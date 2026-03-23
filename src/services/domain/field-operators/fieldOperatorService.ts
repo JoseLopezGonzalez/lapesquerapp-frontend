@@ -8,8 +8,12 @@ import { addWithParams } from '@/lib/entity/entityRelationsHelper';
 
 const ENDPOINT = 'field-operators';
 
+type Filters = Record<string, unknown> & { _requiredRelations?: string[] };
+type Pagination = { page?: number; perPage?: number };
+type FieldOperatorPayload = Record<string, unknown>;
+
 export const fieldOperatorAdminService = {
-  async list(filters = {}, pagination = {}) {
+  async list(filters: Filters = {}, pagination: Pagination = {}) {
     const token = await getAuthToken();
     const { page = 1, perPage = 12 } = pagination;
     const queryParams = new URLSearchParams();
@@ -21,23 +25,23 @@ export const fieldOperatorAdminService = {
     queryParams.append('perPage', String(perPage));
     return fetchEntitiesGeneric(`${API_URL_V2}${ENDPOINT}?${queryParams.toString()}`, token);
   },
-  async getById(id) {
+  async getById(id: number | string) {
     const token = await getAuthToken();
     return fetchEntityDataGeneric(`${API_URL_V2}${ENDPOINT}/${id}`, token);
   },
-  async create(payload) {
+  async create(payload: FieldOperatorPayload) {
     const token = await getAuthToken();
     const response = await createEntityGeneric(`${API_URL_V2}${ENDPOINT}`, payload, token);
     const result = await response.json();
     return result.data ?? result;
   },
-  async update(id, payload) {
+  async update(id: number | string, payload: FieldOperatorPayload) {
     const token = await getAuthToken();
     const response = await submitEntityFormGeneric(`${API_URL_V2}${ENDPOINT}/${id}`, 'PUT', payload, token);
     const result = await response.json();
     return result.data ?? result;
   },
-  async delete(id) {
+  async delete(id: number | string) {
     const token = await getAuthToken();
     return deleteEntityGeneric(`${API_URL_V2}${ENDPOINT}/${id}`, undefined, token);
   },

@@ -41,6 +41,7 @@
   ],
   "exclude": [
     "node_modules",
-    "shadcn-preset"
+    "shadcn-preset",
+    "src/__tests__"
   ]
 }

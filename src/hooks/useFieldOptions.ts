@@ -10,7 +10,13 @@ import {
   getFieldOperatorsOptions,
 } from '@/services/fieldOperatorService';
 
-function useFieldQuery(queryKey, queryFn, requireFieldOperator = true) {
+type OptionRecord = Record<string, unknown>;
+
+function useFieldQuery<T = unknown>(
+  queryKey: string[],
+  queryFn: (token: string) => Promise<T>,
+  requireFieldOperator = true
+) {
   const { data: session } = useSession();
   const { fieldOperatorId } = useFieldOperator();
   const token = session?.user?.accessToken;
@@ -18,20 +24,20 @@ function useFieldQuery(queryKey, queryFn, requireFieldOperator = true) {
 
   return useQuery({
     queryKey: [...queryKey, tenantId ?? 'unknown'],
-    queryFn: () => queryFn(token),
+    queryFn: () => queryFn(token as string),
     enabled: Boolean(token) && Boolean(tenantId) && (!requireFieldOperator || Boolean(fieldOperatorId)),
   });
 }
 
 export function useFieldCustomerOptions() {
   const query = useFieldQuery(['field', 'customers', 'options'], getFieldCustomersOptions, true);
-  const raw = Array.isArray(query.data) ? query.data : query.data?.data ?? [];
+  const raw: OptionRecord[] = Array.isArray(query.data) ? query.data : (query.data as { data?: OptionRecord[] } | undefined)?.data ?? [];
   return {
     ...query,
     data: raw,
-    options: raw.map((customer) => ({
+    options: raw.map((customer: OptionRecord) => ({
       value: String(customer.id),
-      label: customer.name,
+      label: String(customer.name ?? ''),
       operationalStatus: customer.operationalStatus,
     })),
   };
@@ -39,13 +45,13 @@ export function useFieldCustomerOptions() {
 
 export function useFieldProductOptions() {
   const query = useFieldQuery(['field', 'products', 'options'], getFieldProductsOptions, true);
-  const raw = Array.isArray(query.data) ? query.data : query.data?.data ?? [];
+  const raw: OptionRecord[] = Array.isArray(query.data) ? query.data : (query.data as { data?: OptionRecord[] } | undefined)?.data ?? [];
   return {
     ...query,
     data: raw,
-    options: raw.map((product) => ({
+    options: raw.map((product: OptionRecord) => ({
       value: String(product.id),
-      label: product.name,
+      label: String(product.name ?? ''),
       boxGtin: product.boxGtin ?? null,
       species: product.species ?? null,
     })),
@@ -54,10 +60,10 @@ export function useFieldProductOptions() {
 
 export function useFieldOperatorOptions() {
   const query = useFieldQuery(['field-operators', 'options'], getFieldOperatorsOptions, false);
-  const raw = Array.isArray(query.data) ? query.data : query.data?.data ?? [];
+  const raw: OptionRecord[] = Array.isArray(query.data) ? query.data : (query.data as { data?: OptionRecord[] } | undefined)?.data ?? [];
   return {
     ...query,
     data: raw,
-    options: raw.map((operator) => ({ value: String(operator.id), label: operator.name })),
+    options: raw.map((operator: OptionRecord) => ({ value: String(operator.id), label: String(operator.name ?? '') })),
   };
 }

@@ -1,8 +1,8 @@
-function openExternal(url) {
+function openExternal(url: string) {
   window.open(url, '_blank', 'noopener,noreferrer');
 }
 
-export function openInGoogleMaps(lat, lng, query) {
+export function openInGoogleMaps(lat: number | string | null | undefined, lng: number | string | null | undefined, query: string) {
   const hasCoordinates =
     lat != null && lng != null && !Number.isNaN(Number(lat)) && !Number.isNaN(Number(lng));
 
@@ -17,7 +17,7 @@ export function openInGoogleMaps(lat, lng, query) {
   openExternal(url);
 }
 
-export function openInWaze(lat, lng, query) {
+export function openInWaze(lat: number | string | null | undefined, lng: number | string | null | undefined, query: string) {
   const hasCoordinates =
     lat != null && lng != null && !Number.isNaN(Number(lat)) && !Number.isNaN(Number(lng));
 

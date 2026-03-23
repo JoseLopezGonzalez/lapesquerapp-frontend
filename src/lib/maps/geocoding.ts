@@ -4,7 +4,7 @@ export function hasMapboxToken() {
   return Boolean(process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN);
 }
 
-export async function geocodeAddress(query) {
+export async function geocodeAddress(query: string) {
   const token = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
   if (!token || !query?.trim()) return [];
 

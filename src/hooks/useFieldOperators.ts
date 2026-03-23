@@ -4,10 +4,19 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 import { fieldOperatorAdminService } from '@/services/domain/field-operators/fieldOperatorService';
 
-export function useFieldOperators(params = {}) {
+type UseFieldOperatorsParams = {
+  filters?: Record<string, unknown>;
+  page?: number;
+  perPage?: number;
+  enabled?: boolean;
+};
+
+type MutationPayload = Record<string, unknown>;
+
+export function useFieldOperators(params: UseFieldOperatorsParams = {}) {
   const { filters = {}, page = 1, perPage = 12, enabled = true } = params;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
-  const query = useQuery({
+  const query = useQuery<any>({
     queryKey: ['field-operators', 'list', tenantId ?? 'unknown', filters, page, perPage],
     queryFn: () => fieldOperatorAdminService.list(filters, { page, perPage }),
     enabled: Boolean(tenantId) && enabled,
@@ -17,16 +26,16 @@ export function useFieldOperators(params = {}) {
     data: Array.isArray(query.data?.data) ? query.data.data : [],
     meta: query.data?.meta ?? { current_page: 1, last_page: 1, per_page: perPage, total: 0 },
     isLoading: query.isLoading,
-    error: query.error?.message ?? null,
+    error: query.error instanceof Error ? query.error.message : null,
     refetch: query.refetch,
   };
 }
 
-export function useFieldOperatorDetail(id, enabled = true) {
+export function useFieldOperatorDetail(id: number | string | null | undefined, enabled = true) {
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
   return useQuery({
     queryKey: ['field-operators', 'detail', tenantId ?? 'unknown', id],
-    queryFn: () => fieldOperatorAdminService.getById(id),
+    queryFn: () => fieldOperatorAdminService.getById(id as number | string),
     enabled: Boolean(tenantId) && Boolean(id) && enabled,
   });
 }
@@ -35,7 +44,7 @@ export function useFieldOperatorMutations() {
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : 'unknown';
   const queryClient = useQueryClient();
 
-  const invalidate = async (id) => {
+  const invalidate = async (id?: number | string | null) => {
     await queryClient.invalidateQueries({ queryKey: ['field-operators', 'list', tenantId] });
     if (id != null) {
       await queryClient.invalidateQueries({ queryKey: ['field-operators', 'detail', tenantId, id] });
@@ -43,15 +52,15 @@ export function useFieldOperatorMutations() {
     await queryClient.invalidateQueries({ queryKey: ['field-operators', 'options', tenantId] });
   };
 
-  const createMutation = useMutation({
+  const createMutation = useMutation<unknown, Error, MutationPayload>({
     mutationFn: (payload) => fieldOperatorAdminService.create(payload),
     onSuccess: () => invalidate(),
   });
-  const updateMutation = useMutation({
+  const updateMutation = useMutation<unknown, Error, { id: number | string; payload: MutationPayload }>({
     mutationFn: ({ id, payload }) => fieldOperatorAdminService.update(id, payload),
     onSuccess: (_, variables) => invalidate(variables.id),
   });
-  const deleteMutation = useMutation({
+  const deleteMutation = useMutation<unknown, Error, number | string>({
     mutationFn: (id) => fieldOperatorAdminService.delete(id),
     onSuccess: (_, id) => invalidate(id),
   });

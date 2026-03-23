@@ -1,13 +1,19 @@
 const DIRECTIONS_BASE = 'https://api.mapbox.com/directions/v5/mapbox/driving';
 
-function normalizeCoordinates(stops = []) {
+type DirectionStop = {
+  lng?: number | string | null;
+  lat?: number | string | null;
+  position?: number | string | null;
+};
+
+function normalizeCoordinates(stops: DirectionStop[] = []) {
   return stops
-    .filter((stop) => stop?.lng != null && stop?.lat != null)
+    .filter((stop): stop is Required<Pick<DirectionStop, 'lng' | 'lat'>> & DirectionStop => stop?.lng != null && stop?.lat != null)
     .sort((a, b) => Number(a.position ?? 0) - Number(b.position ?? 0))
     .map((stop) => [Number(stop.lng), Number(stop.lat)]);
 }
 
-export async function getRouteDirections(stops = []) {
+export async function getRouteDirections(stops: DirectionStop[] = []) {
   const token = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
   const coordinates = normalizeCoordinates(stops);
 
