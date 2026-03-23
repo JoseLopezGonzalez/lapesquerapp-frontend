@@ -9,6 +9,9 @@ import { createRoute, getRoute, getRoutes, updateRoute } from '@/services/fieldO
 
 type RouteParams = Record<string, string | number | boolean | null | undefined>;
 type RoutePayload = Record<string, unknown>;
+type RouteQueryOptions = {
+  enabled?: boolean;
+};
 
 function useRoutesBase() {
   const { data: session } = useSession();
@@ -17,12 +20,13 @@ function useRoutesBase() {
   return { token, tenantId };
 }
 
-export function useRoutes(params: RouteParams = {}) {
+export function useRoutes(params: RouteParams = {}, options: RouteQueryOptions = {}) {
   const { token, tenantId } = useRoutesBase();
+  const { enabled = true } = options;
   return useQuery({
     queryKey: commercialRouteKeys.list(tenantId, params),
     queryFn: () => getRoutes(token as string, params),
-    enabled: Boolean(token) && Boolean(tenantId),
+    enabled: Boolean(token) && Boolean(tenantId) && enabled,
     select: (data) => ({
       items: normalizeRouteCollection(Array.isArray(data?.data) ? data.data : []),
       meta: data?.meta ?? null,
@@ -47,7 +51,7 @@ export function useRouteMutations() {
 
   const createMutation = useMutation<unknown, Error, RoutePayload>({
     mutationFn: (payload) => createRoute(token as string, payload),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: commercialRouteKeys.all(tenantId) }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: commercialRouteKeys.list(tenantId) }),
   });
 
   const updateMutation = useMutation<unknown, Error, { routeId: number | string; payload: RoutePayload }>({
@@ -57,7 +61,22 @@ export function useRouteMutations() {
         ((response as { data?: unknown } | undefined)?.data ?? response) as Partial<import('@/types/field').DeliveryRoute>
       );
       queryClient.setQueryData(commercialRouteKeys.detail(tenantId, variables.routeId), updatedRoute);
-      queryClient.invalidateQueries({ queryKey: commercialRouteKeys.all(tenantId) });
+      const listEntries = queryClient.getQueriesData<{
+        items?: ReturnType<typeof normalizeRouteCollection>;
+        meta?: unknown;
+        links?: unknown;
+      }>({
+        queryKey: commercialRouteKeys.list(tenantId),
+      });
+      listEntries.forEach(([queryKey, cache]) => {
+        if (!cache?.items) return;
+        queryClient.setQueryData(queryKey, {
+          ...cache,
+          items: cache.items.map((item) =>
+            String(item.id) === String(variables.routeId) ? updatedRoute : item
+          ),
+        });
+      });
     },
   });
 

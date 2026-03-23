@@ -5,7 +5,13 @@ import { getRouteDirections } from '@/lib/maps/directions';
 import { buildStopsCoordinateSignature, normalizeStops } from '@/lib/routes/routeStops';
 import type { RouteStop } from '@/types/field';
 
-export function useRouteGeometry(stops: Partial<RouteStop>[] = []) {
+export function useRouteGeometry(
+  stops: Partial<RouteStop>[] = [],
+  options: {
+    enabled?: boolean;
+  } = {}
+) {
+  const { enabled = true } = options;
   const [routeGeometry, setRouteGeometry] = useState<{
     type: string;
     properties?: {
@@ -23,6 +29,14 @@ export function useRouteGeometry(stops: Partial<RouteStop>[] = []) {
   useEffect(() => {
     let cancelled = false;
     setDirectionsError('');
+
+    if (!enabled) {
+      setRouteGeometry(null);
+      setIsCalculatingRoute(false);
+      return () => {
+        cancelled = true;
+      };
+    }
 
     const stopsWithCoordinates = geometryStops.filter((stop) => stop?.lat != null && stop?.lng != null);
     if (stopsWithCoordinates.length < 2) {
@@ -55,7 +69,7 @@ export function useRouteGeometry(stops: Partial<RouteStop>[] = []) {
     return () => {
       cancelled = true;
     };
-  }, [coordinateSignature]);
+  }, [coordinateSignature, enabled]);
 
   return {
     routeGeometry,

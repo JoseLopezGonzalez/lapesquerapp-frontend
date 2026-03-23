@@ -20,7 +20,8 @@ function normalizeQueryParams(params: Record<string, unknown> = {}) {
 }
 
 export function useCommercialInteractions(params = {}) {
-  const { enabled = true, ...queryParams } = params;
+  const typedParams = params as Record<string, unknown> & { enabled?: boolean };
+  const { enabled = true, ...queryParams } = typedParams;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
   const normalizedParams = normalizeQueryParams(queryParams);
   const queryKey = ['crm', 'interactions', 'list', tenantId ?? 'unknown', normalizedParams];

@@ -11,6 +11,12 @@ import { useFieldRoutes } from '@/hooks/useFieldRoutes';
 import { getFieldStatusLabel } from '@/components/Field/labels';
 import { MapPinned, ArrowRight } from 'lucide-react';
 
+const routeDateFormatter = new Intl.DateTimeFormat('es-ES', {
+  day: '2-digit',
+  month: 'long',
+  year: 'numeric',
+});
+
 function getProgress(route) {
   const stops = Array.isArray(route?.stops) ? route.stops : [];
   const completed = stops.filter((stop) => stop.status === 'completed').length;
@@ -34,11 +40,7 @@ function formatRouteDate(value) {
     return String(value);
   }
 
-  return new Intl.DateTimeFormat('es-ES', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-  }).format(parsed);
+  return routeDateFormatter.format(parsed);
 }
 
 export default function FieldRoutesListPage() {

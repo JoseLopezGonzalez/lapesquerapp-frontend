@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -58,14 +58,17 @@ function formatRouteDate(value) {
 
 export default function FieldRouteExecutionPage({ routeId }) {
   const router = useRouter();
-  const { data: route, isLoading, errorMessage } = useFieldRoute(routeId);
-  const { data: ordersData } = useFieldOrders({ routeId, perPage: 100 });
-  const { updateStop, isUpdatingStop } = useFieldRouteStopMutation(routeId);
   const [selectedStop, setSelectedStop] = useState(null);
   const [resultType, setResultType] = useState('delivery');
   const [resultNotes, setResultNotes] = useState('');
   const [stopSheetOpen, setStopSheetOpen] = useState(false);
   const [stopsSheetOpen, setStopsSheetOpen] = useState(false);
+  const { data: route, isLoading, errorMessage } = useFieldRoute(routeId);
+  const { data: ordersData } = useFieldOrders(
+    { routeId, perPage: 25 },
+    { enabled: stopSheetOpen || Boolean(selectedStop) }
+  );
+  const { updateStop, isUpdatingStop } = useFieldRouteStopMutation(routeId);
   const {
     stops,
     focusedStopId,
@@ -90,6 +93,10 @@ export default function FieldRouteExecutionPage({ routeId }) {
   const focusedStopOrder = focusedStop ? ordersByStopId.get(String(focusedStop.id)) : null;
   const focusedStopQuery = focusedStop?.address || focusedStop?.label || '';
   const routeDateLabel = useMemo(() => formatRouteDate(route?.routeDate), [route?.routeDate]);
+  const handleMapStopClick = useCallback((stop) => {
+    setFocusedStopId(stop.id);
+    setStopSheetOpen(true);
+  }, [setFocusedStopId]);
 
   if (isLoading) {
     return <div className="flex flex-1 items-center justify-center"><Loader /></div>;
@@ -198,10 +205,7 @@ export default function FieldRouteExecutionPage({ routeId }) {
             routeGeometry={routeGeometry}
             disableFallbackLine
             className="h-full min-h-0 w-full rounded-[28px] border-0 shadow-none"
-            onStopClick={(stop) => {
-              setFocusedStopId(stop.id);
-              setStopSheetOpen(true);
-            }}
+            onStopClick={handleMapStopClick}
           />
           {!stopSheetOpen && !stopsSheetOpen && (
             <div className="pointer-events-none absolute right-4 top-4 z-[60] flex justify-end">

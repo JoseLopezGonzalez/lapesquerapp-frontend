@@ -63,7 +63,22 @@ export function useFieldRouteStopMutation(routeId: number | string | null | unde
         ((response as { data?: unknown } | undefined)?.data ?? response) as Partial<import('@/types/field').DeliveryRoute>
       );
       queryClient.setQueryData(fieldRouteKeys.detail(tenantId, routeId), updatedRoute);
-      queryClient.invalidateQueries({ queryKey: fieldRouteKeys.all(tenantId) });
+      const listEntries = queryClient.getQueriesData<{
+        items?: ReturnType<typeof normalizeRouteCollection>;
+        meta?: unknown;
+        links?: unknown;
+      }>({
+        queryKey: fieldRouteKeys.list(tenantId),
+      });
+      listEntries.forEach(([queryKey, cache]) => {
+        if (!cache?.items) return;
+        queryClient.setQueryData(queryKey, {
+          ...cache,
+          items: cache.items.map((item) =>
+            String(item.id) === String(updatedRoute.id) ? updatedRoute : item
+          ),
+        });
+      });
     },
   });
 

@@ -161,6 +161,38 @@ Archivos clave:
 - `src/components/Comercial/CRM/AgendaPageClient.jsx`
 - `src/components/Comercial/CRM/QuickInteractionModal.jsx`
 
+### 2.12 Rutas comercial/repartidor con carga eager e invalidación amplia
+
+- En planner de rutas comercial, se pueden cargar datasets y cálculos pesados aunque la superficie no esté visible (tabs inactivas, diálogos cerrados, detalle oculto).
+- En ejecución de rutas de repartidor, mutaciones de parada pueden combinar patch local + invalidación global, generando trabajo y refetch duplicado.
+
+Patron corregido:
+- Cargar por visibilidad real (`enabled` por tab, diálogo o panel abierto).
+- Evitar cálculo de geometría cuando la vista de detalle no está activa.
+- Usar patch local (`setQueryData`) y invalidación mínima por listas específicas, evitando `all` por defecto.
+- En ejecución de ruta, cargar pedidos on-demand (cuando realmente se necesitan en la UI de parada).
+
+Archivos clave:
+- `src/components/Comercial/Routes/RoutesPlannerPage.jsx`
+- `src/hooks/useRouteGeometry.ts`
+- `src/hooks/useRoutes.ts`
+- `src/hooks/useRouteTemplates.ts`
+- `src/hooks/useFieldRoutes.ts`
+- `src/components/Field/FieldRouteExecutionPage.jsx`
+- `src/hooks/useFieldOrders.ts`
+
+### 2.13 Geocoding masivo sin control de concurrencia
+
+- Enriquecer paradas sin coordenadas con `Promise.all` abierto puede producir bursts de requests y penalizar TTI en rutas grandes.
+
+Patron corregido:
+- Limitar concurrencia de geocoding y deduplicar peticiones en vuelo por dirección.
+- Reusar resultados enriquecidos cuando el set de paradas no cambia.
+
+Archivos clave:
+- `src/lib/routes/routeStops.ts`
+- `src/hooks/useFieldRouteExecutionState.ts`
+
 ## 3) Cambios aplicados en esta ronda
 
 1. Token cache inicial en `crmService` con dedupe de sesión.
@@ -177,6 +209,7 @@ Archivos clave:
 12. Ajuste de altura del dialog en edición para eliminar huecos en blanco.
 13. Creación de interacciones con invalidación dirigida por target y patch optimista de listas.
 14. Agenda optimizada con invalidación mínima y filtros aplicados por borrador.
+15. Rutas comercial/repartidor optimizadas con gating de carga, invalidación dirigida y geocoding con concurrencia controlada.
 
 ## 4) Checklist reutilizable para otros modulos
 
@@ -229,6 +262,9 @@ Aplicar este checklist al revisar cualquier pantalla:
 - Refactor de `queryKey` sin actualizar todas las invalidaciones/mutaciones asociadas (riesgo de cache stale silenciosa).
 - Mutaciones con `onSettled` + invalidación global después de una estrategia optimista local.
 - Diálogos de filtros que escriben estado “live” en cada toggle (bursts de requests).
+- Cálculos de mapa/geometría ejecutándose con panel oculto o tab inactiva.
+- `Promise.all` abierto para geocoding de múltiples paradas.
+- Mutación de paradas con patch local y además invalidación global del mismo dominio.
 
 ## 6) Criterio de diseño recomendado
 

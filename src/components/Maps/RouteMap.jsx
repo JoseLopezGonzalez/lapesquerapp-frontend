@@ -2,7 +2,7 @@
 
 import Map, { Layer, Marker, Source } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { MapPin } from 'lucide-react';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { cn } from '@/lib/utils';
@@ -41,7 +41,7 @@ function getStopColor(stop) {
   return '#6b7280';
 }
 
-export function RouteMap({
+function RouteMapComponent({
   stops = [],
   routeGeometry = null,
   disableFallbackLine = false,
@@ -248,3 +248,5 @@ export function RouteMap({
     </div>
   );
 }
+
+export const RouteMap = memo(RouteMapComponent);

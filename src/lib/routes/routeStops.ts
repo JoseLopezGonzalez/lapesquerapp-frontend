@@ -14,7 +14,9 @@ type RouteEntityDraft = {
 };
 
 const geocodeCache = new Map<string, { lat: number; lng: number } | null>();
+const pendingGeocodeRequests = new Map<string, Promise<{ lat: number; lng: number } | null>>();
 const STOP_SIGNATURE_SEPARATOR = '::';
+const GEOCODE_CONCURRENCY = 3;
 
 function buildDraftId(prefix: string, index?: number) {
   return `${prefix}-${index ?? 'x'}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -158,7 +160,7 @@ export function buildStopsCoordinateSignature(stops: Partial<RouteStop>[] = []) 
 async function geocodeStop(stop: RouteStop) {
   if (stop.lat != null && stop.lng != null) return stop;
 
-  const query = stop.address || stop.label || '';
+  const query = String(stop.address || stop.label || '').trim();
   if (!query) return stop;
 
   if (geocodeCache.has(query)) {
@@ -166,25 +168,58 @@ async function geocodeStop(stop: RouteStop) {
     return cachedCoordinates ? { ...stop, ...cachedCoordinates } : stop;
   }
 
-  try {
-    const [feature] = await geocodeAddress(query);
-    if (!feature?.center) {
-      geocodeCache.set(query, null);
-      return stop;
-    }
-
-    const coordinates = { lng: feature.center[0], lat: feature.center[1] };
-    geocodeCache.set(query, coordinates);
-    return { ...stop, ...coordinates };
-  } catch (_) {
-    geocodeCache.set(query, null);
-    return stop;
+  let requestPromise = pendingGeocodeRequests.get(query);
+  if (!requestPromise) {
+    requestPromise = geocodeAddress(query)
+      .then((features) => {
+        const feature = features?.[0];
+        if (!feature?.center) {
+          geocodeCache.set(query, null);
+          return null;
+        }
+        const coordinates = { lng: feature.center[0], lat: feature.center[1] };
+        geocodeCache.set(query, coordinates);
+        return coordinates;
+      })
+      .catch(() => {
+        geocodeCache.set(query, null);
+        return null;
+      })
+      .finally(() => {
+        pendingGeocodeRequests.delete(query);
+      });
+    pendingGeocodeRequests.set(query, requestPromise);
   }
+
+  const coordinates = await requestPromise;
+  return coordinates ? { ...stop, ...coordinates } : stop;
+}
+
+async function runWithConcurrency<T, R>(
+  items: T[],
+  concurrency: number,
+  worker: (item: T, index: number) => Promise<R>
+) {
+  if (items.length === 0) return [] as R[];
+  const result: R[] = new Array(items.length);
+  let nextIndex = 0;
+
+  async function runner() {
+    while (nextIndex < items.length) {
+      const currentIndex = nextIndex;
+      nextIndex += 1;
+      result[currentIndex] = await worker(items[currentIndex], currentIndex);
+    }
+  }
+
+  const workers = Array.from({ length: Math.min(concurrency, items.length) }, () => runner());
+  await Promise.all(workers);
+  return result;
 }
 
 export async function enrichStopsWithCoordinates(stops: Partial<RouteStop>[] = []) {
   const normalizedStops = normalizeStops(stops);
-  return Promise.all(normalizedStops.map((stop) => geocodeStop(stop)));
+  return runWithConcurrency(normalizedStops, GEOCODE_CONCURRENCY, (stop) => geocodeStop(stop));
 }
 
 export function normalizeRouteEntity<T extends Partial<DeliveryRoute>>(route: T): T & { stops: RouteStop[] } {

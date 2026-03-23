@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
 import {
@@ -520,13 +520,6 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
   const loadedTemplateIdRef = useRef(null);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
   const { options: fieldOperatorOptions } = useFieldOperatorOptions();
-  const { data: customersData } = useCustomersList({ perPage: 250 });
-  const { data: prospectsData } = useProspectsList({ perPage: 250 });
-  const { data: routesData, isLoading: loadingRoutes } = useRoutes({ perPage: 50 });
-  const { data: templatesData, isLoading: loadingTemplates } = useRouteTemplates({ perPage: 50 });
-  const { createRoute, updateRoute, isSavingRoute } = useRouteMutations();
-  const { createTemplate, updateTemplate, isSavingTemplate } = useRouteTemplateMutations();
-  const dieselAverage = useSpainAverageDieselPrice();
   const [tab, setTab] = useState(initialTab);
   const [search, setSearch] = useState('');
   const [geocodeResults, setGeocodeResults] = useState([]);
@@ -544,6 +537,18 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
   const [routeDraft, setRouteDraft] = useState(createEmptyRouteDraft());
   const [templateDraft, setTemplateDraft] = useState(createEmptyTemplateDraft());
   const [newItemDraft, setNewItemDraft] = useState(createEmptyNewItemDraft());
+  const isRoutesTab = tab === 'routes';
+  const stopEditorOpen = Boolean(editingStop || creatingStop);
+  const { data: customersData } = useCustomersList({ perPage: 250, enabled: stopEditorOpen });
+  const { data: prospectsData } = useProspectsList({ perPage: 250, enabled: stopEditorOpen });
+  const { data: routesData, isLoading: loadingRoutes } = useRoutes({ perPage: 50 }, { enabled: isRoutesTab });
+  const { data: templatesData, isLoading: loadingTemplates } = useRouteTemplates(
+    { perPage: 50 },
+    { enabled: !isRoutesTab }
+  );
+  const { createRoute, updateRoute, isSavingRoute } = useRouteMutations();
+  const { createTemplate, updateTemplate, isSavingTemplate } = useRouteTemplateMutations();
+  const dieselAverage = useSpainAverageDieselPrice();
 
   const routes = useMemo(() => routesData?.items ?? [], [routesData]);
   const templates = useMemo(() => templatesData?.items ?? [], [templatesData]);
@@ -585,7 +590,9 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
         templateDraft.stops.length
     );
   }, [routeDraft, tab, templateDraft]);
-  const { routeGeometry, directionsError, isCalculatingRoute } = useRouteGeometry(currentDraft.stops);
+  const { routeGeometry, directionsError, isCalculatingRoute } = useRouteGeometry(currentDraft.stops, {
+    enabled: detailMode,
+  });
   const routeMetrics = useMemo(() => {
     const coordinatesCount = currentDraft.stops.filter((stop) => stop?.lat != null && stop?.lng != null).length;
     const distanceMeters = routeGeometry?.properties?.distance ?? null;
@@ -874,7 +881,7 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
     }));
   };
 
-  const handleMapClick = (event) => {
+  const handleMapClick = useCallback((event) => {
     openCreateStopDialog({
       label: `Parada ${currentDraft.stops.length + 1}`,
       address: `${event.lngLat.lat.toFixed(5)}, ${event.lngLat.lng.toFixed(5)}`,
@@ -883,7 +890,7 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
       targetType: 'location',
       stopType: 'oportunidad',
     });
-  };
+  }, [currentDraft.stops.length]);
 
   const handleDragEnd = (event) => {
     const { active, over } = event;

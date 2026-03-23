@@ -9,6 +9,7 @@ import { useFieldOperator } from '@/context/FieldOperatorContext';
 
 type FieldParams = Record<string, string | number | boolean | null | undefined>;
 type FieldMutationPayload = Record<string, unknown>;
+type FieldQueryOptions = { enabled?: boolean };
 
 function useFieldBase() {
   const { data: session } = useSession();
@@ -18,12 +19,13 @@ function useFieldBase() {
   return { token, tenantId, fieldOperatorId };
 }
 
-export function useFieldOrders(params: FieldParams = {}) {
+export function useFieldOrders(params: FieldParams = {}, options: FieldQueryOptions = {}) {
   const { token, tenantId, fieldOperatorId } = useFieldBase();
+  const { enabled = true } = options;
   const query = useQuery({
     queryKey: fieldOrderKeys.list(tenantId, params),
     queryFn: () => getFieldOrders(token as string, params),
-    enabled: Boolean(token) && Boolean(tenantId) && Boolean(fieldOperatorId),
+    enabled: Boolean(token) && Boolean(tenantId) && Boolean(fieldOperatorId) && enabled,
     select: (data) => ({
       items: Array.isArray(data?.data) ? data.data : [],
       meta: data?.meta ?? null,
@@ -61,16 +63,16 @@ export function useFieldOrderMutations() {
     onSuccess: (response, variables) => {
       const updatedOrder = (response as { data?: unknown } | undefined)?.data ?? response;
       queryClient.setQueryData(fieldOrderKeys.detail(tenantId, variables.orderId), updatedOrder);
-      queryClient.invalidateQueries({ queryKey: fieldOrderKeys.all(tenantId) });
-      queryClient.invalidateQueries({ queryKey: fieldRouteKeys.all(tenantId) });
+      queryClient.invalidateQueries({ queryKey: fieldOrderKeys.list(tenantId) });
+      queryClient.invalidateQueries({ queryKey: fieldRouteKeys.list(tenantId) });
     },
   });
 
   const autoventaMutation = useMutation<unknown, Error, FieldMutationPayload>({
     mutationFn: (payload) => createFieldAutoventa(token as string, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: fieldOrderKeys.all(tenantId) });
-      queryClient.invalidateQueries({ queryKey: fieldRouteKeys.all(tenantId) });
+      queryClient.invalidateQueries({ queryKey: fieldOrderKeys.list(tenantId) });
+      queryClient.invalidateQueries({ queryKey: fieldRouteKeys.list(tenantId) });
       queryClient.invalidateQueries({ queryKey: ['field', 'customers', 'options', tenantId ?? 'unknown'] });
     },
   });
