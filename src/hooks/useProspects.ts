@@ -34,6 +34,7 @@ function patchProspectFromPayload(
   payload: ProspectPayload
 ): Prospect | null | undefined {
   if (!currentProspect) return currentProspect;
+  const currentPrimaryContact = currentProspect.primaryContact;
   return {
     ...currentProspect,
     companyName: payload.companyName ?? currentProspect.companyName,
@@ -46,15 +47,16 @@ function patchProspectFromPayload(
     nextActionAt: payload.nextActionAt ?? currentProspect.nextActionAt,
     nextActionNote: payload.nextActionNote ?? currentProspect.nextActionNote,
     lostReason: payload.lostReason ?? currentProspect.lostReason,
-    primaryContact: payload.primaryContact
-      ? {
-          ...(currentProspect.primaryContact ?? {}),
-          name: payload.primaryContact.name ?? currentProspect.primaryContact?.name ?? '',
-          role: payload.primaryContact.role ?? currentProspect.primaryContact?.role ?? null,
-          phone: payload.primaryContact.phone ?? currentProspect.primaryContact?.phone ?? null,
-          email: payload.primaryContact.email ?? currentProspect.primaryContact?.email ?? null,
-        }
-      : currentProspect.primaryContact,
+    primaryContact:
+      payload.primaryContact && currentPrimaryContact
+        ? {
+            ...currentPrimaryContact,
+            name: payload.primaryContact.name ?? currentPrimaryContact.name ?? '',
+            role: payload.primaryContact.role ?? currentPrimaryContact.role ?? null,
+            phone: payload.primaryContact.phone ?? currentPrimaryContact.phone ?? null,
+            email: payload.primaryContact.email ?? currentPrimaryContact.email ?? null,
+          }
+        : currentProspect.primaryContact,
   };
 }
 
