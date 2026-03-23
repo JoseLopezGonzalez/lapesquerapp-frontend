@@ -1,11 +1,11 @@
 type QueryValue = string | number | boolean | null | undefined;
 type QueryParams = Record<string, QueryValue | QueryValue[]>;
 
-function normalizeQueryParams(params: QueryParams = {}) {
+export function normalizeQueryParams(params: Record<string, unknown> = {}): Record<string, unknown> {
   return Object.entries(params)
     .filter(([, value]) => value != null && value !== '' && (!Array.isArray(value) || value.length > 0))
     .sort(([left], [right]) => left.localeCompare(right))
-    .reduce<Record<string, QueryValue | QueryValue[]>>((accumulator, [key, value]) => {
+    .reduce<Record<string, unknown>>((accumulator, [key, value]) => {
       accumulator[key] = Array.isArray(value) ? [...value].map((item) => String(item)).sort() : value;
       return accumulator;
     }, {});
@@ -26,17 +26,58 @@ export const routeTemplateKeys = {
 };
 
 export const fieldRouteKeys = {
-  all: (tenantId: string | null | undefined) => ['field', 'routes', tenantId ?? 'unknown'] as const,
-  list: (tenantId: string | null | undefined, params: QueryParams = {}) =>
-    ['field', 'routes', tenantId ?? 'unknown', normalizeQueryParams(params)] as const,
-  detail: (tenantId: string | null | undefined, routeId: number | string | null | undefined) =>
-    ['field', 'routes', 'detail', tenantId ?? 'unknown', routeId] as const,
+  all: (tenantId: string | null | undefined, fieldOperatorId: number | string | null | undefined = 'unknown') =>
+    ['field', 'routes', tenantId ?? 'unknown', fieldOperatorId ?? 'unknown'] as const,
+  list: (tenantId: string | null | undefined, fieldOperatorId: number | string | null | undefined = 'unknown', params: QueryParams = {}) =>
+    ['field', 'routes', tenantId ?? 'unknown', fieldOperatorId ?? 'unknown', normalizeQueryParams(params)] as const,
+  detail: (tenantId: string | null | undefined, fieldOperatorId: number | string | null | undefined = 'unknown', routeId: number | string | null | undefined) =>
+    ['field', 'routes', 'detail', tenantId ?? 'unknown', fieldOperatorId ?? 'unknown', routeId] as const,
 };
 
 export const fieldOrderKeys = {
-  all: (tenantId: string | null | undefined) => ['field', 'orders', tenantId ?? 'unknown'] as const,
-  list: (tenantId: string | null | undefined, params: QueryParams = {}) =>
-    ['field', 'orders', tenantId ?? 'unknown', normalizeQueryParams(params)] as const,
-  detail: (tenantId: string | null | undefined, orderId: number | string | null | undefined) =>
-    ['field', 'orders', 'detail', tenantId ?? 'unknown', orderId] as const,
+  all: (tenantId: string | null | undefined, fieldOperatorId: number | string | null | undefined = 'unknown') =>
+    ['field', 'orders', tenantId ?? 'unknown', fieldOperatorId ?? 'unknown'] as const,
+  list: (tenantId: string | null | undefined, fieldOperatorId: number | string | null | undefined = 'unknown', params: QueryParams = {}) =>
+    ['field', 'orders', tenantId ?? 'unknown', fieldOperatorId ?? 'unknown', normalizeQueryParams(params)] as const,
+  detail: (tenantId: string | null | undefined, fieldOperatorId: number | string | null | undefined = 'unknown', orderId: number | string | null | undefined) =>
+    ['field', 'orders', 'detail', tenantId ?? 'unknown', fieldOperatorId ?? 'unknown', orderId] as const,
+};
+
+// P05 — clave de opciones de clientes para field (autoventa y listados)
+export const fieldCustomerOptionKeys = {
+  list: (tenantId: string | null | undefined) =>
+    ['field', 'customers', 'options', tenantId ?? 'unknown'] as const,
+};
+
+// P07 — opciones de productos para field (Step2QRScan)
+export const fieldProductOptionKeys = {
+  list: (tenantId: string | null | undefined) =>
+    ['field', 'products', 'options', tenantId ?? 'unknown'] as const,
+};
+
+// P01 — pedidos comerciales CRM
+export const comercialOrderKeys = {
+  all: (tenantId: string | null | undefined) =>
+    ['crm', 'orders', tenantId ?? 'unknown'] as const,
+  list: (tenantId: string | null | undefined, params: Record<string, unknown> = {}) =>
+    ['crm', 'orders', tenantId ?? 'unknown', normalizeQueryParams(params)] as const,
+};
+
+// P03 — listado de clientes
+export const customerListKeys = {
+  listPrefix: (tenantId: string | null | undefined) =>
+    ['customers', 'list', tenantId ?? 'unknown'] as const,
+  list: (tenantId: string | null | undefined, filters: Record<string, unknown> = {}, page = 1, perPage = 12) =>
+    ['customers', 'list', tenantId ?? 'unknown', normalizeQueryParams(filters), page, perPage] as const,
+};
+
+// P10 — claves de cliente usadas en useCustomerAssignment
+export const crmCustomerKeys = {
+  detail: (tenantId: string | null | undefined, customerId: number | string | null | undefined) =>
+    ['crm', 'customers', 'detail', tenantId ?? 'unknown', customerId] as const,
+};
+
+export const adminCustomerKeys = {
+  assignment: (customerId: number | string | null | undefined) =>
+    ['admin', 'customers', 'assignment', customerId] as const,
 };

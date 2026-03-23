@@ -1,5 +1,4 @@
-import { fetchWithTenant } from "@lib/fetchWithTenant";
-import React, { useState, memo } from 'react'
+import React, { memo } from 'react'
 import { InboxIcon } from '@heroicons/react/24/outline';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { PackageSearch, SearchX, ArrowLeft, CheckCircle2, Clock, AlertCircle, Package } from 'lucide-react';
@@ -14,7 +13,8 @@ import {
     InputGroupAddon,
     InputGroupInput,
 } from '@/components/ui/input-group';
-import { API_URL_V2 } from '@/configs/config';import { useSession } from 'next-auth/react';
+import { downloadActivePlannedProductsXls } from '@/services/orderService';
+import { useSession } from 'next-auth/react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useBackButton } from '@/hooks/use-back-button';
 
@@ -33,7 +33,6 @@ const OrdersList = ({ orders, categories, visibleCategories: visibleCategoriesPr
     const visibleCategories = visibleCategoriesProp ?? categories;
     const activeCount = totalActiveOrders ?? orders?.length ?? 0;
 
-    const [loading, setLoading] = useState(false);
     const { data: session } = useSession();
     const isMobile = useIsMobile();
     const router = useRouter();
@@ -81,15 +80,7 @@ const OrdersList = ({ orders, categories, visibleCategories: visibleCategoriesPr
 
     const exportDocument = async () => {
         const doExport = async () => {
-            const response = await fetchWithTenant(`${API_URL_V2}orders/xlsx/active-planned-products`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${session.user.accessToken}`,
-                    'User-Agent': navigator.userAgent,
-                }
-            });
-            if (!response.ok) throw new Error('Error al exportar');
-            const blob = await response.blob();
+            const blob = await downloadActivePlannedProductsXls(session.user.accessToken);
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -108,12 +99,6 @@ const OrdersList = ({ orders, categories, visibleCategories: visibleCategoriesPr
             },
         });
     };
-
-    const handleExportActivePlannedProducts = () => {
-        exportDocument('active-planned-products', 'xlsx', 'Productos Planificados Activos')
-    };
-
-
 
     return (
         <div className={`flex flex-col h-full relative overflow-hidden`}>
@@ -194,7 +179,7 @@ const OrdersList = ({ orders, categories, visibleCategories: visibleCategoriesPr
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={handleExportActivePlannedProducts}
+                          onClick={exportDocument}
                         >
                           <Download className="h-4 w-4" />
                         </Button>
@@ -207,12 +192,7 @@ const OrdersList = ({ orders, categories, visibleCategories: visibleCategoriesPr
                     </div>
                 )}
             </div>
-            {loading ? (
-                <>
-
-                </>
-            ) : (
-                <div className={`flex-1 flex flex-col min-h-0 overflow-hidden ${isMobile ? 'px-4' : 'px-4 sm:px-7'}`}>
+            <div className={`flex-1 flex flex-col min-h-0 overflow-hidden ${isMobile ? 'px-4' : 'px-4 sm:px-7'}`}>
                     {/* Barra de búsqueda (siempre visible) + tabs con efecto badge y scroll con fade */}
                     <div className={`w-full flex-shrink-0 ${isMobile ? 'mb-3 pt-1 space-y-4' : 'mb-5 pt-2'}`}>
                         <InputGroup className="w-full">
@@ -338,7 +318,6 @@ const OrdersList = ({ orders, categories, visibleCategories: visibleCategoriesPr
                         </div>
                     )}
                 </div>
-            )}
         </div>
     )
 }

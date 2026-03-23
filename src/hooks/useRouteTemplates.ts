@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import { routeTemplateKeys } from '@/lib/routes/queryKeys';
-import { normalizeRouteCollection } from '@/lib/routes/routeStops';
+import { normalizeRouteCollection, normalizeRouteEntity } from '@/lib/routes/routeStops';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 import { createRouteTemplate, getRouteTemplates, updateRouteTemplate } from '@/services/fieldOperatorService';
 
@@ -47,9 +47,9 @@ export function useRouteTemplateMutations() {
   const updateMutation = useMutation<unknown, Error, { templateId: number | string; payload: TemplatePayload }>({
     mutationFn: ({ templateId, payload }) => updateRouteTemplate(token as string, templateId, payload),
     onSuccess: (response, variables) => {
-      const updatedTemplate = normalizeRouteCollection([
-        ((response as { data?: unknown } | undefined)?.data ?? response) as Partial<import('@/types/field').DeliveryRoute>,
-      ])[0];
+      const updatedTemplate = normalizeRouteEntity(
+        ((response as { data?: unknown } | undefined)?.data ?? response) as Partial<import('@/types/field').DeliveryRoute>
+      );
       const listEntries = queryClient.getQueriesData<{
         items?: ReturnType<typeof normalizeRouteCollection>;
         meta?: unknown;

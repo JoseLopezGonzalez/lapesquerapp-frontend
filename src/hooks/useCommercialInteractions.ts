@@ -5,18 +5,16 @@ import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 import { crmService } from '@/services/crmService';
 import type { CommercialInteraction, CommercialInteractionPayload, CrmPaginatedResponse } from '@/types/crm';
 
-function normalizeQueryParams(params: Record<string, unknown> = {}) {
-  return Object.entries(params).reduce<Record<string, unknown>>((acc, [key, value]) => {
-    if (value == null || value === '') return acc;
-    if (Array.isArray(value)) {
-      const cleaned = value.filter((item) => item != null && item !== '');
-      if (cleaned.length === 0) return acc;
-      acc[key] = cleaned;
+function normalizeQueryParams(params: Record<string, unknown> = {}): Record<string, unknown> {
+  return Object.entries(params)
+    .filter(([, value]) => value != null && value !== '' && (!Array.isArray(value) || value.filter((v) => v != null && v !== '').length > 0))
+    .sort(([left], [right]) => left.localeCompare(right))
+    .reduce<Record<string, unknown>>((acc, [key, value]) => {
+      acc[key] = Array.isArray(value)
+        ? value.filter((v) => v != null && v !== '').map(String).sort()
+        : value;
       return acc;
-    }
-    acc[key] = value;
-    return acc;
-  }, {});
+    }, {});
 }
 
 export function useCommercialInteractions(params = {}) {

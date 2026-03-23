@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
+import { normalizeQueryParams } from '@/lib/routes/queryKeys';
 import { crmService } from '@/services/crmService';
 
 type AgendaQueryParams = {
@@ -36,7 +37,7 @@ async function invalidateAgendaQueries(queryClient: ReturnType<typeof useQueryCl
 export function useAgenda(params: AgendaQueryParams = {}) {
   const { enabled = true, ...queryParams } = params;
   const tenantId = getTenantId();
-  const queryKey = ['crm', 'agenda', tenantId ?? 'unknown', queryParams];
+  const queryKey = ['crm', 'agenda', tenantId ?? 'unknown', normalizeQueryParams(queryParams)];
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey,
@@ -55,7 +56,7 @@ export function useAgenda(params: AgendaQueryParams = {}) {
 export function useAgendaSummary(params: AgendaQueryParams = {}) {
   const { enabled = true, ...queryParams } = params;
   const tenantId = getTenantId();
-  const queryKey = ['crm', 'agenda', 'summary', tenantId ?? 'unknown', queryParams];
+  const queryKey = ['crm', 'agenda', 'summary', tenantId ?? 'unknown', normalizeQueryParams(queryParams)];
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey,

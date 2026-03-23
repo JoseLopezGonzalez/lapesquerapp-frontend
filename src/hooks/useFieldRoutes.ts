@@ -22,7 +22,7 @@ function useFieldRouteBase() {
 export function useFieldRoutes(params: FieldParams = {}) {
   const { token, tenantId, fieldOperatorId } = useFieldRouteBase();
   const query = useQuery({
-    queryKey: fieldRouteKeys.list(tenantId, params),
+    queryKey: fieldRouteKeys.list(tenantId, fieldOperatorId, params),
     queryFn: () => getFieldRoutes(token as string, params),
     enabled: Boolean(token) && Boolean(tenantId) && Boolean(fieldOperatorId),
     select: (data) => ({
@@ -41,7 +41,7 @@ export function useFieldRoutes(params: FieldParams = {}) {
 export function useFieldRoute(routeId: number | string | null | undefined) {
   const { token, tenantId, fieldOperatorId } = useFieldRouteBase();
   const query = useQuery({
-    queryKey: fieldRouteKeys.detail(tenantId, routeId),
+    queryKey: fieldRouteKeys.detail(tenantId, fieldOperatorId, routeId),
     queryFn: () => getFieldRoute(token as string, routeId as number | string),
     enabled: Boolean(token) && Boolean(tenantId) && Boolean(fieldOperatorId) && Boolean(routeId),
     select: (data) => normalizeRouteEntity(data?.data ?? data),
@@ -62,13 +62,13 @@ export function useFieldRouteStopMutation(routeId: number | string | null | unde
       const updatedRoute = normalizeRouteEntity(
         ((response as { data?: unknown } | undefined)?.data ?? response) as Partial<import('@/types/field').DeliveryRoute>
       );
-      queryClient.setQueryData(fieldRouteKeys.detail(tenantId, routeId), updatedRoute);
+      queryClient.setQueryData(fieldRouteKeys.detail(tenantId, fieldOperatorId, routeId), updatedRoute);
       const listEntries = queryClient.getQueriesData<{
         items?: ReturnType<typeof normalizeRouteCollection>;
         meta?: unknown;
         links?: unknown;
       }>({
-        queryKey: fieldRouteKeys.list(tenantId),
+        queryKey: fieldRouteKeys.list(tenantId, fieldOperatorId),
       });
       listEntries.forEach(([queryKey, cache]) => {
         if (!cache?.items) return;

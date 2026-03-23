@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
+import { normalizeQueryParams } from '@/lib/routes/queryKeys';
 import { crmService } from '@/services/crmService';
 import type { OfferPayload } from '@/types/crm';
 
@@ -12,7 +13,7 @@ type UseOffersListParams = Record<string, unknown> & {
 export function useOffersList(params: UseOffersListParams = {}) {
   const { enabled = true, ...queryParams } = params;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
-  const queryKey = ['crm', 'offers', 'list', tenantId ?? 'unknown', queryParams];
+  const queryKey = ['crm', 'offers', 'list', tenantId ?? 'unknown', normalizeQueryParams(queryParams)];
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey,

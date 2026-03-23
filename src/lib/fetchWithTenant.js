@@ -136,7 +136,9 @@ export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
 
     // Procesar el error normalmente (para todos los códigos de error, incluyendo 401/403 de validación)
     try {
-      console.error('❌ Error JSON recibido:', errorJson);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('❌ Error JSON recibido:', errorJson);
+      }
       
       // Verificar si hay un logout en curso antes de lanzar errores de autenticación
       const isLoggingOut2 = typeof window !== 'undefined' && 

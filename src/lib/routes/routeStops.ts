@@ -16,6 +16,7 @@ type RouteEntityDraft = {
 const geocodeCache = new Map<string, { lat: number; lng: number } | null>();
 const pendingGeocodeRequests = new Map<string, Promise<{ lat: number; lng: number } | null>>();
 const STOP_SIGNATURE_SEPARATOR = '::';
+const MAX_GEOCODE_CACHE_SIZE = 500;
 const GEOCODE_CONCURRENCY = 3;
 
 function buildDraftId(prefix: string, index?: number) {
@@ -174,10 +175,12 @@ async function geocodeStop(stop: RouteStop) {
       .then((features) => {
         const feature = features?.[0];
         if (!feature?.center) {
+          if (geocodeCache.size >= MAX_GEOCODE_CACHE_SIZE) geocodeCache.delete(geocodeCache.keys().next().value!);
           geocodeCache.set(query, null);
           return null;
         }
         const coordinates = { lng: feature.center[0], lat: feature.center[1] };
+        if (geocodeCache.size >= MAX_GEOCODE_CACHE_SIZE) geocodeCache.delete(geocodeCache.keys().next().value!);
         geocodeCache.set(query, coordinates);
         return coordinates;
       })

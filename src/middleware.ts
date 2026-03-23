@@ -15,6 +15,16 @@ interface JWTToken {
   [key: string]: unknown;
 }
 
+function setVerificationCookie(response: NextResponse): void {
+  response.cookies.set("__session_verified", "1", {
+    maxAge: 60,
+    httpOnly: true,
+    sameSite: "strict",
+    path: "/",
+    secure: process.env.NODE_ENV === "production",
+  });
+}
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const isExternalRoute = pathname.startsWith("/external");
@@ -84,85 +94,94 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  try {
-    const host = req.headers.get("host") || "";
-    const tenant = host.includes("localhost")
-      ? host.split(".").length > 1 && host.split(".")[0] !== "localhost"
-        ? host.split(".")[0]
-        : "dev"
-      : host.split(".")[0];
+  // P-MW — Opción C: cookie-based session verification cache (TTL 60s).
+  // Skips the /me roundtrip on requests within the TTL window.
+  const needsVerification = !req.cookies.get("__session_verified");
+  let currentUser: Record<string, unknown> | null = null;
 
-    const verifyResponse = await fetchWithTenant(
-      `${API_BASE_URL}/api/v2/me`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token.accessToken}`,
+  if (needsVerification) {
+    try {
+      const host = req.headers.get("host") || "";
+      const tenant = host.includes("localhost")
+        ? host.split(".").length > 1 && host.split(".")[0] !== "localhost"
+          ? host.split(".")[0]
+          : "dev"
+        : host.split(".")[0];
+
+      const verifyResponse = await fetchWithTenant(
+        `${API_BASE_URL}/api/v2/me`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token.accessToken}`,
+          },
         },
-      },
-      req.headers
-    );
-
-    let currentUser: Record<string, unknown> | null = null;
-
-    if (!verifyResponse.ok) {
-      const errorText = await verifyResponse.text().catch(() => "");
-      devLog(
-        `🔐 [Middleware] Token inválido o sesión cancelada. Status: ${verifyResponse.status}, Tenant: ${tenant}, Ruta: ${pathname}, Error: ${errorText}`
+        req.headers
       );
-      if (verifyResponse.status === 401 || verifyResponse.status === 403) {
+
+      if (!verifyResponse.ok) {
+        const errorText = await verifyResponse.text().catch(() => "");
+        devLog(
+          `🔐 [Middleware] Token inválido o sesión cancelada. Status: ${verifyResponse.status}, Tenant: ${tenant}, Ruta: ${pathname}, Error: ${errorText}`
+        );
+        if (verifyResponse.status === 401 || verifyResponse.status === 403) {
+          const loginUrl = new URL("/", req.url);
+          loginUrl.searchParams.set("from", pathname);
+          return NextResponse.redirect(loginUrl);
+        }
+      } else {
+        const verifyData =
+          (await verifyResponse.json().catch(() => null)) as
+            | { data?: Record<string, unknown> }
+            | Record<string, unknown>
+            | null;
+        currentUser = (verifyData && "data" in verifyData && verifyData.data
+          ? verifyData.data
+          : verifyData) as Record<string, unknown> | null;
+      }
+    } catch (error) {
+      const err = error as { message?: string; name?: string };
+      logError("🔐 [Middleware] Error al validar el token con el backend:", {
+        message: err.message,
+        name: err.name,
+        tenant: req.headers.get("host")?.split(".")[0] || "unknown",
+        pathname,
+      });
+
+      if (isAuthError(err)) {
         const loginUrl = new URL("/", req.url);
         loginUrl.searchParams.set("from", pathname);
         return NextResponse.redirect(loginUrl);
       }
-    } else {
-      const verifyData =
-        (await verifyResponse.json().catch(() => null)) as
-          | { data?: Record<string, unknown> }
-          | Record<string, unknown>
-          | null;
-      currentUser = (verifyData && "data" in verifyData && verifyData.data
-        ? verifyData.data
-        : verifyData) as Record<string, unknown> | null;
     }
+  }
 
-    const actorType =
-      (currentUser?.actorType as JWTToken["actorType"] | undefined) ??
-      token.actorType ??
-      "internal_user";
-    const rawRole =
-      (currentUser?.role as string | string[] | null | undefined) ?? token.role;
-    const userRole = Array.isArray(rawRole) ? rawRole[0] : rawRole;
+  // actorType and role: currentUser has JWT fallbacks so this works whether
+  // verification ran or was skipped via the cookie cache.
+  const actorType =
+    (currentUser?.actorType as JWTToken["actorType"] | undefined) ??
+    token.actorType ??
+    "internal_user";
+  const rawRole =
+    (currentUser?.role as string | string[] | null | undefined) ?? token.role;
+  const userRoleFromVerification = Array.isArray(rawRole) ? rawRole[0] : rawRole;
 
-    if (isExternalRoute) {
-      if (actorType !== "external_user") {
-        const internalUrl = new URL("/admin/home", req.url);
-        if (userRole === "operario") internalUrl.pathname = "/operator";
-        if (userRole === "comercial") internalUrl.pathname = "/comercial";
-        if (userRole === "repartidor_autoventa") internalUrl.pathname = "/field";
-        return NextResponse.redirect(internalUrl);
-      }
-      return NextResponse.next();
+  if (isExternalRoute) {
+    if (actorType !== "external_user") {
+      const internalUrl = new URL("/admin/home", req.url);
+      if (userRoleFromVerification === "operario") internalUrl.pathname = "/operator";
+      if (userRoleFromVerification === "comercial") internalUrl.pathname = "/comercial";
+      if (userRoleFromVerification === "repartidor_autoventa") internalUrl.pathname = "/field";
+      return NextResponse.redirect(internalUrl);
     }
+    const response = NextResponse.next();
+    if (needsVerification && currentUser) setVerificationCookie(response);
+    return response;
+  }
 
-    if (actorType === "external_user") {
-      const externalUrl = new URL("/external/stores-manager", req.url);
-      return NextResponse.redirect(externalUrl);
-    }
-  } catch (error) {
-    const err = error as { message?: string; name?: string };
-    logError("🔐 [Middleware] Error al validar el token con el backend:", {
-      message: err.message,
-      name: err.name,
-      tenant: req.headers.get("host")?.split(".")[0] || "unknown",
-      pathname,
-    });
-
-    if (isAuthError(err)) {
-      const loginUrl = new URL("/", req.url);
-      loginUrl.searchParams.set("from", pathname);
-      return NextResponse.redirect(loginUrl);
-    }
+  if (actorType === "external_user") {
+    const externalUrl = new URL("/external/stores-manager", req.url);
+    return NextResponse.redirect(externalUrl);
   }
 
   const matchingRoutes = Object.keys(roleConfig).filter((route) =>
@@ -197,7 +216,9 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(unauthorizedUrl);
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+  if (needsVerification && currentUser) setVerificationCookie(response);
+  return response;
 }
 
 export const config = {

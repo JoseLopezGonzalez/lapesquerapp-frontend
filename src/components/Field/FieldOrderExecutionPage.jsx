@@ -1,17 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, ArrowRight, Check, CircleCheck, Loader2, PackageOpen, Route, Save } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Loader2, PackageOpen, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import Loader from '@/components/Utilities/Loader';
 import Step2QRScan from '@/components/Comercial/Autoventa/Step2QRScan';
 import Step3Pricing from '@/components/Comercial/Autoventa/Step3Pricing';
 import { useFieldOrder, useFieldOrderMutations } from '@/hooks/useFieldOrders';
+import { useFieldProductsOptions } from '@/hooks/useFieldProductsOptions';
 import {
   aggregateItemsFromBoxes,
   buildInitialItems,
@@ -19,10 +18,14 @@ import {
   calculateServedItemsTotal,
   validateServedItems,
 } from '@/lib/field/fieldOrderExecution';
-import { getFieldProductsOptions } from '@/services/fieldOperatorService';
 import { notify } from '@/lib/notifications';
-import { getFieldStatusLabel } from '@/components/Field/labels';
 import { cn } from '@/lib/utils';
+import { ReadonlyOrderStep } from './OrderSteps/ReadonlyOrderStep';
+import { ForecastStep } from './OrderSteps/ForecastStep';
+import { WizardEmptyStep } from './OrderSteps/WizardEmptyStep';
+import { OrderSummaryStep } from './OrderSteps/OrderSummaryStep';
+import { OrderConfirmationStep } from './OrderSteps/OrderConfirmationStep';
+import { OrderSuccessStep } from './OrderSteps/OrderSuccessStep';
 
 const STEPS = [
   { id: 1, title: 'Pedido', description: 'Revisa el contexto del pedido operativo' },
@@ -33,252 +36,15 @@ const STEPS = [
   { id: 6, title: 'Confirmar', description: 'Revisa y guarda el pedido operativo' },
 ];
 
-function formatDate(value) {
-  if (!value) return 'Sin fecha';
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return String(value);
-  return new Intl.DateTimeFormat('es-ES', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  }).format(parsed);
-}
-
-function getOrderTypeLabel(orderType) {
-  return orderType === 'autoventa' ? 'Autoventa' : 'Estándar';
-}
-
-function ReadonlyOrderStep({ order }) {
-  return (
-    <div className="w-full max-w-[420px]">
-      <Card>
-        <CardContent className="space-y-4 p-4">
-          <div className="space-y-2">
-            <div className="flex items-start justify-between gap-3">
-              <div className="space-y-1">
-                <p className="text-lg font-semibold">Pedido #{order.id}</p>
-                <p className="text-sm text-muted-foreground">{order.customer?.name || 'Sin cliente'}</p>
-              </div>
-              <Badge variant="secondary">{getOrderTypeLabel(order.orderType ?? order.order_type)}</Badge>
-            </div>
-            <Badge variant="outline">{getFieldStatusLabel(order.status || 'pending')}</Badge>
-          </div>
-
-          <div className="grid gap-3 text-sm">
-            <div>
-              <p className="text-muted-foreground">Fecha de entrada</p>
-              <p className="font-medium">{formatDate(order.entryDate)}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Fecha de carga</p>
-              <p className="font-medium">{formatDate(order.loadDate)}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Referencia</p>
-              <p className="font-medium">{order.buyerReference || 'Sin referencia'}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Ruta</p>
-              {order.routeId ? (
-                <Button asChild variant="link" className="h-auto px-0">
-                  <Link href={`/field/rutas/${order.routeId}`}>
-                    Ver ruta #{order.routeId}
-                  </Link>
-                </Button>
-              ) : (
-                <p className="font-medium">Sin ruta asociada</p>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-function ForecastStep({ items }) {
-  const totalBoxes = items.reduce((sum, item) => sum + (Number(item.boxesCount) || 0), 0);
-  const totalWeight = items.reduce((sum, item) => sum + (Number(item.totalWeight) || 0), 0);
-  const totalAmount = items.reduce((sum, item) => sum + (Number(item.subtotal) || 0), 0);
-
-  return (
-    <div className="w-full max-w-[min(800px,95vw)] space-y-4">
-      <Card>
-        <CardContent className="space-y-3 p-4">
-          {items.map((item, idx) => (
-            <div key={`${item.productId}-${idx}`} className="grid gap-1 border-b pb-3 last:border-b-0 last:pb-0">
-              <p className="font-medium">{item.productName ?? item.productId}</p>
-              <p className="text-sm text-muted-foreground">
-                {item.boxesCount ?? 0} cajas · {Number(item.totalWeight ?? 0).toFixed(2)} kg · {Number(item.unitPrice ?? 0).toFixed(2)} €/kg
-              </p>
-              <p className="text-sm font-medium">{Number(item.subtotal ?? 0).toFixed(2)} €</p>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="grid gap-3 p-4 text-sm sm:grid-cols-3">
-          <div>
-            <p className="text-muted-foreground">Cajas previstas</p>
-            <p className="text-lg font-semibold">{totalBoxes}</p>
-          </div>
-          <div>
-            <p className="text-muted-foreground">Peso previsto</p>
-            <p className="text-lg font-semibold">{totalWeight.toFixed(2)} kg</p>
-          </div>
-          <div>
-            <p className="text-muted-foreground">Total previsto</p>
-            <p className="text-lg font-semibold">{Number(totalAmount ?? 0).toFixed(2)} €</p>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-function WizardEmptyStep({ title, description }) {
-  return (
-    <div className="w-full max-w-[420px]">
-      <Card>
-        <CardContent className="flex min-h-[280px] flex-col items-center justify-center gap-5 p-6 text-center">
-          <div className="rounded-full border bg-muted/30 p-4">
-            <PackageOpen className="h-12 w-12 text-primary" strokeWidth={1.6} />
-          </div>
-          <div className="space-y-2">
-            <h3 className="text-lg font-semibold">{title}</h3>
-            <p className="text-sm text-muted-foreground">{description}</p>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-function OrderSummaryStep({ order, items, totalAmount }) {
-  if (items.length === 0) {
-    return (
-      <WizardEmptyStep
-        title="Sin contenido real todavía"
-        description="Cuando registres cajas en el lector verás aquí el resumen del contenido real del pedido."
-      />
-    );
-  }
-
-  const totalBoxes = items.reduce((sum, item) => sum + (Number(item.boxesCount) || 0), 0);
-  const totalWeight = items.reduce((sum, item) => sum + (Number(item.totalWeight) || 0), 0);
-
-  return (
-    <div className="w-full max-w-[min(800px,95vw)] space-y-4">
-      <Card>
-        <CardContent className="space-y-4 p-4">
-          <div className="grid gap-2 text-sm">
-            <p><strong>Cliente:</strong> {order.customer?.name || 'Sin cliente'}</p>
-            <p><strong>Fecha de carga:</strong> {formatDate(order.loadDate)}</p>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="space-y-3 p-4">
-          {items.map((item, idx) => (
-            <div key={`${item.productId}-${idx}`} className="grid gap-1 border-b pb-3 last:border-b-0 last:pb-0">
-              <p className="font-medium">{item.productName ?? item.productId}</p>
-              <p className="text-sm text-muted-foreground">
-                {item.boxesCount ?? 0} cajas · {Number(item.totalWeight ?? 0).toFixed(2)} kg · {Number(item.unitPrice ?? 0).toFixed(2)} €/kg
-              </p>
-              <p className="text-sm font-medium">{Number(item.subtotal ?? 0).toFixed(2)} €</p>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="grid gap-3 p-4 text-sm sm:grid-cols-3">
-          <div>
-            <p className="text-muted-foreground">Cajas</p>
-            <p className="text-lg font-semibold">{totalBoxes}</p>
-          </div>
-          <div>
-            <p className="text-muted-foreground">Peso neto</p>
-            <p className="text-lg font-semibold">{totalWeight.toFixed(2)} kg</p>
-          </div>
-          <div>
-            <p className="text-muted-foreground">Total estimado</p>
-            <p className="text-lg font-semibold">{Number(totalAmount ?? 0).toFixed(2)} €</p>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-function OrderConfirmationStep({ totalAmount }) {
-  const canSave = Number(totalAmount) > 0;
-
-  return (
-    <div className="w-full max-w-[420px] space-y-4">
-      <Card>
-        <CardContent className="space-y-4 p-4">
-          {canSave ? (
-            <>
-              <div className="rounded-xl border bg-muted/20 p-4">
-                <p className="text-sm text-muted-foreground">Total estimado a guardar</p>
-                <p className="text-2xl font-semibold">{Number(totalAmount ?? 0).toFixed(2)} €</p>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Se guardará el conjunto completo de líneas servidas del pedido, sin modificar su estado.
-              </p>
-            </>
-          ) : (
-            <WizardEmptyStep
-              title="Nada que confirmar todavía"
-              description="Antes de guardar tienes que registrar cajas para construir el contenido real del pedido."
-            />
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-function OrderSuccessStep({ order, onBackToOrders, onBackToRoute }) {
-  return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-6 px-4 py-6">
-      <div className="flex flex-col items-center gap-3 text-center">
-        <div className="rounded-full bg-green-500/10 p-4 ring-4 ring-green-500/20">
-          <CircleCheck className="h-16 w-16 text-green-600 dark:text-green-400" strokeWidth={2} />
-        </div>
-        <p className="text-xl font-semibold text-green-700 dark:text-green-400">
-          Pedido operativo actualizado
-        </p>
-        <p className="max-w-md text-sm text-muted-foreground">
-          El pedido #{order.id} se ha guardado con el contenido servido actualizado.
-        </p>
-      </div>
-
-      <Card className="w-full max-w-md">
-        <CardContent className="flex flex-col gap-3 p-6">
-          <Button onClick={onBackToOrders} className="w-full justify-between">
-            Volver a pedidos
-            <ArrowRight className="h-4 w-4" />
-          </Button>
-          {order.routeId ? (
-            <Button variant="outline" onClick={onBackToRoute} className="w-full justify-between">
-              Volver a la ruta
-              <Route className="h-4 w-4" />
-            </Button>
-          ) : null}
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
 export default function FieldOrderExecutionPage({ orderId }) {
   const router = useRouter();
   const { data: order, isLoading, errorMessage } = useFieldOrder(orderId);
   const { updateOrder, isUpdating } = useFieldOrderMutations();
+  const { data: productsOptionsData } = useFieldProductsOptions();
+  const loadProductOptions = useCallback(
+    () => Promise.resolve(productsOptionsData ?? []),
+    [productsOptionsData]
+  );
   const [step, setStep] = useState(1);
   const [boxes, setBoxes] = useState([]);
   const [forecastItems, setForecastItems] = useState([]);
@@ -489,7 +255,7 @@ export default function FieldOrderExecutionPage({ orderId }) {
               addBox={addBox}
               removeBox={removeBox}
               removeAllBoxes={removeAllBoxes}
-              loadProductOptions={getFieldProductsOptions}
+              loadProductOptions={loadProductOptions}
             />
           </div>
         ) : null}

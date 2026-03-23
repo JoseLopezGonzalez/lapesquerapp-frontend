@@ -2,10 +2,9 @@
 
 import Link from 'next/link';
 import * as React from 'react';
-import { Calendar, Check, ChevronLeft, ChevronRight, ExternalLink, Filter, MoreVertical, XCircle } from 'lucide-react';
+import { Calendar, Check, ExternalLink, MoreVertical, XCircle } from 'lucide-react';
 import { eachDayOfInterval, endOfMonth, endOfWeek, format, getDay, isSameMonth, isToday, startOfMonth, startOfWeek } from 'date-fns';
 import { Button } from '@/components/ui/button';
-import { ButtonGroup } from '@/components/ui/button-group';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   DropdownMenu,
@@ -25,15 +24,11 @@ import { notify } from '@/lib/notifications';
 import { cn } from '@/lib/utils';
 import { useAgenda, useAgendaMutations, useAgendaSummary } from '@/hooks/useAgenda';
 import QuickInteractionModal from './QuickInteractionModal';
+import { AgendaHeaderControls } from './AgendaHeaderControls';
+import { AgendaFiltersDialog } from './AgendaFiltersDialog';
 import { agendaStatusLabels, formatDateValue, getStatusTone, isOverdueDate, toneClasses } from './utils';
 
-const STATUS_OPTIONS = ['pending', 'reprogrammed', 'done', 'cancelled'];
 const WEEKDAYS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
-const TARGET_OPTIONS = [
-  { value: 'all', label: 'Todos' },
-  { value: 'prospect', label: 'Prospectos' },
-  { value: 'customer', label: 'Clientes' },
-];
 
 const toneDotClasses = {
   red: 'bg-red-500',
@@ -485,6 +480,18 @@ export default function AgendaPageClient() {
     setDayDialogOpen(Boolean(date));
   };
 
+  const handleOpenFilters = () => {
+    setDraftTargetType(targetType);
+    setDraftStatuses(statuses);
+    setFiltersDialogOpen(true);
+  };
+
+  const handleApplyFilters = () => {
+    setTargetType(draftTargetType);
+    setStatuses(draftStatuses);
+    setFiltersDialogOpen(false);
+  };
+
   return (
     <>
       <div className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto px-4 py-3 md:px-6">
@@ -497,117 +504,23 @@ export default function AgendaPageClient() {
                 </CardTitle>
                 <CardDescription>La agenda se trabaja desde el calendario. Pulsa un día para abrir su detalle.</CardDescription>
               </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const now = new Date();
-                    setMonth(now);
-                    handleOpenDay(now);
-                  }}
-                >
-                  Hoy
-                </Button>
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setFiltersDialogOpen(true)}
-                >
-                  <Filter />
-                  <span>Filtro</span>
-                </Button>
-
-                <ButtonGroup orientation="horizontal" aria-label="Navegación de mes">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={() => setMonth((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1))}
-                  >
-                    <ChevronLeft />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={() => setMonth((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1))}
-                  >
-                    <ChevronRight />
-                  </Button>
-                </ButtonGroup>
-              </div>
+              <AgendaHeaderControls
+                onToday={() => { const now = new Date(); setMonth(now); handleOpenDay(now); }}
+                onOpenFilters={handleOpenFilters}
+                onPrevMonth={() => setMonth((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1))}
+                onNextMonth={() => setMonth((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1))}
+              />
             </div>
 
-            <Dialog
+            <AgendaFiltersDialog
               open={filtersDialogOpen}
-              onOpenChange={(open) => {
-                setFiltersDialogOpen(open);
-                if (open) {
-                  setDraftTargetType(targetType);
-                  setDraftStatuses(statuses);
-                }
-              }}
-            >
-              <DialogContent className="sm:max-w-[520px]">
-                <DialogHeader>
-                  <DialogTitle>Filtro</DialogTitle>
-                </DialogHeader>
-
-                <div className="grid gap-4">
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-muted-foreground">Tipo</p>
-                    <div className="flex flex-wrap gap-2">
-                      {TARGET_OPTIONS.map((option) => (
-                        <Button
-                          key={option.value}
-                          type="button"
-                          size="sm"
-                          variant={draftTargetType === option.value ? 'default' : 'outline'}
-                          onClick={() => setDraftTargetType(option.value)}
-                        >
-                          {option.label}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-muted-foreground">Estado</p>
-                    <div className="flex flex-wrap gap-2">
-                      {STATUS_OPTIONS.map((status) => (
-                        <Button
-                          key={status}
-                          type="button"
-                          size="sm"
-                          variant={draftStatuses.includes(status) ? 'default' : 'outline'}
-                          onClick={() => handleToggleDraftStatus(status)}
-                        >
-                          {agendaStatusLabels[status]}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setFiltersDialogOpen(false)}>
-                    Cancelar
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      setTargetType(draftTargetType);
-                      setStatuses(draftStatuses);
-                      setFiltersDialogOpen(false);
-                    }}
-                  >
-                    Aplicar filtros
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+              onOpenChange={setFiltersDialogOpen}
+              draftTargetType={draftTargetType}
+              draftStatuses={draftStatuses}
+              onDraftTargetTypeChange={setDraftTargetType}
+              onToggleDraftStatus={handleToggleDraftStatus}
+              onApply={handleApplyFilters}
+            />
 
             <AgendaToolbar
               monthLabel={format(month, 'MMMM yyyy')}

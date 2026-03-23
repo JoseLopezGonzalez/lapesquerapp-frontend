@@ -1,6 +1,7 @@
 'use client';
 import { useQuery } from '@tanstack/react-query';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
+import { customerListKeys } from '@/lib/routes/queryKeys';
 import { customerService } from '@/services/domain/customers/customerService';
 import type { CatalogListFilters, PaginationMeta } from '@/types/catalog';
 
@@ -8,7 +9,7 @@ export function useCustomersList(params: { filters?: CatalogListFilters; page?: 
   const { filters = {}, page = 1, perPage = 12, enabled = true } = params;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
   const { data: response, isLoading, error, refetch } = useQuery({
-    queryKey: ['customers', 'list', tenantId ?? 'unknown', filters, page, perPage],
+    queryKey: customerListKeys.list(tenantId, filters as Record<string, unknown>, page, perPage),
     queryFn: () => customerService.list(filters, { page, perPage }),
     enabled: !!tenantId && enabled,
   });

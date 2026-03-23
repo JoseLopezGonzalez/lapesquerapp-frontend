@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
+import { comercialOrderKeys } from '@/lib/routes/queryKeys';
 import { crmService } from '@/services/crmService';
 
 type CommercialOrder = Record<string, unknown> & {
@@ -13,7 +14,7 @@ export function useComercialOrders(params: Record<string, unknown> = {}) {
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
   const query = useQuery({
-    queryKey: ['crm', 'orders', 'list', tenantId ?? 'unknown', params],
+    queryKey: comercialOrderKeys.list(tenantId, params),
     queryFn: () => crmService.listCommercialOrders(params),
     enabled: Boolean(tenantId),
     select: (response) => ({

@@ -153,6 +153,21 @@ export function getActiveOrders(token: AuthToken): Promise<Order[]> {
 }
 
 /**
+ * Downloads the XLS report of active planned products.
+ */
+export async function downloadActivePlannedProductsXls(token: AuthToken): Promise<Blob> {
+  const response = await fetchWithTenant(`${API_URL_V2}orders/xlsx/active-planned-products`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'User-Agent': getUserAgent(),
+    },
+  });
+  if (!response.ok) throw new Error(`Error ${response.status} al exportar`);
+  return response.blob();
+}
+
+/**
  * Updates the planned product detail of an order.
  */
 export async function updateOrderPlannedProductDetail(

@@ -2,6 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
+import { adminCustomerKeys, crmCustomerKeys, customerListKeys } from '@/lib/routes/queryKeys';
 import { customerService } from '@/services/domain/customers/customerService';
 
 type CustomerAssignmentPayload = {
@@ -23,9 +24,9 @@ export function useCustomerAssignmentMutation() {
     mutationFn: ({ customerId, payload }) => customerService.updateAssignment(customerId, payload),
     onSuccess: async (_, variables) => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['customers', 'list', tenantId] }),
-        queryClient.invalidateQueries({ queryKey: ['crm', 'customers', 'detail', tenantId, variables.customerId] }),
-        queryClient.invalidateQueries({ queryKey: ['admin', 'customers', 'assignment', variables.customerId] }),
+        queryClient.invalidateQueries({ queryKey: customerListKeys.listPrefix(tenantId) }),
+        queryClient.invalidateQueries({ queryKey: crmCustomerKeys.detail(tenantId, variables.customerId) }),
+        queryClient.invalidateQueries({ queryKey: adminCustomerKeys.assignment(variables.customerId) }),
       ]);
     },
   });
