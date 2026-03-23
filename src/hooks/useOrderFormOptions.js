@@ -17,7 +17,8 @@ import { useEffect, useState, useRef } from 'react';
  *   - loading: boolean
  *   - error: Error | null
  */
-export function useOrderFormOptions() {
+export function useOrderFormOptions(params = {}) {
+    const { enabled = true } = params;
     const { data: session } = useSession();
     const [options, setOptions] = useState({
         salespeople: [],
@@ -37,6 +38,11 @@ export function useOrderFormOptions() {
 
         // Si ya se cargaron las opciones, asegurarse de que loading sea false y no volver a cargar
         if (hasLoadedRef.current && token) {
+            setLoading(false);
+            return;
+        }
+
+        if (!enabled) {
             setLoading(false);
             return;
         }
@@ -103,7 +109,7 @@ export function useOrderFormOptions() {
         return () => {
             isMountedRef.current = false;
         };
-    }, [session?.user?.accessToken]);
+    }, [session?.user?.accessToken, enabled]);
 
     // Efecto separado para corregir el estado de loading si las opciones ya están cargadas
     // Esto evita que el loading se quede en true cuando las opciones ya están disponibles

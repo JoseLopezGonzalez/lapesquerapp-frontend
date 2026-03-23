@@ -14,6 +14,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useCustomersList } from '@/hooks/useCustomersList';
 import { useCommercialInteractions } from '@/hooks/useCommercialInteractions';
 import { useOffersList } from '@/hooks/useOffers';
+import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 import { getCustomer, getCustomerOrderHistory } from '@/services/customerService';
 import { useSession } from 'next-auth/react';
 import QuickInteractionModal from './QuickInteractionModal';
@@ -33,31 +34,51 @@ const interactionTypeIcons = {
 function useCustomerDetail(customerId) {
   const { data: session } = useSession();
   const token = session?.user?.accessToken;
+  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
   return useQuery({
-    queryKey: ['crm', 'customers', 'detail', customerId, token],
+    queryKey: ['crm', 'customers', 'detail', tenantId ?? 'unknown', customerId],
     queryFn: () => getCustomer(customerId, token),
-    enabled: !!customerId && !!token,
+    enabled: !!tenantId && !!customerId && !!token,
   });
 }
 
-function useCustomerOrderHistory(customerId) {
+function useCustomerOrderHistory(customerId, options = {}) {
+  const { enabled = true } = options;
   const { data: session } = useSession();
   const token = session?.user?.accessToken;
 
   return useQuery({
     queryKey: ['crm', 'customers', 'history', customerId, token],
     queryFn: () => getCustomerOrderHistory(customerId, token, {}),
-    enabled: !!customerId && !!token,
+    enabled: !!customerId && !!token && enabled,
   });
 }
 
 function CustomerDetail({ customerId, embedded = false }) {
+  const [activeTab, setActiveTab] = useState('data');
+  const shouldLoadOrders = activeTab === 'orders';
+  const shouldLoadInteractions = activeTab === 'interactions';
+  const shouldLoadOffers = activeTab === 'offers';
   const { data: customer, isLoading } = useCustomerDetail(customerId);
-  const { data: history } = useCustomerOrderHistory(customerId);
-  const { data: interactions, isLoading: interactionsLoading } = useCommercialInteractions({ customerId, perPage: 50 });
-  const { data: offers } = useOffersList({ customerId, perPage: 50 });
+  const { data: history } = useCustomerOrderHistory(customerId, { enabled: shouldLoadOrders });
+  const { data: interactions, isLoading: interactionsLoading } = useCommercialInteractions({
+    customerId,
+    perPage: 50,
+    enabled: shouldLoadInteractions,
+  });
+  const { data: offers } = useOffersList({
+    customerId,
+    perPage: 50,
+    enabled: shouldLoadOffers,
+  });
   const [interactionOpen, setInteractionOpen] = useState(false);
+
+  useEffect(() => {
+    setActiveTab('data');
+    setInteractionOpen(false);
+  }, [customerId]);
+
   const sortedInteractions = useMemo(
     () =>
       interactions
@@ -89,7 +110,11 @@ function CustomerDetail({ customerId, embedded = false }) {
         </div>
       </CardHeader>
       <CardContent className="flex w-full min-w-0 flex-1 min-h-0 flex-col py-4">
-        <Tabs defaultValue="data" className="flex h-full w-full min-w-0 flex-1 min-h-0 flex-col overflow-hidden">
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="flex h-full w-full min-w-0 flex-1 min-h-0 flex-col overflow-hidden"
+        >
           <TabsList>
             <TabsTrigger value="data">Datos</TabsTrigger>
             <TabsTrigger value="assignment">Asignación</TabsTrigger>

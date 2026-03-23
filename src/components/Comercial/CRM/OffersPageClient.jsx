@@ -9,6 +9,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/in
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useDebounce } from '@/hooks/useDebounce';
 import { useOffersList } from '@/hooks/useOffers';
 import OfferFormSheet from './OfferFormSheet';
 import OfferDetail from './OfferDetail';
@@ -52,11 +53,12 @@ export default function OffersPageClient({ initialOfferId = null, forceCreate = 
   const router = useRouter();
   const searchParams = useSearchParams();
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 350);
   const [status, setStatus] = useState('all');
   const [formOpen, setFormOpen] = useState(forceCreate);
   const fixedProspectId = searchParams.get('prospectId');
   const { data: offers, isLoading } = useOffersList({
-    search: search || undefined,
+    search: debouncedSearch || undefined,
     status: status !== 'all' ? [status] : undefined,
     perPage: 100,
   });

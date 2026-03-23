@@ -82,6 +82,7 @@ function MigrationSummary({ summary, onRun, running }) {
 }
 
 export default function MigrationsTab({ tenantId }) {
+  const toastId = `tenant-migrations-${tenantId}`;
   const [summary, setSummary] = useState(null);
   const [history, setHistory] = useState([]);
   const [histMeta, setHistMeta] = useState(null);
@@ -121,7 +122,16 @@ export default function MigrationsTab({ tenantId }) {
     try {
       const res = await fetchSuperadmin(`/tenants/${tenantId}/migrations/run`, { method: "POST" });
       const json = await res.json();
-      notify.success({ title: "Migraciones encoladas", description: `Run ID: ${json.run_id}` });
+      notify.loading(
+        {
+          title: "Migraciones en curso",
+          description: `Run ID: ${json.run_id}`,
+        },
+        {
+          id: toastId,
+          important: true,
+        }
+      );
       pendingRunId.current = json.run_id;
 
       pollRef.current = setInterval(async () => {
@@ -138,15 +148,42 @@ export default function MigrationsTab({ tenantId }) {
             setHistMeta(hJson.meta || null);
             fetchSummary();
             if (found.success) {
-              notify.success({ title: "Migraciones completadas", description: `${found.migrations_applied} aplicadas.` });
+              notify.success(
+                {
+                  title: "Migraciones completadas",
+                  description: `${found.migrations_applied} migración(es) aplicadas correctamente.`,
+                },
+                {
+                  id: toastId,
+                  duration: 6000,
+                }
+              );
             } else {
-              notify.error({ title: "Fallo en migraciones" });
+              notify.error(
+                {
+                  title: "Fallo en migraciones",
+                  description: "La ejecución terminó con errores. Revise el historial para ver el output.",
+                },
+                {
+                  id: toastId,
+                  important: true,
+                }
+              );
             }
           }
         } catch { /* silent */ }
       }, 3000);
     } catch (err) {
-      notify.error({ title: err.message || "Error al ejecutar migraciones" });
+      notify.error(
+        {
+          title: err.message || "Error al ejecutar migraciones",
+          description: "No se pudo iniciar la ejecución de migraciones del tenant.",
+        },
+        {
+          id: toastId,
+          important: true,
+        }
+      );
       setRunning(false);
     }
   };

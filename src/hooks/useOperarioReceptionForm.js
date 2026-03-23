@@ -294,6 +294,12 @@ export function useOperarioReceptionForm({ onSuccess }) {
         {
           title: 'Continuar',
           onClick: () => handleSubmit(handleCreate)(),
+        },
+        {
+          cancel: {
+            title: 'Revisar líneas',
+            onClick: () => {},
+          },
         }
       );
       return;

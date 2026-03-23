@@ -54,11 +54,23 @@ export function useOfferMutations() {
   const queryClient = useQueryClient();
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : 'unknown';
 
-  const invalidate = async (id?: number | string) => {
+  const invalidate = async ({
+    id,
+    includeDashboard = false,
+    includeProspectsList = false,
+  }: {
+    id?: number | string;
+    includeDashboard?: boolean;
+    includeProspectsList?: boolean;
+  } = {}) => {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ['crm', 'offers', 'list', tenantId] }),
-      queryClient.invalidateQueries({ queryKey: ['crm', 'dashboard', tenantId] }),
-      queryClient.invalidateQueries({ queryKey: ['crm', 'prospects', 'list', tenantId] }),
+      includeDashboard
+        ? queryClient.invalidateQueries({ queryKey: ['crm', 'dashboard', tenantId] })
+        : Promise.resolve(),
+      includeProspectsList
+        ? queryClient.invalidateQueries({ queryKey: ['crm', 'prospects', 'list', tenantId] })
+        : Promise.resolve(),
       id ? queryClient.invalidateQueries({ queryKey: ['crm', 'offer', 'detail', tenantId, id] }) : Promise.resolve(),
     ]);
   };
@@ -66,16 +78,16 @@ export function useOfferMutations() {
   return {
     createOffer: useMutation({
       mutationFn: (payload: OfferPayload) => crmService.createOffer(payload),
-      onSuccess: () => invalidate(),
+      onSuccess: () => invalidate({ includeDashboard: true }),
     }),
     updateOffer: useMutation({
       mutationFn: ({ id, payload }: { id: number | string; payload: OfferPayload }) =>
         crmService.updateOffer(id, payload),
-      onSuccess: (_, variables) => invalidate(variables.id),
+      onSuccess: (_, variables) => invalidate({ id: variables.id }),
     }),
     deleteOffer: useMutation({
       mutationFn: (id: number | string) => crmService.deleteOffer(id),
-      onSuccess: () => invalidate(),
+      onSuccess: () => invalidate({ includeDashboard: true }),
     }),
     sendOffer: useMutation({
       mutationFn: ({
@@ -85,7 +97,8 @@ export function useOfferMutations() {
         id: number | string;
         payload: { channel: string; email?: string; subject?: string };
       }) => crmService.sendOffer(id, payload),
-      onSuccess: (_, variables) => invalidate(variables.id),
+      onSuccess: (_, variables) =>
+        invalidate({ id: variables.id, includeProspectsList: true }),
     }),
     sendOfferEmail: useMutation({
       mutationFn: ({
@@ -95,20 +108,24 @@ export function useOfferMutations() {
         id: number | string;
         payload: { email: string; subject?: string };
       }) => crmService.sendOfferEmail(id, payload),
-      onSuccess: (_, variables) => invalidate(variables.id),
+      onSuccess: (_, variables) =>
+        invalidate({ id: variables.id, includeProspectsList: true }),
     }),
     acceptOffer: useMutation({
       mutationFn: (id: number | string) => crmService.acceptOffer(id),
-      onSuccess: (_, id) => invalidate(id),
+      onSuccess: (_, id) =>
+        invalidate({ id, includeDashboard: true, includeProspectsList: true }),
     }),
     rejectOffer: useMutation({
       mutationFn: ({ id, reason }: { id: number | string; reason: string }) =>
         crmService.rejectOffer(id, reason),
-      onSuccess: (_, variables) => invalidate(variables.id),
+      onSuccess: (_, variables) =>
+        invalidate({ id: variables.id, includeDashboard: true, includeProspectsList: true }),
     }),
     expireOffer: useMutation({
       mutationFn: (id: number | string) => crmService.expireOffer(id),
-      onSuccess: (_, id) => invalidate(id),
+      onSuccess: (_, id) =>
+        invalidate({ id, includeDashboard: true, includeProspectsList: true }),
     }),
     createOrderFromOffer: useMutation({
       mutationFn: ({
@@ -118,7 +135,8 @@ export function useOfferMutations() {
         id: number | string;
         payload: Record<string, unknown>;
       }) => crmService.createOrderFromOffer(id, payload),
-      onSuccess: (_, variables) => invalidate(variables.id),
+      onSuccess: (_, variables) =>
+        invalidate({ id: variables.id, includeDashboard: true }),
     }),
   };
 }

@@ -302,6 +302,7 @@ export function useOrder(orderId, onChange) {
     /* ---------------------- */
 
     const exportDocument = async (documentName, type, documentLabel) => {
+        const toastId = `order-export-${order.id}-${documentName}-${type}`;
         const doExport = async () => {
             const response = await fetchWithTenant(getOrderExportUrl({
                 orderId: order.id,
@@ -326,12 +327,20 @@ export function useOrder(orderId, onChange) {
             window.URL.revokeObjectURL(url);
         };
         await notify.promise(doExport(), {
-            loading: `Exportando ${documentLabel}.${type}`,
-            success: 'Exportación completada',
+            loading: {
+                title: `Generando ${documentLabel}`,
+                description: `Preparando el archivo ${type.toUpperCase()} para descarga.`,
+            },
+            success: {
+                title: 'Exportación completada',
+                description: `${documentLabel}.${type} ya está listo para descargarse.`,
+            },
             error: (error) => {
                 const desc = error?.userMessage || error?.data?.userMessage || error?.response?.data?.userMessage || error?.message || 'No se pudo completar la exportación. Intente de nuevo.';
                 return { title: 'Error al exportar', description: desc };
             },
+        }, {
+            id: toastId,
         });
     };
 

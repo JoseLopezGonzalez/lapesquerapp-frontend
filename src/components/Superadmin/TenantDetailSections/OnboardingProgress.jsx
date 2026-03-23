@@ -21,6 +21,10 @@ const STEP_LABELS = [
 const POLL_INTERVAL = 4000;
 const STALLED_THRESHOLD = 30000;
 
+function getOnboardingStepLabel(data) {
+  return data.step_label || STEP_LABELS[Math.max(0, (data.step || 1) - 1)] || "Procesando";
+}
+
 function getOnboarding(tenant) {
   if (tenant.onboarding) return tenant.onboarding;
   return {
@@ -36,6 +40,7 @@ function getOnboarding(tenant) {
 export default function OnboardingProgress({ tenant, onRefresh }) {
   const ob = getOnboarding(tenant);
   const totalSteps = ob.total_steps || 8;
+  const toastId = `tenant-onboarding-${tenant.id}`;
 
   const [current, setCurrent] = useState(ob);
   const [retrying, setRetrying] = useState(false);
@@ -65,24 +70,65 @@ export default function OnboardingProgress({ tenant, onRefresh }) {
           prevStep.current = data.step;
           stepStartTime.current = Date.now();
           setStalled(false);
+          notify.loading(
+            {
+              title: "Onboarding en progreso",
+              description: `${getOnboardingStepLabel(data)} · Paso ${Math.min(data.step, totalSteps)} de ${totalSteps}`,
+            },
+            {
+              id: toastId,
+              important: true,
+            }
+          );
         }
 
         setCurrent(data);
 
         if (data.status === "completed" || data.step >= totalSteps) {
           clearInterval(pollRef.current);
-          notify.success({ title: "Onboarding completado" });
+          pollRef.current = null;
+          notify.success(
+            {
+              title: "Onboarding completado",
+              description: "El tenant ya está listo para usarse.",
+            },
+            {
+              id: toastId,
+              duration: 6000,
+            }
+          );
           onRefresh();
           return;
         }
 
         if (data.status === "failed") {
           clearInterval(pollRef.current);
+          pollRef.current = null;
+          notify.error(
+            {
+              title: "Onboarding con errores",
+              description: data.error || "El proceso falló antes de completarse.",
+            },
+            {
+              id: toastId,
+              important: true,
+            }
+          );
           return;
         }
 
         if (Date.now() - stepStartTime.current > STALLED_THRESHOLD) {
           setStalled(true);
+          notify.warning(
+            {
+              title: "Onboarding sin avances recientes",
+              description: "El proceso sigue abierto, pero no ha cambiado de paso recientemente.",
+            },
+            {
+              id: toastId,
+              important: true,
+            }
+          );
         }
       } catch { /* ignore polling errors */ }
     };
@@ -98,7 +144,16 @@ export default function OnboardingProgress({ tenant, onRefresh }) {
       const json = await res.json();
       const data = json.data || json.onboarding || json;
 
-      notify.success({ title: "Reintentando onboarding..." });
+      notify.loading(
+        {
+          title: "Reintentando onboarding",
+          description: `Paso ${Math.min(data.step ?? current.step, totalSteps)} de ${totalSteps}`,
+        },
+        {
+          id: toastId,
+          important: true,
+        }
+      );
       stepStartTime.current = Date.now();
       setStalled(false);
 
@@ -122,22 +177,50 @@ export default function OnboardingProgress({ tenant, onRefresh }) {
             if (d.status === "completed" || d.step >= totalSteps) {
               clearInterval(pollRef.current);
               pollRef.current = null;
-              notify.success({ title: "Onboarding completado" });
+              notify.success(
+                {
+                  title: "Onboarding completado",
+                  description: "El tenant ya está listo para usarse.",
+                },
+                {
+                  id: toastId,
+                  duration: 6000,
+                }
+              );
               onRefresh();
             }
             if (d.status === "failed") {
               clearInterval(pollRef.current);
               pollRef.current = null;
+              notify.error(
+                {
+                  title: "Onboarding con errores",
+                  description: d.error || "El proceso volvió a fallar durante el reintento.",
+                },
+                {
+                  id: toastId,
+                  important: true,
+                }
+              );
             }
           } catch { /* ignore */ }
         }, POLL_INTERVAL);
       }
     } catch (err) {
-      notify.error({ title: err.message || "Error al reintentar" });
+      notify.error(
+        {
+          title: err.message || "Error al reintentar",
+          description: "No se pudo volver a lanzar el onboarding.",
+        },
+        {
+          id: toastId,
+          important: true,
+        }
+      );
     } finally {
       setRetrying(false);
     }
-  }, [tenant.id, totalSteps, onRefresh]);
+  }, [tenant.id, totalSteps, onRefresh, toastId, current.step]);
 
   if (!visible && !completed) return null;
 

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Phone, Mail, MessageCircle, MapPin, CircleDot, MoreVertical, Pencil, UserPlus, Trash2, Plus, UserRound, FilePlus, CalendarClock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -43,10 +43,24 @@ function SectionEmpty({ title, description }) {
 }
 
 export default function ProspectDetail({ prospectId, embedded = false }) {
+  const [activeTab, setActiveTab] = useState('data');
+  const shouldLoadContacts = activeTab === 'contacts';
+  const shouldLoadInteractions = activeTab === 'interactions';
+  const shouldLoadOffers = activeTab === 'offers';
   const { data: prospect, isLoading } = useProspect(prospectId);
-  const { data: contacts, isLoading: contactsLoading } = useProspectContacts(prospectId);
-  const { data: interactions, isLoading: interactionsLoading } = useCommercialInteractions({ prospectId, perPage: 50 });
-  const { data: offers, isLoading: offersLoading } = useOffersList({ prospectId, perPage: 50 });
+  const { data: contacts, isLoading: contactsLoading } = useProspectContacts(prospectId, {
+    enabled: shouldLoadContacts,
+  });
+  const { data: interactions, isLoading: interactionsLoading } = useCommercialInteractions({
+    prospectId,
+    perPage: 50,
+    enabled: shouldLoadInteractions,
+  });
+  const { data: offers, isLoading: offersLoading } = useOffersList({
+    prospectId,
+    perPage: 50,
+    enabled: shouldLoadOffers,
+  });
   const { convertProspect, updateProspect, createContact, updateContact, deleteContact } = useProspectMutations();
   const [editOpen, setEditOpen] = useState(false);
   const [interactionOpen, setInteractionOpen] = useState(false);
@@ -55,7 +69,13 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
   const [contactDraft, setContactDraft] = useState({ name: '', role: '', phone: '', email: '', isPrimary: false });
   const [editingContactId, setEditingContactId] = useState(null);
   const [contactFormOpen, setContactFormOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('data');
+
+  useEffect(() => {
+    setActiveTab('data');
+    setEditingContactId(null);
+    setContactDraft({ name: '', role: '', phone: '', email: '', isPrimary: false });
+    setContactFormOpen(false);
+  }, [prospectId]);
 
   const body = useMemo(() => {
     if (isLoading) {

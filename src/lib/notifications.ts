@@ -7,13 +7,6 @@
 import type { ReactNode } from "react";
 import { toast, type ExternalToast } from "sonner";
 
-const DEFAULT_POSITION = "top-center" as const;
-const DEFAULT_DURATION_SUCCESS = 4000;
-const DEFAULT_DURATION_ERROR = 6000;
-const DEFAULT_DURATION_WARNING = 6000;
-const DEFAULT_DURATION_INFO = 5000;
-const DEFAULT_DURATION_LOADING = null;
-
 export type NotifyMessage =
   | string
   | { title: string; description?: string };
@@ -38,6 +31,10 @@ export interface NotifyActionButton {
   onClick: () => void;
 }
 
+export interface NotifyActionOptions extends NotifyOptions {
+  cancel?: NotifyActionButton;
+}
+
 type ToastId = string | number;
 
 const dedupeRegistry = new Map<string, ToastId>();
@@ -47,11 +44,11 @@ function toContent(msg: NotifyMessage): { title: ReactNode; description?: ReactN
   return { title: msg.title, description: msg.description };
 }
 
-function normalizeDuration(duration: NotifyOptions["duration"], fallback: number | null, important?: boolean): number {
+function normalizeDuration(duration: NotifyOptions["duration"], important?: boolean): number | undefined {
   if (duration === null) return Infinity;
   if (duration !== undefined) return duration;
   if (important) return Infinity;
-  return fallback ?? Infinity;
+  return undefined;
 }
 
 function rememberDedupeKey(key: string | undefined, id: ToastId): void {
@@ -70,17 +67,20 @@ function getToastId(opts?: NotifyOptions): ToastId | undefined {
   return undefined;
 }
 
-function buildToastOptions(opts: NotifyOptions | undefined, fallbackDuration: number | null): ExternalToast {
+function buildToastOptions(opts: NotifyOptions | undefined): ExternalToast {
   const id = getToastId(opts);
+  const duration = normalizeDuration(opts?.duration, opts?.important);
   const out: ExternalToast = {
     id,
-    position: opts?.position ?? DEFAULT_POSITION,
-    duration: normalizeDuration(opts?.duration, fallbackDuration, opts?.important),
-    dismissible: opts?.dismissible ?? true,
+    dismissible: opts?.dismissible,
   };
 
+  if (opts?.position !== undefined) out.position = opts.position;
+  if (duration !== undefined) out.duration = duration;
   if (opts?.description !== undefined) out.description = opts.description;
-  if (opts?.important) out.closeButton = true;
+  if (opts?.important) {
+    out.closeButton = true;
+  }
   if (opts?.dedupeKey && id !== undefined) {
     out.onDismiss = () => forgetDedupeKey(opts.dedupeKey, id);
     out.onAutoClose = () => forgetDedupeKey(opts.dedupeKey, id);
@@ -91,8 +91,7 @@ function buildToastOptions(opts: NotifyOptions | undefined, fallbackDuration: nu
 function createOrReuseToast(
   variant: "success" | "error" | "warning" | "info" | "loading" | "message",
   message: NotifyMessage,
-  options: NotifyOptions | undefined,
-  fallbackDuration: number | null
+  options: NotifyOptions | undefined
 ): ToastId {
   const existingId = getToastId(options);
   if (existingId !== undefined && options?.dedupeKey && options.id === undefined) {
@@ -109,8 +108,7 @@ function createOrReuseToast(
 
   const { title, description } = toContent(message);
   const toastOptions = buildToastOptions(
-    description === undefined ? resolvedOptions : { ...resolvedOptions, description },
-    fallbackDuration
+    description === undefined ? resolvedOptions : { ...resolvedOptions, description }
   );
   const method =
     variant === "message"
@@ -144,21 +142,28 @@ function createPromiseId(options?: NotifyOptions): ToastId {
   return getToastId(options) ?? `notify-promise-${Math.random().toString(36).slice(2, 10)}`;
 }
 
+function buildActionConfig(button: NotifyActionButton) {
+  return {
+    label: button.title,
+    onClick: () => button.onClick(),
+  };
+}
+
 export const notify = {
   success(message: NotifyMessage, options?: NotifyOptions): string {
-    return String(createOrReuseToast("success", message, options, DEFAULT_DURATION_SUCCESS));
+    return String(createOrReuseToast("success", message, options));
   },
 
   error(message: NotifyMessage, options?: NotifyOptions): string {
-    return String(createOrReuseToast("error", message, options, DEFAULT_DURATION_ERROR));
+    return String(createOrReuseToast("error", message, options));
   },
 
   warning(message: NotifyMessage, options?: NotifyOptions): string {
-    return String(createOrReuseToast("warning", message, options, DEFAULT_DURATION_WARNING));
+    return String(createOrReuseToast("warning", message, options));
   },
 
   info(message: NotifyMessage, options?: NotifyOptions): string {
-    return String(createOrReuseToast("info", message, options, DEFAULT_DURATION_INFO));
+    return String(createOrReuseToast("info", message, options));
   },
 
   /**
@@ -166,7 +171,7 @@ export const notify = {
    * Devuelve un id reutilizable en `success/error/info/warning`.
    */
   loading(message: string | { title: string; description?: string }, options?: NotifyOptions): string {
-    return String(createOrReuseToast("loading", message, options, DEFAULT_DURATION_LOADING));
+    return String(createOrReuseToast("loading", message, options));
   },
 
   /**
@@ -182,46 +187,41 @@ export const notify = {
     },
     options?: NotifyOptions
   ): Promise<T> {
-    const promiseFn = typeof promise === "function" ? promise : () => promise;
-    const loadingContent = toContent(
-      typeof messages.loading === "string" ? { title: messages.loading } : messages.loading
-    );
     const toastId = createPromiseId(options);
+    const promiseFn = typeof promise === "function" ? promise : () => promise;
+    const task = promiseFn();
+    const baseOptions = buildToastOptions({ ...options, id: toastId });
 
     rememberDedupeKey(options?.dedupeKey, toastId);
-    toast.loading(loadingContent.title, buildToastOptions(
-      loadingContent.description === undefined
-        ? { ...options, id: toastId }
-        : { ...options, id: toastId, description: loadingContent.description },
-      DEFAULT_DURATION_LOADING
-    ));
-
-    return promiseFn()
-      .then((data) => {
+    toast.promise(task, {
+      ...baseOptions,
+      loading:
+        typeof messages.loading === "string"
+          ? messages.loading
+          : messages.loading.title,
+      description:
+        typeof messages.loading === "string"
+          ? baseOptions.description
+          : messages.loading.description ?? baseOptions.description,
+      success: (data) => {
         const success = toPromiseMessage(
           messages.success,
           data,
           { title: "Operacion completada" }
         );
-        notify.success(success, {
-          ...options,
-          id: toastId,
-        });
-        return data;
-      })
-      .catch((err) => {
+        return typeof success === "string" ? success : success.title;
+      },
+      error: (err) => {
         const errorMessage = toPromiseMessage(
           messages.error,
           err,
           { title: "Error", description: "Ha ocurrido un error. Intente de nuevo." }
         );
-        notify.error(errorMessage, {
-          ...options,
-          id: toastId,
-          important: options?.important ?? true,
-        });
-        throw err;
-      });
+        return typeof errorMessage === "string" ? errorMessage : errorMessage.title;
+      },
+    });
+
+    return task;
   },
 
   /**
@@ -231,28 +231,22 @@ export const notify = {
   action(
     message: NotifyMessage,
     button: NotifyActionButton,
-    options?: NotifyOptions
+    options?: NotifyActionOptions
   ): string {
     const { title, description } = toContent(message);
     const toastId = String(
       getToastId(options)
         ?? (options?.dedupeKey ? `notify-${options.dedupeKey}` : `notify-action-${Math.random().toString(36).slice(2, 10)}`)
     );
-    toast.warning(title, {
+    const id = toast(title, {
       ...buildToastOptions(
-        description === undefined ? { ...options, id: toastId } : { ...options, id: toastId, description },
-        null
+        description === undefined ? { ...options, id: toastId } : { ...options, id: toastId, description }
       ),
-      action: {
-        label: button.title,
-        onClick: () => {
-          toast.dismiss(toastId);
-          button.onClick();
-        },
-      },
+      action: buildActionConfig(button),
+      cancel: options?.cancel ? buildActionConfig(options.cancel) : undefined,
     });
-    rememberDedupeKey(options?.dedupeKey, toastId);
-    return toastId;
+    rememberDedupeKey(options?.dedupeKey, id);
+    return String(id);
   },
 
   dismiss(id: string): void {

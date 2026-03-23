@@ -11,7 +11,8 @@ import { getProductFamilyOptions } from '@/services/productFamilyService';
  * Hook para obtener opciones de productos (value, label) para selects.
  * Usado por useAdminReceptionForm, CreateOrderForm, EditReceptionForm.
  */
-export function useProductOptions() {
+export function useProductOptions(params = {}) {
+  const { enabled = true } = params;
   const { data: session } = useSession();
   const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
@@ -19,7 +20,7 @@ export function useProductOptions() {
   const { data, isLoading } = useQuery({
     queryKey: ['products', 'options', tenantId ?? 'unknown'],
     queryFn: () => getProductOptions(token),
-    enabled: !!token && !!tenantId,
+    enabled: !!token && !!tenantId && enabled,
   });
 
   const productOptions = Array.isArray(data)

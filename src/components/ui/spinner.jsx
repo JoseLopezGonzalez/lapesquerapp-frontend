@@ -1,24 +1,17 @@
-"use client";
+import { cn } from "@/lib/utils"
+import { Loader2Icon } from "lucide-react"
 
-import * as React from "react";
-import { Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-
-function Spinner({ className, size = "default", ...props }) {
+function Spinner({
+  className,
+  ...props
+}) {
   return (
-    <Loader2
+    <Loader2Icon
       role="status"
-      aria-label="Cargando"
-      className={cn(
-        "animate-spin text-primary",
-        size === "sm" && "size-4",
-        size === "default" && "size-6",
-        size === "lg" && "size-10",
-        className
-      )}
-      {...props}
-    />
+      aria-label="Loading"
+      className={cn("size-4 animate-spin", className)}
+      {...props} />
   );
 }
 
-export { Spinner };
+export { Spinner }

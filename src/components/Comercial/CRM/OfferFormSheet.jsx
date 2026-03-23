@@ -41,9 +41,10 @@ export default function OfferFormSheet({
   fixedCustomerId = null,
   onSaved = null,
 }) {
-  const { options, loading: optionsLoading } = useOrderFormOptions();
-  const { productOptions, loading: productsLoading } = useProductOptions();
-  const { taxOptions } = useTaxOptions();
+  const catalogEnabled = open;
+  const { options, loading: optionsLoading } = useOrderFormOptions({ enabled: catalogEnabled });
+  const { productOptions, loading: productsLoading } = useProductOptions({ enabled: catalogEnabled });
+  const { taxOptions } = useTaxOptions({ enabled: catalogEnabled });
   const { data: prospects } = useProspectsList({ perPage: 100, enabled: open && !fixedCustomerId });
   const { data: customers } = useCustomersList({ perPage: 100, enabled: open && !fixedProspectId });
   const { data: linkedProspect } = useProspect(fixedProspectId);

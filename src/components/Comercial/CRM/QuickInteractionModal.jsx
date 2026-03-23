@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CalendarCheck2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -51,9 +51,13 @@ export default function QuickInteractionModal({
   const [nextActionNote, setNextActionNote] = useState(defaultNextActionNote);
   const [nextActionAt, setNextActionAt] = useState(defaultNextActionDate ? new Date(defaultNextActionDate) : null);
   const [noNextAction, setNoNextAction] = useState(isCompleteMode);
+  const wasOpenRef = useRef(false);
 
   useEffect(() => {
-    if (!open) return;
+    const opening = open && !wasOpenRef.current;
+    wasOpenRef.current = open;
+    if (!opening) return;
+
     setType('call');
     setOccurredAt(new Date());
     setSummary('');

@@ -485,12 +485,21 @@ export default function EntityClient({ config }) {
             ? `ids[]=${selectedRows.join('&ids[]=')}`
             : formatFilters(filters);
         const url = `${API_URL_V2}${endpoint}?${queryString}`;
+        const toastId = `entity-export-${config.endpoint}-${fileName}-${type || 'file'}`;
 
         setIsExporting(true);
         try {
             await notify.promise(downloadFile(url, fileName, type), {
-                loading: waitingMessage || 'Generando exportación...',
-                success: 'Exportación generada correctamente',
+                loading: {
+                    title: waitingMessage || 'Generando exportación...',
+                    description: hasSelectedRows
+                        ? `Preparando ${selectedRows.length} registro(s) seleccionados.`
+                        : 'Preparando los datos filtrados para descarga.',
+                },
+                success: {
+                    title: 'Exportación generada correctamente',
+                    description: `${fileName}.${type || 'file'} está listo para descarga.`,
+                },
                 error: (error) => {
                     const desc = error instanceof Response && error.status === 403
                         ? 'No tienes permiso para generar esta exportación.'
@@ -499,6 +508,8 @@ export default function EntityClient({ config }) {
                             : 'Ocurrió algo inesperado al generar la exportación. Intente de nuevo.';
                     return { title: 'Error al generar exportación', description: desc };
                 },
+            }, {
+                id: toastId,
             });
         } finally {
             setIsExporting(false);
@@ -512,12 +523,21 @@ export default function EntityClient({ config }) {
             ? `ids[]=${selectedRows.join('&ids[]=')}`
             : formatFilters(filters);
         const url = `${API_URL_V2}${endpoint}?${queryString}`;
+        const toastId = `entity-report-${config.endpoint}-${fileName}-${type || 'pdf'}`;
 
         setIsGeneratingReport(true);
         try {
             await notify.promise(downloadFile(url, fileName, type || 'pdf'), {
-                loading: waitingMessage || 'Generando reporte...',
-                success: 'Reporte generado correctamente',
+                loading: {
+                    title: waitingMessage || 'Generando reporte...',
+                    description: hasSelectedRows
+                        ? `Preparando el reporte de ${selectedRows.length} registro(s) seleccionados.`
+                        : 'Preparando el reporte con los filtros actuales.',
+                },
+                success: {
+                    title: 'Reporte generado correctamente',
+                    description: `${fileName}.${type || 'pdf'} está listo para descarga.`,
+                },
                 error: (error) => {
                     const desc = error instanceof Response && error.status === 403
                         ? 'No tienes permiso para generar este reporte.'
@@ -526,6 +546,8 @@ export default function EntityClient({ config }) {
                             : 'Ocurrió algo inesperado al generar el reporte. Intente de nuevo.';
                     return { title: 'Error al generar reporte', description: desc };
                 },
+            }, {
+                id: toastId,
             });
         } finally {
             setIsGeneratingReport(false);

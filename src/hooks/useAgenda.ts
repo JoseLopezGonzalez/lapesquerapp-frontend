@@ -28,12 +28,8 @@ function getTenantId() {
 
 async function invalidateAgendaQueries(queryClient: ReturnType<typeof useQueryClient>, tenantId: string) {
   await Promise.all([
-    queryClient.invalidateQueries({ queryKey: ['crm', 'dashboard', tenantId] }),
     queryClient.invalidateQueries({ queryKey: ['crm', 'agenda', tenantId] }),
     queryClient.invalidateQueries({ queryKey: ['crm', 'agenda', 'summary', tenantId] }),
-    queryClient.invalidateQueries({ queryKey: ['crm', 'prospects', 'list', tenantId] }),
-    queryClient.invalidateQueries({ queryKey: ['crm', 'customers', 'detail'] }),
-    queryClient.invalidateQueries({ queryKey: ['crm', 'interactions', 'list', tenantId] }),
   ]);
 }
 

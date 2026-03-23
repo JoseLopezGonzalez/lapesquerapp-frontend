@@ -9,7 +9,8 @@ import { useOrdersManagerOptions } from '@/context/gestor-options/OrdersManagerO
  * Usa el contexto del Gestor de pedidos si existe; si no, hace fetch directo.
  * Ver: docs/OPCIONES-POR-GESTOR.md
  */
-export const useTaxOptions = () => {
+export const useTaxOptions = (params = {}) => {
+  const { enabled = true } = params;
   const ordersManagerOptions = useOrdersManagerOptions();
   const { data: session } = useSession();
   const token = session?.user?.accessToken;
@@ -20,6 +21,11 @@ export const useTaxOptions = () => {
   const fromOrdersManager = ordersManagerOptions?.taxOptions?.length > 0 || ordersManagerOptions?.taxOptionsLoading;
 
   useEffect(() => {
+    if (!enabled) {
+      setLoading(false);
+      return;
+    }
+
     if (fromOrdersManager && ordersManagerOptions.taxOptions?.length > 0) {
       setTaxOptions(ordersManagerOptions.taxOptions);
       setLoading(ordersManagerOptions.taxOptionsLoading ?? false);
@@ -41,7 +47,7 @@ export const useTaxOptions = () => {
       })
       .catch(err => console.error('Error al cargar impuestos:', err))
       .finally(() => setLoading(false));
-  }, [token, fromOrdersManager, ordersManagerOptions]);
+  }, [token, fromOrdersManager, ordersManagerOptions, enabled]);
 
   if (fromOrdersManager && ordersManagerOptions.taxOptions?.length > 0) {
     return { taxOptions: ordersManagerOptions.taxOptions, loading: ordersManagerOptions.taxOptionsLoading ?? false };

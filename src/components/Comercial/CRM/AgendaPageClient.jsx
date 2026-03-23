@@ -384,6 +384,8 @@ export default function AgendaPageClient() {
   const [targetType, setTargetType] = React.useState('all');
   const [statuses, setStatuses] = React.useState(['pending', 'reprogrammed', 'done', 'cancelled']);
   const [filtersDialogOpen, setFiltersDialogOpen] = React.useState(false);
+  const [draftTargetType, setDraftTargetType] = React.useState('all');
+  const [draftStatuses, setDraftStatuses] = React.useState(['pending', 'reprogrammed', 'done', 'cancelled']);
   const [rescheduleDialog, setRescheduleDialog] = React.useState({ open: false, item: null });
   const [cancelDialog, setCancelDialog] = React.useState({ open: false, item: null });
   const [interactionModal, setInteractionModal] = React.useState({
@@ -432,6 +434,15 @@ export default function AgendaPageClient() {
 
   const handleToggleStatus = (status) => {
     setStatuses((current) => {
+      if (current.includes(status)) {
+        return current.length === 1 ? current : current.filter((item) => item !== status);
+      }
+      return [...current, status];
+    });
+  };
+
+  const handleToggleDraftStatus = (status) => {
+    setDraftStatuses((current) => {
       if (current.includes(status)) {
         return current.length === 1 ? current : current.filter((item) => item !== status);
       }
@@ -531,7 +542,16 @@ export default function AgendaPageClient() {
               </div>
             </div>
 
-            <Dialog open={filtersDialogOpen} onOpenChange={setFiltersDialogOpen}>
+            <Dialog
+              open={filtersDialogOpen}
+              onOpenChange={(open) => {
+                setFiltersDialogOpen(open);
+                if (open) {
+                  setDraftTargetType(targetType);
+                  setDraftStatuses(statuses);
+                }
+              }}
+            >
               <DialogContent className="sm:max-w-[520px]">
                 <DialogHeader>
                   <DialogTitle>Filtro</DialogTitle>
@@ -546,8 +566,8 @@ export default function AgendaPageClient() {
                           key={option.value}
                           type="button"
                           size="sm"
-                          variant={targetType === option.value ? 'default' : 'outline'}
-                          onClick={() => setTargetType(option.value)}
+                          variant={draftTargetType === option.value ? 'default' : 'outline'}
+                          onClick={() => setDraftTargetType(option.value)}
                         >
                           {option.label}
                         </Button>
@@ -563,8 +583,8 @@ export default function AgendaPageClient() {
                           key={status}
                           type="button"
                           size="sm"
-                          variant={statuses.includes(status) ? 'default' : 'outline'}
-                          onClick={() => handleToggleStatus(status)}
+                          variant={draftStatuses.includes(status) ? 'default' : 'outline'}
+                          onClick={() => handleToggleDraftStatus(status)}
                         >
                           {agendaStatusLabels[status]}
                         </Button>
@@ -572,6 +592,20 @@ export default function AgendaPageClient() {
                     </div>
                   </div>
                 </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setFiltersDialogOpen(false)}>
+                    Cancelar
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setTargetType(draftTargetType);
+                      setStatuses(draftStatuses);
+                      setFiltersDialogOpen(false);
+                    }}
+                  >
+                    Aplicar filtros
+                  </Button>
+                </DialogFooter>
               </DialogContent>
             </Dialog>
 

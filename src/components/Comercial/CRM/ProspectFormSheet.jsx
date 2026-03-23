@@ -17,6 +17,7 @@ import { format } from 'date-fns';
 import { prospectOriginOptions } from './utils';
 
 export default function ProspectFormSheet({ open, onOpenChange, initialData = null }) {
+  const isEditing = Boolean(initialData);
   const { data: countries } = useCountriesList({ page: 1, perPage: 250, enabled: open });
   const { createProspect, updateProspect } = useProspectMutations();
   const [form, setForm] = useState({
@@ -81,13 +82,15 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
         .split(',')
         .map((value) => value.trim())
         .filter(Boolean),
-      primaryContact: {
+    };
+    if (!isEditing) {
+      payload.primaryContact = {
         name: form.primaryContactName.trim() || undefined,
         role: form.primaryContactRole.trim() || null,
         phone: form.primaryContactPhone.trim() || null,
         email: form.primaryContactEmail.trim() || null,
-      },
-    };
+      };
+    }
 
     try {
       const response = await notify.promise(
@@ -109,10 +112,19 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent size="5xl" className="flex h-[calc(100vh-2rem)] flex-col gap-0 overflow-hidden p-0">
+      <DialogContent
+        size="5xl"
+        className={`flex flex-col gap-0 overflow-hidden p-0 ${
+          isEditing ? 'max-h-[calc(100vh-2rem)]' : 'h-[calc(100vh-2rem)]'
+        }`}
+      >
         <DialogHeader className="border-b p-4">
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>Alta y edición de prospectos con contacto principal y agenda comercial.</DialogDescription>
+          <DialogDescription>
+            {isEditing
+              ? 'Edición de datos generales y agenda comercial del prospecto.'
+              : 'Alta de prospecto con contacto principal y agenda comercial.'}
+          </DialogDescription>
         </DialogHeader>
 
         <ScrollArea className="min-h-0 flex-1">
@@ -214,47 +226,49 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
               />
             </div>
 
-            <div className="rounded-xl border p-4">
-              <div className="mb-4">
-                <h3 className="font-medium">Contacto principal</h3>
-                <p className="text-sm text-muted-foreground">Se usará también para precargar ofertas y convertir el prospecto en cliente.</p>
+            {!isEditing && (
+              <div className="rounded-xl border p-4">
+                <div className="mb-4">
+                  <h3 className="font-medium">Contacto principal</h3>
+                  <p className="text-sm text-muted-foreground">Se usará también para precargar ofertas y convertir el prospecto en cliente.</p>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="grid gap-2">
+                    <Label htmlFor="primary-contact-name">Nombre</Label>
+                    <Input
+                      id="primary-contact-name"
+                      value={form.primaryContactName}
+                      onChange={(event) => handleChange('primaryContactName', event.target.value)}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="primary-contact-role">Cargo</Label>
+                    <Input
+                      id="primary-contact-role"
+                      value={form.primaryContactRole}
+                      onChange={(event) => handleChange('primaryContactRole', event.target.value)}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="primary-contact-phone">Teléfono</Label>
+                    <Input
+                      id="primary-contact-phone"
+                      value={form.primaryContactPhone}
+                      onChange={(event) => handleChange('primaryContactPhone', event.target.value)}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="primary-contact-email">Email</Label>
+                    <Input
+                      id="primary-contact-email"
+                      type="email"
+                      value={form.primaryContactEmail}
+                      onChange={(event) => handleChange('primaryContactEmail', event.target.value)}
+                    />
+                  </div>
+                </div>
               </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="grid gap-2">
-                  <Label htmlFor="primary-contact-name">Nombre</Label>
-                  <Input
-                    id="primary-contact-name"
-                    value={form.primaryContactName}
-                    onChange={(event) => handleChange('primaryContactName', event.target.value)}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="primary-contact-role">Cargo</Label>
-                  <Input
-                    id="primary-contact-role"
-                    value={form.primaryContactRole}
-                    onChange={(event) => handleChange('primaryContactRole', event.target.value)}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="primary-contact-phone">Teléfono</Label>
-                  <Input
-                    id="primary-contact-phone"
-                    value={form.primaryContactPhone}
-                    onChange={(event) => handleChange('primaryContactPhone', event.target.value)}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="primary-contact-email">Email</Label>
-                  <Input
-                    id="primary-contact-email"
-                    type="email"
-                    value={form.primaryContactEmail}
-                    onChange={(event) => handleChange('primaryContactEmail', event.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         </ScrollArea>
 

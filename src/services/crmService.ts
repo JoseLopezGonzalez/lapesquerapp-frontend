@@ -1,6 +1,6 @@
 import { API_URL_V2 } from '@/configs/config';
 import { fetchWithTenant } from '@/lib/fetchWithTenant';
-import { getSession } from 'next-auth/react';
+import { getAuthToken, clearAuthTokenCache } from '@/lib/auth/getAuthToken';
 import type {
   AgendaAction,
   AgendaSummaryData,
@@ -18,13 +18,12 @@ import type {
 } from '@/types/crm';
 import { getErrorMessage, ApiError } from '@/lib/api/apiHelpers';
 
-async function getAuthHeaders(extraHeaders: Record<string, string> = {}) {
-  const session = await getSession();
-  const token = session?.user?.accessToken;
+async function resolveAccessToken() {
+  return getAuthToken();
+}
 
-  if (!token) {
-    throw new Error('No hay sesión autenticada.');
-  }
+async function getAuthHeaders(extraHeaders: Record<string, string> = {}) {
+  const token = await resolveAccessToken();
 
   return {
     Accept: 'application/json',
@@ -34,6 +33,10 @@ async function getAuthHeaders(extraHeaders: Record<string, string> = {}) {
 }
 
 async function parseResponse<T>(response: Response): Promise<T> {
+  if (response.status === 401) {
+    clearAuthTokenCache();
+  }
+
   if (!response.ok) {
     let errorData = null;
     try {
