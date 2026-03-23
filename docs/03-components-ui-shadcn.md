@@ -500,7 +500,7 @@ import { Combobox } from "@/components/Shadcn/Combobox";
 
 **Dependencias**:
 - `next-auth/react` (signOut)
-- `@/lib/notifications` (notify, Sileo)
+- `@/lib/notifications` (`notify`, wrapper estable sobre el runtime actual de toasts)
 - `@/configs/authConfig` (isAuthError, isAuthStatusCode, buildLoginUrl)
 
 ---
@@ -690,4 +690,3 @@ Componentes primitivos accesibles:
 - **Problema**: No hay Storybook o documentación visual de componentes
 - **Impacto**: Difícil ver todos los componentes y sus variantes en un solo lugar
 - **Recomendación**: Considerar implementar Storybook para documentación visual de componentes
-

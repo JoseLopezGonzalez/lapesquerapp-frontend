@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
 import {
   SortableContext,
-  arrayMove,
   useSortable,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
@@ -32,13 +31,24 @@ import { EmptyState } from '@/components/Utilities/EmptyState';
 import Loader from '@/components/Utilities/Loader';
 import { RouteMap } from '@/components/Maps/RouteMap';
 import { geocodeAddress, hasMapboxToken } from '@/lib/maps/geocoding';
-import { getRouteDirections } from '@/lib/maps/directions';
 import { useFieldOperatorOptions } from '@/hooks/useFieldOptions';
 import { useCustomersList } from '@/hooks/useCustomersList';
 import { useProspectsList } from '@/hooks/useProspects';
+import { useRouteGeometry } from '@/hooks/useRouteGeometry';
+import { useRoutePlannerHydration } from '@/hooks/useRoutePlannerHydration';
 import { useRouteMutations, useRoutes } from '@/hooks/useRoutes';
 import { useRouteTemplateMutations, useRouteTemplates } from '@/hooks/useRouteTemplates';
 import { useSpainAverageDieselPrice } from '@/hooks/useSpainAverageDieselPrice';
+import {
+  createDraftStop,
+  createEmptyNewItemDraft,
+  createEmptyRouteDraft,
+  createEmptyTemplateDraft,
+  enrichStopsWithCoordinates,
+  normalizeStops,
+  reorderStops,
+  serializeStopsForWrite,
+} from '@/lib/routes/routeStops';
 import { notify } from '@/lib/notifications';
 import { cn } from '@/lib/utils';
 import {
@@ -61,76 +71,6 @@ import {
   UserRound,
   X,
 } from 'lucide-react';
-
-function normalizeStops(stops = []) {
-  return stops.map((stop, index) => ({
-    id: stop.id ?? `temp-${index}-${Date.now()}`,
-    position: index + 1,
-    stopType: stop.stopType ?? 'obligatoria',
-    targetType: stop.targetType ?? 'location',
-    customerId: stop.customerId ?? null,
-    prospectId: stop.prospectId ?? null,
-    label: stop.label ?? '',
-    address: stop.address ?? '',
-    notes: stop.notes ?? '',
-    lat: stop.lat ?? null,
-    lng: stop.lng ?? null,
-  }));
-}
-
-function createDraftStop(overrides = {}) {
-  return {
-    id: overrides.id ?? `draft-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    position: overrides.position ?? 1,
-    stopType: overrides.stopType ?? 'obligatoria',
-    targetType: overrides.targetType ?? 'location',
-    customerId: overrides.customerId ?? null,
-    prospectId: overrides.prospectId ?? null,
-    label: overrides.label ?? '',
-    address: overrides.address ?? '',
-    notes: overrides.notes ?? '',
-    lat: overrides.lat ?? null,
-    lng: overrides.lng ?? null,
-  };
-}
-
-function createEmptyRouteDraft(overrides = {}) {
-  return {
-    id: null,
-    name: '',
-    description: '',
-    routeDate: '',
-    fieldOperatorId: '',
-    routeTemplateId: '',
-    sourceMode: 'manual',
-    stopsEdited: false,
-    stops: [],
-    ...overrides,
-  };
-}
-
-function createEmptyTemplateDraft(overrides = {}) {
-  return {
-    id: null,
-    name: '',
-    description: '',
-    fieldOperatorId: '',
-    stops: [],
-    ...overrides,
-  };
-}
-
-function createEmptyNewItemDraft(overrides = {}) {
-  return {
-    name: '',
-    description: '',
-    routeDate: '',
-    fieldOperatorId: '',
-    sourceMode: 'manual',
-    routeTemplateId: '',
-    ...overrides,
-  };
-}
 
 function formatDistance(meters) {
   if (!Number.isFinite(meters) || meters <= 0) return 'Sin calcular';
@@ -195,22 +135,6 @@ function getRouteStatusLabel(value) {
   return labels[normalizedValue] ?? value ?? 'Pendiente';
 }
 
-async function enrichStopsWithCoordinates(stops) {
-  return Promise.all(
-    (stops ?? []).map(async (stop) => {
-      if (stop?.lat != null && stop?.lng != null) return stop;
-      const query = stop?.address || stop?.label;
-      if (!query) return stop;
-      try {
-        const [feature] = await geocodeAddress(query);
-        if (!feature?.center) return stop;
-        return { ...stop, lng: feature.center[0], lat: feature.center[1] };
-      } catch (_) {
-        return stop;
-      }
-    })
-  );
-}
 
 function SortableStopItem({ stop, onEdit }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: stop.id });
@@ -615,9 +539,6 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
   const [creatingStop, setCreatingStop] = useState(null);
   const [loadingSelectedItem, setLoadingSelectedItem] = useState(Boolean(routeId || templateId));
   const [detailNotFound, setDetailNotFound] = useState(null);
-  const [routeGeometry, setRouteGeometry] = useState(null);
-  const [directionsError, setDirectionsError] = useState('');
-  const [isCalculatingRoute, setIsCalculatingRoute] = useState(false);
   const [detailMode, setDetailMode] = useState(Boolean(routeId || templateId));
   const [stopsPanelExpanded, setStopsPanelExpanded] = useState(true);
   const [routeDraft, setRouteDraft] = useState(createEmptyRouteDraft());
@@ -692,157 +613,26 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
       consumptionLabel: `${String(MEDIUM_VAN_DIESEL_CONSUMPTION_L_PER_100KM).replace('.', ',')} l/100 km`,
     };
   }, [dieselAverage.value, routeMetrics.distanceKm]);
+  const { routeGeometry, directionsError, isCalculatingRoute } = useRouteGeometry(currentDraft.stops);
 
   useEffect(() => {
     setDetailMode(Boolean(routeId || templateId));
   }, [routeId, templateId]);
 
-  useEffect(() => {
-    if (!routeId) return;
-
-    if (loadedRouteIdRef.current && String(loadedRouteIdRef.current) === String(routeId)) {
-      setLoadingSelectedItem(false);
-      setDetailNotFound(null);
-      return;
-    }
-
-    const source = routeId
-      ? routes.find((item) => String(item.id) === String(routeId))
-      : null;
-
-    if (!source) {
-      if (loadingRoutes) {
-        setLoadingSelectedItem(true);
-        return;
-      }
-
-      setLoadingSelectedItem(false);
-      setDetailNotFound('route');
-      return;
-    }
-
-    let cancelled = false;
-    setLoadingSelectedItem(true);
-    setDetailNotFound(null);
-
-    enrichStopsWithCoordinates(normalizeStops(source.stops ?? [])).then((stops) => {
-      if (cancelled) return;
-
-      setRouteDraft(
-        createEmptyRouteDraft({
-          id: source.id,
-          name: source.name ?? '',
-          description: source.description ?? '',
-          routeDate: source.routeDate ?? '',
-          fieldOperatorId: source.fieldOperator?.id != null ? String(source.fieldOperator.id) : '',
-          routeTemplateId:
-            source.routeTemplateId != null
-              ? String(source.routeTemplateId)
-              : source.routeTemplate?.id != null
-                ? String(source.routeTemplate.id)
-                : '',
-          sourceMode:
-            source.routeTemplateId != null || source.routeTemplate?.id != null
-              ? 'template'
-              : 'manual',
-          stopsEdited: false,
-          stops,
-        })
-      );
-      loadedRouteIdRef.current = source.id;
-      setLoadingSelectedItem(false);
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [routeId, routes, loadingRoutes]);
-
-  useEffect(() => {
-    if (!templateId) return;
-
-    if (loadedTemplateIdRef.current && String(loadedTemplateIdRef.current) === String(templateId)) {
-      setLoadingSelectedItem(false);
-      setDetailNotFound(null);
-      return;
-    }
-
-    const source = templateId
-      ? templates.find((item) => String(item.id) === String(templateId))
-      : null;
-
-    if (!source) {
-      if (loadingTemplates) {
-        setLoadingSelectedItem(true);
-        return;
-      }
-
-      setLoadingSelectedItem(false);
-      setDetailNotFound('template');
-      return;
-    }
-
-    let cancelled = false;
-    setLoadingSelectedItem(true);
-    setDetailNotFound(null);
-
-    enrichStopsWithCoordinates(normalizeStops(source.stops ?? [])).then((stops) => {
-      if (cancelled) return;
-
-      setTemplateDraft(
-        createEmptyTemplateDraft({
-          id: source.id,
-          name: source.name ?? '',
-          description: source.description ?? '',
-          fieldOperatorId: source.fieldOperator?.id != null ? String(source.fieldOperator.id) : '',
-          stops,
-        })
-      );
-      loadedTemplateIdRef.current = source.id;
-      setLoadingSelectedItem(false);
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [templateId, templates, loadingTemplates]);
-
-  useEffect(() => {
-    let cancelled = false;
-    setDirectionsError('');
-
-    const stopsWithCoordinates = currentDraft.stops.filter((stop) => stop?.lat != null && stop?.lng != null);
-    if (stopsWithCoordinates.length < 2) {
-      setRouteGeometry(null);
-      setIsCalculatingRoute(false);
-      return () => {
-        cancelled = true;
-      };
-    }
-
-    async function loadDirections() {
-      setIsCalculatingRoute(true);
-      try {
-        const geometry = await getRouteDirections(currentDraft.stops);
-        if (!cancelled) {
-          setRouteGeometry(geometry);
-          setIsCalculatingRoute(false);
-        }
-      } catch (error) {
-        if (!cancelled) {
-          setRouteGeometry(null);
-          setDirectionsError(error?.message ?? 'No se pudo calcular la ruta por carretera.');
-          setIsCalculatingRoute(false);
-        }
-      }
-    }
-
-    loadDirections();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [currentDraft.stops]);
+  useRoutePlannerHydration({
+    routeId,
+    templateId,
+    routes,
+    templates,
+    loadingRoutes,
+    loadingTemplates,
+    loadedRouteIdRef,
+    loadedTemplateIdRef,
+    setLoadingSelectedItem,
+    setDetailNotFound,
+    setRouteDraft,
+    setTemplateDraft,
+  });
 
   const handleSelectRoute = (route) => {
     setLoadingSelectedItem(true);
@@ -868,16 +658,7 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
       ...(tab === 'routes' ? { routeDate: routeDraft.routeDate || undefined } : {}),
     };
 
-    const normalizedStops = currentDraft.stops.map((stop, index) => ({
-      position: index + 1,
-      stopType: stop.stopType,
-      targetType: stop.targetType,
-      customerId: stop.targetType === 'customer' ? stop.customerId || undefined : undefined,
-      prospectId: stop.targetType === 'prospect' ? stop.prospectId || undefined : undefined,
-      label: stop.label || undefined,
-      address: stop.address || undefined,
-      notes: stop.notes || undefined,
-    }));
+    const normalizedStops = serializeStopsForWrite(currentDraft.stops);
 
     if (tab === 'routes') {
       const canInstantiateFromTemplate =
@@ -1109,25 +890,13 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
     if (!over || active.id === over.id) return;
     if (tab === 'routes') {
       markRouteStopsEdited((current) => {
-        const oldIndex = current.stops.findIndex((stop) => stop.id === active.id);
-        const newIndex = current.stops.findIndex((stop) => stop.id === over.id);
-        const reordered = arrayMove(current.stops, oldIndex, newIndex).map((stop, index) => ({
-          ...stop,
-          position: index + 1,
-        }));
-        return { ...current, stops: reordered };
+        return { ...current, stops: reorderStops(current.stops, active.id, over.id) };
       });
       return;
     }
 
     setTemplateDraft((current) => {
-      const oldIndex = current.stops.findIndex((stop) => stop.id === active.id);
-      const newIndex = current.stops.findIndex((stop) => stop.id === over.id);
-      const reordered = arrayMove(current.stops, oldIndex, newIndex).map((stop, index) => ({
-        ...stop,
-        position: index + 1,
-      }));
-      return { ...current, stops: reordered };
+      return { ...current, stops: reorderStops(current.stops, active.id, over.id) };
     });
   };
 

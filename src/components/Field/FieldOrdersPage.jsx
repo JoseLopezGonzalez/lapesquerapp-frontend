@@ -164,20 +164,20 @@ function FieldOrderCard({ order, onClick }) {
 
 export default function FieldOrdersPage() {
   const router = useRouter();
-  const { data, isLoading, error } = useFieldOrders({ perPage: 20 });
+  const { data, isLoading, errorMessage } = useFieldOrders({ perPage: 20 });
   const orders = data?.items ?? [];
 
   if (isLoading) {
     return <div className="flex flex-1 items-center justify-center"><Loader /></div>;
   }
 
-  if (error) {
+  if (errorMessage) {
     return (
       <div className="flex flex-1 items-center justify-center">
         <EmptyState
           icon={<PackageOpen className="h-10 w-10 text-primary" />}
           title="No se pudieron cargar los pedidos"
-          description={error.message ?? 'Inténtalo de nuevo más tarde.'}
+          description={errorMessage}
         />
       </div>
     );

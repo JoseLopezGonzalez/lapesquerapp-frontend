@@ -80,7 +80,7 @@ export const API_URL_V1 = `${API_URL}v1/`;  // Obsoleta
 
 ### Otros
 
-- **sileo** - Notificaciones toast (wrapper en `@/lib/notifications` como `notify`)
+- **sonner** - Runtime de notificaciones toast, encapsulado detrás del wrapper `@/lib/notifications` (`notify`) y presentado con skin propia inspirada en ReUI
 - **framer-motion 11.18.2** - Animaciones
 - **@tanstack/react-table 8.21.3** - Tablas avanzadas
 - **cmdk 1.0.0** - Command menu
@@ -345,4 +345,3 @@ Para una lista completa de observaciones críticas, consulta **[15-observaciones
 - Proyecto usa JavaScript puro (no TypeScript)
 - Módulo de producción en desarrollo activo
 - Mezcla de librerías de iconos (Lucide, Heroicons, React Icons)
-

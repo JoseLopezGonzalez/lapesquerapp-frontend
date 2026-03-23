@@ -2,6 +2,8 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
+import { routeTemplateKeys } from '@/lib/routes/queryKeys';
+import { normalizeRouteCollection } from '@/lib/routes/routeStops';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 import { createRouteTemplate, getRouteTemplates, updateRouteTemplate } from '@/services/fieldOperatorService';
 
@@ -18,11 +20,11 @@ function useTemplatesBase() {
 export function useRouteTemplates(params: TemplateParams = {}) {
   const { token, tenantId } = useTemplatesBase();
   return useQuery({
-    queryKey: ['route-templates', tenantId ?? 'unknown', params],
+    queryKey: routeTemplateKeys.list(tenantId, params),
     queryFn: () => getRouteTemplates(token as string, params),
     enabled: Boolean(token) && Boolean(tenantId),
     select: (data) => ({
-      items: Array.isArray(data?.data) ? data.data : [],
+      items: normalizeRouteCollection(Array.isArray(data?.data) ? data.data : []),
       meta: data?.meta ?? null,
       links: data?.links ?? null,
     }),
@@ -35,12 +37,12 @@ export function useRouteTemplateMutations() {
 
   const createMutation = useMutation<unknown, Error, TemplatePayload>({
     mutationFn: (payload) => createRouteTemplate(token as string, payload),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['route-templates', tenantId ?? 'unknown'] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: routeTemplateKeys.all(tenantId) }),
   });
 
   const updateMutation = useMutation<unknown, Error, { templateId: number | string; payload: TemplatePayload }>({
     mutationFn: ({ templateId, payload }) => updateRouteTemplate(token as string, templateId, payload),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['route-templates', tenantId ?? 'unknown'] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: routeTemplateKeys.all(tenantId) }),
   });
 
   return {

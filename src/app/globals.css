@@ -251,7 +251,7 @@ select:focus-visible,
 @keyframes flash { 0%{opacity:1;} 50%{opacity:0;} 100%{opacity:1;} }
 
 .z-max { z-index: 9999; }
-[data-sileo-viewport] { z-index: 9999 !important; }
+[data-sonner-toaster] { z-index: 9999 !important; }
 
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 .scrollbar-hide::-webkit-scrollbar { display: none; }

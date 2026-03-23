@@ -355,7 +355,7 @@ customs/
     └── reactDayPickerStyles.css    # Estilos personalizados para DatePicker
 ```
 
-**Nota**: Las notificaciones toast usan Sileo; el wrapper está en `@/lib/notifications` (`notify`).
+**Nota**: Las notificaciones toast usan `notify` como fachada estable; el runtime actual está montado sobre Sonner con un toaster propio.
 
 ---
 
@@ -641,4 +641,3 @@ Cada módulo principal sigue esta estructura:
 - **Problema**: Algunos componentes utilitarios están en `/Utilities/` y otros podrían estar en `/ui/`
 - **Impacto**: Confusión sobre dónde buscar componentes
 - **Recomendación**: Documentar claramente la diferencia: `/ui/` para componentes ShadCN base, `/Utilities/` para componentes de utilidad específicos de la app
-

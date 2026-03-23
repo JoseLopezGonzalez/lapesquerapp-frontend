@@ -1,35 +1,36 @@
 /**
- * Wrapper unificado de notificaciones usando Sileo.
- * Usa title + description como en la documentación: https://sileo.aaryan.design/docs
- * El tema (dark/light) se aplica en el Toaster (ClientLayout) pasando options según resolvedTheme.
+ * Wrapper unificado de notificaciones.
+ * La UI del toaster vive aparte; esta capa mantiene una API estable (`notify`)
+ * y traduce nuestras necesidades de dominio a la librería subyacente.
  */
 
 import type { ReactNode } from "react";
-import { sileo } from "sileo";
+import { toast, type ExternalToast } from "sonner";
 
 const DEFAULT_POSITION = "top-center" as const;
 const DEFAULT_DURATION_SUCCESS = 4000;
 const DEFAULT_DURATION_ERROR = 6000;
 const DEFAULT_DURATION_WARNING = 6000;
 const DEFAULT_DURATION_INFO = 5000;
+const DEFAULT_DURATION_LOADING = null;
 
 export type NotifyMessage =
   | string
   | { title: string; description?: string };
 
 /**
- * Título = descriptivo y contextual (ej. "Cambios guardados", "Error al crear pedido").
- * Descripción = explicación de por qué fue bien o mal.
+ * Titulo = descriptivo y contextual (ej. "Cambios guardados", "Error al crear pedido").
+ * Descripcion = explicacion de por que fue bien o mal.
  * Si se pasa string, se usa como title (sin description).
  */
-function toSileoContent(msg: NotifyMessage): { title: string; description?: string } {
-  if (typeof msg === "string") return { title: msg };
-  return { title: msg.title, description: msg.description };
-}
-
 export interface NotifyOptions {
+  id?: string | number;
+  dedupeKey?: string;
   duration?: number | null;
   position?: "top-left" | "top-center" | "top-right" | "bottom-left" | "bottom-center" | "bottom-right";
+  dismissible?: boolean;
+  important?: boolean;
+  description?: ReactNode;
 }
 
 export interface NotifyActionButton {
@@ -37,65 +38,139 @@ export interface NotifyActionButton {
   onClick: () => void;
 }
 
-function applyOptions(opts?: NotifyOptions): { position?: NotifyOptions["position"]; duration?: number | null } {
-  const out: { position?: NotifyOptions["position"]; duration?: number | null } = {};
-  if (opts?.position) out.position = opts.position;
-  if (opts?.duration !== undefined) out.duration = opts.duration;
+type ToastId = string | number;
+
+const dedupeRegistry = new Map<string, ToastId>();
+
+function toContent(msg: NotifyMessage): { title: ReactNode; description?: ReactNode } {
+  if (typeof msg === "string") return { title: msg };
+  return { title: msg.title, description: msg.description };
+}
+
+function normalizeDuration(duration: NotifyOptions["duration"], fallback: number | null, important?: boolean): number {
+  if (duration === null) return Infinity;
+  if (duration !== undefined) return duration;
+  if (important) return Infinity;
+  return fallback ?? Infinity;
+}
+
+function rememberDedupeKey(key: string | undefined, id: ToastId): void {
+  if (!key) return;
+  dedupeRegistry.set(key, id);
+}
+
+function forgetDedupeKey(key: string | undefined, id: ToastId): void {
+  if (!key) return;
+  if (dedupeRegistry.get(key) === id) dedupeRegistry.delete(key);
+}
+
+function getToastId(opts?: NotifyOptions): ToastId | undefined {
+  if (opts?.id !== undefined) return opts.id;
+  if (opts?.dedupeKey) return dedupeRegistry.get(opts.dedupeKey);
+  return undefined;
+}
+
+function buildToastOptions(opts: NotifyOptions | undefined, fallbackDuration: number | null): ExternalToast {
+  const id = getToastId(opts);
+  const out: ExternalToast = {
+    id,
+    position: opts?.position ?? DEFAULT_POSITION,
+    duration: normalizeDuration(opts?.duration, fallbackDuration, opts?.important),
+    dismissible: opts?.dismissible ?? true,
+  };
+
+  if (opts?.description !== undefined) out.description = opts.description;
+  if (opts?.important) out.closeButton = true;
+  if (opts?.dedupeKey && id !== undefined) {
+    out.onDismiss = () => forgetDedupeKey(opts.dedupeKey, id);
+    out.onAutoClose = () => forgetDedupeKey(opts.dedupeKey, id);
+  }
   return out;
+}
+
+function createOrReuseToast(
+  variant: "success" | "error" | "warning" | "info" | "loading" | "message",
+  message: NotifyMessage,
+  options: NotifyOptions | undefined,
+  fallbackDuration: number | null
+): ToastId {
+  const existingId = getToastId(options);
+  if (existingId !== undefined && options?.dedupeKey && options.id === undefined) {
+    return existingId;
+  }
+
+  const resolvedOptions =
+    options?.dedupeKey && options.id === undefined
+      ? {
+          ...options,
+          id: `notify-${options.dedupeKey}`,
+        }
+      : options;
+
+  const { title, description } = toContent(message);
+  const toastOptions = buildToastOptions(
+    description === undefined ? resolvedOptions : { ...resolvedOptions, description },
+    fallbackDuration
+  );
+  const method =
+    variant === "message"
+      ? toast
+      : variant === "loading"
+        ? toast.loading
+        : toast[variant];
+  const id = method(title, toastOptions);
+  rememberDedupeKey(resolvedOptions?.dedupeKey, id);
+  return id;
+}
+
+function toPromiseMessage<T>(
+  value:
+    | string
+    | { title: string; description?: string }
+    | ((input: T) => string | { title: string; description?: string })
+    | undefined,
+  input: T,
+  fallback: { title: string; description?: string }
+) {
+  if (value == null) return fallback;
+  if (typeof value === "function") {
+    const out = value(input);
+    return typeof out === "string" ? { title: out } : out;
+  }
+  return typeof value === "string" ? { title: value } : value;
+}
+
+function createPromiseId(options?: NotifyOptions): ToastId {
+  return getToastId(options) ?? `notify-promise-${Math.random().toString(36).slice(2, 10)}`;
 }
 
 export const notify = {
   success(message: NotifyMessage, options?: NotifyOptions): string {
-    return sileo.success({
-      ...toSileoContent(message),
-      position: DEFAULT_POSITION,
-      ...applyOptions(options),
-      duration: options?.duration ?? DEFAULT_DURATION_SUCCESS,
-    });
+    return String(createOrReuseToast("success", message, options, DEFAULT_DURATION_SUCCESS));
   },
 
   error(message: NotifyMessage, options?: NotifyOptions): string {
-    return sileo.error({
-      ...toSileoContent(message),
-      position: DEFAULT_POSITION,
-      ...applyOptions(options),
-      duration: options?.duration ?? DEFAULT_DURATION_ERROR,
-    });
+    return String(createOrReuseToast("error", message, options, DEFAULT_DURATION_ERROR));
   },
 
   warning(message: NotifyMessage, options?: NotifyOptions): string {
-    return sileo.warning({
-      ...toSileoContent(message),
-      position: DEFAULT_POSITION,
-      ...applyOptions(options),
-      duration: options?.duration ?? DEFAULT_DURATION_WARNING,
-    });
+    return String(createOrReuseToast("warning", message, options, DEFAULT_DURATION_WARNING));
   },
 
   info(message: NotifyMessage, options?: NotifyOptions): string {
-    return sileo.info({
-      ...toSileoContent(message),
-      position: DEFAULT_POSITION,
-      ...applyOptions(options),
-      duration: options?.duration ?? DEFAULT_DURATION_INFO,
-    });
+    return String(createOrReuseToast("info", message, options, DEFAULT_DURATION_INFO));
   },
 
   /**
    * Loading manual (solo para casos donde no hay promesa; preferir notify.promise para fetches).
+   * Devuelve un id reutilizable en `success/error/info/warning`.
    */
   loading(message: string | { title: string; description?: string }, options?: NotifyOptions): string {
-    const content = typeof message === "string" ? { title: message, description: undefined } : message;
-    return sileo.show({
-      ...content,
-      position: DEFAULT_POSITION,
-      ...applyOptions(options),
-      duration: null,
-    });
+    return String(createOrReuseToast("loading", message, options, DEFAULT_DURATION_LOADING));
   },
 
   /**
-   * Toast nativo de Sileo para flujos async: loading → success/error con animaciones.
+   * Flujo async: loading -> success/error reutilizando el mismo toast id.
    * Usar siempre que haya una promesa (fetch, mutación, etc.).
    */
   promise<T>(
@@ -104,38 +179,49 @@ export const notify = {
       loading: string | { title: string; description?: string };
       success?: string | { title: string; description?: string } | ((data: T) => string | { title: string; description?: string });
       error?: string | { title: string; description?: string } | ((err: unknown) => string | { title: string; description?: string });
-    }
+    },
+    options?: NotifyOptions
   ): Promise<T> {
     const promiseFn = typeof promise === "function" ? promise : () => promise;
-    const loadingContent = typeof messages.loading === "string"
-      ? { title: messages.loading }
-      : { title: messages.loading.title, description: messages.loading.description };
-    const successFn = messages.success;
-    const errorFn = messages.error;
-    return sileo.promise(promiseFn(), {
-      position: DEFAULT_POSITION,
-      loading: loadingContent,
-      success: successFn == null
-        ? { title: "Operación completada" }
-        : typeof successFn === "function"
-          ? (data) => {
-              const out = successFn(data);
-              return typeof out === "string" ? { title: out } : out;
-            }
-          : typeof successFn === "string"
-            ? { title: successFn }
-            : successFn,
-      error: errorFn == null
-        ? { title: "Error", description: "Ha ocurrido un error. Intente de nuevo." }
-        : typeof errorFn === "function"
-          ? (err) => {
-              const out = errorFn(err);
-              return typeof out === "string" ? { title: out } : out;
-            }
-          : typeof errorFn === "string"
-            ? { title: errorFn }
-            : errorFn,
-    });
+    const loadingContent = toContent(
+      typeof messages.loading === "string" ? { title: messages.loading } : messages.loading
+    );
+    const toastId = createPromiseId(options);
+
+    rememberDedupeKey(options?.dedupeKey, toastId);
+    toast.loading(loadingContent.title, buildToastOptions(
+      loadingContent.description === undefined
+        ? { ...options, id: toastId }
+        : { ...options, id: toastId, description: loadingContent.description },
+      DEFAULT_DURATION_LOADING
+    ));
+
+    return promiseFn()
+      .then((data) => {
+        const success = toPromiseMessage(
+          messages.success,
+          data,
+          { title: "Operacion completada" }
+        );
+        notify.success(success, {
+          ...options,
+          id: toastId,
+        });
+        return data;
+      })
+      .catch((err) => {
+        const errorMessage = toPromiseMessage(
+          messages.error,
+          err,
+          { title: "Error", description: "Ha ocurrido un error. Intente de nuevo." }
+        );
+        notify.error(errorMessage, {
+          ...options,
+          id: toastId,
+          important: options?.important ?? true,
+        });
+        throw err;
+      });
   },
 
   /**
@@ -147,29 +233,37 @@ export const notify = {
     button: NotifyActionButton,
     options?: NotifyOptions
   ): string {
-    const { title, description } = toSileoContent(message);
-    let toastId: string;
-    toastId = sileo.warning({
-      title,
-      description,
-      position: options?.position ?? DEFAULT_POSITION,
-      duration: null,
-      button: {
-        title: button.title,
+    const { title, description } = toContent(message);
+    const toastId = String(
+      getToastId(options)
+        ?? (options?.dedupeKey ? `notify-${options.dedupeKey}` : `notify-action-${Math.random().toString(36).slice(2, 10)}`)
+    );
+    toast.warning(title, {
+      ...buildToastOptions(
+        description === undefined ? { ...options, id: toastId } : { ...options, id: toastId, description },
+        null
+      ),
+      action: {
+        label: button.title,
         onClick: () => {
-          sileo.dismiss(toastId);
+          toast.dismiss(toastId);
           button.onClick();
         },
       },
     });
+    rememberDedupeKey(options?.dedupeKey, toastId);
     return toastId;
   },
 
   dismiss(id: string): void {
-    sileo.dismiss(id);
+    for (const [key, value] of dedupeRegistry.entries()) {
+      if (String(value) === id) dedupeRegistry.delete(key);
+    }
+    toast.dismiss(id);
   },
 
-  clear(position?: Parameters<typeof sileo.clear>[0]): void {
-    sileo.clear(position);
+  clear(_position?: NotifyOptions["position"]): void {
+    dedupeRegistry.clear();
+    toast.dismiss();
   },
 };

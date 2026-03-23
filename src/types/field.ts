@@ -50,6 +50,7 @@ export interface FieldOrder {
 
 export interface RouteStop {
   id: number | string;
+  draftKey?: string | null;
   position: number;
   stopType?: 'obligatoria' | 'sugerida' | 'oportunidad' | string;
   targetType?: 'customer' | 'prospect' | 'location' | string;

@@ -98,6 +98,12 @@ export const crmService = {
   getAgendaSummary(params: Record<string, unknown> = {}) {
     return getJson<{ data: AgendaSummaryData }>('crm/agenda/summary', params);
   },
+  listCommercialOrders(params: Record<string, unknown> = {}) {
+    return getJson<{ data: Record<string, unknown>[]; meta?: Record<string, unknown>; links?: Record<string, unknown> }>(
+      'orders',
+      params
+    );
+  },
   rescheduleAgendaAction(
     id: number | string,
     payload: { nextActionAt: string; nextActionNote?: string | null; sourceInteractionId?: number | string | null }

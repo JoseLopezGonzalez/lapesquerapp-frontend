@@ -409,6 +409,10 @@ export default function AgendaPageClient() {
   const { data: events, isLoading } = useAgenda(agendaParams);
   const { data: summary, isLoading: summaryLoading } = useAgendaSummary({ limitNext: 10 });
   const { rescheduleAgendaAction, cancelAgendaAction } = useAgendaMutations();
+  const visiblePendingCount = React.useMemo(
+    () => events.reduce((count, item) => count + (item.status === 'pending' ? 1 : 0), 0),
+    [events]
+  );
 
   const groupedEvents = React.useMemo(
     () =>
@@ -578,7 +582,7 @@ export default function AgendaPageClient() {
               statuses={statuses}
               onToggleStatus={handleToggleStatus}
               summary={summaryLoading ? { overdue: [], today: [], next: [] } : summary}
-              visiblePendingCount={events.filter((item) => item.status === 'pending').length}
+              visiblePendingCount={visiblePendingCount}
             />
           </CardHeader>
           <CardContent className="flex-1 min-h-0 overflow-y-auto space-y-3 pt-0">

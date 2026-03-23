@@ -23,9 +23,9 @@ import { EmptyState } from '@/components/Utilities/EmptyState';
 import Loader from '@/components/Utilities/Loader';
 import { RouteMap } from '@/components/Maps/RouteMap';
 import { useFieldOrders } from '@/hooks/useFieldOrders';
+import { useFieldRouteExecutionState } from '@/hooks/useFieldRouteExecutionState';
+import { useRouteGeometry } from '@/hooks/useRouteGeometry';
 import { useFieldRoute, useFieldRouteStopMutation } from '@/hooks/useFieldRoutes';
-import { getRouteDirections } from '@/lib/maps/directions';
-import { geocodeAddress } from '@/lib/maps/geocoding';
 import { openInGoogleMaps, openInWaze } from '@/lib/maps/navigation';
 import { notify } from '@/lib/notifications';
 import { cn } from '@/lib/utils';
@@ -40,28 +40,6 @@ const resultTypes = [
   { value: 'incident', label: 'Incidencia' },
   { value: 'visit', label: 'Visita realizada' },
 ];
-
-async function enrichStops(stops) {
-  const enriched = await Promise.all(
-    (stops ?? []).map(async (stop) => {
-      if (stop?.lat != null && stop?.lng != null) return stop;
-      const query = stop?.address || stop?.label;
-      if (!query) return stop;
-      try {
-        const [feature] = await geocodeAddress(query);
-        if (!feature?.center) return stop;
-        return { ...stop, lng: feature.center[0], lat: feature.center[1] };
-      } catch (_) {
-        return stop;
-      }
-    })
-  );
-  return enriched;
-}
-
-function getNextPendingStop(stops) {
-  return (stops ?? []).find((stop) => stop.status === 'pending') ?? null;
-}
 
 function formatRouteDate(value) {
   if (!value) return 'Sin fecha';
@@ -80,83 +58,24 @@ function formatRouteDate(value) {
 
 export default function FieldRouteExecutionPage({ routeId }) {
   const router = useRouter();
-  const { data: route, isLoading, error } = useFieldRoute(routeId);
+  const { data: route, isLoading, errorMessage } = useFieldRoute(routeId);
   const { data: ordersData } = useFieldOrders({ routeId, perPage: 100 });
   const { updateStop, isUpdatingStop } = useFieldRouteStopMutation(routeId);
-  const [stops, setStops] = useState([]);
-  const [focusedStopId, setFocusedStopId] = useState(null);
   const [selectedStop, setSelectedStop] = useState(null);
   const [resultType, setResultType] = useState('delivery');
   const [resultNotes, setResultNotes] = useState('');
   const [stopSheetOpen, setStopSheetOpen] = useState(false);
   const [stopsSheetOpen, setStopsSheetOpen] = useState(false);
-  const [routeGeometry, setRouteGeometry] = useState(null);
-  const [isCalculatingRoute, setIsCalculatingRoute] = useState(false);
-  const [routeGeometryError, setRouteGeometryError] = useState('');
-
-  useEffect(() => {
-    let cancelled = false;
-    if (!route?.stops) return;
-    enrichStops(route.stops).then((enriched) => {
-      if (!cancelled) setStops(enriched);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [route]);
-
-  useEffect(() => {
-    let cancelled = false;
-    setRouteGeometryError('');
-
-    const stopsWithCoordinates = stops.filter((stop) => stop?.lat != null && stop?.lng != null);
-    if (stopsWithCoordinates.length < 2) {
-      setRouteGeometry(null);
-      setIsCalculatingRoute(false);
-      return () => {
-        cancelled = true;
-      };
-    }
-
-    async function loadDirections() {
-      setIsCalculatingRoute(true);
-      try {
-        const geometry = await getRouteDirections(stops);
-        if (!cancelled) {
-          setRouteGeometry(geometry);
-          setIsCalculatingRoute(false);
-        }
-      } catch (error) {
-        if (!cancelled) {
-          setRouteGeometry(null);
-          setRouteGeometryError(error?.message ?? 'No se pudo calcular la ruta por carretera.');
-          setIsCalculatingRoute(false);
-        }
-      }
-    }
-
-    loadDirections();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [stops]);
-
-  const nextStop = useMemo(() => getNextPendingStop(stops), [stops]);
-
-  useEffect(() => {
-    if (!stops.length) {
-      setFocusedStopId(null);
-      return;
-    }
-
-    if (focusedStopId != null) {
-      const exists = stops.some((stop) => String(stop.id) === String(focusedStopId));
-      if (exists) return;
-    }
-
-    setFocusedStopId((nextStop ?? stops[0] ?? null)?.id ?? null);
-  }, [stops, focusedStopId, nextStop]);
+  const {
+    stops,
+    focusedStopId,
+    setFocusedStopId,
+    nextStop,
+    focusedStop,
+    mapStops,
+    refreshStopsFromRoute,
+  } = useFieldRouteExecutionState(route);
+  const { routeGeometry, isCalculatingRoute, directionsError: routeGeometryError } = useRouteGeometry(stops);
 
   const ordersByStopId = useMemo(
     () =>
@@ -168,35 +87,21 @@ export default function FieldRouteExecutionPage({ routeId }) {
     [ordersData]
   );
 
-  const focusedStop = useMemo(
-    () => stops.find((stop) => String(stop.id) === String(focusedStopId)) ?? nextStop ?? stops[0] ?? null,
-    [stops, focusedStopId, nextStop]
-  );
-
   const focusedStopOrder = focusedStop ? ordersByStopId.get(String(focusedStop.id)) : null;
   const focusedStopQuery = focusedStop?.address || focusedStop?.label || '';
   const routeDateLabel = useMemo(() => formatRouteDate(route?.routeDate), [route?.routeDate]);
-
-  const mapStops = useMemo(
-    () =>
-      (stops ?? []).map((stop) => ({
-        ...stop,
-        isActive: focusedStop?.id === stop.id,
-      })),
-    [stops, focusedStop]
-  );
 
   if (isLoading) {
     return <div className="flex flex-1 items-center justify-center"><Loader /></div>;
   }
 
-  if (error || !route) {
+  if (errorMessage || !route) {
     return (
       <div className="flex flex-1 items-center justify-center p-4">
         <EmptyState
           icon={<MapPinned className="h-10 w-10 text-primary" />}
           title="No se pudo abrir la ruta"
-          description={error?.message ?? 'La ruta no está disponible.'}
+          description={errorMessage ?? 'La ruta no está disponible.'}
         />
       </div>
     );
@@ -206,16 +111,6 @@ export default function FieldRouteExecutionPage({ routeId }) {
     setSelectedStop(stop);
     setResultType(defaultResult);
     setResultNotes('');
-  };
-
-  const refreshStopsFromRoute = async (updatedRoute, preferredStopId = null) => {
-    const enrichedStops = await enrichStops(updatedRoute?.stops ?? []);
-    setStops(enrichedStops);
-    const nextFocusedId =
-      preferredStopId != null && enrichedStops.some((stop) => String(stop.id) === String(preferredStopId))
-        ? preferredStopId
-        : (getNextPendingStop(enrichedStops) ?? enrichedStops[0] ?? null)?.id ?? null;
-    setFocusedStopId(nextFocusedId);
   };
 
   const handleCompleteStop = async () => {

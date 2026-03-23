@@ -30,15 +30,15 @@ Se usa para:
 - `objetivo`: `9/10`
 - `estado`: `auditado`
 - `fecha_revision`: `2026-03-23`
-- `gap_principal`: consolidar mejor la frontera entre shell server/client y seguir reduciendo dispersión entre layout global, layouts por rol y primitivas compartidas
+- `gap_principal`: reducir client-heavy shell y homogeneizar layouts por área sin depender tanto de wrappers cliente con `force-dynamic`
 - `notas_provisionales`:
-  - todavía conviven patrones distintos de shell entre áreas (`admin`, `comercial`, `field`, `external`, `superadmin`)
-  - el repo usa App Router, pero gran parte del árbol sigue resolviendo mucho trabajo en cliente
-  - la consistencia visual base es razonable, pero necesita seguir ordenándose como plataforma y no solo como colección de componentes
+  - el shell global está bien armado, pero el frontend sigue muy apoyado en Client Components
+  - las áreas `admin`, `comercial`, `field`, `external` y `superadmin` resuelven layout con estrategias próximas, pero no plenamente unificadas
+  - hay buena base de design system, aunque todavía conviven patrones visuales y de navegación con distinta madurez
 - `notas_cerradas`:
-  - existe un shell global claro con `ThemeProvider`, `SessionProvider`, `QueryClientProvider` y capa común de toasts
+  - `ClientLayout` centraliza QueryClient, sesión, tema, toasts y providers globales
   - hay layouts diferenciados por áreas funcionales ya integrados en `src/app`
-  - el design system base y la infraestructura PWA ya forman parte del núcleo del frontend
+  - el sistema de branding ya alimenta metadata y PWA en el layout raíz
 - `dependencias_o_riesgos`:
   - cambios aquí impactan navegación, carga global, accesibilidad, percepción de rendimiento y consistencia visual
 - `referencias_clave`:
@@ -54,13 +54,13 @@ Se usa para:
 - `objetivo`: `9/10`
 - `estado`: `auditado`
 - `fecha_revision`: `2026-03-23`
-- `gap_principal`: cerrar la documentación y el criterio operativo alrededor de sesión, visibilidad por rol y dependencias entre middleware, layouts protegidos y redirecciones client-side
+- `gap_principal`: consolidar el mapa completo de auth entre NextAuth, middleware, portal externo y área superadmin, y preparar la migración de `middleware` a `proxy`
 - `notas_provisionales`:
-  - la base es sólida, pero sigue siendo sensible a regresiones de flujo entre middleware, `page.js` y layouts por rol
-  - cualquier cambio en cookies, dominio o llamada a `/me` debe revisarse junto al bloque de network/cross-origin
+  - la auth principal está bien resuelta, pero el modelo global de acceso está fragmentado por actor y superficie
+  - `/superadmin` queda fuera del middleware principal y usa otro circuito de token
 - `notas_cerradas`:
   - el frontend ya trabaja con login por magic link/OTP y sesión basada en NextAuth
-  - el middleware y la visibilidad por rol existen y están repartidos en puntos claros del repo
+  - el refresh contra `/me` y la protección por rol están integrados en la superficie principal
   - hay rutas y layouts específicos para áreas con perfiles distintos
 - `dependencias_o_riesgos`:
   - se cruza con network/CORS, multi-tenant, cookies, redirecciones y permisos
@@ -77,11 +77,11 @@ Se usa para:
 - `objetivo`: `9/10`
 - `estado`: `en mejora`
 - `fecha_revision`: `2026-03-23`
-- `gap_principal`: unificar el criterio operativo de network/auth cross-origin y hacerlo parte explícita del circuito, no troubleshooting aislado
+- `gap_principal`: reducir dependencias implícitas de tenant/defaults y ordenar mejor la frontera entre servicios, hooks y lógica browser-side de auth/cross-origin
 - `notas_provisionales`:
-  - hay buena base técnica en `fetchWithTenant` y `getCurrentTenant`, pero faltaba un documento maestro integrado en el circuito
-  - sigue habiendo riesgo de diagnósticos incompletos cuando el fallo real está entre frontend, proxy y backend
-  - cualquier flujo con cookies, subdominios o sesión browser-side debe revisarse aquí
+  - `fetchWithTenant` resuelve bien el caso base, pero mezcla resolución de tenant, normalización de headers y manejo de auth errors
+  - el repo sigue teniendo llamadas directas a `fetchWithTenant` fuera de una capa más uniforme
+  - cualquier cambio de dominios, cookies o subdominios sigue teniendo impacto transversal
 - `notas_cerradas`:
   - el frontend ya inyecta tenant en llamadas y usa utilidades compartidas para resolver dominio/tenant
   - hay señales claras de integración multi-tenant tanto en middleware como en hooks y servicios
@@ -96,17 +96,17 @@ Se usa para:
 
 - `bloque`: Admin core y CRUD compartido
 - `alcance`: `admin/*`, `EntityClient`, `entitiesConfig`, formularios y servicios compartidos, patrones CRUD y listados base
-- `puntuacion_actual`: `7/10`
+- `puntuacion_actual`: `6/10`
 - `objetivo`: `9/10`
 - `estado`: `en mejora`
 - `fecha_revision`: `2026-03-23`
-- `gap_principal`: seguir desacoplando el core compartido de admin de componentes/herramientas legacy demasiado grandes y reducir variación de patrones entre entidades
+- `gap_principal`: partir hotspots legacy del admin core y reducir el peso estructural de `entitiesConfig` y gestores compartidos todavía demasiado grandes
 - `notas_provisionales`:
-  - el admin comparte bastante infraestructura, pero todavía hay peso grande en componentes heredados y mezcla de patrones JS/TS
-  - la convivencia entre hooks query-driven y zonas más manuales aún no es totalmente homogénea
+  - `src/configs/entitiesConfig.js` sigue siendo un núcleo enorme y muy cargado
+  - el patrón compartido existe, pero la experiencia real del bloque aún depende de piezas grandes y heterogéneas
+  - el paso a hooks query-driven no ha eliminado del todo la complejidad de los gestores legacy
 - `notas_cerradas`:
-  - existe un núcleo reutilizable de CRUD y configuración de entidades
-  - hay una capa de servicios y hooks suficientemente madura para no tratar cada gestor como una isla
+  - existe un núcleo reutilizable de configuración, servicios y CRUD suficiente para que el admin no sea un conjunto de páginas aisladas
 - `dependencias_o_riesgos`:
   - este bloque condiciona consistencia, velocidad de mantenimiento y facilidad de incorporar nuevas entidades
 - `referencias_clave`:
@@ -118,61 +118,79 @@ Se usa para:
 
 - `bloque`: Comercial CRM y ventas
 - `alcance`: `src/app/comercial`, CRM, prospectos, clientes, ofertas, pedidos comerciales, agenda y rutas comerciales asociadas
-- `puntuacion_actual`: `8/10`
+- `puntuacion_actual`: `9/10`
 - `objetivo`: `9/10`
-- `estado`: `auditado`
+- `estado`: `cerrado`
 - `fecha_revision`: `2026-03-23`
-- `gap_principal`: consolidar el bloque como feature coherente y seguir cerrando inconsistencias entre UI comercial, fetch/cache y reglas de flujo entre CRM, pedidos y rutas
+- `gap_principal`: mantener la disciplina de extracción en los subflujos CRM restantes sin reintroducir transforms inline ni depender de pantallas contenedor demasiado grandes
 - `notas_provisionales`:
-  - el bloque ya tiene cobertura funcional amplia, pero necesita vigilar consistencia entre submódulos recién crecidos
-  - conviene seguir revisando permisos, copy operativo y flujos críticos de uso diario
+  - `RoutesPlannerPage` sigue siendo una pantalla importante del bloque y conviene seguir partiéndola por secciones funcionales si el alcance crece
+  - quedan otras superficies CRM grandes, como detalle de prospectos y algunos gestores heredados, que deberían seguir la misma filosofía
 - `notas_cerradas`:
   - el área comercial ya existe como superficie propia con layouts, páginas, hooks y componentes dedicados
   - hay uso real de React Query y tipos en varios subflujos de CRM y ventas
+  - la planificación de rutas comercial ahora consume una capa compartida de normalización y serialización en `src/lib/routes/routeStops.ts`
+  - el cálculo de geometría de ruta se ha extraído a `src/hooks/useRouteGeometry.ts`, reduciendo trabajo síncrono y efectos duplicados en el planner
+  - `useRoutes`, `useRouteTemplates` y `useComercialOrders` quedaron más alineados con servicios compartidos y con transforms fuera de la UI principal
+  - `AgendaPageClient` y `CustomersPageClient` reducen recomputaciones evitables al mover conteos y ordenaciones a `useMemo`
+  - la identidad temporal de paradas ya no depende de ids efímeros generados en cada normalización, lo que estabiliza reorder, firmas y trabajo derivado
+  - la carga de drafts seleccionados del planner se ha sacado a un hook específico, reduciendo responsabilidad del contenedor principal
+  - `ComercialOrdersManager` ya delega enriquecimiento, visibilidad de categorías y ordenación a helpers puros reutilizables
 - `dependencias_o_riesgos`:
   - se cruza con auth por rol, catálogos, clientes, ofertas, pedidos y ejecución en movilidad
 - `referencias_clave`:
   - `src/app/comercial`
   - `src/components/Comercial`
-  - `src/hooks/useProspects.ts`
+  - `src/components/Comercial/Routes/RoutesPlannerPage.jsx`
+  - `src/hooks/useRoutes.ts`
+  - `src/hooks/useComercialOrders.ts`
 
 ### 6. Field y rutas en movilidad
 
 - `bloque`: Field y rutas en movilidad
 - `alcance`: `src/app/field`, ejecución de rutas, pedidos en campo, autoventa y superficies móviles del rol de campo
-- `puntuacion_actual`: `7/10`
+- `puntuacion_actual`: `9/10`
 - `objetivo`: `9/10`
-- `estado`: `auditado`
+- `estado`: `cerrado`
 - `fecha_revision`: `2026-03-23`
-- `gap_principal`: reforzar cohesión del bloque como feature de movilidad, con foco en UX operativa, permisos y estabilidad del flujo en ruta
+- `gap_principal`: mantener la misma disciplina de extracción y contratos consistentes en nuevas superficies móviles que entren en el bloque
 - `notas_provisionales`:
-  - el bloque tiene piezas claras, pero todavía necesita consolidación documental y de circuito al mismo nivel que áreas más antiguas
-  - cualquier mejora aquí debe mirar de cerca rendimiento percibido, fetch en red variable y continuidad del flujo
+  - conviene seguir ampliando la cobertura automatizada de field si se tocan más mutaciones operativas o flujos de autoventa
+  - `FieldOrderExecutionPage` aún es una pantalla grande, aunque ya descarga parte de la lógica crítica en helpers reutilizables
 - `notas_cerradas`:
   - existe un área field separada del admin y del comercial
   - ya hay hooks y componentes específicos para rutas, pedidos y autoventa
+  - `FieldRouteExecutionPage` ya no recalcula inline geocoding y directions con una cadena propia de efectos, sino que reutiliza la misma capa compartida del planner comercial
+  - `useFieldRoutes` y `useFieldOrders` comparten convenciones más limpias de query keys e invalidación, reduciendo recargas amplias entre rutas y pedidos
+  - la mutación de parada en field actualiza detalle cacheado y refresca el listado bajo claves unificadas
+  - los hooks de field ahora exponen un contrato consistente con `error` raw y `errorMessage`, eliminando consumos ambiguos de `error.message`
+  - `FieldOrdersPage` y `FieldRoutesListPage` ya consumen el nuevo contrato de error sin depender de shapes implícitos
+  - `FieldOrderExecutionPage` delega agregación, validación y construcción de payload a helpers puros, reduciendo lógica inline en el wizard
+  - el flujo de ejecución de ruta ya extrae el estado de stops/foco/refresh tras mutación a un hook local reutilizable
 - `dependencias_o_riesgos`:
   - impacta directamente flujos críticos en movilidad, visibilidad por rol y llamadas API desde contexto cliente
 - `referencias_clave`:
   - `src/app/field`
   - `src/components/Field`
+  - `src/components/Field/FieldRouteExecutionPage.jsx`
+  - `src/hooks/useFieldRoutes.ts`
   - `src/hooks/useFieldOrders.ts`
 
 ### 7. Almacén, stock y operaciones físicas
 
 - `bloque`: Almacén, stock y operaciones físicas
 - `alcance`: stores, pallets, recepciones, dispatches, warehouse, operator, flujos físicos y operaciones de stock
-- `puntuacion_actual`: `8/10`
+- `puntuacion_actual`: `7/10`
 - `objetivo`: `9/10`
 - `estado`: `en mejora`
 - `fecha_revision`: `2026-03-23`
-- `gap_principal`: seguir bajando complejidad en flujos físicos de alto impacto y asegurar consistencia entre admin, warehouse y operator
+- `gap_principal`: reducir complejidad de formularios y vistas críticas de stock/recepción y recuperar una base de tests completamente verde en helpers operativos
 - `notas_provisionales`:
-  - es uno de los bloques con más criticidad operativa y con más riesgo de deuda por tamaño de UI
-  - necesita vigilancia continua en permisos, feedback de usuario y rendimiento de listados/acciones
+  - este bloque concentra algunos de los archivos más grandes del repo, incluyendo `PalletView`, `EditReceptionForm` y formularios operarios
+  - la suite actual falla en `src/__tests__/helpers/receptionCalculations.test.js`, lo que debilita la confianza en una parte sensible del bloque
+  - el warning de `act(...)` en hooks relacionados indica margen de mejora en estabilidad de tests
 - `notas_cerradas`:
-  - el bloque tiene ya hooks de datos, stats y formularios específicos
-  - existe separación entre superficies de almacén admin y operario
+  - el bloque tiene ya hooks de datos, stats y separación entre superficies admin/operator/warehouse
 - `dependencias_o_riesgos`:
   - cualquier regresión aquí afecta operaciones físicas y flujos de negocio diarios
 - `referencias_clave`:
@@ -184,17 +202,17 @@ Se usa para:
 
 - `bloque`: Producción, trazabilidad y etiquetas
 - `alcance`: producciones, diagramas, consumos, registros, raw material flows vinculados, label editor y trazabilidad visual/documental
-- `puntuacion_actual`: `8/10`
+- `puntuacion_actual`: `7/10`
 - `objetivo`: `9/10`
 - `estado`: `en mejora`
 - `fecha_revision`: `2026-03-23`
-- `gap_principal`: reducir complejidad residual en gestores pesados y terminar de consolidar la relación entre producción, trazabilidad y herramientas de etiquetado
+- `gap_principal`: bajar el peso de los gestores de producción y cerrar la brecha entre hooks modernos y componentes todavía muy voluminosos
 - `notas_provisionales`:
-  - producción avanzó mucho, pero sigue siendo sensible a componentes grandes y flujos densos
-  - el editor de etiquetas y las vistas de producción no deben evaluarse como piezas aisladas, sino como parte del mismo ecosistema de trazabilidad
+  - `ProductionOutputsManager`, `ProductionView`, `ProductionOutputConsumptionsManager` y otros gestores siguen siendo muy grandes
+  - `useProductionDetail` ya usa React Query, pero aún refleja workarounds de backend (`500`) y complejidad residual
+  - el ecosistema producción-etiquetas está mejor que antes, pero todavía exige descomposición adicional
 - `notas_cerradas`:
-  - ya existe infraestructura específica para producción y diagramas
-  - hay histórico reciente de mejora en React Query, tipado y descomposición de piezas complejas
+  - ya existe infraestructura específica para producción, diagramas, hooks modernos y tipos dedicados
 - `dependencias_o_riesgos`:
   - alto cruce con stock, documentos, impresiones y UX crítica de operación
 - `referencias_clave`:
@@ -210,9 +228,10 @@ Se usa para:
 - `objetivo`: `9/10`
 - `estado`: `auditado`
 - `fecha_revision`: `2026-03-23`
-- `gap_principal`: mantener homogeneidad entre flujos de fichaje, validaciones, feedback operativo y consistencia entre herramientas del bloque
+- `gap_principal`: seguir afinando feedback operativo, tipado y tamaño de gestores puntuales sin perder simplicidad de uso
 - `notas_provisionales`:
-  - el bloque parece maduro, pero conviene revisar periódicamente UX crítica y acoplamiento con contexto de sesión y permisos
+  - el bloque está razonablemente sólido, pero aún mezcla JS con patrones modernos de React Query
+  - conviene reforzar cobertura de tests más cercana al flujo de usuario
 - `notas_cerradas`:
   - existe un conjunto claro de hooks, formularios y gestores para gestión horaria
   - hay evolución real hacia patrones más consistentes de fetch y validación
@@ -227,14 +246,15 @@ Se usa para:
 
 - `bloque`: Superadmin y tenant operations
 - `alcance`: `superadmin/*`, tenants, alerts, impersonation, status, operaciones de plataforma y health de tenants
-- `puntuacion_actual`: `7/10`
+- `puntuacion_actual`: `6/10`
 - `objetivo`: `9/10`
-- `estado`: `auditado`
+- `estado`: `en mejora`
 - `fecha_revision`: `2026-03-23`
-- `gap_principal`: consolidar este bloque como superficie de plataforma diferenciada, con criterios claros de permisos, estados operativos y mantenimiento
+- `gap_principal`: consolidar superadmin como superficie de plataforma con auth, cache, branding y criterios de estado más homogéneos con el resto del frontend
 - `notas_provisionales`:
-  - el bloque ya es visible y funcional, pero todavía debe madurar como área de plataforma con su propio estándar documental y de control de riesgos
-  - cualquier cambio aquí debe revisar seguridad, impersonation y aislamiento entre tenants
+  - `fetchSuperadmin` usa `sessionStorage` y `fetch` manual en lugar de integrarse con la estrategia general del frontend
+  - `src/app/superadmin/layout.js` mantiene metadata hardcodeada a `PesquerApp`
+  - es una superficie funcional, pero todavía más artesanal que el resto del producto
 - `notas_cerradas`:
   - ya existe un área superadmin con layout, páginas y componentes específicos
   - hay una API separada para superadmin sin `X-Tenant`
@@ -248,16 +268,16 @@ Se usa para:
 ### 11. Flujos documentales y módulos especializados
 
 - `bloque`: Flujos documentales y módulos especializados
-- `alcance`: orquestador, CMR/manual, market-data-extractor, chat AI, integraciones documentales y módulos que no encajan limpiamente en los bloques anteriores
-- `puntuacion_actual`: `6/10`
+- `alcance`: orquestador, CMR/manual, market-data-extractor, chat AI, portal `external/*`, integraciones documentales y módulos que no encajan limpiamente en los bloques anteriores
+- `puntuacion_actual`: `5/10`
 - `objetivo`: `9/10`
 - `estado`: `en mejora`
 - `fecha_revision`: `2026-03-23`
-- `gap_principal`: ordenar el conjunto de módulos especializados con una taxonomía de producto más clara y menos dependencia de documentación dispersa o transitoria
+- `gap_principal`: ordenar la taxonomía y la deuda estructural de módulos especializados, incluyendo orquestador, extractor documental y portal externo
 - `notas_provisionales`:
-  - aquí vive la mayor heterogeneidad documental y funcional del repo
-  - varios submódulos tienen planes, prompts o documentos de transición más que circuito consolidado
-  - este bloque debe usarse para priorizar qué módulos especializados merecen subir al mismo nivel de madurez que las áreas core
+  - `OrquestadorView` sigue siendo una pieza muy grande y todavía apoyada en mock state
+  - el portal `external/*` existe y hoy no está bien reflejado en la taxonomía viva de bloques
+  - esta sigue siendo la zona más heterogénea del repo en documentación, madurez y patrones
 - `notas_cerradas`:
   - el repo ya contiene módulos especializados reales, no solo ideas o prototipos
   - el circuito nuevo reconoce este espacio sin forzarlo artificialmente dentro del admin core

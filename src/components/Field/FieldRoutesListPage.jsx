@@ -42,20 +42,20 @@ function formatRouteDate(value) {
 }
 
 export default function FieldRoutesListPage() {
-  const { data, isLoading, error } = useFieldRoutes({ perPage: 20 });
+  const { data, isLoading, errorMessage } = useFieldRoutes({ perPage: 20 });
   const routes = data?.items ?? [];
 
   if (isLoading) {
     return <div className="flex flex-1 items-center justify-center"><Loader /></div>;
   }
 
-  if (error) {
+  if (errorMessage) {
     return (
       <div className="flex flex-1 items-center justify-center">
         <EmptyState
           icon={<MapPinned className="h-10 w-10 text-primary" />}
           title="No se pudieron cargar las rutas"
-          description={error.message ?? 'Inténtalo de nuevo más tarde.'}
+          description={errorMessage}
         />
       </div>
     );

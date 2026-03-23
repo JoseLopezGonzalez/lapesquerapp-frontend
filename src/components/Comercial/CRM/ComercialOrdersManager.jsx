@@ -14,6 +14,11 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useComercialOrders } from '@/hooks/useComercialOrders';
 import { useOffersList } from '@/hooks/useOffers';
+import {
+  buildVisibleCommercialOrderCategories,
+  enrichOrdersWithOffers,
+  filterAndSortCommercialOrders,
+} from '@/lib/comercial/comercialOrders';
 import { notify } from '@/lib/notifications';
 import { Package } from 'lucide-react';
 
@@ -24,17 +29,6 @@ const initialCategories = [
   { label: 'Hoy', name: 'today', current: false },
   { label: 'Mañana', name: 'tomorrow', current: false },
 ];
-
-function enrichOrdersWithOffers(orders, offers) {
-  const offerByOrderId = new Map(
-    (offers ?? []).filter((o) => o.orderId != null).map((o) => [String(o.orderId), o])
-  );
-  return orders.map((order) => {
-    if (order.offerId) return order;
-    const linked = offerByOrderId.get(String(order.id));
-    return linked ? { ...order, offerId: linked.id } : order;
-  });
-}
 
 export default function ComercialOrdersManager() {
   const searchParams = useSearchParams();
@@ -53,7 +47,7 @@ export default function ComercialOrdersManager() {
   const {
     data: orders = [],
     isLoading: loading,
-    error: ordersError,
+    errorMessage: ordersError,
     refetch,
   } = useComercialOrders({ perPage: 100 });
 
@@ -84,34 +78,7 @@ export default function ComercialOrdersManager() {
   );
 
   const visibleCategories = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    const hasOrdersToday = enrichedOrders.some((order) => {
-      const loadDateObj = order.loadDate ? new Date(order.loadDate) : null;
-      const loadDateOnly = loadDateObj
-        ? new Date(loadDateObj.getFullYear(), loadDateObj.getMonth(), loadDateObj.getDate())
-        : null;
-      return loadDateOnly && loadDateOnly.getTime() === today.getTime();
-    });
-    const hasOrdersTomorrow = enrichedOrders.some((order) => {
-      const loadDateObj = order.loadDate ? new Date(order.loadDate) : null;
-      const loadDateOnly = loadDateObj
-        ? new Date(loadDateObj.getFullYear(), loadDateObj.getMonth(), loadDateObj.getDate())
-        : null;
-      return loadDateOnly && loadDateOnly.getTime() === tomorrow.getTime();
-    });
-
-    const result = [{ label: 'Todos', name: 'all' }];
-    if (hasOrdersToday) result.push({ label: 'Hoy', name: 'today' });
-    if (hasOrdersTomorrow) result.push({ label: 'Mañana', name: 'tomorrow' });
-    result.push(
-      { label: 'En producción', name: 'pending' },
-      { label: 'Terminados', name: 'finished' }
-    );
-    return result;
+    return buildVisibleCommercialOrderCategories(enrichedOrders);
   }, [enrichedOrders]);
 
   useEffect(() => {
@@ -136,39 +103,10 @@ export default function ComercialOrdersManager() {
   }, [isMobile, visibleCategories]);
 
   const sortedOrders = useMemo(() => {
-    const searchLower = debouncedSearchText.toLowerCase();
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    const filtered = enrichedOrders.filter((order) => {
-      const loadDateObj = order.loadDate ? new Date(order.loadDate) : null;
-      const loadDateOnly = loadDateObj
-        ? new Date(loadDateObj.getFullYear(), loadDateObj.getMonth(), loadDateObj.getDate())
-        : null;
-
-      const matchesSearch =
-        order.customer?.name?.toLowerCase().includes(searchLower) ||
-        order.id.toString().includes(debouncedSearchText);
-
-      let matchesCategory = true;
-      if (activeCategory.name === 'today') {
-        matchesCategory = loadDateOnly && loadDateOnly.getTime() === today.getTime();
-      } else if (activeCategory.name === 'tomorrow') {
-        matchesCategory = loadDateOnly && loadDateOnly.getTime() === tomorrow.getTime();
-      } else if (activeCategory.name !== 'all') {
-        matchesCategory = activeCategory.name === order.status;
-      }
-
-      const isOldFinishedOrder =
-        order.status === 'finished' && loadDateOnly && loadDateOnly < today;
-      const matchesBusinessLogic = !isOldFinishedOrder;
-
-      return matchesSearch && matchesCategory && matchesBusinessLogic;
+    return filterAndSortCommercialOrders(enrichedOrders, {
+      searchText: debouncedSearchText,
+      activeCategoryName: activeCategory.name,
     });
-
-    return [...filtered].sort((a, b) => new Date(a.loadDate) - new Date(b.loadDate));
   }, [enrichedOrders, debouncedSearchText, activeCategory]);
 
   const reloadOrders = useCallback(() => {

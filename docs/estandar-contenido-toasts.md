@@ -1,6 +1,6 @@
 # Estándar de contenido para toasts
 
-Este documento define la visión y el estándar de **texto** (título y descripción) de las notificaciones toast en la aplicación. La implementación técnica (Sileo, wrapper, posicionamiento) se describe en [22-sileo-toast-documentation.md](./22-sileo-toast-documentation.md).
+Este documento define la visión y el estándar de **texto y comportamiento** de las notificaciones toast en la aplicación. La implementación técnica actual del sistema se describe en [22-sistema-notificaciones-toast.md](./22-sistema-notificaciones-toast.md).
 
 ---
 
@@ -104,6 +104,30 @@ notify.error({
 4. **Mensajes dinámicos**
    - El título puede ser fijo y la descripción llevar el detalle variable:
    - Ejemplo: `title: 'Error al procesar documento'`, `description: \`${fileName}: ${errorMessage}\``.
+
+5. **Loading manual con `id`**
+   - Usar `notify.loading()` solo cuando no haya una promesa directa que envolver.
+   - El `id` devuelto debe reutilizarse para cerrar o actualizar el mismo toast.
+   - Ejemplo:
+
+```js
+const id = notify.loading({ title: 'Exportando documento' });
+
+notify.success(
+  { title: 'Exportacion completada' },
+  { id, description: 'El archivo ya esta listo' }
+);
+```
+
+6. **Deduplicación**
+   - No deduplicar por defecto.
+   - Usar `dedupeKey` solo en eventos repetibles y ruidosos, por ejemplo varios errores idénticos disparados desde polling o varias requests concurrentes.
+   - Si cada evento representa una acción distinta del usuario, deben apilarse.
+
+7. **Cuándo evitar toast**
+   - No usar toast para errores `422` si ya se pintan errores inline por campo.
+   - No usar toast para procesos de autenticación cubiertos por pantallas de transición.
+   - No usar toast si la información debe permanecer fija y visible en pantalla; en ese caso usar `Alert`, bloque inline o estado persistente.
 
 ---
 

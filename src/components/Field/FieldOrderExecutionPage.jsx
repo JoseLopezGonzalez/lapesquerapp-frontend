@@ -12,6 +12,13 @@ import Loader from '@/components/Utilities/Loader';
 import Step2QRScan from '@/components/Comercial/Autoventa/Step2QRScan';
 import Step3Pricing from '@/components/Comercial/Autoventa/Step3Pricing';
 import { useFieldOrder, useFieldOrderMutations } from '@/hooks/useFieldOrders';
+import {
+  aggregateItemsFromBoxes,
+  buildInitialItems,
+  buildPlannedProductsPayload,
+  calculateServedItemsTotal,
+  validateServedItems,
+} from '@/lib/field/fieldOrderExecution';
 import { getFieldProductsOptions } from '@/services/fieldOperatorService';
 import { notify } from '@/lib/notifications';
 import { getFieldStatusLabel } from '@/components/Field/labels';
@@ -35,52 +42,6 @@ function formatDate(value) {
     month: 'short',
     year: 'numeric',
   }).format(parsed);
-}
-
-function buildInitialItems(order) {
-  return (order?.plannedProductDetails ?? []).map((detail) => ({
-    productId: Number(detail?.product?.id),
-    productName: detail?.product?.name ?? '',
-    boxesCount: Number(detail?.boxes) || 0,
-    totalWeight: Number(detail?.quantity) || 0,
-    unitPrice: Number(detail?.unitPrice) || 0,
-    subtotal: (Number(detail?.quantity) || 0) * (Number(detail?.unitPrice) || 0),
-    tax: detail?.tax?.id != null ? Number(detail.tax.id) : undefined,
-  }));
-}
-
-function aggregateItemsFromBoxes(boxes, order) {
-  const byProduct = new Map();
-  const existingByProductId = new Map(
-    (order?.plannedProductDetails ?? []).map((detail) => [
-      Number(detail?.product?.id),
-      detail,
-    ])
-  );
-
-  for (const box of boxes) {
-    const id = Number(box.productId);
-    if (!byProduct.has(id)) {
-      const detail = existingByProductId.get(id);
-      byProduct.set(id, {
-        productId: id,
-        productName: box.productName ?? detail?.product?.name ?? '',
-        boxesCount: 0,
-        totalWeight: 0,
-        unitPrice: Number(detail?.unitPrice) || 0,
-        subtotal: 0,
-        tax: detail?.tax?.id != null ? Number(detail.tax.id) : undefined,
-      });
-    }
-    const row = byProduct.get(id);
-    row.boxesCount += 1;
-    row.totalWeight += Number(box.netWeight) || 0;
-  }
-
-  return Array.from(byProduct.values()).map((item) => ({
-    ...item,
-    subtotal: Number(item.totalWeight || 0) * Number(item.unitPrice || 0),
-  }));
 }
 
 function getOrderTypeLabel(orderType) {
@@ -316,7 +277,7 @@ function OrderSuccessStep({ order, onBackToOrders, onBackToRoute }) {
 
 export default function FieldOrderExecutionPage({ orderId }) {
   const router = useRouter();
-  const { data: order, isLoading, error } = useFieldOrder(orderId);
+  const { data: order, isLoading, errorMessage } = useFieldOrder(orderId);
   const { updateOrder, isUpdating } = useFieldOrderMutations();
   const [step, setStep] = useState(1);
   const [boxes, setBoxes] = useState([]);
@@ -346,7 +307,7 @@ export default function FieldOrderExecutionPage({ orderId }) {
   );
 
   const totalAmount = useMemo(
-    () => servedItems.reduce((sum, item) => sum + (Number(item.subtotal) || 0), 0),
+    () => calculateServedItemsTotal(servedItems),
     [servedItems]
   );
 
@@ -381,13 +342,13 @@ export default function FieldOrderExecutionPage({ orderId }) {
     return <div className="flex flex-1 items-center justify-center"><Loader /></div>;
   }
 
-  if (error || !order) {
+  if (errorMessage || !order) {
     return (
       <div className="flex flex-1 items-center justify-center">
         <EmptyState
           icon={<PackageOpen className="h-10 w-10 text-primary" />}
           title="No se pudo abrir el pedido"
-          description={error?.message ?? 'El pedido no está disponible.'}
+          description={errorMessage ?? 'El pedido no está disponible.'}
         />
       </div>
     );
@@ -412,29 +373,14 @@ export default function FieldOrderExecutionPage({ orderId }) {
   };
 
   const handleSubmit = async () => {
-    const validationError =
-      servedItems.length === 0
-        ? 'El pedido debe tener al menos un producto.'
-        : servedItems.find((item) => Number(item.totalWeight) <= 0)
-          ? `La cantidad de ${servedItems.find((item) => Number(item.totalWeight) <= 0)?.productName ?? 'un producto'} debe ser mayor que 0.`
-          : servedItems.find((item) => Number(item.boxesCount) < 0)
-            ? 'El número de cajas no puede ser negativo.'
-            : servedItems.find((item) => Number(item.unitPrice) < 0)
-              ? 'El precio no puede ser negativo.'
-              : null;
+    const validationError = validateServedItems(servedItems);
 
     if (validationError) {
       notify.error({ title: 'No se puede guardar el pedido', description: validationError });
       return;
     }
 
-    const plannedProducts = servedItems.map((item) => ({
-      product: Number(item.productId),
-      quantity: Number(item.totalWeight) || 0,
-      boxes: Number(item.boxesCount) || 0,
-      unitPrice: Number(item.unitPrice) || 0,
-      tax: item.tax != null ? Number(item.tax) : undefined,
-    }));
+    const plannedProducts = buildPlannedProductsPayload(servedItems);
 
     try {
       await notify.promise(

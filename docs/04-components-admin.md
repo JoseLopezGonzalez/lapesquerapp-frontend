@@ -801,7 +801,7 @@ Todos los componentes usan servicios de API v2:
 
 ### 4. Toast Notifications
 
-Sileo vía wrapper `notify` (título y descripción separados, posición top-center, tema dark/light automático):
+`notify` como fachada estable del sistema de toasts (título y descripción separados, posición top-center, tema dark/light automático):
 ```javascript
 import { notify } from '@/lib/notifications';
 
@@ -949,4 +949,3 @@ Componentes skeleton para mejor UX:
 - **Problema**: No se encontraron archivos de tests
 - **Impacto**: Sin garantía de que los componentes funcionen correctamente
 - **Recomendación**: Añadir tests unitarios y de integración
-

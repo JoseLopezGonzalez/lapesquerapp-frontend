@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
+import { fieldOrderKeys, fieldRouteKeys } from '@/lib/routes/queryKeys';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 import { createFieldAutoventa, getFieldOrder, getFieldOrders, updateFieldOrder } from '@/services/fieldOperatorService';
 import { useFieldOperator } from '@/context/FieldOperatorContext';
@@ -19,8 +20,8 @@ function useFieldBase() {
 
 export function useFieldOrders(params: FieldParams = {}) {
   const { token, tenantId, fieldOperatorId } = useFieldBase();
-  return useQuery({
-    queryKey: ['field', 'orders', tenantId ?? 'unknown', params],
+  const query = useQuery({
+    queryKey: fieldOrderKeys.list(tenantId, params),
     queryFn: () => getFieldOrders(token as string, params),
     enabled: Boolean(token) && Boolean(tenantId) && Boolean(fieldOperatorId),
     select: (data) => ({
@@ -29,16 +30,26 @@ export function useFieldOrders(params: FieldParams = {}) {
       links: data?.links ?? null,
     }),
   });
+
+  return {
+    ...query,
+    errorMessage: query.error instanceof Error ? query.error.message : null,
+  };
 }
 
 export function useFieldOrder(orderId: number | string | null | undefined) {
   const { token, tenantId, fieldOperatorId } = useFieldBase();
-  return useQuery({
-    queryKey: ['field', 'orders', 'detail', tenantId ?? 'unknown', orderId],
+  const query = useQuery({
+    queryKey: fieldOrderKeys.detail(tenantId, orderId),
     queryFn: () => getFieldOrder(token as string, orderId as number | string),
     enabled: Boolean(token) && Boolean(tenantId) && Boolean(fieldOperatorId) && Boolean(orderId),
     select: (data) => data?.data ?? data,
   });
+
+  return {
+    ...query,
+    errorMessage: query.error instanceof Error ? query.error.message : null,
+  };
 }
 
 export function useFieldOrderMutations() {
@@ -47,18 +58,19 @@ export function useFieldOrderMutations() {
 
   const updateMutation = useMutation<unknown, Error, { orderId: number | string; payload: FieldMutationPayload }>({
     mutationFn: ({ orderId, payload }) => updateFieldOrder(token as string, orderId, payload),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['field', 'orders', tenantId ?? 'unknown'] });
-      queryClient.invalidateQueries({ queryKey: ['field', 'orders', 'detail', tenantId ?? 'unknown', variables.orderId] });
-      queryClient.invalidateQueries({ queryKey: ['field', 'routes', tenantId ?? 'unknown'] });
+    onSuccess: (response, variables) => {
+      const updatedOrder = (response as { data?: unknown } | undefined)?.data ?? response;
+      queryClient.setQueryData(fieldOrderKeys.detail(tenantId, variables.orderId), updatedOrder);
+      queryClient.invalidateQueries({ queryKey: fieldOrderKeys.all(tenantId) });
+      queryClient.invalidateQueries({ queryKey: fieldRouteKeys.all(tenantId) });
     },
   });
 
   const autoventaMutation = useMutation<unknown, Error, FieldMutationPayload>({
     mutationFn: (payload) => createFieldAutoventa(token as string, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['field', 'orders', tenantId ?? 'unknown'] });
-      queryClient.invalidateQueries({ queryKey: ['field', 'routes', tenantId ?? 'unknown'] });
+      queryClient.invalidateQueries({ queryKey: fieldOrderKeys.all(tenantId) });
+      queryClient.invalidateQueries({ queryKey: fieldRouteKeys.all(tenantId) });
       queryClient.invalidateQueries({ queryKey: ['field', 'customers', 'options', tenantId ?? 'unknown'] });
     },
   });

@@ -1,6 +1,7 @@
 import ClientLayout from "./ClientLayout";
 import "./globals.css";
 import { Geist, Geist_Mono } from "next/font/google";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import {
   appName,
   appShortName,
@@ -149,6 +150,7 @@ export default function RootLayout({ children }) {
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background w-full`}>
         <ClientLayout>{children}</ClientLayout>
+        <SpeedInsights />
       </body>
     </html>
   );

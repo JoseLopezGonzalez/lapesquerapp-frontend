@@ -58,6 +58,13 @@ function CustomerDetail({ customerId, embedded = false }) {
   const { data: interactions, isLoading: interactionsLoading } = useCommercialInteractions({ customerId, perPage: 50 });
   const { data: offers } = useOffersList({ customerId, perPage: 50 });
   const [interactionOpen, setInteractionOpen] = useState(false);
+  const sortedInteractions = useMemo(
+    () =>
+      interactions
+        .slice()
+        .sort((a, b) => (a.occurredAt && b.occurredAt ? b.occurredAt.localeCompare(a.occurredAt) : 0)),
+    [interactions]
+  );
 
   const body = isLoading ? (
     <div className="flex min-h-0 flex-1 items-center justify-center">
@@ -157,10 +164,7 @@ function CustomerDetail({ customerId, embedded = false }) {
               <div className="flex-1 min-h-0 overflow-y-auto">
                 <div className="space-y-4">
                   <div className="relative w-full pl-1 py-2 space-y-4">
-                    {interactions
-                      .slice()
-                      .sort((a, b) => (a.occurredAt && b.occurredAt ? b.occurredAt.localeCompare(a.occurredAt) : 0))
-                      .map((interaction, index, array) => {
+                    {sortedInteractions.map((interaction, index, array) => {
                         const isLast = index === array.length - 1;
                         const typeLabel = interactionTypeLabels[interaction.type] ?? interaction.type;
                         const resultLabel = interactionResultLabels[interaction.result] ?? interaction.result;

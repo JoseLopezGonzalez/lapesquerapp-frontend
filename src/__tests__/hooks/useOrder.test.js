@@ -54,7 +54,7 @@ vi.mock('@/context/gestor-options/OrdersManagerOptionsContext', () => ({
 vi.mock('@lib/fetchWithTenant', () => ({ fetchWithTenant: vi.fn() }));
 vi.mock('@/configs/config', () => ({ API_URL_V2: 'https://api.test/v2/' }));
 
-// Mock notifications (Sileo wrapper)
+// Mock notifications wrapper
 vi.mock('@/lib/notifications', () => ({
   notify: {
     loading: vi.fn(() => 'toast-id'),

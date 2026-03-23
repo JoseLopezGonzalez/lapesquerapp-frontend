@@ -18,7 +18,7 @@ vi.mock('@/services/customerService', () => ({
   getCustomerOrderHistory: vi.fn(),
 }));
 
-// Mock notifications (Sileo wrapper)
+// Mock notifications wrapper
 vi.mock('@/lib/notifications', () => ({
   notify: { error: vi.fn() },
 }));
