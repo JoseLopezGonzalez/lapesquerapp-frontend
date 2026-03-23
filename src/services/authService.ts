@@ -1,5 +1,5 @@
 import { fetchWithTenant } from "@lib/fetchWithTenant";
-import { getSession } from "next-auth/react";
+import { getAuthToken, clearAuthTokenCache } from "@/lib/auth/getAuthToken";
 import { API_URL_V2 } from "@/configs/config";
 import type {
   RequestAccessResponse,
@@ -119,15 +119,18 @@ export async function verifyOtp(
  */
 export async function logout(): Promise<Response | { ok: boolean }> {
   try {
-    const session = await getSession();
-    if (!session?.user?.accessToken) {
+    let token: string;
+    try {
+      token = await getAuthToken();
+    } catch {
       return { ok: true };
     }
+    clearAuthTokenCache();
 
     const response = await fetchWithTenant(`${API_URL_V2}logout`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${session.user.accessToken}`,
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
     });
@@ -147,15 +150,12 @@ export async function logout(): Promise<Response | { ok: boolean }> {
  * Obtiene los datos actualizados del usuario desde el backend.
  */
 export async function getCurrentUser(): Promise<AuthUser> {
-  const session = await getSession();
-  if (!session?.user?.accessToken) {
-    throw new Error("No hay sesión autenticada");
-  }
+  const token = await getAuthToken();
 
   const response = await fetchWithTenant(`${API_URL_V2}me`, {
     method: "GET",
     headers: {
-      Authorization: `Bearer ${session.user.accessToken}`,
+      Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
   });

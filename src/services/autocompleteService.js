@@ -1,6 +1,6 @@
 // services/autocompleteService.js
 import { fetchWithTenant } from "@lib/fetchWithTenant";
-import { getSession } from "next-auth/react";
+import { getAuthToken } from "@/lib/auth/getAuthToken";
 import { API_URL_V2 } from "@/configs/config"; // Asegúrate de que esta ruta sea correcta
 import { getErrorMessage } from "@/lib/api/apiHelpers";
 import { getUserAgent } from '@/lib/utils/getUserAgent';
@@ -12,18 +12,14 @@ import { getUserAgent } from '@/lib/utils/getUserAgent';
  * @throws {Error} Si la sesión no está autenticada o si la API devuelve un error.
  */
 export const fetchAutocompleteFilterOptions = async (endpoint) => {
-    const session = await getSession(); // Obtener la sesión dentro del servicio
-
-    if (!session || !session.user || !session.user.accessToken) {
-        throw new Error("No hay sesión autenticada. No se puede obtener el token de acceso.");
-    }
+    const token = await getAuthToken();
 
     try {
         const requestOptions = {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${session.user.accessToken}`,
+                Authorization: `Bearer ${token}`,
                 'User-Agent': getUserAgent(),
             },
         };

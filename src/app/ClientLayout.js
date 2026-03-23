@@ -25,7 +25,7 @@ export default function ClientLayout({ children }) {
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
       <TooltipProvider delayDuration={0}>
         <QueryClientProvider client={getQueryClient()}>
-          <SessionProvider>
+          <SessionProvider refetchOnWindowFocus={false}>
             <SettingsProvider>
             <LogoutProvider>
               <AuthErrorInterceptor />

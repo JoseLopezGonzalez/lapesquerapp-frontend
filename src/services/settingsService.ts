@@ -5,7 +5,7 @@
 
 import { fetchWithTenant } from '@/lib/fetchWithTenant';
 import { API_URL_V2 } from '@/configs/config';
-import { getSession } from 'next-auth/react';
+import { getAuthToken } from '@/lib/auth/getAuthToken';
 import { getUserAgent } from '@/lib/utils/getUserAgent';
 import type { SettingsData, UpdateSettingsAuthError } from '@/types/settings';
 
@@ -15,15 +15,12 @@ import type { SettingsData, UpdateSettingsAuthError } from '@/types/settings';
  * @throws Error when not authenticated or request fails
  */
 export async function getSettings(): Promise<SettingsData | null> {
-  const session = await getSession();
-  if (!session?.user?.accessToken) {
-    throw new Error('No autenticado');
-  }
+  const token = await getAuthToken();
   const res = await fetchWithTenant(`${API_URL_V2}settings`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${session.user.accessToken}`,
+      Authorization: `Bearer ${token}`,
       'User-Agent': getUserAgent(),
     },
   });
@@ -43,15 +40,12 @@ export async function getSettings(): Promise<SettingsData | null> {
 export async function updateSettings(
   data: SettingsData
 ): Promise<SettingsData | UpdateSettingsAuthError> {
-  const session = await getSession();
-  if (!session?.user?.accessToken) {
-    throw new Error('No autenticado');
-  }
+  const token = await getAuthToken();
   const res = await fetchWithTenant(`${API_URL_V2}settings`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${session.user.accessToken}`,
+      Authorization: `Bearer ${token}`,
       'User-Agent': getUserAgent(),
     },
     body: JSON.stringify(data),

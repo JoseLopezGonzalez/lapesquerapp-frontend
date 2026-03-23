@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -n \"getSession\\\\|from ''next-auth\" /home/jose/brisapp-nextjs/src/services/orderService.ts)"
+    ]
+  }
+}

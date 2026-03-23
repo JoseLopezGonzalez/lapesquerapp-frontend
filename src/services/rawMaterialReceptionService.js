@@ -1,7 +1,7 @@
 // /src/services/rawMaterialReceptionService.js
 import { fetchWithTenant } from "@lib/fetchWithTenant";
 import { API_URL_V2 } from "@/configs/config";
-import { getSession } from "next-auth/react";
+import { getAuthToken } from "@/lib/auth/getAuthToken";
 import { getErrorMessage, handleServiceResponse } from "@/lib/api/apiHelpers";
 import { getUserAgent } from '@/lib/utils/getUserAgent';
 
@@ -15,11 +15,7 @@ import { getUserAgent } from '@/lib/utils/getUserAgent';
  * @returns {Promise<Object>} The created reception data returned by the API.
  */
 export const createRawMaterialReception = async (receptionPayload) => {
-    const session = await getSession();
-
-    if (!session || !session.user || !session.user.accessToken) {
-        throw new Error("No hay sesión autenticada. No se puede crear la recepción.");
-    }
+    const token = await getAuthToken();
 
     try {
         const response = await fetchWithTenant(`${API_URL_V2}raw-material-receptions`, {
@@ -27,7 +23,7 @@ export const createRawMaterialReception = async (receptionPayload) => {
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                Authorization: `Bearer ${session.user.accessToken}`,
+                Authorization: `Bearer ${token}`,
                 'User-Agent': getUserAgent(),
             },
             body: JSON.stringify(receptionPayload),
@@ -54,11 +50,7 @@ export const createRawMaterialReception = async (receptionPayload) => {
  * @returns {Promise<Object>} The updated reception data returned by the API.
  */
 export const updateRawMaterialReception = async (receptionId, receptionPayload) => {
-    const session = await getSession();
-
-    if (!session || !session.user || !session.user.accessToken) {
-        throw new Error("No hay sesión autenticada. No se puede actualizar la recepción.");
-    }
+    const token = await getAuthToken();
 
     try {
         const response = await fetchWithTenant(`${API_URL_V2}raw-material-receptions/${receptionId}`, {
@@ -66,7 +58,7 @@ export const updateRawMaterialReception = async (receptionId, receptionPayload) 
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                Authorization: `Bearer ${session.user.accessToken}`,
+                Authorization: `Bearer ${token}`,
                 'User-Agent': getUserAgent(),
             },
             body: JSON.stringify(receptionPayload),

@@ -1,18 +1,15 @@
 // services/CreateEntityService.js
 import { fetchWithTenant } from "@lib/fetchWithTenant";
-import { getSession } from "next-auth/react";
+import { getAuthToken } from "@/lib/auth/getAuthToken";
 import { getUserAgent } from '@/lib/utils/getUserAgent';
 
 const getAuthHeaders = async () => {
-    const session = await getSession();
-    if (!session || !session.user || !session.user.accessToken) {
-        throw new Error("No authenticated session found.");
-    }
+    const token = await getAuthToken();
     return {
-        Authorization: `Bearer ${session.user.accessToken}`,
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
         Accept: "application/json",
-        "User-Agent": getUserAgent(), // ✅ Compatible con cliente y servidor
+        "User-Agent": getUserAgent(),
     };
 };
 

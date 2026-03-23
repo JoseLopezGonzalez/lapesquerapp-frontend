@@ -5,7 +5,7 @@
 
 import { fetchWithTenant } from '@lib/fetchWithTenant';
 import { API_URL_V2 } from '@/configs/config';
-import { getSession } from 'next-auth/react';
+import { getAuthToken } from '@/lib/auth/getAuthToken';
 import { getErrorMessage, handleServiceResponse, ApiError } from '@/lib/api/apiHelpers';
 import { getUserAgent } from '@/lib/utils/getUserAgent';
 
@@ -651,12 +651,7 @@ export async function getTransportChartData(params: TransportChartParams): Promi
  * Creates a new order.
  */
 export const createOrder = async (orderPayload: OrderPayload): Promise<Order> => {
-  const session = await getSession();
-  const token = session?.user?.accessToken;
-
-  if (!token) {
-    throw new Error('No hay sesión autenticada. No se puede crear el pedido.');
-  }
+  const token = await getAuthToken();
 
   const response = await fetchWithTenant(`${API_URL_V2}orders`, {
     method: 'POST',
