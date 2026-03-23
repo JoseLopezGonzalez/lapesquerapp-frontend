@@ -2,14 +2,15 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { enrichStopsWithCoordinates } from '@/lib/routes/routeStops';
+import type { DeliveryRoute, RouteStop } from '@/types/field';
 
-function getNextPendingStop(stops) {
+function getNextPendingStop(stops: RouteStop[] = []) {
   return (stops ?? []).find((stop) => stop.status === 'pending') ?? null;
 }
 
-export function useFieldRouteExecutionState(route) {
-  const [stops, setStops] = useState([]);
-  const [focusedStopId, setFocusedStopId] = useState(null);
+export function useFieldRouteExecutionState(route: DeliveryRoute | null | undefined) {
+  const [stops, setStops] = useState<RouteStop[]>([]);
+  const [focusedStopId, setFocusedStopId] = useState<number | string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -54,7 +55,10 @@ export function useFieldRouteExecutionState(route) {
     [stops, focusedStop]
   );
 
-  const refreshStopsFromRoute = async (updatedRoute, preferredStopId = null) => {
+  const refreshStopsFromRoute = async (
+    updatedRoute: DeliveryRoute | null | undefined,
+    preferredStopId: number | string | null = null
+  ) => {
     const enrichedStops = await enrichStopsWithCoordinates(updatedRoute?.stops ?? []);
     setStops(enrichedStops);
 

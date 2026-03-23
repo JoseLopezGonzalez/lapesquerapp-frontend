@@ -6,7 +6,14 @@ import { buildStopsCoordinateSignature, normalizeStops } from '@/lib/routes/rout
 import type { RouteStop } from '@/types/field';
 
 export function useRouteGeometry(stops: Partial<RouteStop>[] = []) {
-  const [routeGeometry, setRouteGeometry] = useState(null);
+  const [routeGeometry, setRouteGeometry] = useState<{
+    type: string;
+    properties?: {
+      distance?: number;
+      duration?: number;
+    } | null;
+    geometry?: unknown;
+  } | null>(null);
   const [isCalculatingRoute, setIsCalculatingRoute] = useState(false);
   const [directionsError, setDirectionsError] = useState('');
 
@@ -37,7 +44,7 @@ export function useRouteGeometry(stops: Partial<RouteStop>[] = []) {
       } catch (error) {
         if (!cancelled) {
           setRouteGeometry(null);
-          setDirectionsError(error?.message ?? 'No se pudo calcular la ruta por carretera.');
+          setDirectionsError(error instanceof Error ? error.message : 'No se pudo calcular la ruta por carretera.');
           setIsCalculatingRoute(false);
         }
       }

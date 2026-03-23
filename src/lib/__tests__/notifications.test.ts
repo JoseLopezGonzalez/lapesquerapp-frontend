@@ -16,6 +16,11 @@ vi.mock("sonner", () => ({
   toast: toastMock,
 }));
 
+function getToastCallId(call: unknown[] | undefined) {
+  const options = call?.[1] as { id?: string } | undefined;
+  return options?.id;
+}
+
 describe("notify", () => {
   beforeEach(() => {
     vi.resetModules();
@@ -54,8 +59,8 @@ describe("notify", () => {
         description: "2 elementos",
       })
     );
-    expect(toastMock.success.mock.calls[0][1]?.id).toBe(
-      toastMock.loading.mock.calls[0][1]?.id
+    expect(getToastCallId(toastMock.success.mock.calls[0])).toBe(
+      getToastCallId(toastMock.loading.mock.calls[0])
     );
   });
 
@@ -105,10 +110,13 @@ describe("notify", () => {
     const { notify } = await import("@/lib/notifications");
     const onClick = vi.fn();
 
-    toastMock.warning.mockImplementation((_message, options) => {
-      options?.action?.onClick({} as never);
-      return "toast-action-id";
-    });
+    (toastMock.warning as unknown as { mockImplementation: (fn: (...args: unknown[]) => string) => void }).mockImplementation(
+      (...args: unknown[]) => {
+        const options = args[1] as { action?: { onClick?: (event: never) => void } } | undefined;
+        options?.action?.onClick?.({} as never);
+        return "toast-action-id";
+      }
+    );
 
     const id = notify.action(
       { title: "Confirmar cambio" },
@@ -145,8 +153,8 @@ describe("notify", () => {
         description: "boom",
       })
     );
-    expect(toastMock.error.mock.calls[0][1]?.id).toBe(
-      toastMock.loading.mock.calls[0][1]?.id
+    expect(getToastCallId(toastMock.error.mock.calls[0])).toBe(
+      getToastCallId(toastMock.loading.mock.calls[0])
     );
   });
 });

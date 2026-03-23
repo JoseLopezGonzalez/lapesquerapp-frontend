@@ -1,5 +1,24 @@
-type FieldOrderDetail = Record<string, unknown> & {
-  plannedProductDetails?: Array<Record<string, unknown>>;
+type FieldOrderDetailItem = {
+  product?: {
+    id?: number | string | null;
+    name?: string | null;
+  } | null;
+  boxes?: number | string | null;
+  quantity?: number | string | null;
+  unitPrice?: number | string | null;
+  tax?: {
+    id?: number | string | null;
+  } | null;
+};
+
+type FieldOrderDetail = {
+  plannedProductDetails?: FieldOrderDetailItem[];
+};
+
+type BoxItem = {
+  productId?: number | string | null;
+  productName?: string | null;
+  netWeight?: number | string | null;
 };
 
 type ServedItem = {
@@ -24,7 +43,7 @@ export function buildInitialItems(order: FieldOrderDetail | null | undefined): S
   }));
 }
 
-export function aggregateItemsFromBoxes(boxes: Record<string, unknown>[] = [], order: FieldOrderDetail | null | undefined) {
+export function aggregateItemsFromBoxes(boxes: BoxItem[] = [], order: FieldOrderDetail | null | undefined) {
   const byProduct = new Map<number, ServedItem>();
   const existingByProductId = new Map(
     (order?.plannedProductDetails ?? []).map((detail) => [Number(detail?.product?.id), detail])

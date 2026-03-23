@@ -59,7 +59,9 @@ export function useFieldRouteStopMutation(routeId: number | string | null | unde
   const mutation = useMutation<unknown, Error, { stopId: number | string; payload: StopPayload }>({
     mutationFn: ({ stopId, payload }) => updateFieldRouteStop(token as string, routeId as number | string, stopId, payload),
     onSuccess: (response) => {
-      const updatedRoute = normalizeRouteEntity((response as { data?: unknown } | undefined)?.data ?? response);
+      const updatedRoute = normalizeRouteEntity(
+        ((response as { data?: unknown } | undefined)?.data ?? response) as Partial<import('@/types/field').DeliveryRoute>
+      );
       queryClient.setQueryData(fieldRouteKeys.detail(tenantId, routeId), updatedRoute);
       queryClient.invalidateQueries({ queryKey: fieldRouteKeys.all(tenantId) });
     },

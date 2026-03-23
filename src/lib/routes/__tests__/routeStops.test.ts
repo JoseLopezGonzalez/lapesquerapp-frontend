@@ -40,8 +40,8 @@ describe('routeStops', () => {
 
   it('serializes stops for backend write payloads', () => {
     const payload = serializeStopsForWrite([
-      { id: 1, targetType: 'customer', customerId: 7, label: 'Cliente', notes: '' },
-      { id: 2, targetType: 'prospect', prospectId: 9, label: 'Prospecto' },
+      { id: 1, position: 1, targetType: 'customer', customerId: 7, label: 'Cliente', notes: '' },
+      { id: 2, position: 2, targetType: 'prospect', prospectId: 9, label: 'Prospecto' },
     ]);
 
     expect(payload).toEqual([

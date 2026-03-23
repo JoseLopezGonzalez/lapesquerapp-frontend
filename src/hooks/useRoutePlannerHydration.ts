@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import type { RouteStop } from '@/types/field';
 import {
   createEmptyRouteDraft,
   createEmptyTemplateDraft,
@@ -16,7 +17,7 @@ type PlannerEntity = Record<string, unknown> & {
   routeTemplateId?: number | string | null;
   routeTemplate?: { id?: number | string | null } | null;
   fieldOperator?: { id?: number | string | null } | null;
-  stops?: unknown[];
+  stops?: Partial<RouteStop>[];
 };
 
 export function useRoutePlannerHydration({

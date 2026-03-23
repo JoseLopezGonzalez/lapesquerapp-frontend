@@ -30,7 +30,12 @@ export function buildCommercialReferenceDates() {
   return { today, tomorrow };
 }
 
-export function enrichOrdersWithOffers(orders: CommercialOrder[] = [], offers: Record<string, unknown>[] = []) {
+type OfferReference = {
+  id?: number | string;
+  orderId?: number | string | null;
+};
+
+export function enrichOrdersWithOffers(orders: CommercialOrder[] = [], offers: OfferReference[] = []) {
   const offerByOrderId = new Map(
     (offers ?? []).filter((offer) => offer?.orderId != null).map((offer) => [String(offer.orderId), offer])
   );
@@ -96,6 +101,6 @@ export function filterAndSortCommercialOrders(
     .sort((left, right) => {
       const leftDate = new Date(String(left.loadDate ?? ''));
       const rightDate = new Date(String(right.loadDate ?? ''));
-      return leftDate - rightDate;
+      return leftDate.getTime() - rightDate.getTime();
     });
 }
