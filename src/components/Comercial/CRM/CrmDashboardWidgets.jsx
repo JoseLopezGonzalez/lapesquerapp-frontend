@@ -9,6 +9,7 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCrmDashboard } from '@/hooks/useCrmDashboard';
 import { useProspectMutations } from '@/hooks/useProspects';
+import { CRM_AGENDA_DESCRIPTION_MAX_LENGTH } from '@/components/Comercial/CRM/schemas/crmTextLimits';
 import { formatDateValue, isOverdueDate } from './utils';
 import { notify } from '@/lib/notifications';
 import QuickInteractionModal from './QuickInteractionModal';
@@ -122,11 +123,20 @@ export default function CrmDashboardWidgets() {
     if (!date) return;
     const note = window.prompt('Descripción (opcional):', item?.nextActionNote ?? '');
     try {
+      const fromPrompt = note != null ? note.trim() : null;
+      const raw =
+        fromPrompt != null && fromPrompt.length > 0
+          ? fromPrompt
+          : item?.nextActionNote != null
+            ? String(item.nextActionNote)
+            : '';
+      const nextActionNote =
+        raw.length > 0 ? raw.slice(0, CRM_AGENDA_DESCRIPTION_MAX_LENGTH) : null;
       await notify.promise(
         scheduleAction.mutateAsync({
           id: item.prospectId,
           nextActionAt: date,
-          nextActionNote: note != null && note.trim() ? note.trim() : (item?.nextActionNote ?? null),
+          nextActionNote,
         }),
         {
           loading: 'Reprogramando acción...',

@@ -20,6 +20,7 @@ import { useCountriesList } from '@/hooks/useCountriesList';
 import { useProspectMutations } from '@/hooks/useProspects';
 import { format } from 'date-fns';
 import { prospectOriginOptions } from './utils';
+import { CRM_AGENDA_DESCRIPTION_MAX_LENGTH } from './schemas/crmTextLimits';
 import {
   getProspectFormSchema,
   getDefaultProspectFormValues,
@@ -85,7 +86,9 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
       commercialInterestNotes: values.commercialInterestNotes.trim() || null,
       nextActionAt:
         values.scheduleNextAction && values.nextActionAt ? format(values.nextActionAt, 'yyyy-MM-dd') : null,
-      nextActionNote: values.scheduleNextAction ? values.nextActionNote.trim().slice(0, 255) || null : null,
+      nextActionNote: values.scheduleNextAction
+        ? values.nextActionNote.trim().slice(0, CRM_AGENDA_DESCRIPTION_MAX_LENGTH) || null
+        : null,
       speciesInterest: values.speciesInterest
         .split(',')
         .map((value) => value.trim())
@@ -360,7 +363,7 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
                         <Input
                           id="next-action-note"
                           placeholder="Enviar oferta, volver a llamar, preparar muestra..."
-                          maxLength={255}
+                          maxLength={CRM_AGENDA_DESCRIPTION_MAX_LENGTH}
                           aria-invalid={errors.nextActionNote ? 'true' : undefined}
                           {...register('nextActionNote')}
                         />

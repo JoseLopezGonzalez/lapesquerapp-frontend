@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { prospectOriginOptions } from '../utils';
+import { CRM_AGENDA_DESCRIPTION_MAX_LENGTH } from './crmTextLimits';
 
 const originValues = prospectOriginOptions.map((o) => o.value);
 
@@ -42,7 +43,10 @@ export function getProspectFormSchema(isEditing: boolean) {
         .max(5000, 'Máximo 5.000 caracteres')
         .refine((s) => s.trim().length > 0, 'El interés comercial es obligatorio'),
       nextActionAt: z.date().nullable().optional(),
-      nextActionNote: z.string().max(255, 'Máximo 255 caracteres').default(''),
+      nextActionNote: z
+        .string()
+        .max(CRM_AGENDA_DESCRIPTION_MAX_LENGTH, `Máximo ${CRM_AGENDA_DESCRIPTION_MAX_LENGTH} caracteres`)
+        .default(''),
       /** Si es true, debe indicarse fecha de próxima acción. */
       scheduleNextAction: z.boolean().default(false),
       speciesInterest: z.string().max(5000, 'Máximo 5.000 caracteres').default(''),
@@ -141,7 +145,8 @@ export function prospectFormValuesFromInitial(initialData: Record<string, unknow
   const species = initialData.speciesInterest;
   const speciesStr = Array.isArray(species) ? species.join(', ') : '';
   const nextActionAt = initialData.nextActionAt ? new Date(String(initialData.nextActionAt)) : null;
-  const nextActionNote = typeof initialData.nextActionNote === 'string' ? initialData.nextActionNote : '';
+  const nextActionNoteRaw = typeof initialData.nextActionNote === 'string' ? initialData.nextActionNote : '';
+  const nextActionNote = nextActionNoteRaw.slice(0, CRM_AGENDA_DESCRIPTION_MAX_LENGTH);
   const scheduleNextAction = Boolean(nextActionAt || nextActionNote.trim());
 
   return {

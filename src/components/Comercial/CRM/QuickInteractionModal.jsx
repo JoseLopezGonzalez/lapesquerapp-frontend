@@ -16,6 +16,7 @@ import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
 import { useCommercialInteractionMutations } from '@/hooks/useCommercialInteractions';
 import { format } from 'date-fns';
 import { formatDateValue, interactionResultOptions, interactionTypeOptions } from './utils';
+import { CRM_AGENDA_DESCRIPTION_MAX_LENGTH, CRM_INTERACTION_SUMMARY_MAX_LENGTH } from './schemas/crmTextLimits';
 import { getQuickInteractionDefaultValues, getQuickInteractionFormSchema } from './schemas/quickInteractionFormSchema';
 
 function ToggleGroup({ value, onChange, options }) {
@@ -152,9 +153,11 @@ function QuickInteractionModalInner({
       ...(agendaActionId ? { agendaActionId } : {}),
       type: values.type,
       occurredAt: values.occurredAt.toISOString(),
-      summary: values.summary.trim(),
+      summary: values.summary.trim().slice(0, CRM_INTERACTION_SUMMARY_MAX_LENGTH),
       result: values.result,
-      nextActionNote: shouldSendNextAction ? values.nextActionNote.trim() || null : null,
+      nextActionNote: shouldSendNextAction
+        ? values.nextActionNote.trim().slice(0, CRM_AGENDA_DESCRIPTION_MAX_LENGTH) || null
+        : null,
       nextActionAt: shouldSendNextAction && values.nextActionAt ? format(values.nextActionAt, 'yyyy-MM-dd') : null,
     };
 
@@ -236,6 +239,7 @@ function QuickInteractionModalInner({
             <Textarea
               id="interaction-summary"
               rows={3}
+              maxLength={CRM_INTERACTION_SUMMARY_MAX_LENGTH}
               placeholder="Qué se ha hablado, qué ha pedido o qué queda pendiente"
               aria-invalid={errors.summary ? 'true' : undefined}
               {...register('summary')}
@@ -318,6 +322,7 @@ function QuickInteractionModalInner({
                     <Textarea
                       id="next-action-note"
                       rows={2}
+                      maxLength={CRM_AGENDA_DESCRIPTION_MAX_LENGTH}
                       placeholder="Enviar oferta, volver a llamar, preparar muestra..."
                       aria-invalid={errors.nextActionNote ? 'true' : undefined}
                       {...register('nextActionNote')}

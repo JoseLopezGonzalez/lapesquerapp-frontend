@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { interactionResultOptions, interactionTypeOptions } from '../utils';
+import { CRM_AGENDA_DESCRIPTION_MAX_LENGTH, CRM_INTERACTION_SUMMARY_MAX_LENGTH } from './crmTextLimits';
 
 function asEnumTuple(values: string[]) {
   return values as [string, ...string[]];
@@ -14,7 +15,11 @@ export function getQuickInteractionFormSchema(isCompleteMode: boolean) {
       type: z.enum(interactionTypeValues, { required_error: 'Selecciona un tipo' }),
       result: z.enum(interactionResultValues, { required_error: 'Selecciona un resultado' }),
       occurredAt: z.date(),
-      summary: z.string().trim().min(1, 'El resumen es obligatorio').max(5000, 'Máximo 5000 caracteres'),
+      summary: z
+        .string()
+        .trim()
+        .min(1, 'El resumen es obligatorio')
+        .max(CRM_INTERACTION_SUMMARY_MAX_LENGTH, `Máximo ${CRM_INTERACTION_SUMMARY_MAX_LENGTH} caracteres`),
 
       // create mode
       noNextAction: z.boolean().default(false),
@@ -23,7 +28,10 @@ export function getQuickInteractionFormSchema(isCompleteMode: boolean) {
       scheduleNextAction: z.boolean().default(false),
 
       nextActionAt: z.date().nullable().optional(),
-      nextActionNote: z.string().max(2000, 'Máximo 2000 caracteres').default(''),
+      nextActionNote: z
+        .string()
+        .max(CRM_AGENDA_DESCRIPTION_MAX_LENGTH, `Máximo ${CRM_AGENDA_DESCRIPTION_MAX_LENGTH} caracteres`)
+        .default(''),
     })
     .superRefine((data, ctx) => {
       if (isCompleteMode && data.result === 'not_interested') return;
@@ -59,7 +67,9 @@ export function getQuickInteractionDefaultValues({
     noNextAction: isCompleteMode,
     scheduleNextAction: false,
     nextActionAt: isCompleteMode ? null : (defaultNextActionDate ? new Date(defaultNextActionDate) : null),
-    nextActionNote: isCompleteMode ? '' : defaultNextActionNote ?? '',
+    nextActionNote: isCompleteMode
+      ? ''
+      : (defaultNextActionNote ?? '').slice(0, CRM_AGENDA_DESCRIPTION_MAX_LENGTH),
   };
 }
 
