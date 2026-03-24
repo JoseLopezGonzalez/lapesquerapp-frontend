@@ -38,6 +38,8 @@ function patchProspectFromPayload(
   return {
     ...currentProspect,
     companyName: payload.companyName ?? currentProspect.companyName,
+    address: 'address' in payload ? payload.address ?? null : currentProspect.address,
+    website: 'website' in payload ? payload.website ?? null : currentProspect.website,
     countryId: payload.countryId ?? currentProspect.countryId,
     speciesInterest: payload.speciesInterest ?? currentProspect.speciesInterest,
     origin: payload.origin ?? currentProspect.origin,

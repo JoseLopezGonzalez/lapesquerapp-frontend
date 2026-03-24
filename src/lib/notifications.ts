@@ -88,6 +88,26 @@ function buildToastOptions(opts: NotifyOptions | undefined): ExternalToast {
   return out;
 }
 
+function getVariantIconClass(variant: "success" | "error" | "warning" | "info"): string {
+  if (variant === "success") return "text-green-500";
+  if (variant === "error") return "text-destructive";
+  if (variant === "warning") return "text-yellow-500";
+  return "text-violet-500";
+}
+
+function withVariantClassNames(
+  variant: "success" | "error" | "warning" | "info",
+  options: ExternalToast
+): ExternalToast {
+  return {
+    ...options,
+    classNames: {
+      ...options.classNames,
+      icon: [options.classNames?.icon, getVariantIconClass(variant)].filter(Boolean).join(" "),
+    },
+  };
+}
+
 function createOrReuseToast(
   variant: "success" | "error" | "warning" | "info" | "loading" | "message",
   message: NotifyMessage,
@@ -110,13 +130,17 @@ function createOrReuseToast(
   const toastOptions = buildToastOptions(
     description === undefined ? resolvedOptions : { ...resolvedOptions, description }
   );
+  const finalToastOptions =
+    variant === "success" || variant === "error" || variant === "warning" || variant === "info"
+      ? withVariantClassNames(variant, toastOptions)
+      : toastOptions;
   const method =
     variant === "message"
       ? toast
       : variant === "loading"
         ? toast.loading
         : toast[variant];
-  const id = method(title, toastOptions);
+  const id = method(title, finalToastOptions);
   rememberDedupeKey(resolvedOptions?.dedupeKey, id);
   return id;
 }
@@ -187,41 +211,48 @@ export const notify = {
     },
     options?: NotifyOptions
   ): Promise<T> {
-    const toastId = createPromiseId(options);
     const promiseFn = typeof promise === "function" ? promise : () => promise;
     const task = promiseFn();
-    const baseOptions = buildToastOptions({ ...options, id: toastId });
+    const toastId = createPromiseId(options);
+    const loadingContent = toContent(
+      typeof messages.loading === "string" ? { title: messages.loading } : messages.loading
+    );
 
     rememberDedupeKey(options?.dedupeKey, toastId);
-    toast.promise(task, {
-      ...baseOptions,
-      loading:
-        typeof messages.loading === "string"
-          ? messages.loading
-          : messages.loading.title,
-      description:
-        typeof messages.loading === "string"
-          ? baseOptions.description
-          : messages.loading.description ?? baseOptions.description,
-      success: (data) => {
+    toast.loading(
+      loadingContent.title,
+      buildToastOptions(
+        loadingContent.description === undefined
+          ? { ...options, id: toastId }
+          : { ...options, id: toastId, description: loadingContent.description }
+      )
+    );
+
+    return task
+      .then((data) => {
         const success = toPromiseMessage(
           messages.success,
           data,
           { title: "Operacion completada" }
         );
-        return typeof success === "string" ? success : success.title;
-      },
-      error: (err) => {
+        notify.success(success, {
+          ...options,
+          id: toastId,
+        });
+        return data;
+      })
+      .catch((err) => {
         const errorMessage = toPromiseMessage(
           messages.error,
           err,
           { title: "Error", description: "Ha ocurrido un error. Intente de nuevo." }
         );
-        return typeof errorMessage === "string" ? errorMessage : errorMessage.title;
-      },
-    });
-
-    return task;
+        notify.error(errorMessage, {
+          ...options,
+          id: toastId,
+        });
+        throw err;
+      });
   },
 
   /**

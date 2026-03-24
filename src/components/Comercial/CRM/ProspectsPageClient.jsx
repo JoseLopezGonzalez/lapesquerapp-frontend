@@ -1,8 +1,9 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,11 +12,26 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import Loader from '@/components/Utilities/Loader';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useDebounce } from '@/hooks/useDebounce';
 import { useProspectsList } from '@/hooks/useProspects';
-import ProspectFormSheet from './ProspectFormSheet';
-import ProspectDetail from './ProspectDetail';
 import StatusPill from './StatusPill';
 import { isOverdueDate, prospectStatusLabels } from './utils';
+
+const ProspectFormSheet = dynamic(() => import('./ProspectFormSheet'), {
+  loading: () => null,
+  ssr: false,
+});
+
+const ProspectDetail = dynamic(() => import('./ProspectDetail'), {
+  loading: () => (
+    <div className="flex min-h-[360px] w-full items-center justify-center rounded-xl border bg-muted/20">
+      <Loader />
+    </div>
+  ),
+  ssr: false,
+});
+
+const PROSPECTS_PER_PAGE = 12;
 
 const FILTER_TABS = [
   { label: 'Todos', value: 'all' },
@@ -27,6 +43,9 @@ const FILTER_TABS = [
 
 function ProspectCard({ prospect, selected, onClick }) {
   const overdue = isOverdueDate(prospect.nextActionAt);
+  const addressLine = prospect.address?.trim() ?? '';
+  const websiteLine = prospect.website?.trim() ?? '';
+  const ariaExtras = [prospect.country?.name, addressLine, websiteLine].filter(Boolean).join(' · ');
 
   return (
     <Card
@@ -38,7 +57,7 @@ function ProspectCard({ prospect, selected, onClick }) {
       onClick={onClick}
       role="button"
       tabIndex={0}
-      aria-label={`${prospect.companyName}${prospect.country?.name ? ` - ${prospect.country.name}` : ''}`}
+      aria-label={ariaExtras ? `${prospect.companyName} - ${ariaExtras}` : prospect.companyName}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
@@ -58,6 +77,16 @@ function ProspectCard({ prospect, selected, onClick }) {
 
           <div>
             <p className="text-sm text-muted-foreground truncate">{prospect.country?.name ?? 'Sin país'}</p>
+            {addressLine ? (
+              <p className="text-xs text-muted-foreground/90 line-clamp-2" title={addressLine}>
+                {addressLine}
+              </p>
+            ) : null}
+            {websiteLine ? (
+              <p className="text-xs text-muted-foreground/90 truncate" title={websiteLine}>
+                {websiteLine}
+              </p>
+            ) : null}
           </div>
 
           <div className="flex items-center gap-4 flex-wrap">
@@ -75,36 +104,33 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
   const isMobile = useIsMobile();
   const router = useRouter();
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 350);
   const [status, setStatus] = useState('all');
+  const [page, setPage] = useState(1);
   const [formOpen, setFormOpen] = useState(forceCreate);
-  const { data: prospects, isLoading } = useProspectsList({
+  const searchParam = debouncedSearch.trim() || undefined;
+  const { data: prospects, isLoading, meta } = useProspectsList({
     status: status !== 'all' ? [status] : undefined,
-    perPage: 100,
+    perPage: PROSPECTS_PER_PAGE,
+    page,
+    search: searchParam,
   });
   const [selectedId, setSelectedId] = useState(initialProspectId);
-  const normalizedSearch = search.trim().toLowerCase();
+  const hasActiveSearch = Boolean(searchParam);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchParam, status]);
 
   const orderedProspects = useMemo(
     () =>
-      prospects
-        .filter((prospect) => {
-          if (!normalizedSearch) return true;
-
-          const searchableValues = [
-            prospect.companyName,
-            prospect.primaryContact?.name,
-            prospect.country?.name,
-          ];
-
-          return searchableValues.some((value) => String(value ?? '').toLowerCase().includes(normalizedSearch));
-        })
-        .sort((a, b) => {
+      [...prospects].sort((a, b) => {
         if (a.nextActionAt && !b.nextActionAt) return -1;
         if (!a.nextActionAt && b.nextActionAt) return 1;
         if (a.nextActionAt && b.nextActionAt) return a.nextActionAt.localeCompare(b.nextActionAt);
         return a.companyName.localeCompare(b.companyName);
       }),
-    [prospects, normalizedSearch]
+    [prospects]
   );
 
   useEffect(() => {
@@ -161,7 +187,7 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
             <InputGroupInput
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Buscar por empresa"
+              placeholder="Buscar por empresa, dirección o web"
             />
             <InputGroupAddon>
               <Search className="size-4" />
@@ -187,31 +213,67 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
 
         <div className="grid min-h-0 flex-1 gap-4 overflow-hidden md:grid-cols-[360px_minmax(0,1fr)]">
           <Card className="min-h-0 overflow-hidden">
-            <div className="h-full overflow-y-auto">
+            <div className="flex h-full min-h-0 flex-col overflow-hidden">
               {isLoading ? (
                 <div className="flex h-full min-h-0 w-full items-center justify-center p-4">
                   <Loader />
                 </div>
               ) : orderedProspects.length === 0 ? (
-                <div className="flex h-full min-h-0 w-full p-4">
+                <div className="flex h-full min-h-0 w-full overflow-y-auto p-4">
                   <EmptyState
-                    title="Aún no tienes prospectos registrados"
-                    description={normalizedSearch ? 'No hay prospectos que coincidan con la búsqueda actual.' : 'Crea el primero para empezar a alimentar la agenda comercial.'}
+                    title={hasActiveSearch ? 'No hay resultados' : 'Aún no tienes prospectos registrados'}
+                    description={
+                      hasActiveSearch
+                        ? 'Prueba con otro término o cambia el filtro de estado.'
+                        : 'Crea el primero para empezar a alimentar la agenda comercial.'
+                    }
                     className="h-full w-full border bg-muted/20 !min-h-0"
                     button={{ name: 'Nuevo prospecto', onClick: () => setFormOpen(true) }}
                   />
                 </div>
               ) : (
-                <div className="space-y-3 p-4">
-                  {orderedProspects.map((prospect) => (
-                    <ProspectCard
-                      key={prospect.id}
-                      prospect={prospect}
-                      selected={!isMobile && String(selectedId) === String(prospect.id)}
-                      onClick={() => handleSelect(prospect.id)}
-                    />
-                  ))}
-                </div>
+                <>
+                  <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
+                    {orderedProspects.map((prospect) => (
+                      <ProspectCard
+                        key={prospect.id}
+                        prospect={prospect}
+                        selected={!isMobile && String(selectedId) === String(prospect.id)}
+                        onClick={() => handleSelect(prospect.id)}
+                      />
+                    ))}
+                  </div>
+                  {meta.last_page > 1 && (
+                    <div className="flex shrink-0 items-center justify-between gap-2 border-t px-4 py-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={page <= 1 || isLoading}
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        aria-label="Página anterior"
+                      >
+                        <ChevronLeft className="size-4" />
+                        Anterior
+                      </Button>
+                      <span className="text-center text-xs text-muted-foreground sm:text-sm">
+                        Página {meta.current_page} de {meta.last_page}
+                        {meta.total != null ? ` · ${meta.total} en total` : ''}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={page >= meta.last_page || isLoading}
+                        onClick={() => setPage((p) => p + 1)}
+                        aria-label="Página siguiente"
+                      >
+                        Siguiente
+                        <ChevronRight className="size-4" />
+                      </Button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </Card>

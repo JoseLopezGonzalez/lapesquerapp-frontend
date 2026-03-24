@@ -2,12 +2,11 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { Phone, Mail, MessageCircle, MapPin, CircleDot, MoreVertical, Pencil, UserPlus, Trash2, Plus, UserRound, FilePlus, CalendarClock } from 'lucide-react';
+import { Phone, Mail, MessageCircle, MapPin, CircleDot, MoreVertical, Pencil, UserPlus, Trash2, Plus, UserRound, FilePlus, CalendarClock, Globe } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -18,7 +17,16 @@ import { useOffersList } from '@/hooks/useOffers';
 import ProspectFormSheet from './ProspectFormSheet';
 import QuickInteractionModal from './QuickInteractionModal';
 import StatusPill from './StatusPill';
-import { formatDateTimeValue, formatDateValue, interactionResultLabels, interactionTypeLabels, offerStatusLabels, prospectOriginOptions, prospectStatusLabels } from './utils';
+import {
+  formatDateTimeValue,
+  formatDateValue,
+  interactionResultLabels,
+  interactionTypeLabels,
+  offerStatusLabels,
+  prospectOriginOptions,
+  prospectStatusLabels,
+  prospectWebsiteToHref,
+} from './utils';
 import { notify } from '@/lib/notifications';
 import Loader from '@/components/Utilities/Loader';
 import {
@@ -27,6 +35,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import ProspectContactFormDialog from './ProspectContactFormDialog';
 
 const interactionTypeIcons = {
   call: Phone,
@@ -61,21 +70,34 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
     perPage: 50,
     enabled: shouldLoadOffers,
   });
-  const { convertProspect, updateProspect, createContact, updateContact, deleteContact } = useProspectMutations();
+  const { convertProspect, updateProspect, deleteContact } = useProspectMutations();
   const [editOpen, setEditOpen] = useState(false);
   const [interactionOpen, setInteractionOpen] = useState(false);
   const [discardOpen, setDiscardOpen] = useState(false);
   const [lostReason, setLostReason] = useState('');
-  const [contactDraft, setContactDraft] = useState({ name: '', role: '', phone: '', email: '', isPrimary: false });
   const [editingContactId, setEditingContactId] = useState(null);
   const [contactFormOpen, setContactFormOpen] = useState(false);
 
   useEffect(() => {
     setActiveTab('data');
     setEditingContactId(null);
-    setContactDraft({ name: '', role: '', phone: '', email: '', isPrimary: false });
     setContactFormOpen(false);
   }, [prospectId]);
+
+  const editingContact = useMemo(() => {
+    if (editingContactId == null) return null;
+    return contacts.find((contact) => String(contact.id) === String(editingContactId)) ?? null;
+  }, [contacts, editingContactId]);
+
+  const encodedProspectAddress = useMemo(() => {
+    const address = prospect?.address?.trim() ?? '';
+    return address ? encodeURIComponent(address) : '';
+  }, [prospect?.address]);
+
+  const prospectMapUrl = useMemo(() => {
+    if (!encodedProspectAddress) return '';
+    return `https://www.google.com/maps?q=${encodedProspectAddress}&z=13&output=embed`;
+  }, [encodedProspectAddress]);
 
   const body = useMemo(() => {
     if (isLoading) {
@@ -93,6 +115,9 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
     const originLabel =
       prospectOriginOptions.find((option) => option.value === prospect.origin)?.label ??
       (prospect.origin ? String(prospect.origin) : 'Sin origen');
+
+    const websiteTrim = prospect.website?.trim() ?? '';
+    const websiteHref = websiteTrim ? prospectWebsiteToHref(websiteTrim) : null;
 
     const orderedContacts = [...contacts].sort((a, b) => {
       const primaryDiff = Number(Boolean(b.isPrimary)) - Number(Boolean(a.isPrimary));
@@ -143,7 +168,6 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
                     onClick={() => {
                       setActiveTab('contacts');
                       setEditingContactId(null);
-                      setContactDraft({ name: '', role: '', phone: '', email: '', isPrimary: false });
                       setContactFormOpen(true);
                     }}
                   >
@@ -195,29 +219,215 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
               <TabsTrigger value="offers">Ofertas</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="data" className="flex h-full w-full min-w-0 min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="rounded-xl border p-4">
-                  <p className="text-sm text-muted-foreground">Origen</p>
-                  <p className="font-medium">{originLabel}</p>
+            <TabsContent value="data" className="flex h-full w-full min-w-0 min-h-0 flex-1 flex-col pt-1">
+              <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border bg-card">
+                <div className="min-h-0 flex-1 overflow-y-auto p-4">
+                  <div className="flex flex-col gap-4">
+                    <div className="overflow-hidden rounded-2xl border bg-card">
+                      <div className="grid gap-0 lg:grid-cols-[minmax(0,1.15fr)_minmax(340px,0.85fr)]">
+                        <div className="space-y-5 p-5">
+                          <div className="space-y-2">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <StatusPill label={prospectStatusLabels[prospect.status] ?? prospect.status} status={prospect.status} />
+                              <span className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Ficha comercial</span>
+                            </div>
+                            <div>
+                              <p className="text-sm text-muted-foreground">Lectura rápida del prospecto para decidir el siguiente movimiento comercial.</p>
+                            </div>
+                          </div>
+
+                          <div className="overflow-hidden rounded-xl border">
+                            <div className="grid divide-y sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+                              <div className="flex items-start gap-3 px-4 py-3">
+                                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                                  <UserRound className="size-4" />
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-xs text-muted-foreground">Origen</p>
+                                  <p className="mt-1 text-sm font-medium text-foreground">{originLabel}</p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-start gap-3 px-4 py-3">
+                                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                                  <MapPin className="size-4" />
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-xs text-muted-foreground">País</p>
+                                  <p className="mt-1 text-sm font-medium text-foreground">{prospect.country?.name ?? 'Sin país'}</p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-start gap-3 px-4 py-3">
+                                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                                  <UserPlus className="size-4" />
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-xs text-muted-foreground">Contacto principal</p>
+                                  <p className="mt-1 text-sm font-medium text-foreground">{prospect.primaryContact?.name ?? '-'}</p>
+                                  {prospect.primaryContact?.role ? (
+                                    <p className="text-xs text-muted-foreground">{prospect.primaryContact.role}</p>
+                                  ) : null}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="divide-y border-t">
+                              <div className="flex items-start gap-3 px-4 py-3">
+                                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                                  <Globe className="size-4" />
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-xs text-muted-foreground">Sitio web</p>
+                                  <div className="mt-1 text-sm">
+                                    {websiteTrim ? (
+                                      websiteHref ? (
+                                        <a
+                                          href={websiteHref}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="font-medium text-primary underline-offset-4 hover:underline break-all"
+                                        >
+                                          {websiteTrim}
+                                        </a>
+                                      ) : (
+                                        <span className="break-all whitespace-pre-wrap text-foreground">{websiteTrim}</span>
+                                      )
+                                    ) : (
+                                      <span className="text-muted-foreground">Sin sitio web</span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex items-start gap-3 px-4 py-3">
+                                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                                  <MapPin className="size-4" />
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-xs text-muted-foreground">Dirección</p>
+                                  <p className="mt-1 text-sm leading-6 whitespace-pre-wrap text-foreground">
+                                    {prospect.address?.trim() ? prospect.address : <span className="text-muted-foreground">Sin dirección</span>}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <section className="overflow-hidden border-t bg-muted/15 lg:border-t-0 lg:border-l">
+                          {prospectMapUrl ? (
+                            <iframe
+                              width="100%"
+                              height="100%"
+                              style={{ border: 0 }}
+                              loading="lazy"
+                              allowFullScreen
+                              src={prospectMapUrl}
+                              title={`Mapa de ${prospect.companyName}`}
+                              className="min-h-[320px] w-full"
+                            />
+                          ) : (
+                            <div className="flex min-h-[320px] items-center justify-center px-6 text-center text-sm text-muted-foreground">
+                              Añade una dirección para mostrar la ubicación del prospecto.
+                            </div>
+                          )}
+                        </section>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.85fr)]">
+                      <section
+                        className={`rounded-2xl border p-5 ${
+                          prospect.nextActionAt
+                            ? 'border-amber-200 bg-amber-50/80 dark:border-amber-800 dark:bg-amber-950/10'
+                            : 'bg-card'
+                        }`}
+                      >
+                        <div className="space-y-4">
+                          <div className="flex items-start gap-3">
+                            <div
+                              className={`flex size-10 shrink-0 items-center justify-center rounded-xl ${
+                                prospect.nextActionAt
+                                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400'
+                                  : 'bg-muted text-muted-foreground'
+                              }`}
+                            >
+                              <CalendarClock className="size-5" />
+                            </div>
+                            <div className="min-w-0 space-y-1">
+                              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Próxima acción</p>
+                              <h3 className="text-lg font-semibold tracking-tight text-foreground">
+                                {prospect.nextActionAt ? formatDateValue(prospect.nextActionAt) : 'Sin agenda activa'}
+                              </h3>
+                            </div>
+                          </div>
+                          <p className="text-sm leading-7 whitespace-pre-wrap text-foreground">
+                            {prospect.nextActionNote?.trim()
+                              ? prospect.nextActionNote
+                              : 'Este prospecto todavía no tiene una acción comercial planificada. Conviene registrar una siguiente acción para mantener el seguimiento vivo y que el equipo comercial tenga un punto claro de entrada.'}
+                          </p>
+                          <div className="rounded-xl border border-border/70 bg-background/70 p-3">
+                            <p className="text-xs font-medium text-foreground">Lectura operativa</p>
+                            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                              {prospect.nextActionAt
+                                ? 'Hay una siguiente acción definida. Este bloque debe servir como foco operativo principal dentro de la ficha.'
+                                : 'No hay próxima acción definida. Este es el siguiente dato que más valor aporta para activar seguimiento comercial.'}
+                            </p>
+                          </div>
+                        </div>
+                      </section>
+
+                      <div className="space-y-4">
+                        <section className="rounded-2xl border bg-card p-5">
+                          <div className="space-y-3">
+                            <div className="space-y-1">
+                              <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">Resumen comercial</p>
+                              <h3 className="text-lg font-semibold tracking-tight text-foreground">Interés y encaje del prospecto</h3>
+                            </div>
+                            <p className="text-sm leading-7 whitespace-pre-wrap text-foreground">
+                              {prospect.commercialInterestNotes || (
+                                <span className="text-muted-foreground">Todavía no hay contexto comercial registrado para este prospecto.</span>
+                              )}
+                            </p>
+                          </div>
+                        </section>
+
+                        <section className="rounded-2xl border bg-card p-4">
+                          <div className="space-y-3">
+                            <div>
+                              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Especies de interés</p>
+                            </div>
+                            {prospect.speciesInterest?.length ? (
+                              <div className="flex flex-wrap gap-2">
+                                {prospect.speciesInterest.map((species) => (
+                                  <span
+                                    key={species}
+                                    className="inline-flex items-center rounded-full border border-primary/15 bg-primary/8 px-2.5 py-1 text-xs font-medium text-primary"
+                                  >
+                                    {species}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-sm text-muted-foreground">Sin especies definidas</p>
+                            )}
+                          </div>
+                        </section>
+
+                        <section className="rounded-2xl border bg-muted/25 p-4">
+                          <div className="space-y-2">
+                            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Notas internas</p>
+                            <p className="text-sm leading-6 whitespace-pre-wrap text-muted-foreground">
+                              {prospect.notes || 'Sin notas internas'}
+                            </p>
+                          </div>
+                        </section>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="rounded-xl border p-4">
-                  <p className="text-sm text-muted-foreground">Próxima acción</p>
-                  <p className="font-medium">{prospect.nextActionAt ? formatDateValue(prospect.nextActionAt) : 'Sin agenda'}{prospect.nextActionNote ? ` · ${prospect.nextActionNote}` : ''}</p>
-                </div>
-              </div>
-              <div className="rounded-xl border p-4">
-                <p className="text-sm text-muted-foreground mb-1">Especies de interés</p>
-                <p>{prospect.speciesInterest?.length ? prospect.speciesInterest.join(', ') : 'Sin definir'}</p>
-              </div>
-              <div className="rounded-xl border p-4">
-                <p className="text-sm text-muted-foreground mb-1">Interés comercial</p>
-                <p className="whitespace-pre-wrap">{prospect.commercialInterestNotes || 'Sin notas comerciales'}</p>
-              </div>
-              <div className="rounded-xl border p-4">
-                <p className="text-sm text-muted-foreground mb-1">Notas internas</p>
-                <p className="whitespace-pre-wrap">{prospect.notes || 'Sin notas'}</p>
-              </div>
+              </section>
             </TabsContent>
 
             <TabsContent value="contacts" className="flex h-full w-full min-w-0 min-h-0 flex-1 flex-col overflow-hidden">
@@ -267,13 +477,6 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
                                   aria-label="Editar contacto"
                                   onClick={() => {
                                     setEditingContactId(contact.id);
-                                    setContactDraft({
-                                      name: contact.name ?? '',
-                                      role: contact.role ?? '',
-                                      phone: contact.phone ?? '',
-                                      email: contact.email ?? '',
-                                      isPrimary: Boolean(contact.isPrimary),
-                                    });
                                     setContactFormOpen(true);
                                   }}
                                 >
@@ -298,7 +501,6 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
                                       );
                                       if (String(editingContactId) === String(contact.id)) {
                                         setEditingContactId(null);
-                                        setContactDraft({ name: '', role: '', phone: '', email: '', isPrimary: false });
                                       }
                                     } catch {}
                                   }}
@@ -436,6 +638,7 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
     offers,
     offersLoading,
     prospect,
+    prospectMapUrl,
   ]);
 
   return (
@@ -452,125 +655,15 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
         defaultNextActionDate={prospect?.nextActionAt ?? null}
         defaultNextActionNote={prospect?.nextActionNote ?? ''}
       />
-
-      <Dialog
+      <ProspectContactFormDialog
         open={contactFormOpen}
         onOpenChange={(open) => {
           setContactFormOpen(open);
-          if (!open) {
-            setEditingContactId(null);
-            setContactDraft({ name: '', role: '', phone: '', email: '', isPrimary: false });
-          }
+          if (!open) setEditingContactId(null);
         }}
-      >
-        <DialogContent size="md">
-          <DialogHeader>
-            <DialogTitle>{editingContactId ? 'Editar contacto' : 'Añadir contacto'}</DialogTitle>
-            <DialogDescription>
-              Puedes registrar varios contactos. Solo uno quedará como principal.
-            </DialogDescription>
-          </DialogHeader>
-          {prospect && (
-            <>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="grid gap-2">
-                  <Label htmlFor="contact-name">Nombre</Label>
-                  <Input
-                    id="contact-name"
-                    value={contactDraft.name}
-                    onChange={(event) => setContactDraft((current) => ({ ...current, name: event.target.value }))}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="contact-role">Cargo</Label>
-                  <Input
-                    id="contact-role"
-                    value={contactDraft.role}
-                    onChange={(event) => setContactDraft((current) => ({ ...current, role: event.target.value }))}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="contact-phone">Teléfono</Label>
-                  <Input
-                    id="contact-phone"
-                    value={contactDraft.phone}
-                    onChange={(event) => setContactDraft((current) => ({ ...current, phone: event.target.value }))}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="contact-email">Email</Label>
-                  <Input
-                    id="contact-email"
-                    value={contactDraft.email}
-                    onChange={(event) => setContactDraft((current) => ({ ...current, email: event.target.value }))}
-                  />
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <label className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <input
-                    type="checkbox"
-                    checked={contactDraft.isPrimary}
-                    onChange={(event) => setContactDraft((current) => ({ ...current, isPrimary: event.target.checked }))}
-                  />
-                  Marcar como principal
-                </label>
-              </div>
-              <DialogFooter>
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setEditingContactId(null);
-                    setContactDraft({ name: '', role: '', phone: '', email: '', isPrimary: false });
-                    setContactFormOpen(false);
-                  }}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  onClick={async () => {
-                    if (!contactDraft.name.trim()) {
-                      notify.error({ title: 'El nombre del contacto es obligatorio' });
-                      return;
-                    }
-                    try {
-                      const payload = {
-                        name: contactDraft.name.trim(),
-                        role: contactDraft.role.trim() || null,
-                        phone: contactDraft.phone.trim() || null,
-                        email: contactDraft.email.trim() || null,
-                        isPrimary: contactDraft.isPrimary,
-                      };
-                      await notify.promise(
-                        editingContactId
-                          ? updateContact.mutateAsync({
-                              prospectId: prospect.id,
-                              contactId: editingContactId,
-                              payload,
-                            })
-                          : createContact.mutateAsync({
-                              prospectId: prospect.id,
-                              payload,
-                            }),
-                        {
-                          loading: editingContactId ? 'Actualizando contacto...' : 'Guardando contacto...',
-                          success: editingContactId ? 'Contacto actualizado' : 'Contacto guardado',
-                          error: (error) => error?.message || 'No se pudo guardar el contacto',
-                        }
-                      );
-                      setContactDraft({ name: '', role: '', phone: '', email: '', isPrimary: false });
-                      setEditingContactId(null);
-                      setContactFormOpen(false);
-                    } catch {}
-                  }}
-                >
-                  {editingContactId ? 'Actualizar contacto' : 'Guardar contacto'}
-                </Button>
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+        prospectId={prospect?.id ?? prospectId}
+        contact={editingContact}
+      />
 
       <AlertDialog open={discardOpen} onOpenChange={setDiscardOpen}>
         <AlertDialogContent>

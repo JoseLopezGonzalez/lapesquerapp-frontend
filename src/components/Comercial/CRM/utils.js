@@ -1,6 +1,29 @@
 import { format, formatDistanceToNowStrict, isBefore, parseISO, startOfDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 
+/** URL para abrir en navegador (añade https:// si no hay esquema). Evita javascript:/data:. */
+export function prospectWebsiteToHref(raw) {
+  const t = typeof raw === 'string' ? raw.trim() : '';
+  if (!t) return null;
+  const lower = t.toLowerCase();
+  if (lower.startsWith('javascript:') || lower.startsWith('data:')) return null;
+  if (/^https?:\/\//i.test(t)) return t;
+  return `https://${t}`;
+}
+
+/** Etiqueta para selects (empresa + dirección o web acortada si existe). */
+export function formatProspectSelectLabel(prospect) {
+  const base = prospect?.companyName ?? prospect?.name ?? '';
+  const addr = typeof prospect?.address === 'string' ? prospect.address.trim() : '';
+  const web = typeof prospect?.website === 'string' ? prospect.website.trim() : '';
+  const raw = addr || web;
+  if (!raw) {
+    return base || `Prospecto ${prospect?.id ?? ''}`;
+  }
+  const short = raw.length > 56 ? `${raw.slice(0, 56)}…` : raw;
+  return base ? `${base} · ${short}` : short;
+}
+
 export const prospectStatusLabels = {
   new: 'Nuevo',
   following: 'Seguimiento',

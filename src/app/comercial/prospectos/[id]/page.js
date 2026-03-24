@@ -1,4 +1,13 @@
-import ProspectDetail from '@/components/Comercial/CRM/ProspectDetail';
+import dynamic from 'next/dynamic';
+import Loader from '@/components/Utilities/Loader';
+
+const ProspectDetail = dynamic(() => import('@/components/Comercial/CRM/ProspectDetail'), {
+  loading: () => (
+    <div className="flex min-h-[360px] items-center justify-center">
+      <Loader />
+    </div>
+  ),
+});
 
 export default function ComercialProspectDetailPage({ params }) {
   return (

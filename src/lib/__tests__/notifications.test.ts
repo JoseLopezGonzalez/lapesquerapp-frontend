@@ -8,7 +8,6 @@ const toastMock = Object.assign(
     warning: vi.fn(() => "toast-warning-id"),
     info: vi.fn(() => "toast-info-id"),
     loading: vi.fn(() => "toast-loading-id"),
-    promise: vi.fn(() => ({ unwrap: () => Promise.resolve(undefined) })),
     dismiss: vi.fn(),
   }
 );
@@ -32,10 +31,9 @@ describe("notify", () => {
     toastMock.warning.mockReturnValue("toast-warning-id");
     toastMock.info.mockReturnValue("toast-info-id");
     toastMock.loading.mockReturnValue("toast-loading-id");
-    toastMock.promise.mockReturnValue({ unwrap: () => Promise.resolve(undefined) });
   });
 
-  it("delegates promise to sonner using a stable id", async () => {
+  it("keeps promise toast on the same id from loading to success", async () => {
     const { notify } = await import("@/lib/notifications");
 
     const result = await notify.promise(Promise.resolve({ count: 2 }), {
@@ -47,17 +45,24 @@ describe("notify", () => {
     });
 
     expect(result).toEqual({ count: 2 });
-    expect(toastMock.promise).toHaveBeenCalledWith(
-      expect.any(Promise),
+    expect(toastMock.loading).toHaveBeenCalledWith(
+      "Guardando",
       expect.objectContaining({
         id: expect.any(String),
-        loading: "Guardando",
-        success: expect.any(Function),
       })
     );
-    const promiseCalls = (toastMock.promise as unknown as { mock: { calls: unknown[][] } }).mock.calls;
-    const config = promiseCalls[0]?.[1] as { success?: (data: { count: number }) => string } | undefined;
-    expect(config?.success?.({ count: 2 })).toBe("Guardado");
+    expect(toastMock.success).toHaveBeenCalledWith(
+      "Guardado",
+      expect.objectContaining({
+        id: expect.any(String),
+        classNames: expect.objectContaining({
+          icon: expect.stringContaining("text-green-500"),
+        }),
+      })
+    );
+    expect(getToastCallId(toastMock.success.mock.calls[0])).toBe(
+      getToastCallId(toastMock.loading.mock.calls[0])
+    );
   });
 
   it("updates a manual loading toast when the caller passes the same id", async () => {
@@ -79,6 +84,9 @@ describe("notify", () => {
       expect.objectContaining({
         id: "toast-loading-id",
         description: "El archivo ya esta listo",
+        classNames: expect.objectContaining({
+          icon: expect.stringContaining("text-green-500"),
+        }),
       })
     );
   });
@@ -171,15 +179,17 @@ describe("notify", () => {
       })
     ).rejects.toThrow("boom");
 
-    expect(toastMock.promise).toHaveBeenCalledWith(
-      expect.any(Promise),
+    expect(toastMock.error).toHaveBeenCalledWith(
+      "Error al procesar",
       expect.objectContaining({
         id: expect.any(String),
-        error: expect.any(Function),
+        classNames: expect.objectContaining({
+          icon: expect.stringContaining("text-destructive"),
+        }),
       })
     );
-    const promiseCalls = (toastMock.promise as unknown as { mock: { calls: unknown[][] } }).mock.calls;
-    const config = promiseCalls.at(-1)?.[1] as { error?: (err: Error) => string } | undefined;
-    expect(config?.error?.(error)).toBe("Error al procesar");
+    expect(getToastCallId(toastMock.error.mock.calls[0])).toBe(
+      getToastCallId(toastMock.loading.mock.calls[1] ?? toastMock.loading.mock.calls[0])
+    );
   });
 });

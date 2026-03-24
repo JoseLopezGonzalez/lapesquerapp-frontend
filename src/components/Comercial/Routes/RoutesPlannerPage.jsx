@@ -9,6 +9,7 @@ import { RouteMap } from '@/components/Maps/RouteMap';
 import { useFieldOperatorOptions } from '@/hooks/useFieldOptions';
 import { useCustomersList } from '@/hooks/useCustomersList';
 import { useProspectsList } from '@/hooks/useProspects';
+import { formatProspectSelectLabel } from '@/components/Comercial/CRM/utils';
 import { useRouteGeometry } from '@/hooks/useRouteGeometry';
 import { useRoutePlannerHydration } from '@/hooks/useRoutePlannerHydration';
 import { useRouteMutations, useRoutes } from '@/hooks/useRoutes';
@@ -84,7 +85,7 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
     () =>
       (prospectsData ?? []).map((prospect) => ({
         value: String(prospect.id),
-        label: prospect.companyName ?? prospect.name ?? `Prospecto ${prospect.id}`,
+        label: formatProspectSelectLabel(prospect),
       })),
     [prospectsData]
   );

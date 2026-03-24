@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { CalendarCheck2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -9,9 +11,12 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { notify } from '@/lib/notifications';
+import { ApiError } from '@/lib/api/apiHelpers';
+import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
 import { useCommercialInteractionMutations } from '@/hooks/useCommercialInteractions';
 import { format } from 'date-fns';
 import { formatDateValue, interactionResultOptions, interactionTypeOptions } from './utils';
+import { getQuickInteractionDefaultValues, getQuickInteractionFormSchema } from './schemas/quickInteractionFormSchema';
 
 function ToggleGroup({ value, onChange, options }) {
   return (
@@ -31,7 +36,12 @@ function ToggleGroup({ value, onChange, options }) {
   );
 }
 
-export default function QuickInteractionModal({
+function FieldError({ message }) {
+  if (!message) return null;
+  return <p className="text-sm text-red-500">{message}</p>;
+}
+
+function QuickInteractionModalInner({
   open,
   onOpenChange,
   prospectId = null,
@@ -44,14 +54,33 @@ export default function QuickInteractionModal({
 }) {
   const { createInteraction } = useCommercialInteractionMutations();
   const isCompleteMode = mode === 'complete';
-  const [type, setType] = useState('call');
-  const [occurredAt, setOccurredAt] = useState(new Date());
-  const [summary, setSummary] = useState('');
-  const [result, setResult] = useState('pending');
-  const [nextActionNote, setNextActionNote] = useState(isCompleteMode ? '' : defaultNextActionNote);
-  const [nextActionAt, setNextActionAt] = useState(isCompleteMode ? null : (defaultNextActionDate ? new Date(defaultNextActionDate) : null));
-  const [noNextAction, setNoNextAction] = useState(isCompleteMode);
-  const [scheduleNextAction, setScheduleNextAction] = useState(false);
+
+  const formSchema = useMemo(() => getQuickInteractionFormSchema(isCompleteMode), [isCompleteMode]);
+
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    setError,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: getQuickInteractionDefaultValues({
+      isCompleteMode,
+      defaultNextActionDate,
+      defaultNextActionNote,
+    }),
+    mode: 'onTouched',
+  });
+
+  const type = watch('type');
+  const result = watch('result');
+  const scheduleNextAction = watch('scheduleNextAction');
+  const noNextAction = watch('noNextAction');
+
   const wasOpenRef = useRef(false);
 
   useEffect(() => {
@@ -59,15 +88,25 @@ export default function QuickInteractionModal({
     wasOpenRef.current = open;
     if (!opening) return;
 
-    setType('call');
-    setOccurredAt(new Date());
-    setSummary('');
-    setResult('pending');
-    setNextActionNote(isCompleteMode ? '' : (defaultNextActionNote ?? ''));
-    setNextActionAt(isCompleteMode ? null : (defaultNextActionDate ? new Date(defaultNextActionDate) : null));
-    setNoNextAction(isCompleteMode);
-    setScheduleNextAction(false);
-  }, [open, defaultNextActionDate, defaultNextActionNote, isCompleteMode]);
+    reset(
+      getQuickInteractionDefaultValues({
+        isCompleteMode,
+        defaultNextActionDate,
+        defaultNextActionNote,
+      })
+    );
+  }, [open, defaultNextActionDate, defaultNextActionNote, isCompleteMode, reset]);
+
+  useEffect(() => {
+    if (!isCompleteMode) return;
+    if (result !== 'not_interested') return;
+
+    // En complete, si marcamos "No interesa", ocultamos la próxima acción.
+    // Aseguramos consistencia limpiando estado y valores dependientes.
+    setValue('scheduleNextAction', false, { shouldValidate: true });
+    setValue('nextActionAt', null, { shouldValidate: true });
+    setValue('nextActionNote', '', { shouldValidate: true });
+  }, [isCompleteMode, result, setValue]);
 
   const getErrorText = (error) => {
     if (error?.status !== 422) {
@@ -94,12 +133,7 @@ export default function QuickInteractionModal({
     return error?.message || 'La agenda no aceptó la operación solicitada.';
   };
 
-  const handleSubmit = async () => {
-    if (!summary.trim()) {
-      notify.error({ title: 'Añade un resumen de la interacción' });
-      return;
-    }
-
+  const onValidSubmit = async (values) => {
     if (!prospectId && !customerId) {
       notify.error({ title: 'No se ha encontrado el destino de la interacción' });
       return;
@@ -110,23 +144,18 @@ export default function QuickInteractionModal({
       return;
     }
 
-    if (((isCompleteMode && scheduleNextAction) || (!isCompleteMode && !noNextAction)) && !nextActionAt) {
-      notify.error({ title: 'Selecciona una fecha para la próxima acción' });
-      return;
-    }
-
-    const shouldSendNextAction = isCompleteMode ? scheduleNextAction : !noNextAction;
+    const shouldSendNextAction = isCompleteMode ? values.scheduleNextAction : !values.noNextAction;
 
     const payload = {
       ...(prospectId ? { prospectId } : {}),
       ...(customerId ? { customerId } : {}),
       ...(agendaActionId ? { agendaActionId } : {}),
-      type,
-      occurredAt: occurredAt.toISOString(),
-      summary: summary.trim(),
-      result,
-      nextActionNote: shouldSendNextAction ? nextActionNote.trim() || null : null,
-      nextActionAt: shouldSendNextAction && nextActionAt ? format(nextActionAt, 'yyyy-MM-dd') : null,
+      type: values.type,
+      occurredAt: values.occurredAt.toISOString(),
+      summary: values.summary.trim(),
+      result: values.result,
+      nextActionNote: shouldSendNextAction ? values.nextActionNote.trim() || null : null,
+      nextActionAt: shouldSendNextAction && values.nextActionAt ? format(values.nextActionAt, 'yyyy-MM-dd') : null,
     };
 
     try {
@@ -136,7 +165,19 @@ export default function QuickInteractionModal({
         error: (error) => getErrorText(error),
       });
       onOpenChange(false);
-    } catch {}
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 422 && err.data?.errors) {
+        setErrorsFrom422(setError, err.data.errors);
+      }
+    }
+  };
+
+  const onInvalidSubmit = (formErrors) => {
+    const n = Object.keys(formErrors).length;
+    notify.error({
+      title: 'Revisa el formulario',
+      description: n > 1 ? `Hay ${n} campos con errores.` : 'Corrige el error indicado antes de guardar.',
+    });
   };
 
   return (
@@ -170,12 +211,24 @@ export default function QuickInteractionModal({
 
           <div className="grid gap-2">
             <Label>Tipo</Label>
-            <ToggleGroup value={type} onChange={setType} options={interactionTypeOptions} />
+            <ToggleGroup
+              value={type}
+              onChange={(value) => setValue('type', value, { shouldValidate: true })}
+              options={interactionTypeOptions}
+            />
+            <FieldError message={errors.type?.message} />
           </div>
 
           <div className="grid gap-2">
             <Label>Fecha</Label>
-            <DatePicker date={occurredAt} onChange={setOccurredAt} formatStyle="short" />
+            <Controller
+              name="occurredAt"
+              control={control}
+              render={({ field }) => (
+                <DatePicker date={field.value ?? null} onChange={field.onChange} formatStyle="short" />
+              )}
+            />
+            <FieldError message={errors.occurredAt?.message} />
           </div>
 
           <div className="grid gap-2">
@@ -183,56 +236,81 @@ export default function QuickInteractionModal({
             <Textarea
               id="interaction-summary"
               rows={3}
-              value={summary}
-              onChange={(event) => setSummary(event.target.value)}
               placeholder="Qué se ha hablado, qué ha pedido o qué queda pendiente"
+              aria-invalid={errors.summary ? 'true' : undefined}
+              {...register('summary')}
             />
+            <FieldError message={errors.summary?.message} />
           </div>
 
           <div className="grid gap-2">
             <Label>Resultado</Label>
-            <ToggleGroup value={result} onChange={setResult} options={interactionResultOptions} />
+            <ToggleGroup
+              value={result}
+              onChange={(value) => setValue('result', value, { shouldValidate: true })}
+              options={interactionResultOptions}
+            />
+            <FieldError message={errors.result?.message} />
           </div>
 
           {((!isCompleteMode) || (isCompleteMode && result !== 'not_interested')) && (
             <>
               {isCompleteMode ? (
-                <label className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Checkbox
-                    checked={scheduleNextAction}
-                    onCheckedChange={(checked) => {
-                      const value = Boolean(checked);
-                      setScheduleNextAction(value);
-                      if (!value) {
-                        setNextActionAt(null);
-                        setNextActionNote('');
-                      }
-                    }}
-                  />
-                  Programar siguiente acción
-                </label>
+                <Controller
+                  name="scheduleNextAction"
+                  control={control}
+                  render={({ field }) => (
+                    <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={(checked) => {
+                          const on = checked === true;
+                          field.onChange(on);
+                          if (!on) {
+                            setValue('nextActionAt', null, { shouldValidate: true });
+                            setValue('nextActionNote', '', { shouldValidate: true });
+                          }
+                        }}
+                      />
+                      Programar siguiente acción
+                    </label>
+                  )}
+                />
               ) : (
-                <label className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Checkbox
-                    checked={noNextAction}
-                    onCheckedChange={(checked) => {
-                      const value = Boolean(checked);
-                      setNoNextAction(value);
-                      if (value) {
-                        setNextActionAt(null);
-                        setNextActionNote('');
-                      }
-                    }}
-                  />
-                  Sin próxima acción
-                </label>
+                <Controller
+                  name="noNextAction"
+                  control={control}
+                  render={({ field }) => (
+                    <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={(checked) => {
+                          const on = checked === true;
+                          field.onChange(on);
+                          if (on) {
+                            setValue('nextActionAt', null, { shouldValidate: true });
+                            setValue('nextActionNote', '', { shouldValidate: true });
+                          }
+                        }}
+                      />
+                      Sin próxima acción
+                    </label>
+                  )}
+                />
               )}
 
               {((isCompleteMode && scheduleNextAction) || (!isCompleteMode && !noNextAction)) && (
                 <div className="grid gap-4 rounded-xl border bg-muted/10 p-4">
                   <div className="grid gap-2">
                     <Label>Fecha próxima acción</Label>
-                    <DatePicker date={nextActionAt} onChange={setNextActionAt} formatStyle="short" />
+                    <Controller
+                      name="nextActionAt"
+                      control={control}
+                      render={({ field }) => (
+                        <DatePicker date={field.value ?? null} onChange={field.onChange} formatStyle="short" />
+                      )}
+                    />
+                    <FieldError message={errors.nextActionAt?.message} />
                   </div>
 
                   <div className="grid gap-2">
@@ -240,10 +318,11 @@ export default function QuickInteractionModal({
                     <Textarea
                       id="next-action-note"
                       rows={2}
-                      value={nextActionNote}
-                      onChange={(event) => setNextActionNote(event.target.value)}
                       placeholder="Enviar oferta, volver a llamar, preparar muestra..."
+                      aria-invalid={errors.nextActionNote ? 'true' : undefined}
+                      {...register('nextActionNote')}
                     />
+                    <FieldError message={errors.nextActionNote?.message} />
                   </div>
                 </div>
               )}
@@ -255,11 +334,20 @@ export default function QuickInteractionModal({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancelar
           </Button>
-          <Button onClick={handleSubmit} disabled={createInteraction.isPending}>
+          <Button
+            type="button"
+            onClick={handleSubmit(onValidSubmit, onInvalidSubmit)}
+            disabled={createInteraction.isPending}
+          >
             {isCompleteMode ? 'Cerrar tarea' : 'Guardar'}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
+}
+
+export default function QuickInteractionModal(props) {
+  const isCompleteMode = props?.mode === 'complete';
+  return <QuickInteractionModalInner key={isCompleteMode ? 'complete' : 'create'} {...props} />;
 }

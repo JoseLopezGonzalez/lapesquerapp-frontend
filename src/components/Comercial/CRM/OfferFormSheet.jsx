@@ -19,6 +19,7 @@ import { useTaxOptions } from '@/hooks/useTaxOptions';
 import { notify } from '@/lib/notifications';
 import { format } from 'date-fns';
 import { Plus, Trash2 } from 'lucide-react';
+import { formatProspectSelectLabel, prospectWebsiteToHref } from './utils';
 
 function emptyLine(currency = 'EUR') {
   return {
@@ -96,6 +97,8 @@ export default function OfferFormSheet({
   }, [fixedCustomerId, fixedProspectId, initialData, open]);
 
   const title = useMemo(() => (initialData ? 'Editar oferta' : 'Nueva oferta'), [initialData]);
+  const linkedWebsiteTrim = linkedProspect?.website?.trim() ?? '';
+  const linkedWebsiteHref = linkedWebsiteTrim ? prospectWebsiteToHref(linkedWebsiteTrim) : null;
   const targetOptions = targetType === 'prospect' ? prospects : customers;
   const isFixedTarget = Boolean(fixedProspectId || fixedCustomerId);
 
@@ -171,6 +174,23 @@ export default function OfferFormSheet({
             {linkedProspect && (
               <div className="rounded-xl border bg-muted/20 p-4">
                 <p className="font-medium">{linkedProspect.companyName}</p>
+                {linkedProspect.address?.trim() ? (
+                  <p className="mt-1 text-sm text-muted-foreground whitespace-pre-wrap">{linkedProspect.address.trim()}</p>
+                ) : null}
+                {linkedWebsiteTrim ? (
+                  linkedWebsiteHref ? (
+                    <a
+                      href={linkedWebsiteHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-1 block text-sm text-primary underline-offset-4 hover:underline break-all"
+                    >
+                      {linkedWebsiteTrim}
+                    </a>
+                  ) : (
+                    <p className="mt-1 text-sm break-all">{linkedWebsiteTrim}</p>
+                  )
+                ) : null}
                 <p className="mt-1 text-sm text-muted-foreground">
                   {linkedProspect.speciesInterest?.join(', ') || 'Sin especies definidas'}
                 </p>
@@ -202,7 +222,7 @@ export default function OfferFormSheet({
                 <SelectContent>
                   {targetOptions.map((option) => (
                     <SelectItem key={option.id} value={String(option.id)}>
-                      {option.companyName ?? option.name}
+                      {targetType === 'prospect' ? formatProspectSelectLabel(option) : (option.name ?? option.companyName)}
                     </SelectItem>
                   ))}
                 </SelectContent>

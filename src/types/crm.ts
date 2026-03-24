@@ -125,6 +125,10 @@ export interface Offer {
 export interface Prospect {
   id: number | string;
   companyName: string;
+  /** Dirección fiscal / operativa en texto libre (opcional). */
+  address?: string | null;
+  /** Sitio web (texto libre, opcional; máx. 512 en API). */
+  website?: string | null;
   country?: Country | null;
   countryId?: number | string | null;
   speciesInterest?: string[];
@@ -194,6 +198,8 @@ export interface CrmDashboardData {
 
 export interface ProspectPayload {
   companyName: string;
+  address?: string | null;
+  website?: string | null;
   countryId?: number | string | null;
   speciesInterest?: string[];
   origin: ProspectOrigin;
