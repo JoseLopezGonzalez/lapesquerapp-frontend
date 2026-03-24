@@ -142,7 +142,16 @@ describe('useCustomerHistory', () => {
   });
 
   it('returns loading states initially', () => {
-    getCustomerOrderHistoryRanges.mockImplementation(() => new Promise(() => {}));
+    getCustomerOrderHistoryRanges.mockImplementation(
+      () => new Promise((resolve) => setTimeout(() => resolve({
+        data: {
+          first_order_date: '2024-01-10',
+          last_order_date: '2025-04-24',
+          available_years: [2025, 2024],
+          available_months_by_year: { 2025: [4], 2024: [1] },
+        },
+      }), 200))
+    );
 
     const order = { customer: { id: 1 } };
 

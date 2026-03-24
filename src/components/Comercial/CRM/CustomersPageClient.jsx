@@ -19,10 +19,11 @@ import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 import { getCustomer } from '@/services/customerService';
 import { useSession } from 'next-auth/react';
 import QuickInteractionModal from './QuickInteractionModal';
-import { formatCurrency, formatDateValue, formatDateTimeValue, interactionResultLabels, interactionTypeLabels, offerStatusLabels } from './utils';
+import { formatDateValue, formatDateTimeValue, interactionResultLabels, interactionTypeLabels, offerStatusLabels } from './utils';
 import StatusPill from './StatusPill';
 import Loader from '@/components/Utilities/Loader';
 import CustomerAssignmentPanel from '@/components/Admin/Customers/CustomerAssignmentPanel';
+import CustomerOrderHistoryView from '@/components/Shared/CustomerOrderHistoryView';
 
 const interactionTypeIcons = {
   call: Phone,
@@ -51,11 +52,23 @@ function CustomerDetail({ customerId, embedded = false }) {
   const shouldLoadOffers = activeTab === 'offers';
   const { data: customer, isLoading } = useCustomerDetail(customerId);
   const {
+    customerHistory,
+    availableYears,
+    initialLoading,
+    loadingData,
+    error,
+    dateFilter,
+    setDateFilter,
+    selectedYear,
+    setSelectedYear,
+    currentYear,
+    hasCurrentYear,
+    hasYear1,
+    yearsForSelector,
     filteredHistory,
-    initialLoading: ordersInitialLoading,
-    loadingData: ordersLoadingData,
-    error: ordersError,
-    hasHistoryRanges,
+    generalMetrics,
+    calculateTrend,
+    getTrendTooltipText,
   } = useCustomerOrderHistoryRanges({
     customerId,
     enabled: shouldLoadOrders,
@@ -144,51 +157,25 @@ function CustomerDetail({ customerId, embedded = false }) {
           </TabsContent>
 
           <TabsContent value="orders" className="flex h-full w-full min-w-0 flex-1 min-h-0 flex-col overflow-hidden">
-            {ordersInitialLoading || ordersLoadingData ? (
-              <div className="flex min-h-0 flex-1 items-center justify-center">
-                <Loader />
-              </div>
-            ) : ordersError ? (
-              <div className="flex-1 min-h-0 flex">
-                <EmptyState
-                  title="Error cargando pedidos"
-                  description={ordersError}
-                  className="h-full w-full border bg-muted/20 !min-h-0"
-                />
-              </div>
-            ) : hasHistoryRanges === false ? (
-              <div className="flex-1 min-h-0 flex">
-                <EmptyState
-                  title="Sin historial"
-                  description="Este cliente no tiene pedidos registrados."
-                  className="h-full w-full border bg-muted/20 !min-h-0"
-                />
-              </div>
-            ) : !filteredHistory?.length ? (
-              <div className="flex-1 min-h-0 flex">
-                <EmptyState
-                  title="Sin pedidos"
-                  description="Este cliente no tiene historial visible en el periodo seleccionado."
-                  className="h-full w-full border bg-muted/20 !min-h-0"
-                />
-              </div>
-            ) : (
-              <div className="h-full w-full flex flex-col min-h-0">
-                <div className="space-y-3 flex-1 overflow-y-auto pr-2">
-                  {filteredHistory.map((item, index) => (
-                    <div key={`${item.product?.id ?? index}-${index}`} className="rounded-xl border p-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="font-medium">{item.product?.name ?? 'Producto'}</p>
-                          <p className="text-sm text-muted-foreground">{item.lines?.length ?? 0} líneas</p>
-                        </div>
-                        <p className="font-medium">{formatCurrency(item.total_amount ?? 0)}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            <CustomerOrderHistoryView
+              customerHistory={customerHistory}
+              availableYears={availableYears}
+              initialLoading={initialLoading}
+              loadingData={loadingData}
+              error={error}
+              dateFilter={dateFilter}
+              setDateFilter={setDateFilter}
+              selectedYear={selectedYear}
+              setSelectedYear={setSelectedYear}
+              currentYear={currentYear}
+              hasCurrentYear={hasCurrentYear}
+              hasYear1={hasYear1}
+              yearsForSelector={yearsForSelector}
+              filteredHistory={filteredHistory}
+              generalMetrics={generalMetrics}
+              calculateTrend={calculateTrend}
+              getTrendTooltipText={getTrendTooltipText}
+            />
           </TabsContent>
 
           <TabsContent value="interactions" className="flex h-full w-full min-w-0 flex-1 min-h-0 flex-col overflow-hidden">

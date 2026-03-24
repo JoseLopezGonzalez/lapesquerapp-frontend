@@ -46,6 +46,8 @@
 - **API-references/** — Referencias de endpoints
 - **arquitectura-servicios/** — Arquitectura de servicios (00-03-*)
 - **audits/** — Auditorías
+  - [productions-performance-audit-2026-03-24.md](./audits/productions-performance-audit-2026-03-24.md) — Auditoría I: rendimiento y fluidez percibida (13 hallazgos, implementados)
+  - [productions-deep-audit-2026-03-24.md](./audits/productions-deep-audit-2026-03-24.md) — Auditoría II: navegación, editor de registros y rendimiento estructural (18 hallazgos)
 - **chat-ai/** — Integración chat AI (00-03-*)
 - **configs/** — [00-entities-config.md](./configs/00-entities-config.md)
 - **examples/** — [00-entity-config-examples.md](./examples/00-entity-config-examples.md)
