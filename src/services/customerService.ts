@@ -24,6 +24,17 @@ export interface CustomerOrderHistoryResponse {
   data: unknown[];
 }
 
+export interface CustomerOrderHistoryRangesData {
+  first_order_date: string | null;
+  last_order_date: string | null;
+  available_years: number[];
+  available_months_by_year: Record<string, number[]>;
+}
+
+export interface CustomerOrderHistoryRangesResponse {
+  data: CustomerOrderHistoryRangesData;
+}
+
 /**
  * Obtiene las opciones de clientes (para selects/autocomplete).
  */
@@ -117,5 +128,41 @@ export async function getCustomerOrderHistory(
   return {
     available_years: data.available_years || [],
     data: data.data || [],
+  };
+}
+
+/**
+ * Obtiene los rangos de historial de pedidos disponibles para un cliente.
+ */
+export async function getCustomerOrderHistoryRanges(
+  customerId: string | number,
+  token: AuthToken
+): Promise<CustomerOrderHistoryRangesResponse> {
+  const response = await fetchWithTenant(`${API_URL_V2}customers/${customerId}/order-history/ranges`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      'User-Agent': getUserAgent(),
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      getErrorMessage(errorData) || 'Error al obtener rangos de historial del cliente'
+    );
+  }
+
+  const responseData = await response.json();
+  const data = responseData?.data || {};
+
+  return {
+    data: {
+      first_order_date: data.first_order_date || null,
+      last_order_date: data.last_order_date || null,
+      available_years: data.available_years || [],
+      available_months_by_year: data.available_months_by_year || {},
+    },
   };
 }

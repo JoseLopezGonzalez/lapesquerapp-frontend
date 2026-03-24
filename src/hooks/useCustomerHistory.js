@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
-import { getCustomerOrderHistory } from '@/services/customerService';import { notify } from '@/lib/notifications';
+import { getCustomerOrderHistory, getCustomerOrderHistoryRanges } from '@/services/customerService';
+import { notify } from '@/lib/notifications';
 import {
     format as formatDate,
     parseISO,
@@ -14,6 +15,42 @@ import {
     startOfYear,
     endOfYear,
 } from 'date-fns';
+
+function getInitialFilterFromRanges(lastOrderDate, availableYears) {
+    if (lastOrderDate) {
+        const now = new Date();
+        const parsedLastOrderDate = parseISO(lastOrderDate);
+        const previousMonth = subMonths(now, 1);
+        const previousQuarterStart = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3 - 3, 1);
+        const previousQuarterEnd = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 0);
+
+        if (
+            parsedLastOrderDate.getFullYear() === previousMonth.getFullYear()
+            && parsedLastOrderDate.getMonth() === previousMonth.getMonth()
+        ) {
+            return { dateFilter: 'month', selectedYear: null };
+        }
+
+        if (isWithinInterval(parsedLastOrderDate, { start: previousQuarterStart, end: previousQuarterEnd })) {
+            return { dateFilter: 'quarter', selectedYear: null };
+        }
+    }
+
+    const currentYear = new Date().getFullYear();
+    if (availableYears.includes(currentYear)) {
+        return { dateFilter: 'year', selectedYear: null };
+    }
+
+    if (availableYears.includes(currentYear - 1)) {
+        return { dateFilter: 'year-1', selectedYear: null };
+    }
+
+    if (availableYears.length > 0) {
+        return { dateFilter: 'year-select', selectedYear: availableYears[0] };
+    }
+
+    return { dateFilter: 'month', selectedYear: null };
+}
 
 /**
  * Hook para cargar y gestionar el historial de pedidos del cliente
@@ -29,6 +66,11 @@ export function useCustomerHistory(order) {
     const [error, setError] = useState(null);
     const [dateFilter, setDateFilter] = useState('month');
     const [selectedYear, setSelectedYear] = useState(null);
+    const [availableMonthsByYear, setAvailableMonthsByYear] = useState({});
+    const [firstOrderDate, setFirstOrderDate] = useState(null);
+    const [lastOrderDate, setLastOrderDate] = useState(null);
+    const [isRangeReady, setIsRangeReady] = useState(false);
+    const [hasHistoryRanges, setHasHistoryRanges] = useState(null);
 
     const getDateRange = useMemo(() => {
         const now = new Date();
@@ -57,27 +99,70 @@ export function useCustomerHistory(order) {
     }, [dateFilter, selectedYear]);
 
     useEffect(() => {
-        const loadAvailableYears = async () => {
+        const initializeRanges = async () => {
             const customerId = order?.customer?.id;
             const token = session?.user?.accessToken;
 
-            if (!customerId || !token) return;
+            setIsRangeReady(false);
+            setHasHistoryRanges(null);
+
+            if (!customerId || !token) {
+                return;
+            }
 
             try {
-                const result = await getCustomerOrderHistory(customerId, token, {});
-                setAvailableYears(result.available_years || []);
+                const result = await getCustomerOrderHistoryRanges(customerId, token);
+                const rangesData = result?.data || {};
+                const rangesAvailableYears = rangesData.available_years || [];
+
+                setAvailableYears(rangesAvailableYears);
+                setAvailableMonthsByYear(rangesData.available_months_by_year || {});
+                setFirstOrderDate(rangesData.first_order_date || null);
+                setLastOrderDate(rangesData.last_order_date || null);
+
+                if (rangesAvailableYears.length === 0) {
+                    setHasHistoryRanges(false);
+                    setCustomerHistory([]);
+                    setInitialLoading(false);
+                    return;
+                }
+
+                const initialFilter = getInitialFilterFromRanges(
+                    rangesData.last_order_date,
+                    rangesAvailableYears
+                );
+                setDateFilter(initialFilter.dateFilter);
+                setSelectedYear(initialFilter.selectedYear);
+                setHasHistoryRanges(true);
             } catch (err) {
-                console.error('Error al cargar años disponibles:', err);
+                console.error('Error al cargar rangos de historial, se aplicará fallback:', err);
+                setHasHistoryRanges(true);
+                setAvailableYears([]);
+                setAvailableMonthsByYear({});
+                setFirstOrderDate(null);
+                setLastOrderDate(null);
+            } finally {
+                setIsRangeReady(true);
             }
         };
 
-        loadAvailableYears();
+        initializeRanges();
     }, [order?.customer?.id, session?.user?.accessToken]);
 
     useEffect(() => {
         const loadCustomerHistory = async () => {
             const customerId = order?.customer?.id;
             const token = session?.user?.accessToken;
+
+            if (!isRangeReady) {
+                return;
+            }
+
+            if (hasHistoryRanges === false) {
+                setInitialLoading(false);
+                setLoadingData(false);
+                return;
+            }
 
             if (!customerId) {
                 setError('No se pudo obtener el ID del cliente');
@@ -104,6 +189,11 @@ export function useCustomerHistory(order) {
                 if (dateRange && dateRange.from && dateRange.to) {
                     options.dateFrom = formatDate(dateRange.from, 'yyyy-MM-dd');
                     options.dateTo = formatDate(dateRange.to, 'yyyy-MM-dd');
+                } else {
+                    setCustomerHistory([]);
+                    setLoadingData(false);
+                    setInitialLoading(false);
+                    return;
                 }
 
                 const result = await getCustomerOrderHistory(customerId, token, options);
@@ -124,7 +214,7 @@ export function useCustomerHistory(order) {
 
         loadCustomerHistory();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- customerHistory used only to decide loading state, not as trigger
-    }, [order?.customer?.id, session?.user?.accessToken, getDateRange]);
+    }, [order?.customer?.id, session?.user?.accessToken, getDateRange, isRangeReady, hasHistoryRanges]);
 
     const currentYear = new Date().getFullYear();
     const hasCurrentYear = availableYears.includes(currentYear);
@@ -264,6 +354,9 @@ export function useCustomerHistory(order) {
     return {
         customerHistory,
         availableYears,
+        availableMonthsByYear,
+        firstOrderDate,
+        lastOrderDate,
         initialLoading,
         loadingData,
         error,

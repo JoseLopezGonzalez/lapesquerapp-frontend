@@ -16,6 +16,7 @@ vi.mock('next-auth/react', () => ({
 // Mock customerService
 vi.mock('@/services/customerService', () => ({
   getCustomerOrderHistory: vi.fn(),
+  getCustomerOrderHistoryRanges: vi.fn(),
 }));
 
 // Mock notifications wrapper
@@ -23,7 +24,7 @@ vi.mock('@/lib/notifications', () => ({
   notify: { error: vi.fn() },
 }));
 
-import { getCustomerOrderHistory } from '@/services/customerService';
+import { getCustomerOrderHistory, getCustomerOrderHistoryRanges } from '@/services/customerService';
 
 describe('useCustomerHistory', () => {
   const mockOrder = {
@@ -52,9 +53,16 @@ describe('useCustomerHistory', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    getCustomerOrderHistoryRanges.mockResolvedValue({
+      data: {
+        first_order_date: '2024-01-10',
+        last_order_date: '2025-04-24',
+        available_years: [2025, 2024],
+        available_months_by_year: { 2025: [4], 2024: [1] },
+      },
+    });
     getCustomerOrderHistory
-      .mockResolvedValueOnce({ data: [], available_years: [2024, 2025] })
-      .mockResolvedValueOnce({ data: mockHistory, available_years: [2024, 2025] });
+      .mockResolvedValue({ data: mockHistory, available_years: [2024, 2025] });
   });
 
   it('returns filteredHistory and generalMetrics when loaded', async () => {
@@ -96,12 +104,10 @@ describe('useCustomerHistory', () => {
 
   it('calculateTrend returns direction and percentage', async () => {
     getCustomerOrderHistory.mockReset();
-    getCustomerOrderHistory
-      .mockResolvedValueOnce({ data: [], available_years: [2024, 2025] })
-      .mockResolvedValue({
-        data: [mockOrderWithProduct],
-        available_years: [2024, 2025],
-      });
+    getCustomerOrderHistory.mockResolvedValue({
+      data: [mockOrderWithProduct],
+      available_years: [2024, 2025],
+    });
 
     const order = { customer: { id: 1 } };
 
@@ -136,12 +142,62 @@ describe('useCustomerHistory', () => {
   });
 
   it('returns loading states initially', () => {
-    getCustomerOrderHistory.mockImplementation(() => new Promise(() => {}));
+    getCustomerOrderHistoryRanges.mockImplementation(() => new Promise(() => {}));
 
     const order = { customer: { id: 1 } };
 
     const { result } = renderHook(() => useCustomerHistory(order));
 
     expect(result.current.initialLoading).toBe(true);
+  });
+
+  it('does not request detail when ranges are empty', async () => {
+    getCustomerOrderHistoryRanges.mockResolvedValueOnce({
+      data: {
+        first_order_date: null,
+        last_order_date: null,
+        available_years: [],
+        available_months_by_year: {},
+      },
+    });
+
+    const order = { customer: { id: 1 } };
+    const { result } = renderHook(() => useCustomerHistory(order));
+
+    await waitFor(() => {
+      expect(result.current.initialLoading).toBe(false);
+    });
+
+    expect(getCustomerOrderHistory).not.toHaveBeenCalled();
+    expect(result.current.filteredHistory).toEqual([]);
+  });
+
+  it('uses a filtered detail request after ranges initialization', async () => {
+    const order = { customer: { id: 1 } };
+    renderHook(() => useCustomerHistory(order));
+
+    await waitFor(() => {
+      expect(getCustomerOrderHistory).toHaveBeenCalled();
+    });
+
+    const detailOptions = getCustomerOrderHistory.mock.calls[0][2];
+    expect(detailOptions).toMatchObject({
+      dateFrom: expect.any(String),
+      dateTo: expect.any(String),
+    });
+  });
+
+  it('falls back to default filter flow when ranges endpoint fails', async () => {
+    getCustomerOrderHistoryRanges.mockRejectedValueOnce(new Error('Ranges unavailable'));
+    getCustomerOrderHistory.mockResolvedValueOnce({ data: mockHistory, available_years: [2025] });
+
+    const order = { customer: { id: 1 } };
+    const { result } = renderHook(() => useCustomerHistory(order));
+
+    await waitFor(() => {
+      expect(result.current.initialLoading).toBe(false);
+    });
+
+    expect(getCustomerOrderHistory).toHaveBeenCalledTimes(1);
   });
 });
