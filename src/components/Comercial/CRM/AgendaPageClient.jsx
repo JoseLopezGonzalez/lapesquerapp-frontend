@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import * as React from 'react';
-import { Calendar, Check, ExternalLink, MoreVertical, XCircle } from 'lucide-react';
+import { Calendar, Check, ExternalLink, MoreVertical, Search, XCircle } from 'lucide-react';
 import { eachDayOfInterval, endOfMonth, endOfWeek, format, getDay, isSameMonth, isToday, startOfMonth, startOfWeek } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,6 +18,8 @@ import { EmptyState } from '@/components/Utilities/EmptyState';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import Loader from '@/components/Utilities/Loader';
 import { notify } from '@/lib/notifications';
@@ -29,6 +31,12 @@ import { AgendaFiltersDialog } from './AgendaFiltersDialog';
 import { agendaStatusLabels, formatDateValue, getStatusTone, isOverdueDate, toneClasses } from './utils';
 
 const WEEKDAYS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+const DAY_DIALOG_SORT_OPTIONS = [
+  { value: 'priority', label: 'Prioridad' },
+  { value: 'name_asc', label: 'Nombre A-Z' },
+  { value: 'name_desc', label: 'Nombre Z-A' },
+  { value: 'status', label: 'Estado' },
+];
 
 const toneDotClasses = {
   red: 'bg-red-500',
@@ -55,6 +63,26 @@ function AgendaStatusBadge({ status }) {
       {agendaStatusLabels[status] ?? status}
     </span>
   );
+}
+
+function getAgendaItemPriority(item) {
+  if (item.status === 'pending') {
+    return isOverdueDate(item.scheduledAt) ? 0 : 1;
+  }
+
+  const priorityMap = {
+    reprogrammed: 2,
+    done: 3,
+    cancelled: 4,
+  };
+
+  return priorityMap[item.status] ?? 5;
+}
+
+function compareAgendaItemsByPriority(a, b) {
+  const priorityDiff = getAgendaItemPriority(a) - getAgendaItemPriority(b);
+  if (priorityDiff !== 0) return priorityDiff;
+  return String(a.label ?? '').localeCompare(String(b.label ?? ''), 'es', { sensitivity: 'base' });
 }
 
 function AgendaToolbar({
@@ -330,17 +358,103 @@ function AgendaMonthCalendar({ currentMonth, onSelectDate, groupedEvents }) {
 }
 
 function AgendaDayDialog({ open, onOpenChange, date, items, loading, onReschedule, onCancel, onComplete }) {
+  const [search, setSearch] = React.useState('');
+  const [sortBy, setSortBy] = React.useState('priority');
+
+  React.useEffect(() => {
+    if (!open) {
+      setSearch('');
+      setSortBy('priority');
+    }
+  }, [open]);
+
+  const normalizedSearch = React.useMemo(() => search.trim().toLowerCase(), [search]);
+
+  const filteredItems = React.useMemo(() => {
+    if (!normalizedSearch) return items;
+
+    return items.filter((item) => {
+      const searchableValues = [
+        item.label,
+        item.description,
+      ];
+
+      return searchableValues.some((value) => String(value ?? '').toLowerCase().includes(normalizedSearch));
+    });
+  }, [items, normalizedSearch]);
+
+  const sortedItems = React.useMemo(() => {
+    const sorted = [...filteredItems];
+
+    sorted.sort((a, b) => {
+      if (sortBy === 'name_asc') {
+        return String(a.label ?? '').localeCompare(String(b.label ?? ''), 'es', { sensitivity: 'base' });
+      }
+
+      if (sortBy === 'name_desc') {
+        return String(b.label ?? '').localeCompare(String(a.label ?? ''), 'es', { sensitivity: 'base' });
+      }
+
+      if (sortBy === 'status') {
+        const statusDiff = String(agendaStatusLabels[a.status] ?? a.status).localeCompare(
+          String(agendaStatusLabels[b.status] ?? b.status),
+          'es',
+          { sensitivity: 'base' }
+        );
+
+        if (statusDiff !== 0) return statusDiff;
+        return String(a.label ?? '').localeCompare(String(b.label ?? ''), 'es', { sensitivity: 'base' });
+      }
+
+      return compareAgendaItemsByPriority(a, b);
+    });
+
+    return sorted;
+  }, [filteredItems, sortBy]);
+
+  const description = React.useMemo(() => {
+    if (loading) return 'Cargando acciones del día seleccionado.';
+    if (!normalizedSearch) {
+      return `${items.length} ${items.length === 1 ? 'acción' : 'acciones'} para la fecha seleccionada.`;
+    }
+
+    return `${sortedItems.length} ${sortedItems.length === 1 ? 'coincidencia' : 'coincidencias'} para “${search.trim()}”.`;
+  }, [items.length, loading, normalizedSearch, search, sortedItems.length]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent size="lg" className="max-h-[88vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle>{date ? `Agenda del ${formatDateValue(date)}` : 'Detalle del día'}</DialogTitle>
-          <DialogDescription>
-            {loading
-              ? 'Cargando acciones del día seleccionado.'
-              : `${items.length} ${items.length === 1 ? 'acción' : 'acciones'} para la fecha seleccionada.`}
-          </DialogDescription>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
+
+        <div className="flex flex-col gap-3 border-b pb-4 sm:flex-row sm:items-center">
+          <InputGroup className="w-full min-w-0">
+            <InputGroupInput
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Buscar por cliente, prospecto o nota"
+              aria-label="Buscar en las acciones del día"
+            />
+            <InputGroupAddon align="inline-end">
+              <Search className="size-4" />
+            </InputGroupAddon>
+          </InputGroup>
+
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Ordenar por" />
+            </SelectTrigger>
+            <SelectContent align="end">
+              {DAY_DIALOG_SORT_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
         <ScrollArea className="max-h-[65vh] pr-4">
           <div className="space-y-3 pb-2">
@@ -354,8 +468,14 @@ function AgendaDayDialog({ open, onOpenChange, date, items, loading, onReschedul
                 description="Elige otra fecha del calendario o amplía el rango de filtros."
                 className="border bg-muted/20 min-h-[220px]"
               />
+            ) : sortedItems.length === 0 ? (
+              <EmptyState
+                title="No hay coincidencias"
+                description={`No se encontraron acciones para “${search.trim()}” en este día.`}
+                className="border bg-muted/20 min-h-[220px]"
+              />
             ) : (
-              items.map((item) => (
+              sortedItems.map((item) => (
                 <AgendaEventRow
                   key={String(item.agendaActionId)}
                   item={item}

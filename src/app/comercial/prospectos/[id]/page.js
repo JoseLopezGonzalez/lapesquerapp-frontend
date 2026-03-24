@@ -9,10 +9,12 @@ const ProspectDetail = dynamic(() => import('@/components/Comercial/CRM/Prospect
   ),
 });
 
-export default function ComercialProspectDetailPage({ params }) {
+export default async function ComercialProspectDetailPage({ params }) {
+  const { id } = await params;
+
   return (
     <div className="h-full w-full px-4 py-3 md:px-6">
-      <ProspectDetail prospectId={params.id} />
+      <ProspectDetail prospectId={id} />
     </div>
   );
 }
