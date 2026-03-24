@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
+import { toast } from 'sonner'
 import {
     getProductionOutputs,
     createProductionOutput,
@@ -64,6 +65,7 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
     const [loadingAvailableProducts, setLoadingAvailableProducts] = useState(false)
     const [selectedProducts, setSelectedProducts] = useState(new Set())
     const [wasManageDialogOpen, setWasManageDialogOpen] = useState(false)
+    const [deleteOutputConfirm, setDeleteOutputConfirm] = useState({ open: false, outputId: null })
     const [showBoxes, setShowBoxes] = useState(() => {
         if (typeof window !== 'undefined') {
             const saved = localStorage.getItem('production_show_boxes')
@@ -245,12 +247,17 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
                 err.response?.data?.userMessage ||
                 err.message ||
                 'Error al crear la salida'
-            alert(errorMessage)
+            toast.error(errorMessage)
         }
     }
 
-    const handleDeleteOutput = async (outputId) => {
-        if (!confirm('¿Estás seguro de que deseas eliminar esta salida?')) return
+    const handleDeleteOutput = (outputId) => {
+        setDeleteOutputConfirm({ open: true, outputId })
+    }
+
+    const confirmDeleteOutput = async () => {
+        const { outputId } = deleteOutputConfirm
+        setDeleteOutputConfirm({ open: false, outputId: null })
         try {
             const token = session?.user?.accessToken
             if (!token) return
@@ -264,17 +271,37 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
                 err.response?.data?.userMessage ||
                 err.message ||
                 'Error al eliminar la salida'
-            alert(errorMessage)
+            toast.error(errorMessage)
         }
     }
 
     const openManageDialog = async () => {
         if (products.length === 0) await loadProducts()
         setSourcesLoading(true)
-        try {
-            const token = session?.user?.accessToken
-            if (!token) return
-            const sourcesDataResponse = await getProductionRecordSourcesData(productionRecordId, token)
+
+        const token = session?.user?.accessToken
+        if (!token) {
+            setSourcesLoading(false)
+            return
+        }
+
+        // Lanzar sourcesData y outputs(with_sources) en paralelo
+        const [sourcesDataResponse, outputsResponse] = await Promise.all([
+            getProductionRecordSourcesData(productionRecordId, token).catch((err) => {
+                console.warn('Error loading sources data:', err)
+                return null
+            }),
+            getProductionOutputs(token, {
+                production_record_id: productionRecordId,
+                with_sources: true
+            }).catch((err) => {
+                console.warn('Error loading outputs with sources:', err)
+                return null
+            })
+        ])
+
+        // Procesar sourcesData
+        if (sourcesDataResponse) {
             setSourcesData(sourcesDataResponse)
             if (sourcesDataResponse?.stockBoxes) {
                 setAvailableInputs(
@@ -305,11 +332,9 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
                     }))
                 )
             }
-        } catch (err) {
-            console.warn('Error loading sources data:', err)
+        } else {
+            // Fallback: cargar inputs y consumptions en paralelo
             try {
-                const token = session?.user?.accessToken
-                if (!token) return
                 const [inputsData, consumptionsData] = await Promise.all([
                     getProductionInputs(token, { production_record_id: productionRecordId }),
                     getProductionOutputConsumptions(token, { production_record_id: productionRecordId })
@@ -319,23 +344,14 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
             } catch (fallbackErr) {
                 console.error('Error loading sources with fallback method:', fallbackErr)
             }
-        } finally {
-            setSourcesLoading(false)
         }
 
-        let outputsWithSources = outputs
-        try {
-            const token = session?.user?.accessToken
-            if (token) {
-                const response = await getProductionOutputs(token, {
-                    production_record_id: productionRecordId,
-                    with_sources: true
-                })
-                outputsWithSources = response.data || outputs
-                setOutputs(outputsWithSources)
-            }
-        } catch (err) {
-            console.warn('Error loading outputs with sources:', err)
+        setSourcesLoading(false)
+
+        // Procesar outputs con sources
+        const outputsWithSources = outputsResponse?.data || outputs
+        if (outputsResponse?.data) {
+            setOutputs(outputsWithSources)
         }
 
         setEditableOutputs(
@@ -426,7 +442,7 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
                 const record = await getProductionRecord(productionRecordId, token)
                 const hasParent = record.parent_record_id || record.parentRecordId
                 if (!hasParent) {
-                    alert(
+                    toast.error(
                         'Este proceso no tiene un proceso padre. No se pueden copiar consumos del proceso padre.'
                     )
                 } else {
@@ -441,7 +457,7 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
                             consumptions = consumptionsResponse.data || []
                         } catch (err) {
                             console.warn('Error loading consumptions:', err)
-                            alert('Error al cargar los consumos del proceso padre.')
+                            toast.error('Error al cargar los consumos del proceso padre.')
                         }
                     }
                     if (consumptions.length > 0) {
@@ -483,7 +499,7 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
                     })
                     const inputs = inputsResponse.data || []
                     if (inputs.length === 0) {
-                        alert('Este proceso no tiene consumos de materia prima desde stock registrados.')
+                        toast.error('Este proceso no tiene consumos de materia prima desde stock registrados.')
                     } else {
                         const productsMap = {}
                         inputs.forEach((input) => {
@@ -512,23 +528,23 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
                             })
                         if (stockRows.length > 0) allNewRows.push(...stockRows)
                         else
-                            alert(
+                            toast.error(
                                 'Todos los productos de los consumos de materia prima ya están añadidos como salidas.'
                             )
                     }
                 } catch (err) {
                     console.error('Error loading raw material inputs:', err)
-                    alert('Error al cargar los consumos de materia prima desde stock.')
+                    toast.error('Error al cargar los consumos de materia prima desde stock.')
                 }
             }
 
             if (allNewRows.length === 0) {
                 if (useParent && useStock)
-                    alert('No se encontraron productos nuevos para agregar desde las fuentes seleccionadas.')
+                    toast.error('No se encontraron productos nuevos para agregar desde las fuentes seleccionadas.')
                 else if (useParent)
-                    alert('Todos los productos de los consumos del padre ya están añadidos como salidas.')
+                    toast.error('Todos los productos de los consumos del padre ya están añadidos como salidas.')
                 else if (useStock)
-                    alert('No hay productos disponibles en stock o todos ya están añadidos como salidas.')
+                    toast.error('No hay productos disponibles en stock o todos ya están añadidos como salidas.')
                 return
             }
             setNewRows((prev) => [...prev, ...allNewRows])
@@ -541,7 +557,7 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
                 err.response?.data?.userMessage ||
                 err.message ||
                 'Error al copiar desde las fuentes seleccionadas'
-            alert(errorMessage)
+            toast.error(errorMessage)
         } finally {
             setCopyingFromConsumption(false)
         }
@@ -549,7 +565,7 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
 
     const handleConfirmSourceSelection = () => {
         if (!fromParentConsumption && !fromRawMaterialStock) {
-            alert('Por favor selecciona al menos una fuente.')
+            toast.error('Por favor selecciona al menos una fuente.')
             return
         }
         handleCopyFromConsumptions(fromParentConsumption, fromRawMaterialStock)
@@ -644,7 +660,7 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
                 err.response?.data?.userMessage ||
                 err.message ||
                 'Error al guardar las salidas'
-            alert(errorMessage)
+            toast.error(errorMessage)
             setSaving(false)
         }
     }
@@ -663,7 +679,7 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
             if (!token) return
             const productionId = getProductionId()
             if (!productionId) {
-                alert('No se pudo obtener el ID de la producción')
+                toast.error('No se pudo obtener el ID de la producción')
                 return
             }
             const productsList = await getAvailableProductsForOutputs(productionId, token)
@@ -676,7 +692,7 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
                 err.response?.data?.userMessage ||
                 err.message ||
                 'Error al cargar los productos disponibles'
-            alert(errorMessage)
+            toast.error(errorMessage)
         } finally {
             setLoadingAvailableProducts(false)
         }
@@ -701,7 +717,7 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
 
     const handleAddSelectedProducts = async () => {
         if (selectedProducts.size === 0) {
-            alert('Por favor selecciona al menos un producto')
+            toast.error('Por favor selecciona al menos un producto')
             return
         }
         try {
@@ -715,7 +731,7 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
                     (product) => !existingProductIds.has(product.product.id.toString())
                 )
                 if (newProductsToAdd.length === 0) {
-                    alert('Todos los productos seleccionados ya están en la lista.')
+                    toast.error('Todos los productos seleccionados ya están en la lista.')
                     setAvailableProductsDialogOpen(false)
                     setSelectedProducts(new Set())
                     setWasManageDialogOpen(false)
@@ -760,7 +776,7 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
                 err.response?.data?.userMessage ||
                 err.message ||
                 'Error al agregar los productos seleccionados'
-            alert(errorMessage)
+            toast.error(errorMessage)
         }
     }
 
@@ -813,6 +829,9 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
         loadProducts,
         handleCreateOutput,
         handleDeleteOutput,
+        deleteOutputConfirm,
+        setDeleteOutputConfirm,
+        confirmDeleteOutput,
         openManageDialog,
         addNewRow,
         handleOpenSourceSelectionDialog,

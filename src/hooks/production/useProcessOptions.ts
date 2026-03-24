@@ -35,11 +35,15 @@ export function useProcessOptions() {
           'User-Agent': typeof navigator !== 'undefined' ? navigator.userAgent : '',
         },
       });
-      if (!response.ok) return [];
+      if (!response.ok) {
+        console.error('useProcessOptions: error al cargar opciones de proceso', response.status);
+        return [];
+      }
       const json = await response.json();
       return (json.data ?? json ?? []) as ProcessOption[];
     },
     enabled: !!token && !!tenantId,
+    staleTime: 5 * 60 * 1000,
   });
 
   return {

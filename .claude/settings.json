@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(grep -n \"getSession\\\\|from ''next-auth\" /home/jose/brisapp-nextjs/src/services/orderService.ts)"
+      "Bash(grep -n \"getSession\\\\|from ''next-auth\" /home/jose/brisapp-nextjs/src/services/orderService.ts)",
+      "Bash(find /home/jose/brisapp-nextjs/src/hooks/production -type f -name *.ts -o -name *.tsx -o -name *.js -o -name *.jsx)",
+      "Bash(wc -l /home/jose/brisapp-nextjs/src/components/Admin/Productions/*.jsx)",
+      "Bash(find /home/jose/brisapp-nextjs/src/services/production -name index.* -o -name production.*)",
+      "Bash(wc -l /home/jose/brisapp-nextjs/src/app/admin/productions/page.js /home/jose/brisapp-nextjs/src/app/admin/productions/[id]/page.js /home/jose/brisapp-nextjs/src/app/admin/productions/[id]/records/[recordId]/page.js)",
+      "Bash(grep -r \"queryKey\\\\|invalidateQueries\\\\|setQueryData\" /home/jose/brisapp-nextjs/src/hooks/production/*.js /home/jose/brisapp-nextjs/src/hooks/production/*.ts)",
+      "Bash(find /home/jose/brisapp-nextjs -path *context*Production* -type f)"
     ]
   }
 }

@@ -8,6 +8,7 @@ import CostBreakdownView from './CostBreakdownView'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -66,6 +67,9 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
         loadOutputsOnly,
         handleCreateOutput,
         handleDeleteOutput,
+        deleteOutputConfirm,
+        setDeleteOutputConfirm,
+        confirmDeleteOutput,
         handleEditClick,
         resetForm,
         openManageDialog,
@@ -977,6 +981,26 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
         </Dialog>
     )
 
+    const deleteConfirmDialog = (
+        <AlertDialog
+            open={deleteOutputConfirm.open}
+            onOpenChange={(open) => setDeleteOutputConfirm(prev => ({ ...prev, open }))}
+        >
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Eliminar salida</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Esta acción no se puede deshacer. ¿Deseas eliminar esta salida?
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={confirmDeleteOutput}>Eliminar</AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    )
+
     // Si renderInCard es true, envolver en Card con botón en header
     if (renderInCard) {
         return (
@@ -985,6 +1009,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                 {sourceSelectionDialog}
                 {availableProductsDialog}
                 {breakdownDialog}
+                {deleteConfirmDialog}
                 <Card className="h-fit">
                     <CardHeader>
                         <div className="flex items-center justify-between">
@@ -1015,6 +1040,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
             {sourceSelectionDialog}
             {availableProductsDialog}
             {breakdownDialog}
+            {deleteConfirmDialog}
             {mainContent}
         </div>
     )

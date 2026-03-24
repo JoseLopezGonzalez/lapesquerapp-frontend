@@ -1,10 +1,10 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { Handle, Position } from '@xyflow/react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { TrendingDown, TrendingUp, ArrowRight } from 'lucide-react'
+import { TrendingDown, TrendingUp, ArrowRight, Loader2 } from 'lucide-react'
 import { formatWeight } from '@/helpers/production/formatters'
 import { formatDecimal, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
 
@@ -24,6 +24,8 @@ export default function ProcessNode({ data }) {
     hasSalesOrStockChildren = false
   } = data
 
+  const [isNavigating, setIsNavigating] = useState(false)
+
   const hasWaste = totals?.waste > 0
   const hasYield = totals?.yield > 0
   const isDetailed = viewMode === 'detailed'
@@ -37,11 +39,6 @@ export default function ProcessNode({ data }) {
     ? `${formatWeight(totals.outputWeight)}${(totals?.outputBoxes && Number(totals.outputBoxes) > 0) ? ` (${totals.outputBoxes} cajas)` : ''}`
     : '-'
   
-  // Debug: verificar si el nodo final tiene hijos de venta/stock
-  if (isFinal) {
-    console.log(`Nodo final "${processName}" (${data.recordId}): hasSalesOrStockChildren=${hasSalesOrStockChildren}`);
-  }
-
   // Colores distintivos según el tipo de nodo
   const nodeColorClasses = isRoot
     ? 'border-primary/30 bg-primary/5 shadow-primary/10'
@@ -150,7 +147,7 @@ export default function ProcessNode({ data }) {
                 <tbody>
                   {inputProducts.map((product, idx) => (
                     <tr key={idx} className="border-b border-border/20 last:border-b-0">
-                      <td className="py-0.5 px-1 text-foreground font-medium truncate max-w-[120px]">{product.name}</td>
+                      <td className="py-0.5 px-1 text-foreground font-medium max-w-[160px]"><span className="block truncate" title={product.name}>{product.name}</span></td>
                       <td className="py-0.5 px-1 text-muted-foreground text-right whitespace-nowrap">{product.boxes}</td>
                       <td className="py-0.5 px-1 text-muted-foreground text-right whitespace-nowrap">{formatWeight(product.weight)}</td>
                     </tr>
@@ -179,7 +176,7 @@ export default function ProcessNode({ data }) {
                 <tbody>
                   {outputProducts.map((product, idx) => (
                     <tr key={idx} className="border-b border-border/20 last:border-b-0">
-                      <td className="py-0.5 px-1 text-foreground font-medium truncate max-w-[120px]">{product.name}</td>
+                      <td className="py-0.5 px-1 text-foreground font-medium max-w-[160px]"><span className="block truncate" title={product.name}>{product.name}</span></td>
                       <td className="py-0.5 px-1 text-muted-foreground text-right whitespace-nowrap">
                         {product.boxes && product.boxes > 0 ? product.boxes : '-'}
                       </td>
@@ -215,14 +212,22 @@ export default function ProcessNode({ data }) {
             <Button
               variant="outline"
               size="sm"
+              disabled={isNavigating}
               onClick={(e) => {
                 e.stopPropagation()
+                setIsNavigating(true)
                 onNavigate()
               }}
               className="gap-2"
             >
-              Ver detalles
-              <ArrowRight className="h-3.5 w-3.5" />
+              {isNavigating ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <>
+                  Ver detalles
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </>
+              )}
             </Button>
           </div>
         )}

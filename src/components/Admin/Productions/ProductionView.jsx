@@ -13,21 +13,24 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import Loader from '@/components/Utilities/Loader'
+import { Skeleton } from '@/components/ui/skeleton'
 import { ArrowLeft, Calendar, Package, Scale, AlertCircle, Info, Calculator, TrendingDown, TrendingUp, Fish, MapPin, FileText, CheckCircle2, XCircle, AlertTriangle, Eye, AlertOctagon } from 'lucide-react'
 import ProductionRecordsManager from './ProductionRecordsManager'
 import ProductionDiagram, { ViewModeSelector } from './ProductionDiagram'
 
 const ProductionView = ({ productionId }) => {
     const router = useRouter()
-    const { production, processTree, totals, isLoading: loading, error, refetch } = useProductionDetail(productionId)
+    const [activeTab, setActiveTab] = useState('info')
+    const { production, processTree, totals, isLoading: loading, totalsLoading, processTreeLoading, error, refetch } = useProductionDetail(productionId, { enableProcessTree: activeTab === 'diagram' })
     const [viewMode, setViewMode] = useState('simple')
     const [reconciliationDialogOpen, setReconciliationDialogOpen] = useState(false)
 
 
     if (loading) {
         return (
-            <div className="h-full w-full overflow-y-auto flex items-center justify-center">
+            <div className="h-full w-full overflow-y-auto flex flex-col items-center justify-center gap-3">
                 <Loader />
+                <p className="text-sm text-muted-foreground">Cargando producción...</p>
             </div>
         )
     }
@@ -102,7 +105,7 @@ const ProductionView = ({ productionId }) => {
             </div>
 
             {/* Tabs para Información y Diagrama */}
-            <Tabs defaultValue="info" className="w-full">
+            <Tabs defaultValue="info" className="w-full" onValueChange={setActiveTab}>
                 <TabsList>
                     <TabsTrigger value="info">Información</TabsTrigger>
                     <TabsTrigger value="diagram">Diagrama</TabsTrigger>
@@ -188,7 +191,29 @@ const ProductionView = ({ productionId }) => {
                         </Card>
 
                         {/* Totales */}
-                        {totals && (
+                        {totalsLoading ? (
+                            <Card className="h-auto">
+                                <CardHeader className="pb-3">
+                                    <Skeleton className="h-4 w-24" />
+                                </CardHeader>
+                                <CardContent className="pt-0">
+                                    <div className="grid grid-cols-3 gap-0">
+                                        <div className="space-y-2 pr-3 border-r">
+                                            <Skeleton className="h-3 w-16" />
+                                            <Skeleton className="h-6 w-20" />
+                                        </div>
+                                        <div className="space-y-2 px-3 border-r">
+                                            <Skeleton className="h-3 w-16" />
+                                            <Skeleton className="h-6 w-20" />
+                                        </div>
+                                        <div className="space-y-2 pl-3">
+                                            <Skeleton className="h-3 w-20" />
+                                            <Skeleton className="h-6 w-16" />
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ) : totals ? (
                             <Card className="h-auto">
                                     <CardHeader className="pb-3">
                                         <CardTitle className="text-base flex items-center gap-2">
@@ -265,7 +290,7 @@ const ProductionView = ({ productionId }) => {
                                 </div>
                             </CardContent>
                         </Card>
-                        )}
+                        ) : null}
 
                         {/* Conciliación General */}
                         {production.reconciliation && (
@@ -679,7 +704,7 @@ const ProductionView = ({ productionId }) => {
                             <ProductionDiagram
                                 processTree={processTree}
                                 productionId={productionId}
-                                loading={loading}
+                                loading={processTreeLoading}
                                 viewMode={viewMode}
                                 onViewModeChange={setViewMode}
                             />

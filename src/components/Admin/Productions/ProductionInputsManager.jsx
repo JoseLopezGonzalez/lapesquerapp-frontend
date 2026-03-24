@@ -6,6 +6,7 @@ import { formatDecimal } from '@/helpers/formats/numbers/formatNumbers'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -31,6 +32,9 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
         loadExistingDataForEdit,
         resetAddDialog,
         handleDeleteAllInputs,
+        deleteInputConfirm,
+        setDeleteInputConfirm,
+        confirmDeleteInput,
         calculateSummaryByPallet,
         calculateProductsBreakdown,
         lotsDialogOpen,
@@ -474,6 +478,30 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
         )
     })()
 
+    const deleteConfirmDialog = (
+        <AlertDialog
+            open={deleteInputConfirm.open}
+            onOpenChange={(open) => setDeleteInputConfirm(prev => ({ ...prev, open }))}
+        >
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>
+                        {deleteInputConfirm.mode === 'all' ? 'Eliminar todo el consumo' : 'Eliminar entrada'}
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                        {deleteInputConfirm.mode === 'all'
+                            ? `Se eliminarán ${inputs.length} ${inputs.length === 1 ? 'entrada' : 'entradas'} de materia prima. Esta acción no se puede deshacer.`
+                            : 'Esta acción no se puede deshacer. ¿Deseas eliminar esta entrada?'}
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={confirmDeleteInput}>Eliminar</AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    )
+
     // Si renderInCard es true, envolver en Card con botón en header
     if (renderInCard) {
         return (
@@ -481,6 +509,7 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
                 {dialog}
                 {lotsDialog}
                 {palletsDialog}
+                {deleteConfirmDialog}
                 <Card className="h-fit">
                     <CardHeader>
                         <div className="flex items-center justify-between">
@@ -509,6 +538,7 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
         <>
             {lotsDialog}
             {palletsDialog}
+            {deleteConfirmDialog}
             {mainContent}
         </>
     )

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
+import { toast } from 'sonner'
 import {
     getProductionInputs,
     createMultipleProductionInputs,
@@ -47,6 +48,7 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
     const [lotsDialogOpen, setLotsDialogOpen] = useState(false)
     const [selectedProductLots, setSelectedProductLots] = useState(null)
     const [palletsDialogOpen, setPalletsDialogOpen] = useState(false)
+    const [deleteInputConfirm, setDeleteInputConfirm] = useState({ open: false, inputId: null, mode: 'single' })
 
     const isBoxAvailable = (box) => box.isAvailable !== false
 
@@ -157,7 +159,7 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
                 err.response?.data?.userMessage ||
                 err.message ||
                 'Error al cargar los datos existentes'
-            alert(errorMessage)
+            toast.error(errorMessage)
         } finally {
             setLoadingPallet(false)
         }
@@ -165,7 +167,7 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
 
     const handleSearchPallet = async () => {
         if (!palletSearch.trim()) {
-            alert('Por favor ingresa un ID de palet o un lote')
+            toast.error('Por favor ingresa un ID de palet o un lote')
             return
         }
         try {
@@ -185,7 +187,7 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
                 const searchResult = await searchPalletsByLot(searchTerm, token)
                 const pallets = searchResult?.pallets || []
                 if (pallets.length === 0) {
-                    alert(`No se encontraron palets con el lote "${searchTerm}"`)
+                    toast.error(`No se encontraron palets con el lote "${searchTerm}"`)
                     setPalletSearch('')
                     return
                 }
@@ -193,7 +195,7 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
                     (p) => !loadedPallets.some((loaded) => loaded.id === p.id)
                 )
                 if (newPallets.length === 0) {
-                    alert('Todos los palets con este lote ya están cargados')
+                    toast.error('Todos los palets con este lote ya están cargados')
                     setPalletSearch('')
                     return
                 }
@@ -236,7 +238,7 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
                 err.response?.data?.userMessage ||
                 err.message ||
                 'Error al buscar palets'
-            alert(errorMessage)
+            toast.error(errorMessage)
         } finally {
             setLoadingPallet(false)
         }
@@ -285,7 +287,7 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
 
     const handleAddInputs = async () => {
         if (selectedBoxes.length === 0) {
-            alert('Por favor selecciona al menos una caja')
+            toast.error('Por favor selecciona al menos una caja')
             return
         }
         try {
@@ -293,7 +295,7 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
             const token = session?.user?.accessToken
             if (!token) return
             if (!productionRecordId || isNaN(productionRecordId)) {
-                alert('Error: El ID del registro de producción no es válido')
+                toast.error('Error: El ID del registro de producción no es válido')
                 return
             }
             const boxIds = selectedBoxes
@@ -301,7 +303,7 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
                 .filter((id) => id != null && id !== '' && !isNaN(id) && Number(id) > 0)
                 .map((id) => Number(id))
             if (boxIds.length === 0) {
-                alert('No se encontraron IDs válidos en las cajas seleccionadas.')
+                toast.error('No se encontraron IDs válidos en las cajas seleccionadas.')
                 return
             }
             if (inputs.length > 0) {
@@ -318,7 +320,7 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
             } catch (err) {
                 console.error('Error al crear múltiples inputs:', err)
                 const errorMessage = err?.data?.message || err?.message || 'Error al guardar las entradas'
-                alert(errorMessage)
+                toast.error(errorMessage)
                 throw err
             }
             setAddDialogOpen(false)
@@ -346,18 +348,33 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
             console.error('Error adding/editing inputs:', err)
             const errorMessage =
                 err?.data?.message || err?.data?.error || err?.message || 'Error al guardar las entradas'
-            alert(errorMessage)
+            toast.error(errorMessage)
         } finally {
             setSavingInputs(false)
         }
     }
 
-    const handleDeleteInput = async (inputId) => {
-        if (!confirm('¿Estás seguro de que deseas eliminar esta entrada?')) return
+    const handleDeleteInput = (inputId) => {
+        setDeleteInputConfirm({ open: true, inputId, mode: 'single' })
+    }
+
+    const handleDeleteAllInputs = () => {
+        if (inputs.length === 0) return
+        setDeleteInputConfirm({ open: true, inputId: null, mode: 'all' })
+    }
+
+    const confirmDeleteInput = async () => {
+        const { inputId, mode } = deleteInputConfirm
+        setDeleteInputConfirm({ open: false, inputId: null, mode: 'single' })
         try {
             const token = session?.user?.accessToken
             if (!token) return
-            await deleteProductionInput(inputId, token)
+            if (mode === 'single') {
+                await deleteProductionInput(inputId, token)
+            } else {
+                const inputIds = inputs.map((input) => input.id)
+                await deleteMultipleProductionInputs(inputIds, token)
+            }
             const response = await getProductionInputs(token, { production_record_id: productionRecordId })
             const updatedInputs = response.data || []
             setInputs(updatedInputs)
@@ -372,39 +389,7 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
                 err.response?.data?.userMessage ||
                 err.message ||
                 'Error al eliminar la entrada'
-            alert(errorMessage)
-        }
-    }
-
-    const handleDeleteAllInputs = async () => {
-        if (inputs.length === 0) return
-        if (
-            !confirm(
-                `¿Estás seguro de que deseas eliminar todo el consumo?\n\nSe eliminarán ${inputs.length} ${inputs.length === 1 ? 'entrada' : 'entradas'} de materia prima.`
-            )
-        ) {
-            return
-        }
-        try {
-            const token = session?.user?.accessToken
-            if (!token) return
-            const inputIds = inputs.map((input) => input.id)
-            await deleteMultipleProductionInputs(inputIds, token)
-            const response = await getProductionInputs(token, { production_record_id: productionRecordId })
-            const updatedInputs = response.data || []
-            setInputs(updatedInputs)
-            if (updateInputs) await updateInputs(updatedInputs, false)
-            else if (updateRecord) await updateRecord()
-            else if (onRefresh) onRefresh()
-        } catch (err) {
-            console.error('Error deleting all inputs:', err)
-            const errorMessage =
-                err.userMessage ||
-                err.data?.userMessage ||
-                err.response?.data?.userMessage ||
-                err.message ||
-                'Error al eliminar el consumo'
-            alert(errorMessage)
+            toast.error(errorMessage)
         }
     }
 
@@ -518,17 +503,17 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
     const handleCalculateByWeight = (palletId) => {
         const pallet = loadedPallets.find((p) => p.id === palletId)
         if (!pallet || !pallet.boxes || pallet.boxes.length === 0) {
-            alert('El palet no tiene cajas')
+            toast.error('El palet no tiene cajas')
             return
         }
         const weightValue = targetWeight[palletId]
         if (!weightValue) {
-            alert('Por favor ingresa un peso objetivo para este palet')
+            toast.error('Por favor ingresa un peso objetivo para este palet')
             return
         }
         const target = parseFloat(weightValue)
         if (isNaN(target) || target <= 0) {
-            alert('Por favor ingresa un peso válido mayor a 0')
+            toast.error('Por favor ingresa un peso válido mayor a 0')
             return
         }
         const availableBoxes = pallet.boxes
@@ -563,13 +548,13 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
             })
             setTargetWeightResults(results)
         } else {
-            alert('No se pudieron encontrar cajas que se ajusten al peso objetivo')
+            toast.error('No se pudieron encontrar cajas que se ajusten al peso objetivo')
         }
     }
 
     const handleSelectTargetWeightResults = () => {
         if (targetWeightResults.length === 0) {
-            alert('No hay resultados para seleccionar')
+            toast.error('No hay resultados para seleccionar')
             return
         }
         const boxesToAdd = targetWeightResults.map((result) => ({
@@ -646,30 +631,30 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
 
     const handleScanGS1Code = () => {
         if (!scannedCode.trim()) {
-            alert('Por favor escanea o ingresa un código GS1-128')
+            toast.error('Por favor escanea o ingresa un código GS1-128')
             return
         }
         if (!selectedPalletId) {
-            alert('Por favor selecciona un palet primero')
+            toast.error('Por favor selecciona un palet primero')
             return
         }
         const gs1128Code = convertScannedCodeToGs1128(scannedCode.trim())
         if (!gs1128Code) {
-            alert('Formato de código GS1-128 no válido')
+            toast.error('Formato de código GS1-128 no válido')
             setScannedCode('')
             return
         }
         const palletBoxes = getPalletBoxes(selectedPalletId)
         const foundBox = palletBoxes.find((box) => isBoxAvailable(box) && box.gs1128 === gs1128Code)
         if (!foundBox) {
-            alert(
+            toast.error(
                 `No se encontró ninguna caja disponible con ese código GS1-128 en el palet #${selectedPalletId}`
             )
             setScannedCode('')
             return
         }
         if (isBoxSelected(foundBox.id, selectedPalletId)) {
-            alert('Esta caja ya está seleccionada')
+            toast.error('Esta caja ya está seleccionada')
             setScannedCode('')
             return
         }
@@ -679,16 +664,16 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
 
     const handleSearchByWeight = () => {
         if (!weightSearch.trim()) {
-            alert('Por favor ingresa un peso')
+            toast.error('Por favor ingresa un peso')
             return
         }
         if (!selectedPalletId) {
-            alert('Por favor selecciona un palet primero')
+            toast.error('Por favor selecciona un palet primero')
             return
         }
         const target = parseFloat(weightSearch.trim())
         if (isNaN(target) || target <= 0) {
-            alert('Por favor ingresa un peso válido mayor a 0')
+            toast.error('Por favor ingresa un peso válido mayor a 0')
             return
         }
         const palletBoxes = getPalletBoxes(selectedPalletId)
@@ -707,7 +692,7 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
         results.sort((a, b) => a.difference - b.difference)
         setWeightSearchResults(results)
         if (results.length === 0) {
-            alert(
+            toast.error(
                 `No se encontraron cajas que coincidan con el peso ingresado en el palet #${selectedPalletId} (tolerancia: ±${weightTolerance} kg)`
             )
         }
@@ -715,7 +700,7 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
 
     const handleSelectWeightSearchResults = () => {
         if (weightSearchResults.length === 0) {
-            alert('No hay resultados para seleccionar')
+            toast.error('No hay resultados para seleccionar')
             return
         }
         const boxesToAdd = weightSearchResults.map((result) => ({
@@ -799,6 +784,9 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
         handleAddInputs,
         handleDeleteInput,
         handleDeleteAllInputs,
+        deleteInputConfirm,
+        setDeleteInputConfirm,
+        confirmDeleteInput,
         calculateSummaryByPallet,
         calculateProductsBreakdown,
         calculateTotalSummary,

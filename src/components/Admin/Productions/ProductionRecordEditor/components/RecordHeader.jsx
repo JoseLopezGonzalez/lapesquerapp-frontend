@@ -1,10 +1,10 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, CheckCircle, Clock } from 'lucide-react'
+import { ArrowLeft, CheckCircle, Clock, Loader2 } from 'lucide-react'
 
 /**
  * Header del editor de record de producción
@@ -19,16 +19,21 @@ export const RecordHeader = ({
     isCompleted 
 }) => {
     const router = useRouter()
+    const [isNavigating, setIsNavigating] = useState(false)
 
     return (
         <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
                 <Button
                     variant="icon"
-                    onClick={() => router.push(`/admin/productions/${productionId}`)}
+                    disabled={isNavigating}
+                    onClick={() => {
+                        setIsNavigating(true)
+                        router.push(`/admin/productions/${productionId}`)
+                    }}
                     className="gap-2 -ml-2"
                 >
-                    <ArrowLeft className="h-4 w-4" />
+                    {isNavigating ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowLeft className="h-4 w-4" />}
                 </Button>
                 <div className="h-6 w-px bg-border" />
                 <div className="space-y-1">

@@ -36,53 +36,6 @@ function FlowContent({ processTree, productionId, loading, viewMode, onViewModeC
   const router = useRouter()
   const { fitView } = useReactFlow()
 
-  // Debug: Log del processTree recibido
-  useEffect(() => {
-    if (processTree) {
-      console.log('ProductionDiagram - processTree recibido:', processTree)
-      console.log('ProductionDiagram - processNodes:', processTree.processNodes)
-      console.log('ProductionDiagram - processNodes length:', processTree.processNodes?.length)
-      
-      // Diagnóstico: contar nodos de venta/stock en los datos del backend
-      const countSalesStockNodes = (node) => {
-        let salesCount = 0;
-        let stockCount = 0;
-        
-        if (node.children && Array.isArray(node.children)) {
-          node.children.forEach(child => {
-            if (child.type === 'sales') {
-              salesCount++;
-              console.log(`📦 Backend envía nodo de VENTA: id=${child.id}, parentRecordId=${child.parentRecordId}`);
-            }
-            if (child.type === 'stock') {
-              stockCount++;
-              console.log(`📦 Backend envía nodo de STOCK: id=${child.id}, parentRecordId=${child.parentRecordId}`);
-            }
-            if (child.type === 'reprocessed') {
-              console.log(`🔄 Backend envía nodo de REPROCESADO: id=${child.id}, parentRecordId=${child.parentRecordId}`);
-            }
-            if (child.type === 'balance') {
-              console.log(`📦 Backend envía nodo de BALANCE: id=${child.id}, parentRecordId=${child.parentRecordId}`);
-            }
-            // Recursivo para contar en hijos
-            const recursiveCount = countSalesStockNodes(child);
-            salesCount += recursiveCount.sales;
-            stockCount += recursiveCount.stock;
-          });
-        }
-        
-        return { sales: salesCount, stock: stockCount };
-      };
-      
-      processTree.processNodes?.forEach(rootNode => {
-        const counts = countSalesStockNodes(rootNode);
-        if (counts.sales > 0 || counts.stock > 0) {
-          console.log(`🔍 Diagnóstico: Nodo raíz tiene ${counts.sales} nodo(s) de VENTA y ${counts.stock} nodo(s) de STOCK en sus hijos`);
-        }
-      });
-    }
-  }, [processTree])
-
   // Función para navegar a un record (definida antes de usarse en useMemo)
   const navigateToRecord = useCallback((recordId) => {
     router.push(`/admin/productions/${productionId}/records/${recordId}`)
@@ -150,8 +103,9 @@ function FlowContent({ processTree, productionId, loading, viewMode, onViewModeC
 
   if (loading) {
     return (
-      <div className="h-[600px] flex items-center justify-center">
+      <div className="h-[600px] flex flex-col items-center justify-center gap-3">
         <Loader />
+        <p className="text-sm text-muted-foreground">Cargando diagrama de procesos...</p>
       </div>
     )
   }

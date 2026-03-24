@@ -25,6 +25,7 @@ Documentación completa del frontend de **Brisapp**, una aplicación Next.js 16 
 - **[prompts/14-guia-circuito-auditoria-e-implementacion-frontend.md](./prompts/14-guia-circuito-auditoria-e-implementacion-frontend.md)** - Guía operativa del circuito activo
 - **[prompts/15-fuente-de-verdad-bloques-y-puntuaciones-frontend.md](./prompts/15-fuente-de-verdad-bloques-y-puntuaciones-frontend.md)** - Fuente principal de verdad para bloques, puntuaciones y estado
 - **[prompts/16-network-cors-auth-cross-origin-frontend.md](./prompts/16-network-cors-auth-cross-origin-frontend.md)** - Anexo operativo para CORS, cookies, auth flow y cross-origin
+- **[prompts/17-prompt-auditoria-producciones-rendimiento-y-fluidez.md](./prompts/17-prompt-auditoria-producciones-rendimiento-y-fluidez.md)** - Prompt especializado para auditar producciones con foco en rendimiento, loaders, transiciones y fluidez percibida
 
 Los prompts y auditorías movidos a `antiguos/` pasan a ser referencia histórica y no deben usarse como circuito principal.
 

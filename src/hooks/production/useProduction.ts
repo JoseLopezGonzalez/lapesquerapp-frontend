@@ -22,6 +22,7 @@ export function useProduction(productionId: string | number | null) {
       return getProduction(productionId, token);
     },
     enabled: !!token && !!tenantId && productionId != null && productionId !== '',
+    staleTime: 60 * 1000,
   });
 
   return {

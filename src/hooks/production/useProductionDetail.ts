@@ -15,54 +15,75 @@ export interface UseProductionDetailResult {
   processTree: unknown;
   totals: ProductionTotals | null;
   isLoading: boolean;
+  totalsLoading: boolean;
+  processTreeLoading: boolean;
   error: string | null;
   refetch: () => void;
 }
 
+export interface UseProductionDetailOptions {
+  enableProcessTree?: boolean;
+}
+
 /**
  * Hook para detalle de una producción: production, processTree y totals.
+ * 3 queries independientes para carga progresiva.
  * React Query, tenant-aware. Sustituye useEffect + loadProductionData en ProductionView.
  */
-export function useProductionDetail(productionId: string | number | null): UseProductionDetailResult {
+export function useProductionDetail(
+  productionId: string | number | null,
+  options?: UseProductionDetailOptions
+): UseProductionDetailResult {
   const { data: session } = useSession();
   const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
-  const {
-    data,
-    isLoading,
-    error,
-    refetch,
-  } = useQuery({
+  const enableProcessTree = options?.enableProcessTree ?? true;
+  const isEnabled = !!token && !!tenantId && productionId != null && productionId !== '';
+
+  const productionQuery = useQuery({
     queryKey: ['productions', 'detail', tenantId ?? 'unknown', productionId],
-    queryFn: async () => {
+    queryFn: () => {
       if (!token || productionId == null) throw new Error('Missing token or productionId');
-      const [productionData, treeData, totalsData] = await Promise.all([
-        getProduction(productionId, token),
-        getProductionProcessTree(productionId, token).catch((err) => {
-          console.error('Error al cargar processTree:', err);
-          if (err?.message?.includes?.('500')) {
-            console.error('Error 500 del backend - posible problema con formato de fechas en nodos');
-          }
-          return null;
-        }),
-        getProductionTotals(productionId, token).catch(() => null),
-      ]);
-      return {
-        production: productionData as Production,
-        processTree: treeData,
-        totals: totalsData as ProductionTotals | null,
-      };
+      return getProduction(productionId, token);
     },
-    enabled: !!token && !!tenantId && productionId != null && productionId !== '',
+    enabled: isEnabled,
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const totalsQuery = useQuery({
+    queryKey: ['productions', 'totals', tenantId ?? 'unknown', productionId],
+    queryFn: () => getProductionTotals(productionId!, token!).catch(() => null),
+    enabled: isEnabled,
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const processTreeQuery = useQuery({
+    queryKey: ['productions', 'processTree', tenantId ?? 'unknown', productionId],
+    queryFn: () =>
+      getProductionProcessTree(productionId!, token!).catch((err) => {
+        console.error('Error al cargar processTree:', err);
+        if (err?.message?.includes?.('500')) {
+          console.error('Error 500 del backend - posible problema con formato de fechas en nodos');
+        }
+        return null;
+      }),
+    enabled: isEnabled && enableProcessTree,
+    staleTime: 2 * 60 * 1000,
   });
 
   return {
-    production: data?.production ?? null,
-    processTree: data?.processTree ?? null,
-    totals: data?.totals ?? null,
-    isLoading,
-    error: error?.message ?? null,
-    refetch,
+    production: (productionQuery.data ?? null) as Production | null,
+    processTree: processTreeQuery.data ?? null,
+    totals: (totalsQuery.data ?? null) as ProductionTotals | null,
+    isLoading: productionQuery.isLoading,
+    totalsLoading: totalsQuery.isLoading,
+    processTreeLoading: processTreeQuery.isLoading,
+    error: productionQuery.error?.message ?? null,
+    refetch: () => {
+      productionQuery.refetch();
+      totalsQuery.refetch();
+      processTreeQuery.refetch();
+    },
   };
 }

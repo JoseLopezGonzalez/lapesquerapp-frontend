@@ -102,7 +102,7 @@ export function useProductionRecord(productionId, recordId = null, onRefresh = n
         setSaving(true);
         setError(null);
         try {
-            await saveMutation.mutateAsync({
+            return await saveMutation.mutateAsync({
                 formData,
                 isEdit: !!recordId,
             });

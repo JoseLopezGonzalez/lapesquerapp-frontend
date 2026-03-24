@@ -11,6 +11,7 @@
 | [prompts/14-guia-circuito-auditoria-e-implementacion-frontend.md](./prompts/14-guia-circuito-auditoria-e-implementacion-frontend.md) | Guía del circuito activo de auditoría e implementación |
 | [prompts/15-fuente-de-verdad-bloques-y-puntuaciones-frontend.md](./prompts/15-fuente-de-verdad-bloques-y-puntuaciones-frontend.md) | Fuente principal de verdad para bloques y puntuaciones |
 | [prompts/16-network-cors-auth-cross-origin-frontend.md](./prompts/16-network-cors-auth-cross-origin-frontend.md) | Documento integrado de network/CORS/auth/cross-origin |
+| [prompts/17-prompt-auditoria-producciones-rendimiento-y-fluidez.md](./prompts/17-prompt-auditoria-producciones-rendimiento-y-fluidez.md) | Prompt especializado para auditar producciones con foco en rendimiento percibido, loaders y fluidez |
 
 **Regla:** esta estructura sustituye al circuito anterior como referencia operativa principal.
 
