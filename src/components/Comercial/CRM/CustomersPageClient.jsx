@@ -14,8 +14,9 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useCustomersList } from '@/hooks/useCustomersList';
 import { useCommercialInteractions } from '@/hooks/useCommercialInteractions';
 import { useOffersList } from '@/hooks/useOffers';
+import { useCustomerOrderHistoryRanges } from '@/hooks/useCustomerOrderHistoryRanges';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
-import { getCustomer, getCustomerOrderHistory } from '@/services/customerService';
+import { getCustomer } from '@/services/customerService';
 import { useSession } from 'next-auth/react';
 import QuickInteractionModal from './QuickInteractionModal';
 import { formatCurrency, formatDateValue, formatDateTimeValue, interactionResultLabels, interactionTypeLabels, offerStatusLabels } from './utils';
@@ -43,25 +44,23 @@ function useCustomerDetail(customerId) {
   });
 }
 
-function useCustomerOrderHistory(customerId, options = {}) {
-  const { enabled = true } = options;
-  const { data: session } = useSession();
-  const token = session?.user?.accessToken;
-
-  return useQuery({
-    queryKey: ['crm', 'customers', 'history', customerId, token],
-    queryFn: () => getCustomerOrderHistory(customerId, token, {}),
-    enabled: !!customerId && !!token && enabled,
-  });
-}
-
 function CustomerDetail({ customerId, embedded = false }) {
   const [activeTab, setActiveTab] = useState('data');
   const shouldLoadOrders = activeTab === 'orders';
   const shouldLoadInteractions = activeTab === 'interactions';
   const shouldLoadOffers = activeTab === 'offers';
   const { data: customer, isLoading } = useCustomerDetail(customerId);
-  const { data: history } = useCustomerOrderHistory(customerId, { enabled: shouldLoadOrders });
+  const {
+    filteredHistory,
+    initialLoading: ordersInitialLoading,
+    loadingData: ordersLoadingData,
+    error: ordersError,
+    hasHistoryRanges,
+  } = useCustomerOrderHistoryRanges({
+    customerId,
+    enabled: shouldLoadOrders,
+    notifyOnError: false,
+  });
   const { data: interactions, isLoading: interactionsLoading } = useCommercialInteractions({
     customerId,
     perPage: 50,
@@ -145,18 +144,38 @@ function CustomerDetail({ customerId, embedded = false }) {
           </TabsContent>
 
           <TabsContent value="orders" className="flex h-full w-full min-w-0 flex-1 min-h-0 flex-col overflow-hidden">
-            {!history?.data?.length ? (
+            {ordersInitialLoading || ordersLoadingData ? (
+              <div className="flex min-h-0 flex-1 items-center justify-center">
+                <Loader />
+              </div>
+            ) : ordersError ? (
+              <div className="flex-1 min-h-0 flex">
+                <EmptyState
+                  title="Error cargando pedidos"
+                  description={ordersError}
+                  className="h-full w-full border bg-muted/20 !min-h-0"
+                />
+              </div>
+            ) : hasHistoryRanges === false ? (
+              <div className="flex-1 min-h-0 flex">
+                <EmptyState
+                  title="Sin historial"
+                  description="Este cliente no tiene pedidos registrados."
+                  className="h-full w-full border bg-muted/20 !min-h-0"
+                />
+              </div>
+            ) : !filteredHistory?.length ? (
               <div className="flex-1 min-h-0 flex">
                 <EmptyState
                   title="Sin pedidos"
-                  description="Este cliente no tiene historial visible en el periodo actual."
+                  description="Este cliente no tiene historial visible en el periodo seleccionado."
                   className="h-full w-full border bg-muted/20 !min-h-0"
                 />
               </div>
             ) : (
               <div className="h-full w-full flex flex-col min-h-0">
                 <div className="space-y-3 flex-1 overflow-y-auto pr-2">
-                  {history.data.map((item, index) => (
+                  {filteredHistory.map((item, index) => (
                     <div key={`${item.product?.id ?? index}-${index}`} className="rounded-xl border p-4">
                       <div className="flex items-start justify-between gap-3">
                         <div>
