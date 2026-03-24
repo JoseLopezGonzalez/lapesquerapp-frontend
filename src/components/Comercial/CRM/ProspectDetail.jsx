@@ -17,6 +17,7 @@ import { useOffersList } from '@/hooks/useOffers';
 import ProspectFormSheet from './ProspectFormSheet';
 import QuickInteractionModal from './QuickInteractionModal';
 import StatusPill from './StatusPill';
+import ProspectLocationMap from './ProspectLocationMap';
 import {
   formatDateTimeValue,
   formatDateValue,
@@ -88,16 +89,6 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
     if (editingContactId == null) return null;
     return contacts.find((contact) => String(contact.id) === String(editingContactId)) ?? null;
   }, [contacts, editingContactId]);
-
-  const encodedProspectAddress = useMemo(() => {
-    const address = prospect?.address?.trim() ?? '';
-    return address ? encodeURIComponent(address) : '';
-  }, [prospect?.address]);
-
-  const prospectMapUrl = useMemo(() => {
-    if (!encodedProspectAddress) return '';
-    return `https://www.google.com/maps?q=${encodedProspectAddress}&z=13&output=embed`;
-  }, [encodedProspectAddress]);
 
   const body = useMemo(() => {
     if (isLoading) {
@@ -316,22 +307,10 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
                         </div>
 
                         <section className="overflow-hidden border-t bg-muted/15 lg:border-t-0 lg:border-l">
-                          {prospectMapUrl ? (
-                            <iframe
-                              width="100%"
-                              height="100%"
-                              style={{ border: 0 }}
-                              loading="lazy"
-                              allowFullScreen
-                              src={prospectMapUrl}
-                              title={`Mapa de ${prospect.companyName}`}
-                              className="min-h-[320px] w-full"
-                            />
-                          ) : (
-                            <div className="flex min-h-[320px] items-center justify-center px-6 text-center text-sm text-muted-foreground">
-                              Añade una dirección para mostrar la ubicación del prospecto.
-                            </div>
-                          )}
+                          <ProspectLocationMap
+                            address={prospect.address}
+                            companyName={prospect.companyName}
+                          />
                         </section>
                       </div>
                     </div>
@@ -365,16 +344,8 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
                           <p className="text-sm leading-7 whitespace-pre-wrap text-foreground">
                             {prospect.nextActionNote?.trim()
                               ? prospect.nextActionNote
-                              : 'Este prospecto todavía no tiene una acción comercial planificada. Conviene registrar una siguiente acción para mantener el seguimiento vivo y que el equipo comercial tenga un punto claro de entrada.'}
+                              : 'Todavia no hay una proxima accion registrada para este prospecto. Cuando definas el siguiente paso comercial, aparecera aqui como referencia clara para el seguimiento.'}
                           </p>
-                          <div className="rounded-xl border border-border/70 bg-background/70 p-3">
-                            <p className="text-xs font-medium text-foreground">Lectura operativa</p>
-                            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                              {prospect.nextActionAt
-                                ? 'Hay una siguiente acción definida. Este bloque debe servir como foco operativo principal dentro de la ficha.'
-                                : 'No hay próxima acción definida. Este es el siguiente dato que más valor aporta para activar seguimiento comercial.'}
-                            </p>
-                          </div>
                         </div>
                       </section>
 
@@ -430,194 +401,205 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
               </section>
             </TabsContent>
 
-            <TabsContent value="contacts" className="flex h-full w-full min-w-0 min-h-0 flex-1 flex-col overflow-hidden">
-              {contactsLoading ? (
-                <div className="flex min-h-0 flex-1 items-center justify-center">
-                  <Loader />
-                </div>
-              ) : (
-                <div className="mb-4 flex-1 min-h-0 overflow-y-auto">
-                  {contacts.length === 0 ? (
-                    contactFormOpen ? null : (
-                      <SectionEmpty title="Sin contactos" description="Añade al menos un contacto para convertir o ofertar con contexto." />
-                    )
-                  ) : (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Nombre</TableHead>
-                          <TableHead>Cargo</TableHead>
-                          <TableHead>Teléfono</TableHead>
-                          <TableHead>Email</TableHead>
-                          <TableHead className="w-24">Principal</TableHead>
-                          <TableHead className="w-[1%] text-right">Acciones</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {orderedContacts.map((contact) => (
-                          <TableRow key={contact.id}>
-                            <TableCell className="font-medium">{contact.name}</TableCell>
-                            <TableCell className="text-muted-foreground">{contact.role || '—'}</TableCell>
-                            <TableCell className="text-muted-foreground">{contact.phone || '—'}</TableCell>
-                            <TableCell className="text-muted-foreground">{contact.email || '—'}</TableCell>
-                            <TableCell>
-                              {contact.isPrimary ? (
-                                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                                  Principal
-                                </span>
-                              ) : (
-                                '—'
-                              )}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex justify-end gap-1">
-                                <Button
-                                  variant="outline"
-                                  size="icon-sm"
-                                  aria-label="Editar contacto"
-                                  onClick={() => {
-                                    setEditingContactId(contact.id);
-                                    setContactFormOpen(true);
-                                  }}
-                                >
-                                  <Pencil />
-                                </Button>
-                                <Button
-                                  variant="destructive"
-                                  size="icon-sm"
-                                  aria-label="Eliminar contacto"
-                                  onClick={async () => {
-                                    try {
-                                      await notify.promise(
-                                        deleteContact.mutateAsync({
-                                          prospectId: prospect.id,
-                                          contactId: contact.id,
-                                        }),
-                                        {
-                                          loading: 'Eliminando contacto...',
-                                          success: 'Contacto eliminado',
-                                          error: (error) => error?.message || 'No se pudo eliminar el contacto',
-                                        }
-                                      );
-                                      if (String(editingContactId) === String(contact.id)) {
-                                        setEditingContactId(null);
-                                      }
-                                    } catch {}
-                                  }}
-                                >
-                                  <Trash2 />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  )}
-                </div>
-              )}
-
-            </TabsContent>
-
-            <TabsContent value="interactions" className="flex h-full w-full min-w-0 min-h-0 flex-1 flex-col overflow-hidden">
-              {interactionsLoading ? (
-                <div className="flex min-h-0 flex-1 items-center justify-center">
-                  <Loader />
-                </div>
-              ) : interactions.length === 0 ? (
-                <SectionEmpty
-                  title="Sin interacciones"
-                  description="Registra seguimiento para alimentar la agenda comercial."
-                />
-              ) : (
-                <div className="flex-1 min-h-0 overflow-y-auto">
-                  <div className="space-y-4">
-                  <div className="relative w-full pl-1 py-2 space-y-4">
-                    {interactions
-                      .slice()
-                      .sort((a, b) => (a.occurredAt && b.occurredAt ? b.occurredAt.localeCompare(a.occurredAt) : 0))
-                      .map((interaction, index, array) => {
-                      const isLast = index === array.length - 1;
-                      const typeLabel = interactionTypeLabels[interaction.type] ?? interaction.type;
-                      const resultLabel = interactionResultLabels[interaction.result] ?? interaction.result;
-                      const TypeIcon = interactionTypeIcons[interaction.type] ?? CircleDot;
-
-                        return (
-                          <div key={interaction.id} className="flex gap-2 items-stretch">
-                          {/* columna pista */}
-                          <div className="flex flex-col items-center shrink-0 w-6 self-stretch">
-                            <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground border-0 shadow-sm">
-                              <TypeIcon className="size-3 stroke-[2]" />
-                            </div>
-                            {!isLast && <div className="w-0.5 flex-1 min-h-0 mt-1 bg-muted-foreground/50" aria-hidden />}
-                          </div>
-
-                          {/* columna contenido */}
-                          <div className={`flex-1 min-w-0 ${!isLast ? 'pb-4' : ''}`}>
-                            <div className="flex flex-col gap-0.5">
-                              <p className="text-xs text-muted-foreground font-normal">
-                                {formatDateTimeValue(interaction.occurredAt)}
-                              </p>
-                              <div className="flex flex-wrap items-center gap-2">
-                                <span className="text-sm font-semibold leading-tight text-foreground truncate">
-                                  {typeLabel}
-                                </span>
-                                <StatusPill label={resultLabel} status={interaction.result} />
-                              </div>
-                            </div>
-
-                            <div className="mt-2 rounded-xl border bg-card p-3 space-y-3">
-                              <p className="text-sm text-foreground leading-snug">
-                                {interaction.summary}
-                              </p>
-                              {interaction.nextActionAt && (
-                                <div className="pt-2 border-t border-border/60 space-y-1">
-                                  <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                                    <CalendarClock className="size-3 shrink-0" />
-                                    <span>Próxima acción: {formatDateValue(interaction.nextActionAt)}</span>
-                                  </p>
-                                  {interaction.nextActionNote && (
-                                    <p className="text-xs text-muted-foreground whitespace-pre-line pl-4">
-                                      {interaction.nextActionNote}
-                                    </p>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                        );
-                      })}
+            <TabsContent value="contacts" className="flex h-full w-full min-w-0 min-h-0 flex-1 flex-col pt-1">
+              <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border bg-card">
+                {contactsLoading ? (
+                  <div className="flex min-h-0 flex-1 items-center justify-center">
+                    <Loader />
                   </div>
-                </div>
-                </div>
-              )}
+                ) : (
+                  <div className="min-h-0 flex-1 overflow-y-auto p-4">
+                    {contacts.length === 0 ? (
+                      contactFormOpen ? null : (
+                        <SectionEmpty title="Sin contactos" description="Añade al menos un contacto para convertir o ofertar con contexto." />
+                      )
+                    ) : (
+                      <div className="overflow-hidden rounded-xl border">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Nombre</TableHead>
+                              <TableHead>Cargo</TableHead>
+                              <TableHead>Teléfono</TableHead>
+                              <TableHead>Email</TableHead>
+                              <TableHead className="w-24">Principal</TableHead>
+                              <TableHead className="w-[1%] text-right">Acciones</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {orderedContacts.map((contact) => (
+                              <TableRow key={contact.id}>
+                                <TableCell className="font-medium">{contact.name}</TableCell>
+                                <TableCell className="text-muted-foreground">{contact.role || '—'}</TableCell>
+                                <TableCell className="text-muted-foreground">{contact.phone || '—'}</TableCell>
+                                <TableCell className="text-muted-foreground">{contact.email || '—'}</TableCell>
+                                <TableCell>
+                                  {contact.isPrimary ? (
+                                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                                      Principal
+                                    </span>
+                                  ) : (
+                                    '—'
+                                  )}
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <div className="flex justify-end gap-1">
+                                    <Button
+                                      variant="outline"
+                                      size="icon-sm"
+                                      aria-label="Editar contacto"
+                                      onClick={() => {
+                                        setEditingContactId(contact.id);
+                                        setContactFormOpen(true);
+                                      }}
+                                    >
+                                      <Pencil />
+                                    </Button>
+                                    <Button
+                                      variant="destructive"
+                                      size="icon-sm"
+                                      aria-label="Eliminar contacto"
+                                      onClick={async () => {
+                                        try {
+                                          await notify.promise(
+                                            deleteContact.mutateAsync({
+                                              prospectId: prospect.id,
+                                              contactId: contact.id,
+                                            }),
+                                            {
+                                              loading: 'Eliminando contacto...',
+                                              success: 'Contacto eliminado',
+                                              error: (error) => error?.message || 'No se pudo eliminar el contacto',
+                                            }
+                                          );
+                                          if (String(editingContactId) === String(contact.id)) {
+                                            setEditingContactId(null);
+                                          }
+                                        } catch {}
+                                      }}
+                                    >
+                                      <Trash2 />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </section>
             </TabsContent>
 
-            <TabsContent value="offers" className="flex h-full w-full min-w-0 min-h-0 flex-1 flex-col overflow-hidden">
-              {offersLoading ? (
-                <div className="flex min-h-0 flex-1 items-center justify-center">
-                  <Loader />
-                </div>
-              ) : offers.length === 0 ? (
-                <SectionEmpty title="Sin ofertas" description="Crea la primera oferta desde esta ficha para pasar el prospecto a oferta enviada." />
-              ) : (
-                <div className="flex-1 min-h-0 overflow-y-auto space-y-3">
-                  {offers.map((offer) => (
-                    <Link key={offer.id} href={`/comercial/ofertas/${offer.id}`} className="block rounded-xl border p-4 hover:bg-accent/40">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div>
-                          <p className="font-medium">Oferta #{offer.id}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {offer.validUntil ? `Validez: ${formatDateValue(offer.validUntil)}` : 'Sin fecha de validez'}
-                          </p>
-                        </div>
-                        <StatusPill label={offerStatusLabels[offer.status] ?? offer.status} status={offer.status} />
+            <TabsContent value="interactions" className="flex h-full w-full min-w-0 min-h-0 flex-1 flex-col pt-1">
+              <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border bg-card">
+                {interactionsLoading ? (
+                  <div className="flex min-h-0 flex-1 items-center justify-center">
+                    <Loader />
+                  </div>
+                ) : interactions.length === 0 ? (
+                  <div className="min-h-0 flex-1 p-4">
+                    <SectionEmpty
+                      title="Sin interacciones"
+                      description="Registra seguimiento para alimentar la agenda comercial."
+                    />
+                  </div>
+                ) : (
+                  <div className="min-h-0 flex-1 overflow-y-auto p-4">
+                    <div className="space-y-4">
+                      <div className="relative w-full space-y-4 py-2 pl-1">
+                        {interactions
+                          .slice()
+                          .sort((a, b) => (a.occurredAt && b.occurredAt ? b.occurredAt.localeCompare(a.occurredAt) : 0))
+                          .map((interaction, index, array) => {
+                            const isLast = index === array.length - 1;
+                            const typeLabel = interactionTypeLabels[interaction.type] ?? interaction.type;
+                            const resultLabel = interactionResultLabels[interaction.result] ?? interaction.result;
+                            const TypeIcon = interactionTypeIcons[interaction.type] ?? CircleDot;
+
+                            return (
+                              <div key={interaction.id} className="flex items-stretch gap-2">
+                                <div className="flex w-6 shrink-0 flex-col items-center self-stretch">
+                                  <div className="flex size-6 shrink-0 items-center justify-center rounded-full border-0 bg-primary text-primary-foreground shadow-sm">
+                                    <TypeIcon className="size-3 stroke-[2]" />
+                                  </div>
+                                  {!isLast && <div className="mt-1 min-h-0 flex-1 w-0.5 bg-muted-foreground/50" aria-hidden />}
+                                </div>
+
+                                <div className={`min-w-0 flex-1 ${!isLast ? 'pb-4' : ''}`}>
+                                  <div className="flex flex-col gap-0.5">
+                                    <p className="text-xs font-normal text-muted-foreground">
+                                      {formatDateTimeValue(interaction.occurredAt)}
+                                    </p>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      <span className="truncate text-sm font-semibold leading-tight text-foreground">
+                                        {typeLabel}
+                                      </span>
+                                      <StatusPill label={resultLabel} status={interaction.result} />
+                                    </div>
+                                  </div>
+
+                                  <div className="mt-2 space-y-3 rounded-xl border bg-card p-3">
+                                    <p className="text-sm leading-snug text-foreground">
+                                      {interaction.summary}
+                                    </p>
+                                    {interaction.nextActionAt && (
+                                      <div className="space-y-1 border-t border-border/60 pt-2">
+                                        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                          <CalendarClock className="size-3 shrink-0" />
+                                          <span>Próxima acción: {formatDateValue(interaction.nextActionAt)}</span>
+                                        </p>
+                                        {interaction.nextActionNote && (
+                                          <p className="whitespace-pre-line pl-4 text-xs text-muted-foreground">
+                                            {interaction.nextActionNote}
+                                          </p>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
                       </div>
-                    </Link>
-                  ))}
-                </div>
-              )}
+                    </div>
+                  </div>
+                )}
+              </section>
+            </TabsContent>
+
+            <TabsContent value="offers" className="flex h-full w-full min-w-0 min-h-0 flex-1 flex-col pt-1">
+              <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border bg-card">
+                {offersLoading ? (
+                  <div className="flex min-h-0 flex-1 items-center justify-center">
+                    <Loader />
+                  </div>
+                ) : offers.length === 0 ? (
+                  <div className="min-h-0 flex-1 p-4">
+                    <SectionEmpty title="Sin ofertas" description="Crea la primera oferta desde esta ficha para pasar el prospecto a oferta enviada." />
+                  </div>
+                ) : (
+                  <div className="min-h-0 flex-1 overflow-y-auto p-4">
+                    <div className="space-y-3">
+                      {offers.map((offer) => (
+                        <Link key={offer.id} href={`/comercial/ofertas/${offer.id}`} className="block rounded-xl border p-4 hover:bg-accent/40">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div>
+                              <p className="font-medium">Oferta #{offer.id}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {offer.validUntil ? `Validez: ${formatDateValue(offer.validUntil)}` : 'Sin fecha de validez'}
+                              </p>
+                            </div>
+                            <StatusPill label={offerStatusLabels[offer.status] ?? offer.status} status={offer.status} />
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </section>
             </TabsContent>
           </Tabs>
         </CardContent>
@@ -638,7 +620,6 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
     offers,
     offersLoading,
     prospect,
-    prospectMapUrl,
   ]);
 
   return (

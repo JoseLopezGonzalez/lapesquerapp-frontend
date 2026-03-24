@@ -43,9 +43,8 @@ const FILTER_TABS = [
 
 function ProspectCard({ prospect, selected, onClick }) {
   const overdue = isOverdueDate(prospect.nextActionAt);
-  const addressLine = prospect.address?.trim() ?? '';
   const websiteLine = prospect.website?.trim() ?? '';
-  const ariaExtras = [prospect.country?.name, addressLine, websiteLine].filter(Boolean).join(' · ');
+  const ariaExtras = [prospect.country?.name, websiteLine].filter(Boolean).join(' · ');
 
   return (
     <Card
@@ -77,22 +76,11 @@ function ProspectCard({ prospect, selected, onClick }) {
 
           <div>
             <p className="text-sm text-muted-foreground truncate">{prospect.country?.name ?? 'Sin país'}</p>
-            {addressLine ? (
-              <p className="text-xs text-muted-foreground/90 line-clamp-2" title={addressLine}>
-                {addressLine}
-              </p>
-            ) : null}
             {websiteLine ? (
               <p className="text-xs text-muted-foreground/90 truncate" title={websiteLine}>
                 {websiteLine}
               </p>
             ) : null}
-          </div>
-
-          <div className="flex items-center gap-4 flex-wrap">
-            <div className="min-w-0">
-              <p className="text-sm font-medium truncate">{prospect.primaryContact?.name ?? 'Sin contacto principal'}</p>
-            </div>
           </div>
         </div>
       </CardContent>

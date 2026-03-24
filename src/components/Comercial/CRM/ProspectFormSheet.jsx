@@ -143,7 +143,7 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
             {isEditing
-              ? 'Edición de datos generales y agenda comercial del prospecto.'
+              ? 'Edición de datos generales y comerciales del prospecto.'
               : 'Alta de prospecto: datos comerciales y, si aplica, contacto y agenda.'}
           </DialogDescription>
         </DialogHeader>
@@ -309,65 +309,67 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
                 <FieldError message={errors.notes?.message} />
               </div>
 
-              <div className="rounded-xl border p-4">
-                <div className="mb-4">
-                  <h3 className="font-medium">Próxima acción</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Activa la casilla para fijar fecha y, si quieres, una nota en la agenda comercial.
-                  </p>
-                </div>
-                <Controller
-                  name="scheduleNextAction"
-                  control={control}
-                  render={({ field }) => (
-                    <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
-                      <Checkbox
-                        id="prospect-schedule-next-action"
-                        checked={field.value}
-                        onCheckedChange={(checked) => {
-                          const on = checked === true;
-                          field.onChange(on);
-                          if (!on) {
-                            setValue('nextActionAt', null);
-                            setValue('nextActionNote', '');
-                          }
-                        }}
-                      />
-                      <span>Programar próxima acción</span>
-                    </label>
-                  )}
-                />
-                {scheduleNextAction ? (
-                  <div className="mt-4 grid gap-4 rounded-xl border bg-muted/10 p-4">
-                    <div className="grid gap-2">
-                      <Label>Fecha</Label>
-                      <Controller
-                        name="nextActionAt"
-                        control={control}
-                        render={({ field }) => (
-                          <DatePicker
-                            date={field.value ?? null}
-                            onChange={field.onChange}
-                            formatStyle="short"
-                          />
-                        )}
-                      />
-                      <FieldError message={errors.nextActionAt?.message} />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="next-action-note">Descripción</Label>
-                      <Input
-                        id="next-action-note"
-                        placeholder="Enviar oferta, volver a llamar, preparar muestra..."
-                        maxLength={255}
-                        aria-invalid={errors.nextActionNote ? 'true' : undefined}
-                        {...register('nextActionNote')}
-                      />
-                      <FieldError message={errors.nextActionNote?.message} />
-                    </div>
+              {!isEditing && (
+                <div className="rounded-xl border p-4">
+                  <div className="mb-4">
+                    <h3 className="font-medium">Próxima acción</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Activa la casilla para fijar fecha y, si quieres, una nota en la agenda comercial.
+                    </p>
                   </div>
-                ) : null}
-              </div>
+                  <Controller
+                    name="scheduleNextAction"
+                    control={control}
+                    render={({ field }) => (
+                      <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
+                        <Checkbox
+                          id="prospect-schedule-next-action"
+                          checked={field.value}
+                          onCheckedChange={(checked) => {
+                            const on = checked === true;
+                            field.onChange(on);
+                            if (!on) {
+                              setValue('nextActionAt', null);
+                              setValue('nextActionNote', '');
+                            }
+                          }}
+                        />
+                        <span>Programar próxima acción</span>
+                      </label>
+                    )}
+                  />
+                  {scheduleNextAction ? (
+                    <div className="mt-4 grid gap-4 rounded-xl border bg-muted/10 p-4">
+                      <div className="grid gap-2">
+                        <Label>Fecha</Label>
+                        <Controller
+                          name="nextActionAt"
+                          control={control}
+                          render={({ field }) => (
+                            <DatePicker
+                              date={field.value ?? null}
+                              onChange={field.onChange}
+                              formatStyle="short"
+                            />
+                          )}
+                        />
+                        <FieldError message={errors.nextActionAt?.message} />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="next-action-note">Descripción</Label>
+                        <Input
+                          id="next-action-note"
+                          placeholder="Enviar oferta, volver a llamar, preparar muestra..."
+                          maxLength={255}
+                          aria-invalid={errors.nextActionNote ? 'true' : undefined}
+                          {...register('nextActionNote')}
+                        />
+                        <FieldError message={errors.nextActionNote?.message} />
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              )}
 
               {!isEditing && (
                 <div className="rounded-xl border p-4">
