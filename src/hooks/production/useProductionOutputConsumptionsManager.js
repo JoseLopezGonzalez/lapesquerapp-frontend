@@ -44,7 +44,7 @@ export function useProductionOutputConsumptionsManager({
     const { products, refetch: refetchProducts } = useProductOptions({
         enabled: !!productionRecordId
     })
-    const { showBoxes, handleToggleBoxes } = useShowBoxesPreference()
+    const { showBoxes, setShowBoxes, handleToggleBoxes } = useShowBoxesPreference()
 
     const [consumptions, setConsumptions] = useState(initialConsumptions)
     const [availableOutputs, setAvailableOutputs] = useState([])

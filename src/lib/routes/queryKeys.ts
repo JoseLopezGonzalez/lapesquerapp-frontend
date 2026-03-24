@@ -120,3 +120,8 @@ export const productFamilyOptionKeys = {
   list: (tenantId: string | null | undefined) =>
     ['productFamilies', 'options', tenantId ?? 'unknown'] as const,
 };
+
+export const settingsQueryKeys = {
+  detail: (tenantId: string | null | undefined) =>
+    ['settings', tenantId ?? 'unknown'] as const,
+};

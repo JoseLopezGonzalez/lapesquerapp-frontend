@@ -4,7 +4,6 @@ import React, { createContext, useContext, useCallback, useMemo, useRef } from '
 import { useProductionRecord } from '@/hooks/useProductionRecord'
 import { getProductionRecord } from '@/services/productionService'
 import { useSession } from 'next-auth/react'
-import { normalizeProductionRecord } from '@/helpers/production/normalizers'
 import { updateRecordWithCalculatedTotals } from '@/helpers/production/calculateTotals'
 
 // Creamos el contexto
@@ -16,9 +15,20 @@ const ProductionRecordContext = createContext()
  */
 export function ProductionRecordProvider({ productionId, recordId = null, children, onRefresh = null }) {
     const { data: session } = useSession()
-    
-    // Usar el hook existente para gestionar el record
-    const recordData = useProductionRecord(productionId, recordId, onRefresh)
+    const {
+        record,
+        production,
+        processes,
+        existingRecords,
+        loading,
+        saving,
+        error,
+        isEditMode,
+        saveRecord,
+        refresh,
+        loadInitialData,
+        setRecord
+    } = useProductionRecord(productionId, recordId, onRefresh)
 
     // Referencia para guardar estado anterior (para rollback)
     const previousStateRef = useRef(null)
@@ -26,68 +36,68 @@ export function ProductionRecordProvider({ productionId, recordId = null, childr
     // Función para actualizar el record completo (después de cambios)
     const updateRecord = useCallback(async () => {
         const token = session?.user?.accessToken
-        const currentRecordId = recordId || recordData.record?.id
+        const currentRecordId = recordId || record?.id
         if (!token || !currentRecordId) return
 
         try {
             // Guardar estado anterior para rollback
-            previousStateRef.current = recordData.record
+            previousStateRef.current = record
             
             const updatedRecord = await getProductionRecord(currentRecordId, token)
             // El record ya viene normalizado desde el servicio
             
-            if (recordData.setRecord) {
-                recordData.setRecord(updatedRecord)
+            if (setRecord) {
+                setRecord(updatedRecord)
             } else {
                 // Si no está disponible setRecord, usar refresh
-                recordData.refresh()
+                refresh()
             }
             return updatedRecord
         } catch (err) {
             console.error('Error updating record:', err)
             // Rollback en caso de error
-            if (previousStateRef.current && recordData.setRecord) {
-                recordData.setRecord(previousStateRef.current)
+            if (previousStateRef.current && setRecord) {
+                setRecord(previousStateRef.current)
             }
             throw err
         }
-    }, [session?.user?.accessToken, recordId, recordData])
+    }, [session?.user?.accessToken, recordId, record, setRecord, refresh])
 
     // Funciones helper para obtener datos del record (ahora normalizados)
     // El record ya viene normalizado desde el servicio, así que accedemos directamente
     const recordInputs = useMemo(() => {
-        if (!recordData.record) return []
-        return recordData.record.inputs || []
-    }, [recordData.record])
+        if (!record) return []
+        return record.inputs || []
+    }, [record])
 
     const recordOutputs = useMemo(() => {
-        if (!recordData.record) return []
-        return recordData.record.outputs || []
-    }, [recordData.record])
+        if (!record) return []
+        return record.outputs || []
+    }, [record])
 
     const recordConsumptions = useMemo(() => {
-        if (!recordData.record) return []
-        return recordData.record.parentOutputConsumptions || []
-    }, [recordData.record])
+        if (!record) return []
+        return record.parentOutputConsumptions || []
+    }, [record])
 
     const hasParent = useMemo(() => {
-        if (!recordData.record) return false
-        return !!(recordData.record.parentRecordId)
-    }, [recordData.record])
+        if (!record) return false
+        return !!(record.parentRecordId)
+    }, [record])
 
     // Función para actualizar inputs (actualización optimista con cálculo local de totales y rollback)
     const updateInputs = useCallback(async (newInputs, shouldRefresh = false) => {
-        const currentRecordId = recordId || recordData.record?.id
+        const currentRecordId = recordId || record?.id
         if (!currentRecordId) return
 
-        if (recordData.setRecord && recordData.record) {
+        if (setRecord && record) {
             // Guardar estado anterior para rollback
-            const previousRecord = recordData.record
+            const previousRecord = record
             previousStateRef.current = previousRecord
             
             try {
                 // Actualización optimista inmediata con cálculo local de totales
-                recordData.setRecord(prev => {
+                setRecord(prev => {
                     const updatedRecord = {
                         ...prev,
                         inputs: newInputs
@@ -102,34 +112,34 @@ export function ProductionRecordProvider({ productionId, recordId = null, childr
                     updateRecord().catch(err => {
                         console.warn('Error refreshing record after inputs update:', err)
                         // Rollback en caso de error
-                        if (previousStateRef.current && recordData.setRecord) {
-                            recordData.setRecord(previousStateRef.current)
+                        if (previousStateRef.current && setRecord) {
+                            setRecord(previousStateRef.current)
                         }
                     })
                 }
             } catch (err) {
                 // Rollback en caso de error
-                if (previousStateRef.current && recordData.setRecord) {
-                    recordData.setRecord(previousStateRef.current)
+                if (previousStateRef.current && setRecord) {
+                    setRecord(previousStateRef.current)
                 }
                 throw err
             }
         }
-    }, [recordData, recordId, updateRecord])
+    }, [recordId, record, setRecord, updateRecord])
 
     // Función para actualizar outputs (actualización optimista con cálculo local de totales y rollback)
     const updateOutputs = useCallback(async (newOutputs, shouldRefresh = false) => {
-        const currentRecordId = recordId || recordData.record?.id
+        const currentRecordId = recordId || record?.id
         if (!currentRecordId) return
 
-        if (recordData.setRecord && recordData.record) {
+        if (setRecord && record) {
             // Guardar estado anterior para rollback
-            const previousRecord = recordData.record
+            const previousRecord = record
             previousStateRef.current = previousRecord
             
             try {
                 // Actualización optimista inmediata con cálculo local de totales
-                recordData.setRecord(prev => {
+                setRecord(prev => {
                     const updatedRecord = {
                         ...prev,
                         outputs: newOutputs
@@ -144,35 +154,35 @@ export function ProductionRecordProvider({ productionId, recordId = null, childr
                     updateRecord().catch(err => {
                         console.warn('Error refreshing record after outputs update:', err)
                         // Rollback en caso de error
-                        if (previousStateRef.current && recordData.setRecord) {
-                            recordData.setRecord(previousStateRef.current)
+                        if (previousStateRef.current && setRecord) {
+                            setRecord(previousStateRef.current)
                         }
                     })
                 }
             } catch (err) {
                 // Rollback en caso de error
-                if (previousStateRef.current && recordData.setRecord) {
-                    recordData.setRecord(previousStateRef.current)
+                if (previousStateRef.current && setRecord) {
+                    setRecord(previousStateRef.current)
                 }
                 throw err
             }
         }
-    }, [recordData, recordId, updateRecord])
+    }, [recordId, record, setRecord, updateRecord])
 
     // Función para actualizar consumptions (actualización optimista con rollback)
     // Nota: Los consumptions no afectan los totales del record actual, solo se actualizan
     const updateConsumptions = useCallback(async (newConsumptions, shouldRefresh = false) => {
-        const currentRecordId = recordId || recordData.record?.id
+        const currentRecordId = recordId || record?.id
         if (!currentRecordId) return
 
-        if (recordData.setRecord && recordData.record) {
+        if (setRecord && record) {
             // Guardar estado anterior para rollback
-            const previousRecord = recordData.record
+            const previousRecord = record
             previousStateRef.current = previousRecord
             
             try {
                 // Actualización optimista inmediata
-                recordData.setRecord(prev => ({
+                setRecord(prev => ({
                     ...prev,
                     parentOutputConsumptions: newConsumptions
                 }))
@@ -183,47 +193,82 @@ export function ProductionRecordProvider({ productionId, recordId = null, childr
                     updateRecord().catch(err => {
                         console.warn('Error refreshing record after consumptions update:', err)
                         // Rollback en caso de error
-                        if (previousStateRef.current && recordData.setRecord) {
-                            recordData.setRecord(previousStateRef.current)
+                        if (previousStateRef.current && setRecord) {
+                            setRecord(previousStateRef.current)
                         }
                     })
                 }
             } catch (err) {
                 // Rollback en caso de error
-                if (previousStateRef.current && recordData.setRecord) {
-                    recordData.setRecord(previousStateRef.current)
+                if (previousStateRef.current && setRecord) {
+                    setRecord(previousStateRef.current)
                 }
                 throw err
             }
         }
-    }, [recordData, recordId, updateRecord])
+    }, [recordId, record, setRecord, updateRecord])
 
-    // Valor del contexto
-    const contextValue = useMemo(() => ({
-        // Datos del hook original
-        ...recordData,
-        
-        // Funciones adicionales para actualización
-        updateRecord,
-        updateInputs,
-        updateOutputs,
-        updateConsumptions,
-        
-        // Acceso directo a datos del record (helpers)
+    const recordDataSlice = useMemo(() => ({
+        record,
+        production,
+        processes,
+        existingRecords,
+        isEditMode,
         recordInputs,
         recordOutputs,
         recordConsumptions,
         hasParent
     }), [
-        recordData,
-        updateRecord,
-        updateInputs,
-        updateOutputs,
-        updateConsumptions,
+        record,
+        production,
+        processes,
+        existingRecords,
+        isEditMode,
         recordInputs,
         recordOutputs,
         recordConsumptions,
         hasParent
+    ])
+
+    const recordStateSlice = useMemo(() => ({
+        loading,
+        saving,
+        error,
+        saveRecord,
+        refresh,
+        loadInitialData,
+        updateRecord
+    }), [
+        loading,
+        saving,
+        error,
+        saveRecord,
+        refresh,
+        loadInitialData,
+        updateRecord
+    ])
+
+    const recordMutationsSlice = useMemo(() => ({
+        setRecord,
+        updateInputs,
+        updateOutputs,
+        updateConsumptions
+    }), [
+        setRecord,
+        updateInputs,
+        updateOutputs,
+        updateConsumptions
+    ])
+
+    // Valor del contexto
+    const contextValue = useMemo(() => ({
+        ...recordDataSlice,
+        ...recordStateSlice,
+        ...recordMutationsSlice
+    }), [
+        recordDataSlice,
+        recordStateSlice,
+        recordMutationsSlice
     ])
 
     return (

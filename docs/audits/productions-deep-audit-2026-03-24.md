@@ -8,6 +8,45 @@
 
 ---
 
+## Estado tras implementación (actualizado el 2026-03-24)
+
+Después de la auditoría, el Sprint 1 ha quedado **implementado** en el repo local. Hubo una primera pasada parcial realizada con Claude Code y un cierre posterior para rematar los puntos que quedaron a medias.
+
+### Cambios que ya había dejado encaminados Claude Code
+
+- `NAV-01`: aumento del TTL de `__session_verified` de 60s a 5 minutos en `src/middleware.ts`.
+- `DEEP-01`: unificación inicial de la query key de `useProduction` con el detalle de producción.
+- Mejora parcial de la UX del detalle:
+  - loaders con texto en `ProductionView`
+  - carga diferida del `processTree` según pestaña activa
+- `DEEP-12`: extracción inicial del hook `useShowBoxesPreference()`, aunque todavía no estaba conectado a los managers.
+- Parte de `DEEP-05`: intento de migración de `useProductionRecord` para reducir estado duplicado, pero quedó incompleto y con regresión (`useEffect` usado sin import, invalidaciones amplias aún presentes).
+
+### Cambios que se han rematado para cerrar Sprint 1
+
+- `NAV-04`: `ProductionDiagram` se carga ahora con `dynamic(..., { ssr: false })` y el selector de vista se separó del bundle pesado para no descargar `@xyflow/react` desde la pestaña "Info".
+- `DEEP-02`, `DEEP-03`, `DEEP-05`:
+  - `useProductionRecord` usa ahora React Query como fuente de verdad del record
+  - se eliminó la sincronización `useEffect -> useState`
+  - se añadió `staleTime: 30 * 1000`
+  - las invalidaciones se limitaron al record y la producción afectados
+  - se mantuvo compatibilidad con `ProductionRecordContext` mediante `setRecord` apoyado en `queryClient.setQueryData`
+- `DEEP-08`: `useProductionOutputsManager` y `useProductionOutputConsumptionsManager` comparten ya la caché de opciones de producto vía `useProductOptions()`.
+- `DEEP-11`: memoización de `calculateSummaryByPallet`, `calculateProductsBreakdown` y `calculateTotalSummary` en `useProductionInputsManager`.
+- `DEEP-12`: conexión real del hook compartido `useShowBoxesPreference()` en Outputs y Consumptions.
+- Endurecimiento de infraestructura de caché:
+  - nuevas factories `productionQueryKeys` en `src/lib/routes/queryKeys.ts`
+  - uso de esas keys en `useProduction`, `useProductionDetail` y `useProductionRecord`
+  - ampliación de `useProductOptions()` para devolver también `products` crudos además de `productOptions`
+
+### Validación realizada
+
+- `eslint` ejecutado sobre los archivos tocados del Sprint 1.
+- Resultado: **0 errores**.
+- Permanecen warnings previos de `react-hooks/exhaustive-deps` en los mega-hooks de inputs/outputs/consumptions; no bloquean el cierre de Sprint 1 y quedan como deuda de Sprint 2/3.
+
+---
+
 ## Limitaciones declaradas
 
 - Sin acceso a runtime: no hay TTFB medido, waterfall real de red, FPS ni coste de re-render con React Profiler.
@@ -554,17 +593,17 @@ Estas funciones se recrean en cada render del hook. Si los componentes hijos que
 
 ### Sprint 1 — Impacto inmediato, bajo riesgo (1–2 días)
 
-| Hallazgo | Cambio | Archivos |
-|---|---|---|
-| NAV-01 | Aumentar TTL de `__session_verified` de 60s a 5–10 minutos | `src/middleware.ts` |
-| NAV-04 | `dynamic(() => import('./ProductionDiagram'), { ssr: false })` | `ProductionView.jsx` |
-| DEEP-01 | Unificar queryKey de `useProduction` a `['productions', 'detail', ...]` | `src/hooks/production/useProduction.ts` |
-| DEEP-02 | Acotar `invalidateQueries` a solo las keys afectadas | `src/hooks/useProductionRecord.js` |
-| DEEP-03 | Añadir `staleTime: 30 * 1000` a `recordQuery` | `src/hooks/useProductionRecord.js` |
-| DEEP-05 | Eliminar `useState(record)` + `useEffect` que lo sincroniza | `src/hooks/useProductionRecord.js` |
-| DEEP-08 | Mover `loadProducts` a `useQuery(['productOptions', tenantId])` compartido | `useProductionOutputsManager.js`, `useProductionOutputConsumptionsManager.js` |
-| DEEP-11 | Envolver `calculateSummaryByPallet`, `calculateProductsBreakdown`, `calculateTotalSummary` en `useMemo` | `useProductionInputsManager.js` |
-| DEEP-12 | Extraer a hook `useShowBoxesPreference()` compartido | ambos manager hooks |
+| Hallazgo | Cambio | Archivos | Estado | Nota |
+|---|---|---|---|---|
+| NAV-01 | Aumentar TTL de `__session_verified` de 60s a 5–10 minutos | `src/middleware.ts` | ✅ Implementado | Hecho en la pasada inicial con Claude Code |
+| NAV-04 | `dynamic(() => import('./ProductionDiagram'), { ssr: false })` | `ProductionView.jsx` | ✅ Implementado | Rematado separando también `ViewModeSelector` del bundle pesado |
+| DEEP-01 | Unificar queryKey de `useProduction` a `['productions', 'detail', ...]` | `src/hooks/production/useProduction.ts` | ✅ Implementado | Hecho en la pasada inicial y consolidado usando `productionQueryKeys` |
+| DEEP-02 | Acotar `invalidateQueries` a solo las keys afectadas | `src/hooks/useProductionRecord.js` | ✅ Implementado | Rematado al rehacer `useProductionRecord` |
+| DEEP-03 | Añadir `staleTime: 30 * 1000` a `recordQuery` | `src/hooks/useProductionRecord.js` | ✅ Implementado | Rematado |
+| DEEP-05 | Eliminar `useState(record)` + `useEffect` que lo sincroniza | `src/hooks/useProductionRecord.js` | ✅ Implementado | Claude dejó una migración incompleta; se rehízo sin romper el contexto |
+| DEEP-08 | Mover `loadProducts` a `useQuery(['productOptions', tenantId])` compartido | `useProductionOutputsManager.js`, `useProductionOutputConsumptionsManager.js` | ✅ Implementado | Rematado vía `useProductOptions()` compartido |
+| DEEP-11 | Envolver `calculateSummaryByPallet`, `calculateProductsBreakdown`, `calculateTotalSummary` en `useMemo` | `useProductionInputsManager.js` | ✅ Implementado | Rematado |
+| DEEP-12 | Extraer a hook `useShowBoxesPreference()` compartido | ambos manager hooks | ✅ Implementado | Claude extrajo el hook; faltaba conectarlo en los managers |
 
 ### Sprint 2 — Mejoras arquitectónicas, riesgo medio (3–5 días)
 
@@ -587,6 +626,15 @@ Estas funciones se recrean en cada render del hook. Si los componentes hijos que
 
 ## Notas finales
 
-Los hallazgos de Sprint 1 son todos cambios de 1 a 10 líneas con riesgo muy bajo y sin necesidad de tests adicionales. Resuelven los dos problemas más percibidos por el usuario: la espera opaca al navegar (NAV-01) y las requests duplicadas al abrir un record (DEEP-01, DEEP-08).
+Sprint 1 queda cerrado a nivel de código en el repo local. Los puntos de mayor impacto perceptible ya mitigados son:
 
-Los Sprints 2 y 3 requieren más contexto sobre las decisiones originales de arquitectura (especialmente `force-dynamic` y el patrón de Context + triple estado) antes de proceder.
+- la espera opaca al navegar por expiración rápida del middleware (`NAV-01`)
+- el bundle innecesario del diagrama en la carga inicial del detalle (`NAV-04`)
+- la duplicidad de fetches/cachés y el estado duplicado alrededor del editor de records (`DEEP-01`, `DEEP-02`, `DEEP-03`, `DEEP-05`, `DEEP-08`)
+
+No se han abordado en esta pasada los cambios arquitectónicos de Sprint 2 y 3. Siguen vigentes como siguientes pasos recomendados:
+
+- revisar `force-dynamic` en `/admin`
+- sustituir `window.open()` por navegación interna con prefetch
+- dividir `ProductionRecordContext`
+- atacar la deuda estructural de los mega-hooks y el estado triplicado

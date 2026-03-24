@@ -1,4 +1,4 @@
-export function mapEntityRows(rawRows, headers, handleDelete, config) {
+export function mapEntityRows(rawRows, headers, handleDelete, config, handleView) {
     // console.log('rawRows', rawRows);
     // console.log('headers', headers);
     const isProductionStatus = config?.endpoint === "productions";
@@ -51,9 +51,18 @@ export function mapEntityRows(rawRows, headers, handleDelete, config) {
                 view: {
                     label: 'Ver',
                     onClick: () => {
+                        if (typeof handleView === 'function') {
+                            handleView(row.id);
+                            return;
+                        }
+
                         if (config?.viewRoute) {
                             const viewUrl = config.viewRoute.replace(':id', row.id);
-                            window.open(viewUrl, '_blank');
+                            if (config?.sameTabNavigation) {
+                                window.location.assign(viewUrl);
+                            } else {
+                                window.open(viewUrl, '_blank');
+                            }
                         }
                     },
                 },

@@ -116,6 +116,7 @@ export default function EntityClient({ config }) {
     const [isDeleting, setIsDeleting] = useState(false);
     const [isGeneratingReport, setIsGeneratingReport] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
+    const usesSameTabNavigation = config?.sameTabNavigation === true;
 
     const perPage = config?.perPage || 12;
     const filtersObject = useMemo(() => {
@@ -228,11 +229,56 @@ export default function EntityClient({ config }) {
         }
     }, [config.endpoint, isQueryDriven, queryResult?.refetch]);
 
+    // Handler para abrir modal de creación
+    const handleOpenCreate = useCallback(() => {
+        if (config.createRedirect) {
+            if (usesSameTabNavigation) {
+                router.push(config.createRedirect);
+            } else {
+                window.open(config.createRedirect, '_blank');
+            }
+        } else {
+            setModal({ open: true, mode: 'create', editId: null });
+        }
+    }, [config.createRedirect, router, usesSameTabNavigation]);
+
+    // Handler para abrir modal de edición
+    const handleOpenEdit = useCallback((id) => {
+        if (config.editRedirect) {
+            const editUrl = config.editRedirect.replace(':id', id);
+            if (usesSameTabNavigation) {
+                router.push(editUrl);
+            } else {
+                window.open(editUrl, '_blank');
+            }
+        } else {
+            setModal({ open: true, mode: 'edit', editId: id });
+        }
+    }, [config.editRedirect, router, usesSameTabNavigation]);
+
+    // Handler para navegar a la vista de detalles
+    const handleOpenView = useCallback((id) => {
+        if (!config.viewRoute) return;
+
+        const viewUrl = config.viewRoute.replace(':id', id);
+        if (usesSameTabNavigation) {
+            router.push(viewUrl);
+        } else {
+            window.open(viewUrl, '_blank');
+        }
+    }, [config.viewRoute, router, usesSameTabNavigation]);
+
     const dataForTable = useMemo(() => {
         if (!isQueryDriven || !queryResult) return data;
-        const processedRows = mapEntityRows(queryResult.data, config.table?.headers || [], handleDelete, config);
+        const processedRows = mapEntityRows(
+            queryResult.data,
+            config.table?.headers || [],
+            handleDelete,
+            config,
+            handleOpenView
+        );
         return { loading: queryResult.isLoading, rows: processedRows };
-    }, [isQueryDriven, queryResult?.data, queryResult?.isLoading, data, config.table?.headers, handleDelete, config]);
+    }, [isQueryDriven, queryResult?.data, queryResult?.isLoading, data, config.table?.headers, handleDelete, config, handleOpenView]);
 
     const paginationMetaForTable = useMemo(() => {
         if (!isQueryDriven || !queryResult) return paginationMeta;
@@ -281,7 +327,7 @@ export default function EntityClient({ config }) {
             const result = await entityService.list(filtersObject, { page, perPage });
 
             // Usar el helper para procesar los datos
-            const processedRows = mapEntityRows(result.data, config.table.headers, handleDelete, config);
+            const processedRows = mapEntityRows(result.data, config.table.headers, handleDelete, config, handleOpenView);
 
             const apiCurrentPage = result.meta?.current_page || page;
             const apiTotalPages = result.meta?.last_page || 1;
@@ -557,32 +603,6 @@ export default function EntityClient({ config }) {
     const handleOnSelectionChange = (selectedRows) => {
         setSelectedRows(selectedRows);
     }
-
-    // Handler para abrir modal de creación
-    const handleOpenCreate = () => {
-        if (config.createRedirect) {
-            window.open(config.createRedirect, '_blank');
-        } else {
-            setModal({ open: true, mode: 'create', editId: null });
-        }
-    };
-    // Handler para abrir modal de edición
-    const handleOpenEdit = (id) => {
-        if (config.editRedirect) {
-            const editUrl = config.editRedirect.replace(':id', id);
-            window.open(editUrl, '_blank');
-        } else {
-        setModal({ open: true, mode: 'edit', editId: id });
-        }
-    };
-
-    // Handler para navegar a la vista de detalles
-    const handleOpenView = (id) => {
-        if (config.viewRoute) {
-            const viewUrl = config.viewRoute.replace(':id', id);
-            window.open(viewUrl, '_blank');
-        }
-    };
 
     // Handler para cerrar modal y refrescar datos si es necesario
     const handleCloseModal = (shouldRefresh = false) => {

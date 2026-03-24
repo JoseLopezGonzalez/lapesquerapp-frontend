@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { toast } from 'sonner'
 import {
@@ -50,12 +50,13 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
     const [palletsDialogOpen, setPalletsDialogOpen] = useState(false)
     const [deleteInputConfirm, setDeleteInputConfirm] = useState({ open: false, inputId: null, mode: 'single' })
 
-    const isBoxAvailable = (box) => box.isAvailable !== false
+    const isBoxAvailable = useCallback((box) => box.isAvailable !== false, [])
 
-    const getAllBoxes = () =>
+    const getAllBoxes = useCallback(() =>
         loadedPallets.flatMap((pallet) =>
             (pallet.boxes || []).map((box) => ({ ...box, palletId: pallet.id }))
         )
+    , [loadedPallets])
 
     const hasInitializedRef = useRef(false)
     const previousInputsIdsRef = useRef(null)
@@ -99,7 +100,7 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
         }
     }, [inputsKey, contextInputs, initialInputsProp, inputs.length])
 
-    const loadInputsOnly = async () => {
+    const loadInputsOnly = useCallback(async () => {
         try {
             const token = session?.user?.accessToken
             if (!token) return
@@ -108,9 +109,9 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
         } catch (err) {
             console.warn('Error loading inputs:', err)
         }
-    }
+    }, [productionRecordId, session?.user?.accessToken])
 
-    const loadInputs = async () => {
+    const loadInputs = useCallback(async () => {
         try {
             setLoading(true)
             setError(null)
@@ -130,9 +131,9 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
         } finally {
             setLoading(false)
         }
-    }
+    }, [productionRecordId, session?.user?.accessToken])
 
-    const loadExistingDataForEdit = async () => {
+    const loadExistingDataForEdit = useCallback(async () => {
         if (inputs.length === 0) return
         try {
             setLoadingPallet(true)
@@ -163,9 +164,9 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
         } finally {
             setLoadingPallet(false)
         }
-    }
+    }, [inputs, session?.user?.accessToken])
 
-    const handleSearchPallet = async () => {
+    const handleSearchPallet = useCallback(async () => {
         if (!palletSearch.trim()) {
             toast.error('Por favor ingresa un ID de palet o un lote')
             return
@@ -242,37 +243,39 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
         } finally {
             setLoadingPallet(false)
         }
-    }
+    }, [isBoxAvailable, loadedPallets, palletSearch, selectedBoxes, session?.user?.accessToken])
 
-    const handleRemovePallet = (palletId) => {
+    const handleRemovePallet = useCallback((palletId) => {
         setLoadedPallets((prev) => prev.filter((p) => p.id !== palletId))
         setSelectedBoxes((prev) => prev.filter((box) => box.palletId !== palletId))
         if (selectedPalletId === palletId) {
             const remainingPallets = loadedPallets.filter((p) => p.id !== palletId)
             setSelectedPalletId(remainingPallets.length > 0 ? remainingPallets[0].id : null)
         }
-    }
+    }, [loadedPallets, selectedPalletId])
 
-    const getPalletBoxes = (palletId) => {
+    const getPalletBoxes = useCallback((palletId) => {
         const pallet = loadedPallets.find((p) => p.id === palletId)
         return pallet?.boxes || []
-    }
+    }, [loadedPallets])
 
-    const getSelectedBoxesForPallet = (palletId) =>
+    const getSelectedBoxesForPallet = useCallback((palletId) =>
         selectedBoxes.filter((box) => box.palletId === palletId)
+    , [selectedBoxes])
 
-    const handleToggleBox = (boxId, palletId) => {
+    const handleToggleBox = useCallback((boxId, palletId) => {
         setSelectedBoxes((prev) => {
             const exists = prev.some((box) => box.boxId === boxId && box.palletId === palletId)
             if (exists) return prev.filter((box) => !(box.boxId === boxId && box.palletId === palletId))
             return [...prev, { boxId, palletId }]
         })
-    }
+    }, [])
 
-    const isBoxSelected = (boxId, palletId) =>
+    const isBoxSelected = useCallback((boxId, palletId) =>
         selectedBoxes.some((box) => box.boxId === boxId && box.palletId === palletId)
+    , [selectedBoxes])
 
-    const handleSelectAllBoxes = () => {
+    const handleSelectAllBoxes = useCallback(() => {
         const allBoxes = getAllBoxes()
         const availableBoxes = allBoxes.filter(
             (box) => isBoxAvailable(box) && !isBoxSelected(box.id, box.palletId)
@@ -281,11 +284,11 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
             ...prev,
             ...availableBoxes.map((box) => ({ boxId: box.id, palletId: box.palletId }))
         ])
-    }
+    }, [getAllBoxes, isBoxAvailable, isBoxSelected])
 
-    const handleUnselectAllBoxes = () => setSelectedBoxes([])
+    const handleUnselectAllBoxes = useCallback(() => setSelectedBoxes([]), [])
 
-    const handleAddInputs = async () => {
+    const handleAddInputs = useCallback(async () => {
         if (selectedBoxes.length === 0) {
             toast.error('Por favor selecciona al menos una caja')
             return
@@ -352,18 +355,18 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
         } finally {
             setSavingInputs(false)
         }
-    }
+    }, [inputs, onRefresh, productionRecordId, selectedBoxes, session?.user?.accessToken, updateInputs, updateRecord])
 
-    const handleDeleteInput = (inputId) => {
+    const handleDeleteInput = useCallback((inputId) => {
         setDeleteInputConfirm({ open: true, inputId, mode: 'single' })
-    }
+    }, [])
 
-    const handleDeleteAllInputs = () => {
+    const handleDeleteAllInputs = useCallback(() => {
         if (inputs.length === 0) return
         setDeleteInputConfirm({ open: true, inputId: null, mode: 'all' })
-    }
+    }, [inputs.length])
 
-    const confirmDeleteInput = async () => {
+    const confirmDeleteInput = useCallback(async () => {
         const { inputId, mode } = deleteInputConfirm
         setDeleteInputConfirm({ open: false, inputId: null, mode: 'single' })
         try {
@@ -391,7 +394,7 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
                 'Error al eliminar la entrada'
             toast.error(errorMessage)
         }
-    }
+    }, [deleteInputConfirm, inputs, onRefresh, productionRecordId, session?.user?.accessToken, updateInputs, updateRecord])
 
     const summaryByPallet = useMemo(() => {
         const summaryByPallet = {}
@@ -490,13 +493,13 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
         }
     }, [inputs, summaryByPallet])
 
-    const calculateSummaryByPallet = () => summaryByPallet
+    const calculateSummaryByPallet = useCallback(() => summaryByPallet, [summaryByPallet])
 
-    const calculateProductsBreakdown = () => productsBreakdown
+    const calculateProductsBreakdown = useCallback(() => productsBreakdown, [productsBreakdown])
 
-    const calculateTotalSummary = () => totalSummary
+    const calculateTotalSummary = useCallback(() => totalSummary, [totalSummary])
 
-    const calculateTotalWeight = () => {
+    const calculateTotalWeight = useCallback(() => {
         const allBoxes = getAllBoxes()
         return selectedBoxes.reduce((total, selectedBox) => {
             const box = allBoxes.find(
@@ -504,9 +507,9 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
             )
             return total + parseFloat(box?.netWeight || 0)
         }, 0)
-    }
+    }, [getAllBoxes, selectedBoxes])
 
-    const handleCalculateByWeight = (palletId) => {
+    const handleCalculateByWeight = useCallback((palletId) => {
         const pallet = loadedPallets.find((p) => p.id === palletId)
         if (!pallet || !pallet.boxes || pallet.boxes.length === 0) {
             toast.error('El palet no tiene cajas')
@@ -556,9 +559,9 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
         } else {
             toast.error('No se pudieron encontrar cajas que se ajusten al peso objetivo')
         }
-    }
+    }, [isBoxAvailable, isBoxSelected, loadedPallets, targetWeight])
 
-    const handleSelectTargetWeightResults = () => {
+    const handleSelectTargetWeightResults = useCallback(() => {
         if (targetWeightResults.length === 0) {
             toast.error('No hay resultados para seleccionar')
             return
@@ -578,9 +581,9 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
         })
         setTargetWeightResults([])
         setTargetWeight((prev) => ({ ...prev, [selectedPalletId]: '' }))
-    }
+    }, [selectedPalletId, targetWeightResults])
 
-    const calculateWeightByPallet = (palletId) => {
+    const calculateWeightByPallet = useCallback((palletId) => {
         const allBoxes = getAllBoxes()
         const selectedForPallet = getSelectedBoxesForPallet(palletId)
         return selectedForPallet.reduce((total, selectedBox) => {
@@ -589,9 +592,9 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
             )
             return total + parseFloat(box?.netWeight || 0)
         }, 0)
-    }
+    }, [getAllBoxes, getSelectedBoxesForPallet])
 
-    const calculateWeightByProduct = () => {
+    const calculateWeightByProduct = useCallback(() => {
         const allBoxes = getAllBoxes()
         const productWeights = {}
         selectedBoxes.forEach((selectedBox) => {
@@ -608,9 +611,9 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
             }
         })
         return Object.values(productWeights)
-    }
+    }, [getAllBoxes, selectedBoxes])
 
-    const convertScannedCodeToGs1128 = (code) => {
+    const convertScannedCodeToGs1128 = useCallback((code) => {
         const cleaned = code.replace(/[()]/g, '')
         let match = cleaned.match(/01(\d{14})3100(\d{6})10(.+)/)
         if (match) {
@@ -633,9 +636,9 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
             return `(01)${gtin}(3200)${weightStr}(10)${lot}`
         }
         return null
-    }
+    }, [])
 
-    const handleScanGS1Code = () => {
+    const handleScanGS1Code = useCallback(() => {
         if (!scannedCode.trim()) {
             toast.error('Por favor escanea o ingresa un código GS1-128')
             return
@@ -666,9 +669,9 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
         }
         handleToggleBox(foundBox.id, selectedPalletId)
         setScannedCode('')
-    }
+    }, [convertScannedCodeToGs1128, getPalletBoxes, handleToggleBox, isBoxAvailable, isBoxSelected, scannedCode, selectedPalletId])
 
-    const handleSearchByWeight = () => {
+    const handleSearchByWeight = useCallback(() => {
         if (!weightSearch.trim()) {
             toast.error('Por favor ingresa un peso')
             return
@@ -702,9 +705,9 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
                 `No se encontraron cajas que coincidan con el peso ingresado en el palet #${selectedPalletId} (tolerancia: ±${weightTolerance} kg)`
             )
         }
-    }
+    }, [getPalletBoxes, isBoxAvailable, isBoxSelected, selectedPalletId, weightSearch, weightTolerance])
 
-    const handleSelectWeightSearchResults = () => {
+    const handleSelectWeightSearchResults = useCallback(() => {
         if (weightSearchResults.length === 0) {
             toast.error('No hay resultados para seleccionar')
             return
@@ -724,9 +727,9 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
         })
         setWeightSearchResults([])
         setWeightSearch('')
-    }
+    }, [weightSearchResults])
 
-    const resetAddDialog = () => {
+    const resetAddDialog = useCallback(() => {
         setPalletSearch('')
         setLoadedPallets([])
         setSelectedBoxes([])
@@ -737,7 +740,7 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
         setWeightSearch('')
         setWeightSearchResults([])
         setTargetWeightResults([])
-    }
+    }, [])
 
     return {
         inputs,

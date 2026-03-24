@@ -3616,6 +3616,7 @@ export const configs = {
   productions: {
     title: "Producciones",
     hideEditButton: true,
+    sameTabNavigation: true,
     description: "Gestiona, edita y consulta lotes de producción.",
     emptyState: {
       title: "No existen producciones según los filtros",

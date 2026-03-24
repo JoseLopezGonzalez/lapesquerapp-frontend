@@ -8,8 +8,7 @@ import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 import { invalidateSettingsCache } from '@/helpers/getSettingValue';
 import { isAuthError } from '@/configs/authConfig';
 import { isExternalActor } from '@/lib/auth/actor';
-
-const SETTINGS_QUERY_KEY = 'settings';
+import { settingsQueryKeys } from '@/lib/routes/queryKeys';
 
 /**
  * React Query hook for tenant settings.
@@ -56,14 +55,14 @@ export function useSettingsData() {
   );
 
   const query = useQuery({
-    queryKey: [SETTINGS_QUERY_KEY, tenantId],
+    queryKey: settingsQueryKeys.detail(tenantId),
     queryFn: async () => {
       const data = await getSettings();
       if (data === null) return null;
       return data;
     },
     enabled,
-    staleTime: 60 * 1000,
+    staleTime: 10 * 60 * 1000,
     retry: (failureCount, error) => {
       if (isAuthError(error)) return false;
       return failureCount < 2;
@@ -79,7 +78,7 @@ export function useSettingsData() {
 
   const setSettings = (newData) => {
     if (tenantId) {
-      queryClient.setQueryData([SETTINGS_QUERY_KEY, tenantId], newData);
+      queryClient.setQueryData(settingsQueryKeys.detail(tenantId), newData);
       invalidateSettingsCache(tenantId);
     } else {
       invalidateSettingsCache(null);
