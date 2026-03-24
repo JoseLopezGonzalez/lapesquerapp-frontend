@@ -103,9 +103,8 @@ function FlowContent({ processTree, productionId, loading, viewMode, onViewModeC
 
   if (loading) {
     return (
-      <div className="h-[600px] flex flex-col items-center justify-center gap-3">
-        <Loader />
-        <p className="text-sm text-muted-foreground">Cargando diagrama de procesos...</p>
+      <div className="h-[600px] flex items-center justify-center">
+        <Loader text="Cargando diagrama de procesos..." />
       </div>
     )
   }

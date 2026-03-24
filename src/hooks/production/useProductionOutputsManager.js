@@ -276,8 +276,10 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
     }
 
     const openManageDialog = async () => {
-        if (products.length === 0) await loadProducts()
+        // Open immediately; data loads in background
+        setManageDialogOpen(true)
         setSourcesLoading(true)
+        if (products.length === 0) loadProducts()
 
         const token = session?.user?.accessToken
         if (!token) {
@@ -401,7 +403,6 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
             })
         )
         setNewRows([])
-        setManageDialogOpen(true)
     }
 
     const addNewRow = () => {

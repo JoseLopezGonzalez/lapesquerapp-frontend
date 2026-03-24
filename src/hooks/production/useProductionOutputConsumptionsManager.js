@@ -423,8 +423,7 @@ export function useProductionOutputConsumptionsManager({
             )
             return
         }
-        if (products.length === 0) await loadProducts()
-        await loadAvailableOutputs()
+        // Open immediately with current data; sources load in background
         setEditableConsumptions(
             consumptions.map((consumption) => {
                 const outputId = getOutputId(consumption)
@@ -446,6 +445,8 @@ export function useProductionOutputConsumptionsManager({
         )
         setNewConsumptionRows([])
         setManageDialogOpen(true)
+        if (products.length === 0) loadProducts()
+        await loadAvailableOutputs()
     }
 
     const addNewConsumptionRow = () => {
@@ -682,7 +683,9 @@ export function useProductionOutputConsumptionsManager({
         manageDialogOpen,
         setManageDialogOpen,
         editableConsumptions,
+        setEditableConsumptions,
         newConsumptionRows,
+        setNewConsumptionRows,
         savingAll,
         addingFromParent,
         showBoxes,

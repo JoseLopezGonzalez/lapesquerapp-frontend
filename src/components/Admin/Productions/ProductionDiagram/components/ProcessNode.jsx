@@ -147,7 +147,7 @@ export default function ProcessNode({ data }) {
                 <tbody>
                   {inputProducts.map((product, idx) => (
                     <tr key={idx} className="border-b border-border/20 last:border-b-0">
-                      <td className="py-0.5 px-1 text-foreground font-medium max-w-[160px]"><span className="block truncate" title={product.name}>{product.name}</span></td>
+                      <td className="py-0.5 px-1 text-foreground font-medium">{product.name}</td>
                       <td className="py-0.5 px-1 text-muted-foreground text-right whitespace-nowrap">{product.boxes}</td>
                       <td className="py-0.5 px-1 text-muted-foreground text-right whitespace-nowrap">{formatWeight(product.weight)}</td>
                     </tr>
@@ -176,7 +176,7 @@ export default function ProcessNode({ data }) {
                 <tbody>
                   {outputProducts.map((product, idx) => (
                     <tr key={idx} className="border-b border-border/20 last:border-b-0">
-                      <td className="py-0.5 px-1 text-foreground font-medium max-w-[160px]"><span className="block truncate" title={product.name}>{product.name}</span></td>
+                      <td className="py-0.5 px-1 text-foreground font-medium">{product.name}</td>
                       <td className="py-0.5 px-1 text-muted-foreground text-right whitespace-nowrap">
                         {product.boxes && product.boxes > 0 ? product.boxes : '-'}
                       </td>

@@ -28,9 +28,8 @@ const ProductionView = ({ productionId }) => {
 
     if (loading) {
         return (
-            <div className="h-full w-full overflow-y-auto flex flex-col items-center justify-center gap-3">
-                <Loader />
-                <p className="text-sm text-muted-foreground">Cargando producción...</p>
+            <div className="h-full w-full overflow-y-auto flex items-center justify-center">
+                <Loader text="Cargando producción..." />
             </div>
         )
     }

@@ -131,12 +131,12 @@ export default function StockNode({ data }) {
                             <span className="truncate">{store.name || 'Sin nombre'}</span>
                           )}
                         </td>
-                        <td className="py-1 px-1 text-foreground max-w-[200px]">
-                          <span className="block truncate" title={product.name || 'Sin nombre'}>{product.name || 'Sin nombre'}</span>
+                        <td className="py-1 px-1 text-foreground">
+                          {product.name || 'Sin nombre'}
                         </td>
-                        <td className="py-1 px-1 text-right font-medium">{productData.totalBoxes || 0}</td>
-                        <td className="py-1 px-1 text-right">{formatWeight(productData.totalNetWeight || 0)}</td>
-                        <td className="py-1 px-1 text-right text-muted-foreground">{pallets.length || 0}</td>
+                        <td className="py-1 px-1 text-right font-medium whitespace-nowrap">{productData.totalBoxes || 0}</td>
+                        <td className="py-1 px-1 text-right whitespace-nowrap">{formatWeight(productData.totalNetWeight || 0)}</td>
+                        <td className="py-1 px-1 text-right text-muted-foreground whitespace-nowrap">{pallets.length || 0}</td>
                       </tr>
                     )
                   })
