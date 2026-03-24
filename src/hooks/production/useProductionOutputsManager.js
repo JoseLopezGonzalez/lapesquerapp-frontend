@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
 import { toast } from 'sonner'
 import {
@@ -19,6 +20,8 @@ import { getRecordField } from '@/helpers/production/recordHelpers'
 import { useProductionRecordContextOptional } from '@/context/ProductionRecordContext'
 import { useProductOptions } from '@/hooks/useProductOptions'
 import { useShowBoxesPreference } from './useShowBoxesPreference'
+import { getCurrentTenant } from '@/lib/utils/getCurrentTenant'
+import { productionQueryKeys } from '@/lib/routes/queryKeys'
 
 /**
  * Hook con toda la lógica de ProductionOutputsManager: estado, carga de outputs/products,
@@ -28,19 +31,15 @@ import { useShowBoxesPreference } from './useShowBoxesPreference'
  */
 export function useProductionOutputsManager({ productionRecordId, initialOutputsProp = [], onRefresh }) {
     const { data: session } = useSession()
+    const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null
+    const queryClient = useQueryClient()
     const contextData = useProductionRecordContextOptional()
-    const contextOutputs = contextData?.recordOutputs || []
-    const initialOutputs = contextOutputs.length > 0 ? contextOutputs : initialOutputsProp
     const updateOutputs = contextData?.updateOutputs
     const updateRecord = contextData?.updateRecord
     const { productOptions, loading: productsLoading, refetch: refetchProducts } = useProductOptions({
         enabled: !!productionRecordId
     })
     const { showBoxes, handleToggleBoxes } = useShowBoxesPreference()
-
-    const [outputs, setOutputs] = useState(initialOutputs)
-    const [loading, setLoading] = useState(initialOutputs.length === 0)
-    const [error, setError] = useState(null)
     const [formData, setFormData] = useState({
         product_id: '',
         lot_id: '',
@@ -71,55 +70,37 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
     const [deleteOutputConfirm, setDeleteOutputConfirm] = useState({ open: false, outputId: null })
     const products = productOptions
 
-    const hasInitializedRef = useRef(false)
-    const previousOutputsIdsRef = useRef(null)
-
-    const outputsKey = useMemo(() => {
-        const currentOutputs = contextOutputs.length > 0 ? contextOutputs : initialOutputsProp
-        if (!currentOutputs || currentOutputs.length === 0) return null
-        return currentOutputs.map((output) => output.id || JSON.stringify(output)).sort().join(',')
-    }, [contextOutputs, initialOutputsProp])
-
-    useEffect(() => {
-        if (hasInitializedRef.current) return
-        if (!session?.user?.accessToken || !productionRecordId) return
-        const currentOutputs = contextOutputs.length > 0 ? contextOutputs : initialOutputsProp
-        if (currentOutputs && Array.isArray(currentOutputs) && currentOutputs.length > 0) {
-            setOutputs(currentOutputs)
-            setLoading(false)
-            hasInitializedRef.current = true
-            previousOutputsIdsRef.current = outputsKey
-            return
-        }
-        loadOutputs().finally(() => {
-            hasInitializedRef.current = true
-        })
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [session?.user?.accessToken, productionRecordId])
-
-    useEffect(() => {
-        if (!hasInitializedRef.current) return
-        const currentOutputs = contextOutputs.length > 0 ? contextOutputs : initialOutputsProp
-        if (!currentOutputs || !Array.isArray(currentOutputs) || currentOutputs.length === 0) {
-            if (outputs.length > 0) setOutputs([])
-            return
-        }
-        if (outputsKey !== previousOutputsIdsRef.current) {
-            setOutputs(currentOutputs)
-            if (currentOutputs.length > 0) setLoading(false)
-            previousOutputsIdsRef.current = outputsKey
-        }
-    }, [outputsKey, contextOutputs, initialOutputsProp, outputs.length])
-
-    const loadOutputsOnly = async () => {
-        try {
+    const outputsQueryKey = productionQueryKeys.outputs(tenantId, productionRecordId, true)
+    const outputsQuery = useQuery({
+        queryKey: outputsQueryKey,
+        queryFn: async () => {
             const token = session?.user?.accessToken
             if (!token) return []
             const response = await getProductionOutputs(token, {
                 production_record_id: productionRecordId,
                 with_sources: true
             })
-            const updatedOutputs = response.data || []
+            return response.data || []
+        },
+        enabled: !!session?.user?.accessToken && !!productionRecordId,
+        initialData: Array.isArray(initialOutputsProp) ? initialOutputsProp : [],
+        staleTime: 30 * 1000,
+    })
+
+    const outputs = outputsQuery.data ?? []
+    const loading = outputsQuery.isLoading
+    const error = outputsQuery.error?.message ?? null
+
+    const setOutputs = useCallback((updater) => {
+        queryClient.setQueryData(outputsQueryKey, (previous = []) =>
+            typeof updater === 'function' ? updater(previous) : updater
+        )
+    }, [outputsQueryKey, queryClient])
+
+    const loadOutputsOnly = async () => {
+        try {
+            const result = await outputsQuery.refetch()
+            const updatedOutputs = result.data || []
             setOutputs(updatedOutputs)
             if (updateOutputs) await updateOutputs(updatedOutputs, false)
             else if (updateRecord) await updateRecord()
@@ -132,26 +113,11 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
 
     const loadOutputs = async (showLoading = true) => {
         try {
-            if (showLoading) setLoading(true)
-            setError(null)
-            const token = session?.user?.accessToken
-            if (!token) return
-            const response = await getProductionOutputs(token, {
-                production_record_id: productionRecordId,
-                with_sources: true
-            })
-            setOutputs(response.data || [])
+            const result = await outputsQuery.refetch()
+            return result.data || []
         } catch (err) {
             console.error('Error loading outputs:', err)
-            const errorMessage =
-                err.userMessage ||
-                err.data?.userMessage ||
-                err.response?.data?.userMessage ||
-                err.message ||
-                'Error al cargar las salidas'
-            setError(errorMessage)
-        } finally {
-            if (showLoading) setLoading(false)
+            return []
         }
     }
 
@@ -802,7 +768,6 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
         wasManageDialogOpen,
         setWasManageDialogOpen,
         showBoxes,
-        setShowBoxes,
         handleToggleBoxes,
         loadOutputsOnly,
         loadOutputs,

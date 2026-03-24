@@ -45,6 +45,60 @@ Después de la auditoría, el Sprint 1 ha quedado **implementado** en el repo lo
 - Resultado: **0 errores**.
 - Permanecen warnings previos de `react-hooks/exhaustive-deps` en los mega-hooks de inputs/outputs/consumptions; no bloquean el cierre de Sprint 1 y quedan como deuda de Sprint 2/3.
 
+### Estado tras implementación de Sprint 2
+
+Sprint 2 ha quedado **implementado parcialmente** en el repo local:
+
+- `NAV-03`:
+  - la navegación en producciones pasó a misma pestaña;
+  - se añadió `sameTabNavigation` a la config de producciones;
+  - `EntityClient` usa `router.push()` solo para producciones;
+  - la acción `view` generada en las filas ya no fuerza `window.open()` para este bloque.
+- `NAV-05`:
+  - `useSettingsData()` usa ahora `staleTime: 10 * 60 * 1000`;
+  - se mantuvo el contrato público de `SettingsContext`;
+  - se añadieron `settingsQueryKeys` para evitar arrays literales de query keys.
+- `DEEP-04`:
+  - `ProductionRecordContext` se reorganizó internamente en slices memoizados;
+  - se mantuvo la API externa del contexto;
+  - el objetivo fue reducir invalidaciones innecesarias del árbol completo.
+- `DEEP-13`:
+  - se envolvieron con `useCallback` los handlers principales de `useProductionInputsManager`;
+  - el cambio se limitó a estabilización de referencias, sin refactor grande del hook.
+- `NAV-02`:
+  - **no implementado en esta pasada**;
+  - se decidió no tocar `force-dynamic` del layout raíz de `/admin` sin validación runtime específica, por el riesgo de afectar más áreas fuera de producciones.
+
+### Validación realizada de Sprint 2
+
+- `eslint` ejecutado sobre los archivos tocados de Sprint 2.
+- Resultado: **0 errores**.
+- Persisten warnings de `react-hooks/exhaustive-deps` en `EntityClient` y en hooks grandes de producción; se consideran deuda previa / estructural y no bloquean el cierre parcial de Sprint 2.
+
+### Estado tras implementación de Sprint 3
+
+Sprint 3 ha quedado **implementado en su base estructural** en el repo local, con refactor importante del editor:
+
+- `DEEP-06` + `DEEP-07`:
+  - se añadieron query keys específicas para `productionInputs`, `productionOutputs` y `productionOutputConsumptions`;
+  - los tres managers pasaron a apoyarse en React Query como fuente principal para sus colecciones remotas;
+  - se eliminó la carga automática de Inputs / Consumos / Outputs al abrir el editor;
+  - `RecordContentSections` ahora monta estas tres secciones bajo demanda y, una vez abiertas, las mantiene montadas para no perder estado local.
+- `DEEP-09` + `DEEP-10`:
+  - se ha reducido de forma importante el patrón previo de triple estado `Context + Hook + Component`;
+  - las colecciones remotas ya no dependen del patrón antiguo de sincronización con `hasInitializedRef`, `inputsKey`, `outputsKey`, `consumptionsKey`;
+  - la caché de React Query pasa a ser la fuente de verdad principal para inputs, outputs y consumptions.
+- Compatibilidad:
+  - se mantuvieron los componentes visuales existentes del editor;
+  - `initialInputs`, `initialOutputs` e `initialConsumptions` permanecen como compatibilidad transitoria, pero ya no actúan como fuente de verdad principal.
+
+### Validación realizada de Sprint 3
+
+- `eslint` ejecutado sobre las piezas principales del Sprint 3.
+- Resultado: **0 errores**.
+- Persisten warnings de `react-hooks/exhaustive-deps` en `useProductionInputsManager`; no bloquean la implementación, pero indican que el hardening del refactor aún no está completamente cerrado.
+- Importante: **no se ha hecho validación manual completa en runtime** del nuevo flujo lazy del editor desde esta pasada.
+
 ---
 
 ## Limitaciones declaradas
@@ -607,34 +661,43 @@ Estas funciones se recrean en cada render del hook. Si los componentes hijos que
 
 ### Sprint 2 — Mejoras arquitectónicas, riesgo medio (3–5 días)
 
-| Hallazgo | Cambio | Archivos |
-|---|---|---|
-| NAV-02 | Evaluar mover `force-dynamic` de layout raíz a páginas específicas | `src/app/admin/layout.js` |
-| NAV-03 | Reemplazar `window.open()` por `router.push()` + `<Link>` en EntityClient | `EntityClient/index.js` |
-| NAV-05 | Añadir `staleTime: 10 * 60 * 1000` a la query de settings | `src/context/SettingsContext.js` |
-| DEEP-04 | Separar `ProductionRecordContext` en slices: datos / estado de carga / colecciones | `ProductionRecordContext.js` |
-| DEEP-13 | Envolver handlers principales en `useCallback` | `useProductionInputsManager.js` |
+| Hallazgo | Cambio | Archivos | Estado | Nota |
+|---|---|---|---|---|
+| NAV-02 | Evaluar mover `force-dynamic` de layout raíz a páginas específicas | `src/app/admin/layout.js` | ⏸️ Pendiente | No se tocó en esta pasada por riesgo transversal fuera de producciones |
+| NAV-03 | Reemplazar `window.open()` por `router.push()` + `<Link>` en EntityClient | `EntityClient/index.js` | ✅ Implementado parcial | Aplicado solo al bloque de producciones, tal como se decidió |
+| NAV-05 | Añadir `staleTime: 10 * 60 * 1000` a la query de settings | `src/context/SettingsContext.js` | ✅ Implementado | Hecho realmente en `useSettingsData()` y consolidado con `settingsQueryKeys` |
+| DEEP-04 | Separar `ProductionRecordContext` en slices: datos / estado de carga / colecciones | `ProductionRecordContext.js` | ✅ Implementado | Separación interna en slices memoizados, sin romper la API pública |
+| DEEP-13 | Envolver handlers principales en `useCallback` | `useProductionInputsManager.js` | ✅ Implementado | Estabilización parcial centrada en los handlers calientes del manager de inputs |
 
 ### Sprint 3 — Refactors estructurales, riesgo alto (sprint dedicado)
 
-| Hallazgo | Cambio | Archivos |
-|---|---|---|
-| DEEP-06 + DEEP-07 | Migrar los 3 managers a React Query para eliminar fetches manuales y lazy loading real | 3 hooks managers (~2.400 líneas) |
-| DEEP-09 + DEEP-10 | Subdividir mega-hooks en hooks especializados, eliminar estado triplicado | 3 hooks managers + 3 components + Context |
+| Hallazgo | Cambio | Archivos | Estado | Nota |
+|---|---|---|---|---|
+| DEEP-06 + DEEP-07 | Migrar los 3 managers a React Query para eliminar fetches manuales y lazy loading real | 3 hooks managers (~2.400 líneas) | ✅ Implementado base | React Query + lazy mounting de secciones ya aplicados |
+| DEEP-09 + DEEP-10 | Subdividir mega-hooks en hooks especializados, eliminar estado triplicado | 3 hooks managers + 3 components + Context | ✅ Implementado parcial | Eliminada gran parte del estado triplicado; el despiece fino en sub-hooks aún admite hardening posterior |
 
 ---
 
 ## Notas finales
 
-Sprint 1 queda cerrado a nivel de código en el repo local. Los puntos de mayor impacto perceptible ya mitigados son:
+Sprint 1 queda cerrado a nivel de código en el repo local. Sprint 2 queda **cerrado de forma parcial**, con `NAV-02` pendiente. Sprint 3 queda **implementado en su base estructural**, pero todavía requiere validación manual exhaustiva del nuevo flujo lazy del editor antes de darlo por completamente endurecido.
+
+Los puntos de mayor impacto perceptible ya mitigados son:
 
 - la espera opaca al navegar por expiración rápida del middleware (`NAV-01`)
 - el bundle innecesario del diagrama en la carga inicial del detalle (`NAV-04`)
 - la duplicidad de fetches/cachés y el estado duplicado alrededor del editor de records (`DEEP-01`, `DEEP-02`, `DEEP-03`, `DEEP-05`, `DEEP-08`)
+- la carga inmediata de Inputs / Outputs / Consumos al abrir el editor (`DEEP-06`, `DEEP-07`)
+- la mayor parte del patrón de estado triplicado en los managers del editor (`DEEP-09`, `DEEP-10`)
 
-No se han abordado en esta pasada los cambios arquitectónicos de Sprint 2 y 3. Siguen vigentes como siguientes pasos recomendados:
+Los principales puntos pendientes antes de considerar el bloque completamente estabilizado son:
 
-- revisar `force-dynamic` en `/admin`
+- revisar `force-dynamic` en `/admin` con validación runtime real
+- validar manualmente el nuevo comportamiento lazy del editor de records
+- endurecer los warnings de dependencias en hooks grandes tras el refactor
+
+Siguen vigentes como siguientes pasos recomendados:
+
 - sustituir `window.open()` por navegación interna con prefetch
-- dividir `ProductionRecordContext`
-- atacar la deuda estructural de los mega-hooks y el estado triplicado
+- cerrar `NAV-02`
+- hacer hardening del refactor del editor tras pruebas manuales reales

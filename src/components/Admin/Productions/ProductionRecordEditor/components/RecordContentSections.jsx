@@ -1,13 +1,15 @@
 'use client'
 
-import React from 'react'
-import { Card, CardContent } from '@/components/ui/card'
+import React, { useState } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import ProductionInputsManager from '../../ProductionInputsManager'
 import ProductionOutputsManager from '../../ProductionOutputsManager'
 import ProductionOutputConsumptionsManager from '../../ProductionOutputConsumptionsManager'
 import ProductionRecordImagesManager from '../../ProductionRecordImagesManager'
 import ProductionCostsManager from '../../ProductionCostsManager'
 import { useProductionRecordContext } from '@/context/ProductionRecordContext'
+import { ChevronDown, ChevronRight } from 'lucide-react'
 
 /**
  * Secciones de contenido del record (inputs, outputs, consumos, imágenes)
@@ -25,9 +27,71 @@ export const RecordContentSections = ({
         hasParent,
         updateRecord
     } = useProductionRecordContext()
+    const [sectionState, setSectionState] = useState({
+        inputsOpen: false,
+        inputsLoaded: false,
+        consumptionsOpen: false,
+        consumptionsLoaded: false,
+        outputsOpen: false,
+        outputsLoaded: false,
+    })
 
     // Usar updateRecord como onRefresh si está disponible
     const handleRefresh = onRefresh || (() => updateRecord?.())
+
+    const openSection = (sectionKey) => {
+        setSectionState((prev) => ({
+            ...prev,
+            [`${sectionKey}Open`]: !prev[`${sectionKey}Open`],
+            [`${sectionKey}Loaded`]: true,
+        }))
+    }
+
+    const LazyManagerSection = ({
+        sectionKey,
+        title,
+        description,
+        children,
+    }) => {
+        const isOpen = sectionState[`${sectionKey}Open`]
+        const isLoaded = sectionState[`${sectionKey}Loaded`]
+
+        return (
+            <div className="break-inside-avoid mb-6 max-w-full w-full">
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0">
+                        <div>
+                            <CardTitle>{title}</CardTitle>
+                            <CardDescription>{description}</CardDescription>
+                        </div>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => openSection(sectionKey)}
+                        >
+                            {isOpen ? (
+                                <>
+                                    <ChevronDown className="h-4 w-4 mr-2" />
+                                    Ocultar
+                                </>
+                            ) : (
+                                <>
+                                    <ChevronRight className="h-4 w-4 mr-2" />
+                                    {isLoaded ? 'Mostrar' : 'Cargar'}
+                                </>
+                            )}
+                        </Button>
+                    </CardHeader>
+                    {isLoaded ? (
+                        <CardContent className={isOpen ? 'pt-0' : 'hidden'}>
+                            {children}
+                        </CardContent>
+                    ) : null}
+                </Card>
+            </div>
+        )
+    }
+
     if (!recordId) {
         return (
             <Card>
@@ -54,45 +118,48 @@ export const RecordContentSections = ({
                 />
             </div>
 
-            {/* Inputs */}
-            <div className="break-inside-avoid mb-6 max-w-full w-full">
+            <LazyManagerSection
+                sectionKey="inputs"
+                title="Consumo de materia prima desde stock"
+                description="Materia prima consumida desde el stock"
+            >
                 <ProductionInputsManager
                     productionRecordId={recordId}
                     initialInputs={recordInputs}
                     onRefresh={handleRefresh}
                     hideTitle={true}
-                    renderInCard={true}
-                    cardTitle="Consumo de materia prima desde stock"
-                    cardDescription="Materia prima consumida desde el stock"
+                    renderInCard={false}
                 />
-            </div>
+            </LazyManagerSection>
 
-            {/* Consumos del Padre */}
-            <div className="break-inside-avoid mb-6 max-w-full w-full">
+            <LazyManagerSection
+                sectionKey="consumptions"
+                title="Consumos de proceso anterior"
+                description="Productos consumidos del proceso anterior"
+            >
                 <ProductionOutputConsumptionsManager
                     productionRecordId={recordId}
                     initialConsumptions={recordConsumptions}
                     hasParent={hasParent}
                     onRefresh={handleRefresh}
                     hideTitle={true}
-                    renderInCard={true}
-                    cardTitle="Consumos de proceso anterior"
-                    cardDescription="Productos consumidos del proceso anterior"
+                    renderInCard={false}
                 />
-            </div>
+            </LazyManagerSection>
 
-            {/* Outputs */}
-            <div className="break-inside-avoid mb-6 max-w-full w-full">
+            <LazyManagerSection
+                sectionKey="outputs"
+                title="Productos resultantes"
+                description="Productos resultantes de este proceso"
+            >
                 <ProductionOutputsManager
                     productionRecordId={recordId}
                     initialOutputs={recordOutputs}
                     onRefresh={handleRefresh}
                     hideTitle={true}
-                    renderInCard={true}
-                    cardTitle="Productos resultantes"
-                    cardDescription="Productos resultantes de este proceso"
+                    renderInCard={false}
                 />
-            </div>
+            </LazyManagerSection>
 
             {/* Costes del Proceso */}
             <div className="break-inside-avoid mb-6 max-w-full w-full">
@@ -104,4 +171,3 @@ export const RecordContentSections = ({
         </>
     )
 }
-

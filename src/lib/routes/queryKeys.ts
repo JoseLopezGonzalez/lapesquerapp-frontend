@@ -104,6 +104,19 @@ export const productionQueryKeys = {
     productionId: number | string | null | undefined,
     recordId: number | string | null | undefined
   ) => ['productionRecords', 'options', tenantId ?? 'unknown', productionId, recordId] as const,
+  inputs: (
+    tenantId: string | null | undefined,
+    recordId: number | string | null | undefined
+  ) => ['productionInputs', tenantId ?? 'unknown', recordId] as const,
+  outputs: (
+    tenantId: string | null | undefined,
+    recordId: number | string | null | undefined,
+    withSources: boolean = true
+  ) => ['productionOutputs', tenantId ?? 'unknown', recordId, { withSources }] as const,
+  consumptions: (
+    tenantId: string | null | undefined,
+    recordId: number | string | null | undefined
+  ) => ['productionOutputConsumptions', tenantId ?? 'unknown', recordId] as const,
 };
 
 export const productOptionKeys = {

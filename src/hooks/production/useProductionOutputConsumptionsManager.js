@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
 import {
     getProductionRecord,
@@ -21,6 +22,8 @@ import {
 import { useProductionRecordContextOptional } from '@/context/ProductionRecordContext'
 import { useProductOptions } from '@/hooks/useProductOptions'
 import { useShowBoxesPreference } from './useShowBoxesPreference'
+import { getCurrentTenant } from '@/lib/utils/getCurrentTenant'
+import { productionQueryKeys } from '@/lib/routes/queryKeys'
 
 /**
  * Hook con toda la lógica de ProductionOutputConsumptionsManager: estado, carga de consumptions/outputs/products,
@@ -34,24 +37,19 @@ export function useProductionOutputConsumptionsManager({
     onRefresh
 }) {
     const { data: session } = useSession()
+    const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null
+    const queryClient = useQueryClient()
     const contextData = useProductionRecordContextOptional()
-    const contextConsumptions = contextData?.recordConsumptions || []
     const contextHasParent = contextData?.hasParent ?? hasParentProp
-    const initialConsumptions = contextConsumptions.length > 0 ? contextConsumptions : initialConsumptionsProp
     const hasParent = contextHasParent
     const updateConsumptions = contextData?.updateConsumptions
     const updateRecord = contextData?.updateRecord
     const { products, refetch: refetchProducts } = useProductOptions({
         enabled: !!productionRecordId
     })
-    const { showBoxes, setShowBoxes, handleToggleBoxes } = useShowBoxesPreference()
+    const { showBoxes, handleToggleBoxes } = useShowBoxesPreference()
 
-    const [consumptions, setConsumptions] = useState(initialConsumptions)
     const [availableOutputs, setAvailableOutputs] = useState([])
-    const [loading, setLoading] = useState(
-        !hasParent || initialConsumptions.length === 0 ? false : true
-    )
-    const [error, setError] = useState(null)
     const [addDialogOpen, setAddDialogOpen] = useState(false)
     const [savingConsumption, setSavingConsumption] = useState(false)
     const [loadingAvailableOutputs, setLoadingAvailableOutputs] = useState(false)
@@ -67,87 +65,36 @@ export function useProductionOutputConsumptionsManager({
     const [savingAll, setSavingAll] = useState(false)
     const [addingFromParent, setAddingFromParent] = useState(false)
 
-    const hasInitializedRef = useRef(false)
-    const previousConsumptionsIdsRef = useRef(null)
-    const previousHasParentRef = useRef(hasParent)
+    const consumptionsQueryKey = productionQueryKeys.consumptions(tenantId, productionRecordId)
+    const consumptionsQuery = useQuery({
+        queryKey: consumptionsQueryKey,
+        queryFn: async () => {
+            const token = session?.user?.accessToken
+            if (!token || !hasParent) return []
+            const response = await getProductionOutputConsumptions(token, {
+                production_record_id: productionRecordId
+            })
+            return response.data || []
+        },
+        enabled: !!session?.user?.accessToken && !!productionRecordId && hasParent,
+        initialData: Array.isArray(initialConsumptionsProp) ? initialConsumptionsProp : [],
+        staleTime: 30 * 1000,
+    })
 
-    const consumptionsKey = useMemo(() => {
-        if (!hasParent) return 'no-parent'
-        const current =
-            contextConsumptions.length > 0 ? contextConsumptions : initialConsumptionsProp
-        if (!current || current.length === 0) return 'empty'
-        return current.map((c) => c.id || JSON.stringify(c)).sort().join(',')
-    }, [contextConsumptions, initialConsumptionsProp, hasParent])
+    const consumptions = hasParent ? (consumptionsQuery.data ?? []) : []
+    const loading = hasParent ? consumptionsQuery.isLoading : false
+    const error = hasParent ? (consumptionsQuery.error?.message ?? null) : null
 
-    useEffect(() => {
-        if (hasInitializedRef.current) return
-        if (!session?.user?.accessToken || !productionRecordId) return
-        if (!hasParent) {
-            setConsumptions([])
-            setLoading(false)
-            hasInitializedRef.current = true
-            previousHasParentRef.current = hasParent
-            return
-        }
-        const current =
-            contextConsumptions.length > 0 ? contextConsumptions : initialConsumptionsProp
-        if (current && Array.isArray(current) && current.length > 0) {
-            setConsumptions(current)
-            setLoading(false)
-            hasInitializedRef.current = true
-            previousConsumptionsIdsRef.current = consumptionsKey
-            previousHasParentRef.current = hasParent
-            return
-        }
-        loadData().finally(() => {
-            hasInitializedRef.current = true
-            previousHasParentRef.current = hasParent
-        })
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [session?.user?.accessToken, productionRecordId])
-
-    useEffect(() => {
-        if (!hasInitializedRef.current) return
-        if (hasParent !== previousHasParentRef.current) {
-            if (!hasParent) {
-                setConsumptions([])
-                setLoading(false)
-            } else {
-                const current =
-                    contextConsumptions.length > 0 ? contextConsumptions : initialConsumptionsProp
-                if (current && current.length > 0) {
-                    setConsumptions(current)
-                    setLoading(false)
-                } else {
-                    loadData()
-                }
-            }
-            previousHasParentRef.current = hasParent
-            previousConsumptionsIdsRef.current = consumptionsKey
-            return
-        }
-        if (!hasParent) return
-        const current =
-            contextConsumptions.length > 0 ? contextConsumptions : initialConsumptionsProp
-        if (!current || !Array.isArray(current)) {
-            if (consumptions.length > 0) setConsumptions([])
-            return
-        }
-        if (consumptionsKey !== previousConsumptionsIdsRef.current) {
-            setConsumptions(current)
-            setLoading(false)
-            previousConsumptionsIdsRef.current = consumptionsKey
-        }
-    }, [consumptionsKey, contextConsumptions, initialConsumptionsProp, hasParent, consumptions.length])
+    const setConsumptions = (updater) => {
+        queryClient.setQueryData(consumptionsQueryKey, (previous = []) =>
+            typeof updater === 'function' ? updater(previous) : updater
+        )
+    }
 
     const loadConsumptionsOnly = async () => {
         try {
-            const token = session?.user?.accessToken
-            if (!token) return []
-            const consumptionsResponse = await getProductionOutputConsumptions(token, {
-                production_record_id: productionRecordId
-            })
-            const updatedConsumptions = consumptionsResponse.data || []
+            const result = await consumptionsQuery.refetch()
+            const updatedConsumptions = result.data || []
             setConsumptions(updatedConsumptions)
             if (updateConsumptions) await updateConsumptions(updatedConsumptions, false)
             else if (updateRecord) await updateRecord()
@@ -174,40 +121,14 @@ export function useProductionOutputConsumptionsManager({
 
     const loadData = async () => {
         try {
-            setLoading(true)
-            setError(null)
-            const token = session?.user?.accessToken
-            if (!token) return
-            if (initialConsumptions.length > 0) {
-                setConsumptions(initialConsumptions)
-                setLoading(false)
-                return
-            }
             if (!hasParent) {
-                setConsumptions([])
-                setLoading(false)
-                return
+                return []
             }
-            try {
-                const consumptionsResponse = await getProductionOutputConsumptions(token, {
-                    production_record_id: productionRecordId
-                })
-                setConsumptions(consumptionsResponse.data || [])
-            } catch (consumptionErr) {
-                console.warn('Error loading consumptions:', consumptionErr)
-                setConsumptions([])
-            }
+            const result = await consumptionsQuery.refetch()
+            return result.data || []
         } catch (err) {
             console.error('Error loading data:', err)
-            const errorMessage =
-                err.userMessage ||
-                err.data?.userMessage ||
-                err.response?.data?.userMessage ||
-                err.message ||
-                'Error al cargar los datos'
-            setError(errorMessage)
-        } finally {
-            setLoading(false)
+            return []
         }
     }
 
@@ -674,7 +595,6 @@ export function useProductionOutputConsumptionsManager({
         savingAll,
         addingFromParent,
         showBoxes,
-        setShowBoxes,
         hasParent,
         handleToggleBoxes,
         loadConsumptionsOnly,

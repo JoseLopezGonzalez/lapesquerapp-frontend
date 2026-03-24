@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
 import { toast } from 'sonner'
 import {
@@ -11,6 +12,8 @@ import {
 } from '@/services/productionService'
 import { getPallet, searchPalletsByLot } from '@/services/palletService'
 import { useProductionRecordContextOptional } from '@/context/ProductionRecordContext'
+import { getCurrentTenant } from '@/lib/utils/getCurrentTenant'
+import { productionQueryKeys } from '@/lib/routes/queryKeys'
 
 /**
  * Hook con toda la lógica de ProductionInputsManager: estado, carga de inputs,
@@ -21,15 +24,11 @@ import { useProductionRecordContextOptional } from '@/context/ProductionRecordCo
  */
 export function useProductionInputsManager({ productionRecordId, initialInputsProp = [], onRefresh }) {
     const { data: session } = useSession()
+    const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null
+    const queryClient = useQueryClient()
     const contextData = useProductionRecordContextOptional()
-    const contextInputs = contextData?.recordInputs || []
-    const initialInputs = contextInputs.length > 0 ? contextInputs : initialInputsProp
     const updateInputs = contextData?.updateInputs
     const updateRecord = contextData?.updateRecord
-
-    const [inputs, setInputs] = useState(initialInputs)
-    const [loading, setLoading] = useState(initialInputs.length === 0)
-    const [error, setError] = useState(null)
     const [addDialogOpen, setAddDialogOpen] = useState(false)
 
     const [palletSearch, setPalletSearch] = useState('')
@@ -58,80 +57,52 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
         )
     , [loadedPallets])
 
-    const hasInitializedRef = useRef(false)
-    const previousInputsIdsRef = useRef(null)
+    const inputsQueryKey = productionQueryKeys.inputs(tenantId, productionRecordId)
+    const inputsQuery = useQuery({
+        queryKey: inputsQueryKey,
+        queryFn: async () => {
+            const token = session?.user?.accessToken
+            if (!token) return []
+            const response = await getProductionInputs(token, { production_record_id: productionRecordId })
+            return response.data || []
+        },
+        enabled: !!session?.user?.accessToken && !!productionRecordId,
+        initialData: Array.isArray(initialInputsProp) ? initialInputsProp : [],
+        staleTime: 30 * 1000,
+    })
 
-    const inputsKey = useMemo(() => {
-        const currentInputs = contextInputs.length > 0 ? contextInputs : initialInputsProp
-        if (!currentInputs || currentInputs.length === 0) return null
-        return currentInputs
-            .map((input) => input.id || input.boxId || JSON.stringify(input))
-            .sort()
-            .join(',')
-    }, [contextInputs, initialInputsProp])
+    const inputs = inputsQuery.data ?? []
+    const loading = inputsQuery.isLoading
+    const error = inputsQuery.error?.message ?? null
 
-    useEffect(() => {
-        if (hasInitializedRef.current) return
-        if (!session?.user?.accessToken || !productionRecordId) return
-        const currentInputs = contextInputs.length > 0 ? contextInputs : initialInputsProp
-        if (currentInputs && Array.isArray(currentInputs) && currentInputs.length > 0) {
-            setInputs(currentInputs)
-            setLoading(false)
-            hasInitializedRef.current = true
-            previousInputsIdsRef.current = inputsKey
-            return
-        }
-        loadInputs().finally(() => {
-            hasInitializedRef.current = true
-        })
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [session?.user?.accessToken, productionRecordId])
-
-    useEffect(() => {
-        if (!hasInitializedRef.current) return
-        const currentInputs = contextInputs.length > 0 ? contextInputs : initialInputsProp
-        if (!currentInputs || !Array.isArray(currentInputs) || currentInputs.length === 0) {
-            if (inputs.length > 0) setInputs([])
-            return
-        }
-        if (inputsKey !== previousInputsIdsRef.current) {
-            setInputs(currentInputs)
-            previousInputsIdsRef.current = inputsKey
-        }
-    }, [inputsKey, contextInputs, initialInputsProp, inputs.length])
+    const setInputs = useCallback((updater) => {
+        queryClient.setQueryData(inputsQueryKey, (previous = []) =>
+            typeof updater === 'function' ? updater(previous) : updater
+        )
+    }, [inputsQueryKey, queryClient])
 
     const loadInputsOnly = useCallback(async () => {
         try {
-            const token = session?.user?.accessToken
-            if (!token) return
-            const response = await getProductionInputs(token, { production_record_id: productionRecordId })
-            setInputs(response.data || [])
+            const result = await inputsQuery.refetch()
+            const updatedInputs = result.data || []
+            if (updateInputs) await updateInputs(updatedInputs, false)
+            else if (updateRecord) await updateRecord()
+            return updatedInputs
         } catch (err) {
             console.warn('Error loading inputs:', err)
+            return []
         }
-    }, [productionRecordId, session?.user?.accessToken])
+    }, [inputsQuery, updateInputs, updateRecord])
 
     const loadInputs = useCallback(async () => {
         try {
-            setLoading(true)
-            setError(null)
-            const token = session?.user?.accessToken
-            if (!token) return
-            const response = await getProductionInputs(token, { production_record_id: productionRecordId })
-            setInputs(response.data || [])
+            const result = await inputsQuery.refetch()
+            return result.data || []
         } catch (err) {
             console.error('Error loading inputs:', err)
-            const errorMessage =
-                err.userMessage ||
-                err.data?.userMessage ||
-                err.response?.data?.userMessage ||
-                err.message ||
-                'Error al cargar las entradas'
-            setError(errorMessage)
-        } finally {
-            setLoading(false)
+            return []
         }
-    }, [productionRecordId, session?.user?.accessToken])
+    }, [inputsQuery])
 
     const loadExistingDataForEdit = useCallback(async () => {
         if (inputs.length === 0) return
