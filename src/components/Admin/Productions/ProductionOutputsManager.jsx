@@ -311,6 +311,26 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
 
     // Diálogo de edición eliminado - toda la edición se hace desde el diálogo de gestión múltiple
 
+    // Botón para el header (sin Dialog wrapper)
+    const hasOutputs = outputs.length > 0
+    const headerButton = (
+        <Button
+            onClick={openManageDialog}
+        >
+            {hasOutputs ? (
+                <>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Editar Salidas
+                </>
+            ) : (
+                <>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Agregar Salidas
+                </>
+            )}
+        </Button>
+    )
+
     const mainContent = (
         <>
             {!hideTitle && !renderInCard && (
@@ -325,7 +345,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
             )}
             {!renderInCard && (
                 <div className={`flex items-center ${hideTitle ? 'justify-end' : 'justify-between'}`}>
-                    {addButton}
+                    {headerButton}
                 </div>
             )}
 
@@ -356,90 +376,70 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                             </p>
                         </div>
                     )}
-                        <ScrollArea className={hideTitle ? "h-64" : "h-96"}>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Producto</TableHead>
-                                        {showBoxes && <TableHead>Cajas</TableHead>}
-                                        <TableHead>Peso Total</TableHead>
-                                        {showBoxes && <TableHead>Peso Promedio</TableHead>}
-                                        <TableHead>Coste</TableHead>
-                                        <TableHead>Acciones</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {outputs.map((output) => {
-                                        const weight = getWeight(output)
-                                        const avgWeight = formatAverageWeight(weight, output.boxes)
-                                        return (
-                                            <TableRow key={output.id}>
-                                                <TableCell className="font-medium">
-                                                    {output.product?.name || 'N/A'}
-                                                </TableCell>
-                                                {showBoxes && <TableCell>{output.boxes || 0}</TableCell>}
-                                                <TableCell>{formatWeight(weight)}</TableCell>
-                                                {showBoxes && <TableCell>{avgWeight}</TableCell>}
-                                                <TableCell>
-                                                    <CostDisplay output={output} showDetails={false} size="sm" />
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="flex gap-2">
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => {
-                                                                setBreakdownOutputId(output.id)
-                                                                setBreakdownDialogOpen(true)
-                                                            }}
-                                                        >
-                                                            Ver Desglose
-                                                        </Button>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => handleEditClick(output)}
-                                                        >
-                                                            <Edit className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => handleDeleteOutput(output.id)}
-                                                        >
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
-                                        )
-                                    })}
-                                </TableBody>
-                            </Table>
-                        </ScrollArea>
+                    <ScrollArea className={hideTitle ? 'h-64' : 'h-96'}>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Producto</TableHead>
+                                    {showBoxes && <TableHead>Cajas</TableHead>}
+                                    <TableHead>Peso Total</TableHead>
+                                    {showBoxes && <TableHead>Peso Promedio</TableHead>}
+                                    <TableHead>Coste</TableHead>
+                                    <TableHead>Acciones</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {outputs.map((output) => {
+                                    const weight = getWeight(output)
+                                    const avgWeight = formatAverageWeight(weight, output.boxes)
+                                    return (
+                                        <TableRow key={output.id}>
+                                            <TableCell className="font-medium">
+                                                {output.product?.name || 'N/A'}
+                                            </TableCell>
+                                            {showBoxes && <TableCell>{output.boxes || 0}</TableCell>}
+                                            <TableCell>{formatWeight(weight)}</TableCell>
+                                            {showBoxes && <TableCell>{avgWeight}</TableCell>}
+                                            <TableCell>
+                                                <CostDisplay output={output} showDetails={false} size="sm" />
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex gap-2">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => {
+                                                            setBreakdownOutputId(output.id)
+                                                            setBreakdownDialogOpen(true)
+                                                        }}
+                                                    >
+                                                        Ver Desglose
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => handleEditClick(output)}
+                                                    >
+                                                        <Edit className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => handleDeleteOutput(output.id)}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    )
+                                })}
+                            </TableBody>
+                        </Table>
+                    </ScrollArea>
                 </div>
             )}
         </>
-    )
-
-    // Botón para el header (sin Dialog wrapper)
-    const hasOutputs = outputs.length > 0
-    const headerButton = (
-        <Button
-            onClick={openManageDialog}
-        >
-            {hasOutputs ? (
-                <>
-                    <Edit className="h-4 w-4 mr-2" />
-                    Editar Salidas
-                </>
-            ) : (
-                <>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Agregar Salidas
-                </>
-            )}
-        </Button>
     )
 
     // Dialog de gestión múltiple
@@ -1050,4 +1050,3 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
 }
 
 export default ProductionOutputsManager
-

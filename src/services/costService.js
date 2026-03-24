@@ -16,7 +16,15 @@ import { normalizeProductionOutput } from "@/helpers/production/normalizers";
  * @returns {Promise<Object>} - Lista de costes del catálogo
  */
 export function getCostCatalog(token, params = {}) {
-    return apiGet(`${API_URL_V2}cost-catalog`, token, params, {
+    const normalizedParams = {
+        ...params,
+    };
+
+    if (typeof normalizedParams.active_only === 'boolean') {
+        normalizedParams.active_only = normalizedParams.active_only ? 1 : 0;
+    }
+
+    return apiGet(`${API_URL_V2}cost-catalog`, token, normalizedParams, {
         transform: (data) => {
             const catalog = data.data || data || [];
             return {
@@ -197,4 +205,3 @@ export function getCostBreakdown(outputId, token) {
         }
     });
 }
-
