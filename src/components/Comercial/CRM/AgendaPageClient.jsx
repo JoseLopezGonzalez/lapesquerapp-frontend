@@ -159,7 +159,7 @@ function AgendaEventRow({ item, onReschedule, onCancel, onComplete }) {
             </div>
             <div className="min-w-0">
               <p className="text-muted-foreground mb-1 text-xs">Nota</p>
-              <p className="text-sm font-medium whitespace-pre-wrap">{item.description || '—'}</p>
+              <p className="text-sm font-medium whitespace-pre-wrap break-words">{item.description || '—'}</p>
             </div>
           </div>
         </div>

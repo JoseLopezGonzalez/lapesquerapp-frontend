@@ -58,9 +58,12 @@ function ReminderRow({ item, onReschedule, onClear, onFollowUp }) {
           <Link href={targetHref} className="font-medium hover:underline">
             {item.label}
           </Link>
-          <p className="text-sm text-muted-foreground">
-            {formatDateValue(item.nextActionAt)} {item.nextActionNote ? `· ${item.nextActionNote}` : ''}
-          </p>
+          <p className="text-sm text-muted-foreground">{formatDateValue(item.nextActionAt)}</p>
+          {item.nextActionNote ? (
+            <p className="mt-1 whitespace-pre-wrap break-words text-sm text-muted-foreground">
+              {item.nextActionNote}
+            </p>
+          ) : null}
         </div>
         {overdue && (
           <span className="rounded-full bg-red-500/15 px-2 py-1 text-xs font-medium text-red-700 dark:text-red-300">

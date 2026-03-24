@@ -341,7 +341,7 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
                               </h3>
                             </div>
                           </div>
-                          <p className="text-sm leading-7 whitespace-pre-wrap text-foreground">
+                          <p className="text-sm leading-7 whitespace-pre-wrap break-words text-foreground">
                             {prospect.nextActionNote?.trim()
                               ? prospect.nextActionNote
                               : 'Todavia no hay una proxima accion registrada para este prospecto. Cuando definas el siguiente paso comercial, aparecera aqui como referencia clara para el seguimiento.'}
@@ -542,7 +542,7 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
                                   </div>
 
                                   <div className="mt-2 space-y-3 rounded-xl border bg-card p-3">
-                                    <p className="text-sm leading-snug text-foreground">
+                                    <p className="text-sm leading-snug whitespace-pre-wrap break-words text-foreground">
                                       {interaction.summary}
                                     </p>
                                     {interaction.nextActionAt && (
@@ -552,7 +552,7 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
                                           <span>Próxima acción: {formatDateValue(interaction.nextActionAt)}</span>
                                         </p>
                                         {interaction.nextActionNote && (
-                                          <p className="whitespace-pre-line pl-4 text-xs text-muted-foreground">
+                                          <p className="whitespace-pre-wrap break-words pl-4 text-xs text-muted-foreground">
                                             {interaction.nextActionNote}
                                           </p>
                                         )}

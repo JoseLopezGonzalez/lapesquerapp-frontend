@@ -341,7 +341,7 @@ function CustomerDetail({ customerId, embedded = false }) {
                               </div>
 
                               <div className="mt-2 rounded-xl border bg-card p-3 space-y-3">
-                                <p className="text-sm text-foreground leading-snug">{interaction.summary}</p>
+                                <p className="text-sm text-foreground leading-snug whitespace-pre-wrap break-words">{interaction.summary}</p>
 
                                 {interaction.nextActionAt && (
                                   <div className="pt-2 border-t border-border/60 space-y-1">
@@ -351,7 +351,7 @@ function CustomerDetail({ customerId, embedded = false }) {
                                     </p>
 
                                     {interaction.nextActionNote && (
-                                      <p className="text-xs text-muted-foreground whitespace-pre-line pl-4">{interaction.nextActionNote}</p>
+                                      <p className="text-xs text-muted-foreground whitespace-pre-wrap break-words pl-4">{interaction.nextActionNote}</p>
                                     )}
                                   </div>
                                 )}

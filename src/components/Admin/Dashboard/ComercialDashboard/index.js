@@ -157,7 +157,7 @@ function ReminderRow({ item, onReschedule, onCancel, onComplete }) {
                         </div>
                         <div className="min-w-0">
                             <p className="text-muted-foreground mb-1 text-xs">Nota</p>
-                            <p className="text-sm font-medium whitespace-pre-wrap">{item.nextActionNote || "—"}</p>
+                            <p className="text-sm font-medium whitespace-pre-wrap break-words">{item.nextActionNote || "—"}</p>
                         </div>
                     </div>
                 </div>
