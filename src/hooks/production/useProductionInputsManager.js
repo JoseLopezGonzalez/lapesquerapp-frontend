@@ -393,7 +393,7 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
         }
     }
 
-    const calculateSummaryByPallet = () => {
+    const summaryByPallet = useMemo(() => {
         const summaryByPallet = {}
         inputs.forEach((input) => {
             if (!input.box || !input.box.palletId) return
@@ -443,9 +443,9 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
                 lots: Array.from(product.lots).sort()
             })).sort((a, b) => b.totalWeight - a.totalWeight)
         }))
-    }
+    }, [inputs])
 
-    const calculateProductsBreakdown = () => {
+    const productsBreakdown = useMemo(() => {
         const productsMap = {}
         inputs.forEach((input) => {
             if (!input.box?.product?.name) return
@@ -473,9 +473,9 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
             ...product,
             lots: Array.from(product.lots).sort()
         })).sort((a, b) => b.totalWeight - a.totalWeight)
-    }
+    }, [inputs])
 
-    const calculateTotalSummary = () => {
+    const totalSummary = useMemo(() => {
         const totalBoxes = inputs.filter((input) => input.box?.id).length
         const totalWeight = inputs.reduce((sum, input) => sum + parseFloat(input.box?.netWeight || 0), 0)
         const uniqueProducts = new Set()
@@ -486,9 +486,15 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
             totalBoxes,
             totalWeight,
             totalProducts: uniqueProducts.size,
-            totalPallets: calculateSummaryByPallet().length
+            totalPallets: summaryByPallet.length
         }
-    }
+    }, [inputs, summaryByPallet])
+
+    const calculateSummaryByPallet = () => summaryByPallet
+
+    const calculateProductsBreakdown = () => productsBreakdown
+
+    const calculateTotalSummary = () => totalSummary
 
     const calculateTotalWeight = () => {
         const allBoxes = getAllBoxes()

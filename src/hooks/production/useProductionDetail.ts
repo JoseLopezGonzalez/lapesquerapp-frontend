@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
+import { productionQueryKeys } from '@/lib/routes/queryKeys';
 import {
   getProduction,
   getProductionProcessTree,
@@ -42,7 +43,7 @@ export function useProductionDetail(
   const isEnabled = !!token && !!tenantId && productionId != null && productionId !== '';
 
   const productionQuery = useQuery({
-    queryKey: ['productions', 'detail', tenantId ?? 'unknown', productionId],
+    queryKey: productionQueryKeys.detail(tenantId, productionId),
     queryFn: () => {
       if (!token || productionId == null) throw new Error('Missing token or productionId');
       return getProduction(productionId, token);
@@ -52,14 +53,14 @@ export function useProductionDetail(
   });
 
   const totalsQuery = useQuery({
-    queryKey: ['productions', 'totals', tenantId ?? 'unknown', productionId],
+    queryKey: productionQueryKeys.totals(tenantId, productionId),
     queryFn: () => getProductionTotals(productionId!, token!).catch(() => null),
     enabled: isEnabled,
     staleTime: 2 * 60 * 1000,
   });
 
   const processTreeQuery = useQuery({
-    queryKey: ['productions', 'processTree', tenantId ?? 'unknown', productionId],
+    queryKey: productionQueryKeys.processTree(tenantId, productionId),
     queryFn: () =>
       getProductionProcessTree(productionId!, token!).catch((err) => {
         console.error('Error al cargar processTree:', err);

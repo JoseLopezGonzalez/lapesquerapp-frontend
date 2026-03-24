@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { useProductionDetail } from '@/hooks/production/useProductionDetail'
 import { formatDateLong, formatWeight } from '@/helpers/production/formatters'
@@ -16,7 +17,16 @@ import Loader from '@/components/Utilities/Loader'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ArrowLeft, Calendar, Package, Scale, AlertCircle, Info, Calculator, TrendingDown, TrendingUp, Fish, MapPin, FileText, CheckCircle2, XCircle, AlertTriangle, Eye, AlertOctagon } from 'lucide-react'
 import ProductionRecordsManager from './ProductionRecordsManager'
-import ProductionDiagram, { ViewModeSelector } from './ProductionDiagram'
+import { ViewModeSelector } from './ProductionDiagram/ViewModeSelector'
+
+const ProductionDiagram = dynamic(() => import('./ProductionDiagram'), {
+    ssr: false,
+    loading: () => (
+        <div className="h-[600px] flex items-center justify-center">
+            <Loader text="Cargando diagrama..." />
+        </div>
+    )
+})
 
 const ProductionView = ({ productionId }) => {
     const router = useRouter()
@@ -700,13 +710,15 @@ const ProductionView = ({ productionId }) => {
                             <CardDescription>Visualización del flujo de procesos</CardDescription>
                         </CardHeader>
                         <CardContent className="p-0">
-                            <ProductionDiagram
-                                processTree={processTree}
-                                productionId={productionId}
-                                loading={processTreeLoading}
-                                viewMode={viewMode}
-                                onViewModeChange={setViewMode}
-                            />
+                            {activeTab === 'diagram' ? (
+                                <ProductionDiagram
+                                    processTree={processTree}
+                                    productionId={productionId}
+                                    loading={processTreeLoading}
+                                    viewMode={viewMode}
+                                    onViewModeChange={setViewMode}
+                                />
+                            ) : null}
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -717,4 +729,3 @@ const ProductionView = ({ productionId }) => {
 }
 
 export default ProductionView
-

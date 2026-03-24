@@ -21,8 +21,7 @@ import ReprocessedNode from './components/ReprocessedNode'
 import RestantesNode from './components/RestantesNode'
 import Loader from '@/components/Utilities/Loader'
 import { EmptyState } from '@/components/Utilities/EmptyState'
-import { Package, Eye, EyeOff, Calculator, AlertCircle } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { Package, AlertCircle } from 'lucide-react'
 
 const nodeTypes = {
   processNode: ProcessNode,
@@ -181,95 +180,6 @@ function FlowContent({ processTree, productionId, loading, viewMode, onViewModeC
   )
 }
 
-// Definición de vistas disponibles
-const VIEW_MODES = {
-  simple: {
-    id: 'simple',
-    label: 'Vista Simple',
-    icon: EyeOff,
-    description: 'Información básica del proceso',
-    enabled: true
-  },
-  detailed: {
-    id: 'detailed',
-    label: 'Vista Detallada',
-    icon: Eye,
-    description: 'Incluye productos y detalles',
-    enabled: true
-  },
-  accounting: {
-    id: 'accounting',
-    label: 'Vista Contabilidad',
-    icon: Calculator,
-    description: 'Información contable y costos',
-    enabled: false // Por ahora inoperativa
-  }
-}
-
-// Definición de vistas disponibles (exportada para uso externo)
-export const VIEW_MODES_CONFIG = {
-  simple: {
-    id: 'simple',
-    label: 'Simple',
-    icon: EyeOff,
-    description: 'Información básica del proceso',
-    enabled: true
-  },
-  detailed: {
-    id: 'detailed',
-    label: 'Detallada',
-    icon: Eye,
-    description: 'Incluye productos y detalles',
-    enabled: true
-  },
-  accounting: {
-    id: 'accounting',
-    label: 'Contabilidad',
-    icon: Calculator,
-    description: 'Información contable y costos',
-    enabled: false // Por ahora inoperativa
-  }
-}
-
-// Componente del selector de vistas para usar en la cabecera (simula diseño de tabs sin usar Tabs)
-export function ViewModeSelector({ viewMode, onViewModeChange }) {
-  return (
-    <div className="inline-flex h-9 items-center justify-center rounded-lg bg-muted p-1 gap-1">
-      {Object.values(VIEW_MODES_CONFIG).map((mode) => {
-        const Icon = mode.icon
-        const isActive = viewMode === mode.id
-        const isDisabled = !mode.enabled
-        
-        return (
-          <button
-            key={mode.id}
-            type="button"
-            onClick={() => {
-              if (!isDisabled && mode.enabled) {
-                onViewModeChange(mode.id)
-              }
-            }}
-            disabled={isDisabled}
-            className={cn(
-              'inline-flex items-center justify-center gap-1.5 px-3 py-1 text-sm font-medium',
-              'transition-all duration-200 rounded-md',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-              isDisabled && 'opacity-50 cursor-not-allowed',
-              !isDisabled && 'hover:bg-muted/80 cursor-pointer',
-              isActive && 'bg-background text-foreground shadow-sm',
-              !isActive && !isDisabled && 'text-muted-foreground'
-            )}
-            title={isDisabled ? 'Próximamente' : mode.description}
-          >
-            <Icon className={cn('h-3.5 w-3.5', isActive && 'text-primary')} />
-            <span className="text-xs">{mode.label}</span>
-          </button>
-        )
-      })}
-    </div>
-  )
-}
-
 export default function ProductionDiagram({ processTree, productionId, loading = false, viewMode: externalViewMode, onViewModeChange: externalOnViewModeChange }) {
   const [internalViewMode, setInternalViewMode] = useState('simple')
   
@@ -285,9 +195,7 @@ export default function ProductionDiagram({ processTree, productionId, loading =
         loading={loading}
         viewMode={viewMode}
         onViewModeChange={onViewModeChange}
-        viewModes={VIEW_MODES_CONFIG}
       />
     </ReactFlowProvider>
   )
 }
-

@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
+import { productionQueryKeys } from '@/lib/routes/queryKeys';
 import { getProduction } from '@/services/productionService';
 import type { Production } from '@/types/production';
 
@@ -16,7 +17,7 @@ export function useProduction(productionId: string | number | null) {
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['productions', 'detail', tenantId ?? 'unknown', productionId],
+    queryKey: productionQueryKeys.detail(tenantId, productionId),
     queryFn: () => {
       if (!token || productionId == null) throw new Error('Missing token or productionId');
       return getProduction(productionId, token);

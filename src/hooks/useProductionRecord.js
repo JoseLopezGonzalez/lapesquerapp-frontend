@@ -1,17 +1,17 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useMemo, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import {
-    getProductionRecord,
     createProductionRecord,
-    updateProductionRecord,
+    getProductionRecord,
     getProductionRecordsOptions,
-    getProduction
+    updateProductionRecord
 } from '@/services/productionService';
 import { dateToIso } from '@/helpers/production/dateFormatters';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
+import { productionQueryKeys } from '@/lib/routes/queryKeys';
 import { useProduction } from '@/hooks/production/useProduction';
 import { useProcessOptions } from '@/hooks/production/useProcessOptions';
 
@@ -22,38 +22,54 @@ import { useProcessOptions } from '@/hooks/production/useProcessOptions';
 export function useProductionRecord(productionId, recordId = null, onRefresh = null) {
     const { data: session } = useSession();
     const token = session?.user?.accessToken;
+    const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
     const queryClient = useQueryClient();
+    const [activeRecordId, setActiveRecordId] = useState(recordId);
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState(null);
 
     const { production, isLoading: productionLoading, refetch: refetchProduction } = useProduction(productionId);
     const { processes, isLoading: processesLoading } = useProcessOptions();
 
-    const [record, setRecord] = useState(null);
-    const [saving, setSaving] = useState(false);
-    const [error, setError] = useState(null);
-
-    const isEditMode = recordId !== null || (record?.id != null);
+    const currentRecordId = activeRecordId ?? null;
+    const recordDetailKey = productionQueryKeys.recordDetail(tenantId, currentRecordId);
+    const recordOptionsKey = productionQueryKeys.recordOptions(tenantId, productionId, currentRecordId);
+    const productionDetailKey = productionQueryKeys.detail(tenantId, productionId);
+    const productionTotalsKey = productionQueryKeys.totals(tenantId, productionId);
+    const productionProcessTreeKey = productionQueryKeys.processTree(tenantId, productionId);
 
     const recordQuery = useQuery({
-        queryKey: ['productionRecords', recordId],
-        queryFn: () => getProductionRecord(recordId, token),
-        enabled: !!token && !!recordId,
+        queryKey: recordDetailKey,
+        queryFn: () => getProductionRecord(currentRecordId, token),
+        enabled: !!token && !!currentRecordId,
+        staleTime: 30 * 1000,
     });
 
     const existingRecordsQuery = useQuery({
-        queryKey: ['productionRecords', 'options', productionId, recordId ?? record?.id],
-        queryFn: () => getProductionRecordsOptions(token, productionId, recordId || record?.id),
+        queryKey: recordOptionsKey,
+        queryFn: () => getProductionRecordsOptions(token, productionId, currentRecordId),
         enabled: !!token && !!productionId,
     });
 
+    const record = useMemo(() => recordQuery.data ?? null, [recordQuery.data]);
     const existingRecords = existingRecordsQuery.data ?? [];
+    const isEditMode = currentRecordId !== null || (record?.id != null);
 
-    useEffect(() => {
-        if (recordId && recordQuery.data !== undefined) {
-            setRecord(recordQuery.data);
-        } else if (!recordId) {
-            setRecord(null);
+    const setRecord = useCallback((updater) => {
+        const targetRecordId = activeRecordId ?? recordId ?? record?.id ?? null;
+        if (!targetRecordId) return null;
+
+        const targetKey = productionQueryKeys.recordDetail(tenantId, targetRecordId);
+        queryClient.setQueryData(targetKey, (previous) =>
+            typeof updater === 'function' ? updater(previous) : updater
+        );
+
+        if (targetRecordId !== activeRecordId) {
+            setActiveRecordId(targetRecordId);
         }
-    }, [recordId, recordQuery.data]);
+
+        return queryClient.getQueryData(targetKey) ?? null;
+    }, [activeRecordId, queryClient, record?.id, recordId, tenantId]);
 
     const saveMutation = useMutation({
         mutationFn: async ({ formData, isEdit }) => {
@@ -69,29 +85,51 @@ export function useProductionRecord(productionId, recordId = null, onRefresh = n
                 ...(finishedAtISO !== null && { finished_at: finishedAtISO }),
                 notes: formData.notes || null,
             };
+
             if (isEdit) {
-                return updateProductionRecord(recordId, recordData, token);
+                return updateProductionRecord(currentRecordId, recordData, token);
             }
+
             return createProductionRecord(recordData, token);
         },
-        onSuccess: async (response, { formData, isEdit }) => {
+        onSuccess: async (response, { isEdit }) => {
             setError(null);
+
+            let nextRecordId = currentRecordId;
+            let nextRecord = null;
+
             if (isEdit) {
-                const updated = await getProductionRecord(recordId, token);
-                setRecord(updated);
+                nextRecord = await getProductionRecord(currentRecordId, token);
             } else {
                 const createdId = response?.data?.id ?? response?.id;
                 if (createdId) {
-                    const newRecord = await getProductionRecord(createdId, token);
-                    setRecord(newRecord);
+                    nextRecordId = createdId;
+                    setActiveRecordId(createdId);
+                    nextRecord = await getProductionRecord(createdId, token);
                 }
             }
-            queryClient.invalidateQueries({ queryKey: ['productionRecords'] });
-            queryClient.invalidateQueries({ queryKey: ['productions'] });
+
+            if (nextRecordId && nextRecord) {
+                queryClient.setQueryData(
+                    productionQueryKeys.recordDetail(tenantId, nextRecordId),
+                    nextRecord
+                );
+            }
+
+            await Promise.all([
+                queryClient.invalidateQueries({
+                    queryKey: productionQueryKeys.recordOptions(tenantId, productionId, nextRecordId),
+                }),
+                queryClient.invalidateQueries({ queryKey: productionDetailKey }),
+                queryClient.invalidateQueries({ queryKey: productionTotalsKey }),
+                queryClient.invalidateQueries({ queryKey: productionProcessTreeKey }),
+            ]);
+
             if (onRefresh) onRefresh();
         },
         onError: (err) => {
-            const msg = err?.userMessage ?? err?.data?.userMessage ?? err?.response?.data?.userMessage ?? err?.message ?? `Error al ${recordId ? 'actualizar' : 'crear'} el proceso`;
+            const action = currentRecordId ? 'actualizar' : 'crear';
+            const msg = err?.userMessage ?? err?.data?.userMessage ?? err?.response?.data?.userMessage ?? err?.message ?? `Error al ${action} el proceso`;
             setError(msg);
         },
         onSettled: () => setSaving(false),
@@ -100,32 +138,38 @@ export function useProductionRecord(productionId, recordId = null, onRefresh = n
     const saveRecord = useCallback(async (formData) => {
         if (!token || !productionId) throw new Error('Token o productionId no disponible');
         if (!formData.process_id || formData.process_id === 'none') throw new Error('El tipo de proceso es obligatorio');
+
         setSaving(true);
         setError(null);
+
         try {
             return await saveMutation.mutateAsync({
                 formData,
-                isEdit: !!recordId,
+                isEdit: !!currentRecordId,
             });
         } catch (e) {
             setSaving(false);
             throw e;
         }
-    }, [token, productionId, recordId, saveMutation]);
+    }, [token, productionId, currentRecordId, saveMutation]);
 
     const refresh = useCallback(() => {
         refetchProduction();
-        recordQuery.refetch();
+        if (currentRecordId) {
+            recordQuery.refetch();
+        }
         existingRecordsQuery.refetch();
-    }, [refetchProduction, recordQuery, existingRecordsQuery]);
+    }, [currentRecordId, existingRecordsQuery, recordQuery, refetchProduction]);
 
     const loadInitialData = useCallback(() => {
         refetchProduction();
-        recordQuery.refetch();
+        if (currentRecordId) {
+            recordQuery.refetch();
+        }
         existingRecordsQuery.refetch();
-    }, [refetchProduction, recordQuery, existingRecordsQuery]);
+    }, [currentRecordId, existingRecordsQuery, recordQuery, refetchProduction]);
 
-    const loading = productionLoading || processesLoading || (!!recordId && recordQuery.isLoading) || existingRecordsQuery.isLoading;
+    const loading = productionLoading || processesLoading || (!!currentRecordId && recordQuery.isLoading) || existingRecordsQuery.isLoading;
 
     return {
         record,

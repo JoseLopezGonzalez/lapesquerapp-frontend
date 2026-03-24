@@ -81,3 +81,42 @@ export const adminCustomerKeys = {
   assignment: (customerId: number | string | null | undefined) =>
     ['admin', 'customers', 'assignment', customerId] as const,
 };
+
+export const productionQueryKeys = {
+  detail: (
+    tenantId: string | null | undefined,
+    productionId: number | string | null | undefined
+  ) => ['productions', 'detail', tenantId ?? 'unknown', productionId] as const,
+  totals: (
+    tenantId: string | null | undefined,
+    productionId: number | string | null | undefined
+  ) => ['productions', 'totals', tenantId ?? 'unknown', productionId] as const,
+  processTree: (
+    tenantId: string | null | undefined,
+    productionId: number | string | null | undefined
+  ) => ['productions', 'processTree', tenantId ?? 'unknown', productionId] as const,
+  recordDetail: (
+    tenantId: string | null | undefined,
+    recordId: number | string | null | undefined
+  ) => ['productionRecords', 'detail', tenantId ?? 'unknown', recordId] as const,
+  recordOptions: (
+    tenantId: string | null | undefined,
+    productionId: number | string | null | undefined,
+    recordId: number | string | null | undefined
+  ) => ['productionRecords', 'options', tenantId ?? 'unknown', productionId, recordId] as const,
+};
+
+export const productOptionKeys = {
+  list: (tenantId: string | null | undefined) =>
+    ['products', 'options', tenantId ?? 'unknown'] as const,
+};
+
+export const productCategoryOptionKeys = {
+  list: (tenantId: string | null | undefined) =>
+    ['productCategories', 'options', tenantId ?? 'unknown'] as const,
+};
+
+export const productFamilyOptionKeys = {
+  list: (tenantId: string | null | undefined) =>
+    ['productFamilies', 'options', tenantId ?? 'unknown'] as const,
+};

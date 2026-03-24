@@ -14,10 +14,11 @@ import {
     getProductionInputs,
     getProductionRecordSourcesData
 } from '@/services/productionService'
-import { getProductOptions } from '@/services/productService'
 import { getConsumedWeight, getConsumedBoxes } from '@/helpers/production/formatters'
 import { getRecordField } from '@/helpers/production/recordHelpers'
 import { useProductionRecordContextOptional } from '@/context/ProductionRecordContext'
+import { useProductOptions } from '@/hooks/useProductOptions'
+import { useShowBoxesPreference } from './useShowBoxesPreference'
 
 /**
  * Hook con toda la lógica de ProductionOutputsManager: estado, carga de outputs/products,
@@ -32,10 +33,12 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
     const initialOutputs = contextOutputs.length > 0 ? contextOutputs : initialOutputsProp
     const updateOutputs = contextData?.updateOutputs
     const updateRecord = contextData?.updateRecord
+    const { productOptions, loading: productsLoading, refetch: refetchProducts } = useProductOptions({
+        enabled: !!productionRecordId
+    })
+    const { showBoxes, handleToggleBoxes } = useShowBoxesPreference()
 
     const [outputs, setOutputs] = useState(initialOutputs)
-    const [products, setProducts] = useState([])
-    const [productsLoading, setProductsLoading] = useState(true)
     const [loading, setLoading] = useState(initialOutputs.length === 0)
     const [error, setError] = useState(null)
     const [formData, setFormData] = useState({
@@ -66,13 +69,7 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
     const [selectedProducts, setSelectedProducts] = useState(new Set())
     const [wasManageDialogOpen, setWasManageDialogOpen] = useState(false)
     const [deleteOutputConfirm, setDeleteOutputConfirm] = useState({ open: false, outputId: null })
-    const [showBoxes, setShowBoxes] = useState(() => {
-        if (typeof window !== 'undefined') {
-            const saved = localStorage.getItem('production_show_boxes')
-            return saved !== null ? saved === 'true' : true
-        }
-        return true
-    })
+    const products = productOptions
 
     const hasInitializedRef = useRef(false)
     const previousOutputsIdsRef = useRef(null)
@@ -92,13 +89,11 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
             setLoading(false)
             hasInitializedRef.current = true
             previousOutputsIdsRef.current = outputsKey
-            loadProducts()
             return
         }
         loadOutputs().finally(() => {
             hasInitializedRef.current = true
         })
-        loadProducts()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [session?.user?.accessToken, productionRecordId])
 
@@ -115,13 +110,6 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
             previousOutputsIdsRef.current = outputsKey
         }
     }, [outputsKey, contextOutputs, initialOutputsProp, outputs.length])
-
-    const handleToggleBoxes = (checked) => {
-        setShowBoxes(checked)
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('production_show_boxes', checked.toString())
-        }
-    }
 
     const loadOutputsOnly = async () => {
         try {
@@ -168,21 +156,12 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
     }
 
     const loadProducts = async () => {
-        setProductsLoading(true)
         try {
-            const token = session?.user?.accessToken
-            if (!token) return
-            const response = await getProductOptions(token)
-            const productsData = Array.isArray(response) ? response : (response.data || response || [])
-            const formattedProducts = productsData.map((product) => ({
-                value: product.id?.toString() || '',
-                label: product.name || `Producto #${product.id}`
-            }))
-            setProducts(formattedProducts)
+            const result = await refetchProducts()
+            return result.data ?? []
         } catch (err) {
             console.error('Error loading products:', err)
-        } finally {
-            setProductsLoading(false)
+            return []
         }
     }
 

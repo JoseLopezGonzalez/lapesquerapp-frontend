@@ -3,6 +3,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
+import {
+  productCategoryOptionKeys,
+  productFamilyOptionKeys,
+  productOptionKeys,
+} from '@/lib/routes/queryKeys';
 import { getProductOptions } from '@/services/productService';
 import { getProductCategoryOptions } from '@/services/productCategoryService';
 import { getProductFamilyOptions } from '@/services/productFamilyService';
@@ -17,20 +22,21 @@ export function useProductOptions(params = {}) {
   const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['products', 'options', tenantId ?? 'unknown'],
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: productOptionKeys.list(tenantId),
     queryFn: () => getProductOptions(token),
     enabled: !!token && !!tenantId && enabled,
     staleTime: 5 * 60 * 1000,
   });
 
-  const productOptions = Array.isArray(data)
-    ? data.map((p) => ({ value: `${p.id}`, label: p.name }))
-    : [];
+  const products = Array.isArray(data) ? data : [];
+  const productOptions = products.map((p) => ({ value: `${p.id}`, label: p.name }));
 
   return {
+    products,
     productOptions,
     loading: isLoading,
+    refetch,
   };
 }
 
@@ -56,7 +62,7 @@ export function useProductCategoryOptions() {
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
   return useOptions(
-    ['productCategories', 'options', tenantId ?? 'unknown'],
+    productCategoryOptionKeys.list(tenantId),
     () => getProductCategoryOptions(token),
     !!token && !!tenantId
   );
@@ -71,7 +77,7 @@ export function useProductFamilyOptions() {
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
   return useOptions(
-    ['productFamilies', 'options', tenantId ?? 'unknown'],
+    productFamilyOptionKeys.list(tenantId),
     () => getProductFamilyOptions(token),
     !!token && !!tenantId
   );

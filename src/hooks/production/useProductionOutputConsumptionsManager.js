@@ -11,7 +11,6 @@ import {
     deleteProductionOutputConsumption,
     syncProductionOutputConsumptions
 } from '@/services/productionService'
-import { getProductOptions } from '@/services/productService'
 import {
     formatNumber,
     getOutputId,
@@ -20,6 +19,8 @@ import {
     getProductName
 } from '@/helpers/production/formatters'
 import { useProductionRecordContextOptional } from '@/context/ProductionRecordContext'
+import { useProductOptions } from '@/hooks/useProductOptions'
+import { useShowBoxesPreference } from './useShowBoxesPreference'
 
 /**
  * Hook con toda la lógica de ProductionOutputConsumptionsManager: estado, carga de consumptions/outputs/products,
@@ -40,10 +41,13 @@ export function useProductionOutputConsumptionsManager({
     const hasParent = contextHasParent
     const updateConsumptions = contextData?.updateConsumptions
     const updateRecord = contextData?.updateRecord
+    const { products, refetch: refetchProducts } = useProductOptions({
+        enabled: !!productionRecordId
+    })
+    const { showBoxes, handleToggleBoxes } = useShowBoxesPreference()
 
     const [consumptions, setConsumptions] = useState(initialConsumptions)
     const [availableOutputs, setAvailableOutputs] = useState([])
-    const [products, setProducts] = useState([])
     const [loading, setLoading] = useState(
         !hasParent || initialConsumptions.length === 0 ? false : true
     )
@@ -62,13 +66,6 @@ export function useProductionOutputConsumptionsManager({
     const [newConsumptionRows, setNewConsumptionRows] = useState([])
     const [savingAll, setSavingAll] = useState(false)
     const [addingFromParent, setAddingFromParent] = useState(false)
-    const [showBoxes, setShowBoxes] = useState(() => {
-        if (typeof window !== 'undefined') {
-            const saved = localStorage.getItem('production_show_boxes')
-            return saved !== null ? saved === 'true' : true
-        }
-        return true
-    })
 
     const hasInitializedRef = useRef(false)
     const previousConsumptionsIdsRef = useRef(null)
@@ -90,7 +87,6 @@ export function useProductionOutputConsumptionsManager({
             setLoading(false)
             hasInitializedRef.current = true
             previousHasParentRef.current = hasParent
-            loadProducts()
             return
         }
         const current =
@@ -101,14 +97,12 @@ export function useProductionOutputConsumptionsManager({
             hasInitializedRef.current = true
             previousConsumptionsIdsRef.current = consumptionsKey
             previousHasParentRef.current = hasParent
-            loadProducts()
             return
         }
         loadData().finally(() => {
             hasInitializedRef.current = true
             previousHasParentRef.current = hasParent
         })
-        loadProducts()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [session?.user?.accessToken, productionRecordId])
 
@@ -145,13 +139,6 @@ export function useProductionOutputConsumptionsManager({
             previousConsumptionsIdsRef.current = consumptionsKey
         }
     }, [consumptionsKey, contextConsumptions, initialConsumptionsProp, hasParent, consumptions.length])
-
-    const handleToggleBoxes = (checked) => {
-        setShowBoxes(checked)
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('production_show_boxes', checked.toString())
-        }
-    }
 
     const loadConsumptionsOnly = async () => {
         try {
@@ -226,13 +213,11 @@ export function useProductionOutputConsumptionsManager({
 
     const loadProducts = async () => {
         try {
-            const token = session?.user?.accessToken
-            if (!token) return
-            const response = await getProductOptions(token)
-            const productsData = Array.isArray(response) ? response : (response.data || response || [])
-            setProducts(productsData)
+            const result = await refetchProducts()
+            return result.data ?? []
         } catch (err) {
             console.error('Error loading products:', err)
+            return []
         }
     }
 
