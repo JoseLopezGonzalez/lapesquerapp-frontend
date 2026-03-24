@@ -21,6 +21,7 @@ export function useProductOptions(params = {}) {
     queryKey: ['products', 'options', tenantId ?? 'unknown'],
     queryFn: () => getProductOptions(token),
     enabled: !!token && !!tenantId && enabled,
+    staleTime: 5 * 60 * 1000,
   });
 
   const productOptions = Array.isArray(data)

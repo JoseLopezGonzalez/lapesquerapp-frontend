@@ -16,7 +16,7 @@ export function useProduction(productionId: string | number | null) {
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['productions', 'one', tenantId ?? 'unknown', productionId],
+    queryKey: ['productions', 'detail', tenantId ?? 'unknown', productionId],
     queryFn: () => {
       if (!token || productionId == null) throw new Error('Missing token or productionId');
       return getProduction(productionId, token);

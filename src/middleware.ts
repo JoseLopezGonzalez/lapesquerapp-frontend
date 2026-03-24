@@ -17,7 +17,7 @@ interface JWTToken {
 
 function setVerificationCookie(response: NextResponse): void {
   response.cookies.set("__session_verified", "1", {
-    maxAge: 60,
+    maxAge: 5 * 60,
     httpOnly: true,
     sameSite: "strict",
     path: "/",

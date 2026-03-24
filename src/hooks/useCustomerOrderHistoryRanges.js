@@ -102,10 +102,13 @@ export function useCustomerOrderHistoryRanges({ customerId, enabled = true, noti
     }
 
     const initializeRanges = async () => {
+      setInitialLoading(true);
+      setLoadingData(false);
       setIsRangeReady(false);
       setHasHistoryRanges(null);
 
       if (!customerId || !token) {
+        setInitialLoading(false);
         return;
       }
 

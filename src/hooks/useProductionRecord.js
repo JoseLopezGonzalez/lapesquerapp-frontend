@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import {
@@ -11,6 +11,7 @@ import {
     getProduction
 } from '@/services/productionService';
 import { dateToIso } from '@/helpers/production/dateFormatters';
+import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 import { useProduction } from '@/hooks/production/useProduction';
 import { useProcessOptions } from '@/hooks/production/useProcessOptions';
 

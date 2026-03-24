@@ -15,6 +15,7 @@ import { useCustomersList } from '@/hooks/useCustomersList';
 import { useCommercialInteractions } from '@/hooks/useCommercialInteractions';
 import { useOffersList } from '@/hooks/useOffers';
 import { useCustomerOrderHistoryRanges } from '@/hooks/useCustomerOrderHistoryRanges';
+import { useComercialOrders } from '@/hooks/useComercialOrders';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 import { getCustomer } from '@/services/customerService';
 import { useSession } from 'next-auth/react';
@@ -24,6 +25,9 @@ import StatusPill from './StatusPill';
 import Loader from '@/components/Utilities/Loader';
 import CustomerAssignmentPanel from '@/components/Admin/Customers/CustomerAssignmentPanel';
 import CustomerOrderHistoryView from '@/components/Shared/CustomerOrderHistoryView';
+import StatusBadge from '@/components/Admin/OrdersManager/StatusBadge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { formatDecimalCurrency, formatDecimalWeight, formatInteger } from '@/helpers/formats/numbers/formatNumbers';
 
 const interactionTypeIcons = {
   call: Phone,
@@ -47,7 +51,10 @@ function useCustomerDetail(customerId) {
 
 function CustomerDetail({ customerId, embedded = false }) {
   const [activeTab, setActiveTab] = useState('data');
+  const [ordersPage, setOrdersPage] = useState(1);
+  const ORDERS_PER_PAGE = 12;
   const shouldLoadOrders = activeTab === 'orders';
+  const shouldLoadHistory = activeTab === 'history';
   const shouldLoadInteractions = activeTab === 'interactions';
   const shouldLoadOffers = activeTab === 'offers';
   const { data: customer, isLoading } = useCustomerDetail(customerId);
@@ -71,8 +78,19 @@ function CustomerDetail({ customerId, embedded = false }) {
     getTrendTooltipText,
   } = useCustomerOrderHistoryRanges({
     customerId,
-    enabled: shouldLoadOrders,
+    enabled: shouldLoadHistory,
     notifyOnError: false,
+  });
+  const {
+    data: customerOrders = [],
+    meta: customerOrdersMeta,
+    isLoading: ordersTableLoading,
+    errorMessage: ordersTableError,
+  } = useComercialOrders({
+    customerId,
+    page: ordersPage,
+    perPage: ORDERS_PER_PAGE,
+    enabled: shouldLoadOrders,
   });
   const { data: interactions, isLoading: interactionsLoading } = useCommercialInteractions({
     customerId,
@@ -88,6 +106,7 @@ function CustomerDetail({ customerId, embedded = false }) {
 
   useEffect(() => {
     setActiveTab('data');
+    setOrdersPage(1);
     setInteractionOpen(false);
   }, [customerId]);
 
@@ -131,6 +150,7 @@ function CustomerDetail({ customerId, embedded = false }) {
             <TabsTrigger value="data">Datos</TabsTrigger>
             <TabsTrigger value="assignment">Asignación</TabsTrigger>
             <TabsTrigger value="orders">Pedidos</TabsTrigger>
+            <TabsTrigger value="history">Histórico</TabsTrigger>
             <TabsTrigger value="interactions">Interacciones</TabsTrigger>
             <TabsTrigger value="offers">Ofertas</TabsTrigger>
           </TabsList>
@@ -157,6 +177,105 @@ function CustomerDetail({ customerId, embedded = false }) {
           </TabsContent>
 
           <TabsContent value="orders" className="flex h-full w-full min-w-0 flex-1 min-h-0 flex-col overflow-hidden">
+            {ordersTableLoading ? (
+              <div className="flex min-h-0 flex-1 items-center justify-center">
+                <Loader />
+              </div>
+            ) : ordersTableError ? (
+              <div className="flex-1 min-h-0 flex">
+                <EmptyState
+                  title="Error cargando pedidos"
+                  description={ordersTableError}
+                  className="h-full w-full border bg-muted/20 !min-h-0"
+                />
+              </div>
+            ) : customerOrders.length === 0 ? (
+              <div className="flex-1 min-h-0 flex">
+                <EmptyState
+                  title="Sin pedidos"
+                  description="Este cliente no tiene pedidos."
+                  className="h-full w-full border bg-muted/20 !min-h-0"
+                />
+              </div>
+            ) : (
+              <div className="flex h-full min-h-0 flex-col gap-3">
+                <div className="flex-1 min-h-0 overflow-auto border rounded-lg">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ID</TableHead>
+                        <TableHead>Fecha Salida</TableHead>
+                        <TableHead>Cliente</TableHead>
+                        <TableHead>Referencia</TableHead>
+                        <TableHead>Estado</TableHead>
+                        <TableHead>Tipo</TableHead>
+                        <TableHead className="text-right">Peso total</TableHead>
+                        <TableHead className="text-right">Cajas</TableHead>
+                        <TableHead className="text-right">Palets</TableHead>
+                        <TableHead className="text-right">Subtotal</TableHead>
+                        <TableHead className="text-right">Total</TableHead>
+                        <TableHead>Vendedor</TableHead>
+                        <TableHead>Incoterm</TableHead>
+                        <TableHead>Transporte</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {customerOrders.map((order) => {
+                        const status = order.status;
+                        const statusColor = status === 'finished' ? 'green' : status === 'incident' ? 'red' : 'orange';
+                        const statusLabel = status === 'finished' ? 'Finalizado' : status === 'incident' ? 'Incidencia' : 'Pendiente';
+                        return (
+                          <TableRow key={order.id}>
+                            <TableCell className="font-medium">#{order.id}</TableCell>
+                            <TableCell>{formatDateValue(order.loadDate)}</TableCell>
+                            <TableCell>{order.customer?.name ?? customer?.name ?? '-'}</TableCell>
+                            <TableCell>{order.buyerReference || '-'}</TableCell>
+                            <TableCell>
+                              <StatusBadge color={statusColor} label={statusLabel} />
+                            </TableCell>
+                            <TableCell>{order.orderType === 'autoventa' ? 'Autoventa' : 'Estándar'}</TableCell>
+                            <TableCell className="text-right">{formatDecimalWeight(order.totalNetWeight ?? 0)}</TableCell>
+                            <TableCell className="text-right">{formatInteger(order.totalBoxes ?? 0)}</TableCell>
+                            <TableCell className="text-right">{formatInteger(order.pallets ?? 0)}</TableCell>
+                            <TableCell className="text-right">{formatDecimalCurrency(order.subtotalAmount ?? 0)}</TableCell>
+                            <TableCell className="text-right">{formatDecimalCurrency(order.totalAmount ?? 0)}</TableCell>
+                            <TableCell>{order.salesperson?.name ?? '-'}</TableCell>
+                            <TableCell>{order.incoterm?.code ?? '-'}</TableCell>
+                            <TableCell>{order.transport?.name ?? '-'}</TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-muted-foreground">
+                    Página {customerOrdersMeta.current_page} de {customerOrdersMeta.last_page} · {customerOrdersMeta.total} pedidos
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setOrdersPage((prev) => Math.max(1, prev - 1))}
+                      disabled={customerOrdersMeta.current_page <= 1}
+                    >
+                      Anterior
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setOrdersPage((prev) => prev + 1)}
+                      disabled={customerOrdersMeta.current_page >= customerOrdersMeta.last_page}
+                    >
+                      Siguiente
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="history" className="flex h-full w-full min-w-0 flex-1 min-h-0 flex-col overflow-hidden">
             <CustomerOrderHistoryView
               customerHistory={customerHistory}
               availableYears={availableYears}
