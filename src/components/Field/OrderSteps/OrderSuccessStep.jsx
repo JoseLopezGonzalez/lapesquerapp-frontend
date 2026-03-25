@@ -34,21 +34,40 @@ export function OrderSuccessStep({ order, onBackToOrders, onBackToRoute }) {
       </div>
 
       <Card className="w-full max-w-md">
-        <CardContent className="flex flex-col gap-3 p-6">
-          <Button onClick={onPrint} className="w-full justify-between">
-            Imprimir ticket
-            <Printer className="h-4 w-4" />
-          </Button>
-          <Button onClick={onBackToOrders} className="w-full justify-between">
-            Volver a pedidos
-            <ArrowRight className="h-4 w-4" />
-          </Button>
-          {order.routeId ? (
-            <Button variant="outline" onClick={onBackToRoute} className="w-full justify-between">
-              Volver a la ruta
-              <Route className="h-4 w-4" />
+        <CardContent className="pt-6 pb-6 px-6">
+          <div className="flex flex-row flex-wrap justify-center gap-4">
+            <Button
+              variant="default"
+              size="sm"
+              className="flex-1 min-w-[160px] max-w-[260px] gap-2 min-h-[40px] touch-manipulation active:scale-[0.98] transition-transform text-sm"
+              onClick={onPrint}
+            >
+              <Printer className="h-4 w-4 shrink-0" />
+              Imprimir ticket
             </Button>
-          ) : null}
+
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1 min-w-[160px] max-w-[260px] gap-2 min-h-[40px] touch-manipulation active:scale-[0.98] transition-transform text-sm"
+              onClick={onBackToOrders}
+            >
+              <ArrowRight className="h-4 w-4 shrink-0" />
+              Volver a pedidos
+            </Button>
+
+            {order.routeId ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex-1 min-w-[160px] max-w-[260px] gap-2 min-h-[40px] touch-manipulation active:scale-[0.98] transition-transform text-sm"
+                onClick={onBackToRoute}
+              >
+                <Route className="h-4 w-4 shrink-0" />
+                Volver a la ruta
+              </Button>
+            ) : null}
+          </div>
         </CardContent>
       </Card>
 

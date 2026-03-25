@@ -314,13 +314,16 @@ export default function FieldOrdersPage() {
             </div>
           ) : null}
 
-          <DialogFooter>
+          <DialogFooter className="sm:justify-center">
             <Button
               type="button"
+              variant="default"
+              size="sm"
+              className="w-full gap-2 min-h-[40px] touch-manipulation active:scale-[0.98] transition-transform text-sm sm:w-auto sm:min-w-[200px]"
               onClick={onPrint}
               disabled={!ticketData || printLoading}
             >
-              <Printer className="h-4 w-4 mr-2" />
+              <Printer className="h-4 w-4 shrink-0" />
               Imprimir
             </Button>
           </DialogFooter>
