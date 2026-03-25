@@ -37,6 +37,6 @@ export function mapPlannedProductDetailsToTicketItems(order: OrderWithPlannedPro
         subtotal: totalWeight * unitPrice,
       };
     })
-    .filter(Boolean);
+    .filter((item): item is TicketItem => item !== null);
 }
 
