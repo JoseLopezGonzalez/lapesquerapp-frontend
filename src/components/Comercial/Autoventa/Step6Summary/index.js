@@ -31,7 +31,10 @@ export default function Step6Summary({ state, totalAmount }) {
           <TableBody>
             {items.map((item, idx) => (
               <TableRow key={idx} className="align-top">
-                <TableCell className="py-2">{item.productName ?? item.productId}</TableCell>
+                {/* Keep this summary layout aligned with the printed ticket (AutoventaTicketPrint). */}
+                <TableCell className="py-2 whitespace-normal break-words">
+                  {item.productName ?? item.productId}
+                </TableCell>
                 <TableCell className="text-right py-2 text-sm whitespace-pre-line">
                   {`${item.boxesCount ?? 0} /c\n${Number(item.totalWeight).toFixed(2)} kg\n${Number(item.unitPrice).toFixed(2)} €/kg\n${Number(item.subtotal ?? 0).toFixed(2)} €`}
                 </TableCell>

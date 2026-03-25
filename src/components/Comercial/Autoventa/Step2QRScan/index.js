@@ -19,6 +19,7 @@ export default function Step2QRScan({
   removeAllBoxes,
   loadProductOptions = getProductOptions,
 }) {
+  const isDev = process.env.NODE_ENV === 'development';
   const { data: session } = useSession();
   const token = session?.user?.accessToken;
   const [productsOptions, setProductsOptions] = useState([]);
@@ -133,7 +134,7 @@ export default function Step2QRScan({
         </Button>
       </div>
 
-      <div className="hidden w-full shrink-0 space-y-2 md:block">
+      <div className={`${isDev ? 'block' : 'hidden md:block'} w-full shrink-0 space-y-2`}>
         <Textarea
           value={manualCodes}
           onChange={(event) => setManualCodes(event.target.value)}

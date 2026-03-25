@@ -32,7 +32,8 @@ export default function AutoventaTicketPrint({ order, state }) {
         <tbody>
           {items.map((item, idx) => (
             <tr key={idx} className="border-b align-top">
-              <td className="py-1 pr-2">{item.productName ?? item.productId}</td>
+              {/* Intentionally matches Step6Summary so screen + ticket keep the same structure. */}
+              <td className="py-1 pr-2 whitespace-normal break-words">{item.productName ?? item.productId}</td>
               <td className="py-1 text-right text-xs whitespace-pre-line">
                 {`${item.boxesCount ?? 0} /c\n${Number(item.totalWeight).toFixed(2)} kg\n${Number(item.unitPrice).toFixed(2)} €/kg\n${Number(item.subtotal ?? 0).toFixed(2)} €`}
               </td>
