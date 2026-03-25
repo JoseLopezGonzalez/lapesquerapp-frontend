@@ -199,7 +199,7 @@ export function useOrder(orderId, onChange) {
     const updateOrderData = async (updateData) => {
         /* setLoading(true); */
         const token = session?.user?.accessToken;
-        updateOrder(orderId, updateData, token)
+        return updateOrder(orderId, updateData, token)
             .then((updated) => {
                 updateOrderCache(updated);
                 onChange(updated);
@@ -213,7 +213,7 @@ export function useOrder(orderId, onChange) {
 
     const updateOrderStatus = async (status) => {
         const token = session?.user?.accessToken;
-        setOrderStatus(orderId, status, token)
+        return setOrderStatus(orderId, status, token)
             .then((updated) => {
                 updateOrderCache(updated);
                 return updated;
@@ -228,7 +228,7 @@ export function useOrder(orderId, onChange) {
 
     const updatePlannedProductDetail = async (id, updateData) => {
         const token = session?.user?.accessToken;
-        updateOrderPlannedProductDetail(id, updateData, token)
+        return updateOrderPlannedProductDetail(id, updateData, token)
             .then((updated) => {
                 // Construir el pedido actualizado manualmente
                 if (!order) return;
@@ -250,7 +250,7 @@ export function useOrder(orderId, onChange) {
 
     const deletePlannedProductDetail = async (id) => {
         const token = session?.user?.accessToken;
-        deleteOrderPlannedProductDetail(id, token)
+        return deleteOrderPlannedProductDetail(id, token)
             .then(() => {
                 // Construir el pedido actualizado manualmente
                 if (!order) return;
@@ -270,7 +270,7 @@ export function useOrder(orderId, onChange) {
 
     const createPlannedProductDetail = async (detailData) => {
         const token = session?.user?.accessToken;
-        createOrderPlannedProductDetail(detailData, token)
+        return createOrderPlannedProductDetail(detailData, token)
             .then((created) => {
                 // Construir el pedido actualizado manualmente
                 if (!order) return;
@@ -546,7 +546,7 @@ export function useOrder(orderId, onChange) {
 
     const updateTemperatureOrder = async (updatedTemperature) => {
         const token = session?.user?.accessToken;
-        updateOrder(orderId, { temperature: updatedTemperature }, token)
+        return updateOrder(orderId, { temperature: updatedTemperature }, token)
             .then((updated) => {
                 updateOrderCache(updated);
                 return updated;
@@ -559,7 +559,7 @@ export function useOrder(orderId, onChange) {
 
     const openOrderIncident = async (description) => {
         const token = session?.user?.accessToken;
-        createOrderIncident(order.id, description, token)
+        return createOrderIncident(order.id, description, token)
             .then((updated) => {
                 // Construir el pedido actualizado manualmente
                 if (!order) return;

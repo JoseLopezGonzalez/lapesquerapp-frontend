@@ -76,7 +76,7 @@ Object.defineProperty(global, 'URL', {
 global.URL.createObjectURL = mockCreateObjectURL;
 global.URL.revokeObjectURL = mockRevokeObjectURL;
 
-import { getOrder, setOrderStatus } from '@/services/orderService';
+import { getOrder, setOrderStatus, updateOrder } from '@/services/orderService';
 import { fetchWithTenant } from '@lib/fetchWithTenant';
 import { notify } from '@/lib/notifications';
 
@@ -142,6 +142,25 @@ describe('useOrder', () => {
 
     expect(setOrderStatus).toHaveBeenCalledWith(1, 'in_production', 'test-token');
     expect(onChange).toHaveBeenCalledWith(updatedOrder);
+  });
+
+  it('updateOrderData propagates service errors instead of resolving early', async () => {
+    const serviceError = new Error('backend failed');
+    updateOrder.mockRejectedValue(serviceError);
+
+    const { result } = renderHook(() => useOrder(1), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    await expect(
+      act(async () => {
+        await result.current.updateOrderData({ customerReference: 'X-1' });
+      })
+    ).rejects.toThrow('backend failed');
   });
 
   it('exportDocument calls fetchWithTenant', async () => {
