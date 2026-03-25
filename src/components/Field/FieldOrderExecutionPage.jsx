@@ -11,11 +11,15 @@ import Step2QRScan from '@/components/Comercial/Autoventa/Step2QRScan';
 import Step3Pricing from '@/components/Comercial/Autoventa/Step3Pricing';
 import { useFieldOrder, useFieldOrderMutations } from '@/hooks/useFieldOrders';
 import { useFieldProductsOptions } from '@/hooks/useFieldProductsOptions';
+import { useFieldTaxesOptions } from '@/hooks/useFieldTaxesOptions';
 import {
   aggregateItemsFromBoxes,
   buildInitialItems,
-  buildPlannedProductsPayload,
+  buildBoxesSyncPayload,
+  buildPlannedAdjustmentsPayload,
+  buildPlannedExtrasPayload,
   calculateServedItemsTotal,
+  detectExtraProductIds,
   validateServedItems,
 } from '@/lib/field/fieldOrderExecution';
 import { notify } from '@/lib/notifications';
@@ -41,6 +45,7 @@ export default function FieldOrderExecutionPage({ orderId }) {
   const { data: order, isLoading, errorMessage } = useFieldOrder(orderId);
   const { updateOrder, isUpdating } = useFieldOrderMutations();
   const { data: productsOptionsData } = useFieldProductsOptions();
+  const { data: taxOptionsData } = useFieldTaxesOptions();
   const loadProductOptions = useCallback(
     () => Promise.resolve(productsOptionsData ?? []),
     [productsOptionsData]
@@ -54,9 +59,22 @@ export default function FieldOrderExecutionPage({ orderId }) {
   useEffect(() => {
     if (!order) return;
     const initialItems = buildInitialItems(order);
+    const initialBoxes = (order?.pallets ?? [])
+      .flatMap((pallet) => pallet?.boxes ?? [])
+      .map((box) => ({
+        id: box?.id ?? null,
+        palletId: box?.palletId ?? null,
+        productId: box?.product?.id ?? box?.productId ?? null,
+        productName: box?.product?.name ?? box?.productName ?? '',
+        lot: box?.lot ?? '',
+        gs1128: box?.gs1128 ?? '',
+        netWeight: box?.netWeight ?? 0,
+        grossWeight: box?.grossWeight ?? null,
+      }))
+      .filter((box) => box.productId != null);
     setForecastItems(initialItems);
-    setServedItems([]);
-    setBoxes([]);
+    setBoxes(initialBoxes);
+    setServedItems(initialBoxes.length ? aggregateItemsFromBoxes(initialBoxes, order) : []);
     setStep(1);
     setIsSuccess(false);
   }, [order]);
@@ -104,6 +122,16 @@ export default function FieldOrderExecutionPage({ orderId }) {
     );
   };
 
+  const setItemTax = (productId, taxId) => {
+    setServedItems((current) =>
+      current.map((item) =>
+        Number(item.productId) === Number(productId)
+          ? { ...item, taxId: taxId == null ? undefined : Number(taxId) }
+          : item
+      )
+    );
+  };
+
   if (isLoading) {
     return <div className="flex flex-1 items-center justify-center"><Loader /></div>;
   }
@@ -146,14 +174,21 @@ export default function FieldOrderExecutionPage({ orderId }) {
       return;
     }
 
-    const plannedProducts = buildPlannedProductsPayload(servedItems);
+    const extraProductIds = detectExtraProductIds(boxes, order);
+    const plannedExtras = buildPlannedExtrasPayload(servedItems, extraProductIds);
+    const plannedAdjustments = buildPlannedAdjustmentsPayload(servedItems, order);
+    const boxesPayload = buildBoxesSyncPayload(boxes);
 
     try {
       await notify.promise(
         updateOrder({
           orderId,
           payload: {
-            plannedProducts,
+            boxes: boxesPayload,
+            plannedExtras: plannedExtras.length ? plannedExtras : undefined,
+            plannedAdjustments: plannedAdjustments.length ? plannedAdjustments : undefined,
+            // items is optional; backend syncs execution from boxes
+            items: servedItems,
           },
         }),
         {
@@ -244,7 +279,7 @@ export default function FieldOrderExecutionPage({ orderId }) {
           </div>
         ) : null}
         {!showSuccess && step === 2 ? (
-          <div className="flex flex-1 min-h-0 w-full items-center justify-center overflow-y-auto">
+          <div className="flex flex-1 min-h-0 w-full items-start justify-center overflow-y-auto">
             <ForecastStep items={forecastItems} />
           </div>
         ) : null}
@@ -262,7 +297,12 @@ export default function FieldOrderExecutionPage({ orderId }) {
         {!showSuccess && step === 4 ? (
           <div className="flex flex-1 min-h-0 w-full items-center justify-center overflow-y-auto">
             {servedItems.length > 0 ? (
-              <Step3Pricing state={state} setItemPrice={setItemPrice} />
+              <Step3Pricing
+                state={state}
+                setItemPrice={setItemPrice}
+                taxOptions={taxOptionsData ?? []}
+                setItemTax={setItemTax}
+              />
             ) : (
               <WizardEmptyStep
                 title="Sin productos registrados todavía"
@@ -272,7 +312,7 @@ export default function FieldOrderExecutionPage({ orderId }) {
           </div>
         ) : null}
         {!showSuccess && step === 5 ? (
-          <div className="flex flex-1 min-h-0 w-full items-center justify-center overflow-y-auto">
+          <div className="flex flex-1 min-h-0 w-full items-start justify-center overflow-y-auto">
             <OrderSummaryStep
               order={order}
               items={servedItems}

@@ -49,6 +49,14 @@ export async function getFieldProductsOptions(token: string) {
   return handleResponse(response, 'Error al obtener productos operativos');
 }
 
+export async function getFieldTaxesOptions(token: string) {
+  const response = await fetchWithTenant(`${API_URL_V2}field/taxes/options`, {
+    method: 'GET',
+    headers: getHeaders(token),
+  });
+  return handleResponse(response, 'Error al obtener impuestos operativos');
+}
+
 export async function getFieldOrders(token: string, params: QueryParams = {}) {
   const qs = buildQuery(params);
   const response = await fetchWithTenant(`${API_URL_V2}field/orders${qs ? `?${qs}` : ''}`, {

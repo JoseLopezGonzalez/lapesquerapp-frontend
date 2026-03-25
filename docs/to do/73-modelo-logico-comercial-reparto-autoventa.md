@@ -2229,23 +2229,29 @@ Regla real:
 
 `PUT /api/v2/field/orders/{order}`
 
+Contrato actualizado (ejecución por cajas, sync de estado completo).
+
 Campos admitidos:
 
+- `boxes` (estado completo de ejecución; create/update/delete por presencia de `id`)
+- `plannedExtras` (opcional; crea líneas planned nuevas para productos no prefijados)
+- `plannedAdjustments` (opcional; ajusta solo precio/IVA de líneas planned existentes)
+- `items` (opcional; solo resumen UI, no es fuente de verdad)
+
+Campos **prohibidos** (si se envían → `422`):
+
 - `status`
-- `plannedProducts`
+- `plannedProducts` (legacy)
 
-Cada línea de `plannedProducts` admite:
+Reglas importantes para frontend:
 
-- `product`
-- `quantity`
-- `boxes`
-- `unitPrice`
-- `tax`
-
-Regla importante para frontend:
-
-- si no se envía ni `status` ni `plannedProducts`, backend devuelve error de validación
-- si se envía `plannedProducts`, frontend debe tratarlo como **nuevo conjunto operativo de líneas**, no como parche parcial por línea
+- la ejecución real se guarda en `boxes[]` (no en planned)
+- `boxes[]` se interpreta como “foto final” del pedido:
+  - **Update**: caja con `id`
+  - **Create**: caja sin `id`
+  - **Delete**: caja existente cuyo `id` no venga en el payload
+- `plannedExtras[]` solo se usa para productos detectados al escanear que no existen en `plannedProductDetails`
+- `plannedAdjustments[]` solo puede modificar `unitPrice` y `taxId` (no cantidad ni cajas)
 - este endpoint no sirve para cambiar cliente, fechas ni condiciones comerciales del pedido
 
 #### Resumen de interacción de pedido operativo
@@ -2254,7 +2260,7 @@ Regla importante para frontend:
 |------|----------|--------------------|
 | Listado | `GET /api/v2/field/orders` | scope por `field_operator_id` |
 | Detalle | `GET /api/v2/field/orders/{order}` | `403` si no pertenece al actor |
-| Actualización | `PUT /api/v2/field/orders/{order}` | `status`, `plannedProducts` |
+| Actualización | `PUT /api/v2/field/orders/{order}` | `boxes`, `plannedExtras`, `plannedAdjustments` (y `items` opcional) |
 
 ### 17.8. Contrato real de autoventa operativa
 

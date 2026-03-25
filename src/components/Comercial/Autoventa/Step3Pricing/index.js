@@ -3,9 +3,17 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
-export default function Step3Pricing({ state, setItemPrice }) {
+export default function Step3Pricing({ state, setItemPrice, taxOptions = null, setItemTax = null }) {
   const items = state.items ?? [];
+  const showTaxSelect = Array.isArray(taxOptions) && taxOptions.length > 0 && typeof setItemTax === 'function';
 
   return (
     <div className="w-full flex flex-col items-center mx-auto max-w-[420px]">
@@ -44,6 +52,29 @@ export default function Step3Pricing({ state, setItemPrice }) {
                   inputMode="decimal"
                 />
               </div>
+
+              {showTaxSelect && (
+                <div className="space-y-2">
+                  <Label className="text-muted-foreground">IVA</Label>
+                  <Select
+                    value={item.taxId == null ? '' : String(item.taxId)}
+                    onValueChange={(value) => {
+                      setItemTax(item.productId, value === '' ? null : Number(value));
+                    }}
+                  >
+                    <SelectTrigger className="h-10 touch-manipulation">
+                      <SelectValue placeholder="Selecciona IVA" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {taxOptions.map((tax) => (
+                        <SelectItem key={String(tax.id)} value={String(tax.id)}>
+                          {tax.name ?? `IVA ${tax.rate ?? ''}`}{tax.rate != null ? ` (${tax.rate}%)` : ''}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}

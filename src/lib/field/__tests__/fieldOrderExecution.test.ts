@@ -2,8 +2,11 @@ import { describe, expect, it } from 'vitest';
 import {
   aggregateItemsFromBoxes,
   buildInitialItems,
-  buildPlannedProductsPayload,
+  buildBoxesSyncPayload,
+  buildPlannedAdjustmentsPayload,
+  buildPlannedExtrasPayload,
   calculateServedItemsTotal,
+  detectExtraProductIds,
   validateServedItems,
 } from '@/lib/field/fieldOrderExecution';
 
@@ -11,6 +14,7 @@ describe('fieldOrderExecution helpers', () => {
   const order = {
     plannedProductDetails: [
       {
+        id: 10,
         product: { id: 1, name: 'Merluza' },
         boxes: 2,
         quantity: 20,
@@ -53,12 +57,17 @@ describe('fieldOrderExecution helpers', () => {
   });
 
   it('validates served items and builds payload', () => {
-    const items = [{ productId: 1, productName: 'Merluza', boxesCount: 2, totalWeight: 22, unitPrice: 5, subtotal: 110, tax: 4 }];
+    const items = [{ plannedProductDetailId: 10, productId: 1, productName: 'Merluza', boxesCount: 2, totalWeight: 22, unitPrice: 5, subtotal: 110, taxId: 4 }];
 
     expect(validateServedItems(items)).toBeNull();
     expect(calculateServedItemsTotal(items)).toBe(110);
-    expect(buildPlannedProductsPayload(items)).toEqual([
-      { product: 1, quantity: 22, boxes: 2, unitPrice: 5, tax: 4 },
+    expect(buildBoxesSyncPayload([{ id: 7, productId: 1, lot: 'L-1', netWeight: 10, gs1128: 'GS1' }])).toEqual([
+      { id: 7, productId: 1, lot: 'L-1', netWeight: 10, grossWeight: undefined, gs1128: 'GS1' },
     ]);
+    expect(detectExtraProductIds([{ productId: 99, netWeight: 1 }], order)).toEqual([99]);
+    expect(buildPlannedExtrasPayload([{ productId: 99, productName: 'Extra', boxesCount: 1, totalWeight: 1, unitPrice: 12, subtotal: 12, taxId: 2 }], [99])).toEqual([
+      { productId: 99, unitPrice: 12, taxId: 2 },
+    ]);
+    expect(buildPlannedAdjustmentsPayload(items, order)).toEqual([]);
   });
 });
