@@ -126,7 +126,12 @@ export default function Step8PrintTicket({ state, onFinish, onNew }) {
         </Card>
       </motion.div>
 
-      <AutoventaTicketPrint order={ticketData} state={{ ...state, ...ticketData }} />
+      <AutoventaTicketPrint
+        order={ticketData}
+        state={{ ...state, ...ticketData }}
+        printId="autoventa-ticket-print"
+        title="Autoventa"
+      />
     </div>
   );
 }

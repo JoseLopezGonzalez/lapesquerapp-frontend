@@ -1,10 +1,24 @@
 'use client';
 
-import { ArrowRight, CircleCheck, Route } from 'lucide-react';
+import { ArrowRight, CircleCheck, Printer, Route } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { usePrintElement } from '@/hooks/usePrintElement';
+import AutoventaTicketPrint from '@/components/Comercial/Autoventa/AutoventaTicketPrint';
+import { mapPlannedProductDetailsToTicketItems } from '@/lib/field/fieldOrderTicket';
 
 export function OrderSuccessStep({ order, onBackToOrders, onBackToRoute }) {
+  const printId = `field-order-ticket-print-${order?.id ?? 'unknown'}`;
+  const { onPrint } = usePrintElement({ id: printId, freeSize: true });
+  const items = mapPlannedProductDetailsToTicketItems(order);
+  const ticketData = {
+    entryDate: order?.entryDate ?? '',
+    customerName: order?.customer?.name ?? '',
+    invoiceRequired: Boolean(order?.invoiceRequired ?? false),
+    observations: order?.observations ?? '',
+    items,
+  };
+
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-6 px-4 py-6">
       <div className="flex flex-col items-center gap-3 text-center">
@@ -21,6 +35,10 @@ export function OrderSuccessStep({ order, onBackToOrders, onBackToRoute }) {
 
       <Card className="w-full max-w-md">
         <CardContent className="flex flex-col gap-3 p-6">
+          <Button onClick={onPrint} className="w-full justify-between">
+            Imprimir ticket
+            <Printer className="h-4 w-4" />
+          </Button>
           <Button onClick={onBackToOrders} className="w-full justify-between">
             Volver a pedidos
             <ArrowRight className="h-4 w-4" />
@@ -33,6 +51,13 @@ export function OrderSuccessStep({ order, onBackToOrders, onBackToRoute }) {
           ) : null}
         </CardContent>
       </Card>
+
+      <AutoventaTicketPrint
+        order={ticketData}
+        state={ticketData}
+        printId={printId}
+        title="Ticket"
+      />
     </div>
   );
 }

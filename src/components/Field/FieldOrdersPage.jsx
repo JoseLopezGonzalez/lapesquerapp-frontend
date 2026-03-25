@@ -1,16 +1,30 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ChevronRight, PackageOpen } from 'lucide-react';
+import { MoreVertical, PackageOpen, Printer } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import Loader from '@/components/Utilities/Loader';
-import { useFieldOrders } from '@/hooks/useFieldOrders';
+import { useFieldOrder, useFieldOrders } from '@/hooks/useFieldOrders';
 import { getFieldStatusLabel } from '@/components/Field/labels';
 import { formatDate } from '@/helpers/formats/dates/formatDates';
 import StatusBadge from '@/components/Admin/OrdersManager/StatusBadge';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Button } from '@/components/ui/button';
+import { usePrintElement } from '@/hooks/usePrintElement';
+import AutoventaTicketPrint from '@/components/Comercial/Autoventa/AutoventaTicketPrint';
+import { mapPlannedProductDetailsToTicketItems } from '@/lib/field/fieldOrderTicket';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { useMemo, useState } from 'react';
 
 function getDateMeta(loadDate) {
   if (!loadDate) {
@@ -50,7 +64,7 @@ function getStatusColor(status) {
   return 'orange';
 }
 
-function FieldOrderCard({ order, onClick }) {
+function FieldOrderCard({ order, onClick, onQuickPrint }) {
   const isMobile = useIsMobile();
   const orderId = String(order.id ?? '').padStart(5, '0');
   const customerName = order.customer?.name || 'Sin cliente';
@@ -80,9 +94,46 @@ function FieldOrderCard({ order, onClick }) {
         }
       }}
     >
-      <CardContent className="py-0">
+      <CardContent className="relative py-0">
+        <div className="absolute top-2 right-2 z-10">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-11 w-11 touch-manipulation"
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                }}
+                aria-label="Acciones del pedido"
+              >
+                <MoreVertical className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+              }}
+            >
+              <DropdownMenuItem
+                onSelect={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  onQuickPrint?.(order?.id);
+                }}
+              >
+                <Printer className="h-4 w-4" />
+                Imprimir
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
         {isMobile ? (
-          <div className="grow w-full min-w-0 flex items-center gap-3 pr-1">
+          <div className="grow w-full min-w-0 flex items-center gap-3 pr-1 pt-2">
             <div className="flex-1 min-w-0 space-y-1">
               <p className="font-medium text-base truncate leading-tight" title={customerName}>
                 {customerName}
@@ -116,7 +167,7 @@ function FieldOrderCard({ order, onClick }) {
                 ) : null}
               </div>
             </div>
-            <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" aria-hidden />
+            <div className="flex items-center gap-1 shrink-0 pt-2" />
           </div>
         ) : (
           <div className="grow w-full max-w-xs xl:max-w-none space-y-2 sm:space-y-2">
@@ -166,6 +217,23 @@ export default function FieldOrdersPage() {
   const router = useRouter();
   const { data, isLoading, errorMessage } = useFieldOrders({ perPage: 20 });
   const orders = data?.items ?? [];
+  const [printOrderId, setPrintOrderId] = useState(null);
+  const [printOpen, setPrintOpen] = useState(false);
+  const { data: printOrder, isLoading: printLoading, errorMessage: printError } = useFieldOrder(printOrderId, { enabled: printOpen });
+  const printId = useMemo(() => `field-order-ticket-print-${printOrderId ?? 'unknown'}`, [printOrderId]);
+  const { onPrint } = usePrintElement({ id: printId, freeSize: true });
+
+  const ticketData = useMemo(() => {
+    if (!printOrder) return null;
+    const items = mapPlannedProductDetailsToTicketItems(printOrder);
+    return {
+      entryDate: printOrder?.entryDate ?? '',
+      customerName: printOrder?.customer?.name ?? '',
+      invoiceRequired: Boolean(printOrder?.invoiceRequired ?? false),
+      observations: printOrder?.observations ?? '',
+      items,
+    };
+  }, [printOrder]);
 
   if (isLoading) {
     return <div className="flex flex-1 items-center justify-center"><Loader /></div>;
@@ -208,9 +276,65 @@ export default function FieldOrdersPage() {
             key={order.id}
             order={order}
             onClick={() => router.push(`/field/pedidos/${order.id}`)}
+            onQuickPrint={(id) => {
+              setPrintOrderId(id);
+              setPrintOpen(true);
+            }}
           />
         ))}
       </div>
+
+      <Dialog open={printOpen} onOpenChange={setPrintOpen}>
+        <DialogContent size="md">
+          <DialogHeader>
+            <DialogTitle>Imprimir ticket</DialogTitle>
+            <DialogDescription>
+              {printOrderId ? `Pedido #${String(printOrderId).padStart(5, '0')}` : 'Selecciona un pedido'}
+            </DialogDescription>
+          </DialogHeader>
+
+          {printLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader />
+            </div>
+          ) : printError ? (
+            <EmptyState
+              icon={<PackageOpen className="h-10 w-10 text-primary" />}
+              title="No se pudo cargar el pedido"
+              description={printError}
+            />
+          ) : ticketData ? (
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                Cliente: <span className="text-foreground">{ticketData.customerName || 'Sin cliente'}</span>
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Fecha: <span className="text-foreground">{ticketData.entryDate || 'Sin fecha'}</span>
+              </p>
+            </div>
+          ) : null}
+
+          <DialogFooter>
+            <Button
+              type="button"
+              onClick={onPrint}
+              disabled={!ticketData || printLoading}
+            >
+              <Printer className="h-4 w-4 mr-2" />
+              Imprimir
+            </Button>
+          </DialogFooter>
+
+          {ticketData ? (
+            <AutoventaTicketPrint
+              order={ticketData}
+              state={ticketData}
+              printId={printId}
+              title="Ticket"
+            />
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

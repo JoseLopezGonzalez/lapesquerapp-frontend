@@ -55,6 +55,7 @@ export default function FieldOrderExecutionPage({ orderId }) {
   const [forecastItems, setForecastItems] = useState([]);
   const [servedItems, setServedItems] = useState([]);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [savedOrder, setSavedOrder] = useState(null);
 
   useEffect(() => {
     if (!order) return;
@@ -77,6 +78,7 @@ export default function FieldOrderExecutionPage({ orderId }) {
     setServedItems(initialBoxes.length ? aggregateItemsFromBoxes(initialBoxes, order) : []);
     setStep(1);
     setIsSuccess(false);
+    setSavedOrder(null);
   }, [order]);
 
   const state = useMemo(
@@ -180,7 +182,7 @@ export default function FieldOrderExecutionPage({ orderId }) {
     const boxesPayload = buildBoxesSyncPayload(boxes);
 
     try {
-      await notify.promise(
+      const response = await notify.promise(
         updateOrder({
           orderId,
           payload: {
@@ -200,6 +202,8 @@ export default function FieldOrderExecutionPage({ orderId }) {
           }),
         }
       );
+      const updated = response?.data ?? response;
+      setSavedOrder(updated ?? null);
       setIsSuccess(true);
     } catch {
       return;
@@ -327,7 +331,7 @@ export default function FieldOrderExecutionPage({ orderId }) {
         ) : null}
         {showSuccess ? (
           <OrderSuccessStep
-            order={order}
+            order={savedOrder ?? order}
             onBackToOrders={() => router.push('/field/pedidos')}
             onBackToRoute={() => router.push(`/field/rutas/${order.routeId}`)}
           />

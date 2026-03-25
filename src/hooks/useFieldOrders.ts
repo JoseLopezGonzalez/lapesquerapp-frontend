@@ -39,12 +39,13 @@ export function useFieldOrders(params: FieldParams = {}, options: FieldQueryOpti
   };
 }
 
-export function useFieldOrder(orderId: number | string | null | undefined) {
+export function useFieldOrder(orderId: number | string | null | undefined, options: FieldQueryOptions = {}) {
   const { token, tenantId, fieldOperatorId } = useFieldBase();
+  const { enabled = true } = options;
   const query = useQuery({
     queryKey: fieldOrderKeys.detail(tenantId, fieldOperatorId, orderId),
     queryFn: () => getFieldOrder(token as string, orderId as number | string),
-    enabled: Boolean(token) && Boolean(tenantId) && Boolean(fieldOperatorId) && Boolean(orderId),
+    enabled: Boolean(token) && Boolean(tenantId) && Boolean(fieldOperatorId) && Boolean(orderId) && enabled,
     select: (data) => data?.data ?? data,
   });
 

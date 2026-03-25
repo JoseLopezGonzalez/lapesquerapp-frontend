@@ -1,6 +1,6 @@
 'use client';
 
-export default function AutoventaTicketPrint({ order, state }) {
+export default function AutoventaTicketPrint({ order, state, printId = 'autoventa-ticket-print', title = 'Autoventa' }) {
   const data = order ?? state;
   const entryDate = data?.entryDate ?? state?.entryDate ?? '';
   const customerName = data?.customer?.name ?? data?.customerName ?? state?.customerName ?? '';
@@ -14,11 +14,11 @@ export default function AutoventaTicketPrint({ order, state }) {
 
   return (
     <div
-      id="autoventa-ticket-print"
+      id={printId}
       className="hidden print:block p-4 text-sm"
       style={{ fontFamily: 'sans-serif', maxWidth: '80mm' }}
     >
-      <h2 className="font-bold text-lg mb-2">Autoventa</h2>
+      <h2 className="font-bold text-lg mb-2">{title}</h2>
       <p><strong>Fecha:</strong> {entryDate}</p>
       <p><strong>Cliente:</strong> {customerName}</p>
       {invoiceRequired && <p><strong>Factura:</strong> Sí</p>}
