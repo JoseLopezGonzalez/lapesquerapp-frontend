@@ -584,34 +584,27 @@ export default function OperarioCreateReceptionForm({
                                       )
                                     )}
 
-                                    {!productsBySpeciesLoading && (
-                                      <div className="pt-2 flex flex-col gap-2">
-                                        {productsBySpeciesLastPage > 1 && (
-                                          <p className="text-center text-xs text-muted-foreground">
-                                            Página {productsBySpeciesPage} de {productsBySpeciesLastPage}
-                                            {productsBySpeciesTotal != null ? ` · ${productsBySpeciesTotal} en total` : ''}
-                                          </p>
-                                        )}
-                                        <Button
-                                          type="button"
-                                          variant="outline"
-                                          className="w-full min-h-[48px] touch-manipulation"
-                                          disabled={!canLoadMoreProductsBySpecies || productsBySpeciesLoadingMore}
-                                          onClick={() => loadMoreProductsBySpecies()}
-                                        >
-                                          {productsBySpeciesLoadingMore ? (
-                                            <>
-                                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                              Cargando...
-                                            </>
-                                          ) : canLoadMoreProductsBySpecies ? (
-                                            'Cargar más'
-                                          ) : (
-                                            'No hay más'
-                                          )}
-                                        </Button>
-                                      </div>
-                                    )}
+                                    {!productsBySpeciesLoading &&
+                                      (productsBySpeciesLoadingMore || canLoadMoreProductsBySpecies) && (
+                                        <div className="pt-2">
+                                          <Button
+                                            type="button"
+                                            variant="outline"
+                                            className="w-full min-h-[48px] touch-manipulation"
+                                            disabled={productsBySpeciesLoadingMore}
+                                            onClick={() => loadMoreProductsBySpecies()}
+                                          >
+                                            {productsBySpeciesLoadingMore ? (
+                                              <>
+                                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                                Cargando...
+                                              </>
+                                            ) : (
+                                              'Cargar más'
+                                            )}
+                                          </Button>
+                                        </div>
+                                      )}
                                   </div>
                                 </div>
                               </div>
