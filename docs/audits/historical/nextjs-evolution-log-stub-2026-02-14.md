@@ -4,7 +4,7 @@ Este log pertenece al circuito anterior y se conserva solo como histórico secun
 
 Versión histórica:
 
-- `docs/audits/antiguos/frontend-circuito-v1/nextjs-evolution-log.md`
+- `docs/audits/historical/v1/nextjs-evolution-log-2026-02-16.md`
 
 Fuente activa del circuito actual:
 

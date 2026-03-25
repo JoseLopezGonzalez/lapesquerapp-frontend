@@ -12,6 +12,7 @@ const CACHE_KEY_LAST_SPECIES = 'operario-reception-last-species';
 const CACHE_KEY_PRODUCT_HISTORY = 'operario-reception-product-history';
 const MAX_PRODUCT_HISTORY = 100;
 const QUICK_PICKS_COUNT = 4;
+const PRODUCTS_PER_PAGE = 100;
 
 function getProductHistory(speciesId) {
   try {
@@ -52,6 +53,28 @@ export function getQuickPickProductIds(speciesId, productOptions) {
     .map(([id]) => id);
 }
 
+function getQuickPickProductIdsUnvalidated(speciesId) {
+  const history = getProductHistory(speciesId);
+  const counts = {};
+  for (let i = history.length - 1; i >= 0; i--) {
+    const id = history[i];
+    counts[id] = (counts[id] ?? 0) + 1;
+  }
+  return Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, QUICK_PICKS_COUNT)
+    .map(([id]) => id);
+}
+
+function extractPagination(res) {
+  const meta = res?.meta ?? res ?? {};
+  const currentPage = Number(meta.current_page ?? 1) || 1;
+  const lastPage = Number(meta.last_page ?? 1) || 1;
+  const total = meta.total != null ? Number(meta.total) : null;
+  const perPage = meta.per_page != null ? Number(meta.per_page) : null;
+  return { currentPage, lastPage, total, perPage };
+}
+
 export const STEPS = [
   { id: 0, title: 'Especie', description: 'Seleccione la especie' },
   { id: 1, title: 'Proveedor', description: 'Seleccione el proveedor' },
@@ -69,6 +92,11 @@ export function useOperarioReceptionForm({ onSuccess }) {
   const [speciesLoading, setSpeciesLoading] = useState(true);
   const [productOptionsBySpecies, setProductOptionsBySpecies] = useState([]);
   const [productsBySpeciesLoading, setProductsBySpeciesLoading] = useState(false);
+  const [productsBySpeciesLoadingMore, setProductsBySpeciesLoadingMore] = useState(false);
+  const [productsBySpeciesPage, setProductsBySpeciesPage] = useState(1);
+  const [productsBySpeciesLastPage, setProductsBySpeciesLastPage] = useState(1);
+  const [productsBySpeciesTotal, setProductsBySpeciesTotal] = useState(null);
+  const [quickPickOptionsBySpecies, setQuickPickOptionsBySpecies] = useState([]);
 
   const { supplierOptions, loading: suppliersLoading } = useSupplierOptions();
 
@@ -165,35 +193,144 @@ export function useOperarioReceptionForm({ onSuccess }) {
   useEffect(() => {
     if (!speciesValue) {
       setProductOptionsBySpecies([]);
+      setQuickPickOptionsBySpecies([]);
+      setProductsBySpeciesPage(1);
+      setProductsBySpeciesLastPage(1);
+      setProductsBySpeciesTotal(null);
       return;
     }
     let cancelled = false;
     setProductsBySpeciesLoading(true);
+    setProductsBySpeciesLoadingMore(false);
     const speciesId =
       typeof speciesValue === 'object'
         ? speciesValue?.id ?? speciesValue?.value
         : speciesValue;
-    productService
-      .list({ species: [speciesId] }, { page: 1, perPage: 500 })
-      .then((res) => {
+    const loadInitial = async () => {
+      try {
+        const res = await productService.list(
+          { species: [speciesId] },
+          { page: 1, perPage: PRODUCTS_PER_PAGE }
+        );
         if (cancelled) return;
-        const items = res?.data ?? [];
+
+        const items = Array.isArray(res?.data) ? res.data : [];
         const opts = items.map((p) => ({
           value: String(p.id),
           label: p.name ?? p.alias ?? String(p.id),
         }));
+        const { currentPage, lastPage, total } = extractPagination(res);
+        setProductsBySpeciesPage(currentPage);
+        setProductsBySpeciesLastPage(lastPage);
+        setProductsBySpeciesTotal(total);
         setProductOptionsBySpecies(opts);
-      })
-      .catch(() => {
-        if (!cancelled) setProductOptionsBySpecies([]);
-      })
-      .finally(() => {
+
+        // Hydrate quick picks even if they are not in the first page.
+        const quickPickIds = getQuickPickProductIdsUnvalidated(speciesValue);
+        const byId = new Map(opts.map((o) => [String(o.value), o]));
+        const missingIds = quickPickIds.filter((id) => !byId.has(String(id)));
+        let hydrated = [];
+        if (missingIds.length > 0) {
+          const resByIds = await productService.list(
+            { species: [speciesId], ids: missingIds },
+            { page: 1, perPage: missingIds.length }
+          );
+          if (cancelled) return;
+          const itemsByIds = Array.isArray(resByIds?.data) ? resByIds.data : [];
+          hydrated = itemsByIds.map((p) => ({
+            value: String(p.id),
+            label: p.name ?? p.alias ?? String(p.id),
+          }));
+          hydrated.forEach((o) => byId.set(String(o.value), o));
+        }
+
+        if (hydrated.length > 0) {
+          // Ensure labels resolve for hydrated products (even if not in loaded pages).
+          setProductOptionsBySpecies((prev) => {
+            const base = Array.isArray(prev) && prev.length > 0 ? prev : opts;
+            const seen = new Set(base.map((o) => String(o.value)));
+            const merged = [...base];
+            hydrated.forEach((o) => {
+              const k = String(o.value);
+              if (!seen.has(k)) {
+                seen.add(k);
+                merged.push(o);
+              }
+            });
+            return merged;
+          });
+        }
+        const quickPickOpts = quickPickIds
+          .map((id) => byId.get(String(id)))
+          .filter(Boolean);
+        setQuickPickOptionsBySpecies(quickPickOpts);
+      } catch {
+        if (!cancelled) {
+          setProductOptionsBySpecies([]);
+          setQuickPickOptionsBySpecies([]);
+          setProductsBySpeciesPage(1);
+          setProductsBySpeciesLastPage(1);
+          setProductsBySpeciesTotal(null);
+        }
+      } finally {
         if (!cancelled) setProductsBySpeciesLoading(false);
-      });
+      }
+    };
+
+    loadInitial();
     return () => {
       cancelled = true;
     };
   }, [speciesValue]);
+
+  const canLoadMoreProductsBySpecies =
+    !productsBySpeciesLoading &&
+    !productsBySpeciesLoadingMore &&
+    productsBySpeciesPage < productsBySpeciesLastPage;
+
+  const loadMoreProductsBySpecies = useCallback(async () => {
+    if (!speciesValue) return;
+    if (!canLoadMoreProductsBySpecies) return;
+    setProductsBySpeciesLoadingMore(true);
+    const speciesId =
+      typeof speciesValue === 'object'
+        ? speciesValue?.id ?? speciesValue?.value
+        : speciesValue;
+    try {
+      const nextPage = productsBySpeciesPage + 1;
+      const res = await productService.list(
+        { species: [speciesId] },
+        { page: nextPage, perPage: PRODUCTS_PER_PAGE }
+      );
+      const items = Array.isArray(res?.data) ? res.data : [];
+      const newOpts = items.map((p) => ({
+        value: String(p.id),
+        label: p.name ?? p.alias ?? String(p.id),
+      }));
+      const { currentPage, lastPage, total } = extractPagination(res);
+      setProductsBySpeciesPage(currentPage);
+      setProductsBySpeciesLastPage(lastPage);
+      setProductsBySpeciesTotal(total);
+      setProductOptionsBySpecies((prev) => {
+        const seen = new Set((prev || []).map((o) => String(o.value)));
+        const merged = [...(prev || [])];
+        newOpts.forEach((o) => {
+          const k = String(o.value);
+          if (!seen.has(k)) {
+            seen.add(k);
+            merged.push(o);
+          }
+        });
+        return merged;
+      });
+    } finally {
+      setProductsBySpeciesLoadingMore(false);
+    }
+  }, [
+    speciesValue,
+    canLoadMoreProductsBySpecies,
+    productsBySpeciesPage,
+  ]);
 
   const handleCreate = useCallback(
     async (data) => {
@@ -443,6 +580,13 @@ export function useOperarioReceptionForm({ onSuccess }) {
     suppliersByLetter,
     productOptionsBySpecies,
     productsBySpeciesLoading,
+    productsBySpeciesLoadingMore,
+    productsBySpeciesPage,
+    productsBySpeciesLastPage,
+    productsBySpeciesTotal,
+    canLoadMoreProductsBySpecies,
+    loadMoreProductsBySpecies,
+    quickPickOptionsBySpecies,
     editingLineIndex,
     setEditingLineIndex,
     lineDialogOpen,

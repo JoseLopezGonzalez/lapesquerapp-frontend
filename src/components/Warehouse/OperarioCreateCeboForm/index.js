@@ -42,7 +42,6 @@ import { cn } from '@/lib/utils';
 import {
   useOperarioCeboForm,
   STEPS_CEBO,
-  getQuickPickProductIdsCebo,
 } from '@/hooks/useOperarioCeboForm';
 
 const TARE_OPTIONS = [
@@ -80,6 +79,13 @@ export default function OperarioCreateCeboForm({
     suppliersByLetter,
     productOptionsBySpecies,
     productsBySpeciesLoading,
+    productsBySpeciesLoadingMore,
+    productsBySpeciesPage,
+    productsBySpeciesLastPage,
+    productsBySpeciesTotal,
+    canLoadMoreProductsBySpecies,
+    loadMoreProductsBySpecies,
+    quickPickOptionsBySpecies,
     editingLineIndex,
     setEditingLineIndex,
     lineDialogOpen,
@@ -496,17 +502,7 @@ export default function OperarioCreateCeboForm({
                             typeof value === 'object'
                               ? value?.id ?? value?.value
                               : value;
-                          const quickPickIds = getQuickPickProductIdsCebo(
-                            speciesValue,
-                            productOptionsBySpecies
-                          );
-                          const quickPickOpts = quickPickIds
-                            .map((id) =>
-                              productOptionsBySpecies?.find(
-                                (o) => String(o.value) === id
-                              )
-                            )
-                            .filter(Boolean);
+                          const quickPickOpts = quickPickOptionsBySpecies || [];
 
                           if (productStepView === 'search') {
                             return (
@@ -524,6 +520,13 @@ export default function OperarioCreateCeboForm({
                                 <div
                                   className="flex-1 min-h-[200px] max-h-[min(320px,50vh)] rounded-lg border overflow-y-auto overflow-x-hidden"
                                   style={{ minHeight: 0 }}
+                                  onScroll={(e) => {
+                                    const el = e.currentTarget;
+                                    const remaining = el.scrollHeight - el.scrollTop - el.clientHeight;
+                                    if (remaining < 180 && canLoadMoreProductsBySpecies) {
+                                      loadMoreProductsBySpecies();
+                                    }
+                                  }}
                                 >
                                   <div className="flex flex-col gap-2 p-3 pr-4">
                                     {productsBySpeciesLoading ? (
@@ -565,6 +568,35 @@ export default function OperarioCreateCeboForm({
                                           );
                                         }
                                       )
+                                    )}
+
+                                    {!productsBySpeciesLoading && (
+                                      <div className="pt-2 flex flex-col gap-2">
+                                        {productsBySpeciesLastPage > 1 && (
+                                          <p className="text-center text-xs text-muted-foreground">
+                                            Página {productsBySpeciesPage} de {productsBySpeciesLastPage}
+                                            {productsBySpeciesTotal != null ? ` · ${productsBySpeciesTotal} en total` : ''}
+                                          </p>
+                                        )}
+                                        <Button
+                                          type="button"
+                                          variant="outline"
+                                          className="w-full min-h-[48px] touch-manipulation"
+                                          disabled={!canLoadMoreProductsBySpecies || productsBySpeciesLoadingMore}
+                                          onClick={() => loadMoreProductsBySpecies()}
+                                        >
+                                          {productsBySpeciesLoadingMore ? (
+                                            <>
+                                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                              Cargando...
+                                            </>
+                                          ) : canLoadMoreProductsBySpecies ? (
+                                            'Cargar más'
+                                          ) : (
+                                            'No hay más'
+                                          )}
+                                        </Button>
+                                      </div>
                                     )}
                                   </div>
                                 </div>

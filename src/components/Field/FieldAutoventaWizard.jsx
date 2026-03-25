@@ -238,7 +238,7 @@ export default function FieldAutoventaWizard() {
           </div>
         )}
         {step === 3 && (
-          <div className="flex flex-1 min-h-0 w-full items-center justify-center overflow-y-auto">
+          <div className="flex flex-1 min-h-0 w-full items-start justify-center overflow-y-auto">
             <Step3Pricing
               state={state}
               setItemPrice={setItemPrice}

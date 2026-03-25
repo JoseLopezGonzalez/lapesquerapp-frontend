@@ -17,7 +17,9 @@
       "Bash(grep -r prefetch /home/jose/brisapp-nextjs/src/components/Admin --include=*.jsx --include=*.js)",
       "Bash(wc -l /home/jose/brisapp-nextjs/src/hooks/production/*.js /home/jose/brisapp-nextjs/src/hooks/production/*.ts)",
       "Bash(wc -l /home/jose/brisapp-nextjs/src/app/admin/productions/[id]/records/create/CreateProductionRecordPage.jsx)",
-      "Bash(ls -la /home/jose/brisapp-nextjs/src/lib/queryClient.*)"
+      "Bash(ls -la /home/jose/brisapp-nextjs/src/lib/queryClient.*)",
+      "Bash(find /home/jose/brisapp-nextjs -name *login* -o -name *auth*verify*)",
+      "Bash(git mv:*)"
     ]
   }
 }
