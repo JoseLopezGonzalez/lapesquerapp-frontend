@@ -9,8 +9,6 @@ import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { barcos, barcosVentaDirecta, datosVendidurias, lonjaDeIsla, PORCENTAJE_SERVICIOS_VENDIDURIAS, productos, servicioExtraLonjaDeIsla, serviciosLonjaDeIsla } from '../exportData'
 import { Input } from '@/components/ui/input'
-import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';
 import { parseDecimalValue, calculateImporteFromLinea } from '@/exportHelpers/common'
 import { formatDecimalCurrency, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
 import { notify } from '@/lib/notifications'
@@ -365,7 +363,8 @@ const ExportModal = ({ document }) => {
         }
     };
 
-    const generateExcelForA3erp = () => {
+    const generateExcelForA3erp = async () => {
+        const [XLSX, { saveAs }] = await Promise.all([import('xlsx'), import('file-saver')]);
         const processedRows = [];
         const ventaRows = [];
         // Extraer año de la fecha (últimos 2 dígitos)

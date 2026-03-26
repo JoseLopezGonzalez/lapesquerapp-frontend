@@ -254,11 +254,10 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
                                   <UserPlus className="size-4" />
                                 </div>
                                 <div className="min-w-0">
-                                  <p className="text-xs text-muted-foreground">Contacto principal</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {prospect.primaryContact?.role?.trim() ? prospect.primaryContact.role : 'Contacto principal'}
+                                  </p>
                                   <p className="mt-1 text-sm font-medium text-foreground">{prospect.primaryContact?.name ?? '-'}</p>
-                                  {prospect.primaryContact?.role ? (
-                                    <p className="text-xs text-muted-foreground">{prospect.primaryContact.role}</p>
-                                  ) : null}
                                 </div>
                               </div>
                             </div>

@@ -16,8 +16,6 @@ import { actualYearRange } from "@/helpers/dates"
 import { Button } from "@/components/ui/button"
 import { DateRangePicker } from "@/components/ui/dateRangePicker"
 import Loader from "@/components/Utilities/Loader"
-import * as XLSX from "xlsx"
-import { saveAs } from "file-saver"
 import { PiMicrosoftExcelLogoFill } from "react-icons/pi"
 
 const initialDateRange = {
@@ -56,11 +54,13 @@ export function OrderRankingChart() {
         },
     }[valueType]
 
-    const handleExportToExcel = () => {
+    const handleExportToExcel = async () => {
         if (fullData.length === 0) {
             notify.error({ title: "No hay datos para exportar" })
             return
         }
+
+        const [XLSX, { saveAs }] = await Promise.all([import('xlsx'), import('file-saver')])
 
         const rows = fullData.map((item) => ({
             Agrupación: item.name,

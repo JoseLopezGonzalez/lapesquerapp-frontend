@@ -11,8 +11,6 @@ import { Input } from "@/components/ui/input"
 import { DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { PiMicrosoftExcelLogo } from "react-icons/pi"
-import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';
 
 export default function ProductSummary() {
 
@@ -44,7 +42,8 @@ export default function ProductSummary() {
     const totalFilteredProducts = filteredProducts.length
     const totalQuantityFilteredProducts = filteredProducts.reduce((sum, product) => sum + product.quantity, 0)
 
-    const generateExcel = () => {
+    const generateExcel = async () => {
+        const [XLSX, { saveAs }] = await Promise.all([import('xlsx'), import('file-saver')]);
         const allProducts = species.reduce((acc, species) => {
             const speciesProducts = species.products.map((product) => ({
                 Producto: product.name,

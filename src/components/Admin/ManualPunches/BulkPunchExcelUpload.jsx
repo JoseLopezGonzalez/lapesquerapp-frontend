@@ -15,9 +15,7 @@ import {
 } from '@/components/ui/table';
 import { Loader2, Upload, Download, CheckCircle2, AlertTriangle, AlertCircle, X } from 'lucide-react';import { createBulkPunches, validateBulkPunches } from '@/services/punchService';
 import { useEmployeeOptions } from '@/hooks/useEmployeesForPunches';
-import * as XLSX from 'xlsx';
 import { notify } from '@/lib/notifications';
-import { saveAs } from 'file-saver';
 
 export default function BulkPunchExcelUpload() {
   const { data: session } = useSession();
@@ -133,10 +131,11 @@ export default function BulkPunchExcelUpload() {
   };
 
   // Parsear Excel
-  const parseExcel = (file) => {
+  const parseExcel = async (file) => {
+    const XLSX = await import('xlsx');
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      
+
       reader.onload = (e) => {
         try {
           const fileData = new Uint8Array(e.target.result);
@@ -438,9 +437,10 @@ export default function BulkPunchExcelUpload() {
   };
 
   // Descargar plantilla
-  const handleDownloadTemplate = () => {
+  const handleDownloadTemplate = async () => {
     try {
       setLoadingTemplate(true);
+      const [XLSX, { saveAs }] = await Promise.all([import('xlsx'), import('file-saver')]);
 
       // Crear datos para Excel en español
       const headers = ['Empleado', 'Tipo', 'Fecha y Hora'];

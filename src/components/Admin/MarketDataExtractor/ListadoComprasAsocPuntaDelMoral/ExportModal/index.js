@@ -9,8 +9,6 @@ import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { asocArmadoresPuntaDelMoral, asocArmadoresPuntaDelMoralSubasta, barcos, productos, servicioExtraAsocArmadoresPuntaDelMoral, serviciosAsocArmadoresPuntaDelMoral } from '../exportData'
 import { Input } from '@/components/ui/input'
-import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';
 import { parseDecimalValue, calculateImporte, calculateImporteFromLinea } from '@/exportHelpers/common'
 import { formatDecimalCurrency, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
 import { normalizeText } from '@/helpers/formats/texts'
@@ -73,7 +71,8 @@ const ExportModal = ({ document }) => {
     servicios.splice(1, 0, servicioExtra)
 
 
-    const generateExcelForA3erp = () => {
+    const generateExcelForA3erp = async () => {
+        const [XLSX, { saveAs }] = await Promise.all([import('xlsx'), import('file-saver')]);
         const processedRows = [];
         // Extraer año de la fecha (últimos 2 dígitos)
         // Intentar extraer año directamente de la cadena (formato YYYY-MM-DD o YYYY/MM/DD)

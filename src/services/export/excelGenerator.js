@@ -4,8 +4,6 @@
  * Genera un único archivo Excel consolidando múltiples documentos
  */
 
-import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';
 import { generateCofraExcelRows } from '@/exportHelpers/cofraExportHelper';
 import { generateLonjaDeIslaExcelRows } from '@/exportHelpers/lonjaDeIslaExportHelper';
 import { generateAsocExcelRows } from '@/exportHelpers/asocExportHelper';
@@ -20,7 +18,8 @@ import { generateAsocExcelRows } from '@/exportHelpers/asocExportHelper';
  * @param {string} options.software - Software type ('A3ERP', 'Facilcom', etc.) - default: 'A3ERP'
  * @returns {Blob} Excel file blob
  */
-export function generateMassiveExcel(documents, options = {}) {
+export async function generateMassiveExcel(documents, options = {}) {
+    const XLSX = await import('xlsx');
     const { software = 'A3ERP' } = options;
 
     if (documents.length === 0) {
@@ -100,9 +99,12 @@ export function generateMassiveExcel(documents, options = {}) {
  * @param {Array} documents - Array of documents to export
  * @param {Object} options - Options for generation
  */
-export function downloadMassiveExcel(documents, options = {}) {
+export async function downloadMassiveExcel(documents, options = {}) {
     try {
-        const blob = generateMassiveExcel(documents, options);
+        const [blob, { saveAs }] = await Promise.all([
+            generateMassiveExcel(documents, options),
+            import('file-saver'),
+        ]);
         const currentDate = new Date().toISOString().split('T')[0].replace(/-/g, '');
         const filename = `ALBARANES_A3ERP_MASIVO_${currentDate}.xls`;
         saveAs(blob, filename);

@@ -120,7 +120,7 @@ export default function MassiveExportDialog({
                 return;
             }
 
-            downloadMassiveExcel(documentsToExport, { software });
+            await downloadMassiveExcel(documentsToExport, { software });
             notify.success({
               title: 'Excel generado',
               description: 'El archivo se ha generado correctamente.',

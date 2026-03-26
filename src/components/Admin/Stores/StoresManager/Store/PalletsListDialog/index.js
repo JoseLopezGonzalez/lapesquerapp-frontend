@@ -20,8 +20,6 @@ import { formatDecimalWeight, formatDecimal } from "@/helpers/formats/numbers/fo
 import { PiMicrosoftExcelLogo } from "react-icons/pi";
 import { Edit, Printer, MapPinHouse, Copy } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import * as XLSX from "xlsx";
-import { saveAs } from "file-saver";
 import { getAvailableBoxesCount, getAvailableNetWeight } from "@/helpers/pallet/boxAvailability";
 import { useSession } from "next-auth/react";
 
@@ -103,7 +101,8 @@ export function PalletsListDialog() {
         return total + getAvailableNetWeight(pallet);
     }, 0);
 
-    const generateExcel = () => {
+    const generateExcel = async () => {
+        const [XLSX, { saveAs }] = await Promise.all([import('xlsx'), import('file-saver')]);
         const data = filteredPallets.map((p) => {
             const fullPallet = safePallets.find(pa => pa.id === p.id);
             const productNames = Array.from(new Set(fullPallet?.boxes?.map(b => b.product?.name))).join(", ");

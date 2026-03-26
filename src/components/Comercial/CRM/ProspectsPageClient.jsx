@@ -3,8 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
-import { Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -289,7 +288,7 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
                             setPage((p) => Math.max(1, p - 1));
                           }}
                         >
-                          <IconChevronLeft className="size-4" />
+                          <ChevronLeft className="size-4" />
                         </PaginationLink>
                       </PaginationItem>
                       {paginationItems.map((item, idx) =>
@@ -329,7 +328,7 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
                             setPage((p) => p + 1);
                           }}
                         >
-                          <IconChevronRight className="size-4" />
+                          <ChevronRight className="size-4" />
                         </PaginationLink>
                       </PaginationItem>
                     </PaginationContent>

@@ -29,7 +29,7 @@ export default function MassiveExportModal({ documents }) {
                 documentType: doc.documentType,
             }));
 
-            downloadMassiveExcel(documentsToExport);
+            await downloadMassiveExcel(documentsToExport);
             notify.success({
               title: 'Excel generado',
               description: 'El archivo se ha generado correctamente.',

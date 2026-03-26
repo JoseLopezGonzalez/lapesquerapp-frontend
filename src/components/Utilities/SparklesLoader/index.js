@@ -25,7 +25,7 @@ const SparklesLoader = () => {
                 renderer: 'svg',
                 loop: true,
                 autoplay: true,
-                path: 'https://lottie.host/b9622bf5-048c-4fd4-b040-c3192e4c1ec8/9cYjmJ8bB1.json',
+                path: '/animations/sparkles.json',
             })
         }
 

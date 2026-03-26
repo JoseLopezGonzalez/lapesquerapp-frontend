@@ -1,9 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   transpilePackages: ['mapbox-gl'],
-  turbopack: {
-    root: process.cwd(),
-  },
   // Eliminar console.log/info/debug en producción (mantener error/warn)
   // Nota: con Turbopack puede no aplicarse; verificar con build
   compiler: {
