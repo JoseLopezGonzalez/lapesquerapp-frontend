@@ -130,7 +130,7 @@ export function useCommercialInteractionMutations() {
   };
 
   const invalidate = async (payload: Partial<CommercialInteractionPayload> = {}) => {
-    const impactsAgenda = Boolean(payload.agendaActionId || payload.nextActionAt);
+    const impactsAgenda = Boolean(payload.agendaActionId);
     await Promise.all([
       impactsAgenda
         ? queryClient.invalidateQueries({ queryKey: ['crm', 'dashboard', tenantId] })
@@ -146,6 +146,9 @@ export function useCommercialInteractionMutations() {
         : Promise.resolve(),
       payload.prospectId
         ? queryClient.invalidateQueries({ queryKey: ['crm', 'prospect', 'detail', tenantId, payload.prospectId] })
+        : Promise.resolve(),
+      payload.customerId
+        ? queryClient.invalidateQueries({ queryKey: ['crm', 'customers', 'detail', tenantId, payload.customerId] })
         : Promise.resolve(),
     ]);
   };

@@ -3,17 +3,10 @@
 import dynamic from 'next/dynamic';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { Loader2, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-} from '@/components/ui/pagination';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components/ui/input-group';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EmptyState } from '@/components/Utilities/EmptyState';
@@ -38,6 +31,7 @@ const ProspectDetail = dynamic(() => import('./ProspectDetail'), {
 });
 
 const PROSPECTS_PER_PAGE = 12;
+const INFINITE_SCROLL_THRESHOLD_PX = 180;
 
 const FILTER_TABS = [
   { label: 'Todos', value: 'all' },
@@ -47,24 +41,6 @@ const FILTER_TABS = [
   { label: 'Descartados', value: 'discarded' },
 ];
 
-/** @returns {(number | 'ellipsis')[]} */
-function buildPaginationRange(currentPage, lastPage) {
-  const last = Math.max(1, lastPage);
-  if (last <= 7) {
-    return Array.from({ length: last }, (_, i) => i + 1);
-  }
-  const set = new Set([1, last, currentPage, currentPage - 1, currentPage + 1]);
-  const sorted = [...set].filter((p) => p >= 1 && p <= last).sort((a, b) => a - b);
-  const out = [];
-  let prev = 0;
-  for (const p of sorted) {
-    if (p - prev > 1) out.push('ellipsis');
-    out.push(p);
-    prev = p;
-  }
-  return out;
-}
-
 function ProspectCard({ prospect, selected, onClick }) {
   const overdue = isOverdueDate(prospect.nextActionAt);
   const ariaExtras = [prospect.country?.name].filter(Boolean).join(' · ');
@@ -72,9 +48,8 @@ function ProspectCard({ prospect, selected, onClick }) {
   return (
     <Card
       className={cn(
-        'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ring transition-colors hover:bg-accent/50',
-        selected && 'ring-2 ring-offset-2 ring-primary',
-        overdue && !selected && 'border-destructive/50'
+        'cursor-pointer focus-visible:outline-none transition-colors hover:bg-accent/50',
+        selected && 'bg-accent/40'
       )}
       onClick={onClick}
       role="button"
@@ -113,6 +88,7 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
   const [appliedNameFilter, setAppliedNameFilter] = useState('');
   const [status, setStatus] = useState('all');
   const [page, setPage] = useState(1);
+  const [loadedProspects, setLoadedProspects] = useState([]);
   const [formOpen, setFormOpen] = useState(forceCreate);
   const searchParam = appliedNameFilter.trim() || undefined;
   const { data: prospects, isLoading, meta } = useProspectsList({
@@ -125,25 +101,38 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
   const hasActiveSearch = Boolean(searchParam);
 
   useEffect(() => {
+    setLoadedProspects([]);
     setPage(1);
   }, [searchParam, status]);
 
+  useEffect(() => {
+    setLoadedProspects((prev) => {
+      if (page === 1) return prospects;
+      const seen = new Set(prev.map((item) => String(item.id)));
+      const next = [...prev];
+      for (const item of prospects) {
+        if (seen.has(String(item.id))) continue;
+        next.push(item);
+      }
+      return next;
+    });
+  }, [prospects, page]);
+
   const orderedProspects = useMemo(
     () =>
-      [...prospects].sort((a, b) => {
+      [...loadedProspects].sort((a, b) => {
         if (a.nextActionAt && !b.nextActionAt) return -1;
         if (!a.nextActionAt && b.nextActionAt) return 1;
         if (a.nextActionAt && b.nextActionAt) return a.nextActionAt.localeCompare(b.nextActionAt);
         return a.companyName.localeCompare(b.companyName);
       }),
-    [prospects]
+    [loadedProspects]
   );
 
   const prospectsLastPage = Math.max(1, meta.last_page ?? 1);
-  const paginationItems = useMemo(
-    () => buildPaginationRange(page, prospectsLastPage),
-    [page, prospectsLastPage]
-  );
+  const isInitialLoading = isLoading && page === 1;
+  const isLoadingMore = isLoading && page > 1;
+  const canLoadMore = page < prospectsLastPage && !isLoading;
 
   useEffect(() => {
     if (isMobile || !selectedId) return;
@@ -163,6 +152,15 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
 
   const applyNameFilter = () => {
     setAppliedNameFilter(nameFilterDraft.trim());
+  };
+
+  const handleProspectsScroll = (event) => {
+    if (!canLoadMore) return;
+    const el = event.currentTarget;
+    const remaining = el.scrollHeight - el.scrollTop - el.clientHeight;
+    if (remaining < INFINITE_SCROLL_THRESHOLD_PX) {
+      setPage((prev) => prev + 1);
+    }
   };
 
   return (
@@ -243,7 +241,7 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
 
         <div className="grid min-h-0 flex-1 gap-4 overflow-hidden md:grid-cols-[360px_minmax(0,1fr)]">
           <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
-            {isLoading ? (
+            {isInitialLoading ? (
               <div className="flex h-full min-h-0 w-full items-center justify-center p-4">
                 <Loader />
               </div>
@@ -262,7 +260,10 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
               </div>
             ) : (
               <>
-                <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
+                <div
+                  className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4"
+                  onScroll={handleProspectsScroll}
+                >
                   {orderedProspects.map((prospect) => (
                     <ProspectCard
                       key={prospect.id}
@@ -271,70 +272,14 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
                       onClick={() => handleSelect(prospect.id)}
                     />
                   ))}
-                </div>
-                <div className="flex shrink-0 flex-col items-center gap-2 border-t px-4 py-3">
-                  <Pagination className="mx-0 w-full justify-center">
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationLink
-                          href="#"
-                          aria-label="Ir a la página anterior"
-                          size="icon"
-                          className={cn((page <= 1 || isLoading) && 'pointer-events-none opacity-50')}
-                          aria-disabled={page <= 1 || isLoading}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            if (page <= 1 || isLoading) return;
-                            setPage((p) => Math.max(1, p - 1));
-                          }}
-                        >
-                          <ChevronLeft className="size-4" />
-                        </PaginationLink>
-                      </PaginationItem>
-                      {paginationItems.map((item, idx) =>
-                        item === 'ellipsis' ? (
-                          <PaginationItem key={`ellipsis-${idx}`}>
-                            <PaginationEllipsis />
-                          </PaginationItem>
-                        ) : (
-                          <PaginationItem key={item}>
-                            <PaginationLink
-                              href="#"
-                              isActive={item === page}
-                              size="default"
-                              className="min-w-8"
-                              aria-label={`Ir a la página ${item}`}
-                              onClick={(e) => {
-                                e.preventDefault();
-                                if (isLoading || item === page) return;
-                                setPage(item);
-                              }}
-                            >
-                              {item}
-                            </PaginationLink>
-                          </PaginationItem>
-                        )
-                      )}
-                      <PaginationItem>
-                        <PaginationLink
-                          href="#"
-                          aria-label="Ir a la página siguiente"
-                          size="icon"
-                          className={cn((page >= prospectsLastPage || isLoading) && 'pointer-events-none opacity-50')}
-                          aria-disabled={page >= prospectsLastPage || isLoading}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            if (page >= prospectsLastPage || isLoading) return;
-                            setPage((p) => p + 1);
-                          }}
-                        >
-                          <ChevronRight className="size-4" />
-                        </PaginationLink>
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                  {meta.total != null ? (
-                    <p className="text-center text-xs text-muted-foreground">{meta.total} en total</p>
+                  {isLoadingMore ? (
+                    <div className="flex items-center justify-center py-2 text-sm text-muted-foreground">
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Cargando más prospectos...
+                    </div>
+                  ) : null}
+                  {!canLoadMore && orderedProspects.length > 0 ? (
+                    <p className="py-2 text-center text-xs text-muted-foreground">No hay más prospectos para mostrar.</p>
                   ) : null}
                 </div>
               </>

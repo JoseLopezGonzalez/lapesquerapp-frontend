@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useCustomersList } from '@/hooks/useCustomersList';
@@ -16,10 +17,12 @@ import { useCommercialInteractions } from '@/hooks/useCommercialInteractions';
 import { useOffersList } from '@/hooks/useOffers';
 import { useCustomerOrderHistoryRanges } from '@/hooks/useCustomerOrderHistoryRanges';
 import { useComercialOrders } from '@/hooks/useComercialOrders';
+import { usePendingAgendaAction } from '@/hooks/useAgenda';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 import { getCustomer } from '@/services/customerService';
 import { useSession } from 'next-auth/react';
 import QuickInteractionModal from './QuickInteractionModal';
+import ResolveNextActionDialog from './ResolveNextActionDialog';
 import { formatDateValue, formatDateTimeValue, interactionResultLabels, interactionTypeLabels, offerStatusLabels } from './utils';
 import StatusPill from './StatusPill';
 import Loader from '@/components/Utilities/Loader';
@@ -103,6 +106,35 @@ function CustomerDetail({ customerId, embedded = false }) {
     enabled: shouldLoadOffers,
   });
   const [interactionOpen, setInteractionOpen] = useState(false);
+  const [interactionMode, setInteractionMode] = useState('create');
+  const [interactionAgendaActionId, setInteractionAgendaActionId] = useState(null);
+  const [interactionNextActionDate, setInteractionNextActionDate] = useState(null);
+  const [interactionNextActionNote, setInteractionNextActionNote] = useState('');
+  const [resolveNextActionOpen, setResolveNextActionOpen] = useState(false);
+  const [postInteractionPromptOpen, setPostInteractionPromptOpen] = useState(false);
+  const [preflightDialogOpen, setPreflightDialogOpen] = useState(false);
+  const [lastInteractionId, setLastInteractionId] = useState(null);
+  const { data: pendingPreflightData, refetch: refetchPendingPreflight } = usePendingAgendaAction(
+    'customer',
+    customerId,
+    true
+  );
+  const handleStartInteraction = async () => {
+    const response = await refetchPendingPreflight();
+    const rawPending = response?.data?.data ?? null;
+    const pendingAction = rawPending?.pendingAction ?? (rawPending?.agendaActionId ? rawPending : null);
+    const hasPending = typeof rawPending?.hasPending === 'boolean' ? rawPending.hasPending : Boolean(pendingAction);
+    if (hasPending) {
+      setPreflightDialogOpen(true);
+      return;
+    }
+    setInteractionMode('create');
+    setInteractionAgendaActionId(null);
+    setInteractionNextActionDate(null);
+    setInteractionNextActionNote('');
+    setInteractionOpen(true);
+  };
+
 
   useEffect(() => {
     setActiveTab('data');
@@ -134,9 +166,12 @@ function CustomerDetail({ customerId, embedded = false }) {
             <CardTitle className="text-2xl">{customer.name}</CardTitle>
             <p className="text-sm text-muted-foreground">{customer.country?.name ?? 'Sin país'} · Comercial #{customer.salesperson?.id ?? '-'}</p>
           </div>
-          <Button onClick={() => setInteractionOpen(true)}>
+          <Button onClick={handleStartInteraction}>
             <Plus data-icon="inline-start" />
             Nueva interacción
+          </Button>
+          <Button variant="outline" onClick={() => setResolveNextActionOpen(true)}>
+            Gestionar próxima acción
           </Button>
         </div>
       </CardHeader>
@@ -409,12 +444,192 @@ function CustomerDetail({ customerId, embedded = false }) {
   return embedded ? (
     <Card className="flex h-full w-full max-w-none min-h-0 min-w-0 flex-1 basis-0 self-stretch flex-col overflow-hidden">
       {body}
-      <QuickInteractionModal open={interactionOpen} onOpenChange={setInteractionOpen} customerId={customerId} />
+      <QuickInteractionModal
+        open={interactionOpen}
+        onOpenChange={setInteractionOpen}
+        customerId={customerId}
+        agendaActionId={interactionAgendaActionId}
+        defaultNextActionDate={interactionNextActionDate}
+        defaultNextActionNote={interactionNextActionNote}
+        mode={interactionMode}
+        title={interactionMode === 'complete' ? 'Cerrar tarea' : 'Registrar interacción'}
+        onInteractionCreated={(interaction) => {
+          setLastInteractionId(interaction?.id ?? null);
+          if (interactionMode === 'create') setPostInteractionPromptOpen(true);
+        }}
+      />
+      <ResolveNextActionDialog
+        open={resolveNextActionOpen}
+        onOpenChange={setResolveNextActionOpen}
+        targetType="customer"
+        targetId={customerId}
+        sourceInteractionId={lastInteractionId}
+      />
+      <AlertDialog open={postInteractionPromptOpen} onOpenChange={setPostInteractionPromptOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Interacción guardada</AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Quieres gestionar la próxima acción ahora?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Ahora no</AlertDialogCancel>
+            <AlertDialogAction onClick={() => setResolveNextActionOpen(true)}>Sí, gestionar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog open={preflightDialogOpen} onOpenChange={setPreflightDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Ya existe una acción pendiente</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div>
+                {pendingPreflightData?.pendingAction ? (
+                  <>
+                    <span className="block text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground mb-1">Acción pendiente activa</span>
+                    <span className="block font-semibold text-foreground">{formatDateValue(pendingPreflightData.pendingAction.scheduledAt)}</span>
+                    {pendingPreflightData.pendingAction.description && (
+                      <span className="block mt-0.5 text-sm text-muted-foreground">{pendingPreflightData.pendingAction.description}</span>
+                    )}
+                  </>
+                ) : (
+                  'Este cliente ya tiene una acción pendiente activa.'
+                )}
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-col">
+            <AlertDialogCancel className="w-full whitespace-normal">Volver</AlertDialogCancel>
+            <AlertDialogAction
+              className="w-full whitespace-normal"
+              onClick={() => {
+                setPreflightDialogOpen(false);
+                const pendingAction = pendingPreflightData?.pendingAction ?? null;
+                if (pendingAction?.agendaActionId) {
+                  setInteractionMode('complete');
+                  setInteractionAgendaActionId(pendingAction.agendaActionId);
+                  setInteractionNextActionDate(pendingAction.scheduledAt ?? null);
+                  setInteractionNextActionNote(pendingAction.description ?? '');
+                  setInteractionOpen(true);
+                  return;
+                }
+                setResolveNextActionOpen(true);
+              }}
+            >
+              Ir a cerrar pendiente
+            </AlertDialogAction>
+            <AlertDialogAction
+              className="w-full whitespace-normal"
+              onClick={() => {
+                setPreflightDialogOpen(false);
+                setInteractionMode('create');
+                setInteractionAgendaActionId(null);
+                setInteractionNextActionDate(null);
+                setInteractionNextActionNote('');
+                setInteractionOpen(true);
+              }}
+            >
+              Continuar con interacción
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   ) : (
     <Card className="w-full max-w-none min-w-0">
       {body}
-      <QuickInteractionModal open={interactionOpen} onOpenChange={setInteractionOpen} customerId={customerId} />
+      <QuickInteractionModal
+        open={interactionOpen}
+        onOpenChange={setInteractionOpen}
+        customerId={customerId}
+        agendaActionId={interactionAgendaActionId}
+        defaultNextActionDate={interactionNextActionDate}
+        defaultNextActionNote={interactionNextActionNote}
+        mode={interactionMode}
+        title={interactionMode === 'complete' ? 'Cerrar tarea' : 'Registrar interacción'}
+        onInteractionCreated={(interaction) => {
+          setLastInteractionId(interaction?.id ?? null);
+          if (interactionMode === 'create') setPostInteractionPromptOpen(true);
+        }}
+      />
+      <ResolveNextActionDialog
+        open={resolveNextActionOpen}
+        onOpenChange={setResolveNextActionOpen}
+        targetType="customer"
+        targetId={customerId}
+        sourceInteractionId={lastInteractionId}
+      />
+      <AlertDialog open={postInteractionPromptOpen} onOpenChange={setPostInteractionPromptOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Interacción guardada</AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Quieres gestionar la próxima acción ahora?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Ahora no</AlertDialogCancel>
+            <AlertDialogAction onClick={() => setResolveNextActionOpen(true)}>Sí, gestionar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog open={preflightDialogOpen} onOpenChange={setPreflightDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Ya existe una acción pendiente</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div>
+                {pendingPreflightData?.pendingAction ? (
+                  <>
+                    <span className="block text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground mb-1">Acción pendiente activa</span>
+                    <span className="block font-semibold text-foreground">{formatDateValue(pendingPreflightData.pendingAction.scheduledAt)}</span>
+                    {pendingPreflightData.pendingAction.description && (
+                      <span className="block mt-0.5 text-sm text-muted-foreground">{pendingPreflightData.pendingAction.description}</span>
+                    )}
+                  </>
+                ) : (
+                  'Este cliente ya tiene una acción pendiente activa.'
+                )}
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-col">
+            <AlertDialogCancel className="w-full whitespace-normal">Volver</AlertDialogCancel>
+            <AlertDialogAction
+              className="w-full whitespace-normal"
+              onClick={() => {
+                setPreflightDialogOpen(false);
+                const pendingAction = pendingPreflightData?.pendingAction ?? null;
+                if (pendingAction?.agendaActionId) {
+                  setInteractionMode('complete');
+                  setInteractionAgendaActionId(pendingAction.agendaActionId);
+                  setInteractionNextActionDate(pendingAction.scheduledAt ?? null);
+                  setInteractionNextActionNote(pendingAction.description ?? '');
+                  setInteractionOpen(true);
+                  return;
+                }
+                setResolveNextActionOpen(true);
+              }}
+            >
+              Ir a cerrar pendiente
+            </AlertDialogAction>
+            <AlertDialogAction
+              className="w-full whitespace-normal"
+              onClick={() => {
+                setPreflightDialogOpen(false);
+                setInteractionMode('create');
+                setInteractionAgendaActionId(null);
+                setInteractionNextActionDate(null);
+                setInteractionNextActionNote('');
+                setInteractionOpen(true);
+              }}
+            >
+              Continuar con interacción
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

@@ -46,7 +46,7 @@ function parseShortDate(input) {
   return null
 }
 
-export function DatePicker({ date, onChange, formatStyle = "short" }) {
+export function DatePicker({ date, onChange, formatStyle = "short", fromDate = null }) {
   const safeDate = date && isValidDate(date) ? date : null
   const [open, setOpen] = React.useState(false)
   const [month, setMonth] = React.useState(safeDate || new Date())
@@ -79,7 +79,11 @@ export function DatePicker({ date, onChange, formatStyle = "short" }) {
         // Crear una fecha con la zona horaria correcta (mediodía para evitar problemas de UTC)
         const localDate = new Date(parsed)
         localDate.setHours(12, 0, 0, 0)
-        
+        if (fromDate) {
+          const min = new Date(fromDate)
+          min.setHours(0, 0, 0, 0)
+          if (localDate < min) return
+        }
         onChange(localDate)
         setMonth(localDate)
         setValue(formatDate(localDate, formatStyle))
@@ -145,6 +149,7 @@ export function DatePicker({ date, onChange, formatStyle = "short" }) {
               onMonthChange={setMonth}
               locale={es}
               onSelect={handleSelect}
+              disabled={fromDate ? { before: fromDate } : undefined}
             />
           </PopoverContent>
         </Popover>

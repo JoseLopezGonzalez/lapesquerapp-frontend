@@ -16,6 +16,9 @@ import type {
   ProspectContact,
   ProspectContactPayload,
   ProspectPayload,
+  ResolveNextActionPayload,
+  ResolveNextActionResponse,
+  PendingAgendaResponse,
 } from '@/types/crm';
 import { getErrorMessage, ApiError } from '@/lib/api/apiHelpers';
 
@@ -102,6 +105,12 @@ export const crmService = {
   getAgendaSummary(params: Record<string, unknown> = {}) {
     return getJson<{ data: AgendaSummaryData }>('crm/agenda/summary', params);
   },
+  getPendingAgendaAction(params: { targetType: 'prospect' | 'customer'; targetId: number | string }) {
+    return getJson<{ data: PendingAgendaResponse | AgendaAction | null }>('crm/agenda/pending', params);
+  },
+  resolveNextAction(payload: ResolveNextActionPayload) {
+    return sendJson<ResolveNextActionResponse>('crm/agenda/resolve-next-action', 'POST', payload);
+  },
   listCommercialOrders(params: Record<string, unknown> = {}) {
     return getJson<{ data: Record<string, unknown>[]; meta?: Record<string, unknown>; links?: Record<string, unknown> }>(
       'orders',
@@ -114,8 +123,8 @@ export const crmService = {
   ) {
     return sendJson<{ data: AgendaAction }>(`crm/agenda/${id}/reschedule`, 'POST', payload);
   },
-  cancelAgendaAction(id: number | string) {
-    return sendJson<{ data: AgendaAction; message?: string }>(`crm/agenda/${id}/cancel`, 'POST');
+  cancelAgendaAction(id: number | string, reason: string) {
+    return sendJson<{ data: AgendaAction; message?: string }>(`crm/agenda/${id}/cancel`, 'POST', { reason });
   },
   listProspects(params: Record<string, unknown> = {}) {
     return getJson<CrmPaginatedResponse<Prospect>>('prospects', params);

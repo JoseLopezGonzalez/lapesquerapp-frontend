@@ -60,9 +60,44 @@ export interface AgendaAction {
   previousActionId?: number | string | null;
   scheduledAt: string;
   description?: string | null;
+  reason?: string | null;
   status: AgendaStatus;
   target: AgendaTarget;
   label: string;
+}
+
+export type ResolveNextActionStrategy =
+  | 'keep'
+  | 'reschedule'
+  | 'reschedule_with_description'
+  | 'override'
+  | 'create_if_none';
+
+export interface PendingAgendaResponse {
+  hasPending?: boolean;
+  pendingAction?: AgendaAction | null;
+}
+
+export interface ResolveNextActionPayload {
+  targetType: 'prospect' | 'customer';
+  targetId: number | string;
+  strategy: ResolveNextActionStrategy;
+  currentPendingId?: number | string;
+  expectedPendingId?: number | string;
+  nextActionAt?: string | null;
+  description?: string | null;
+  reason?: string | null;
+  sourceInteractionId?: number | string | null;
+}
+
+export interface ResolveNextActionResponse {
+  data: {
+    strategy: ResolveNextActionStrategy;
+    changed?: boolean;
+    previousPending?: AgendaAction | null;
+    currentPending?: AgendaAction | null;
+  };
+  message?: string;
 }
 
 export type CommercialInteractionAgendaMode = 'created' | 'completed' | 'completed_and_created';

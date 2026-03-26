@@ -6,7 +6,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { DatePicker } from '@/components/ui/datePicker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -18,9 +17,7 @@ import { ApiError } from '@/lib/api/apiHelpers';
 import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
 import { useCountriesList } from '@/hooks/useCountriesList';
 import { useProspectMutations } from '@/hooks/useProspects';
-import { format } from 'date-fns';
 import { prospectOriginOptions } from './utils';
-import { CRM_AGENDA_DESCRIPTION_MAX_LENGTH } from './schemas/crmTextLimits';
 import {
   getProspectFormSchema,
   getDefaultProspectFormValues,
@@ -71,7 +68,6 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
   }, [open, initialData, reset]);
 
   const title = useMemo(() => (initialData ? 'Editar prospecto' : 'Nuevo prospecto'), [initialData]);
-  const scheduleNextAction = watch('scheduleNextAction');
   const includePrimaryContact = watch('includePrimaryContact');
 
   const onValidSubmit = async (values) => {
@@ -84,11 +80,6 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
       status: values.status,
       notes: values.notes.trim() || null,
       commercialInterestNotes: values.commercialInterestNotes.trim() || null,
-      nextActionAt:
-        values.scheduleNextAction && values.nextActionAt ? format(values.nextActionAt, 'yyyy-MM-dd') : null,
-      nextActionNote: values.scheduleNextAction
-        ? values.nextActionNote.trim().slice(0, CRM_AGENDA_DESCRIPTION_MAX_LENGTH) || null
-        : null,
       speciesInterest: values.speciesInterest
         .split(',')
         .map((value) => value.trim())
@@ -147,7 +138,7 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
           <DialogDescription>
             {isEditing
               ? 'Edición de datos generales y comerciales del prospecto.'
-              : 'Alta de prospecto: datos comerciales y, si aplica, contacto y agenda.'}
+              : 'Alta de prospecto: datos comerciales y, si aplica, contacto principal.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -311,68 +302,6 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
                 />
                 <FieldError message={errors.notes?.message} />
               </div>
-
-              {!isEditing && (
-                <div className="rounded-xl border p-4">
-                  <div className="mb-4">
-                    <h3 className="font-medium">Próxima acción</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Activa la casilla para fijar fecha y, si quieres, una nota en la agenda comercial.
-                    </p>
-                  </div>
-                  <Controller
-                    name="scheduleNextAction"
-                    control={control}
-                    render={({ field }) => (
-                      <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
-                        <Checkbox
-                          id="prospect-schedule-next-action"
-                          checked={field.value}
-                          onCheckedChange={(checked) => {
-                            const on = checked === true;
-                            field.onChange(on);
-                            if (!on) {
-                              setValue('nextActionAt', null);
-                              setValue('nextActionNote', '');
-                            }
-                          }}
-                        />
-                        <span>Programar próxima acción</span>
-                      </label>
-                    )}
-                  />
-                  {scheduleNextAction ? (
-                    <div className="mt-4 grid gap-4 rounded-xl border bg-muted/10 p-4">
-                      <div className="grid gap-2">
-                        <Label>Fecha</Label>
-                        <Controller
-                          name="nextActionAt"
-                          control={control}
-                          render={({ field }) => (
-                            <DatePicker
-                              date={field.value ?? null}
-                              onChange={field.onChange}
-                              formatStyle="short"
-                            />
-                          )}
-                        />
-                        <FieldError message={errors.nextActionAt?.message} />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="next-action-note">Descripción</Label>
-                        <Input
-                          id="next-action-note"
-                          placeholder="Enviar oferta, volver a llamar, preparar muestra..."
-                          maxLength={CRM_AGENDA_DESCRIPTION_MAX_LENGTH}
-                          aria-invalid={errors.nextActionNote ? 'true' : undefined}
-                          {...register('nextActionNote')}
-                        />
-                        <FieldError message={errors.nextActionNote?.message} />
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
-              )}
 
               {!isEditing && (
                 <div className="rounded-xl border p-4">

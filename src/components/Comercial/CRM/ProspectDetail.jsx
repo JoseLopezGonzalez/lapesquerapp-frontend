@@ -12,10 +12,12 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { useProspect, useProspectContacts, useProspectMutations } from '@/hooks/useProspects';
+import { usePendingAgendaAction } from '@/hooks/useAgenda';
 import { useCommercialInteractions } from '@/hooks/useCommercialInteractions';
 import { useOffersList } from '@/hooks/useOffers';
 import ProspectFormSheet from './ProspectFormSheet';
 import QuickInteractionModal from './QuickInteractionModal';
+import ResolveNextActionDialog from './ResolveNextActionDialog';
 import StatusPill from './StatusPill';
 import ProspectLocationMap from './ProspectLocationMap';
 import {
@@ -74,10 +76,39 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
   const { convertProspect, updateProspect, deleteContact } = useProspectMutations();
   const [editOpen, setEditOpen] = useState(false);
   const [interactionOpen, setInteractionOpen] = useState(false);
+  const [interactionMode, setInteractionMode] = useState('create');
+  const [interactionAgendaActionId, setInteractionAgendaActionId] = useState(null);
+  const [interactionNextActionDate, setInteractionNextActionDate] = useState(null);
+  const [interactionNextActionNote, setInteractionNextActionNote] = useState('');
+  const [resolveNextActionOpen, setResolveNextActionOpen] = useState(false);
+  const [postInteractionPromptOpen, setPostInteractionPromptOpen] = useState(false);
+  const [preflightDialogOpen, setPreflightDialogOpen] = useState(false);
+  const [lastInteractionId, setLastInteractionId] = useState(null);
   const [discardOpen, setDiscardOpen] = useState(false);
   const [lostReason, setLostReason] = useState('');
   const [editingContactId, setEditingContactId] = useState(null);
   const [contactFormOpen, setContactFormOpen] = useState(false);
+  const { data: pendingPreflightData, refetch: refetchPendingPreflight } = usePendingAgendaAction(
+    'prospect',
+    prospect?.id ?? prospectId,
+    true
+  );
+  const handleStartInteraction = async () => {
+    const response = await refetchPendingPreflight();
+    const rawPending = response?.data?.data ?? null;
+    const pendingAction = rawPending?.pendingAction ?? (rawPending?.agendaActionId ? rawPending : null);
+    const hasPending = typeof rawPending?.hasPending === 'boolean' ? rawPending.hasPending : Boolean(pendingAction);
+    if (hasPending) {
+      setPreflightDialogOpen(true);
+      return;
+    }
+    setInteractionMode('create');
+    setInteractionAgendaActionId(null);
+    setInteractionNextActionDate(null);
+    setInteractionNextActionNote('');
+    setInteractionOpen(true);
+  };
+
 
   useEffect(() => {
     setActiveTab('data');
@@ -135,9 +166,12 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button onClick={() => setInteractionOpen(true)}>
+              <Button onClick={handleStartInteraction}>
                 <Plus data-icon="inline-start" />
                 Nueva interacción
+              </Button>
+              <Button variant="outline" onClick={() => setResolveNextActionOpen(true)}>
+                Añadir próxima acción
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -315,38 +349,44 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
                     </div>
 
                     <div className="grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.85fr)]">
-                      <section
-                        className={`rounded-2xl border p-5 ${
-                          prospect.nextActionAt
-                            ? 'border-amber-200 bg-amber-50/80 dark:border-amber-800 dark:bg-amber-950/10'
-                            : 'bg-card'
-                        }`}
-                      >
-                        <div className="space-y-4">
-                          <div className="flex items-start gap-3">
-                            <div
-                              className={`flex size-10 shrink-0 items-center justify-center rounded-xl ${
-                                prospect.nextActionAt
-                                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400'
-                                  : 'bg-muted text-muted-foreground'
-                              }`}
-                            >
-                              <CalendarClock className="size-5" />
+                      {(() => {
+                        const pendingAction = pendingPreflightData?.pendingAction ?? null;
+                        const hasPendingAction = Boolean(pendingAction);
+                        return (
+                          <section
+                            className={`rounded-2xl border p-5 ${
+                              hasPendingAction
+                                ? 'border-amber-200 bg-amber-50/80 dark:border-amber-800 dark:bg-amber-950/10'
+                                : 'bg-card'
+                            }`}
+                          >
+                            <div className="space-y-4">
+                              <div className="flex items-start gap-3">
+                                <div
+                                  className={`flex size-10 shrink-0 items-center justify-center rounded-xl ${
+                                    hasPendingAction
+                                      ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400'
+                                      : 'bg-muted text-muted-foreground'
+                                  }`}
+                                >
+                                  <CalendarClock className="size-5" />
+                                </div>
+                                <div className="min-w-0 space-y-1">
+                                  <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Próxima acción</p>
+                                  <h3 className="text-lg font-semibold tracking-tight text-foreground">
+                                    {hasPendingAction ? formatDateValue(pendingAction.scheduledAt) : 'Sin agenda activa'}
+                                  </h3>
+                                </div>
+                              </div>
+                              <p className="text-sm leading-7 whitespace-pre-wrap break-words text-foreground">
+                                {pendingAction?.description?.trim()
+                                  ? pendingAction.description
+                                  : 'Todavía no hay una próxima acción registrada para este prospecto. Cuando definas el siguiente paso comercial, aparecerá aquí como referencia clara para el seguimiento.'}
+                              </p>
                             </div>
-                            <div className="min-w-0 space-y-1">
-                              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Próxima acción</p>
-                              <h3 className="text-lg font-semibold tracking-tight text-foreground">
-                                {prospect.nextActionAt ? formatDateValue(prospect.nextActionAt) : 'Sin agenda activa'}
-                              </h3>
-                            </div>
-                          </div>
-                          <p className="text-sm leading-7 whitespace-pre-wrap break-words text-foreground">
-                            {prospect.nextActionNote?.trim()
-                              ? prospect.nextActionNote
-                              : 'Todavia no hay una proxima accion registrada para este prospecto. Cuando definas el siguiente paso comercial, aparecera aqui como referencia clara para el seguimiento.'}
-                          </p>
-                        </div>
-                      </section>
+                          </section>
+                        );
+                      })()}
 
                       <div className="space-y-4">
                         <section className="rounded-2xl border bg-card p-5">
@@ -632,9 +672,99 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
         open={interactionOpen}
         onOpenChange={setInteractionOpen}
         prospectId={prospect?.id ?? prospectId}
-        defaultNextActionDate={prospect?.nextActionAt ?? null}
-        defaultNextActionNote={prospect?.nextActionNote ?? ''}
+        agendaActionId={interactionAgendaActionId}
+        defaultNextActionDate={interactionNextActionDate}
+        defaultNextActionNote={interactionNextActionNote}
+        mode={interactionMode}
+        title={interactionMode === 'complete' ? 'Cerrar tarea' : 'Registrar interacción'}
+        onInteractionCreated={(interaction) => {
+          setLastInteractionId(interaction?.id ?? null);
+          if (interactionMode === 'create') setPostInteractionPromptOpen(true);
+        }}
       />
+      <ResolveNextActionDialog
+        open={resolveNextActionOpen}
+        onOpenChange={setResolveNextActionOpen}
+        targetType="prospect"
+        targetId={prospect?.id ?? prospectId}
+        sourceInteractionId={lastInteractionId}
+      />
+      <AlertDialog open={postInteractionPromptOpen} onOpenChange={setPostInteractionPromptOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Interacción guardada</AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Quieres gestionar la próxima acción ahora?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Ahora no</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setResolveNextActionOpen(true);
+              }}
+            >
+              Sí, gestionar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog open={preflightDialogOpen} onOpenChange={setPreflightDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Ya existe una acción pendiente</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div>
+                {pendingPreflightData?.pendingAction ? (
+                  <>
+                    <span className="block text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground mb-1">Acción pendiente activa</span>
+                    <span className="block font-semibold text-foreground">{formatDateValue(pendingPreflightData.pendingAction.scheduledAt)}</span>
+                    {pendingPreflightData.pendingAction.description && (
+                      <span className="block mt-0.5 text-sm text-muted-foreground">{pendingPreflightData.pendingAction.description}</span>
+                    )}
+                  </>
+                ) : (
+                  'Este prospecto ya tiene una acción pendiente activa.'
+                )}
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-col">
+            <AlertDialogCancel className="w-full whitespace-normal">Volver</AlertDialogCancel>
+            <AlertDialogAction
+              className="w-full whitespace-normal"
+              onClick={() => {
+                setPreflightDialogOpen(false);
+                const pendingAction = pendingPreflightData?.pendingAction ?? null;
+                if (pendingAction?.agendaActionId) {
+                  setInteractionMode('complete');
+                  setInteractionAgendaActionId(pendingAction.agendaActionId);
+                  setInteractionNextActionDate(pendingAction.scheduledAt ?? null);
+                  setInteractionNextActionNote(pendingAction.description ?? '');
+                  setInteractionOpen(true);
+                  return;
+                }
+                setResolveNextActionOpen(true);
+              }}
+            >
+              Ir a cerrar pendiente
+            </AlertDialogAction>
+            <AlertDialogAction
+              className="w-full whitespace-normal"
+              onClick={() => {
+                setPreflightDialogOpen(false);
+                setInteractionMode('create');
+                setInteractionAgendaActionId(null);
+                setInteractionNextActionDate(null);
+                setInteractionNextActionNote('');
+                setInteractionOpen(true);
+              }}
+            >
+              Continuar con interacción
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <ProspectContactFormDialog
         open={contactFormOpen}
         onOpenChange={(open) => {

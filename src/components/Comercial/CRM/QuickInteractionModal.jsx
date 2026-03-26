@@ -5,7 +5,6 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CalendarCheck2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { DatePicker } from '@/components/ui/datePicker';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
@@ -14,9 +13,10 @@ import { notify } from '@/lib/notifications';
 import { ApiError } from '@/lib/api/apiHelpers';
 import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
 import { useCommercialInteractionMutations } from '@/hooks/useCommercialInteractions';
+import { getAgendaDomainErrorMessage } from './agendaErrorMessages';
 import { format } from 'date-fns';
 import { formatDateValue, interactionResultOptions, interactionTypeOptions } from './utils';
-import { CRM_AGENDA_DESCRIPTION_MAX_LENGTH, CRM_INTERACTION_SUMMARY_MAX_LENGTH } from './schemas/crmTextLimits';
+import { CRM_INTERACTION_SUMMARY_MAX_LENGTH } from './schemas/crmTextLimits';
 import { getQuickInteractionDefaultValues, getQuickInteractionFormSchema } from './schemas/quickInteractionFormSchema';
 
 function ToggleGroup({ value, onChange, options }) {
@@ -52,6 +52,7 @@ function QuickInteractionModalInner({
   defaultNextActionNote = '',
   title = 'Registrar interacción',
   mode = 'create',
+  onInteractionCreated,
 }) {
   const { createInteraction } = useCommercialInteractionMutations();
   const isCompleteMode = mode === 'complete';
@@ -79,8 +80,6 @@ function QuickInteractionModalInner({
 
   const type = watch('type');
   const result = watch('result');
-  const scheduleNextAction = watch('scheduleNextAction');
-  const noNextAction = watch('noNextAction');
 
   const wasOpenRef = useRef(false);
 
@@ -97,17 +96,6 @@ function QuickInteractionModalInner({
       })
     );
   }, [open, defaultNextActionDate, defaultNextActionNote, isCompleteMode, reset]);
-
-  useEffect(() => {
-    if (!isCompleteMode) return;
-    if (result !== 'not_interested') return;
-
-    // En complete, si marcamos "No interesa", ocultamos la próxima acción.
-    // Aseguramos consistencia limpiando estado y valores dependientes.
-    setValue('scheduleNextAction', false, { shouldValidate: true });
-    setValue('nextActionAt', null, { shouldValidate: true });
-    setValue('nextActionNote', '', { shouldValidate: true });
-  }, [isCompleteMode, result, setValue]);
 
   const getErrorText = (error) => {
     if (error?.status !== 422) {
@@ -131,7 +119,7 @@ function QuickInteractionModalInner({
       return 'Ya existe una acción pendiente activa para este target. Reprograma o cancela la pendiente actual antes de crear otra.';
     }
 
-    return error?.message || 'La agenda no aceptó la operación solicitada.';
+    return getAgendaDomainErrorMessage(error, 'La agenda no aceptó la operación solicitada.');
   };
 
   const onValidSubmit = async (values) => {
@@ -145,8 +133,6 @@ function QuickInteractionModalInner({
       return;
     }
 
-    const shouldSendNextAction = isCompleteMode ? values.scheduleNextAction : !values.noNextAction;
-
     const payload = {
       ...(prospectId ? { prospectId } : {}),
       ...(customerId ? { customerId } : {}),
@@ -155,18 +141,19 @@ function QuickInteractionModalInner({
       occurredAt: values.occurredAt.toISOString(),
       summary: values.summary.trim().slice(0, CRM_INTERACTION_SUMMARY_MAX_LENGTH),
       result: values.result,
-      nextActionNote: shouldSendNextAction
-        ? values.nextActionNote.trim().slice(0, CRM_AGENDA_DESCRIPTION_MAX_LENGTH) || null
-        : null,
-      nextActionAt: shouldSendNextAction && values.nextActionAt ? format(values.nextActionAt, 'yyyy-MM-dd') : null,
+      nextActionNote: null,
+      nextActionAt: null,
     };
 
     try {
-      await notify.promise(createInteraction.mutateAsync(payload), {
+      const response = await notify.promise(createInteraction.mutateAsync(payload), {
         loading: isCompleteMode ? 'Cerrando tarea y registrando interacción...' : 'Registrando interacción...',
         success: isCompleteMode ? 'Tarea cerrada e interacción registrada' : 'Interacción registrada',
         error: (error) => getErrorText(error),
       });
+      if (typeof onInteractionCreated === 'function') {
+        onInteractionCreated(response?.data ?? null);
+      }
       onOpenChange(false);
     } catch (err) {
       if (err instanceof ApiError && err.status === 422 && err.data?.errors) {
@@ -190,23 +177,26 @@ function QuickInteractionModalInner({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
             {isCompleteMode
-              ? 'Cierra la tarea pendiente registrando la interacción que la resuelve y, si hace falta, deja la siguiente acción programada.'
-              : 'Registra seguimiento comercial y, si hace falta, deja la siguiente acción programada.'}
+              ? 'Cierra la tarea pendiente registrando la interacción que la resuelve.'
+              : 'Registra seguimiento comercial.'}
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4">
           {isCompleteMode && (
-            <div className="rounded-xl border bg-muted/10 p-4">
+            <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
               <div className="flex items-start gap-3">
-                <div className="rounded-full bg-primary/10 p-2 text-primary">
+                <div className="rounded-full bg-primary/15 p-2 text-primary">
                   <CalendarCheck2 className="size-4" />
                 </div>
                 <div className="space-y-1">
-                  <p className="text-sm font-medium">Se cerrará la acción pendiente actual</p>
-                  <p className="text-sm text-muted-foreground">
-                    {defaultNextActionDate ? formatDateValue(defaultNextActionDate) : 'Sin fecha'} {defaultNextActionNote ? `· ${defaultNextActionNote}` : ''}
+                  <p className="text-sm font-medium text-primary">Se cerrará la acción pendiente actual</p>
+                  <p className="text-xs text-muted-foreground">
+                    {defaultNextActionDate ? formatDateValue(defaultNextActionDate) : 'Sin fecha'}
                   </p>
+                  {defaultNextActionNote && (
+                    <p className="text-sm text-foreground">{defaultNextActionNote}</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -257,82 +247,6 @@ function QuickInteractionModalInner({
             <FieldError message={errors.result?.message} />
           </div>
 
-          {((!isCompleteMode) || (isCompleteMode && result !== 'not_interested')) && (
-            <>
-              {isCompleteMode ? (
-                <Controller
-                  name="scheduleNextAction"
-                  control={control}
-                  render={({ field }) => (
-                    <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={(checked) => {
-                          const on = checked === true;
-                          field.onChange(on);
-                          if (!on) {
-                            setValue('nextActionAt', null, { shouldValidate: true });
-                            setValue('nextActionNote', '', { shouldValidate: true });
-                          }
-                        }}
-                      />
-                      Programar siguiente acción
-                    </label>
-                  )}
-                />
-              ) : (
-                <Controller
-                  name="noNextAction"
-                  control={control}
-                  render={({ field }) => (
-                    <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={(checked) => {
-                          const on = checked === true;
-                          field.onChange(on);
-                          if (on) {
-                            setValue('nextActionAt', null, { shouldValidate: true });
-                            setValue('nextActionNote', '', { shouldValidate: true });
-                          }
-                        }}
-                      />
-                      Sin próxima acción
-                    </label>
-                  )}
-                />
-              )}
-
-              {((isCompleteMode && scheduleNextAction) || (!isCompleteMode && !noNextAction)) && (
-                <div className="grid gap-4 rounded-xl border bg-muted/10 p-4">
-                  <div className="grid gap-2">
-                    <Label>Fecha próxima acción</Label>
-                    <Controller
-                      name="nextActionAt"
-                      control={control}
-                      render={({ field }) => (
-                        <DatePicker date={field.value ?? null} onChange={field.onChange} formatStyle="short" />
-                      )}
-                    />
-                    <FieldError message={errors.nextActionAt?.message} />
-                  </div>
-
-                  <div className="grid gap-2">
-                    <Label htmlFor="next-action-note">Descripción de la acción</Label>
-                    <Textarea
-                      id="next-action-note"
-                      rows={2}
-                      maxLength={CRM_AGENDA_DESCRIPTION_MAX_LENGTH}
-                      placeholder="Enviar oferta, volver a llamar, preparar muestra..."
-                      aria-invalid={errors.nextActionNote ? 'true' : undefined}
-                      {...register('nextActionNote')}
-                    />
-                    <FieldError message={errors.nextActionNote?.message} />
-                  </div>
-                </div>
-              )}
-            </>
-          )}
         </div>
 
         <DialogFooter>
