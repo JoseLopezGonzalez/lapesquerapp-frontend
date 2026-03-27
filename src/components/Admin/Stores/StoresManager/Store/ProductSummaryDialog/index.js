@@ -16,13 +16,11 @@ export function ProductSummaryDialog() {
                     Productos
                 </Button>
             </DialogTrigger>
-            <DialogContent size="xl">
+            <DialogContent size="4xl">
                 <DialogHeader>
                     <DialogTitle>Productos</DialogTitle>
                 </DialogHeader>
-                <div className=" gap-4 pb-2">
-                    <ProductSummary />
-                </div>
+                <ProductSummary />
             </DialogContent>
         </Dialog>
     )

@@ -147,7 +147,7 @@ export function PalletsListDialog() {
                     <DialogTitle>Palets</DialogTitle>
                 </DialogHeader>
 
-                <div className="bg-background text-foreground p-6  mx-auto rounded-lg w-full "> {/* max-w-3xl */}
+                <div className="bg-background text-foreground px-2 pb-2 w-full ">
                     <div className="text-sm text-muted-foreground/90 mb-6 flex items-center">
                         <span>{speciesSummary.length} especies</span>
                         <Separator orientation="vertical" className="mx-2 h-3" />
@@ -339,13 +339,13 @@ export function PalletsListDialog() {
 
 
 
-                    <DialogFooter className="pt-7">
-                        <Button variant="secondary" onClick={generateExcel}>
-                            <PiMicrosoftExcelLogo className="mr-2" />
-                            Exportar .xlsx
-                        </Button>
-                    </DialogFooter>
                 </div>
+                <DialogFooter>
+                    <Button variant="secondary" onClick={generateExcel}>
+                        <PiMicrosoftExcelLogo className="mr-2" />
+                        Exportar .xlsx
+                    </Button>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     );

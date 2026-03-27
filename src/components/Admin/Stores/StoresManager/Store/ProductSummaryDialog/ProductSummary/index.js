@@ -15,8 +15,8 @@ import { PiMicrosoftExcelLogo } from "react-icons/pi"
 export default function ProductSummary() {
 
     const { speciesSummary, store } = useStoreContext()
-    const species = speciesSummary
-    const storeName = store.name
+    const species = Array.isArray(speciesSummary) ? speciesSummary : []
+    const storeName = store?.name ?? "Tienda"
 
     const [searchText, setSearchText] = useState("")
     const [selectedSpecies, setSelectedSpecies] = useState(null)
@@ -28,7 +28,18 @@ export default function ProductSummary() {
     const totalSpecies = species.length
 
     useEffect(() => {
-        setSelectedSpecies(species[0].name)
+        if (species.length === 0) {
+            setSelectedSpecies(null)
+            return
+        }
+
+        setSelectedSpecies((previousSelectedSpecies) => {
+            if (previousSelectedSpecies && species.some((s) => s.name === previousSelectedSpecies)) {
+                return previousSelectedSpecies
+            }
+
+            return species[0]?.name ?? null
+        })
     }, [species])
 
     useEffect(() => {
@@ -72,7 +83,8 @@ export default function ProductSummary() {
     };
 
     return (
-        <div className="bg-background text-foreground p-6 max-w-3xl mx-auto rounded-lg  min-w-[700px]">
+        <>
+        <div className="bg-background text-foreground px-2 pb-2 min-w-[700px]">
             <div className="text-sm text-muted-foreground/90 mb-6 flex items-center">
                 <span>{totalSpecies} {totalSpecies > 1 ? 'Especies' : 'Especie'}</span>
                 <Separator orientation="vertical" className="mx-2 h-3" />
@@ -190,16 +202,17 @@ export default function ProductSummary() {
                 </div>
             )}
 
-            <DialogFooter className='pt-7'>
-                <Button variant="secondary" onClick={generateExcel} >
-                    <PiMicrosoftExcelLogo />
-                    Exportar todo .xlsx
-                </Button>
-                {/* <Button variant="secondary" >
-                    <LucideFileJson />
-                    Exportar .json
-                </Button> */}
-            </DialogFooter>
         </div>
+        <DialogFooter>
+            <Button variant="secondary" onClick={generateExcel} >
+                <PiMicrosoftExcelLogo />
+                Exportar todo .xlsx
+            </Button>
+            {/* <Button variant="secondary" >
+                <LucideFileJson />
+                Exportar .json
+            </Button> */}
+        </DialogFooter>
+        </>
     )
 }
