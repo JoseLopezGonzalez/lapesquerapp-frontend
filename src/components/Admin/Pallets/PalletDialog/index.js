@@ -55,7 +55,11 @@ export default function PalletDialog({
     return (
         <>
             <Dialog open={isOpen} onOpenChange={handleOnClickClose}>
-                <DialogContent size="full" className="max-h-[90vh] overflow-hidden" aria-describedby={undefined}>
+                <DialogContent
+                    size="full"
+                    className="h-[90vh] max-h-[90vh] flex flex-col overflow-hidden"
+                    aria-describedby={undefined}
+                >
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2 flex-wrap">
                             <span>
@@ -89,7 +93,7 @@ export default function PalletDialog({
                             )}
                         </DialogTitle>
                     </DialogHeader>
-                    <div className="flex justify-center flex-1 items-center w-full h-full overflow-auto pb-4">
+                    <div className="flex flex-1 min-h-0 w-full overflow-hidden pb-4">
                         <PalletView
                             palletId={palletId && !palletId?.toString().startsWith('temp-') ? palletId : (palletId === 'new' ? 'new' : null)}
                             onChange={onChange}
