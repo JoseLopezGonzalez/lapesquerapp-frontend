@@ -132,7 +132,7 @@ export default function SalesNode({ data }) {
                             <span className="text-foreground">{order.formattedId || `#${order.id}`}</span>
                           )}
                         </td>
-                        <td className="py-1 px-1 text-muted-foreground truncate max-w-[140px]">-</td>
+                        <td className="py-1 px-1 text-muted-foreground whitespace-normal break-words">-</td>
                         <td className="py-1 px-1 text-right font-medium">{orderData.totalBoxes || 0}</td>
                         <td className="py-1 px-1 text-right">{formatWeight(orderData.totalNetWeight || 0)}</td>
                         <td className="py-1 px-1 text-right">-</td>
@@ -167,8 +167,8 @@ export default function SalesNode({ data }) {
                             )
                           )}
                         </td>
-                        <td className="py-1 px-1 text-foreground truncate max-w-[140px]">
-                          <span className="truncate">{product.name || 'Sin nombre'}</span>
+                        <td className="py-1 px-1 text-foreground whitespace-normal break-words leading-tight align-top">
+                          {product.name || 'Sin nombre'}
                         </td>
                         <td className="py-1 px-1 text-right font-medium">{productData.totalBoxes || 0}</td>
                         <td className="py-1 px-1 text-right">{formatWeight(productData.totalNetWeight || 0)}</td>
