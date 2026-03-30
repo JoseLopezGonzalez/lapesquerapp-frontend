@@ -133,9 +133,9 @@ export default function SalesNode({ data }) {
                           )}
                         </td>
                         <td className="py-1 px-1 text-muted-foreground whitespace-normal break-words">-</td>
-                        <td className="py-1 px-1 text-right font-medium">{orderData.totalBoxes || 0}</td>
-                        <td className="py-1 px-1 text-right">{formatWeight(orderData.totalNetWeight || 0)}</td>
-                        <td className="py-1 px-1 text-right">-</td>
+                        <td className="py-1 px-1 text-right font-medium whitespace-nowrap">{orderData.totalBoxes || 0}</td>
+                        <td className="py-1 px-1 text-right whitespace-nowrap">{formatWeight(orderData.totalNetWeight || 0)}</td>
+                        <td className="py-1 px-1 text-right whitespace-nowrap">-</td>
                       </tr>
                     )
                   }
@@ -170,9 +170,9 @@ export default function SalesNode({ data }) {
                         <td className="py-1 px-1 text-foreground whitespace-normal break-words leading-tight align-top">
                           {product.name || 'Sin nombre'}
                         </td>
-                        <td className="py-1 px-1 text-right font-medium">{productData.totalBoxes || 0}</td>
-                        <td className="py-1 px-1 text-right">{formatWeight(productData.totalNetWeight || 0)}</td>
-                        <td className="py-1 px-1 text-right text-muted-foreground">{pallets.length || 0}</td>
+                        <td className="py-1 px-1 text-right font-medium whitespace-nowrap">{productData.totalBoxes || 0}</td>
+                        <td className="py-1 px-1 text-right whitespace-nowrap">{formatWeight(productData.totalNetWeight || 0)}</td>
+                        <td className="py-1 px-1 text-right text-muted-foreground whitespace-nowrap">{pallets.length || 0}</td>
                       </tr>
                     )
                   })
