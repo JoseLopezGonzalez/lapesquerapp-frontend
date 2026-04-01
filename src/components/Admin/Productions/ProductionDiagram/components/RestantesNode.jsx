@@ -173,19 +173,19 @@ export default function RestantesNode({ data }) {
                   : 'text-gray-600'
                 
                 return (
-                  <div key={product.id || index} className="flex justify-between items-center py-1">
-                    <span className="font-medium text-foreground truncate flex-1">
+                  <div key={product.id || index} className="flex justify-between items-start gap-2 py-1">
+                    <span className="font-medium text-foreground min-w-0 flex-1 whitespace-normal break-words leading-tight">
                       {product.name || 'Sin nombre'}
                     </span>
-                    <div className={`${productTextColor} ml-2 text-right`}>
-                      <div>
+                    <div className={`${productTextColor} shrink-0 text-right`}>
+                      <div className="whitespace-nowrap">
                         {isProductFaltante ? '-' : ''}{Math.abs(balance.boxes || 0)} cajas
                       </div>
-                      <div className="text-[10px]">
+                      <div className="text-[10px] whitespace-nowrap">
                         {isProductFaltante ? '-' : ''}{formatWeight(Math.abs(balance.weight || 0))}
                       </div>
                       {balance.percentage !== undefined && balance.percentage !== null && balance.percentage !== 0 && (
-                        <div className="text-[9px] opacity-75">
+                        <div className="text-[9px] opacity-75 whitespace-nowrap">
                           ({Math.abs(balance.percentage).toFixed(1)}%)
                         </div>
                       )}
@@ -243,34 +243,34 @@ export default function RestantesNode({ data }) {
                       key={product.id || index}
                       className={`border-b border-border/10 ${balanceBgColor}`}
                     >
-                      <td className="py-1 px-1 font-medium text-foreground truncate max-w-[120px]">
-                        <span className="truncate">{product.name || 'Sin nombre'}</span>
+                      <td className="py-1 px-1 font-medium text-foreground whitespace-normal break-words leading-tight align-top">
+                        {product.name || 'Sin nombre'}
                       </td>
                       <td className="py-1 px-1 text-right text-muted-foreground">
-                        <div>{produced.boxes || 0}</div>
-                        <div className="text-[9px]">{formatWeight(produced.weight || 0)}</div>
+                        <div className="whitespace-nowrap">{produced.boxes || 0}</div>
+                        <div className="text-[9px] whitespace-nowrap">{formatWeight(produced.weight || 0)}</div>
                       </td>
                       <td className="py-1 px-1 text-right text-muted-foreground">
-                        <div>{inSales.boxes || 0}</div>
-                        <div className="text-[9px]">{formatWeight(inSales.weight || 0)}</div>
+                        <div className="whitespace-nowrap">{inSales.boxes || 0}</div>
+                        <div className="text-[9px] whitespace-nowrap">{formatWeight(inSales.weight || 0)}</div>
                       </td>
                       <td className="py-1 px-1 text-right text-muted-foreground">
-                        <div>{inStock.boxes || 0}</div>
-                        <div className="text-[9px]">{formatWeight(inStock.weight || 0)}</div>
+                        <div className="whitespace-nowrap">{inStock.boxes || 0}</div>
+                        <div className="text-[9px] whitespace-nowrap">{formatWeight(inStock.weight || 0)}</div>
                       </td>
                       <td className="py-1 px-1 text-right text-muted-foreground">
-                        <div>{reprocessed.boxes || 0}</div>
-                        <div className="text-[9px]">{formatWeight(reprocessed.weight || 0)}</div>
+                        <div className="whitespace-nowrap">{reprocessed.boxes || 0}</div>
+                        <div className="text-[9px] whitespace-nowrap">{formatWeight(reprocessed.weight || 0)}</div>
                       </td>
                       <td className={`py-1 px-1 text-right font-medium ${balanceTextColor}`}>
-                        <div>
+                        <div className="whitespace-nowrap">
                           {isProductFaltante ? '-' : ''}{Math.abs(balance.boxes || 0)}
                         </div>
-                        <div className="text-[9px]">
+                        <div className="text-[9px] whitespace-nowrap">
                           {isProductFaltante ? '-' : ''}{formatWeight(Math.abs(balance.weight || 0))}
                         </div>
                         {balance.percentage !== undefined && balance.percentage !== null && balance.percentage !== 0 && (
-                          <div className="text-[8px] opacity-75">
+                          <div className="text-[8px] opacity-75 whitespace-nowrap">
                             ({Math.abs(balance.percentage).toFixed(1)}%)
                           </div>
                         )}

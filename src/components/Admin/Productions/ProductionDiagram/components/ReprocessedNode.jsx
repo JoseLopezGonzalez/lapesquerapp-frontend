@@ -165,11 +165,11 @@ export default function ReprocessedNode({ data }) {
                               key={`${processId}-${product.id || productIdx}`}
                               className="border-b border-border/10 bg-muted/5"
                             >
-                              <td className="py-1 px-1 text-foreground truncate max-w-[200px]">
-                                <span className="truncate">{product.name || 'Sin nombre'}</span>
+                              <td className="py-1 px-1 text-foreground whitespace-normal break-words leading-tight align-top">
+                                {product.name || 'Sin nombre'}
                               </td>
-                              <td className="py-1 px-1 text-right font-medium">{productData.totalBoxes || 0}</td>
-                              <td className="py-1 px-1 text-right">{formatWeight(productData.totalNetWeight || 0)}</td>
+                              <td className="py-1 px-1 text-right font-medium whitespace-nowrap">{productData.totalBoxes || 0}</td>
+                              <td className="py-1 px-1 text-right whitespace-nowrap">{formatWeight(productData.totalNetWeight || 0)}</td>
                             </tr>
                           )
                         })}
