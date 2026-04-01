@@ -1904,7 +1904,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                                     netWeight: boxesWithIds.reduce((sum, box) => sum + (parseFloat(box.netWeight) || 0), 0),
                                 },
                                 prices: palletMetadata.prices || {},
-                                observations: palletMetadata.observations || pallet.observations || '',
+                                observations: pallet.observations ?? palletMetadata.observations ?? '',
                             };
                             return updated;
                         });

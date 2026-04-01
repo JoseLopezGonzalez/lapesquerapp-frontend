@@ -346,7 +346,7 @@ export function useAdminReceptionForm({ onSuccess }) {
           updated[editingPalletIndex] = {
             pallet,
             prices: palletMetadata.prices || {},
-            observations: palletMetadata.observations || pallet.observations || '',
+            observations: pallet.observations ?? palletMetadata.observations ?? '',
           };
           return updated;
         });
