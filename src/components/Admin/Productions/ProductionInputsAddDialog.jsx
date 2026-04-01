@@ -16,6 +16,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EmptyState } from '@/components/Utilities/EmptyState'
 import Loader from '@/components/Utilities/Loader'
 
+const NO_PALLET_ID = '__no_pallet__'
+
 /**
  * Diálogo para agregar/editar materia prima (inputs) en un registro de producción.
  * Recibe el objeto api retornado por useProductionInputsManager.
@@ -65,6 +67,10 @@ export default function ProductionInputsAddDialog({ api }) {
         handleAddInputs,
         isBoxAvailable
     } = api
+
+    const formatPalletLabel = (palletId) => (
+        String(palletId) === NO_PALLET_ID ? 'Sin palet (histórico)' : `Palet #${palletId}`
+    )
 
     return (
         <DialogContent size="full" className="h-[90vh] flex flex-col p-0">
@@ -155,24 +161,26 @@ export default function ProductionInputsAddDialog({ api }) {
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center">
                                                         <Package className="h-4 w-4 mr-2 text-muted-foreground" />
-                                                        <span className="font-medium">Palet #{pallet.id}</span>
+                                                        <span className="font-medium">{formatPalletLabel(pallet.id)}</span>
                                                         {selectedCount > 0 && (
                                                             <Badge variant="default" className="ml-2 text-xs">
                                                                 {selectedCount} seleccionadas
                                                             </Badge>
                                                         )}
                                                     </div>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-6 w-6 hover:bg-destructive/20"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation()
-                                                            handleRemovePallet(pallet.id)
-                                                        }}
-                                                    >
-                                                        <X className="h-3 w-3" />
-                                                    </Button>
+                                                    {String(pallet.id) !== NO_PALLET_ID && (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-6 w-6 hover:bg-destructive/20"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation()
+                                                                handleRemovePallet(pallet.id)
+                                                            }}
+                                                        >
+                                                            <X className="h-3 w-3" />
+                                                        </Button>
+                                                    )}
                                                 </div>
 
                                                 {/* Productos y lotes */}
@@ -452,7 +460,7 @@ export default function ProductionInputsAddDialog({ api }) {
                                                 <div className="space-y-3">
                                                     <div>
                                                         <Label htmlFor={`target-weight-${selectedPalletId}`} className="text-sm font-semibold">
-                                                            Peso Objetivo Total (kg) - Palet #{selectedPalletId}
+                                                            Peso Objetivo Total (kg) - {formatPalletLabel(selectedPalletId)}
                                                         </Label>
                                                         <Input
                                                             id={`target-weight-${selectedPalletId}`}
@@ -469,7 +477,7 @@ export default function ProductionInputsAddDialog({ api }) {
                                                             className="mt-1"
                                                         />
                                                         <p className="text-xs text-muted-foreground mt-1">
-                                                            Ingresa un peso objetivo total y el sistema calculará las cajas del palet #{selectedPalletId} cuya suma se acerque lo más posible al peso objetivo sin excederlo.
+                                                            Ingresa un peso objetivo total y el sistema calculará las cajas de {formatPalletLabel(selectedPalletId).toLowerCase()} cuya suma se acerque lo más posible al peso objetivo sin excederlo.
                                                         </p>
                                                     </div>
                                                     <Button
@@ -548,7 +556,7 @@ export default function ProductionInputsAddDialog({ api }) {
                                                                                     {box.product?.name || 'Sin producto'}
                                                                                 </p>
                                                                                 <Badge variant="outline" className="text-xs ml-2">
-                                                                                    Palet #{result.palletId}
+                                                                                    {formatPalletLabel(result.palletId)}
                                                                                 </Badge>
                                                                             </div>
                                                                             <p className="text-xs text-muted-foreground truncate">
@@ -603,7 +611,7 @@ export default function ProductionInputsAddDialog({ api }) {
                                                     autoFocus
                                                 />
                                                 <p className="text-xs text-muted-foreground mt-1">
-                                                    Escanea o pega un código GS1-128 para buscar y seleccionar automáticamente la caja correspondiente en el palet #{selectedPalletId}. El sistema reconocerá códigos con peso en kilogramos (3100) o libras (3200).
+                                                    Escanea o pega un código GS1-128 para buscar y seleccionar automáticamente la caja correspondiente en {formatPalletLabel(selectedPalletId).toLowerCase()}. El sistema reconocerá códigos con peso en kilogramos (3100) o libras (3200).
                                                 </p>
                                             </div>
                                             <Button
@@ -643,7 +651,7 @@ export default function ProductionInputsAddDialog({ api }) {
                                                         className="mt-1"
                                                     />
                                                     <p className="text-xs text-muted-foreground mt-1">
-                                                        Ingresa un peso para encontrar cajas del palet #{selectedPalletId} que coincidan con ese peso. Puedes ajustar la tolerancia de búsqueda para controlar la precisión de coincidencia.
+                                                        Ingresa un peso para encontrar cajas de {formatPalletLabel(selectedPalletId).toLowerCase()} que coincidan con ese peso. Puedes ajustar la tolerancia de búsqueda para controlar la precisión de coincidencia.
                                                     </p>
                                                     <div className="flex items-center gap-2 mt-2">
                                                         <Label htmlFor="weight-tolerance" className="text-xs text-muted-foreground">
@@ -728,7 +736,7 @@ export default function ProductionInputsAddDialog({ api }) {
                                                                                 {box.product?.name || 'Sin producto'}
                                                                             </p>
                                                                             <Badge variant="outline" className="text-xs ml-2">
-                                                                                Palet #{result.palletId}
+                                                                                {formatPalletLabel(result.palletId)}
                                                                             </Badge>
                                                                         </div>
                                                                         <div className="flex items-center gap-2 text-xs mt-1">
@@ -823,7 +831,7 @@ export default function ProductionInputsAddDialog({ api }) {
                                             <div className="flex items-center justify-between gap-2 px-2 py-1 bg-muted rounded-md">
                                                 <div className="flex items-center gap-2">
                                                     <Badge variant="outline" className="text-xs font-semibold">
-                                                        Palet #{pallet.id}
+                                                        {formatPalletLabel(pallet.id)}
                                                     </Badge>
                                                     <span className="text-xs text-muted-foreground">
                                                         {selectedForPallet.length} cajas

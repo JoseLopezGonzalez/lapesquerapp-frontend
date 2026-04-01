@@ -15,6 +15,8 @@ import { useProductionRecordContextOptional } from '@/context/ProductionRecordCo
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant'
 import { productionQueryKeys } from '@/lib/routes/queryKeys'
 
+const NO_PALLET_ID = '__no_pallet__'
+
 /**
  * Hook con toda la lógica de ProductionInputsManager: estado, carga de inputs,
  * diálogo de agregar (palets, selección manual/peso/GS1/búsqueda por peso),
@@ -111,12 +113,9 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
             const token = session?.user?.accessToken
             if (!token) return
             const palletIds = [...new Set(inputs.map((input) => input.box?.palletId).filter(Boolean))]
-            if (palletIds.length === 0) {
-                setLoadingPallet(false)
-                return
-            }
-            const palletsPromises = palletIds.map((palletId) => getPallet(palletId, token))
-            const loadedPalletsData = await Promise.all(palletsPromises)
+            const loadedPalletsData = palletIds.length > 0
+                ? await Promise.all(palletIds.map((palletId) => getPallet(palletId, token)))
+                : []
 
             // En edición, el endpoint de palet puede no incluir cajas ya consumidas/no disponibles.
             // Mezclamos esas cajas desde los inputs existentes para no perderlas en el diálogo.
@@ -129,6 +128,13 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
                 acc[palletId].push(box)
                 return acc
             }, {})
+
+            const noPalletBoxesMap = inputs.reduce((acc, input) => {
+                const box = input?.box
+                if (!box?.id || box?.palletId) return acc
+                acc.set(Number(box.id), box)
+                return acc
+            }, new Map())
 
             const mergedPalletsData = loadedPalletsData.map((pallet) => {
                 const existingBoxes = Array.isArray(pallet?.boxes) ? pallet.boxes : []
@@ -145,11 +151,23 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
                 }
             })
 
+            if (noPalletBoxesMap.size > 0) {
+                mergedPalletsData.push({
+                    id: NO_PALLET_ID,
+                    isVirtualNoPallet: true,
+                    boxes: Array.from(noPalletBoxesMap.values()).map((box) => ({
+                        ...box,
+                        palletId: NO_PALLET_ID,
+                        isAvailable: true
+                    }))
+                })
+            }
+
             setLoadedPallets(mergedPalletsData)
             if (mergedPalletsData.length > 0) setSelectedPalletId(mergedPalletsData[0].id)
             const existingBoxSelections = inputs
-                .filter((input) => input.box?.id && input.box?.palletId)
-                .map((input) => ({ boxId: input.box.id, palletId: input.box.palletId }))
+                .filter((input) => input.box?.id)
+                .map((input) => ({ boxId: input.box.id, palletId: input.box.palletId || NO_PALLET_ID }))
             setSelectedBoxes(existingBoxSelections)
         } catch (err) {
             console.error('Error loading existing data:', err)
