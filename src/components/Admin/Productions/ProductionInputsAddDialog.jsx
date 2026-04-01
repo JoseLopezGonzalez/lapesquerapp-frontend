@@ -393,7 +393,7 @@ export default function ProductionInputsAddDialog({ api }) {
                                                 <ScrollArea className="flex-1 min-h-0">
                                                     <div className="p-2 space-y-1">
                                                         {getSelectedBoxesForPallet(selectedPalletId).map((selectedBox) => {
-                                                            const box = getPalletBoxes(selectedPalletId).find(b => b.id === selectedBox.boxId)
+                                                            const box = getPalletBoxes(selectedPalletId).find(b => Number(b.id) === Number(selectedBox.boxId))
                                                             if (!box) return null
                                                             return (
                                                                 <div
@@ -835,7 +835,7 @@ export default function ProductionInputsAddDialog({ api }) {
                                             </div>
                                             <div className="space-y-1 pl-2 border-l-2 border-muted">
                                                 {selectedForPallet.map((selectedBox) => {
-                                                    const box = getPalletBoxes(pallet.id).find(b => b.id === selectedBox.boxId)
+                                                    const box = getPalletBoxes(pallet.id).find(b => Number(b.id) === Number(selectedBox.boxId))
                                                     if (!box) return null
                                                     return (
                                                         <div

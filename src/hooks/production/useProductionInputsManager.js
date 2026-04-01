@@ -117,8 +117,36 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
             }
             const palletsPromises = palletIds.map((palletId) => getPallet(palletId, token))
             const loadedPalletsData = await Promise.all(palletsPromises)
-            setLoadedPallets(loadedPalletsData)
-            if (loadedPalletsData.length > 0) setSelectedPalletId(loadedPalletsData[0].id)
+
+            // En edición, el endpoint de palet puede no incluir cajas ya consumidas/no disponibles.
+            // Mezclamos esas cajas desde los inputs existentes para no perderlas en el diálogo.
+            const missingBoxesByPallet = inputs.reduce((acc, input) => {
+                const box = input?.box
+                const palletId = box?.palletId
+                if (!box?.id || !palletId) return acc
+
+                if (!acc[palletId]) acc[palletId] = []
+                acc[palletId].push(box)
+                return acc
+            }, {})
+
+            const mergedPalletsData = loadedPalletsData.map((pallet) => {
+                const existingBoxes = Array.isArray(pallet?.boxes) ? pallet.boxes : []
+                const existingBoxIds = new Set(existingBoxes.map((box) => Number(box?.id)))
+                const fallbackBoxes = (missingBoxesByPallet[pallet.id] || []).filter(
+                    (box) => !existingBoxIds.has(Number(box?.id))
+                )
+
+                if (fallbackBoxes.length === 0) return pallet
+
+                return {
+                    ...pallet,
+                    boxes: [...existingBoxes, ...fallbackBoxes.map((box) => ({ ...box, isAvailable: true }))]
+                }
+            })
+
+            setLoadedPallets(mergedPalletsData)
+            if (mergedPalletsData.length > 0) setSelectedPalletId(mergedPalletsData[0].id)
             const existingBoxSelections = inputs
                 .filter((input) => input.box?.id && input.box?.palletId)
                 .map((input) => ({ boxId: input.box.id, palletId: input.box.palletId }))
