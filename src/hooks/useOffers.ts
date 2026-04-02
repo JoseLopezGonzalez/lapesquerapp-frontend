@@ -53,7 +53,7 @@ export function useOffer(id: number | string | null | undefined) {
 
 export function useOfferMutations() {
   const queryClient = useQueryClient();
-  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : 'unknown';
+  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() ?? 'unknown' : 'unknown';
 
   const invalidate = async ({
     id,

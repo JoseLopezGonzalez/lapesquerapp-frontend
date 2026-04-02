@@ -39,6 +39,7 @@ const FILTER_TABS = [
   { label: 'Seguimiento', value: 'following' },
   { label: 'Oferta enviada', value: 'offer_sent' },
   { label: 'Descartados', value: 'discarded' },
+  { label: 'Convertidos', value: 'customer' },
 ];
 
 function ProspectCard({ prospect, selected, onClick }) {

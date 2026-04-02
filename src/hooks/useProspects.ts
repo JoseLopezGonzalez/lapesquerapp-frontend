@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 import { crmService } from '@/services/crmService';
-import type { Prospect, ProspectContact, ProspectContactPayload, ProspectPayload } from '@/types/crm';
+import type { ConvertToCustomerPayload, Prospect, ProspectContact, ProspectContactPayload, ProspectPayload } from '@/types/crm';
 
 type UseProspectsListParams = Record<string, unknown> & {
   enabled?: boolean;
@@ -129,7 +129,7 @@ export function useProspectContacts(
 
 export function useProspectMutations() {
   const queryClient = useQueryClient();
-  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : 'unknown';
+  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() ?? 'unknown' : 'unknown';
 
   const invalidate = async ({
     id,
@@ -259,10 +259,11 @@ export function useProspectMutations() {
         }),
     }),
     convertProspect: useMutation({
-      mutationFn: (id: number | string) => crmService.convertProspectToCustomer(id),
-      onSuccess: (_, id) =>
+      mutationFn: ({ id, payload }: { id: number | string; payload?: ConvertToCustomerPayload }) =>
+        crmService.convertProspectToCustomer(id, payload),
+      onSuccess: (_, variables) =>
         invalidate({
-          id,
+          id: variables.id,
           includeDashboard: true,
           includeAgenda: true,
           includeAgendaSummary: true,

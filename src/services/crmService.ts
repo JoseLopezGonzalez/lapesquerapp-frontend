@@ -7,7 +7,9 @@ import type {
   CommercialInteraction,
   CommercialInteractionCreateResponse,
   CommercialInteractionPayload,
-  CrmDashboardData,
+  CrmDashboardCustomersData,
+  CrmDashboardPendingActionsData,
+  CrmDashboardProspectsData,
   CrmPaginatedResponse,
   CrmWriteResponse,
   Offer,
@@ -19,6 +21,7 @@ import type {
   ResolveNextActionPayload,
   ResolveNextActionResponse,
   PendingAgendaResponse,
+  ConvertToCustomerPayload,
 } from '@/types/crm';
 import { getErrorMessage, ApiError } from '@/lib/api/apiHelpers';
 
@@ -96,8 +99,14 @@ async function sendJson<T>(path: string, method: string, body?: unknown): Promis
 }
 
 export const crmService = {
-  getDashboard() {
-    return getJson<{ data: CrmDashboardData }>('crm/dashboard');
+  getCrmPendingActions() {
+    return getJson<{ data: CrmDashboardPendingActionsData }>('crm/dashboard/pending-actions');
+  },
+  getCrmCustomersData() {
+    return getJson<{ data: CrmDashboardCustomersData }>('crm/dashboard/customers');
+  },
+  getCrmProspectsData() {
+    return getJson<{ data: CrmDashboardProspectsData }>('crm/dashboard/prospects');
   },
   listAgenda(params: Record<string, unknown> = {}) {
     return getJson<{ data: { events: AgendaAction[] } }>('crm/agenda', params);
@@ -157,8 +166,12 @@ export const crmService = {
   deleteProspectContact(prospectId: number | string, contactId: number | string) {
     return sendJson<{ message?: string }>(`prospects/${prospectId}/contacts/${contactId}`, 'DELETE');
   },
-  convertProspectToCustomer(id: number | string) {
-    return sendJson<CrmWriteResponse<Prospect>>(`prospects/${id}/convert-to-customer`, 'POST');
+  convertProspectToCustomer(id: number | string, payload?: ConvertToCustomerPayload) {
+    return sendJson<{ message: string; data: Record<string, unknown> }>(
+      `prospects/${id}/convert-to-customer`,
+      'POST',
+      payload ?? {}
+    );
   },
   scheduleProspectAction(id: number | string, nextActionAt: string, nextActionNote?: string | null) {
     const body: { nextActionAt: string; nextActionNote?: string | null } = { nextActionAt };

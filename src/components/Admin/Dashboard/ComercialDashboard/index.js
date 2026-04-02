@@ -16,6 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DatePicker } from "@/components/ui/datePicker";
@@ -98,11 +99,19 @@ function ReminderRow({ item, onReschedule, onCancel, onComplete }) {
                 overdue && "border-red-300 bg-red-50/50 dark:border-red-800 dark:bg-red-950/30"
             )}
         >
-            <CardContent className="py-0">
-                <div className="space-y-2 sm:space-y-2">
+            <CardContent className="py-3">
+                <div className="space-y-3">
                     <div className="flex items-center gap-2 flex-wrap justify-between">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium bg-blue-500/15 text-blue-700 dark:text-blue-300">
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <span className="rounded-md bg-muted px-2 py-0.5 text-xs font-medium">
+                                {formatDateValue(item.nextActionAt)}
+                            </span>
+                            {overdue && (
+                                <span className="rounded-full bg-red-500/15 px-2 py-0.5 text-xs font-medium text-red-700 dark:text-red-300">
+                                    Vencida
+                                </span>
+                            )}
+                            <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-blue-500/15 text-blue-700 dark:text-blue-300">
                                 Pendiente
                             </span>
                         </div>
@@ -113,7 +122,7 @@ function ReminderRow({ item, onReschedule, onCancel, onComplete }) {
                                         <MoreVertical />
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="min-w-[12rem]">
+                                <DropdownMenuContent align="end" className="min-w-48">
                                     <DropdownMenuItem onSelect={() => onReschedule(item)}>
                                         <Calendar />
                                         Reprogramar
@@ -145,20 +154,8 @@ function ReminderRow({ item, onReschedule, onCancel, onComplete }) {
                             {item.label}
                         </Link>
                     </div>
-                    <div className="space-y-3">
-                        <div>
-                            <p className="text-muted-foreground mb-1 text-xs">Fecha</p>
-                            <p className="text-sm font-medium tabular-nums">
-                                {formatDateValue(item.nextActionAt)}
-                                {overdue && (
-                                    <span className="ml-2 text-xs font-medium text-destructive">· Vencida</span>
-                                )}
-                            </p>
-                        </div>
-                        <div className="min-w-0">
-                            <p className="text-muted-foreground mb-1 text-xs">Nota</p>
-                            <p className="text-sm font-medium whitespace-pre-wrap break-words">{item.nextActionNote || "—"}</p>
-                        </div>
+                    <div className="min-w-0">
+                        <p className="text-sm font-medium whitespace-pre-wrap wrap-break-word">{item.nextActionNote || "Sin nota"}</p>
                     </div>
                 </div>
             </CardContent>
@@ -328,17 +325,71 @@ export default function ComercialDashboard() {
                                         description="No tienes acciones pendientes para hoy."
                                     />
                                 ) : (
-                                    <div className="space-y-3">
-                                        {reminders.map((item) => (
-                                            <ReminderRow
-                                                key={String(item.agendaActionId)}
-                                                item={item}
-                                                onReschedule={(agendaItem) => setRescheduleDialog({ open: true, item: agendaItem })}
-                                                onCancel={(agendaItem) => setCancelDialog({ open: true, item: agendaItem })}
-                                                onComplete={handleComplete}
-                                            />
-                                        ))}
-                                    </div>
+                                    <Table className="table-fixed">
+                                        <TableBody>
+                                            {reminders.map((item) => {
+                                                const targetHref = item.prospectId
+                                                    ? `/comercial/prospectos/${item.prospectId}`
+                                                    : item.customerId
+                                                      ? `/comercial/clientes/${item.customerId}`
+                                                      : "/comercial";
+                                                const overdue = isOverdueDate(item.nextActionAt) || item.daysOverdue > 0;
+
+                                                return (
+                                                    <TableRow
+                                                        key={String(item.agendaActionId)}
+                                                        className={overdue ? "bg-red-50/40 dark:bg-red-950/20" : ""}
+                                                    >
+                                                        <TableCell className="w-[72%] whitespace-normal">
+                                                            <Link href={targetHref} className="block font-medium hover:underline">
+                                                                {item.label}
+                                                            </Link>
+                                                            <div className="mt-1 flex flex-wrap items-center gap-1">
+                                                                <p className="text-xs text-muted-foreground">{formatDateValue(item.nextActionAt)}</p>
+                                                                <span
+                                                                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] ${
+                                                                        item.type === "interaction"
+                                                                            ? "bg-blue-500/10 text-blue-700 dark:text-blue-300"
+                                                                            : "bg-slate-500/10 text-slate-700 dark:text-slate-300"
+                                                                    }`}
+                                                                >
+                                                                    {overdue ? "Vencida" : "Pendiente"}
+                                                                </span>
+                                                            </div>
+                                                            <span className="mt-1 block text-xs text-muted-foreground wrap-break-word">
+                                                                {item.nextActionNote || "Sin nota"}
+                                                            </span>
+                                                        </TableCell>
+                                                        <TableCell className="text-right">
+                                                            <DropdownMenu>
+                                                                <DropdownMenuTrigger asChild>
+                                                                    <Button variant="ghost" size="icon" aria-label="Acciones">
+                                                                        <MoreVertical className="size-4" />
+                                                                    </Button>
+                                                                </DropdownMenuTrigger>
+                                                                <DropdownMenuContent align="end" className="min-w-48">
+                                                                    <DropdownMenuItem
+                                                                        onSelect={() => setRescheduleDialog({ open: true, item })}
+                                                                    >
+                                                                        Reprogramar
+                                                                    </DropdownMenuItem>
+                                                                    <DropdownMenuItem onSelect={() => handleComplete(item)}>
+                                                                        Cerrar
+                                                                    </DropdownMenuItem>
+                                                                    <DropdownMenuItem
+                                                                        variant="destructive"
+                                                                        onSelect={() => setCancelDialog({ open: true, item })}
+                                                                    >
+                                                                        Cancelar
+                                                                    </DropdownMenuItem>
+                                                                </DropdownMenuContent>
+                                                            </DropdownMenu>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                );
+                                            })}
+                                        </TableBody>
+                                    </Table>
                                 )}
                             </CardContent>
                         </Card>
@@ -362,27 +413,46 @@ export default function ComercialDashboard() {
                                         description="Todos tus clientes tienen actividad reciente."
                                     />
                                 ) : (
-                                    <div className="space-y-3">
-                                        {crmData.inactive_customers.map((customer) => (
-                                            <Link
-                                                key={customer.id}
-                                                href={`/comercial/clientes/${customer.id}`}
-                                                className="block rounded-xl border p-3 hover:bg-accent/40"
-                                            >
-                                                <div className="flex items-start justify-between gap-3">
-                                                    <div>
-                                                        <p className="font-medium">{customer.name}</p>
-                                                        <p className="text-sm text-muted-foreground">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Cliente</TableHead>
+                                                <TableHead>Estado</TableHead>
+                                                <TableHead className="text-right">Inactividad</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {crmData.inactive_customers.map((customer) => (
+                                                <TableRow
+                                                    key={customer.id}
+                                                    className={customer.lastOrderAt == null ? "bg-amber-50/40 dark:bg-amber-950/20" : ""}
+                                                >
+                                                    <TableCell className="font-medium">
+                                                        <Link href={`/comercial/clientes/${customer.id}`} className="hover:underline">
+                                                            {customer.name}
+                                                        </Link>
+                                                        <p className="text-xs font-normal text-muted-foreground">
                                                             {customer.country?.name ?? "Sin país"}
                                                         </p>
-                                                    </div>
-                                                    <span className="rounded-full bg-red-500/15 px-2 py-1 text-xs font-medium text-red-700 dark:text-red-300">
-                                                        {customer.daysSinceLastOrder} días
-                                                    </span>
-                                                </div>
-                                            </Link>
-                                        ))}
-                                    </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <span
+                                                            className={`rounded-full px-2 py-1 text-xs font-medium ${
+                                                                customer.lastOrderAt == null
+                                                                    ? "bg-amber-500/20 text-amber-800 dark:text-amber-300"
+                                                                    : "bg-red-500/15 text-red-700 dark:text-red-300"
+                                                            }`}
+                                                        >
+                                                            {customer.lastOrderAt == null ? "Nunca pidió" : "Con historial"}
+                                                        </span>
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        {customer.lastOrderAt == null ? "—" : `${customer.daysSinceLastOrder ?? "—"} días`}
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
                                 )}
                             </CardContent>
                         </Card>
@@ -406,27 +476,46 @@ export default function ComercialDashboard() {
                                         description="No hay prospectos pendientes de seguimiento."
                                     />
                                 ) : (
-                                    <div className="space-y-3">
-                                        {crmData.prospects_without_activity.map((prospect) => (
-                                            <Link
-                                                key={prospect.id}
-                                                href={`/comercial/prospectos/${prospect.id}`}
-                                                className="block rounded-xl border p-3 hover:bg-accent/40"
-                                            >
-                                                <div className="flex items-start justify-between gap-3">
-                                                    <div>
-                                                        <p className="font-medium">{prospect.companyName}</p>
-                                                        <p className="text-sm text-muted-foreground">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Prospecto</TableHead>
+                                                <TableHead>Estado</TableHead>
+                                                <TableHead className="text-right">Sin actividad</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {crmData.prospects_without_activity.map((prospect) => (
+                                                <TableRow
+                                                    key={prospect.id}
+                                                    className={prospect.lastContactAt == null ? "bg-blue-50/40 dark:bg-blue-950/20" : ""}
+                                                >
+                                                    <TableCell className="font-medium">
+                                                        <Link href={`/comercial/prospectos/${prospect.id}`} className="hover:underline">
+                                                            {prospect.companyName}
+                                                        </Link>
+                                                        <p className="text-xs font-normal text-muted-foreground">
                                                             {prospect.country?.name ?? "Sin país"}
                                                         </p>
-                                                    </div>
-                                                    <span className="rounded-full bg-amber-500/15 px-2 py-1 text-xs font-medium text-amber-700 dark:text-amber-300">
-                                                        {prospect.daysWithoutActivity} días
-                                                    </span>
-                                                </div>
-                                            </Link>
-                                        ))}
-                                    </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <span
+                                                            className={`rounded-full px-2 py-1 text-xs font-medium ${
+                                                                prospect.lastContactAt == null
+                                                                    ? "bg-blue-500/20 text-blue-800 dark:text-blue-300"
+                                                                    : "bg-amber-500/15 text-amber-700 dark:text-amber-300"
+                                                            }`}
+                                                        >
+                                                            {prospect.lastContactAt == null ? "Sin contacto" : "Con historial"}
+                                                        </span>
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        {prospect.lastContactAt == null ? "—" : `${prospect.daysWithoutActivity ?? "—"} días`}
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
                                 )}
                             </CardContent>
                         </Card>

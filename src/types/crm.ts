@@ -40,6 +40,7 @@ export interface CommercialInteraction {
   id: number | string;
   prospectId?: number | string | null;
   customerId?: number | string | null;
+  isFromProspect?: boolean;
   salesperson?: Salesperson | null;
   salespersonId?: number | string | null;
   type: CommercialInteractionType;
@@ -190,6 +191,19 @@ export interface Prospect {
   } | null;
 }
 
+export interface ConvertToCustomerPayload {
+  vatNumber?: string | null;
+  billingAddress?: string | null;
+  shippingAddress?: string | null;
+  transportId?: number | string | null;
+  paymentTermId?: number | string | null;
+  a3erpCode?: string | null;
+  facilcomCode?: string | null;
+  transportationNotes?: string | null;
+  productionNotes?: string | null;
+  accountingNotes?: string | null;
+}
+
 export interface CrmReminderItem {
   type: 'prospect' | 'customer';
   id: number | string;
@@ -218,11 +232,34 @@ export interface ProspectWithoutActivityItem {
   lastContactAt?: string | null;
 }
 
-export interface CrmDashboardData {
+export interface CrmDashboardPendingActionsData {
   reminders_today: CrmReminderItem[];
   overdue_actions: CrmReminderItem[];
+  counters: {
+    remindersToday: number;
+    overdueActions: number;
+  };
+}
+
+export interface CrmDashboardCustomersData {
   inactive_customers: InactiveCustomerItem[];
+  counters: {
+    inactiveCustomers: number;
+  };
+}
+
+export interface CrmDashboardProspectsData {
   prospects_without_activity: ProspectWithoutActivityItem[];
+  counters: {
+    prospectsWithoutActivity: number;
+  };
+}
+
+export interface CrmDashboardData {
+  reminders_today: CrmDashboardPendingActionsData['reminders_today'];
+  overdue_actions: CrmDashboardPendingActionsData['overdue_actions'];
+  inactive_customers: CrmDashboardCustomersData['inactive_customers'];
+  prospects_without_activity: CrmDashboardProspectsData['prospects_without_activity'];
   counters: {
     remindersToday: number;
     overdueActions: number;

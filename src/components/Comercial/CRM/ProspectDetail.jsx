@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
-import { Phone, Mail, MessageCircle, MapPin, CircleDot, MoreVertical, Pencil, UserPlus, Trash2, Plus, UserRound, FilePlus, CalendarClock, Globe } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Phone, Mail, MessageCircle, MapPin, CircleDot, MoreVertical, Pencil, UserPlus, Trash2, Plus, UserRound, FilePlus, CalendarClock, Globe, ExternalLink, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -39,6 +39,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import ProspectContactFormDialog from './ProspectContactFormDialog';
+import ConvertProspectDialog from './ConvertProspectDialog';
 
 const interactionTypeIcons = {
   call: Phone,
@@ -63,9 +64,12 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
   const { data: contacts, isLoading: contactsLoading } = useProspectContacts(prospectId, {
     enabled: shouldLoadContacts,
   });
-  const { data: interactions, isLoading: interactionsLoading } = useCommercialInteractions({
+  const [interactionsPage, setInteractionsPage] = useState(1);
+  const [loadedInteractions, setLoadedInteractions] = useState([]);
+  const { data: interactions, isLoading: interactionsLoading, meta: interactionsMeta } = useCommercialInteractions({
     prospectId,
-    perPage: 50,
+    perPage: 20,
+    page: interactionsPage,
     enabled: shouldLoadInteractions,
   });
   const { data: offers, isLoading: offersLoading } = useOffersList({
@@ -73,7 +77,7 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
     perPage: 50,
     enabled: shouldLoadOffers,
   });
-  const { convertProspect, updateProspect, deleteContact } = useProspectMutations();
+  const { updateProspect, deleteContact } = useProspectMutations();
   const [editOpen, setEditOpen] = useState(false);
   const [interactionOpen, setInteractionOpen] = useState(false);
   const [interactionMode, setInteractionMode] = useState('create');
@@ -84,6 +88,7 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
   const [postInteractionPromptOpen, setPostInteractionPromptOpen] = useState(false);
   const [preflightDialogOpen, setPreflightDialogOpen] = useState(false);
   const [lastInteractionId, setLastInteractionId] = useState(null);
+  const [convertDialogOpen, setConvertDialogOpen] = useState(false);
   const [discardOpen, setDiscardOpen] = useState(false);
   const [lostReason, setLostReason] = useState('');
   const [editingContactId, setEditingContactId] = useState(null);
@@ -114,7 +119,33 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
     setActiveTab('data');
     setEditingContactId(null);
     setContactFormOpen(false);
+    setInteractionsPage(1);
+    setLoadedInteractions([]);
   }, [prospectId]);
+
+  useEffect(() => {
+    if (!shouldLoadInteractions) return;
+    setLoadedInteractions((prev) => {
+      if (interactionsPage === 1) return interactions;
+      const seen = new Set(prev.map((item) => String(item.id)));
+      const next = [...prev];
+      for (const item of interactions) {
+        if (!seen.has(String(item.id))) next.push(item);
+      }
+      return next;
+    });
+  }, [interactions, interactionsPage, shouldLoadInteractions]);
+
+  const interactionsLastPage = Math.max(1, interactionsMeta?.last_page ?? 1);
+  const canLoadMoreInteractions = interactionsPage < interactionsLastPage && !interactionsLoading;
+
+  const handleInteractionsScroll = useCallback((event) => {
+    if (!canLoadMoreInteractions) return;
+    const el = event.currentTarget;
+    if (el.scrollHeight - el.scrollTop - el.clientHeight < 180) {
+      setInteractionsPage((prev) => prev + 1);
+    }
+  }, [canLoadMoreInteractions]);
 
   const editingContact = useMemo(() => {
     if (editingContactId == null) return null;
@@ -166,6 +197,14 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
+              {prospect.status === 'customer' && prospect.customerId && (
+                <Button variant="outline" asChild>
+                  <Link href={`/comercial/clientes/${prospect.customerId}`}>
+                    <ExternalLink data-icon="inline-start" />
+                    Ver ficha de cliente
+                  </Link>
+                </Button>
+              )}
               <Button onClick={handleStartInteraction}>
                 <Plus data-icon="inline-start" />
                 Nueva interacción
@@ -205,18 +244,8 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
                       Nueva oferta
                     </Link>
                   </DropdownMenuItem>
-                  {prospect.status === 'offer_sent' && (
-                    <DropdownMenuItem
-                      onClick={async () => {
-                        try {
-                          await notify.promise(convertProspect.mutateAsync(prospect.id), {
-                            loading: 'Convirtiendo prospecto...',
-                            success: 'Prospecto convertido en cliente',
-                            error: (error) => error?.message || 'No se pudo convertir el prospecto',
-                          });
-                        } catch {}
-                      }}
-                    >
+                  {prospect.status !== 'customer' && (
+                    <DropdownMenuItem onClick={() => setConvertDialogOpen(true)}>
                       <UserPlus />
                       Convertir a cliente
                     </DropdownMenuItem>
@@ -534,11 +563,11 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
 
             <TabsContent value="interactions" className="flex h-full w-full min-w-0 min-h-0 flex-1 flex-col pt-1">
               <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border bg-card">
-                {interactionsLoading ? (
+                {interactionsLoading && interactionsPage === 1 ? (
                   <div className="flex min-h-0 flex-1 items-center justify-center">
                     <Loader />
                   </div>
-                ) : interactions.length === 0 ? (
+                ) : loadedInteractions.length === 0 ? (
                   <div className="min-h-0 flex-1 p-4">
                     <SectionEmpty
                       title="Sin interacciones"
@@ -546,13 +575,10 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
                     />
                   </div>
                 ) : (
-                  <div className="min-h-0 flex-1 overflow-y-auto p-4">
+                  <div className="min-h-0 flex-1 overflow-y-auto p-4" onScroll={handleInteractionsScroll}>
                     <div className="space-y-4">
                       <div className="relative w-full space-y-4 py-2 pl-1">
-                        {interactions
-                          .slice()
-                          .sort((a, b) => (a.occurredAt && b.occurredAt ? b.occurredAt.localeCompare(a.occurredAt) : 0))
-                          .map((interaction, index, array) => {
+                        {loadedInteractions.map((interaction, index, array) => {
                             const isLast = index === array.length - 1;
                             const typeLabel = interactionTypeLabels[interaction.type] ?? interaction.type;
                             const resultLabel = interactionResultLabels[interaction.result] ?? interaction.result;
@@ -604,6 +630,11 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
                           })}
                       </div>
                     </div>
+                    {interactionsLoading && interactionsPage > 1 && (
+                      <div className="flex items-center justify-center py-4 text-muted-foreground">
+                        <Loader2 className="size-4 animate-spin" />
+                      </div>
+                    )}
                   </div>
                 )}
               </section>
@@ -649,12 +680,13 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
     contacts,
     contactsLoading,
     contactFormOpen,
-    convertProspect,
     deleteContact,
     editingContactId,
     embedded,
-    interactions,
+    loadedInteractions,
     interactionsLoading,
+    interactionsPage,
+    handleInteractionsScroll,
     isLoading,
     offers,
     offersLoading,
@@ -773,6 +805,12 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
         }}
         prospectId={prospect?.id ?? prospectId}
         contact={editingContact}
+      />
+
+      <ConvertProspectDialog
+        open={convertDialogOpen}
+        onOpenChange={setConvertDialogOpen}
+        prospect={prospect}
       />
 
       <AlertDialog open={discardOpen} onOpenChange={setDiscardOpen}>

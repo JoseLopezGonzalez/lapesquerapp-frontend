@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { CalendarClock, CircleDot, MapPin, Mail, MessageCircle, Phone, Loader2, Plus, MoreVertical, Pencil } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -45,6 +45,20 @@ const interactionTypeIcons = {
   visit: MapPin,
   other: CircleDot,
 };
+
+function getInteractionOriginMeta(interaction) {
+  if (interaction?.isFromProspect === true) {
+    return {
+      label: 'Histórico de prospecto',
+      className: 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
+    };
+  }
+
+  return {
+    label: 'Interacción de cliente',
+    className: 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300',
+  };
+}
 
 function useCustomerDetail(customerId) {
   const { data: session } = useSession();
@@ -96,14 +110,17 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
     isLoading: ordersTableLoading,
     errorMessage: ordersTableError,
   } = useComercialOrders({
-    customerId,
+    customers: customerId ? [customerId] : [],
     page: ordersPage,
     perPage: ORDERS_PER_PAGE,
     enabled: shouldLoadOrders,
   });
-  const { data: interactions, isLoading: interactionsLoading } = useCommercialInteractions({
+  const [interactionsPage, setInteractionsPage] = useState(1);
+  const [loadedInteractions, setLoadedInteractions] = useState([]);
+  const { data: interactions, isLoading: interactionsLoading, meta: interactionsMeta } = useCommercialInteractions({
     customerId,
-    perPage: 50,
+    perPage: 20,
+    page: interactionsPage,
     enabled: shouldLoadInteractions,
   });
   const { data: offers } = useOffersList({
@@ -147,15 +164,33 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
     setActiveTab('data');
     setOrdersPage(1);
     setInteractionOpen(false);
+    setInteractionsPage(1);
+    setLoadedInteractions([]);
   }, [customerId]);
 
-  const sortedInteractions = useMemo(
-    () =>
-      interactions
-        .slice()
-        .sort((a, b) => (a.occurredAt && b.occurredAt ? b.occurredAt.localeCompare(a.occurredAt) : 0)),
-    [interactions]
-  );
+  useEffect(() => {
+    if (!shouldLoadInteractions) return;
+    setLoadedInteractions((prev) => {
+      if (interactionsPage === 1) return interactions;
+      const seen = new Set(prev.map((item) => String(item.id)));
+      const next = [...prev];
+      for (const item of interactions) {
+        if (!seen.has(String(item.id))) next.push(item);
+      }
+      return next;
+    });
+  }, [interactions, interactionsPage, shouldLoadInteractions]);
+
+  const interactionsLastPage = Math.max(1, interactionsMeta?.last_page ?? 1);
+  const canLoadMoreInteractions = interactionsPage < interactionsLastPage && !interactionsLoading;
+
+  const handleInteractionsScroll = useCallback((event) => {
+    if (!canLoadMoreInteractions) return;
+    const el = event.currentTarget;
+    if (el.scrollHeight - el.scrollTop - el.clientHeight < 180) {
+      setInteractionsPage((prev) => prev + 1);
+    }
+  }, [canLoadMoreInteractions]);
 
   const operationalStatusLabel = useMemo(() => {
     const status = customer?.operationalStatus ?? customer?.operational_status ?? null;
@@ -542,11 +577,11 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
 
           <TabsContent value="interactions" className="flex h-full w-full min-w-0 min-h-0 flex-1 flex-col pt-1">
             <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border bg-card">
-              {interactionsLoading ? (
+              {interactionsLoading && interactionsPage === 1 ? (
                 <div className="flex min-h-0 flex-1 items-center justify-center">
                   <Loader />
                 </div>
-              ) : interactions.length === 0 ? (
+              ) : loadedInteractions.length === 0 ? (
                 <div className="min-h-0 flex-1 p-4">
                   <EmptyState
                     title="Sin interacciones"
@@ -555,14 +590,15 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
                   />
                 </div>
               ) : (
-                <div className="min-h-0 flex-1 overflow-y-auto p-4">
+                <div className="min-h-0 flex-1 overflow-y-auto p-4" onScroll={handleInteractionsScroll}>
                   <div className="space-y-4">
                     <div className="relative w-full pl-1 py-2 space-y-4">
-                      {sortedInteractions.map((interaction, index, array) => {
+                      {loadedInteractions.map((interaction, index, array) => {
                         const isLast = index === array.length - 1;
                         const typeLabel = interactionTypeLabels[interaction.type] ?? interaction.type;
                         const resultLabel = interactionResultLabels[interaction.result] ?? interaction.result;
                         const TypeIcon = interactionTypeIcons[interaction.type] ?? CircleDot;
+                        const originMeta = getInteractionOriginMeta(interaction);
 
                         return (
                           <div key={interaction.id} className="flex gap-2 items-stretch">
@@ -581,6 +617,11 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
                                 <div className="flex flex-wrap items-center gap-2">
                                   <span className="text-sm font-semibold leading-tight text-foreground truncate">{typeLabel}</span>
                                   <StatusPill label={resultLabel} status={interaction.result} />
+                                  <span
+                                    className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${originMeta.className}`}
+                                  >
+                                    {originMeta.label}
+                                  </span>
                                 </div>
                               </div>
 
@@ -606,6 +647,11 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
                       })}
                     </div>
                   </div>
+                  {interactionsLoading && interactionsPage > 1 && (
+                    <div className="flex items-center justify-center py-4 text-muted-foreground">
+                      <Loader2 className="size-4 animate-spin" />
+                    </div>
+                  )}
                 </div>
               )}
             </section>

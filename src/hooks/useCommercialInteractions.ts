@@ -41,7 +41,7 @@ export function useCommercialInteractions(params = {}) {
 
 export function useCommercialInteractionMutations() {
   const queryClient = useQueryClient();
-  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : 'unknown';
+  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() ?? 'unknown' : 'unknown';
 
   type InteractionsCache = CrmPaginatedResponse<CommercialInteraction> | undefined;
   type QueryKey = readonly unknown[];
@@ -89,6 +89,7 @@ export function useCommercialInteractionMutations() {
     id: `tmp-${Date.now()}`,
     prospectId: payload.prospectId ?? null,
     customerId: payload.customerId ?? null,
+    isFromProspect: payload.prospectId != null,
     type: payload.type,
     occurredAt: payload.occurredAt,
     summary: payload.summary,

@@ -2,11 +2,13 @@
 
 import Link from 'next/link';
 import * as React from 'react';
-import { CalendarClock, CircleAlert, Clock3, UserRoundX, PhoneCall, UserCircle2 } from 'lucide-react';
+import { CalendarClock, CircleAlert, Clock3, UserRoundX, PhoneCall, UserCircle2, MoreVertical } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useCrmDashboard } from '@/hooks/useCrmDashboard';
 import { useProspectMutations } from '@/hooks/useProspects';
 import { CRM_AGENDA_DESCRIPTION_MAX_LENGTH } from '@/components/Comercial/CRM/schemas/crmTextLimits';
@@ -53,26 +55,34 @@ function ReminderRow({ item, onReschedule, onClear, onFollowUp }) {
   const overdue = isOverdueDate(item.nextActionAt) || item.daysOverdue > 0;
 
   return (
-    <div className={`rounded-xl border p-3 ${overdue ? 'border-red-300 bg-red-50/70 dark:border-red-900 dark:bg-red-950/20' : 'bg-card'}`}>
+    <div
+      className={`rounded-xl border p-3 ${
+        overdue ? 'border-red-300 bg-red-50/50 dark:border-red-900 dark:bg-red-950/20' : 'bg-card'
+      }`}
+    >
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <Link href={targetHref} className="font-medium hover:underline">
+        <div className="min-w-0 space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="rounded-md bg-muted px-2 py-0.5 text-xs font-medium">
+              {formatDateValue(item.nextActionAt)}
+            </span>
+            {overdue ? (
+              <span className="rounded-full bg-red-500/15 px-2 py-0.5 text-xs font-medium text-red-700 dark:text-red-300">
+                Vencida
+              </span>
+            ) : null}
+          </div>
+          <Link href={targetHref} className="block font-medium hover:underline">
             {item.label}
           </Link>
-          <p className="text-sm text-muted-foreground">{formatDateValue(item.nextActionAt)}</p>
           {item.nextActionNote ? (
-            <p className="mt-1 whitespace-pre-wrap break-words text-sm text-muted-foreground">
-              {item.nextActionNote}
-            </p>
-          ) : null}
+            <p className="whitespace-pre-wrap wrap-break-word text-sm text-muted-foreground">{item.nextActionNote}</p>
+          ) : (
+            <p className="text-sm text-muted-foreground">Sin nota</p>
+          )}
         </div>
-        {overdue && (
-          <span className="rounded-full bg-red-500/15 px-2 py-1 text-xs font-medium text-red-700 dark:text-red-300">
-            Vencida
-          </span>
-        )}
       </div>
-      <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+      <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
         <span className={`inline-flex items-center gap-1 rounded-full px-2 py-1 ${item.type === 'interaction' ? 'bg-blue-500/10 text-blue-700 dark:text-blue-300' : 'bg-slate-500/10 text-slate-700 dark:text-slate-300'}`}>
           {item.type === 'interaction' ? <PhoneCall className="size-3" /> : <UserCircle2 className="size-3" />}
           {item.type === 'interaction' ? 'Interacción' : 'Prospecto'}
@@ -199,17 +209,63 @@ export default function CrmDashboardWidgets() {
               description="No tienes acciones pendientes para hoy."
             />
           ) : (
-            <div className="space-y-3">
-              {reminders.map((item) => (
-                <ReminderRow
-                  key={`${item.type}-${item.id}`}
-                  item={item}
-                  onReschedule={handleReschedule}
-                  onClear={handleClear}
-                  onFollowUp={handleFollowUp}
-                />
-              ))}
-            </div>
+            <Table className="table-fixed">
+              <TableBody>
+                {reminders.map((item) => {
+                  const targetHref = item.prospectId
+                    ? `/comercial/prospectos/${item.prospectId}`
+                    : item.customerId
+                      ? `/comercial/clientes/${item.customerId}`
+                      : '/comercial';
+                  const overdue = isOverdueDate(item.nextActionAt) || item.daysOverdue > 0;
+
+                  return (
+                    <TableRow
+                      key={`${item.type}-${item.id}`}
+                      className={overdue ? 'bg-red-50/40 dark:bg-red-950/20' : ''}
+                    >
+                      <TableCell className="w-[72%] whitespace-normal">
+                        <Link href={targetHref} className="block font-medium hover:underline">
+                          {item.label}
+                        </Link>
+                        <div className="mt-1 flex flex-wrap items-center gap-1">
+                          <p className="text-xs text-muted-foreground">{formatDateValue(item.nextActionAt)}</p>
+                          <span
+                            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] ${
+                              item.type === 'interaction'
+                                ? 'bg-blue-500/10 text-blue-700 dark:text-blue-300'
+                                : 'bg-slate-500/10 text-slate-700 dark:text-slate-300'
+                            }`}
+                          >
+                            {item.type === 'interaction' ? <PhoneCall className="size-3" /> : <UserCircle2 className="size-3" />}
+                            {overdue ? 'Vencida' : 'Pendiente'}
+                          </span>
+                        </div>
+                        <span className="mt-1 block text-xs text-muted-foreground wrap-break-word">
+                          {item.nextActionNote || 'Sin nota'}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" aria-label="Acciones">
+                              <MoreVertical className="size-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onSelect={() => handleReschedule(item)}>Aplazar</DropdownMenuItem>
+                            {item.prospectId ? (
+                              <DropdownMenuItem onSelect={() => handleClear(item.prospectId)}>Descartar</DropdownMenuItem>
+                            ) : null}
+                            <DropdownMenuItem onSelect={() => handleFollowUp(item)}>Seguimiento</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
           )}
         </CardContent>
       </Card>
@@ -230,25 +286,44 @@ export default function CrmDashboardWidgets() {
               description="Todos tus clientes tienen actividad reciente."
             />
           ) : (
-            <div className="space-y-3">
-              {data.inactive_customers.map((customer) => (
-                <Link
-                  key={customer.id}
-                  href={`/comercial/clientes/${customer.id}`}
-                  className="block rounded-xl border p-3 hover:bg-accent/40"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="font-medium">{customer.name}</p>
-                      <p className="text-sm text-muted-foreground">{customer.country?.name ?? 'Sin país'}</p>
-                    </div>
-                    <span className="rounded-full bg-red-500/15 px-2 py-1 text-xs font-medium text-red-700 dark:text-red-300">
-                      {customer.daysSinceLastOrder} días
-                    </span>
-                  </div>
-                </Link>
-              ))}
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Cliente</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead className="text-right">Inactividad</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data.inactive_customers.map((customer) => (
+                  <TableRow
+                    key={customer.id}
+                    className={customer.lastOrderAt == null ? 'bg-amber-50/40 dark:bg-amber-950/20' : ''}
+                  >
+                    <TableCell className="font-medium">
+                      <Link href={`/comercial/clientes/${customer.id}`} className="hover:underline">
+                        {customer.name}
+                      </Link>
+                      <p className="text-xs font-normal text-muted-foreground">{customer.country?.name ?? 'Sin país'}</p>
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={`rounded-full px-2 py-1 text-xs font-medium ${
+                          customer.lastOrderAt == null
+                            ? 'bg-amber-500/20 text-amber-800 dark:text-amber-300'
+                            : 'bg-red-500/15 text-red-700 dark:text-red-300'
+                        }`}
+                      >
+                        {customer.lastOrderAt == null ? 'Nunca pidió' : 'Con historial'}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {customer.lastOrderAt == null ? '—' : `${customer.daysSinceLastOrder ?? '—'} días`}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           )}
         </CardContent>
       </Card>
@@ -269,25 +344,44 @@ export default function CrmDashboardWidgets() {
               description="No hay prospectos pendientes de seguimiento."
             />
           ) : (
-            <div className="space-y-3">
-              {data.prospects_without_activity.map((prospect) => (
-                <Link
-                  key={prospect.id}
-                  href={`/comercial/prospectos/${prospect.id}`}
-                  className="block rounded-xl border p-3 hover:bg-accent/40"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="font-medium">{prospect.companyName}</p>
-                      <p className="text-sm text-muted-foreground">{prospect.country?.name ?? 'Sin país'}</p>
-                    </div>
-                    <span className="rounded-full bg-amber-500/15 px-2 py-1 text-xs font-medium text-amber-700 dark:text-amber-300">
-                      {prospect.daysWithoutActivity} días
-                    </span>
-                  </div>
-                </Link>
-              ))}
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Prospecto</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead className="text-right">Sin actividad</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data.prospects_without_activity.map((prospect) => (
+                  <TableRow
+                    key={prospect.id}
+                    className={prospect.lastContactAt == null ? 'bg-blue-50/40 dark:bg-blue-950/20' : ''}
+                  >
+                    <TableCell className="font-medium">
+                      <Link href={`/comercial/prospectos/${prospect.id}`} className="hover:underline">
+                        {prospect.companyName}
+                      </Link>
+                      <p className="text-xs font-normal text-muted-foreground">{prospect.country?.name ?? 'Sin país'}</p>
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={`rounded-full px-2 py-1 text-xs font-medium ${
+                          prospect.lastContactAt == null
+                            ? 'bg-blue-500/20 text-blue-800 dark:text-blue-300'
+                            : 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
+                        }`}
+                      >
+                        {prospect.lastContactAt == null ? 'Sin contacto' : 'Con historial'}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {prospect.lastContactAt == null ? '—' : `${prospect.daysWithoutActivity ?? '—'} días`}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           )}
         </CardContent>
       </Card>
