@@ -215,7 +215,7 @@ function FieldOrderCard({ order, onClick, onQuickPrint }) {
 
 export default function FieldOrdersPage() {
   const router = useRouter();
-  const { data, isLoading, errorMessage } = useFieldOrders({ perPage: 20 });
+  const { data, isLoading, errorMessage } = useFieldOrders({ perPage: 20, active: true });
   const orders = data?.items ?? [];
   const [printOrderId, setPrintOrderId] = useState(null);
   const [printOpen, setPrintOpen] = useState(false);

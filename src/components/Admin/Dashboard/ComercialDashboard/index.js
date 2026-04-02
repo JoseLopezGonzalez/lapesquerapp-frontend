@@ -306,6 +306,12 @@ export default function ComercialDashboard() {
         }
 
         const reminders = [...(crmData?.overdue_actions ?? []), ...(crmData?.reminders_today ?? [])];
+        const sortedInactiveCustomers = [...(crmData?.inactive_customers ?? [])].sort((a, b) => {
+            const aNeverOrdered = a.lastOrderAt == null;
+            const bNeverOrdered = b.lastOrderAt == null;
+            if (aNeverOrdered === bNeverOrdered) return 0;
+            return aNeverOrdered ? -1 : 1;
+        });
 
         items.push(
             {
@@ -425,7 +431,7 @@ export default function ComercialDashboard() {
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
-                                                {crmData.inactive_customers.map((customer) => (
+                                            {sortedInactiveCustomers.map((customer) => (
                                                     <TableRow
                                                         key={customer.id}
                                                         className={customer.lastOrderAt == null ? "bg-amber-50/40 dark:bg-amber-950/20" : ""}
