@@ -36,6 +36,10 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
     const contextData = useProductionRecordContextOptional()
     const updateOutputs = contextData?.updateOutputs
     const updateRecord = contextData?.updateRecord
+    const totalInputWeight = parseFloat(contextData?.record?.totalInputWeight || 0)
+    const totalOutputWeight = parseFloat(contextData?.record?.totalOutputWeight || 0)
+    const processTransformationFactor =
+        totalInputWeight > 0 && totalOutputWeight > 0 ? totalOutputWeight / totalInputWeight : 1
     const { productOptions, loading: productsLoading, refetch: refetchProducts } = useProductOptions({
         enabled: !!productionRecordId
     })
@@ -150,8 +154,8 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
                 formData.sources && formData.sources.length > 0
                     ? formData.sources.map((source) => {
                           const formatted = { source_type: source.source_type }
-                          if (source.source_type === 'stock_box') {
-                              formatted.production_input_id = parseInt(source.production_input_id)
+                          if (source.source_type === 'stock_product') {
+                              formatted.product_id = parseInt(source.product_id)
                           } else if (source.source_type === 'parent_output') {
                               formatted.production_output_consumption_id = parseInt(
                                   source.production_output_consumption_id
@@ -250,34 +254,60 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
         // Procesar sourcesData
         if (sourcesDataResponse) {
             setSourcesData(sourcesDataResponse)
-            if (sourcesDataResponse?.stockBoxes) {
+            const stockProducts = sourcesDataResponse?.stockProducts || []
+            if (stockProducts.length > 0) {
                 setAvailableInputs(
-                    sourcesDataResponse.stockBoxes.map((box) => ({
-                        id: box.productionInputId,
-                        box: {
-                            id: box.boxId,
-                            netWeight: box.netWeight,
-                            product: box.product,
-                            lot: box.lot,
-                            costPerKg: box.costPerKg,
-                            totalCost: box.totalCost
-                        }
+                    stockProducts.map((productSource) => ({
+                        id: productSource.productId || productSource.product_id,
+                        product: productSource.product,
+                        productId: productSource.productId || productSource.product_id,
+                        totalWeight:
+                            parseFloat(
+                                productSource.availableWeightKg ??
+                                productSource.available_weight_kg ??
+                                productSource.totalWeightKg ??
+                                productSource.total_weight_kg ??
+                                productSource.consumedWeightKg ??
+                                productSource.consumed_weight_kg ??
+                                productSource.weightKg ??
+                                productSource.weight_kg ??
+                                productSource.totalWeight ??
+                                productSource.total_weight ??
+                                0
+                            ) || 0,
+                        costPerKg:
+                            productSource.costPerKg ??
+                            productSource.cost_per_kg ??
+                            productSource.sourceCostPerKg ??
+                            productSource.source_cost_per_kg ??
+                            null,
+                        totalCost:
+                            productSource.totalCost ??
+                            productSource.total_cost ??
+                            productSource.sourceTotalCost ??
+                            productSource.source_total_cost ??
+                            null,
                     }))
                 )
+            } else {
+                setAvailableInputs([])
             }
             if (sourcesDataResponse?.parentOutputs) {
                 setAvailableConsumptions(
                     sourcesDataResponse.parentOutputs.map((output) => ({
                         id: output.productionOutputConsumptionId,
+                        productionOutputConsumptionId: output.productionOutputConsumptionId || output.production_output_consumption_id,
                         productionOutputId: output.productionOutputId,
-                        consumedWeightKg: output.consumedWeightKg,
-                        consumedBoxes: output.consumedBoxes,
+                        consumedWeightKg: output.consumedWeightKg ?? output.consumed_weight_kg,
+                        consumedBoxes: output.consumedBoxes ?? output.consumed_boxes,
                         product: output.product,
-                        lotId: output.lotId,
-                        costPerKg: output.costPerKg,
-                        totalCost: output.totalCost
+                        lotId: output.lotId ?? output.lot_id,
+                        costPerKg: output.costPerKg ?? output.cost_per_kg,
+                        totalCost: output.totalCost ?? output.total_cost
                     }))
                 )
+            } else {
+                setAvailableConsumptions([])
             }
         } else {
             // Fallback: cargar inputs y consumptions en paralelo
@@ -286,7 +316,24 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
                     getProductionInputs(token, { production_record_id: productionRecordId }),
                     getProductionOutputConsumptions(token, { production_record_id: productionRecordId })
                 ])
-                setAvailableInputs(inputsData.data || [])
+                const groupedInputs = {}
+                ;(inputsData.data || []).forEach((input) => {
+                    const product = input.box?.product
+                    const productId = product?.id || input.box?.productId
+                    if (!productId) return
+                    if (!groupedInputs[productId]) {
+                        groupedInputs[productId] = {
+                            id: productId,
+                            productId: productId,
+                            product,
+                            totalWeight: 0,
+                            costPerKg: null,
+                            totalCost: 0,
+                        }
+                    }
+                    groupedInputs[productId].totalWeight += parseFloat(input.box?.netWeight || 0) || 0
+                })
+                setAvailableInputs(Object.values(groupedInputs))
                 setAvailableConsumptions(consumptionsData.data || [])
             } catch (fallbackErr) {
                 console.error('Error loading sources with fallback method:', fallbackErr)
@@ -311,28 +358,36 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
                             if (!source) return null
                             return {
                                 source_type: source.source_type || source.sourceType || null,
-                                production_input_id:
-                                    source.production_input_id || source.productionInputId || null,
+                                product_id:
+                                    source.product_id ||
+                                    source.productId ||
+                                    source.product?.id ||
+                                    null,
                                 production_output_consumption_id:
                                     source.production_output_consumption_id ||
                                     source.productionOutputConsumptionId ||
                                     null,
-                                contributed_weight_kg:
-                                    source.contributed_weight_kg !== undefined &&
-                                    source.contributed_weight_kg !== null
-                                        ? source.contributed_weight_kg
-                                        : source.contributedWeightKg !== undefined &&
-                                            source.contributedWeightKg !== null
-                                          ? source.contributedWeightKg
-                                          : null,
-                                contribution_percentage:
-                                    source.contribution_percentage !== undefined &&
-                                    source.contribution_percentage !== null
-                                        ? source.contribution_percentage
-                                        : source.contributionPercentage !== undefined &&
-                                            source.contributionPercentage !== null
-                                          ? source.contributionPercentage
-                                          : null
+                                product: source.product || null,
+                                contributed_weight_kg: (() => {
+                                    if (source.contributed_weight_kg !== undefined && source.contributed_weight_kg !== null) {
+                                        return source.contributed_weight_kg
+                                    }
+                                    if (source.contributedWeightKg !== undefined && source.contributedWeightKg !== null) {
+                                        return source.contributedWeightKg
+                                    }
+                                    return null
+                                })(),
+                                contribution_percentage: (() => {
+                                    const contributedWeight =
+                                        source.contributed_weight_kg !== undefined && source.contributed_weight_kg !== null
+                                            ? source.contributed_weight_kg
+                                            : source.contributedWeightKg !== undefined && source.contributedWeightKg !== null
+                                                ? source.contributedWeightKg
+                                                : null
+                                    if (contributedWeight === null || contributedWeight === undefined) return null
+                                    const transformedWeight = parseFloat(contributedWeight || 0) * processTransformationFactor
+                                    return parseFloat(weight || 0) > 0 ? (transformedWeight / parseFloat(weight || 0)) * 100 : null
+                                })()
                             }
                         })
                         .filter((s) => s !== null)
@@ -553,10 +608,25 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
                     weight_kg: parseFloat(row.weight_kg) || 0
                 }
                 if (row.sources && Array.isArray(row.sources) && row.sources.length > 0) {
-                    output.sources = row.sources.map((source) => {
-                        const formatted = { source_type: source.source_type }
-                        if (source.source_type === 'stock_box') {
-                            formatted.production_input_id = parseInt(source.production_input_id)
+                    const validSources = row.sources.filter((source) => {
+                        if (!source?.source_type) return false
+                        if (source.source_type === 'stock_product' && !source.product_id) return false
+                        if (source.source_type === 'parent_output' && !source.production_output_consumption_id) return false
+                        return (
+                            (source.contributed_weight_kg !== null &&
+                                source.contributed_weight_kg !== undefined &&
+                                source.contributed_weight_kg !== '') ||
+                            (source.contribution_percentage !== null &&
+                                source.contribution_percentage !== undefined &&
+                                source.contribution_percentage !== '')
+                        )
+                    })
+
+                    if (validSources.length > 0) {
+                        output.sources = validSources.map((source) => {
+                            const formatted = { source_type: source.source_type }
+                        if (source.source_type === 'stock_product') {
+                            formatted.product_id = parseInt(source.product_id)
                         } else if (source.source_type === 'parent_output') {
                             formatted.production_output_consumption_id = parseInt(
                                 source.production_output_consumption_id
@@ -575,8 +645,9 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
                         ) {
                             formatted.contribution_percentage = parseFloat(source.contribution_percentage)
                         }
-                        return formatted
-                    })
+                            return formatted
+                        })
+                    }
                 }
                 if (row.id && !row.id.toString().startsWith('new-')) {
                     output.id = row.id

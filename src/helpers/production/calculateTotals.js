@@ -16,11 +16,35 @@ export function calculateTotalInputWeight(inputs) {
 }
 
 /**
+ * Calcula el peso total de consumos desde un proceso padre
+ */
+export function calculateTotalConsumptionWeight(consumptions) {
+    if (!consumptions || !Array.isArray(consumptions)) return 0
+
+    return consumptions.reduce((sum, consumption) => {
+        const weight = consumption.consumedWeightKg || consumption.consumed_weight_kg || 0
+        return sum + parseFloat(weight || 0)
+    }, 0)
+}
+
+/**
  * Calcula el número total de cajas de inputs
  */
 export function calculateTotalInputBoxes(inputs) {
     if (!inputs || !Array.isArray(inputs)) return 0
     return inputs.filter(input => input.box?.id || input.id).length
+}
+
+/**
+ * Calcula el número total de cajas consumidas desde un proceso padre
+ */
+export function calculateTotalConsumptionBoxes(consumptions) {
+    if (!consumptions || !Array.isArray(consumptions)) return 0
+
+    return consumptions.reduce((sum, consumption) => {
+        const boxes = consumption.consumedBoxes || consumption.consumed_boxes || 0
+        return sum + parseInt(boxes || 0, 10)
+    }, 0)
 }
 
 /**
@@ -100,12 +124,13 @@ export function calculateYieldPercentage(inputWeight, outputWeight) {
 /**
  * Calcula todos los totales de un record basándose en inputs y outputs
  * @param {Array} inputs - Array de inputs
+ * @param {Array} consumptions - Array de consumos del proceso padre
  * @param {Array} outputs - Array de outputs
  * @returns {Object} - Objeto con todos los totales calculados
  */
-export function calculateRecordTotals(inputs, outputs) {
-    const totalInputWeight = calculateTotalInputWeight(inputs)
-    const totalInputBoxes = calculateTotalInputBoxes(inputs)
+export function calculateRecordTotals(inputs, consumptions, outputs) {
+    const totalInputWeight = calculateTotalInputWeight(inputs) + calculateTotalConsumptionWeight(consumptions)
+    const totalInputBoxes = calculateTotalInputBoxes(inputs) + calculateTotalConsumptionBoxes(consumptions)
     const totalOutputWeight = calculateTotalOutputWeight(outputs)
     const totalOutputBoxes = calculateTotalOutputBoxes(outputs)
     
@@ -130,20 +155,21 @@ export function calculateRecordTotals(inputs, outputs) {
  * Actualiza un record con totales calculados localmente
  * @param {Object} record - Record actual
  * @param {Array} inputs - Array de inputs (opcional, si no se proporciona usa record.inputs)
+ * @param {Array} consumptions - Array de consumos del proceso padre (opcional, si no se proporciona usa record.parentOutputConsumptions)
  * @param {Array} outputs - Array de outputs (opcional, si no se proporciona usa record.outputs)
  * @returns {Object} - Record actualizado con totales calculados
  */
-export function updateRecordWithCalculatedTotals(record, inputs = null, outputs = null) {
+export function updateRecordWithCalculatedTotals(record, inputs = null, consumptions = null, outputs = null) {
     if (!record) return record
     
     const currentInputs = inputs || record.inputs || []
+    const currentConsumptions = consumptions || record.parentOutputConsumptions || []
     const currentOutputs = outputs || record.outputs || []
     
-    const totals = calculateRecordTotals(currentInputs, currentOutputs)
+    const totals = calculateRecordTotals(currentInputs, currentConsumptions, currentOutputs)
     
     return {
         ...record,
         ...totals
     }
 }
-

@@ -1,6 +1,7 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 import { fetchWithTenant } from '@/lib/fetchWithTenant';
@@ -12,6 +13,33 @@ export interface ProcessOption {
   type?: string;
   description?: string | null;
   [key: string]: unknown;
+}
+
+/** Formato unificado para selects: la API puede devolver solo `id`/`name` o también `value`/`label`. */
+export interface NormalizedProcessOption extends ProcessOption {
+  value: number;
+  label: string;
+}
+
+function normalizeProcessOptionsList(raw: ProcessOption[]): NormalizedProcessOption[] {
+  if (!raw?.length) return [];
+  const out: NormalizedProcessOption[] = [];
+  for (const p of raw) {
+    const rawValue = (p as { value?: unknown }).value;
+    const coerced =
+      rawValue !== undefined && rawValue !== null && !Number.isNaN(Number(rawValue))
+        ? Number(rawValue)
+        : p.id;
+    if (coerced == null || Number.isNaN(Number(coerced))) continue;
+    const value = Number(coerced);
+    const labelRaw = (p as { label?: unknown }).label;
+    const label =
+      typeof labelRaw === 'string' && labelRaw.trim() !== ''
+        ? labelRaw
+        : p.name?.trim() || `Proceso #${value}`;
+    out.push({ ...p, value, label });
+  }
+  return out;
 }
 
 /**
@@ -44,10 +72,13 @@ export function useProcessOptions() {
     },
     enabled: !!token && !!tenantId,
     staleTime: 5 * 60 * 1000,
+    placeholderData: keepPreviousData,
   });
 
+  const processes = useMemo(() => normalizeProcessOptionsList(data ?? []), [data]);
+
   return {
-    processes: (data ?? []) as ProcessOption[],
+    processes,
     isLoading,
     error: error?.message ?? null,
   };

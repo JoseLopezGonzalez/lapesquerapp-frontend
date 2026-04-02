@@ -119,6 +119,7 @@ const ProductionRecordEditorContent = ({ productionId, recordId = null }) => {
                             isEditMode={isEditMode}
                             saving={saving}
                             onSubmit={handleSubmit}
+                            processLabelFallback={getProcessName(record)}
                         />
                     </div>
 

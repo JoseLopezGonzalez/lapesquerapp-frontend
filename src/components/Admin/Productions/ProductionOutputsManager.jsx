@@ -1,18 +1,24 @@
 'use client'
 
 import React from 'react'
+import { DndContext, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core'
+import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts'
 import { formatWeight, getWeight, formatAverageWeight, getConsumedWeight, getConsumedBoxes, getProductName } from '@/helpers/production/formatters'
 import { formatDecimal } from '@/helpers/formats/numbers/formatNumbers'
 import CostDisplay from './CostDisplay'
 import CostBreakdownView from './CostBreakdownView'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { Plus, Trash2, Package, Edit, Save, X, Loader2, ArrowUp, Sparkles, Zap, ChevronDown, ChevronRight } from 'lucide-react'
 import { EmptyState } from '@/components/Utilities/EmptyState'
 import Loader from '@/components/Utilities/Loader'
@@ -23,9 +29,109 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { useProductionOutputsManager } from '@/hooks/production/useProductionOutputsManager'
+import { useProductionRecordContextOptional } from '@/context/ProductionRecordContext'
+
+const roundToTwo = (value) => Math.round((parseFloat(value || 0) + Number.EPSILON) * 100) / 100
+
+const getSourceKey = (source) => {
+    if (!source) return null
+    if (source.source_type === 'stock_product' && source.product_id != null) {
+        return `stock_product:${source.product_id}`
+    }
+    if (source.source_type === 'parent_output' && source.production_output_consumption_id != null) {
+        return `parent_output:${source.production_output_consumption_id}`
+    }
+    return null
+}
+
+const getSourceKeyFromValue = (value) => {
+    if (!value) return null
+    const [type, id] = value.split('-')
+    if (!type || !id) return null
+    return `${type}:${id}`
+}
+
+const parseSourceValue = (value) => {
+    const [type, id] = (value || '').split('-')
+    if (!type || !id) return null
+
+    return {
+        source_type: type,
+        product_id: type === 'stock_product' ? parseInt(id, 10) : null,
+        production_output_consumption_id: type === 'parent_output' ? parseInt(id, 10) : null,
+    }
+}
+
+const buildSourceOptions = (availableInputs, availableConsumptions) => [
+    ...availableInputs.map((input) => ({
+        key: `stock_product:${input.productId ?? input.id}`,
+        value: `stock_product-${input.productId ?? input.id}`,
+        source_type: 'stock_product',
+        product_id: input.productId ?? input.id,
+        production_output_consumption_id: null,
+        typeLabel: 'Stock',
+        label: input.product?.name || `Producto #${input.productId ?? input.id}`,
+        secondaryLabel: `${formatWeight(input.totalWeight)} consumidos desde stock`,
+        totalWeight: parseFloat(input.totalWeight || 0),
+    })),
+    ...availableConsumptions.map((consumption) => ({
+        key: `parent_output:${consumption.id}`,
+        value: `parent_output-${consumption.id}`,
+        source_type: 'parent_output',
+        product_id: null,
+        production_output_consumption_id: consumption.id,
+        typeLabel: 'Padre',
+        label: consumption.product?.name || `Consumo #${consumption.id}`,
+        secondaryLabel: `Consumo #${consumption.id} · ${formatWeight(consumption.consumedWeightKg)}`,
+        totalWeight: parseFloat(consumption.consumedWeightKg || 0),
+    })),
+]
+
+function SortablePriorityItem({ item, usage, disabled = false }) {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+        id: item.key,
+        disabled,
+    })
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    }
+
+    return (
+        <div
+            ref={setNodeRef}
+            style={style}
+            className={`flex items-center justify-between gap-3 rounded-md border bg-background px-3 py-2 text-xs ${
+                isDragging ? 'shadow-md ring-1 ring-primary/30' : ''
+            }`}
+        >
+            <button
+                type="button"
+                className="cursor-grab text-muted-foreground active:cursor-grabbing disabled:cursor-default"
+                {...attributes}
+                {...listeners}
+                disabled={disabled}
+                aria-label={`Mover prioridad de ${item.label}`}
+            >
+                ::
+            </button>
+            <div className="min-w-0 flex-1">
+                <p className="truncate font-medium text-foreground">
+                    {item.typeLabel} · {item.label}
+                </p>
+                <p className="truncate text-muted-foreground">
+                    Restante: {formatWeight(usage?.remainingSourceWeight || 0)} / {formatWeight(item.totalWeight)}
+                </p>
+            </div>
+        </div>
+    )
+}
 
 const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialOutputsProp = [], onRefresh, hideTitle = false, renderInCard = false, cardTitle, cardDescription }) => {
     const api = useProductionOutputsManager({ productionRecordId, initialOutputsProp, onRefresh })
+    const recordContext = useProductionRecordContextOptional()
+    const record = recordContext?.record
     const {
         outputs,
         products,
@@ -88,6 +194,268 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
         toggleProductSelection,
         handleAddSelectedProducts
     } = api
+
+    const totalInputWeight = parseFloat(record?.totalInputWeight || 0)
+    const totalOutputWeight = parseFloat(record?.totalOutputWeight || 0)
+    const processTransformationFactor = totalInputWeight > 0 && totalOutputWeight > 0
+        ? totalOutputWeight / totalInputWeight
+        : 1
+
+    const getAdjustedOutputWeightFromSource = (sourceWeight) => {
+        const parsedSourceWeight = parseFloat(sourceWeight || 0)
+        return parsedSourceWeight * processTransformationFactor
+    }
+
+    const getSourceWeightFromAdjustedOutputWeight = (adjustedOutputWeight) => {
+        const parsedAdjustedOutputWeight = parseFloat(adjustedOutputWeight || 0)
+        if (processTransformationFactor <= 0) return 0
+        return parsedAdjustedOutputWeight / processTransformationFactor
+    }
+    const [priorityDialogRowId, setPriorityDialogRowId] = React.useState(null)
+
+    const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
+    const allRows = getAllRows()
+
+    const sourceOptions = React.useMemo(
+        () => buildSourceOptions(availableInputs, availableConsumptions),
+        [availableInputs, availableConsumptions]
+    )
+
+    const sourceOptionsMap = React.useMemo(
+        () => new Map(sourceOptions.map((option) => [option.key, option])),
+        [sourceOptions]
+    )
+
+    const sourceUsageMap = React.useMemo(() => {
+        const usage = new Map(
+            sourceOptions.map((option) => [
+                option.key,
+                {
+                    ...option,
+                    assignedSourceWeight: 0,
+                    assignedTransformedWeight: 0,
+                    assignedLines: 0,
+                }
+            ])
+        )
+
+        allRows.forEach((row) => {
+            if (!Array.isArray(row.sources)) return
+            row.sources.forEach((source) => {
+                const key = getSourceKey(source)
+                if (!key || !usage.has(key)) return
+                const weight = parseFloat(source.contributed_weight_kg || 0) || 0
+                const current = usage.get(key)
+                current.assignedSourceWeight += weight
+                current.assignedTransformedWeight += getAdjustedOutputWeightFromSource(weight)
+                current.assignedLines += 1
+            })
+        })
+
+        usage.forEach((entry) => {
+            entry.totalSourceWeight = roundToTwo(entry.totalWeight)
+            entry.totalTransformedWeight = roundToTwo(getAdjustedOutputWeightFromSource(entry.totalWeight))
+            entry.assignedSourceWeight = roundToTwo(entry.assignedSourceWeight)
+            entry.assignedTransformedWeight = roundToTwo(entry.assignedTransformedWeight)
+            entry.remainingSourceWeight = roundToTwo(Math.max(0, entry.totalWeight - entry.assignedSourceWeight))
+            entry.remainingTransformedWeight = roundToTwo(getAdjustedOutputWeightFromSource(entry.remainingSourceWeight))
+            entry.usagePercentage = entry.totalWeight > 0 ? roundToTwo((entry.assignedSourceWeight / entry.totalWeight) * 100) : 0
+        })
+
+        return usage
+    }, [allRows, sourceOptions, getAdjustedOutputWeightFromSource])
+
+    const getLineAssignedWeight = React.useCallback((row, sourceIndex) => {
+        if (!Array.isArray(row?.sources)) return 0
+        return parseFloat(row.sources[sourceIndex]?.contributed_weight_kg || 0) || 0
+    }, [])
+
+    const getAvailableSourceWeightForLine = React.useCallback((row, sourceIndex, sourceKey) => {
+        if (!sourceKey) return 0
+        const usage = sourceUsageMap.get(sourceKey)
+        if (!usage) return 0
+        return roundToTwo(usage.remainingSourceWeight + getLineAssignedWeight(row, sourceIndex))
+    }, [getLineAssignedWeight, sourceUsageMap])
+
+    const getOrderedPriorityKeys = React.useCallback((row) => {
+        const explicit = Array.isArray(row?.source_priority) ? row.source_priority.filter((key) => sourceOptionsMap.has(key)) : []
+        const existing = Array.isArray(row?.sources)
+            ? row.sources.map((source) => getSourceKey(source)).filter((key) => key && sourceOptionsMap.has(key))
+            : []
+        const remaining = sourceOptions.map((option) => option.key).filter((key) => !explicit.includes(key) && !existing.includes(key))
+        return [...explicit, ...existing.filter((key) => !explicit.includes(key)), ...remaining]
+    }, [sourceOptions, sourceOptionsMap])
+
+    const setRowSourcePriority = React.useCallback((rowId, orderedKeys) => {
+        updateRow(rowId, 'source_priority', orderedKeys)
+    }, [updateRow])
+
+    const recalculateSourcesForRow = React.useCallback((row, sources) => {
+        const outputWeight = parseFloat(row.weight_kg || 0) || 0
+        return (sources || []).map((source) => {
+            const sourceWeight = parseFloat(source.contributed_weight_kg || 0) || 0
+            const transformedWeight = getAdjustedOutputWeightFromSource(sourceWeight)
+            return {
+                ...source,
+                contributed_weight_kg: source.contributed_weight_kg === null || source.contributed_weight_kg === undefined || source.contributed_weight_kg === ''
+                    ? null
+                    : roundToTwo(sourceWeight),
+                contribution_percentage: outputWeight > 0
+                    ? roundToTwo((transformedWeight / outputWeight) * 100)
+                    : null,
+            }
+        })
+    }, [getAdjustedOutputWeightFromSource])
+
+    const clearRowSources = React.useCallback((rowId) => {
+        updateRow(rowId, 'sources', [])
+    }, [updateRow])
+
+    const distributeSourcesProportionally = React.useCallback(() => {
+        const validRows = allRows.filter((row) => parseFloat(row.weight_kg || 0) > 0)
+        const availableSources = sourceOptions.filter((option) => option.totalWeight > 0)
+
+        if (validRows.length === 0 || availableSources.length === 0) {
+            return
+        }
+
+        allRows.forEach((row) => {
+            updateRow(row.id, 'sources', [])
+            updateRow(row.id, 'source_priority', availableSources.map((option) => option.key))
+        })
+
+        const totalAvailableSourceWeight = availableSources.reduce((sum, source) => sum + source.totalWeight, 0)
+        const totalRequiredSourceWeight = validRows.reduce(
+            (sum, row) => sum + getSourceWeightFromAdjustedOutputWeight(parseFloat(row.weight_kg || 0) || 0),
+            0
+        )
+        const coverageRatio = totalRequiredSourceWeight > 0
+            ? Math.min(1, totalAvailableSourceWeight / totalRequiredSourceWeight)
+            : 0
+
+        validRows.forEach((row) => {
+            const requiredSourceWeight = getSourceWeightFromAdjustedOutputWeight(parseFloat(row.weight_kg || 0) || 0)
+            const targetSourceWeight = requiredSourceWeight * coverageRatio
+            const nextSources = availableSources
+                .map((option) => {
+                    const sourceWeight = roundToTwo(targetSourceWeight * (option.totalWeight / totalAvailableSourceWeight))
+                    if (sourceWeight <= 0) return null
+                    return {
+                        source_type: option.source_type,
+                        product_id: option.product_id,
+                        production_output_consumption_id: option.production_output_consumption_id,
+                        contributed_weight_kg: sourceWeight,
+                        contribution_percentage: null,
+                    }
+                })
+                .filter(Boolean)
+
+            updateRow(row.id, 'sources', recalculateSourcesForRow(row, nextSources))
+        })
+    }, [allRows, getSourceWeightFromAdjustedOutputWeight, recalculateSourcesForRow, sourceOptions, updateRow])
+
+    const completeRowWithPriority = React.useCallback((row) => {
+        const outputWeight = parseFloat(row.weight_kg || 0) || 0
+        if (outputWeight <= 0) return
+
+        const orderedKeys = getOrderedPriorityKeys(row)
+        const currentSources = Array.isArray(row.sources) ? [...row.sources] : []
+        const currentTransformedWeight = currentSources.reduce(
+            (sum, source) => sum + getAdjustedOutputWeightFromSource(parseFloat(source.contributed_weight_kg || 0) || 0),
+            0
+        )
+        let remainingTransformedWeight = Math.max(0, outputWeight - currentTransformedWeight)
+
+        if (remainingTransformedWeight <= 0) {
+            updateRow(row.id, 'sources', recalculateSourcesForRow(row, currentSources))
+            return
+        }
+
+        const nextSources = [...currentSources]
+
+        orderedKeys.forEach((sourceKey) => {
+            if (remainingTransformedWeight <= 0) return
+            const option = sourceOptionsMap.get(sourceKey)
+            if (!option) return
+
+            const existingIndex = nextSources.findIndex((source) => getSourceKey(source) === sourceKey)
+            const lineReferenceIndex = existingIndex >= 0 ? existingIndex : nextSources.length
+            const availableSourceWeight = getAvailableSourceWeightForLine(
+                { ...row, sources: nextSources },
+                lineReferenceIndex,
+                sourceKey
+            )
+
+            if (availableSourceWeight <= 0) return
+
+            const requiredSourceWeight = getSourceWeightFromAdjustedOutputWeight(remainingTransformedWeight)
+            const sourceWeightToApply = roundToTwo(Math.min(availableSourceWeight, requiredSourceWeight))
+            if (sourceWeightToApply <= 0) return
+
+            if (existingIndex >= 0) {
+                const currentWeight = parseFloat(nextSources[existingIndex].contributed_weight_kg || 0) || 0
+                nextSources[existingIndex] = {
+                    ...nextSources[existingIndex],
+                    contributed_weight_kg: roundToTwo(currentWeight + sourceWeightToApply),
+                }
+            } else {
+                nextSources.push({
+                    source_type: option.source_type,
+                    product_id: option.product_id,
+                    production_output_consumption_id: option.production_output_consumption_id,
+                    contributed_weight_kg: sourceWeightToApply,
+                    contribution_percentage: null,
+                })
+            }
+
+            remainingTransformedWeight = Math.max(
+                0,
+                remainingTransformedWeight - getAdjustedOutputWeightFromSource(sourceWeightToApply)
+            )
+        })
+
+        updateRow(row.id, 'sources', recalculateSourcesForRow(row, nextSources))
+    }, [
+        getAdjustedOutputWeightFromSource,
+        getAvailableSourceWeightForLine,
+        getOrderedPriorityKeys,
+        getSourceWeightFromAdjustedOutputWeight,
+        recalculateSourcesForRow,
+        sourceOptionsMap,
+        updateRow,
+    ])
+
+    const globalSourceSummary = React.useMemo(
+        () => Array.from(sourceUsageMap.values()).sort((a, b) => a.label.localeCompare(b.label)),
+        [sourceUsageMap]
+    )
+    const groupedGlobalSourceSummary = React.useMemo(() => ({
+        stock: globalSourceSummary.filter((source) => source.source_type === 'stock_product'),
+        parent: globalSourceSummary.filter((source) => source.source_type === 'parent_output'),
+    }), [globalSourceSummary])
+    const globalSourcesChartData = React.useMemo(
+        () => globalSourceSummary.map((source) => ({
+            shortName: source.label,
+            name: source.label,
+            fullName: `${source.typeLabel} · ${source.label}`,
+            total: roundToTwo(source.totalSourceWeight),
+            used: roundToTwo(source.assignedSourceWeight),
+            remaining: roundToTwo(source.remainingSourceWeight),
+            usagePercentage: roundToTwo(source.usagePercentage),
+        })),
+        [globalSourceSummary]
+    )
+    const globalSourcesChartConfig = React.useMemo(() => ({
+        total: {
+            label: 'Disponible',
+            color: 'hsl(var(--muted-foreground) / 0.35)',
+        },
+        used: {
+            label: 'Usado',
+            color: 'var(--chart-1)',
+        },
+    }), [])
+    const priorityDialogRow = allRows.find((row) => row.id === priorityDialogRowId) || null
 
     if (loading) {
         return (
@@ -442,6 +810,261 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
         </>
     )
 
+    const priorityDialog = (
+        <Dialog open={priorityDialogRowId !== null} onOpenChange={(open) => {
+            if (!open) {
+                setPriorityDialogRowId(null)
+            }
+        }}>
+            <DialogContent size="4xl" className="max-h-[90vh] overflow-hidden">
+                <DialogHeader>
+                    <DialogTitle>Prioridad de fuentes</DialogTitle>
+                    <DialogDescription>
+                        Ordena las fuentes para completar esta salida al 100%. Se consumirán en este orden y siempre respetando la disponibilidad global restante.
+                    </DialogDescription>
+                </DialogHeader>
+
+                {priorityDialogRow ? (
+                    <div className="space-y-4 overflow-hidden">
+                        <div className="rounded-lg border bg-muted/20 p-4">
+                            <div className="flex flex-wrap items-start justify-between gap-3">
+                                <div>
+                                    <p className="text-sm font-semibold text-foreground">
+                                        {products.find((product) => String(product.value ?? product.id) === String(priorityDialogRow.product_id))?.label || 'Salida seleccionada'}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                        Peso objetivo: {formatWeight(priorityDialogRow.weight_kg || 0)}
+                                    </p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-xs text-muted-foreground">Cobertura actual</p>
+                                    <p className="text-sm font-semibold text-foreground">
+                                        {formatDecimal(
+                                            (priorityDialogRow.sources || []).reduce((sum, source) => sum + (parseFloat(source.contribution_percentage) || 0), 0)
+                                        )}%
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <ScrollArea className="h-[50vh] rounded-md border">
+                            <div className="p-4">
+                                <DndContext
+                                    sensors={sensors}
+                                    collisionDetection={closestCenter}
+                                    onDragEnd={({ active, over }) => {
+                                        if (!over || active.id === over.id || !priorityDialogRow) return
+                                        const orderedKeys = getOrderedPriorityKeys(priorityDialogRow)
+                                        const oldIndex = orderedKeys.indexOf(active.id)
+                                        const newIndex = orderedKeys.indexOf(over.id)
+                                        if (oldIndex === -1 || newIndex === -1) return
+                                        setRowSourcePriority(priorityDialogRow.id, arrayMove(orderedKeys, oldIndex, newIndex))
+                                    }}
+                                >
+                                    <SortableContext
+                                        items={getOrderedPriorityKeys(priorityDialogRow)}
+                                        strategy={verticalListSortingStrategy}
+                                    >
+                                        <div className="grid gap-2">
+                                            {getOrderedPriorityKeys(priorityDialogRow).map((priorityKey) => {
+                                                const option = sourceOptionsMap.get(priorityKey)
+                                                if (!option) return null
+                                                return (
+                                                    <SortablePriorityItem
+                                                        key={priorityKey}
+                                                        item={option}
+                                                        usage={sourceUsageMap.get(priorityKey)}
+                                                        disabled={sourceOptions.length <= 1}
+                                                    />
+                                                )
+                                            })}
+                                        </div>
+                                    </SortableContext>
+                                </DndContext>
+                            </div>
+                        </ScrollArea>
+                    </div>
+                ) : null}
+
+                <DialogFooter className="flex-wrap">
+                    <Button
+                        variant="outline"
+                        onClick={() => setPriorityDialogRowId(null)}
+                    >
+                        Cancelar
+                    </Button>
+                    <Button
+                        onClick={() => {
+                            if (priorityDialogRow) {
+                                completeRowWithPriority(priorityDialogRow)
+                            }
+                            setPriorityDialogRowId(null)
+                        }}
+                        disabled={!priorityDialogRow || sourceOptions.length === 0}
+                    >
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        Completar al 100%
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    )
+
+    const globalSourcesSummaryContent = globalSourceSummary.length > 0 ? (
+        <div className="space-y-4">
+            <div className="rounded-lg border bg-muted/20 p-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                        <h4 className="text-sm font-semibold">Resumen global de fuentes</h4>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                            El consumo total de cada source se controla globalmente en todo el diálogo.
+                        </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                        <Badge variant="secondary">{globalSourceSummary.length} fuentes</Badge>
+                        <Badge variant="outline">
+                            {formatWeight(globalSourceSummary.reduce((sum, source) => sum + (source.assignedSourceWeight || 0), 0))} usadas
+                        </Badge>
+                    </div>
+                </div>
+            </div>
+
+            <div className="grid min-h-0 gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+                <div className="min-h-0 rounded-lg border bg-background">
+                    <div className="border-b px-4 py-3">
+                        <h5 className="text-sm font-semibold text-foreground">Uso por fuente</h5>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                            Comparativa del peso total disponible frente al peso ya asignado en salidas.
+                        </p>
+                    </div>
+                    <div className="p-4">
+                        <Card className="border-0 shadow-none">
+                            <CardHeader className="px-0 pt-0">
+                                <CardTitle className="text-sm">Disponible vs usado</CardTitle>
+                                <CardDescription>
+                                    Visualización global del reparto actual de fuentes.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="px-0">
+                                <ChartContainer config={globalSourcesChartConfig} className="h-[240px] w-full">
+                                    <BarChart accessibilityLayer data={globalSourcesChartData}>
+                                        <CartesianGrid vertical={false} />
+                                        <XAxis
+                                            dataKey="shortName"
+                                            tickLine={false}
+                                            tickMargin={10}
+                                            axisLine={false}
+                                            interval={0}
+                                            tickFormatter={(value) => String(value).slice(0, 10)}
+                                        />
+                                        <ChartTooltip
+                                            cursor={false}
+                                            content={
+                                                <ChartTooltipContent
+                                                    indicator="dashed"
+                                                    labelFormatter={(_, payload) => payload?.[0]?.payload?.fullName || ''}
+                                                    formatter={(value, name) => (
+                                                        <div className="flex flex-1 items-center justify-between gap-3 leading-none">
+                                                            <span className="text-muted-foreground">{name === 'total' ? 'Disponible' : 'Usado'}</span>
+                                                            <span className="font-mono font-medium tabular-nums text-foreground">
+                                                                {formatWeight(value || 0)}
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                />
+                                            }
+                                        />
+                                        <Bar dataKey="total" fill="var(--color-total)" radius={4} />
+                                        <Bar dataKey="used" fill="var(--color-used)" radius={4} />
+                                    </BarChart>
+                                </ChartContainer>
+                            </CardContent>
+                            <CardFooter className="flex-col items-start gap-2 border-t px-0 pb-0 pt-3 text-sm">
+                                <div className="flex gap-2 leading-none font-medium">
+                                    {formatWeight(globalSourceSummary.reduce((sum, source) => sum + (source.assignedSourceWeight || 0), 0))} usados de {formatWeight(globalSourceSummary.reduce((sum, source) => sum + (source.totalSourceWeight || 0), 0))}
+                                </div>
+                                <div className="leading-none text-muted-foreground">
+                                    A la derecha tienes el detalle agrupado por origen con su disponibilidad y porcentaje de uso.
+                                </div>
+                            </CardFooter>
+                        </Card>
+                    </div>
+                </div>
+
+                <div className="min-h-0 space-y-4">
+                    {[
+                        { key: 'stock', title: 'Fuentes desde stock', items: groupedGlobalSourceSummary.stock },
+                        { key: 'parent', title: 'Fuentes desde proceso padre', items: groupedGlobalSourceSummary.parent },
+                    ].map((group) => (
+                        group.items.length > 0 ? (
+                            <div key={group.key} className="overflow-hidden rounded-lg border bg-background">
+                                <div className="flex items-center justify-between gap-3 border-b px-4 py-3">
+                                    <div>
+                                        <h5 className="text-sm font-semibold text-foreground">{group.title}</h5>
+                                        <p className="mt-1 text-xs text-muted-foreground">
+                                            Disponibilidad y consumo agregado de este grupo de fuentes.
+                                        </p>
+                                    </div>
+                                    <Badge variant="secondary">{group.items.length}</Badge>
+                                </div>
+                                <Table>
+                                    <TableHeader className="bg-muted/30">
+                                        <TableRow>
+                                            <TableHead>Fuente</TableHead>
+                                            <TableHead className="text-right">Disponible</TableHead>
+                                            <TableHead className="text-right">Usado</TableHead>
+                                            <TableHead className="text-right">Restante</TableHead>
+                                            <TableHead className="text-right">% uso</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {group.items.map((source) => {
+                                            const sourceFullyConsumed = source.usagePercentage >= 100
+                                            return (
+                                                <TableRow key={source.key}>
+                                                    <TableCell>
+                                                        <div className="min-w-0">
+                                                            <p className="truncate font-medium">{source.label}</p>
+                                                            <p className="truncate text-xs text-muted-foreground">{source.secondaryLabel}</p>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        {formatWeight(source.totalSourceWeight)}
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        {formatWeight(source.assignedSourceWeight)}
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        {formatWeight(source.remainingSourceWeight)}
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        <Badge
+                                                            variant="outline"
+                                                            className={sourceFullyConsumed ? 'border-green-200 text-green-700' : 'border-amber-200 text-amber-700'}
+                                                        >
+                                                            {formatDecimal(source.usagePercentage)}%
+                                                        </Badge>
+                                                    </TableCell>
+                                                </TableRow>
+                                            )
+                                        })}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        ) : null
+                    ))}
+                </div>
+            </div>
+        </div>
+    ) : (
+        <div className="rounded-lg border border-dashed bg-muted/10 p-8 text-center">
+            <p className="text-sm font-medium text-foreground">No hay fuentes globales disponibles</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+                Cuando existan consumos desde stock o desde procesos anteriores, aparecerán aquí.
+            </p>
+        </div>
+    )
+
     // Dialog de gestión múltiple
     const manageDialog = (
         <Dialog open={manageDialogOpen} onOpenChange={(open) => {
@@ -452,91 +1075,120 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
             }
             setManageDialogOpen(open)
         }}>
-            <DialogContent size="5xl" className="max-h-[90vh]">
-                <DialogHeader>
+            <DialogContent size="full" className="flex h-[calc(100vh-2rem)] flex-col gap-0 overflow-hidden p-0">
+                <DialogHeader className="border-b px-6 py-4 pr-14">
                     <DialogTitle>Gestionar Salidas</DialogTitle>
                     <DialogDescription>
                         Agrega, edita o elimina múltiples salidas de forma rápida
                     </DialogDescription>
                 </DialogHeader>
                 
-                <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                            <Checkbox
-                                id="show-boxes-outputs-dialog"
-                                checked={showBoxes}
-                                onCheckedChange={handleToggleBoxes}
-                            />
-                            <label
-                                htmlFor="show-boxes-outputs-dialog"
-                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                            >
-                                Mostrar Cajas
-                            </label>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button
-                                            onClick={handleOpenAvailableProductsDialog}
-                                            variant="default"
-                                            size="sm"
-                                        >
-                                            <Zap className="h-4 w-4 mr-2" />
-                                            Agregar desde productos disponibles
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent className="max-w-xs">
-                                        <p className="text-sm">
-                                            Agrega automáticamente productos con cajas y pesos registrados en ventas, stock y reprocesados.
-                                        </p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
-                            <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button
-                                            onClick={handleOpenSourceSelectionDialog}
-                                            variant="default"
-                                            size="sm"
-                                            disabled={copyingFromConsumption}
-                                        >
-                                            {copyingFromConsumption ? (
-                                                <>
-                                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                                    Añadiendo...
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Sparkles className="h-4 w-4 mr-2" />
-                                                    Añadir automáticamente desde consumo
-                                                </>
-                                            )}
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent className="max-w-xs">
-                                        <p className="text-sm">
-                                            Añade automáticamente líneas de salida desde consumo de proceso padre o materia prima en stock. Puedes seleccionar una o ambas fuentes.
-                                        </p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
-                            <Button
-                                onClick={addNewRow}
-                                variant="outline"
-                                size="sm"
-                            >
-                                <Plus className="h-4 w-4 mr-2" />
-                                Agregar Línea
-                            </Button>
-                        </div>
+                <Tabs defaultValue="outputs" className="flex min-h-0 flex-1 flex-col overflow-hidden px-6 pt-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <TabsList className="grid w-full max-w-sm grid-cols-2">
+                            <TabsTrigger value="outputs">Salidas</TabsTrigger>
+                            <TabsTrigger value="sources">Fuentes globales</TabsTrigger>
+                        </TabsList>
                     </div>
 
-                    <ScrollArea className="h-[500px] border rounded-md">
-                        <Table>
+                    <TabsContent value="outputs" className="mt-4 flex min-h-0 flex-1 flex-col overflow-hidden data-[state=inactive]:hidden">
+                        <div className="flex h-full min-h-0 flex-col gap-4">
+                            <div className="shrink-0 flex flex-wrap items-center justify-between gap-3">
+                                <div className="flex items-center gap-2">
+                                    <Checkbox
+                                        id="show-boxes-outputs-dialog"
+                                        checked={showBoxes}
+                                        onCheckedChange={handleToggleBoxes}
+                                    />
+                                    <label
+                                        htmlFor="show-boxes-outputs-dialog"
+                                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                                    >
+                                        Mostrar Cajas
+                                    </label>
+                                </div>
+                                <div className="flex flex-wrap items-center justify-end gap-2">
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                onClick={distributeSourcesProportionally}
+                                                variant="secondary"
+                                                size="sm"
+                                                disabled={allRows.filter((row) => parseFloat(row.weight_kg || 0) > 0).length === 0 || sourceOptions.length === 0}
+                                            >
+                                                <Sparkles className="h-4 w-4 mr-2" />
+                                                Distribuir fuentes
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent className="max-w-xs">
+                                            <p className="text-sm">
+                                                Sobrescribe las fuentes de todas las salidas válidas repartiendo cada source de forma proporcional a su peso disponible.
+                                            </p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                onClick={handleOpenAvailableProductsDialog}
+                                                variant="default"
+                                                size="sm"
+                                            >
+                                                <Zap className="h-4 w-4 mr-2" />
+                                                Agregar desde productos disponibles
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent className="max-w-xs">
+                                            <p className="text-sm">
+                                                Agrega automáticamente productos con cajas y pesos registrados en ventas, stock y reprocesados.
+                                            </p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                onClick={handleOpenSourceSelectionDialog}
+                                                variant="default"
+                                                size="sm"
+                                                disabled={copyingFromConsumption}
+                                            >
+                                                {copyingFromConsumption ? (
+                                                    <>
+                                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                                        Añadiendo...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Sparkles className="h-4 w-4 mr-2" />
+                                                        Añadir automáticamente desde consumo
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent className="max-w-xs">
+                                            <p className="text-sm">
+                                                Añade automáticamente líneas de salida desde consumo de proceso padre o materia prima en stock. Puedes seleccionar una o ambas fuentes.
+                                            </p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                                <Button
+                                    onClick={addNewRow}
+                                    variant="outline"
+                                    size="sm"
+                                >
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    Agregar Línea
+                                </Button>
+                                </div>
+                            </div>
+
+                            <ScrollArea className="min-h-0 flex-1 rounded-md border">
+                                <Table>
                             <TableHeader>
                                 <TableRow>
                                 <TableHead className="w-[300px]">Producto</TableHead>
@@ -548,17 +1200,22 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {getAllRows().map((row) => {
+                                {allRows.map((row) => {
                                     const avgWeight = row.boxes && parseFloat(row.boxes) > 0 && row.weight_kg
                                         ? formatDecimal(parseFloat(row.weight_kg) / parseFloat(row.boxes))
                                         : '0,00'
+                                    const sourcesTotalPercentage = Array.isArray(row.sources)
+                                        ? row.sources.reduce((sum, source) => sum + (parseFloat(source.contribution_percentage) || 0), 0)
+                                        : 0
+                                    const sourcesFullyConfigured = Array.isArray(row.sources)
+                                        && row.sources.length > 0
+                                        && Math.abs(sourcesTotalPercentage - 100) < 0.01
                                     
                                     const isValid = row.product_id && row.boxes && parseFloat(row.boxes) > 0 && row.weight_kg && parseFloat(row.weight_kg) > 0
                                     
                                     return (
-                                        <>
+                                        <React.Fragment key={row.id}>
                                             <TableRow 
-                                                key={row.id}
                                                 className={!isValid && (row.product_id || row.boxes || row.weight_kg) ? 'bg-muted/50' : ''}
                                             >
                                                 <TableCell>
@@ -592,7 +1249,20 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                                         step="0.01"
                                                         min="0"
                                                         value={row.weight_kg}
-                                                        onChange={(e) => updateRow(row.id, 'weight_kg', e.target.value)}
+                                                        onChange={(e) => {
+                                                            const nextWeight = e.target.value
+                                                            updateRow(row.id, 'weight_kg', nextWeight)
+                                                            if (Array.isArray(row.sources) && row.sources.length > 0) {
+                                                                updateRow(
+                                                                    row.id,
+                                                                    'sources',
+                                                                    recalculateSourcesForRow(
+                                                                        { ...row, weight_kg: nextWeight },
+                                                                        row.sources
+                                                                    )
+                                                                )
+                                                            }
+                                                        }}
                                                         placeholder="0.00"
                                                         className={`h-9 ${!row.weight_kg || parseFloat(row.weight_kg) <= 0 ? 'border-destructive' : ''}`}
                                                     />
@@ -622,7 +1292,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                                         <span className="flex items-center gap-1">
                                                         {row.sources && Array.isArray(row.sources) && row.sources.length > 0 ? (
                                                             <>
-                                                                <span className="h-2 w-2 rounded-full bg-green-500"></span>
+                                                                <span className={`h-2 w-2 rounded-full ${sourcesFullyConfigured ? 'bg-green-500' : 'bg-amber-500'}`}></span>
                                                                 {row.sources.length} fuente{row.sources.length !== 1 ? 's' : ''}
                                                             </>
                                                         ) : (
@@ -648,78 +1318,136 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                                 </TableCell>
                                             </TableRow>
                                             {expandedSourcesRows.has(row.id) && (
-                                                <TableRow key={`${row.id}-sources`} className="bg-gray-50/50">
+                                                <TableRow className="bg-gray-50/50">
                                                 <TableCell colSpan={showBoxes ? 6 : 5} className="p-4 pl-8">
-                                                    <div className="space-y-3">
-                                                        <div className="text-sm font-semibold text-gray-700">
-                                                            Fuentes de Materia Prima
+                                                    <div className="space-y-4">
+                                                        <div className="flex flex-wrap items-center justify-between gap-2">
+                                                            <div>
+                                                                <p className="text-xs font-semibold text-foreground">Editor de fuentes</p>
+                                                                <p className="text-[11px] text-muted-foreground">
+                                                                    El reparto respeta la disponibilidad global total de cada source.
+                                                                </p>
+                                                            </div>
+                                                            <div className="flex flex-wrap items-center gap-2">
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    disabled={sourcesLoading || sourceOptions.length === 0}
+                                                                    onClick={() => setPriorityDialogRowId(row.id)}
+                                                                >
+                                                                    <Sparkles className="h-3.5 w-3.5 mr-2" />
+                                                                    Completar al 100%
+                                                                </Button>
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    disabled={!row.sources || row.sources.length === 0}
+                                                                    onClick={() => clearRowSources(row.id)}
+                                                                >
+                                                                    Limpiar fuentes
+                                                                </Button>
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    disabled={sourcesLoading || sourceOptions.length === 0}
+                                                                    onClick={() => {
+                                                                        const updated = [
+                                                                            ...(row.sources || []),
+                                                                            {
+                                                                                source_type: null,
+                                                                                product_id: null,
+                                                                                production_output_consumption_id: null,
+                                                                                contributed_weight_kg: null,
+                                                                                contribution_percentage: null,
+                                                                            }
+                                                                        ]
+                                                                        updateRow(row.id, 'sources', updated)
+                                                                    }}
+                                                                >
+                                                                    <Plus className="h-3.5 w-3.5 mr-2" />
+                                                                    Agregar línea
+                                                                </Button>
+                                                            </div>
                                                         </div>
+
                                                         {row.sources && Array.isArray(row.sources) && row.sources.length > 0 ? (
                                                             <div className="space-y-2">
                                                                 <Table>
                                                                     <TableHeader>
                                                                         <TableRow>
-                                                                            <TableHead className="h-8 text-xs">Tipo</TableHead>
                                                                             <TableHead className="h-8 text-xs">Origen</TableHead>
-                                                                            <TableHead className="h-8 text-xs">Peso (kg)</TableHead>
+                                                                            <TableHead className="h-8 text-xs">Peso fuente (kg)</TableHead>
+                                                                            <TableHead className="h-8 text-xs">Peso transformado (kg)</TableHead>
                                                                             <TableHead className="h-8 text-xs">%</TableHead>
                                                                             <TableHead className="h-8 text-xs w-[40px]"></TableHead>
                                                                         </TableRow>
                                                                     </TableHeader>
                                                                     <TableBody>
                                                                         {row.sources.map((source, sourceIndex) => {
-                                                                            // Obtener el peso disponible del source específico (origen real, incluyendo merma/rendimiento)
-                                                                            const sourceTotalWeight = (() => {
-                                                                                if (source.source_type === 'stock_box') {
-                                                                                    // Buscar el input en availableInputs o sourcesData
-                                                                                    const input = availableInputs.find(i => i.id === source.production_input_id)
-                                                                                    const stockBox = sourcesData?.stockBoxes?.find(b => b.productionInputId === source.production_input_id)
-                                                                                    // El peso disponible es el netWeight del source (ya incluye merma si aplica)
-                                                                                    return stockBox?.netWeight || input?.box?.netWeight || 0
-                                                                                } else {
-                                                                                    // Buscar el consumo en availableConsumptions o sourcesData
-                                                                                    const consumption = availableConsumptions.find(c => c.id === source.production_output_consumption_id)
-                                                                                    const parentOutput = sourcesData?.parentOutputs?.find(o => o.productionOutputConsumptionId === source.production_output_consumption_id)
-                                                                                    // El peso disponible es el consumedWeightKg del source (ya incluye merma si aplica)
-                                                                                    return parentOutput?.consumedWeightKg || consumption?.consumedWeightKg || 0
-                                                                                }
-                                                                            })()
-                                                                            
-                                                                            // Calcular cuánto se ha usado de este source en otros sources del mismo output
-                                                                            const usedInSameOutput = row.sources
-                                                                                .filter((s, idx) => idx !== sourceIndex && 
-                                                                                    ((source.source_type === 'stock_box' && s.production_input_id === source.production_input_id) ||
-                                                                                     (source.source_type === 'parent_output' && s.production_output_consumption_id === source.production_output_consumption_id)))
-                                                                                .reduce((sum, s) => sum + (parseFloat(s.contributed_weight_kg) || 0), 0)
-                                                                            
-                                                                            // Calcular el peso disponible restante (total - ya usado en otros sources del mismo output)
-                                                                            const sourceAvailableWeight = Math.max(0, sourceTotalWeight - usedInSameOutput)
-                                                                            
+                                                                            const currentSourceKey = getSourceKey(source)
+                                                                            const currentSourceValue = source.source_type === 'stock_product'
+                                                                                ? `stock_product-${source.product_id}`
+                                                                                : source.source_type === 'parent_output'
+                                                                                    ? `parent_output-${source.production_output_consumption_id}`
+                                                                                    : undefined
+                                                                            const sourceUsage = currentSourceKey ? sourceUsageMap.get(currentSourceKey) : null
+                                                                            const sourceAvailableWeight = getAvailableSourceWeightForLine(row, sourceIndex, currentSourceKey)
+                                                                            const currentSourceWeight = parseFloat(source.contributed_weight_kg || 0) || 0
+                                                                            const currentAdjustedWeight = getAdjustedOutputWeightFromSource(currentSourceWeight)
+
                                                                             return (
                                                                                 <TableRow key={sourceIndex}>
-                                                                                    <TableCell className="py-1 px-2">
-                                                                                        <Badge variant="outline" className="text-xs">
-                                                                                            {source.source_type === 'stock_box' ? 'Stock' : 'Padre'}
-                                                                                        </Badge>
-                                                                                    </TableCell>
-                                                                                    <TableCell className="py-1 px-2 text-xs">
-                                                                                        {(() => {
-                                                                                            if (source.source_type === 'stock_box') {
-                                                                                                // Buscar el input en availableInputs o sourcesData
-                                                                                                const input = availableInputs.find(i => i.id === source.production_input_id)
-                                                                                                const stockBox = sourcesData?.stockBoxes?.find(b => b.productionInputId === source.production_input_id)
-                                                                                                const productName = stockBox?.product?.name || input?.box?.product?.name || 'N/A'
-                                                                                                const weight = stockBox?.netWeight || input?.box?.netWeight || 0
-                                                                                                return `Input #${source.production_input_id} - ${productName} (${formatWeight(weight)})`
-                                                                                            } else {
-                                                                                                // Buscar el consumo en availableConsumptions o sourcesData
-                                                                                                const consumption = availableConsumptions.find(c => c.id === source.production_output_consumption_id)
-                                                                                                const parentOutput = sourcesData?.parentOutputs?.find(o => o.productionOutputConsumptionId === source.production_output_consumption_id)
-                                                                                                const productName = parentOutput?.product?.name || consumption?.product?.name || 'N/A'
-                                                                                                const weight = parentOutput?.consumedWeightKg || consumption?.consumedWeightKg || 0
-                                                                                                return `Consumo #${source.production_output_consumption_id} - ${productName} (${formatWeight(weight)})`
-                                                                                            }
-                                                                                        })()}
+                                                                                    <TableCell className="py-1 px-2 align-top">
+                                                                                        <div className="space-y-1">
+                                                                                            <Select
+                                                                                                value={currentSourceValue}
+                                                                                                onValueChange={(value) => {
+                                                                                                    const parsed = parseSourceValue(value)
+                                                                                                    if (!parsed) return
+                                                                                                    const updated = [...(row.sources || [])]
+                                                                                                    updated[sourceIndex] = {
+                                                                                                        ...updated[sourceIndex],
+                                                                                                        ...parsed,
+                                                                                                        contributed_weight_kg: null,
+                                                                                                        contribution_percentage: null,
+                                                                                                    }
+                                                                                                    updateRow(row.id, 'sources', updated)
+                                                                                                }}
+                                                                                            >
+                                                                                                <SelectTrigger className="h-7 min-w-[280px] text-xs">
+                                                                                                    <SelectValue placeholder="Seleccionar origen" />
+                                                                                                </SelectTrigger>
+                                                                                                <SelectContent>
+                                                                                                    {sourceOptions.length > 0 ? sourceOptions.map((option) => {
+                                                                                                        const isUsed = (row.sources || []).some((candidate, candidateIndex) => (
+                                                                                                            candidateIndex !== sourceIndex && getSourceKey(candidate) === option.key
+                                                                                                        ))
+                                                                                                        const optionUsage = sourceUsageMap.get(option.key)
+                                                                                                        return (
+                                                                                                            <SelectItem
+                                                                                                                key={option.key}
+                                                                                                                value={option.value}
+                                                                                                                disabled={isUsed}
+                                                                                                            >
+                                                                                                                {option.typeLabel} · {option.label} · Restante {formatWeight(optionUsage?.remainingSourceWeight || option.totalWeight)}
+                                                                                                            </SelectItem>
+                                                                                                        )
+                                                                                                    }) : (
+                                                                                                        <SelectItem value="no-options" disabled>
+                                                                                                            No hay orígenes disponibles
+                                                                                                        </SelectItem>
+                                                                                                    )}
+                                                                                                </SelectContent>
+                                                                                            </Select>
+                                                                                            {sourceUsage && (
+                                                                                                <p className="text-[11px] text-muted-foreground">
+                                                                                                    Disponible global: {formatWeight(sourceAvailableWeight)} · Total usado: {formatWeight(sourceUsage.assignedSourceWeight)}
+                                                                                                </p>
+                                                                                            )}
+                                                                                        </div>
                                                                                     </TableCell>
                                                                                     <TableCell className="py-1 px-2">
                                                                                         <Input
@@ -729,23 +1457,54 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                                                                             onChange={(e) => {
                                                                                                 const updated = [...(row.sources || [])]
                                                                                                 let weight = parseFloat(e.target.value) || 0
-                                                                                                
-                                                                                                // Validar que no exceda lo disponible del source
                                                                                                 if (weight > sourceAvailableWeight) {
                                                                                                     weight = sourceAvailableWeight
-                                                                                                    console.warn(
-                                                                                                        `El peso ${e.target.value}kg excede lo disponible del source (${sourceAvailableWeight.toFixed(2)}kg). ` +
-                                                                                                        `Ajustado automáticamente a ${weight.toFixed(2)}kg`
-                                                                                                    )
                                                                                                 }
-                                                                                                
-                                                                                                const outputWeight = parseFloat(row.weight_kg) || 0
-                                                                                                
+                                                                                                const outputWeight = parseFloat(row.weight_kg || 0) || 0
+                                                                                                const adjustedOutputWeight = getAdjustedOutputWeightFromSource(weight)
                                                                                                 updated[sourceIndex] = {
                                                                                                     ...updated[sourceIndex],
-                                                                                                    contributed_weight_kg: e.target.value === '' ? null : weight,
-                                                                                                    // Calcular porcentaje sobre el OUTPUT FINAL, no sobre el source (redondeado a 2 decimales)
-                                                                                                    contribution_percentage: outputWeight > 0 ? parseFloat(((weight / outputWeight) * 100).toFixed(2)) : null
+                                                                                                    contributed_weight_kg: e.target.value === '' ? null : roundToTwo(weight),
+                                                                                                    contribution_percentage: outputWeight > 0 ? roundToTwo((adjustedOutputWeight / outputWeight) * 100) : null,
+                                                                                                }
+                                                                                                updateRow(row.id, 'sources', updated)
+                                                                                            }}
+                                                                                            className="h-7 text-xs w-24"
+                                                                                            placeholder="0.00"
+                                                                                        />
+                                                                                    </TableCell>
+                                                                                    <TableCell className="py-1 px-2">
+                                                                                        <Input
+                                                                                            type="number"
+                                                                                            step="0.01"
+                                                                                            value={source.contributed_weight_kg === null || source.contributed_weight_kg === undefined || source.contributed_weight_kg === ''
+                                                                                                ? ''
+                                                                                                : currentAdjustedWeight.toFixed(2)}
+                                                                                            onChange={(e) => {
+                                                                                                const updated = [...(row.sources || [])]
+                                                                                                const inputValue = e.target.value
+                                                                                                if (inputValue === '') {
+                                                                                                    updated[sourceIndex] = {
+                                                                                                        ...updated[sourceIndex],
+                                                                                                        contributed_weight_kg: null,
+                                                                                                        contribution_percentage: null,
+                                                                                                    }
+                                                                                                    updateRow(row.id, 'sources', updated)
+                                                                                                    return
+                                                                                                }
+                                                                                                let adjustedWeight = parseFloat(inputValue) || 0
+                                                                                                let sourceWeight = getSourceWeightFromAdjustedOutputWeight(adjustedWeight)
+                                                                                                if (sourceWeight > sourceAvailableWeight) {
+                                                                                                    sourceWeight = sourceAvailableWeight
+                                                                                                    adjustedWeight = getAdjustedOutputWeightFromSource(sourceWeight)
+                                                                                                }
+                                                                                                const outputWeight = parseFloat(row.weight_kg || 0) || 0
+                                                                                                updated[sourceIndex] = {
+                                                                                                    ...updated[sourceIndex],
+                                                                                                    contributed_weight_kg: roundToTwo(sourceWeight),
+                                                                                                    contribution_percentage: outputWeight > 0
+                                                                                                        ? roundToTwo((adjustedWeight / outputWeight) * 100)
+                                                                                                        : null,
                                                                                                 }
                                                                                                 updateRow(row.id, 'sources', updated)
                                                                                             }}
@@ -759,168 +1518,96 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                                                                             step="0.01"
                                                                                             min="0"
                                                                                             max="100"
-                                                                                            value={source.contribution_percentage !== null && source.contribution_percentage !== undefined 
-                                                                                                ? source.contribution_percentage 
+                                                                                            value={source.contribution_percentage !== null && source.contribution_percentage !== undefined
+                                                                                                ? source.contribution_percentage
                                                                                                 : ''}
                                                                                             onChange={(e) => {
                                                                                                 const updated = [...(row.sources || [])]
                                                                                                 const inputValue = e.target.value
-                                                                                                
-                                                                                                // Permitir escribir libremente (sin formatear inmediatamente)
                                                                                                 if (inputValue === '') {
                                                                                                     updated[sourceIndex] = {
                                                                                                         ...updated[sourceIndex],
                                                                                                         contribution_percentage: null,
-                                                                                                        contributed_weight_kg: null
+                                                                                                        contributed_weight_kg: null,
                                                                                                     }
                                                                                                     updateRow(row.id, 'sources', updated)
                                                                                                     return
                                                                                                 }
-                                                                                                
                                                                                                 let percentage = parseFloat(inputValue) || 0
-                                                                                                
-                                                                                                // El porcentaje se refiere al OUTPUT FINAL, no al source
-                                                                                                const outputWeight = parseFloat(row.weight_kg) || 0
-                                                                                                
-                                                                                                // Calcular el peso que resultaría de este porcentaje del OUTPUT
-                                                                                                const calculatedWeightFromOutput = outputWeight > 0 ? (percentage / 100) * outputWeight : 0
-                                                                                                
-                                                                                                // Si el peso calculado excede lo disponible del source, ajustar automáticamente
-                                                                                                let finalWeight = calculatedWeightFromOutput
-                                                                                                let finalPercentage = percentage
-                                                                                                
+                                                                                                const outputWeight = parseFloat(row.weight_kg || 0) || 0
+                                                                                                let calculatedAdjustedOutputWeight = outputWeight > 0 ? (percentage / 100) * outputWeight : 0
+                                                                                                let calculatedWeightFromOutput = getSourceWeightFromAdjustedOutputWeight(calculatedAdjustedOutputWeight)
                                                                                                 if (calculatedWeightFromOutput > sourceAvailableWeight) {
-                                                                                                    // Ajustar al máximo disponible del source
-                                                                                                    finalWeight = sourceAvailableWeight
-                                                                                                    // Recalcular el porcentaje basado en el output final (redondeado a 2 decimales)
-                                                                                                    finalPercentage = outputWeight > 0 ? parseFloat(((sourceAvailableWeight / outputWeight) * 100).toFixed(2)) : 0
-                                                                                                    // Mostrar advertencia
-                                                                                                    console.warn(
-                                                                                                        `El porcentaje ${percentage}% del output (${calculatedWeightFromOutput.toFixed(2)}kg) excede lo disponible del source (${sourceAvailableWeight.toFixed(2)}kg). ` +
-                                                                                                        `Ajustado automáticamente a ${finalPercentage.toFixed(2)}% (${finalWeight.toFixed(2)}kg)`
-                                                                                                    )
+                                                                                                    calculatedWeightFromOutput = sourceAvailableWeight
+                                                                                                    calculatedAdjustedOutputWeight = getAdjustedOutputWeightFromSource(calculatedWeightFromOutput)
+                                                                                                    percentage = outputWeight > 0 ? roundToTwo((calculatedAdjustedOutputWeight / outputWeight) * 100) : 0
                                                                                                 }
-                                                                                                
                                                                                                 updated[sourceIndex] = {
                                                                                                     ...updated[sourceIndex],
-                                                                                                    contribution_percentage: finalPercentage,
-                                                                                                    // Calcular peso basado en el peso disponible del source específico (origen real, incluyendo merma/rendimiento)
-                                                                                                    contributed_weight_kg: finalWeight
+                                                                                                    contribution_percentage: percentage,
+                                                                                                    contributed_weight_kg: roundToTwo(calculatedWeightFromOutput),
                                                                                                 }
                                                                                                 updateRow(row.id, 'sources', updated)
                                                                                             }}
-                                                                                            onBlur={(e) => {
-                                                                                                // Formatear a 2 decimales cuando pierde el foco
-                                                                                                if (e.target.value !== '' && source.contribution_percentage !== null) {
-                                                                                                    const formatted = parseFloat(source.contribution_percentage.toFixed(2))
-                                                                                                    const updated = [...(row.sources || [])]
-                                                                                                    updated[sourceIndex] = {
-                                                                                                        ...updated[sourceIndex],
-                                                                                                        contribution_percentage: formatted
-                                                                                                    }
-                                                                                                    updateRow(row.id, 'sources', updated)
-                                                                                                }
-                                                                                            }}
-                                                                                            className={`h-7 text-xs w-24 ${
-                                                                                                source.contribution_percentage && parseFloat(row.weight_kg) > 0 && sourceAvailableWeight > 0 && 
-                                                                                                ((source.contribution_percentage / 100) * parseFloat(row.weight_kg)) > sourceAvailableWeight 
-                                                                                                    ? 'border-yellow-500' 
-                                                                                                    : ''
-                                                                                            }`}
+                                                                                            className="h-7 text-xs w-24"
                                                                                             placeholder="0.00"
                                                                                         />
                                                                                     </TableCell>
-                                                                                <TableCell className="py-1 px-2">
-                                                                                    <Button
-                                                                                        variant="ghost"
-                                                                                        size="sm"
-                                                                                        onClick={() => {
-                                                                                            const updated = row.sources.filter((_, i) => i !== sourceIndex)
-                                                                                            updateRow(row.id, 'sources', updated)
-                                                                                        }}
-                                                                                        className="h-7 w-7 p-0"
-                                                                                    >
-                                                                                        <Trash2 className="h-3 w-3" />
-                                                                                    </Button>
-                                                                                </TableCell>
-                                                                            </TableRow>
+                                                                                    <TableCell className="py-1 px-2">
+                                                                                        <Button
+                                                                                            variant="ghost"
+                                                                                            size="sm"
+                                                                                            onClick={() => {
+                                                                                                const updated = row.sources.filter((_, i) => i !== sourceIndex)
+                                                                                                updateRow(row.id, 'sources', updated)
+                                                                                            }}
+                                                                                            className="h-7 w-7 p-0"
+                                                                                        >
+                                                                                            <Trash2 className="h-3 w-3" />
+                                                                                        </Button>
+                                                                                    </TableCell>
+                                                                                </TableRow>
                                                                             )
                                                                         })}
                                                                     </TableBody>
                                                                 </Table>
                                                                 {(() => {
-                                                                    const totalPercentage = row.sources.reduce((sum, s) => {
-                                                                        return sum + (parseFloat(s.contribution_percentage) || 0)
-                                                                    }, 0)
-                                                                    const isValid = Math.abs(totalPercentage - 100) < 0.01
+                                                                    const totalPercentage = row.sources.reduce((sum, s) => sum + (parseFloat(s.contribution_percentage) || 0), 0)
+                                                                    const isComplete = Math.abs(totalPercentage - 100) < 0.01
+                                                                    const progressValue = Math.max(0, Math.min(totalPercentage, 100))
                                                                     return (
-                                                                        <div className={`text-xs ${isValid ? 'text-green-600' : 'text-red-600'}`}>
-                                                                            Total: {formatDecimal(totalPercentage, 2)}% / 100%
+                                                                        <div className="space-y-1.5">
+                                                                            <div className="flex items-center justify-between gap-3">
+                                                                                <span className="text-xs font-medium text-muted-foreground">
+                                                                                    Total fuentes
+                                                                                </span>
+                                                                                <span className={`text-xs font-semibold ${isComplete ? 'text-green-600' : 'text-amber-600'}`}>
+                                                                                    {formatDecimal(totalPercentage)}% / 100%
+                                                                                </span>
+                                                                            </div>
+                                                                            <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                                                                                <div
+                                                                                    className={`h-full rounded-full transition-all ${isComplete ? 'bg-green-500' : 'bg-amber-500'}`}
+                                                                                    style={{ width: `${progressValue}%` }}
+                                                                                />
+                                                                            </div>
                                                                         </div>
                                                                     )
                                                                 })()}
                                                             </div>
                                                         ) : (
-                                                            <div className="text-xs text-gray-500 py-2">
-                                                                No hay fuentes configuradas. Se calcularán automáticamente de forma proporcional.
+                                                            <div className="rounded-md border border-dashed bg-background/80 px-3 py-4 text-xs text-muted-foreground">
+                                                                No hay fuentes configuradas todavía para esta salida.
                                                             </div>
                                                         )}
-                                                        <div className="flex gap-2">
-                                                            <Select
-                                                                onValueChange={(value) => {
-                                                                    const [type, id] = value.split('-')
-                                                                    const newSource = {
-                                                                        source_type: type,
-                                                                        [type === 'stock_box' ? 'production_input_id' : 'production_output_consumption_id']: parseInt(id),
-                                                                        contributed_weight_kg: null,
-                                                                        contribution_percentage: null,
-                                                                    }
-                                                                    const updated = [...(row.sources || []), newSource]
-                                                                    updateRow(row.id, 'sources', updated)
-                                                                }}
-                                                            >
-                                                                <SelectTrigger className="h-8 text-xs w-64" loading={sourcesLoading}>
-                                                                    <SelectValue placeholder="Añadir fuente" loading={sourcesLoading} />
-                                                                </SelectTrigger>
-                                                                <SelectContent loading={sourcesLoading}>
-                                                                    {availableInputs.length > 0 && (
-                                                                        <>
-                                                                            <div className="px-2 py-1.5 text-xs font-semibold text-gray-500">Materias Primas</div>
-                                                                            {availableInputs.map(input => (
-                                                                                <SelectItem key={`stock_box-${input.id}`} value={`stock_box-${input.id}`} className="text-xs">
-                                                                                    Input #{input.id} - {formatWeight(input.box?.netWeight)}
-                                                                                </SelectItem>
-                                                                            ))}
-                                                                        </>
-                                                                    )}
-                                                                    {availableConsumptions.length > 0 && (
-                                                                        <>
-                                                                            <div className="px-2 py-1.5 text-xs font-semibold text-gray-500">Outputs Padre</div>
-                                                                            {availableConsumptions.map(consumption => (
-                                                                                <SelectItem 
-                                                                                    key={`parent_output-${consumption.id}`} 
-                                                                                    value={`parent_output-${consumption.id}`}
-                                                                                    className="text-xs"
-                                                                                >
-                                                                                    Consumo #{consumption.id} - {formatWeight(consumption.consumedWeightKg)}
-                                                                                </SelectItem>
-                                                                            ))}
-                                                                        </>
-                                                                    )}
-                                                                    {availableInputs.length === 0 && availableConsumptions.length === 0 && (
-                                                                        <SelectItem value="none" disabled className="text-xs">No hay fuentes disponibles</SelectItem>
-                                                                    )}
-                                                                </SelectContent>
-                                                            </Select>
-                                                        </div>
                                                     </div>
                                                 </TableCell>
                                             </TableRow>
-                                        )}
-                                        </>
+                                            )}
+                                        </React.Fragment>
                                     )
                                 })}
-                                {getAllRows().length === 0 && (
+                                {allRows.length === 0 && (
                                     <TableRow>
                                         <TableCell colSpan={5} className="p-0">
                                             <div className="py-12">
@@ -934,10 +1621,21 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                     </TableRow>
                                 )}
                             </TableBody>
-                        </Table>
-                    </ScrollArea>
+                                </Table>
+                            </ScrollArea>
+                        </div>
+                    </TabsContent>
 
-                    <div className="flex justify-end gap-2 pt-2 border-t">
+                    <TabsContent value="sources" className="mt-4 flex min-h-0 flex-1 flex-col overflow-hidden data-[state=inactive]:hidden">
+                        <ScrollArea className="min-h-0 flex-1 rounded-md border">
+                            <div className="p-4">
+                                {globalSourcesSummaryContent}
+                            </div>
+                        </ScrollArea>
+                    </TabsContent>
+                </Tabs>
+
+                <DialogFooter className="shrink-0 flex-wrap !mx-0 !mb-0 rounded-none px-6 py-4">
                         <Button
                             variant="outline"
                             onClick={() => setManageDialogOpen(false)}
@@ -947,7 +1645,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                         </Button>
                         <Button
                             onClick={handleSaveAll}
-                            disabled={saving || getAllRows().some(row => 
+                            disabled={saving || allRows.some(row => 
                                 (row.product_id || row.boxes || row.weight_kg) && 
                                 (!row.product_id || !row.weight_kg || parseFloat(row.weight_kg) <= 0)
                             )}
@@ -961,8 +1659,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                 </>
                             )}
                         </Button>
-                    </div>
-                </div>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     )
@@ -1009,6 +1706,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
         return (
             <>
                 {manageDialog}
+                {priorityDialog}
                 {sourceSelectionDialog}
                 {availableProductsDialog}
                 {breakdownDialog}
@@ -1040,6 +1738,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
     return (
         <div className="space-y-4">
             {manageDialog}
+            {priorityDialog}
             {sourceSelectionDialog}
             {availableProductsDialog}
             {breakdownDialog}

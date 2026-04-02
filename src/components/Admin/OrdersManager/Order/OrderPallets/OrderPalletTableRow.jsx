@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Edit, Copy, Unlink, Trash2, Loader2 } from 'lucide-react';
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
+import { formatCostPerKg, formatTotalCost } from '@/helpers/production/costFormatters';
 
 export default function OrderPalletTableRow({
   pallet,
@@ -40,6 +41,12 @@ export default function OrderPalletTableRow({
       <TableCell className="px-4 py-3 text-right">{pallet.numberOfBoxes || 0}</TableCell>
       <TableCell className="px-4 py-3 text-right text-nowrap">
         {formatDecimalWeight(pallet.netWeight || 0)}
+      </TableCell>
+      <TableCell className="px-4 py-3 text-right text-nowrap">
+        {formatCostPerKg(pallet.costPerKg)}
+      </TableCell>
+      <TableCell className="px-4 py-3 text-right text-nowrap">
+        {formatTotalCost(pallet.totalCost)}
       </TableCell>
       <TableCell className="px-4 py-3">
         <div className="flex justify-end gap-1">

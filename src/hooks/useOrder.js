@@ -64,6 +64,17 @@ const getOrderExportUrl = ({ orderId, documentName, type }) => {
     return `${API_URL_V2}orders/${orderId}/${type}/${documentName}`;
 };
 
+const normalizeOrderPallet = (pallet) => {
+    if (!pallet) return pallet;
+
+    return {
+        ...pallet,
+        receptionId: pallet.receptionId ?? pallet.reception_id ?? null,
+        costPerKg: pallet.costPerKg ?? pallet.cost_per_kg ?? null,
+        totalCost: pallet.totalCost ?? pallet.total_cost ?? null,
+    };
+};
+
 export function useOrder(orderId, onChange) {
     const { data: session, status } = useSession();
     const queryClient = useQueryClient();
@@ -100,7 +111,10 @@ export function useOrder(orderId, onChange) {
         onChange?.(updatedOrder);
     }, [queryClient, queryKey, onChange]);
 
-    const pallets = useMemo(() => order?.pallets || [], [order?.pallets]);
+    const pallets = useMemo(
+        () => (order?.pallets || []).map(normalizeOrderPallet),
+        [order?.pallets]
+    );
 
     // Si estamos dentro del Gestor de pedidos, usar opciones del contexto para no duplicar peticiones
     useEffect(() => {

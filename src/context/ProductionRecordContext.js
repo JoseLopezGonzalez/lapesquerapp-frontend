@@ -103,7 +103,12 @@ export function ProductionRecordProvider({ productionId, recordId = null, childr
                         inputs: newInputs
                     }
                     // Calcular totales localmente basándose en los nuevos inputs y outputs actuales
-                    return updateRecordWithCalculatedTotals(updatedRecord, newInputs, prev.outputs || [])
+                    return updateRecordWithCalculatedTotals(
+                        updatedRecord,
+                        newInputs,
+                        prev.parentOutputConsumptions || [],
+                        prev.outputs || []
+                    )
                 })
                 
                 // Si se solicita, recargar el record completo del servidor en segundo plano (solo para validación)
@@ -144,8 +149,13 @@ export function ProductionRecordProvider({ productionId, recordId = null, childr
                         ...prev,
                         outputs: newOutputs
                     }
-                    // Calcular totales localmente basándose en los inputs actuales y los nuevos outputs
-                    return updateRecordWithCalculatedTotals(updatedRecord, prev.inputs || [], newOutputs)
+                    // Calcular totales localmente basándose en los inputs y consumos actuales y los nuevos outputs
+                    return updateRecordWithCalculatedTotals(
+                        updatedRecord,
+                        prev.inputs || [],
+                        prev.parentOutputConsumptions || [],
+                        newOutputs
+                    )
                 })
                 
                 // Si se solicita, recargar el record completo del servidor en segundo plano (solo para validación)
@@ -170,7 +180,7 @@ export function ProductionRecordProvider({ productionId, recordId = null, childr
     }, [recordId, record, setRecord, updateRecord])
 
     // Función para actualizar consumptions (actualización optimista con rollback)
-    // Nota: Los consumptions no afectan los totales del record actual, solo se actualizan
+    // Los consumos del proceso padre sí afectan los totales de entrada del record
     const updateConsumptions = useCallback(async (newConsumptions, shouldRefresh = false) => {
         const currentRecordId = recordId || record?.id
         if (!currentRecordId) return
@@ -181,11 +191,20 @@ export function ProductionRecordProvider({ productionId, recordId = null, childr
             previousStateRef.current = previousRecord
             
             try {
-                // Actualización optimista inmediata
-                setRecord(prev => ({
-                    ...prev,
-                    parentOutputConsumptions: newConsumptions
-                }))
+                // Actualización optimista inmediata con recálculo de totales
+                setRecord(prev => {
+                    const updatedRecord = {
+                        ...prev,
+                        parentOutputConsumptions: newConsumptions
+                    }
+
+                    return updateRecordWithCalculatedTotals(
+                        updatedRecord,
+                        prev.inputs || [],
+                        newConsumptions,
+                        prev.outputs || []
+                    )
+                })
                 
                 // Si se solicita, recargar el record completo del servidor en segundo plano (solo para validación)
                 if (shouldRefresh) {

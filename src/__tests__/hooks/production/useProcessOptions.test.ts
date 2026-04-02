@@ -55,7 +55,10 @@ describe('useProcessOptions', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    expect(result.current.processes).toEqual(mockProcesses);
+    expect(result.current.processes).toEqual([
+      { id: 1, name: 'Proceso A', type: 'primary', value: 1, label: 'Proceso A' },
+      { id: 2, name: 'Proceso B', type: 'secondary', value: 2, label: 'Proceso B' },
+    ]);
     expect(result.current.error).toBeNull();
     expect(fetchWithTenant).toHaveBeenCalledWith(
       expect.stringContaining('processes/options'),

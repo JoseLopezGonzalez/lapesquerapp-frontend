@@ -1,11 +1,10 @@
-import CreateProductionRecordPage from './CreateProductionRecordPage'
+import { redirect } from 'next/navigation'
 
-export default async function CreateProductionRecordPageWrapper({ params }) {
-    const { id } = await params;
-    const productionId = id;
-
-    return (
-        <CreateProductionRecordPage productionId={productionId} />
-    )
+/**
+ * La creación de procesos se hace desde el diálogo en la ficha de producción.
+ * Mantener la ruta como redirección por enlaces antiguos o favoritos.
+ */
+export default async function CreateProductionRecordRedirect({ params }) {
+    const { id } = await params
+    redirect(`/admin/productions/${id}`)
 }
-

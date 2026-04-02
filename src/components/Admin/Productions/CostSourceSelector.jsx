@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { getProductionInputs, getProductionOutputConsumptions } from '@/services/productionService'
+import { getProductionRecordSourcesData } from '@/services/productionService'
 import { useSession } from 'next-auth/react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -51,13 +51,36 @@ export default function CostSourceSelector({
             setError(null);
             const token = session.user.accessToken;
 
-            const [inputsData, consumptionsData] = await Promise.all([
-                getProductionInputs(token, { production_record_id: productionRecordId }),
-                getProductionOutputConsumptions(token, { production_record_id: productionRecordId }),
-            ]);
+            const sourcesData = await getProductionRecordSourcesData(productionRecordId, token);
 
-            setInputs(inputsData.data || []);
-            setConsumptions(consumptionsData.data || []);
+            setInputs(
+                (sourcesData?.stockProducts || []).map((source) => ({
+                    id: source.productId || source.product_id,
+                    productId: source.productId || source.product_id,
+                    product: source.product,
+                    totalWeight:
+                        parseFloat(
+                            source.availableWeightKg ??
+                            source.available_weight_kg ??
+                            source.totalWeightKg ??
+                            source.total_weight_kg ??
+                            source.consumedWeightKg ??
+                            source.consumed_weight_kg ??
+                            source.weightKg ??
+                            source.weight_kg ??
+                            source.totalWeight ??
+                            source.total_weight ??
+                            0
+                        ) || 0,
+                }))
+            );
+            setConsumptions(
+                (sourcesData?.parentOutputs || []).map((source) => ({
+                    id: source.productionOutputConsumptionId || source.production_output_consumption_id,
+                    consumedWeightKg: source.consumedWeightKg ?? source.consumed_weight_kg,
+                    product: source.product,
+                }))
+            );
         } catch (err) {
             console.error('Error loading sources:', err);
             // Priorizar userMessage sobre message para mostrar errores en formato natural
@@ -71,7 +94,7 @@ export default function CostSourceSelector({
     const addSource = (type, sourceId) => {
         const newSource = {
             source_type: type,
-            [type === 'stock_box' ? 'production_input_id' : 'production_output_consumption_id']: sourceId,
+            [type === 'stock_product' ? 'product_id' : 'production_output_consumption_id']: sourceId,
             contributed_weight_kg: null,
             contribution_percentage: null,
         };
@@ -170,12 +193,12 @@ export default function CostSourceSelector({
                                 <TableRow key={index}>
                                     <TableCell>
                                         <Badge>
-                                            {source.source_type === 'stock_box' ? 'Stock' : 'Output Padre'}
+                                            {source.source_type === 'stock_product' ? 'Stock' : 'Output Padre'}
                                         </Badge>
                                     </TableCell>
                                     <TableCell>
-                                        {source.source_type === 'stock_box' 
-                                            ? `Input #${source.production_input_id}`
+                                        {source.source_type === 'stock_product' 
+                                            ? `Producto #${source.product_id}`
                                             : `Consumo #${source.production_output_consumption_id}`
                                         }
                                     </TableCell>
@@ -225,8 +248,8 @@ export default function CostSourceSelector({
                                 <>
                                     <div className="px-2 py-1.5 text-sm font-semibold text-gray-500">Materias Primas</div>
                                     {inputs.map(input => (
-                                        <SelectItem key={`stock_box-${input.id}`} value={`stock_box-${input.id}`}>
-                                            Input #{input.id} - {formatWeight(input.box?.netWeight)}
+                                        <SelectItem key={`stock_product-${input.productId}`} value={`stock_product-${input.productId}`}>
+                                            {input.product?.name || `Producto #${input.productId}`} - {formatWeight(input.totalWeight)}
                                         </SelectItem>
                                     ))}
                                 </>
@@ -260,4 +283,3 @@ export default function CostSourceSelector({
         </Card>
     );
 }
-

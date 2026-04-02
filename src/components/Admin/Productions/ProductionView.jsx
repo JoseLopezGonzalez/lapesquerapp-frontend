@@ -17,6 +17,7 @@ import Loader from '@/components/Utilities/Loader'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ArrowLeft, Calendar, Package, Scale, AlertCircle, Info, Calculator, TrendingDown, TrendingUp, Fish, MapPin, FileText, CheckCircle2, XCircle, AlertTriangle, Eye, AlertOctagon } from 'lucide-react'
 import ProductionRecordsManager from './ProductionRecordsManager'
+import CreateProductionRecordDialog from './CreateProductionRecordDialog'
 import { ViewModeSelector } from './ProductionDiagram/ViewModeSelector'
 
 const ProductionDiagram = dynamic(() => import('./ProductionDiagram'), {
@@ -34,6 +35,7 @@ const ProductionView = ({ productionId }) => {
     const { production, processTree, totals, isLoading: loading, totalsLoading, processTreeLoading, error, refetch } = useProductionDetail(productionId, { enableProcessTree: activeTab === 'diagram' })
     const [viewMode, setViewMode] = useState('simple')
     const [reconciliationDialogOpen, setReconciliationDialogOpen] = useState(false)
+    const [createRecordOpen, setCreateRecordOpen] = useState(false)
 
 
     if (loading) {
@@ -690,6 +692,14 @@ const ProductionView = ({ productionId }) => {
                         <ProductionRecordsManager
                             productionId={productionId}
                             processTree={processTree}
+                            onRefresh={refetch}
+                            onOpenCreateDialog={() => setCreateRecordOpen(true)}
+                        />
+
+                        <CreateProductionRecordDialog
+                            open={createRecordOpen}
+                            onOpenChange={setCreateRecordOpen}
+                            productionId={productionId}
                             onRefresh={refetch}
                         />
                     </div>

@@ -459,24 +459,44 @@ export function useProductionOutputConsumptionsManager({
             const token = session?.user?.accessToken
             if (!token) return
             const allRows = getAllConsumptionRows()
+            const hasIncompleteRows = allRows.some((row) => {
+                const hasData = row.production_output_id || row.consumed_weight_kg
+                if (!hasData) return false
+
+                const hasOutput = row.production_output_id && row.production_output_id.trim() !== ''
+                const hasWeight = row.consumed_weight_kg && parseFloat(row.consumed_weight_kg || 0) > 0
+
+                return !hasOutput || !hasWeight
+            })
+
+            if (hasIncompleteRows) {
+                throw new Error('Hay líneas incompletas. Completa o elimina esas filas antes de guardar.')
+            }
+
             const validRows = allRows.filter(
                 (row) =>
                     row.production_output_id &&
                     row.consumed_weight_kg &&
                     parseFloat(row.consumed_weight_kg || 0) > 0
             )
-            if (validRows.length === 0) {
-                alert('Debe haber al menos un consumo válido para guardar')
-                setSavingAll(false)
-                return
-            }
+            const existingConsumptionByOutputId = new Map(
+                consumptions
+                    .map((consumption) => {
+                        const outputId = getOutputId(consumption)
+                        if (!outputId || !consumption?.id) return null
+                        return [String(outputId), consumption.id]
+                    })
+                    .filter(Boolean)
+            )
+
             const allConsumptions = validRows.map((row) => {
                 const weight = parseFloat(row.consumed_weight_kg)
                 if (isNaN(weight) || weight <= 0) {
                     throw new Error('El peso debe ser mayor a 0 para el output seleccionado')
                 }
+                const outputId = parseInt(row.production_output_id)
                 const consumption = {
-                    production_output_id: parseInt(row.production_output_id),
+                    production_output_id: outputId,
                     consumed_weight_kg: weight
                 }
                 if (row.consumed_boxes && row.consumed_boxes.trim() !== '') {
@@ -484,9 +504,34 @@ export function useProductionOutputConsumptionsManager({
                     if (!isNaN(boxes) && boxes >= 0) consumption.consumed_boxes = boxes
                 }
                 if (row.notes && row.notes.trim() !== '') consumption.notes = row.notes.trim()
-                if (row.id && !row.id.toString().startsWith('new-')) consumption.id = row.id
+                if (row.id && !row.id.toString().startsWith('new-')) {
+                    consumption.id = row.id
+                } else {
+                    const existingId = existingConsumptionByOutputId.get(String(outputId))
+                    if (existingId) {
+                        consumption.id = existingId
+                    }
+                }
                 return consumption
             })
+
+            const duplicatedOutputIds = [...new Set(
+                allConsumptions
+                    .map((consumption, index, array) => {
+                        const count = array.filter(
+                            (candidate) => candidate.production_output_id === consumption.production_output_id
+                        ).length
+                        return count > 1 ? consumption.production_output_id : null
+                    })
+                    .filter((outputId) => outputId !== null)
+            )]
+
+            if (duplicatedOutputIds.length > 0) {
+                throw new Error(
+                    `No puedes consumir el mismo output del proceso padre más de una vez en este proceso. Duplicados: ${duplicatedOutputIds.join(', ')}`
+                )
+            }
+
             const newConsumptions = allConsumptions.filter((c) => !c.id)
             const existingConsumptions = allConsumptions.filter((c) => c.id)
             const existingIds = existingConsumptions.map((c) => c.id)

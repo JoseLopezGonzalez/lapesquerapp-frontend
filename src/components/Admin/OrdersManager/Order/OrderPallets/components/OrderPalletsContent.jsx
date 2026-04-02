@@ -59,6 +59,8 @@ const OrderPalletsContent = ({
                         <TableHead>Observaciones</TableHead>
                         <TableHead className="text-right">Cajas</TableHead>
                         <TableHead className="text-right">Peso Neto</TableHead>
+                        <TableHead className="text-right">Coste €/kg</TableHead>
+                        <TableHead className="text-right">Coste Total</TableHead>
                         <TableHead className="text-right">Acciones</TableHead>
                     </TableRow>
                 </TableHeader>

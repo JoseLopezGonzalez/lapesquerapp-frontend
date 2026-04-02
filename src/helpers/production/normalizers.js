@@ -92,6 +92,8 @@ const normalizeProductionOutputSourceInline = (source) => {
         id: source.id,
         productionOutputId: source.production_output_id || source.productionOutputId,
         sourceType: source.source_type || source.sourceType,
+        productId: source.product_id || source.productId || source.product?.id || null,
+        product: source.product ? normalizeProduct(source.product) : (source.product || null),
         productionInputId: source.production_input_id || source.productionInputId || null,
         productionInput: source.production_input ? normalizeProductionInput(source.production_input) : (source.productionInput ? normalizeProductionInput(source.productionInput) : null),
         productionOutputConsumptionId: source.production_output_consumption_id || source.productionOutputConsumptionId || null,
@@ -279,4 +281,3 @@ export const normalizeProductionRecordResponse = (response) => {
     const data = response.data || response
     return normalizeProductionRecord(data)
 }
-

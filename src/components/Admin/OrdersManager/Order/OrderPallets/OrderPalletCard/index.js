@@ -14,6 +14,7 @@ import {
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
+import { formatCostPerKg, formatTotalCost } from '@/helpers/production/costFormatters'
 import { getAvailableBoxes, getAvailableBoxesCount, getAvailableNetWeight } from '@/helpers/pallet/boxAvailability'
 
 export default function OrderPalletCard({ 
@@ -226,6 +227,21 @@ export default function OrderPalletCard({
                         </div>
                     </div>
                 )}
+
+                <div className="grid grid-cols-2 gap-3 pt-1">
+                    <div>
+                        <div className="text-xs font-medium text-muted-foreground mb-1">Coste €/kg:</div>
+                        <div className="text-sm font-medium text-foreground">
+                            {formatCostPerKg(pallet.costPerKg)}
+                        </div>
+                    </div>
+                    <div>
+                        <div className="text-xs font-medium text-muted-foreground mb-1">Coste total:</div>
+                        <div className="text-sm font-medium text-foreground">
+                            {formatTotalCost(pallet.totalCost)}
+                        </div>
+                    </div>
+                </div>
             </CardContent>
 
             <CardFooter className="p-0 w-full">

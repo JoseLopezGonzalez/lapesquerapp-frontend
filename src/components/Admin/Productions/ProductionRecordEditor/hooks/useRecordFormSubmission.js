@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 
 /**
@@ -12,6 +12,7 @@ export const useRecordFormSubmission = ({
     formData
 }) => {
     const router = useRouter()
+    const [isNavigatePending, startTransition] = useTransition()
 
     const handleSubmit = useCallback(async (e) => {
         if (e) {
@@ -21,25 +22,28 @@ export const useRecordFormSubmission = ({
         try {
             // El hook useProductionRecord ya maneja la conversión de fechas
             const response = await saveRecord(formData)
-            
-            // Si es creación, navegar a la página de edición
+
+            // Si es creación, navegar a la página de edición (transición = loader hasta montar la ruta)
             if (!recordId) {
                 const createdRecordId = response?.data?.id || response?.id
                 if (createdRecordId) {
-                    router.push(`/admin/productions/${productionId}/records/${createdRecordId}`)
+                    startTransition(() => {
+                        router.push(`/admin/productions/${productionId}/records/${createdRecordId}`)
+                    })
                 }
             }
-            
+
             return response
         } catch (err) {
             // El error ya está manejado en el hook useProductionRecord
             console.error('Error saving record:', err)
             throw err
         }
-    }, [productionId, recordId, saveRecord, formData, router])
+    }, [productionId, recordId, saveRecord, formData, router, startTransition])
 
     return {
-        handleSubmit
+        handleSubmit,
+        isNavigatePending
     }
 }
 

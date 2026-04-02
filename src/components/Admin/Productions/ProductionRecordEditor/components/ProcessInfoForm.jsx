@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -11,6 +11,7 @@ import { Info } from 'lucide-react'
 
 /**
  * Formulario de información del proceso
+ * @param {'card'|'embedded'} layout — `embedded` omite la Card (p. ej. dentro de un Dialog)
  */
 export const ProcessInfoForm = ({
     formData,
@@ -20,22 +21,38 @@ export const ProcessInfoForm = ({
     currentRecordId,
     isEditMode,
     saving,
-    onSubmit
+    onSubmit,
+    layout = 'card',
+    /** Si el `process_id` del registro no viene en la lista de opciones, mostrar este nombre (p. ej. `record.process.name`). */
+    processLabelFallback = ''
 }) => {
     const handleSubmit = (e) => {
         e.preventDefault()
         onSubmit()
     }
 
-    return (
-        <Card>
-            <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
-                    <Info className="h-5 w-5 text-primary" />
-                    Información del Proceso
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
+    const processTypeOptions = useMemo(() => {
+        const list = Array.isArray(processes) ? processes : []
+        const rows = list
+            .map((p) => {
+                const v = p.value ?? p.id
+                if (v == null) return null
+                const valueStr = String(v)
+                const label = (p.label ?? p.name ?? '').trim() || `Proceso #${valueStr}`
+                return { valueStr, label, key: valueStr }
+            })
+            .filter(Boolean)
+
+        const pid = formData.process_id
+        if (pid && pid !== 'none' && !rows.some((r) => r.valueStr === String(pid))) {
+            const fallback = processLabelFallback?.trim() || `Proceso #${pid}`
+            rows.push({ valueStr: String(pid), label: fallback, key: `orphan-${pid}` })
+        }
+
+        return rows
+    }, [processes, formData.process_id, processLabelFallback])
+
+    const formInner = (
                 <form onSubmit={handleSubmit} className="space-y-3">
                     {/* Tipo de Proceso - OBLIGATORIO */}
                     <div className="space-y-1.5">
@@ -44,8 +61,8 @@ export const ProcessInfoForm = ({
                                 Tipo de Proceso <span className="text-destructive">*</span>
                             </Label>
                         </div>
-                        <div className="flex items-center gap-2">
-                            {processes.length > 0 && (
+                        <div className="flex min-w-0 max-w-full items-center gap-2">
+                            {processTypeOptions.length > 0 ? (
                                 <Select
                                     value={formData.process_id !== 'none' ? formData.process_id : undefined}
                                     onValueChange={(value) => {
@@ -54,21 +71,23 @@ export const ProcessInfoForm = ({
                                     disabled={saving}
                                     required
                                 >
-                                    <SelectTrigger className="h-9">
-                                        <SelectValue placeholder="Selecciona un tipo de proceso">
-                                            {formData.process_id !== 'none' && processes.find(p => p.value?.toString() === formData.process_id)?.label}
-                                        </SelectValue>
+                                    <SelectTrigger className="h-9 w-full min-w-0 max-w-full">
+                                        <SelectValue placeholder="Selecciona un tipo de proceso" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {processes
-                                            .filter(process => process?.value != null)
-                                            .map(process => (
-                                                <SelectItem key={process.value} value={process.value.toString()}>
-                                                    {process.label || `Proceso #${process.value}`}
-                                                </SelectItem>
-                                            ))}
+                                        {processTypeOptions.map((process) => (
+                                            <SelectItem key={process.key} value={process.valueStr}>
+                                                {process.label}
+                                            </SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
+                            ) : (
+                                <div className="flex h-9 w-full min-w-0 items-center rounded-lg border border-input bg-muted/40 px-3 text-sm text-muted-foreground">
+                                    {formData.process_id !== 'none'
+                                        ? processLabelFallback?.trim() || `Proceso #${formData.process_id}`
+                                        : 'Cargando tipos de proceso...'}
+                                </div>
                             )}
                         </div>
                     </div>
@@ -177,8 +196,23 @@ export const ProcessInfoForm = ({
                         </Button>
                     </div>
                 </form>
+    )
+
+    if (layout === 'embedded') {
+        return formInner
+    }
+
+    return (
+        <Card>
+            <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                    <Info className="h-5 w-5 text-primary" />
+                    Información del Proceso
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+                {formInner}
             </CardContent>
         </Card>
     )
 }
-

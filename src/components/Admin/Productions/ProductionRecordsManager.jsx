@@ -15,7 +15,7 @@ import { useRouter } from 'next/navigation'
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
 import { formatInteger, formatDecimal, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
 
-const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
+const ProductionRecordsManager = ({ productionId, processTree, onRefresh, onOpenCreateDialog }) => {
     const { data: session } = useSession()
     const router = useRouter()
     const [records, setRecords] = useState([])
@@ -81,7 +81,11 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh }) => {
     }
 
     const handleNavigateToCreate = () => {
-        router.push(`/admin/productions/${productionId}/records/create`)
+        if (onOpenCreateDialog) {
+            onOpenCreateDialog()
+        } else {
+            router.push(`/admin/productions/${productionId}/records/create`)
+        }
     }
 
     const handleDeleteRecord = async (recordId) => {

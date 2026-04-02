@@ -714,7 +714,7 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
                         </Button>
                         <Button
                             onClick={handleSaveAllConsumptions}
-                            disabled={savingAll || getAllConsumptionRows().length === 0 || getAllConsumptionRows().some(row => {
+                            disabled={savingAll || getAllConsumptionRows().some(row => {
                                 // Si la fila tiene algún dato, debe estar completa y válida
                                 const hasData = row.production_output_id || row.consumed_weight_kg
                                 if (!hasData) return false // Fila vacía, no bloquea
@@ -782,4 +782,3 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
 }
 
 export default ProductionOutputConsumptionsManager
-
