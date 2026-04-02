@@ -325,71 +325,73 @@ export default function ComercialDashboard() {
                                         description="No tienes acciones pendientes para hoy."
                                     />
                                 ) : (
-                                    <Table className="table-fixed">
-                                        <TableBody>
-                                            {reminders.map((item) => {
-                                                const targetHref = item.prospectId
-                                                    ? `/comercial/prospectos/${item.prospectId}`
-                                                    : item.customerId
-                                                      ? `/comercial/clientes/${item.customerId}`
-                                                      : "/comercial";
-                                                const overdue = isOverdueDate(item.nextActionAt) || item.daysOverdue > 0;
+                                    <div className="max-w-full **:data-[slot=table-container]:max-h-[360px] **:data-[slot=table-container]:overflow-y-auto">
+                                        <Table className="table-fixed">
+                                            <TableBody>
+                                                {reminders.map((item) => {
+                                                    const targetHref = item.prospectId
+                                                        ? `/comercial/prospectos/${item.prospectId}`
+                                                        : item.customerId
+                                                          ? `/comercial/clientes/${item.customerId}`
+                                                          : "/comercial";
+                                                    const overdue = isOverdueDate(item.nextActionAt) || item.daysOverdue > 0;
 
-                                                return (
-                                                    <TableRow
-                                                        key={String(item.agendaActionId)}
-                                                        className={overdue ? "bg-red-50/40 dark:bg-red-950/20" : ""}
-                                                    >
-                                                        <TableCell className="w-[72%] whitespace-normal">
-                                                            <Link href={targetHref} className="block font-medium hover:underline">
-                                                                {item.label}
-                                                            </Link>
-                                                            <div className="mt-1 flex flex-wrap items-center gap-1">
-                                                                <p className="text-xs text-muted-foreground">{formatDateValue(item.nextActionAt)}</p>
-                                                                <span
-                                                                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] ${
-                                                                        item.type === "interaction"
-                                                                            ? "bg-blue-500/10 text-blue-700 dark:text-blue-300"
-                                                                            : "bg-slate-500/10 text-slate-700 dark:text-slate-300"
-                                                                    }`}
-                                                                >
-                                                                    {overdue ? "Vencida" : "Pendiente"}
+                                                    return (
+                                                        <TableRow
+                                                            key={String(item.agendaActionId)}
+                                                            className={overdue ? "bg-red-50/40 dark:bg-red-950/20" : ""}
+                                                        >
+                                                            <TableCell className="w-[72%] whitespace-normal">
+                                                                <Link href={targetHref} className="block font-medium hover:underline">
+                                                                    {item.label}
+                                                                </Link>
+                                                                <div className="mt-1 flex flex-wrap items-center gap-1">
+                                                                    <p className="text-xs text-muted-foreground">{formatDateValue(item.nextActionAt)}</p>
+                                                                    <span
+                                                                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] ${
+                                                                            item.type === "interaction"
+                                                                                ? "bg-blue-500/10 text-blue-700 dark:text-blue-300"
+                                                                                : "bg-slate-500/10 text-slate-700 dark:text-slate-300"
+                                                                        }`}
+                                                                    >
+                                                                        {overdue ? "Vencida" : "Pendiente"}
+                                                                    </span>
+                                                                </div>
+                                                                <span className="mt-1 block text-xs text-muted-foreground wrap-break-word">
+                                                                    {item.nextActionNote || "Sin nota"}
                                                                 </span>
-                                                            </div>
-                                                            <span className="mt-1 block text-xs text-muted-foreground wrap-break-word">
-                                                                {item.nextActionNote || "Sin nota"}
-                                                            </span>
-                                                        </TableCell>
-                                                        <TableCell className="text-right">
-                                                            <DropdownMenu>
-                                                                <DropdownMenuTrigger asChild>
-                                                                    <Button variant="ghost" size="icon" aria-label="Acciones">
-                                                                        <MoreVertical className="size-4" />
-                                                                    </Button>
-                                                                </DropdownMenuTrigger>
-                                                                <DropdownMenuContent align="end" className="min-w-48">
-                                                                    <DropdownMenuItem
-                                                                        onSelect={() => setRescheduleDialog({ open: true, item })}
-                                                                    >
-                                                                        Reprogramar
-                                                                    </DropdownMenuItem>
-                                                                    <DropdownMenuItem onSelect={() => handleComplete(item)}>
-                                                                        Cerrar
-                                                                    </DropdownMenuItem>
-                                                                    <DropdownMenuItem
-                                                                        variant="destructive"
-                                                                        onSelect={() => setCancelDialog({ open: true, item })}
-                                                                    >
-                                                                        Cancelar
-                                                                    </DropdownMenuItem>
-                                                                </DropdownMenuContent>
-                                                            </DropdownMenu>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                );
-                                            })}
-                                        </TableBody>
-                                    </Table>
+                                                            </TableCell>
+                                                            <TableCell className="text-right">
+                                                                <DropdownMenu>
+                                                                    <DropdownMenuTrigger asChild>
+                                                                        <Button variant="ghost" size="icon" aria-label="Acciones">
+                                                                            <MoreVertical className="size-4" />
+                                                                        </Button>
+                                                                    </DropdownMenuTrigger>
+                                                                    <DropdownMenuContent align="end" className="min-w-48">
+                                                                        <DropdownMenuItem
+                                                                            onSelect={() => setRescheduleDialog({ open: true, item })}
+                                                                        >
+                                                                            Reprogramar
+                                                                        </DropdownMenuItem>
+                                                                        <DropdownMenuItem onSelect={() => handleComplete(item)}>
+                                                                            Cerrar
+                                                                        </DropdownMenuItem>
+                                                                        <DropdownMenuItem
+                                                                            variant="destructive"
+                                                                            onSelect={() => setCancelDialog({ open: true, item })}
+                                                                        >
+                                                                            Cancelar
+                                                                        </DropdownMenuItem>
+                                                                    </DropdownMenuContent>
+                                                                </DropdownMenu>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    );
+                                                })}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
                                 )}
                             </CardContent>
                         </Card>
@@ -413,46 +415,48 @@ export default function ComercialDashboard() {
                                         description="Todos tus clientes tienen actividad reciente."
                                     />
                                 ) : (
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>Cliente</TableHead>
-                                                <TableHead>Estado</TableHead>
-                                                <TableHead className="text-right">Inactividad</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {crmData.inactive_customers.map((customer) => (
-                                                <TableRow
-                                                    key={customer.id}
-                                                    className={customer.lastOrderAt == null ? "bg-amber-50/40 dark:bg-amber-950/20" : ""}
-                                                >
-                                                    <TableCell className="font-medium">
-                                                        <Link href={`/comercial/clientes/${customer.id}`} className="hover:underline">
-                                                            {customer.name}
-                                                        </Link>
-                                                        <p className="text-xs font-normal text-muted-foreground">
-                                                            {customer.country?.name ?? "Sin país"}
-                                                        </p>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <span
-                                                            className={`rounded-full px-2 py-1 text-xs font-medium ${
-                                                                customer.lastOrderAt == null
-                                                                    ? "bg-amber-500/20 text-amber-800 dark:text-amber-300"
-                                                                    : "bg-red-500/15 text-red-700 dark:text-red-300"
-                                                            }`}
-                                                        >
-                                                            {customer.lastOrderAt == null ? "Nunca pidió" : "Con historial"}
-                                                        </span>
-                                                    </TableCell>
-                                                    <TableCell className="text-right">
-                                                        {customer.lastOrderAt == null ? "—" : `${customer.daysSinceLastOrder ?? "—"} días`}
-                                                    </TableCell>
+                                    <div className="max-w-full **:data-[slot=table-container]:max-h-[360px] **:data-[slot=table-container]:overflow-y-auto">
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead className="sticky top-0 z-10 bg-card">Cliente</TableHead>
+                                                    <TableHead className="sticky top-0 z-10 bg-card">Estado</TableHead>
+                                                    <TableHead className="sticky top-0 z-10 bg-card text-right">Inactividad</TableHead>
                                                 </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {crmData.inactive_customers.map((customer) => (
+                                                    <TableRow
+                                                        key={customer.id}
+                                                        className={customer.lastOrderAt == null ? "bg-amber-50/40 dark:bg-amber-950/20" : ""}
+                                                    >
+                                                        <TableCell className="font-medium">
+                                                            <Link href={`/comercial/clientes/${customer.id}`} className="hover:underline">
+                                                                {customer.name}
+                                                            </Link>
+                                                            <p className="text-xs font-normal text-muted-foreground">
+                                                                {customer.country?.name ?? "Sin país"}
+                                                            </p>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <span
+                                                                className={`rounded-full px-2 py-1 text-xs font-medium ${
+                                                                    customer.lastOrderAt == null
+                                                                        ? "bg-amber-500/20 text-amber-800 dark:text-amber-300"
+                                                                        : "bg-red-500/15 text-red-700 dark:text-red-300"
+                                                                }`}
+                                                            >
+                                                                {customer.lastOrderAt == null ? "Nunca pidió" : "Con historial"}
+                                                            </span>
+                                                        </TableCell>
+                                                        <TableCell className="text-right">
+                                                            {customer.lastOrderAt == null ? "—" : `${customer.daysSinceLastOrder ?? "—"} días`}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
                                 )}
                             </CardContent>
                         </Card>
@@ -476,46 +480,48 @@ export default function ComercialDashboard() {
                                         description="No hay prospectos pendientes de seguimiento."
                                     />
                                 ) : (
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>Prospecto</TableHead>
-                                                <TableHead>Estado</TableHead>
-                                                <TableHead className="text-right">Sin actividad</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {crmData.prospects_without_activity.map((prospect) => (
-                                                <TableRow
-                                                    key={prospect.id}
-                                                    className={prospect.lastContactAt == null ? "bg-blue-50/40 dark:bg-blue-950/20" : ""}
-                                                >
-                                                    <TableCell className="font-medium">
-                                                        <Link href={`/comercial/prospectos/${prospect.id}`} className="hover:underline">
-                                                            {prospect.companyName}
-                                                        </Link>
-                                                        <p className="text-xs font-normal text-muted-foreground">
-                                                            {prospect.country?.name ?? "Sin país"}
-                                                        </p>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <span
-                                                            className={`rounded-full px-2 py-1 text-xs font-medium ${
-                                                                prospect.lastContactAt == null
-                                                                    ? "bg-blue-500/20 text-blue-800 dark:text-blue-300"
-                                                                    : "bg-amber-500/15 text-amber-700 dark:text-amber-300"
-                                                            }`}
-                                                        >
-                                                            {prospect.lastContactAt == null ? "Sin contacto" : "Con historial"}
-                                                        </span>
-                                                    </TableCell>
-                                                    <TableCell className="text-right">
-                                                        {prospect.lastContactAt == null ? "—" : `${prospect.daysWithoutActivity ?? "—"} días`}
-                                                    </TableCell>
+                                    <div className="max-w-full **:data-[slot=table-container]:max-h-[360px] **:data-[slot=table-container]:overflow-y-auto">
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead className="sticky top-0 z-10 bg-card">Prospecto</TableHead>
+                                                    <TableHead className="sticky top-0 z-10 bg-card">Estado</TableHead>
+                                                    <TableHead className="sticky top-0 z-10 bg-card text-right">Sin actividad</TableHead>
                                                 </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {crmData.prospects_without_activity.map((prospect) => (
+                                                    <TableRow
+                                                        key={prospect.id}
+                                                        className={prospect.lastContactAt == null ? "bg-blue-50/40 dark:bg-blue-950/20" : ""}
+                                                    >
+                                                        <TableCell className="font-medium">
+                                                            <Link href={`/comercial/prospectos/${prospect.id}`} className="hover:underline">
+                                                                {prospect.companyName}
+                                                            </Link>
+                                                            <p className="text-xs font-normal text-muted-foreground">
+                                                                {prospect.country?.name ?? "Sin país"}
+                                                            </p>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <span
+                                                                className={`rounded-full px-2 py-1 text-xs font-medium ${
+                                                                    prospect.lastContactAt == null
+                                                                        ? "bg-blue-500/20 text-blue-800 dark:text-blue-300"
+                                                                        : "bg-amber-500/15 text-amber-700 dark:text-amber-300"
+                                                                }`}
+                                                            >
+                                                                {prospect.lastContactAt == null ? "Sin contacto" : "Con historial"}
+                                                            </span>
+                                                        </TableCell>
+                                                        <TableCell className="text-right">
+                                                            {prospect.lastContactAt == null ? "—" : `${prospect.daysWithoutActivity ?? "—"} días`}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
                                 )}
                             </CardContent>
                         </Card>
