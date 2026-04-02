@@ -101,6 +101,12 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
   const hasActiveSearch = Boolean(searchParam);
 
   useEffect(() => {
+    if (nameFilterDraft.trim() !== '') return;
+    if (appliedNameFilter === '') return;
+    setAppliedNameFilter('');
+  }, [nameFilterDraft, appliedNameFilter]);
+
+  useEffect(() => {
     setLoadedProspects([]);
     setPage(1);
   }, [searchParam, status]);
@@ -254,7 +260,7 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
                       ? 'Prueba con otro nombre, limpia el filtro o cambia el estado del prospecto.'
                       : 'Crea el primero para empezar a alimentar la agenda comercial.'
                   }
-                  className="h-full w-full border bg-muted/20 !min-h-0"
+                  className="h-full w-full border bg-muted/20 min-h-0!"
                   button={{ name: 'Nuevo prospecto', onClick: () => setFormOpen(true) }}
                 />
               </div>

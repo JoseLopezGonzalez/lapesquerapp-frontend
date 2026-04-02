@@ -50,7 +50,7 @@ export const navigationConfig = [
     {
         name: 'Pedidos',
         icon: PackageOpen,
-        href: '/comercial/pedidos',
+        href: '/comercial/orders',
         allowedRoles: ["comercial"],
     },
     {
@@ -315,6 +315,12 @@ export const navigationConfig = [
 ];
 
 export const navigationManagerConfig = [
+    {
+        name: 'Gestor de pedidos',
+        icon: PackageOpen,
+        allowedRoles: ["comercial"],
+        href: '/comercial/orders-manager',
+    },
     {
         name: 'Gestor de pedidos',
         icon: PencilSquareIcon,

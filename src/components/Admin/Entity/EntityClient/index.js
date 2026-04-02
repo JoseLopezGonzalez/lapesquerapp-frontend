@@ -687,6 +687,9 @@ export default function EntityClient({ config }) {
         onClick: () => handleGlobalAction(action)
     }))
 
+    const isSelectable = config?.isSelectable !== false;
+    const canBulkDelete = isSelectable && config?.hideBulkDelete !== true;
+
     return (
         <div className='h-full w-full overflow-hidden'>
             <EntityTable>
@@ -707,7 +710,7 @@ export default function EntityClient({ config }) {
                     exports={config.exports}
                     reports={config.reports}
                     selectedRows={selectedRows}
-                    onSelectedRowsDelete={handleSelectedRowsDelete}
+                    onSelectedRowsDelete={canBulkDelete ? handleSelectedRowsDelete : undefined}
                     onExport={handleExport}
                     onReport={handleReport}
                     onRefresh={handleRefresh}
@@ -724,7 +727,7 @@ export default function EntityClient({ config }) {
                         headers={config.table?.headers || []}
                         loading={dataForTable.loading}
                         emptyState={config.emptyState || { title: '', description: '' }}
-                        isSelectable={true}
+                        isSelectable={isSelectable}
                         selectedRows={selectedRows}
                         onSelectionChange={handleOnSelectionChange}
                         onEdit={handleOpenEdit}
