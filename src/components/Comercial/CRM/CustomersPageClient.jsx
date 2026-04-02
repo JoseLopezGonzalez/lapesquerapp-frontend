@@ -54,10 +54,7 @@ function getInteractionOriginMeta(interaction) {
     };
   }
 
-  return {
-    label: 'Interacción de cliente',
-    className: 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300',
-  };
+  return null;
 }
 
 function useCustomerDetail(customerId) {
@@ -617,11 +614,13 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
                                 <div className="flex flex-wrap items-center gap-2">
                                   <span className="text-sm font-semibold leading-tight text-foreground truncate">{typeLabel}</span>
                                   <StatusPill label={resultLabel} status={interaction.result} />
-                                  <span
-                                    className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${originMeta.className}`}
-                                  >
-                                    {originMeta.label}
-                                  </span>
+                                  {originMeta ? (
+                                    <span
+                                      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${originMeta.className}`}
+                                    >
+                                      {originMeta.label}
+                                    </span>
+                                  ) : null}
                                 </div>
                               </div>
 
