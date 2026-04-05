@@ -256,17 +256,13 @@ export default function EntityClient({ config }) {
         }
     }, [config.editRedirect, router, usesSameTabNavigation]);
 
-    // Handler para navegar a la vista de detalles
+    // Vista de detalles siempre en nueva pestaña para no descartar el listado/filtros de la actual.
     const handleOpenView = useCallback((id) => {
         if (!config.viewRoute) return;
 
         const viewUrl = config.viewRoute.replace(':id', id);
-        if (usesSameTabNavigation) {
-            router.push(viewUrl);
-        } else {
-            window.open(viewUrl, '_blank');
-        }
-    }, [config.viewRoute, router, usesSameTabNavigation]);
+        window.open(viewUrl, '_blank');
+    }, [config.viewRoute]);
 
     const dataForTable = useMemo(() => {
         if (!isQueryDriven || !queryResult) return data;

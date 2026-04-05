@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatDecimal, formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers"
-import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
+import { formatCostPerKg } from "@/helpers/production/costFormatters"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { PackageSearch, SearchX } from "lucide-react"
 import { useStockByProductsStats } from "@/hooks/useStockStats"
@@ -52,20 +52,27 @@ export function StockByProductsCard() {
             <CardContent className="min-h-0">
                 {isLoading ? (
                     <ScrollArea className="max-h-[200px] min-h-0 pr-2">
-                        <Table>
-                            <TableBody>
-                                {Array.from({ length: 5 }).map((_, i) => (
-                                    <TableRow key={i}>
-                                        <TableCell className="text-sm text-muted-foreground">
-                                            <Skeleton className="h-4 w-1/2" />
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <Skeleton className="h-4 w-16 ml-auto" />
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                        <div className="flex flex-col text-sm">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                                <div
+                                    key={i}
+                                    className="flex gap-3 border-b border-muted py-2 last:border-b-0"
+                                >
+                                    <div className="min-w-0 flex-1 space-y-2">
+                                        <Skeleton className="h-4 w-[85%] max-w-xs" />
+                                        <Skeleton className="h-3 w-[55%] max-w-[200px]" />
+                                    </div>
+                                    <div className="hidden shrink-0 items-start gap-3 pt-0.5 sm:flex">
+                                        <Skeleton className="h-4 w-10" />
+                                        <Skeleton className="h-4 w-14" />
+                                    </div>
+                                    <div className="flex shrink-0 flex-col items-end gap-1 pt-0.5 sm:hidden">
+                                        <Skeleton className="h-3 w-12" />
+                                        <Skeleton className="h-3 w-10" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </ScrollArea>
                 ) : stockData.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-8 min-h-[200px]">
@@ -82,38 +89,42 @@ export function StockByProductsCard() {
                     </div>
                 ) : filteredData.length > 0 ? (
                     <div className="max-h-[200px] min-h-0 overflow-auto pr-2">
-                        <Table>
-                            <TableBody>
-                                {filteredData.map((item, i) => (
-                                    <TableRow key={i} className="border-muted border-b">
-                                        {/* Nombre */}
-                                        <TableCell className="text-sm">{item.name}</TableCell>
+                        <div className="flex flex-col text-sm">
+                            {filteredData.map((item, i) => (
+                                <div
+                                    key={i}
+                                    className="flex gap-3 border-b border-muted py-2 transition-colors last:border-b-0 hover:bg-muted/50"
+                                >
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex flex-col gap-0.5">
+                                            <span className="wrap-break-word text-foreground">{item.name}</span>
+                                            <span className="text-xs text-muted-foreground">
+                                                Coste medio: {formatCostPerKg(item.average_cost_per_kg)}
+                                            </span>
+                                        </div>
+                                    </div>
 
-                                        {/* % visible solo en sm+ */}
-                                        <TableCell className="text-right hidden sm:table-cell text-xs font-mono font-bold text-nowrap">
+                                    <div className="hidden shrink-0 items-start gap-4 text-right tabular-nums sm:flex">
+                                        <span className="text-xs font-mono font-bold text-nowrap">
                                             {formatDecimal(item.percentage)}%
-                                        </TableCell>
-
-                                        {/* kg visible solo en sm+ */}
-                                        <TableCell className="text-right hidden sm:table-cell text-sm font-mono text-muted-foreground text-nowrap">
+                                        </span>
+                                        <span className="text-sm font-mono text-muted-foreground text-nowrap">
                                             {formatDecimalWeight(item.total_kg)}
-                                        </TableCell>
+                                        </span>
+                                    </div>
 
-                                        {/* Celda combinada para móvil */}
-                                        <TableCell
-                                            className="sm:hidden text-right text-xs font-mono  text-nowrap"
-                                            colSpan={2}
-                                        >
-                                            <div className="flex flex-col items-end">
-                                                <span className="text-right text-xs text-muted-foreground">{formatDecimalWeight(item.total_kg)}</span>
-                                                <span className="text-right text-xs font-bold">{formatDecimal(item.percentage)}%</span>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-
-                                ))}
-                            </TableBody>
-                        </Table>
+                                    <div className="shrink-0 text-right text-xs font-mono sm:hidden">
+                                        <div className="flex flex-col items-end gap-0.5 text-nowrap">
+                                            <span className="text-muted-foreground">{formatDecimalWeight(item.total_kg)}</span>
+                                            <span className="font-bold">{formatDecimal(item.percentage)}%</span>
+                                            <span className="text-[11px] text-muted-foreground">
+                                                {formatCostPerKg(item.average_cost_per_kg)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 ) : (
                     <div className="flex flex-col items-center justify-center py-8 min-h-[200px]">

@@ -11,6 +11,16 @@ import { getUserAgent } from '@/lib/utils/getUserAgent';
 /** Auth token for API requests */
 type AuthToken = string;
 
+export interface StockByProductItem {
+  id: number;
+  name: string;
+  total_kg: number;
+  average_cost_per_kg: number | null;
+  percentage: number;
+}
+
+type ApiListResponse<T> = T[] | { data: T[] };
+
 /** Response from getStores */
 export interface GetStoresResponse {
   data: unknown[];
@@ -139,7 +149,9 @@ export async function getStockBySpeciesStats(
   return response.json();
 }
 
-export async function getStockByProducts(token: AuthToken): Promise<unknown> {
+export async function getStockByProducts(
+  token: AuthToken
+): Promise<ApiListResponse<StockByProductItem>> {
   const response = await fetchWithTenant(
     `${API_URL_V2}stores/total-stock-by-products`,
     {

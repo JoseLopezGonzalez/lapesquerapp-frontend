@@ -220,7 +220,7 @@ export const storeService = {
 
     /**
      * Obtiene el stock total agrupado por productos
-     * @returns {Promise<Array>} Array de objetos con { id, name, total_kg, percentage }
+     * @returns {Promise<Array>} Array de objetos con { id, name, total_kg, average_cost_per_kg, percentage }
      * 
      * @example
      * const stats = await storeService.getStockByProducts();
@@ -313,4 +313,3 @@ export const getRegisteredPallets = async (token) => {
     const service = storeService;
     return service.getRegisteredPallets();
 };
-

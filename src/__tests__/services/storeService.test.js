@@ -101,8 +101,8 @@ describe('storeService', () => {
   describe('getStockByProducts', () => {
     it('fetches stock by products and returns data', async () => {
       const mockData = [
-        { id: 1, name: 'Producto A', total_kg: 10000, percentage: 33.3 },
-        { id: 2, name: 'Producto B', total_kg: 20000, percentage: 66.7 },
+        { id: 1, name: 'Producto A', total_kg: 10000, average_cost_per_kg: 2.5, percentage: 33.3 },
+        { id: 2, name: 'Producto B', total_kg: 20000, average_cost_per_kg: null, percentage: 66.7 },
       ];
       fetchWithTenant.mockResolvedValueOnce(mockJsonResponse(mockData));
 

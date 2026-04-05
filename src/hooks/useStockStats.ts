@@ -7,6 +7,7 @@ import {
   getTotalStockStats,
   getStockBySpeciesStats,
   getStockByProducts,
+  type StockByProductItem,
 } from '@/services/storeService';
 
 /**
@@ -66,7 +67,9 @@ export function useStockByProductsStats() {
     enabled: !!token && !!tenantId,
   });
 
-  const stockData = Array.isArray(data) ? data : (data as { data?: unknown[] })?.data ?? [];
+  const stockData = Array.isArray(data)
+    ? data
+    : (data as { data?: StockByProductItem[] })?.data ?? [];
   return {
     data: stockData,
     isLoading,
