@@ -21,42 +21,154 @@ function getNodeLevel(nodeId, edges, visited = new Set()) {
 /**
  * Extrae información de productos de inputs
  */
-function extractInputProducts(inputs) {
+function extractInputProducts(inputs, parentOutputConsumptions = [], outputs = []) {
   if (!inputs || !Array.isArray(inputs)) return [];
-  
+
+  const parentConsumptionMap = new Map();
+  if (Array.isArray(parentOutputConsumptions)) {
+    parentOutputConsumptions.forEach((consumption) => {
+      if (!consumption) return;
+      if (consumption.id !== undefined && consumption.id !== null) {
+        parentConsumptionMap.set(`id:${consumption.id}`, consumption);
+      }
+      const productionOutputId =
+        consumption.productionOutputId ??
+        consumption.production_output_id ??
+        consumption.productionOutput?.id ??
+        consumption.production_output?.id;
+      if (productionOutputId !== undefined && productionOutputId !== null) {
+        parentConsumptionMap.set(`output:${productionOutputId}`, consumption);
+      }
+    });
+  }
+
+  const sourceByConsumptionId = new Map();
+  if (Array.isArray(outputs)) {
+    outputs.forEach((output) => {
+      if (!Array.isArray(output?.sources)) return;
+      output.sources.forEach((source) => {
+        const consumptionId =
+          source?.productionOutputConsumptionId ??
+          source?.production_output_consumption_id;
+        if (consumptionId !== undefined && consumptionId !== null && !sourceByConsumptionId.has(consumptionId)) {
+          sourceByConsumptionId.set(consumptionId, source);
+        }
+      });
+    });
+  }
+
   const productsMap = {};
   inputs.forEach(input => {
-    if (input.box?.product?.name) {
-      const productName = input.box.product.name;
-      const weight = parseFloat(
-        input.weightKg ??
-        input.weight_kg ??
-        input.box?.netWeight ??
-        input.box?.net_weight ??
-        0
-      );
-      const costPerKg = input.costPerKg ?? input.cost_per_kg ?? input.box?.costPerKg ?? input.box?.cost_per_kg ?? null;
-      if (!productsMap[productName]) {
-        productsMap[productName] = {
-          name: productName,
-          boxes: 0,
-          weight: 0,
-          weightedCostTotal: 0,
-          costWeightBase: 0,
-          costPerKg: null
-        };
-      }
-      productsMap[productName].boxes += 1;
-      productsMap[productName].weight += weight;
+    if (!input) return;
 
-      if (costPerKg !== null && costPerKg !== undefined) {
-        const numericCostPerKg = parseFloat(costPerKg);
-        if (!Number.isNaN(numericCostPerKg)) {
-          const weightBase = weight > 0 ? weight : 1;
-          productsMap[productName].weightedCostTotal += numericCostPerKg * weightBase;
-          productsMap[productName].costWeightBase += weightBase;
-          productsMap[productName].costPerKg = productsMap[productName].weightedCostTotal / productsMap[productName].costWeightBase;
-        }
+    const relatedParentConsumption =
+      parentConsumptionMap.get(`id:${input.id}`) ||
+      parentConsumptionMap.get(`output:${input.productionOutputId ?? input.production_output_id ?? input.productionOutput?.id ?? input.production_output?.id}`) ||
+      null;
+
+    const relatedSource =
+      sourceByConsumptionId.get(input.id) ||
+      sourceByConsumptionId.get(relatedParentConsumption?.id) ||
+      null;
+
+    const productName =
+      input.product?.name ||
+      input.box?.product?.name ||
+      input.productionOutput?.product?.name ||
+      input.production_output?.product?.name ||
+      relatedParentConsumption?.product?.name ||
+      relatedParentConsumption?.productionOutput?.product?.name ||
+      relatedParentConsumption?.production_output?.product?.name;
+
+    if (!productName) return;
+
+    const weight = parseFloat(
+      input.consumedWeightKg ??
+      input.consumed_weight_kg ??
+      input.weightKg ??
+      input.weight_kg ??
+      input.weight ??
+      relatedParentConsumption?.consumedWeightKg ??
+      relatedParentConsumption?.consumed_weight_kg ??
+      relatedParentConsumption?.weight ??
+      input.box?.netWeight ??
+      input.box?.net_weight ??
+      0
+    );
+
+    const boxes = parseFloat(
+      input.consumedBoxes ??
+      input.consumed_boxes ??
+      input.boxes ??
+      relatedParentConsumption?.consumedBoxes ??
+      relatedParentConsumption?.consumed_boxes ??
+      0
+    );
+
+    const costPerKg =
+      input.costPerKg ??
+      input.cost_per_kg ??
+      input.box?.costPerKg ??
+      input.box?.cost_per_kg ??
+      input.productionOutput?.costPerKg ??
+      input.productionOutput?.cost_per_kg ??
+      input.production_output?.costPerKg ??
+      input.production_output?.cost_per_kg ??
+      relatedParentConsumption?.costPerKg ??
+      relatedParentConsumption?.cost_per_kg ??
+      relatedParentConsumption?.productionOutput?.costPerKg ??
+      relatedParentConsumption?.productionOutput?.cost_per_kg ??
+      relatedParentConsumption?.production_output?.costPerKg ??
+      relatedParentConsumption?.production_output?.cost_per_kg ??
+      null;
+
+    const totalCost =
+      input.totalCost ??
+      input.total_cost ??
+      relatedParentConsumption?.totalCost ??
+      relatedParentConsumption?.total_cost ??
+      relatedSource?.sourceTotalCost ??
+      relatedSource?.source_total_cost ??
+      null;
+
+    const effectiveCostPerKg =
+      costPerKg ??
+      relatedSource?.sourceCostPerKg ??
+      relatedSource?.source_cost_per_kg ??
+      null;
+
+    if (!productsMap[productName]) {
+      productsMap[productName] = {
+        name: productName,
+        boxes: 0,
+        weight: 0,
+        weightedCostTotal: 0,
+        costWeightBase: 0,
+        costPerKg: null
+      };
+    }
+
+    productsMap[productName].boxes += Number.isNaN(boxes) ? 0 : boxes || (input.type === 'stock_box' ? 1 : 0);
+    productsMap[productName].weight += Number.isNaN(weight) ? 0 : weight;
+
+    if (totalCost !== null && totalCost !== undefined) {
+      const numericTotalCost = parseFloat(totalCost);
+      if (!Number.isNaN(numericTotalCost)) {
+        const weightBase = !Number.isNaN(weight) && weight > 0 ? weight : 1;
+        productsMap[productName].weightedCostTotal += numericTotalCost;
+        productsMap[productName].costWeightBase += weightBase;
+        productsMap[productName].costPerKg = productsMap[productName].weightedCostTotal / productsMap[productName].costWeightBase;
+        return;
+      }
+    }
+
+    if (effectiveCostPerKg !== null && effectiveCostPerKg !== undefined) {
+      const numericCostPerKg = parseFloat(effectiveCostPerKg);
+      if (!Number.isNaN(numericCostPerKg)) {
+        const weightBase = !Number.isNaN(weight) && weight > 0 ? weight : 1;
+        productsMap[productName].weightedCostTotal += numericCostPerKg * weightBase;
+        productsMap[productName].costWeightBase += weightBase;
+        productsMap[productName].costPerKg = productsMap[productName].weightedCostTotal / productsMap[productName].costWeightBase;
       }
     }
   });
@@ -200,6 +312,30 @@ function normalizeSalesOrders(orders) {
   }));
 }
 
+function normalizeStockMetrics(entity) {
+  if (!entity) return {};
+
+  return {
+    costPerKg: entity.costPerKg ?? entity.cost_per_kg ?? null,
+    costTotal: entity.costTotal ?? entity.cost_total ?? null,
+  };
+}
+
+function normalizeStockStores(stores) {
+  if (!Array.isArray(stores)) return [];
+
+  return stores.map((storeData) => ({
+    ...storeData,
+    ...normalizeStockMetrics(storeData),
+    products: Array.isArray(storeData.products)
+      ? storeData.products.map((productData) => ({
+          ...productData,
+          ...normalizeStockMetrics(productData),
+        }))
+      : [],
+  }));
+}
+
 /**
  * Identifica el tipo de nodo (PROCESS, SALES, STOCK, REPROCESSED, BALANCE)
  */
@@ -302,11 +438,11 @@ export function transformProcessTreeToFlow(processTree, includeDetails = false, 
     // Crear nodo según su tipo
     if (isProcessNode(node)) {
       // Nodo de proceso (existente)
-      const inputProducts = includeDetails ? extractInputProducts(node.inputs) : [];
-      const outputProducts = includeDetails ? extractOutputProducts(node.outputs) : [];
-      const nodeCosts = isAccountingMode ? normalizeNodeCosts(node.costs) : null;
       const parentConsumptions =
         node.parentOutputConsumptions || node.parent_output_consumptions || [];
+      const inputProducts = includeDetails ? extractInputProducts(node.inputs, parentConsumptions, node.outputs) : [];
+      const outputProducts = includeDetails ? extractOutputProducts(node.outputs) : [];
+      const nodeCosts = isAccountingMode ? normalizeNodeCosts(node.costs) : null;
       const accountingOutputs =
         isAccountingMode && Array.isArray(node.outputs)
           ? node.outputs
@@ -397,22 +533,26 @@ export function transformProcessTreeToFlow(processTree, includeDetails = false, 
     } else if (isStockNode(node)) {
       // Nodo de stock (v3 - agrupa múltiples productos del nodo final)
       const stockParentRecordId = node.parentRecordId || (parentId ? parseInt(parentId, 10) : null);
+      const normalizedStores = normalizeStockStores(node.stores);
       
       flowNode = {
         id: nodeId,
         type: 'stockNode',
         position: { x: 0, y: 0 }, // Se calculará después
         data: {
-          stores: node.stores || [], // v3: Array de almacenes, cada almacén tiene array de productos
+          stores: normalizedStores, // v3: Array de almacenes, cada almacén tiene array de productos
           totalBoxes: node.totalBoxes || 0,
           totalNetWeight: node.totalNetWeight || 0,
-          summary: node.summary || {},
+          summary: {
+            ...(node.summary || {}),
+            ...normalizeStockMetrics(node.summary || {}),
+          },
           parentRecordId: stockParentRecordId, // Guardar para conexión
           viewMode: viewMode
         }
       };
       
-      console.log(`📦 Nodo de stock creado: ${nodeId}, parentRecordId guardado: ${stockParentRecordId}, stores: ${(node.stores || []).length}`);
+      console.log(`📦 Nodo de stock creado: ${nodeId}, parentRecordId guardado: ${stockParentRecordId}, stores: ${(normalizedStores || []).length}`);
     } else if (isReprocessedNode(node)) {
       // Nodo de reprocesado
       const reprocessedParentRecordId = node.parentRecordId || (parentId ? parseInt(parentId, 10) : null);

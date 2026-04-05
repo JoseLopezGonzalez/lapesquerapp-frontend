@@ -103,9 +103,11 @@ const ProductionView = ({ productionId }) => {
                             <ArrowLeft className="h-4 w-4" />
                         </Button>
                         <div>
-                            <h1 className="text-2xl font-bold">Producción #{production.id}</h1>
+                            <h1 className="text-2xl font-bold tracking-tight">
+                                {production.lot?.trim() ? production.lot : 'Sin lote'}
+                            </h1>
                             <p className="text-sm text-muted-foreground">
-                                Lote: {production.lot || 'Sin lote'}
+                                Producción #{production.id}
                             </p>
                         </div>
                     </div>

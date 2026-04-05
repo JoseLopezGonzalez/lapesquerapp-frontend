@@ -3,6 +3,7 @@
 import React from 'react'
 import { Handle, Position } from '@xyflow/react'
 import { formatWeight } from '@/helpers/production/formatters'
+import { formatCostPerKg, formatTotalCost } from '@/helpers/production/costFormatters'
 
 export default function StockNode({ data }) {
   const {
@@ -15,7 +16,8 @@ export default function StockNode({ data }) {
 
   const storesCount = summary?.storesCount || stores.length || 0
   const productsCount = summary?.productsCount || 0
-  const isDetailed = viewMode === 'detailed'
+  const isDetailed = viewMode === 'detailed' || viewMode === 'accounting'
+  const isAccounting = viewMode === 'accounting'
 
   return (
     <div className={`
@@ -57,6 +59,18 @@ export default function StockNode({ data }) {
                 <td className="text-muted-foreground py-0.5 pr-2">Total Peso:</td>
                 <td className="font-bold text-foreground text-right">{formatWeight(totalNetWeight || summary?.netWeight || 0)}</td>
               </tr>
+              {isAccounting && (
+                <>
+                  <tr>
+                    <td className="text-muted-foreground py-0.5 pr-2">Coste/kg:</td>
+                    <td className="font-bold text-foreground text-right">{formatCostPerKg(summary?.costPerKg)}</td>
+                  </tr>
+                  <tr>
+                    <td className="text-muted-foreground py-0.5 pr-2">Coste total:</td>
+                    <td className="text-foreground text-right">{formatTotalCost(summary?.costTotal)}</td>
+                  </tr>
+                </>
+              )}
             </tbody>
           </table>
         </div>
@@ -92,6 +106,7 @@ export default function StockNode({ data }) {
                   <th className="text-right py-1 px-1 font-medium text-muted-foreground">Cajas</th>
                   <th className="text-right py-1 px-1 font-medium text-muted-foreground">Peso</th>
                   <th className="text-right py-1 px-1 font-medium text-muted-foreground">Palets</th>
+                  {isAccounting && <th className="text-right py-1 px-1 font-medium text-muted-foreground">Coste</th>}
                 </tr>
               </thead>
               <tbody>
@@ -111,6 +126,12 @@ export default function StockNode({ data }) {
                         <td className="py-1 px-1 text-right font-medium">{storeData.totalBoxes || 0}</td>
                         <td className="py-1 px-1 text-right">{formatWeight(storeData.totalNetWeight || 0)}</td>
                         <td className="py-1 px-1 text-right">-</td>
+                        {isAccounting && (
+                          <td className="py-1 px-1 text-right">
+                            <div className="font-medium whitespace-nowrap">{formatCostPerKg(storeData.costPerKg)}</div>
+                            <div className="text-[9px] text-muted-foreground whitespace-nowrap">{formatTotalCost(storeData.costTotal)}</div>
+                          </td>
+                        )}
                       </tr>
                     )
                   }
@@ -137,6 +158,12 @@ export default function StockNode({ data }) {
                         <td className="py-1 px-1 text-right font-medium whitespace-nowrap">{productData.totalBoxes || 0}</td>
                         <td className="py-1 px-1 text-right whitespace-nowrap">{formatWeight(productData.totalNetWeight || 0)}</td>
                         <td className="py-1 px-1 text-right text-muted-foreground whitespace-nowrap">{pallets.length || 0}</td>
+                        {isAccounting && (
+                          <td className="py-1 px-1 text-right">
+                            <div className="font-medium whitespace-nowrap">{formatCostPerKg(productData.costPerKg)}</div>
+                            <div className="text-[9px] text-muted-foreground whitespace-nowrap">{formatTotalCost(productData.costTotal)}</div>
+                          </td>
+                        )}
                       </tr>
                     )
                   })

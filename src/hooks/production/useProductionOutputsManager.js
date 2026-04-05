@@ -323,6 +323,16 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
                         id: productSource.productId || productSource.product_id,
                         product: productSource.product,
                         productId: productSource.productId || productSource.product_id,
+                        totalBoxes:
+                            parseFloat(
+                                productSource.totalBoxes ??
+                                productSource.total_boxes ??
+                                productSource.boxesCount ??
+                                productSource.boxes_count ??
+                                productSource.consumedBoxes ??
+                                productSource.consumed_boxes ??
+                                0
+                            ) || 0,
                         totalWeight:
                             parseFloat(
                                 productSource.availableWeightKg ??
@@ -362,6 +372,7 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
                         productionOutputId: output.productionOutputId,
                         consumedWeightKg: output.consumedWeightKg ?? output.consumed_weight_kg,
                         consumedBoxes: output.consumedBoxes ?? output.consumed_boxes,
+                        totalBoxes: output.consumedBoxes ?? output.consumed_boxes ?? 0,
                         product: output.product,
                         lotId: output.lotId ?? output.lot_id,
                         costPerKg: output.costPerKg ?? output.cost_per_kg,
@@ -388,11 +399,13 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
                             id: productId,
                             productId: productId,
                             product,
+                            totalBoxes: 0,
                             totalWeight: 0,
                             costPerKg: null,
                             totalCost: 0,
                         }
                     }
+                    groupedInputs[productId].totalBoxes += 1
                     groupedInputs[productId].totalWeight += parseFloat(input.box?.netWeight || 0) || 0
                 })
                 setAvailableInputs(Object.values(groupedInputs))

@@ -32,6 +32,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { useProductionOutputsManager } from '@/hooks/production/useProductionOutputsManager'
 import { useProductionRecordContextOptional } from '@/context/ProductionRecordContext'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
 
 const roundToTwo = (value) => Math.round((parseFloat(value || 0) + Number.EPSILON) * 100) / 100
 
@@ -70,10 +71,12 @@ const buildSourceOptions = (availableInputs, availableConsumptions) => [
         value: `stock_product-${input.productId ?? input.id}`,
         source_type: 'stock_product',
         product_id: input.productId ?? input.id,
+        matched_product_id: input.productId ?? input.product?.id ?? input.id,
         production_output_consumption_id: null,
         typeLabel: 'Stock',
         label: input.product?.name || `Producto #${input.productId ?? input.id}`,
         secondaryLabel: `${formatWeight(input.totalWeight)} consumidos desde stock`,
+        totalBoxes: parseFloat(input.totalBoxes || 0) || 0,
         totalWeight: parseFloat(input.totalWeight || 0),
     })),
     ...availableConsumptions.map((consumption) => ({
@@ -81,10 +84,12 @@ const buildSourceOptions = (availableInputs, availableConsumptions) => [
         value: `parent_output-${consumption.id}`,
         source_type: 'parent_output',
         product_id: null,
+        matched_product_id: consumption.product?.id ?? null,
         production_output_consumption_id: consumption.id,
         typeLabel: 'Padre',
         label: consumption.product?.name || `Consumo #${consumption.id}`,
         secondaryLabel: `Consumo #${consumption.id} · ${formatWeight(consumption.consumedWeightKg)}`,
+        totalBoxes: parseFloat(consumption.totalBoxes ?? consumption.consumedBoxes ?? 0) || 0,
         totalWeight: parseFloat(consumption.consumedWeightKg || 0),
     })),
 ]
@@ -419,6 +424,214 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
             updateRow(row.id, 'sources', recalculateSourcesForRow(row, nextSources))
         })
     }, [allRows, getSourceWeightFromAdjustedOutputWeight, recalculateSourcesForRow, sourceOptions, updateRow])
+
+    const distributeMatchingSourcesByProduct = React.useCallback(() => {
+        const validRows = allRows.filter((row) => row.product_id && parseFloat(row.weight_kg || 0) > 0)
+        const availableSources = sourceOptions.filter((option) => option.totalWeight > 0)
+
+        if (validRows.length === 0 || availableSources.length === 0) {
+            return
+        }
+
+        const groupedOutputs = new Map()
+        validRows.forEach((row) => {
+            const productId = String(row.product_id)
+            if (!groupedOutputs.has(productId)) {
+                groupedOutputs.set(productId, {
+                    rows: [],
+                    totalWeight: 0,
+                    totalBoxes: 0,
+                })
+            }
+            const group = groupedOutputs.get(productId)
+            group.rows.push(row)
+            group.totalWeight += parseFloat(row.weight_kg || 0) || 0
+            group.totalBoxes += parseFloat(row.boxes || 0) || 0
+        })
+
+        const groupedSources = new Map()
+        availableSources.forEach((option) => {
+            const productId = String(option.matched_product_id || '')
+            if (!productId) return
+            if (!groupedSources.has(productId)) {
+                groupedSources.set(productId, {
+                    totalSourceWeight: 0,
+                    totalAdjustedWeight: 0,
+                    totalBoxes: 0,
+                    options: [],
+                })
+            }
+            const group = groupedSources.get(productId)
+            group.totalSourceWeight += option.totalWeight
+            group.totalAdjustedWeight += getAdjustedOutputWeightFromSource(option.totalWeight)
+            group.totalBoxes += option.totalBoxes || 0
+            group.options.push(option)
+        })
+
+        const allProductIds = new Set([...groupedOutputs.keys(), ...groupedSources.keys()])
+        const mismatchMessages = []
+
+        allProductIds.forEach((productId) => {
+            const outputGroup = groupedOutputs.get(productId)
+            const sourceGroup = groupedSources.get(productId)
+
+            if (!outputGroup || !sourceGroup) {
+                mismatchMessages.push('No coinciden los productos entre entradas y salidas.')
+                return
+            }
+
+            const weightDifference = Math.abs(roundToTwo(outputGroup.totalWeight) - roundToTwo(sourceGroup.totalAdjustedWeight))
+            if (weightDifference > 0.01) {
+                mismatchMessages.push('No coinciden los pesos entre entradas y salidas del mismo producto.')
+            }
+
+            const outputBoxes = roundToTwo(outputGroup.totalBoxes)
+            const sourceBoxes = roundToTwo(sourceGroup.totalBoxes)
+            if ((outputBoxes > 0 || sourceBoxes > 0) && Math.abs(outputBoxes - sourceBoxes) > 0.01) {
+                mismatchMessages.push('No coinciden las cajas entre entradas y salidas del mismo producto.')
+            }
+        })
+
+        if (mismatchMessages.length > 0) {
+            toast.error('La distribución 1:1 requiere que entradas y salidas coincidan en productos y cantidades.')
+            return
+        }
+
+        validRows.forEach((row) => {
+            const matchingSources = availableSources.filter(
+                (option) => String(option.matched_product_id || '') === String(row.product_id || '')
+            )
+
+            if (matchingSources.length === 0) {
+                return
+            }
+
+            const totalMatchingWeight = matchingSources.reduce((sum, source) => sum + source.totalWeight, 0)
+            if (totalMatchingWeight <= 0) {
+                return
+            }
+
+            const requiredSourceWeight = getSourceWeightFromAdjustedOutputWeight(parseFloat(row.weight_kg || 0) || 0)
+            const targetSourceWeight = Math.min(requiredSourceWeight, totalMatchingWeight)
+
+            const nextSources = matchingSources
+                .map((option) => {
+                    const sourceWeight = roundToTwo(targetSourceWeight * (option.totalWeight / totalMatchingWeight))
+                    if (sourceWeight <= 0) return null
+                    return {
+                        source_type: option.source_type,
+                        product_id: option.product_id,
+                        production_output_consumption_id: option.production_output_consumption_id,
+                        contributed_weight_kg: sourceWeight,
+                        contribution_percentage: null,
+                    }
+                })
+                .filter(Boolean)
+
+            updateRow(row.id, 'source_priority', matchingSources.map((option) => option.key))
+            updateRow(row.id, 'sources', recalculateSourcesForRow(row, nextSources))
+        })
+    }, [allRows, getSourceWeightFromAdjustedOutputWeight, recalculateSourcesForRow, sourceOptions, updateRow])
+
+    const addOutputsFromConsumptionsAndDistributeMatchingSources = React.useCallback(() => {
+        const availableSources = sourceOptions.filter(
+            (option) => option.totalWeight > 0 && option.matched_product_id !== null && option.matched_product_id !== undefined
+        )
+
+        if (availableSources.length === 0) {
+            return
+        }
+
+        const groupedByProduct = new Map()
+        availableSources.forEach((option) => {
+            const productId = String(option.matched_product_id)
+            if (!groupedByProduct.has(productId)) {
+                groupedByProduct.set(productId, {
+                    productId,
+                    totalSourceWeight: 0,
+                    totalBoxes: 0,
+                    options: [],
+                })
+            }
+            const group = groupedByProduct.get(productId)
+            group.totalSourceWeight += option.totalWeight
+            group.totalBoxes += option.totalBoxes || 0
+            group.options.push(option)
+        })
+
+        const existingRowsByProduct = new Map()
+        allRows.forEach((row) => {
+            if (!row.product_id) return
+            existingRowsByProduct.set(String(row.product_id), row)
+        })
+
+        const buildSourcesForRow = (row, options) => {
+            const totalMatchingWeight = options.reduce((sum, option) => sum + option.totalWeight, 0)
+            if (totalMatchingWeight <= 0) return []
+
+            const requiredSourceWeight = getSourceWeightFromAdjustedOutputWeight(parseFloat(row.weight_kg || 0) || 0)
+            const targetSourceWeight = Math.min(requiredSourceWeight, totalMatchingWeight)
+
+            return recalculateSourcesForRow(
+                row,
+                options
+                    .map((option) => {
+                        const sourceWeight = roundToTwo(targetSourceWeight * (option.totalWeight / totalMatchingWeight))
+                        if (sourceWeight <= 0) return null
+                        return {
+                            source_type: option.source_type,
+                            product_id: option.product_id,
+                            production_output_consumption_id: option.production_output_consumption_id,
+                            contributed_weight_kg: sourceWeight,
+                            contribution_percentage: null,
+                        }
+                    })
+                    .filter(Boolean)
+            )
+        }
+
+        setEditableOutputs((prev) =>
+            prev.map((row) => {
+                const group = groupedByProduct.get(String(row.product_id || ''))
+                if (!group || !(parseFloat(row.weight_kg || 0) > 0)) return row
+                return {
+                    ...row,
+                    source_priority: group.options.map((option) => option.key),
+                    sources: buildSourcesForRow(row, group.options),
+                }
+            })
+        )
+
+        const timestamp = Date.now()
+        setNewRows((prev) => {
+            const nextRows = [...prev]
+            const knownProductIds = new Set([
+                ...allRows.map((row) => (row.product_id ? String(row.product_id) : null)).filter(Boolean),
+                ...prev.map((row) => (row.product_id ? String(row.product_id) : null)).filter(Boolean),
+            ])
+
+            groupedByProduct.forEach((group) => {
+                if (knownProductIds.has(group.productId)) return
+
+                const weightKg = roundToTwo(getAdjustedOutputWeightFromSource(group.totalSourceWeight))
+                const newRow = {
+                    id: `new-matching-source-${timestamp}-${group.productId}`,
+                    product_id: group.productId,
+                    boxes: group.totalBoxes > 0 ? String(group.totalBoxes) : '',
+                    weight_kg: weightKg > 0 ? weightKg.toFixed(2) : '',
+                    source_priority: group.options.map((option) => option.key),
+                    sources: [],
+                    isNew: true,
+                }
+
+                newRow.sources = buildSourcesForRow(newRow, group.options)
+                nextRows.push(newRow)
+                knownProductIds.add(group.productId)
+            })
+
+            return nextRows
+        })
+    }, [allRows, getAdjustedOutputWeightFromSource, getSourceWeightFromAdjustedOutputWeight, recalculateSourcesForRow, setEditableOutputs, sourceOptions])
 
     const completeRowWithPriority = React.useCallback((row) => {
         const outputWeight = parseFloat(row.weight_kg || 0) || 0
@@ -1493,6 +1706,20 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                             </div>
                                         </DropdownMenuItem>
                                         <DropdownMenuSeparator />
+                                        <DropdownMenuLabel>Agregar y asignar</DropdownMenuLabel>
+                                        <DropdownMenuItem
+                                            onClick={addOutputsFromConsumptionsAndDistributeMatchingSources}
+                                            disabled={sourceOptions.length === 0}
+                                        >
+                                            <Sparkles className="mr-2 h-4 w-4" />
+                                            <div className="flex flex-col gap-0.5">
+                                                <span>Añadir salidas y distribuir por mismo producto</span>
+                                                <span className="text-xs text-muted-foreground">
+                                                    Crea las salidas faltantes desde los consumos y les asigna sus fuentes del mismo producto.
+                                                </span>
+                                            </div>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuSeparator />
                                         <DropdownMenuLabel>Asignar fuentes</DropdownMenuLabel>
                                         <DropdownMenuItem
                                             onClick={distributeSourcesProportionally}
@@ -1503,6 +1730,18 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                                 <span>Distribuir fuentes</span>
                                                 <span className="text-xs text-muted-foreground">
                                                     Reparte proporcionalmente cada fuente según su disponibilidad.
+                                                </span>
+                                            </div>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            onClick={distributeMatchingSourcesByProduct}
+                                            disabled={allRows.filter((row) => row.product_id && parseFloat(row.weight_kg || 0) > 0).length === 0 || sourceOptions.length === 0}
+                                        >
+                                            <Sparkles className="mr-2 h-4 w-4" />
+                                            <div className="flex flex-col gap-0.5">
+                                                <span>Distribuir fuentes por mismo producto</span>
+                                                <span className="text-xs text-muted-foreground">
+                                                    Asigna a cada salida solo las fuentes del mismo producto, priorizando una correspondencia 1:1.
                                                 </span>
                                             </div>
                                         </DropdownMenuItem>

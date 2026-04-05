@@ -13,7 +13,7 @@ export default function RestantesNode({ data }) {
   } = data
 
   const productsCount = summary?.productsCount || products.length || 0
-  const isDetailed = viewMode === 'detailed'
+  const isDetailed = viewMode === 'detailed' || viewMode === 'accounting'
 
   // Calcular totales de faltantes y sobrantes desde el summary o desde los productos
   // NOTA: Los valores del summary ya vienen calculados correctamente como valores absolutos
@@ -300,4 +300,3 @@ export default function RestantesNode({ data }) {
     </div>
   )
 }
-
