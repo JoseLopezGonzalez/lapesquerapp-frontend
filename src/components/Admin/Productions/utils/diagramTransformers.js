@@ -338,6 +338,30 @@ function normalizeStockStores(stores) {
   }));
 }
 
+function normalizeReprocessedMetrics(entity) {
+  if (!entity) return {};
+
+  return {
+    costPerKg: entity.costPerKg ?? entity.cost_per_kg ?? null,
+    costTotal: entity.costTotal ?? entity.cost_total ?? null,
+  };
+}
+
+function normalizeReprocessedProcesses(processes) {
+  if (!Array.isArray(processes)) return [];
+
+  return processes.map((processData) => ({
+    ...processData,
+    ...normalizeReprocessedMetrics(processData),
+    products: Array.isArray(processData.products)
+      ? processData.products.map((productData) => ({
+          ...productData,
+          ...normalizeReprocessedMetrics(productData),
+        }))
+      : [],
+  }));
+}
+
 /**
  * Identifica el tipo de nodo (PROCESS, SALES, STOCK, REPROCESSED, BALANCE)
  */
@@ -558,22 +582,26 @@ export function transformProcessTreeToFlow(processTree, includeDetails = false, 
     } else if (isReprocessedNode(node)) {
       // Nodo de reprocesado
       const reprocessedParentRecordId = node.parentRecordId || (parentId ? parseInt(parentId, 10) : null);
+      const normalizedProcesses = normalizeReprocessedProcesses(node.processes);
       
       flowNode = {
         id: nodeId,
         type: 'reprocessedNode',
         position: { x: 0, y: 0 }, // Se calculará después
         data: {
-          processes: node.processes || [], // Array de procesos de reprocesado
+          processes: normalizedProcesses, // Array de procesos de reprocesado
           totalBoxes: node.totalBoxes || 0,
           totalNetWeight: node.totalNetWeight || 0,
-          summary: node.summary || {},
+          summary: {
+            ...(node.summary || {}),
+            ...normalizeReprocessedMetrics(node.summary || {}),
+          },
           parentRecordId: reprocessedParentRecordId, // Guardar para conexión
           viewMode: viewMode
         }
       };
       
-      console.log(`🔄 Nodo de reprocesado creado: ${nodeId}, parentRecordId guardado: ${reprocessedParentRecordId}, processes: ${(node.processes || []).length}`);
+      console.log(`🔄 Nodo de reprocesado creado: ${nodeId}, parentRecordId guardado: ${reprocessedParentRecordId}, processes: ${(normalizedProcesses || []).length}`);
     } else if (isBalanceNode(node)) {
       // Nodo de balance (faltantes y sobras)
       const balanceParentRecordId = node.parentRecordId || (parentId ? parseInt(parentId, 10) : null);

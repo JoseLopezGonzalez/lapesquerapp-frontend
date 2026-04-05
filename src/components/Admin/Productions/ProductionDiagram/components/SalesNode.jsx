@@ -48,6 +48,7 @@ export default function SalesNode({ data }) {
   const ordersCount = summary?.ordersCount || orders.length || 0
   const productsCount = summary?.productsCount || 0
   const isDetailed = viewMode === 'detailed' || viewMode === 'accounting'
+  const isAccounting = viewMode === 'accounting'
 
   return (
     <div className={`
@@ -85,22 +86,26 @@ export default function SalesNode({ data }) {
                 <td className="text-muted-foreground py-0.5 pr-2">Total Peso:</td>
                 <td className="font-bold text-foreground text-right">{formatWeight(totalNetWeight || summary?.netWeight || 0)}</td>
               </tr>
-              <SalesMetricRow
-                label="Venta"
-                primaryValue={summary?.salePricePerKg}
-                secondaryValue={summary?.saleTotal ?? summary?.saleSubtotal}
-              />
-              <SalesMetricRow
-                label="Coste"
-                primaryValue={summary?.costPerKg}
-                secondaryValue={summary?.costTotal}
-              />
-              <SalesMetricRow
-                label="Margen"
-                primaryValue={summary?.marginPerKgExTax}
-                secondaryValue={summary?.marginTotalExTax}
-                tertiaryValue={summary?.marginPercentageExTax}
-              />
+              {isAccounting && (
+                <>
+                  <SalesMetricRow
+                    label="Venta"
+                    primaryValue={summary?.salePricePerKg}
+                    secondaryValue={summary?.saleTotal ?? summary?.saleSubtotal}
+                  />
+                  <SalesMetricRow
+                    label="Coste"
+                    primaryValue={summary?.costPerKg}
+                    secondaryValue={summary?.costTotal}
+                  />
+                  <SalesMetricRow
+                    label="Margen"
+                    primaryValue={summary?.marginPerKgExTax}
+                    secondaryValue={summary?.marginTotalExTax}
+                    tertiaryValue={summary?.marginPercentageExTax}
+                  />
+                </>
+              )}
             </tbody>
           </table>
         </div>
@@ -128,13 +133,17 @@ export default function SalesNode({ data }) {
                   )}
                   <div className="text-right">
                     <div className="text-muted-foreground">{orderData.totalBoxes || 0} cajas · {formatWeight(orderData.totalNetWeight || 0)}</div>
-                    <div className="font-medium text-foreground">{formatCostPerKg(orderData.salePricePerKg)}</div>
-                    <div className="text-[10px] text-muted-foreground">
-                      Coste {formatCostPerKg(orderData.costPerKg)}
-                    </div>
-                    <div className="text-[10px] text-muted-foreground">
-                      Margen {formatCostPerKg(orderData.marginPerKgExTax)}
-                    </div>
+                    {isAccounting && (
+                      <>
+                        <div className="font-medium text-foreground">{formatCostPerKg(orderData.salePricePerKg)}</div>
+                        <div className="text-[10px] text-muted-foreground">
+                          Coste {formatCostPerKg(orderData.costPerKg)}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground">
+                          Margen {formatCostPerKg(orderData.marginPerKgExTax)}
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               )
@@ -151,9 +160,9 @@ export default function SalesNode({ data }) {
                   <th className="text-left py-1 px-1 font-medium text-muted-foreground">Producto</th>
                   <th className="text-right py-1 px-1 font-medium text-muted-foreground">Cajas</th>
                   <th className="text-right py-1 px-1 font-medium text-muted-foreground">Peso</th>
-                  <th className="text-right py-1 px-1 font-medium text-muted-foreground">Venta</th>
-                  <th className="text-right py-1 px-1 font-medium text-muted-foreground">Coste</th>
-                  <th className="text-right py-1 px-1 font-medium text-muted-foreground">Margen</th>
+                  {isAccounting && <th className="text-right py-1 px-1 font-medium text-muted-foreground">Venta</th>}
+                  {isAccounting && <th className="text-right py-1 px-1 font-medium text-muted-foreground">Coste</th>}
+                  {isAccounting && <th className="text-right py-1 px-1 font-medium text-muted-foreground">Margen</th>}
                 </tr>
               </thead>
               <tbody>
@@ -182,19 +191,25 @@ export default function SalesNode({ data }) {
                         <td className="py-1 px-1 text-muted-foreground whitespace-normal break-words align-middle">-</td>
                         <td className="py-1 px-1 text-right font-medium whitespace-nowrap align-middle">{orderData.totalBoxes || 0}</td>
                         <td className="py-1 px-1 text-right whitespace-nowrap align-middle">{formatWeight(orderData.totalNetWeight || 0)}</td>
-                        <td className="py-1 px-1 text-right whitespace-nowrap align-middle">
-                          <div className="font-medium text-foreground">{formatCostPerKg(orderData.salePricePerKg)}</div>
-                          <div className="text-muted-foreground">{formatTotalCost(orderData.saleTotal ?? orderData.saleSubtotal)}</div>
-                        </td>
-                        <td className="py-1 px-1 text-right whitespace-nowrap align-middle">
-                          <div className="font-medium text-foreground">{formatCostPerKg(orderData.costPerKg)}</div>
-                          <div className="text-muted-foreground">{formatTotalCost(orderData.costTotal)}</div>
-                        </td>
-                        <td className="py-1 px-1 text-right whitespace-nowrap align-middle">
-                          <div className="font-medium text-foreground">{formatCostPerKg(orderData.marginPerKgExTax)}</div>
-                          <div className="text-muted-foreground">{formatTotalCost(orderData.marginTotalExTax)}</div>
-                          <div className="text-muted-foreground">{formatPercentage(orderData.marginPercentageExTax)}</div>
-                        </td>
+                        {isAccounting && (
+                          <td className="py-1 px-1 text-right whitespace-nowrap align-middle">
+                            <div className="font-medium text-foreground">{formatCostPerKg(orderData.salePricePerKg)}</div>
+                            <div className="text-muted-foreground">{formatTotalCost(orderData.saleTotal ?? orderData.saleSubtotal)}</div>
+                          </td>
+                        )}
+                        {isAccounting && (
+                          <td className="py-1 px-1 text-right whitespace-nowrap align-middle">
+                            <div className="font-medium text-foreground">{formatCostPerKg(orderData.costPerKg)}</div>
+                            <div className="text-muted-foreground">{formatTotalCost(orderData.costTotal)}</div>
+                          </td>
+                        )}
+                        {isAccounting && (
+                          <td className="py-1 px-1 text-right whitespace-nowrap align-middle">
+                            <div className="font-medium text-foreground">{formatCostPerKg(orderData.marginPerKgExTax)}</div>
+                            <div className="text-muted-foreground">{formatTotalCost(orderData.marginTotalExTax)}</div>
+                            <div className="text-muted-foreground">{formatPercentage(orderData.marginPercentageExTax)}</div>
+                          </td>
+                        )}
                       </tr>
                     )
                   }
@@ -229,19 +244,25 @@ export default function SalesNode({ data }) {
                         </td>
                         <td className="py-1 px-1 text-right font-medium whitespace-nowrap align-middle">{productData.totalBoxes || 0}</td>
                         <td className="py-1 px-1 text-right whitespace-nowrap align-middle">{formatWeight(productData.totalNetWeight || 0)}</td>
-                        <td className="py-1 px-1 text-right whitespace-nowrap align-middle">
-                          <div className="font-medium text-foreground">{formatCostPerKg(productData.salePricePerKg)}</div>
-                          <div className="text-muted-foreground">{formatTotalCost(productData.saleTotal ?? productData.saleSubtotal)}</div>
-                        </td>
-                        <td className="py-1 px-1 text-right whitespace-nowrap align-middle">
-                          <div className="font-medium text-foreground">{formatCostPerKg(productData.costPerKg)}</div>
-                          <div className="text-muted-foreground">{formatTotalCost(productData.costTotal)}</div>
-                        </td>
-                        <td className="py-1 px-1 text-right whitespace-nowrap align-middle">
-                          <div className="font-medium text-foreground">{formatCostPerKg(productData.marginPerKgExTax)}</div>
-                          <div className="text-muted-foreground">{formatTotalCost(productData.marginTotalExTax)}</div>
-                          <div className="text-muted-foreground">{formatPercentage(productData.marginPercentageExTax)}</div>
-                        </td>
+                        {isAccounting && (
+                          <td className="py-1 px-1 text-right whitespace-nowrap align-middle">
+                            <div className="font-medium text-foreground">{formatCostPerKg(productData.salePricePerKg)}</div>
+                            <div className="text-muted-foreground">{formatTotalCost(productData.saleTotal ?? productData.saleSubtotal)}</div>
+                          </td>
+                        )}
+                        {isAccounting && (
+                          <td className="py-1 px-1 text-right whitespace-nowrap align-middle">
+                            <div className="font-medium text-foreground">{formatCostPerKg(productData.costPerKg)}</div>
+                            <div className="text-muted-foreground">{formatTotalCost(productData.costTotal)}</div>
+                          </td>
+                        )}
+                        {isAccounting && (
+                          <td className="py-1 px-1 text-right whitespace-nowrap align-middle">
+                            <div className="font-medium text-foreground">{formatCostPerKg(productData.marginPerKgExTax)}</div>
+                            <div className="text-muted-foreground">{formatTotalCost(productData.marginTotalExTax)}</div>
+                            <div className="text-muted-foreground">{formatPercentage(productData.marginPercentageExTax)}</div>
+                          </td>
+                        )}
                       </tr>
                     )
                   })

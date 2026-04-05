@@ -3,6 +3,7 @@
 import React from 'react'
 import { Handle, Position } from '@xyflow/react'
 import { formatWeight } from '@/helpers/production/formatters'
+import { formatCostPerKg, formatTotalCost } from '@/helpers/production/costFormatters'
 import { RotateCcw, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
 
@@ -18,6 +19,7 @@ export default function ReprocessedNode({ data }) {
   const processesCount = summary?.processesCount || processes.length || 0
   const productsCount = summary?.productsCount || 0
   const isDetailed = viewMode === 'detailed' || viewMode === 'accounting'
+  const isAccounting = viewMode === 'accounting'
 
   return (
     <div className={`
@@ -60,6 +62,18 @@ export default function ReprocessedNode({ data }) {
                 <td className="text-muted-foreground py-0.5 pr-2">Total Peso:</td>
                 <td className="font-bold text-foreground text-right">{formatWeight(totalNetWeight || summary?.netWeight || 0)}</td>
               </tr>
+              {isAccounting && (
+                <>
+                  <tr>
+                    <td className="text-muted-foreground py-0.5 pr-2">Coste/kg:</td>
+                    <td className="font-bold text-foreground text-right">{formatCostPerKg(summary?.costPerKg)}</td>
+                  </tr>
+                  <tr>
+                    <td className="text-muted-foreground py-0.5 pr-2">Coste total:</td>
+                    <td className="text-foreground text-right">{formatTotalCost(summary?.costTotal)}</td>
+                  </tr>
+                </>
+              )}
             </tbody>
           </table>
         </div>
@@ -142,6 +156,12 @@ export default function ReprocessedNode({ data }) {
                       <div className="text-right text-[9px] text-muted-foreground">
                         <div>{processData.totalBoxes || 0} cajas</div>
                         <div>{formatWeight(processData.totalNetWeight || 0)}</div>
+                        {isAccounting && (
+                          <>
+                            <div className="font-medium text-foreground">{formatCostPerKg(processData.costPerKg)}</div>
+                            <div>{formatTotalCost(processData.costTotal)}</div>
+                          </>
+                        )}
                       </div>
                     )}
                   </div>
@@ -154,6 +174,7 @@ export default function ReprocessedNode({ data }) {
                           <th className="text-left py-1 px-1 font-medium text-muted-foreground">Producto</th>
                           <th className="text-right py-1 px-1 font-medium text-muted-foreground">Cajas</th>
                           <th className="text-right py-1 px-1 font-medium text-muted-foreground">Peso</th>
+                          {isAccounting && <th className="text-right py-1 px-1 font-medium text-muted-foreground">Coste</th>}
                         </tr>
                       </thead>
                       <tbody>
@@ -170,6 +191,12 @@ export default function ReprocessedNode({ data }) {
                               </td>
                               <td className="py-1 px-1 text-right font-medium whitespace-nowrap">{productData.totalBoxes || 0}</td>
                               <td className="py-1 px-1 text-right whitespace-nowrap">{formatWeight(productData.totalNetWeight || 0)}</td>
+                              {isAccounting && (
+                                <td className="py-1 px-1 text-right">
+                                  <div className="font-medium whitespace-nowrap">{formatCostPerKg(productData.costPerKg)}</div>
+                                  <div className="text-[9px] text-muted-foreground whitespace-nowrap">{formatTotalCost(productData.costTotal)}</div>
+                                </td>
+                              )}
                             </tr>
                           )
                         })}
