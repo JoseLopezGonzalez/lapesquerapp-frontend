@@ -17,7 +17,7 @@ export default function ReprocessedNode({ data }) {
 
   const processesCount = summary?.processesCount || processes.length || 0
   const productsCount = summary?.productsCount || 0
-  const isDetailed = viewMode === 'detailed'
+  const isDetailed = viewMode === 'detailed' || viewMode === 'accounting'
 
   return (
     <div className={`
@@ -199,4 +199,3 @@ export default function ReprocessedNode({ data }) {
     </div>
   )
 }
-
