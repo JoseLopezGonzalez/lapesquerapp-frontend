@@ -19,7 +19,9 @@ function getNodeLevel(nodeId, edges, visited = new Set()) {
 }
 
 /**
- * Extrae información de productos de inputs
+ * Extrae información de productos de inputs.
+ * Prioriza el coste directo de cada input / consumo padre devuelto por el árbol.
+ * Solo usa outputs[].sources[] como fallback defensivo para payloads antiguos.
  */
 function extractInputProducts(inputs, parentOutputConsumptions = [], outputs = []) {
   if (!inputs || !Array.isArray(inputs)) return [];
