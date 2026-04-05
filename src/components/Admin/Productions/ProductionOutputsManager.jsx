@@ -433,6 +433,11 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
             return
         }
 
+        if (Math.abs(roundToTwo(processTransformationFactor) - 1) > 0.01) {
+            toast.error('La distribución 1:1 solo está disponible cuando entrada y salida del nodo tienen la misma cantidad total.')
+            return
+        }
+
         const groupedOutputs = new Map()
         validRows.forEach((row) => {
             const productId = String(row.product_id)
@@ -440,13 +445,11 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                 groupedOutputs.set(productId, {
                     rows: [],
                     totalWeight: 0,
-                    totalBoxes: 0,
                 })
             }
             const group = groupedOutputs.get(productId)
             group.rows.push(row)
             group.totalWeight += parseFloat(row.weight_kg || 0) || 0
-            group.totalBoxes += parseFloat(row.boxes || 0) || 0
         })
 
         const groupedSources = new Map()
@@ -456,15 +459,11 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
             if (!groupedSources.has(productId)) {
                 groupedSources.set(productId, {
                     totalSourceWeight: 0,
-                    totalAdjustedWeight: 0,
-                    totalBoxes: 0,
                     options: [],
                 })
             }
             const group = groupedSources.get(productId)
             group.totalSourceWeight += option.totalWeight
-            group.totalAdjustedWeight += getAdjustedOutputWeightFromSource(option.totalWeight)
-            group.totalBoxes += option.totalBoxes || 0
             group.options.push(option)
         })
 
@@ -480,15 +479,9 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                 return
             }
 
-            const weightDifference = Math.abs(roundToTwo(outputGroup.totalWeight) - roundToTwo(sourceGroup.totalAdjustedWeight))
+            const weightDifference = Math.abs(roundToTwo(outputGroup.totalWeight) - roundToTwo(sourceGroup.totalSourceWeight))
             if (weightDifference > 0.01) {
                 mismatchMessages.push('No coinciden los pesos entre entradas y salidas del mismo producto.')
-            }
-
-            const outputBoxes = roundToTwo(outputGroup.totalBoxes)
-            const sourceBoxes = roundToTwo(sourceGroup.totalBoxes)
-            if ((outputBoxes > 0 || sourceBoxes > 0) && Math.abs(outputBoxes - sourceBoxes) > 0.01) {
-                mismatchMessages.push('No coinciden las cajas entre entradas y salidas del mismo producto.')
             }
         })
 
@@ -511,8 +504,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                 return
             }
 
-            const requiredSourceWeight = getSourceWeightFromAdjustedOutputWeight(parseFloat(row.weight_kg || 0) || 0)
-            const targetSourceWeight = Math.min(requiredSourceWeight, totalMatchingWeight)
+            const targetSourceWeight = Math.min(parseFloat(row.weight_kg || 0) || 0, totalMatchingWeight)
 
             const nextSources = matchingSources
                 .map((option) => {
@@ -531,7 +523,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
             updateRow(row.id, 'source_priority', matchingSources.map((option) => option.key))
             updateRow(row.id, 'sources', recalculateSourcesForRow(row, nextSources))
         })
-    }, [allRows, getSourceWeightFromAdjustedOutputWeight, recalculateSourcesForRow, sourceOptions, updateRow])
+    }, [allRows, processTransformationFactor, recalculateSourcesForRow, sourceOptions, updateRow])
 
     const addOutputsFromConsumptionsAndDistributeMatchingSources = React.useCallback(() => {
         const availableSources = sourceOptions.filter(

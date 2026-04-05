@@ -471,8 +471,8 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
                         </div>
                     ) : null}
 
-                    <div className="flex flex-col gap-4">
-                    <div className="flex justify-between items-center">
+                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
                             <Checkbox
                                 id="show-boxes-consumptions-dialog"
@@ -486,7 +486,7 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
                                 Mostrar Cajas
                             </label>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-1.5">
                             <TooltipProvider>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
@@ -498,12 +498,12 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
                                         >
                                             {addingFromParent ? (
                                                 <>
-                                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                                    <Loader2 data-icon="inline-start" className="animate-spin" />
                                                     Añadiendo...
                                                 </>
                                             ) : (
                                                 <>
-                                                    <Sparkles className="h-4 w-4 mr-2" />
+                                                    <Sparkles data-icon="inline-start" />
                                                     Añadir automáticamente disponibles
                                                 </>
                                             )}
@@ -521,7 +521,7 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
                                 variant="outline"
                                 size="sm"
                             >
-                                <Plus className="h-4 w-4 mr-2" />
+                                <Plus data-icon="inline-start" />
                                 Agregar Línea
                             </Button>
                         </div>
@@ -783,12 +783,12 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
                     >
                         {savingAll ? (
                             <>
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                <Loader2 data-icon="inline-start" className="animate-spin" />
                                 Guardando...
                             </>
                         ) : (
                             <>
-                                <Save className="h-4 w-4 mr-2" />
+                                <Save data-icon="inline-start" />
                                 Guardar
                             </>
                         )}
