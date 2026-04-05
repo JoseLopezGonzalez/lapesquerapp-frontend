@@ -45,6 +45,9 @@ export const normalizeProductionRecord = (record) => {
             : (Array.isArray(record.parentOutputConsumptions)
                 ? record.parentOutputConsumptions.map(normalizeProductionOutputConsumption)
                 : []),
+        inputCostsSummary: normalizeInputCostsSummary(
+            record.input_costs_summary || record.inputCostsSummary || null
+        ),
     }
 }
 
@@ -77,6 +80,8 @@ export const normalizeProductionInput = (input) => {
         productionRecordId: input.production_record_id || input.productionRecordId,
         boxId: input.box_id || input.boxId,
         box: input.box ? normalizeBox(input.box) : (input.box || null),
+        costPerKg: input.cost_per_kg !== undefined ? input.cost_per_kg : (input.costPerKg !== undefined ? input.costPerKg : null),
+        totalCost: input.total_cost !== undefined ? input.total_cost : (input.totalCost !== undefined ? input.totalCost : null),
     }
 }
 
@@ -146,19 +151,78 @@ export const normalizeProductionOutput = (output) => {
  */
 export const normalizeProductionOutputConsumption = (consumption) => {
     if (!consumption) return null
-    
+
+    const consumedOutputRaw =
+        consumption.consumed_production_output ||
+        consumption.consumedProductionOutput ||
+        consumption.consumed_output ||
+        consumption.consumedOutput ||
+        null
+
     return {
         id: consumption.id,
         productionRecordId: consumption.production_record_id || consumption.productionRecordId,
         productionOutputId: consumption.production_output_id || consumption.productionOutputId,
-        productionOutput: consumption.production_output 
+        productionOutput: consumption.production_output
             ? normalizeProductionOutput(consumption.production_output)
-            : (consumption.productionOutput 
-                ? normalizeProductionOutput(consumption.productionOutput)
-                : null),
+            : consumption.productionOutput
+              ? normalizeProductionOutput(consumption.productionOutput)
+              : null,
+        consumedProductionOutputId:
+            consumption.consumed_output_id ||
+            consumption.consumedOutputId ||
+            (consumedOutputRaw?.id != null ? consumedOutputRaw.id : null),
+        consumedProductionOutput: consumedOutputRaw ? normalizeProductionOutput(consumedOutputRaw) : null,
+        product: consumption.product ? normalizeProduct(consumption.product) : consumption.product || null,
+        productName: consumption.product_name || consumption.productName || null,
         consumedWeightKg: consumption.consumed_weight_kg || consumption.consumedWeightKg || 0,
         consumedBoxes: consumption.consumed_boxes || consumption.consumedBoxes || 0,
+        costPerKg: consumption.cost_per_kg !== undefined ? consumption.cost_per_kg : (consumption.costPerKg !== undefined ? consumption.costPerKg : null),
+        totalCost: consumption.total_cost !== undefined ? consumption.total_cost : (consumption.totalCost !== undefined ? consumption.totalCost : null),
         notes: consumption.notes || null,
+    }
+}
+
+function normalizeInputCostSummaryItem(item) {
+    if (!item) return null
+
+    return {
+        productId: item.product_id || item.productId || item.product?.id || null,
+        product: item.product ? normalizeProduct(item.product) : (item.product || null),
+        productName: item.product_name || item.productName || item.product?.name || null,
+        totalWeightKg: item.total_weight_kg !== undefined ? item.total_weight_kg : (item.totalWeightKg !== undefined ? item.totalWeightKg : item.totalWeight),
+        totalBoxes: item.total_boxes !== undefined ? item.total_boxes : (item.totalBoxes !== undefined ? item.totalBoxes : item.boxes),
+        totalCost: item.total_cost !== undefined ? item.total_cost : (item.totalCost !== undefined ? item.totalCost : null),
+        costPerKg: item.cost_per_kg !== undefined ? item.cost_per_kg : (item.costPerKg !== undefined ? item.costPerKg : null),
+    }
+}
+
+function normalizeInputCostSummaryTotals(section) {
+    if (!section) return null
+
+    return {
+        totalWeightKg: section.total_weight_kg !== undefined ? section.total_weight_kg : (section.totalWeightKg !== undefined ? section.totalWeightKg : section.totalWeight),
+        totalBoxes: section.total_boxes !== undefined ? section.total_boxes : (section.totalBoxes !== undefined ? section.totalBoxes : section.boxes),
+        totalCost: section.total_cost !== undefined ? section.total_cost : (section.totalCost !== undefined ? section.totalCost : null),
+        averageCostPerKg: section.average_cost_per_kg !== undefined ? section.average_cost_per_kg : (section.averageCostPerKg !== undefined ? section.averageCostPerKg : section.costPerKg),
+    }
+}
+
+export function normalizeInputCostsSummary(summary) {
+    if (!summary) return null
+
+    return {
+        stockProducts: Array.isArray(summary.stock_products)
+            ? summary.stock_products.map(normalizeInputCostSummaryItem)
+            : (Array.isArray(summary.stockProducts) ? summary.stockProducts.map(normalizeInputCostSummaryItem) : []),
+        parentProducts: Array.isArray(summary.parent_products)
+            ? summary.parent_products.map(normalizeInputCostSummaryItem)
+            : (Array.isArray(summary.parentProducts) ? summary.parentProducts.map(normalizeInputCostSummaryItem) : []),
+        totals: {
+            stock: normalizeInputCostSummaryTotals(summary.totals?.stock || summary.stockTotals || null),
+            parent: normalizeInputCostSummaryTotals(summary.totals?.parent || summary.parentTotals || null),
+            combined: normalizeInputCostSummaryTotals(summary.totals?.combined || summary.combinedTotals || null),
+        }
     }
 }
 

@@ -3,7 +3,11 @@
  * Convierte datos de snake_case a camelCase para consistencia en toda la aplicación
  */
 
-import { normalizeProductionInput, normalizeProductionOutputConsumption } from './normalizers';
+import {
+    normalizeProductionInput,
+    normalizeProductionOutputConsumption,
+    normalizeProduct,
+} from './normalizers';
 
 /**
  * Normaliza un CostCatalog de snake_case a camelCase
@@ -64,6 +68,8 @@ export const normalizeProductionOutputSource = (source) => {
         id: source.id,
         productionOutputId: source.production_output_id || source.productionOutputId,
         sourceType: source.source_type || source.sourceType,
+        productId: source.product_id || source.productId || source.product?.id || null,
+        product: source.product ? normalizeProduct(source.product) : source.product || null,
         productionInputId: source.production_input_id || source.productionInputId || null,
         productionInput: source.production_input ? normalizeProductionInput(source.production_input) : (source.productionInput ? normalizeProductionInput(source.productionInput) : null),
         productionOutputConsumptionId: source.production_output_consumption_id || source.productionOutputConsumptionId || null,
@@ -109,14 +115,38 @@ export const normalizeCostBreakdown = (breakdown) => {
         materials: {
             totalCost: breakdown.materials?.total_cost !== undefined ? breakdown.materials.total_cost : breakdown.materials?.totalCost,
             costPerKg: breakdown.materials?.cost_per_kg !== undefined ? breakdown.materials.cost_per_kg : breakdown.materials?.costPerKg,
-            sources: Array.isArray(breakdown.materials?.sources) 
-                ? breakdown.materials.sources.map(source => ({
-                    sourceType: source.source_type || source.sourceType,
-                    contributedWeightKg: source.contributed_weight_kg !== undefined ? source.contributed_weight_kg : source.contributedWeightKg,
-                    contributionPercentage: source.contribution_percentage !== undefined ? source.contribution_percentage : source.contributionPercentage,
-                    sourceCostPerKg: source.source_cost_per_kg !== undefined ? source.source_cost_per_kg : source.sourceCostPerKg,
-                    sourceTotalCost: source.source_total_cost !== undefined ? source.source_total_cost : source.sourceTotalCost,
-                }))
+            sources: Array.isArray(breakdown.materials?.sources)
+                ? breakdown.materials.sources.map((source) => {
+                      const base = normalizeProductionOutputSource(source) || {}
+                      const sourceName =
+                          source.source_name ??
+                          source.sourceName ??
+                          source.name ??
+                          source.label ??
+                          source.display_name ??
+                          source.displayName ??
+                          null
+                      return {
+                          ...base,
+                          sourceName: sourceName ?? base.sourceName ?? null,
+                          contributedWeightKg:
+                              source.contributed_weight_kg !== undefined
+                                  ? source.contributed_weight_kg
+                                  : source.contributedWeightKg,
+                          contributionPercentage:
+                              source.contribution_percentage !== undefined
+                                  ? source.contribution_percentage
+                                  : source.contributionPercentage,
+                          sourceCostPerKg:
+                              source.source_cost_per_kg !== undefined
+                                  ? source.source_cost_per_kg
+                                  : source.sourceCostPerKg,
+                          sourceTotalCost:
+                              source.source_total_cost !== undefined
+                                  ? source.source_total_cost
+                                  : source.sourceTotalCost,
+                      }
+                  })
                 : []
         },
         processCosts: {

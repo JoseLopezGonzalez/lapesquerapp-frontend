@@ -5,6 +5,7 @@ import {
     normalizeProductionCost,
     normalizeCostBreakdown,
 } from "@/helpers/production/costNormalizers";
+import { mergeCostBreakdownMaterialSourcesWithOutput } from "@/helpers/production/mergeCostBreakdownMaterialSources";
 import { normalizeProductionOutput } from "@/helpers/production/normalizers";
 
 // ==================== COST CATALOG ====================
@@ -195,11 +196,16 @@ export function getCostBreakdown(outputId, token) {
     return apiGet(`${API_URL_V2}production-outputs/${outputId}/cost-breakdown`, token, {}, {
         transform: (data) => {
             const breakdown = data.data || data;
+            const costRaw = breakdown.cost_breakdown || breakdown.costBreakdown;
+            const mergedCost = mergeCostBreakdownMaterialSourcesWithOutput(
+                costRaw,
+                breakdown.output
+            );
             return {
                 ...data,
                 data: {
                     output: breakdown.output ? normalizeProductionOutput(breakdown.output) : null,
-                    costBreakdown: normalizeCostBreakdown(breakdown.cost_breakdown || breakdown.costBreakdown)
+                    costBreakdown: normalizeCostBreakdown(mergedCost),
                 }
             };
         }

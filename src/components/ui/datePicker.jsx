@@ -46,7 +46,14 @@ function parseShortDate(input) {
   return null
 }
 
-export function DatePicker({ date, onChange, formatStyle = "short", fromDate = null }) {
+export function DatePicker({
+  date,
+  onChange,
+  formatStyle = "short",
+  fromDate = null,
+  id: inputId,
+  disabled = false,
+}) {
   const safeDate = date && isValidDate(date) ? date : null
   const [open, setOpen] = React.useState(false)
   const [month, setMonth] = React.useState(safeDate || new Date())
@@ -117,19 +124,22 @@ export function DatePicker({ date, onChange, formatStyle = "short", fromDate = n
     <div className="flex flex-col gap-3">
       <div className="relative flex gap-2">
         <Input
-          id="date"
+          id={inputId ?? "date"}
           value={value}
           placeholder={formatDate(new Date(), formatStyle)}
           className="bg-background pr-10"
           onChange={handleInputChange}
           onKeyDown={handleInputKeyDown}
+          disabled={disabled}
         />
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
-              id="date-picker"
+              id={inputId ? `${inputId}-picker` : "date-picker"}
+              type="button"
               variant="ghost"
               className="absolute top-1/2 right-2 size-6 -translate-y-1/2"
+              disabled={disabled}
             >
               <CalendarIcon className="size-3.5" />
               <span className="sr-only">Seleccionar fecha</span>

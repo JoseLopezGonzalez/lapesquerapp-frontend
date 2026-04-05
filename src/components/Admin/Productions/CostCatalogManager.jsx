@@ -151,8 +151,8 @@ export default function CostCatalogManager() {
                 <CardTitle>Catálogo de Costes</CardTitle>
                 <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                     <DialogTrigger asChild>
-                        <Button onClick={() => handleOpenDialog()}>
-                            <Plus className="h-4 w-4 mr-2" />
+                        <Button onClick={() => handleOpenDialog()} data-icon="inline-start">
+                            <Plus />
                             Añadir Coste
                         </Button>
                     </DialogTrigger>

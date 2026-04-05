@@ -23,7 +23,7 @@ export const VIEW_MODES_CONFIG = {
     label: 'Contabilidad',
     icon: Calculator,
     description: 'Informacion contable y costos',
-    enabled: false
+    enabled: true
   }
 }
 

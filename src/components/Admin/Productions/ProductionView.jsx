@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useProductionDetail } from '@/hooks/production/useProductionDetail'
 import { formatDateLong, formatWeight } from '@/helpers/production/formatters'
 import { formatDecimal, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -15,10 +15,11 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { ScrollArea } from '@/components/ui/scroll-area'
 import Loader from '@/components/Utilities/Loader'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ArrowLeft, Calendar, Package, Scale, AlertCircle, Info, Calculator, TrendingDown, TrendingUp, Fish, MapPin, FileText, CheckCircle2, XCircle, AlertTriangle, Eye, AlertOctagon } from 'lucide-react'
+import { ArrowLeft, Calendar, Package, Scale, AlertCircle, Info, Calculator, TrendingDown, TrendingUp, Fish, MapPin, FileText, CheckCircle2, XCircle, AlertTriangle, Eye, AlertOctagon, Pencil } from 'lucide-react'
 import ProductionRecordsManager from './ProductionRecordsManager'
 import CreateProductionRecordDialog from './CreateProductionRecordDialog'
 import { ViewModeSelector } from './ProductionDiagram/ViewModeSelector'
+import EditProductionHeaderDialog from './EditProductionHeaderDialog'
 
 const ProductionDiagram = dynamic(() => import('./ProductionDiagram'), {
     ssr: false,
@@ -36,6 +37,7 @@ const ProductionView = ({ productionId }) => {
     const [viewMode, setViewMode] = useState('simple')
     const [reconciliationDialogOpen, setReconciliationDialogOpen] = useState(false)
     const [createRecordOpen, setCreateRecordOpen] = useState(false)
+    const [editHeaderOpen, setEditHeaderOpen] = useState(false)
 
 
     if (loading) {
@@ -91,29 +93,38 @@ const ProductionView = ({ productionId }) => {
         <div className="h-full w-full overflow-y-auto">
             <div className="p-4 space-y-4">
                 {/* Header */}
-                <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => router.back()}
-                    >
-                        <ArrowLeft className="h-4 w-4" />
-                    </Button>
-                    <div>
-                        <h1 className="text-2xl font-bold">Producción #{production.id}</h1>
-                        <p className="text-sm text-muted-foreground">
-                            Lote: {production.lot || 'Sin lote'}
-                        </p>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-3">
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => router.back()}
+                        >
+                            <ArrowLeft className="h-4 w-4" />
+                        </Button>
+                        <div>
+                            <h1 className="text-2xl font-bold">Producción #{production.id}</h1>
+                            <p className="text-sm text-muted-foreground">
+                                Lote: {production.lot || 'Sin lote'}
+                            </p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2 self-start sm:self-auto">
+                        <Badge
+                            variant={isOpen ? 'default' : 'secondary'}
+                            className={isOpen ? 'bg-green-500' : ''}
+                        >
+                            {isOpen ? 'Abierto' : isClosed ? 'Cerrado' : 'Sin estado'}
+                        </Badge>
                     </div>
                 </div>
-                <Badge
-                    variant={isOpen ? 'default' : 'secondary'}
-                    className={isOpen ? 'bg-green-500' : ''}
-                >
-                    {isOpen ? 'Abierto' : isClosed ? 'Cerrado' : 'Sin estado'}
-                </Badge>
-            </div>
+
+                <EditProductionHeaderDialog
+                    open={editHeaderOpen}
+                    onOpenChange={setEditHeaderOpen}
+                    production={production}
+                    onSaved={refetch}
+                />
 
             {/* Tabs para Información y Diagrama */}
             <Tabs defaultValue="info" className="w-full" onValueChange={setActiveTab}>
@@ -132,6 +143,18 @@ const ProductionView = ({ productionId }) => {
                                         <Info className="h-4 w-4 text-primary" />
                                         Información General
                                     </CardTitle>
+                                    <CardAction>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setEditHeaderOpen(true)}
+                                            data-icon="inline-start"
+                                            aria-label="Editar cabecera de producción"
+                                        >
+                                            <Pencil className="h-3.5 w-3.5" />
+                                            Editar
+                                        </Button>
+                                    </CardAction>
                             </CardHeader>
                                 <CardContent className="pt-0 flex-1 flex flex-col">
                                     <div className="space-y-4 flex-1">

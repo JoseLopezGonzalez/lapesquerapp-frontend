@@ -3,7 +3,7 @@
 import React from 'react'
 import { formatWeight } from '@/helpers/production/formatters'
 import { formatDecimal } from '@/helpers/formats/numbers/formatNumbers'
-import { DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Card } from '@/components/ui/card'
-import { Package, Search, X, ChevronRight, ChevronLeft, ChevronsRight, ChevronsLeft, Calculator, CheckCircle, Box, Scan, Scale, Hand, Target, Unlink } from 'lucide-react'
+import { Package, Search, X, ChevronRight, ChevronLeft, ChevronsRight, ChevronsLeft, Calculator, CheckCircle, Box, Scan, Scale, Hand, Target, Unlink, Plus, Save, Loader2 } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EmptyState } from '@/components/Utilities/EmptyState'
 import Loader from '@/components/Utilities/Loader'
@@ -73,26 +73,31 @@ export default function ProductionInputsAddDialog({ api }) {
     )
 
     return (
-        <DialogContent size="full" className="h-[90vh] flex flex-col p-0">
-            <div className="relative flex-1 flex flex-col min-h-0 p-6">
-                {/* Loader overlay */}
+        <DialogContent className="flex h-[90vh] max-h-[90vh] min-h-0 flex-col overflow-hidden" size="full">
+            <DialogHeader className="shrink-0">
+                <DialogTitle>
+                    {inputs.length > 0 ? 'Editar materia prima' : 'Agregar materia prima'}
+                </DialogTitle>
+                <DialogDescription>
+                    {inputs.length > 0
+                        ? 'Modifica la materia prima que se consumirá desde el stock en este proceso'
+                        : 'Busca un palet y selecciona las cajas de materia prima que se consumirán desde el stock en este proceso'
+                    }
+                </DialogDescription>
+            </DialogHeader>
+
+            <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
                 {(loadingPallet || savingInputs) && (
-                    <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center rounded-lg">
+                    <div
+                        className="absolute inset-0 z-50 flex items-center justify-center rounded-lg bg-background/80 backdrop-blur-sm"
+                        role="status"
+                        aria-live="polite"
+                        aria-busy="true"
+                    >
                         <Loader />
                     </div>
                 )}
-                <DialogHeader className="flex-shrink-0">
-                    <DialogTitle>
-                        {inputs.length > 0 ? 'Editar materia prima' : 'Agregar materia prima'}
-                    </DialogTitle>
-                    <DialogDescription>
-                        {inputs.length > 0
-                            ? 'Modifica la materia prima que se consumirá desde el stock en este proceso'
-                            : 'Busca un palet y selecciona las cajas de materia prima que se consumirán desde el stock en este proceso'
-                        }
-                    </DialogDescription>
-                </DialogHeader>
-                <div className="grid grid-cols-12 gap-4 flex-1 min-h-0 overflow-hidden">
+                <div className="grid min-h-0 flex-1 grid-cols-12 gap-4 overflow-hidden">
                     {/* Columna izquierda: Listado de palets y buscador */}
                     <div className="col-span-3 flex flex-col border rounded-lg overflow-hidden">
                         <div className="p-3 border-b bg-muted/50 flex-shrink-0">
@@ -879,26 +884,38 @@ export default function ProductionInputsAddDialog({ api }) {
                         </ScrollArea>
                     </div>
                 </div>
-
-                {/* Botones de acción */}
-                <div className="flex justify-end gap-2 pt-2 border-t flex-shrink-0">
-                    <Button
-                        variant="outline"
-                        onClick={() => {
-                            setAddDialogOpen(false)
-                            resetAddDialog()
-                        }}
-                    >
-                        Cancelar
-                    </Button>
-                    <Button
-                        onClick={handleAddInputs}
-                        disabled={selectedBoxes.length === 0}
-                    >
-                        {inputs.length > 0 ? 'Guardar' : 'Agregar'} {selectedBoxes.length > 0 && `(${selectedBoxes.length})`}
-                    </Button>
-                </div>
             </div>
+
+            <DialogFooter className="shrink-0">
+                <Button
+                    variant="outline"
+                    onClick={() => {
+                        setAddDialogOpen(false)
+                        resetAddDialog()
+                    }}
+                    disabled={savingInputs}
+                >
+                    Cancelar
+                </Button>
+                <Button
+                    onClick={handleAddInputs}
+                    disabled={selectedBoxes.length === 0 || savingInputs}
+                    data-icon="inline-start"
+                >
+                    {savingInputs ? (
+                        <>
+                            <Loader2 className="animate-spin" />
+                            {inputs.length > 0 ? 'Guardando...' : 'Agregando...'}
+                        </>
+                    ) : (
+                        <>
+                            {inputs.length > 0 ? <Save /> : <Plus />}
+                            {inputs.length > 0 ? 'Guardar' : 'Agregar'}
+                            {selectedBoxes.length > 0 ? ` (${selectedBoxes.length})` : ''}
+                        </>
+                    )}
+                </Button>
+            </DialogFooter>
         </DialogContent>
     )
 }

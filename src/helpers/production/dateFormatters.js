@@ -9,6 +9,36 @@
  * @param {string|Date|null|undefined} isoDate - Fecha en formato ISO
  * @returns {string} - Fecha en formato YYYY-MM-DD o cadena vacía
  */
+/**
+ * Convierte YYYY-MM-DD (interpretado en calendario local) a Date al mediodía local (evita desfases UTC).
+ * @param {string|null|undefined} ymd
+ * @returns {Date|null}
+ */
+export const ymdLocalStringToDate = (ymd) => {
+    if (!ymd || typeof ymd !== 'string') return null
+    const trimmed = ymd.trim()
+    const m = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+    if (!m) return null
+    const year = Number(m[1])
+    const month = Number(m[2]) - 1
+    const day = Number(m[3])
+    const date = new Date(year, month, day, 12, 0, 0, 0)
+    return isNaN(date.getTime()) ? null : date
+}
+
+/**
+ * Fecha local → YYYY-MM-DD para inputs/API que esperan solo fecha.
+ * @param {Date|null|undefined} date
+ * @returns {string}
+ */
+export const dateToYmdLocalString = (date) => {
+    if (!(date instanceof Date) || isNaN(date.getTime())) return ''
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+}
+
 export const isoToDate = (isoDate) => {
     if (!isoDate) return ''
     

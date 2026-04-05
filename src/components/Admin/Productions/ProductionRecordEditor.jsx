@@ -33,7 +33,8 @@ const ProductionRecordEditorContent = ({ productionId, recordId = null }) => {
 
     const {
         formData,
-        setFormData
+        setFormData,
+        isFormDirty
     } = useRecordFormData(record, processes, isEditMode)
 
     const { handleSubmit } = useRecordFormSubmission({
@@ -119,6 +120,7 @@ const ProductionRecordEditorContent = ({ productionId, recordId = null }) => {
                             isEditMode={isEditMode}
                             saving={saving}
                             onSubmit={handleSubmit}
+                            isFormDirty={isFormDirty}
                             processLabelFallback={getProcessName(record)}
                         />
                     </div>

@@ -85,6 +85,11 @@ export function ProductionRecordProvider({ productionId, recordId = null, childr
         return !!(record.parentRecordId)
     }, [record])
 
+    const recordInputCostsSummary = useMemo(() => {
+        if (!record) return null
+        return record.inputCostsSummary || null
+    }, [record])
+
     // Función para actualizar inputs (actualización optimista con cálculo local de totales y rollback)
     const updateInputs = useCallback(async (newInputs, shouldRefresh = false) => {
         const currentRecordId = recordId || record?.id
@@ -236,7 +241,8 @@ export function ProductionRecordProvider({ productionId, recordId = null, childr
         recordInputs,
         recordOutputs,
         recordConsumptions,
-        hasParent
+        hasParent,
+        recordInputCostsSummary
     }), [
         record,
         production,
@@ -246,7 +252,8 @@ export function ProductionRecordProvider({ productionId, recordId = null, childr
         recordInputs,
         recordOutputs,
         recordConsumptions,
-        hasParent
+        hasParent,
+        recordInputCostsSummary
     ])
 
     const recordStateSlice = useMemo(() => ({

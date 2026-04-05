@@ -1,4 +1,9 @@
 import dagre from 'dagre';
+import { normalizeCostBreakdown, normalizeProductionOutputSource } from '@/helpers/production/costNormalizers';
+import {
+  mergeCostBreakdownMaterialSourcesWithOutput,
+  attachParentConsumptionsToSources,
+} from '@/helpers/production/mergeCostBreakdownMaterialSources';
 
 /**
  * Calcula el nivel de profundidad de un nodo en el árbol
@@ -23,19 +28,40 @@ function extractInputProducts(inputs) {
   inputs.forEach(input => {
     if (input.box?.product?.name) {
       const productName = input.box.product.name;
+      const weight = parseFloat(
+        input.weightKg ??
+        input.weight_kg ??
+        input.box?.netWeight ??
+        input.box?.net_weight ??
+        0
+      );
+      const costPerKg = input.costPerKg ?? input.cost_per_kg ?? input.box?.costPerKg ?? input.box?.cost_per_kg ?? null;
       if (!productsMap[productName]) {
         productsMap[productName] = {
           name: productName,
           boxes: 0,
-          weight: 0
+          weight: 0,
+          weightedCostTotal: 0,
+          costWeightBase: 0,
+          costPerKg: null
         };
       }
       productsMap[productName].boxes += 1;
-      productsMap[productName].weight += parseFloat(input.box?.netWeight || 0);
+      productsMap[productName].weight += weight;
+
+      if (costPerKg !== null && costPerKg !== undefined) {
+        const numericCostPerKg = parseFloat(costPerKg);
+        if (!Number.isNaN(numericCostPerKg)) {
+          const weightBase = weight > 0 ? weight : 1;
+          productsMap[productName].weightedCostTotal += numericCostPerKg * weightBase;
+          productsMap[productName].costWeightBase += weightBase;
+          productsMap[productName].costPerKg = productsMap[productName].weightedCostTotal / productsMap[productName].costWeightBase;
+        }
+      }
     }
   });
   
-  return Object.values(productsMap);
+  return Object.values(productsMap).map(({ weightedCostTotal, costWeightBase, ...product }) => product);
 }
 
 /**
@@ -48,22 +74,130 @@ function extractOutputProducts(outputs) {
   outputs.forEach(output => {
     if (output.product?.name) {
       const productName = output.product.name;
+      const weight = parseFloat(output.weightKg || output.weight || 0);
+      const costPerKg = output.costPerKg ?? output.cost_per_kg ?? null;
       if (!productsMap[productName]) {
         productsMap[productName] = {
           name: productName,
           boxes: output.boxes || 0,
-          weight: 0
+          weight: 0,
+          weightedCostTotal: 0,
+          costWeightBase: 0,
+          costPerKg: null
         };
       } else {
         productsMap[productName].boxes += (output.boxes || 0);
       }
-      // Usar weightKg en lugar de weight
-      const weight = parseFloat(output.weightKg || output.weight || 0);
       productsMap[productName].weight += weight;
+
+      if (costPerKg !== null && costPerKg !== undefined) {
+        const numericCostPerKg = parseFloat(costPerKg);
+        if (!Number.isNaN(numericCostPerKg)) {
+          const weightBase = weight > 0 ? weight : 1;
+          productsMap[productName].weightedCostTotal += numericCostPerKg * weightBase;
+          productsMap[productName].costWeightBase += weightBase;
+          productsMap[productName].costPerKg = productsMap[productName].weightedCostTotal / productsMap[productName].costWeightBase;
+        }
+      }
     }
   });
   
-  return Object.values(productsMap);
+  return Object.values(productsMap).map(({ weightedCostTotal, costWeightBase, ...product }) => product);
+}
+
+function normalizeNodeCosts(costs) {
+  if (!costs) return null;
+
+  return {
+    totalCost: costs.totalCost ?? costs.total_cost ?? null,
+    averageCostPerKg: costs.averageCostPerKg ?? costs.average_cost_per_kg ?? null,
+    materialsCost: costs.materialsCost ?? costs.materials_cost ?? null,
+    processCost: costs.processCost ?? costs.process_cost ?? null,
+    productionCost: costs.productionCost ?? costs.production_cost ?? null,
+    processProductionCost: costs.processProductionCost ?? costs.process_production_cost ?? null,
+    processLaborCost: costs.processLaborCost ?? costs.process_labor_cost ?? null,
+    processOperationalCost: costs.processOperationalCost ?? costs.process_operational_cost ?? null,
+    processPackagingCost: costs.processPackagingCost ?? costs.process_packaging_cost ?? null,
+    productionLevelProductionCost: costs.productionLevelProductionCost ?? costs.production_level_production_cost ?? null,
+    productionLevelLaborCost: costs.productionLevelLaborCost ?? costs.production_level_labor_cost ?? null,
+    productionLevelOperationalCost: costs.productionLevelOperationalCost ?? costs.production_level_operational_cost ?? null,
+    productionLevelPackagingCost: costs.productionLevelPackagingCost ?? costs.production_level_packaging_cost ?? null,
+  };
+}
+
+function normalizeAccountingOutput(output, parentOutputConsumptions = []) {
+  if (!output) return null;
+
+  const rawCostBreakdown = output.costBreakdown || output.cost_breakdown;
+  const mergedRaw = mergeCostBreakdownMaterialSourcesWithOutput(rawCostBreakdown, output);
+  const costBreakdown = normalizeCostBreakdown(mergedRaw);
+
+  const rawSources = Array.isArray(output.sources) ? output.sources : [];
+  const normalizedSources = rawSources
+    .map((source) => normalizeProductionOutputSource(source))
+    .filter(Boolean);
+
+  let materialSources = Array.isArray(costBreakdown?.materials?.sources)
+    ? costBreakdown.materials.sources
+    : [];
+
+  materialSources = attachParentConsumptionsToSources(
+    materialSources,
+    parentOutputConsumptions
+  );
+
+  const nextCostBreakdown =
+    costBreakdown && materialSources.length > 0
+      ? {
+          ...costBreakdown,
+          materials: {
+            ...costBreakdown.materials,
+            sources: materialSources,
+          },
+        }
+      : costBreakdown;
+
+  return {
+    id: output.id,
+    productId: output.productId ?? output.product_id ?? output.product?.id ?? null,
+    product: output.product || null,
+    boxes: output.boxes || 0,
+    weightKg: parseFloat(output.weightKg ?? output.weight_kg ?? output.weight ?? 0),
+    costPerKg: output.costPerKg ?? output.cost_per_kg ?? null,
+    totalCost: output.totalCost ?? output.total_cost ?? null,
+    costBreakdown: nextCostBreakdown,
+    sources: materialSources.length > 0 ? materialSources : normalizedSources,
+  };
+}
+
+function normalizeSalesMetrics(entity) {
+  if (!entity) return {};
+
+  return {
+    salePricePerKg: entity.salePricePerKg ?? entity.sale_price_per_kg ?? null,
+    saleSubtotal: entity.saleSubtotal ?? entity.sale_subtotal ?? null,
+    saleTotal: entity.saleTotal ?? entity.sale_total ?? null,
+    costPerKg: entity.costPerKg ?? entity.cost_per_kg ?? null,
+    costTotal: entity.costTotal ?? entity.cost_total ?? null,
+    marginTotalExTax: entity.marginTotalExTax ?? entity.margin_total_ex_tax ?? null,
+    marginPerKgExTax: entity.marginPerKgExTax ?? entity.margin_per_kg_ex_tax ?? null,
+    marginPercentageExTax: entity.marginPercentageExTax ?? entity.margin_percentage_ex_tax ?? null,
+  };
+}
+
+function normalizeSalesOrders(orders) {
+  if (!Array.isArray(orders)) return [];
+
+  return orders.map((orderData) => ({
+    ...orderData,
+    ...normalizeSalesMetrics(orderData),
+    products: Array.isArray(orderData.products)
+      ? orderData.products.map((productData) => ({
+          ...productData,
+          ...normalizeSalesMetrics(productData),
+        }))
+      : [],
+  }));
 }
 
 /**
@@ -146,6 +280,7 @@ export function transformProcessTreeToFlow(processTree, includeDetails = false, 
   const nodes = [];
   const edges = [];
   const nodeMap = new Map();
+  const isAccountingMode = viewMode === 'accounting';
 
   // Crear nodos y edges recursivamente
   function createNodesAndEdges(node, parentId = null) {
@@ -169,6 +304,15 @@ export function transformProcessTreeToFlow(processTree, includeDetails = false, 
       // Nodo de proceso (existente)
       const inputProducts = includeDetails ? extractInputProducts(node.inputs) : [];
       const outputProducts = includeDetails ? extractOutputProducts(node.outputs) : [];
+      const nodeCosts = isAccountingMode ? normalizeNodeCosts(node.costs) : null;
+      const parentConsumptions =
+        node.parentOutputConsumptions || node.parent_output_consumptions || [];
+      const accountingOutputs =
+        isAccountingMode && Array.isArray(node.outputs)
+          ? node.outputs
+              .map((out) => normalizeAccountingOutput(out, parentConsumptions))
+              .filter(Boolean)
+          : [];
       
       // Verificar si el nodo tiene hijos de venta/stock/reprocessed/balance (para mostrar handle de salida en nodos finales)
       const hasSalesOrStockChildren = node.children && Array.isArray(node.children) && node.children.some(child => {
@@ -221,6 +365,8 @@ export function transformProcessTreeToFlow(processTree, includeDetails = false, 
           // Información detallada de productos (solo en modo detallado o accounting)
           inputProducts: includeDetails ? inputProducts : [],
           outputProducts: includeDetails ? outputProducts : [],
+          nodeCosts,
+          accountingOutputs,
           viewMode: viewMode
         }
       };
@@ -228,22 +374,26 @@ export function transformProcessTreeToFlow(processTree, includeDetails = false, 
       // Nodo de venta (v3 - agrupa múltiples productos del nodo final)
       // Determinar el parentRecordId: usar el que viene en el nodo, o el parentId recibido
       const salesParentRecordId = node.parentRecordId || (parentId ? parseInt(parentId, 10) : null);
+      const normalizedOrders = normalizeSalesOrders(node.orders);
       
       flowNode = {
         id: nodeId,
         type: 'salesNode',
         position: { x: 0, y: 0 }, // Se calculará después
         data: {
-          orders: node.orders || [], // v3: Array de pedidos, cada pedido tiene array de productos
+          orders: normalizedOrders, // v3: Array de pedidos, cada pedido tiene array de productos
           totalBoxes: node.totalBoxes || 0,
           totalNetWeight: node.totalNetWeight || 0,
-          summary: node.summary || {},
+          summary: {
+            ...(node.summary || {}),
+            ...normalizeSalesMetrics(node.summary || {}),
+          },
           parentRecordId: salesParentRecordId, // Guardar para conexión
           viewMode: viewMode
         }
       };
       
-      console.log(`📦 Nodo de venta creado: ${nodeId}, parentRecordId guardado: ${salesParentRecordId}, orders: ${(node.orders || []).length}`);
+      console.log(`📦 Nodo de venta creado: ${nodeId}, parentRecordId guardado: ${salesParentRecordId}, orders: ${(normalizedOrders || []).length}`);
     } else if (isStockNode(node)) {
       // Nodo de stock (v3 - agrupa múltiples productos del nodo final)
       const stockParentRecordId = node.parentRecordId || (parentId ? parseInt(parentId, 10) : null);
@@ -508,11 +658,12 @@ export function getLayoutedElements(nodes, edges, direction = 'LR') {
   // Añadir nodos al grafo (tamaño variable según modo y tipo)
   nodes.forEach((node) => {
     const isDetailed = node.data?.viewMode === 'detailed';
+    const isAccounting = node.data?.viewMode === 'accounting';
     const isSpecialNode = node.type === 'salesNode' || node.type === 'stockNode' || node.type === 'reprocessedNode' || node.type === 'restantesNode';
     
     // Tamaños base
-    let width = isDetailed ? 400 : 300;
-    let height = isDetailed ? 300 : 200;
+    let width = isAccounting ? 460 : (isDetailed ? 400 : 300);
+    let height = isAccounting ? 640 : (isDetailed ? 300 : 200);
     
     // Los nodos especiales: más pequeños en vista simple, más grandes en detallada
     if (isSpecialNode) {
@@ -538,10 +689,11 @@ export function getLayoutedElements(nodes, edges, direction = 'LR') {
   const layoutedNodes = nodes.map((node) => {
     const nodeWithPosition = dagreGraph.node(node.id);
     const isDetailed = node.data?.viewMode === 'detailed';
+    const isAccounting = node.data?.viewMode === 'accounting';
     const isSpecialNode = node.type === 'salesNode' || node.type === 'stockNode' || node.type === 'reprocessedNode' || node.type === 'restantesNode';
     
-    let nodeWidth = isDetailed ? 400 : 300;
-    let nodeHeight = isDetailed ? 300 : 200;
+    let nodeWidth = isAccounting ? 460 : (isDetailed ? 400 : 300);
+    let nodeHeight = isAccounting ? 640 : (isDetailed ? 300 : 200);
     
     // Los nodos especiales: más pequeños en vista simple, más grandes en detallada
     if (isSpecialNode) {
@@ -585,15 +737,16 @@ export function getManualLayout(nodes, edges) {
     const nodesInLevel = levels[level];
     const indexInLevel = nodesInLevel.findIndex(n => n.id === node.id);
     const isDetailed = node.data?.viewMode === 'detailed';
+    const isAccounting = node.data?.viewMode === 'accounting';
     const isSpecialNode = node.type === 'salesNode' || node.type === 'stockNode' || node.type === 'reprocessedNode' || node.type === 'restantesNode';
     
     // Separación horizontal
-    const horizontalSpacing = isDetailed ? 450 : 350;
+    const horizontalSpacing = isAccounting ? 520 : (isDetailed ? 450 : 350);
     
     // Separación vertical (más espacio para nodos especiales que pueden tener muchos items)
     const verticalSpacing = isSpecialNode
       ? (isDetailed ? 450 : 420)
-      : (isDetailed ? 320 : 220);
+      : (isAccounting ? 720 : (isDetailed ? 320 : 220));
     
     const x = level * horizontalSpacing;
     const y = indexInLevel * verticalSpacing;
@@ -606,4 +759,3 @@ export function getManualLayout(nodes, edges) {
 
   return { nodes: layoutedNodes, edges };
 }
-

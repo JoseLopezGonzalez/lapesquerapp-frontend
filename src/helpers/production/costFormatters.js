@@ -67,3 +67,59 @@ export function getCostTypeLabel(costType) {
     return labels[costType] || costType;
 }
 
+/**
+ * Etiqueta legible para el tipo de fuente de materia en desglose de costes (API: snake_case).
+ * @param {string|null|undefined} sourceType - p. ej. stock_product, parent_output
+ * @returns {string}
+ */
+export function getMaterialSourceTypeLabel(sourceType) {
+    if (sourceType == null || sourceType === '') return '—';
+    const labels = {
+        stock_product: 'Stock',
+        parent_output: 'Proceso padre',
+    };
+    return labels[sourceType] || String(sourceType);
+}
+
+/**
+ * Nombre legible de una fila de fuente de materia (desglose de costes / API normalizada).
+ * Prioriza etiquetas explícitas, producto, input (caja) o consumo de salida padre.
+ * @param {object|null|undefined} source
+ * @returns {string}
+ */
+export function getMaterialSourceDisplayLabel(source) {
+    if (!source) return '—';
+
+    const pickString = (...candidates) => {
+        for (const c of candidates) {
+            if (typeof c === 'string' && c.trim()) return c.trim();
+        }
+        return null;
+    };
+
+    const explicit = pickString(source.sourceName, source.name, source.label);
+    if (explicit) return explicit;
+
+    if (source.product?.name) return source.product.name;
+
+    const input = source.productionInput || source.production_input;
+    if (input?.box?.product?.name) return input.box.product.name;
+
+    const poc =
+        source.productionOutputConsumption ||
+        source.production_output_consumption ||
+        null;
+    if (poc) {
+        const fromPoc = pickString(poc.productName, poc.product_name);
+        if (fromPoc) return fromPoc;
+        if (poc.product?.name) return poc.product.name;
+        if (poc.consumedProductionOutput?.product?.name) return poc.consumedProductionOutput.product.name;
+        if (poc.consumed_production_output?.product?.name) return poc.consumed_production_output.product.name;
+        if (poc.productionOutput?.product?.name) return poc.productionOutput.product.name;
+        if (poc.production_output?.product?.name) return poc.production_output.product.name;
+    }
+
+    const st = source.sourceType || source.source_type;
+    return getMaterialSourceTypeLabel(st);
+}
+

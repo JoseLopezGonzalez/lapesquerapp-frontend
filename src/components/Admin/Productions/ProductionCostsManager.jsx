@@ -17,11 +17,12 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Plus, Edit, Trash2, Loader2 } from 'lucide-react'
+import { Plus, Edit, Trash2, Loader2, Calculator, AlertCircle } from 'lucide-react'
 import { formatCostPerKg, formatTotalCost, getCostTypeColor, getCostTypeLabel } from '@/helpers/production/costFormatters'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertCircle } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { EmptyState } from '@/components/Utilities/EmptyState'
 
 /**
  * Componente para gestionar costes de producción
@@ -191,14 +192,18 @@ export default function ProductionCostsManager({
         }
     };
 
+    const showCostsEmpty = !loading && costs.length === 0
+
     return (
-        <Card>
+        <Card
+            className={cn(showCostsEmpty && 'min-h-[min(22rem,55vh)]')}
+        >
             <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Costes de {productionRecordId ? 'Proceso' : 'Producción'}</CardTitle>
                 <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                     <DialogTrigger asChild>
-                        <Button onClick={() => handleOpenDialog()}>
-                            <Plus className="h-4 w-4 mr-2" />
+                        <Button onClick={() => handleOpenDialog()} data-icon="inline-start">
+                            <Plus />
                             Añadir Coste
                         </Button>
                     </DialogTrigger>
@@ -355,12 +360,23 @@ export default function ProductionCostsManager({
                     </DialogContent>
                 </Dialog>
             </CardHeader>
-            <CardContent>
+            <CardContent
+                className={cn(showCostsEmpty && 'flex min-h-0 flex-1 flex-col')}
+            >
                 {loading && costs.length === 0 ? (
                     <div className="text-center py-8">Cargando...</div>
                 ) : costs.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">
-                        No hay costes registrados
+                    <div className="flex min-h-0 flex-1 flex-col">
+                        <EmptyState
+                            icon={<Calculator className="h-12 w-12 text-primary" strokeWidth={1.5} />}
+                            title="No hay costes registrados"
+                            description={
+                                productionRecordId
+                                    ? 'Pulsa «Añadir coste» en la cabecera de esta tarjeta para registrar costes asociados a este proceso.'
+                                    : 'Pulsa «Añadir coste» en la cabecera para registrar costes asociados a esta producción.'
+                            }
+                            className="h-full min-h-0 flex-1 rounded-lg border border-dashed bg-muted/30"
+                        />
                     </div>
                 ) : (
                     <Table>

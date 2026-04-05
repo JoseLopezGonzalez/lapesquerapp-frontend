@@ -20,8 +20,10 @@ import Loader from '@/components/Utilities/Loader'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useProductionInputsManager } from '@/hooks/production/useProductionInputsManager'
 import ProductionInputsAddDialog from './ProductionInputsAddDialog'
+import { cn } from '@/lib/utils'
+import { formatCostPerKg, formatTotalCost } from '@/helpers/production/costFormatters'
 
-const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInputsProp = [], onRefresh, hideTitle = false, renderInCard = false, cardTitle, cardDescription }) => {
+const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInputsProp = [], inputCostsSummary = null, onRefresh, hideTitle = false, renderInCard = false, cardTitle, cardDescription }) => {
     const api = useProductionInputsManager({ productionRecordId, initialInputsProp, onRefresh })
     const {
         inputs,
@@ -91,10 +93,9 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
                                 <Button 
                                     variant="outline" 
                                     size="icon" 
-                                    className="h-9 w-9"
                                     onClick={() => setPalletsDialogOpen(true)}
                                 >
-                                    <Info className="h-4 w-4" />
+                                    <Info />
                                 </Button>
                             </TooltipTrigger>
                             <TooltipContent>
@@ -111,10 +112,9 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
                             <Button
                                 variant="destructive"
                                 size="icon"
-                                className="h-9 w-9"
                                 onClick={handleDeleteAllInputs}
                             >
-                                <Trash2 className="h-4 w-4" />
+                                <Trash2 />
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -128,15 +128,16 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
                 setAddDialogOpen(true)
                 loadExistingDataForEdit()
             }}
+            data-icon="inline-start"
         >
             {inputs.length > 0 ? (
                 <>
-                    <Edit className="h-4 w-4 mr-2" />
+                    <Edit />
                     Editar Consumo
                 </>
             ) : (
                 <>
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Plus />
                     Agregar Consumo
                 </>
             )}
@@ -178,10 +179,9 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
                                                 <Button 
                                                     variant="outline" 
                                                     size="icon" 
-                                                    className="h-9 w-9"
                                                     onClick={() => setPalletsDialogOpen(true)}
                                                 >
-                                                    <Info className="h-4 w-4" />
+                                                    <Info />
                                                 </Button>
                                             </TooltipTrigger>
                                             <TooltipContent>
@@ -198,10 +198,9 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
                                             <Button
                                                 variant="destructive"
                                                 size="icon"
-                                                className="h-9 w-9"
                                                 onClick={handleDeleteAllInputs}
                                             >
-                                                <Trash2 className="h-4 w-4" />
+                                                <Trash2 />
                                             </Button>
                                         </TooltipTrigger>
                                         <TooltipContent>
@@ -211,15 +210,15 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
                                 </TooltipProvider>
                             )}
                         <DialogTrigger asChild>
-                            <Button>
+                            <Button data-icon="inline-start">
                                 {inputs.length > 0 ? (
                                     <>
-                                        <Edit className="h-4 w-4 mr-2" />
+                                        <Edit />
                                         Editar Consumo
                                     </>
                                 ) : (
                                     <>
-                                        <Plus className="h-4 w-4 mr-2" />
+                                        <Plus />
                                         Agregar Consumo
                                     </>
                                 )}
@@ -232,7 +231,12 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
             )}
 
             {/* Sección: Inputs desde Stock */}
-            <div className="space-y-4">
+            <div
+                className={cn(
+                    'space-y-4',
+                    renderInCard && inputs.length === 0 && 'flex min-h-0 flex-1 flex-col'
+                )}
+            >
                 <div className="flex items-center justify-between">
                     
                     {!renderInCard && (
@@ -243,10 +247,10 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
                                         <TooltipTrigger asChild>
                                             <Button
                                                 variant="destructive"
-                                                size="sm"
                                                 onClick={handleDeleteAllInputs}
+                                                data-icon="inline-start"
                                             >
-                                                <Trash2 className="h-4 w-4 mr-2" />
+                                                <Trash2 />
                                                 Eliminar Todo
                                             </Button>
                                         </TooltipTrigger>
@@ -265,15 +269,15 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
                                 }
                             }}>
                                 <DialogTrigger asChild>
-                                    <Button size="sm">
+                                    <Button data-icon="inline-start">
                                         {inputs.length > 0 ? (
                                             <>
-                                                <Edit className="h-4 w-4 mr-2" />
+                                                <Edit />
                                                 Editar
                                             </>
                                         ) : (
                                             <>
-                                                <Plus className="h-4 w-4 mr-2" />
+                                                <Plus />
                                                 Agregar
                                             </>
                                         )}
@@ -286,17 +290,31 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
                 </div>
 
                 {inputs.length === 0 ? (
-                    <div className="flex items-center justify-center py-8 border rounded-lg">
+                    <div
+                        className={cn(
+                            renderInCard && 'flex min-h-0 flex-1 flex-col',
+                            !renderInCard &&
+                                'flex items-center justify-center rounded-lg border py-8'
+                        )}
+                    >
                         <EmptyState
                             icon={<Box className="h-12 w-12 text-primary" strokeWidth={1.5} />}
                             title="No hay consumo desde stock"
                             description="Agrega cajas desde un palet para comenzar a registrar el consumo de materia prima"
+                            className={
+                                renderInCard
+                                    ? 'h-full min-h-0 flex-1 rounded-lg border border-dashed bg-muted/30'
+                                    : undefined
+                            }
                         />
                     </div>
-                ) : (
+                ) : (() => {
+                    const productsBreakdown = calculateProductsBreakdown()
+
+                    return (
                 <div className="space-y-4">
                         {/* Desglose por producto */}
-                        {calculateProductsBreakdown().length > 0 && (
+                        {productsBreakdown.length > 0 && (
                         <ScrollArea className="h-64">
                             <Table>
                                 <TableHeader>
@@ -304,10 +322,12 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
                                         <TableHead>Artículo</TableHead>
                                         <TableHead>Cajas</TableHead>
                                         <TableHead>Peso Total</TableHead>
+                                        <TableHead>Coste/kg</TableHead>
+                                        <TableHead>Coste total</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {calculateProductsBreakdown().map((product, idx) => (
+                                    {productsBreakdown.map((product, idx) => (
                                         <TableRow key={idx}>
                                             <TableCell className="font-medium">
                                                         {product.name}
@@ -318,6 +338,12 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
                                             <TableCell>
                                                     {formatWeight(product.totalWeight)}
                                             </TableCell>
+                                            <TableCell>
+                                                {formatCostPerKg(product.costPerKg)}
+                                            </TableCell>
+                                            <TableCell>
+                                                {formatTotalCost(product.totalCost)}
+                                            </TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>
@@ -325,7 +351,8 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
                                 </ScrollArea>
                     )}
                 </div>
-                )}
+                    )
+                })()}
             </div>
         </>
     )
@@ -510,7 +537,11 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
                 {lotsDialog}
                 {palletsDialog}
                 {deleteConfirmDialog}
-                <Card className="h-fit">
+                <Card
+                    className={cn(
+                        inputs.length === 0 ? 'min-h-[min(22rem,55vh)]' : 'h-fit'
+                    )}
+                >
                     <CardHeader>
                         <div className="flex items-center justify-between">
                             <div>
@@ -525,7 +556,11 @@ const ProductionInputsManager = ({ productionRecordId, initialInputs: initialInp
                             {headerButton}
                         </div>
                     </CardHeader>
-                    <CardContent className="">
+                    <CardContent
+                        className={cn(
+                            inputs.length === 0 && 'flex min-h-0 flex-1 flex-col'
+                        )}
+                    >
                         {mainContent}
                     </CardContent>
                 </Card>

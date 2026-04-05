@@ -15,6 +15,7 @@ const mergeOrderDetails = (plannedProductDetails, productionProductDetails) => {
 
     // Añadir productos previstos primero
     plannedProductDetails?.forEach(detail => {
+        if (!detail?.product?.id) return;
         resultMap.set(detail.product.id, {
             product: detail.product,
             plannedQuantity: parseFloat(detail.quantity),
@@ -29,6 +30,7 @@ const mergeOrderDetails = (plannedProductDetails, productionProductDetails) => {
 
     // Añadir datos reales desde pallets
     productionProductDetails?.forEach(production => {
+        if (!production?.product?.id) return;
         const existing = resultMap.get(production.product.id);
         if (existing) {
             existing.productionQuantity += parseFloat(production.netWeight);

@@ -26,7 +26,7 @@ const CreateProductionRecordDialogBody = ({ productionId }) => {
         saveRecord
     } = useProductionRecordContext()
 
-    const { formData, setFormData } = useRecordFormData(record, processes, isEditMode)
+    const { formData, setFormData, isFormDirty } = useRecordFormData(record, processes, isEditMode)
 
     const { handleSubmit, isNavigatePending } = useRecordFormSubmission({
         productionId,
@@ -79,6 +79,7 @@ const CreateProductionRecordDialogBody = ({ productionId }) => {
                 isEditMode={isEditMode}
                 saving={blocking}
                 onSubmit={handleSubmit}
+                isFormDirty={isFormDirty}
             />
         </div>
     )

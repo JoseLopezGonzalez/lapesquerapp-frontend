@@ -4,10 +4,11 @@ import React, { useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { DatePicker } from '@/components/ui/datePicker'
+import { dateToYmdLocalString, ymdLocalStringToDate } from '@/helpers/production/dateFormatters'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Info } from 'lucide-react'
+import { Info, Loader2, Plus, Save } from 'lucide-react'
 
 /**
  * Formulario de información del proceso
@@ -22,6 +23,8 @@ export const ProcessInfoForm = ({
     isEditMode,
     saving,
     onSubmit,
+    /** false mientras el formulario coincide con la última línea base (servidor o vacío en alta). */
+    isFormDirty = true,
     layout = 'card',
     /** Si el `process_id` del registro no viene en la lista de opciones, mostrar este nombre (p. ej. `record.process.name`). */
     processLabelFallback = ''
@@ -140,37 +143,49 @@ export const ProcessInfoForm = ({
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
                                 <Label htmlFor="started_at" className="text-sm">Fecha de Inicio</Label>
-                                <Input
+                                <DatePicker
                                     id="started_at"
-                                    type="date"
-                                    value={formData.started_at}
-                                    onChange={(e) => onFormDataChange({ ...formData, started_at: e.target.value })}
+                                    formatStyle="short"
                                     disabled={saving}
-                                    className="h-9"
+                                    date={ymdLocalStringToDate(formData.started_at)}
+                                    onChange={(d) =>
+                                        onFormDataChange({
+                                            ...formData,
+                                            started_at: dateToYmdLocalString(d),
+                                        })
+                                    }
                                 />
                             </div>
                             <div className="space-y-1.5">
                                 <Label htmlFor="finished_at" className="text-sm">Fecha de Finalización</Label>
-                                <Input
+                                <DatePicker
                                     id="finished_at"
-                                    type="date"
-                                    value={formData.finished_at || ''}
-                                    onChange={(e) => onFormDataChange({ ...formData, finished_at: e.target.value })}
+                                    formatStyle="short"
                                     disabled={saving}
-                                    className="h-9"
+                                    date={ymdLocalStringToDate(formData.finished_at)}
+                                    onChange={(d) =>
+                                        onFormDataChange({
+                                            ...formData,
+                                            finished_at: dateToYmdLocalString(d),
+                                        })
+                                    }
                                 />
                             </div>
                         </div>
                     ) : (
                         <div className="space-y-1.5">
                             <Label htmlFor="started_at" className="text-sm">Fecha de Inicio</Label>
-                            <Input
+                            <DatePicker
                                 id="started_at"
-                                type="date"
-                                value={formData.started_at}
-                                onChange={(e) => onFormDataChange({ ...formData, started_at: e.target.value })}
+                                formatStyle="short"
                                 disabled={saving}
-                                className="h-9"
+                                date={ymdLocalStringToDate(formData.started_at)}
+                                onChange={(d) =>
+                                    onFormDataChange({
+                                        ...formData,
+                                        started_at: dateToYmdLocalString(d),
+                                    })
+                                }
                             />
                         </div>
                     )}
@@ -189,10 +204,18 @@ export const ProcessInfoForm = ({
                     </div>
 
                     <div className="flex justify-end gap-2 pt-1">
-                        <Button type="submit" disabled={saving} size="sm">
-                            {saving
-                                ? (isEditMode ? 'Guardando...' : 'Creando...')
-                                : (isEditMode ? 'Guardar' : 'Crear')}
+                        <Button type="submit" disabled={saving || !isFormDirty} data-icon="inline-start">
+                            {saving ? (
+                                <>
+                                    <Loader2 className="animate-spin" />
+                                    {isEditMode ? 'Guardando...' : 'Creando...'}
+                                </>
+                            ) : (
+                                <>
+                                    {isEditMode ? <Save /> : <Plus />}
+                                    {isEditMode ? 'Guardar' : 'Crear'}
+                                </>
+                            )}
                         </Button>
                     </div>
                 </form>

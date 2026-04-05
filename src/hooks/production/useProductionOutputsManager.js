@@ -23,6 +23,53 @@ import { useShowBoxesPreference } from './useShowBoxesPreference'
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant'
 import { productionQueryKeys } from '@/lib/routes/queryKeys'
 
+const roundManageBaseline = (value) =>
+    Math.round((parseFloat(value || 0) + Number.EPSILON) * 100) / 100
+
+function normalizeSourceForManageBaseline(source) {
+    if (!source) {
+        return {
+            source_type: null,
+            product_id: null,
+            production_output_consumption_id: null,
+            contributed_weight_kg: null,
+            contribution_percentage: null,
+        }
+    }
+    const wc = source.contributed_weight_kg
+    const pct = source.contribution_percentage
+    return {
+        source_type: source.source_type || null,
+        product_id: source.product_id != null && source.product_id !== '' ? String(source.product_id) : null,
+        production_output_consumption_id:
+            source.production_output_consumption_id != null && source.production_output_consumption_id !== ''
+                ? String(source.production_output_consumption_id)
+                : null,
+        contributed_weight_kg:
+            wc === null || wc === undefined || wc === '' ? null : roundManageBaseline(wc),
+        contribution_percentage:
+            pct === null || pct === undefined || pct === '' ? null : roundManageBaseline(pct),
+    }
+}
+
+function normalizeRowForManageBaseline(row) {
+    const w = row.weight_kg
+    const b = row.boxes
+    return {
+        id: String(row.id),
+        product_id: row.product_id != null ? String(row.product_id) : '',
+        boxes: b === null || b === undefined || b === '' ? '' : String(parseInt(b, 10) || 0),
+        weight_kg: w === null || w === undefined || w === '' ? '' : String(roundManageBaseline(w)),
+        isNew: !!row.isNew,
+        source_priority: Array.isArray(row.source_priority) ? [...row.source_priority] : [],
+        sources: (row.sources || []).map(normalizeSourceForManageBaseline),
+    }
+}
+
+function serializeManageDialogState(editableOutputs, newRows) {
+    return JSON.stringify([...editableOutputs, ...newRows].map(normalizeRowForManageBaseline))
+}
+
 /**
  * Hook con toda la lógica de ProductionOutputsManager: estado, carga de outputs/products,
  * diálogos (gestión múltiple, selección de fuente, productos disponibles, breakdown),
@@ -53,12 +100,13 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
     })
     const [breakdownOutputId, setBreakdownOutputId] = useState(null)
     const [breakdownDialogOpen, setBreakdownDialogOpen] = useState(false)
-    const [expandedSourcesRows, setExpandedSourcesRows] = useState(new Set())
+    const [expandedSourceRowId, setExpandedSourceRowId] = useState(null)
     const [availableInputs, setAvailableInputs] = useState([])
     const [availableConsumptions, setAvailableConsumptions] = useState([])
     const [sourcesLoading, setSourcesLoading] = useState(false)
     const [sourcesData, setSourcesData] = useState(null)
     const [manageDialogOpen, setManageDialogOpen] = useState(false)
+    const [manageDialogBaselineJson, setManageDialogBaselineJson] = useState(null)
     const [editableOutputs, setEditableOutputs] = useState([])
     const [newRows, setNewRows] = useState([])
     const [saving, setSaving] = useState(false)
@@ -94,6 +142,19 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
     const outputs = outputsQuery.data ?? []
     const loading = outputsQuery.isLoading
     const error = outputsQuery.error?.message ?? null
+
+    useEffect(() => {
+        if (!manageDialogOpen) {
+            setManageDialogBaselineJson(null)
+        }
+    }, [manageDialogOpen])
+
+    const isManageDialogDirty = useMemo(() => {
+        if (manageDialogBaselineJson === null || !manageDialogOpen) return false
+        return serializeManageDialogState(editableOutputs, newRows) !== manageDialogBaselineJson
+    }, [manageDialogOpen, manageDialogBaselineJson, editableOutputs, newRows])
+
+    const manageDialogDataReady = manageDialogBaselineJson !== null && manageDialogOpen
 
     const setOutputs = useCallback((updater) => {
         queryClient.setQueryData(outputsQueryKey, (previous = []) =>
@@ -225,7 +286,7 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
     }
 
     const openManageDialog = async () => {
-        // Open immediately; data loads in background
+        const loadStartedAt = performance.now()
         setManageDialogOpen(true)
         setSourcesLoading(true)
         if (products.length === 0) loadProducts()
@@ -236,6 +297,7 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
             return
         }
 
+        try {
         // Lanzar sourcesData y outputs(with_sources) en paralelo
         const [sourcesDataResponse, outputsResponse] = await Promise.all([
             getProductionRecordSourcesData(productionRecordId, token).catch((err) => {
@@ -340,69 +402,78 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
             }
         }
 
-        setSourcesLoading(false)
-
         // Procesar outputs con sources
         const outputsWithSources = outputsResponse?.data || outputs
         if (outputsResponse?.data) {
             setOutputs(outputsWithSources)
         }
 
-        setEditableOutputs(
-            outputsWithSources.map((output) => {
-                const weight = output.weightKg || output.weight_kg || 0
-                let normalizedSources = []
-                if (output.sources && Array.isArray(output.sources) && output.sources.length > 0) {
-                    normalizedSources = output.sources
-                        .map((source) => {
-                            if (!source) return null
-                            return {
-                                source_type: source.source_type || source.sourceType || null,
-                                product_id:
-                                    source.product_id ||
-                                    source.productId ||
-                                    source.product?.id ||
-                                    null,
-                                production_output_consumption_id:
-                                    source.production_output_consumption_id ||
-                                    source.productionOutputConsumptionId ||
-                                    null,
-                                product: source.product || null,
-                                contributed_weight_kg: (() => {
-                                    if (source.contributed_weight_kg !== undefined && source.contributed_weight_kg !== null) {
-                                        return source.contributed_weight_kg
-                                    }
-                                    if (source.contributedWeightKg !== undefined && source.contributedWeightKg !== null) {
-                                        return source.contributedWeightKg
-                                    }
-                                    return null
-                                })(),
-                                contribution_percentage: (() => {
-                                    const contributedWeight =
-                                        source.contributed_weight_kg !== undefined && source.contributed_weight_kg !== null
-                                            ? source.contributed_weight_kg
-                                            : source.contributedWeightKg !== undefined && source.contributedWeightKg !== null
-                                                ? source.contributedWeightKg
-                                                : null
-                                    if (contributedWeight === null || contributedWeight === undefined) return null
-                                    const transformedWeight = parseFloat(contributedWeight || 0) * processTransformationFactor
-                                    return parseFloat(weight || 0) > 0 ? (transformedWeight / parseFloat(weight || 0)) * 100 : null
-                                })()
-                            }
-                        })
-                        .filter((s) => s !== null)
-                }
-                return {
-                    id: output.id,
-                    product_id: output.product?.id?.toString() || '',
-                    boxes: output.boxes?.toString() || '',
-                    weight_kg: weight.toString(),
-                    sources: normalizedSources,
-                    isNew: false
-                }
-            })
-        )
+        const nextEditableOutputs = outputsWithSources.map((output) => {
+            const weight = output.weightKg || output.weight_kg || 0
+            let normalizedSources = []
+            if (output.sources && Array.isArray(output.sources) && output.sources.length > 0) {
+                normalizedSources = output.sources
+                    .map((source) => {
+                        if (!source) return null
+                        return {
+                            source_type: source.source_type || source.sourceType || null,
+                            product_id:
+                                source.product_id ||
+                                source.productId ||
+                                source.product?.id ||
+                                null,
+                            production_output_consumption_id:
+                                source.production_output_consumption_id ||
+                                source.productionOutputConsumptionId ||
+                                null,
+                            product: source.product || null,
+                            contributed_weight_kg: (() => {
+                                if (source.contributed_weight_kg !== undefined && source.contributed_weight_kg !== null) {
+                                    return source.contributed_weight_kg
+                                }
+                                if (source.contributedWeightKg !== undefined && source.contributedWeightKg !== null) {
+                                    return source.contributedWeightKg
+                                }
+                                return null
+                            })(),
+                            contribution_percentage: (() => {
+                                const contributedWeight =
+                                    source.contributed_weight_kg !== undefined && source.contributed_weight_kg !== null
+                                        ? source.contributed_weight_kg
+                                        : source.contributedWeightKg !== undefined && source.contributedWeightKg !== null
+                                            ? source.contributedWeightKg
+                                            : null
+                                if (contributedWeight === null || contributedWeight === undefined) return null
+                                const transformedWeight = parseFloat(contributedWeight || 0) * processTransformationFactor
+                                return parseFloat(weight || 0) > 0 ? (transformedWeight / parseFloat(weight || 0)) * 100 : null
+                            })()
+                        }
+                    })
+                    .filter((s) => s !== null)
+            }
+            return {
+                id: output.id,
+                product_id: output.product?.id?.toString() || '',
+                boxes: output.boxes?.toString() || '',
+                weight_kg: weight.toString(),
+                sources: normalizedSources,
+                isNew: false
+            }
+        })
+        setManageDialogBaselineJson(serializeManageDialogState(nextEditableOutputs, []))
+        setEditableOutputs(nextEditableOutputs)
         setNewRows([])
+
+        const minSpinnerMs = 400
+        const elapsed = performance.now() - loadStartedAt
+        if (elapsed < minSpinnerMs) {
+            await new Promise((resolve) => setTimeout(resolve, minSpinnerMs - elapsed))
+        }
+        } catch (err) {
+            console.error('Error preparing manage dialog:', err)
+        } finally {
+            setSourcesLoading(false)
+        }
     }
 
     const addNewRow = () => {
@@ -810,8 +881,8 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
         setBreakdownOutputId,
         breakdownDialogOpen,
         setBreakdownDialogOpen,
-        expandedSourcesRows,
-        setExpandedSourcesRows,
+        expandedSourceRowId,
+        setExpandedSourceRowId,
         availableInputs,
         availableConsumptions,
         sourcesLoading,
@@ -823,6 +894,8 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
         newRows,
         setNewRows,
         saving,
+        isManageDialogDirty,
+        manageDialogDataReady,
         copyingFromConsumption,
         sourceSelectionDialogOpen,
         setSourceSelectionDialogOpen,

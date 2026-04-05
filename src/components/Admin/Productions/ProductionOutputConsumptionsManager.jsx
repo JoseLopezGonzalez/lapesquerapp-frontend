@@ -25,8 +25,10 @@ import Loader from '@/components/Utilities/Loader'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useProductionOutputConsumptionsManager } from '@/hooks/production/useProductionOutputConsumptionsManager'
+import { cn } from '@/lib/utils'
+import { formatCostPerKg, formatTotalCost } from '@/helpers/production/costFormatters'
 
-const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsumptions: initialConsumptionsProp = [], hasParent: hasParentProp = false, onRefresh, hideTitle = false, renderInCard = false, cardTitle, cardDescription }) => {
+const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsumptions: initialConsumptionsProp = [], inputCostsSummary = null, hasParent: hasParentProp = false, onRefresh, hideTitle = false, renderInCard = false, cardTitle, cardDescription }) => {
     const api = useProductionOutputConsumptionsManager({
         productionRecordId,
         initialConsumptionsProp,
@@ -309,18 +311,18 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
         </Dialog>
     )
 
+    const isConsumptionsEmptyView = !hasParent || consumptions.length === 0
+
     const headerButton = hasParent ? (
-        <Button
-            onClick={openManageDialog}
-        >
+        <Button onClick={openManageDialog} data-icon="inline-start">
             {consumptions.length > 0 ? (
                 <>
-                    <Edit className="h-4 w-4 mr-2" />
+                    <Edit />
                     Gestionar Consumos
                 </>
             ) : (
                 <>
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Plus />
                     Agregar Consumos
                 </>
             )}
@@ -356,23 +358,49 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
                 </div>
             )}
 
+            <div
+                className={cn(
+                    renderInCard && isConsumptionsEmptyView && 'flex min-h-0 flex-1 flex-col'
+                )}
+            >
             {!hasParent ? (
-                <div className="flex items-center justify-center py-8">
+                <div
+                    className={cn(
+                        renderInCard && 'flex min-h-0 flex-1 flex-col',
+                        !renderInCard && 'flex items-center justify-center py-8'
+                    )}
+                >
                     <EmptyState
                         icon={<ArrowDown className="h-12 w-12 text-muted-foreground" strokeWidth={1.5} />}
                         title="Este proceso no tiene padre"
                         description="Selecciona un proceso padre en el formulario de información del proceso para poder consumir sus outputs"
+                        className={
+                            renderInCard
+                                ? 'h-full min-h-0 flex-1 rounded-lg border border-dashed bg-muted/30'
+                                : undefined
+                        }
                     />
                 </div>
             ) : consumptions.length === 0 ? (
-                <div className="flex items-center justify-center py-8">
+                <div
+                    className={cn(
+                        renderInCard && 'flex min-h-0 flex-1 flex-col',
+                        !renderInCard && 'flex items-center justify-center py-8'
+                    )}
+                >
                     <EmptyState
                         icon={<ArrowDown className="h-12 w-12 text-primary" strokeWidth={1.5} />}
                         title="No hay consumos del padre"
                         description="Consume outputs del proceso padre para utilizarlos en este proceso"
+                        className={
+                            renderInCard
+                                ? 'h-full min-h-0 flex-1 rounded-lg border border-dashed bg-muted/30'
+                                : undefined
+                        }
                     />
                 </div>
             ) : (
+                <div className="space-y-4">
                     <ScrollArea className="h-64">
                         <Table>
                             <TableHeader>
@@ -380,6 +408,8 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
                                     <TableHead>Producto</TableHead>
                                     <TableHead>Peso Consumido</TableHead>
                                     {showBoxes && <TableHead>Cajas</TableHead>}
+                                    <TableHead>Coste/kg</TableHead>
+                                    <TableHead>Coste total</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -392,12 +422,16 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
                                             {formatWeight(getConsumedWeight(consumption))}
                                         </TableCell>
                                         {showBoxes && <TableCell>{getConsumedBoxes(consumption)}</TableCell>}
+                                        <TableCell>{formatCostPerKg(consumption.costPerKg)}</TableCell>
+                                        <TableCell>{formatTotalCost(consumption.totalCost)}</TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
                         </Table>
                     </ScrollArea>
+                </div>
             )}
+            </div>
         </>
     )
 
@@ -749,7 +783,11 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
             <>
                 {manageDialog}
                 {dialog}
-                <Card className="h-fit">
+                <Card
+                    className={cn(
+                        isConsumptionsEmptyView ? 'min-h-[min(22rem,55vh)]' : 'h-fit'
+                    )}
+                >
                     <CardHeader>
                         <div className="flex items-center justify-between">
                             <div>
@@ -764,7 +802,11 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
                             {headerButton}
                         </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent
+                        className={cn(
+                            isConsumptionsEmptyView && 'flex min-h-0 flex-1 flex-col'
+                        )}
+                    >
                         {mainContent}
                     </CardContent>
                 </Card>

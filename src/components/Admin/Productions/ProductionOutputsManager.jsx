@@ -28,8 +28,10 @@ import { Combobox } from '@/components/Shadcn/Combobox'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { useProductionOutputsManager } from '@/hooks/production/useProductionOutputsManager'
 import { useProductionRecordContextOptional } from '@/context/ProductionRecordContext'
+import { cn } from '@/lib/utils'
 
 const roundToTwo = (value) => Math.round((parseFloat(value || 0) + Number.EPSILON) * 100) / 100
 
@@ -128,10 +130,51 @@ function SortablePriorityItem({ item, usage, disabled = false }) {
     )
 }
 
+function SortableOutputPriorityItem({ item, disabled = false }) {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+        id: item.id,
+        disabled,
+    })
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    }
+
+    return (
+        <div
+            ref={setNodeRef}
+            style={style}
+            className={`flex items-center justify-between gap-3 rounded-md border bg-background px-3 py-2 text-xs ${
+                isDragging ? 'shadow-md ring-1 ring-primary/30' : ''
+            }`}
+        >
+            <button
+                type="button"
+                className="cursor-grab text-muted-foreground active:cursor-grabbing disabled:cursor-default"
+                {...attributes}
+                {...listeners}
+                disabled={disabled}
+                aria-label={`Mover prioridad de ${item.label}`}
+            >
+                ::
+            </button>
+            <div className="min-w-0 flex-1">
+                <p className="truncate font-medium text-foreground">{item.label}</p>
+                <p className="truncate text-muted-foreground">
+                    Peso objetivo: {formatWeight(item.weight)}
+                </p>
+            </div>
+        </div>
+    )
+}
+
 const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialOutputsProp = [], onRefresh, hideTitle = false, renderInCard = false, cardTitle, cardDescription }) => {
     const api = useProductionOutputsManager({ productionRecordId, initialOutputsProp, onRefresh })
     const recordContext = useProductionRecordContextOptional()
     const record = recordContext?.record
+    /** Misma lista que `record.parentOutputConsumptions`, memoizada en contexto (mejor que leer solo `record`). */
+    const recordConsumptions = recordContext?.recordConsumptions ?? record?.parentOutputConsumptions
     const {
         outputs,
         products,
@@ -144,8 +187,8 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
         setBreakdownOutputId,
         breakdownDialogOpen,
         setBreakdownDialogOpen,
-        expandedSourcesRows,
-        setExpandedSourcesRows,
+        expandedSourceRowId,
+        setExpandedSourceRowId,
         availableInputs,
         availableConsumptions,
         sourcesLoading,
@@ -157,6 +200,8 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
         newRows,
         setNewRows,
         saving,
+        isManageDialogDirty,
+        manageDialogDataReady,
         copyingFromConsumption,
         sourceSelectionDialogOpen,
         setSourceSelectionDialogOpen,
@@ -212,9 +257,30 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
         return parsedAdjustedOutputWeight / processTransformationFactor
     }
     const [priorityDialogRowId, setPriorityDialogRowId] = React.useState(null)
+    const [globalPriorityDialogOpen, setGlobalPriorityDialogOpen] = React.useState(false)
+    const [globalOutputPriorityIds, setGlobalOutputPriorityIds] = React.useState([])
+    const [globalSourcePriorityKeys, setGlobalSourcePriorityKeys] = React.useState([])
+    const [manageDialogActiveTab, setManageDialogActiveTab] = React.useState('outputs')
+    const [manageDialogSession, setManageDialogSession] = React.useState(0)
+    const prevManageDialogOpenRef = React.useRef(false)
+
+    React.useEffect(() => {
+        if (manageDialogOpen && !prevManageDialogOpenRef.current) {
+            setManageDialogSession((s) => s + 1)
+        }
+        prevManageDialogOpenRef.current = manageDialogOpen
+    }, [manageDialogOpen])
 
     const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
     const allRows = getAllRows()
+    const validOutputRows = React.useMemo(
+        () => allRows.filter((row) => row.product_id && parseFloat(row.weight_kg || 0) > 0),
+        [allRows]
+    )
+    const validOutputRowMap = React.useMemo(
+        () => new Map(validOutputRows.map((row) => [String(row.id), row])),
+        [validOutputRows]
+    )
 
     const sourceOptions = React.useMemo(
         () => buildSourceOptions(availableInputs, availableConsumptions),
@@ -425,6 +491,100 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
         updateRow,
     ])
 
+    const openGlobalPriorityDialog = React.useCallback(() => {
+        setGlobalOutputPriorityIds(validOutputRows.map((row) => String(row.id)))
+        setGlobalSourcePriorityKeys(sourceOptions.map((option) => option.key))
+        setGlobalPriorityDialogOpen(true)
+    }, [sourceOptions, validOutputRows])
+
+    const autoAssignSourcesByDoublePriority = React.useCallback(() => {
+        const orderedRows = globalOutputPriorityIds
+            .map((rowId) => validOutputRowMap.get(String(rowId)))
+            .filter(Boolean)
+
+        if (orderedRows.length === 0 || globalSourcePriorityKeys.length === 0) return
+
+        const remainingSourceWeights = new Map(
+            globalSourcePriorityKeys.map((sourceKey) => [
+                sourceKey,
+                roundToTwo(sourceOptionsMap.get(sourceKey)?.totalWeight || 0),
+            ])
+        )
+        const nextSourcesByRowId = new Map()
+
+        orderedRows.forEach((row) => {
+            let remainingAdjustedWeight = parseFloat(row.weight_kg || 0) || 0
+            const nextSources = []
+
+            globalSourcePriorityKeys.forEach((sourceKey) => {
+                if (remainingAdjustedWeight <= 0) return
+
+                const option = sourceOptionsMap.get(sourceKey)
+                if (!option) return
+
+                const remainingSourceWeight = remainingSourceWeights.get(sourceKey) || 0
+                if (remainingSourceWeight <= 0) return
+
+                const requiredSourceWeight = getSourceWeightFromAdjustedOutputWeight(remainingAdjustedWeight)
+                const sourceWeightToApply = roundToTwo(Math.min(remainingSourceWeight, requiredSourceWeight))
+                if (sourceWeightToApply <= 0) return
+
+                nextSources.push({
+                    source_type: option.source_type,
+                    product_id: option.product_id,
+                    production_output_consumption_id: option.production_output_consumption_id,
+                    contributed_weight_kg: sourceWeightToApply,
+                    contribution_percentage: null,
+                })
+
+                remainingSourceWeights.set(
+                    sourceKey,
+                    roundToTwo(Math.max(0, remainingSourceWeight - sourceWeightToApply))
+                )
+                remainingAdjustedWeight = Math.max(
+                    0,
+                    remainingAdjustedWeight - getAdjustedOutputWeightFromSource(sourceWeightToApply)
+                )
+            })
+
+            nextSourcesByRowId.set(String(row.id), recalculateSourcesForRow(row, nextSources))
+        })
+
+        setEditableOutputs((prev) =>
+            prev.map((row) => {
+                const hasPriority = globalOutputPriorityIds.includes(String(row.id))
+                if (!hasPriority) return row
+                return {
+                    ...row,
+                    source_priority: [...globalSourcePriorityKeys],
+                    sources: nextSourcesByRowId.get(String(row.id)) || [],
+                }
+            })
+        )
+        setNewRows((prev) =>
+            prev.map((row) => {
+                const hasPriority = globalOutputPriorityIds.includes(String(row.id))
+                if (!hasPriority) return row
+                return {
+                    ...row,
+                    source_priority: [...globalSourcePriorityKeys],
+                    sources: nextSourcesByRowId.get(String(row.id)) || [],
+                }
+            })
+        )
+        setGlobalPriorityDialogOpen(false)
+    }, [
+        getAdjustedOutputWeightFromSource,
+        getSourceWeightFromAdjustedOutputWeight,
+        globalOutputPriorityIds,
+        globalSourcePriorityKeys,
+        recalculateSourcesForRow,
+        setEditableOutputs,
+        setNewRows,
+        sourceOptionsMap,
+        validOutputRowMap,
+    ])
+
     const globalSourceSummary = React.useMemo(
         () => Array.from(sourceUsageMap.values()).sort((a, b) => a.label.localeCompare(b.label)),
         [sourceUsageMap]
@@ -448,14 +608,28 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
     const globalSourcesChartConfig = React.useMemo(() => ({
         total: {
             label: 'Disponible',
-            color: 'hsl(var(--muted-foreground) / 0.35)',
+            color: 'var(--chart-1)',
         },
         used: {
             label: 'Usado',
-            color: 'var(--chart-1)',
+            color: 'var(--chart-3)',
         },
     }), [])
     const priorityDialogRow = allRows.find((row) => row.id === priorityDialogRowId) || null
+    const globalOutputPriorityItems = React.useMemo(
+        () =>
+            globalOutputPriorityIds
+                .map((rowId) => validOutputRowMap.get(String(rowId)))
+                .filter(Boolean)
+                .map((row) => ({
+                    id: String(row.id),
+                    label:
+                        products.find((product) => String(product.value ?? product.id) === String(row.product_id))?.label ||
+                        `Salida ${row.id}`,
+                    weight: parseFloat(row.weight_kg || 0) || 0,
+                })),
+        [globalOutputPriorityIds, products, validOutputRowMap]
+    )
 
     if (loading) {
         return (
@@ -666,8 +840,9 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                             <Button
                                 onClick={handleAddSelectedProducts}
                                 disabled={selectedProducts.size === 0}
+                                data-icon="inline-start"
                             >
-                                <Plus className="h-4 w-4 mr-2" />
+                                <Plus />
                                 Agregar {selectedProducts.size > 0 ? `${selectedProducts.size} ` : ''}Producto{selectedProducts.size !== 1 ? 's' : ''}
                             </Button>
                         </div>
@@ -682,17 +857,15 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
     // Botón para el header (sin Dialog wrapper)
     const hasOutputs = outputs.length > 0
     const headerButton = (
-        <Button
-            onClick={openManageDialog}
-        >
+        <Button onClick={openManageDialog} data-icon="inline-start">
             {hasOutputs ? (
                 <>
-                    <Edit className="h-4 w-4 mr-2" />
+                    <Edit />
                     Editar Salidas
                 </>
             ) : (
                 <>
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Plus />
                     Agregar Salidas
                 </>
             )}
@@ -718,8 +891,20 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
             )}
 
             {/* Lista de outputs existentes */}
+            <div
+                className={cn(
+                    renderInCard && outputs.length === 0 && 'flex min-h-0 flex-1 flex-col'
+                )}
+            >
             {outputs.length === 0 ? (
-                <div className="py-12 text-center border-2 border-dashed rounded-lg bg-muted/30">
+                <div
+                    className={cn(
+                        'text-center border-2 border-dashed rounded-lg bg-muted/30',
+                        renderInCard
+                            ? 'flex min-h-0 flex-1 flex-col items-center justify-center py-12'
+                            : 'py-12'
+                    )}
+                >
                     <div className="flex flex-col items-center justify-center space-y-4">
                         <div className="rounded-full bg-primary/10 p-4">
                             <Package className="h-10 w-10 text-primary" />
@@ -772,7 +957,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                                 <CostDisplay output={output} showDetails={false} size="sm" />
                                             </TableCell>
                                             <TableCell>
-                                                <div className="flex gap-2">
+                                                <div className="flex flex-wrap gap-2">
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
@@ -783,20 +968,24 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                                     >
                                                         Ver Desglose
                                                     </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => handleEditClick(output)}
-                                                    >
-                                                        <Edit className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => handleDeleteOutput(output.id)}
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
+                                                    {!renderInCard && (
+                                                        <>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => handleEditClick(output)}
+                                                            >
+                                                                <Edit className="h-4 w-4" />
+                                                            </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => handleDeleteOutput(output.id)}
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </Button>
+                                                        </>
+                                                    )}
                                                 </div>
                                             </TableCell>
                                         </TableRow>
@@ -807,6 +996,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                     </ScrollArea>
                 </div>
             )}
+            </div>
         </>
     )
 
@@ -886,7 +1076,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                     </div>
                 ) : null}
 
-                <DialogFooter className="flex-wrap">
+                <DialogFooter>
                     <Button
                         variant="outline"
                         onClick={() => setPriorityDialogRowId(null)}
@@ -904,6 +1094,129 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                     >
                         <Sparkles className="h-4 w-4 mr-2" />
                         Completar al 100%
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    )
+
+    const globalPriorityDialog = (
+        <Dialog
+            open={globalPriorityDialogOpen}
+            onOpenChange={(open) => {
+                setGlobalPriorityDialogOpen(open)
+                if (!open) {
+                    setGlobalOutputPriorityIds([])
+                    setGlobalSourcePriorityKeys([])
+                }
+            }}
+        >
+            <DialogContent size="4xl" className="max-h-[90vh] overflow-hidden">
+                <DialogHeader>
+                    <DialogTitle>Asignación automática por doble prioridad</DialogTitle>
+                    <DialogDescription>
+                        Primero se atenderán las salidas en el orden que elijas y, dentro de cada una, se consumirán las fuentes según su propio orden. Esta acción sobrescribe las fuentes de las salidas válidas.
+                    </DialogDescription>
+                </DialogHeader>
+
+                <div className="grid gap-4 lg:grid-cols-2">
+                    <div className="space-y-3">
+                        <div className="rounded-lg border bg-muted/20 p-4">
+                            <p className="text-sm font-semibold text-foreground">1. Prioridad de productos de salida</p>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                                Las primeras salidas consumirán antes la disponibilidad global.
+                            </p>
+                        </div>
+                        <ScrollArea className="h-[45vh] rounded-md border">
+                            <div className="p-4">
+                                <DndContext
+                                    sensors={sensors}
+                                    collisionDetection={closestCenter}
+                                    onDragEnd={({ active, over }) => {
+                                        if (!over || active.id === over.id) return
+                                        const oldIndex = globalOutputPriorityIds.indexOf(String(active.id))
+                                        const newIndex = globalOutputPriorityIds.indexOf(String(over.id))
+                                        if (oldIndex === -1 || newIndex === -1) return
+                                        setGlobalOutputPriorityIds((prev) => arrayMove(prev, oldIndex, newIndex))
+                                    }}
+                                >
+                                    <SortableContext
+                                        items={globalOutputPriorityIds}
+                                        strategy={verticalListSortingStrategy}
+                                    >
+                                        <div className="grid gap-2">
+                                            {globalOutputPriorityItems.map((item) => (
+                                                <SortableOutputPriorityItem
+                                                    key={item.id}
+                                                    item={item}
+                                                    disabled={globalOutputPriorityItems.length <= 1}
+                                                />
+                                            ))}
+                                        </div>
+                                    </SortableContext>
+                                </DndContext>
+                            </div>
+                        </ScrollArea>
+                    </div>
+
+                    <div className="space-y-3">
+                        <div className="rounded-lg border bg-muted/20 p-4">
+                            <p className="text-sm font-semibold text-foreground">2. Prioridad de fuentes</p>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                                Cada salida intentará completarse siguiendo este orden de fuentes.
+                            </p>
+                        </div>
+                        <ScrollArea className="h-[45vh] rounded-md border">
+                            <div className="p-4">
+                                <DndContext
+                                    sensors={sensors}
+                                    collisionDetection={closestCenter}
+                                    onDragEnd={({ active, over }) => {
+                                        if (!over || active.id === over.id) return
+                                        const oldIndex = globalSourcePriorityKeys.indexOf(String(active.id))
+                                        const newIndex = globalSourcePriorityKeys.indexOf(String(over.id))
+                                        if (oldIndex === -1 || newIndex === -1) return
+                                        setGlobalSourcePriorityKeys((prev) => arrayMove(prev, oldIndex, newIndex))
+                                    }}
+                                >
+                                    <SortableContext
+                                        items={globalSourcePriorityKeys}
+                                        strategy={verticalListSortingStrategy}
+                                    >
+                                        <div className="grid gap-2">
+                                            {globalSourcePriorityKeys.map((priorityKey) => {
+                                                const option = sourceOptionsMap.get(priorityKey)
+                                                if (!option) return null
+                                                return (
+                                                    <SortablePriorityItem
+                                                        key={priorityKey}
+                                                        item={option}
+                                                        usage={sourceUsageMap.get(priorityKey)}
+                                                        disabled={globalSourcePriorityKeys.length <= 1}
+                                                    />
+                                                )
+                                            })}
+                                        </div>
+                                    </SortableContext>
+                                </DndContext>
+                            </div>
+                        </ScrollArea>
+                    </div>
+                </div>
+
+                <DialogFooter>
+                    <Button
+                        variant="outline"
+                        onClick={() => setGlobalPriorityDialogOpen(false)}
+                    >
+                        Cancelar
+                    </Button>
+                    <Button
+                        onClick={autoAssignSourcesByDoublePriority}
+                        disabled={globalOutputPriorityIds.length === 0 || globalSourcePriorityKeys.length === 0}
+                    >
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        Asignar consumos
                     </Button>
                 </DialogFooter>
             </DialogContent>
@@ -938,7 +1251,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                         </p>
                     </div>
                     <div className="p-4">
-                        <Card className="border-0 shadow-none">
+                        <Card className="overflow-visible border-0 shadow-none">
                             <CardHeader className="px-0 pt-0">
                                 <CardTitle className="text-sm">Disponible vs usado</CardTitle>
                                 <CardDescription>
@@ -979,11 +1292,11 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                     </BarChart>
                                 </ChartContainer>
                             </CardContent>
-                            <CardFooter className="flex-col items-start gap-2 border-t px-0 pb-0 pt-3 text-sm">
-                                <div className="flex gap-2 leading-none font-medium">
+                            <CardFooter className="flex-col items-start gap-2 px-0 pt-3 pb-3 text-sm">
+                                <div className="min-w-0 font-medium leading-snug">
                                     {formatWeight(globalSourceSummary.reduce((sum, source) => sum + (source.assignedSourceWeight || 0), 0))} usados de {formatWeight(globalSourceSummary.reduce((sum, source) => sum + (source.totalSourceWeight || 0), 0))}
                                 </div>
-                                <div className="leading-none text-muted-foreground">
+                                <div className="min-w-0 text-pretty text-muted-foreground leading-snug">
                                     A la derecha tienes el detalle agrupado por origen con su disponibilidad y porcentaje de uso.
                                 </div>
                             </CardFooter>
@@ -1065,27 +1378,60 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
         </div>
     )
 
+    const manageDialogBusy =
+        sourcesLoading ||
+        saving ||
+        copyingFromConsumption ||
+        (productsLoading && products.length === 0)
+
     // Dialog de gestión múltiple
     const manageDialog = (
         <Dialog open={manageDialogOpen} onOpenChange={(open) => {
-            if (!open && !saving) {
-                // Resetear estados al cerrar sin guardar
-                setEditableOutputs([])
-                setNewRows([])
+            if (!open) {
+                setExpandedSourceRowId(null)
+                setPriorityDialogRowId(null)
+                setGlobalPriorityDialogOpen(false)
+                setGlobalOutputPriorityIds([])
+                setGlobalSourcePriorityKeys([])
+                setManageDialogActiveTab('outputs')
+                if (!saving) {
+                    setEditableOutputs([])
+                    setNewRows([])
+                }
             }
             setManageDialogOpen(open)
         }}>
-            <DialogContent size="full" className="flex h-[calc(100vh-2rem)] flex-col gap-0 overflow-hidden p-0">
-                <DialogHeader className="border-b px-6 py-4 pr-14">
+            <DialogContent
+                size="full"
+                className="flex h-[calc(100vh-2rem)] max-h-[calc(100vh-2rem)] min-h-0 flex-col overflow-hidden"
+            >
+                <DialogHeader>
                     <DialogTitle>Gestionar Salidas</DialogTitle>
                     <DialogDescription>
                         Agrega, edita o elimina múltiples salidas de forma rápida
                     </DialogDescription>
                 </DialogHeader>
-                
-                <Tabs defaultValue="outputs" className="flex min-h-0 flex-1 flex-col overflow-hidden px-6 pt-4">
+
+                <div className="relative isolate z-0 flex min-h-0 min-w-0 flex-1 basis-0 flex-col overflow-hidden">
+                    {manageDialogBusy ? (
+                        <div
+                            role="status"
+                            aria-live="polite"
+                            aria-busy="true"
+                            className="absolute inset-0 z-100 flex flex-col items-center justify-center gap-3 rounded-lg border border-border bg-background/95 p-8 text-center shadow-lg backdrop-blur-md dark:bg-background/90"
+                        >
+                            <Loader />
+                        </div>
+                    ) : null}
+
+                <Tabs
+                    key={manageDialogSession}
+                    value={manageDialogActiveTab}
+                    onValueChange={setManageDialogActiveTab}
+                    className="flex min-h-0 flex-1 flex-col overflow-hidden"
+                >
                     <div className="flex flex-wrap items-center justify-between gap-3">
-                        <TabsList className="grid w-full max-w-sm grid-cols-2">
+                        <TabsList>
                             <TabsTrigger value="outputs">Salidas</TabsTrigger>
                             <TabsTrigger value="sources">Fuentes globales</TabsTrigger>
                         </TabsList>
@@ -1108,99 +1454,99 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                     </label>
                                 </div>
                                 <div className="flex flex-wrap items-center justify-end gap-2">
-                                <TooltipProvider>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Button
-                                                onClick={distributeSourcesProportionally}
-                                                variant="secondary"
-                                                size="sm"
-                                                disabled={allRows.filter((row) => parseFloat(row.weight_kg || 0) > 0).length === 0 || sourceOptions.length === 0}
-                                            >
-                                                <Sparkles className="h-4 w-4 mr-2" />
-                                                Distribuir fuentes
-                                            </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent className="max-w-xs">
-                                            <p className="text-sm">
-                                                Sobrescribe las fuentes de todas las salidas válidas repartiendo cada source de forma proporcional a su peso disponible.
-                                            </p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
-                                <TooltipProvider>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Button
-                                                onClick={handleOpenAvailableProductsDialog}
-                                                variant="default"
-                                                size="sm"
-                                            >
-                                                <Zap className="h-4 w-4 mr-2" />
-                                                Agregar desde productos disponibles
-                                            </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent className="max-w-xs">
-                                            <p className="text-sm">
-                                                Agrega automáticamente productos con cajas y pesos registrados en ventas, stock y reprocesados.
-                                            </p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
-                                <TooltipProvider>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Button
-                                                onClick={handleOpenSourceSelectionDialog}
-                                                variant="default"
-                                                size="sm"
-                                                disabled={copyingFromConsumption}
-                                            >
-                                                {copyingFromConsumption ? (
-                                                    <>
-                                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                                        Añadiendo...
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <Sparkles className="h-4 w-4 mr-2" />
-                                                        Añadir automáticamente desde consumo
-                                                    </>
-                                                )}
-                                            </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent className="max-w-xs">
-                                            <p className="text-sm">
-                                                Añade automáticamente líneas de salida desde consumo de proceso padre o materia prima en stock. Puedes seleccionar una o ambas fuentes.
-                                            </p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="outline" size="sm">
+                                            <Sparkles data-icon="inline-start" />
+                                            Acciones automáticas
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-80">
+                                        <DropdownMenuLabel>Agregar salidas</DropdownMenuLabel>
+                                        <DropdownMenuItem onClick={handleOpenAvailableProductsDialog}>
+                                            <Zap className="mr-2 h-4 w-4" />
+                                            <div className="flex flex-col gap-0.5">
+                                                <span>Agregar desde productos disponibles</span>
+                                                <span className="text-xs text-muted-foreground">
+                                                    Añade productos con cajas y pesos registrados en ventas, stock y reprocesados.
+                                                </span>
+                                            </div>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            onClick={handleOpenSourceSelectionDialog}
+                                            disabled={copyingFromConsumption}
+                                        >
+                                            {copyingFromConsumption ? (
+                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            ) : (
+                                                <Sparkles className="mr-2 h-4 w-4" />
+                                            )}
+                                            <div className="flex flex-col gap-0.5">
+                                                <span>
+                                                    {copyingFromConsumption
+                                                        ? 'Añadiendo desde consumo...'
+                                                        : 'Añadir automáticamente desde consumo'}
+                                                </span>
+                                                <span className="text-xs text-muted-foreground">
+                                                    Añade líneas de salida desde consumos del padre o materia prima desde stock.
+                                                </span>
+                                            </div>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuLabel>Asignar fuentes</DropdownMenuLabel>
+                                        <DropdownMenuItem
+                                            onClick={distributeSourcesProportionally}
+                                            disabled={allRows.filter((row) => parseFloat(row.weight_kg || 0) > 0).length === 0 || sourceOptions.length === 0}
+                                        >
+                                            <Sparkles className="mr-2 h-4 w-4" />
+                                            <div className="flex flex-col gap-0.5">
+                                                <span>Distribuir fuentes</span>
+                                                <span className="text-xs text-muted-foreground">
+                                                    Reparte proporcionalmente cada fuente según su disponibilidad.
+                                                </span>
+                                            </div>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            onClick={openGlobalPriorityDialog}
+                                            disabled={validOutputRows.length === 0 || sourceOptions.length === 0}
+                                        >
+                                            <ArrowUp className="mr-2 h-4 w-4" />
+                                            <div className="flex flex-col gap-0.5">
+                                                <span>Asignar por prioridades</span>
+                                                <span className="text-xs text-muted-foreground">
+                                                    Usa el orden de salidas y el orden de fuentes para asignar consumos.
+                                                </span>
+                                            </div>
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                                 <Button
                                     onClick={addNewRow}
-                                    variant="outline"
+                                    variant="default"
                                     size="sm"
                                 >
-                                    <Plus className="h-4 w-4 mr-2" />
-                                    Agregar Línea
+                                    <Plus data-icon="inline-start" />
+                                    Agregar salida
                                 </Button>
                                 </div>
                             </div>
 
                             <ScrollArea className="min-h-0 flex-1 rounded-md border">
                                 <Table>
-                            <TableHeader>
-                                <TableRow>
-                                <TableHead className="w-[300px]">Producto</TableHead>
-                                {showBoxes && <TableHead className="w-[120px]">Cajas</TableHead>}
-                                <TableHead className="w-[120px]">Peso (kg)</TableHead>
-                                {showBoxes && <TableHead className="w-[100px]">Peso Prom.</TableHead>}
-                                <TableHead className="w-[100px]">Fuentes</TableHead>
-                                <TableHead className="w-[60px]"></TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {allRows.map((row) => {
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="min-w-[16rem]">Producto</TableHead>
+                                            {showBoxes && <TableHead>Cajas</TableHead>}
+                                            <TableHead>Peso (kg)</TableHead>
+                                            {showBoxes && <TableHead>Peso prom.</TableHead>}
+                                            <TableHead>Fuentes</TableHead>
+                                            <TableHead>
+                                                <span className="sr-only">Eliminar fila</span>
+                                            </TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {allRows.map((row) => {
                                     const avgWeight = row.boxes && parseFloat(row.boxes) > 0 && row.weight_kg
                                         ? formatDecimal(parseFloat(row.weight_kg) / parseFloat(row.boxes))
                                         : '0,00'
@@ -1239,7 +1585,6 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                                         value={row.boxes}
                                                         onChange={(e) => updateRow(row.id, 'boxes', e.target.value)}
                                                         placeholder="0"
-                                                        className="h-9"
                                                     />
                                                 </TableCell>
                                                 )}
@@ -1264,12 +1609,16 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                                             }
                                                         }}
                                                         placeholder="0.00"
-                                                        className={`h-9 ${!row.weight_kg || parseFloat(row.weight_kg) <= 0 ? 'border-destructive' : ''}`}
+                                                        className={
+                                                            !row.weight_kg || parseFloat(row.weight_kg) <= 0
+                                                                ? 'border-destructive'
+                                                                : undefined
+                                                        }
                                                     />
                                                 </TableCell>
                                                 {showBoxes && (
                                                 <TableCell>
-                                                    <span className="text-sm text-muted-foreground">
+                                                    <span className="text-muted-foreground">
                                                         {formatWeight(avgWeight)}
                                                     </span>
                                                 </TableCell>
@@ -1279,31 +1628,29 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                                         variant="outline"
                                                         size="sm"
                                                         onClick={() => {
-                                                            const newExpanded = new Set(expandedSourcesRows)
-                                                            if (expandedSourcesRows.has(row.id)) {
-                                                                newExpanded.delete(row.id)
-                                                            } else {
-                                                                newExpanded.add(row.id)
-                                                            }
-                                                            setExpandedSourcesRows(newExpanded)
+                                                            setExpandedSourceRowId((current) =>
+                                                                current === row.id ? null : row.id
+                                                            )
                                                         }}
-                                                        className="h-8 text-xs"
                                                     >
-                                                        <span className="flex items-center gap-1">
                                                         {row.sources && Array.isArray(row.sources) && row.sources.length > 0 ? (
                                                             <>
-                                                                <span className={`h-2 w-2 rounded-full ${sourcesFullyConfigured ? 'bg-green-500' : 'bg-amber-500'}`}></span>
-                                                                {row.sources.length} fuente{row.sources.length !== 1 ? 's' : ''}
+                                                                <span
+                                                                    className={`h-2 w-2 shrink-0 rounded-full ${sourcesFullyConfigured ? 'bg-green-500' : 'bg-amber-500'}`}
+                                                                    aria-hidden
+                                                                />
+                                                                <span>
+                                                                    {row.sources.length} fuente{row.sources.length !== 1 ? 's' : ''}
+                                                                </span>
                                                             </>
                                                         ) : (
-                                                            'Configurar'
+                                                            <span>Configurar</span>
                                                         )}
-                                                            {expandedSourcesRows.has(row.id) ? (
-                                                                <ChevronDown className="h-4 w-4 ml-1" />
-                                                            ) : (
-                                                                <ChevronRight className="h-4 w-4 ml-1" />
-                                                            )}
-                                                        </span>
+                                                        {expandedSourceRowId === row.id ? (
+                                                            <ChevronDown data-icon="inline-end" />
+                                                        ) : (
+                                                            <ChevronRight data-icon="inline-end" />
+                                                        )}
                                                     </Button>
                                                 </TableCell>
                                                 <TableCell>
@@ -1311,46 +1658,50 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                                         variant="ghost"
                                                         size="icon"
                                                         onClick={() => removeRow(row.id)}
-                                                        className="h-8 w-8"
                                                     >
                                                         <Trash2 className="h-4 w-4 text-destructive" />
                                                     </Button>
                                                 </TableCell>
                                             </TableRow>
-                                            {expandedSourcesRows.has(row.id) && (
-                                                <TableRow className="bg-gray-50/50">
-                                                <TableCell colSpan={showBoxes ? 6 : 5} className="p-4 pl-8">
+                                            {expandedSourceRowId === row.id && (
+                                                <TableRow className="bg-muted/40">
+                                                    <TableCell colSpan={showBoxes ? 6 : 5} className="align-top">
                                                     <div className="space-y-4">
                                                         <div className="flex flex-wrap items-center justify-between gap-2">
                                                             <div>
-                                                                <p className="text-xs font-semibold text-foreground">Editor de fuentes</p>
-                                                                <p className="text-[11px] text-muted-foreground">
-                                                                    El reparto respeta la disponibilidad global total de cada source.
+                                                                <p className="text-xs font-semibold text-foreground">Orígenes de esta salida</p>
+                                                                <p className="text-xs text-muted-foreground">
+                                                                    Establece desde qué stock o salidas del proceso padre deriva el peso de esta salida y reparte kilos y porcentajes hasta el 100 %.
                                                                 </p>
                                                             </div>
                                                             <div className="flex flex-wrap items-center gap-2">
+                                                                <DropdownMenu>
+                                                                    <DropdownMenuTrigger asChild>
+                                                                        <Button type="button" variant="outline" size="sm">
+                                                                            Acciones
+                                                                            <ChevronDown className="ml-1.5 h-3.5 w-3.5 opacity-60" />
+                                                                        </Button>
+                                                                    </DropdownMenuTrigger>
+                                                                    <DropdownMenuContent align="end" className="w-56">
+                                                                        <DropdownMenuItem
+                                                                            disabled={sourcesLoading || sourceOptions.length === 0}
+                                                                            onClick={() => setPriorityDialogRowId(row.id)}
+                                                                        >
+                                                                            <Sparkles className="mr-2 h-4 w-4" />
+                                                                            Completar al 100%
+                                                                        </DropdownMenuItem>
+                                                                        <DropdownMenuItem
+                                                                            disabled={!row.sources || row.sources.length === 0}
+                                                                            onClick={() => clearRowSources(row.id)}
+                                                                        >
+                                                                            <X className="mr-2 h-4 w-4" />
+                                                                            Limpiar fuentes
+                                                                        </DropdownMenuItem>
+                                                                    </DropdownMenuContent>
+                                                                </DropdownMenu>
                                                                 <Button
                                                                     type="button"
-                                                                    variant="outline"
-                                                                    size="sm"
-                                                                    disabled={sourcesLoading || sourceOptions.length === 0}
-                                                                    onClick={() => setPriorityDialogRowId(row.id)}
-                                                                >
-                                                                    <Sparkles className="h-3.5 w-3.5 mr-2" />
-                                                                    Completar al 100%
-                                                                </Button>
-                                                                <Button
-                                                                    type="button"
-                                                                    variant="outline"
-                                                                    size="sm"
-                                                                    disabled={!row.sources || row.sources.length === 0}
-                                                                    onClick={() => clearRowSources(row.id)}
-                                                                >
-                                                                    Limpiar fuentes
-                                                                </Button>
-                                                                <Button
-                                                                    type="button"
-                                                                    variant="outline"
+                                                                    variant="default"
                                                                     size="sm"
                                                                     disabled={sourcesLoading || sourceOptions.length === 0}
                                                                     onClick={() => {
@@ -1368,21 +1719,29 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                                                     }}
                                                                 >
                                                                     <Plus className="h-3.5 w-3.5 mr-2" />
-                                                                    Agregar línea
+                                                                    Agregar fuente
                                                                 </Button>
                                                             </div>
                                                         </div>
 
                                                         {row.sources && Array.isArray(row.sources) && row.sources.length > 0 ? (
-                                                            <div className="space-y-2">
+                                                            <div className="space-y-0 overflow-hidden rounded-md border bg-card">
                                                                 <Table>
                                                                     <TableHeader>
-                                                                        <TableRow>
-                                                                            <TableHead className="h-8 text-xs">Origen</TableHead>
-                                                                            <TableHead className="h-8 text-xs">Peso fuente (kg)</TableHead>
-                                                                            <TableHead className="h-8 text-xs">Peso transformado (kg)</TableHead>
-                                                                            <TableHead className="h-8 text-xs">%</TableHead>
-                                                                            <TableHead className="h-8 text-xs w-[40px]"></TableHead>
+                                                                        <TableRow className="hover:bg-transparent">
+                                                                            <TableHead className="min-w-[220px] text-muted-foreground">
+                                                                                Origen
+                                                                            </TableHead>
+                                                                            <TableHead className="w-[128px] text-muted-foreground">
+                                                                                Peso fuente (kg)
+                                                                            </TableHead>
+                                                                            <TableHead className="w-[128px] text-muted-foreground">
+                                                                                Peso transformado (kg)
+                                                                            </TableHead>
+                                                                            <TableHead className="w-[96px] text-muted-foreground">%</TableHead>
+                                                                            <TableHead className="w-12 p-2">
+                                                                                <span className="sr-only">Eliminar</span>
+                                                                            </TableHead>
                                                                         </TableRow>
                                                                     </TableHeader>
                                                                     <TableBody>
@@ -1393,15 +1752,15 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                                                                 : source.source_type === 'parent_output'
                                                                                     ? `parent_output-${source.production_output_consumption_id}`
                                                                                     : undefined
-                                                                            const sourceUsage = currentSourceKey ? sourceUsageMap.get(currentSourceKey) : null
                                                                             const sourceAvailableWeight = getAvailableSourceWeightForLine(row, sourceIndex, currentSourceKey)
                                                                             const currentSourceWeight = parseFloat(source.contributed_weight_kg || 0) || 0
+                                                                            const additionalSourceWeight = roundToTwo(Math.max(0, sourceAvailableWeight - currentSourceWeight))
                                                                             const currentAdjustedWeight = getAdjustedOutputWeightFromSource(currentSourceWeight)
 
                                                                             return (
                                                                                 <TableRow key={sourceIndex}>
-                                                                                    <TableCell className="py-1 px-2 align-top">
-                                                                                        <div className="space-y-1">
+                                                                                    <TableCell className="align-top">
+                                                                                        <div className="flex flex-col gap-1.5">
                                                                                             <Select
                                                                                                 value={currentSourceValue}
                                                                                                 onValueChange={(value) => {
@@ -1417,7 +1776,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                                                                                     updateRow(row.id, 'sources', updated)
                                                                                                 }}
                                                                                             >
-                                                                                                <SelectTrigger className="h-7 min-w-[280px] text-xs">
+                                                                                                <SelectTrigger className="w-full max-w-md">
                                                                                                     <SelectValue placeholder="Seleccionar origen" />
                                                                                                 </SelectTrigger>
                                                                                                 <SelectContent>
@@ -1425,14 +1784,13 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                                                                                         const isUsed = (row.sources || []).some((candidate, candidateIndex) => (
                                                                                                             candidateIndex !== sourceIndex && getSourceKey(candidate) === option.key
                                                                                                         ))
-                                                                                                        const optionUsage = sourceUsageMap.get(option.key)
                                                                                                         return (
                                                                                                             <SelectItem
                                                                                                                 key={option.key}
                                                                                                                 value={option.value}
                                                                                                                 disabled={isUsed}
                                                                                                             >
-                                                                                                                {option.typeLabel} · {option.label} · Restante {formatWeight(optionUsage?.remainingSourceWeight || option.totalWeight)}
+                                                                                                                {option.typeLabel} · {option.label}
                                                                                                             </SelectItem>
                                                                                                         )
                                                                                                     }) : (
@@ -1442,14 +1800,14 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                                                                                     )}
                                                                                                 </SelectContent>
                                                                                             </Select>
-                                                                                            {sourceUsage && (
-                                                                                                <p className="text-[11px] text-muted-foreground">
-                                                                                                    Disponible global: {formatWeight(sourceAvailableWeight)} · Total usado: {formatWeight(sourceUsage.assignedSourceWeight)}
+                                                                                            {currentSourceKey ? (
+                                                                                                <p className="text-xs text-muted-foreground">
+                                                                                                    Disponible: {formatWeight(additionalSourceWeight)}
                                                                                                 </p>
-                                                                                            )}
+                                                                                            ) : null}
                                                                                         </div>
                                                                                     </TableCell>
-                                                                                    <TableCell className="py-1 px-2">
+                                                                                    <TableCell>
                                                                                         <Input
                                                                                             type="number"
                                                                                             step="0.01"
@@ -1469,11 +1827,11 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                                                                                 }
                                                                                                 updateRow(row.id, 'sources', updated)
                                                                                             }}
-                                                                                            className="h-7 text-xs w-24"
+                                                                                            className="max-w-32"
                                                                                             placeholder="0.00"
                                                                                         />
                                                                                     </TableCell>
-                                                                                    <TableCell className="py-1 px-2">
+                                                                                    <TableCell>
                                                                                         <Input
                                                                                             type="number"
                                                                                             step="0.01"
@@ -1508,11 +1866,11 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                                                                                 }
                                                                                                 updateRow(row.id, 'sources', updated)
                                                                                             }}
-                                                                                            className="h-7 text-xs w-24"
+                                                                                            className="max-w-32"
                                                                                             placeholder="0.00"
                                                                                         />
                                                                                     </TableCell>
-                                                                                    <TableCell className="py-1 px-2">
+                                                                                    <TableCell>
                                                                                         <Input
                                                                                             type="number"
                                                                                             step="0.01"
@@ -1549,21 +1907,20 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                                                                                 }
                                                                                                 updateRow(row.id, 'sources', updated)
                                                                                             }}
-                                                                                            className="h-7 text-xs w-24"
+                                                                                            className="max-w-28"
                                                                                             placeholder="0.00"
                                                                                         />
                                                                                     </TableCell>
-                                                                                    <TableCell className="py-1 px-2">
+                                                                                    <TableCell>
                                                                                         <Button
                                                                                             variant="ghost"
-                                                                                            size="sm"
+                                                                                            size="icon"
                                                                                             onClick={() => {
                                                                                                 const updated = row.sources.filter((_, i) => i !== sourceIndex)
                                                                                                 updateRow(row.id, 'sources', updated)
                                                                                             }}
-                                                                                            className="h-7 w-7 p-0"
                                                                                         >
-                                                                                            <Trash2 className="h-3 w-3" />
+                                                                                            <Trash2 className="h-4 w-4 text-destructive" />
                                                                                         </Button>
                                                                                     </TableCell>
                                                                                 </TableRow>
@@ -1576,12 +1933,12 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                                                     const isComplete = Math.abs(totalPercentage - 100) < 0.01
                                                                     const progressValue = Math.max(0, Math.min(totalPercentage, 100))
                                                                     return (
-                                                                        <div className="space-y-1.5">
-                                                                            <div className="flex items-center justify-between gap-3">
-                                                                                <span className="text-xs font-medium text-muted-foreground">
+                                                                        <div className="space-y-2 border-t bg-muted/30 px-4 py-3">
+                                                                            <div className="flex items-center justify-between gap-3 text-sm">
+                                                                                <span className="font-medium text-muted-foreground">
                                                                                     Total fuentes
                                                                                 </span>
-                                                                                <span className={`text-xs font-semibold ${isComplete ? 'text-green-600' : 'text-amber-600'}`}>
+                                                                                <span className={`font-medium tabular-nums ${isComplete ? 'text-green-600' : 'text-amber-600'}`}>
                                                                                     {formatDecimal(totalPercentage)}% / 100%
                                                                                 </span>
                                                                             </div>
@@ -1601,26 +1958,26 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                                             </div>
                                                         )}
                                                     </div>
-                                                </TableCell>
-                                            </TableRow>
+                                                    </TableCell>
+                                                </TableRow>
                                             )}
                                         </React.Fragment>
                                     )
                                 })}
                                 {allRows.length === 0 && (
                                     <TableRow>
-                                        <TableCell colSpan={5} className="p-0">
+                                        <TableCell colSpan={showBoxes ? 6 : 5} className="p-0">
                                             <div className="py-12">
                                                 <EmptyState
                                                     icon={<Package className="h-12 w-12 text-primary" strokeWidth={1.5} />}
                                                     title="No hay salidas agregadas"
-                                                    description="Haz clic en 'Agregar Línea' para comenzar a agregar salidas al proceso"
+                                                    description="Haz clic en 'Agregar salida' para comenzar a añadir salidas al proceso"
                                                 />
                                             </div>
                                         </TableCell>
                                     </TableRow>
                                 )}
-                            </TableBody>
+                                    </TableBody>
                                 </Table>
                             </ScrollArea>
                         </div>
@@ -1635,31 +1992,38 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                     </TabsContent>
                 </Tabs>
 
-                <DialogFooter className="shrink-0 flex-wrap !mx-0 !mb-0 rounded-none px-6 py-4">
-                        <Button
-                            variant="outline"
-                            onClick={() => setManageDialogOpen(false)}
-                            disabled={saving}
-                        >
-                            Cancelar
-                        </Button>
-                        <Button
-                            onClick={handleSaveAll}
-                            disabled={saving || allRows.some(row => 
-                                (row.product_id || row.boxes || row.weight_kg) && 
-                                (!row.product_id || !row.weight_kg || parseFloat(row.weight_kg) <= 0)
-                            )}
-                        >
-                            {saving ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                                <>
-                                    <Save className="h-4 w-4 mr-2" />
-                                    Guardar
-                                </>
-                            )}
-                        </Button>
+                <DialogFooter>
+                    <Button
+                        variant="outline"
+                        onClick={() => setManageDialogOpen(false)}
+                        disabled={saving}
+                    >
+                        Cancelar
+                    </Button>
+                    <Button
+                        onClick={handleSaveAll}
+                        disabled={
+                            saving ||
+                            !manageDialogDataReady ||
+                            !isManageDialogDirty ||
+                            allRows.some(
+                                (row) =>
+                                    (row.product_id || row.boxes || row.weight_kg) &&
+                                    (!row.product_id || !row.weight_kg || parseFloat(row.weight_kg) <= 0)
+                            )
+                        }
+                    >
+                        {saving ? (
+                            <Loader2 className="animate-spin" />
+                        ) : (
+                            <>
+                                <Save data-icon="inline-start" />
+                                Guardar
+                            </>
+                        )}
+                    </Button>
                 </DialogFooter>
+                </div>
             </DialogContent>
         </Dialog>
     )
@@ -1675,7 +2039,11 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                     </DialogDescription>
                 </DialogHeader>
                 {breakdownOutputId && (
-                    <CostBreakdownView outputId={breakdownOutputId} />
+                    <CostBreakdownView
+                        outputId={breakdownOutputId}
+                        productionRecordId={productionRecordId}
+                        parentOutputConsumptions={recordConsumptions}
+                    />
                 )}
             </DialogContent>
         </Dialog>
@@ -1707,11 +2075,16 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
             <>
                 {manageDialog}
                 {priorityDialog}
+                {globalPriorityDialog}
                 {sourceSelectionDialog}
                 {availableProductsDialog}
                 {breakdownDialog}
                 {deleteConfirmDialog}
-                <Card className="h-fit">
+                <Card
+                    className={cn(
+                        outputs.length === 0 ? 'min-h-[min(22rem,55vh)]' : 'h-fit'
+                    )}
+                >
                     <CardHeader>
                         <div className="flex items-center justify-between">
                             <div>
@@ -1726,7 +2099,11 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                             {headerButton}
                         </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent
+                        className={cn(
+                            outputs.length === 0 && 'flex min-h-0 flex-1 flex-col'
+                        )}
+                    >
                         {mainContent}
                     </CardContent>
                 </Card>
@@ -1739,6 +2116,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
         <div className="space-y-4">
             {manageDialog}
             {priorityDialog}
+            {globalPriorityDialog}
             {sourceSelectionDialog}
             {availableProductsDialog}
             {breakdownDialog}

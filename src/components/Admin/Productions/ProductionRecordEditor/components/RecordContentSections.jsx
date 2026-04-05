@@ -22,6 +22,7 @@ export const RecordContentSections = ({
         recordInputs,
         recordOutputs,
         recordConsumptions,
+        recordInputCostsSummary,
         hasParent,
         updateRecord
     } = useProductionRecordContext()
@@ -59,6 +60,7 @@ export const RecordContentSections = ({
                 <ProductionInputsManager
                     productionRecordId={recordId}
                     initialInputs={recordInputs}
+                    inputCostsSummary={recordInputCostsSummary}
                     onRefresh={handleRefresh}
                     hideTitle={true}
                     renderInCard={true}
@@ -71,6 +73,7 @@ export const RecordContentSections = ({
                 <ProductionOutputConsumptionsManager
                     productionRecordId={recordId}
                     initialConsumptions={recordConsumptions}
+                    inputCostsSummary={recordInputCostsSummary}
                     hasParent={hasParent}
                     onRefresh={handleRefresh}
                     hideTitle={true}

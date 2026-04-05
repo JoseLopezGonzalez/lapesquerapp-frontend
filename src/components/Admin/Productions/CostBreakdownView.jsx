@@ -1,32 +1,135 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { getCostBreakdown } from '@/services/costService'
+import { getProductionRecord } from '@/services/productionService'
 import { useSession } from 'next-auth/react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { ChevronDown, ChevronRight, Loader2 } from 'lucide-react'
-import { formatCostPerKg, formatTotalCost, getCostTypeColor, getCostTypeLabel } from '@/helpers/production/costFormatters'
+import { formatCostPerKg, formatTotalCost, getCostTypeColor, getCostTypeLabel, getMaterialSourceDisplayLabel } from '@/helpers/production/costFormatters'
 import Loader from '@/components/Utilities/Loader'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
+import { cn } from '@/lib/utils'
+
+/**
+ * Métrica principal: €/kg; total como referencia secundaria.
+ */
+function CostSummaryHero({ costPerKg, totalCost, className, size = 'lg' }) {
+    const kgClass =
+        size === 'lg'
+            ? 'text-2xl font-semibold tabular-nums tracking-tight text-foreground sm:text-3xl'
+            : 'text-lg font-semibold tabular-nums text-foreground'
+
+    return (
+        <div
+            className={cn(
+                'flex flex-col gap-3 rounded-lg border border-border/60 bg-muted/20 p-4 sm:flex-row sm:items-end sm:justify-between',
+                className
+            )}
+        >
+            <div className="min-w-0 space-y-1">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Coste por kg
+                </p>
+                <p className={kgClass}>{formatCostPerKg(costPerKg)}</p>
+            </div>
+            <div className="min-w-0 space-y-0.5 sm:text-right">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                    Coste total
+                </p>
+                <p className="text-sm font-medium tabular-nums text-muted-foreground sm:text-base">
+                    {formatTotalCost(totalCost)}
+                </p>
+            </div>
+        </div>
+    )
+}
+
+/**
+ * Une la fila del desglose (suele ir sin consumo anidado) con `parentOutputConsumptions` del registro.
+ * @param {object} source
+ * @param {Map<number, object>} consumptionById
+ */
+function withConsumptionFromRecord(source, consumptionById) {
+    if (!source || !consumptionById?.size) return source
+    const cid =
+        source.productionOutputConsumptionId ??
+        source.production_output_consumption_id ??
+        source.outputConsumptionId ??
+        source.output_consumption_id ??
+        null
+    if (cid == null) return source
+    const c = consumptionById.get(Number(cid))
+    if (!c) return source
+    return { ...source, productionOutputConsumption: c }
+}
 
 /**
  * Componente para mostrar el desglose completo de costes de un output
  * @param {number} outputId - ID del output
+ * @param {number} [productionRecordId] - Registro actual; si no hay consumos en props, se recarga el registro para enlazar fuentes
+ * @param {object[]|undefined} [parentOutputConsumptions] - Consumos del proceso padre (desde contexto o API)
  */
-export default function CostBreakdownView({ outputId }) {
+export default function CostBreakdownView({ outputId, productionRecordId, parentOutputConsumptions }) {
     const { data: session } = useSession();
     const [breakdown, setBreakdown] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [fallbackConsumptions, setFallbackConsumptions] = useState(null);
     const [expandedSections, setExpandedSections] = useState({
         materials: true,
         processCosts: true,
         productionCosts: true,
     });
+
+    const effectiveConsumptions = useMemo(() => {
+        if (Array.isArray(parentOutputConsumptions) && parentOutputConsumptions.length > 0) {
+            return parentOutputConsumptions
+        }
+        if (fallbackConsumptions != null) return fallbackConsumptions
+        return []
+    }, [parentOutputConsumptions, fallbackConsumptions])
+
+    const consumptionById = useMemo(() => {
+        const m = new Map()
+        for (const c of effectiveConsumptions) {
+            if (c?.id != null) m.set(Number(c.id), c)
+        }
+        return m
+    }, [effectiveConsumptions])
+
+    useEffect(() => {
+        const hasProps =
+            Array.isArray(parentOutputConsumptions) && parentOutputConsumptions.length > 0
+        if (hasProps) {
+            setFallbackConsumptions(null)
+            return
+        }
+        if (!productionRecordId || !session?.user?.accessToken) {
+            setFallbackConsumptions(null)
+            return
+        }
+        let cancelled = false
+        ;(async () => {
+            try {
+                const rec = await getProductionRecord(
+                    productionRecordId,
+                    session.user.accessToken
+                )
+                const list = rec?.parentOutputConsumptions ?? []
+                if (!cancelled) setFallbackConsumptions(Array.isArray(list) ? list : [])
+            } catch {
+                if (!cancelled) setFallbackConsumptions([])
+            }
+        })()
+        return () => {
+            cancelled = true
+        }
+    }, [outputId, productionRecordId, session?.user?.accessToken, parentOutputConsumptions])
 
     useEffect(() => {
         if (session?.user?.accessToken && outputId) {
@@ -79,21 +182,44 @@ export default function CostBreakdownView({ outputId }) {
 
         return (
             <div className="space-y-2">
-                <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                    <span className="font-medium">{title}</span>
-                    <div className="flex gap-4">
-                        <span>{formatTotalCost(typeBreakdown.totalCost)}</span>
-                        <span className="text-gray-500">{formatCostPerKg(typeBreakdown.costPerKg)}</span>
+                <div className="flex flex-col gap-2 rounded-md border border-border/50 bg-muted/25 p-3 sm:flex-row sm:items-center sm:justify-between">
+                    <span className="shrink-0 font-medium text-foreground">{title}</span>
+                    <div className="flex flex-col gap-3 sm:items-end">
+                        <div className="sm:text-right">
+                            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                                Coste / kg
+                            </p>
+                            <p className="text-base font-semibold tabular-nums text-foreground">
+                                {formatCostPerKg(typeBreakdown.costPerKg)}
+                            </p>
+                        </div>
+                        <div className="sm:text-right">
+                            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Total</p>
+                            <p className="text-sm tabular-nums text-muted-foreground">
+                                {formatTotalCost(typeBreakdown.totalCost)}
+                            </p>
+                        </div>
                     </div>
                 </div>
                 {typeBreakdown.breakdown && typeBreakdown.breakdown.length > 0 && (
                     <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead className="pl-8">Concepto</TableHead>
+                                <TableHead className="text-right font-semibold">€/kg</TableHead>
+                                <TableHead className="text-right text-muted-foreground">Total</TableHead>
+                            </TableRow>
+                        </TableHeader>
                         <TableBody>
                             {typeBreakdown.breakdown.map((item, index) => (
                                 <TableRow key={index}>
                                     <TableCell className="pl-8">{item.name}</TableCell>
-                                    <TableCell>{formatTotalCost(item.totalCost)}</TableCell>
-                                    <TableCell>{formatCostPerKg(item.costPerKg)}</TableCell>
+                                    <TableCell className="text-right font-semibold tabular-nums">
+                                        {formatCostPerKg(item.costPerKg)}
+                                    </TableCell>
+                                    <TableCell className="text-right tabular-nums text-muted-foreground">
+                                        {formatTotalCost(item.totalCost)}
+                                    </TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
@@ -111,13 +237,10 @@ export default function CostBreakdownView({ outputId }) {
                     <CardTitle>Resumen de Costes</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="flex items-center justify-between text-lg font-semibold">
-                        <span>Coste Total</span>
-                        <div className="flex gap-4">
-                            <span>{formatTotalCost(breakdown.total.totalCost)}</span>
-                            <span className="text-gray-600">{formatCostPerKg(breakdown.total.costPerKg)}</span>
-                        </div>
-                    </div>
+                    <CostSummaryHero
+                        costPerKg={breakdown.total.costPerKg}
+                        totalCost={breakdown.total.totalCost}
+                    />
                 </CardContent>
             </Card>
 
@@ -127,35 +250,36 @@ export default function CostBreakdownView({ outputId }) {
                     <CardTitle>Materias Primas</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex gap-4">
-                            <span>{formatTotalCost(breakdown.materials.totalCost)}</span>
-                            <span className="text-gray-500">{formatCostPerKg(breakdown.materials.costPerKg)}</span>
-                        </div>
-                    </div>
                     {breakdown.materials.sources && breakdown.materials.sources.length > 0 && (
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Tipo</TableHead>
+                                    <TableHead>Fuente</TableHead>
                                     <TableHead>Peso (kg)</TableHead>
                                     <TableHead>Porcentaje</TableHead>
-                                    <TableHead>Coste por kg</TableHead>
-                                    <TableHead>Coste Total</TableHead>
+                                    <TableHead className="text-right font-semibold">Coste / kg</TableHead>
+                                    <TableHead className="text-right text-muted-foreground">Coste total</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {breakdown.materials.sources.map((source, index) => (
+                                {breakdown.materials.sources.map((source, index) => {
+                                    const sourceForLabel = withConsumptionFromRecord(source, consumptionById)
+                                    return (
                                     <TableRow key={index}>
                                         <TableCell>
-                                            <Badge>{source.sourceType}</Badge>
+                                            <Badge>{getMaterialSourceDisplayLabel(sourceForLabel)}</Badge>
                                         </TableCell>
                                         <TableCell>{source.contributedWeightKg}</TableCell>
                                         <TableCell>{source.contributionPercentage}%</TableCell>
-                                        <TableCell>{formatCostPerKg(source.sourceCostPerKg)}</TableCell>
-                                        <TableCell>{formatTotalCost(source.sourceTotalCost)}</TableCell>
+                                        <TableCell className="text-right font-semibold tabular-nums">
+                                            {formatCostPerKg(source.sourceCostPerKg)}
+                                        </TableCell>
+                                        <TableCell className="text-right tabular-nums text-muted-foreground">
+                                            {formatTotalCost(source.sourceTotalCost)}
+                                        </TableCell>
                                     </TableRow>
-                                ))}
+                                    )
+                                })}
                             </TableBody>
                         </Table>
                     )}
@@ -185,12 +309,16 @@ export default function CostBreakdownView({ outputId }) {
                             {renderCostTypeBreakdown(breakdown.processCosts.operational, 'Operativos')}
                             {renderCostTypeBreakdown(breakdown.processCosts.packaging, 'Envases')}
                             {breakdown.processCosts.total && (
-                                <div className="flex items-center justify-between p-2 bg-blue-50 rounded font-semibold">
-                                    <span>Total Proceso</span>
-                                    <div className="flex gap-4">
-                                        <span>{formatTotalCost(breakdown.processCosts.total.totalCost)}</span>
-                                        <span>{formatCostPerKg(breakdown.processCosts.total.costPerKg)}</span>
-                                    </div>
+                                <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3">
+                                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-400">
+                                        Total proceso
+                                    </p>
+                                    <CostSummaryHero
+                                        size="sm"
+                                        costPerKg={breakdown.processCosts.total.costPerKg}
+                                        totalCost={breakdown.processCosts.total.totalCost}
+                                        className="border-0 bg-transparent p-0"
+                                    />
                                 </div>
                             )}
                         </CardContent>
@@ -221,12 +349,16 @@ export default function CostBreakdownView({ outputId }) {
                             {renderCostTypeBreakdown(breakdown.productionCosts.operational, 'Operativos')}
                             {renderCostTypeBreakdown(breakdown.productionCosts.packaging, 'Envases')}
                             {breakdown.productionCosts.total && (
-                                <div className="flex items-center justify-between p-2 bg-green-50 rounded font-semibold">
-                                    <span>Total Lote</span>
-                                    <div className="flex gap-4">
-                                        <span>{formatTotalCost(breakdown.productionCosts.total.totalCost)}</span>
-                                        <span>{formatCostPerKg(breakdown.productionCosts.total.costPerKg)}</span>
-                                    </div>
+                                <div className="rounded-lg border border-green-500/20 bg-green-500/5 p-3">
+                                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-green-700 dark:text-green-400">
+                                        Total lote
+                                    </p>
+                                    <CostSummaryHero
+                                        size="sm"
+                                        costPerKg={breakdown.productionCosts.total.costPerKg}
+                                        totalCost={breakdown.productionCosts.total.totalCost}
+                                        className="border-0 bg-transparent p-0"
+                                    />
                                 </div>
                             )}
                         </CardContent>

@@ -470,22 +470,39 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
         inputs.forEach((input) => {
             if (!input.box?.product?.name) return
             const productName = input.box.product.name
+            const inputWeight = parseFloat(input.box?.netWeight || 0)
+            const inputCostPerKg = input.costPerKg ?? input.cost_per_kg ?? input.box?.costPerKg ?? input.box?.cost_per_kg ?? null
+            const inputTotalCost = input.totalCost ?? input.total_cost ?? (
+                inputCostPerKg != null ? (parseFloat(inputCostPerKg) || 0) * inputWeight : 0
+            )
             if (!productsMap[productName]) {
                 productsMap[productName] = {
                     name: productName,
                     boxesCount: 0,
                     totalWeight: 0,
+                    totalCost: 0,
+                    costWeightBase: 0,
+                    costPerKg: null,
                     lots: new Set(),
                     boxes: []
                 }
             }
             productsMap[productName].boxesCount += 1
-            productsMap[productName].totalWeight += parseFloat(input.box?.netWeight || 0)
+            productsMap[productName].totalWeight += inputWeight
+            productsMap[productName].totalCost += parseFloat(inputTotalCost || 0) || 0
+            if (inputCostPerKg !== null && inputCostPerKg !== undefined) {
+                productsMap[productName].costWeightBase += inputWeight
+                if (productsMap[productName].totalWeight > 0) {
+                    productsMap[productName].costPerKg = productsMap[productName].totalCost / productsMap[productName].totalWeight
+                }
+            }
             if (input.box.lot) productsMap[productName].lots.add(input.box.lot)
             productsMap[productName].boxes.push({
                 id: input.box.id,
                 lot: input.box.lot || null,
-                weight: parseFloat(input.box?.netWeight || 0),
+                weight: inputWeight,
+                costPerKg: inputCostPerKg,
+                totalCost: inputTotalCost,
                 palletId: input.box.palletId
             })
         })

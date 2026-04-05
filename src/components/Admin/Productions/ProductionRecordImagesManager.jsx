@@ -123,7 +123,12 @@ const ProductionRecordImagesManager = ({
     }, [])
 
     const content = (
-        <div className="space-y-4">
+        <div
+            className={cn(
+                'space-y-4',
+                renderInCard && images.length === 0 && 'flex min-h-0 flex-1 flex-col'
+            )}
+        >
             {/* Galería estilo WhatsApp */}
             {images.length > 0 ? (
                 <div className="max-w-2xl">
@@ -380,7 +385,12 @@ const ProductionRecordImagesManager = ({
                     )}
                 </div>
             ) : (
-                <div className="max-w-2xl">
+                <div
+                    className={cn(
+                        'max-w-2xl',
+                        renderInCard && 'flex min-h-0 flex-1 flex-col justify-center'
+                    )}
+                >
                     <div className="grid grid-cols-3 gap-2">
                         {/* Placeholders vacíos */}
                         {[1, 2, 3, 4, 5].map((i) => (
@@ -487,7 +497,11 @@ const ProductionRecordImagesManager = ({
 
     if (renderInCard) {
         return (
-            <Card>
+            <Card
+                className={cn(
+                    images.length === 0 && 'min-h-[min(22rem,55vh)]'
+                )}
+            >
                 <CardHeader className="pb-3">
                     <CardTitle className="text-lg flex items-center gap-2">
                         <ImageIcon className="h-5 w-5 text-primary" />
@@ -497,7 +511,12 @@ const ProductionRecordImagesManager = ({
                         <CardDescription>{cardDescription}</CardDescription>
                     )}
                 </CardHeader>
-                <CardContent className="pt-0">
+                <CardContent
+                    className={cn(
+                        'pt-0',
+                        images.length === 0 && 'flex min-h-0 flex-1 flex-col'
+                    )}
+                >
                     {content}
                 </CardContent>
             </Card>

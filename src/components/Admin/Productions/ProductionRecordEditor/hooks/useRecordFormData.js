@@ -1,6 +1,25 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { isoToDate } from '@/helpers/production/dateFormatters'
 import { getProcessId, getParentRecordId, getRecordNotes, getRecordField } from '@/helpers/production/recordHelpers'
+
+const EMPTY_FORM_BASELINE = {
+    process_id: 'none',
+    parent_record_id: 'none',
+    notes: '',
+    started_at: '',
+    finished_at: ''
+}
+
+function snapshotEqual(a, b) {
+    if (!a || !b) return false
+    return (
+        String(a.process_id ?? 'none') === String(b.process_id ?? 'none') &&
+        String(a.parent_record_id ?? 'none') === String(b.parent_record_id ?? 'none') &&
+        String(a.notes ?? '') === String(b.notes ?? '') &&
+        String(a.started_at ?? '') === String(b.started_at ?? '') &&
+        String(a.finished_at ?? '') === String(b.finished_at ?? '')
+    )
+}
 
 /**
  * Hook para manejar el estado del formulario de record de producción
@@ -16,6 +35,9 @@ export const useRecordFormData = (record, processes, isEditMode) => {
 
     /** Evita pisar el tipo de proceso cuando el mismo registro se refresca sin `process` en el snapshot (refetch intermedio). */
     const syncedRecordIdRef = useRef(null)
+
+    /** Valores guardados en servidor (o vacíos en alta) para detectar cambios sin guardar. */
+    const baselineFormRef = useRef({ ...EMPTY_FORM_BASELINE })
 
     // Inicializar formulario cuando se carga el record
     useEffect(() => {
@@ -59,35 +81,39 @@ export const useRecordFormData = (record, processes, isEditMode) => {
                 finalProcessId = prev.process_id
             }
 
-            return {
+            const next = {
                 process_id: finalProcessId,
                 parent_record_id: parentRecordId ? parentRecordId.toString() : 'none',
                 notes: notes || '',
                 started_at: startedAtFormatted,
                 finished_at: finishedAtFormatted
             }
+            baselineFormRef.current = { ...next }
+            return next
         })
     }, [record, processes, isEditMode])
+
+    const isFormDirty = useMemo(
+        () => !snapshotEqual(formData, baselineFormRef.current),
+        [formData]
+    )
 
     const updateFormData = useCallback((updates) => {
         setFormData(prev => ({ ...prev, ...updates }))
     }, [])
 
     const resetFormData = useCallback(() => {
-        setFormData({
-            process_id: 'none',
-            parent_record_id: 'none',
-            notes: '',
-            started_at: '',
-            finished_at: ''
-        })
+        const empty = { ...EMPTY_FORM_BASELINE }
+        baselineFormRef.current = empty
+        setFormData(empty)
     }, [])
 
     return {
         formData,
         setFormData,
         updateFormData,
-        resetFormData
+        resetFormData,
+        isFormDirty
     }
 }
 
