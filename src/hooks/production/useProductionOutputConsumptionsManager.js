@@ -44,7 +44,11 @@ export function useProductionOutputConsumptionsManager({
     const hasParent = contextHasParent
     const updateConsumptions = contextData?.updateConsumptions
     const updateRecord = contextData?.updateRecord
-    const { products, refetch: refetchProducts } = useProductOptions({
+    const {
+        products,
+        refetch: refetchProducts,
+        loading: productsLoading,
+    } = useProductOptions({
         enabled: !!productionRecordId
     })
     const { showBoxes, handleToggleBoxes } = useShowBoxesPreference()
@@ -623,6 +627,7 @@ export function useProductionOutputConsumptionsManager({
         setConsumptions,
         availableOutputs,
         products,
+        productsLoading,
         loading,
         error,
         addDialogOpen,

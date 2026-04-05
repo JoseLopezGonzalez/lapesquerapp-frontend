@@ -13,6 +13,7 @@ import { ProcessInfoForm } from '@/components/Admin/Productions/ProductionRecord
 import { useRecordFormData } from '@/components/Admin/Productions/ProductionRecordEditor/hooks/useRecordFormData'
 import { useRecordFormSubmission } from '@/components/Admin/Productions/ProductionRecordEditor/hooks/useRecordFormSubmission'
 import Loader from '@/components/Utilities/Loader'
+import { Loader2 } from 'lucide-react'
 
 const CreateProductionRecordDialogBody = ({ productionId }) => {
     const {
@@ -49,17 +50,17 @@ const CreateProductionRecordDialogBody = ({ productionId }) => {
         <div className="relative min-h-[200px]">
             {blocking ? (
                 <div
-                    className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-2 rounded-lg bg-background/90 backdrop-blur-[1px]"
+                    className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-2 bg-background/80"
                     aria-busy="true"
                     aria-live="polite"
+                    role="status"
                 >
-                    <Loader
-                        text={
-                            isNavigatePending
-                                ? 'Abriendo el proceso...'
-                                : 'Creando proceso...'
-                        }
-                    />
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">
+                        {isNavigatePending
+                            ? 'Abriendo el proceso...'
+                            : 'Creando proceso...'}
+                    </p>
                 </div>
             ) : null}
 

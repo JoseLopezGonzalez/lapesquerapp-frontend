@@ -1631,9 +1631,9 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                             role="status"
                             aria-live="polite"
                             aria-busy="true"
-                            className="absolute inset-0 z-100 flex flex-col items-center justify-center gap-3 rounded-lg border border-border bg-background/95 p-8 text-center shadow-lg backdrop-blur-md dark:bg-background/90"
+                            className="absolute inset-0 z-100 flex flex-col items-center justify-center bg-white dark:bg-background"
                         >
-                            <Loader />
+                            <Loader text="Cargando" />
                         </div>
                     ) : null}
 
@@ -2230,6 +2230,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                         </ScrollArea>
                     </TabsContent>
                 </Tabs>
+                </div>
 
                 <DialogFooter>
                     <Button
@@ -2262,7 +2263,6 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                         )}
                     </Button>
                 </DialogFooter>
-                </div>
             </DialogContent>
         </Dialog>
     )

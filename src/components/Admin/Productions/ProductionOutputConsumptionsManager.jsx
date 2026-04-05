@@ -12,7 +12,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Plus, Trash2, Edit, ArrowDown, Save, Loader2, Sparkles } from 'lucide-react'
@@ -39,6 +39,7 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
         consumptions,
         availableOutputs,
         products,
+        productsLoading,
         loading,
         error,
         addDialogOpen,
@@ -435,6 +436,12 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
         </>
     )
 
+    const manageDialogBusy =
+        savingAll ||
+        addingFromParent ||
+        loadingAvailableOutputs ||
+        (productsLoading && products.length === 0)
+
     // Diálogo masivo de gestión
     const manageDialog = (
         <Dialog open={manageDialogOpen} onOpenChange={(open) => {
@@ -444,15 +451,27 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
             }
             setManageDialogOpen(open)
         }}>
-            <DialogContent size="5xl" className="max-h-[90vh]">
+            <DialogContent size="5xl" className="max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Gestionar consumos de proceso anterior</DialogTitle>
                     <DialogDescription>
                         Agrega, edita o elimina múltiples consumos de productos del proceso anterior de forma rápida
                     </DialogDescription>
                 </DialogHeader>
-                
-                <div className="space-y-4">
+
+                <div className="relative">
+                    {manageDialogBusy ? (
+                        <div
+                            role="status"
+                            aria-live="polite"
+                            aria-busy="true"
+                            className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white dark:bg-background"
+                        >
+                            <Loader text="Cargando" />
+                        </div>
+                    ) : null}
+
+                    <div className="flex flex-col gap-4">
                     <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
                             <Checkbox
@@ -508,7 +527,7 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
                         </div>
                     </div>
 
-                    <ScrollArea className="h-[500px] border rounded-md">
+                    <ScrollArea className="h-[min(500px,55vh)] border rounded-md">
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -737,43 +756,44 @@ const ProductionOutputConsumptionsManager = ({ productionRecordId, initialConsum
                             </TableBody>
                         </Table>
                     </ScrollArea>
-
-                    <div className="flex justify-end gap-2 pt-2 border-t">
-                        <Button
-                            variant="outline"
-                            onClick={() => setManageDialogOpen(false)}
-                            disabled={savingAll}
-                        >
-                            Cancelar
-                        </Button>
-                        <Button
-                            onClick={handleSaveAllConsumptions}
-                            disabled={savingAll || getAllConsumptionRows().some(row => {
-                                // Si la fila tiene algún dato, debe estar completa y válida
-                                const hasData = row.production_output_id || row.consumed_weight_kg
-                                if (!hasData) return false // Fila vacía, no bloquea
-                                
-                                // Si tiene datos, debe tener todos los campos requeridos y válidos
-                                const hasOutput = row.production_output_id && row.production_output_id.trim() !== ''
-                                const hasWeight = row.consumed_weight_kg && parseFloat(row.consumed_weight_kg || 0) > 0
-                                
-                                return !hasOutput || !hasWeight
-                            })}
-                        >
-                            {savingAll ? (
-                                <>
-                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                    Guardando...
-                                </>
-                            ) : (
-                                <>
-                                    <Save className="h-4 w-4 mr-2" />
-                                    Guardar
-                                </>
-                            )}
-                        </Button>
                     </div>
                 </div>
+
+                <DialogFooter>
+                    <Button
+                        variant="outline"
+                        onClick={() => setManageDialogOpen(false)}
+                        disabled={savingAll}
+                    >
+                        Cancelar
+                    </Button>
+                    <Button
+                        onClick={handleSaveAllConsumptions}
+                        disabled={savingAll || getAllConsumptionRows().some(row => {
+                            // Si la fila tiene algún dato, debe estar completa y válida
+                            const hasData = row.production_output_id || row.consumed_weight_kg
+                            if (!hasData) return false // Fila vacía, no bloquea
+
+                            // Si tiene datos, debe tener todos los campos requeridos y válidos
+                            const hasOutput = row.production_output_id && row.production_output_id.trim() !== ''
+                            const hasWeight = row.consumed_weight_kg && parseFloat(row.consumed_weight_kg || 0) > 0
+
+                            return !hasOutput || !hasWeight
+                        })}
+                    >
+                        {savingAll ? (
+                            <>
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                Guardando...
+                            </>
+                        ) : (
+                            <>
+                                <Save className="h-4 w-4 mr-2" />
+                                Guardar
+                            </>
+                        )}
+                    </Button>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     )

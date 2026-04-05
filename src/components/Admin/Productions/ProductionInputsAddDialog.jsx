@@ -14,7 +14,6 @@ import { Card } from '@/components/ui/card'
 import { Package, Search, X, ChevronRight, ChevronLeft, ChevronsRight, ChevronsLeft, Calculator, CheckCircle, Box, Scan, Scale, Hand, Target, Unlink, Plus, Save, Loader2 } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EmptyState } from '@/components/Utilities/EmptyState'
-import Loader from '@/components/Utilities/Loader'
 
 const NO_PALLET_ID = '__no_pallet__'
 
@@ -89,12 +88,12 @@ export default function ProductionInputsAddDialog({ api }) {
             <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
                 {(loadingPallet || savingInputs) && (
                     <div
-                        className="absolute inset-0 z-50 flex items-center justify-center rounded-lg bg-background/80 backdrop-blur-sm"
+                        className="absolute inset-0 z-50 flex items-center justify-center bg-background/80"
                         role="status"
                         aria-live="polite"
                         aria-busy="true"
                     >
-                        <Loader />
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
                     </div>
                 )}
                 <div className="grid min-h-0 flex-1 grid-cols-12 gap-4 overflow-hidden">
