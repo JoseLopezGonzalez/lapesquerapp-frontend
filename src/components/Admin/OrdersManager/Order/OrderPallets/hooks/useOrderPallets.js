@@ -189,6 +189,21 @@ export function useOrderPallets() {
         } finally {
           setUnlinkingPalletId(null);
         }
+      } else if (confirmAction === 'unlinkAll') {
+        if (!pallets?.length) {
+          notify.error({ title: 'No hay palets para desvincular' });
+          setIsConfirmDialogOpen(false);
+          setConfirmAction(null);
+          setConfirmPalletId(null);
+          return;
+        }
+        const ids = pallets.map((p) => p.id);
+        setIsUnlinkingAll(true);
+        try {
+          await onUnlinkAllPallets(ids);
+        } finally {
+          setIsUnlinkingAll(false);
+        }
       }
       setIsConfirmDialogOpen(false);
       setConfirmAction(null);
@@ -197,7 +212,7 @@ export function useOrderPallets() {
       console.error('Error al ejecutar la acción:', error);
       if (confirmAction === 'unlink') setUnlinkingPalletId(null);
     }
-  }, [confirmAction, confirmPalletId, onDeletePallet, onUnlinkPallet]);
+  }, [confirmAction, confirmPalletId, pallets, onDeletePallet, onUnlinkPallet, onUnlinkAllPallets]);
 
   const handleCancelAction = useCallback(() => {
     setIsConfirmDialogOpen(false);
@@ -401,21 +416,14 @@ export function useOrderPallets() {
     }
   }, [selectedPalletIds, onLinkPallets]);
 
-  const handleUnlinkAllPallets = useCallback(async () => {
+  const handleUnlinkAllPallets = useCallback(() => {
     if (!pallets?.length) {
       notify.error({ title: 'No hay palets para desvincular' });
       return;
     }
-    const ids = pallets.map((p) => p.id);
-    try {
-      setIsUnlinkingAll(true);
-      await onUnlinkAllPallets(ids);
-    } catch (error) {
-      console.error('Error al desvincular todos los palets:', error);
-    } finally {
-      setIsUnlinkingAll(false);
-    }
-  }, [pallets, onUnlinkAllPallets]);
+    setConfirmAction('unlinkAll');
+    setIsConfirmDialogOpen(true);
+  }, [pallets]);
 
   const handleOpenCreateFromForecastDialog = useCallback(() => {
     const detailsWithBoxes = (plannedProductDetails || [])

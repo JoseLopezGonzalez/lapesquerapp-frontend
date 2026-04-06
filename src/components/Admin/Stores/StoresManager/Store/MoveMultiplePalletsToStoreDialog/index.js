@@ -192,17 +192,17 @@ export default function MoveMultiplePalletsToStoreDialog() {
 
     return (
         <Dialog open={isOpen} onOpenChange={resetAndClose}>
-            <DialogContent size="7xl" className="max-h-[90vh] flex flex-col">
-                <DialogHeader>
+            <DialogContent size="7xl" className="max-h-[90vh] flex flex-col overflow-hidden">
+                <DialogHeader className="shrink-0">
                     <DialogTitle>Traspaso masivo de palets</DialogTitle>
                     <DialogDescription>
                         Seleccione los palets que desea mover y el almacén de destino
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="flex-1 overflow-hidden flex gap-4">
+                <div className="flex min-h-0 flex-1 gap-4 overflow-hidden">
                     {/* Sección izquierda: Selección de pallets */}
-                    <div className="flex-1 flex flex-col gap-2 min-w-0">
+                    <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2">
                         <div className="flex items-center justify-between">
                             <h3 className="text-sm font-medium flex items-center gap-2">
                                 <Package className="h-4 w-4" />
@@ -241,7 +241,7 @@ export default function MoveMultiplePalletsToStoreDialog() {
                         </div>
 
                         {/* Lista de pallets */}
-                        <ScrollArea className="flex-1 border rounded-md">
+                        <ScrollArea className="min-h-0 flex-1 border rounded-md">
                             {filteredPallets.length === 0 ? (
                                 <div className="text-center text-sm text-muted-foreground py-6">
                                     {allPallets.length === 0 
@@ -360,7 +360,7 @@ export default function MoveMultiplePalletsToStoreDialog() {
                     <div className="w-px bg-border" />
 
                     {/* Sección derecha: Selección de almacén */}
-                    <div className="flex-1 flex flex-col gap-2 min-w-0">
+                    <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2">
                         <h3 className="text-sm font-medium flex items-center gap-2">
                             <Warehouse className="h-4 w-4" />
                             Almacén de destino
@@ -389,15 +389,15 @@ export default function MoveMultiplePalletsToStoreDialog() {
 
                         {/* Lista de almacenes */}
                         {storesLoading ? (
-                            <div className="flex flex-col items-center justify-center flex-1">
+                            <div className="flex min-h-0 flex-1 flex-col items-center justify-center">
                                 <Loader />
                             </div>
                         ) : filteredStores.length === 0 ? (
-                            <div className="text-center text-sm text-muted-foreground py-6 border rounded-md flex-1 flex items-center justify-center">
+                            <div className="flex min-h-0 flex-1 flex-col items-center justify-center rounded-md border py-6 text-center text-sm text-muted-foreground">
                                 No se encontraron almacenes
                             </div>
                         ) : (
-                            <ScrollArea className="flex-1 border rounded-md">
+                            <ScrollArea className="min-h-0 flex-1 border rounded-md">
                                 <div className="flex flex-col gap-2 p-3">
                                     {filteredStores.map((store) => {
                                         const isSelected = selectedStoreValue === store.value;
@@ -423,7 +423,7 @@ export default function MoveMultiplePalletsToStoreDialog() {
                     </div>
                 </div>
 
-                <DialogFooter className="mt-4">
+                <DialogFooter className="mt-4 shrink-0">
                     <Button variant="outline" onClick={resetAndClose} disabled={isSubmitting}>
                         Cancelar
                     </Button>

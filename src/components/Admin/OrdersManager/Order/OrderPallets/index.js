@@ -190,7 +190,8 @@ const OrderPallets = ({ readOnly = false }) => {
                 action={confirmAction}
                 onConfirm={handleConfirmAction}
                 onCancel={handleCancelAction}
-                isUnlinking={unlinkingPalletId !== null}
+                isUnlinking={unlinkingPalletId !== null || isUnlinkingAll}
+                unlinkAllCount={confirmAction === 'unlinkAll' ? pallets.length : undefined}
             />
 
             {/* PalletDialogWrapper */}
