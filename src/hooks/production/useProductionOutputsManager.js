@@ -118,7 +118,6 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
     const [availableProducts, setAvailableProducts] = useState([])
     const [loadingAvailableProducts, setLoadingAvailableProducts] = useState(false)
     const [selectedProducts, setSelectedProducts] = useState(new Set())
-    const [wasManageDialogOpen, setWasManageDialogOpen] = useState(false)
     const [deleteOutputConfirm, setDeleteOutputConfirm] = useState({ open: false, outputId: null })
     const products = productOptions
 
@@ -800,8 +799,6 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
     }
 
     const handleOpenAvailableProductsDialog = async () => {
-        setWasManageDialogOpen(manageDialogOpen)
-        setManageDialogOpen(false)
         setAvailableProductsDialogOpen(true)
         setSelectedProducts(new Set())
         await loadAvailableProducts()
@@ -823,52 +820,29 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
         }
         try {
             const productsToAdd = availableProducts.filter((p) => selectedProducts.has(p.product.id))
-            if (wasManageDialogOpen) {
-                const existingProductIds = new Set()
-                getAllRows().forEach((row) => {
-                    if (row.product_id) existingProductIds.add(row.product_id.toString())
-                })
-                const newProductsToAdd = productsToAdd.filter(
-                    (product) => !existingProductIds.has(product.product.id.toString())
-                )
-                if (newProductsToAdd.length === 0) {
-                    toast.error('Todos los productos seleccionados ya están en la lista.')
-                    setAvailableProductsDialogOpen(false)
-                    setSelectedProducts(new Set())
-                    setWasManageDialogOpen(false)
-                    return
-                }
-                const newRowsToAdd = newProductsToAdd.map((product, index) => ({
-                    id: `new-${Date.now()}-${index}-${product.product.id}`,
-                    product_id: product.product.id.toString(),
-                    boxes: (product.totalBoxes || 0).toString(),
-                    weight_kg: product.totalWeight > 0 ? parseFloat(product.totalWeight).toFixed(2) : '0.00',
-                    isNew: true
-                }))
-                setNewRows((prev) => [...prev, ...newRowsToAdd])
+            const existingProductIds = new Set()
+            getAllRows().forEach((row) => {
+                if (row.product_id) existingProductIds.add(row.product_id.toString())
+            })
+            const newProductsToAdd = productsToAdd.filter(
+                (product) => !existingProductIds.has(product.product.id.toString())
+            )
+            if (newProductsToAdd.length === 0) {
+                toast.error('Todos los productos seleccionados ya están en la lista.')
                 setAvailableProductsDialogOpen(false)
                 setSelectedProducts(new Set())
-                setWasManageDialogOpen(false)
-                setManageDialogOpen(true)
-            } else {
-                const token = session?.user?.accessToken
-                if (!token) return
-                const createPromises = productsToAdd.map((product) => {
-                    const outputData = {
-                        production_record_id: parseInt(productionRecordId),
-                        product_id: product.product.id,
-                        lot_id: null,
-                        boxes: product.totalBoxes || 0,
-                        weight_kg: product.totalWeight || 0
-                    }
-                    return createProductionOutput(outputData, token)
-                })
-                await Promise.all(createPromises)
-                await loadOutputsOnly()
-                setAvailableProductsDialogOpen(false)
-                setSelectedProducts(new Set())
-                setWasManageDialogOpen(false)
+                return
             }
+            const newRowsToAdd = newProductsToAdd.map((product, index) => ({
+                id: `new-${Date.now()}-${index}-${product.product.id}`,
+                product_id: product.product.id.toString(),
+                boxes: (product.totalBoxes || 0).toString(),
+                weight_kg: product.totalWeight > 0 ? parseFloat(product.totalWeight).toFixed(2) : '0.00',
+                isNew: true
+            }))
+            setNewRows((prev) => [...prev, ...newRowsToAdd])
+            setAvailableProductsDialogOpen(false)
+            setSelectedProducts(new Set())
         } catch (err) {
             console.error('Error adding selected products:', err)
             const errorMessage =
@@ -922,8 +896,6 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
         loadingAvailableProducts,
         selectedProducts,
         setSelectedProducts,
-        wasManageDialogOpen,
-        setWasManageDialogOpen,
         showBoxes,
         handleToggleBoxes,
         loadOutputsOnly,

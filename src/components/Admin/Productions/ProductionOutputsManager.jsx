@@ -220,7 +220,6 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
         loadingAvailableProducts,
         selectedProducts,
         setSelectedProducts,
-        wasManageDialogOpen,
         showBoxes,
         handleToggleBoxes,
         loadOutputsOnly,
@@ -943,11 +942,6 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
             setAvailableProductsDialogOpen(open)
             if (!open) {
                 setSelectedProducts(new Set())
-                // Si se cierra sin agregar y el diálogo de gestión estaba abierto, reabrirlo
-                if (wasManageDialogOpen && !selectedProducts.size) {
-                    setManageDialogOpen(true)
-                }
-                setWasManageDialogOpen(false)
             }
         }}>
             <DialogContent size="4xl" className="max-h-[90vh]">
