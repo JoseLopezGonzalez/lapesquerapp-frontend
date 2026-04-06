@@ -153,7 +153,7 @@ export default function OrderPalletCard({
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
                                     onClick={() => onUnlink(pallet.id)}
-                                    disabled={belongsToReception || isUnlinking}
+                                    disabled={isUnlinking}
                                     className="cursor-pointer"
                                 >
                                     <Unlink className="h-4 w-4 mr-2" />

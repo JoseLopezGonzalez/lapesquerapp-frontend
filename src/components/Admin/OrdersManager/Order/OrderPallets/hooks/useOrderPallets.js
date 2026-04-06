@@ -406,12 +406,7 @@ export function useOrderPallets() {
       notify.error({ title: 'No hay palets para desvincular' });
       return;
     }
-    const palletsToUnlink = pallets.filter((p) => !p.receptionId);
-    if (palletsToUnlink.length === 0) {
-      notify.error({ title: 'No hay palets disponibles para desvincular. Todos pertenecen a recepciones.' });
-      return;
-    }
-    const ids = palletsToUnlink.map((p) => p.id);
+    const ids = pallets.map((p) => p.id);
     try {
       setIsUnlinkingAll(true);
       await onUnlinkAllPallets(ids);
