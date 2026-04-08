@@ -6,6 +6,7 @@
 
 import { parseDecimalValue, calculateImporte } from './common';
 import { parseEuropeanNumber } from '@/helpers/formats/numbers/formatNumbers';
+import { normalizeText } from '@/helpers/formats/texts';
 import { 
     barcos, 
     barcosVentaDirecta, 
@@ -17,6 +18,30 @@ import {
     serviciosLonjaDeIsla 
 } from '@/components/Admin/MarketDataExtractor/ListadoComprasLonjaDeIsla/exportData';
 
+function getLonjaDeIslaUnknownSpecies(document) {
+    const unknownSpecies = new Set();
+    const ventas = document?.tables?.ventas || [];
+
+    ventas.forEach((linea) => {
+        const producto = productos.find(
+            (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
+        );
+        if (!producto) unknownSpecies.add(linea.especie);
+    });
+
+    return Array.from(unknownSpecies);
+}
+
+function assertLonjaDeIslaSpeciesMapped(document) {
+    const unknownSpecies = getLonjaDeIslaUnknownSpecies(document);
+    if (unknownSpecies.length > 0) {
+        throw new Error(
+            `Especies no contempladas para exportación Lonja de Isla: ${unknownSpecies.join(', ')}. ` +
+            'Actualiza el catálogo de productos antes de exportar.'
+        );
+    }
+}
+
 /**
  * Generates Excel rows for a LonjaDeIsla document
  * 
@@ -27,6 +52,8 @@ import {
  * @returns {Object} Object with rows array and nextSequence number
  */
 export function generateLonjaDeIslaExcelRows(document, options = {}) {
+    assertLonjaDeIslaSpeciesMapped(document);
+
     const { CABSERIE: baseCABSERIE = "LI", startSequence = 1, startSequenceVenta } = options;
     const { details: { fecha }, tables: { ventas, vendidurias } } = document;
     // Extraer año de la fecha (últimos 2 dígitos)
@@ -180,7 +207,9 @@ export function generateLonjaDeIslaExcelRows(document, options = {}) {
         ventaAlbaranSequence++;
 
         barco.lineas.forEach(linea => {
-            const producto = productos.find(p => p.nombre == linea.especie);
+            const producto = productos.find(
+                (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
+            );
             processedRows.push({
                 CABSERIE: CABSERIE,
                 CABNUMDOC: cabNumDoc,
@@ -202,7 +231,9 @@ export function generateLonjaDeIslaExcelRows(document, options = {}) {
         const cabNumDoc = `${fechaSoloNumeros}${albaranSequence}`;
         if (isConvertibleBarco(barco.cod)) {
             barco.lineas.forEach(linea => {
-                const producto = productos.find(p => p.nombre == linea.especie);
+                const producto = productos.find(
+                    (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
+                );
                 processedRows.push({
                     CABSERIE: CABSERIE,
                     CABNUMDOC: cabNumDoc,
@@ -353,5 +384,9 @@ export function generateLonjaDeIslaLinkedSummary(document) {
     });
 
     return [...linkedSummaryVendidurias, ...linkedSummaryDirectas];
+}
+
+export function validateLonjaDeIslaSpeciesForExport(document) {
+    assertLonjaDeIslaSpeciesMapped(document);
 }
 

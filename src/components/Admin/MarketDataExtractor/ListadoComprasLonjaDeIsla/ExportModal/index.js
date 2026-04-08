@@ -10,6 +10,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { barcos, barcosVentaDirecta, datosVendidurias, lonjaDeIsla, PORCENTAJE_SERVICIOS_VENDIDURIAS, productos, servicioExtraLonjaDeIsla, serviciosLonjaDeIsla } from '../exportData'
 import { Input } from '@/components/ui/input'
 import { parseDecimalValue, calculateImporteFromLinea } from '@/exportHelpers/common'
+import { validateLonjaDeIslaSpeciesForExport } from '@/exportHelpers/lonjaDeIslaExportHelper'
+import { normalizeText } from '@/helpers/formats/texts'
 import { formatDecimalCurrency, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
 import { notify } from '@/lib/notifications'
 import { linkAllPurchases, validatePurchases, groupLinkedSummaryBySupplier } from "@/services/export/linkService"
@@ -364,6 +366,8 @@ const ExportModal = ({ document }) => {
     };
 
     const generateExcelForA3erp = async () => {
+        validateLonjaDeIslaSpeciesForExport(document);
+
         const [XLSX, { saveAs }] = await Promise.all([import('xlsx'), import('file-saver')]);
         const processedRows = [];
         const ventaRows = [];
@@ -425,13 +429,16 @@ const ExportModal = ({ document }) => {
             ventaAlbaranSequence++;
 
             barco.lineas.forEach(linea => {
+                const producto = productos.find(
+                    (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
+                );
                 processedRows.push({
                     CABSERIE: CABSERIE,
                     CABNUMDOC: cabNumDoc,
                     CABFECHA: fecha,
                     CABCODPRO: barco.armador.codA3erp,
                     CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
-                    LINCODART: productos.find(p => p.nombre == linea.especie)?.codA3erp,
+                    LINCODART: producto?.codA3erp,
                     LINDESCLIN: linea.especie,
                     LINUNIDADES: parseDecimalValue(linea.kilos),
                     LINPRCMONEDA: parseDecimalValue(linea.precio),
@@ -444,13 +451,16 @@ const ExportModal = ({ document }) => {
         ventasVendidurias.forEach(barco => {
             const cabNumDoc = `${fechaSoloNumeros}${albaranSequence}`;
             isConvertibleBarco(barco.cod) && barco.lineas.forEach(linea => {
+                const producto = productos.find(
+                    (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
+                );
                 processedRows.push({
                     CABSERIE: CABSERIE,
                     CABNUMDOC: cabNumDoc,
                     CABFECHA: fecha,
                     CABCODPRO: barco.vendiduria.codA3erp,
                     CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
-                    LINCODART: productos.find(p => p.nombre == linea.especie).codA3erp,
+                    LINCODART: producto?.codA3erp,
                     LINDESCLIN: linea.especie,
                     LINUNIDADES: parseDecimalValue(linea.kilos),
                     LINPRCMONEDA: parseDecimalValue(linea.precio),
