@@ -83,18 +83,45 @@ export function transformDocumentToReceptionData(processedDocument, documentType
     const parsedDate = parseDateFromDocument(fecha);
     const lines = config.getLines(processedDocument);
 
-    const details = lines.map((linea) => {
+    const aggregated = new Map();
+
+    lines.forEach((linea) => {
         const producto = resolveProduct(linea.especie, config.productos);
+        const productId = producto?.codBrisappProducto ? String(producto.codBrisappProducto) : null;
+        const key = productId || `__unmapped__${linea.especie}`;
         const weight = parseDecimalValue(linea[config.weightKey]);
-        const weightStr = weight > 0 ? String(weight) : '';
+        const boxes = Number(linea.cajas) || 0;
+        const price = parseDecimalValue(linea.precio);
+        const importe = weight * price;
+
+        if (aggregated.has(key)) {
+            const existing = aggregated.get(key);
+            existing.totalWeight += weight;
+            existing.totalBoxes += boxes;
+            existing.totalImporte += importe;
+        } else {
+            aggregated.set(key, {
+                product: productId,
+                totalWeight: weight,
+                totalBoxes: boxes,
+                totalImporte: importe,
+            });
+        }
+    });
+
+    const details = Array.from(aggregated.values()).map((agg) => {
+        const weightStr = agg.totalWeight > 0 ? String(parseFloat(agg.totalWeight.toFixed(2))) : '';
+        const avgPrice = agg.totalWeight > 0
+            ? parseFloat((agg.totalImporte / agg.totalWeight).toFixed(2))
+            : 0;
 
         return {
-            product: producto?.codBrisappProducto ? String(producto.codBrisappProducto) : null,
+            product: agg.product,
             grossWeight: weightStr,
-            boxes: Number(linea.cajas) || 0,
+            boxes: agg.totalBoxes,
             tare: '0',
             netWeight: weightStr,
-            price: String(parseDecimalValue(linea.precio)),
+            price: String(avgPrice),
             lot: '',
         };
     });
