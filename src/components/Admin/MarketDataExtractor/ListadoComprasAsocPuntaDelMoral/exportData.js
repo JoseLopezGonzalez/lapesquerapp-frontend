@@ -52,4 +52,9 @@ export const productos = [
   { nombre: "PULPO PORTUGAL", codA3erp: "95" },
   { nombre: "PULPO ALMIZCLADO", codA3erp: "671" },
   { nombre: "COQUINA", codA3erp: "47" },
+  { nombre: "ALISTAO", codA3erp: "10139" },
+  { nombre: "ALISTAO ROTO", codA3erp: "10143" },
+  { nombre: "GAMBAS", codA3erp: "10140" },
+  { nombre: "GAMBA ROTA", codA3erp: "10141" },
+  { nombre: "CIGALAS", codA3erp: "10142" },
 ]

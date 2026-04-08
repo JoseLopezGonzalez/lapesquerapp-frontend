@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { asocArmadoresPuntaDelMoral, asocArmadoresPuntaDelMoralSubasta, barcos, productos, servicioExtraAsocArmadoresPuntaDelMoral, serviciosAsocArmadoresPuntaDelMoral } from '../exportData'
 import { Input } from '@/components/ui/input'
 import { parseDecimalValue, calculateImporte, calculateImporteFromLinea } from '@/exportHelpers/common'
+import { validateAsocSpeciesForExport } from '@/exportHelpers/asocExportHelper'
 import { formatDecimalCurrency, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
 import { normalizeText } from '@/helpers/formats/texts'
 import { notify } from '@/lib/notifications'
@@ -72,6 +73,8 @@ const ExportModal = ({ document }) => {
 
 
     const generateExcelForA3erp = async () => {
+        validateAsocSpeciesForExport(document);
+
         const [XLSX, { saveAs }] = await Promise.all([import('xlsx'), import('file-saver')]);
         const processedRows = [];
         // Extraer año de la fecha (últimos 2 dígitos)
@@ -111,13 +114,16 @@ const ExportModal = ({ document }) => {
 
                 lines.forEach(l => {
                     l.lineas.forEach(linea => {
+                        const producto = productos.find(
+                            (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
+                        );
                         processedRows.push({
                             CABSERIE: CABSERIE,
                             CABNUMDOC: cabNumDoc,
                             CABFECHA: fecha,
                             CABCODPRO: asocArmadoresPuntaDelMoral.codA3erp,
                             CABREFERENCIA: `ASOC - ${fecha} - ${barcoData.nombre}`,
-                            LINCODART: productos.find(p => p.nombre === linea.especie).codA3erp,
+                            LINCODART: producto?.codA3erp,
                             LINDESCLIN: linea.especie,
                             LINUNIDADES: parseDecimalValue(linea.pesoNeto),
                             LINPRCMONEDA: parseDecimalValue(linea.precio),
@@ -132,13 +138,16 @@ const ExportModal = ({ document }) => {
             const cabNumDoc = `${fechaSoloNumeros}${albaranSequence}`;
 
             document.tables.subastas.forEach(linea => {
+                const producto = productos.find(
+                    (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
+                );
                 processedRows.push({
                     CABSERIE: CABSERIE,
                     CABNUMDOC: cabNumDoc,
                     CABFECHA: fecha,
                     CABCODPRO: asocArmadoresPuntaDelMoralSubasta.codA3erp,
                     CABREFERENCIA: `ASOC - ${fecha} - SUBASTA`,
-                    LINCODART: productos.find(p => p.nombre === linea.especie).codA3erp,
+                    LINCODART: producto?.codA3erp,
                     LINDESCLIN: linea.especie,
                     LINUNIDADES: parseDecimalValue(linea.pesoNeto),
                     LINPRCMONEDA: parseDecimalValue(linea.precio),
@@ -342,7 +351,12 @@ const ExportModal = ({ document }) => {
         // Ya no necesitamos initialAlbaranNumber, se usa la fecha como identificador base
 
         if (software === "A3ERP") {
-            generateExcelForA3erp();
+            generateExcelForA3erp().catch((error) => {
+                notify.error({
+                    title: 'No se puede exportar',
+                    description: error.message || 'Hay especies no contempladas en el documento.',
+                });
+            });
         } else if (software === "Facilcom") {
             // generateExcelForFacilcom();
         } else {

@@ -15,6 +15,30 @@ import {
     serviciosAsocArmadoresPuntaDelMoral 
 } from '@/components/Admin/MarketDataExtractor/ListadoComprasAsocPuntaDelMoral/exportData';
 
+function getAsocUnknownSpecies(document) {
+    const unknownSpecies = new Set();
+    const subastas = document?.tables?.subastas || [];
+
+    subastas.forEach((linea) => {
+        const producto = productos.find(
+            (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
+        );
+        if (!producto) unknownSpecies.add(linea.especie);
+    });
+
+    return Array.from(unknownSpecies);
+}
+
+function assertAsocSpeciesMapped(document) {
+    const unknownSpecies = getAsocUnknownSpecies(document);
+    if (unknownSpecies.length > 0) {
+        throw new Error(
+            `Especies no contempladas para exportación ASOC: ${unknownSpecies.join(', ')}. ` +
+            'Actualiza el catálogo de productos antes de exportar.'
+        );
+    }
+}
+
 /**
  * Generates Excel rows for an Asoc document
  * 
@@ -25,6 +49,8 @@ import {
  * @returns {Object} Object with rows array and nextSequence number
  */
 export function generateAsocExcelRows(document, options = {}) {
+    assertAsocSpeciesMapped(document);
+
     const { CABSERIE: baseCABSERIE = "AS", startSequence = 1 } = options;
     const { details: { fecha, tipoSubasta }, tables } = document;
     // Extraer año de la fecha (últimos 2 dígitos)
@@ -112,7 +138,9 @@ export function generateAsocExcelRows(document, options = {}) {
 
             lines.forEach(l => {
                 l.lineas.forEach(linea => {
-                    const producto = productos.find(p => p.nombre === linea.especie);
+                    const producto = productos.find(
+                        (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
+                    );
                     processedRows.push({
                         CABSERIE: CABSERIE,
                         CABNUMDOC: cabNumDoc,
@@ -134,7 +162,9 @@ export function generateAsocExcelRows(document, options = {}) {
         const cabNumDoc = `${fechaSoloNumeros}${albaranSequence}`;
 
         document.tables.subastas.forEach(linea => {
-            const producto = productos.find(p => p.nombre === linea.especie);
+            const producto = productos.find(
+                (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
+            );
             processedRows.push({
                 CABSERIE: CABSERIE,
                 CABNUMDOC: cabNumDoc,
@@ -233,5 +263,9 @@ export function generateAsocLinkedSummary(document) {
             error: codBrisappBarco === null ? true : false,
         };
     });
+}
+
+export function validateAsocSpeciesForExport(document) {
+    assertAsocSpeciesMapped(document);
 }
 

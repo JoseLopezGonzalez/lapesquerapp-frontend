@@ -102,6 +102,14 @@ export default function MassiveExportDialog({
     }, [open, documents]);
 
     const handleExport = async () => {
+        if (errors.length > 0) {
+            notify.error({
+              title: 'No se puede exportar',
+              description: 'Corrige los errores detectados antes de generar el Excel.',
+            });
+            return;
+        }
+
         setIsExporting(true);
         try {
             const documentsToExport = documents
@@ -284,7 +292,7 @@ export default function MassiveExportDialog({
                     <Button 
                         variant="default" 
                         onClick={handleExport}
-                        disabled={isExporting || documents?.length === 0}
+                        disabled={isExporting || documents?.length === 0 || errors.length > 0}
                     >
                         {isExporting ? (
                             <>
