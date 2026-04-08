@@ -5340,20 +5340,24 @@ export const lonjaDeIsla = {
 
 export const PORCENTAJE_SERVICIOS_VENDIDURIAS = 3.5;
 
+export const lonjaDeIslaBrisapp = {
+  codBrisapp: "213",
+};
+
 export const productos = [
-  { nombre: "Pulpo común / Pulpo común", codA3erp: "95" },
-  { nombre: "PULPO BLANCO / PULPO BLANCO", codA3erp: "671" },
-  { nombre: "PULPOS / PULPO O PULPO ROQUERO", codA3erp: "95" },
-  { nombre: "BOGAVANTES / BOGAVANTE O", codA3erp: "10144" },
-  { nombre: "RASCACIOS / ESCORPORA", codA3erp: "10145" },
-  { nombre: "ACEDIA / ACEDÍA", codA3erp: "10146" },
-  { nombre: "GAMBAS / GAMBA O GAMBA BLANCA", codA3erp: "10147" },
-  { nombre: "GALERAS / GALERA", codA3erp: "10148" },
-  { nombre: "CAÑAILLAS / CAÑAILLA", codA3erp: "10149" },
-  { nombre: "BURROS / BORRIQUETE O BURRO", codA3erp: "10150" },
-  { nombre: "CORVINATA PUNTEADA / CORVINATA", codA3erp: "10151" },
-  { nombre: "LENGUADO RUBIO / LENGUADO", codA3erp: "10152" },
-  { nombre: "PESCADILLA / MERLUZA EUROPEA", codA3erp: "10153" },
-  { nombre: "SARGO BREADO / SARGO BREADO", codA3erp: "10154" },
-  { nombre: "LANGOSTINOS / LANGOSTINO O", codA3erp: "10155" },
+  { nombre: "Pulpo común / Pulpo común", codA3erp: "95", codBrisappProducto: "155" },
+  { nombre: "PULPO BLANCO / PULPO BLANCO", codA3erp: "671", codBrisappProducto: "155" },
+  { nombre: "PULPOS / PULPO O PULPO ROQUERO", codA3erp: "95", codBrisappProducto: "155" },
+  { nombre: "BOGAVANTES / BOGAVANTE O", codA3erp: "10144", codBrisappProducto: "312" },
+  { nombre: "RASCACIOS / ESCORPORA", codA3erp: "10145", codBrisappProducto: "314" },
+  { nombre: "ACEDIA / ACEDÍA", codA3erp: "10146", codBrisappProducto: "313" },
+  { nombre: "GAMBAS / GAMBA O GAMBA BLANCA", codA3erp: "10147", codBrisappProducto: "308" },
+  { nombre: "GALERAS / GALERA", codA3erp: "10148", codBrisappProducto: "317" },
+  { nombre: "CAÑAILLAS / CAÑAILLA", codA3erp: "10149", codBrisappProducto: "113" },
+  { nombre: "BURROS / BORRIQUETE O BURRO", codA3erp: "10150", codBrisappProducto: "316" },
+  { nombre: "CORVINATA PUNTEADA / CORVINATA", codA3erp: "10151", codBrisappProducto: "315" },
+  { nombre: "LENGUADO RUBIO / LENGUADO", codA3erp: "10152", codBrisappProducto: "318" },
+  { nombre: "PESCADILLA / MERLUZA EUROPEA", codA3erp: "10153", codBrisappProducto: "319" },
+  { nombre: "SARGO BREADO / SARGO BREADO", codA3erp: "10154", codBrisappProducto: "320" },
+  { nombre: "LANGOSTINOS / LANGOSTINO O", codA3erp: "10155", codBrisappProducto: "321" },
 ]

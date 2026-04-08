@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Combobox } from '@/components/Shadcn/Combobox';
-import { Plus, Trash2, ArrowRight, Package, List, Edit, Loader2 } from 'lucide-react';
+import { Plus, Trash2, ArrowRight, Package, List, Edit, Loader2, FileText } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -48,6 +48,7 @@ import dynamic from 'next/dynamic';
 import { normalizeDate } from '@/helpers/receptionCalculations';
 import { useAdminReceptionForm } from '@/hooks/useAdminReceptionForm';
 import { VirtualizedTable } from '../VirtualizedTable';
+import ImportDocumentDialog from '../ImportDocumentDialog';
 
 const PalletDialog = dynamic(
   () => import('@/components/Admin/Pallets/PalletDialog'),
@@ -102,6 +103,7 @@ export default function CreateReceptionForm({ onSuccess }) {
     initialPalletForEdit,
     handleCreate,
     handleSaveClick,
+    prefillFromDocument,
     productOptions,
     productsLoading,
     supplierOptions,
@@ -109,6 +111,8 @@ export default function CreateReceptionForm({ onSuccess }) {
     announce,
     Announcer,
   } = form;
+
+  const [isImportDialogOpen, setIsImportDialogOpen] = React.useState(false);
 
   if (suppliersLoading) {
     return (
@@ -124,13 +128,24 @@ export default function CreateReceptionForm({ onSuccess }) {
 
       <div className="flex justify-between items-start mb-6">
         <h1 className="text-2xl font-semibold mb-4">Recepción de materia prima</h1>
-        <Button
-          type="button"
-          onClick={handleSaveClick}
-          disabled={isSubmitting}
-          aria-label="Guardar recepción"
-          title="Guardar recepción (Ctrl+S)"
-        >
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setIsImportDialogOpen(true)}
+            disabled={isSubmitting}
+            aria-label="Importar desde documento de lonja"
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            Importar desde documento
+          </Button>
+          <Button
+            type="button"
+            onClick={handleSaveClick}
+            disabled={isSubmitting}
+            aria-label="Guardar recepción"
+            title="Guardar recepción (Ctrl+S)"
+          >
           {isSubmitting ? (
             <>
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -142,7 +157,8 @@ export default function CreateReceptionForm({ onSuccess }) {
               <ArrowRight className="ml-2 h-4 w-4" />
             </>
           )}
-        </Button>
+          </Button>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit(handleCreate)} className="flex flex-col gap-8">
@@ -801,6 +817,12 @@ export default function CreateReceptionForm({ onSuccess }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ImportDocumentDialog
+        open={isImportDialogOpen}
+        onOpenChange={setIsImportDialogOpen}
+        onDocumentProcessed={prefillFromDocument}
+      />
     </div>
   );
 }

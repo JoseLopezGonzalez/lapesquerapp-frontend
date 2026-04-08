@@ -47,14 +47,18 @@ export const servicioExtraAsocArmadoresPuntaDelMoral = {
   porcentaje: 3,
 }
 
+export const asocArmadoresPuntaDelMoralBrisapp = {
+  codBrisapp: "214",
+};
+
 export const productos = [
-  { nombre: "PULPO", codA3erp: "95" },
-  { nombre: "PULPO PORTUGAL", codA3erp: "95" },
-  { nombre: "PULPO ALMIZCLADO", codA3erp: "671" },
-  { nombre: "COQUINA", codA3erp: "47" },
-  { nombre: "ALISTAO", codA3erp: "10139" },
-  { nombre: "ALISTAO ROTO", codA3erp: "10143" },
-  { nombre: "GAMBAS", codA3erp: "10140" },
-  { nombre: "GAMBA ROTA", codA3erp: "10141" },
-  { nombre: "CIGALAS", codA3erp: "10142" },
+  { nombre: "PULPO", codA3erp: "95", codBrisappProducto: "155" },
+  { nombre: "PULPO PORTUGAL", codA3erp: "95", codBrisappProducto: "155" },
+  { nombre: "PULPO ALMIZCLADO", codA3erp: "671", codBrisappProducto: "155" },
+  { nombre: "COQUINA", codA3erp: "47", codBrisappProducto: null },
+  { nombre: "ALISTAO", codA3erp: "10139", codBrisappProducto: "307" },
+  { nombre: "ALISTAO ROTO", codA3erp: "10143", codBrisappProducto: "311" },
+  { nombre: "GAMBAS", codA3erp: "10147", codBrisappProducto: "308" },
+  { nombre: "GAMBA ROTA", codA3erp: "10141", codBrisappProducto: "309" },
+  { nombre: "CIGALAS", codA3erp: "10142", codBrisappProducto: "310" },
 ]

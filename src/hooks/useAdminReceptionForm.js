@@ -7,7 +7,9 @@ import { useProductOptions } from '@/hooks/useProductOptions';
 import { useSupplierOptions } from '@/hooks/useSupplierOptions';
 import { usePriceSynchronization } from '@/hooks/usePriceSynchronization';
 import { useAccessibilityAnnouncer } from '@/components/Admin/RawMaterialReceptions/AccessibilityAnnouncer';
-import { createRawMaterialReception } from '@/services/rawMaterialReceptionService';import { normalizeDate, calculateNetWeights } from '@/helpers/receptionCalculations';
+import { createRawMaterialReception } from '@/services/rawMaterialReceptionService';
+import { normalizeDate, calculateNetWeights } from '@/helpers/receptionCalculations';
+import { transformDocumentToReceptionData } from '@/helpers/documentToReceptionTransformer';
 import {
   extractGlobalPriceMap,
   transformPalletsToApiFormat,
@@ -311,6 +313,30 @@ export function useAdminReceptionForm({ onSuccess }) {
     })();
   }, [handleSubmit, handleCreate, mode, watch]);
 
+  const prefillFromDocument = useCallback(
+    (processedDocument, documentType) => {
+      const data = transformDocumentToReceptionData(processedDocument, documentType);
+
+      if (data.supplier) {
+        setValue('supplier', data.supplier);
+      }
+      if (data.date) {
+        setValue('date', normalizeDate(data.date));
+      }
+      setValue('notes', data.notes || '');
+      if (data.details && data.details.length > 0) {
+        setValue('details', data.details);
+      }
+
+      setMode('automatic');
+      setTemporalPallets([]);
+      setTimeout(() => triggerRecalc(), 50);
+
+      announce('Datos importados desde documento', 'polite');
+    },
+    [setValue, triggerRecalc, announce]
+  );
+
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
@@ -455,6 +481,9 @@ export function useAdminReceptionForm({ onSuccess }) {
     // Submit
     handleCreate,
     handleSaveClick,
+
+    // Document import
+    prefillFromDocument,
 
     // Options
     productOptions,
