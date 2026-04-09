@@ -495,11 +495,12 @@ export function useOrderPallets() {
 
     const buildGs1128 = (productId, lotVal, netWeight) => {
       const p = productOptionsMap.get(String(productId));
-      const boxGtin = p?.boxGtin;
-      if (!boxGtin) return null;
+      const normalizedBoxGtin = String(p?.boxGtin ?? '').replace(/\D/g, '');
+      const fallbackGtinFromProduct = String(productId ?? '').replace(/\D/g, '').padStart(14, '0').slice(-14);
+      const gtin = normalizedBoxGtin || fallbackGtinFromProduct || '00000000000000';
       const w = parseFloat(netWeight) || 0;
       const formatted = w.toFixed(2).replace('.', '').padStart(6, '0');
-      return `(01)${boxGtin}(3100)${formatted}(10)${lotVal}`;
+      return `(01)${gtin}(3100)${formatted}(10)${lotVal}`;
     };
 
     let nextBoxId = Date.now();
@@ -531,7 +532,7 @@ export function useOrderPallets() {
           lot,
           netWeight,
           grossWeight: netWeight,
-          ...(gs1128 && { gs1128 }),
+          gs1128,
         });
       }
     }

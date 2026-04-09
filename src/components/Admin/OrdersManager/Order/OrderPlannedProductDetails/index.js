@@ -136,6 +136,16 @@ const OrderPlannedProductDetails = () => {
 
     const handleInputChange = useCallback((index, field, value) => {
         const updatedDetails = [...details];
+        if (!updatedDetails[index]) return;
+
+        if (!updatedDetails[index].tax || typeof updatedDetails[index].tax !== 'object') {
+            updatedDetails[index].tax = { id: null, rate: 0 };
+        }
+
+        if (!updatedDetails[index].product || typeof updatedDetails[index].product !== 'object') {
+            updatedDetails[index].product = { id: null, name: '' };
+        }
+
         if (field.includes("product")) {
             // Asegurar que el valor sea string para productos
             const productValue = value ? String(value) : null;
@@ -354,7 +364,7 @@ const OrderPlannedProductDetails = () => {
                                                         {editIndex === index ? (
                                                             <div className="[&_button]:!h-9">
                                                                 <Select
-                                                                    value={detail.tax.id != null ? String(detail.tax.id) : ''}
+                                                                    value={detail?.tax?.id != null ? String(detail.tax.id) : ''}
                                                                     onValueChange={(value) => handleInputChange(index, 'tax', value)}
                                                                 >
                                                                     <SelectTrigger loading={optionsLoading} className="w-full">
@@ -370,7 +380,7 @@ const OrderPlannedProductDetails = () => {
                                                                 </Select>
                                                             </div>
                                                         ) : (
-                                                            <p className="text-sm font-medium py-2">{detail.tax.rate}%</p>
+                                                            <p className="text-sm font-medium py-2">{detail?.tax?.rate ?? 0}%</p>
                                                         )}
                                                     </div>
                                                 </div>
@@ -522,7 +532,7 @@ const OrderPlannedProductDetails = () => {
                                 </TableHeader>
                                 <TableBody>
                                         {details.map((detail, index) => {
-                                            const taxRate = Number(detail.tax.rate) || 0;
+                                            const taxRate = Number(detail?.tax?.rate) || 0;
 
                                             return (
                                                 <TableRow key={detail.id || detail.tempId}>
@@ -581,7 +591,7 @@ const OrderPlannedProductDetails = () => {
                                                     <TableCell className="text-right whitespace-nowrap">
                                                 {editIndex === index ? (
                                                     <Select
-                                                        value={detail.tax.id != null ? String(detail.tax.id) : ''}
+                                                        value={detail?.tax?.id != null ? String(detail.tax.id) : ''}
                                                         onValueChange={(value) => handleInputChange(index, 'tax', value)}
                                                     >
                                                         <SelectTrigger loading={optionsLoading} className="w-full">
