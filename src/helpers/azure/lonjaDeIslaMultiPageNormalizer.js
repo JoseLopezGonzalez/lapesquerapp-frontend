@@ -99,20 +99,61 @@ function splitMergedVentasRows(ventas) {
 }
 
 /**
- * Generic table-row splitter. Applies the same merge-detection / split
- * logic but without the ventas-specific garbage filter.
+ * Validates a reconstructed peces row. Requires descripcion and kilos
+ * (both mandatory in the downstream validator).
  */
-function splitMergedGenericRows(rows) {
+function isValidPecesRow(row) {
+    const descripcion = (row.descripcion || '').trim();
+    if (!descripcion || descripcion === '/' || descripcion === '-') return false;
+
+    const kilos = (row.kilos || '').trim();
+    if (!kilos) return false;
+
+    return true;
+}
+
+/**
+ * Validates a reconstructed vendidurias row. Requires vendiduria, kilos,
+ * and importe (all mandatory in the downstream validator).
+ */
+function isValidVendiduriasRow(row) {
+    if (!(row.vendiduria || '').trim()) return false;
+    if (!(row.kilos || '').trim()) return false;
+    if (!(row.importe || '').trim()) return false;
+    return true;
+}
+
+/**
+ * Per-table row validators. Tables not listed here use a generic
+ * "has any non-empty field" check.
+ */
+const TABLE_ROW_VALIDATORS = {
+    peces: isValidPecesRow,
+    vendidurias: isValidVendiduriasRow,
+};
+
+/**
+ * Generic fallback: row is valid if at least one field has content.
+ */
+function hasAnyContent(row) {
+    return Object.values(row).some(
+        (v) => typeof v === 'string' && v.trim() !== '',
+    );
+}
+
+/**
+ * Splits merged rows in a table array, filtering with a table-specific
+ * validator when available, or a generic "any content" check otherwise.
+ */
+function splitMergedTableRows(rows, tableName) {
     if (!Array.isArray(rows)) return rows;
 
+    const isValid = TABLE_ROW_VALIDATORS[tableName] || hasAnyContent;
     const result = [];
     for (const row of rows) {
         const splitRows = splitMergedRow(row);
         for (const r of splitRows) {
-            const hasAnyContent = Object.values(r).some(
-                (v) => typeof v === 'string' && v.trim() !== '',
-            );
-            if (hasAnyContent) result.push(r);
+            if (isValid(r)) result.push(r);
         }
     }
     return result;
@@ -202,10 +243,10 @@ export function normalizeLonjaDeIslaMultiPage(azureData) {
     if (doc.tables) {
         doc.tables.ventas = splitMergedVentasRows(doc.tables.ventas);
 
-        const genericTables = ['peces', 'vendidurias', 'cajas', 'tipoVentas'];
-        for (const tableName of genericTables) {
+        const secondaryTables = ['peces', 'vendidurias', 'cajas', 'tipoVentas'];
+        for (const tableName of secondaryTables) {
             if (Array.isArray(doc.tables[tableName])) {
-                doc.tables[tableName] = splitMergedGenericRows(doc.tables[tableName]);
+                doc.tables[tableName] = splitMergedTableRows(doc.tables[tableName], tableName);
             }
         }
     }

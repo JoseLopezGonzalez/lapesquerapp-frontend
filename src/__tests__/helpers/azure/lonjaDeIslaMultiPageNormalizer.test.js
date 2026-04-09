@@ -224,6 +224,72 @@ describe('normalizeLonjaDeIslaMultiPage', () => {
         });
     });
 
+    // ─── Secondary table filtering (peces, vendidurias) ───────────────
+
+    describe('peces table row filtering', () => {
+        it('filters out peces rows missing kilos after split', () => {
+            const mergedPeces = {
+                fao: 'OCC\nMUI\n',
+                descripcion: 'GAMBAS / GAMBA BLANCA\nCAÑAILLAS / CAÑAILLA\n',
+                kilos: '15.5\n10.0\n',
+                importe: '124\n60\n',
+            };
+            const doc = makeDoc({ ventas: [makeVenta()], peces: [mergedPeces] });
+
+            const result = normalizeLonjaDeIslaMultiPage([doc]);
+            const peces = result[0].tables.peces;
+
+            expect(peces).toHaveLength(2);
+            expect(peces[0].descripcion).toBe('GAMBAS / GAMBA BLANCA');
+            expect(peces[1].descripcion).toBe('CAÑAILLAS / CAÑAILLA');
+        });
+
+        it('filters out peces rows missing descripcion after split', () => {
+            const mergedPeces = {
+                fao: 'OCC\nMUI\nXYZ',
+                descripcion: 'GAMBAS / GAMBA BLANCA\nCAÑAILLAS / CAÑAILLA\n/',
+                kilos: '15.5\n10.0\n5.0',
+                importe: '124\n60\n40',
+            };
+            const doc = makeDoc({ ventas: [makeVenta()], peces: [mergedPeces] });
+
+            const result = normalizeLonjaDeIslaMultiPage([doc]);
+            const peces = result[0].tables.peces;
+
+            expect(peces).toHaveLength(2);
+        });
+
+        it('keeps valid peces rows intact', () => {
+            const p1 = { fao: 'OCC', descripcion: 'GAMBAS', kilos: '10', importe: '80' };
+            const p2 = { fao: 'MUI', descripcion: 'CAÑAILLAS', kilos: '5', importe: '60' };
+            const doc = makeDoc({ ventas: [makeVenta()], peces: [p1, p2] });
+
+            const result = normalizeLonjaDeIslaMultiPage([doc]);
+
+            expect(result[0].tables.peces).toHaveLength(2);
+            expect(result[0].tables.peces[0]).toEqual(p1);
+            expect(result[0].tables.peces[1]).toEqual(p2);
+        });
+    });
+
+    describe('vendidurias table row filtering', () => {
+        it('filters out vendidurias rows missing kilos after split', () => {
+            const merged = {
+                vendiduria: 'VENDEDOR A\nVENDEDOR B\n',
+                cajas: '5\n3\n',
+                kilos: '50\n30\n',
+                importe: '400\n240\n',
+            };
+            const doc = makeDoc({ ventas: [makeVenta()], vendidurias: [merged] });
+
+            const result = normalizeLonjaDeIslaMultiPage([doc]);
+
+            expect(result[0].tables.vendidurias).toHaveLength(2);
+            expect(result[0].tables.vendidurias[0].vendiduria).toBe('VENDEDOR A');
+            expect(result[0].tables.vendidurias[1].vendiduria).toBe('VENDEDOR B');
+        });
+    });
+
     // ─── Cross-validation with peces ────────────────────────────────────
 
     describe('cross-validation with peces', () => {
