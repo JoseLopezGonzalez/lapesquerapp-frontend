@@ -28,9 +28,7 @@ const ExportModal = ({ document }) => {
     const ventasVendidurias = {}
     const ventasDirectas = {}
 
-    const isConvertibleBarco = (cod) => {
-        return barcos.some((barco) => barco.cod === cod);
-    };
+    const isConvertibleBarco = () => true;
 
     const addError = (error) => {
         if (!errors.includes(error)) {
