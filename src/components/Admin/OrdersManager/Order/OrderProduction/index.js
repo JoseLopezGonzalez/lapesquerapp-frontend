@@ -11,7 +11,7 @@ import { EmptyState } from '@/components/Utilities/EmptyState/index';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const OrderProduction = () => {
     const isMobile = useIsMobile();
@@ -59,13 +59,13 @@ const OrderProduction = () => {
 
                                 {/* Vista Mobile: Cards */}
                                 {mergedProductDetails.map((detail) => (
-                                    <Card key={`${detail.product.id}-${detail.status}`} className="p-4">
+                                    <Card key={`${detail?.product?.id ?? 'unknown'}-${detail.status}`} className="p-4">
                                         <div className="space-y-3">
                                             {/* Artículo y Estado */}
                                             <div className="flex items-start justify-between">
                                                 <div className="flex-1">
                                                     <p className="text-xs text-muted-foreground mb-1.5 uppercase tracking-wide">Artículo</p>
-                                                    <p className="text-sm font-semibold">{detail.product.name}</p>
+                                                    <p className="text-sm font-semibold">{detail?.product?.name || 'Sin producto'}</p>
                                                 </div>
                                                 <div>
                                                     {detail.status === 'success' ? (
@@ -145,6 +145,9 @@ const OrderProduction = () => {
                         <DialogContent className={`${isMobile ? 'max-w-full w-full h-full max-h-full m-0 rounded-none flex flex-col' : ''}`}>
                             <DialogHeader>
                                 <DialogTitle>Totales</DialogTitle>
+                                <DialogDescription>
+                                    Comparativa total entre cantidades previstas y producidas.
+                                </DialogDescription>
                             </DialogHeader>
                             <div className={`${isMobile ? 'flex-1 flex flex-col items-center justify-center px-4' : ''}`}>
                                 <div className={`space-y-6 ${isMobile ? 'w-full max-w-md' : ''}`}>
@@ -212,8 +215,8 @@ const OrderProduction = () => {
                                     </TableHeader>
                                     <TableBody>
                                         {mergedProductDetails.map((detail) => (
-                                            <TableRow key={`${detail.product.id}-${detail.status}`} className='text-nowrap'>
-                                                <TableCell className="font-medium">{detail.product.name}</TableCell>
+                                            <TableRow key={`${detail?.product?.id ?? 'unknown'}-${detail.status}`} className='text-nowrap'>
+                                                <TableCell className="font-medium">{detail?.product?.name || 'Sin producto'}</TableCell>
                                                 <TableCell>
                                                     {detail.status === 'noPlanned' ? (
                                                         <div className="space-y-1">

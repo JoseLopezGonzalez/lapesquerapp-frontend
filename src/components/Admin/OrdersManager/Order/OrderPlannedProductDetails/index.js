@@ -245,9 +245,13 @@ const OrderPlannedProductDetails = () => {
             notify.error({ title: 'No hay productos detectados' });
             return;
         }
-        const product = detail.product;
+        const product = detail?.product;
+        if (!product?.id) {
+            notify.error({ title: 'Producto detectado inválido. Recarga el pedido e inténtalo de nuevo.' });
+            return;
+        }
         const newTemporaryDetail = {
-            product: { name: product.name, id: product.id },
+            product: { name: product?.name || '', id: product.id },
             boxes: detail.productionBoxes,
             quantity: detail.productionQuantity,
             unitPrice: '',

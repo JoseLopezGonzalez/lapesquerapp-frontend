@@ -77,6 +77,32 @@ const normalizeOrderPallet = (pallet) => {
     };
 };
 
+const normalizePlannedProductDetail = (detail, productOptions = [], taxOptions = []) => {
+    if (!detail || typeof detail !== 'object') return detail;
+
+    const productId = detail?.product?.id ?? detail?.productId ?? null;
+    const matchedProduct = productOptions.find((p) => String(p?.value) === String(productId));
+    const productName = detail?.product?.name ?? matchedProduct?.label ?? '';
+
+    const taxId = detail?.tax?.id ?? detail?.taxId ?? null;
+    const matchedTax = taxOptions.find((t) => Number(t?.value) === Number(taxId));
+    const fallbackTaxRate = matchedTax?.label;
+    const taxRateRaw = detail?.tax?.rate ?? fallbackTaxRate ?? 0;
+    const parsedTaxRate = Number(taxRateRaw);
+
+    return {
+        ...detail,
+        product: {
+            id: productId,
+            name: productName,
+        },
+        tax: {
+            id: taxId,
+            rate: Number.isNaN(parsedTaxRate) ? 0 : parsedTaxRate,
+        },
+    };
+};
+
 export function useOrder(orderId, onChange) {
     const { data: session, status } = useSession();
     const queryClient = useQueryClient();
@@ -248,8 +274,11 @@ export function useOrder(orderId, onChange) {
             .then((updated) => {
                 // Construir el pedido actualizado manualmente
                 if (!order) return;
+                const normalizedUpdated = normalizePlannedProductDetail(updated, productOptions, taxOptions);
                 const updatedPlannedDetails = order.plannedProductDetails.map((detail) => 
-                    detail.id === updated.id ? updated : detail
+                    detail.id === normalizedUpdated.id
+                        ? normalizedUpdated
+                        : normalizePlannedProductDetail(detail, productOptions, taxOptions)
                 );
                 const updatedOrder = {
                     ...order,
@@ -290,9 +319,13 @@ export function useOrder(orderId, onChange) {
             .then((created) => {
                 // Construir el pedido actualizado manualmente
                 if (!order) return;
+                const normalizedCreated = normalizePlannedProductDetail(created, productOptions, taxOptions);
+                const normalizedExisting = (order.plannedProductDetails || []).map((detail) =>
+                    normalizePlannedProductDetail(detail, productOptions, taxOptions)
+                );
                 const updatedOrder = {
                     ...order,
-                    plannedProductDetails: [...order.plannedProductDetails, created]
+                    plannedProductDetails: [...normalizedExisting, normalizedCreated]
                 };
                 // Actualizar estado local
                 updateOrderCache(updatedOrder);
