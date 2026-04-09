@@ -521,7 +521,7 @@ const ExportModal = ({ document }) => {
     };
 
     return (
-        <DialogContent size="2xl" className="max-h-[90vh] overflow-y-auto">
+        <DialogContent size="4xl" className="max-h-[90vh] flex flex-col">
             <DialogHeader>
                 <DialogTitle>Exportar Datos de Factura</DialogTitle>
                 <DialogDescription>
@@ -529,7 +529,7 @@ const ExportModal = ({ document }) => {
                 </DialogDescription>
             </DialogHeader>
 
-            <div className="grid gap-4 py-4">
+            <div className="grid gap-4 py-4 overflow-y-auto flex-1 min-h-0">
                 <div className="grid grid-cols-2 items-center gap-4">
                     <div className='flex flex-col gap-1'>
                         <label htmlFor="software" className=" font-medium">
