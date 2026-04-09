@@ -124,12 +124,34 @@ function isValidVendiduriasRow(row) {
 }
 
 /**
- * Per-table row validators. Tables not listed here use a generic
- * "has any non-empty field" check.
+ * Validates a reconstructed cajas row. Requires descripcion and cajas
+ * (both mandatory in the downstream validator).
+ */
+function isValidCajasRow(row) {
+    if (!(row.descripcion || '').trim()) return false;
+    if (!(row.cajas || '').trim()) return false;
+    return true;
+}
+
+/**
+ * Validates a reconstructed tipoVentas row. Requires descripcion and cajas
+ * (both mandatory in the downstream validator).
+ */
+function isValidTipoVentasRow(row) {
+    if (!(row.descripcion || '').trim()) return false;
+    if (!(row.cajas || '').trim()) return false;
+    return true;
+}
+
+/**
+ * Per-table row validators aligned with the downstream Lonja de Isla
+ * validator's required fields.
  */
 const TABLE_ROW_VALIDATORS = {
     peces: isValidPecesRow,
     vendidurias: isValidVendiduriasRow,
+    cajas: isValidCajasRow,
+    tipoVentas: isValidTipoVentasRow,
 };
 
 /**

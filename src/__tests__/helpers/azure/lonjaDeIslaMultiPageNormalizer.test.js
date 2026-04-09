@@ -290,6 +290,53 @@ describe('normalizeLonjaDeIslaMultiPage', () => {
         });
     });
 
+    describe('cajas table row filtering', () => {
+        it('filters out cajas rows missing descripcion after split', () => {
+            const merged = {
+                descripcion: 'CAJA GRANDE\nCAJA MEDIANA\n',
+                cajas: '10\n5\n',
+                importe: '20\n10\n',
+            };
+            const doc = makeDoc({ ventas: [makeVenta()], cajas: [merged] });
+
+            const result = normalizeLonjaDeIslaMultiPage([doc]);
+
+            expect(result[0].tables.cajas).toHaveLength(2);
+            expect(result[0].tables.cajas[0].descripcion).toBe('CAJA GRANDE');
+            expect(result[0].tables.cajas[1].descripcion).toBe('CAJA MEDIANA');
+        });
+
+        it('filters out cajas rows missing cajas field after split', () => {
+            const merged = {
+                descripcion: 'CAJA GRANDE\nCAJA MEDIANA\nX',
+                cajas: '10\n5\n',
+            };
+            const doc = makeDoc({ ventas: [makeVenta()], cajas: [merged] });
+
+            const result = normalizeLonjaDeIslaMultiPage([doc]);
+
+            expect(result[0].tables.cajas).toHaveLength(2);
+        });
+    });
+
+    describe('tipoVentas table row filtering', () => {
+        it('filters out tipoVentas rows missing required fields after split', () => {
+            const merged = {
+                cod: '1\n2\n',
+                descripcion: 'SUBASTA\nRUEDA\n',
+                cajas: '8\n4\n',
+                importe: '100\n50\n',
+            };
+            const doc = makeDoc({ ventas: [makeVenta()], tipoVentas: [merged] });
+
+            const result = normalizeLonjaDeIslaMultiPage([doc]);
+
+            expect(result[0].tables.tipoVentas).toHaveLength(2);
+            expect(result[0].tables.tipoVentas[0].descripcion).toBe('SUBASTA');
+            expect(result[0].tables.tipoVentas[1].descripcion).toBe('RUEDA');
+        });
+    });
+
     // ─── Cross-validation with peces ────────────────────────────────────
 
     describe('cross-validation with peces', () => {
