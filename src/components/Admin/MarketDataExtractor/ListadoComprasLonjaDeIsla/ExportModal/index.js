@@ -11,6 +11,7 @@ import { barcos, barcosVentaDirecta, datosVendidurias, lonjaDeIsla, PORCENTAJE_S
 import { Input } from '@/components/ui/input'
 import { parseDecimalValue, calculateImporteFromLinea } from '@/exportHelpers/common'
 import { validateLonjaDeIslaSpeciesForExport } from '@/exportHelpers/lonjaDeIslaExportHelper'
+import { findBarcoMatch } from '@/exportHelpers/lonjaDeIslaBarcoMatcher'
 import { normalizeText } from '@/helpers/formats/texts'
 import { formatDecimalCurrency, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
 import { notify } from '@/lib/notifications'
@@ -39,18 +40,15 @@ const ExportModal = ({ document }) => {
 
     ventas.map((venta, index) => {
 
-        /* Ojo lógica si falla codigo busca por nombre */
-
-        const barcoEncontrado = barcos.find((barco) => {
-            if (barco.cod !== venta.codBarco && barco.barco === venta.barco) {
-                addError(`Barco encontrado por nombre: ${venta.codBarco} - ${venta.barco}`)
-            }
-            return barco.cod === venta.codBarco || barco.barco === venta.barco
-        });
+        const barcoEncontrado = findBarcoMatch(barcos, venta);
 
         if (!barcoEncontrado) {
             addError(`Barco no encontrado: ${venta.codBarco} - ${venta.barco}`)
             return null;
+        }
+
+        if (barcoEncontrado.cod !== venta.codBarco) {
+            addError(`Barco encontrado por nombre: ${venta.codBarco} - ${venta.barco} → ${barcoEncontrado.barco}`)
         }
 
         const nombreBarco = barcoEncontrado.barco;

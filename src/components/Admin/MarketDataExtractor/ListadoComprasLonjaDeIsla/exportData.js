@@ -16,7 +16,7 @@ export const datosVendidurias = [
   },
   {
     nombre: 'Pescados de Isla Cristina S.L.U.',
-    cod: 'IS',
+    cod: 'PI',
     codA3erp: '165014',
   },
   {
@@ -45,17 +45,17 @@ export const barcos = [
   {
     barco: "SEGUNDO CRISTO OCEANO",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "GRAN SEBASTIAN",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "NAVEGA",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "DIAZ MARTIN",
@@ -110,7 +110,7 @@ export const barcos = [
   {
     barco: "NUEVO TRIFAN",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "NUEVO DIVINO SALVADOR",
@@ -120,12 +120,12 @@ export const barcos = [
   {
     barco: "NUEVO ANTILLA",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "SEGUNDO ALONSO AGUADO",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "AGUSTIN Y MARIA",
@@ -135,7 +135,7 @@ export const barcos = [
   {
     barco: "SEGUNDO RAFAEL ANA",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "ESTRELLA CEREZO",
@@ -175,7 +175,7 @@ export const barcos = [
   {
     barco: "SEGUNDO SIEMPRE JUANA",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "LOS CHAPES",
@@ -195,7 +195,7 @@ export const barcos = [
   {
     barco: "RAMON AGUADO",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "ISABEL MARY",
@@ -210,7 +210,7 @@ export const barcos = [
   {
     barco: "EL LARGO",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "DIOS DEL MAR",
@@ -265,27 +265,27 @@ export const barcos = [
   {
     barco: "ISABELITA Y MATI",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "SORAYA POMARES",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "SEGUNDO PLAYA DE CADIZ",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "FRAMA PRIMERO",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "PAIS ANDALUZ",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "SEGUNDO MOLINERO",
@@ -295,7 +295,7 @@ export const barcos = [
   {
     barco: "JOSE Y DOS MARIA",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "NUEVO AUDAZ",
@@ -320,7 +320,7 @@ export const barcos = [
   {
     barco: "VICTORIA DE ANTONIO EL MORO",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "NUEVO ROSAMAR",
@@ -335,7 +335,7 @@ export const barcos = [
   {
     barco: "HNOS PEREZ MUNELL",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "ISABEL GOMEZ",
@@ -355,22 +355,22 @@ export const barcos = [
   {
     barco: "HNOS CARRILLO VICTORIA",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "NUEVO SIERRA NEVADA",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "SEGUNDO CRISTOBAL MARTÍN",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "FUGITIVO PRIMERO",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "MARIA Y MANUEL",
@@ -420,7 +420,7 @@ export const barcos = [
   {
     barco: "ELVIRA Y MANUEL",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "LOS NAVEGA",
@@ -430,7 +430,7 @@ export const barcos = [
   {
     barco: "NUEVO CABO ESPARTEL",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "NUESTRA SRA REGLA MARIA",
@@ -475,7 +475,7 @@ export const barcos = [
   {
     barco: "EL PPT",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "HNOS ALONSO MORENO",
@@ -515,7 +515,7 @@ export const barcos = [
   {
     barco: "PONCE HERMANOS",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "RAFAEL Y CARMEN",
@@ -565,7 +565,7 @@ export const barcos = [
   {
     barco: "HNOS LOPEZ PEREZ",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "CARETA PRIMERO",
@@ -595,7 +595,7 @@ export const barcos = [
   {
     barco: "PUNTA SANAMEDE",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "MANOLO ROTEÑO",
@@ -620,7 +620,7 @@ export const barcos = [
   {
     barco: "SEGUNDO MARITERE CARRILLO",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "SEGUNDO RODRIGUEZ FORTES",
@@ -640,7 +640,7 @@ export const barcos = [
   {
     barco: "MARIA JESUS SEGUNDA",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "ALMIRANTE ZUANZE",
@@ -675,7 +675,7 @@ export const barcos = [
   {
     barco: "REGLAMAR",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "LAINA PRIMERO",
@@ -725,7 +725,7 @@ export const barcos = [
   {
     barco: "GRAN PODER",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "HNOS PASTOR",
@@ -740,7 +740,7 @@ export const barcos = [
   {
     barco: "NUEVO BAHIA BLANCA",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "JOAO PINTO",
@@ -810,7 +810,7 @@ export const barcos = [
   {
     barco: "MATARO TERCERO",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "HNOS LOZANO",
@@ -847,7 +847,7 @@ export const barcos = [
   {
     barco: "PEDRO PASCUAL TERCERO",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "SARAY  Y YUDAIMA",
@@ -862,12 +862,12 @@ export const barcos = [
   {
     barco: "NUEVO MARTA",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "NUEVO MI VIDA",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     cod: '343',
@@ -899,7 +899,7 @@ export const barcos = [
   {
     barco: "GRAN CORNETA",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "CANDIDO",
@@ -941,7 +941,7 @@ export const barcos = [
   {
     barco: "EL SOCIO",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "NUEVO MARIA CRISTINA",
@@ -1001,7 +1001,7 @@ export const barcos = [
   {
     barco: "JUANA Y MANUEL",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "PEDRO",
@@ -1036,7 +1036,7 @@ export const barcos = [
   {
     barco: "CATALINA SILVA",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "INMA",
@@ -1046,7 +1046,7 @@ export const barcos = [
   {
     barco: "GEMA Y MODE",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "ABUELO ANTONIO",
@@ -1056,7 +1056,7 @@ export const barcos = [
   {
     barco: "NUEVO CAPRICHO",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "ERIKA I",
@@ -1128,17 +1128,17 @@ export const barcos = [
   {
     barco: "PRINCIPE GUERREIRO",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "SEGUNDO ANTONIO Y JUANA",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "NUEVO JONATHAN",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "SANTA MARIA SEGUNDO",
@@ -1175,7 +1175,7 @@ export const barcos = [
   {
     barco: "NUEVO SANDOKAN",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "ISABEL Y LETI",
@@ -1185,7 +1185,7 @@ export const barcos = [
   {
     barco: "CABO DE HORNOS PRIMERO",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "JOSE Y ALEJANDRO",
@@ -1195,7 +1195,7 @@ export const barcos = [
   {
     barco: "JUAN ANTONIO PRIMERO",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "NUEVO ANGEL LOPEZ",
@@ -1205,7 +1205,7 @@ export const barcos = [
   {
     barco: "GUMERSINDO Y MANUELA",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "HNOS ARAUJO GARCIA",
@@ -1220,7 +1220,7 @@ export const barcos = [
   {
     barco: "MI NUEVA VOLUNTAD",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "LAURA",
@@ -1305,7 +1305,7 @@ export const barcos = [
   {
     barco: "NUEVO ISIS",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "JOSE ADAN",
@@ -1340,7 +1340,7 @@ export const barcos = [
   {
     barco: "MARIA NAZARET PRIMERO",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "DE LA MAR",
@@ -1480,7 +1480,7 @@ export const barcos = [
   {
     barco: "MAPE",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS',
+    codVendiduria: 'PI',
     cod: '496',
     codBrisapp: '211',
   },
@@ -1497,7 +1497,7 @@ export const barcos = [
   {
     barco: "PRAIA DE MONTE GORDO",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "MANUEL Y PEDRO",
@@ -1538,7 +1538,7 @@ export const barcos = [
   {
     barco: "LAS TRES HERMANAS SILVA",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "HNOS SEGURA",
@@ -1553,7 +1553,7 @@ export const barcos = [
   {
     barco: "NUEVO GRAN PODER",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "SAN PEDRO DO MAR",
@@ -1593,7 +1593,7 @@ export const barcos = [
   {
     barco: "SEGUNDO REGLAMAR",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "LOZANO ABREU",
@@ -1608,17 +1608,17 @@ export const barcos = [
   {
     barco: "SEGUNDO GRAN ANTONIO",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "EL MORICO",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "ANANGEL",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "EL CORINA",
@@ -1683,7 +1683,7 @@ export const barcos = [
   {
     barco: "NUEVO ANTONIO GOMEZ",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "BELLA CINTA",
@@ -1693,7 +1693,7 @@ export const barcos = [
   {
     barco: "PAPA JULIN",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "ATARDECER",
@@ -1715,12 +1715,12 @@ export const barcos = [
     barco: "URTAIN PRIMERO",
     codBrisapp: '5',
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "BEGOÑAKO AMA",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "SAN RAMON",
@@ -1765,12 +1765,12 @@ export const barcos = [
   {
     barco: "RAFAEL FERNANDEZ RODRIGUEZ",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "JOSE DE LOS SANTOS SARE",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "ZE ROSA",
@@ -1890,17 +1890,17 @@ export const barcos = [
   {
     barco: "LA PRONTITUD",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "ATILA",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "ELVIMAR",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "TRES CUÑADOS_",
@@ -2111,12 +2111,12 @@ export const barcos = [
   {
     barco: "DIEGO CORDERO BARRERA",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "LOS ENEBRALES",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "FELIX  BOTELLO BOTELLO",
@@ -2376,7 +2376,7 @@ export const barcos = [
   {
     barco: "FABIANA",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "GRACA DO SENHOR",
@@ -2411,7 +2411,7 @@ export const barcos = [
   {
     barco: "NUEVO CANDIDO",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "ANTONIO MANUEL CORREA ORTEGA",
@@ -2461,7 +2461,7 @@ export const barcos = [
   {
     barco: "FRANCISCO JOAQUIN RAMOS MONALLA",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "JUAN RAMON GONZALEZ JIMENEZ",
@@ -2521,7 +2521,7 @@ export const barcos = [
   {
     barco: "NUEVO LUJAN",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "TORRE NUEVA",
@@ -2621,7 +2621,7 @@ export const barcos = [
   {
     barco: "CRISTO DEL SAGRARIO",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "NUEVO VELERO",
@@ -2636,7 +2636,7 @@ export const barcos = [
   {
     barco: "SERRANO SEGUNDO",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "DON JAIME",
@@ -2848,7 +2848,7 @@ export const barcos = [
   {
     barco: "PATROCINIO MEDERO BRAS",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "ABUELA PEPA MARI",
@@ -2888,7 +2888,7 @@ export const barcos = [
   {
     barco: "ANITA LUISA",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "FALETE Y QUICA",
@@ -2913,7 +2913,7 @@ export const barcos = [
   {
     barco: "JUAN Y MARIA",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "CRISTOBALINA",
@@ -2963,7 +2963,7 @@ export const barcos = [
   {
     barco: "LIBERACION",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "JUAN MANUEL",
@@ -3095,7 +3095,7 @@ export const barcos = [
   {
     barco: "GUMERSINDO Y MANUELA*",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "HNOS LOPEZ PRIETO*",
@@ -3155,7 +3155,7 @@ export const barcos = [
   {
     barco: "SERRANO SEGUNDO*",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "ABUELO GORDO*",
@@ -3185,7 +3185,7 @@ export const barcos = [
   {
     barco: "FABIANA*",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "GOMEZ SANTANA CUARTO*",
@@ -3195,7 +3195,7 @@ export const barcos = [
   {
     barco: "GRAN CORNETA*",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "HNOS GOMEZ SANTANA*",
@@ -3210,7 +3210,7 @@ export const barcos = [
   {
     barco: "JUAN ANTONIO PRIMERO*",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "LAINA PRIMERO*",
@@ -3230,7 +3230,7 @@ export const barcos = [
   {
     barco: "MARIA NAZARET PRIMERO*",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "MARIA Y MANUEL*",
@@ -3245,7 +3245,7 @@ export const barcos = [
   {
     barco: "SEGUNDO GRAN ANTONIO*",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "CARETA PRIMERO*",
@@ -3265,7 +3265,7 @@ export const barcos = [
   {
     barco: "NUEVO HNOS GOMEZ*",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "NUEVO HNOS REYES JIMENEZ*",
@@ -3275,12 +3275,12 @@ export const barcos = [
   {
     barco: "PAPA JULIN*",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "PEDRO PASCUAL TERCERO*",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "SANTA POLA*",
@@ -3505,7 +3505,7 @@ export const barcos = [
   {
     barco: "LOS ENEBRALES*",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "PITI SEGUNDO",
@@ -3530,7 +3530,7 @@ export const barcos = [
   {
     barco: "NUEVO SANDOKAN*",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "ORIA CORTES",
@@ -3662,7 +3662,7 @@ export const barcos = [
   {
     barco: "JAIRO MEDERO MARTIN",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "SEBASTIAN LORENZO RODRIGUEZ",
@@ -3764,7 +3764,7 @@ export const barcos = [
   {
     barco: "MARIA MANUELA",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "ABUELA CUSTODIA MARIA",
@@ -4054,7 +4054,7 @@ export const barcos = [
   {
     barco: "PUERTO MILLAN,  ANTONIO",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "CABO VERDE",
@@ -4104,7 +4104,7 @@ export const barcos = [
   {
     barco: "REINA DE LAS ANTILLAS",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "MARME",
@@ -4129,7 +4129,7 @@ export const barcos = [
   {
     barco: "MI LIBERTAD PRIMERA",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "LENINHA",
@@ -4259,7 +4259,7 @@ export const barcos = [
   {
     barco: "NUEVO BAHIA SANLUCAR",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "CRISTO DE LUZ",
@@ -4301,7 +4301,7 @@ export const barcos = [
   {
     barco: "SENHORA DO BONFIM",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "ARTUR PAULA",
@@ -4485,7 +4485,7 @@ export const barcos = [
   {
     barco: "JOSE LUIS LOPEZ FERNANDEZ",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "ANTONIO JESUS ALVAREZ ROBIÑO",
@@ -4515,7 +4515,7 @@ export const barcos = [
   {
     barco: "NUEVE HERMANOS CARRILLO",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "CESAR ROMERO GARCIA",
@@ -4548,7 +4548,7 @@ export const barcos = [
     codBrisapp: '190',
     barco: "MI NIÑA CORAIMA",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "ANGEL CUSTODIO",
@@ -4563,7 +4563,7 @@ export const barcos = [
   {
     barco: "EL TITI",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "NUEVO PUNTA NEGRA",
@@ -4593,7 +4593,7 @@ export const barcos = [
   {
     barco: "HNOS MARTIN ARES",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "MELVA SEGUNDA",
@@ -4603,7 +4603,7 @@ export const barcos = [
   {
     barco: "LAS PIRATAS",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "JUAN MANUEL RAMOS MONAYA",
@@ -4683,7 +4683,7 @@ export const barcos = [
   {
     barco: "JOMAR",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "AITANA Y CANDELA",
@@ -4713,7 +4713,7 @@ export const barcos = [
   {
     barco: "LORENZO BEAS GONZALEZ",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "NAIARA Y SORAYA",
@@ -4848,7 +4848,7 @@ export const barcos = [
   {
     barco: "BLANCA ORTA ANTONIO",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "MANUEL RODRIGUEZ MILLAN",
@@ -5079,7 +5079,7 @@ export const barcos = [
   {
     barco: "ISRAEL CORREA DE LOS ANGELES",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "JENIFER DONOSO ROMERO",
@@ -5169,7 +5169,7 @@ export const barcos = [
   {
     barco: "JUAN LOPEZ",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'IS'
+    codVendiduria: 'PI'
   },
   {
     barco: "ROSA DE LOS VIENTOS",

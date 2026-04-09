@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Check, X } from "lucide-react";
 import { calculateImporteFromLinea } from "@/exportHelpers/common";
+import { findBarcoMatch } from "@/exportHelpers/lonjaDeIslaBarcoMatcher";
 import { barcos as barcosLonja, barcosVentaDirecta, datosVendidurias, serviciosLonjaDeIsla, servicioExtraLonjaDeIsla, PORCENTAJE_SERVICIOS_VENDIDURIAS } from "../../ListadoComprasLonjaDeIsla/exportData";
 
 export default function LonjaDeIslaExportPreview({ document }) {
@@ -14,9 +15,7 @@ export default function LonjaDeIslaExportPreview({ document }) {
     const ventasDirectas = {};
 
     ventas.forEach((venta) => {
-        const barcoEncontrado = barcosLonja.find((barco) =>
-            barco.cod === venta.codBarco || barco.barco === venta.barco
-        );
+        const barcoEncontrado = findBarcoMatch(barcosLonja, venta);
         if (!barcoEncontrado) return;
 
         const nombreBarco = barcoEncontrado.barco;

@@ -5,6 +5,7 @@
  */
 
 import { parseDecimalValue, calculateImporte } from './common';
+import { findBarcoMatch } from './lonjaDeIslaBarcoMatcher';
 import { parseEuropeanNumber } from '@/helpers/formats/numbers/formatNumbers';
 import { normalizeText } from '@/helpers/formats/texts';
 import { 
@@ -86,9 +87,7 @@ export function generateLonjaDeIslaExcelRows(document, options = {}) {
     const ventasDirectas = [];
 
     ventas.forEach((venta) => {
-        const barcoEncontrado = barcos.find((barco) => 
-            barco.cod === venta.codBarco || barco.barco === venta.barco
-        );
+        const barcoEncontrado = findBarcoMatch(barcos, venta);
 
         if (!barcoEncontrado) {
             return;
@@ -308,9 +307,7 @@ export function generateLonjaDeIslaLinkedSummary(document) {
     const ventasDirectas = [];
 
     ventas.forEach((venta) => {
-        const barcoEncontrado = barcos.find((barco) => 
-            barco.cod === venta.codBarco || barco.barco === venta.barco
-        );
+        const barcoEncontrado = findBarcoMatch(barcos, venta);
 
         if (!barcoEncontrado) {
             return;
