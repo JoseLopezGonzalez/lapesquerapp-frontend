@@ -5360,4 +5360,8 @@ export const productos = [
   { nombre: "PESCADILLA / MERLUZA EUROPEA", codA3erp: "10153", codBrisappProducto: "319" },
   { nombre: "SARGO BREADO / SARGO BREADO", codA3erp: "10154", codBrisappProducto: "320" },
   { nombre: "LANGOSTINOS / LANGOSTINO O", codA3erp: "10155", codBrisappProducto: "321" },
+  { nombre: "CORVINAS / CORVINA", codA3erp: null, codBrisappProducto: null },
+  { nombre: "ALISTADO / GAMBA ROJA O GAMBA", codA3erp: "10139", codBrisappProducto: "307" },
+  { nombre: "LANGOSTINO MORUNO / LANGOSTINO", codA3erp: null, codBrisappProducto: null },
+  { nombre: "CIGALAS / CIGALA", codA3erp: "10142", codBrisappProducto: "310" },
 ]

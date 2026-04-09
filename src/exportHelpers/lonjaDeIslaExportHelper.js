@@ -33,14 +33,10 @@ function getLonjaDeIslaUnknownSpecies(document) {
     return Array.from(unknownSpecies);
 }
 
-function assertLonjaDeIslaSpeciesMapped(document) {
+function getUnmappedSpeciesWarnings(document) {
     const unknownSpecies = getLonjaDeIslaUnknownSpecies(document);
-    if (unknownSpecies.length > 0) {
-        throw new Error(
-            `Especies no contempladas para exportación Lonja de Isla: ${unknownSpecies.join(', ')}. ` +
-            'Actualiza el catálogo de productos antes de exportar.'
-        );
-    }
+    if (unknownSpecies.length === 0) return [];
+    return unknownSpecies.map((s) => `Especie sin código A3: ${s}`);
 }
 
 /**
@@ -53,7 +49,7 @@ function assertLonjaDeIslaSpeciesMapped(document) {
  * @returns {Object} Object with rows array and nextSequence number
  */
 export function generateLonjaDeIslaExcelRows(document, options = {}) {
-    assertLonjaDeIslaSpeciesMapped(document);
+    const speciesWarnings = getUnmappedSpeciesWarnings(document);
 
     const { CABSERIE: baseCABSERIE = "LI", startSequence = 1, startSequenceVenta } = options;
     const { details: { fecha }, tables: { ventas, vendidurias } } = document;
@@ -78,10 +74,6 @@ export function generateLonjaDeIslaExcelRows(document, options = {}) {
     // Helper functions
     const calculateImporteFromLinea = (linea) => calculateImporte(linea.kilos, linea.precio);
     
-    const isConvertibleBarco = (cod) => {
-        return barcos.some((barco) => barco.cod === cod);
-    };
-
     // Process ventas into ventasVendidurias and ventasDirectas
     const ventasVendidurias = [];
     const ventasDirectas = [];
@@ -209,14 +201,15 @@ export function generateLonjaDeIslaExcelRows(document, options = {}) {
             const producto = productos.find(
                 (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
             );
+            const isMapped = !!producto?.codA3erp;
             processedRows.push({
                 CABSERIE: CABSERIE,
                 CABNUMDOC: cabNumDoc,
                 CABFECHA: fecha,
                 CABCODPRO: barco.armador.codA3erp,
                 CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
-                LINCODART: producto?.codA3erp,
-                LINDESCLIN: linea.especie,
+                LINCODART: isMapped ? producto.codA3erp : '',
+                LINDESCLIN: isMapped ? linea.especie : `⚠ ${linea.especie}`,
                 LINUNIDADES: parseDecimalValue(linea.kilos),
                 LINPRCMONEDA: parseDecimalValue(linea.precio),
                 LINTIPIVA: 'RED10',
@@ -228,25 +221,24 @@ export function generateLonjaDeIslaExcelRows(document, options = {}) {
     // Generate rows for ventasVendidurias
     Object.values(ventasVendidurias).filter(Boolean).forEach(barco => {
         const cabNumDoc = `${fechaSoloNumeros}${albaranSequence}`;
-        if (isConvertibleBarco(barco.cod)) {
-            barco.lineas.forEach(linea => {
-                const producto = productos.find(
-                    (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
-                );
-                processedRows.push({
-                    CABSERIE: CABSERIE,
-                    CABNUMDOC: cabNumDoc,
-                    CABFECHA: fecha,
-                    CABCODPRO: barco.vendiduria.codA3erp,
-                    CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
-                    LINCODART: producto?.codA3erp,
-                    LINDESCLIN: linea.especie,
-                    LINUNIDADES: parseDecimalValue(linea.kilos),
-                    LINPRCMONEDA: parseDecimalValue(linea.precio),
-                    LINTIPIVA: 'RED10',
-                });
+        barco.lineas.forEach(linea => {
+            const producto = productos.find(
+                (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
+            );
+            const isMapped = !!producto?.codA3erp;
+            processedRows.push({
+                CABSERIE: CABSERIE,
+                CABNUMDOC: cabNumDoc,
+                CABFECHA: fecha,
+                CABCODPRO: barco.vendiduria.codA3erp,
+                CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
+                LINCODART: isMapped ? producto.codA3erp : '',
+                LINDESCLIN: isMapped ? linea.especie : `⚠ ${linea.especie}`,
+                LINUNIDADES: parseDecimalValue(linea.kilos),
+                LINPRCMONEDA: parseDecimalValue(linea.precio),
+                LINTIPIVA: 'RED10',
             });
-        }
+        });
 
         const importeTotal = getImporteTotal(barco.lineas);
 
@@ -287,7 +279,8 @@ export function generateLonjaDeIslaExcelRows(document, options = {}) {
         rows: processedRows,
         nextSequence: albaranSequence,
         ventaRows,
-        nextVentaSequence: ventaAlbaranSequence
+        nextVentaSequence: ventaAlbaranSequence,
+        warnings: speciesWarnings,
     };
 }
 
@@ -384,6 +377,6 @@ export function generateLonjaDeIslaLinkedSummary(document) {
 }
 
 export function validateLonjaDeIslaSpeciesForExport(document) {
-    assertLonjaDeIslaSpeciesMapped(document);
+    return getLonjaDeIslaUnknownSpecies(document);
 }
 

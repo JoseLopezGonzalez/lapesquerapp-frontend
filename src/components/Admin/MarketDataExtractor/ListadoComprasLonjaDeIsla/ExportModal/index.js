@@ -365,7 +365,13 @@ const ExportModal = ({ document }) => {
     };
 
     const generateExcelForA3erp = async () => {
-        validateLonjaDeIslaSpeciesForExport(document);
+        const unmappedSpecies = validateLonjaDeIslaSpeciesForExport(document);
+        if (unmappedSpecies.length > 0) {
+            notify.warning({
+                title: 'Especies sin código A3',
+                description: `${unmappedSpecies.join(', ')}. Se exportarán con LINCODART vacío.`,
+            }, { duration: 8000 });
+        }
 
         const [XLSX, { saveAs }] = await Promise.all([import('xlsx'), import('file-saver')]);
         const processedRows = [];
@@ -431,14 +437,15 @@ const ExportModal = ({ document }) => {
                 const producto = productos.find(
                     (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
                 );
+                const isMapped = !!producto?.codA3erp;
                 processedRows.push({
                     CABSERIE: CABSERIE,
                     CABNUMDOC: cabNumDoc,
                     CABFECHA: fecha,
                     CABCODPRO: barco.armador.codA3erp,
                     CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
-                    LINCODART: producto?.codA3erp,
-                    LINDESCLIN: linea.especie,
+                    LINCODART: isMapped ? producto.codA3erp : '',
+                    LINDESCLIN: isMapped ? linea.especie : `⚠ ${linea.especie}`,
                     LINUNIDADES: parseDecimalValue(linea.kilos),
                     LINPRCMONEDA: parseDecimalValue(linea.precio),
                     LINTIPIVA: 'RED10',
@@ -449,18 +456,19 @@ const ExportModal = ({ document }) => {
 
         ventasVendiduriasArray.forEach(barco => {
             const cabNumDoc = `${fechaSoloNumeros}${albaranSequence}`;
-            isConvertibleBarco(barco.cod) && barco.lineas.forEach(linea => {
+            barco.lineas.forEach(linea => {
                 const producto = productos.find(
                     (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
                 );
+                const isMapped = !!producto?.codA3erp;
                 processedRows.push({
                     CABSERIE: CABSERIE,
                     CABNUMDOC: cabNumDoc,
                     CABFECHA: fecha,
                     CABCODPRO: barco.vendiduria.codA3erp,
                     CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
-                    LINCODART: producto?.codA3erp,
-                    LINDESCLIN: linea.especie,
+                    LINCODART: isMapped ? producto.codA3erp : '',
+                    LINDESCLIN: isMapped ? linea.especie : `⚠ ${linea.especie}`,
                     LINUNIDADES: parseDecimalValue(linea.kilos),
                     LINPRCMONEDA: parseDecimalValue(linea.precio),
                     LINTIPIVA: 'RED10',
