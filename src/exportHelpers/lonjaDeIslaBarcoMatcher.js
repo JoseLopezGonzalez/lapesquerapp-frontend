@@ -100,12 +100,18 @@ export function findBarcoMatch(barcosCatalog, venta) {
     const catalogMatch = findInCatalog(barcosCatalog, venta, cleanName);
 
     if (catalogMatch) {
-        if (prefixCodVendiduria && prefixCodVendiduria !== catalogMatch.codVendiduria) {
+        const cod = catalogMatch.cod || venta.codBarco || cleanName;
+        const needsOverride = prefixCodVendiduria && prefixCodVendiduria !== catalogMatch.codVendiduria;
+
+        if (needsOverride || !catalogMatch.cod) {
             return {
                 ...catalogMatch,
-                codVendiduria: prefixCodVendiduria,
-                _originalCodVendiduria: catalogMatch.codVendiduria,
-                _prefixOverride: true,
+                cod,
+                ...(needsOverride && {
+                    codVendiduria: prefixCodVendiduria,
+                    _originalCodVendiduria: catalogMatch.codVendiduria,
+                    _prefixOverride: true,
+                }),
             };
         }
         return catalogMatch;

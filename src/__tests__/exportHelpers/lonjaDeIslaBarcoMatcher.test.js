@@ -112,6 +112,41 @@ describe('findBarcoMatch', () => {
         });
     });
 
+    describe('cod guarantee', () => {
+        it('uses venta.codBarco as cod when catalog entry has none', () => {
+            const result = findBarcoMatch(CATALOG, { codBarco: '674', barco: 'EL JUNZA' });
+            expect(result).not.toBeNull();
+            expect(result.cod).toBe('674');
+            expect(result.barco).toBe('EL JUNZA');
+        });
+
+        it('falls back to cleaned name as cod when both catalog and venta lack cod', () => {
+            const result = findBarcoMatch(CATALOG, { barco: 'EL JUNZA' });
+            expect(result).not.toBeNull();
+            expect(result.cod).toBe('EL JUNZA');
+        });
+
+        it('preserves catalog cod when it exists', () => {
+            const result = findBarcoMatch(CATALOG, { codBarco: '999', barco: 'JOSE PRIN' });
+            expect(result.cod).toBe('325');
+        });
+
+        it('fills cod from codBarco with prefix stripping and same vendiduria', () => {
+            const result = findBarcoMatch(CATALOG, { codBarco: '917', barco: 'EX-MADRIGAL FERRERA' });
+            expect(result).not.toBeNull();
+            expect(result.cod).toBe('917');
+            expect(result.codVendiduria).toBe('EX');
+        });
+
+        it('fills cod from codBarco with prefix override to different vendiduria', () => {
+            const result = findBarcoMatch(CATALOG, { codBarco: '888', barco: 'JA-NAVEGA' });
+            expect(result).not.toBeNull();
+            expect(result.cod).toBe('888');
+            expect(result.codVendiduria).toBe('JA');
+            expect(result._prefixOverride).toBe(true);
+        });
+    });
+
     describe('tier 3: partial name match (truncated names)', () => {
         it('matches when doc name is a prefix of catalog name', () => {
             const result = findBarcoMatch(CATALOG, { barco: 'HNOS PEREZ MU' });

@@ -25,8 +25,8 @@ const ExportModal = ({ document }) => {
     const [selectedLinks, setSelectedLinks] = useState([])
     const [isValidating, setIsValidating] = useState(false)
     const [validationResults, setValidationResults] = useState({})
-    const ventasVendidurias = []
-    const ventasDirectas = []
+    const ventasVendidurias = {}
+    const ventasDirectas = {}
 
     const isConvertibleBarco = (cod) => {
         return barcos.some((barco) => barco.cod === cod);
@@ -47,7 +47,7 @@ const ExportModal = ({ document }) => {
             return null;
         }
 
-        if (barcoEncontrado.cod !== venta.codBarco) {
+        if (venta.codBarco && barcoEncontrado.cod !== venta.codBarco) {
             addError(`Barco encontrado por nombre: ${venta.codBarco} - ${venta.barco} → ${barcoEncontrado.barco}`)
         }
 
@@ -95,14 +95,17 @@ const ExportModal = ({ document }) => {
         return (importeTotal * PORCENTAJE_SERVICIOS_VENDIDURIAS / 100).toFixed(2);
     }
 
-    const importeTotalVentasDirectas = ventasDirectas.reduce((acc, barco) => {
+    const ventasDirectasArray = Object.values(ventasDirectas);
+    const ventasVendiduriasArray = Object.values(ventasVendidurias);
+
+    const importeTotalVentasDirectas = ventasDirectasArray.reduce((acc, barco) => {
         return acc + barco.lineas.reduce((acc, linea) => {
             return acc + calculateImporteFromLinea(linea);
         }, 0);
     }, 0);
 
     /* importes totales por cada tipo de vendiduria segun ventasVendiduriasGroupByBarco */
-    const importesTotalesVendidurias = ventasVendidurias.reduce((acc, barco) => {
+    const importesTotalesVendidurias = ventasVendiduriasArray.reduce((acc, barco) => {
         if (!barco.vendiduria) {
             return acc;
         }
@@ -386,7 +389,7 @@ const ExportModal = ({ document }) => {
         let albaranSequence = 1; // Contador secuencial para distinguir diferentes albaranes del mismo documento
         let ventaAlbaranSequence = 1; // Secuencia separada para albaranes de venta
 
-        ventasDirectas.forEach(barco => {
+        ventasDirectasArray.forEach(barco => {
             const cabNumDoc = `${fechaSoloNumeros}${albaranSequence}`;
             const cabNumDocVenta = `${fechaSoloNumeros}${ventaAlbaranSequence}`;
             const importeBase = getImporteTotal(barco.lineas); // base = Σ(kilos*precio)
@@ -446,7 +449,7 @@ const ExportModal = ({ document }) => {
             albaranSequence++;
         });
 
-        ventasVendidurias.forEach(barco => {
+        ventasVendiduriasArray.forEach(barco => {
             const cabNumDoc = `${fechaSoloNumeros}${albaranSequence}`;
             isConvertibleBarco(barco.cod) && barco.lineas.forEach(linea => {
                 const producto = productos.find(
@@ -699,7 +702,7 @@ const ExportModal = ({ document }) => {
                         </Card>
                     )}
 
-                    {ventasDirectas.length > 0 && (
+                    {ventasDirectasArray.length > 0 && (
                         <Card>
                             <CardHeader className="pb-2">
                                 <div className="pb-2">
@@ -709,7 +712,7 @@ const ExportModal = ({ document }) => {
                             </CardHeader>
                             <CardContent className='flex flex-col gap-4'>
 
-                                {ventasDirectas.map((barco, index) => (
+                                {ventasDirectasArray.map((barco, index) => (
                                     <Card key={`${barco.nombre}-${index}`}>
                                         <CardHeader className="pb-2">
                                             <div className="flex justify-between items-start">
@@ -804,7 +807,7 @@ const ExportModal = ({ document }) => {
                         </Card>
                     )}
 
-                    {ventasVendidurias.length > 0 && (
+                    {ventasVendiduriasArray.length > 0 && (
                         <Card>
                             <CardHeader className="pb-2">
                                 <div className="pb-2">
@@ -812,7 +815,7 @@ const ExportModal = ({ document }) => {
                                 </div>
                             </CardHeader>
                             <CardContent className='flex flex-col gap-4'>
-                                {ventasVendidurias.map((barco, index) => (
+                                {ventasVendiduriasArray.map((barco, index) => (
                                     <Card key={`${barco.nombre}-${index}`}>
                                         <CardHeader className="pb-2">
                                             <div className="flex justify-between items-start">
