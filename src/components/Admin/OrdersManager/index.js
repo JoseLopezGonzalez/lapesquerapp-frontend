@@ -15,6 +15,7 @@ import ProductionView from './ProductionView';import { useDebounce } from '@/hoo
 import { useIsMobile } from '@/hooks/use-mobile';
 import { notify } from '@/lib/notifications';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 
 const initialCategories = [
@@ -29,9 +30,12 @@ export default function OrdersManager() {
     const queryClient = useQueryClient();
     const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
     const isMobile = useIsMobile();
+    const router = useRouter();
+    const searchParams = useSearchParams();
 
     const [onCreatingNewOrder, setOnCreatingNewOrder] = useState(false);
     const [isOrderLoading, setIsOrderLoading] = useState(false);
+    const [createOrderPrefill, setCreateOrderPrefill] = useState(null);
 
     const { orders = [], isLoading: loading, error: ordersError, refetch, queryKey } = useOrders();
     const [categories, setCategories] = useState(initialCategories);
@@ -72,6 +76,46 @@ export default function OrdersManager() {
 });
         }
     }, [ordersError]);
+
+    useEffect(() => {
+        const shouldOpenCreate = searchParams.get('create') === '1';
+        const prefillKey = searchParams.get('prefill');
+        let parsedPrefill = null;
+
+        if (prefillKey) {
+            try {
+                const rawPrefill = sessionStorage.getItem(prefillKey);
+                if (rawPrefill) {
+                    parsedPrefill = JSON.parse(rawPrefill);
+                    sessionStorage.removeItem(prefillKey);
+                }
+            } catch (error) {
+                notify.error({
+                    title: 'No se pudo cargar el prellenado del pedido',
+                    description: 'El pedido se abrirá sin líneas pre-cargadas.',
+                });
+            }
+        }
+
+        if (parsedPrefill) {
+            setCreateOrderPrefill(parsedPrefill);
+        }
+
+        if (shouldOpenCreate) {
+            setSelectedOrder(null);
+            setOnCreatingNewOrder(true);
+        }
+
+        if (!shouldOpenCreate && !prefillKey) {
+            return;
+        }
+
+        const nextParams = new URLSearchParams(searchParams.toString());
+        nextParams.delete('create');
+        nextParams.delete('prefill');
+        const nextQuery = nextParams.toString();
+        router.replace(nextQuery ? `/admin/orders-manager?${nextQuery}` : '/admin/orders-manager');
+    }, [searchParams, router]);
 
     // Memoizar la categoría activa para evitar búsquedas repetidas
     const activeCategory = useMemo(() => {
@@ -183,6 +227,7 @@ export default function OrdersManager() {
     }, [viewMode]);
 
     const handleOnClickOrderCard = useCallback((orderId) => {
+        setCreateOrderPrefill(null);
         setOnCreatingNewOrder(false);
         // Si estamos en vista producción, cambiar a vista normal
         if (viewMode === 'production') {
@@ -217,6 +262,7 @@ export default function OrdersManager() {
 
     const handleOnChangeSearch = useCallback((value) => {
         /* Set current true category.name all  */
+        setCreateOrderPrefill(null);
         setOnCreatingNewOrder(false);
         setCategories(prevCategories => prevCategories.map((cat) => {
             return {
@@ -239,12 +285,14 @@ export default function OrdersManager() {
         }));
         setSelectedOrder(null);
         setSearchText('');
+        setCreateOrderPrefill(null);
         setOnCreatingNewOrder(true);
     }, []);
 
     const handleCloseDetail = useCallback(() => {
         setSelectedOrder(null);
         setOnCreatingNewOrder(false);
+        setCreateOrderPrefill(null);
     }, []);
 
     const handleOnCreatedOrder = useCallback((id, newOrderData = null) => {
@@ -252,6 +300,7 @@ export default function OrdersManager() {
         // Esto permite que el componente Order comience a cargar el pedido sin esperar
         setOnCreatingNewOrder(false);
         setSelectedOrder(id);
+        setCreateOrderPrefill(null);
         
         // Recargar la lista en segundo plano para asegurar que esté actualizada
         // pero sin bloquear la carga del pedido individual
@@ -307,7 +356,7 @@ export default function OrdersManager() {
         if (onCreatingNewOrder) {
             return (
                 <div className='h-full flex flex-col overflow-hidden'>
-                    <CreateOrderForm onCreate={handleOnCreatedOrder} onClose={handleCloseDetail} />
+                    <CreateOrderForm onCreate={handleOnCreatedOrder} onClose={handleCloseDetail} initialPrefill={createOrderPrefill} />
                     </div>
             );
         }
@@ -321,7 +370,7 @@ export default function OrdersManager() {
                 />
             </Card>
         );
-    }, [selectedOrder, onCreatingNewOrder, handleOnChange, handleOrderLoading, isMobile, handleCloseDetail, handleOnCreatedOrder, handleOnClickAddNewOrder]);
+    }, [selectedOrder, onCreatingNewOrder, handleOnChange, handleOrderLoading, isMobile, handleCloseDetail, handleOnCreatedOrder, handleOnClickAddNewOrder, createOrderPrefill]);
 
     return (
         <>

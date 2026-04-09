@@ -14,7 +14,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { notify } from '@/lib/notifications';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const OrderPlannedProductDetails = () => {
     const isMobile = useIsMobile();
@@ -305,7 +305,7 @@ const OrderPlannedProductDetails = () => {
                                                         <div className="[&_button]:!h-9">
                                                             <Combobox
                                                                 options={productOptions || []}
-                                                                value={detail.product.id ? String(detail.product.id) : null}
+                                                                value={detail?.product?.id ? String(detail.product.id) : null}
                                                                 onChange={(e) => handleInputChange(index, 'product', e)}
                                                                 loading={optionsLoading}
                                                                 placeholder="Seleccionar producto..."
@@ -314,7 +314,7 @@ const OrderPlannedProductDetails = () => {
                                                             />
                                                         </div>
                                                     ) : (
-                                                        <p className="text-sm font-medium py-2">{detail.product.name || 'Sin producto'}</p>
+                                                        <p className="text-sm font-medium py-2">{detail?.product?.name || 'Sin producto'}</p>
                                                     )}
                                                 </div>
                                                 
@@ -465,6 +465,9 @@ const OrderPlannedProductDetails = () => {
                         <DialogContent className={`${isMobile ? 'max-w-full w-full h-full max-h-full m-0 rounded-none flex flex-col' : ''}`}>
                             <DialogHeader>
                                 <DialogTitle>Totales</DialogTitle>
+                                <DialogDescription>
+                                    Resumen de cajas, cantidad y precio promedio de la previsión.
+                                </DialogDescription>
                             </DialogHeader>
                             <div className={`${isMobile ? 'flex-1 flex flex-col items-center justify-center px-4' : ''}`}>
                                 <div className={`space-y-6 ${isMobile ? 'w-full max-w-md' : ''}`}>
@@ -540,7 +543,7 @@ const OrderPlannedProductDetails = () => {
                                                 {editIndex === index ? (
                                                     <Combobox
                                                         options={productOptions || []}
-                                                        value={detail.product.id ? String(detail.product.id) : null}
+                                                        value={detail?.product?.id ? String(detail.product.id) : null}
                                                         onChange={(e) => handleInputChange(index, 'product', e)}
                                                         loading={optionsLoading}
                                                         placeholder="Seleccionar producto..."
@@ -549,7 +552,7 @@ const OrderPlannedProductDetails = () => {
                                                         className="w-full"
                                                     />
                                                         ) : (
-                                                            detail.product.name || 'Sin producto'
+                                                            detail?.product?.name || 'Sin producto'
                                                         )}
                                             </TableCell>
                                                     <TableCell className="text-right">

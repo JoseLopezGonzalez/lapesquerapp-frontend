@@ -2,7 +2,7 @@
 'use client'
 
 // Importaciones existentes (mantenerlas o refactorizar si es necesario)
-import React, { useEffect, useCallback, useRef } from 'react'; // Añadido useCallback y useRef
+import React, { useEffect, useCallback, useRef, useMemo } from 'react'; // Añadido useCallback y useRef
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -58,7 +58,7 @@ function getTextValue(...candidates) {
     return '';
 }
 
-const CreateOrderForm = ({ onCreate, onClose }) => {
+const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }) => {
     const { productOptions, loading: productsLoading } = useProductOptions();
     const { taxOptions, loading: taxLoading } = useTaxOptions();
     const isMobile = useIsMobile();
@@ -73,6 +73,7 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
 
     // Ref para rastrear si el formulario ya fue inicializado
     const isInitializedRef = useRef(false);
+    const appliedPrefillSignatureRef = useRef(null);
     // Ref para rastrear el último customer seleccionado y evitar llamadas duplicadas
     const lastCustomerIdRef = useRef(null);
 
@@ -136,17 +137,52 @@ const CreateOrderForm = ({ onCreate, onClose }) => {
         name: 'plannedProducts',
     });
 
+    const prefilledPlannedProducts = useMemo(() => {
+        if (!initialPrefill || !Array.isArray(initialPrefill.plannedProducts)) {
+            return [];
+        }
+
+        return initialPrefill.plannedProducts
+            .filter((line) => line?.product != null && line?.product !== '')
+            .map((line) => ({
+                product: String(line.product),
+                quantity: line.quantity != null ? String(line.quantity) : '',
+                boxes: line.boxes != null ? String(line.boxes) : '',
+                unitPrice: line.unitPrice != null ? String(line.unitPrice) : '',
+                tax: line.tax != null ? String(line.tax) : '',
+            }));
+    }, [initialPrefill]);
+
+    const prefillSignature = useMemo(() => {
+        if (!initialPrefill) return null;
+        if (prefilledPlannedProducts.length === 0) return null;
+        return JSON.stringify(prefilledPlannedProducts);
+    }, [initialPrefill, prefilledPlannedProducts]);
+
     // Efecto para inicializar el formulario solo cuando loading cambia de true a false por primera vez
     useEffect(() => {
         // Solo resetear cuando loading termine por primera vez y el formulario no haya sido inicializado
         if (!loading && !isInitializedRef.current && defaultValues) {
             reset({
                 ...defaultValues,
-                plannedProducts: [],
+                plannedProducts: prefilledPlannedProducts,
             });
+            appliedPrefillSignatureRef.current = prefillSignature;
             isInitializedRef.current = true;
         }
-    }, [loading, defaultValues, reset]); // Solo resetear cuando loading cambia
+    }, [loading, defaultValues, reset, prefilledPlannedProducts, prefillSignature]); // Solo resetear cuando loading cambia
+
+    useEffect(() => {
+        if (loading || !isInitializedRef.current || !prefillSignature) return;
+        if (appliedPrefillSignatureRef.current === prefillSignature) return;
+
+        reset({
+            ...defaultValues,
+            plannedProducts: prefilledPlannedProducts,
+        });
+        appliedPrefillSignatureRef.current = prefillSignature;
+        lastCustomerIdRef.current = null;
+    }, [loading, prefillSignature, defaultValues, prefilledPlannedProducts, reset]);
 
     // Función de manejo de creación de pedido, ahora usando el servicio
     const handleCreate = async (formData) => {

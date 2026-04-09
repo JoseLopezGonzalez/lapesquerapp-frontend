@@ -9,7 +9,7 @@ import { formatDecimalCurrency, formatDecimalWeight, formatInteger } from '@/hel
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Info } from 'lucide-react';
 
 const OrderProductDetails = () => {
@@ -59,7 +59,7 @@ const OrderProductDetails = () => {
                                         <CardContent className="p-4 space-y-3">
                                             {/* Nombre del producto */}
                                             <div className="space-y-1">
-                                                <p className="text-sm font-semibold">{detail.product.name}</p>
+                                                <p className="text-sm font-semibold">{detail?.product?.name || 'Sin producto'}</p>
                                             </div>
 
                                             {/* Información en grid */}
@@ -78,7 +78,7 @@ const OrderProductDetails = () => {
                                                 </div>
                                                 <div className="space-y-1">
                                                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Impuesto</p>
-                                                    <p className="text-sm font-semibold">{`${detail.tax.rate}%`}</p>
+                                                    <p className="text-sm font-semibold">{`${detail?.tax?.rate ?? 0}%`}</p>
                                                 </div>
                                                 <div className="space-y-1">
                                                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Subtotal</p>
@@ -114,6 +114,9 @@ const OrderProductDetails = () => {
                         <DialogContent className={`${isMobile ? 'max-w-full w-full h-full max-h-full m-0 rounded-none flex flex-col' : ''}`}>
                             <DialogHeader>
                                 <DialogTitle>Totales</DialogTitle>
+                                <DialogDescription>
+                                    Resumen de cajas, cantidad, precio promedio y totales del pedido.
+                                </DialogDescription>
                             </DialogHeader>
                             <div className={`${isMobile ? 'flex-1 flex flex-col items-center justify-center px-4' : ''}`}>
                                 <div className={`space-y-6 ${isMobile ? 'w-full max-w-md' : ''}`}>
@@ -181,7 +184,7 @@ const OrderProductDetails = () => {
                                         {order.productDetails.map((detail) => (
                                             <TableRow key={detail.id || `${detail.product?.id}-${detail.product?.name}`} className='text-nowrap'>
                                                 <TableCell>
-                                                    {detail.product.name}
+                                                    {detail?.product?.name || 'Sin producto'}
                                                 </TableCell>
                                                 <TableCell>
                                                     {formatInteger(detail.boxes)}
@@ -193,7 +196,7 @@ const OrderProductDetails = () => {
                                                     {formatDecimalCurrency(detail.unitPrice)}
                                                 </TableCell>
                                                 <TableCell>
-                                                    {`${detail.tax.rate}%`}
+                                                    {`${detail?.tax?.rate ?? 0}%`}
                                                 </TableCell>
                                                 <TableCell>
                                                     {formatDecimalCurrency(detail.subtotal)}

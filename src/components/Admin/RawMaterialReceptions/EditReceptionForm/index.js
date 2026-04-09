@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Combobox } from '@/components/Shadcn/Combobox';
-import { Plus, Trash2, ArrowRight, AlertTriangle, Package, Edit, Loader2, Printer, FileText } from 'lucide-react';
+import { Plus, Trash2, ArrowRight, AlertTriangle, Package, Edit, Loader2, Printer, FileText, ShoppingCart } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
@@ -24,6 +24,7 @@ import { formatDecimal, formatDecimalWeight, formatDecimalCurrency } from '@/hel
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/Utilities/EmptyState';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { getPallet } from '@/services/palletService';
 import { notify } from '@/lib/notifications';
 import dynamic from 'next/dynamic';
@@ -116,6 +117,9 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
     const [receptionPrices, setReceptionPrices] = useState([]);
     const [isAllPalletsLabelDialogOpen, setIsAllPalletsLabelDialogOpen] = useState(false);
     const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
+    const [isCreateOrderDialogOpen, setIsCreateOrderDialogOpen] = useState(false);
+    const [priceTransferMode, setPriceTransferMode] = useState('same');
+    const [priceIncreasePercent, setPriceIncreasePercent] = useState('');
     // Store original box IDs from backend to distinguish between real and temporary IDs
     const [originalBoxIds, setOriginalBoxIds] = useState(new Set());
     // Track if there are any used boxes in the reception
@@ -234,6 +238,75 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
         });
         return { totalKg, totalAmount };
     }, [watchedPricesAndWeights, watchedDetails, priceAndWeightTrigger]);
+
+    const buildOrderPrefillFromDetails = useCallback(() => {
+        const details = Array.isArray(watchedDetails) ? watchedDetails : [];
+        const parsedPercent = parseFloat(priceIncreasePercent);
+        const safePercent = Number.isFinite(parsedPercent) ? Math.max(0, parsedPercent) : 0;
+        const multiplier = priceTransferMode === 'increase' ? (1 + (safePercent / 100)) : 1;
+
+        let omittedCount = 0;
+        const plannedProducts = details.reduce((acc, detail) => {
+            const productId = detail?.product;
+            const quantity = parseFloat(detail?.netWeight);
+            const boxes = parseInt(detail?.boxes, 10);
+            const unitPrice = parseFloat(detail?.price);
+
+            if (!productId || !Number.isFinite(quantity) || quantity <= 0 || !Number.isFinite(boxes) || boxes < 1 || !Number.isFinite(unitPrice) || unitPrice <= 0) {
+                omittedCount += 1;
+                return acc;
+            }
+
+            const adjustedPrice = Number((unitPrice * multiplier).toFixed(4));
+            if (adjustedPrice <= 0) {
+                omittedCount += 1;
+                return acc;
+            }
+
+            acc.push({
+                product: String(productId),
+                quantity: String(quantity),
+                boxes: String(boxes),
+                unitPrice: String(adjustedPrice),
+                tax: '',
+            });
+
+            return acc;
+        }, []);
+
+        return { plannedProducts, omittedCount };
+    }, [watchedDetails, priceIncreasePercent, priceTransferMode]);
+
+    const handleCreateOrderFromReception = useCallback(() => {
+        const { plannedProducts, omittedCount } = buildOrderPrefillFromDetails();
+
+        if (plannedProducts.length === 0) {
+            notify.error({
+                title: 'No hay líneas válidas para crear el pedido',
+                description: 'Revisa producto, peso neto, cajas y precio en la recepción.',
+            });
+            return;
+        }
+
+        const storageKey = `order-prefill-from-reception-${receptionId}-${Date.now()}`;
+        sessionStorage.setItem(storageKey, JSON.stringify({
+            plannedProducts,
+            source: {
+                type: 'raw-material-reception',
+                receptionId: String(receptionId),
+            },
+        }));
+
+        if (omittedCount > 0) {
+            notify.warning({
+                title: 'Algunas líneas no se han incluido',
+                description: `Se han omitido ${omittedCount} línea(s) sin datos válidos para pedido.`,
+            });
+        }
+
+        setIsCreateOrderDialogOpen(false);
+        router.push(`/admin/orders-manager?create=1&prefill=${encodeURIComponent(storageKey)}`);
+    }, [buildOrderPrefillFromDetails, receptionId, router]);
 
     // Load reception data
     useEffect(() => {
@@ -1248,6 +1321,16 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                         <Printer className="h-4 w-4 mr-2" />
                         Imprimir
                     </Button>
+                    {creationMode !== 'pallets' && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setIsCreateOrderDialogOpen(true)}
+                        >
+                            <ShoppingCart className="h-4 w-4 mr-2" />
+                            Crear pedido
+                        </Button>
+                    )}
                     <Button
                         type="button"
                         onClick={handleSubmit(handleUpdate)}
@@ -1850,6 +1933,73 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                 </div>
                 )}
             </form>
+
+            <Dialog open={isCreateOrderDialogOpen} onOpenChange={setIsCreateOrderDialogOpen}>
+                <DialogContent size="md">
+                    <DialogHeader>
+                        <DialogTitle>Crear pedido desde recepción</DialogTitle>
+                        <DialogDescription>
+                            Se crearán líneas previstas copiando las líneas de esta recepción (producto, cantidad, cajas y precio).
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="price-transfer-mode">Precio de líneas</Label>
+                            <Select value={priceTransferMode} onValueChange={setPriceTransferMode}>
+                                <SelectTrigger id="price-transfer-mode">
+                                    <SelectValue placeholder="Selecciona una opción" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="same">Mantener precio original</SelectItem>
+                                    <SelectItem value="increase">Aplicar incremento porcentual</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {priceTransferMode === 'increase' && (
+                            <div className="space-y-2">
+                                <Label htmlFor="price-increase-percent">Incremento (%)</Label>
+                                <Input
+                                    id="price-increase-percent"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    value={priceIncreasePercent}
+                                    onChange={(event) => setPriceIncreasePercent(event.target.value)}
+                                    placeholder="Ej. 7.5"
+                                />
+                            </div>
+                        )}
+
+                        <div className="rounded-md border p-3 text-sm text-muted-foreground">
+                            {(() => {
+                                const { plannedProducts, omittedCount } = buildOrderPrefillFromDetails();
+                                return (
+                                    <p>
+                                        Líneas válidas para pedido: <span className="font-medium text-foreground">{plannedProducts.length}</span>
+                                        {omittedCount > 0 ? ` · Omitidas: ${omittedCount}` : ''}
+                                    </p>
+                                );
+                            })()}
+                        </div>
+                    </div>
+
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setIsCreateOrderDialogOpen(false)}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button type="button" onClick={handleCreateOrderFromReception}>
+                            <ShoppingCart className="h-4 w-4 mr-2" />
+                            Ir a crear pedido
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             {/* PalletDialog for creating/editing palets */}
             {creationMode === 'pallets' && (
