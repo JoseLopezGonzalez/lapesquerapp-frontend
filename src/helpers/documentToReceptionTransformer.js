@@ -19,15 +19,11 @@ import {
     productos as lonjaDeIslaProductos,
     lonjaDeIslaBrisapp,
 } from '@/components/Admin/MarketDataExtractor/ListadoComprasLonjaDeIsla/exportData';
-import { validateAsocSpeciesForExport } from '@/exportHelpers/asocExportHelper';
-import { validateLonjaDeIslaSpeciesForExport } from '@/exportHelpers/lonjaDeIslaExportHelper';
-
 const DOCUMENT_TYPE_CONFIG = {
     listadoComprasAsocArmadoresPuntaDelMoral: {
         label: 'Asoc. Armadores Punta del Moral',
         productos: asocProductos,
         supplierBrisapp: asocArmadoresPuntaDelMoralBrisapp,
-        validate: validateAsocSpeciesForExport,
         getLines: (doc) => doc.tables?.subastas || [],
         weightKey: 'pesoNeto',
     },
@@ -35,7 +31,6 @@ const DOCUMENT_TYPE_CONFIG = {
         label: 'Lonja de Isla',
         productos: lonjaDeIslaProductos,
         supplierBrisapp: lonjaDeIslaBrisapp,
-        validate: validateLonjaDeIslaSpeciesForExport,
         getLines: (doc) => doc.tables?.ventas || [],
         weightKey: 'kilos',
     },
@@ -43,7 +38,17 @@ const DOCUMENT_TYPE_CONFIG = {
 
 function resolveProduct(especie, productosArray) {
     const normalized = normalizeText(especie);
-    return productosArray.find((p) => normalizeText(p.nombre) === normalized) || null;
+    if (!normalized) return null;
+
+    const exact = productosArray.find((p) => normalizeText(p.nombre) === normalized);
+    if (exact) return exact;
+
+    const partial = productosArray.find((p) => {
+        const catName = normalizeText(p.nombre);
+        if (!catName) return false;
+        return catName.startsWith(normalized) || normalized.startsWith(catName);
+    });
+    return partial || null;
 }
 
 function parseDateFromDocument(fechaStr) {
@@ -68,8 +73,7 @@ function parseDateFromDocument(fechaStr) {
  *
  * @param {Object} processedDocument - Single document from processDocument().data[0]
  * @param {string} documentType - 'listadoComprasAsocArmadoresPuntaDelMoral' | 'listadoComprasLonjaDeIsla'
- * @returns {{ supplier: string|null, date: Date|null, notes: string, details: Array }}
- * @throws {Error} If species validation fails (unknown species in document)
+ * @returns {{ supplier: string|null, date: Date|null, notes: string, details: Array, warnings: string[] }}
  */
 export function transformDocumentToReceptionData(processedDocument, documentType) {
     const config = DOCUMENT_TYPE_CONFIG[documentType];
@@ -77,30 +81,34 @@ export function transformDocumentToReceptionData(processedDocument, documentType
         throw new Error(`Tipo de documento no soportado para importar recepción: ${documentType}`);
     }
 
-    config.validate(processedDocument);
-
     const fecha = processedDocument.details?.fecha;
     const parsedDate = parseDateFromDocument(fecha);
     const lines = config.getLines(processedDocument);
 
     const aggregated = new Map();
+    const unmatchedSpecies = new Set();
 
     lines.forEach((linea) => {
         const producto = resolveProduct(linea.especie, config.productos);
         const productId = producto?.codBrisappProducto ? String(producto.codBrisappProducto) : null;
-        const key = productId || `__unmapped__${linea.especie}`;
+
+        if (!productId) {
+            unmatchedSpecies.add(linea.especie);
+            return;
+        }
+
         const weight = parseDecimalValue(linea[config.weightKey]);
         const boxes = Number(linea.cajas) || 0;
         const price = parseDecimalValue(linea.precio);
         const importe = weight * price;
 
-        if (aggregated.has(key)) {
-            const existing = aggregated.get(key);
+        if (aggregated.has(productId)) {
+            const existing = aggregated.get(productId);
             existing.totalWeight += weight;
             existing.totalBoxes += boxes;
             existing.totalImporte += importe;
         } else {
-            aggregated.set(key, {
+            aggregated.set(productId, {
                 product: productId,
                 totalWeight: weight,
                 totalBoxes: boxes,
@@ -129,10 +137,15 @@ export function transformDocumentToReceptionData(processedDocument, documentType
     const supplierIdRaw = config.supplierBrisapp.codBrisapp;
     const supplier = supplierIdRaw ? String(supplierIdRaw) : null;
 
+    const warnings = unmatchedSpecies.size > 0
+        ? [`Líneas no reconocidas: ${Array.from(unmatchedSpecies).join(', ')}`]
+        : [];
+
     return {
         supplier,
         date: parsedDate,
         notes: `Importado desde ${config.label} - ${fecha || 'sin fecha'}`,
         details,
+        warnings,
     };
 }

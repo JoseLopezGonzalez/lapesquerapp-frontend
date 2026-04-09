@@ -332,6 +332,13 @@ export function useAdminReceptionForm({ onSuccess }) {
       setTemporalPallets([]);
       setTimeout(() => triggerRecalc(), 50);
 
+      if (data.warnings?.length > 0) {
+        notify.warning({
+          title: 'Algunas líneas no se reconocieron',
+          description: data.warnings.join('. '),
+        }, { duration: 8000 });
+      }
+
       announce('Datos importados desde documento', 'polite');
     },
     [setValue, triggerRecalc, announce]
