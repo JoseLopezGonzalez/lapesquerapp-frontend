@@ -10,6 +10,7 @@ import { extractDataWithAzureDocumentAi } from "@/services/azure";
 import { validateAlbaranCofraStructure, validateLonjaDeIslaStructure, validateAsocStructure } from "@/validators/lonjas";
 import { parseAlbaranCofraData, parseLonjaDeIslaData, parseAsocData } from "@/parsers/lonjas";
 import { ValidationError, ParsingError } from "@/errors/lonjasErrors";
+import { normalizeLonjaDeIslaMultiPage } from "@/helpers/azure/lonjaDeIslaMultiPageNormalizer";
 
 /**
  * Mapeo de tipos de documento a sus procesadores específicos
@@ -22,6 +23,7 @@ const DOCUMENT_PROCESSORS = {
     },
     'listadoComprasLonjaDeIsla': {
         azureType: 'ListadoComprasLonjaDeIsla',
+        preprocess: normalizeLonjaDeIslaMultiPage,
         validator: validateLonjaDeIslaStructure,
         parser: parseLonjaDeIslaData
     },
@@ -55,18 +57,23 @@ export async function processDocument(file, documentType) {
 
     try {
         // 1. Extraer datos de Azure Document AI
-        const azureData = await extractDataWithAzureDocumentAi({
+        let azureData = await extractDataWithAzureDocumentAi({
             file,
             documentType: processor.azureType,
         });
 
-        // 2. Validar estructura
+        // 2. Normalizar datos multi-página (si el tipo de documento lo requiere)
+        if (processor.preprocess) {
+            azureData = processor.preprocess(azureData);
+        }
+
+        // 3. Validar estructura
         processor.validator(azureData);
 
-        // 3. Parsear datos
+        // 4. Parsear datos
         const processedData = processor.parser(azureData);
 
-        // 4. Retornar resultado exitoso
+        // 5. Retornar resultado exitoso
         return {
             success: true,
             documentType,
