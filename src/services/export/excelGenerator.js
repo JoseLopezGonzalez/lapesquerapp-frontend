@@ -19,7 +19,7 @@ import { generateAsocExcelRows } from '@/exportHelpers/asocExportHelper';
  * @returns {Blob} Excel file blob
  */
 export async function generateMassiveExcel(documents, options = {}) {
-    const XLSX = await import('xlsx');
+    const XLSX = await import('xlsx-js-style');
     const { software = 'A3ERP' } = options;
 
     if (documents.length === 0) {
@@ -72,8 +72,24 @@ export async function generateMassiveExcel(documents, options = {}) {
         throw new Error('No se generaron filas para exportar');
     }
 
-    // Create Excel workbook
+    const yellowFill = { fill: { fgColor: { rgb: "FFFF00" } } };
+
     const worksheet = XLSX.utils.json_to_sheet(allCompraRows);
+
+    if (allCompraRows.length > 0) {
+        const headers = Object.keys(allCompraRows[0]);
+        const lincodartCol = headers.indexOf('LINCODART');
+        if (lincodartCol >= 0) {
+            for (let r = 0; r < allCompraRows.length; r++) {
+                if (!allCompraRows[r].LINCODART && allCompraRows[r].LINCODART !== 0) {
+                    const cellRef = XLSX.utils.encode_cell({ r: r + 1, c: lincodartCol });
+                    if (!worksheet[cellRef]) worksheet[cellRef] = { v: '', t: 's' };
+                    worksheet[cellRef].s = yellowFill;
+                }
+            }
+        }
+    }
+
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'ALBARANESCOMPRA');
 
@@ -82,13 +98,10 @@ export async function generateMassiveExcel(documents, options = {}) {
         XLSX.utils.book_append_sheet(workbook, worksheetVenta, 'ALBARANESVENTA');
     }
 
-    // Generate filename with current date
     const currentDate = new Date().toISOString().split('T')[0].replace(/-/g, '');
-    const filename = `ALBARANES_A3ERP_MASIVO_${currentDate}.xls`;
 
-    // Convert to blob
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xls', type: 'array' });
-    const blob = new Blob([excelBuffer], { type: 'application/vnd.ms-excel' });
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     
     return blob;
 }
@@ -106,7 +119,7 @@ export async function downloadMassiveExcel(documents, options = {}) {
             import('file-saver'),
         ]);
         const currentDate = new Date().toISOString().split('T')[0].replace(/-/g, '');
-        const filename = `ALBARANES_A3ERP_MASIVO_${currentDate}.xls`;
+        const filename = `ALBARANES_A3ERP_MASIVO_${currentDate}.xlsx`;
         saveAs(blob, filename);
     } catch (error) {
         console.error('Error al generar Excel masivo:', error);

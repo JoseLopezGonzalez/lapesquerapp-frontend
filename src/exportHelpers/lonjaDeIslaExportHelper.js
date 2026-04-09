@@ -201,15 +201,14 @@ export function generateLonjaDeIslaExcelRows(document, options = {}) {
             const producto = productos.find(
                 (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
             );
-            const isMapped = !!producto?.codA3erp;
             processedRows.push({
                 CABSERIE: CABSERIE,
                 CABNUMDOC: cabNumDoc,
                 CABFECHA: fecha,
                 CABCODPRO: barco.armador.codA3erp,
                 CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
-                LINCODART: isMapped ? producto.codA3erp : '',
-                LINDESCLIN: isMapped ? linea.especie : `⚠ ${linea.especie}`,
+                LINCODART: producto?.codA3erp || '',
+                LINDESCLIN: linea.especie,
                 LINUNIDADES: parseDecimalValue(linea.kilos),
                 LINPRCMONEDA: parseDecimalValue(linea.precio),
                 LINTIPIVA: 'RED10',
@@ -225,15 +224,14 @@ export function generateLonjaDeIslaExcelRows(document, options = {}) {
             const producto = productos.find(
                 (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
             );
-            const isMapped = !!producto?.codA3erp;
             processedRows.push({
                 CABSERIE: CABSERIE,
                 CABNUMDOC: cabNumDoc,
                 CABFECHA: fecha,
                 CABCODPRO: barco.vendiduria.codA3erp,
                 CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
-                LINCODART: isMapped ? producto.codA3erp : '',
-                LINDESCLIN: isMapped ? linea.especie : `⚠ ${linea.especie}`,
+                LINCODART: producto?.codA3erp || '',
+                LINDESCLIN: linea.especie,
                 LINUNIDADES: parseDecimalValue(linea.kilos),
                 LINPRCMONEDA: parseDecimalValue(linea.precio),
                 LINTIPIVA: 'RED10',

@@ -373,7 +373,7 @@ const ExportModal = ({ document }) => {
             }, { duration: 8000 });
         }
 
-        const [XLSX, { saveAs }] = await Promise.all([import('xlsx'), import('file-saver')]);
+        const [XLSX, { saveAs }] = await Promise.all([import('xlsx-js-style'), import('file-saver')]);
         const processedRows = [];
         const ventaRows = [];
         // Extraer año de la fecha (últimos 2 dígitos)
@@ -437,15 +437,14 @@ const ExportModal = ({ document }) => {
                 const producto = productos.find(
                     (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
                 );
-                const isMapped = !!producto?.codA3erp;
                 processedRows.push({
                     CABSERIE: CABSERIE,
                     CABNUMDOC: cabNumDoc,
                     CABFECHA: fecha,
                     CABCODPRO: barco.armador.codA3erp,
                     CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
-                    LINCODART: isMapped ? producto.codA3erp : '',
-                    LINDESCLIN: isMapped ? linea.especie : `⚠ ${linea.especie}`,
+                    LINCODART: producto?.codA3erp || '',
+                    LINDESCLIN: linea.especie,
                     LINUNIDADES: parseDecimalValue(linea.kilos),
                     LINPRCMONEDA: parseDecimalValue(linea.precio),
                     LINTIPIVA: 'RED10',
@@ -460,15 +459,14 @@ const ExportModal = ({ document }) => {
                 const producto = productos.find(
                     (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
                 );
-                const isMapped = !!producto?.codA3erp;
                 processedRows.push({
                     CABSERIE: CABSERIE,
                     CABNUMDOC: cabNumDoc,
                     CABFECHA: fecha,
                     CABCODPRO: barco.vendiduria.codA3erp,
                     CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
-                    LINCODART: isMapped ? producto.codA3erp : '',
-                    LINDESCLIN: isMapped ? linea.especie : `⚠ ${linea.especie}`,
+                    LINCODART: producto?.codA3erp || '',
+                    LINDESCLIN: linea.especie,
                     LINUNIDADES: parseDecimalValue(linea.kilos),
                     LINPRCMONEDA: parseDecimalValue(linea.precio),
                     LINTIPIVA: 'RED10',
@@ -512,8 +510,22 @@ const ExportModal = ({ document }) => {
         albaranSequence++;
 
 
-        // Crear el libro y hoja
+        const yellowFill = { fill: { fgColor: { rgb: "FFFF00" } } };
+        const headers = Object.keys(processedRows[0] || {});
+        const lincodartCol = headers.indexOf('LINCODART');
+
         const worksheet = XLSX.utils.json_to_sheet(processedRows);
+
+        if (lincodartCol >= 0) {
+            for (let r = 0; r < processedRows.length; r++) {
+                if (!processedRows[r].LINCODART && processedRows[r].LINCODART !== 0) {
+                    const cellRef = XLSX.utils.encode_cell({ r: r + 1, c: lincodartCol });
+                    if (!worksheet[cellRef]) worksheet[cellRef] = { v: '', t: 's' };
+                    worksheet[cellRef].s = yellowFill;
+                }
+            }
+        }
+
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, 'ALBARANESCOMPRA');
 
@@ -522,10 +534,9 @@ const ExportModal = ({ document }) => {
             XLSX.utils.book_append_sheet(workbook, worksheetVenta, 'ALBARANESVENTA');
         }
 
-        // Guardar archivo
-        const excelBuffer = XLSX.write(workbook, { bookType: 'xls', type: 'array' });
-        const blob = new Blob([excelBuffer], { type: 'application/vnd.ms-excel' });
-        saveAs(blob, `ALBARANES_A3ERP_LONJA_ISLA_${fecha}.xls`);
+        const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        saveAs(blob, `ALBARANES_A3ERP_LONJA_ISLA_${fecha}.xlsx`);
     };
 
     return (
