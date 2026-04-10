@@ -77,6 +77,16 @@ const normalizeOrderPallet = (pallet) => {
     };
 };
 
+const parseTaxRate = (value) => {
+    if (value == null || value === '') return 0;
+    if (typeof value === 'number') return Number.isNaN(value) ? 0 : value;
+
+    const normalized = String(value).replace(',', '.');
+    const match = normalized.match(/-?\d+(\.\d+)?/);
+    const parsed = match ? Number(match[0]) : Number(normalized);
+    return Number.isNaN(parsed) ? 0 : parsed;
+};
+
 const normalizePlannedProductDetail = (
     detail,
     productOptions = [],
@@ -107,7 +117,7 @@ const normalizePlannedProductDetail = (
     const matchedTax = taxOptions.find((t) => Number(t?.value) === Number(taxId));
     const fallbackTaxRate = matchedTax?.label;
     const taxRateRaw = detail?.tax?.rate ?? fallbackDetail?.tax?.rate ?? fallbackTaxRate ?? 0;
-    const parsedTaxRate = Number(taxRateRaw);
+    const parsedTaxRate = parseTaxRate(taxRateRaw);
 
     return {
         ...detail,
@@ -117,7 +127,7 @@ const normalizePlannedProductDetail = (
         },
         tax: {
             id: taxId,
-            rate: Number.isNaN(parsedTaxRate) ? 0 : parsedTaxRate,
+            rate: parsedTaxRate,
         },
     };
 };

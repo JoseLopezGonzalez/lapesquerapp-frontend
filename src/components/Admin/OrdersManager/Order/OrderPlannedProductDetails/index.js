@@ -23,6 +23,16 @@ const OrderPlannedProductDetails = () => {
 
     const { productOptions: rawProductOptions, taxOptions: rawTaxOptions, loading: optionsLoading } = options || {};
 
+    const parseTaxRate = useCallback((value) => {
+        if (value == null || value === '') return 0;
+        if (typeof value === 'number') return Number.isNaN(value) ? 0 : value;
+
+        const normalized = String(value).replace(',', '.');
+        const match = normalized.match(/-?\d+(\.\d+)?/);
+        const parsed = match ? Number(match[0]) : Number(normalized);
+        return Number.isNaN(parsed) ? 0 : parsed;
+    }, []);
+
     // Asegurar que siempre sean arrays válidos
     const productOptions = useMemo(() => {
         if (!Array.isArray(rawProductOptions)) return [];
@@ -63,10 +73,10 @@ const OrderPlannedProductDetails = () => {
     const taxOptionsMap = useMemo(() => {
         const map = new Map();
         taxOptions.forEach(option => {
-            map.set(option.value, option.label);
+            map.set(option.value, parseTaxRate(option.label));
         });
         return map;
-    }, [taxOptions]);
+    }, [taxOptions, parseTaxRate]);
 
     // Memoizar la combinación de detalles
     const allDetails = useMemo(() => {
@@ -155,7 +165,7 @@ const OrderPlannedProductDetails = () => {
         } else if (field.includes("tax")) {
             updatedDetails[index].tax.id = Number(value);
             // Usar Map para búsqueda O(1) en lugar de find O(n)
-            updatedDetails[index].tax.rate = taxOptionsMap.get(Number(value)) || '';
+            updatedDetails[index].tax.rate = taxOptionsMap.get(Number(value)) ?? 0;
         } else {
             updatedDetails[index][field] = value == '' ? '' : Number(value);
         }
@@ -384,7 +394,7 @@ const OrderPlannedProductDetails = () => {
                                                                 </Select>
                                                             </div>
                                                         ) : (
-                                                            <p className="text-sm font-medium py-2">{detail?.tax?.rate ?? 0}%</p>
+                                                            <p className="text-sm font-medium py-2">{parseTaxRate(detail?.tax?.rate)}%</p>
                                                         )}
                                                     </div>
                                                 </div>
@@ -539,7 +549,7 @@ const OrderPlannedProductDetails = () => {
                                 </TableHeader>
                                 <TableBody>
                                         {details.map((detail, index) => {
-                                            const taxRate = Number(detail?.tax?.rate) || 0;
+                                            const taxRate = parseTaxRate(detail?.tax?.rate);
 
                                             return (
                                                 <TableRow key={detail.id || detail.tempId}>
