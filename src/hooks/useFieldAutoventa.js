@@ -137,6 +137,7 @@ export function useFieldAutoventa({ createAutoventa, routeId = null, routeStopId
 
   const submitAutoventa = useCallback(async () => {
     const payload = {
+      orderType: 'autoventa',
       customer: state.customerId ? Number(state.customerId) : undefined,
       newCustomerName: state.customerId ? undefined : (state.newCustomerName || undefined),
       entryDate: state.entryDate,
