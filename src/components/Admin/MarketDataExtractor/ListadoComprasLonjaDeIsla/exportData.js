@@ -5360,6 +5360,7 @@ export const productos = [
   { nombre: "PESCADILLA / MERLUZA EUROPEA", codA3erp: "10153", codBrisappProducto: "319" },
   { nombre: "SARGO BREADO / SARGO BREADO", codA3erp: "10154", codBrisappProducto: "320" },
   { nombre: "LANGOSTINOS / LANGOSTINO O", codA3erp: "10155", codBrisappProducto: "321" },
+  { nombre: "Langostino / Langostino", codA3erp: "10155", codBrisappProducto: "321" },
   { nombre: "CORVINAS / CORVINA", codA3erp: null, codBrisappProducto: "112" },
   { nombre: "ALISTADO / GAMBA ROJA O GAMBA", codA3erp: "10139", codBrisappProducto: "307" },
   { nombre: "LANGOSTINO MORUNO / LANGOSTINO", codA3erp: null, codBrisappProducto: "328" },
@@ -5371,4 +5372,8 @@ export const productos = [
   { nombre: "PUNTILLITA / PUNTILLITA", codA3erp: null, codBrisappProducto: "111" },
   { nombre: "Rape / Rape", codA3erp: null, codBrisappProducto: "326" },
   { nombre: "SALMONETE DE ROCA / SALMONETE DE ROCA", codA3erp: null, codBrisappProducto: "327" },
+  { nombre: "Canaila / Canaila", codA3erp: "10149", codBrisappProducto: "113" },
+  { nombre: "Burro chiclero / Burro chiclero", codA3erp: null, codBrisappProducto: "330" },
+  { nombre: "Corvinata real / Corvinata real", codA3erp: null, codBrisappProducto: "329" },
+  { nombre: "Merluza europea / Merluza europea", codA3erp: null, codBrisappProducto: "331" },
 ]
