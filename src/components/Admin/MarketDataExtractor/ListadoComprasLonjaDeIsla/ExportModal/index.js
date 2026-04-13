@@ -17,6 +17,8 @@ import { formatDecimalCurrency, formatDecimalWeight } from '@/helpers/formats/nu
 import { notify } from '@/lib/notifications'
 import { linkAllPurchases, validatePurchases, groupLinkedSummaryBySupplier } from "@/services/export/linkService"
 import { Loader2 } from "lucide-react"
+import { buildLonjaDeIslaVendiduriaResumen } from '@/exportHelpers/lonjaDeIslaVendiduriaResumen'
+import LonjaDeIslaVendiduriaResumenCard from '../LonjaDeIslaVendiduriaResumenCard'
 
 const ExportModal = ({ document }) => {
     const { details: { fecha }, tables: { ventas, vendidurias } } = document
@@ -95,6 +97,11 @@ const ExportModal = ({ document }) => {
 
     const ventasDirectasArray = Object.values(ventasDirectas);
     const ventasVendiduriasArray = Object.values(ventasVendidurias);
+
+    const resumenPorVendiduria = buildLonjaDeIslaVendiduriaResumen(
+        ventasVendidurias,
+        ventasDirectas,
+    );
 
     const importeTotalVentasDirectas = ventasDirectasArray.reduce((acc, barco) => {
         return acc + barco.lineas.reduce((acc, linea) => {
@@ -580,6 +587,7 @@ const ExportModal = ({ document }) => {
                 </div>
 
                 <div className="space-y-4 mt-2">
+                    <LonjaDeIslaVendiduriaResumenCard rows={resumenPorVendiduria} />
                     {linkedSummary.length > 0 && (
                         <Card>
                             <CardHeader className="pb-2">

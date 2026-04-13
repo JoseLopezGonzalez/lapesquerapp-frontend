@@ -5189,16 +5189,6 @@ export const barcosVentaDirecta = [
     }
   },
   {
-    /* LA CABRIOLA */
-    cod: '1305',
-    barco: "LA CABRIOLA",
-    armador: {
-      nombre: 'Pesquera Los Guachi, S.L.',
-      codA3erp: '691012',
-      codA3erpCliente: '988243',
-    }
-  },
-  {
     cod: '325',
     barco: "JOSE PRIN",
     armador: {

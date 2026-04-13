@@ -7,6 +7,8 @@ import { Check, X } from "lucide-react";
 import { calculateImporteFromLinea } from "@/exportHelpers/common";
 import { findBarcoMatch } from "@/exportHelpers/lonjaDeIslaBarcoMatcher";
 import { barcos as barcosLonja, barcosVentaDirecta, datosVendidurias, serviciosLonjaDeIsla, servicioExtraLonjaDeIsla, PORCENTAJE_SERVICIOS_VENDIDURIAS } from "../../ListadoComprasLonjaDeIsla/exportData";
+import { buildLonjaDeIslaVendiduriaResumen } from "@/exportHelpers/lonjaDeIslaVendiduriaResumen";
+import LonjaDeIslaVendiduriaResumenCard from "../../ListadoComprasLonjaDeIsla/LonjaDeIslaVendiduriaResumenCard";
 
 export default function LonjaDeIslaExportPreview({ document }) {
     const { tables: { ventas } } = document;
@@ -62,12 +64,18 @@ export default function LonjaDeIslaExportPreview({ document }) {
         return (total * PORCENTAJE_SERVICIOS_VENDIDURIAS / 100).toFixed(2);
     };
 
-    const isConvertibleBarco = (cod) => barcosLonja.some((b) => b.cod === cod);
+    const isConvertibleBarco = () => true;
     const ventasVendiduriasArray = Object.values(ventasVendidurias).filter(Boolean);
     const ventasDirectasArray = Object.values(ventasDirectas).filter(Boolean);
 
+    const resumenPorVendiduria = buildLonjaDeIslaVendiduriaResumen(
+        ventasVendidurias,
+        ventasDirectas,
+    );
+
     return (
         <div className="space-y-4">
+            <LonjaDeIslaVendiduriaResumenCard rows={resumenPorVendiduria} />
             {ventasDirectasArray.length > 0 && (
                 <Card>
                     <CardHeader className="pb-2">
