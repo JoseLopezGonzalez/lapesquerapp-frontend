@@ -17,9 +17,10 @@ import { notify } from '@/lib/notifications'
 import { linkAllPurchases, validatePurchases, groupLinkedSummaryBySupplier } from "@/services/export/linkService"
 import { Loader2 } from "lucide-react"
 import LonjaDeIslaUnifiedExportTable from '../LonjaDeIslaUnifiedExportTable'
+import LonjaDeIslaVentaDirectaCard from '../LonjaDeIslaVentaDirectaCard'
 
 const ExportModal = ({ document }) => {
-    const { details: { fecha }, tables: { ventas } } = document
+    const { details: { fecha }, tables: { ventas, vendidurias } } = document
     const [software, setSoftware] = useState("A3ERP")
     const [errors, setErrors] = useState([])
     const [selectedLinks, setSelectedLinks] = useState([])
@@ -507,7 +508,12 @@ const ExportModal = ({ document }) => {
                 <div className="space-y-4 mt-2">
                     <LonjaDeIslaUnifiedExportTable
                         ventasVendidurias={ventasVendidurias}
+                        sourceVendidurias={vendidurias}
                         ventasDirectas={ventasDirectas}
+                        servicios={servicios}
+                    />
+                    <LonjaDeIslaVentaDirectaCard
+                        ventasDirectasArray={ventasDirectasArray}
                         servicios={servicios}
                     />
                     {linkedSummary.length > 0 && (

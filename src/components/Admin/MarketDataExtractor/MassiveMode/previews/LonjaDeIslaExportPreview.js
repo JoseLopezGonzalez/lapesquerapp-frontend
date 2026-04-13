@@ -10,9 +10,10 @@ import {
     servicioExtraLonjaDeIsla,
 } from "../../ListadoComprasLonjaDeIsla/exportData";
 import LonjaDeIslaUnifiedExportTable from "../../ListadoComprasLonjaDeIsla/LonjaDeIslaUnifiedExportTable";
+import LonjaDeIslaVentaDirectaCard from "../../ListadoComprasLonjaDeIsla/LonjaDeIslaVentaDirectaCard";
 
 export default function LonjaDeIslaExportPreview({ document }) {
-    const { tables: { ventas } } = document;
+    const { tables: { ventas, vendidurias } } = document;
 
     const ventasVendidurias = {};
     const ventasDirectas = {};
@@ -64,10 +65,17 @@ export default function LonjaDeIslaExportPreview({ document }) {
     });
 
     return (
-        <LonjaDeIslaUnifiedExportTable
-            ventasVendidurias={ventasVendidurias}
-            ventasDirectas={ventasDirectas}
-            servicios={servicios}
-        />
+        <div className="space-y-4">
+            <LonjaDeIslaUnifiedExportTable
+                ventasVendidurias={ventasVendidurias}
+                sourceVendidurias={vendidurias}
+                ventasDirectas={ventasDirectas}
+                servicios={servicios}
+            />
+            <LonjaDeIslaVentaDirectaCard
+                ventasDirectasArray={Object.values(ventasDirectas).filter(Boolean)}
+                servicios={servicios}
+            />
+        </div>
     );
 }

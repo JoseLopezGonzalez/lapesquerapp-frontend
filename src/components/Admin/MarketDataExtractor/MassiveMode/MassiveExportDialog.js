@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Download, Loader2, AlertTriangle, FileText, CircleX } from "lucide-react";import { downloadMassiveExcel } from "@/services/export/excelGenerator";
+import { Download, Loader2, AlertTriangle, CircleX, FileCheck2 } from "lucide-react";import { downloadMassiveExcel } from "@/services/export/excelGenerator";
 import { generateCofraExcelRows } from "@/exportHelpers/cofraExportHelper";
 import { generateLonjaDeIslaExcelRows } from "@/exportHelpers/lonjaDeIslaExportHelper";
 import { generateAsocExcelRows } from "@/exportHelpers/asocExportHelper";
@@ -172,15 +172,15 @@ export default function MassiveExportDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent size="5xl" className="max-h-[90vh] flex flex-col p-0">
-                <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0">
+            <DialogContent size="5xl" className="max-h-[95vh] flex flex-col">
+                <DialogHeader>
                     <DialogTitle>Exportar Excel - Modo Masivo</DialogTitle>
                     <DialogDescription>
                         {documents?.length || 0} Documento(s) listo(s) para exportar
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="px-6 pb-4 flex-1 overflow-y-auto min-h-0">
+                <div className="flex-1 overflow-y-auto min-h-0">
                     <div className="grid gap-4">
                         <div className="grid grid-cols-2 items-center gap-4">
                             <div className='flex flex-col gap-1'>
@@ -242,7 +242,9 @@ export default function MassiveExportDialog({
                                                                 ) : docInfo.status === 'warning' ? (
                                                                     <AlertTriangle className="h-4 w-4 text-yellow-500 flex-shrink-0" />
                                                                 ) : (
-                                                                    <FileText className="h-4 w-4 text-green-500 flex-shrink-0" />
+                                                                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-green-100 text-green-700 flex-shrink-0">
+                                                                        <FileCheck2 className="h-3.5 w-3.5" />
+                                                                    </span>
                                                                 )}
                                                                 <div className="flex-1 min-w-0 text-left">
                                                                     <p className="text-sm font-medium truncate">{docInfo.name}</p>
@@ -262,7 +264,7 @@ export default function MassiveExportDialog({
                                                             </div>
                                                         </div>
                                                     </AccordionTrigger>
-                                                    <AccordionContent>
+                                                    <AccordionContent className="h-auto">
                                                         <div className="pt-2">
                                                             {document?.processedData?.[0] ? (
                                                                 renderDocumentContent(document.processedData[0], docInfo.type)
@@ -281,7 +283,7 @@ export default function MassiveExportDialog({
                     </div>
                 </div>
 
-                <DialogFooter className="px-6 pb-6 pt-4 flex-shrink-0 border-t">
+                <DialogFooter>
                     <Button 
                         variant="outline" 
                         onClick={() => onOpenChange(false)}
