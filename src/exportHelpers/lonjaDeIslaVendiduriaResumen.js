@@ -1,6 +1,6 @@
 import { parseDecimalValue, calculateImporteFromLinea } from './common';
 
-function aggregateLineas(lineas) {
+export function aggregateLineasForLonja(lineas) {
     if (!Array.isArray(lineas)) {
         return { cajas: 0, kilos: 0, importe: 0 };
     }
@@ -39,7 +39,7 @@ export function buildLonjaDeIslaVendiduriaResumen(ventasVendidurias, ventasDirec
                 importe: 0,
             };
         }
-        const agg = aggregateLineas(barco.lineas);
+        const agg = aggregateLineasForLonja(barco.lineas);
         byCod[cod].cajas += agg.cajas;
         byCod[cod].kilos += agg.kilos;
         byCod[cod].importe += agg.importe;
@@ -52,7 +52,7 @@ export function buildLonjaDeIslaVendiduriaResumen(ventasVendidurias, ventasDirec
     if (ventasDirectasArray.length > 0) {
         const vd = ventasDirectasArray.reduce(
             (acc, barco) => {
-                const agg = aggregateLineas(barco.lineas);
+                const agg = aggregateLineasForLonja(barco.lineas);
                 acc.cajas += agg.cajas;
                 acc.kilos += agg.kilos;
                 acc.importe += agg.importe;
@@ -68,6 +68,34 @@ export function buildLonjaDeIslaVendiduriaResumen(ventasVendidurias, ventasDirec
     }
 
     return rows;
+}
+
+/**
+ * Agrupa barcos de vendiduría por código de vendiduría (CF, PI, …).
+ *
+ * @param {Record<string, object>} ventasVendidurias
+ * @returns {Array<{ vendiduria: object, barcos: object[] }>}
+ */
+export function groupVentasVendiduriasByCodVendiduria(ventasVendidurias) {
+    const byCod = {};
+    for (const barco of Object.values(ventasVendidurias || {}).filter(Boolean)) {
+        const cod = barco.vendiduria?.cod;
+        if (!cod) continue;
+        if (!byCod[cod]) {
+            byCod[cod] = { vendiduria: barco.vendiduria, barcos: [] };
+        }
+        byCod[cod].barcos.push(barco);
+    }
+    return Object.values(byCod)
+        .map((g) => ({
+            ...g,
+            barcos: [...g.barcos].sort((a, b) =>
+                String(a.nombre).localeCompare(String(b.nombre), 'es'),
+            ),
+        }))
+        .sort((a, b) =>
+            String(a.vendiduria.nombre).localeCompare(String(b.vendiduria.nombre), 'es'),
+        );
 }
 
 export function sumLonjaDeIslaResumenRows(rows) {

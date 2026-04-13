@@ -5,9 +5,8 @@ import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTit
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
-import { barcos, barcosVentaDirecta, datosVendidurias, lonjaDeIsla, PORCENTAJE_SERVICIOS_VENDIDURIAS, productos, servicioExtraLonjaDeIsla, serviciosLonjaDeIsla } from '../exportData'
+import { barcos, barcosVentaDirecta, datosVendidurias, lonjaDeIsla, productos, servicioExtraLonjaDeIsla, serviciosLonjaDeIsla } from '../exportData'
 import { Input } from '@/components/ui/input'
 import { parseDecimalValue, calculateImporteFromLinea } from '@/exportHelpers/common'
 import { validateLonjaDeIslaSpeciesForExport } from '@/exportHelpers/lonjaDeIslaExportHelper'
@@ -17,11 +16,10 @@ import { formatDecimalCurrency, formatDecimalWeight } from '@/helpers/formats/nu
 import { notify } from '@/lib/notifications'
 import { linkAllPurchases, validatePurchases, groupLinkedSummaryBySupplier } from "@/services/export/linkService"
 import { Loader2 } from "lucide-react"
-import { buildLonjaDeIslaVendiduriaResumen } from '@/exportHelpers/lonjaDeIslaVendiduriaResumen'
-import LonjaDeIslaVendiduriaResumenCard from '../LonjaDeIslaVendiduriaResumenCard'
+import LonjaDeIslaUnifiedExportTable from '../LonjaDeIslaUnifiedExportTable'
 
 const ExportModal = ({ document }) => {
-    const { details: { fecha }, tables: { ventas, vendidurias } } = document
+    const { details: { fecha }, tables: { ventas } } = document
     const [software, setSoftware] = useState("A3ERP")
     const [errors, setErrors] = useState([])
     const [selectedLinks, setSelectedLinks] = useState([])
@@ -29,8 +27,6 @@ const ExportModal = ({ document }) => {
     const [validationResults, setValidationResults] = useState({})
     const ventasVendidurias = {}
     const ventasDirectas = {}
-
-    const isConvertibleBarco = () => true;
 
     const addError = (error) => {
         if (!errors.includes(error)) {
@@ -88,92 +84,14 @@ const ExportModal = ({ document }) => {
         }
     });
 
-    const getImporteServiciosVendiduria = (lineas) => {
-    const importeTotal = lineas.reduce((acc, linea) => {
-        return acc + calculateImporteFromLinea(linea);
-    }, 0);
-        return (importeTotal * PORCENTAJE_SERVICIOS_VENDIDURIAS / 100).toFixed(2);
-    }
-
     const ventasDirectasArray = Object.values(ventasDirectas);
     const ventasVendiduriasArray = Object.values(ventasVendidurias);
-
-    const resumenPorVendiduria = buildLonjaDeIslaVendiduriaResumen(
-        ventasVendidurias,
-        ventasDirectas,
-    );
 
     const importeTotalVentasDirectas = ventasDirectasArray.reduce((acc, barco) => {
         return acc + barco.lineas.reduce((acc, linea) => {
             return acc + calculateImporteFromLinea(linea);
         }, 0);
     }, 0);
-
-    /* importes totales por cada tipo de vendiduria segun ventasVendiduriasGroupByBarco */
-    const importesTotalesVendidurias = ventasVendiduriasArray.reduce((acc, barco) => {
-        if (!barco.vendiduria) {
-            return acc;
-        }
-        const vendiduria = barco.vendiduria?.cod;
-        const totalBarco = barco.lineas.reduce((acc, linea) => {
-            return acc + calculateImporteFromLinea(linea);
-        }, 0);
-        if (!acc[vendiduria]) {
-            acc[vendiduria] = {
-                vendiduria: vendiduria,
-                importe: 0,
-            };
-        }
-        acc[vendiduria].importe += totalBarco;
-        return acc;
-    }, {});
-    /* convertir el objeto a array */
-    const importesTotalesVendiduriasArray = Object.values(importesTotalesVendidurias);
-
-    const compararImportesPorVendiduria = () => {
-        const totalesCalculados = {};
-        const totalesDocumento = {};
-
-        // Agrupar importes por vendiduria desde tu app
-        importesTotalesVendiduriasArray.forEach(({ vendiduria, importe }) => {
-            if (!vendiduria) return;
-            const clave = vendiduria;
-            totalesCalculados[clave] = (totalesCalculados[clave] || 0) + importe;
-        });
-
-        // Agrupar importes por vendiduria desde lonja
-        vendidurias.forEach(({ cod, vendiduria, importe }) => {
-            const clave = cod;
-            const valor = parseDecimalValue(importe);
-            totalesDocumento[clave] = (totalesDocumento[clave] || 0) + valor;
-        });
-
-        // Comparar
-        const comparacion = [];
-
-        const todasLasVendidurias = new Set([
-            ...Object.keys(totalesCalculados),
-            ...Object.keys(totalesDocumento),
-        ]);
-
-        todasLasVendidurias.forEach((vendiduria) => {
-            const importeCalculado = totalesCalculados[vendiduria] || 0;
-            const importeDocumento = totalesDocumento[vendiduria] || 0;
-            const diferencia = +(importeCalculado - importeDocumento).toFixed(2);
-
-            const vendiduriaEncontrada = datosVendidurias.find((vendiduriaObj) => vendiduriaObj.cod === vendiduria);
-
-            comparacion.push({
-                vendiduria: vendiduriaEncontrada ? vendiduriaEncontrada.nombre : 'Desconocido',
-                importeCalculado,
-                importeDocumento,
-                diferencia,
-                cuadran: diferencia === 0,
-            });
-        });
-
-        return comparacion;
-    };
 
     const servicios = serviciosLonjaDeIsla.map((servicio) => {
         return {
@@ -587,7 +505,11 @@ const ExportModal = ({ document }) => {
                 </div>
 
                 <div className="space-y-4 mt-2">
-                    <LonjaDeIslaVendiduriaResumenCard rows={resumenPorVendiduria} />
+                    <LonjaDeIslaUnifiedExportTable
+                        ventasVendidurias={ventasVendidurias}
+                        ventasDirectas={ventasDirectas}
+                        servicios={servicios}
+                    />
                     {linkedSummary.length > 0 && (
                         <Card>
                             <CardHeader className="pb-2">
@@ -727,191 +649,6 @@ const ExportModal = ({ document }) => {
                         </Card>
                     )}
 
-                    {ventasDirectasArray.length > 0 && (
-                        <Card>
-                            <CardHeader className="pb-2">
-                                <div className="pb-2">
-                                    <CardTitle className="text-lg">Ventas Directas</CardTitle>
-
-                                </div>
-                            </CardHeader>
-                            <CardContent className='flex flex-col gap-4'>
-
-                                {ventasDirectasArray.map((barco, index) => (
-                                    <Card key={`${barco.nombre}-${index}`}>
-                                        <CardHeader className="pb-2">
-                                            <div className="flex justify-between items-start">
-                                                <CardTitle>
-                                                    <div className='flex flex-col gap-1'>
-                                                        <span className="text-lg">{barco.nombre}</span>
-                                                        <span className="text-sm text-muted-foreground">
-                                                            {barco.armador.nombre}
-                                                        </span>
-                                                    </div>
-                                                </CardTitle>
-                                                <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                                                    <Badge variant="outline" className=" text-blue-500  flex items-center gap-1">
-                                                        Venta Directa
-                                                    </Badge>
-                                                    <Badge variant="outline" className="bg-green-900 text-green-200 border-green-500 flex items-center gap-1">
-                                                        <Check className="h-3.5 w-3.5" />
-                                                        Exportable
-                                                    </Badge>
-                                                </div>
-                                            </div>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <Table>
-                                                <TableHeader>
-                                                    <TableRow>
-                                                        <TableHead>Cajas</TableHead>
-                                                        <TableHead>Producto</TableHead>
-                                                        <TableHead className="text-right">Peso Neto</TableHead>
-                                                        <TableHead className="text-right">Precio</TableHead>
-                                                        <TableHead className="text-right">Importe</TableHead>
-                                                    </TableRow>
-                                                </TableHeader>
-                                                <TableBody>
-                                                    {barco.lineas.map((linea, index) => (
-                                                        <TableRow key={index} className="hover:bg-muted/50">
-                                                            <TableCell className="font-medium">{linea.cajas}</TableCell>
-                                                            <TableCell>{linea.especie}</TableCell>
-                                                            <TableCell className="text-right">{linea.kilos}</TableCell>
-                                                            <TableCell className="text-right">{linea.precio} €</TableCell>
-                                                            <TableCell className="text-right font-medium">
-                                                                {linea.importe} €
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    ))}
-                                                </TableBody>
-                                            </Table>
-                                        </CardContent>
-                                    </Card>
-                                ))}
-
-                                <Card>
-                                    <CardHeader className="pb-2">
-                                        <div className="flex justify-between items-center">
-                                            <CardTitle className="text-lg">Servicios Lonja de Isla Cristina</CardTitle>
-                                            <div className="flex items-center gap-2">
-                                                <Badge variant="outline" className="bg-green-900 text-green-200 border-green-500 flex items-center gap-1">
-                                                    <Check className="h-3.5 w-3.5" />
-                                                    Exportable
-                                                </Badge>
-                                            </div>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <Table>
-                                            <TableHeader>
-                                                <TableRow>
-                                                    {/* <TableHead>Cod</TableHead> */}
-                                                    <TableHead>Descripción</TableHead>
-                                                    <TableHead className="text-right">Base</TableHead>
-                                                    <TableHead className="text-right">Porcentaje</TableHead>
-                                                    <TableHead className="text-right">Precio</TableHead>
-                                                    <TableHead className="text-right">Importe</TableHead>
-                                                </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                                {servicios.map((servicio, index) => (
-                                                    <TableRow key={index} className="hover:bg-muted/50">
-                                                        <TableCell>{servicio.descripcion}</TableCell>
-                                                        <TableCell className="text-right">{servicio.base.toFixed(2)} €</TableCell>
-                                                        <TableCell className="text-right">{servicio.porcentaje} %</TableCell>
-                                                        <TableCell className="text-right">{servicio.precio.toFixed(2)} €</TableCell>
-                                                        <TableCell className="text-right font-medium">{servicio.importe.toFixed(2)} €</TableCell>
-                                                    </TableRow>
-                                                ))}
-                                            </TableBody>
-                                        </Table>
-                                    </CardContent>
-                                </Card>
-
-                            </CardContent>
-                        </Card>
-                    )}
-
-                    {ventasVendiduriasArray.length > 0 && (
-                        <Card>
-                            <CardHeader className="pb-2">
-                                <div className="pb-2">
-                                    <CardTitle className="text-lg">Ventas Vendidurias</CardTitle>
-                                </div>
-                            </CardHeader>
-                            <CardContent className='flex flex-col gap-4'>
-                                {ventasVendiduriasArray.map((barco, index) => (
-                                    <Card key={`${barco.nombre}-${index}`}>
-                                        <CardHeader className="pb-2">
-                                            <div className="flex justify-between items-start">
-                                                <CardTitle >
-                                                    <div className='flex flex-col gap-1'>
-                                                        <span className="text-lg">{barco.nombre}</span>
-                                                        <span className="text-sm text-muted-foreground">
-                                                            <span>{barco.vendiduria?.nombre} </span>
-                                                        </span>
-                                                    </div>
-                                                </CardTitle>
-                                                <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                                                    <Badge variant="outline" className=" text-yellow-500  flex items-center gap-1">
-                                                        Vendiduría
-                                                    </Badge>
-                                                    {isConvertibleBarco(barco.cod) ? (
-                                                        <Badge variant="outline" className="bg-green-900 text-green-200 border-green-500 flex items-center gap-1">
-                                                            <Check className="h-3.5 w-3.5" />
-                                                            Exportable
-                                                        </Badge>
-                                                    ) : (
-                                                        <Badge variant="outline" className="bg-red-900 text-red-200 border-red-500 flex items-center gap-1">
-                                                            <X className="h-3.5 w-3.5" />
-                                                            No exportable
-                                                        </Badge>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <Table>
-                                                <TableHeader>
-                                                    <TableRow>
-                                                        <TableHead>Cajas</TableHead>
-                                                        <TableHead>Producto</TableHead>
-                                                        <TableHead className="text-right">Peso Neto</TableHead>
-                                                        <TableHead className="text-right">Precio</TableHead>
-                                                        <TableHead className="text-right">Importe</TableHead>
-                                                    </TableRow>
-                                                </TableHeader>
-                                                <TableBody>
-                                                    {barco.lineas.map((linea, index) => (
-                                                        <TableRow key={index} className="hover:bg-muted/50">
-                                                            <TableCell className="font-medium">{linea.cajas}</TableCell>
-                                                            <TableCell>{linea.especie}</TableCell>
-                                                            <TableCell className="text-right">{linea.kilos}</TableCell>
-                                                            <TableCell className="text-right">{linea.precio} €</TableCell>
-                                                            <TableCell className="text-right font-medium">
-                                                                {linea.importe} €
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    ))}
-                                                    <TableRow>
-                                                        <TableCell></TableCell>
-                                                        <TableCell className="font-medium ">
-                                                            Importe Servicios Vendiduria
-                                                        </TableCell>
-                                                        <TableCell></TableCell>
-                                                        <TableCell></TableCell>
-                                                        <TableCell className="text-right font-medium">
-                                                            {getImporteServiciosVendiduria(barco.lineas)} €
-                                                        </TableCell>
-                                                    </TableRow>
-                                                </TableBody>
-                                            </Table>
-                                        </CardContent>
-                                    </Card>
-                                ))}
-                            </CardContent>
-                        </Card>
-                    )}
                 </div>
             </div>
 
