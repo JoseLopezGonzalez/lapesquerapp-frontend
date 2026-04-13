@@ -11,16 +11,21 @@ import {
 } from "../../ListadoComprasLonjaDeIsla/exportData";
 import LonjaDeIslaUnifiedExportTable from "../../ListadoComprasLonjaDeIsla/LonjaDeIslaUnifiedExportTable";
 import LonjaDeIslaVentaDirectaCard from "../../ListadoComprasLonjaDeIsla/LonjaDeIslaVentaDirectaCard";
+import LonjaDeIslaUnresolvedLinesCard from "../../ListadoComprasLonjaDeIsla/LonjaDeIslaUnresolvedLinesCard";
 
 export default function LonjaDeIslaExportPreview({ document }) {
     const { tables: { ventas, vendidurias } } = document;
 
     const ventasVendidurias = {};
     const ventasDirectas = {};
+    const unresolvedLines = [];
 
     ventas.forEach((venta) => {
         const barcoEncontrado = findBarcoMatch(barcosLonja, venta);
-        if (!barcoEncontrado) return;
+        if (!barcoEncontrado) {
+            unresolvedLines.push({ reason: "barco_not_found", venta });
+            return;
+        }
 
         const nombreBarco = barcoEncontrado.barco;
         const codBarco = `${barcoEncontrado.cod}`;
@@ -28,7 +33,10 @@ export default function LonjaDeIslaExportPreview({ document }) {
 
         if (!barcoVentaDirectaEncontrado) {
             const vendiduria = datosVendidurias.find((v) => v.cod === barcoEncontrado.codVendiduria);
-            if (!vendiduria) return;
+            if (!vendiduria) {
+                unresolvedLines.push({ reason: "vendiduria_not_found", venta });
+                return;
+            }
             if (!ventasVendidurias[codBarco]) {
                 ventasVendidurias[codBarco] = { cod: codBarco, nombre: nombreBarco, vendiduria, lineas: [] };
             }
@@ -66,6 +74,7 @@ export default function LonjaDeIslaExportPreview({ document }) {
 
     return (
         <div className="space-y-4">
+            <LonjaDeIslaUnresolvedLinesCard unresolvedLines={unresolvedLines} />
             <LonjaDeIslaUnifiedExportTable
                 ventasVendidurias={ventasVendidurias}
                 sourceVendidurias={vendidurias}

@@ -12,6 +12,12 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { calculateImporteFromLinea, parseDecimalValue } from '@/exportHelpers/common';
 import {
     aggregateLineasForLonja,
@@ -78,6 +84,14 @@ function importeServiciosVendiduria(lineas) {
     return (imp * PORCENTAJE_SERVICIOS_VENDIDURIAS) / 100;
 }
 
+function round2(value) {
+    return Number((Number(value) || 0).toFixed(2));
+}
+
+function normalizeSignedZero(value) {
+    return Object.is(value, -0) ? 0 : value;
+}
+
 /**
  * Tabla única jerárquica: total por vendiduría → barco → líneas de producto (+ serv. vendiduría por barco);
  * luego venta directa → barcos → líneas; servicios Lonja al final.
@@ -140,36 +154,93 @@ export default function LonjaDeIslaUnifiedExportTable({
         if (!azure) {
             return (
                 <TableCell className="w-[9.5rem] align-middle text-right">
-                    <div className="flex items-center justify-end">
-                        <span className="inline-flex items-center gap-1 rounded-md border border-amber-300 bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700">
-                            <TriangleAlert className="h-3.5 w-3.5" />
-                            Sin total doc
-                        </span>
-                    </div>
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div className="flex items-center justify-end">
+                                    <span className="inline-flex items-center gap-1 rounded-md border border-amber-300 bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700 cursor-help">
+                                        <TriangleAlert className="h-3.5 w-3.5" />
+                                        Sin total doc
+                                    </span>
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent side="left" sideOffset={8}>
+                                <div className="space-y-2 min-w-[250px]">
+                                    <p className="font-semibold">No hay totales de documento</p>
+                                    <p>Vendiduría: {cod}</p>
+                                    <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
+                                        <span className="text-background/70">Kilos app</span>
+                                        <span className="text-right">{formatDecimalWeight(kilosCalc)}</span>
+                                        <span className="text-background/70">Importe app</span>
+                                        <span className="text-right">{formatDecimalCurrency(importeCalc)}</span>
+                                    </div>
+                                    <p className="text-amber-300">Azure no devolvió registro en tabla vendidurías.</p>
+                                </div>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
                 </TableCell>
             );
         }
 
-        const kilosDiff = Math.abs(kilosCalc - azure.kilos);
-        const importeDiff = Math.abs(importeCalc - azure.importe);
+        const kilosDelta = normalizeSignedZero(round2(kilosCalc - azure.kilos));
+        const importeDelta = normalizeSignedZero(round2(importeCalc - azure.importe));
+        const kilosDiff = Math.abs(kilosDelta);
+        const importeDiff = Math.abs(importeDelta);
         const ok = kilosDiff <= 0.01 && importeDiff <= 0.01;
-        const title = `Kilos app/doc: ${kilosCalc.toFixed(2)} / ${azure.kilos.toFixed(2)} | Importe app/doc: ${importeCalc.toFixed(2)} / ${azure.importe.toFixed(2)}`;
 
         return (
-            <TableCell className="w-[9.5rem] align-middle text-right" title={title}>
-                <div className="flex items-center justify-end">
-                    {ok ? (
-                        <span className="inline-flex items-center gap-1 rounded-md border border-sky-300 bg-sky-50 px-2 py-0.5 text-[11px] font-medium text-sky-700">
-                            <ShieldCheck className="h-3.5 w-3.5" />
-                            Validado
-                        </span>
-                    ) : (
-                        <span className="inline-flex items-center gap-1 rounded-md border border-red-300 bg-red-50 px-2 py-0.5 text-[11px] font-medium text-red-700">
-                            <TriangleAlert className="h-3.5 w-3.5" />
-                            No validado
-                        </span>
-                    )}
-                </div>
+            <TableCell className="w-[9.5rem] align-middle text-right">
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <div className="flex items-center justify-end">
+                                {ok ? (
+                                    <span className="inline-flex items-center gap-1 rounded-md border border-sky-300 bg-sky-50 px-2 py-0.5 text-[11px] font-medium text-sky-700 cursor-help">
+                                        <ShieldCheck className="h-3.5 w-3.5" />
+                                        Validado
+                                    </span>
+                                ) : (
+                                    <span className="inline-flex items-center gap-1 rounded-md border border-red-300 bg-red-50 px-2 py-0.5 text-[11px] font-medium text-red-700 cursor-help">
+                                        <TriangleAlert className="h-3.5 w-3.5" />
+                                        No validado
+                                    </span>
+                                )}
+                            </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="left" sideOffset={8}>
+                            <div className="space-y-2 min-w-[300px]">
+                                <p className="font-semibold">{ok ? 'Comparación validada' : 'Descuadre detectado'}</p>
+                                <div className="grid grid-cols-[auto_1fr_1fr] gap-x-3 gap-y-1">
+                                    <span className="text-background/70">Fuente</span>
+                                    <span className="text-right text-background/70">Kilos</span>
+                                    <span className="text-right text-background/70">Importe</span>
+
+                                    <span>App</span>
+                                    <span className="text-right">{formatDecimalWeight(kilosCalc)}</span>
+                                    <span className="text-right">{formatDecimalCurrency(importeCalc)}</span>
+
+                                    <span>Documento</span>
+                                    <span className="text-right">{formatDecimalWeight(azure.kilos)}</span>
+                                    <span className="text-right">{formatDecimalCurrency(azure.importe)}</span>
+
+                                    <span className="font-medium">Diferencia</span>
+                                    <span className="text-right font-medium">
+                                        {kilosDelta > 0 ? '+' : ''}{formatDecimalWeight(kilosDelta)}
+                                    </span>
+                                    <span className="text-right font-medium">
+                                        {importeDelta > 0 ? '+' : ''}{formatDecimalCurrency(importeDelta)}
+                                    </span>
+                                </div>
+                                {!ok && (
+                                    <p className="text-red-300">
+                                        Tolerancia usada: 0,01 kg y 0,01 EUR.
+                                    </p>
+                                )}
+                            </div>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
             </TableCell>
         );
     };

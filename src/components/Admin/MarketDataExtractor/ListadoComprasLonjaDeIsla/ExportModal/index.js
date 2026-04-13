@@ -18,6 +18,7 @@ import { linkAllPurchases, validatePurchases, groupLinkedSummaryBySupplier } fro
 import { Loader2 } from "lucide-react"
 import LonjaDeIslaUnifiedExportTable from '../LonjaDeIslaUnifiedExportTable'
 import LonjaDeIslaVentaDirectaCard from '../LonjaDeIslaVentaDirectaCard'
+import LonjaDeIslaUnresolvedLinesCard from '../LonjaDeIslaUnresolvedLinesCard'
 
 const ExportModal = ({ document }) => {
     const { details: { fecha }, tables: { ventas, vendidurias } } = document
@@ -28,6 +29,7 @@ const ExportModal = ({ document }) => {
     const [validationResults, setValidationResults] = useState({})
     const ventasVendidurias = {}
     const ventasDirectas = {}
+    const unresolvedLines = []
 
     const addError = (error) => {
         if (!errors.includes(error)) {
@@ -41,6 +43,7 @@ const ExportModal = ({ document }) => {
 
         if (!barcoEncontrado) {
             addError(`Barco no encontrado: ${venta.codBarco} - ${venta.barco}`)
+            unresolvedLines.push({ reason: 'barco_not_found', venta })
             return null;
         }
 
@@ -58,6 +61,7 @@ const ExportModal = ({ document }) => {
 
             if (!vendiduria) {
                 addError(`Vendiduria no encontrada para el barco: ${codBarco} - ${nombreBarco}`)
+                unresolvedLines.push({ reason: 'vendiduria_not_found', venta })
                 return null;
             }
 
@@ -506,6 +510,7 @@ const ExportModal = ({ document }) => {
                 </div>
 
                 <div className="space-y-4 mt-2">
+                    <LonjaDeIslaUnresolvedLinesCard unresolvedLines={unresolvedLines} />
                     <LonjaDeIslaUnifiedExportTable
                         ventasVendidurias={ventasVendidurias}
                         sourceVendidurias={vendidurias}

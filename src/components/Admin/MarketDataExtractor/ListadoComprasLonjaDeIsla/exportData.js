@@ -2429,6 +2429,12 @@ export const barcos = [
     codVendiduria: 'CF'
   },
   {
+    cod: '389',
+    barco: "MIGUEL EL VIEJO",
+    vendiduria: "EXPO-VENT DE PESCA, S.L.",
+    codVendiduria: 'EX'
+  },
+  {
     barco: "JESUS ANTONIO GONZALEZ JIMENEZ",
     vendiduria: "EXPO-VENT DE PESCA, S.L.",
     codVendiduria: 'EX'
