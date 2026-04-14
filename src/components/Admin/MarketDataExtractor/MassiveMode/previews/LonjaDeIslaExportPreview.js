@@ -2,6 +2,7 @@
 
 import { calculateImporteFromLinea } from "@/exportHelpers/common";
 import { findBarcoMatch } from "@/exportHelpers/lonjaDeIslaBarcoMatcher";
+import { getLonjaDeIslaTradeType } from "@/exportHelpers/lonjaDeIslaExportHelper";
 import {
     barcos as barcosLonja,
     barcosVentaDirecta,
@@ -15,6 +16,7 @@ import LonjaDeIslaUnresolvedLinesCard from "../../ListadoComprasLonjaDeIsla/Lonj
 
 export default function LonjaDeIslaExportPreview({ document }) {
     const { tables: { ventas, vendidurias } } = document;
+    const tradeType = getLonjaDeIslaTradeType(document);
 
     const ventasVendidurias = {};
     const ventasDirectas = {};
@@ -74,6 +76,11 @@ export default function LonjaDeIslaExportPreview({ document }) {
 
     return (
         <div className="space-y-4">
+            <div className="flex items-center gap-1 p-1 text-white bg-white/30 w-fit px-2 border border-white rounded-md">
+                <span className="text-xs">
+                    Tipo documento: {tradeType === "SUBASTA" ? "Subasta" : "Contrato"}
+                </span>
+            </div>
             <LonjaDeIslaUnresolvedLinesCard unresolvedLines={unresolvedLines} />
             <LonjaDeIslaUnifiedExportTable
                 ventasVendidurias={ventasVendidurias}

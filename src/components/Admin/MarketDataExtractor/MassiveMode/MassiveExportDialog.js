@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Download, Loader2, AlertTriangle, CircleX, FileCheck2 } from "lucide-react";import { downloadMassiveExcel } from "@/services/export/excelGenerator";
 import { generateCofraExcelRows } from "@/exportHelpers/cofraExportHelper";
-import { generateLonjaDeIslaExcelRows } from "@/exportHelpers/lonjaDeIslaExportHelper";
+import { generateLonjaDeIslaExcelRows, getLonjaDeIslaTradeType } from "@/exportHelpers/lonjaDeIslaExportHelper";
 import { generateAsocExcelRows } from "@/exportHelpers/asocExportHelper";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { notify } from "@/lib/notifications";
@@ -156,6 +156,46 @@ export default function MassiveExportDialog({
         return labels[type] || type;
     };
 
+    const getSubtypeLabel = (document, documentType) => {
+        if (!document) return null;
+
+        if (documentType === 'listadoComprasLonjaDeIsla') {
+            return getLonjaDeIslaTradeType(document) === 'SUBASTA' ? 'Subasta' : 'Contrato';
+        }
+
+        if (documentType === 'listadoComprasAsocArmadoresPuntaDelMoral') {
+            const tipoSubasta = document?.details?.tipoSubasta;
+            if (tipoSubasta === 'T2 Arrastre') return 'Subasta';
+            if (tipoSubasta === 'M1 M1') return 'Venta directa';
+        }
+
+        return null;
+    };
+
+    const getSubtypePillClassName = (subtype) => {
+        if (subtype === 'Subasta') return 'border-amber-300 bg-amber-50 text-amber-800';
+        if (subtype === 'Contrato') return 'border-sky-300 bg-sky-50 text-sky-800';
+        if (subtype === 'Venta directa') return 'border-emerald-300 bg-emerald-50 text-emerald-800';
+        return 'border-muted bg-muted/40 text-foreground';
+    };
+
+    const getDocumentSummaryParts = (document, documentType) => {
+        if (!document) {
+            return {
+                fecha: 'Sin fecha',
+                lonja: getDocumentTypeLabel(documentType),
+            };
+        }
+
+        const isCofra = documentType === 'albaranCofradiaPescadoresSantoCristoDelMar';
+        const details = isCofra ? document?.detalles : document?.details;
+
+        return {
+            fecha: details?.fecha || 'Sin fecha',
+            lonja: details?.lonja || getDocumentTypeLabel(documentType),
+        };
+    };
+
 
     const DOCUMENT_PREVIEW_COMPONENTS = {
         albaranCofradiaPescadoresSantoCristoDelMar: CofraExportPreview,
@@ -247,11 +287,32 @@ export default function MassiveExportDialog({
                                                                     </span>
                                                                 )}
                                                                 <div className="flex-1 min-w-0 text-left">
-                                                                    <p className="text-sm font-medium truncate">{docInfo.name}</p>
-                                                                    <p className="text-xs text-muted-foreground">{getDocumentTypeLabel(docInfo.type)}</p>
+                                                                    {(() => {
+                                                                        const processedDoc = document?.processedData?.[0];
+                                                                        const summary = getDocumentSummaryParts(processedDoc, docInfo.type);
+                                                                        const subtype = getSubtypeLabel(processedDoc, docInfo.type);
+                                                                        return (
+                                                                            <div className="leading-tight whitespace-normal break-words">
+                                                                                <p className="text-sm font-medium">{summary.fecha}</p>
+                                                                                <p className="text-sm font-medium text-foreground/80">{summary.lonja}</p>
+                                                                                <p className="text-[11px] text-muted-foreground truncate mt-1">{docInfo.name}</p>
+                                                                            </div>
+                                                                        );
+                                                                    })()}
                                                                 </div>
                                                             </div>
                                                             <div className="text-right flex-shrink-0">
+                                                                {(() => {
+                                                                    const processedDoc = document?.processedData?.[0];
+                                                                    const subtype = getSubtypeLabel(processedDoc, docInfo.type);
+                                                                    return subtype ? (
+                                                                        <div className="mb-1">
+                                                                            <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-semibold ${getSubtypePillClassName(subtype)}`}>
+                                                                                {subtype}
+                                                                            </span>
+                                                                        </div>
+                                                                    ) : null;
+                                                                })()}
                                                                 {docInfo.status === 'error' && (
                                                                     <span className="text-xs text-red-600">{docInfo.error}</span>
                                                                 )}

@@ -2,8 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, XCircle, Loader2, Eye, RotateCcw, FileText, CheckCircle, Trash2 } from "lucide-react";
+import { CheckCircle2, XCircle, Loader2, RotateCcw, FileText, CheckCircle, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useState } from "react";
 import AlbaranCofraWeb from "../AlbaranCofraWeb";
@@ -11,6 +10,7 @@ import ListadoComprasLonjaDeIsla from "../ListadoComprasLonjaDeIsla";
 import ListadoComprasAsocPuntaDelMoral from "../ListadoComprasAsocPuntaDelMoral";
 import { EmptyState } from "@/components/Utilities/EmptyState";
 import { getDocumentTypeLabel } from "../shared/documentTypeLabels";
+import { getLonjaDeIslaTradeType } from "@/exportHelpers/lonjaDeIslaExportHelper";
 
 export default function DocumentList({ documents, onRetry, onDelete, onDeleteAll }) {
     const [openDialogId, setOpenDialogId] = useState(null);
@@ -28,17 +28,51 @@ export default function DocumentList({ documents, onRetry, onDelete, onDeleteAll
         }
     };
 
-    const getStatusBadge = (status) => {
-        switch (status) {
-            case 'success':
-                return <Badge variant="default" className="bg-green-500">Éxito</Badge>;
-            case 'error':
-                return <Badge variant="destructive">Error</Badge>;
-            case 'processing':
-                return <Badge variant="secondary">Procesando...</Badge>;
-            default:
-                return <Badge variant="outline">Pendiente</Badge>;
+    const getSubtypeLabel = (doc) => {
+        if (!doc?.processedData?.length) return null;
+        const processed = doc.processedData[0];
+
+        if (doc.documentType === 'listadoComprasLonjaDeIsla') {
+            return getLonjaDeIslaTradeType(processed) === 'SUBASTA' ? 'Subasta' : 'Contrato';
         }
+
+        if (doc.documentType === 'listadoComprasAsocArmadoresPuntaDelMoral') {
+            const tipoSubasta = processed?.details?.tipoSubasta;
+            if (tipoSubasta === 'T2 Arrastre') return 'Subasta';
+            if (tipoSubasta === 'M1 M1') return 'Venta directa';
+        }
+
+        return null;
+    };
+
+    const getExtractedSummaryParts = (doc) => {
+        if (!doc?.processedData?.length) {
+            return {
+                fecha: 'Sin fecha',
+                lonja: getDocumentTypeLabel(doc?.documentType),
+            };
+        }
+
+        const processed = doc.processedData[0];
+        const isCofra = doc.documentType === 'albaranCofradiaPescadoresSantoCristoDelMar';
+        const details = isCofra ? processed?.detalles : processed?.details;
+
+        const fecha = details?.fecha || 'Sin fecha';
+        const lonja = details?.lonja || getDocumentTypeLabel(doc.documentType);
+        return { fecha, lonja };
+    };
+
+    const getSubtypePillClassName = (subtype) => {
+        if (subtype === 'Subasta') {
+            return 'border-amber-300 bg-amber-50 text-amber-800';
+        }
+        if (subtype === 'Contrato') {
+            return 'border-sky-300 bg-sky-50 text-sky-800';
+        }
+        if (subtype === 'Venta directa') {
+            return 'border-emerald-300 bg-emerald-50 text-emerald-800';
+        }
+        return 'border-muted bg-muted/40 text-foreground';
     };
 
     const renderDocumentPreview = (document, hideExport = false) => {
@@ -89,16 +123,30 @@ export default function DocumentList({ documents, onRetry, onDelete, onDeleteAll
                                             {getStatusIcon(doc.status)}
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <div className="font-medium truncate">{doc.file.name}</div>
-                                            <div className="text-sm text-muted-foreground truncate">
-                                                {getDocumentTypeLabel(doc.documentType)}
+                                            {(() => {
+                                                const summary = getExtractedSummaryParts(doc);
+                                                return (
+                                                    <>
+                                                        <div className="font-medium leading-tight whitespace-normal break-words">
+                                                            <span className="block">{summary.fecha}</span>
+                                                            <span className="block">{summary.lonja}</span>
+                                                        </div>
+                                                    </>
+                                                );
+                                            })()}
+                                            <div className="text-xs text-muted-foreground truncate">
+                                                {doc.file.name}
                                             </div>
-                                        </div>
-                                        <div className="flex-shrink-0">
-                                            {getStatusBadge(doc.status)}
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                                        {getSubtypeLabel(doc) && (
+                                            <span
+                                                className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-semibold ${getSubtypePillClassName(getSubtypeLabel(doc))}`}
+                                            >
+                                                {getSubtypeLabel(doc)}
+                                            </span>
+                                        )}
                                         {doc.status === 'error' && (
                                             <Button
                                                 variant="outline"
@@ -113,7 +161,6 @@ export default function DocumentList({ documents, onRetry, onDelete, onDeleteAll
                                             <Dialog open={openDialogId === doc.id} onOpenChange={(open) => setOpenDialogId(open ? doc.id : null)}>
                                                 <DialogTrigger asChild>
                                                     <Button variant="outline" size="sm">
-                                                        <Eye className="h-4 w-4 mr-2" />
                                                         Ver detalles
                                                     </Button>
                                                 </DialogTrigger>

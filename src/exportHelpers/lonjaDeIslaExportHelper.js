@@ -19,6 +19,28 @@ import {
     serviciosLonjaDeIsla 
 } from '@/components/Admin/MarketDataExtractor/ListadoComprasLonjaDeIsla/exportData';
 
+const LONJA_CABNUMDOC_TYPES = {
+    COMPRA_CONTRATO: '5',
+    COMPRA_SUBASTA: '6',
+    SERVICIOS: '7',
+    VENTA: '8',
+};
+
+function buildCabNumDoc(fechaSoloNumeros, typeDigit, sequence) {
+    return `${fechaSoloNumeros}${typeDigit}${sequence}`;
+}
+
+export function isLonjaDeIslaSubastaDocument(document) {
+    const tipoVentas = document?.tables?.tipoVentas || [];
+    return tipoVentas.some((row) =>
+        normalizeText(row?.descripcion || '').includes('cinta')
+    );
+}
+
+export function getLonjaDeIslaTradeType(document) {
+    return isLonjaDeIslaSubastaDocument(document) ? 'SUBASTA' : 'CONTRATO';
+}
+
 function getLonjaDeIslaUnknownSpecies(document) {
     const unknownSpecies = new Set();
     const ventas = document?.tables?.ventas || [];
@@ -50,6 +72,10 @@ function getUnmappedSpeciesWarnings(document) {
  */
 export function generateLonjaDeIslaExcelRows(document, options = {}) {
     const speciesWarnings = getUnmappedSpeciesWarnings(document);
+    const tradeType = getLonjaDeIslaTradeType(document);
+    const compraTypeDigit = tradeType === 'SUBASTA'
+        ? LONJA_CABNUMDOC_TYPES.COMPRA_SUBASTA
+        : LONJA_CABNUMDOC_TYPES.COMPRA_CONTRATO;
 
     const { CABSERIE: baseCABSERIE = "LI", startSequence = 1, startSequenceVenta } = options;
     const { details: { fecha }, tables: { ventas, vendidurias } } = document;
@@ -157,8 +183,16 @@ export function generateLonjaDeIslaExcelRows(document, options = {}) {
 
     // Generate rows for ventasDirectas
     Object.values(ventasDirectas).forEach(barco => {
-        const cabNumDoc = `${fechaSoloNumeros}${albaranSequence}`;
-        const cabNumDocVenta = `${fechaSoloNumeros}${ventaAlbaranSequence}`;
+        const cabNumDoc = buildCabNumDoc(
+            fechaSoloNumeros,
+            compraTypeDigit,
+            albaranSequence
+        );
+        const cabNumDocVenta = buildCabNumDoc(
+            fechaSoloNumeros,
+            LONJA_CABNUMDOC_TYPES.VENTA,
+            ventaAlbaranSequence
+        );
 
         // Hoja ALBARANESVENTA: 1 albarán por cada "venta directa" (grupo de barco) con 2 líneas
         const importeBase = getImporteTotal(barco.lineas); // base = Σ(kilos*precio)
@@ -219,7 +253,11 @@ export function generateLonjaDeIslaExcelRows(document, options = {}) {
 
     // Generate rows for ventasVendidurias
     Object.values(ventasVendidurias).filter(Boolean).forEach(barco => {
-        const cabNumDoc = `${fechaSoloNumeros}${albaranSequence}`;
+        const cabNumDoc = buildCabNumDoc(
+            fechaSoloNumeros,
+            compraTypeDigit,
+            albaranSequence
+        );
         barco.lineas.forEach(linea => {
             const producto = productos.find(
                 (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
@@ -256,7 +294,11 @@ export function generateLonjaDeIslaExcelRows(document, options = {}) {
     });
 
     // Generate rows for servicios
-    const cabNumDocServicios = `${fechaSoloNumeros}${albaranSequence}`;
+    const cabNumDocServicios = buildCabNumDoc(
+        fechaSoloNumeros,
+        LONJA_CABNUMDOC_TYPES.SERVICIOS,
+        albaranSequence
+    );
     servicios.forEach(line => {
         processedRows.push({
             CABSERIE: CABSERIE,

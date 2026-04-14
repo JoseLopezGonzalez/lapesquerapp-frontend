@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { barcos, barcosVentaDirecta, datosVendidurias, lonjaDeIsla, productos, servicioExtraLonjaDeIsla, serviciosLonjaDeIsla } from '../exportData'
 import { Input } from '@/components/ui/input'
 import { parseDecimalValue, calculateImporteFromLinea } from '@/exportHelpers/common'
-import { validateLonjaDeIslaSpeciesForExport } from '@/exportHelpers/lonjaDeIslaExportHelper'
+import { getLonjaDeIslaTradeType, validateLonjaDeIslaSpeciesForExport } from '@/exportHelpers/lonjaDeIslaExportHelper'
 import { findBarcoMatch } from '@/exportHelpers/lonjaDeIslaBarcoMatcher'
 import { normalizeText } from '@/helpers/formats/texts'
 import { formatDecimalCurrency, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
@@ -20,8 +20,19 @@ import LonjaDeIslaUnifiedExportTable from '../LonjaDeIslaUnifiedExportTable'
 import LonjaDeIslaVentaDirectaCard from '../LonjaDeIslaVentaDirectaCard'
 import LonjaDeIslaUnresolvedLinesCard from '../LonjaDeIslaUnresolvedLinesCard'
 
+const LONJA_CABNUMDOC_TYPES = {
+    COMPRA_CONTRATO: '5',
+    COMPRA_SUBASTA: '6',
+    SERVICIOS: '7',
+    VENTA: '8',
+};
+
+const buildCabNumDoc = (fechaSoloNumeros, typeDigit, sequence) =>
+    `${fechaSoloNumeros}${typeDigit}${sequence}`;
+
 const ExportModal = ({ document }) => {
     const { details: { fecha }, tables: { ventas, vendidurias } } = document
+    const tradeType = getLonjaDeIslaTradeType(document);
     const [software, setSoftware] = useState("A3ERP")
     const [errors, setErrors] = useState([])
     const [selectedLinks, setSelectedLinks] = useState([])
@@ -320,12 +331,23 @@ const ExportModal = ({ document }) => {
         const CABSERIE = `LI${año}`;
         // Convertir fecha a formato solo números: eliminar todos los caracteres no numéricos (ej: "2024-12-17" -> "20241217")
         const fechaSoloNumeros = String(fecha).replace(/[^0-9]/g, '');
+        const compraTypeDigit = tradeType === 'SUBASTA'
+            ? LONJA_CABNUMDOC_TYPES.COMPRA_SUBASTA
+            : LONJA_CABNUMDOC_TYPES.COMPRA_CONTRATO;
         let albaranSequence = 1; // Contador secuencial para distinguir diferentes albaranes del mismo documento
         let ventaAlbaranSequence = 1; // Secuencia separada para albaranes de venta
 
         ventasDirectasArray.forEach(barco => {
-            const cabNumDoc = `${fechaSoloNumeros}${albaranSequence}`;
-            const cabNumDocVenta = `${fechaSoloNumeros}${ventaAlbaranSequence}`;
+            const cabNumDoc = buildCabNumDoc(
+                fechaSoloNumeros,
+                compraTypeDigit,
+                albaranSequence
+            );
+            const cabNumDocVenta = buildCabNumDoc(
+                fechaSoloNumeros,
+                LONJA_CABNUMDOC_TYPES.VENTA,
+                ventaAlbaranSequence
+            );
             const importeBase = getImporteTotal(barco.lineas); // base = Σ(kilos*precio)
             const codCliente = barco.armador?.codA3erpCliente;
 
@@ -384,7 +406,11 @@ const ExportModal = ({ document }) => {
         });
 
         ventasVendiduriasArray.forEach(barco => {
-            const cabNumDoc = `${fechaSoloNumeros}${albaranSequence}`;
+            const cabNumDoc = buildCabNumDoc(
+                fechaSoloNumeros,
+                compraTypeDigit,
+                albaranSequence
+            );
             barco.lineas.forEach(linea => {
                 const producto = productos.find(
                     (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
@@ -421,7 +447,11 @@ const ExportModal = ({ document }) => {
 
         });
 
-        const cabNumDocServicios = `${fechaSoloNumeros}${albaranSequence}`;
+        const cabNumDocServicios = buildCabNumDoc(
+            fechaSoloNumeros,
+            LONJA_CABNUMDOC_TYPES.SERVICIOS,
+            albaranSequence
+        );
         servicios.forEach(line => {
             processedRows.push({
                 CABSERIE: CABSERIE,
@@ -497,6 +527,11 @@ const ExportModal = ({ document }) => {
                     </div>
                 </div>
                 <div className='flex flex-col gap-1'>
+                    <div className="flex items-center gap-1 p-1 text-white bg-white/30 w-fit px-2 border border-white rounded-md">
+                        <span className="text-xs">
+                            Tipo documento: {tradeType === 'SUBASTA' ? 'Subasta' : 'Contrato'}
+                        </span>
+                    </div>
                     {errors.length > 0 && (
                         <ul className="list-disc list-inside text-red-500 flex flex-col gap-2">
                             {errors.map((error, index) => (

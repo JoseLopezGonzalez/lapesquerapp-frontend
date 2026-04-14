@@ -15,6 +15,17 @@ import {
     serviciosAsocArmadoresPuntaDelMoral 
 } from '@/components/Admin/MarketDataExtractor/ListadoComprasAsocPuntaDelMoral/exportData';
 
+const ASOC_CABNUMDOC_TYPES = {
+    VENTA_DIRECTA: '1',
+    SUBASTA: '2',
+    SERVICIOS: '3',
+    CAJAS_SUBASTA: '4',
+};
+
+function buildCabNumDoc(fechaSoloNumeros, typeDigit, sequence) {
+    return `${fechaSoloNumeros}${typeDigit}${sequence}`;
+}
+
 function getAsocUnknownSpecies(document) {
     const unknownSpecies = new Set();
     const subastas = document?.tables?.subastas || [];
@@ -134,7 +145,11 @@ export function generateAsocExcelRows(document, options = {}) {
                 continue;
             }
 
-            const cabNumDoc = `${fechaSoloNumeros}${albaranSequence}`;
+            const cabNumDoc = buildCabNumDoc(
+                fechaSoloNumeros,
+                ASOC_CABNUMDOC_TYPES.VENTA_DIRECTA,
+                albaranSequence
+            );
 
             lines.forEach(l => {
                 l.lineas.forEach(linea => {
@@ -159,7 +174,11 @@ export function generateAsocExcelRows(document, options = {}) {
             albaranSequence++;
         }
     } else if (isSubasta) {
-        const cabNumDoc = `${fechaSoloNumeros}${albaranSequence}`;
+        const cabNumDoc = buildCabNumDoc(
+            fechaSoloNumeros,
+            ASOC_CABNUMDOC_TYPES.SUBASTA,
+            albaranSequence
+        );
 
         document.tables.subastas.forEach(linea => {
             const producto = productos.find(
@@ -183,7 +202,11 @@ export function generateAsocExcelRows(document, options = {}) {
     }
 
     // Generate rows for servicios
-    const cabNumDocServicios = `${fechaSoloNumeros}${albaranSequence}`;
+    const cabNumDocServicios = buildCabNumDoc(
+        fechaSoloNumeros,
+        ASOC_CABNUMDOC_TYPES.SERVICIOS,
+        albaranSequence
+    );
     servicios.forEach(line => {
         processedRows.push({
             CABSERIE: CABSERIE,
@@ -202,7 +225,11 @@ export function generateAsocExcelRows(document, options = {}) {
 
     // Generate row for cajas if subasta
     if (isSubasta) {
-        const cabNumDocCajas = `${fechaSoloNumeros}${albaranSequence}`;
+        const cabNumDocCajas = buildCabNumDoc(
+            fechaSoloNumeros,
+            ASOC_CABNUMDOC_TYPES.CAJAS_SUBASTA,
+            albaranSequence
+        );
         processedRows.push({
             CABSERIE: CABSERIE,
             CABNUMDOC: cabNumDocCajas,

@@ -17,6 +17,16 @@ import { notify } from '@/lib/notifications'
 import { linkAllPurchases, validatePurchases, groupLinkedSummaryBySupplier } from "@/services/export/linkService"
 import { Loader2 } from "lucide-react"
 
+const ASOC_CABNUMDOC_TYPES = {
+    VENTA_DIRECTA: '1',
+    SUBASTA: '2',
+    SERVICIOS: '3',
+    CAJAS_SUBASTA: '4',
+};
+
+const buildCabNumDoc = (fechaSoloNumeros, typeDigit, sequence) =>
+    `${fechaSoloNumeros}${typeDigit}${sequence}`;
+
 const ExportModal = ({ document }) => {
     const { details: { fecha, tipoSubasta }, tables } = document
     const [software, setSoftware] = useState("A3ERP")
@@ -110,7 +120,11 @@ const ExportModal = ({ document }) => {
                     continue; // o lanza un toast o marca el error visualmente
                 }
 
-                const cabNumDoc = `${fechaSoloNumeros}${albaranSequence}`;
+                const cabNumDoc = buildCabNumDoc(
+                    fechaSoloNumeros,
+                    ASOC_CABNUMDOC_TYPES.VENTA_DIRECTA,
+                    albaranSequence
+                );
 
                 lines.forEach(l => {
                     l.lineas.forEach(linea => {
@@ -135,7 +149,11 @@ const ExportModal = ({ document }) => {
                 albaranSequence++;
             }
         } else if (isSubasta) {
-            const cabNumDoc = `${fechaSoloNumeros}${albaranSequence}`;
+            const cabNumDoc = buildCabNumDoc(
+                fechaSoloNumeros,
+                ASOC_CABNUMDOC_TYPES.SUBASTA,
+                albaranSequence
+            );
 
             document.tables.subastas.forEach(linea => {
                 const producto = productos.find(
@@ -158,7 +176,11 @@ const ExportModal = ({ document }) => {
             albaranSequence++;
         }
 
-        const cabNumDocServicios = `${fechaSoloNumeros}${albaranSequence}`;
+        const cabNumDocServicios = buildCabNumDoc(
+            fechaSoloNumeros,
+            ASOC_CABNUMDOC_TYPES.SERVICIOS,
+            albaranSequence
+        );
         servicios.forEach(line => {
             processedRows.push({
                 CABSERIE: CABSERIE,
@@ -177,7 +199,11 @@ const ExportModal = ({ document }) => {
         albaranSequence++;
 
         if (isSubasta) {
-            const cabNumDocCajas = `${fechaSoloNumeros}${albaranSequence}`;
+            const cabNumDocCajas = buildCabNumDoc(
+                fechaSoloNumeros,
+                ASOC_CABNUMDOC_TYPES.CAJAS_SUBASTA,
+                albaranSequence
+            );
             processedRows.push({
                 CABSERIE: CABSERIE,
                 CABNUMDOC: cabNumDocCajas,
