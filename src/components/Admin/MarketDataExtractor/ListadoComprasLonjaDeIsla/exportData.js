@@ -5372,7 +5372,7 @@ export const productos = [
   { nombre: "SALMONETE DE ROCA / SALMONETE", codA3erp: "10160", codBrisappProducto: "327" },
   { nombre: "Canaila / Canaila", codA3erp: "10149", codBrisappProducto: "113" },
   { nombre: "Canailla / Canailla", codA3erp: "10149", codBrisappProducto: "113" },
-  { nombre: "Burro chiclero / Burro chiclero", codA3erp: null, codBrisappProducto: "330" },
-  { nombre: "Corvinata real / Corvinata real", codA3erp: null, codBrisappProducto: "329" },
+  { nombre: "Burro chiclero / Burro chiclero", codA3erp: "10157", codBrisappProducto: "330" },
+  { nombre: "Corvinata real / Corvinata real", codA3erp: "10158", codBrisappProducto: "329" },
   { nombre: "Merluza europea / Merluza europea", codA3erp: "10153", codBrisappProducto: "331" },
 ]
