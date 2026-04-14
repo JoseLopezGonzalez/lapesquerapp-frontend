@@ -209,7 +209,7 @@ export function generateAsocExcelRows(document, options = {}) {
             CABFECHA: fecha,
             CABCODPRO: asocArmadoresPuntaDelMoralSubasta.codA3erp,
             CABREFERENCIA: `ASOC - ${fecha} - SERVICIOS CAJAS SUBASTA`,
-            LINCODART: 1015,
+            LINCODART: 10168,
             LINDESCLIN: 'Préstamo cajas',
             LINUNIDADES: cajasTotales,
             LINPRCMONEDA: 5.50,
