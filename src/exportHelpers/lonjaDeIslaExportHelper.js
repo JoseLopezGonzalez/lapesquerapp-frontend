@@ -90,6 +90,7 @@ export function generateLonjaDeIslaExcelRows(document, options = {}) {
     const speciesWarnings = getUnmappedSpeciesWarnings(document);
     const tradeType = getLonjaDeIslaTradeType(document);
     const tradeLetter = tradeType === 'SUBASTA' ? 'S' : 'C';
+    const shouldGenerateServicios = tradeType !== 'SUBASTA';
     const compraTypeDigit = tradeType === 'SUBASTA'
         ? LONJA_CABNUMDOC_TYPES.COMPRA_SUBASTA
         : LONJA_CABNUMDOC_TYPES.COMPRA_CONTRATO;
@@ -292,7 +293,7 @@ export function generateLonjaDeIslaExcelRows(document, options = {}) {
                         CABNUMDOC: cabNumDoc,
                         CABFECHA: fecha,
                         CABCODPRO: vendiduria.codA3erp,
-                        CABREFERENCIA: `LONJA - ${fecha} - ${vendiduria.nombre}`,
+                        CABREFERENCIA: `LONJA - ${fecha} - ${vendiduria.nombre} ${tradeLetter}`,
                         LINCODART: producto?.codA3erp || '',
                         LINDESCLIN: linea.especie,
                         LINUNIDADES: parseDecimalValue(linea.kilos),
@@ -308,7 +309,7 @@ export function generateLonjaDeIslaExcelRows(document, options = {}) {
                 CABNUMDOC: cabNumDoc,
                 CABFECHA: fecha,
                 CABCODPRO: lonjaDeIsla.codA3erp,
-                CABREFERENCIA: `LONJA - ${fecha} - ${vendiduria.nombre}`,
+                CABREFERENCIA: `LONJA - ${fecha} - ${vendiduria.nombre} ${tradeLetter}`,
                 LINCODART: 9999,
                 LINDESCLIN: 'Gastos de Lonja y OP',
                 LINUNIDADES: 1,
@@ -333,7 +334,7 @@ export function generateLonjaDeIslaExcelRows(document, options = {}) {
                     CABNUMDOC: cabNumDoc,
                     CABFECHA: fecha,
                     CABCODPRO: barco.vendiduria.codA3erp,
-                    CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
+                    CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre} ${tradeLetter}`,
                     LINCODART: producto?.codA3erp || '',
                     LINDESCLIN: linea.especie,
                     LINUNIDADES: parseDecimalValue(linea.kilos),
@@ -349,7 +350,7 @@ export function generateLonjaDeIslaExcelRows(document, options = {}) {
                 CABNUMDOC: cabNumDoc,
                 CABFECHA: fecha,
                 CABCODPRO: lonjaDeIsla.codA3erp,
-                CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
+                CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre} ${tradeLetter}`,
                 LINCODART: 9999,
                 LINDESCLIN: 'Gastos de Lonja y OP',
                 LINUNIDADES: 1,
@@ -360,27 +361,29 @@ export function generateLonjaDeIslaExcelRows(document, options = {}) {
         });
     }
 
-    // Generate rows for servicios
-    const cabNumDocServicios = buildCabNumDoc(
-        fechaSoloNumeros,
-        serviciosTypeDigit,
-        albaranSequence
-    );
-    servicios.forEach(line => {
-        processedRows.push({
-            CABSERIE: CABSERIE,
-            CABNUMDOC: cabNumDocServicios,
-            CABFECHA: fecha,
-            CABCODPRO: lonjaDeIsla.codA3erp,
-            CABREFERENCIA: `LONJA - ${fecha} - SERVICIOS ${tradeLetter}`,
-            LINCODART: 9999,
-            LINDESCLIN: line.descripcion,
-            LINUNIDADES: line.unidades,
-            LINPRCMONEDA: line.precio,
-            LINTIPIVA: 'RED10',
+    // Generate rows for servicios only for Contrato.
+    if (shouldGenerateServicios) {
+        const cabNumDocServicios = buildCabNumDoc(
+            fechaSoloNumeros,
+            serviciosTypeDigit,
+            albaranSequence
+        );
+        servicios.forEach(line => {
+            processedRows.push({
+                CABSERIE: CABSERIE,
+                CABNUMDOC: cabNumDocServicios,
+                CABFECHA: fecha,
+                CABCODPRO: lonjaDeIsla.codA3erp,
+                CABREFERENCIA: `LONJA - ${fecha} - SERVICIOS ${tradeLetter}`,
+                LINCODART: 9999,
+                LINDESCLIN: line.descripcion,
+                LINUNIDADES: line.unidades,
+                LINPRCMONEDA: line.precio,
+                LINTIPIVA: 'RED10',
+            });
         });
-    });
-    albaranSequence++;
+        albaranSequence++;
+    }
 
     return {
         rows: processedRows,

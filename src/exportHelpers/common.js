@@ -67,7 +67,31 @@ export function calculateImporte(weight, price) {
  * @returns {number} Calculated importe rounded to 2 decimals
  */
 export function calculateImporteFromLinea(linea, weightKey = 'kilos') {
-    const weight = linea[weightKey] ?? linea.pesoNeto ?? linea.kilos;
-    return calculateImporte(weight, linea.precio);
+    const declaredImporteRaw = linea?.importe;
+    const hasDeclaredImporte =
+        declaredImporteRaw !== undefined &&
+        declaredImporteRaw !== null &&
+        String(declaredImporteRaw).trim() !== '';
+
+    const computedImporte = calculateImporte(
+        linea?.[weightKey] ?? linea?.pesoNeto ?? linea?.kilos,
+        linea?.precio
+    );
+
+    if (!hasDeclaredImporte) {
+        return computedImporte;
+    }
+
+    const declaredImporte = parseDecimalValue(declaredImporteRaw);
+
+    // Dual source of truth:
+    // 1) Prefer extracted importe when it exists and is usable.
+    // 2) Fallback to computed kilos*precio when extracted importe is 0 but
+    //    computation yields a positive amount (common OCR partial extraction case).
+    if (declaredImporte === 0 && computedImporte > 0) {
+        return computedImporte;
+    }
+
+    return declaredImporte;
 }
 

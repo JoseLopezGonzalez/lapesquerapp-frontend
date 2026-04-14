@@ -347,6 +347,7 @@ const ExportModal = ({ document }) => {
         // Convertir fecha a formato solo números: eliminar todos los caracteres no numéricos (ej: "2024-12-17" -> "20241217")
         const fechaSoloNumeros = String(fecha).replace(/[^0-9]/g, '');
         const tradeLetter = tradeType === 'SUBASTA' ? 'S' : 'C';
+        const shouldGenerateServicios = tradeType !== 'SUBASTA';
         const compraTypeDigit = tradeType === 'SUBASTA'
             ? LONJA_CABNUMDOC_TYPES.COMPRA_SUBASTA
             : LONJA_CABNUMDOC_TYPES.COMPRA_CONTRATO;
@@ -445,7 +446,7 @@ const ExportModal = ({ document }) => {
                             CABNUMDOC: cabNumDoc,
                             CABFECHA: fecha,
                             CABCODPRO: vendiduria.codA3erp,
-                            CABREFERENCIA: `LONJA - ${fecha} - ${vendiduria.nombre}`,
+                            CABREFERENCIA: `LONJA - ${fecha} - ${vendiduria.nombre} ${tradeLetter}`,
                             LINCODART: producto?.codA3erp || '',
                             LINDESCLIN: linea.especie,
                             LINUNIDADES: parseDecimalValue(linea.kilos),
@@ -461,7 +462,7 @@ const ExportModal = ({ document }) => {
                     CABNUMDOC: cabNumDoc,
                     CABFECHA: fecha,
                     CABCODPRO: lonjaDeIsla.codA3erp,
-                    CABREFERENCIA: `LONJA - ${fecha} - ${vendiduria.nombre}`,
+                    CABREFERENCIA: `LONJA - ${fecha} - ${vendiduria.nombre} ${tradeLetter}`,
                     LINCODART: 9999,
                     LINDESCLIN: 'Gastos de Lonja y OP',
                     LINUNIDADES: 1,
@@ -486,7 +487,7 @@ const ExportModal = ({ document }) => {
                         CABNUMDOC: cabNumDoc,
                         CABFECHA: fecha,
                         CABCODPRO: barco.vendiduria.codA3erp,
-                        CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
+                        CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre} ${tradeLetter}`,
                         LINCODART: producto?.codA3erp || '',
                         LINDESCLIN: linea.especie,
                         LINUNIDADES: parseDecimalValue(linea.kilos),
@@ -502,7 +503,7 @@ const ExportModal = ({ document }) => {
                     CABNUMDOC: cabNumDoc,
                     CABFECHA: fecha,
                     CABCODPRO: lonjaDeIsla.codA3erp,
-                    CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
+                    CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre} ${tradeLetter}`,
                     LINCODART: 9999,
                     LINDESCLIN: 'Gastos de Lonja y OP',
                     LINUNIDADES: 1,
@@ -513,27 +514,29 @@ const ExportModal = ({ document }) => {
             });
         }
 
-        const cabNumDocServicios = buildCabNumDoc(
-            fechaSoloNumeros,
-            serviciosTypeDigit,
-            albaranSequence
-        );
-        servicios.forEach(line => {
-            processedRows.push({
-                CABSERIE: CABSERIE,
-                CABNUMDOC: cabNumDocServicios,
-                CABFECHA: fecha,
-                CABCODPRO: lonjaDeIsla.codA3erp,
-                CABREFERENCIA: `LONJA - ${fecha} - SERVICIOS ${tradeLetter}`,
-                LINCODART: 9999,
-                LINDESCLIN: line.descripcion,
-                LINUNIDADES: line.unidades,
-                LINPRCMONEDA: line.precio,
-                LINTIPIVA: 'RED10',
+        if (shouldGenerateServicios) {
+            const cabNumDocServicios = buildCabNumDoc(
+                fechaSoloNumeros,
+                serviciosTypeDigit,
+                albaranSequence
+            );
+            servicios.forEach(line => {
+                processedRows.push({
+                    CABSERIE: CABSERIE,
+                    CABNUMDOC: cabNumDocServicios,
+                    CABFECHA: fecha,
+                    CABCODPRO: lonjaDeIsla.codA3erp,
+                    CABREFERENCIA: `LONJA - ${fecha} - SERVICIOS ${tradeLetter}`,
+                    LINCODART: 9999,
+                    LINDESCLIN: line.descripcion,
+                    LINUNIDADES: line.unidades,
+                    LINPRCMONEDA: line.precio,
+                    LINTIPIVA: 'RED10',
+                });
             });
-        });
 
-        albaranSequence++;
+            albaranSequence++;
+        }
 
 
         const yellowFill = { fill: { fgColor: { rgb: "FFFF00" } } };
