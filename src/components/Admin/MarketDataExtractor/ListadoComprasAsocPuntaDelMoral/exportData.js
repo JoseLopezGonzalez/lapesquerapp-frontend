@@ -23,7 +23,7 @@ export const asocArmadoresPuntaDelMoral = {
 
 export const asocArmadoresPuntaDelMoralSubasta = {
   nombre: "Asoc. Armadores Punta del Moral, S.Coop.And.",
-  codA3erp: "A400",
+  codA3erp: "218706",
 }
 
 export const serviciosAsocArmadoresPuntaDelMoral = [
