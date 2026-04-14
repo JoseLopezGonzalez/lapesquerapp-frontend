@@ -23,7 +23,8 @@ import LonjaDeIslaUnresolvedLinesCard from '../LonjaDeIslaUnresolvedLinesCard'
 const LONJA_CABNUMDOC_TYPES = {
     COMPRA_CONTRATO: '5',
     COMPRA_SUBASTA: '6',
-    SERVICIOS: '7',
+    SERVICIOS_CONTRATO: '7',
+    SERVICIOS_SUBASTA: '9',
     VENTA: '8',
 };
 
@@ -334,6 +335,9 @@ const ExportModal = ({ document }) => {
         const compraTypeDigit = tradeType === 'SUBASTA'
             ? LONJA_CABNUMDOC_TYPES.COMPRA_SUBASTA
             : LONJA_CABNUMDOC_TYPES.COMPRA_CONTRATO;
+        const serviciosTypeDigit = tradeType === 'SUBASTA'
+            ? LONJA_CABNUMDOC_TYPES.SERVICIOS_SUBASTA
+            : LONJA_CABNUMDOC_TYPES.SERVICIOS_CONTRATO;
         let albaranSequence = 1; // Contador secuencial para distinguir diferentes albaranes del mismo documento
         let ventaAlbaranSequence = 1; // Secuencia separada para albaranes de venta
 
@@ -449,7 +453,7 @@ const ExportModal = ({ document }) => {
 
         const cabNumDocServicios = buildCabNumDoc(
             fechaSoloNumeros,
-            LONJA_CABNUMDOC_TYPES.SERVICIOS,
+            serviciosTypeDigit,
             albaranSequence
         );
         servicios.forEach(line => {
