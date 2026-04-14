@@ -31,6 +31,20 @@ const LONJA_CABNUMDOC_TYPES = {
 const buildCabNumDoc = (fechaSoloNumeros, typeDigit, sequence) =>
     `${fechaSoloNumeros}${typeDigit}${sequence}`;
 
+const groupVentasByVendiduria = (ventasVendiduriasArray) =>
+    ventasVendiduriasArray.reduce((acc, barco) => {
+        const codVendiduria = barco?.vendiduria?.cod;
+        if (!codVendiduria) return acc;
+        if (!acc[codVendiduria]) {
+            acc[codVendiduria] = {
+                vendiduria: barco.vendiduria,
+                barcos: [],
+            };
+        }
+        acc[codVendiduria].barcos.push(barco);
+        return acc;
+    }, {});
+
 const ExportModal = ({ document }) => {
     const { details: { fecha }, tables: { ventas, vendidurias } } = document
     const tradeType = getLonjaDeIslaTradeType(document);
@@ -332,6 +346,7 @@ const ExportModal = ({ document }) => {
         const CABSERIE = `LI${año}`;
         // Convertir fecha a formato solo números: eliminar todos los caracteres no numéricos (ej: "2024-12-17" -> "20241217")
         const fechaSoloNumeros = String(fecha).replace(/[^0-9]/g, '');
+        const tradeLetter = tradeType === 'SUBASTA' ? 'S' : 'C';
         const compraTypeDigit = tradeType === 'SUBASTA'
             ? LONJA_CABNUMDOC_TYPES.COMPRA_SUBASTA
             : LONJA_CABNUMDOC_TYPES.COMPRA_CONTRATO;
@@ -409,47 +424,94 @@ const ExportModal = ({ document }) => {
             albaranSequence++;
         });
 
-        ventasVendiduriasArray.forEach(barco => {
-            const cabNumDoc = buildCabNumDoc(
-                fechaSoloNumeros,
-                compraTypeDigit,
-                albaranSequence
-            );
-            barco.lineas.forEach(linea => {
-                const producto = productos.find(
-                    (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
+        if (tradeType === 'SUBASTA') {
+            const ventasPorVendiduria = groupVentasByVendiduria(ventasVendiduriasArray);
+
+            Object.values(ventasPorVendiduria).forEach(({ vendiduria, barcos }) => {
+                const cabNumDoc = buildCabNumDoc(
+                    fechaSoloNumeros,
+                    compraTypeDigit,
+                    albaranSequence
                 );
+                let importeTotalVendiduria = 0;
+
+                barcos.forEach((barco) => {
+                    barco.lineas.forEach((linea) => {
+                        const producto = productos.find(
+                            (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
+                        );
+                        processedRows.push({
+                            CABSERIE: CABSERIE,
+                            CABNUMDOC: cabNumDoc,
+                            CABFECHA: fecha,
+                            CABCODPRO: vendiduria.codA3erp,
+                            CABREFERENCIA: `LONJA - ${fecha} - ${vendiduria.nombre}`,
+                            LINCODART: producto?.codA3erp || '',
+                            LINDESCLIN: linea.especie,
+                            LINUNIDADES: parseDecimalValue(linea.kilos),
+                            LINPRCMONEDA: parseDecimalValue(linea.precio),
+                            LINTIPIVA: 'RED10',
+                        });
+                        importeTotalVendiduria += calculateImporteFromLinea(linea);
+                    });
+                });
+
                 processedRows.push({
                     CABSERIE: CABSERIE,
                     CABNUMDOC: cabNumDoc,
                     CABFECHA: fecha,
-                    CABCODPRO: barco.vendiduria.codA3erp,
-                    CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
-                    LINCODART: producto?.codA3erp || '',
-                    LINDESCLIN: linea.especie,
-                    LINUNIDADES: parseDecimalValue(linea.kilos),
-                    LINPRCMONEDA: parseDecimalValue(linea.precio),
+                    CABCODPRO: lonjaDeIsla.codA3erp,
+                    CABREFERENCIA: `LONJA - ${fecha} - ${vendiduria.nombre}`,
+                    LINCODART: 9999,
+                    LINDESCLIN: 'Gastos de Lonja y OP',
+                    LINUNIDADES: 1,
+                    LINPRCMONEDA: importeTotalVendiduria * 3.5 / 100,
                     LINTIPIVA: 'RED10',
                 });
+                albaranSequence++;
             });
+        } else {
+            ventasVendiduriasArray.forEach(barco => {
+                const cabNumDoc = buildCabNumDoc(
+                    fechaSoloNumeros,
+                    compraTypeDigit,
+                    albaranSequence
+                );
+                barco.lineas.forEach(linea => {
+                    const producto = productos.find(
+                        (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
+                    );
+                    processedRows.push({
+                        CABSERIE: CABSERIE,
+                        CABNUMDOC: cabNumDoc,
+                        CABFECHA: fecha,
+                        CABCODPRO: barco.vendiduria.codA3erp,
+                        CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
+                        LINCODART: producto?.codA3erp || '',
+                        LINDESCLIN: linea.especie,
+                        LINUNIDADES: parseDecimalValue(linea.kilos),
+                        LINPRCMONEDA: parseDecimalValue(linea.precio),
+                        LINTIPIVA: 'RED10',
+                    });
+                });
 
-            const importeTotal = getImporteTotal(barco.lineas);
+                const importeTotal = getImporteTotal(barco.lineas);
 
-            processedRows.push({
-                CABSERIE: CABSERIE,
-                CABNUMDOC: cabNumDoc,
-                CABFECHA: fecha,
-                CABCODPRO: lonjaDeIsla.codA3erp,
-                CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
-                LINCODART: 9999,
-                LINDESCLIN: 'Gastos de Lonja y OP',
-                LINUNIDADES: 1,
-                LINPRCMONEDA: importeTotal * 3.5 / 100,
-                LINTIPIVA: 'RED10',
+                processedRows.push({
+                    CABSERIE: CABSERIE,
+                    CABNUMDOC: cabNumDoc,
+                    CABFECHA: fecha,
+                    CABCODPRO: lonjaDeIsla.codA3erp,
+                    CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
+                    LINCODART: 9999,
+                    LINDESCLIN: 'Gastos de Lonja y OP',
+                    LINUNIDADES: 1,
+                    LINPRCMONEDA: importeTotal * 3.5 / 100,
+                    LINTIPIVA: 'RED10',
+                });
+                albaranSequence++;
             });
-            albaranSequence++;
-
-        });
+        }
 
         const cabNumDocServicios = buildCabNumDoc(
             fechaSoloNumeros,
@@ -462,7 +524,7 @@ const ExportModal = ({ document }) => {
                 CABNUMDOC: cabNumDocServicios,
                 CABFECHA: fecha,
                 CABCODPRO: lonjaDeIsla.codA3erp,
-                CABREFERENCIA: `LONJA - ${fecha} - SERVICIOS`,
+                CABREFERENCIA: `LONJA - ${fecha} - SERVICIOS ${tradeLetter}`,
                 LINCODART: 9999,
                 LINDESCLIN: line.descripcion,
                 LINUNIDADES: line.unidades,
