@@ -166,7 +166,7 @@ export default function MassiveExportDialog({
         if (documentType === 'listadoComprasAsocArmadoresPuntaDelMoral') {
             const tipoSubasta = document?.details?.tipoSubasta;
             if (tipoSubasta === 'T2 Arrastre') return 'Subasta';
-            if (tipoSubasta === 'M1 M1') return 'Venta directa';
+            if (tipoSubasta === 'M1 M1') return 'Contrato';
         }
 
         return null;
