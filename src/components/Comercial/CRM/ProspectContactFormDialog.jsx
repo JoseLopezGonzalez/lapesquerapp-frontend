@@ -118,8 +118,8 @@ export default function ProspectContactFormDialog({ open, onOpenChange, prospect
                 render={({ field }) => (
                   <PhoneInput
                     id="contact-phone"
-                    defaultCountry="FR"
-                    placeholder="Enter phone number"
+                    defaultCountry="ES"
+                    placeholder="Teléfono"
                     autoComplete="tel"
                     aria-invalid={errors.phone ? 'true' : undefined}
                     name={field.name}

@@ -14,13 +14,17 @@ function normalizeToE164(value, defaultCountry) {
   const rawValue = value.trim();
   if (!rawValue) return '';
 
-  const compactValue = rawValue.startsWith('+')
+  const parsed = parsePhoneNumberFromString(rawValue, defaultCountry);
+  if (parsed) return parsed.number;
+
+  const digitsOnly = rawValue.startsWith('+')
     ? `+${rawValue.slice(1).replace(/[^\d]/g, '')}`
     : rawValue.replace(/[^\d]/g, '');
 
-  const parsed = parsePhoneNumberFromString(compactValue, defaultCountry);
-  if (parsed) return parsed.number;
-  if (compactValue.startsWith('+') && compactValue.length > 1) return compactValue;
+  const parsedCompact = parsePhoneNumberFromString(digitsOnly, defaultCountry);
+  if (parsedCompact) return parsedCompact.number;
+
+  if (digitsOnly.startsWith('+') && digitsOnly.length > 1) return digitsOnly;
   return '';
 }
 
@@ -91,7 +95,7 @@ function CountrySelect({ disabled, value, onChange, options }) {
 }
 
 const PhoneInput = React.forwardRef(
-  ({ className, defaultCountry = 'FR', value, onChange, ...props }, ref) => {
+  ({ className, defaultCountry = 'ES', value, onChange, ...props }, ref) => {
     const normalizedValue = React.useMemo(
       () => normalizeToE164(value, defaultCountry),
       [value, defaultCountry]
