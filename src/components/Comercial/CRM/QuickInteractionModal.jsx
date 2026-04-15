@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CalendarCheck2 } from 'lucide-react';
+import { CalendarCheck2, Loader2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/datePicker';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -56,6 +56,7 @@ function QuickInteractionModalInner({
 }) {
   const { createInteraction } = useCommercialInteractionMutations();
   const isCompleteMode = mode === 'complete';
+  const [isImprovingSummary, setIsImprovingSummary] = useState(false);
 
   const formSchema = useMemo(() => getQuickInteractionFormSchema(isCompleteMode), [isCompleteMode]);
 
@@ -80,6 +81,7 @@ function QuickInteractionModalInner({
 
   const type = watch('type');
   const result = watch('result');
+  const summary = watch('summary');
 
   const wasOpenRef = useRef(false);
 
@@ -170,6 +172,51 @@ function QuickInteractionModalInner({
     });
   };
 
+  const handleImproveSummary = async () => {
+    const rawSummary = String(summary ?? '').trim();
+    if (!rawSummary) {
+      notify.error({ title: 'Escribe un resumen antes de mejorarlo con IA' });
+      return;
+    }
+
+    setIsImprovingSummary(true);
+    try {
+      const response = await fetch('/api/crm/improve-text', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          kind: 'interaction_summary',
+          text: rawSummary,
+        }),
+      });
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload?.error || 'No se pudo mejorar el resumen con IA');
+      }
+
+      const improvedSummary = String(payload?.improvedText ?? '').trim();
+      if (!improvedSummary) {
+        throw new Error('La IA no devolvió un resumen válido');
+      }
+
+      setValue('summary', improvedSummary, {
+        shouldValidate: true,
+        shouldDirty: true,
+        shouldTouch: true,
+      });
+    } catch (error) {
+      notify.error({
+        title: 'Error al mejorar el resumen',
+        description: error?.message || 'No se pudo procesar la mejora con IA',
+      });
+    } finally {
+      setIsImprovingSummary(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent size="lg">
@@ -225,7 +272,26 @@ function QuickInteractionModalInner({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="interaction-summary">Resumen</Label>
+            <div className="flex items-center justify-between gap-2">
+              <Label htmlFor="interaction-summary">Resumen</Label>
+              <Button
+                type="button"
+                onClick={handleImproveSummary}
+                disabled={isImprovingSummary || createInteraction.isPending}
+              >
+                {isImprovingSummary ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    Mejorando...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="size-4" />
+                    Mejorar con IA
+                  </>
+                )}
+              </Button>
+            </div>
             <Textarea
               id="interaction-summary"
               rows={3}

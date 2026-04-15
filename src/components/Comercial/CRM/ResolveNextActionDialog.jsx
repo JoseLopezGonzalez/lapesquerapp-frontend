@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { format } from 'date-fns';
-import { Calendar, CalendarClock, CalendarOff, FilePen, Lock } from 'lucide-react';
+import { Calendar, CalendarClock, CalendarOff, FilePen, Loader2, Lock, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/datePicker';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -12,6 +12,7 @@ import { notify } from '@/lib/notifications';
 import { useAgendaMutations, usePendingAgendaAction } from '@/hooks/useAgenda';
 import { extractAgendaErrorCode, getAgendaDomainErrorMessage } from './agendaErrorMessages';
 import { formatDateValue } from './utils';
+import { CRM_AGENDA_DESCRIPTION_MAX_LENGTH } from './schemas/crmTextLimits';
 
 const strategyOptions = [
   {
@@ -61,6 +62,7 @@ export default function ResolveNextActionDialog({ open, onOpenChange, targetType
   const [nextActionAt, setNextActionAt] = useState(null);
   const [description, setDescription] = useState('');
   const [reason, setReason] = useState('');
+  const [isImprovingDescription, setIsImprovingDescription] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -145,6 +147,47 @@ export default function ResolveNextActionDialog({ open, onOpenChange, targetType
           description: 'Se ha recargado la pendiente actual. Revisa y vuelve a confirmar.',
         });
       }
+    }
+  };
+
+  const handleImproveDescription = async () => {
+    const rawDescription = String(description ?? '').trim();
+    if (!rawDescription) {
+      notify.error({ title: 'Escribe una descripción antes de mejorarla con IA' });
+      return;
+    }
+
+    setIsImprovingDescription(true);
+    try {
+      const response = await fetch('/api/crm/improve-text', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          kind: 'next_action_description',
+          text: rawDescription,
+        }),
+      });
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload?.error || 'No se pudo mejorar la descripción con IA');
+      }
+
+      const improvedDescription = String(payload?.improvedText ?? '').trim();
+      if (!improvedDescription) {
+        throw new Error('La IA no devolvió una descripción válida');
+      }
+
+      setDescription(improvedDescription);
+    } catch (error) {
+      notify.error({
+        title: 'Error al mejorar la descripción',
+        description: error?.message || 'No se pudo procesar la mejora con IA',
+      });
+    } finally {
+      setIsImprovingDescription(false);
     }
   };
 
@@ -237,12 +280,32 @@ export default function ResolveNextActionDialog({ open, onOpenChange, targetType
 
               {showsDescription && (
                 <div className="grid gap-2">
-                  <Label htmlFor="resolve-next-action-description">
-                    Descripción{!requiresDescription && <span className="ml-1 text-xs font-normal text-muted-foreground">(opcional)</span>}
-                  </Label>
+                  <div className="flex items-center justify-between gap-2">
+                    <Label htmlFor="resolve-next-action-description">
+                      Descripción{!requiresDescription && <span className="ml-1 text-xs font-normal text-muted-foreground">(opcional)</span>}
+                    </Label>
+                    <Button
+                      type="button"
+                      onClick={handleImproveDescription}
+                      disabled={isImprovingDescription || resolveNextAction.isPending}
+                    >
+                      {isImprovingDescription ? (
+                        <>
+                          <Loader2 className="size-4 animate-spin" />
+                          Mejorando...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="size-4" />
+                          Mejorar con IA
+                        </>
+                      )}
+                    </Button>
+                  </div>
                   <Textarea
                     id="resolve-next-action-description"
                     rows={3}
+                    maxLength={CRM_AGENDA_DESCRIPTION_MAX_LENGTH}
                     value={description}
                     onChange={(event) => setDescription(event.target.value)}
                     placeholder="Enviar oferta, llamar al cliente, preparar muestra..."

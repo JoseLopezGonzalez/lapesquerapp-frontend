@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader2, Sparkles } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -43,6 +44,8 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
   const { data: countries } = useCountriesList({ page: 1, perPage: 250, enabled: open });
   const { createProspect, updateProspect } = useProspectMutations();
   const [warnings, setWarnings] = useState([]);
+  const [isImprovingCommercialInterest, setIsImprovingCommercialInterest] = useState(false);
+  const [isImprovingNotes, setIsImprovingNotes] = useState(false);
 
   const prospectSchema = useMemo(() => getProspectFormSchema(isEditing), [isEditing]);
 
@@ -69,6 +72,9 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
 
   const title = useMemo(() => (initialData ? 'Editar prospecto' : 'Nuevo prospecto'), [initialData]);
   const includePrimaryContact = watch('includePrimaryContact');
+  const commercialInterestNotes = watch('commercialInterestNotes');
+  const notes = watch('notes');
+  const isSubmitting = createProspect.isPending || updateProspect.isPending;
 
   const onValidSubmit = async (values) => {
     const payload = {
@@ -122,6 +128,78 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
     notify.error({
       title: 'Revisa el formulario',
       description: n > 1 ? `Hay ${n} campos con errores.` : 'Corrige el error indicado antes de guardar.',
+    });
+  };
+
+  const improveProspectText = async ({ kind, text, setLoading, onSuccess, emptyTextErrorTitle, genericErrorTitle }) => {
+    const rawText = String(text ?? '').trim();
+    if (!rawText) {
+      notify.error({ title: emptyTextErrorTitle });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch('/api/crm/improve-text', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ kind, text: rawText }),
+      });
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload?.error || 'No se pudo mejorar el texto con IA');
+      }
+
+      const improvedText = String(payload?.improvedText ?? '').trim();
+      if (!improvedText) {
+        throw new Error('La IA no devolvió un texto válido');
+      }
+
+      onSuccess(improvedText);
+    } catch (error) {
+      notify.error({
+        title: genericErrorTitle,
+        description: error?.message || 'No se pudo procesar la mejora con IA',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleImproveCommercialInterest = async () => {
+    await improveProspectText({
+      kind: 'prospect_commercial_interest',
+      text: commercialInterestNotes,
+      setLoading: setIsImprovingCommercialInterest,
+      onSuccess: (improvedText) => {
+        setValue('commercialInterestNotes', improvedText, {
+          shouldValidate: true,
+          shouldDirty: true,
+          shouldTouch: true,
+        });
+      },
+      emptyTextErrorTitle: 'Escribe el interés comercial antes de mejorarlo con IA',
+      genericErrorTitle: 'Error al mejorar el interés comercial',
+    });
+  };
+
+  const handleImproveNotes = async () => {
+    await improveProspectText({
+      kind: 'prospect_notes',
+      text: notes,
+      setLoading: setIsImprovingNotes,
+      onSuccess: (improvedText) => {
+        setValue('notes', improvedText, {
+          shouldValidate: true,
+          shouldDirty: true,
+          shouldTouch: true,
+        });
+      },
+      emptyTextErrorTitle: 'Escribe unas notas antes de mejorarlas con IA',
+      genericErrorTitle: 'Error al mejorar las notas',
     });
   };
 
@@ -278,13 +356,33 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="commercial-interest">
-                  Interés comercial
-                  <RequiredMark />
-                </Label>
+                <div className="flex items-center justify-between gap-2">
+                  <Label htmlFor="commercial-interest">
+                    Interés comercial
+                    <RequiredMark />
+                  </Label>
+                  <Button
+                    type="button"
+                    onClick={handleImproveCommercialInterest}
+                    disabled={isImprovingCommercialInterest || isSubmitting}
+                  >
+                    {isImprovingCommercialInterest ? (
+                      <>
+                        <Loader2 className="size-4 animate-spin" />
+                        Mejorando...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="size-4" />
+                        Mejorar con IA
+                      </>
+                    )}
+                  </Button>
+                </div>
                 <Textarea
                   id="commercial-interest"
                   rows={4}
+                  maxLength={5000}
                   placeholder="Formato, calibre, mercado objetivo, referencias..."
                   aria-invalid={errors.commercialInterestNotes ? 'true' : undefined}
                   {...register('commercialInterestNotes')}
@@ -293,10 +391,30 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="notes">Notas</Label>
+                <div className="flex items-center justify-between gap-2">
+                  <Label htmlFor="notes">Notas</Label>
+                  <Button
+                    type="button"
+                    onClick={handleImproveNotes}
+                    disabled={isImprovingNotes || isSubmitting}
+                  >
+                    {isImprovingNotes ? (
+                      <>
+                        <Loader2 className="size-4 animate-spin" />
+                        Mejorando...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="size-4" />
+                        Mejorar con IA
+                      </>
+                    )}
+                  </Button>
+                </div>
                 <Textarea
                   id="notes"
                   rows={4}
+                  maxLength={5000}
                   aria-invalid={errors.notes ? 'true' : undefined}
                   {...register('notes')}
                 />
@@ -390,7 +508,7 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={createProspect.isPending || updateProspect.isPending}>
+            <Button type="submit" disabled={isSubmitting}>
               Guardar
             </Button>
           </div>
