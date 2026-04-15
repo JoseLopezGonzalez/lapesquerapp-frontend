@@ -101,6 +101,12 @@ const PhoneInput = React.forwardRef(
       [value, defaultCountry]
     );
 
+    React.useEffect(() => {
+      if (normalizedValue && normalizedValue !== value) {
+        onChange?.(normalizedValue);
+      }
+    }, [normalizedValue, value, onChange]);
+
     return (
       <RPNInput.default
         ref={ref}
