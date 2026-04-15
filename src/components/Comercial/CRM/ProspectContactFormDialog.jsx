@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PhoneInput } from '@/components/reui/phone-input';
 import { notify } from '@/lib/notifications';
 import { ApiError } from '@/lib/api/apiHelpers';
 import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
@@ -111,12 +112,23 @@ export default function ProspectContactFormDialog({ open, onOpenChange, prospect
 
             <div className="grid gap-2">
               <Label htmlFor="contact-phone">Teléfono</Label>
-              <Input
-                id="contact-phone"
-                type="tel"
-                autoComplete="tel"
-                aria-invalid={errors.phone ? 'true' : undefined}
-                {...register('phone')}
+              <Controller
+                name="phone"
+                control={control}
+                render={({ field }) => (
+                  <PhoneInput
+                    id="contact-phone"
+                    defaultCountry="FR"
+                    placeholder="Enter phone number"
+                    autoComplete="tel"
+                    aria-invalid={errors.phone ? 'true' : undefined}
+                    name={field.name}
+                    value={field.value ?? ''}
+                    onBlur={field.onBlur}
+                    onChange={field.onChange}
+                    ref={field.ref}
+                  />
+                )}
               />
               <FieldError message={errors.phone?.message} />
             </div>

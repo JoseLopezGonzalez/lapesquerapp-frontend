@@ -42,6 +42,15 @@ const FILTER_TABS = [
   { label: 'Convertidos', value: 'customer' },
 ];
 
+function haveSameProspectIds(listA, listB) {
+  if (listA === listB) return true;
+  if (listA.length !== listB.length) return false;
+  for (let index = 0; index < listA.length; index += 1) {
+    if (String(listA[index].id) !== String(listB[index].id)) return false;
+  }
+  return true;
+}
+
 function ProspectCard({ prospect, selected, onClick }) {
   const overdue = isOverdueDate(prospect.nextActionAt);
   const ariaExtras = [prospect.country?.name].filter(Boolean).join(' · ');
@@ -114,14 +123,16 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
 
   useEffect(() => {
     setLoadedProspects((prev) => {
-      if (page === 1) return prospects;
+      if (page === 1) {
+        return haveSameProspectIds(prev, prospects) ? prev : prospects;
+      }
       const seen = new Set(prev.map((item) => String(item.id)));
       const next = [...prev];
       for (const item of prospects) {
         if (seen.has(String(item.id))) continue;
         next.push(item);
       }
-      return next;
+      return next.length === prev.length ? prev : next;
     });
   }, [prospects, page]);
 
