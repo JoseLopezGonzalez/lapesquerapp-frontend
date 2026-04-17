@@ -42,14 +42,6 @@ const FILTER_TABS = [
   { label: 'Convertidos', value: 'customer' },
 ];
 
-function haveSameProspectIds(listA, listB) {
-  if (listA === listB) return true;
-  if (listA.length !== listB.length) return false;
-  for (let index = 0; index < listA.length; index += 1) {
-    if (String(listA[index].id) !== String(listB[index].id)) return false;
-  }
-  return true;
-}
 
 function ProspectCard({ prospect, selected, onClick }) {
   const overdue = isOverdueDate(prospect.nextActionAt);
@@ -124,15 +116,15 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
   useEffect(() => {
     setLoadedProspects((prev) => {
       if (page === 1) {
-        return haveSameProspectIds(prev, prospects) ? prev : prospects;
+        return prospects;
       }
+      const prospectMap = new Map(prospects.map((p) => [String(p.id), p]));
       const seen = new Set(prev.map((item) => String(item.id)));
-      const next = [...prev];
+      const next = prev.map((item) => prospectMap.get(String(item.id)) ?? item);
       for (const item of prospects) {
-        if (seen.has(String(item.id))) continue;
-        next.push(item);
+        if (!seen.has(String(item.id))) next.push(item);
       }
-      return next.length === prev.length ? prev : next;
+      return next;
     });
   }, [prospects, page]);
 

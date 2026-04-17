@@ -972,11 +972,11 @@ export default function CustomersPageClient({ initialCustomerId = null }) {
   useEffect(() => {
     setLoadedCustomers((prev) => {
       if (page === 1) return customers;
+      const customerMap = new Map(customers.map((c) => [String(c.id), c]));
       const seen = new Set(prev.map((item) => String(item.id)));
-      const next = [...prev];
+      const next = prev.map((item) => customerMap.get(String(item.id)) ?? item);
       for (const item of customers) {
-        if (seen.has(String(item.id))) continue;
-        next.push(item);
+        if (!seen.has(String(item.id))) next.push(item);
       }
       return next;
     });

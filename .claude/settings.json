@@ -19,7 +19,8 @@
       "Bash(wc -l /home/jose/brisapp-nextjs/src/app/admin/productions/[id]/records/create/CreateProductionRecordPage.jsx)",
       "Bash(ls -la /home/jose/brisapp-nextjs/src/lib/queryClient.*)",
       "Bash(find /home/jose/brisapp-nextjs -name *login* -o -name *auth*verify*)",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "Bash(grep -rn \"useQueryClient\\\\|invalidateQueries\\\\|setQueryData\" /home/jose/brisapp-nextjs/src/components/Comercial/CRM/*.jsx)"
     ]
   }
 }
