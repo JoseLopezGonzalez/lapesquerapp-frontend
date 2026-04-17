@@ -61,8 +61,8 @@ export const barcos = [
   {
     cod: '963',
     barco: "NUEVO CAROAN",
-    vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
-    codVendiduria: 'PI'
+    vendiduria: "EXPO-VENT DE PESCA, S.L.",
+    codVendiduria: 'EX'
   },
   {
     barco: "NAVEGA",
