@@ -63,4 +63,5 @@ export const productos = [
   { nombre: "CIGALAS", codA3erp: "10142", codBrisappProducto: "310" },
   { nombre: "MORUNO", codA3erp: "10159", codBrisappProducto: "328" },
   { nombre: "CHOQUITO", codA3erp: "10169", codBrisappProducto: "333" },
+  { nombre: "PERIQUITO", codA3erp: "10170", codBrisappProducto: "334" },
 ]

@@ -38,6 +38,12 @@ export const barcos = [
     codVendiduria: 'CF'
   },
   {
+    cod: '107',
+    barco: "JAVI CALE",
+    vendiduria: "CONGELADOS FRIPERGA, S.L.",
+    codVendiduria: 'CF'
+  },
+  {
     barco: "MANINO",
     vendiduria: "CONGELADOS FRIPERGA, S.L.",
     codVendiduria: 'CF'
@@ -49,6 +55,12 @@ export const barcos = [
   },
   {
     barco: "GRAN SEBASTIAN",
+    vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
+    codVendiduria: 'PI'
+  },
+  {
+    cod: '963',
+    barco: "NUEVO CAROAN",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
     codVendiduria: 'PI'
   },
