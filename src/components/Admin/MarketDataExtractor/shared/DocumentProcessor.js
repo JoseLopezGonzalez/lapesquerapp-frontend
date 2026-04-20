@@ -11,6 +11,7 @@ import { validateAlbaranCofraStructure, validateLonjaDeIslaStructure, validateAs
 import { parseAlbaranCofraData, parseLonjaDeIslaData, parseAsocData } from "@/parsers/lonjas";
 import { ValidationError, ParsingError } from "@/errors/lonjasErrors";
 import { normalizeLonjaDeIslaMultiPage } from "@/helpers/azure/lonjaDeIslaMultiPageNormalizer";
+import { normalizeAsocMultiPage } from "@/helpers/azure/asocMultiPageNormalizer";
 
 /**
  * Mapeo de tipos de documento a sus procesadores específicos
@@ -29,6 +30,7 @@ const DOCUMENT_PROCESSORS = {
     },
     'listadoComprasAsocArmadoresPuntaDelMoral': {
         azureType: 'ListadoComprasAsocArmadoresPuntaDelMoral',
+        preprocess: normalizeAsocMultiPage,
         validator: validateAsocStructure,
         parser: parseAsocData
     }
