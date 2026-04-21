@@ -8,6 +8,9 @@ import {
   getOrdersTotalAmountStats,
   getOrderRankingStats,
   getSalesBySalesperson,
+  getOrdersProfitabilitySummary,
+  getOrdersProfitabilityTimeline,
+  getOrdersProfitabilityProducts,
 } from '@/services/orderService';
 
 interface OrderRankingItem {
@@ -147,6 +150,19 @@ interface SalesBySalespersonParams {
   range?: { from?: Date; to?: Date };
 }
 
+interface ProfitabilityRangeParams {
+  range?: { from?: Date; to?: Date };
+}
+
+interface ProfitabilitySummaryParams extends ProfitabilityRangeParams {
+  productId?: string;
+}
+
+interface ProfitabilityTimelineParams extends ProfitabilityRangeParams {
+  productId?: string;
+  granularity?: 'day' | 'week' | 'month';
+}
+
 function parseSalesBySalespersonResponse(raw: unknown): SalesBySalespersonItem[] {
   const arr = Array.isArray(raw)
     ? raw
@@ -184,6 +200,120 @@ export function useSalesBySalesperson(params: SalesBySalespersonParams) {
 
   return {
     data,
+    isLoading,
+    error: error?.message ?? null,
+  };
+}
+
+/**
+ * Hook para obtener el resumen global de rentabilidad de pedidos.
+ */
+export function useOrdersProfitabilitySummary(params: ProfitabilitySummaryParams) {
+  const { range } = params ?? {};
+  const productId = params?.productId ?? 'all';
+  const { data: session, status } = useSession();
+  const token = session?.user?.accessToken;
+  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
+  const yearToDate = getYearToDateRange();
+  const dateFrom = range?.from?.toLocaleDateString?.('sv-SE') ?? yearToDate.dateFrom;
+  const dateTo = range?.to?.toLocaleDateString?.('sv-SE') ?? yearToDate.dateTo;
+  const enabled = !!token && !!tenantId && !!dateFrom && !!dateTo && status !== 'loading';
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['orders', 'profitabilitySummary', tenantId ?? 'unknown', dateFrom, dateTo, productId, status],
+    queryFn: () =>
+      getOrdersProfitabilitySummary(
+        {
+          dateFrom,
+          dateTo,
+          productIds: productId && productId !== 'all' ? [productId] : undefined,
+        },
+        token as string
+      ),
+    enabled,
+  });
+
+  return {
+    data: data ?? null,
+    isLoading,
+    error: error?.message ?? null,
+  };
+}
+
+/**
+ * Hook para obtener la evolución temporal de rentabilidad de pedidos.
+ */
+export function useOrdersProfitabilityTimeline(params: ProfitabilityTimelineParams) {
+  const { range } = params ?? {};
+  const productId = params?.productId ?? 'all';
+  const granularity = params?.granularity ?? 'month';
+  const { data: session, status } = useSession();
+  const token = session?.user?.accessToken;
+  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
+  const yearToDate = getYearToDateRange();
+  const dateFrom = range?.from?.toLocaleDateString?.('sv-SE') ?? yearToDate.dateFrom;
+  const dateTo = range?.to?.toLocaleDateString?.('sv-SE') ?? yearToDate.dateTo;
+  const enabled = !!token && !!tenantId && !!dateFrom && !!dateTo && status !== 'loading';
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: [
+      'orders',
+      'profitabilityTimeline',
+      tenantId ?? 'unknown',
+      dateFrom,
+      dateTo,
+      granularity,
+      productId,
+      status,
+    ],
+    queryFn: () =>
+      getOrdersProfitabilityTimeline(
+        {
+          dateFrom,
+          dateTo,
+          granularity,
+          productIds: productId && productId !== 'all' ? [productId] : undefined,
+        },
+        token as string
+      ),
+    enabled,
+  });
+
+  return {
+    data: data ?? null,
+    isLoading,
+    error: error?.message ?? null,
+  };
+}
+
+/**
+ * Hook para obtener la rentabilidad por producto.
+ */
+export function useOrdersProfitabilityProducts(params: ProfitabilityRangeParams) {
+  const { range } = params ?? {};
+  const { data: session, status } = useSession();
+  const token = session?.user?.accessToken;
+  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
+  const yearToDate = getYearToDateRange();
+  const dateFrom = range?.from?.toLocaleDateString?.('sv-SE') ?? yearToDate.dateFrom;
+  const dateTo = range?.to?.toLocaleDateString?.('sv-SE') ?? yearToDate.dateTo;
+  const enabled = !!token && !!tenantId && !!dateFrom && !!dateTo && status !== 'loading';
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['orders', 'profitabilityProducts', tenantId ?? 'unknown', dateFrom, dateTo, status],
+    queryFn: () =>
+      getOrdersProfitabilityProducts(
+        {
+          dateFrom,
+          dateTo,
+        },
+        token as string
+      ),
+    enabled,
+  });
+
+  return {
+    data: data ?? null,
     isLoading,
     error: error?.message ?? null,
   };

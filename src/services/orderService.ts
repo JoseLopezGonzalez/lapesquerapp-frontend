@@ -79,6 +79,69 @@ export interface OrderCostAnalysisResponse {
   byPallet: OrderCostAnalysisPallet[];
 }
 
+export interface OrdersProfitabilitySummaryParams {
+  dateFrom: string;
+  dateTo: string;
+  productIds?: Array<string | number>;
+}
+
+export interface OrdersProfitabilityTimelineParams extends OrdersProfitabilitySummaryParams {
+  granularity?: 'day' | 'week' | 'month';
+}
+
+export interface OrdersProfitabilityProductsParams {
+  dateFrom: string;
+  dateTo: string;
+}
+
+export interface ProfitabilitySummaryResponse {
+  period: {
+    from: string;
+    to: string;
+  };
+  ordersCount: number;
+  totalRevenue: number;
+  totalCost: number | null;
+  grossMargin: number | null;
+  marginPercentage: number | null;
+}
+
+export interface ProfitabilityTimelinePoint {
+  period: string;
+  periodLabel: string;
+  ordersCount: number;
+  totalRevenue: number;
+  totalCost: number | null;
+  grossMargin: number | null;
+  marginPercentage: number | null;
+}
+
+export interface ProfitabilityTimelineResponse {
+  granularity: 'day' | 'week' | 'month';
+  series: ProfitabilityTimelinePoint[];
+}
+
+export interface ProfitabilityProductItem {
+  product: {
+    id: number;
+    name: string;
+  };
+  totalWeightKg: number;
+  totalRevenue: number;
+  totalCost: number | null;
+  grossMargin: number | null;
+  marginPercentage: number | null;
+  ordersCount: number;
+}
+
+export interface ProfitabilityProductsResponse {
+  period: {
+    from: string;
+    to: string;
+  };
+  products: ProfitabilityProductItem[];
+}
+
 /** Order incident payload */
 export interface OrderIncidentPayload {
   description?: string;
@@ -106,6 +169,28 @@ export interface SalesChartParams {
   to: string;
   unit: string;
   groupBy: string;
+}
+
+function buildProfitabilityQuery(
+  params: OrdersProfitabilitySummaryParams & { granularity?: string }
+): URLSearchParams {
+  const query = new URLSearchParams({
+    dateFrom: params.dateFrom,
+    dateTo: params.dateTo,
+  });
+
+  if (params.granularity) {
+    query.append('granularity', params.granularity);
+  }
+
+  for (const productId of params.productIds ?? []) {
+    const normalizedId = String(productId);
+    if (normalizedId && normalizedId !== 'all') {
+      query.append('productIds[]', normalizedId);
+    }
+  }
+
+  return query;
 }
 
 /**
@@ -637,6 +722,103 @@ export async function getOrdersTotalAmountStats(
   }
 
   return response.json();
+}
+
+/**
+ * Fetches profitability summary stats for orders.
+ */
+export async function getOrdersProfitabilitySummary(
+  params: OrdersProfitabilitySummaryParams,
+  token: AuthToken
+): Promise<ProfitabilitySummaryResponse> {
+  const query = buildProfitabilityQuery(params);
+  const response = await fetchWithTenant(
+    `${API_URL_V2}statistics/orders/profitability-summary?${query.toString()}`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Authorization: `Bearer ${token}`,
+        'User-Agent': getUserAgent(),
+      },
+    }
+  );
+
+  const data = await handleServiceResponse(
+    response,
+    null,
+    'Error al obtener el resumen de rentabilidad'
+  );
+
+  return ((data as { data?: ProfitabilitySummaryResponse })?.data ??
+    data) as ProfitabilitySummaryResponse;
+}
+
+/**
+ * Fetches profitability timeline stats for orders.
+ */
+export async function getOrdersProfitabilityTimeline(
+  params: OrdersProfitabilityTimelineParams,
+  token: AuthToken
+): Promise<ProfitabilityTimelineResponse> {
+  const query = buildProfitabilityQuery(params);
+  const response = await fetchWithTenant(
+    `${API_URL_V2}statistics/orders/profitability-timeline?${query.toString()}`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Authorization: `Bearer ${token}`,
+        'User-Agent': getUserAgent(),
+      },
+    }
+  );
+
+  const data = await handleServiceResponse(
+    response,
+    null,
+    'Error al obtener la evolución de rentabilidad'
+  );
+
+  return ((data as { data?: ProfitabilityTimelineResponse })?.data ??
+    data) as ProfitabilityTimelineResponse;
+}
+
+/**
+ * Fetches profitability by products stats for orders.
+ */
+export async function getOrdersProfitabilityProducts(
+  params: OrdersProfitabilityProductsParams,
+  token: AuthToken
+): Promise<ProfitabilityProductsResponse> {
+  const query = new URLSearchParams({
+    dateFrom: params.dateFrom,
+    dateTo: params.dateTo,
+  });
+
+  const response = await fetchWithTenant(
+    `${API_URL_V2}statistics/orders/profitability-products?${query.toString()}`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Authorization: `Bearer ${token}`,
+        'User-Agent': getUserAgent(),
+      },
+    }
+  );
+
+  const data = await handleServiceResponse(
+    response,
+    null,
+    'Error al obtener la rentabilidad por producto'
+  );
+
+  return ((data as { data?: ProfitabilityProductsResponse })?.data ??
+    data) as ProfitabilityProductsResponse;
 }
 
 /**

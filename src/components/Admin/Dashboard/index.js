@@ -9,7 +9,6 @@ import { TotalAmountSoldCard } from "./TotalAmountSoldCard";
 import { StockBySpeciesCard } from "./StockBySpeciesCard";
 import { StockByProductsCard } from "./StockByProductsCard";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { NewLabelingFeatureCard } from "./NewLabelingFeatureCard";
 import { CurrentStockCard } from "./CurrentStockCard";
 import { WorkingEmployeesCard } from "./WorkingEmployeesCard";
 import { WorkerStatisticsCard } from "./WorkerStatisticsCard";
@@ -18,6 +17,9 @@ import { ReceptionChart } from "./ReceptionChart";
 import { DispatchChart } from "./DispatchChart";
 import { TransportRadarChart } from "./TransportRadarChart";
 import { DailyCalibersBySpeciesCard } from "./DailyCalibersBySpeciesCard";
+import { OrdersProfitabilitySummaryCard } from "./OrdersProfitabilitySummaryCard";
+import { OrdersProfitabilityTimelineCard } from "./OrdersProfitabilityTimelineCard";
+import { OrdersProfitabilityProductsCard } from "./OrdersProfitabilityProductsCard";
 import Masonry from "react-masonry-css";
 
 const breakpointColumnsObj = {
@@ -68,7 +70,7 @@ export default function Dashboard() {
                             <TotalAmountSoldCard />
                         </div>
                         <div className="w-full overflow-hidden hidden sm:block">
-                            <NewLabelingFeatureCard />
+                            <OrdersProfitabilitySummaryCard />
                         </div>
                     </div>
 
@@ -91,6 +93,12 @@ export default function Dashboard() {
                         </div>
                         <div>
                             <StockByProductsCard />
+                        </div>
+                        <div className="w-full min-w-0 max-w-full box-border overflow-hidden">
+                            <OrdersProfitabilityTimelineCard />
+                        </div>
+                        <div className="w-full min-w-0 max-w-full box-border overflow-hidden">
+                            <OrdersProfitabilityProductsCard />
                         </div>
                         <div className="w-full min-w-0 max-w-full box-border overflow-hidden">
                             <SalesChart />

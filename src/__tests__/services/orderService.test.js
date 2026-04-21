@@ -8,6 +8,9 @@ import {
   getOrder,
   getOrderCostAnalysis,
   getActiveOrders,
+  getOrdersProfitabilityProducts,
+  getOrdersProfitabilitySummary,
+  getOrdersProfitabilityTimeline,
   createOrder,
   updateOrder,
   setOrderStatus,
@@ -183,6 +186,91 @@ describe('orderService', () => {
         })
       );
       expect(result).toEqual(analysis);
+    });
+  });
+
+  describe('profitability statistics', () => {
+    it('fetches profitability summary with product filters', async () => {
+      const summary = {
+        period: { from: '2026-01-01', to: '2026-03-31' },
+        ordersCount: 3,
+        totalRevenue: 1500,
+        totalCost: 1000,
+        grossMargin: 500,
+        marginPercentage: 33.33,
+      };
+
+      fetchWithTenant.mockResolvedValueOnce(mockJsonResponse({ data: summary }));
+
+      const result = await getOrdersProfitabilitySummary(
+        {
+          dateFrom: '2026-01-01',
+          dateTo: '2026-03-31',
+          productIds: [12, '18'],
+        },
+        token
+      );
+
+      expect(fetchWithTenant).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'statistics/orders/profitability-summary?dateFrom=2026-01-01&dateTo=2026-03-31&productIds%5B%5D=12&productIds%5B%5D=18'
+        ),
+        expect.any(Object)
+      );
+      expect(result).toEqual(summary);
+    });
+
+    it('fetches profitability timeline with granularity and omits all product filter', async () => {
+      const timeline = {
+        granularity: 'week',
+        series: [],
+      };
+
+      fetchWithTenant.mockResolvedValueOnce(mockJsonResponse({ data: timeline }));
+
+      const result = await getOrdersProfitabilityTimeline(
+        {
+          dateFrom: '2026-01-01',
+          dateTo: '2026-03-31',
+          granularity: 'week',
+          productIds: ['all'],
+        },
+        token
+      );
+
+      expect(fetchWithTenant).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'statistics/orders/profitability-timeline?dateFrom=2026-01-01&dateTo=2026-03-31&granularity=week'
+        ),
+        expect.any(Object)
+      );
+      expect(fetchWithTenant.mock.calls[0][0]).not.toContain('productIds%5B%5D=all');
+      expect(result).toEqual(timeline);
+    });
+
+    it('fetches profitability products stats', async () => {
+      const products = {
+        period: { from: '2026-01-01', to: '2026-03-31' },
+        products: [],
+      };
+
+      fetchWithTenant.mockResolvedValueOnce(mockJsonResponse({ data: products }));
+
+      const result = await getOrdersProfitabilityProducts(
+        {
+          dateFrom: '2026-01-01',
+          dateTo: '2026-03-31',
+        },
+        token
+      );
+
+      expect(fetchWithTenant).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'statistics/orders/profitability-products?dateFrom=2026-01-01&dateTo=2026-03-31'
+        ),
+        expect.any(Object)
+      );
+      expect(result).toEqual(products);
     });
   });
 
