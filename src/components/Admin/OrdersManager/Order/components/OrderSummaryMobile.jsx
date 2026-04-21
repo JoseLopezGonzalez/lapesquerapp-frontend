@@ -47,6 +47,11 @@ export default function OrderSummaryMobile({
           <p className="text-base text-muted-foreground mt-1">
             Cliente Nº {order.customer?.id ?? '—'}
           </p>
+          {order?.buyerReference ? (
+            <p className="text-sm text-muted-foreground mt-1">
+              Ref. cliente: {order.buyerReference}
+            </p>
+          ) : null}
         </div>
       </div>
 

@@ -21,9 +21,12 @@ export interface OrderPayload {
 export interface Order {
   id: number | string;
   orderType?: 'standard' | 'autoventa';
+  revenuePerKg?: number | null;
   totalCost?: number | null;
+  costPerKg?: number | null;
   grossMargin?: number | null;
   marginPercentage?: number | null;
+  marginPerKg?: number | null;
   [key: string]: unknown;
 }
 
@@ -57,7 +60,10 @@ export interface OrderCostAnalysisProductLine {
 export interface OrderCostAnalysisPallet {
   palletId: number;
   totalWeightKg: number;
+  totalRevenue?: number | null;
   totalCost: number | null;
+  totalMargin?: number | null;
+  marginPercentage?: number | null;
   costPerKg: number | null;
   products: string[];
 }

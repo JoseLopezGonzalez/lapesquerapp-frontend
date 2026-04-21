@@ -61,6 +61,12 @@ export default function OrderHeaderDesktop({
             <span className="text-base font-medium">{order.customer?.name ?? '—'}</span>
             <br />
             <span className="text-sm text-muted-foreground">Cliente Nº {order.customer?.id ?? '—'}</span>
+            {order?.buyerReference ? (
+              <>
+                <br />
+                <span className="text-sm text-muted-foreground">Ref. cliente: {order.buyerReference}</span>
+              </>
+            ) : null}
           </p>
         </div>
         <div>
