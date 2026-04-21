@@ -30,20 +30,19 @@ export function OrdersProfitabilitySummaryCard() {
     return (
       <Card className="relative h-full rounded-2xl border bg-gradient-to-t from-neutral-100 to-white p-4 shadow-sm dark:from-neutral-800 dark:to-neutral-900">
         <CardHeader className="p-0 pb-4">
-          <div className="mb-2 flex items-center justify-between gap-2">
-            <Skeleton className="h-4 w-40" />
-            <Skeleton className="h-5 w-16" />
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <Skeleton className="h-4 w-36" />
+              <div className="mt-2 flex items-start gap-2">
+                <Skeleton className="h-9 w-36" />
+                <Skeleton className="mt-1 h-4 w-4 rounded-full" />
+              </div>
+            </div>
+            <Skeleton className="h-6 w-16 rounded-full" />
           </div>
-          <Skeleton className="h-9 w-36" />
-          <Skeleton className="mt-2 h-3 w-28" />
         </CardHeader>
-        <CardContent className="space-y-3 px-0 pb-4">
-          <div className="grid grid-cols-2 gap-3">
-            <Skeleton className="h-14 w-full" />
-            <Skeleton className="h-14 w-full" />
-          </div>
-          <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-            <Skeleton className="h-3 w-24" />
+        <CardContent className="px-0 pb-0">
+          <div className="flex justify-end">
             <Skeleton className="h-4 w-4 rounded-full" />
           </div>
         </CardContent>
