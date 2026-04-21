@@ -21,7 +21,7 @@ const getNullableDecimal = (value) => (value == null ? '—' : formatDecimal(val
 const getNullablePercentage = (value) => (value == null ? '—' : `${formatDecimal(value)}%`);
 const getNullableCurrencyPerKg = (value) => (value == null ? '—' : `${formatDecimal(value)} €/kg`);
 
-function AnalysisMetricCard({ title, value, description, icon: Icon, emphasize = false }) {
+function AnalysisMetricCard({ title, value, description, detail, icon: Icon, emphasize = false }) {
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -34,6 +34,7 @@ function AnalysisMetricCard({ title, value, description, icon: Icon, emphasize =
         <div className={emphasize ? 'text-2xl font-semibold tracking-tight' : 'text-xl font-semibold tracking-tight'}>
           {value}
         </div>
+        {detail ? <p className="text-xs text-muted-foreground">{detail}</p> : null}
         <p className="text-sm text-muted-foreground">{description}</p>
       </CardContent>
     </Card>
@@ -222,7 +223,7 @@ export default function OrderCostAnalysis() {
         </Button>
       </div>
 
-      <TabsContent value="product-lines" className="mt-4 min-h-0 flex-1">
+      <TabsContent value="product-lines" className="mt-4 min-h-0 flex-1 overflow-hidden">
         {productLines.length === 0 ? (
           <EmptyState
             title="Sin líneas analíticas"
@@ -239,38 +240,40 @@ export default function OrderCostAnalysis() {
             </Accordion>
           </ScrollArea>
         ) : (
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Producto</TableHead>
-                  <TableHead className="text-right">Precio/kg</TableHead>
-                  <TableHead className="text-right">Cantidad</TableHead>
-                  <TableHead className="text-right">Importe</TableHead>
-                  <TableHead className="text-right">Coste</TableHead>
-                  <TableHead className="text-right">Margen</TableHead>
-                  <TableHead className="text-right">Margen %</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {productLines.map((line) => (
-                  <TableRow key={line.product.id}>
-                    <TableCell className="font-medium">{line.product.name}</TableCell>
-                    <TableCell className="text-right">{getNullableCurrency(line.unitPrice)}</TableCell>
-                    <TableCell className="text-right">{getNullableWeight(line.lineWeightKg)}</TableCell>
-                    <TableCell className="text-right">{getNullableCurrency(line.lineRevenue)}</TableCell>
-                    <TableCell className="text-right">{getNullableCurrency(line.lineCost)}</TableCell>
-                    <TableCell className="text-right">{getNullableCurrency(line.lineMargin)}</TableCell>
-                    <TableCell className="text-right">{getNullablePercentage(line.lineMarginPct)}</TableCell>
+          <ScrollArea className="h-full">
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Producto</TableHead>
+                    <TableHead className="text-right">Precio/kg</TableHead>
+                    <TableHead className="text-right">Cantidad</TableHead>
+                    <TableHead className="text-right">Importe</TableHead>
+                    <TableHead className="text-right">Coste</TableHead>
+                    <TableHead className="text-right">Margen</TableHead>
+                    <TableHead className="text-right">Margen %</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                </TableHeader>
+                <TableBody>
+                  {productLines.map((line) => (
+                    <TableRow key={line.product.id}>
+                      <TableCell className="font-medium">{line.product.name}</TableCell>
+                      <TableCell className="text-right">{getNullableCurrency(line.unitPrice)}</TableCell>
+                      <TableCell className="text-right">{getNullableWeight(line.lineWeightKg)}</TableCell>
+                      <TableCell className="text-right">{getNullableCurrency(line.lineRevenue)}</TableCell>
+                      <TableCell className="text-right">{getNullableCurrency(line.lineCost)}</TableCell>
+                      <TableCell className="text-right">{getNullableCurrency(line.lineMargin)}</TableCell>
+                      <TableCell className="text-right">{getNullablePercentage(line.lineMarginPct)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </ScrollArea>
         )}
       </TabsContent>
 
-      <TabsContent value="pallets" className="mt-4 min-h-0 flex-1">
+      <TabsContent value="pallets" className="mt-4 min-h-0 flex-1 overflow-hidden">
         {palletLines.length === 0 ? (
           <EmptyState
             title="Sin palets analíticos"
@@ -287,48 +290,50 @@ export default function OrderCostAnalysis() {
             </Accordion>
           </ScrollArea>
         ) : (
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Palet</TableHead>
-                  <TableHead>Productos</TableHead>
-                  <TableHead className="text-right">Cantidad</TableHead>
-                  <TableHead className="text-right">Importe</TableHead>
-                  <TableHead className="text-right">Coste total</TableHead>
-                  <TableHead className="text-right">Margen</TableHead>
-                  <TableHead className="text-right">Margen %</TableHead>
-                  <TableHead className="text-right">Coste/kg</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {palletLines.map((pallet) => (
-                  <TableRow key={pallet.palletId}>
-                    <TableCell className="font-medium">#{pallet.palletId}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-2">
-                        {(pallet.products || []).length > 0 ? (
-                          pallet.products.map((product) => (
-                            <Badge key={`${pallet.palletId}-${product}`} variant="outline">
-                              {product}
-                            </Badge>
-                          ))
-                        ) : (
-                          <span className="text-sm text-muted-foreground">Sin productos</span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">{getNullableWeight(pallet.totalWeightKg)}</TableCell>
-                    <TableCell className="text-right">{getNullableCurrency(pallet.totalRevenue)}</TableCell>
-                    <TableCell className="text-right">{getNullableCurrency(pallet.totalCost)}</TableCell>
-                    <TableCell className="text-right">{getNullableCurrency(pallet.totalMargin)}</TableCell>
-                    <TableCell className="text-right">{getNullablePercentage(pallet.marginPercentage)}</TableCell>
-                    <TableCell className="text-right">{getNullableDecimal(pallet.costPerKg)} €/kg</TableCell>
+          <ScrollArea className="h-full">
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Palet</TableHead>
+                    <TableHead>Productos</TableHead>
+                    <TableHead className="text-right">Cantidad</TableHead>
+                    <TableHead className="text-right">Importe</TableHead>
+                    <TableHead className="text-right">Coste total</TableHead>
+                    <TableHead className="text-right">Margen</TableHead>
+                    <TableHead className="text-right">Margen %</TableHead>
+                    <TableHead className="text-right">Coste/kg</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                </TableHeader>
+                <TableBody>
+                  {palletLines.map((pallet) => (
+                    <TableRow key={pallet.palletId}>
+                      <TableCell className="font-medium">#{pallet.palletId}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-2">
+                          {(pallet.products || []).length > 0 ? (
+                            pallet.products.map((product) => (
+                              <Badge key={`${pallet.palletId}-${product}`} variant="outline">
+                                {product}
+                              </Badge>
+                            ))
+                          ) : (
+                            <span className="text-sm text-muted-foreground">Sin productos</span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">{getNullableWeight(pallet.totalWeightKg)}</TableCell>
+                      <TableCell className="text-right">{getNullableCurrency(pallet.totalRevenue)}</TableCell>
+                      <TableCell className="text-right">{getNullableCurrency(pallet.totalCost)}</TableCell>
+                      <TableCell className="text-right">{getNullableCurrency(pallet.totalMargin)}</TableCell>
+                      <TableCell className="text-right">{getNullablePercentage(pallet.marginPercentage)}</TableCell>
+                      <TableCell className="text-right">{getNullableDecimal(pallet.costPerKg)} €/kg</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </ScrollArea>
         )}
       </TabsContent>
     </Tabs>
@@ -355,18 +360,21 @@ export default function OrderCostAnalysis() {
             <AnalysisMetricCard
               title="Importe"
               value={getNullableCurrency(summary.totalRevenue)}
+              detail={`${getNullableCurrencyPerKg(order?.revenuePerKg)} por kg`}
               description="Importe total del pedido"
               icon={Wallet}
             />
             <AnalysisMetricCard
               title="Coste total"
               value={getNullableCurrency(summary.totalCost)}
+              detail={`${getNullableCurrencyPerKg(order?.costPerKg)} por kg`}
               description={summary.totalCost == null ? 'Sin coste calculable' : 'Coste acumulado de cajas disponibles'}
               icon={Package2}
             />
             <AnalysisMetricCard
               title="Margen bruto"
               value={getNullableCurrency(summary.grossMargin)}
+              detail={`${getNullableCurrencyPerKg(order?.marginPerKg)} por kg`}
               description={summary.grossMargin == null ? 'Sin coste calculable' : 'Importe menos coste total'}
               icon={ChartColumn}
               emphasize
@@ -377,27 +385,9 @@ export default function OrderCostAnalysis() {
               description={summary.marginPercentage == null ? 'No calculable con los datos actuales' : 'Porcentaje de margen sobre importe'}
               icon={ChartColumn}
             />
-            <AnalysisMetricCard
-              title="Importe/kg"
-              value={getNullableCurrencyPerKg(order?.revenuePerKg)}
-              description="Importe medio por kg del pedido"
-              icon={Wallet}
-            />
-            <AnalysisMetricCard
-              title="Coste/kg"
-              value={getNullableCurrencyPerKg(order?.costPerKg)}
-              description="Coste medio por kg del pedido"
-              icon={Package2}
-            />
-            <AnalysisMetricCard
-              title="Margen/kg"
-              value={getNullableCurrencyPerKg(order?.marginPerKg)}
-              description="Margen medio por kg del pedido"
-              icon={ChartColumn}
-            />
           </div>
         </CardHeader>
-        <CardContent className="flex min-h-0 flex-1 flex-col">
+        <CardContent className="flex min-h-0 flex-1 flex-col overflow-hidden">
           {content}
         </CardContent>
       </Card>

@@ -74,6 +74,7 @@ const OrderDetails = () => {
                         <div className="text-center">
                             <div className="text-sm font-medium text-muted-foreground">Coste total</div>
                             <div className="font-medium">{getNullableCurrency(order.totalCost)}</div>
+                            <div className="text-xs text-muted-foreground mt-1">{getNullableCurrencyPerKg(order.costPerKg)} por kg</div>
                             {order.totalCost == null ? (
                                 <div className="text-xs text-muted-foreground mt-1">Sin coste calculable</div>
                             ) : null}
@@ -81,22 +82,11 @@ const OrderDetails = () => {
                         <div className="text-center">
                             <div className="text-sm font-medium text-muted-foreground">Margen bruto</div>
                             <div className="font-medium">{getNullableCurrency(order.grossMargin)}</div>
+                            <div className="text-xs text-muted-foreground mt-1">{getNullableCurrencyPerKg(order.marginPerKg)} por kg</div>
                         </div>
                         <div className="text-center">
                             <div className="text-sm font-medium text-muted-foreground">Margen %</div>
                             <div className="font-medium">{getNullablePercentage(order.marginPercentage)}</div>
-                        </div>
-                        <div className="text-center">
-                            <div className="text-sm font-medium text-muted-foreground">Importe/kg</div>
-                            <div className="font-medium">{getNullableCurrencyPerKg(order.revenuePerKg)}</div>
-                        </div>
-                        <div className="text-center">
-                            <div className="text-sm font-medium text-muted-foreground">Coste/kg</div>
-                            <div className="font-medium">{getNullableCurrencyPerKg(order.costPerKg)}</div>
-                        </div>
-                        <div className="text-center">
-                            <div className="text-sm font-medium text-muted-foreground">Margen/kg</div>
-                            <div className="font-medium">{getNullableCurrencyPerKg(order.marginPerKg)}</div>
                         </div>
                     </div>
                 </div>
@@ -125,6 +115,7 @@ const OrderDetails = () => {
                         <div className="text-center">
                             <div className="text-sm font-medium text-muted-foreground">Importe</div>
                             <div className="font-medium">{getNullableCurrency(order.totalAmount)}</div>
+                            <div className="text-xs text-muted-foreground mt-1">{getNullableCurrencyPerKg(order.revenuePerKg)} por kg</div>
                         </div>
                         <div className="text-center">
                             <div className="text-sm font-medium text-muted-foreground">Coste total</div>
@@ -257,6 +248,7 @@ const OrderDetails = () => {
                     <div>
                         <div className="text-sm text-muted-foreground">Coste total</div>
                         <div className="text-sm font-medium">{getNullableCurrency(order.totalCost)}</div>
+                        <div className="text-xs text-muted-foreground mt-1">{getNullableCurrencyPerKg(order.costPerKg)} por kg</div>
                         {order.totalCost == null ? (
                             <div className="text-xs text-muted-foreground mt-1">Sin coste calculable</div>
                         ) : null}
@@ -264,22 +256,11 @@ const OrderDetails = () => {
                     <div>
                         <div className="text-sm text-muted-foreground">Margen bruto</div>
                         <div className="text-sm font-medium">{getNullableCurrency(order.grossMargin)}</div>
+                        <div className="text-xs text-muted-foreground mt-1">{getNullableCurrencyPerKg(order.marginPerKg)} por kg</div>
                     </div>
                     <div>
                         <div className="text-sm text-muted-foreground">Margen %</div>
                         <div className="text-sm font-medium">{getNullablePercentage(order.marginPercentage)}</div>
-                    </div>
-                    <div>
-                        <div className="text-sm text-muted-foreground">Importe/kg</div>
-                        <div className="text-sm font-medium">{getNullableCurrencyPerKg(order.revenuePerKg)}</div>
-                    </div>
-                    <div>
-                        <div className="text-sm text-muted-foreground">Coste/kg</div>
-                        <div className="text-sm font-medium">{getNullableCurrencyPerKg(order.costPerKg)}</div>
-                    </div>
-                    <div>
-                        <div className="text-sm text-muted-foreground">Margen/kg</div>
-                        <div className="text-sm font-medium">{getNullableCurrencyPerKg(order.marginPerKg)}</div>
                     </div>
                 </CardContent>
             </Card>
@@ -306,6 +287,7 @@ const OrderDetails = () => {
                     <div>
                         <div className="text-sm text-muted-foreground">Importe</div>
                         <div className="text-sm font-medium">{getNullableCurrency(order.totalAmount)}</div>
+                        <div className="text-xs text-muted-foreground mt-1">{getNullableCurrencyPerKg(order.revenuePerKg)} por kg</div>
                     </div>
                 </CardContent>
             </Card>
