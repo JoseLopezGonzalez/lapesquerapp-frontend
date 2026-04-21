@@ -17,7 +17,6 @@ import { formatDecimal, formatDecimalCurrency, formatDecimalWeight } from '@/hel
 
 const getNullableCurrency = (value) => (value == null ? '—' : formatDecimalCurrency(value));
 const getNullableWeight = (value) => (value == null ? '—' : formatDecimalWeight(value));
-const getNullableDecimal = (value) => (value == null ? '—' : formatDecimal(value));
 const getNullablePercentage = (value) => (value == null ? '—' : `${formatDecimal(value)}%`);
 const getNullableCurrencyPerKg = (value) => (value == null ? '—' : `${formatDecimal(value)} €/kg`);
 
@@ -58,8 +57,8 @@ function ProductLineMobileCard({ line }) {
       <AccordionContent className="px-4 pb-4">
         <div className="grid grid-cols-2 gap-3 rounded-md border bg-muted/20 p-3">
           <div>
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">Precio/kg</p>
-            <p className="text-sm font-medium">{getNullableCurrency(line.unitPrice)}</p>
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">Importe/kg</p>
+            <p className="text-sm font-medium">{getNullableCurrencyPerKg(line.revenuePerKg ?? line.unitPrice)}</p>
           </div>
           <div>
             <p className="text-xs uppercase tracking-wide text-muted-foreground">Cantidad</p>
@@ -76,6 +75,14 @@ function ProductLineMobileCard({ line }) {
           <div>
             <p className="text-xs uppercase tracking-wide text-muted-foreground">Margen</p>
             <p className="text-sm font-medium">{getNullableCurrency(line.lineMargin)}</p>
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">Coste/kg</p>
+            <p className="text-sm font-medium">{getNullableCurrencyPerKg(line.costPerKg)}</p>
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">Margen/kg</p>
+            <p className="text-sm font-medium">{getNullableCurrencyPerKg(line.marginPerKg)}</p>
           </div>
           <div className="col-span-2">
             <p className="text-xs uppercase tracking-wide text-muted-foreground">Margen %</p>
@@ -96,7 +103,7 @@ function PalletMobileCard({ pallet }) {
             <p className="truncate text-sm font-semibold">Palet #{pallet.palletId}</p>
             <p className="text-xs text-muted-foreground">{getNullableWeight(pallet.totalWeightKg)}</p>
           </div>
-          <Badge variant="outline">{getNullableDecimal(pallet.costPerKg)} €/kg</Badge>
+          <p className="text-sm font-semibold">{getNullableCurrency(pallet.totalMargin)}</p>
         </div>
       </AccordionTrigger>
       <AccordionContent className="px-4 pb-4">
@@ -111,20 +118,28 @@ function PalletMobileCard({ pallet }) {
               <p className="text-sm font-medium">{getNullableCurrency(pallet.totalRevenue)}</p>
             </div>
             <div>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Importe/kg</p>
+              <p className="text-sm font-medium">{getNullableCurrencyPerKg(pallet.revenuePerKg)}</p>
+            </div>
+            <div>
               <p className="text-xs uppercase tracking-wide text-muted-foreground">Coste total</p>
               <p className="text-sm font-medium">{getNullableCurrency(pallet.totalCost)}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Coste/kg</p>
+              <p className="text-sm font-medium">{getNullableCurrencyPerKg(pallet.costPerKg)}</p>
             </div>
             <div>
               <p className="text-xs uppercase tracking-wide text-muted-foreground">Margen</p>
               <p className="text-sm font-medium">{getNullableCurrency(pallet.totalMargin)}</p>
             </div>
             <div>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Margen/kg</p>
+              <p className="text-sm font-medium">{getNullableCurrencyPerKg(pallet.marginPerKg)}</p>
+            </div>
+            <div>
               <p className="text-xs uppercase tracking-wide text-muted-foreground">Margen %</p>
               <p className="text-sm font-medium">{getNullablePercentage(pallet.marginPercentage)}</p>
-            </div>
-            <div className="col-span-2">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Coste/kg</p>
-              <p className="text-sm font-medium">{getNullableDecimal(pallet.costPerKg)} €/kg</p>
             </div>
           </div>
           <div>
@@ -245,23 +260,27 @@ export default function OrderCostAnalysis() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Producto</TableHead>
-                    <TableHead className="text-right">Precio/kg</TableHead>
-                    <TableHead className="text-right">Cantidad</TableHead>
-                    <TableHead className="text-right">Importe</TableHead>
-                    <TableHead className="text-right">Coste</TableHead>
-                    <TableHead className="text-right">Margen</TableHead>
-                    <TableHead className="text-right">Margen %</TableHead>
-                  </TableRow>
+                  <TableHead>Producto</TableHead>
+                  <TableHead className="text-right">Importe/kg</TableHead>
+                  <TableHead className="text-right">Cantidad</TableHead>
+                  <TableHead className="text-right">Importe</TableHead>
+                  <TableHead className="text-right">Coste/kg</TableHead>
+                  <TableHead className="text-right">Coste</TableHead>
+                  <TableHead className="text-right">Margen/kg</TableHead>
+                  <TableHead className="text-right">Margen</TableHead>
+                  <TableHead className="text-right">Margen %</TableHead>
+                </TableRow>
                 </TableHeader>
                 <TableBody>
                   {productLines.map((line) => (
                     <TableRow key={line.product.id}>
                       <TableCell className="font-medium">{line.product.name}</TableCell>
-                      <TableCell className="text-right">{getNullableCurrency(line.unitPrice)}</TableCell>
+                      <TableCell className="text-right">{getNullableCurrencyPerKg(line.revenuePerKg ?? line.unitPrice)}</TableCell>
                       <TableCell className="text-right">{getNullableWeight(line.lineWeightKg)}</TableCell>
                       <TableCell className="text-right">{getNullableCurrency(line.lineRevenue)}</TableCell>
+                      <TableCell className="text-right">{getNullableCurrencyPerKg(line.costPerKg)}</TableCell>
                       <TableCell className="text-right">{getNullableCurrency(line.lineCost)}</TableCell>
+                      <TableCell className="text-right">{getNullableCurrencyPerKg(line.marginPerKg)}</TableCell>
                       <TableCell className="text-right">{getNullableCurrency(line.lineMargin)}</TableCell>
                       <TableCell className="text-right">{getNullablePercentage(line.lineMarginPct)}</TableCell>
                     </TableRow>
@@ -295,16 +314,18 @@ export default function OrderCostAnalysis() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Palet</TableHead>
-                    <TableHead>Productos</TableHead>
-                    <TableHead className="text-right">Cantidad</TableHead>
-                    <TableHead className="text-right">Importe</TableHead>
-                    <TableHead className="text-right">Coste total</TableHead>
-                    <TableHead className="text-right">Margen</TableHead>
-                    <TableHead className="text-right">Margen %</TableHead>
-                    <TableHead className="text-right">Coste/kg</TableHead>
-                  </TableRow>
-                </TableHeader>
+                  <TableHead>Palet</TableHead>
+                  <TableHead>Productos</TableHead>
+                  <TableHead className="text-right">Cantidad</TableHead>
+                  <TableHead className="text-right">Importe/kg</TableHead>
+                  <TableHead className="text-right">Importe</TableHead>
+                  <TableHead className="text-right">Coste/kg</TableHead>
+                  <TableHead className="text-right">Coste total</TableHead>
+                  <TableHead className="text-right">Margen/kg</TableHead>
+                  <TableHead className="text-right">Margen</TableHead>
+                  <TableHead className="text-right">Margen %</TableHead>
+                </TableRow>
+              </TableHeader>
                 <TableBody>
                   {palletLines.map((pallet) => (
                     <TableRow key={pallet.palletId}>
@@ -323,11 +344,13 @@ export default function OrderCostAnalysis() {
                         </div>
                       </TableCell>
                       <TableCell className="text-right">{getNullableWeight(pallet.totalWeightKg)}</TableCell>
+                      <TableCell className="text-right">{getNullableCurrencyPerKg(pallet.revenuePerKg)}</TableCell>
                       <TableCell className="text-right">{getNullableCurrency(pallet.totalRevenue)}</TableCell>
+                      <TableCell className="text-right">{getNullableCurrencyPerKg(pallet.costPerKg)}</TableCell>
                       <TableCell className="text-right">{getNullableCurrency(pallet.totalCost)}</TableCell>
+                      <TableCell className="text-right">{getNullableCurrencyPerKg(pallet.marginPerKg)}</TableCell>
                       <TableCell className="text-right">{getNullableCurrency(pallet.totalMargin)}</TableCell>
                       <TableCell className="text-right">{getNullablePercentage(pallet.marginPercentage)}</TableCell>
-                      <TableCell className="text-right">{getNullableDecimal(pallet.costPerKg)} €/kg</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -360,21 +383,21 @@ export default function OrderCostAnalysis() {
             <AnalysisMetricCard
               title="Importe"
               value={getNullableCurrency(summary.totalRevenue)}
-              detail={`${getNullableCurrencyPerKg(order?.revenuePerKg)} por kg`}
+              detail={getNullableCurrencyPerKg(order?.revenuePerKg)}
               description="Importe total del pedido"
               icon={Wallet}
             />
             <AnalysisMetricCard
               title="Coste total"
               value={getNullableCurrency(summary.totalCost)}
-              detail={`${getNullableCurrencyPerKg(order?.costPerKg)} por kg`}
+              detail={getNullableCurrencyPerKg(order?.costPerKg)}
               description={summary.totalCost == null ? 'Sin coste calculable' : 'Coste acumulado de cajas disponibles'}
               icon={Package2}
             />
             <AnalysisMetricCard
               title="Margen bruto"
               value={getNullableCurrency(summary.grossMargin)}
-              detail={`${getNullableCurrencyPerKg(order?.marginPerKg)} por kg`}
+              detail={getNullableCurrencyPerKg(order?.marginPerKg)}
               description={summary.grossMargin == null ? 'Sin coste calculable' : 'Importe menos coste total'}
               icon={ChartColumn}
               emphasize

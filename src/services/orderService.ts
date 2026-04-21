@@ -52,19 +52,24 @@ export interface OrderCostAnalysisProductLine {
   lineWeightKg: number;
   lineRevenue: number;
   lineRevenueWithTax: number;
+  revenuePerKg?: number | null;
   lineCost: number | null;
+  costPerKg?: number | null;
   lineMargin: number | null;
   lineMarginPct: number | null;
+  marginPerKg?: number | null;
 }
 
 export interface OrderCostAnalysisPallet {
   palletId: number;
   totalWeightKg: number;
   totalRevenue?: number | null;
+  revenuePerKg?: number | null;
   totalCost: number | null;
+  costPerKg: number | null;
   totalMargin?: number | null;
   marginPercentage?: number | null;
-  costPerKg: number | null;
+  marginPerKg?: number | null;
   products: string[];
 }
 
