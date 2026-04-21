@@ -1,11 +1,9 @@
 "use client"
 
-import { useMemo } from "react"
 import { Calendar, Info, Loader2 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useOrdersProfitabilitySummary } from "@/hooks/useOrdersStats"
 import { formatDecimal, formatDecimalCurrency } from "@/helpers/formats/numbers/formatNumbers"
@@ -27,10 +25,6 @@ function formatNullablePercentage(value) {
 
 export function OrdersProfitabilitySummaryCard() {
   const { data, isLoading } = useOrdersProfitabilitySummary({})
-  const periodLabel = useMemo(
-    () => formatDateRange(data?.period?.from, data?.period?.to),
-    [data?.period?.from, data?.period?.to]
-  )
 
   if (isLoading && !data) {
     return (
@@ -48,11 +42,11 @@ export function OrdersProfitabilitySummaryCard() {
             <Skeleton className="h-14 w-full" />
             <Skeleton className="h-14 w-full" />
           </div>
+          <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="h-4 w-4 rounded-full" />
+          </div>
         </CardContent>
-        <CardFooter className="grid gap-2 px-0 pt-0">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-        </CardFooter>
       </Card>
     )
   }
@@ -110,10 +104,6 @@ export function OrdersProfitabilitySummaryCard() {
                 </Tooltip>
               )}
             </div>
-            <p className="mt-1 text-xs italic text-muted-foreground">
-              {data?.ordersCount ? `${data.ordersCount} pedidos en el rango` : "Sin pedidos en el rango"}
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">{periodLabel}</p>
           </div>
           <Badge variant="outline" className="shrink-0">
             {formatNullablePercentage(data?.marginPercentage)}
@@ -121,22 +111,12 @@ export function OrdersProfitabilitySummaryCard() {
         </div>
       </CardHeader>
 
-      <CardContent className="grid gap-3 px-0 pb-4">
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-xl border bg-background/70 p-3">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">Importe</p>
-            <p className="mt-1 text-base font-medium">{formatNullableCurrency(data?.totalRevenue)}</p>
+      <CardContent className="px-0 pb-0">
+        {isLoading ? (
+          <div className="flex justify-end">
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
           </div>
-          <div className="rounded-xl border bg-background/70 p-3">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">Coste</p>
-            <p className="mt-1 text-base font-medium">{formatNullableCurrency(data?.totalCost)}</p>
-          </div>
-        </div>
-        <Separator />
-        <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-          <span className="truncate">Año en curso</span>
-          {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-        </div>
+        ) : null}
       </CardContent>
     </Card>
   )
