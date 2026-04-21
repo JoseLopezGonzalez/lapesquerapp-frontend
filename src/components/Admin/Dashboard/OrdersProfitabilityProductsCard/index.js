@@ -1,14 +1,14 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { Loader2, SearchX } from "lucide-react"
+import { Info, Loader2, SearchX } from "lucide-react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { DateRangePicker } from "@/components/ui/dateRangePicker"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useOrdersProfitabilityProducts } from "@/hooks/useOrdersStats"
 import { actualYearRange } from "@/helpers/dates"
 import { formatDecimal, formatDecimalCurrency, formatDecimalWeight } from "@/helpers/formats/numbers/formatNumbers"
@@ -18,14 +18,12 @@ const initialDateRange = {
   to: actualYearRange.to,
 }
 
-const metricLabels = {
-  grossMargin: "Margen bruto",
-  marginPercentage: "Margen %",
-  totalRevenue: "Importe",
-}
-
 function formatNullableCurrency(value) {
   return typeof value === "number" ? formatDecimalCurrency(value) : "—"
+}
+
+function formatNullableCurrencyPerKg(value) {
+  return typeof value === "number" ? `${formatDecimal(value)} €/kg` : "—"
 }
 
 function formatNullablePercentage(value) {
@@ -34,7 +32,6 @@ function formatNullablePercentage(value) {
 
 export function OrdersProfitabilityProductsCard() {
   const [range, setRange] = useState(initialDateRange)
-  const [metric, setMetric] = useState("grossMargin")
   const [search, setSearch] = useState("")
   const { data, isLoading } = useOrdersProfitabilityProducts({ range })
 
@@ -70,24 +67,12 @@ export function OrdersProfitabilityProductsCard() {
 
         <div className="grid grid-cols-1 gap-2">
           <DateRangePicker dateRange={range} onChange={setRange} />
-          <div className="grid grid-cols-1 gap-2 xl:grid-cols-[minmax(0,1fr)_180px]">
-            <Input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar producto"
-            />
-            <Select value={metric} onValueChange={setMetric}>
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="grossMargin">Orden: Margen bruto</SelectItem>
-                <SelectItem value="marginPercentage">Orden: Margen %</SelectItem>
-                <SelectItem value="totalRevenue">Orden: Importe</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <Input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar producto"
+          />
         </div>
       </CardHeader>
 
@@ -96,18 +81,14 @@ export function OrdersProfitabilityProductsCard() {
           <div className="space-y-3">
             <div className="rounded-md border">
               <div className="border-b px-4 py-3">
-                <div className="grid grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 gap-3">
                   <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-4 w-16" />
-                  <Skeleton className="h-4 w-16" />
                   <Skeleton className="h-4 w-16" />
                 </div>
               </div>
               <div className="space-y-2 p-4">
                 {Array.from({ length: 5 }).map((_, index) => (
-                  <div key={index} className="grid grid-cols-4 gap-3">
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-full" />
+                  <div key={index} className="grid grid-cols-2 gap-3">
                     <Skeleton className="h-4 w-full" />
                     <Skeleton className="h-4 w-full" />
                   </div>
@@ -123,49 +104,74 @@ export function OrdersProfitabilityProductsCard() {
             <Table>
               <TableHeader className="sticky top-0 z-10 bg-background">
                 <TableRow>
-                  <TableHead className="min-w-[220px]">Producto</TableHead>
-                  <TableHead className="text-right">Cantidad</TableHead>
-                  <TableHead className="text-right">Importe</TableHead>
-                  <TableHead className="text-right">Coste</TableHead>
-                  <TableHead className="text-right">Margen bruto</TableHead>
-                  <TableHead className="text-right">Margen %</TableHead>
-                  <TableHead className="text-right">Pedidos</TableHead>
+                  <TableHead className="w-[220px] max-w-[220px]">Producto</TableHead>
+                  <TableHead className="text-right">Margen/kg</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {[...filteredProducts]
                   .sort((a, b) => {
-                    const aValue = typeof a?.[metric] === "number" ? a[metric] : Number.NEGATIVE_INFINITY
-                    const bValue = typeof b?.[metric] === "number" ? b[metric] : Number.NEGATIVE_INFINITY
+                    const aValue = typeof a?.grossMargin === "number" ? a.grossMargin : Number.NEGATIVE_INFINITY
+                    const bValue = typeof b?.grossMargin === "number" ? b.grossMargin : Number.NEGATIVE_INFINITY
                     return bValue - aValue
                   })
                   .map((item) => (
                     <TableRow key={item.product?.id ?? item.product?.name}>
-                      <TableCell className="font-medium">
-                        <div className="flex flex-col gap-0.5">
-                          <span>{item.product?.name ?? "Sin producto"}</span>
-                          <span className="text-xs text-muted-foreground">
-                            Prioridad visual: {metricLabels[metric]}
-                          </span>
-                        </div>
+                      <TableCell className="w-[220px] max-w-[220px] align-top font-medium">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button type="button" className="flex w-full items-start justify-between gap-2 text-left">
+                              <div className="flex min-w-0 flex-col gap-0.5">
+                                <span className="whitespace-normal break-words leading-tight">
+                                  {item.product?.name ?? "Sin producto"}
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                  {formatDecimalWeight(item.totalWeightKg ?? 0)}
+                                </span>
+                              </div>
+                              <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent className="w-72 p-4 text-sm">
+                            <div className="grid gap-2">
+                              <div className="flex justify-between gap-3">
+                                <span>Importe</span>
+                                <span className="font-medium">{formatNullableCurrency(item.totalRevenue)}</span>
+                              </div>
+                              <div className="flex justify-between gap-3">
+                                <span>Importe/kg</span>
+                                <span className="font-medium">{formatNullableCurrencyPerKg(item.revenuePerKg)}</span>
+                              </div>
+                              <div className="flex justify-between gap-3">
+                                <span>Coste</span>
+                                <span className="font-medium">{formatNullableCurrency(item.totalCost)}</span>
+                              </div>
+                              <div className="flex justify-between gap-3">
+                                <span>Coste/kg</span>
+                                <span className="font-medium">{formatNullableCurrencyPerKg(item.costPerKg)}</span>
+                              </div>
+                              <div className="flex justify-between gap-3">
+                                <span>Margen</span>
+                                <span className="font-medium">{formatNullableCurrency(item.grossMargin)}</span>
+                              </div>
+                              <div className="flex justify-between gap-3">
+                                <span>Margen/kg</span>
+                                <span className="font-medium">{formatNullableCurrencyPerKg(item.marginPerKg)}</span>
+                              </div>
+                              <div className="flex justify-between gap-3">
+                                <span>Margen %</span>
+                                <span className="font-medium">{formatNullablePercentage(item.marginPercentage)}</span>
+                              </div>
+                              <div className="flex justify-between gap-3">
+                                <span>Pedidos</span>
+                                <span className="font-medium">{item.ordersCount ?? 0}</span>
+                              </div>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
                       </TableCell>
                       <TableCell className="text-right tabular-nums">
-                        {formatDecimalWeight(item.totalWeightKg ?? 0)}
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {formatNullableCurrency(item.totalRevenue)}
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {formatNullableCurrency(item.totalCost)}
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {formatNullableCurrency(item.grossMargin)}
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {formatNullablePercentage(item.marginPercentage)}
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {item.ordersCount ?? 0}
+                        {formatNullableCurrencyPerKg(item.marginPerKg)}
                       </TableCell>
                     </TableRow>
                   ))}

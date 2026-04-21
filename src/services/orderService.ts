@@ -128,9 +128,12 @@ export interface ProfitabilityProductItem {
   };
   totalWeightKg: number;
   totalRevenue: number;
+  revenuePerKg?: number | null;
   totalCost: number | null;
+  costPerKg?: number | null;
   grossMargin: number | null;
   marginPercentage: number | null;
+  marginPerKg?: number | null;
   ordersCount: number;
 }
 
