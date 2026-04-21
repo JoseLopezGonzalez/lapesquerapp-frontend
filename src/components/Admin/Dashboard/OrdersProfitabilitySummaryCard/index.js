@@ -1,28 +1,14 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import { Calendar, Info, Loader2 } from "lucide-react"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { DateRangePicker } from "@/components/ui/dateRangePicker"
-import { Combobox } from "@/components/Shadcn/Combobox"
 import { useOrdersProfitabilitySummary } from "@/hooks/useOrdersStats"
-import { useProductOptions } from "@/hooks/useProductOptions"
-import { actualYearRange } from "@/helpers/dates"
 import { formatDecimal, formatDecimalCurrency } from "@/helpers/formats/numbers/formatNumbers"
-
-const initialDateRange = {
-  from: actualYearRange.from,
-  to: actualYearRange.to,
-}
-
-const PRODUCT_ALL_OPTION = {
-  value: "all",
-  label: "Todos los productos",
-}
 
 function formatDateRange(from, to) {
   if (!from || !to) return "Rango no definido"
@@ -40,12 +26,11 @@ function formatNullablePercentage(value) {
 }
 
 export function OrdersProfitabilitySummaryCard() {
-  const [range, setRange] = useState(initialDateRange)
-  const [productId, setProductId] = useState("all")
-  const { productOptions, loading: productsLoading } = useProductOptions()
-  const { data, isLoading } = useOrdersProfitabilitySummary({ range, productId })
-
-  const comboboxOptions = useMemo(() => [PRODUCT_ALL_OPTION, ...productOptions], [productOptions])
+  const { data, isLoading } = useOrdersProfitabilitySummary({})
+  const periodLabel = useMemo(
+    () => formatDateRange(data?.period?.from, data?.period?.to),
+    [data?.period?.from, data?.period?.to]
+  )
 
   if (isLoading && !data) {
     return (
@@ -128,6 +113,7 @@ export function OrdersProfitabilitySummaryCard() {
             <p className="mt-1 text-xs italic text-muted-foreground">
               {data?.ordersCount ? `${data.ordersCount} pedidos en el rango` : "Sin pedidos en el rango"}
             </p>
+            <p className="mt-1 text-xs text-muted-foreground">{periodLabel}</p>
           </div>
           <Badge variant="outline" className="shrink-0">
             {formatNullablePercentage(data?.marginPercentage)}
@@ -148,23 +134,10 @@ export function OrdersProfitabilitySummaryCard() {
         </div>
         <Separator />
         <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-          <span className="truncate">{formatDateRange(data?.period?.from, data?.period?.to)}</span>
+          <span className="truncate">Año en curso</span>
           {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
         </div>
       </CardContent>
-
-      <CardFooter className="grid gap-2 px-0 pt-0">
-        <DateRangePicker dateRange={range} onChange={setRange} />
-        <Combobox
-          options={comboboxOptions}
-          placeholder="Todos los productos"
-          searchPlaceholder="Buscar producto..."
-          notFoundMessage="No se encontraron productos"
-          value={productId}
-          onChange={(value) => setProductId(value || "all")}
-          loading={productsLoading}
-        />
-      </CardFooter>
     </Card>
   )
 }
