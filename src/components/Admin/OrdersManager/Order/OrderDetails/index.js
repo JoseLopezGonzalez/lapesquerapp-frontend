@@ -1,14 +1,17 @@
 import React, { useMemo } from 'react'
-import { CalendarIcon, FileText, Package, Truck, User } from 'lucide-react';
+import { CalendarIcon, FileText, Package, Truck, Wallet } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useOrderContext } from '@/context/OrderContext';
-import { formatInteger, formatDecimalWeight, formatDecimalCurrency } from '@/helpers/formats/numbers/formatNumbers';
+import { formatInteger, formatDecimal, formatDecimalWeight, formatDecimalCurrency } from '@/helpers/formats/numbers/formatNumbers';
 import { formatDate } from '@/helpers/formats/dates/formatDates';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
+
+const getNullableCurrency = (value) => (value == null ? '—' : formatDecimalCurrency(value));
+const getNullablePercentage = (value) => (value == null ? '—' : `${formatDecimal(value)}%`);
 
 // Mover API key a constante fuera del componente
 const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyBh1lKDP8noxYHU6dXDs3Yjqyg_PpC5Ks4';
@@ -106,7 +109,22 @@ const OrderDetails = () => {
                         </div>
                         <div className="text-center">
                             <div className="text-sm font-medium text-muted-foreground">Importe</div>
-                            <div className="font-medium">{formatDecimalCurrency(order.totalAmount)}</div>
+                            <div className="font-medium">{getNullableCurrency(order.totalAmount)}</div>
+                        </div>
+                        <div className="text-center">
+                            <div className="text-sm font-medium text-muted-foreground">Coste total</div>
+                            <div className="font-medium">{getNullableCurrency(order.totalCost)}</div>
+                            {order.totalCost == null ? (
+                                <div className="text-xs text-muted-foreground mt-1">Sin coste calculable</div>
+                            ) : null}
+                        </div>
+                        <div className="text-center">
+                            <div className="text-sm font-medium text-muted-foreground">Margen bruto</div>
+                            <div className="font-medium">{getNullableCurrency(order.grossMargin)}</div>
+                        </div>
+                        <div className="text-center">
+                            <div className="text-sm font-medium text-muted-foreground">Margen %</div>
+                            <div className="font-medium">{getNullablePercentage(order.marginPercentage)}</div>
                         </div>
                     </div>
                 </div>
@@ -257,7 +275,32 @@ const OrderDetails = () => {
                     </div>
                     <div>
                         <div className="text-sm text-muted-foreground">Importe</div>
-                        <div className="text-sm font-medium">{formatDecimalCurrency(order.totalAmount)}</div>
+                        <div className="text-sm font-medium">{getNullableCurrency(order.totalAmount)}</div>
+                    </div>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Wallet className="size-4" />
+                        Rentabilidad
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="grid gap-3">
+                    <div>
+                        <div className="text-sm text-muted-foreground">Coste total</div>
+                        <div className="text-sm font-medium">{getNullableCurrency(order.totalCost)}</div>
+                        {order.totalCost == null ? (
+                            <div className="text-xs text-muted-foreground mt-1">Sin coste calculable</div>
+                        ) : null}
+                    </div>
+                    <div>
+                        <div className="text-sm text-muted-foreground">Margen bruto</div>
+                        <div className="text-sm font-medium">{getNullableCurrency(order.grossMargin)}</div>
+                    </div>
+                    <div>
+                        <div className="text-sm text-muted-foreground">Margen %</div>
+                        <div className="text-sm font-medium">{getNullablePercentage(order.marginPercentage)}</div>
                     </div>
                 </CardContent>
             </Card>

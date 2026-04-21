@@ -2,7 +2,7 @@ import { fetchWithTenant } from "@lib/fetchWithTenant";
 // /src/hooks/useOrder.js
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { createOrderIncident, createOrderPlannedProductDetail, deleteOrderPlannedProductDetail, destroyOrderIncident, getOrder, setOrderStatus, updateOrder, updateOrderIncident, updateOrderPlannedProductDetail } from '@/services/orderService';
+import { createOrderIncident, createOrderPlannedProductDetail, deleteOrderPlannedProductDetail, destroyOrderIncident, getOrder, getOrderCostAnalysis, setOrderStatus, updateOrder, updateOrderIncident, updateOrderPlannedProductDetail } from '@/services/orderService';
 import { deletePallet, unlinkPalletFromOrder, linkPalletToOrder, linkPalletsToOrders, unlinkPalletsFromOrders } from '@/services/palletService';
 import { useSession } from 'next-auth/react';import { API_URL_V2 } from '@/configs/config';
 import { getProductOptions } from '@/services/productService';
@@ -142,7 +142,11 @@ export function useOrder(orderId, onChange) {
     const [activeTab, setActiveTab] = useState('details');
     const [optionsLoaded, setOptionsLoaded] = useState(false);
     const [optionsLoading, setOptionsLoading] = useState(false);
+    const [costAnalysis, setCostAnalysis] = useState(null);
+    const [costAnalysisLoading, setCostAnalysisLoading] = useState(false);
+    const [costAnalysisError, setCostAnalysisError] = useState(null);
     const previousOrderIdRef = useRef(null);
+    const costAnalysisRequestedRef = useRef(false);
 
     const ordersManagerOptions = useOrdersManagerOptions();
 
@@ -220,6 +224,10 @@ export function useOrder(orderId, onChange) {
     useEffect(() => {
         if (previousOrderIdRef.current !== orderId) {
             setActiveTab('details');
+            setCostAnalysis(null);
+            setCostAnalysisError(null);
+            setCostAnalysisLoading(false);
+            costAnalysisRequestedRef.current = false;
             previousOrderIdRef.current = orderId;
         }
     }, [orderId]);
@@ -250,9 +258,50 @@ export function useOrder(orderId, onChange) {
         return () => clearTimeout(timeoutId);
     }, [optionsLoaded, accessToken, loadOptions, ordersManagerOptions?.productOptions?.length, ordersManagerOptions?.productsLoading, ordersManagerOptions?.taxOptionsLoading]);
 
+    const loadCostAnalysis = useCallback(async ({ force = false } = {}) => {
+        if (!orderId || !accessToken) return null;
+        if (costAnalysisLoading) return costAnalysis;
+        if (!force && (costAnalysisRequestedRef.current || costAnalysis)) {
+            return costAnalysis;
+        }
+
+        setCostAnalysisLoading(true);
+        setCostAnalysisError(null);
+
+        try {
+            const response = await getOrderCostAnalysis(orderId, accessToken);
+            const normalizedResponse = response ? {
+                ...response,
+                byProductLine: [...(response.byProductLine || [])].sort((a, b) => (Number(b?.lineRevenue) || 0) - (Number(a?.lineRevenue) || 0)),
+                byPallet: [...(response.byPallet || [])].sort((a, b) => (Number(b?.totalCost) || 0) - (Number(a?.totalCost) || 0)),
+            } : null;
+
+            setCostAnalysis(normalizedResponse);
+            costAnalysisRequestedRef.current = true;
+            return normalizedResponse;
+        } catch (err) {
+            setCostAnalysisError(err);
+            throw err;
+        } finally {
+            setCostAnalysisLoading(false);
+        }
+    }, [accessToken, costAnalysis, costAnalysisLoading, orderId]);
+
+    useEffect(() => {
+        if (activeTab !== 'analysis') return;
+        if (!accessToken || !orderId) return;
+        if (costAnalysisRequestedRef.current || costAnalysisLoading) return;
+
+        loadCostAnalysis().catch(() => {});
+    }, [activeTab, accessToken, orderId, costAnalysisLoading, loadCostAnalysis]);
+
     const reload = useCallback(async () => {
         try {
             const result = await queryRefetch();
+            setCostAnalysis(null);
+            setCostAnalysisError(null);
+            setCostAnalysisLoading(false);
+            costAnalysisRequestedRef.current = false;
             return result?.data ?? result;
         } catch (err) {
             setMutationError(err);
@@ -946,6 +995,11 @@ export function useOrder(orderId, onChange) {
         fastExportDocuments,
         activeTab,
         setActiveTab,
+        reload,
+        costAnalysis,
+        costAnalysisLoading,
+        costAnalysisError,
+        loadCostAnalysis,
         updateTemperatureOrder,
         openOrderIncident,
         resolveOrderIncident,

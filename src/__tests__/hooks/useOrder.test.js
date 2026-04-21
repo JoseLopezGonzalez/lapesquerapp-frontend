@@ -20,6 +20,7 @@ vi.mock('next-auth/react', () => ({
 // Mock orderService
 vi.mock('@/services/orderService', () => ({
   getOrder: vi.fn(),
+  getOrderCostAnalysis: vi.fn(),
   setOrderStatus: vi.fn(),
   updateOrder: vi.fn(),
   createOrderIncident: vi.fn(),
@@ -76,7 +77,7 @@ Object.defineProperty(global, 'URL', {
 global.URL.createObjectURL = mockCreateObjectURL;
 global.URL.revokeObjectURL = mockRevokeObjectURL;
 
-import { getOrder, setOrderStatus, updateOrder } from '@/services/orderService';
+import { getOrder, getOrderCostAnalysis, setOrderStatus, updateOrder } from '@/services/orderService';
 import { fetchWithTenant } from '@lib/fetchWithTenant';
 import { notify } from '@/lib/notifications';
 
@@ -105,6 +106,16 @@ describe('useOrder', () => {
     vi.clearAllMocks();
     mockCreateObjectURL.mockReturnValue('blob:mock-url');
     getOrder.mockResolvedValue(mockOrder);
+    getOrderCostAnalysis.mockResolvedValue({
+      summary: {
+        totalRevenue: 100,
+        totalCost: 70,
+        grossMargin: 30,
+        marginPercentage: 30,
+      },
+      byProductLine: [],
+      byPallet: [],
+    });
   });
 
   it('returns order, loading, error when loaded', async () => {
@@ -313,5 +324,64 @@ describe('useOrder', () => {
 
     expect(result.current.error).toBeDefined();
     expect(result.current.order).toBeNull();
+  });
+
+  it('loads cost analysis lazily when analysis tab becomes active', async () => {
+    const { result } = renderHook(() => useOrder(1), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    expect(getOrderCostAnalysis).not.toHaveBeenCalled();
+
+    await act(async () => {
+      result.current.setActiveTab('analysis');
+    });
+
+    await waitFor(() => {
+      expect(getOrderCostAnalysis).toHaveBeenCalledWith(1, 'test-token');
+    });
+
+    expect(result.current.costAnalysis).toEqual(
+      expect.objectContaining({
+        summary: expect.objectContaining({
+          totalRevenue: 100,
+        }),
+      })
+    );
+  });
+
+  it('reload clears cost analysis cache so it can be fetched again', async () => {
+    const { result } = renderHook(() => useOrder(1), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    await act(async () => {
+      result.current.setActiveTab('analysis');
+    });
+
+    await waitFor(() => {
+      expect(getOrderCostAnalysis).toHaveBeenCalledTimes(1);
+    });
+
+    await act(async () => {
+      await result.current.reload();
+    });
+
+    await act(async () => {
+      result.current.setActiveTab('details');
+      result.current.setActiveTab('analysis');
+    });
+
+    await waitFor(() => {
+      expect(getOrderCostAnalysis).toHaveBeenCalledTimes(2);
+    });
   });
 });

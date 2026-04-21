@@ -6,6 +6,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   getOrder,
+  getOrderCostAnalysis,
   getActiveOrders,
   createOrder,
   updateOrder,
@@ -152,6 +153,36 @@ describe('orderService', () => {
       });
 
       await expect(getActiveOrders(token)).rejects.toThrow();
+    });
+  });
+
+  describe('getOrderCostAnalysis', () => {
+    it('fetches cost analysis by order id and returns data', async () => {
+      const analysis = {
+        summary: {
+          totalRevenue: 100,
+          totalCost: 80,
+          grossMargin: 20,
+          marginPercentage: 20,
+        },
+        byProductLine: [],
+        byPallet: [],
+      };
+
+      fetchWithTenant.mockResolvedValueOnce(mockJsonResponse({ data: analysis }));
+
+      const result = await getOrderCostAnalysis(1, token);
+
+      expect(fetchWithTenant).toHaveBeenCalledWith(
+        expect.stringContaining('/orders/1/cost-analysis'),
+        expect.objectContaining({
+          method: 'GET',
+          headers: expect.objectContaining({
+            Authorization: `Bearer ${token}`,
+          }),
+        })
+      );
+      expect(result).toEqual(analysis);
     });
   });
 

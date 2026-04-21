@@ -21,12 +21,51 @@ export interface OrderPayload {
 export interface Order {
   id: number | string;
   orderType?: 'standard' | 'autoventa';
+  totalCost?: number | null;
+  grossMargin?: number | null;
+  marginPercentage?: number | null;
   [key: string]: unknown;
 }
 
 /** Order planned product detail payload */
 export interface OrderPlannedProductDetailPayload {
   [key: string]: unknown;
+}
+
+export interface OrderCostAnalysisSummary {
+  totalRevenue: number;
+  totalCost: number | null;
+  grossMargin: number | null;
+  marginPercentage: number | null;
+}
+
+export interface OrderCostAnalysisProductLine {
+  product: {
+    id: number;
+    name: string;
+  };
+  unitPrice: number;
+  taxRate: number;
+  lineWeightKg: number;
+  lineRevenue: number;
+  lineRevenueWithTax: number;
+  lineCost: number | null;
+  lineMargin: number | null;
+  lineMarginPct: number | null;
+}
+
+export interface OrderCostAnalysisPallet {
+  palletId: number;
+  totalWeightKg: number;
+  totalCost: number | null;
+  costPerKg: number | null;
+  products: string[];
+}
+
+export interface OrderCostAnalysisResponse {
+  summary: OrderCostAnalysisSummary;
+  byProductLine: OrderCostAnalysisProductLine[];
+  byPallet: OrderCostAnalysisPallet[];
 }
 
 /** Order incident payload */
@@ -74,6 +113,31 @@ export function getOrder(orderId: string, token: AuthToken): Promise<Order | nul
       const data = await handleServiceResponse(response, null, 'Error al obtener el pedido');
       if (!data) return null;
       return (data.data || data) as Order;
+    })
+    .catch((error) => {
+      throw error;
+    });
+}
+
+/**
+ * Fetches detailed cost analysis for an order.
+ */
+export function getOrderCostAnalysis(
+  orderId: string | number,
+  token: AuthToken
+): Promise<OrderCostAnalysisResponse | null> {
+  return fetchWithTenant(`${API_URL_V2}orders/${orderId}/cost-analysis`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      'User-Agent': getUserAgent(),
+    },
+  })
+    .then(async (response) => {
+      const data = await handleServiceResponse(response, null, 'Error al obtener el análisis económico');
+      if (!data) return null;
+      return (data.data || data) as OrderCostAnalysisResponse;
     })
     .catch((error) => {
       throw error;

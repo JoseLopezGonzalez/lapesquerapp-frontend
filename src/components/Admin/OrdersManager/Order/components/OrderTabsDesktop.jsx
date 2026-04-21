@@ -9,6 +9,7 @@ const TAB_LABELS = {
   details: 'Información',
   products: 'Previsión',
   productDetails: 'Detalle productos',
+  analysis: 'Análisis',
   production: 'Producción',
   labels: 'Etiquetas',
   pallets: 'Palets',
@@ -46,7 +47,7 @@ export default function OrderTabsDesktop({ activeTab, onTabChange, blockedTabIds
             {allowedSections.map((section) => {
               const Component = section.component;
               const isLazy = section.lazy;
-              const compactTabs = ['products', 'productDetails', 'production', 'pallets', 'documents', 'export', 'labels', 'map', 'incident', 'customer-history'];
+              const compactTabs = ['products', 'productDetails', 'analysis', 'production', 'pallets', 'documents', 'export', 'labels', 'map', 'incident', 'customer-history'];
               const tabClass = section.id === 'details'
                 ? 'space-y-4 w-full h-full overflow-y-auto'
                 : compactTabs.includes(section.id)

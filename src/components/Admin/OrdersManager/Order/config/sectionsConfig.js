@@ -8,6 +8,7 @@ import {
   Package,
   ListCollapse,
   Factory,
+  ChartColumn,
   Tickets,
   FileCheck,
   Download,
@@ -23,6 +24,7 @@ const OrderExport = lazy(() => import('../OrderExport'));
 const OrderLabels = lazy(() => import('../OrderLabels'));
 const OrderMap = lazy(() => import('../OrderMap'));
 const OrderProduction = lazy(() => import('../OrderProduction'));
+const OrderCostAnalysis = lazy(() => import('../OrderCostAnalysis'));
 const OrderProductDetails = lazy(() => import('../OrderProductDetails'));
 const OrderPlannedProductDetails = lazy(() => import('../OrderPlannedProductDetails'));
 const OrderIncident = lazy(() => import('../OrderIncident'));
@@ -32,6 +34,7 @@ export const SECTIONS_CONFIG = [
   { id: 'details', title: 'Información', component: OrderDetails, icon: Info },
   { id: 'products', title: 'Previsión', component: OrderPlannedProductDetails, lazy: true, icon: Package },
   { id: 'productDetails', title: 'Detalle productos', component: OrderProductDetails, lazy: true, icon: ListCollapse },
+  { id: 'analysis', title: 'Análisis', component: OrderCostAnalysis, lazy: true, icon: ChartColumn },
   { id: 'production', title: 'Producción', component: OrderProduction, lazy: true, icon: Factory },
   { id: 'pallets', title: 'Palets', component: OrderPallets, lazy: true, icon: Package },
   { id: 'labels', title: 'Etiquetas', component: OrderLabels, lazy: true, icon: Tickets },
