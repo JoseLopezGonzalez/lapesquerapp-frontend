@@ -1801,8 +1801,8 @@ export const barcos = [
   },
   {
     barco: "MABECRIRU",
-    vendiduria: "HIJOS DE MANUEL GEY, S.L.",
-    codVendiduria: 'JA'
+    vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
+    codVendiduria: 'PI'
   },
   {
     barco: "RAFAEL ORTA MARTIN",
@@ -2443,8 +2443,8 @@ export const barcos = [
   {
     cod: '389',
     barco: "MIGUEL EL VIEJO",
-    vendiduria: "EXPO-VENT DE PESCA, S.L.",
-    codVendiduria: 'EX'
+    vendiduria: "CONGELADOS FRIPERGA, S.L.",
+    codVendiduria: 'CF'
   },
   {
     barco: "JESUS ANTONIO GONZALEZ JIMENEZ",
