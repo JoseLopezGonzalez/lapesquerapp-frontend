@@ -40,8 +40,8 @@ export const barcos = [
   {
     cod: '107',
     barco: "JAVI CALE",
-    vendiduria: "CONGELADOS FRIPERGA, S.L.",
-    codVendiduria: 'CF'
+    vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
+    codVendiduria: 'PI'
   },
   {
     barco: "MANINO",
