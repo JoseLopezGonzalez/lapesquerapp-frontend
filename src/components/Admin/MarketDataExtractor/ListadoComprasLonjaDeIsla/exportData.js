@@ -1241,8 +1241,8 @@ export const barcos = [
   },
   {
     barco: "EL POPI",
-    vendiduria: "HIJOS DE MANUEL GEY, S.L.",
-    codVendiduria: 'JA'
+    vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
+    codVendiduria: 'PI'
   },
   {
     barco: "NAZARENO",
@@ -2698,8 +2698,8 @@ export const barcos = [
   },
   {
     barco: "MARINA",
-    vendiduria: "HIJOS DE MANUEL GEY, S.L.",
-    codVendiduria: 'JA'
+    vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
+    codVendiduria: 'PI'
   },
   {
     barco: "NUEVO ARCO",
