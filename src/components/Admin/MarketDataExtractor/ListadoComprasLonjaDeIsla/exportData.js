@@ -5270,6 +5270,15 @@ export const barcosVentaDirecta = [
     }
   },
   {
+    cod: '496',
+    barco: "MAPE",
+    armador: {
+      nombre: 'Manuel Jesus Yaque Camacho',
+      codA3erp: '988285',
+      codA3erpCliente: '988265',
+    }
+  },
+  {
     cod: '358',
     barco: "HERMANOS ARAUJO LOPEZ",
     armador: {
