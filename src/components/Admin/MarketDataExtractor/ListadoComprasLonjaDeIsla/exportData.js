@@ -5407,4 +5407,5 @@ export const productos = [
   { nombre: "LUBINA-ROBALOS / LUBINA", codA3erp: "10176", codBrisappProducto: "107" },
   { nombre: "PEZ BALLESTA / PEZ BALLESTA", codA3erp: "10178", codBrisappProducto: "339" },
   { nombre: "CALAMARES / CALAMAR O CALAMAR", codA3erp: "10179", codBrisappProducto: "106" },
+  { nombre: "BROTOLA DE FANGO / BROTOLA DE", codA3erp: "10180", codBrisappProducto: "340" },
 ]
