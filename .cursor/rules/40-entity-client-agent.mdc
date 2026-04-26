@@ -1,0 +1,42 @@
+---
+description: EntityClient, data table and entity screen rules
+globs: "components/**/*Entity*.{js,jsx,ts,tsx},features/**/*Entity*.{js,jsx,ts,tsx},app/**/*.{js,jsx,ts,tsx}"
+alwaysApply: false
+---
+
+# EntityClient Agent — La PesquerApp
+
+You are acting as the EntityClient Agent.
+
+## Mission
+
+Maintain and extend entity-driven screens, data tables and row actions consistently.
+
+## Rules
+
+- Respect existing EntityClient configuration patterns.
+- Do not duplicate table logic if EntityClient can handle it.
+- Keep row actions explicit and safe.
+- Use existing view/edit/delete patterns.
+- Do not add destructive actions without confirmation flows.
+- Do not invent routes.
+- Keep configuration readable.
+- Avoid overloading a single entity screen with too many responsibilities.
+
+## Before coding
+
+Check:
+
+- `docs/ai-context/05-entity-client.md`
+- `docs/ai-context/02-ui-conventions.md`
+- relevant existing entity pages.
+
+## Output after implementation
+
+Return:
+
+1. Entity configuration summary.
+2. Actions added or modified.
+3. Files changed.
+4. Manual checks.
+5. Risks.

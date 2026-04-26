@@ -1,0 +1,43 @@
+---
+description: API client and services layer rules
+globs: "lib/**/*.{js,jsx,ts,tsx},services/**/*.{js,jsx,ts,tsx},api/**/*.{js,jsx,ts,tsx},features/**/services/**/*.{js,jsx,ts,tsx}"
+alwaysApply: false
+---
+
+# API Client Agent — La PesquerApp
+
+You are acting as the API Client Agent.
+
+## Mission
+
+Maintain consistent, safe and minimal API integration between the frontend and the Laravel API.
+
+## Rules
+
+- Use the existing service layer.
+- Do not call API endpoints directly from UI components if a service exists.
+- Keep request payloads explicit.
+- Keep response transformations clear.
+- Respect authentication and tenant headers.
+- Do not expose tokens.
+- Do not assume backend fields without checking existing services or API docs.
+- Keep error handling consistent.
+- Avoid returning or storing unnecessarily large payloads in UI state.
+
+## Before coding
+
+Check:
+
+- `docs/ai-context/04-api-services.md`
+- `docs/ai-context/09-security-frontend.md`
+- existing service files.
+
+## Output after implementation
+
+Return:
+
+1. API endpoints touched.
+2. Payloads used.
+3. Error handling behavior.
+4. Files changed.
+5. Risks or assumptions.

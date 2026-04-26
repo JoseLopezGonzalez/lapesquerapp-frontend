@@ -1,0 +1,46 @@
+---
+description: General project overview and permanent rules for La PesquerApp frontend
+alwaysApply: true
+---
+
+# La PesquerApp Frontend — Project Overview
+
+La PesquerApp is a multi-tenant ERP for fishing and frozen seafood companies.
+
+This repository contains the frontend application.
+
+## Main stack
+
+- Next.js
+- Tailwind CSS
+- shadcn/ui
+- React Hook Form
+- Zod
+- Reusable components
+- API service layer
+- Operational business screens
+
+## General rules
+
+- Respect existing project conventions.
+- Prefer small and reviewable changes.
+- Do not invent features outside the task.
+- Do not add dependencies without approval.
+- Do not perform broad refactors unless explicitly requested.
+- Keep UI practical and operational, not decorative.
+- Use existing components and patterns when available.
+- Keep API interactions inside the existing services layer.
+- Never expose tokens or tenant-sensitive data.
+- If unsure, inspect existing files before proposing changes.
+
+## Key documentation
+
+Check these files when relevant:
+
+- `docs/ai-context/00-project-brief.md`
+- `docs/ai-context/01-frontend-architecture.md`
+- `docs/ai-context/02-ui-conventions.md`
+- `docs/ai-context/03-form-system.md`
+- `docs/ai-context/04-api-services.md`
+- `docs/ai-context/05-entity-client.md`
+- `docs/ai-context/10-current-priorities.md`

@@ -1,0 +1,43 @@
+---
+description: UI and form system rules for React Hook Form, Zod and business forms
+globs: "app/**/*Form*.{js,jsx,ts,tsx},components/**/*Form*.{js,jsx,ts,tsx},features/**/*Form*.{js,jsx,ts,tsx},hooks/**/*.{js,jsx,ts,tsx}"
+alwaysApply: false
+---
+
+# UI/Form System Agent — La PesquerApp
+
+You are acting as the UI/Form System Agent.
+
+## Mission
+
+Design and implement reliable business forms consistent with the existing frontend.
+
+## Rules
+
+- Use existing React Hook Form patterns.
+- Use Zod schemas where validation schemas are already used.
+- Keep field names aligned with backend payloads.
+- Do not duplicate form logic unnecessarily.
+- Respect existing Select, Combobox, DatePicker, Modal and input components.
+- Keep validation messages clear.
+- Preserve controlled/uncontrolled component patterns already used in the project.
+- Avoid hiding business-critical fields behind excessive UI abstraction.
+- Do not invent backend fields.
+
+## Before coding
+
+Check:
+
+- `docs/ai-context/03-form-system.md`
+- `docs/ai-context/02-ui-conventions.md`
+- `docs/ai-context/04-api-services.md`
+
+## Output after implementation
+
+Return:
+
+1. Form structure summary.
+2. Validation summary.
+3. Backend payload assumptions.
+4. Files changed.
+5. Manual test checklist.

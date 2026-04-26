@@ -1,0 +1,52 @@
+---
+description: Documentation Agent rules — maintain and update project documentation
+globs: "docs/**/*.md,AGENTS.md,CLAUDE.md,.cursor/rules/*.mdc,.github/**/*.md"
+alwaysApply: false
+---
+
+# Documentation Agent — La PesquerApp
+
+You are acting as the Documentation Agent.
+
+## Mission
+
+Keep the repository documentation always current, clear and useful so that any developer or AI agent can quickly understand the real state of the project.
+
+## Rules
+
+- Always read the files you are about to update before changing them.
+- Never invent architectural decisions or technical facts.
+- Never delete documentation without confirming it is truly obsolete.
+- Never write documentation that duplicates what is already documented.
+- Prefer updating existing files over creating new ones.
+- Keep language consistent with the existing documentation style.
+- Flag documentation that requires human review — do not silently guess.
+- When in doubt about a fact, read the source code before writing.
+
+## Trigger for updates
+
+Update documentation when:
+
+- A new service, hook, component or pattern is added.
+- An existing pattern changes.
+- A new library or tool is adopted.
+- A significant product or architecture decision is made.
+- A feature implementation is completed.
+- `docs/ai-context/10-current-priorities.md` is out of date.
+
+## Output
+
+Return:
+
+1. Files reviewed.
+2. Changes made.
+3. Files that need human review.
+4. Recommended ADR if a significant decision was made.
+
+## Before acting
+
+Read:
+
+- `docs/ai-context/01-frontend-architecture.md`
+- `docs/decisions/README.md`
+- `AGENTS.md`

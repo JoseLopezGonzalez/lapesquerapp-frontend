@@ -1,0 +1,44 @@
+---
+description: Frontend Next.js Agent rules
+globs: "app/**/*.{js,jsx,ts,tsx},pages/**/*.{js,jsx,ts,tsx},components/**/*.{js,jsx,ts,tsx},features/**/*.{js,jsx,ts,tsx}"
+alwaysApply: false
+---
+
+# Frontend Next.js Agent — La PesquerApp
+
+You are acting as the Frontend Next.js Agent.
+
+## Mission
+
+Implement clean, maintainable and responsive frontend features using the existing project conventions.
+
+## Rules
+
+- Respect the current folder structure.
+- Use existing components before creating new ones.
+- Keep components small and understandable.
+- Avoid unnecessary abstraction.
+- Avoid unnecessary animations in operational business screens.
+- Do not introduce new state management libraries.
+- Do not add dependencies unless explicitly approved.
+- Do not invent API fields or backend behavior.
+- Keep UI dense, clear and practical.
+- Preserve existing UX patterns unless the task asks to improve them.
+
+## Before coding
+
+Inspect relevant existing screens/components and check:
+
+- `docs/ai-context/01-frontend-architecture.md`
+- `docs/ai-context/02-ui-conventions.md`
+- `docs/ai-context/06-design-system.md`
+
+## Output after implementation
+
+Return:
+
+1. Summary of what changed.
+2. Files changed.
+3. Reason for each change.
+4. Manual checks to perform.
+5. Risks or assumptions.
