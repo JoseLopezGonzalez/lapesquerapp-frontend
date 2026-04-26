@@ -9,12 +9,23 @@ import { useOrderContext } from '@/context/OrderContext';
 import { formatDecimalCurrency, formatDecimalWeight, formatInteger } from '@/helpers/formats/numbers/formatNumbers';
 import { GitBranchPlus, Plus, X, Check, Edit2, Trash2, MoreVertical, Info } from 'lucide-react';
 import { Combobox } from '@/components/Shadcn/Combobox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';import { EmptyState } from '@/components/Utilities/EmptyState/index';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { EmptyState } from '@/components/Utilities/EmptyState/index';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { notify } from '@/lib/notifications';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const OrderPlannedProductDetails = () => {
     const isMobile = useIsMobile();
@@ -60,6 +71,7 @@ const OrderPlannedProductDetails = () => {
     const [temporaryDetails, setTemporaryDetails] = useState([]); // Estado para líneas temporales
     const [editIndex, setEditIndex] = useState(null);
     const [showTotalsDialog, setShowTotalsDialog] = useState(false);
+    const [deleteConfirmDetail, setDeleteConfirmDetail] = useState(null);
 
     // Crear Maps para búsquedas O(1) en lugar de O(n)
     const productOptionsMap = useMemo(() => {
@@ -218,6 +230,18 @@ const OrderPlannedProductDetails = () => {
         }).then(() => setEditIndex(null));
     };
 
+    const deletePersistedLine = useCallback((detail) => {
+        notify.promise(plannedProductDetailActions.delete(detail.id), {
+            loading: 'Eliminando línea...',
+            success: 'Línea eliminada correctamente',
+            error: (error) => {
+                console.error('Error al eliminar la línea:', error);
+                const desc = error?.userMessage || error?.data?.userMessage || error?.response?.data?.userMessage || error?.message || 'No se pudo eliminar la línea. Intente de nuevo.';
+                return { title: 'Error al eliminar la línea', description: desc };
+            },
+        }).then(() => setEditIndex(null));
+    }, [plannedProductDetailActions]);
+
     const handleOnClickDeleteLine = async (detail) => {
         // Línea temporal: solo remover del estado local (identificar por tempId, no por editIndex)
         if (!detail?.id && detail?.isTemporary) {
@@ -229,15 +253,15 @@ const OrderPlannedProductDetails = () => {
         // Línea persistida: requiere id para eliminar vía API
         if (!detail?.id) return;
 
-        notify.promise(plannedProductDetailActions.delete(detail.id), {
-            loading: 'Eliminando línea...',
-            success: 'Línea eliminada correctamente',
-            error: (error) => {
-                console.error('Error al eliminar la línea:', error);
-                const desc = error?.userMessage || error?.data?.userMessage || error?.response?.data?.userMessage || error?.message || 'No se pudo eliminar la línea. Intente de nuevo.';
-                return { title: 'Error al eliminar la línea', description: desc };
-            },
-        }).then(() => setEditIndex(null));
+        setDeleteConfirmDetail(detail);
+    };
+
+    const handleConfirmDeleteLine = () => {
+        if (!deleteConfirmDetail?.id) return;
+
+        const detail = deleteConfirmDetail;
+        setDeleteConfirmDetail(null);
+        deletePersistedLine(detail);
     };
 
     const handleOnClickCloseLine = (detail) => {
@@ -665,6 +689,27 @@ const OrderPlannedProductDetails = () => {
                 </CardContent>
             </Card>
             )}
+            <AlertDialog
+                open={Boolean(deleteConfirmDetail)}
+                onOpenChange={(open) => {
+                    if (!open) setDeleteConfirmDetail(null);
+                }}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Eliminar línea prevista</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Esta acción eliminará la línea del pedido y puede afectar importes, cajas y preparación.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction variant="destructive" onClick={handleConfirmDeleteLine}>
+                            Eliminar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 };

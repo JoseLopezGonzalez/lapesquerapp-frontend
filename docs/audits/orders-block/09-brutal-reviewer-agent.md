@@ -41,13 +41,13 @@ El componente `Order` bloquea secciones en modo comercial si el pedido no está 
 
 ## 3. Qué es confuso
 
-| Confusión | Por qué importa |
-|---|---|
-| `/admin/orders` vs `/admin/orders-manager` | Uno es listado EntityClient; otro es operación real. No está documentado. |
-| `createForm` en config de `orders` | Parece usable, pero el alta real vive en `CreateOrderForm` dentro del gestor. |
-| Estados `pending`, `finished`, `incident` | Se usan como negocio, UI y filtros, pero no hay contrato visible. |
-| `A3ERP`, `A3ERP2`, `Facilcom`, Excel y PDFs | Hay exportaciones masivas e individuales en sitios distintos. |
-| Admin y comercial comparten UI | Bueno, pero la duplicidad de gestores dice que el patrón no terminó de abstraerse. |
+| ID | Confusión | Por qué importa | Explicación del problema | Solución / mejora recomendada | Estado | Observaciones |
+| --- | --- | --- | --- | --- | --- | --- |
+| OB09-01 | `/admin/orders` vs `/admin/orders-manager` | Uno es listado EntityClient; otro es operación real. No está documentado. | La diferencia no es obvia desde la estructura de rutas. | Documentar rutas y propósito en contexto de pedidos. | Pendiente |  |
+| OB09-02 | `createForm` en config de `orders` | Parece usable, pero el alta real vive en `CreateOrderForm` dentro del gestor. | Un agente puede perder tiempo o introducir cambios muertos. | Deprecar/eliminar config no usada o explicar que es legacy. | Pendiente |  |
+| OB09-03 | Estados `pending`, `finished`, `incident` | Se usan como negocio, UI y filtros, pero no hay contrato visible. | El mismo estado afecta permisos, filtros, badges y documentos. | Definir ciclo de estados y transiciones permitidas. | Pendiente |  |
+| OB09-04 | `A3ERP`, `A3ERP2`, `Facilcom`, Excel y PDFs | Hay exportaciones masivas e individuales en sitios distintos. | El usuario o desarrollador no sabe qué salida corresponde a cada operación. | Crear matriz de exportaciones por destino, rol y caso de uso. | Pendiente |  |
+| OB09-05 | Admin y comercial comparten UI | Bueno, pero la duplicidad de gestores dice que el patrón no terminó de abstraerse. | Compartir componentes sin abstracción común crea divergencia silenciosa. | Extraer gestor compartido parametrizado por permisos/rol. | Pendiente |  |
 
 ---
 
@@ -62,13 +62,13 @@ El componente `Order` bloquea secciones en modo comercial si el pedido no está 
 
 ## 5. Qué debe corregirse primero
 
-| Prioridad | Problema | Acción |
-|---|---|---|
-| P0 | Logs de token | Eliminar inmediatamente cualquier log de token en `orderService.js`. |
-| P0 | Acción destructiva sin confirmación | Confirm dialog para eliminar líneas previstas persistidas. |
-| P1 | Doble service layer | Definir facade único y documentar migración. |
-| P1 | `readOnly` sin test | Tests que prueben bloqueo UI y verificación backend por rol. |
-| P1 | `useOrder.js` sobredimensionado | Extraer servicios de documentos, líneas, palets y análisis cuando se toque el bloque. |
+| ID | Prioridad | Problema | Explicación del problema | Acción | Solución / mejora recomendada | Estado | Observaciones |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| OB09-06 | P0 | Logs de token | Exponen material sensible en consola y posibles agregadores de logs. | Eliminar inmediatamente cualquier log de token en `orderService.js`. | Sustituir por logs no sensibles o métricas agregadas. | Pendiente |  |
+| OB09-07 | P0 | Acción destructiva sin confirmación | Un click accidental puede borrar una línea real de pedido. | Confirm dialog para eliminar líneas previstas persistidas. | Confirmar solo persistidas; las temporales pueden seguir quitándose localmente. | Pendiente |  |
+| OB09-08 | P1 | Doble service layer | Aumenta ambigüedad, duplicación y diferencias de errores/payloads. | Definir facade único y documentar migración. | Mantener adapter solo como compatibilidad temporal hacia el facade. | Pendiente |  |
+| OB09-09 | P1 | `readOnly` sin test | Una regresión puede exponer acciones sensibles a comerciales. | Tests que prueben bloqueo UI y verificación backend por rol. | Cubrir admin/comercial/field en UI y policies backend. | Pendiente |  |
+| OB09-10 | P1 | `useOrder.js` sobredimensionado | Hace que cualquier cambio tenga alto radio de impacto. | Extraer servicios de documentos, líneas, palets y análisis cuando se toque el bloque. | No refactor masivo; extraer por oportunidad al tocar cada subflujo. | Pendiente |  |
 
 ---
 
@@ -83,4 +83,3 @@ No reescribir el bloque entero. Sería caro y arriesgado. Pero sí cortar las fu
 5. documentar arquitectura real de pedidos.
 
 Después de eso, cualquier mejora nueva debería pagar una pequeña deuda: si toca palets, extraer palets; si toca documentos, extraer documentos; si toca líneas, validar líneas.
-

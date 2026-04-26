@@ -146,6 +146,19 @@ configs['raw-material-receptions'] = {
 - La pantalla tiene múltiples estados o flujos que no caben en el patrón lista/modal.
 - Ya existe una pantalla dedicada para esa entidad fuera de `/admin/[entity]/`.
 
+### Caso especial: pedidos
+
+El bloque de pedidos combina un listado EntityClient con gestores operativos dedicados:
+
+| Ruta | Implementación | Propósito |
+|---|---|---|
+| `/admin/orders` | Ruta dinámica `src/app/admin/[entity]/page.js` + `configs.orders` en `src/configs/entitiesConfig.js` | Listado administrativo EntityClient: filtros, tabla, selección y exportaciones. No existe `src/app/admin/orders/page.js`. |
+| `/admin/orders-manager` | `src/app/admin/orders-manager/page.js` + `src/components/Admin/OrdersManager/` | Gestor operacional admin: creación, detalle/editor, producción, documentos, palets y rentabilidad. |
+| `/comercial/orders` | `src/app/comercial/orders/page.js` con config de pedidos adaptada | Listado comercial read-only basado en EntityClient. |
+| `/comercial/orders-manager` | `src/app/comercial/orders-manager/page.js` + gestor comercial | Gestor operacional comercial con restricciones por rol. |
+
+Cuando se modifique el listado de pedidos, revisar `configs.orders` y el flujo EntityClient. Cuando se modifique la operación diaria de pedidos, revisar `OrdersManager` y sus hooks/servicios relacionados. No crear un `src/app/admin/orders/page.js` salvo decisión arquitectónica explícita: la ruta ya está cubierta por `/admin/[entity]`.
+
 ---
 
 ## Cómo añadir una nueva entidad al EntityClient

@@ -5,30 +5,19 @@ import { useQueryClient } from '@tanstack/react-query';
 import OrdersList from './OrdersList';
 import Order from './Order';
 import { useOrders } from '@/hooks/useOrders';
-import { Loader2, Package, Plus, Download, LayoutGrid, List } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Package } from 'lucide-react';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { Card } from '@/components/ui/card';
-import Loader from '@/components/Utilities/Loader';
 import CreateOrderForm from './CreateOrderForm';
-import ProductionView from './ProductionView';import { useDebounce } from '@/hooks/useDebounce';
+import OrdersManagerLayout from './shared/OrdersManagerLayout';
+import { useDebounce } from '@/hooks/useDebounce';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { notify } from '@/lib/notifications';
-import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 import { useRouter, useSearchParams } from 'next/navigation';
-
-
-const initialCategories = [
-    { label: 'Todos', name: 'all', current: true },
-    { label: 'En producción', name: 'pending', current: false },
-    { label: 'Terminados', name: 'finished', current: false },
-    { label: 'Hoy', name: 'today', current: false },
-    { label: 'Mañana', name: 'tomorrow', current: false },
-]
+import { INITIAL_ORDER_CATEGORIES, buildVisibleOrderCategories, filterAndSortOrders } from '@/lib/orders/orderListFilters';
 
 export default function OrdersManager() {
     const queryClient = useQueryClient();
-    const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
     const isMobile = useIsMobile();
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -37,8 +26,8 @@ export default function OrdersManager() {
     const [isOrderLoading, setIsOrderLoading] = useState(false);
     const [createOrderPrefill, setCreateOrderPrefill] = useState(null);
 
-    const { orders = [], isLoading: loading, error: ordersError, refetch, queryKey } = useOrders();
-    const [categories, setCategories] = useState(initialCategories);
+    const { orders = [], isLoading: loading, error: ordersError, queryKey } = useOrders();
+    const [categories, setCategories] = useState(INITIAL_ORDER_CATEGORIES);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [searchText, setSearchText] = useState('');
     const [viewMode, setViewMode] = useState('normal'); // 'normal' o 'production'
@@ -122,29 +111,8 @@ export default function OrdersManager() {
         return categories.find((category) => category.current) || categories[0];
     }, [categories]);
 
-    // Categorías visibles: Hoy y Mañana solo si hay pedidos para esa fecha; orden: Hoy, Mañana, Todos, En producción, Terminados
     const visibleCategories = useMemo(() => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-
-        const hasOrdersToday = orders.some((order) => {
-            const loadDateObj = order.loadDate ? new Date(order.loadDate) : null;
-            const loadDateOnly = loadDateObj ? new Date(loadDateObj.getFullYear(), loadDateObj.getMonth(), loadDateObj.getDate()) : null;
-            return loadDateOnly && loadDateOnly.getTime() === today.getTime();
-        });
-        const hasOrdersTomorrow = orders.some((order) => {
-            const loadDateObj = order.loadDate ? new Date(order.loadDate) : null;
-            const loadDateOnly = loadDateObj ? new Date(loadDateObj.getFullYear(), loadDateObj.getMonth(), loadDateObj.getDate()) : null;
-            return loadDateOnly && loadDateOnly.getTime() === tomorrow.getTime();
-        });
-
-        const result = [{ label: 'Todos', name: 'all' }];
-        if (hasOrdersToday) result.push({ label: 'Hoy', name: 'today' });
-        if (hasOrdersTomorrow) result.push({ label: 'Mañana', name: 'tomorrow' });
-        result.push({ label: 'En producción', name: 'pending' }, { label: 'Terminados', name: 'finished' });
-        return result;
+        return buildVisibleOrderCategories(orders);
     }, [orders]);
 
     // Si la categoría activa ya no está visible (ej. era "Hoy" y ya no hay pedidos para hoy), volver a "Todos"
@@ -172,47 +140,10 @@ export default function OrdersManager() {
         return visibleCategories.filter((c) => c.name !== 'today' && c.name !== 'tomorrow');
     }, [isMobile, visibleCategories]);
 
-    // Optimizar filtrado y ordenamiento con useMemo (usando debouncedSearchText)
-    // No incluimos selectedOrder en las dependencias para evitar re-renders innecesarios
-    // isSelected se calculará en OrderCard basándose en selectedOrderId prop
     const sortedOrders = useMemo(() => {
-        const searchLower = debouncedSearchText.toLowerCase();
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); // Resetear horas para comparación de fechas
-        
-        // Filtrar sin mutar los objetos originales
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-
-        const filtered = orders
-            .filter((order) => {
-                const loadDateObj = order.loadDate ? new Date(order.loadDate) : null;
-                const loadDateOnly = loadDateObj ? new Date(loadDateObj.getFullYear(), loadDateObj.getMonth(), loadDateObj.getDate()) : null;
-
-                // Filtro de búsqueda
-                const matchesSearch = order.customer?.name?.toLowerCase().includes(searchLower) ||
-                    order.id.toString().includes(debouncedSearchText);
-
-                // Filtro de categoría: estado (all/pending/finished) o fecha (today/tomorrow)
-                let matchesCategory = true;
-                if (activeCategory.name === 'today') {
-                    matchesCategory = loadDateOnly && loadDateOnly.getTime() === today.getTime();
-                } else if (activeCategory.name === 'tomorrow') {
-                    matchesCategory = loadDateOnly && loadDateOnly.getTime() === tomorrow.getTime();
-                } else if (activeCategory.name !== 'all') {
-                    matchesCategory = activeCategory.name === order.status;
-                }
-
-                // Lógica de negocio: no mostrar finished antiguos (solo hoy o futuros)
-                const isOldFinishedOrder = order.status === 'finished' && loadDateOnly && loadDateOnly < today;
-                const matchesBusinessLogic = !isOldFinishedOrder;
-
-                return matchesSearch && matchesCategory && matchesBusinessLogic;
-            });
-
-        // Ordenar creando una copia del array
-        return [...filtered].sort((a, b) => {
-            return new Date(a.loadDate) - new Date(b.loadDate);
+        return filterAndSortOrders(orders, {
+            searchText: debouncedSearchText,
+            activeCategoryName: activeCategory.name,
         });
     }, [orders, debouncedSearchText, activeCategory]);
 
@@ -373,57 +304,15 @@ export default function OrdersManager() {
     }, [selectedOrder, onCreatingNewOrder, handleOnChange, handleOrderLoading, isMobile, handleCloseDetail, handleOnCreatedOrder, handleOnClickAddNewOrder, createOrderPrefill]);
 
     return (
-        <>
-            {loading ? (
-                /* Loader */
-                <div className="w-full h-full flex items-center justify-center">
-                    <Loader />
-                </div>
-            ) : (
-                /* Vista - layout adaptativo: lista siempre visible, detalle se muestra cuando se selecciona */
-                <div className="h-full flex flex-col">
-                    {viewMode === 'production' ? (
-                        /* Vista de producción - pantalla completa */
-                        <div className="h-full flex flex-col overflow-hidden">
-                            {/* Contenido de vista producción - ocupa todo el espacio */}
-                            <div className="h-full min-h-0 overflow-hidden">
-                                <ProductionView
-                                    orders={sortedOrders}
-                                    onClickOrder={handleOnClickOrderCard}
-                                    useMockData={sortedOrders.length === 0}
-                                    onToggleViewMode={toggleViewMode}
-                                />
-                            </div>
-                        </div>
-                    ) : isMobile ? (
-                        /* Vista móvil: lista o detalle según selección */
-                        <div className="h-full flex flex-col min-h-0">
-                            {selectedOrder || onCreatingNewOrder ? (
-                                /* Mostrar detalle cuando hay selección */
-                                <div className='h-full overflow-hidden'>
-                                    {OrderDetailContent}
-                                </div>
-                            ) : (
-                                /* Mostrar lista cuando no hay selección */
-                                <div className='h-full flex flex-col overflow-hidden min-h-0'>
-                                    {OrdersListContent}
-                                </div>
-                            )}
-                            
-                        </div>
-                    ) : (
-                        /* Vista desktop - layout side-by-side */
-                        <div className="flex flex-col xl:flex-row h-full">
-                            <div className='w-full xl:w-[360px] xl:flex-shrink-0 xl:h-full'>
-                                {OrdersListContent}
-                            </div>
-                            <div className='grow lg:pl-0 p-2'>
-                                {OrderDetailContent}
-                            </div>
-                        </div>
-                    )}
-                </div>
-            )}
-        </>
+        <OrdersManagerLayout
+            loading={loading}
+            viewMode={viewMode}
+            isMobile={isMobile}
+            hasDetail={Boolean(selectedOrder || onCreatingNewOrder)}
+            listContent={OrdersListContent}
+            detailContent={OrderDetailContent}
+            onClickProductionOrder={handleOnClickOrderCard}
+            onToggleViewMode={toggleViewMode}
+        />
     )
 }

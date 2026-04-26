@@ -4,7 +4,8 @@ import React, { useEffect, useState, Suspense, useCallback, useMemo } from 'reac
 import { ArrowLeft, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import OrderEditSheet from './OrderEditSheet';
-import { OrderProvider, useOrderContext } from '@/context/OrderContext';import OrderSkeleton from './OrderSkeleton';
+import { OrderProvider, useOrderContext } from '@/context/OrderContext';
+import OrderSkeleton from './OrderSkeleton';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import Loader from '@/components/Utilities/Loader';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -22,6 +23,7 @@ import OrderHeaderDesktop from './components/OrderHeaderDesktop';
 import OrderTabsDesktop from './components/OrderTabsDesktop';
 import { notify } from '@/lib/notifications';
 import OrderSectionContentMobile from './components/OrderSectionContentMobile';
+import { getBlockedOrderSectionsForReadOnly, isOrderPalletsReadOnly } from '@/lib/orders/orderReadOnlyPermissions';
 
 const OrderContent = ({ onLoading, onClose, readOnly = false }) => {
   const isMobile = useIsMobile();
@@ -53,14 +55,15 @@ const OrderContent = ({ onLoading, onClose, readOnly = false }) => {
   // - Etiquetas
   // - Envío de Documentos
   // - Incidencia
-  const commercialInProgressBlockedTabIds =
-    readOnly && order?.status && order.status !== 'finished'
-      ? ['labels', 'documents', 'incident', 'export']
-      : [];
+  const commercialInProgressBlockedTabIds = getBlockedOrderSectionsForReadOnly({
+    readOnly,
+    status: order?.status,
+  });
 
-  // Palets: en modo comercial read-only (pedido en curso) solo vista (lista vinculada),
-  // sin acciones de crear/editar/eliminar/desvincular/vincular desde previsión.
-  const palletsReadOnly = Boolean(readOnly && order?.status && order.status !== 'finished');
+  const palletsReadOnly = isOrderPalletsReadOnly({
+    readOnly,
+    status: order?.status,
+  });
 
   useEffect(() => {
     if (commercialInProgressBlockedTabIds.length === 0) return;
@@ -215,5 +218,4 @@ const Order = ({ orderId, onChange, onLoading, onClose, readOnly = false }) => {
 }
 
 export default Order
-
 

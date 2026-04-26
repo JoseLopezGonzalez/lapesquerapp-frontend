@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { SECTIONS_CONFIG, PRIMARY_SECTION_IDS_MOBILE } from '../config/sectionsConfig';
+import { getBlockedOrderSectionsForReadOnly } from '@/lib/orders/orderReadOnlyPermissions';
 
 /**
  * Header móvil: botón back + título (#orderId) + menú ⋮ (secciones overflow, Editar, Imprimir)
@@ -26,11 +27,10 @@ export default function OrderHeaderMobile({
 }) {
   if (!onClose) return null;
 
-  // En modo comercial con pedido en curso, ocultar secciones sensibles en el menú overflow.
-  const commercialInProgressBlockedTabIds =
-    readOnly && order?.status && order.status !== 'finished'
-      ? ['labels', 'documents', 'incident', 'export']
-      : [];
+  const commercialInProgressBlockedTabIds = getBlockedOrderSectionsForReadOnly({
+    readOnly,
+    status: order?.status,
+  });
 
   const overflowSections = SECTIONS_CONFIG.filter(
     (s) => !PRIMARY_SECTION_IDS_MOBILE.includes(s.id)

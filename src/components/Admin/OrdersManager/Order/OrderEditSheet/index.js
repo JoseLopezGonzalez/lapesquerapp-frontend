@@ -18,15 +18,16 @@ import {
   FieldGroup,
 } from '@/components/ui/field';
 import { Separator } from '@/components/ui/separator';
-import { useOrderContext } from '@/context/OrderContext';import EmailListInput from '@/components/ui/emailListInput';
+import { useOrderContext } from '@/context/OrderContext';
+import EmailListInput from '@/components/ui/emailListInput';
 import { DatePicker } from '@/components/ui/datePicker';
-import { format } from "date-fns"
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { notify } from '@/lib/notifications';
 import { orderEditSchema } from './schemas/orderEditSchema';
+import { buildOrderEditPayload } from './utils/buildOrderEditPayload';
 
 const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenChange }) => {
     const { order, updateOrderData } = useOrderContext()
@@ -92,19 +93,7 @@ const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenCh
 
     const onSubmit = async (data) => {
         setSaving(true);
-        const payload = {};
-        Object.keys(dirtyFields).forEach((fieldName) => {
-            const fieldValue = data[fieldName];
-            if (fieldName === 'entryDate' || fieldName === 'loadDate') {
-                payload[fieldName] = fieldValue instanceof Date
-                    ? format(fieldValue, 'yyyy-MM-dd')
-                    : fieldValue;
-            } else if (fieldName === 'fieldOperator') {
-                payload[fieldName] = fieldValue ? parseInt(fieldValue, 10) : null;
-            } else {
-                payload[fieldName] = fieldValue;
-            }
-        });
+        const payload = buildOrderEditPayload(data, dirtyFields);
 
         if (Object.keys(payload).length === 0) {
             notify.info({

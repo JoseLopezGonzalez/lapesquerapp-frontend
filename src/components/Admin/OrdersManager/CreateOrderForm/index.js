@@ -1,8 +1,6 @@
-// components/CreateOrderForm.jsx
 'use client'
 
-// Importaciones existentes (mantenerlas o refactorizar si es necesario)
-import React, { useEffect, useCallback, useRef, useMemo } from 'react'; // Añadido useCallback y useRef
+import React, { useEffect, useCallback, useRef, useMemo } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,14 +9,13 @@ import { Combobox } from '@/components/Shadcn/Combobox';
 import { PlusCircle, Trash2, ArrowLeft, Plus } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
-import { useOrderCreateFormConfig } from '@/hooks/useOrderCreateFormConfig'; // Hook personalizado
+import { useOrderCreateFormConfig } from '@/hooks/useOrderCreateFormConfig';
 import { useSession } from 'next-auth/react';
-import { getCustomer } from '@/services/customerService'; // Ya externalizado
-import { useProductOptions } from '@/hooks/useProductOptions'; // Hook personalizado
-import { useTaxOptions } from '@/hooks/useTaxOptions'; // Hook personalizado
-import Loader from '@/components/Utilities/Loader';import EmailListInput from '@/components/ui/emailListInput';
-
-// Importa el nuevo servicio para la creación de pedidos
+import { getCustomer } from '@/services/customerService';
+import { useProductOptions } from '@/hooks/useProductOptions';
+import { useTaxOptions } from '@/hooks/useTaxOptions';
+import Loader from '@/components/Utilities/Loader';
+import EmailListInput from '@/components/ui/emailListInput';
 import { createOrder } from '@/services/orderService';
 import { Textarea } from '@/components/ui/textarea';
 import { DatePicker } from '@/components/ui/datePicker';
@@ -64,17 +61,12 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }) => {
     const isMobile = useIsMobile();
     const router = useRouter();
     const { data: session } = useSession();
-    // Ya no necesitamos 'token' directamente aquí para 'createOrder',
-    // porque el servicio lo obtiene con getSession().
-    // const token = session?.user?.accessToken;
 
     const { defaultValues, formGroups, loading: formConfigLoading } = useOrderCreateFormConfig();
-    const loading = formConfigLoading || productsLoading;
+    const loading = formConfigLoading || productsLoading || taxLoading;
 
-    // Ref para rastrear si el formulario ya fue inicializado
     const isInitializedRef = useRef(false);
     const appliedPrefillSignatureRef = useRef(null);
-    // Ref para rastrear el último customer seleccionado y evitar llamadas duplicadas
     const lastCustomerIdRef = useRef(null);
 
     const {
@@ -94,21 +86,16 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }) => {
         },
         mode: 'onChange',
     });
+    const submitDisabled = isSubmitting || loading || !isValid;
 
-    // Watch del customer para el efecto de carga de datos
     const selectedCustomerId = watch('customer');
 
-    // Efecto para cargar datos del cliente cuando cambia el cliente seleccionado
     useEffect(() => {
         if (!selectedCustomerId || selectedCustomerId === lastCustomerIdRef.current) return;
         
         lastCustomerIdRef.current = selectedCustomerId;
 
-        // Asegúrate de que 'getCustomer' en services/customerService.js obtenga el token internamente
-        // o que tu hook useOrderCreateFormConfig ya lo maneje si 'handleGetCustomer' lo llama.
-        // Si 'getCustomer' necesita el token explícitamente, pásalo como argumento.
-        // Por la forma en que lo tienes ahora, parece que 'getCustomer' no necesita el token directamente.
-        getCustomer(selectedCustomerId, session?.user?.accessToken) // Pasa el token si getCustomer lo espera
+        getCustomer(selectedCustomerId, session?.user?.accessToken)
             .then((customer) => {
                 setValue('salesperson', getRelatedId(customer, customer.salesperson, customer.salespersonId, customer.salesperson_id));
                 setValue('fieldOperator', getRelatedId(customer, customer.fieldOperator, customer.fieldOperatorId, customer.field_operator_id));
@@ -130,7 +117,7 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }) => {
                   description: 'No se pudieron cargar los datos. Intente de nuevo.',
                 });
             });
-    }, [selectedCustomerId, setValue, session]); // Usar selectedCustomerId directamente en lugar de watch('customer')
+    }, [selectedCustomerId, setValue, session]);
 
     const { fields, append, remove } = useFieldArray({
         control,
@@ -159,9 +146,7 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }) => {
         return JSON.stringify(prefilledPlannedProducts);
     }, [initialPrefill, prefilledPlannedProducts]);
 
-    // Efecto para inicializar el formulario solo cuando loading cambia de true a false por primera vez
     useEffect(() => {
-        // Solo resetear cuando loading termine por primera vez y el formulario no haya sido inicializado
         if (!loading && !isInitializedRef.current && defaultValues) {
             reset({
                 ...defaultValues,
@@ -170,7 +155,7 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }) => {
             appliedPrefillSignatureRef.current = prefillSignature;
             isInitializedRef.current = true;
         }
-    }, [loading, defaultValues, reset, prefilledPlannedProducts, prefillSignature]); // Solo resetear cuando loading cambia
+    }, [loading, defaultValues, reset, prefilledPlannedProducts, prefillSignature]);
 
     useEffect(() => {
         if (loading || !isInitializedRef.current || !prefillSignature) return;
@@ -184,14 +169,13 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }) => {
         lastCustomerIdRef.current = null;
     }, [loading, prefillSignature, defaultValues, prefilledPlannedProducts, reset]);
 
-    // Función de manejo de creación de pedido, ahora usando el servicio
     const handleCreate = async (formData) => {
         const payload = {
             customer: parseInt(formData.customer),
             entryDate: formData.entryDate ? format(formData.entryDate, 'yyyy-MM-dd') : null,
             loadDate: formData.loadDate ? format(formData.loadDate, 'yyyy-MM-dd') : null,
             salesperson: formData.salesperson ? parseInt(formData.salesperson) : null,
-            fieldOperator: formData.fieldOperator ? parseInt(formData.fieldOperator) : undefined,
+            fieldOperator: formData.fieldOperator ? parseInt(formData.fieldOperator) : null,
             payment: formData.payment ? parseInt(formData.payment) : null,
             incoterm: formData.incoterm ? parseInt(formData.incoterm) : null,
             buyerReference: formData.buyerReference || null,
@@ -355,6 +339,7 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }) => {
                 handleCreate={handleCreate}
                 isSubmitting={isSubmitting}
                 isValid={isValid}
+                submitDisabled={submitDisabled}
                 renderField={renderField}
                 productOptions={productOptions}
                 productsLoading={productsLoading}
@@ -531,10 +516,10 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }) => {
                     <div className={`flex justify-end gap-4 ${isMobile ? 'sticky bottom-0 bg-background pt-4 pb-4 border-t mt-6 -mx-4 px-4' : 'pt-4'}`}>
                             <Button 
                                 type="submit" 
-                                disabled={isSubmitting}
+                                disabled={submitDisabled}
                                 className={isMobile ? 'h-12 text-base w-full' : ''}
-                                title={Object.keys(errors).length > 0 ? 'Hay errores en el formulario. Puedes pulsar para verlos junto a cada campo.' : undefined}
-                                aria-label={Object.keys(errors).length > 0 ? 'Hay errores: pulsa para ver los detalles junto a cada campo' : undefined}
+                                title={submitDisabled && !isSubmitting ? 'Completa el formulario y espera a que carguen las opciones antes de guardar.' : undefined}
+                                aria-label={submitDisabled && !isSubmitting ? 'Crear pedido no disponible hasta completar el formulario y cargar las opciones' : undefined}
                             >
                                 <Plus className={`${isMobile ? 'h-5 w-5' : 'h-4 w-4'} mr-2`} />
                                 {isSubmitting ? 'Creando...' : 'Crear Pedido'}

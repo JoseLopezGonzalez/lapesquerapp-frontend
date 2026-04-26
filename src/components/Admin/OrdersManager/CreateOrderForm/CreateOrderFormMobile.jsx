@@ -115,6 +115,7 @@ const CreateOrderFormMobile = ({
     handleCreate,
     isSubmitting,
     isValid,
+    submitDisabled,
     renderField,
     productOptions,
     productsLoading,
@@ -351,7 +352,6 @@ const CreateOrderFormMobile = ({
                                                             <Controller
                                                                 name={field.name}
                                                                 control={control}
-                                                                rules={field.rules}
                                                                 render={({ field: { onChange, value, onBlur } }) => (
                                                                     <ExpandedCombobox
                                                                         field={field}
@@ -411,7 +411,6 @@ const CreateOrderFormMobile = ({
                                                             <Controller
                                                                 control={control}
                                                                 name={`plannedProducts.${index}.product`}
-                                                                rules={{ required: 'Producto es requerido' }}
                                                                 render={({ field: { onChange, value } }) => (
                                                                     <Combobox
                                                                         options={productOptions}
@@ -440,9 +439,7 @@ const CreateOrderFormMobile = ({
                                                                 type="number"
                                                                 step="any"
                                                                 {...register(`plannedProducts.${index}.quantity`, {
-                                                                    required: 'Cantidad es requerida',
                                                                     valueAsNumber: true,
-                                                                    min: { value: 0.01, message: 'Cantidad debe ser mayor que 0' }
                                                                 })}
                                                                 placeholder="0.00"
                                                                 className="h-12 text-base"
@@ -460,9 +457,7 @@ const CreateOrderFormMobile = ({
                                                                 type="number"
                                                                 step="any"
                                                                 {...register(`plannedProducts.${index}.boxes`, {
-                                                                    required: 'Cajas son requeridas',
                                                                     valueAsNumber: true,
-                                                                    min: { value: 1, message: 'Cajas debe ser al menos 1' }
                                                                 })}
                                                                 placeholder="0"
                                                                 className="h-12 text-base"
@@ -482,9 +477,7 @@ const CreateOrderFormMobile = ({
                                                                 type="number"
                                                                 step="any"
                                                                 {...register(`plannedProducts.${index}.unitPrice`, {
-                                                                    required: 'Precio unitario es requerido',
                                                                     valueAsNumber: true,
-                                                                    min: { value: 0.01, message: 'Precio debe ser mayor que 0' }
                                                                 })}
                                                                 placeholder="0.00"
                                                                 className="h-12 text-base"
@@ -501,7 +494,6 @@ const CreateOrderFormMobile = ({
                                                             <Controller
                                                                 control={control}
                                                                 name={`plannedProducts.${index}.tax`}
-                                                                rules={{ required: 'IVA es requerido' }}
                                                                 render={({ field }) => {
                                                                     const currentValue = field.value ? String(field.value) : "";
                                                                     
@@ -594,7 +586,7 @@ const CreateOrderFormMobile = ({
                             ) : (
                                 <Button
                                     type="submit"
-                                    disabled={isSubmitting || !isValid}
+                                    disabled={submitDisabled}
                                     className={`h-11 px-6 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transition-transform ${isFirstStep ? 'ml-auto' : ''}`}
                                 >
                                     <Plus className="h-5 w-5 mr-2" />

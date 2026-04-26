@@ -51,16 +51,16 @@ La capa API usa `fetchWithTenant` en las rutas principales y tiene cobertura par
 
 ## 4. Hallazgos
 
-| Severidad | Hallazgo | Referencia |
-|---|---|---|
-| Alta | El adapter de dominio imprime token parcial y stack en consola al obtener pedidos activos. Aunque solo muestra primeros caracteres, no debe loguearse token. | `src/services/domain/orders/orderService.js:172` |
-| Alta | Hay dos servicios oficiales para pedidos, con responsabilidades solapadas y contratos distintos. | `src/services/orderService.ts:1`, `src/services/domain/orders/orderService.js:1` |
-| Alta | `useOrder.js` hace llamadas HTTP de documentos directamente en el hook, fuera de `orderService`. | `src/hooks/useOrder.js:441`, `src/hooks/useOrder.js:486` |
-| Media | El adapter declara que `/orders` "debería" devolver paginado; el propio comentario expresa incertidumbre del contrato. | `src/services/domain/orders/orderService.js:41` |
-| Media | `setOrderStatus` tipa `status` como `number`, pero el sistema llama con strings como `pending` o `finished`. | `src/services/orderService.ts:423`, `src/components/Admin/OrdersManager/Order/index.js:82` |
-| Media | Algunas funciones lanzan `Error` plano y pierden `status/data`, dificultando `setErrorsFrom422`. | `src/services/orderService.ts:355`, `src/services/orderService.ts:411` |
-| Media | Descargas individuales construyen URLs en el hook y usan `navigator.userAgent` directamente. | `src/hooks/useOrder.js:441` |
-| Baja | Importaciones no usadas en el adapter (`fetchEntityDataGeneric`, `submitEntityFormGeneric`) sugieren deuda o refactor incompleto. | `src/services/domain/orders/orderService.js:23` |
+| ID | Severidad | Hallazgo | Explicación del problema | Referencia | Solución / mejora recomendada | Estado | Observaciones |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| OB03-01 | Alta | El adapter de dominio imprime token parcial y stack en consola al obtener pedidos activos. Aunque solo muestra primeros caracteres, no debe loguearse token. | Los logs pueden acabar en herramientas externas o capturas; cualquier fragmento de credencial es superficie innecesaria. | `src/services/domain/orders/orderService.js:172` | Eliminar logs sensibles y usar telemetría sin credenciales. | Pendiente |  |
+| OB03-02 | Alta | Hay dos servicios oficiales para pedidos, con responsabilidades solapadas y contratos distintos. | Cada nueva llamada obliga a decidir entre dos capas y puede propagar errores o payloads de forma diferente. | `src/services/orderService.ts:1`, `src/services/domain/orders/orderService.js:1` | Consolidar en un facade único o documentar adapter transitorio. | Pendiente |  |
+| OB03-03 | Alta | `useOrder.js` hace llamadas HTTP de documentos directamente en el hook, fuera de `orderService`. | El hook mezcla estado React con transporte HTTP, dificultando tests, reutilización y consistencia de errores. | `src/hooks/useOrder.js:441`, `src/hooks/useOrder.js:486` | Mover exportación/envío documental a `orderService.ts`. | Pendiente |  |
+| OB03-04 | Media | El adapter declara que `/orders` "debería" devolver paginado; el propio comentario expresa incertidumbre del contrato. | Un contrato incierto puede romper EntityClient o paginación sin que el frontend lo detecte temprano. | `src/services/domain/orders/orderService.js:41` | Confirmar contrato backend y convertir comentario en documentación estable. | Pendiente |  |
+| OB03-05 | Media | `setOrderStatus` tipa `status` como `number`, pero el sistema llama con strings como `pending` o `finished`. | El tipado comunica un contrato falso y reduce la utilidad de TypeScript para prevenir errores. | `src/services/orderService.ts:423`, `src/components/Admin/OrdersManager/Order/index.js:82` | Corregir tipo a enum/string de estados reales. | Pendiente |  |
+| OB03-06 | Media | Algunas funciones lanzan `Error` plano y pierden `status/data`, dificultando `setErrorsFrom422`. | La UI no puede distinguir 422, 403 o errores de red con precisión, y pierde errores de campo. | `src/services/orderService.ts:355`, `src/services/orderService.ts:411` | Usar `ApiError` en todas las mutaciones con `status` y `data`. | Pendiente |  |
+| OB03-07 | Media | Descargas individuales construyen URLs en el hook y usan `navigator.userAgent` directamente. | Repite detalles técnicos fuera del service layer y complica cambios futuros de endpoints o headers. | `src/hooks/useOrder.js:441` | Centralizar construcción de URLs y headers en el service layer. | Pendiente |  |
+| OB03-08 | Baja | Importaciones no usadas en el adapter (`fetchEntityDataGeneric`, `submitEntityFormGeneric`) sugieren deuda o refactor incompleto. | La presencia de código muerto confunde sobre qué patrón debe seguirse. | `src/services/domain/orders/orderService.js:23` | Eliminar imports muertos al tocar el adapter. | Pendiente |  |
 
 ---
 
@@ -81,4 +81,3 @@ La capa API usa `fetchWithTenant` en las rutas principales y tiene cobertura par
 - [ ] Forzar 403 en exportación individual y confirmar mensaje amigable.
 - [ ] Probar exportaciones masivas A3ERP, A3ERP2, Facilcom y hojas de pedido.
 - [ ] Probar envío documental sin emails configurados.
-

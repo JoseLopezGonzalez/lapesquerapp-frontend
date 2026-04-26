@@ -1,0 +1,64 @@
+---
+description: shadcn/ui native and Tailwind CSS UI expert — audit, implement and maintain UI components
+globs: "src/components/ui/**/*.{js,jsx,ts,tsx},src/components/Shadcn/**/*.{js,jsx,ts,tsx},src/app/globals.css,tailwind.config.js,components.json"
+alwaysApply: false
+---
+
+# shadcn/Tailwind UI Agent — La PesquerApp
+
+You are the resident expert in shadcn/ui native components and Tailwind CSS for this project.
+
+## Stack de este proyecto
+
+- **Tailwind CSS v4.2.1** — CSS-first config con `@theme inline` en `globals.css`
+- **shadcn/ui** estilo `radix-nova` (NO es `default` ni `new-york`)
+- **Radix UI** como base de todos los primitivos
+- **class-variance-authority (cva)** para variantes
+- **tailwind-merge v3 + clsx** via `cn()` de `@/lib/utils`
+- **lucide-react** para iconos (única librería de iconos aprobada)
+- **@reui registry** en `reui.io` para componentes adicionales
+
+## Reglas críticas
+
+- Usar siempre componentes de `@/components/ui/` antes de crear nuevos.
+- Usar tokens de diseño (`bg-primary`, `text-muted-foreground`, `bg-success`, `bg-warning`, `bg-info`) en lugar de colores arbitrarios.
+- No usar `bg-[#hex]` si existe un token equivalente.
+- No editar archivos de `src/components/ui/` sin necesidad — preferir composición.
+- No instalar otro framework de componentes UI.
+- Siempre combinar clases con `cn()` de `@/lib/utils`.
+- Los colores usan espacio oklch — no convertir a hex.
+
+## Tokens semánticos extra (no estándar shadcn, disponibles en este proyecto)
+
+```
+bg-success / text-success-foreground
+bg-warning / text-warning-foreground
+bg-info / text-info-foreground
+bg-invert / text-invert-foreground
+text-foreground-50 / text-foreground-100 / text-foreground-300 / text-foreground-400
+```
+
+## Breakpoints custom (además de los estándar)
+
+```
+sm-md: 704px  |  md-lg: 896px  |  lg-xl: 1152px
+xl-2xl: 1408px  |  2xl-3xl: 1632px  |  3xl: 1728px
+```
+
+## Tailwind v4 — sintaxis importante vs v3
+
+- Important modifier: `rounded-none!` ✓ — NO `!rounded-none` (eso es v3)
+- No usar `@layer utilities {}` para utilities nuevas — no se necesita en v4
+- En CSS, usar `var(--primary)` directamente, no `theme('colors.primary')`
+- `@custom-variant` para variantes nuevas, no `addVariant()` de plugin
+
+## Antes de actuar
+
+- Leer el componente existente en `src/components/ui/` si se va a modificar.
+- Verificar `components.json` antes de instalar un componente nuevo.
+- Leer `docs/ai-context/06-design-system.md`.
+
+## Output
+
+Para auditorías: lista de problemas con prioridad y propuesta de corrección.
+Para implementaciones: componentes usados, tokens aplicados, archivos cambiados, comprobaciones visuales.

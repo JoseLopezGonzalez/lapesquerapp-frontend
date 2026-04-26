@@ -29,14 +29,14 @@ EntityClient está correctamente usado para el listado administrativo y comercia
 
 ## 3. Hallazgos
 
-| Severidad | Hallazgo | Referencia |
-|---|---|---|
-| Media | `createRedirect` envía al gestor, pero `orders.createForm` sigue definido en el config. Puede inducir a agentes a editar un formulario que no se usa. | `src/configs/entitiesConfig.js:142`, `src/configs/entitiesConfig.js:381` |
-| Media | El grupo de filtros tiene typo `salespeple`; puede afectar trazabilidad o tooling si se usan nombres de grupo. | `src/configs/entitiesConfig.js:297` |
-| Media | `pallets` se muestra como texto directo; si backend devuelve array, puede renderizar mal o poco útil. | `src/configs/entitiesConfig.js:371` |
-| Media | El listado comercial clona config admin y filtra exports por título, una dependencia frágil de texto visible. | `src/app/comercial/orders/page.js:5` |
-| Baja | La ruta `/admin/orders` depende de `/admin/[entity]`; correcto, pero no hay archivo dedicado que oriente al lector. | `src/app/admin/[entity]/page.js:1` |
-| Baja | `hideEditButton: true` empuja edición al gestor/detalle, pero no hay comentario explicando la decisión. | `src/configs/entitiesConfig.js:131` |
+| ID | Severidad | Hallazgo | Explicación del problema | Referencia | Solución / mejora recomendada | Estado | Observaciones |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| OB04-01 | Media | `createRedirect` envía al gestor, pero `orders.createForm` sigue definido en el config. Puede inducir a agentes a editar un formulario que no se usa. | Mantener dos definiciones de alta hace que el implementador pueda modificar el sitio equivocado. | `src/configs/entitiesConfig.js:142`, `src/configs/entitiesConfig.js:381` | Marcar `createForm` como deprecated o retirarlo si no lo consume ninguna ruta. | Pendiente |  |
+| OB04-02 | Media | El grupo de filtros tiene typo `salespeple`; puede afectar trazabilidad o tooling si se usan nombres de grupo. | Los nombres de grupo suelen usarse para persistencia, analytics o automatización; un typo se propaga silenciosamente. | `src/configs/entitiesConfig.js:297` | Corregir a `salespeople` verificando compatibilidad con filtros persistidos. | Pendiente |  |
+| OB04-03 | Media | `pallets` se muestra como texto directo; si backend devuelve array, puede renderizar mal o poco útil. | Una columna operacional debe ser legible; un array crudo o `[object Object]` degrada la tabla. | `src/configs/entitiesConfig.js:371` | Mostrar recuento/summary calculado o path específico estable. | Pendiente |  |
+| OB04-04 | Media | El listado comercial clona config admin y filtra exports por título, una dependencia frágil de texto visible. | Cambiar un texto visible puede alterar permisos/acciones sin tocar lógica. | `src/app/comercial/orders/page.js:5` | Filtrar exports por `endpoint`/`id` estable en vez de `title`. | Pendiente |  |
+| OB04-05 | Baja | La ruta `/admin/orders` depende de `/admin/[entity]`; correcto, pero no hay archivo dedicado que oriente al lector. | Los agentes pueden buscar un page específico y concluir erróneamente que la ruta no existe. | `src/app/admin/[entity]/page.js:1` | Documentar esta resolución en contexto de pedidos. | Pendiente |  |
+| OB04-06 | Baja | `hideEditButton: true` empuja edición al gestor/detalle, pero no hay comentario explicando la decisión. | Sin explicación, parece una omisión de CRUD en lugar de una decisión de producto. | `src/configs/entitiesConfig.js:131` | Añadir comentario breve: edición compleja vive en gestor/detalle. | Pendiente |  |
 
 ---
 
@@ -66,4 +66,3 @@ EntityClient está correctamente usado para el listado administrativo y comercia
 - [ ] `/comercial/orders`: comprobar que no aparece crear, editar, seleccionar ni borrar.
 - [ ] Click en una fila de comercial: debe navegar a `/comercial/orders/:id`.
 - [ ] Verificar formato de columna `pallets` con pedidos que tengan varios palets.
-

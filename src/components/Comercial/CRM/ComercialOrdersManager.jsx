@@ -6,10 +6,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import OrdersList from '@/components/Admin/OrdersManager/OrdersList';
 import Order from '@/components/Admin/OrdersManager/Order';
 import CreateOrderForm from '@/components/Admin/OrdersManager/CreateOrderForm';
-import ProductionView from '@/components/Admin/OrdersManager/ProductionView';
+import OrdersManagerLayout from '@/components/Admin/OrdersManager/shared/OrdersManagerLayout';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/Utilities/EmptyState';
-import Loader from '@/components/Utilities/Loader';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useComercialOrders } from '@/hooks/useComercialOrders';
@@ -19,16 +18,9 @@ import {
   enrichOrdersWithOffers,
   filterAndSortCommercialOrders,
 } from '@/lib/comercial/comercialOrders';
+import { INITIAL_ORDER_CATEGORIES } from '@/lib/orders/orderListFilters';
 import { notify } from '@/lib/notifications';
 import { Package } from 'lucide-react';
-
-const initialCategories = [
-  { label: 'Todos', name: 'all', current: true },
-  { label: 'En producción', name: 'pending', current: false },
-  { label: 'Terminados', name: 'finished', current: false },
-  { label: 'Hoy', name: 'today', current: false },
-  { label: 'Mañana', name: 'tomorrow', current: false },
-];
 
 export default function ComercialOrdersManager() {
   const searchParams = useSearchParams();
@@ -39,7 +31,7 @@ export default function ComercialOrdersManager() {
   const [isOrderLoading, setIsOrderLoading] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(searchParams.get('orderId'));
   const [searchText, setSearchText] = useState('');
-  const [categories, setCategories] = useState(initialCategories);
+  const [categories, setCategories] = useState(INITIAL_ORDER_CATEGORIES);
   const [viewMode, setViewMode] = useState('normal');
 
   const debouncedSearchText = useDebounce(searchText, 300);
@@ -261,45 +253,16 @@ export default function ComercialOrdersManager() {
     handleOnClickAddNewOrder,
   ]);
 
-  if (loading) {
-    return (
-      <div className="w-full h-full flex items-center justify-center">
-        <Loader />
-      </div>
-    );
-  }
-
   return (
-    <div className="h-full flex flex-col">
-      {viewMode === 'production' ? (
-        <div className="h-full flex flex-col overflow-hidden">
-          <div className="h-full min-h-0 overflow-hidden">
-            <ProductionView
-              orders={sortedOrders}
-              onClickOrder={handleOnClickOrderCard}
-              useMockData={sortedOrders.length === 0}
-              onToggleViewMode={toggleViewMode}
-            />
-          </div>
-        </div>
-      ) : isMobile ? (
-        <div className="h-full flex flex-col min-h-0">
-          {selectedOrder || onCreatingNewOrder ? (
-            <div className="h-full overflow-hidden">{OrderDetailContent}</div>
-          ) : (
-            <div className="h-full flex flex-col overflow-hidden min-h-0">
-              {OrdersListContent}
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="flex flex-col xl:flex-row h-full">
-          <div className="w-full xl:w-[360px] xl:flex-shrink-0 xl:h-full">
-            {OrdersListContent}
-          </div>
-          <div className="grow lg:pl-0 p-2">{OrderDetailContent}</div>
-        </div>
-      )}
-    </div>
+    <OrdersManagerLayout
+      loading={loading}
+      viewMode={viewMode}
+      isMobile={isMobile}
+      hasDetail={Boolean(selectedOrder || onCreatingNewOrder)}
+      listContent={OrdersListContent}
+      detailContent={OrderDetailContent}
+      onClickProductionOrder={handleOnClickOrderCard}
+      onToggleViewMode={toggleViewMode}
+    />
   );
 }
