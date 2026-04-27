@@ -207,9 +207,7 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         size="5xl"
-        className={`flex flex-col gap-0 overflow-hidden p-0 ${
-          isEditing ? 'max-h-[calc(100vh-2rem)]' : 'h-[calc(100vh-2rem)]'
-        }`}
+        className="flex h-[calc(100vh-2rem)] max-h-[calc(100vh-2rem)] flex-col gap-0 overflow-hidden p-0"
       >
         <DialogHeader className="border-b p-4">
           <DialogTitle>{title}</DialogTitle>
