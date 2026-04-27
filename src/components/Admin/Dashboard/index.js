@@ -18,7 +18,6 @@ import { DispatchChart } from "./DispatchChart";
 import { TransportRadarChart } from "./TransportRadarChart";
 import { DailyCalibersBySpeciesCard } from "./DailyCalibersBySpeciesCard";
 import { OrdersProfitabilitySummaryCard } from "./OrdersProfitabilitySummaryCard";
-import { OrdersProfitabilityTimelineCard } from "./OrdersProfitabilityTimelineCard";
 import { OrdersProfitabilityProductsCard } from "./OrdersProfitabilityProductsCard";
 import Masonry from "react-masonry-css";
 
@@ -93,9 +92,6 @@ export default function Dashboard() {
                         </div>
                         <div>
                             <StockByProductsCard />
-                        </div>
-                        <div className="w-full min-w-0 max-w-full box-border overflow-hidden">
-                            <OrdersProfitabilityTimelineCard />
                         </div>
                         <div className="w-full min-w-0 max-w-full box-border overflow-hidden">
                             <OrdersProfitabilityProductsCard />

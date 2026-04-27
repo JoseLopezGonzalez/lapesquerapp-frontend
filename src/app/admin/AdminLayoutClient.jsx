@@ -1,13 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { useSession, signOut } from "next-auth/react";import AdminRouteProtection from '@/components/AdminRouteProtection';
+import { useSession, signOut } from "next-auth/react";
+import AdminRouteProtection from '@/components/AdminRouteProtection';
 import { ResponsiveLayout } from '@/components/Admin/Layout/ResponsiveLayout';
 import { navigationConfig, navigationManagerConfig } from "@/configs/navgationConfig";
 import { useSettings } from '@/context/SettingsContext';
 import { filterNavigationByRoles } from "@/utils/navigationUtils";
 import { notify } from "@/lib/notifications";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, GalleryVerticalEnd, AudioWaveform, Earth } from "lucide-react";
 
 export default function AdminLayoutClient({ children }) {
   const { data: session } = useSession();
@@ -115,7 +116,6 @@ export default function AdminLayoutClient({ children }) {
 
   // Preparar apps para AppSwitcher
   const apps = React.useMemo(() => {
-    const { GalleryVerticalEnd, AudioWaveform, Earth } = require("lucide-react");
     const companyName = !loading && settings?.["company.name"] ? settings["company.name"] : "Empresa";
     
     return [

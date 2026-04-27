@@ -196,7 +196,7 @@ export function DailyCalibersBySpeciesCard() {
                                 <RadialBar dataKey="weight_kg" background />
                             </RadialBarChart>
                         </ChartContainer>
-                        <div className="space-y-4">
+                        <div className="max-h-[200px] min-h-0 overflow-auto pr-2 space-y-4">
                             {calibers.map((item) => (
                                 <div key={item.product_id} className="space-y-1">
                                     <div className="flex justify-between items-center">
