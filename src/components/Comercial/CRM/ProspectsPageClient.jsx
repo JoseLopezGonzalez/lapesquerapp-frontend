@@ -77,7 +77,7 @@ function ProspectCard({ prospect, selected, onClick }) {
         <div className="grow w-full space-y-2 sm:space-y-2">
           <div className="flex items-center gap-2 flex-wrap">
             <StatusPill label={prospectStatusLabels[prospect.status] ?? prospect.status} status={prospect.status} />
-            <Badge variant="secondary">{prospect.category?.name ?? 'Sin categoría'}</Badge>
+            {prospect.category?.name ? <Badge variant="secondary">{prospect.category.name}</Badge> : null}
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
