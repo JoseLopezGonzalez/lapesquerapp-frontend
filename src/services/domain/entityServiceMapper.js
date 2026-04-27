@@ -17,6 +17,7 @@ import { activityLogService } from './activity-logs/activityLogService';
 import { productCategoryService } from './product-categories/productCategoryService';
 import { productFamilyService } from './product-families/productFamilyService';
 import { paymentTermService } from './payment-terms/paymentTermService';
+import { prospectCategoryService } from './prospect-categories/prospectCategoryService';
 import { speciesService } from './species/speciesService';
 import { transportService } from './transports/transportService';
 import { taxService } from './taxes/taxService';
@@ -54,6 +55,7 @@ const entityServiceMap = {
     'product-categories': productCategoryService,
     'product-families': productFamilyService,
     'payment-terms': paymentTermService,
+    'prospect-categories': prospectCategoryService,
     'species': speciesService,
     'transports': transportService,
     'taxes': taxService,

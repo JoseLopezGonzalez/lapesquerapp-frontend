@@ -219,6 +219,11 @@ export const navigationConfig = [
                 allowedRoles: ["administrador", "direccion", "tecnico"],
             },
             {
+                name: 'Categorías de Prospectos',
+                href: '/admin/prospect-categories',
+                allowedRoles: ["administrador", "direccion", "tecnico"],
+            },
+            {
                 name: 'Paises',
                 href: '/admin/countries',
                 allowedRoles: ["administrador", "direccion", "tecnico"],

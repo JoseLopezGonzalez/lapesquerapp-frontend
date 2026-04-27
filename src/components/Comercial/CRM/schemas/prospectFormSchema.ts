@@ -31,6 +31,7 @@ export function getProspectFormSchema(isEditing: boolean) {
       address: z.string().max(10000, 'Máximo 10.000 caracteres').default(''),
       website: z.string().max(512, 'Máximo 512 caracteres').default(''),
       countryId: z.string().min(1, 'Selecciona un país'),
+      categoryId: z.string().trim().optional().catch(''),
       origin: z
         .string()
         .min(1, 'Selecciona un origen')
@@ -99,6 +100,7 @@ export function getDefaultProspectFormValues(): ProspectFormValues {
     address: '',
     website: '',
     countryId: '',
+    categoryId: '',
     origin: '',
     status: 'new',
     notes: '',
@@ -124,12 +126,20 @@ export function prospectFormValuesFromInitial(initialData: Record<string, unknow
         ? String(initialData.countryId)
         : '';
   const species = initialData.speciesInterest;
+  const category = initialData.category as { id?: unknown } | null | undefined;
+  const categoryId =
+    category?.id != null
+      ? String(category.id)
+      : initialData.categoryId != null
+        ? String(initialData.categoryId)
+        : '';
   const speciesStr = Array.isArray(species) ? species.join(', ') : '';
   return {
     companyName: String(initialData.companyName ?? ''),
     address: typeof initialData.address === 'string' ? initialData.address : '',
     website: typeof initialData.website === 'string' ? initialData.website : '',
     countryId,
+    categoryId,
     origin: normalizeOrigin(initialData.origin),
     status:
       typeof initialData.status === 'string' && prospectStatusTuple.includes(initialData.status as (typeof prospectStatusTuple)[number])

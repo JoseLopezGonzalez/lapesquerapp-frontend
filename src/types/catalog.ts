@@ -66,6 +66,17 @@ export interface PaymentTerm {
   [key: string]: unknown;
 }
 
+/** Prospect category — CRM catalog */
+export interface ProspectCategory {
+  id: number | string;
+  name: string;
+  description?: string | null;
+  active: boolean;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+  [key: string]: unknown;
+}
+
 /** Country (país) — Bloque 5 */
 export interface Country {
   id: number | string;

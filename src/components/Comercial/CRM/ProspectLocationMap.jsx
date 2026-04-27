@@ -15,6 +15,7 @@ export default function ProspectLocationMap({ address, companyName }) {
   const [status, setStatus] = useState('idle');
   const [coords, setCoords] = useState(null);
   const [error, setError] = useState('');
+  const [mapReady, setMapReady] = useState(false);
 
   const trimmedAddress = address?.trim() ?? '';
   const hasToken = hasMapboxToken();
@@ -25,6 +26,7 @@ export default function ProspectLocationMap({ address, companyName }) {
 
   useEffect(() => {
     let cancelled = false;
+    setMapReady((ready) => (ready ? false : ready));
 
     if (!trimmedAddress || !hasToken) {
       setCoords(null);
@@ -69,7 +71,7 @@ export default function ProspectLocationMap({ address, companyName }) {
   }, [trimmedAddress, hasToken]);
 
   useEffect(() => {
-    if (!coords) return;
+    if (!coords || !mapReady) return;
     const map = mapRef.current?.getMap?.();
     if (!map) return;
 
@@ -78,7 +80,7 @@ export default function ProspectLocationMap({ address, companyName }) {
       zoom: 13.5,
       duration: 600,
     });
-  }, [coords]);
+  }, [coords, mapReady]);
 
   const initialViewState = useMemo(() => {
     if (!coords) return DEFAULT_VIEW;
@@ -157,12 +159,23 @@ export default function ProspectLocationMap({ address, companyName }) {
         dragRotate={false}
         touchZoomRotate={false}
         pitchWithRotate={false}
+        onLoad={() => setMapReady((ready) => (ready ? ready : true))}
+        onError={(event) => {
+          const message =
+            event?.error?.message ||
+            event?.error?.error?.message ||
+            'No se pudo cargar el mapa.';
+          setStatus((current) => (current === 'error' ? current : 'error'));
+          setError((current) => (current === message ? current : message));
+        }}
       >
-        <Marker longitude={coords.lng} latitude={coords.lat} anchor="bottom">
-          <div className="rounded-full border-2 border-background bg-primary p-1 text-primary-foreground shadow-lg">
-            <MapPin className="h-4 w-4" />
-          </div>
-        </Marker>
+        {mapReady ? (
+          <Marker longitude={coords.lng} latitude={coords.lat} anchor="bottom">
+            <div className="rounded-full border-2 border-background bg-primary p-1 text-primary-foreground shadow-lg">
+              <MapPin className="h-4 w-4" />
+            </div>
+          </Marker>
+        ) : null}
       </Map>
       <span className="sr-only">Mapa de ubicacion para {companyName || 'el prospecto'}</span>
     </div>

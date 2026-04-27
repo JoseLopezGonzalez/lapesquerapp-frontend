@@ -3,15 +3,24 @@
 import dynamic from 'next/dynamic';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Plus } from 'lucide-react';
+import { Filter, Loader2, Plus, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components/ui/input-group';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import Loader from '@/components/Utilities/Loader';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useProspectCategoryOptions } from '@/hooks/useProspectCategories';
 import { useProspectsList } from '@/hooks/useProspects';
 import StatusPill from './StatusPill';
 import { isOverdueDate, prospectStatusLabels } from './utils';
@@ -68,6 +77,7 @@ function ProspectCard({ prospect, selected, onClick }) {
         <div className="grow w-full space-y-2 sm:space-y-2">
           <div className="flex items-center gap-2 flex-wrap">
             <StatusPill label={prospectStatusLabels[prospect.status] ?? prospect.status} status={prospect.status} />
+            <Badge variant="secondary">{prospect.category?.name ?? 'Sin categoría'}</Badge>
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
@@ -89,18 +99,27 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
   const [nameFilterDraft, setNameFilterDraft] = useState('');
   const [appliedNameFilter, setAppliedNameFilter] = useState('');
   const [status, setStatus] = useState('all');
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState([]);
   const [page, setPage] = useState(1);
   const [loadedProspects, setLoadedProspects] = useState([]);
   const [formOpen, setFormOpen] = useState(forceCreate);
   const searchParam = appliedNameFilter.trim() || undefined;
+  const { data: categoryOptions = [], isLoading: categoriesLoading } = useProspectCategoryOptions(true);
   const { data: prospects, isLoading, meta } = useProspectsList({
     status: status !== 'all' ? [status] : undefined,
+    categories: selectedCategoryIds.length ? selectedCategoryIds : undefined,
     perPage: PROSPECTS_PER_PAGE,
     page,
     search: searchParam,
   });
   const [selectedId, setSelectedId] = useState(initialProspectId);
-  const hasActiveSearch = Boolean(searchParam);
+  const hasActiveSearch = Boolean(searchParam) || selectedCategoryIds.length > 0;
+  const selectedCategories = useMemo(
+    () => selectedCategoryIds
+      .map((id) => categoryOptions.find((option) => String(option.value) === String(id)))
+      .filter(Boolean),
+    [categoryOptions, selectedCategoryIds]
+  );
 
   useEffect(() => {
     if (nameFilterDraft.trim() !== '') return;
@@ -111,7 +130,15 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
   useEffect(() => {
     setLoadedProspects([]);
     setPage(1);
-  }, [searchParam, status]);
+  }, [searchParam, status, selectedCategoryIds]);
+
+  const toggleCategoryFilter = (categoryId) => {
+    const value = String(categoryId);
+    setSelectedId(null);
+    setSelectedCategoryIds((prev) =>
+      prev.includes(value) ? prev.filter((id) => id !== value) : [...prev, value]
+    );
+  };
 
   useEffect(() => {
     setLoadedProspects((prev) => {
@@ -205,32 +232,78 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
             </div>
           </div>
 
-          <InputGroup className="w-full min-w-0">
-            <InputGroupInput
-              value={nameFilterDraft}
-              onChange={(event) => setNameFilterDraft(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') {
-                  event.preventDefault();
-                  applyNameFilter();
-                }
-              }}
-              placeholder="Buscar por nombre de empresa…"
-              aria-label="Buscar prospectos por nombre de empresa"
-              autoComplete="off"
-            />
-            <InputGroupAddon align="inline-end">
-              <InputGroupButton
-                type="button"
-                variant="secondary"
-                disabled={isLoading}
-                aria-label="Buscar"
-                onClick={applyNameFilter}
-              >
-                Buscar
-              </InputGroupButton>
-            </InputGroupAddon>
-          </InputGroup>
+          <div className="flex w-full flex-wrap items-center gap-2">
+            <InputGroup className="min-w-0 flex-1">
+              <InputGroupInput
+                value={nameFilterDraft}
+                onChange={(event) => setNameFilterDraft(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    event.preventDefault();
+                    applyNameFilter();
+                  }
+                }}
+                placeholder="Buscar por nombre de empresa…"
+                aria-label="Buscar prospectos por nombre de empresa"
+                autoComplete="off"
+              />
+              <InputGroupAddon align="inline-end">
+                <InputGroupButton
+                  type="button"
+                  variant="secondary"
+                  disabled={isLoading}
+                  aria-label="Buscar"
+                  onClick={applyNameFilter}
+                >
+                  Buscar
+                </InputGroupButton>
+              </InputGroupAddon>
+            </InputGroup>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button type="button" variant="outline" size="icon" className="shrink-0" aria-label="Filtrar por categoría">
+                  <Filter data-icon="inline-start" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-64">
+                {categoriesLoading ? (
+                  <div className="px-2 py-1.5 text-sm text-muted-foreground">Cargando…</div>
+                ) : categoryOptions.length === 0 ? (
+                  <div className="px-2 py-1.5 text-sm text-muted-foreground">Sin categorías activas</div>
+                ) : (
+                  categoryOptions.map((option) => {
+                    const value = String(option.value);
+                    return (
+                      <DropdownMenuCheckboxItem
+                        key={value}
+                        checked={selectedCategoryIds.includes(value)}
+                        onCheckedChange={() => toggleCategoryFilter(value)}
+                        onSelect={(event) => event.preventDefault()}
+                      >
+                        {option.label}
+                      </DropdownMenuCheckboxItem>
+                    );
+                  })
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {selectedCategories.map((option) => (
+              <Badge key={option.value} variant="secondary" className="gap-1 pr-1">
+                {option.label}
+                <button
+                  type="button"
+                  className="rounded-sm p-0.5 hover:bg-background/70"
+                  aria-label={`Quitar filtro ${option.label}`}
+                  onClick={() => toggleCategoryFilter(option.value)}
+                >
+                  <X className="size-3" />
+                </button>
+              </Badge>
+            ))}
+          </div>
         </div>
 
         <Tabs

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Phone, Mail, MessageCircle, MapPin, CircleDot, MoreVertical, Pencil, UserPlus, Trash2, Plus, UserRound, FilePlus, CalendarClock, Globe, ExternalLink, Loader2 } from 'lucide-react';
+import { Phone, Mail, MessageCircle, MapPin, CircleDot, MoreVertical, Pencil, UserPlus, Trash2, Plus, UserRound, FilePlus, CalendarClock, Globe, ExternalLink, Loader2, Tag } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -193,7 +193,7 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
                   )}
               </div>
               <p className="text-sm text-muted-foreground">
-                {prospect.country?.name ?? 'Sin país'} · {prospect.primaryContact?.name ?? 'Sin contacto principal'}
+                {prospect.country?.name ?? 'Sin país'} · {prospect.category?.name ?? 'Sin categoría'} · {prospect.primaryContact?.name ?? 'Sin contacto principal'}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -291,7 +291,7 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
                           </div>
 
                           <div className="overflow-hidden rounded-xl border">
-                            <div className="grid divide-y sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+                            <div className="grid divide-y sm:grid-cols-4 sm:divide-x sm:divide-y-0">
                               <div className="flex items-start gap-3 px-4 py-3">
                                 <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
                                   <UserRound className="size-4" />
@@ -309,6 +309,16 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
                                 <div className="min-w-0">
                                   <p className="text-xs text-muted-foreground">País</p>
                                   <p className="mt-1 text-sm font-medium text-foreground">{prospect.country?.name ?? 'Sin país'}</p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-start gap-3 px-4 py-3">
+                                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                                  <Tag className="size-4" />
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-xs text-muted-foreground">Categoría</p>
+                                  <p className="mt-1 text-sm font-medium text-foreground">{prospect.category?.name ?? '-'}</p>
                                 </div>
                               </div>
 

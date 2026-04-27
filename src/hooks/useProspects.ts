@@ -13,6 +13,8 @@ type QueryKey = readonly unknown[];
 type ProspectListCache = { data?: Prospect[] } | undefined;
 type ProspectDetailCache = { data?: Prospect } | undefined;
 type ProspectContactsCache = { data?: ProspectContact[] } | undefined;
+const EMPTY_PROSPECTS: Prospect[] = [];
+const EMPTY_CONTACTS: ProspectContact[] = [];
 
 function getPrimaryContact(contacts: ProspectContact[]) {
   return contacts.find((contact) => Boolean(contact.isPrimary)) ?? null;
@@ -41,6 +43,11 @@ function patchProspectFromPayload(
     address: 'address' in payload ? payload.address ?? null : currentProspect.address,
     website: 'website' in payload ? payload.website ?? null : currentProspect.website,
     countryId: payload.countryId ?? currentProspect.countryId,
+    categoryId: 'categoryId' in payload ? payload.categoryId ?? null : currentProspect.categoryId,
+    category:
+      'categoryId' in payload && String(payload.categoryId ?? '') !== String(currentProspect.categoryId ?? '')
+        ? null
+        : currentProspect.category,
     speciesInterest: payload.speciesInterest ?? currentProspect.speciesInterest,
     origin: payload.origin ?? currentProspect.origin,
     status: payload.status ?? currentProspect.status,
@@ -77,7 +84,7 @@ export function useProspectsList(params: UseProspectsListParams = {}) {
   });
 
   return {
-    data: data?.data ?? [],
+    data: data?.data ?? EMPTY_PROSPECTS,
     meta: data?.meta ?? { current_page: 1, last_page: 1, per_page: 12, total: 0 },
     isLoading,
     error: error?.message ?? null,
@@ -120,7 +127,7 @@ export function useProspectContacts(
   });
 
   return {
-    data: data?.data ?? [],
+    data: data?.data ?? EMPTY_CONTACTS,
     isLoading,
     error: error?.message ?? null,
     refetch,

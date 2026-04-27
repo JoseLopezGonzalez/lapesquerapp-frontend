@@ -17,6 +17,7 @@ import { notify } from '@/lib/notifications';
 import { ApiError } from '@/lib/api/apiHelpers';
 import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
 import { useCountriesList } from '@/hooks/useCountriesList';
+import { useProspectCategoryOptions } from '@/hooks/useProspectCategories';
 import { useProspectMutations } from '@/hooks/useProspects';
 import { prospectOriginOptions } from './utils';
 import {
@@ -24,6 +25,8 @@ import {
   getDefaultProspectFormValues,
   prospectFormValuesFromInitial,
 } from './schemas/prospectFormSchema';
+
+const CATEGORY_NONE_VALUE = '__none__';
 
 function FieldError({ message }) {
   if (!message) return null;
@@ -42,6 +45,7 @@ function RequiredMark() {
 export default function ProspectFormSheet({ open, onOpenChange, initialData = null }) {
   const isEditing = Boolean(initialData);
   const { data: countries } = useCountriesList({ page: 1, perPage: 250, enabled: open });
+  const { data: categoryOptions = [], isLoading: categoriesLoading } = useProspectCategoryOptions(open);
   const { createProspect, updateProspect } = useProspectMutations();
   const [warnings, setWarnings] = useState([]);
   const [isImprovingCommercialInterest, setIsImprovingCommercialInterest] = useState(false);
@@ -75,6 +79,13 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
   const commercialInterestNotes = watch('commercialInterestNotes');
   const notes = watch('notes');
   const isSubmitting = createProspect.isPending || updateProspect.isPending;
+  const categorySelectOptions = useMemo(() => {
+    const currentCategory = initialData?.category;
+    if (!currentCategory?.id || !currentCategory?.name) return categoryOptions;
+    const exists = categoryOptions.some((option) => String(option.value) === String(currentCategory.id));
+    if (exists) return categoryOptions;
+    return [{ value: currentCategory.id, label: currentCategory.name }, ...categoryOptions];
+  }, [categoryOptions, initialData?.category]);
 
   const onValidSubmit = async (values) => {
     const payload = {
@@ -82,6 +93,7 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
       address: values.address.trim() || null,
       website: values.website.trim() || null,
       countryId: values.countryId ? Number(values.countryId) : null,
+      categoryId: values.categoryId ? Number(values.categoryId) : null,
       origin: values.origin,
       status: values.status,
       notes: values.notes.trim() || null,
@@ -280,7 +292,7 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
                 <FieldError message={errors.website?.message} />
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-3">
                 <div className="grid gap-2">
                   <Label>
                     País
@@ -308,6 +320,32 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
                     )}
                   />
                   <FieldError message={errors.countryId?.message} />
+                </div>
+                <div className="grid gap-2">
+                  <Label>Categoría</Label>
+                  <Controller
+                    name="categoryId"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        value={field.value ? String(field.value) : CATEGORY_NONE_VALUE}
+                        onValueChange={(v) => field.onChange(v === CATEGORY_NONE_VALUE ? '' : v)}
+                      >
+                        <SelectTrigger className="w-full" aria-invalid={errors.categoryId ? 'true' : undefined}>
+                          <SelectValue placeholder={categoriesLoading ? 'Cargando…' : 'Sin categoría'} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={CATEGORY_NONE_VALUE}>Sin categoría</SelectItem>
+                          {categorySelectOptions.map((option) => (
+                            <SelectItem key={option.value} value={String(option.value)}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                  <FieldError message={errors.categoryId?.message} />
                 </div>
                 <div className="grid gap-2">
                   <Label>

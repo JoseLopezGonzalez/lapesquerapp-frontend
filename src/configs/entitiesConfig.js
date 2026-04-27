@@ -3084,6 +3084,127 @@ export const configs = {
 
   },
 
+  'prospect-categories': {
+    title: "Categorías de Prospectos",
+    description: "Gestiona las categorías usadas para clasificar prospectos comerciales.",
+    emptyState: {
+      title: "No existen categorías de prospectos según los filtros",
+      description: "Ajusta los filtros o crea una nueva categoría de prospecto.",
+    },
+    endpoint: "prospect-categories",
+    viewRoute: "/admin/prospect-categories/:id",
+    deleteEndpoint: "prospect-categories/:id",
+    hideBulkDelete: true,
+    filtersGroup: {
+      search: {
+        label: "Buscar",
+        filters: [
+          {
+            name: "name",
+            label: "Nombre",
+            type: "search",
+            placeholder: "Buscar por nombre",
+          }
+        ],
+      },
+      groups: [
+        {
+          name: "generals",
+          label: "Generales",
+          filters: [
+            {
+              name: "name",
+              label: "Nombre",
+              type: "text",
+              placeholder: "Buscar por nombre",
+            },
+            {
+              name: "active",
+              label: "Estado",
+              type: "pairSelectBoxes",
+              options: [
+                { name: "1", label: "Activas" },
+                { name: "0", label: "Inactivas" },
+              ],
+            },
+            {
+              name: "ids",
+              label: "IDs",
+              type: "textAccumulator",
+              placeholder: "Buscar por ID",
+            }
+          ],
+        }
+      ],
+    },
+    table: {
+      headers: [
+        { name: "id", label: "ID", type: "id", path: "id" },
+        { name: "name", label: "Nombre", type: "text", path: "name" },
+        { name: "description", label: "Descripción", type: "text", path: "description", hideOnMobile: true },
+        { name: "active", label: "Activa", type: "badge", path: "active", options: {
+          true: { label: "Activa", color: "success", outline: true },
+          false: { label: "Inactiva", color: "secondary", outline: true },
+        } },
+        { name: "created_at", label: "Fecha de creación", type: "date", path: "createdAt", hideOnMobile: true },
+        { name: "updated_at", label: "Fecha de actualización", type: "date", path: "updatedAt", hideOnMobile: true }
+      ],
+    },
+    createForm: {
+      title: "Nueva Categoría de Prospecto",
+      endpoint: "prospect-categories",
+      method: "POST",
+      successMessage: "Categoría de prospecto creada con éxito",
+      errorMessage: "Error al crear la categoría de prospecto",
+    },
+    beforeSubmit: {
+      booleanFields: ["active"],
+    },
+    fields: [
+      {
+        name: "name",
+        label: "Nombre",
+        type: "text",
+        placeholder: "Restaurante, Mayorista, Distribuidor...",
+        validation: {
+          required: "El nombre es obligatorio",
+          minLength: { value: 3, message: "Debe tener al menos 3 caracteres" },
+          maxLength: { value: 255, message: "Máximo 255 caracteres" },
+        },
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+      },
+      {
+        name: "active",
+        label: "Activa",
+        type: "select",
+        placeholder: "Estado",
+        defaultValue: "1",
+        options: [
+          { value: "1", label: "Activa" },
+          { value: "0", label: "Inactiva" },
+        ],
+        cols: { sm: 3, md: 3, lg: 3, xl: 3 },
+      },
+      {
+        name: "description",
+        label: "Descripción",
+        type: "textarea",
+        placeholder: "Descripción opcional de la categoría",
+        validation: {
+          maxLength: { value: 1000, message: "Máximo 1.000 caracteres" },
+        },
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+      }
+    ],
+    editForm: {
+      title: "Editar Categoría de Prospecto",
+      endpoint: "prospect-categories",
+      method: "PUT",
+      successMessage: "Categoría de prospecto actualizada con éxito",
+      errorMessage: "Error al actualizar la categoría de prospecto",
+    },
+  },
+
   /* ceboDispatches*/
   'cebo-dispatches': {
     hideEditButton: false,

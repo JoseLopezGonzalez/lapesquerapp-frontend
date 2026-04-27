@@ -1,4 +1,4 @@
-import type { Country, Customer, PaginationMeta, Salesperson } from '@/types/catalog';
+import type { Country, Customer, PaginationMeta, ProspectCategory, Salesperson } from '@/types/catalog';
 
 export type ProspectStatus = 'new' | 'following' | 'offer_sent' | 'customer' | 'discarded';
 export type ProspectOrigin = 'conxemar' | 'direct' | 'referral' | 'web' | 'other';
@@ -167,6 +167,8 @@ export interface Prospect {
   website?: string | null;
   country?: Country | null;
   countryId?: number | string | null;
+  category?: ProspectCategory | null;
+  categoryId?: number | string | null;
   speciesInterest?: string[];
   origin: ProspectOrigin;
   status: ProspectStatus;
@@ -273,6 +275,7 @@ export interface ProspectPayload {
   address?: string | null;
   website?: string | null;
   countryId?: number | string | null;
+  categoryId?: number | string | null;
   speciesInterest?: string[];
   origin: ProspectOrigin;
   status?: ProspectStatus;

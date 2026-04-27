@@ -1,6 +1,6 @@
 'use client';
 
-import { Globe, MapPin, UserPlus, UserRound } from 'lucide-react';
+import { Globe, MapPin, Tag, UserPlus, UserRound } from 'lucide-react';
 import Loader from '@/components/Utilities/Loader';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import StatusPill from '../StatusPill';
@@ -54,7 +54,7 @@ export default function ProspectDataPanel({ prospect, isLoading }) {
             </div>
 
             <div className="overflow-hidden rounded-xl border">
-              <div className="grid divide-y sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+              <div className="grid divide-y sm:grid-cols-4 sm:divide-x sm:divide-y-0">
                 <div className="flex items-start gap-3 px-4 py-3">
                   <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
                     <UserRound className="size-4" />
@@ -72,6 +72,16 @@ export default function ProspectDataPanel({ prospect, isLoading }) {
                   <div className="min-w-0">
                     <p className="text-xs text-muted-foreground">País</p>
                     <p className="mt-1 text-sm font-medium text-foreground">{prospect.country?.name ?? 'Sin país'}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 px-4 py-3">
+                  <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                    <Tag className="size-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs text-muted-foreground">Categoría</p>
+                    <p className="mt-1 text-sm font-medium text-foreground">{prospect.category?.name ?? '-'}</p>
                   </div>
                 </div>
 
