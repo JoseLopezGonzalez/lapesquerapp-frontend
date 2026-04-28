@@ -76,7 +76,9 @@ export function useProductionDetail(
         return null;
       }),
     enabled: isEnabled && enableProcessTree,
-    staleTime: 2 * 60 * 1000,
+    // El árbol se muestra “a demanda” (tab Diagrama). Si volvemos desde otras pantallas,
+    // queremos evitar que se reutilice un tree aún “fresh” pero desactualizado.
+    staleTime: 0,
     refetchOnMount: 'always',
     refetchOnReconnect: true,
     refetchOnWindowFocus: true,
