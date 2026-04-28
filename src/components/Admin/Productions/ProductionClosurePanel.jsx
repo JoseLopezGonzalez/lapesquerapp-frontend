@@ -31,6 +31,25 @@ const BLOCKING_GUIDANCE = {
   reconciliation_not_ok: 'Revisa la conciliación del lote.',
 }
 
+const BLOCKING_LABELS = {
+  already_closed: 'Lote ya cerrado',
+  not_open: 'Producción no abierta',
+  no_processes: 'Sin procesos',
+  process_not_started: 'Proceso sin inicio',
+  process_not_finished: 'Proceso sin finalizar',
+  final_node_no_outputs: 'Proceso final sin salidas',
+  pending_order: 'Pedido pendiente',
+  pallet_not_shipped: 'Palet sin expedir',
+  stock_remaining: 'Stock pendiente',
+  orphan_box: 'Caja sin ubicar',
+  reconciliation_not_ok: 'Conciliación pendiente',
+}
+
+function getBlockingLabel(code) {
+  if (!code) return 'Bloqueo'
+  return BLOCKING_LABELS[code] || code.replace(/_/g, ' ')
+}
+
 function getRoles(user) {
   const rawRole = user?.role
   return Array.isArray(rawRole) ? rawRole : rawRole ? [rawRole] : []
@@ -137,12 +156,14 @@ export default function ProductionClosurePanel({
   const canManage = canManageClosure(session?.user)
   const [closureCheck, setClosureCheck] = useState(null)
   const [checkError, setCheckError] = useState(null)
+  const [checkDialogOpen, setCheckDialogOpen] = useState(false)
   const [closeDialogOpen, setCloseDialogOpen] = useState(false)
   const [reopenDialogOpen, setReopenDialogOpen] = useState(false)
 
   useEffect(() => {
     setClosureCheck(null)
     setCheckError(null)
+    setCheckDialogOpen(false)
   }, [productionId, isClosed])
 
   const checkMutation = useMutation({
@@ -153,9 +174,12 @@ export default function ProductionClosurePanel({
     onSuccess: (data) => {
       setClosureCheck(data)
       setCheckError(null)
+      setCheckDialogOpen(true)
     },
     onError: (error) => {
       setCheckError(error?.message || 'No se pudo verificar el cierre')
+      setClosureCheck(null)
+      setCheckDialogOpen(true)
       toast.error(error?.message || 'No se pudo verificar el cierre')
     },
   })
@@ -234,12 +258,6 @@ export default function ProductionClosurePanel({
                 Verificar cierre
               </Button>
             )}
-            {canCloseAfterCheck && (
-              <Button type="button" size="sm" onClick={() => setCloseDialogOpen(true)}>
-                <LockKeyhole className="mr-2 h-4 w-4" />
-                Cerrar definitivamente
-              </Button>
-            )}
             {canShowReopenButton && (
               <Button type="button" variant="outline" size="sm" onClick={() => setReopenDialogOpen(true)}>
                 <RotateCcw className="mr-2 h-4 w-4" />
@@ -268,67 +286,99 @@ export default function ProductionClosurePanel({
           </div>
         )}
 
-        {checkError && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>No se pudo verificar</AlertTitle>
-            <AlertDescription>{checkError}</AlertDescription>
-          </Alert>
-        )}
+      </CardContent>
 
-        {closureCheck && (
+      <Dialog open={checkDialogOpen} onOpenChange={setCheckDialogOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Verificación de cierre</DialogTitle>
+            <DialogDescription>
+              Resultado de la evaluación del lote antes del cierre definitivo.
+            </DialogDescription>
+          </DialogHeader>
+
           <div className="space-y-3">
-            <Alert variant={closureCheck.canClose ? 'default' : 'destructive'}>
-              {closureCheck.canClose ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-              <AlertTitle>
-                {closureCheck.canClose ? 'La producción se puede cerrar' : 'Hay bloqueos pendientes'}
-              </AlertTitle>
-              <AlertDescription>
-                {closureCheck.canClose
-                  ? 'Revisa el resumen y confirma el cierre definitivo con un motivo.'
-                  : 'Resuelve los elementos indicados antes de intentar cerrar el lote.'}
-              </AlertDescription>
-            </Alert>
-
-            {summaryEntries.length > 0 && (
-              <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-                {summaryEntries.map(([key, value]) => (
-                  <div key={key} className="rounded-md border bg-card p-3">
-                    <p className="text-xs text-muted-foreground">{SUMMARY_LABELS[key] || key}</p>
-                    <p className="text-sm font-semibold">{formatSummaryValue(key, value)}</p>
-                  </div>
-                ))}
-              </div>
+            {checkError && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>No se pudo verificar</AlertTitle>
+                <AlertDescription>{checkError}</AlertDescription>
+              </Alert>
             )}
 
-            {!closureCheck.canClose && Array.isArray(closureCheck.blockingReasons) && closureCheck.blockingReasons.length > 0 && (
-              <div className="rounded-md border">
-                <div className="border-b px-3 py-2 text-sm font-medium">Bloqueos</div>
-                <div className="divide-y">
-                  {closureCheck.blockingReasons.map((reason, index) => (
-                    <div key={`${reason.code}-${index}`} className="space-y-1 px-3 py-2">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant="outline">{reason.code || 'bloqueo'}</Badge>
-                        {reason.recordId ? <Badge variant="secondary">Proceso #{reason.recordId}</Badge> : null}
-                        {reason.orderId ? <Badge variant="secondary">Pedido #{reason.orderId}</Badge> : null}
-                        {reason.palletId ? <Badge variant="secondary">Palet #{reason.palletId}</Badge> : null}
-                        {reason.boxId ? <Badge variant="secondary">Caja #{reason.boxId}</Badge> : null}
-                        {reason.reconciliationStatus ? (
-                          <Badge variant="secondary">{reason.reconciliationStatus}</Badge>
-                        ) : null}
+            {closureCheck && (
+              <>
+                <Alert variant={closureCheck.canClose ? 'default' : 'destructive'}>
+                  {closureCheck.canClose ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+                  <AlertTitle>
+                    {closureCheck.canClose ? 'La producción se puede cerrar' : 'Hay bloqueos pendientes'}
+                  </AlertTitle>
+                  <AlertDescription>
+                    {closureCheck.canClose
+                      ? 'Revisa el resumen y confirma el cierre definitivo con un motivo.'
+                      : 'Resuelve los elementos indicados antes de intentar cerrar el lote.'}
+                  </AlertDescription>
+                </Alert>
+
+                {summaryEntries.length > 0 && (
+                  <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+                    {summaryEntries.map(([key, value]) => (
+                      <div key={key} className="rounded-md border bg-card p-3">
+                        <p className="text-xs text-muted-foreground">{SUMMARY_LABELS[key] || key}</p>
+                        <p className="text-sm font-semibold">{formatSummaryValue(key, value)}</p>
                       </div>
-                      <p className="text-sm">{reason.message}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {BLOCKING_GUIDANCE[reason.code] || 'Revisa este bloqueo antes de cerrar.'}
-                      </p>
+                    ))}
+                  </div>
+                )}
+
+                {!closureCheck.canClose && Array.isArray(closureCheck.blockingReasons) && closureCheck.blockingReasons.length > 0 && (
+                  <div className="rounded-md border">
+                    <div className="border-b px-3 py-2 text-sm font-medium">Bloqueos</div>
+                    <div className="divide-y">
+                      {closureCheck.blockingReasons.map((reason, index) => (
+                        <div key={`${reason.code}-${index}`} className="space-y-1 px-3 py-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge variant="outline">{getBlockingLabel(reason.code)}</Badge>
+                            {reason.recordId ? <Badge variant="secondary">Proceso #{reason.recordId}</Badge> : null}
+                            {reason.orderId ? <Badge variant="secondary">Pedido #{reason.orderId}</Badge> : null}
+                            {reason.palletId ? <Badge variant="secondary">Palet #{reason.palletId}</Badge> : null}
+                            {reason.boxId ? <Badge variant="secondary">Caja #{reason.boxId}</Badge> : null}
+                            {reason.reconciliationStatus ? (
+                              <Badge variant="secondary">{reason.reconciliationStatus}</Badge>
+                            ) : null}
+                          </div>
+                          <p className="text-sm">{reason.message}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {BLOCKING_GUIDANCE[reason.code] || 'Revisa este bloqueo antes de cerrar.'}
+                          </p>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
-        )}
-      </CardContent>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setCheckDialogOpen(false)}>
+              Cerrar
+            </Button>
+            {canCloseAfterCheck && (
+              <Button
+                type="button"
+                onClick={() => {
+                  setCheckDialogOpen(false)
+                  setCloseDialogOpen(true)
+                }}
+              >
+                <LockKeyhole className="mr-2 h-4 w-4" />
+                Cerrar definitivamente
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <ClosureReasonDialog
         open={closeDialogOpen}
