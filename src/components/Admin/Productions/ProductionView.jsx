@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { ScrollArea } from '@/components/ui/scroll-area'
 import Loader from '@/components/Utilities/Loader'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ArrowLeft, Calendar, Package, Scale, AlertCircle, Info, Calculator, TrendingDown, TrendingUp, Fish, MapPin, FileText, CheckCircle2, XCircle, AlertTriangle, Eye, AlertOctagon, Pencil } from 'lucide-react'
+import { ArrowLeft, Calendar, Package, Scale, AlertCircle, TrendingDown, TrendingUp, Fish, MapPin, FileText, CheckCircle2, XCircle, AlertTriangle, Eye, AlertOctagon } from 'lucide-react'
 import ProductionRecordsManager from './ProductionRecordsManager'
 import CreateProductionRecordDialog from './CreateProductionRecordDialog'
 import { ViewModeSelector } from './ProductionDiagram/ViewModeSelector'
@@ -88,6 +88,10 @@ const ProductionView = ({ productionId }) => {
 
     const isOpen = production.openedAt && !production.closedAt
     const isClosed = production.closedAt
+    const openedAtLabel = production.openedAt ? formatDateLong(production.openedAt) : null
+    const closedAtLabel = production.closedAt ? formatDateLong(production.closedAt) : null
+    const displayOpenedAt = openedAtLabel && openedAtLabel !== 'N/A' ? openedAtLabel : '-'
+    const displayClosedAt = closedAtLabel && closedAtLabel !== 'N/A' ? closedAtLabel : '-'
 
     return (
         <div className="h-full w-full overflow-y-auto">
@@ -113,8 +117,7 @@ const ProductionView = ({ productionId }) => {
                     </div>
                     <div className="flex items-center gap-2 self-start sm:self-auto">
                         <Badge
-                            variant={isOpen ? 'default' : 'secondary'}
-                            className={isOpen ? 'bg-green-500' : ''}
+                            variant={isOpen ? 'success' : 'secondary'}
                         >
                             {isOpen ? 'Abierto' : isClosed ? 'Cerrado' : 'Sin estado'}
                         </Badge>
@@ -142,18 +145,15 @@ const ProductionView = ({ productionId }) => {
                         <Card className={`flex flex-col ${production.reconciliation ? "lg:row-span-2" : ""} h-full`}>
                                 <CardHeader className="pb-3">
                                     <CardTitle className="text-base flex items-center gap-2">
-                                        <Info className="h-4 w-4 text-primary" />
                                         Información General
                                     </CardTitle>
                                     <CardAction>
                                         <Button
-                                            variant="outline"
+                                            variant="default"
                                             size="sm"
                                             onClick={() => setEditHeaderOpen(true)}
-                                            data-icon="inline-start"
                                             aria-label="Editar cabecera de producción"
                                         >
-                                            <Pencil className="h-3.5 w-3.5" />
                                             Editar
                                         </Button>
                                     </CardAction>
@@ -192,7 +192,9 @@ const ProductionView = ({ productionId }) => {
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <p className="text-xs text-muted-foreground mb-1">Apertura</p>
-                                                    <p className="text-sm font-semibold">{formatDateLong(production.openedAt)}</p>
+                                                    <p className={`text-sm font-semibold ${displayOpenedAt === '-' ? 'text-muted-foreground' : ''}`}>
+                                                        {displayOpenedAt}
+                                                    </p>
                                                 </div>
                                             </div>
                                             <div className="flex items-start gap-3">
@@ -201,8 +203,8 @@ const ProductionView = ({ productionId }) => {
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <p className="text-xs text-muted-foreground mb-1">Cierre</p>
-                                                    <p className={`text-sm font-semibold ${production.closedAt ? '' : 'text-muted-foreground'}`}>
-                                                        {formatDateLong(production.closedAt) || 'No cerrado'}
+                                                    <p className={`text-sm font-semibold ${displayClosedAt === '-' ? 'text-muted-foreground' : ''}`}>
+                                                        {displayClosedAt}
                                                     </p>
                                     </div>
                                     </div>
@@ -253,7 +255,6 @@ const ProductionView = ({ productionId }) => {
                             <Card className="h-auto">
                                     <CardHeader className="pb-3">
                                         <CardTitle className="text-base flex items-center gap-2">
-                                            <Calculator className="h-4 w-4 text-primary" />
                                             Totales
                                         </CardTitle>
                                 </CardHeader>
@@ -299,14 +300,14 @@ const ProductionView = ({ productionId }) => {
                                                     <div>
                                                         <p className={`text-lg font-bold leading-tight ${production.waste > 0 ? 'text-destructive' : 'text-green-600'}`}>
                                                             {production.waste > 0 
-                                                                ? `-${formatDecimalWeight(production.waste)}`
-                                                                : `+${formatDecimalWeight(production.yield)}`
+                                                                ? `-${formatDecimal(production.wastePercentage || 0)}%`
+                                                                : `+${formatDecimal(production.yieldPercentage || 0)}%`
                                                             }
                                                         </p>
                                                         <p className={`text-xs mt-0.5 ${production.waste > 0 ? 'text-destructive/80' : 'text-green-600/80'}`}>
                                                             {production.waste > 0 
-                                                                ? `-${formatDecimal(production.wastePercentage || 0)}%`
-                                                                : `+${formatDecimal(production.yieldPercentage || 0)}%`
+                                                                ? `-${formatDecimalWeight(production.waste)}`
+                                                                : `+${formatDecimalWeight(production.yield)}`
                                                             }
                                                         </p>
                                                     </div>
@@ -350,29 +351,6 @@ const ProductionView = ({ productionId }) => {
                                                 Conciliación
                                             </CardTitle>
                                             <div className="flex items-center gap-2">
-                                                <Badge 
-                                                    variant={
-                                                        production.reconciliation.summary?.overallStatus === 'error' 
-                                                            ? 'destructive' 
-                                                            : production.reconciliation.summary?.overallStatus === 'warning'
-                                                            ? 'secondary'
-                                                            : 'default'
-                                                    }
-                                                    className={`text-xs ${
-                                                        production.reconciliation.summary?.overallStatus === 'error' 
-                                                            ? 'bg-destructive' 
-                                                            : production.reconciliation.summary?.overallStatus === 'warning'
-                                                            ? 'bg-yellow-500'
-                                                            : 'bg-green-500'
-                                                    }`}
-                                                >
-                                                    {production.reconciliation.summary?.overallStatus === 'error' 
-                                                        ? 'Error' 
-                                                        : production.reconciliation.summary?.overallStatus === 'warning'
-                                                        ? 'Adv'
-                                                        : 'OK'
-                                                    }
-                                                </Badge>
                                                 {production.reconciliation.products && production.reconciliation.products.length > 0 && (
                                                     <Dialog open={reconciliationDialogOpen} onOpenChange={setReconciliationDialogOpen}>
                                                         <DialogTrigger asChild>
@@ -604,16 +582,10 @@ const ProductionView = ({ productionId }) => {
                                                                                                         item.status === 'error'
                                                                                                             ? 'destructive'
                                                                                                             : item.status === 'warning'
-                                                                                                            ? 'secondary'
-                                                                                                            : 'default'
+                                                                                                            ? 'warning'
+                                                                                                            : 'success'
                                                                                                     }
-                                                                                                    className={`text-xs px-2 py-0.5 ${
-                                                                                                        item.status === 'error'
-                                                                                                            ? 'bg-destructive'
-                                                                                                            : item.status === 'warning'
-                                                                                                            ? 'bg-yellow-500'
-                                                                                                            : 'bg-green-500'
-                                                                                                    }`}
+                                                                                                    className="text-xs px-2 py-0.5"
                                                                                                 >
                                                                                                     {item.status === 'error'
                                                                                                         ? 'Error'

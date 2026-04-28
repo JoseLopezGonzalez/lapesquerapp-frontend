@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { AudioWaveform, Earth, GalleryVerticalEnd } from 'lucide-react';
 import { ResponsiveLayout } from '@/components/Admin/Layout/ResponsiveLayout';
 import { navigationConfig, navigationManagerConfig } from '@/configs/navgationConfig';
 import { useSettings } from '@/context/SettingsContext';
@@ -99,7 +100,6 @@ export default function ComercialLayoutClient({ children }) {
   );
 
   const apps = React.useMemo(() => {
-    const { GalleryVerticalEnd, AudioWaveform, Earth } = require('lucide-react');
     const companyName = !loading && settings?.['company.name'] ? settings['company.name'] : 'Empresa';
     return [
       { name: companyName, logo: GalleryVerticalEnd, description: 'Administración', current: true },

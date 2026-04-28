@@ -14,6 +14,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useRouter } from 'next/navigation'
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
 import { formatInteger, formatDecimal, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 
 const ProductionRecordsManager = ({ productionId, processTree, onRefresh, onOpenCreateDialog }) => {
     const { data: session } = useSession()
@@ -23,6 +24,7 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh, onOpen
     const [error, setError] = useState(null)
     const [currentPage, setCurrentPage] = useState(1)
     const [paginationMeta, setPaginationMeta] = useState(null)
+    const [deleteConfirmRecord, setDeleteConfirmRecord] = useState(null)
     const prevProductionIdRef = useRef(null)
 
     // Resetear página cuando cambia la producción
@@ -89,10 +91,6 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh, onOpen
     }
 
     const handleDeleteRecord = async (recordId) => {
-        if (!confirm('¿Estás seguro de que deseas eliminar este proceso?')) {
-            return
-        }
-
         try {
             const token = session.user.accessToken
             await deleteProductionRecord(recordId, token)
@@ -104,6 +102,16 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh, onOpen
             const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al eliminar el proceso';
             alert(errorMessage)
         }
+    }
+
+    const handleOnClickDeleteRecord = (record) => {
+        setDeleteConfirmRecord(record)
+    }
+
+    const handleConfirmDeleteRecord = async () => {
+        if (!deleteConfirmRecord?.id) return
+        await handleDeleteRecord(deleteConfirmRecord.id)
+        setDeleteConfirmRecord(null)
     }
 
     const getRootRecords = () => {
@@ -162,19 +170,19 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh, onOpen
                         {record.waste !== undefined && record.waste !== null && record.waste > 0 ? (
                             <div className="text-sm">
                                 <div className="font-medium text-destructive">
-                                    -{formatDecimalWeight(record.waste)}
+                                    -{formatDecimal(record.wastePercentage || 0)}%
                                 </div>
                                 <div className="text-xs text-muted-foreground">
-                                    -{formatDecimal(record.wastePercentage || 0)}%
+                                    -{formatDecimalWeight(record.waste)}
                                 </div>
                             </div>
                         ) : record.yield !== undefined && record.yield !== null && record.yield > 0 ? (
                             <div className="text-sm">
                                 <div className="font-medium text-green-600">
-                                    +{formatDecimalWeight(record.yield)}
+                                    +{formatDecimal(record.yieldPercentage || 0)}%
                                 </div>
                                 <div className="text-xs text-muted-foreground">
-                                    +{formatDecimal(record.yieldPercentage || 0)}%
+                                    +{formatDecimalWeight(record.yield)}
                                 </div>
                             </div>
                         ) : (
@@ -183,12 +191,12 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh, onOpen
                     </TableCell>
                     <TableCell>
                                     {isCompleted ? (
-                                        <Badge variant="default" className="bg-green-500">
+                                        <Badge variant="success">
                                             <CheckCircle className="h-3 w-3 mr-1" />
                                             Completado
                                         </Badge>
                                     ) : (
-                                        <Badge variant="outline">
+                                        <Badge variant="warning">
                                             <Clock className="h-3 w-3 mr-1" />
                                             En progreso
                                         </Badge>
@@ -216,11 +224,12 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh, onOpen
                                     <Tooltip>
                                         <TooltipTrigger asChild>
                                 <Button
-                                    size="sm"
+                                    size="icon"
                                     variant="destructive"
-                                    onClick={() => handleDeleteRecord(record.id)}
+                                    onClick={() => handleOnClickDeleteRecord(record)}
+                                    aria-label="Eliminar proceso"
                                 >
-                                    <Trash2 className="h-4 w-4" />
+                                    <Trash2 />
                                 </Button>
                                         </TooltipTrigger>
                                         <TooltipContent>
@@ -259,7 +268,7 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh, onOpen
                     </p>
                 </div>
                 <Button onClick={handleNavigateToCreate}>
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Plus />
                     Nuevo Proceso
                 </Button>
             </div>
@@ -443,6 +452,27 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh, onOpen
                     )}
                 </>
             )}
+            <AlertDialog
+                open={Boolean(deleteConfirmRecord)}
+                onOpenChange={(open) => {
+                    if (!open) setDeleteConfirmRecord(null)
+                }}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Eliminar proceso</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Esta acción eliminará el proceso #{deleteConfirmRecord?.id} y no se puede deshacer.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction variant="destructive" onClick={handleConfirmDeleteRecord}>
+                            Eliminar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     )
 }
