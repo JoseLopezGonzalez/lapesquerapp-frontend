@@ -135,7 +135,7 @@ function SortablePriorityItem({ item, usage, disabled = false }) {
     )
 }
 
-function SortableOutputPriorityItem({ item, disabled = false }) {
+function SortableOutputPriorityItem({ item, disabled = false, selected = false, onSelect }) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
         id: item.id,
         disabled,
@@ -150,9 +150,12 @@ function SortableOutputPriorityItem({ item, disabled = false }) {
         <div
             ref={setNodeRef}
             style={style}
-            className={`flex items-center justify-between gap-3 rounded-md border bg-background px-3 py-2 text-xs ${
-                isDragging ? 'shadow-md ring-1 ring-primary/30' : ''
-            }`}
+            className={cn(
+                'flex items-center justify-between gap-3 rounded-md border bg-background px-3 py-2 text-xs cursor-pointer select-none',
+                isDragging ? 'shadow-md ring-1 ring-primary/30' : '',
+                selected ? 'ring-2 ring-primary/50' : ''
+            )}
+            onClick={() => onSelect?.(String(item.id))}
         >
             <button
                 type="button"
@@ -161,6 +164,7 @@ function SortableOutputPriorityItem({ item, disabled = false }) {
                 {...listeners}
                 disabled={disabled}
                 aria-label={`Mover prioridad de ${item.label}`}
+                onClick={(e) => e.stopPropagation()}
             >
                 ::
             </button>
@@ -250,6 +254,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
     const [globalPriorityDialogOpen, setGlobalPriorityDialogOpen] = React.useState(false)
     const [globalOutputPriorityIds, setGlobalOutputPriorityIds] = React.useState([])
     const [globalSourcePriorityKeys, setGlobalSourcePriorityKeys] = React.useState([])
+    const [selectedGlobalOutputPriorityId, setSelectedGlobalOutputPriorityId] = React.useState(null)
     const [manageDialogActiveTab, setManageDialogActiveTab] = React.useState('outputs')
     const [manageDialogSession, setManageDialogSession] = React.useState(0)
     const prevManageDialogOpenRef = React.useRef(false)
@@ -727,8 +732,39 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
     const openGlobalPriorityDialog = React.useCallback(() => {
         setGlobalOutputPriorityIds(validOutputRows.map((row) => String(row.id)))
         setGlobalSourcePriorityKeys(sourceOptions.map((option) => option.key))
+        setSelectedGlobalOutputPriorityId(null)
         setGlobalPriorityDialogOpen(true)
     }, [sourceOptions, validOutputRows])
+    const handleSelectGlobalOutputPriority = React.useCallback((rowId) => {
+        setGlobalOutputPriorityIds((prev) => {
+            if (!rowId) return prev
+            const next = [...prev]
+            const clickedIndex = next.indexOf(String(rowId))
+            if (clickedIndex === -1) {
+                setSelectedGlobalOutputPriorityId(null)
+                return prev
+            }
+
+            if (!selectedGlobalOutputPriorityId) {
+                setSelectedGlobalOutputPriorityId(String(rowId))
+                return prev
+            }
+
+            if (String(rowId) === String(selectedGlobalOutputPriorityId)) {
+                setSelectedGlobalOutputPriorityId(null)
+                return prev
+            }
+
+            const selectedIndex = next.indexOf(String(selectedGlobalOutputPriorityId))
+            if (selectedIndex === -1) {
+                setSelectedGlobalOutputPriorityId(String(rowId))
+                return prev
+            }
+
+            setSelectedGlobalOutputPriorityId(null)
+            return arrayMove(next, selectedIndex, clickedIndex)
+        })
+    }, [selectedGlobalOutputPriorityId])
 
     const autoAssignSourcesByDoublePriority = React.useCallback(() => {
         const orderedRows = globalOutputPriorityIds
@@ -1336,6 +1372,7 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                 if (!open) {
                     setGlobalOutputPriorityIds([])
                     setGlobalSourcePriorityKeys([])
+                    setSelectedGlobalOutputPriorityId(null)
                 }
             }}
         >
@@ -1378,6 +1415,8 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                                     key={item.id}
                                                     item={item}
                                                     disabled={globalOutputPriorityItems.length <= 1}
+                                                    selected={String(item.id) === String(selectedGlobalOutputPriorityId)}
+                                                    onSelect={handleSelectGlobalOutputPriority}
                                                 />
                                             ))}
                                         </div>
