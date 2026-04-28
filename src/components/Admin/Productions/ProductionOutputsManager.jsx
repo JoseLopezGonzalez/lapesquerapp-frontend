@@ -244,22 +244,8 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
         handleAddSelectedProducts
     } = api
 
-    const totalInputWeight = parseFloat(record?.totalInputWeight || 0)
-    const totalOutputWeight = parseFloat(record?.totalOutputWeight || 0)
-    const processTransformationFactor = totalInputWeight > 0 && totalOutputWeight > 0
-        ? totalOutputWeight / totalInputWeight
-        : 1
-
-    const getAdjustedOutputWeightFromSource = (sourceWeight) => {
-        const parsedSourceWeight = parseFloat(sourceWeight || 0)
-        return parsedSourceWeight * processTransformationFactor
-    }
-
-    const getSourceWeightFromAdjustedOutputWeight = (adjustedOutputWeight) => {
-        const parsedAdjustedOutputWeight = parseFloat(adjustedOutputWeight || 0)
-        if (processTransformationFactor <= 0) return 0
-        return parsedAdjustedOutputWeight / processTransformationFactor
-    }
+    const persistedTotalInputWeight = parseFloat(record?.totalInputWeight || 0)
+    const persistedTotalOutputWeight = parseFloat(record?.totalOutputWeight || 0)
     const [priorityDialogRowId, setPriorityDialogRowId] = React.useState(null)
     const [globalPriorityDialogOpen, setGlobalPriorityDialogOpen] = React.useState(false)
     const [globalOutputPriorityIds, setGlobalOutputPriorityIds] = React.useState([])
@@ -277,6 +263,29 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
 
     const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
     const allRows = getAllRows()
+    const draftTotalOutputWeight = React.useMemo(
+        () => allRows.reduce((sum, row) => sum + (parseFloat(row.weight_kg || 0) || 0), 0),
+        [allRows]
+    )
+    const processTransformationFactor = React.useMemo(() => {
+        if (persistedTotalInputWeight <= 0) return 1
+        if (draftTotalOutputWeight > 0) {
+            return draftTotalOutputWeight / persistedTotalInputWeight
+        }
+        if (persistedTotalOutputWeight > 0) {
+            return persistedTotalOutputWeight / persistedTotalInputWeight
+        }
+        return 1
+    }, [draftTotalOutputWeight, persistedTotalInputWeight, persistedTotalOutputWeight])
+    const getAdjustedOutputWeightFromSource = React.useCallback((sourceWeight) => {
+        const parsedSourceWeight = parseFloat(sourceWeight || 0)
+        return parsedSourceWeight * processTransformationFactor
+    }, [processTransformationFactor])
+    const getSourceWeightFromAdjustedOutputWeight = React.useCallback((adjustedOutputWeight) => {
+        const parsedAdjustedOutputWeight = parseFloat(adjustedOutputWeight || 0)
+        if (processTransformationFactor <= 0) return 0
+        return parsedAdjustedOutputWeight / processTransformationFactor
+    }, [processTransformationFactor])
     const validOutputRows = React.useMemo(
         () => allRows.filter((row) => row.product_id && parseFloat(row.weight_kg || 0) > 0),
         [allRows]
@@ -284,6 +293,10 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
     const validOutputRowMap = React.useMemo(
         () => new Map(validOutputRows.map((row) => [String(row.id), row])),
         [validOutputRows]
+    )
+    const hasAnyAssignedSources = React.useMemo(
+        () => allRows.some((row) => Array.isArray(row.sources) && row.sources.length > 0),
+        [allRows]
     )
 
     const sourceOptions = React.useMemo(
@@ -380,6 +393,22 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
     const clearRowSources = React.useCallback((rowId) => {
         updateRow(rowId, 'sources', [])
     }, [updateRow])
+    const clearAllSources = React.useCallback(() => {
+        setEditableOutputs((prev) =>
+            prev.map((row) => ({
+                ...row,
+                sources: [],
+                source_priority: [],
+            }))
+        )
+        setNewRows((prev) =>
+            prev.map((row) => ({
+                ...row,
+                sources: [],
+                source_priority: [],
+            }))
+        )
+    }, [setEditableOutputs, setNewRows])
 
     const distributeSourcesProportionally = React.useCallback(() => {
         const validRows = allRows.filter((row) => parseFloat(row.weight_kg || 0) > 0)
@@ -1740,6 +1769,20 @@ const ProductionOutputsManager = ({ productionRecordId, initialOutputs: initialO
                                                 <span>Asignar por prioridades</span>
                                                 <span className="text-xs text-muted-foreground">
                                                     Usa el orden de salidas y el orden de fuentes para asignar consumos.
+                                                </span>
+                                            </div>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuLabel>Limpiar</DropdownMenuLabel>
+                                        <DropdownMenuItem
+                                            onClick={clearAllSources}
+                                            disabled={!hasAnyAssignedSources}
+                                        >
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            <div className="flex flex-col gap-0.5">
+                                                <span>Limpiar todas las fuentes</span>
+                                                <span className="text-xs text-muted-foreground">
+                                                    Elimina todas las asignaciones de fuentes en la tabla actual.
                                                 </span>
                                             </div>
                                         </DropdownMenuItem>
