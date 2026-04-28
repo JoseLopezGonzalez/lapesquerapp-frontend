@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { useProspect, useProspectContacts, useProspectMutations } from '@/hooks/useProspects';
@@ -40,6 +41,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import ProspectContactFormDialog from './ProspectContactFormDialog';
 import ConvertProspectDialog from './ConvertProspectDialog';
+import { useProspectCategoryOptions } from '@/hooks/useProspectCategories';
+
+const CATEGORY_NONE_VALUE = '__none__';
 
 const interactionTypeIcons = {
   call: Phone,
@@ -78,6 +82,8 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
     enabled: shouldLoadOffers,
   });
   const { updateProspect, deleteContact } = useProspectMutations();
+  const { data: categoryOptions = [], isLoading: categoriesLoading } = useProspectCategoryOptions(true);
+  const [isCategoryUpdating, setIsCategoryUpdating] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [interactionOpen, setInteractionOpen] = useState(false);
   const [interactionMode, setInteractionMode] = useState('create');
@@ -152,6 +158,65 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
     return contacts.find((contact) => String(contact.id) === String(editingContactId)) ?? null;
   }, [contacts, editingContactId]);
 
+  const categorySelectOptions = useMemo(() => {
+    const currentCategory = prospect?.category;
+    if (!currentCategory?.id || !currentCategory?.name) return categoryOptions;
+    const exists = categoryOptions.some((option) => String(option.value) === String(currentCategory.id));
+    if (exists) return categoryOptions;
+    return [{ value: currentCategory.id, label: currentCategory.name }, ...categoryOptions];
+  }, [categoryOptions, prospect?.category]);
+
+  const handleQuickCategoryChange = useCallback(
+    async (value) => {
+      if (!prospect || isCategoryUpdating) return;
+      const currentCategoryId = prospect.category?.id ?? prospect.categoryId ?? null;
+      const nextCategoryId = value === CATEGORY_NONE_VALUE ? null : Number(value);
+      if (String(currentCategoryId ?? '') === String(nextCategoryId ?? '')) return;
+
+      try {
+        setIsCategoryUpdating(true);
+        await notify.promise(
+          updateProspect.mutateAsync({
+            id: prospect.id,
+            payload: {
+              companyName: prospect.companyName,
+              address: prospect.address ?? null,
+              website: prospect.website ?? null,
+              countryId: prospect.country?.id ?? prospect.countryId ?? null,
+              categoryId: nextCategoryId,
+              speciesInterest: prospect.speciesInterest ?? [],
+              origin: prospect.origin ?? 'manual',
+              status: prospect.status,
+              notes: prospect.notes ?? null,
+              commercialInterestNotes: prospect.commercialInterestNotes ?? null,
+              nextActionAt: prospect.nextActionAt ?? null,
+              nextActionNote: prospect.nextActionNote ?? null,
+              lostReason: prospect.lostReason ?? null,
+              primaryContact: prospect.primaryContact
+                ? {
+                    name: prospect.primaryContact.name,
+                    role: prospect.primaryContact.role ?? null,
+                    phone: prospect.primaryContact.phone ?? null,
+                    email: prospect.primaryContact.email ?? null,
+                  }
+                : null,
+            },
+          }),
+          {
+            loading: 'Actualizando categoría...',
+            success: 'Categoría actualizada',
+            error: (error) => error?.message || 'No se pudo actualizar la categoría',
+          }
+        );
+      } catch {
+        // notify.promise handles feedback
+      } finally {
+        setIsCategoryUpdating(false);
+      }
+    },
+    [prospect, isCategoryUpdating, updateProspect]
+  );
+
   const body = useMemo(() => {
     if (isLoading) {
       return (
@@ -192,9 +257,30 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
                     />
                   )}
               </div>
-              <p className="text-sm text-muted-foreground">
-                {prospect.country?.name ?? 'Sin país'} · {prospect.category?.name ?? 'Sin categoría'} · {prospect.primaryContact?.name ?? 'Sin contacto principal'}
-              </p>
+              <div className="flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
+                <span>{prospect.country?.name ?? 'Sin país'}</span>
+                <span aria-hidden>·</span>
+                <span>{prospect.primaryContact?.name ?? 'Sin contacto principal'}</span>
+              </div>
+              <div className="pt-1">
+                <Select
+                  value={String(prospect.category?.id ?? prospect.categoryId ?? CATEGORY_NONE_VALUE)}
+                  onValueChange={handleQuickCategoryChange}
+                  disabled={categoriesLoading || isCategoryUpdating}
+                >
+                  <SelectTrigger className="h-7 w-[170px] text-xs">
+                    <SelectValue placeholder={categoriesLoading ? 'Cargando…' : 'Sin categoría'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={CATEGORY_NONE_VALUE}>Sin categoría</SelectItem>
+                    {categorySelectOptions.map((option) => (
+                      <SelectItem key={String(option.value)} value={String(option.value)}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="flex flex-wrap gap-2">
               {prospect.status === 'customer' && prospect.customerId && (
@@ -695,12 +781,16 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
     embedded,
     loadedInteractions,
     interactionsLoading,
+    isCategoryUpdating,
     interactionsPage,
     handleInteractionsScroll,
+    handleQuickCategoryChange,
     isLoading,
     offers,
     offersLoading,
     prospect,
+    categorySelectOptions,
+    categoriesLoading,
   ]);
 
   return (
