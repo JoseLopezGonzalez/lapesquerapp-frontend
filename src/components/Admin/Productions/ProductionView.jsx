@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { ScrollArea } from '@/components/ui/scroll-area'
 import Loader from '@/components/Utilities/Loader'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ArrowLeft, Calendar, Package, Scale, AlertCircle, TrendingDown, TrendingUp, Fish, MapPin, FileText, CheckCircle2, XCircle, AlertTriangle, Eye, AlertOctagon } from 'lucide-react'
+import { ArrowLeft, Calendar, Package, Scale, AlertCircle, TrendingDown, TrendingUp, Fish, MapPin, FileText, CheckCircle2, XCircle, AlertTriangle, AlertOctagon } from 'lucide-react'
 import ProductionRecordsManager from './ProductionRecordsManager'
 import CreateProductionRecordDialog from './CreateProductionRecordDialog'
 import { ViewModeSelector } from './ProductionDiagram/ViewModeSelector'
@@ -355,7 +355,6 @@ const ProductionView = ({ productionId }) => {
                                                     <Dialog open={reconciliationDialogOpen} onOpenChange={setReconciliationDialogOpen}>
                                                         <DialogTrigger asChild>
                                                             <Button variant="outline" size="sm" className="h-7 text-xs">
-                                                                <Eye className="h-3 w-3 mr-1" />
                                                                 Detalle
                                                             </Button>
                                                         </DialogTrigger>
