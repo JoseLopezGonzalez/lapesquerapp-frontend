@@ -50,6 +50,9 @@ export function useProductionDetail(
     },
     enabled: isEnabled,
     staleTime: 2 * 60 * 1000,
+    refetchOnMount: 'always',
+    refetchOnReconnect: true,
+    refetchOnWindowFocus: true,
   });
 
   const totalsQuery = useQuery({
@@ -57,6 +60,9 @@ export function useProductionDetail(
     queryFn: () => getProductionTotals(productionId!, token!).catch(() => null),
     enabled: isEnabled,
     staleTime: 2 * 60 * 1000,
+    refetchOnMount: 'always',
+    refetchOnReconnect: true,
+    refetchOnWindowFocus: true,
   });
 
   const processTreeQuery = useQuery({
@@ -71,6 +77,9 @@ export function useProductionDetail(
       }),
     enabled: isEnabled && enableProcessTree,
     staleTime: 2 * 60 * 1000,
+    refetchOnMount: 'always',
+    refetchOnReconnect: true,
+    refetchOnWindowFocus: true,
   });
 
   return {
