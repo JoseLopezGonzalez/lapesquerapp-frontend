@@ -20,6 +20,7 @@ import ProductionRecordsManager from './ProductionRecordsManager'
 import CreateProductionRecordDialog from './CreateProductionRecordDialog'
 import { ViewModeSelector } from './ProductionDiagram/ViewModeSelector'
 import EditProductionHeaderDialog from './EditProductionHeaderDialog'
+import ProductionClosurePanel from './ProductionClosurePanel'
 
 const ProductionDiagram = dynamic(() => import('./ProductionDiagram'), {
     ssr: false,
@@ -86,10 +87,14 @@ const ProductionView = ({ productionId }) => {
         )
     }
 
-    const isOpen = production.openedAt && !production.closedAt
-    const isClosed = production.closedAt
+    const isOpen = typeof production.isOpen === 'boolean'
+        ? production.isOpen
+        : Boolean(production.openedAt && !production.closedAt)
+    const isClosed = typeof production.isClosed === 'boolean'
+        ? production.isClosed
+        : false
     const openedAtLabel = production.openedAt ? formatDateLong(production.openedAt) : null
-    const closedAtLabel = production.closedAt ? formatDateLong(production.closedAt) : null
+    const closedAtLabel = isClosed && production.closedAt ? formatDateLong(production.closedAt) : null
     const displayOpenedAt = openedAtLabel && openedAtLabel !== 'N/A' ? openedAtLabel : '-'
     const displayClosedAt = closedAtLabel && closedAtLabel !== 'N/A' ? closedAtLabel : '-'
 
@@ -115,12 +120,17 @@ const ProductionView = ({ productionId }) => {
                             </p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2 self-start sm:self-auto">
+                    <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
                         <Badge
                             variant={isOpen ? 'success' : 'secondary'}
                         >
-                            {isOpen ? 'Abierto' : isClosed ? 'Cerrado' : 'Sin estado'}
+                            {isOpen ? 'Jornada abierta' : 'Jornada cerrada'}
                         </Badge>
+                        {isClosed && (
+                            <Badge variant="destructive">
+                                Cierre definitivo
+                            </Badge>
+                        )}
                     </div>
                 </div>
 
@@ -152,6 +162,7 @@ const ProductionView = ({ productionId }) => {
                                             variant="default"
                                             size="sm"
                                             onClick={() => setEditHeaderOpen(true)}
+                                            disabled={isClosed}
                                             aria-label="Editar cabecera de producción"
                                         >
                                             Editar
@@ -202,7 +213,7 @@ const ProductionView = ({ productionId }) => {
                                                     <Calendar className="h-4 w-4 text-muted-foreground" />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-xs text-muted-foreground mb-1">Cierre</p>
+                                                    <p className="text-xs text-muted-foreground mb-1">Cierre definitivo</p>
                                                     <p className={`text-sm font-semibold ${displayClosedAt === '-' ? 'text-muted-foreground' : ''}`}>
                                                         {displayClosedAt}
                                                     </p>
@@ -684,12 +695,21 @@ const ProductionView = ({ productionId }) => {
 
                         </div>
 
+                        <ProductionClosurePanel
+                            production={production}
+                            productionId={productionId}
+                            isOpen={isOpen}
+                            isClosed={isClosed}
+                            onRefresh={refetch}
+                        />
+
                         {/* Procesos */}
                         <ProductionRecordsManager
                             productionId={productionId}
                             processTree={processTree}
                             onRefresh={refetch}
                             onOpenCreateDialog={() => setCreateRecordOpen(true)}
+                            isClosed={isClosed}
                         />
 
                         <CreateProductionRecordDialog

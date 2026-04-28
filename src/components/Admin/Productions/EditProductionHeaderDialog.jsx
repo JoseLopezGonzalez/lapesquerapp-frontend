@@ -56,7 +56,7 @@ export default function EditProductionHeaderDialog({
 }) {
   const { data: session } = useSession()
   const token = session?.user?.accessToken
-  const isClosed = !!production?.closedAt
+  const isClosed = production?.isClosed === true
   const { data: speciesOptions = [], isLoading: speciesLoading } = useSpeciesOptions()
   const { data: captureZoneOptions = [], isLoading: captureZonesLoading } = useCaptureZoneOptions()
   const normalizedSpeciesOptions = normalizeSelectOptions(speciesOptions)
@@ -84,16 +84,16 @@ export default function EditProductionHeaderDialog({
         throw new Error('No se pudo autenticar la actualización de la producción')
       }
 
-      const payload = isClosed
-        ? {
-            notes: values.notes?.trim() || null,
-          }
-        : {
-            lot: values.lot?.trim() || null,
-            species_id: values.speciesId !== EMPTY_OPTION ? Number(values.speciesId) : null,
-            capture_zone_id: values.captureZoneId !== EMPTY_OPTION ? Number(values.captureZoneId) : null,
-            notes: values.notes?.trim() || null,
-          }
+      if (isClosed) {
+        throw new Error('La producción está cerrada definitivamente. Reábrela antes de realizar cambios.')
+      }
+
+      const payload = {
+        lot: values.lot?.trim() || null,
+        species_id: values.speciesId !== EMPTY_OPTION ? Number(values.speciesId) : null,
+        capture_zone_id: values.captureZoneId !== EMPTY_OPTION ? Number(values.captureZoneId) : null,
+        notes: values.notes?.trim() || null,
+      }
 
       return updateProduction(production.id, payload, token)
     },
@@ -126,7 +126,7 @@ export default function EditProductionHeaderDialog({
           {isClosed && (
             <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
               <Lock className="mt-0.5 h-4 w-4 flex-shrink-0" />
-              <p>La producción está cerrada. El backend solo permite modificar las notas.</p>
+              <p>La producción está cerrada definitivamente. Reábrela antes de realizar cambios.</p>
             </div>
           )}
 
@@ -201,7 +201,7 @@ export default function EditProductionHeaderDialog({
                 id="production-notes"
                 rows={5}
                 placeholder="Añade notas para esta producción"
-                disabled={updateMutation.isPending}
+                disabled={isClosed || updateMutation.isPending}
                 {...register('notes')}
               />
             </div>
@@ -216,7 +216,7 @@ export default function EditProductionHeaderDialog({
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={!isDirty || updateMutation.isPending}>
+            <Button type="submit" disabled={isClosed || !isDirty || updateMutation.isPending}>
               {updateMutation.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

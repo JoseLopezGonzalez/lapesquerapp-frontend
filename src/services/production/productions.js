@@ -17,6 +17,13 @@ export function getProduction(productionId, token) {
   });
 }
 
+/** @param {string|number} productionId @param {string} token @returns {Promise<Object>} */
+export function getProductionClosureCheck(productionId, token) {
+  return apiGet(`${API_URL_V2}productions/${productionId}/closure-check`, token, {}, {
+    transform: (data) => data.data || data,
+  });
+}
+
 /** @param {Object} productionData @param {string} token @returns {Promise<Object>} */
 export function createProduction(productionData, token) {
   return apiPost(`${API_URL_V2}productions`, token, productionData);
@@ -25,6 +32,26 @@ export function createProduction(productionData, token) {
 /** @param {string|number} productionId @param {Object} productionData @param {string} token @returns {Promise<Object>} */
 export function updateProduction(productionId, productionData, token) {
   return apiPut(`${API_URL_V2}productions/${productionId}`, token, productionData);
+}
+
+/** @param {string|number} productionId @param {{ reason: string }} data @param {string} token @returns {Promise<Object>} */
+export function closeProduction(productionId, data, token) {
+  return apiPost(`${API_URL_V2}productions/${productionId}/close`, token, data, {
+    transform: (response) => {
+      const production = response.data || response;
+      return { ...response, data: normalizeProduction(production) };
+    },
+  });
+}
+
+/** @param {string|number} productionId @param {{ reason: string }} data @param {string} token @returns {Promise<Object>} */
+export function reopenProduction(productionId, data, token) {
+  return apiPost(`${API_URL_V2}productions/${productionId}/reopen`, token, data, {
+    transform: (response) => {
+      const production = response.data || response;
+      return { ...response, data: normalizeProduction(production) };
+    },
+  });
 }
 
 /** @param {string|number} productionId @param {string} token @returns {Promise<Object>} */

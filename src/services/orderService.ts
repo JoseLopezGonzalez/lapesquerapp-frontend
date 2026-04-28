@@ -759,6 +759,34 @@ export async function getOrdersProfitabilitySummary(
 }
 
 /**
+ * Exports the profitability summary audit workbook for orders.
+ */
+export async function exportOrdersProfitabilitySummary(
+  params: OrdersProfitabilitySummaryParams,
+  token: AuthToken
+): Promise<Blob> {
+  const query = buildProfitabilityQuery(params);
+  const response = await fetchWithTenant(
+    `${API_URL_V2}statistics/orders/profitability-summary/export?${query.toString()}`,
+    {
+      method: 'GET',
+      headers: {
+        Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        Authorization: `Bearer ${token}`,
+        'User-Agent': getUserAgent(),
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const message = `Error ${response.status} al exportar la auditoria de margen`;
+    throw new Error(message);
+  }
+
+  return response.blob();
+}
+
+/**
  * Fetches profitability timeline stats for orders.
  */
 export async function getOrdersProfitabilityTimeline(

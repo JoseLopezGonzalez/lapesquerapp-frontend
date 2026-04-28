@@ -16,7 +16,7 @@ import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, Pagi
 import { formatInteger, formatDecimal, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 
-const ProductionRecordsManager = ({ productionId, processTree, onRefresh, onOpenCreateDialog }) => {
+const ProductionRecordsManager = ({ productionId, processTree, onRefresh, onOpenCreateDialog, isClosed = false }) => {
     const { data: session } = useSession()
     const router = useRouter()
     const [records, setRecords] = useState([])
@@ -83,6 +83,7 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh, onOpen
     }
 
     const handleNavigateToCreate = () => {
+        if (isClosed) return
         if (onOpenCreateDialog) {
             onOpenCreateDialog()
         } else {
@@ -227,6 +228,7 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh, onOpen
                                     size="icon"
                                     variant="destructive"
                                     onClick={() => handleOnClickDeleteRecord(record)}
+                                    disabled={isClosed}
                                     aria-label="Eliminar proceso"
                                 >
                                     <Trash2 />
@@ -267,7 +269,7 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh, onOpen
                         Gestiona los procesos dentro del lote de producción
                     </p>
                 </div>
-                <Button onClick={handleNavigateToCreate}>
+                <Button onClick={handleNavigateToCreate} disabled={isClosed}>
                     <Plus />
                     Nuevo Proceso
                 </Button>
@@ -478,4 +480,3 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh, onOpen
 }
 
 export default ProductionRecordsManager
-

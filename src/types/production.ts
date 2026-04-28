@@ -20,6 +20,15 @@ export interface Production {
   captureZone: CaptureZone | null;
   openedAt: string | null;
   closedAt: string | null;
+  isOpen?: boolean;
+  isClosed?: boolean;
+  closedBy?: number | null;
+  closureReason?: string | null;
+  closedByUser?: { id: number; name: string } | null;
+  reopenedAt?: string | null;
+  reopenedBy?: number | null;
+  reopenReason?: string | null;
+  reopenedByUser?: { id: number; name: string } | null;
   notes: string | null;
   waste?: number;
   wastePercentage?: number;

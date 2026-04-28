@@ -1,12 +1,17 @@
 "use client"
 
-import { Calendar, Info, Loader2 } from "lucide-react"
+import { Calendar, Download, Info, Loader2 } from "lucide-react"
+import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { Button } from "@/components/ui/button"
+import { notify } from "@/lib/notifications"
 import { useOrdersProfitabilitySummary } from "@/hooks/useOrdersStats"
 import { formatDecimal, formatDecimalCurrency } from "@/helpers/formats/numbers/formatNumbers"
+import { exportOrdersProfitabilitySummary } from "@/services/orderService"
+import { useSession } from "next-auth/react"
 
 function formatDateRange(from, to) {
   if (!from || !to) return "Rango no definido"
@@ -24,7 +29,47 @@ function formatNullablePercentage(value) {
 }
 
 export function OrdersProfitabilitySummaryCard() {
+  const [isExporting, setIsExporting] = useState(false)
+  const { data: session } = useSession()
+  const token = session?.user?.accessToken
   const { data, isLoading } = useOrdersProfitabilitySummary({})
+
+  const handleExport = async () => {
+    if (!token) {
+      notify.error({ title: "No hay sesion activa para exportar" })
+      return
+    }
+
+    if (!data?.period?.from || !data?.period?.to) {
+      notify.error({ title: "No hay rango de fechas disponible para exportar" })
+      return
+    }
+
+    try {
+      setIsExporting(true)
+      const blob = await exportOrdersProfitabilitySummary(
+        {
+          dateFrom: data.period.from,
+          dateTo: data.period.to,
+        },
+        token
+      )
+
+      const url = window.URL.createObjectURL(blob)
+      const anchor = document.createElement("a")
+      anchor.href = url
+      anchor.download = `auditoria_rentabilidad_pedidos_${data.period.from}_${data.period.to}.xlsx`
+      document.body.appendChild(anchor)
+      anchor.click()
+      document.body.removeChild(anchor)
+      window.URL.revokeObjectURL(url)
+      notify.success({ title: "Exportacion completada" })
+    } catch (_error) {
+      notify.error({ title: "No se pudo exportar la auditoria de margen" })
+    } finally {
+      setIsExporting(false)
+    }
+  }
 
   if (isLoading && !data) {
     return (
@@ -111,11 +156,21 @@ export function OrdersProfitabilitySummaryCard() {
       </CardHeader>
 
       <CardContent className="px-0 pb-0">
-        {isLoading ? (
-          <div className="flex justify-end">
+        <div className="flex items-center justify-between gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            onClick={handleExport}
+            disabled={isLoading || isExporting || !data}
+          >
+            {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+            Exportar Excel
+          </Button>
+          {isLoading ? (
             <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-          </div>
-        ) : null}
+          ) : null}
+        </div>
       </CardContent>
     </Card>
   )

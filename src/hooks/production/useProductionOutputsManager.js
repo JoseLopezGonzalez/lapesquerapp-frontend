@@ -93,7 +93,6 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
     const { showBoxes, handleToggleBoxes } = useShowBoxesPreference()
     const [formData, setFormData] = useState({
         product_id: '',
-        lot_id: '',
         boxes: '',
         weight_kg: '',
         sources: []
@@ -198,7 +197,6 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
     const resetForm = () => {
         setFormData({
             product_id: '',
-            lot_id: '',
             boxes: '',
             weight_kg: '',
             sources: []
@@ -240,7 +238,6 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
             const outputData = {
                 production_record_id: parseInt(productionRecordId),
                 product_id: parseInt(formData.product_id),
-                lot_id: formData.lot_id || null,
                 boxes: parseInt(formData.boxes) || 0,
                 weight_kg: parseFloat(formData.weight_kg) || 0,
                 sources: formattedSources
@@ -373,7 +370,6 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
                         consumedBoxes: output.consumedBoxes ?? output.consumed_boxes,
                         totalBoxes: output.consumedBoxes ?? output.consumed_boxes ?? 0,
                         product: output.product,
-                        lotId: output.lotId ?? output.lot_id,
                         costPerKg: output.costPerKg ?? output.cost_per_kg,
                         totalCost: output.totalCost ?? output.total_cost
                     }))
@@ -686,7 +682,6 @@ export function useProductionOutputsManager({ productionRecordId, initialOutputs
             ].map((row) => {
                 const output = {
                     product_id: parseInt(row.product_id),
-                    lot_id: null,
                     boxes: parseInt(row.boxes) || 0,
                     weight_kg: parseFloat(row.weight_kg) || 0
                 }
