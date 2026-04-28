@@ -61,6 +61,26 @@ export const useRecordFormData = (record, processes, isEditMode) => {
         const notes = getRecordNotes(record)
 
         setFormData((prev) => {
+            const appearsToBeEmptySnapshot =
+                (processIdFromServer == null || processIdFromServer === '') &&
+                parentRecordId == null &&
+                !notes &&
+                !startedAtFormatted &&
+                !finishedAtFormatted
+
+            const hadPreviousMeaningfulValues =
+                prev.process_id !== 'none' ||
+                prev.parent_record_id !== 'none' ||
+                Boolean(prev.notes) ||
+                Boolean(prev.started_at) ||
+                Boolean(prev.finished_at)
+
+            // Evitar "parpadeo a vacío" cuando el mismo registro se refresca con payload parcial.
+            // En ese caso preservamos el estado actual del formulario para no permitir guardados erróneos.
+            if (!isFirstSyncForThisRecord && appearsToBeEmptySnapshot && hadPreviousMeaningfulValues) {
+                return prev
+            }
+
             let finalProcessId = 'none'
 
             if (processIdFromServer != null && processIdFromServer !== '') {

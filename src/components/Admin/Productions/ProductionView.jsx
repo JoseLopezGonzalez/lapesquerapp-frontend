@@ -124,13 +124,19 @@ const ProductionView = ({ productionId }) => {
                         <Badge
                             variant={isOpen ? 'success' : 'secondary'}
                         >
-                            {isOpen ? 'Jornada abierta' : 'Jornada cerrada'}
+                            {isOpen ? 'Abierto' : isClosed ? 'Cerrado' : 'Sin estado'}
                         </Badge>
                         {isClosed && (
                             <Badge variant="destructive">
                                 Cierre definitivo
                             </Badge>
                         )}
+                        <ProductionClosurePanel
+                            productionId={productionId}
+                            isOpen={isOpen}
+                            isClosed={isClosed}
+                            onRefresh={refetch}
+                        />
                     </div>
                 </div>
 
@@ -694,14 +700,6 @@ const ProductionView = ({ productionId }) => {
                         )}
 
                         </div>
-
-                        <ProductionClosurePanel
-                            production={production}
-                            productionId={productionId}
-                            isOpen={isOpen}
-                            isClosed={isClosed}
-                            onRefresh={refetch}
-                        />
 
                         {/* Procesos */}
                         <ProductionRecordsManager

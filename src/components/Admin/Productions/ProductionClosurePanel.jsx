@@ -1,18 +1,16 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { AlertCircle, CheckCircle2, Loader2, LockKeyhole, RotateCcw, Search, XCircle } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Loader2, LockKeyhole, Search, XCircle } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { formatWeight } from '@/helpers/production/formatters'
 import { closeProduction, getProductionClosureCheck, reopenProduction } from '@/services/productionService'
 
 const MANAGER_ROLES = new Set(['administrador', 'direccion'])
@@ -57,22 +55,6 @@ function getRoles(user) {
 
 function canManageClosure(user) {
   return getRoles(user).some((role) => MANAGER_ROLES.has(role))
-}
-
-function formatSummaryValue(key, value) {
-  if (key.toLowerCase().includes('weight')) {
-    return formatWeight(value || 0)
-  }
-  return value ?? 0
-}
-
-const SUMMARY_LABELS = {
-  producedWeight: 'Producido',
-  producedBoxes: 'Cajas producidas',
-  salesWeight: 'Ventas',
-  reprocessedWeight: 'Reprocesado',
-  stockWeight: 'Stock',
-  balanceWeight: 'Balance',
 }
 
 function ClosureReasonDialog({
@@ -145,7 +127,6 @@ function ClosureReasonDialog({
 }
 
 export default function ProductionClosurePanel({
-  production,
   productionId,
   isOpen,
   isClosed,
@@ -217,79 +198,29 @@ export default function ProductionClosurePanel({
   })
 
   const canShowCloseButton = isOpen && !isClosed && canManage
-  const canShowReopenButton = isClosed && canManage
   const canCloseAfterCheck = closureCheck?.canClose === true && canShowCloseButton
-  const summaryEntries = useMemo(
-    () => Object.entries(closureCheck?.summary || {}),
-    [closureCheck?.summary]
-  )
 
   return (
-    <Card className={isClosed ? 'border-primary/40 bg-primary/5' : ''}>
-      <CardHeader className="pb-3">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <CardTitle className="text-base flex items-center gap-2">
-              {isClosed ? (
-                <LockKeyhole className="h-4 w-4 text-primary" />
-              ) : (
-                <Search className="h-4 w-4 text-muted-foreground" />
-              )}
-              Cierre definitivo
-            </CardTitle>
-            <CardDescription>
-              Estado del bloqueo del lote y evaluación previa al cierre.
-            </CardDescription>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {!isClosed && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => checkMutation.mutate()}
-                disabled={!token || checkMutation.isPending}
-              >
-                {checkMutation.isPending ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Search className="mr-2 h-4 w-4" />
-                )}
-                Verificar cierre
-              </Button>
-            )}
-            {canShowReopenButton && (
-              <Button type="button" variant="outline" size="sm" onClick={() => setReopenDialogOpen(true)}>
-                <RotateCcw className="mr-2 h-4 w-4" />
-                Reabrir
-              </Button>
-            )}
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {isClosed ? (
-          <Alert>
-            <LockKeyhole className="h-4 w-4" />
-            <AlertTitle>Lote bloqueado</AlertTitle>
-            <AlertDescription>
-              {production?.closureReason || 'Esta producción está cerrada definitivamente.'}
-              {production?.closedByUser?.name ? ` Cerrada por ${production.closedByUser.name}.` : ''}
-            </AlertDescription>
-          </Alert>
-        ) : (
-          <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            <Badge variant={isOpen ? 'success' : 'secondary'}>
-              {isOpen ? 'Jornada abierta' : 'Jornada no abierta'}
-            </Badge>
-            <span>Todos los roles pueden consultar la verificación de cierre.</span>
-          </div>
-        )}
-
-      </CardContent>
+    <>
+      {!isClosed && (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => checkMutation.mutate()}
+          disabled={!token || checkMutation.isPending}
+        >
+          {checkMutation.isPending ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Search className="mr-2 h-4 w-4" />
+          )}
+          Verificar cierre
+        </Button>
+      )}
 
       <Dialog open={checkDialogOpen} onOpenChange={setCheckDialogOpen}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+        <DialogContent className="sm:max-w-3xl">
           <DialogHeader>
             <DialogTitle>Verificación de cierre</DialogTitle>
             <DialogDescription>
@@ -297,7 +228,7 @@ export default function ProductionClosurePanel({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-3">
+          <div className="max-h-[65vh] overflow-y-auto space-y-3 pr-1">
             {checkError && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
@@ -319,17 +250,6 @@ export default function ProductionClosurePanel({
                       : 'Resuelve los elementos indicados antes de intentar cerrar el lote.'}
                   </AlertDescription>
                 </Alert>
-
-                {summaryEntries.length > 0 && (
-                  <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-                    {summaryEntries.map(([key, value]) => (
-                      <div key={key} className="rounded-md border bg-card p-3">
-                        <p className="text-xs text-muted-foreground">{SUMMARY_LABELS[key] || key}</p>
-                        <p className="text-sm font-semibold">{formatSummaryValue(key, value)}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
 
                 {!closureCheck.canClose && Array.isArray(closureCheck.blockingReasons) && closureCheck.blockingReasons.length > 0 && (
                   <div className="rounded-md border">
@@ -399,6 +319,6 @@ export default function ProductionClosurePanel({
         onOpenChange={setReopenDialogOpen}
         onConfirm={(reason) => reopenMutation.mutate(reason)}
       />
-    </Card>
+    </>
   )
 }
