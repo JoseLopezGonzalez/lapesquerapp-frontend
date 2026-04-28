@@ -85,6 +85,38 @@ export interface OrdersProfitabilitySummaryParams {
   productIds?: Array<string | number>;
 }
 
+export interface OrdersProfitabilityExportJobParams extends OrdersProfitabilitySummaryParams {
+  onlyMissingCosts?: boolean;
+}
+
+export type OrdersProfitabilityExportJobStatus =
+  | 'pending'
+  | 'processing'
+  | 'finished'
+  | 'failed';
+
+export interface OrdersProfitabilityExportJob {
+  id: string;
+  status: OrdersProfitabilityExportJobStatus;
+  filters: {
+    dateFrom: string;
+    dateTo: string;
+    productIds?: Array<string | number>;
+    onlyMissingCosts?: boolean;
+  };
+  filename: string | null;
+  errorMessage: string | null;
+  createdAt: string;
+  startedAt: string | null;
+  finishedAt: string | null;
+  downloadUrl: string | null;
+}
+
+export interface OrdersProfitabilityExportDownload {
+  blob: Blob;
+  filename: string;
+}
+
 export interface OrdersProfitabilityTimelineParams extends OrdersProfitabilitySummaryParams {
   granularity?: 'day' | 'week' | 'month';
 }
@@ -194,6 +226,58 @@ function buildProfitabilityQuery(
   }
 
   return query;
+}
+
+function unwrapProfitabilityExportJob(data: unknown): OrdersProfitabilityExportJob {
+  return ((data as { data?: OrdersProfitabilityExportJob })?.data ??
+    data) as OrdersProfitabilityExportJob;
+}
+
+function normalizeProfitabilityProductIds(productIds?: Array<string | number>): number[] {
+  return (productIds ?? [])
+    .map((productId) => Number(productId))
+    .filter((productId) => Number.isFinite(productId));
+}
+
+function buildProfitabilityExportJobPayload(
+  params: OrdersProfitabilityExportJobParams
+): Required<Pick<OrdersProfitabilityExportJobParams, 'dateFrom' | 'dateTo' | 'onlyMissingCosts'>> & {
+  productIds: number[];
+} {
+  return {
+    dateFrom: params.dateFrom,
+    dateTo: params.dateTo,
+    productIds: normalizeProfitabilityProductIds(params.productIds),
+    onlyMissingCosts: params.onlyMissingCosts ?? true,
+  };
+}
+
+function normalizeProfitabilityExportDownloadUrl(downloadUrl: string): string {
+  if (downloadUrl.startsWith('http://') || downloadUrl.startsWith('https://')) {
+    return downloadUrl;
+  }
+
+  if (downloadUrl.startsWith('/api/v2/')) {
+    return `${API_URL_V2}${downloadUrl.replace(/^\/api\/v2\//, '')}`;
+  }
+
+  if (downloadUrl.startsWith('/api-backend/')) {
+    return downloadUrl;
+  }
+
+  return `${API_URL_V2}${downloadUrl.replace(/^\/+/, '')}`;
+}
+
+function getFilenameFromContentDisposition(contentDisposition: string | null): string | null {
+  if (!contentDisposition) return null;
+
+  const encodedMatch = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
+  if (encodedMatch?.[1]) {
+    return decodeURIComponent(encodedMatch[1].replace(/"/g, ''));
+  }
+
+  const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/i);
+  return filenameMatch?.[1] ?? null;
 }
 
 /**
@@ -759,15 +843,73 @@ export async function getOrdersProfitabilitySummary(
 }
 
 /**
- * Exports the profitability summary audit workbook for orders.
+ * Creates an async profitability export job for orders.
  */
-export async function exportOrdersProfitabilitySummary(
-  params: OrdersProfitabilitySummaryParams,
+export async function createOrdersProfitabilityExportJob(
+  params: OrdersProfitabilityExportJobParams,
   token: AuthToken
-): Promise<Blob> {
-  const query = buildProfitabilityQuery(params);
+): Promise<OrdersProfitabilityExportJob> {
   const response = await fetchWithTenant(
-    `${API_URL_V2}statistics/orders/profitability-summary/export?${query.toString()}`,
+    `${API_URL_V2}statistics/orders/profitability-summary/export-jobs`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Authorization: `Bearer ${token}`,
+        'User-Agent': getUserAgent(),
+      },
+      body: JSON.stringify(buildProfitabilityExportJobPayload(params)),
+    }
+  );
+
+  const data = await handleServiceResponse(
+    response,
+    null,
+    'Error al crear la exportacion de rentabilidad'
+  );
+
+  return unwrapProfitabilityExportJob(data);
+}
+
+/**
+ * Fetches the current status of an async profitability export job.
+ */
+export async function getOrdersProfitabilityExportJob(
+  id: string,
+  token: AuthToken
+): Promise<OrdersProfitabilityExportJob> {
+  const response = await fetchWithTenant(
+    `${API_URL_V2}statistics/orders/profitability-summary/export-jobs/${id}`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Authorization: `Bearer ${token}`,
+        'User-Agent': getUserAgent(),
+      },
+    }
+  );
+
+  const data = await handleServiceResponse(
+    response,
+    null,
+    'Error al consultar la exportacion de rentabilidad'
+  );
+
+  return unwrapProfitabilityExportJob(data);
+}
+
+/**
+ * Downloads a finished async profitability export job.
+ */
+export async function downloadOrdersProfitabilityExportJob(
+  downloadUrl: string,
+  token: AuthToken
+): Promise<OrdersProfitabilityExportDownload> {
+  const response = await fetchWithTenant(
+    normalizeProfitabilityExportDownloadUrl(downloadUrl),
     {
       method: 'GET',
       headers: {
@@ -779,11 +921,24 @@ export async function exportOrdersProfitabilitySummary(
   );
 
   if (!response.ok) {
-    const message = `Error ${response.status} al exportar la auditoria de margen`;
-    throw new Error(message);
+    let errorData: unknown = null;
+    try {
+      errorData = await response.json();
+    } catch (_error) {
+      errorData = { message: `Error ${response.status} al descargar la exportacion` };
+    }
+
+    throw new Error(
+      getErrorMessage(errorData as object) || 'Error al descargar la exportacion de rentabilidad'
+    );
   }
 
-  return response.blob();
+  return {
+    blob: await response.blob(),
+    filename:
+      getFilenameFromContentDisposition(response.headers.get('content-disposition')) ??
+      'rentabilidad.xlsx',
+  };
 }
 
 /**

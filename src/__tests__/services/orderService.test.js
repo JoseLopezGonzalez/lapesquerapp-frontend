@@ -5,9 +5,12 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
+  createOrdersProfitabilityExportJob,
+  downloadOrdersProfitabilityExportJob,
   getOrder,
   getOrderCostAnalysis,
   getActiveOrders,
+  getOrdersProfitabilityExportJob,
   getOrdersProfitabilityProducts,
   getOrdersProfitabilitySummary,
   getOrdersProfitabilityTimeline,
@@ -220,6 +223,129 @@ describe('orderService', () => {
       expect(result).toEqual(summary);
     });
 
+    it('creates profitability export job with missing costs filter enabled', async () => {
+      const job = {
+        id: '8b84f421-3a64-4c34-b257-d7f96891d0c2',
+        status: 'pending',
+        filters: {
+          dateFrom: '2025-12-31',
+          dateTo: '2026-04-28',
+          productIds: [],
+          onlyMissingCosts: true,
+        },
+        filename: null,
+        errorMessage: null,
+        createdAt: '2026-04-28T14:55:00+00:00',
+        startedAt: null,
+        finishedAt: null,
+        downloadUrl: null,
+      };
+
+      fetchWithTenant.mockResolvedValueOnce(mockJsonResponse(job));
+
+      const result = await createOrdersProfitabilityExportJob(
+        {
+          dateFrom: '2025-12-31',
+          dateTo: '2026-04-28',
+          productIds: [],
+        },
+        token
+      );
+
+      expect(fetchWithTenant).toHaveBeenCalledWith(
+        expect.stringContaining('statistics/orders/profitability-summary/export-jobs'),
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          }),
+          body: JSON.stringify({
+            dateFrom: '2025-12-31',
+            dateTo: '2026-04-28',
+            productIds: [],
+            onlyMissingCosts: true,
+          }),
+        })
+      );
+      expect(result).toEqual(job);
+    });
+
+    it('fetches profitability export job status', async () => {
+      const job = {
+        id: 'job-1',
+        status: 'processing',
+        filters: {
+          dateFrom: '2025-12-31',
+          dateTo: '2026-04-28',
+          productIds: [],
+          onlyMissingCosts: true,
+        },
+        filename: null,
+        errorMessage: null,
+        createdAt: '2026-04-28T14:55:00+00:00',
+        startedAt: '2026-04-28T14:55:05+00:00',
+        finishedAt: null,
+        downloadUrl: null,
+      };
+
+      fetchWithTenant.mockResolvedValueOnce(mockJsonResponse({ data: job }));
+
+      const result = await getOrdersProfitabilityExportJob('job-1', token);
+
+      expect(fetchWithTenant).toHaveBeenCalledWith(
+        expect.stringContaining('statistics/orders/profitability-summary/export-jobs/job-1'),
+        expect.objectContaining({
+          method: 'GET',
+          headers: expect.objectContaining({
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+          }),
+        })
+      );
+      expect(result).toEqual(job);
+    });
+
+    it('downloads profitability export job as a blob and reads filename header', async () => {
+      const blob = new Blob(['xlsx'], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+
+      fetchWithTenant.mockResolvedValueOnce({
+        ok: true,
+        headers: {
+          get: (name) =>
+            name.toLowerCase() === 'content-disposition'
+              ? 'attachment; filename="rentabilidad_test.xlsx"'
+              : null,
+        },
+        blob: async () => blob,
+      });
+
+      const result = await downloadOrdersProfitabilityExportJob(
+        '/api/v2/statistics/orders/profitability-summary/export-jobs/job-1/download',
+        token
+      );
+
+      expect(fetchWithTenant).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'statistics/orders/profitability-summary/export-jobs/job-1/download'
+        ),
+        expect.objectContaining({
+          method: 'GET',
+          headers: expect.objectContaining({
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          }),
+        })
+      );
+      expect(result).toEqual({
+        blob,
+        filename: 'rentabilidad_test.xlsx',
+      });
+    });
+
     it('fetches profitability timeline with granularity and omits all product filter', async () => {
       const timeline = {
         granularity: 'week',
@@ -272,6 +398,7 @@ describe('orderService', () => {
       );
       expect(result).toEqual(products);
     });
+
   });
 
   describe('updateOrder', () => {

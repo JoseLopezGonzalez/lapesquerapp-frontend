@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { DatePicker } from '@/components/ui/datePicker'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { dateToYmdLocalString, ymdLocalStringToDate } from '@/helpers/production/dateFormatters'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Info, Loader2, Plus, Save } from 'lucide-react'
@@ -158,18 +159,46 @@ export const ProcessInfoForm = ({
                             </div>
                             <div className="space-y-1.5">
                                 <Label htmlFor="finished_at" className="text-sm">Fecha de Finalización</Label>
-                                <DatePicker
-                                    id="finished_at"
-                                    formatStyle="short"
-                                    disabled={saving}
-                                    date={ymdLocalStringToDate(formData.finished_at)}
-                                    onChange={(d) =>
-                                        onFormDataChange({
-                                            ...formData,
-                                            finished_at: dateToYmdLocalString(d),
-                                        })
-                                    }
-                                />
+                                <div className="flex items-end gap-2">
+                                    <div className="flex-1">
+                                        <DatePicker
+                                            id="finished_at"
+                                            formatStyle="short"
+                                            disabled={saving}
+                                            date={ymdLocalStringToDate(formData.finished_at)}
+                                            onChange={(d) =>
+                                                onFormDataChange({
+                                                    ...formData,
+                                                    finished_at: dateToYmdLocalString(d),
+                                                })
+                                            }
+                                        />
+                                    </div>
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="h-7 px-2 text-xs"
+                                                    disabled={saving || !formData.started_at}
+                                                    onClick={() =>
+                                                        onFormDataChange({
+                                                            ...formData,
+                                                            finished_at: formData.started_at,
+                                                        })
+                                                    }
+                                                >
+                                                    Copiar inicio
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent side="top">
+                                                Establece fecha fin con la misma fecha de inicio.
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                </div>
                             </div>
                         </div>
                     ) : (
