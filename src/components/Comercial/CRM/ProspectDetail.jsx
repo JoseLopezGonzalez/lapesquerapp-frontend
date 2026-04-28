@@ -132,7 +132,13 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
   useEffect(() => {
     if (!shouldLoadInteractions) return;
     setLoadedInteractions((prev) => {
-      if (interactionsPage === 1) return interactions;
+      if (interactionsPage === 1) {
+        const sameLength = prev.length === interactions.length;
+        const sameOrder = sameLength
+          ? prev.every((item, index) => String(item?.id) === String(interactions[index]?.id))
+          : false;
+        return sameOrder ? prev : interactions;
+      }
       const seen = new Set(prev.map((item) => String(item.id)));
       const next = [...prev];
       for (const item of interactions) {

@@ -5,6 +5,8 @@ import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 import { crmService } from '@/services/crmService';
 import type { CommercialInteraction, CommercialInteractionPayload, CrmPaginatedResponse } from '@/types/crm';
 
+const EMPTY_INTERACTIONS: CommercialInteraction[] = [];
+
 function normalizeQueryParams(params: Record<string, unknown> = {}): Record<string, unknown> {
   return Object.entries(params)
     .filter(([, value]) => value != null && value !== '' && (!Array.isArray(value) || value.filter((v) => v != null && v !== '').length > 0))
@@ -31,7 +33,7 @@ export function useCommercialInteractions(params = {}) {
   });
 
   return {
-    data: data?.data ?? [],
+    data: data?.data ?? EMPTY_INTERACTIONS,
     meta: data?.meta ?? { current_page: 1, last_page: 1, per_page: 20, total: 0 },
     isLoading,
     error: error?.message ?? null,
