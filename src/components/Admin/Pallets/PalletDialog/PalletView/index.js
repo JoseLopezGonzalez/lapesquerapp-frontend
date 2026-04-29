@@ -107,6 +107,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
     const externalActor = isExternalActor(session?.user);
     const canDeleteTimeline = !externalActor && roles.some((r) => r === "administrador" || r === "tecnico");
     const canDeletePalletData = canDeletePallet(session?.user);
+    const canEditCost = !externalActor && roles.some((r) => ['administrador', 'direccion', 'tecnico'].includes(r));
 
     const orderIdBlocked = initialOrderId !== null;
 
@@ -197,6 +198,11 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
             return;
         }
         editPallet.box.edit.netWeight(boxId, netWeight);
+    };
+
+    const handleOnChangeBoxManualCost = (boxId, value) => {
+        if (isReadOnly) return;
+        editPallet.box.edit.manualCostPerKg(boxId, value);
     };
 
     const handleOnClickDuplicateBox = (boxId) => {
@@ -550,6 +556,20 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                         disabled={isReadOnly}
                                                                     />
                                                                 </div>
+                                                                {canEditCost && (
+                                                                    <div className="space-y-2">
+                                                                        <Label>Coste manual (€/kg)</Label>
+                                                                        <Input
+                                                                            type="number"
+                                                                            step="0.01"
+                                                                            placeholder="Opcional"
+                                                                            value={boxCreationData.manualCostPerKg}
+                                                                            onChange={(e) => boxCreationDataChange("manualCostPerKg", e.target.value)}
+                                                                            className="text-right"
+                                                                            disabled={isReadOnly}
+                                                                        />
+                                                                    </div>
+                                                                )}
                                                                 <div className="col-span-2 grid grid-cols-2 gap-x-2">
                                                                     <Button
                                                                         variant="outline"
@@ -916,6 +936,35 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                         disabled={isReadOnly || !boxAvailable}
                                                                     />
                                                                 </TableCell>
+                                                                {canEditCost && (
+                                                                    <TableCell onClick={(e) => e.stopPropagation()}>
+                                                                        {box.traceableCostPerKg != null ? (
+                                                                            <TooltipProvider>
+                                                                                <Tooltip>
+                                                                                    <TooltipTrigger asChild>
+                                                                                        <div className="text-right cursor-help">
+                                                                                            <span className="text-sm font-medium text-green-700">{parseFloat(box.traceableCostPerKg).toFixed(2)} €/kg</span>
+                                                                                            <p className="text-xs text-muted-foreground">Trazable</p>
+                                                                                        </div>
+                                                                                    </TooltipTrigger>
+                                                                                    <TooltipContent>
+                                                                                        <p>Coste por recepción o producción. No editable.</p>
+                                                                                    </TooltipContent>
+                                                                                </Tooltip>
+                                                                            </TooltipProvider>
+                                                                        ) : (
+                                                                            <Input
+                                                                                type="number"
+                                                                                step="0.01"
+                                                                                placeholder="€/kg"
+                                                                                defaultValue={box.manualCostPerKg != null ? box.manualCostPerKg : ""}
+                                                                                onChange={(e) => handleOnChangeBoxManualCost(box.id, e.target.value)}
+                                                                                className="w-full text-right"
+                                                                                disabled={isReadOnly || !boxAvailable}
+                                                                            />
+                                                                        )}
+                                                                    </TableCell>
+                                                                )}
                                                                 <TableCell>
                                                                     {canEditBox && (
                                                                         <div className="flex gap-1">
@@ -949,10 +998,10 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                             </TableRow>
                                                         );
                                                     }
-                                                    
+
                                                     return (
-                                                        <TableRow 
-                                                            key={box.id} 
+                                                        <TableRow
+                                                            key={box.id}
                                                             onClick={canEditBox ? () => handleOnClickBoxRow(box.id) : undefined}
                                                             className={`${canEditBox ? 'cursor-text hover:bg-muted' : 'cursor-default'} ${box?.new === true ? "bg-foreground-50" : ""} ${!boxAvailable ? "bg-orange-50/30" : ""}`}
                                                         >
@@ -969,7 +1018,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                                     <p>
                                                                                         {(() => {
                                                                                             const productionInfo = getBoxProductionInfo(box);
-                                                                                            return productionInfo 
+                                                                                            return productionInfo
                                                                                                 ? `Caja usada en producción #${productionInfo.id}${productionInfo.lot ? ` (Lote: ${productionInfo.lot})` : ''}`
                                                                                                 : 'Caja usada en producción';
                                                                                         })()}
@@ -983,6 +1032,31 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                             <TableCell>{box.lot}</TableCell>
                                                             <TableCell>{box.gs1128}</TableCell>
                                                             <TableCell>{box.netWeight} kg</TableCell>
+                                                            {canEditCost && (
+                                                                <TableCell className="text-right text-sm">
+                                                                    {box.traceableCostPerKg != null ? (
+                                                                        <TooltipProvider>
+                                                                            <Tooltip>
+                                                                                <TooltipTrigger asChild>
+                                                                                    <span className="text-green-700 cursor-help">{parseFloat(box.traceableCostPerKg).toFixed(2)} €/kg</span>
+                                                                                </TooltipTrigger>
+                                                                                <TooltipContent><p>Coste trazable (recepción / producción)</p></TooltipContent>
+                                                                            </Tooltip>
+                                                                        </TooltipProvider>
+                                                                    ) : box.manualCostPerKg != null ? (
+                                                                        <TooltipProvider>
+                                                                            <Tooltip>
+                                                                                <TooltipTrigger asChild>
+                                                                                    <span className="text-blue-600 cursor-help">{parseFloat(box.manualCostPerKg).toFixed(2)} €/kg</span>
+                                                                                </TooltipTrigger>
+                                                                                <TooltipContent><p>Coste manual</p></TooltipContent>
+                                                                            </Tooltip>
+                                                                        </TooltipProvider>
+                                                                    ) : (
+                                                                        <span className="text-muted-foreground">—</span>
+                                                                    )}
+                                                                </TableCell>
+                                                            )}
                                                             <TableCell>
                                                                 {canEditBox && (
                                                                     <div className="flex gap-1">
@@ -1059,13 +1133,14 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                                 <TableHead className="min-w-[170px] w-[170px]">Lote</TableHead>
                                                                                 <TableHead className="min-w-[150px]">GS1 128</TableHead>
                                                                                 <TableHead className="min-w-[100px] w-[100px]">Peso Neto</TableHead>
+                                                                                {canEditCost && <TableHead className="w-[110px] text-right">Coste/kg</TableHead>}
                                                                                 <TableHead className="min-w-[150px]">Estado</TableHead>
                                                                             </TableRow>
                                                                         </TableHeader>
                                                                         <TableBody>
                                                                             {temporalPallet.boxes.length === 0 ? (
                                                                                 <TableRow>
-                                                                                    <TableCell colSpan={5} className="p-0">
+                                                                                    <TableCell colSpan={canEditCost ? 6 : 5} className="p-0">
                                                                                         <div className="py-12">
                                                                                             <EmptyState
                                                                                                 icon={<Box className="h-12 w-12 text-primary" strokeWidth={1.5} />}
@@ -1153,6 +1228,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                                     <TableHead className="min-w-[170px] w-[170px]">Lote</TableHead>
                                                                                     <TableHead className="min-w-[150px]">GS1 128</TableHead>
                                                                                     <TableHead className="min-w-[100px] w-[100px]">Peso Neto</TableHead>
+                                                                                    {canEditCost && <TableHead className="w-[110px] text-right">Coste/kg</TableHead>}
                                                                                     <TableHead className="w-[100px]">Acciones</TableHead>
                                                                                 </TableRow>
                                                                             </TableHeader>
@@ -1576,6 +1652,31 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                             <TableCell>{box.lot}</TableCell>
                                                                             <TableCell>{box.gs1128}</TableCell>
                                                                             <TableCell>{box.netWeight} kg</TableCell>
+                                                                            {canEditCost && (
+                                                                                <TableCell className="text-right text-sm">
+                                                                                    {box.traceableCostPerKg != null ? (
+                                                                                        <TooltipProvider>
+                                                                                            <Tooltip>
+                                                                                                <TooltipTrigger asChild>
+                                                                                                    <span className="text-green-700 cursor-help">{parseFloat(box.traceableCostPerKg).toFixed(2)} €/kg</span>
+                                                                                                </TooltipTrigger>
+                                                                                                <TooltipContent><p>Coste trazable (recepción / producción)</p></TooltipContent>
+                                                                                            </Tooltip>
+                                                                                        </TooltipProvider>
+                                                                                    ) : box.manualCostPerKg != null ? (
+                                                                                        <TooltipProvider>
+                                                                                            <Tooltip>
+                                                                                                <TooltipTrigger asChild>
+                                                                                                    <span className="text-blue-600 cursor-help">{parseFloat(box.manualCostPerKg).toFixed(2)} €/kg</span>
+                                                                                                </TooltipTrigger>
+                                                                                                <TooltipContent><p>Coste manual</p></TooltipContent>
+                                                                                            </Tooltip>
+                                                                                        </TooltipProvider>
+                                                                                    ) : (
+                                                                                        <span className="text-muted-foreground">—</span>
+                                                                                    )}
+                                                                                </TableCell>
+                                                                            )}
                                                                             <TableCell>
                                                                                 {!boxAvailable && productionInfo ? (
                                                                                     <TooltipProvider>

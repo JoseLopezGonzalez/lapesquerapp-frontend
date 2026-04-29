@@ -102,6 +102,7 @@ const getInitialBoxCreationData = (preserveDiscounts = false, currentDiscounts =
         scannedCode: "", // para lector
         deleteScannedCode: "",//para lector eliminar
         gs1codes: "", // <- NUEVO
+        manualCostPerKg: "",
     };
 };
 
@@ -148,6 +149,7 @@ function boxContentEqual(origBox, tempBox) {
     if (String(origBox.lot ?? '') !== String(tempBox.lot ?? '')) return false;
     if (normNum(origBox.netWeight) !== normNum(tempBox.netWeight)) return false;
     if (normNum(origBox.grossWeight) !== normNum(tempBox.grossWeight)) return false;
+    if (normNum(origBox.manualCostPerKg) !== normNum(tempBox.manualCostPerKg)) return false;
     return true;
 }
 
@@ -470,6 +472,19 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                         box.id === boxId ? { ...box, netWeight: roundedWeight, gs1128: getGs1128(box.product.id, box.lot, roundedWeight) } : box
                     )
                 })));
+        },
+        manualCostPerKg: (boxId, value) => {
+            if (!temporalPallet) return;
+            const parsed = (value === "" || value === null || value === undefined) ? null : parseFloat(value);
+            const cost = (parsed !== null && isNaN(parsed)) ? null : parsed;
+            setTemporalPallet((prev) => (
+                recalculatePalletStats({
+                    ...prev,
+                    boxes: prev.boxes.map((box) =>
+                        box.id === boxId ? { ...box, manualCostPerKg: cost } : box
+                    )
+                })
+            ));
         }
     };
 
@@ -761,7 +776,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
 
     const onAddNewBox = ({ method }) => {
         if (!temporalPallet) return;
-        const { productId, lot, netWeight, weights, totalWeight, numberOfBoxes, palletWeight, boxTare, scannedCode } = boxCreationData;
+        const { productId, lot, netWeight, weights, totalWeight, numberOfBoxes, palletWeight, boxTare, scannedCode, manualCostPerKg } = boxCreationData;
 
         if (method === 'manual') {
             if (!productId || !lot || !netWeight) {
@@ -769,11 +784,13 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 return;
             }
             const product = getProductById(productId); // Validar que el producto existe
+            const parsedCost = manualCostPerKg ? parseFloat(manualCostPerKg) : null;
             const newBox = {
                 product: product,
                 lot,
                 netWeight: roundToTwoDecimals(netWeight),
-                scannedCode
+                scannedCode,
+                manualCostPerKg: (parsedCost !== null && !isNaN(parsedCost)) ? parsedCost : null,
             };
             addBox(newBox);
             notify.success({ title: 'Caja creada', description: 'Se ha añadido una caja al palet con el producto y peso indicados.' });
