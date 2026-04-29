@@ -62,6 +62,9 @@ describe('useOrders profitability stats', () => {
       totalCost: 700,
       grossMargin: 300,
       marginPercentage: 30,
+      coveredBoxes: 7,
+      uncoveredBoxes: 3,
+      costCoverageBoxesPct: 70,
     });
     mockGetOrdersProfitabilityTimeline.mockResolvedValue({
       granularity: 'month',
@@ -92,6 +95,7 @@ describe('useOrders profitability stats', () => {
       'test-token'
     );
     expect(result.current.data?.grossMargin).toBe(300);
+    expect(result.current.data?.costCoverageBoxesPct).toBe(70);
   });
 
   it('loads profitability timeline and refetches with granularity changes in query key inputs', async () => {

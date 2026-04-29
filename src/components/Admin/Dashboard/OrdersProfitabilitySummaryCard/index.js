@@ -9,7 +9,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Button } from "@/components/ui/button"
 import { notify } from "@/lib/notifications"
 import { useOrdersProfitabilitySummary } from "@/hooks/useOrdersStats"
-import { formatDecimal, formatDecimalCurrency } from "@/helpers/formats/numbers/formatNumbers"
+import { formatDecimal, formatDecimalCurrency, formatInteger } from "@/helpers/formats/numbers/formatNumbers"
 import {
   createOrdersProfitabilityExportJob,
   downloadOrdersProfitabilityExportJob,
@@ -18,6 +18,7 @@ import {
 import { useSession } from "next-auth/react"
 
 const POLL_INTERVAL_MS = 3000
+const LOW_COST_COVERAGE_THRESHOLD = 80
 
 function formatDateRange(from, to) {
   if (!from || !to) return "Rango no definido"
@@ -58,6 +59,8 @@ export function OrdersProfitabilitySummaryCard() {
   const { data: session } = useSession()
   const token = session?.user?.accessToken
   const { data, isLoading } = useOrdersProfitabilitySummary({})
+  const costCoverageBoxesPct = Number(data?.costCoverageBoxesPct ?? 0)
+  const isLowCoverage = data && costCoverageBoxesPct < LOW_COST_COVERAGE_THRESHOLD
   const isExportBusy = isCreatingExport || isPollingExport || isDownloadingExport
   const exportStatusMessage = getExportStatusMessage(exportJob, isCreatingExport)
 
@@ -227,11 +230,33 @@ export function OrdersProfitabilitySummaryCard() {
                         <span>Margen %</span>
                         <span className="font-medium">{formatNullablePercentage(data.marginPercentage)}</span>
                       </div>
+                      <div className="flex justify-between gap-3">
+                        <span>% cajas con coste</span>
+                        <span className="font-medium">{formatNullablePercentage(data.costCoverageBoxesPct)}</span>
+                      </div>
+                      <div className="flex justify-between gap-3">
+                        <span>Cajas con coste</span>
+                        <span className="font-medium">{formatInteger(data.coveredBoxes ?? 0)}</span>
+                      </div>
+                      <div className="flex justify-between gap-3">
+                        <span>Cajas sin coste</span>
+                        <span className="font-medium">{formatInteger(data.uncoveredBoxes ?? 0)}</span>
+                      </div>
+                      {isLowCoverage && (
+                        <div className="text-xs italic text-muted-foreground">
+                          Cobertura baja: el margen es orientativo.
+                        </div>
+                      )}
                     </div>
                   </TooltipContent>
                 </Tooltip>
               )}
             </div>
+            {data && (
+              <div className="mt-1 text-xs text-muted-foreground">
+                {formatNullablePercentage(data.costCoverageBoxesPct)} cajas con coste
+              </div>
+            )}
           </div>
           <Badge variant="outline" className="shrink-0">
             {formatNullablePercentage(data?.marginPercentage)}

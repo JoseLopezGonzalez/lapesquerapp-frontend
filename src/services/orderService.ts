@@ -136,6 +136,9 @@ export interface ProfitabilitySummaryResponse {
   totalCost: number | null;
   grossMargin: number | null;
   marginPercentage: number | null;
+  coveredBoxes: number;
+  uncoveredBoxes: number;
+  costCoverageBoxesPct: number;
 }
 
 export interface ProfitabilityTimelinePoint {

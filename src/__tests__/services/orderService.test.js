@@ -201,6 +201,9 @@ describe('orderService', () => {
         totalCost: 1000,
         grossMargin: 500,
         marginPercentage: 33.33,
+        coveredBoxes: 28,
+        uncoveredBoxes: 6,
+        costCoverageBoxesPct: 82.35,
       };
 
       fetchWithTenant.mockResolvedValueOnce(mockJsonResponse({ data: summary }));
