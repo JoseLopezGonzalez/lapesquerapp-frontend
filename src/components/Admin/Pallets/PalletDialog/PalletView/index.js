@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 
 import { PALLET_LABEL_SIZE } from "@/configs/config";
 
-import { Copy, Trash2, Scan, Plus, Upload, Package, FileText, Edit, Eye, CloudAlert, RotateCcw, ChevronDown, ChevronsUpDown, ListChevronsUpDown, ListChevronsDownUp, Box, Truck, Layers, Weight, Link2Off, Printer, AlertCircle, Factory, CheckCircle, Loader2, ExternalLink, Minus, History } from "lucide-react";
+import { Copy, Trash2, Scan, Plus, Upload, Package, FileText, Edit, Eye, CloudAlert, RotateCcw, ChevronDown, ChevronsUpDown, ListChevronsUpDown, ListChevronsDownUp, Box, Truck, Layers, Weight, Link2Off, Printer, AlertCircle, Factory, CheckCircle, Loader2, ExternalLink, Minus, History, Euro } from "lucide-react";
 import { PiShrimp } from "react-icons/pi";
 
 import { Badge } from "@/components/ui/badge";
@@ -1405,6 +1405,21 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                 <Package className="h-5 w-5" />
                                                                 <span>Cambiar Producto</span>
                                                             </Button>
+                                                            {canEditCost && (
+                                                                <Button
+                                                                    variant={bulkActionType === 'cost' ? 'default' : 'outline'}
+                                                                    onClick={() => {
+                                                                        setBulkActionType('cost');
+                                                                        setBulkActionValue('');
+                                                                    }}
+                                                                    size="sm"
+                                                                    className="h-8 px-3 flex items-center justify-center gap-2 text-xs"
+                                                                    disabled={isReadOnly}
+                                                                >
+                                                                    <Euro className="h-5 w-5" />
+                                                                    <span>Coste por kg</span>
+                                                                </Button>
+                                                            )}
                                                         </div>
                                                     </div>
 
@@ -1437,7 +1452,25 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                     </div>
                                                                 </div>
                                                             )}
-                                                            {bulkActionType === 'product' ? (
+                                                            {bulkActionType === 'cost' ? (
+                                                                <div className="space-y-3">
+                                                                    <div className="space-y-2">
+                                                                        <Label>Coste por kg (€)</Label>
+                                                                        <Input
+                                                                            type="number"
+                                                                            step="0.01"
+                                                                            value={bulkActionValue}
+                                                                            onChange={(e) => setBulkActionValue(e.target.value)}
+                                                                            placeholder="0.00"
+                                                                            className="text-right"
+                                                                            disabled={isReadOnly}
+                                                                        />
+                                                                    </div>
+                                                                    <p className="text-xs text-muted-foreground">
+                                                                        Solo se aplica a cajas disponibles sin coste trazable (recepción/producción).
+                                                                    </p>
+                                                                </div>
+                                                            ) : bulkActionType === 'product' ? (
                                                                 <>
                                                                     <div className="space-y-2">
                                                                         <Label>Producto Actual</Label>
@@ -1510,7 +1543,11 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                 <Button
                                                                     className="w-full"
                                                                     onClick={() => {
-                                                                        if (bulkActionType === 'product') {
+                                                                        if (bulkActionType === 'cost') {
+                                                                            const costValue = parseFloat(bulkActionValue);
+                                                                            if (isNaN(costValue) || costValue < 0) return;
+                                                                            editPallet.box.bulkEdit.setManualCostPerKg(null, costValue);
+                                                                        } else if (bulkActionType === 'product') {
                                                                             if (!oldProductId || !newProductId) {
                                                                                 return;
                                                                             }
@@ -1551,10 +1588,12 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                         setWeightOperation('add');
                                                                     }}
                                                                     disabled={
-                                                                        isReadOnly || 
-                                                                        (bulkActionType === 'product' 
-                                                                            ? (!oldProductId || !newProductId)
-                                                                            : (!bulkActionValue || bulkActionValue.trim() === ''))
+                                                                        isReadOnly ||
+                                                                        (bulkActionType === 'cost'
+                                                                            ? (bulkActionValue === '' || isNaN(parseFloat(bulkActionValue)) || parseFloat(bulkActionValue) < 0)
+                                                                            : bulkActionType === 'product'
+                                                                                ? (!oldProductId || !newProductId)
+                                                                                : (!bulkActionValue || bulkActionValue.trim() === ''))
                                                                     }
                                                                 >
                                                                     Aplicar Cambios

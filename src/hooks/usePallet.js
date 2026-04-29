@@ -725,6 +725,43 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
                 title: 'Producto actualizado',
                 description: `Se ha cambiado el producto en ${boxesToEdit.length} ${boxesToEdit.length === 1 ? 'caja disponible' : 'cajas disponibles'}.`
             });
+        },
+
+        /**
+         * Establece el coste manual por kg en cajas disponibles sin coste trazable.
+         * @param {Array<number>|null} boxIds - IDs a editar, o null para todas las disponibles
+         * @param {number|null} cost - Coste en €/kg, o null para limpiar
+         */
+        setManualCostPerKg: (boxIds, cost) => {
+            if (!temporalPallet) return;
+
+            const boxesToEdit = (boxIds
+                ? temporalPallet.boxes.filter(box => boxIds.includes(box.id) && box.isAvailable !== false)
+                : temporalPallet.boxes.filter(box => box.isAvailable !== false)
+            ).filter(box => box.traceableCostPerKg == null);
+
+            if (boxesToEdit.length === 0) {
+                notify.error({ title: 'Sin cajas elegibles', description: 'No hay cajas disponibles sin coste trazable a las que aplicar el coste manual.' });
+                return;
+            }
+
+            setTemporalPallet((prev) => (
+                recalculatePalletStats({
+                    ...prev,
+                    boxes: prev.boxes.map((box) =>
+                        boxesToEdit.some(b => b.id === box.id) ? { ...box, manualCostPerKg: cost } : box
+                    )
+                })
+            ));
+
+            const skipped = (temporalPallet.boxes.filter(b => b.isAvailable !== false).length) - boxesToEdit.length;
+            const skippedMsg = skipped > 0 ? ` (${skipped} omitida${skipped !== 1 ? 's' : ''} por tener coste trazable)` : '';
+            notify.success({
+                title: cost != null ? 'Coste aplicado' : 'Coste limpiado',
+                description: cost != null
+                    ? `${cost} €/kg asignado a ${boxesToEdit.length} caja${boxesToEdit.length !== 1 ? 's' : ''}${skippedMsg}.`
+                    : `Coste manual eliminado de ${boxesToEdit.length} caja${boxesToEdit.length !== 1 ? 's' : ''}${skippedMsg}.`
+            });
         }
     };
 
