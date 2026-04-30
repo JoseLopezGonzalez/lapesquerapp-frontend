@@ -143,6 +143,20 @@ export const navigationConfig = [
         allowedRoles: ["administrador", "direccion", "tecnico"],
         href: '/admin/productions',
         requiredFeature: 'module.production',
+        childrens: [
+            {
+                name: 'Listado',
+                href: '/admin/productions',
+                allowedRoles: ["administrador", "direccion", "tecnico"],
+                requiredFeature: 'module.production',
+            },
+            {
+                name: 'Control de producciones',
+                href: '/admin/productions/control-panel',
+                allowedRoles: ["administrador", "direccion", "tecnico"],
+                requiredFeature: 'module.production',
+            },
+        ],
     },
     {
         name: 'Pedidos',

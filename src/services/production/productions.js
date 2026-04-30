@@ -7,6 +7,13 @@ export function getProductions(token, params = {}) {
   return apiGet(`${API_URL_V2}productions`, token, params);
 }
 
+/** @param {string} token @param {object} [params] @returns {Promise<Object>} */
+export function getProductionControlPanel(token, params = {}) {
+  return apiGet(`${API_URL_V2}productions/control-panel`, token, params, {
+    transform: (data) => data.data || data,
+  });
+}
+
 /** @param {string|number} productionId @param {string} token @returns {Promise<Object>} */
 export function getProduction(productionId, token) {
   return apiGet(`${API_URL_V2}productions/${productionId}`, token, {}, {

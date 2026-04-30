@@ -83,6 +83,10 @@ export const adminCustomerKeys = {
 };
 
 export const productionQueryKeys = {
+  controlPanel: (
+    tenantId: string | null | undefined,
+    params: Record<string, unknown> = {}
+  ) => ['productions', 'controlPanel', tenantId ?? 'unknown', normalizeQueryParams(params)] as const,
   detail: (
     tenantId: string | null | undefined,
     productionId: number | string | null | undefined
