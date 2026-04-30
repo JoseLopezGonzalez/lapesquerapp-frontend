@@ -8,8 +8,10 @@ import {
   AlertCircle,
   ArrowDownUp,
   CheckCircle2,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
   CircleX,
   ClipboardCheck,
   Euro,
@@ -26,7 +28,6 @@ import {
   Search,
   ShieldAlert,
   TriangleAlert,
-  Warehouse,
   X,
 } from 'lucide-react'
 
@@ -34,8 +35,9 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { DateRangePicker } from '@/components/ui/dateRangePicker'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -47,6 +49,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useProductionControlPanel } from '@/hooks/production/useProductionControlPanel'
+import { useProductionOrphanStock } from '@/hooks/production/useProductionOrphanStock'
 import { notify } from '@/lib/notifications'
 import { cn } from '@/lib/utils'
 import { closeProduction } from '@/services/productionService'
@@ -100,7 +103,7 @@ function formatDateParam(date) {
 
 function formatDisplayDate(value) {
   if (!value) return 'Sin fecha'
-  const date = new Date(`${value}T12:00:00`)
+  const date = value.includes('T') ? new Date(value) : new Date(`${value}T12:00:00`)
   if (Number.isNaN(date.getTime())) return value
   return new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date)
 }
@@ -214,33 +217,51 @@ function SummaryMetric({ icon: Icon, label, value, description, loading }) {
   )
 }
 
+function countActiveFilters(filters) {
+  let count = 0
+  if (filters.lot?.trim()) count += 1
+  if (filters.species_id) count += 1
+  if (filters.status) count += 1
+  if (filters.reconciliation_status) count += 1
+  if (filters.dateRange?.from || filters.dateRange?.to) count += 1
+  if (filters.sort_by !== initialFilters.sort_by || filters.sort_dir !== initialFilters.sort_dir) count += 1
+  return count
+}
+
 function Filters({ filters, setFilters, onApply, onReset, fetching }) {
+  const [open, setOpen] = useState(false)
+  const activeFiltersCount = countActiveFilters(filters)
+
+  const handleApply = () => {
+    onApply()
+    setOpen(false)
+  }
+
+  const handleReset = () => {
+    onReset()
+    setOpen(false)
+  }
+
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Filter className="size-4" />
-              Filtros
-            </CardTitle>
-            <CardDescription>El resumen es global; los filtros afectan solo a la tabla.</CardDescription>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button type="button" variant="outline" size="sm" onClick={onReset}>
-              <X className="mr-2 size-4" />
-              Limpiar
-            </Button>
-            <Button type="button" size="sm" onClick={onApply} disabled={fetching}>
-              {fetching ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Search className="mr-2 size-4" />}
-              Aplicar
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-6">
-          <div className="space-y-1.5 lg:col-span-2">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="secondary" size="sm">
+          <Filter className="size-4" />
+          <span className="hidden xl:flex">Filtros</span>
+          {activeFiltersCount > 0 ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-foreground-200 px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
+              {activeFiltersCount}
+            </span>
+          ) : null}
+        </Button>
+      </DialogTrigger>
+      <DialogContent size="2xl">
+        <DialogHeader>
+          <DialogTitle>Filtros</DialogTitle>
+          <DialogDescription>El resumen es global; estos filtros afectan solo a la tabla de producciones.</DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-3 py-3 md:grid-cols-2">
+          <div className="space-y-1.5 md:col-span-2">
             <Label htmlFor="production-control-lot">Lote</Label>
             <Input
               id="production-control-lot"
@@ -308,7 +329,7 @@ function Filters({ filters, setFilters, onApply, onReset, fetching }) {
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-1.5 md:col-span-2 lg:col-span-2">
+          <div className="space-y-1.5 md:col-span-2">
             <Label>Rango de fechas</Label>
             <DateRangePicker
               dateRange={filters.dateRange}
@@ -316,66 +337,223 @@ function Filters({ filters, setFilters, onApply, onReset, fetching }) {
             />
           </div>
         </div>
-      </CardContent>
-    </Card>
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={handleReset}>
+            <X className="size-4" />
+            Resetear
+          </Button>
+          <Button type="button" onClick={handleApply} disabled={fetching}>
+            {fetching ? <Loader2 className="size-4 animate-spin" /> : <Search className="size-4" />}
+            Aplicar
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 
-function GlobalAlerts({ alerts }) {
-  const visibleAlerts = alerts.slice(0, 5)
-
+function OrphanStockPanel({
+  lots,
+  pagination,
+  loading,
+  fetching,
+  error,
+  page,
+  onPageChange,
+}) {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-base">
-          <ShieldAlert className="size-4" />
-          Alertas globales
-        </CardTitle>
-        <CardDescription>Lotes o cajas que requieren revisión fuera de una producción concreta.</CardDescription>
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <ShieldAlert className="size-4" />
+              Lotes huérfanos en stock
+            </CardTitle>
+            <CardDescription>Stock registrado o almacenado sin producción ni recepción asociada.</CardDescription>
+          </div>
+          {fetching && !loading ? <Badge variant="outline">Actualizando</Badge> : null}
+        </div>
       </CardHeader>
       <CardContent>
-        {visibleAlerts.length === 0 ? (
-          <div className="rounded-lg border border-dashed px-3 py-4 text-sm text-muted-foreground">
-            No hay alertas globales en este momento.
-          </div>
-        ) : (
+        {error ? (
+          <Alert variant="destructive" className="mb-3">
+            <AlertCircle className="size-4" />
+            <AlertTitle>No se pudieron cargar los lotes huérfanos</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        ) : null}
+
+        {loading ? (
           <div className="space-y-2">
-            {visibleAlerts.map((alert, index) => (
-              <div key={`${alert.code}-${alert.lot}-${index}`} className="rounded-lg border px-3 py-2">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex min-w-0 flex-wrap items-center gap-2">
-                    <SeverityBadge severity={alert.severity} />
-                    <span className="truncate text-sm font-medium">{alert.title || ALERT_LABELS[alert.code] || alert.code}</span>
-                    {alert.lot ? <Badge variant="outline" className="font-mono">{alert.lot}</Badge> : null}
-                  </div>
-                  {alert.actions?.some((action) => action.type === 'open_lot_search') && alert.lot ? (
-                    <Button asChild size="sm" variant="outline">
-                      <Link href={`/admin/boxes?lot=${encodeURIComponent(alert.lot)}`}>
-                        <PackageSearch className="mr-2 size-4" />
-                        Ver cajas
-                      </Link>
-                    </Button>
-                  ) : null}
-                </div>
-                <p className="mt-2 text-sm text-muted-foreground">{alert.message}</p>
-                <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                  {alert.product?.name ? <span>{alert.product.name}</span> : null}
-                  {alert.weightKg != null ? <span>{formatKg(alert.weightKg)}</span> : null}
-                  {alert.boxesCount != null ? <span>{formatNumber(alert.boxesCount)} cajas</span> : null}
-                </div>
-              </div>
-            ))}
-            {alerts.length > visibleAlerts.length ? (
-              <p className="text-xs text-muted-foreground">Hay {alerts.length - visibleAlerts.length} alertas más. Ajusta el lote en inventario para investigarlas.</p>
-            ) : null}
+            {Array.from({ length: 4 }).map((_, index) => <Skeleton key={index} className="h-12 w-full" />)}
+          </div>
+        ) : lots.length === 0 ? (
+          <Empty className="min-h-40 border">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <CheckCircle2 className="size-4" />
+              </EmptyMedia>
+              <EmptyTitle>Sin lotes huérfanos</EmptyTitle>
+              <EmptyDescription>No hay stock sin producción ni recepción asociada.</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        ) : (
+          <div className="overflow-x-auto rounded-lg border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="min-w-36">Lote</TableHead>
+                  <TableHead className="text-right">Peso</TableHead>
+                  <TableHead className="text-right">Cajas</TableHead>
+                  <TableHead className="text-right">Palets</TableHead>
+                  <TableHead className="text-right">Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {lots.map((lot) => (
+                  <OrphanStockLotRow key={lot.lot} lot={lot} />
+                ))}
+              </TableBody>
+            </Table>
           </div>
         )}
+
+        <div className="mt-3 flex flex-col gap-2 text-sm sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-muted-foreground">
+            {formatNumber(pagination.total)} lotes huérfanos distintos.
+          </div>
+          <div className="flex items-center justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(Math.max(1, page - 1))}
+              disabled={page <= 1 || fetching}
+            >
+              <ChevronLeft className="mr-2 size-4" />
+              Anterior
+            </Button>
+            <Badge variant="outline">{page} / {pagination.lastPage || 1}</Badge>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(Math.min(pagination.lastPage || page + 1, page + 1))}
+              disabled={page >= (pagination.lastPage || 1) || fetching}
+            >
+              Siguiente
+              <ChevronRight className="ml-2 size-4" />
+            </Button>
+          </div>
+        </div>
       </CardContent>
     </Card>
   )
 }
 
-function ProductionTable({ productions, selectedProduction, onSelectProduction, loading }) {
+function OrphanStockLotRow({ lot }) {
+  const [open, setOpen] = useState(false)
+  const pallets = lot.pallets || []
+
+  return (
+    <>
+      <TableRow className="cursor-pointer hover:bg-muted/40" onClick={() => setOpen((current) => !current)}>
+        <TableCell>
+          <div className="flex items-center gap-2">
+            {open ? <ChevronDown className="size-4 text-muted-foreground" /> : <ChevronRight className="size-4 text-muted-foreground" />}
+            <span className="font-mono text-sm font-medium">{lot.lot || 'Sin lote'}</span>
+            <Badge variant="destructive" className="gap-1">
+              <TriangleAlert className="size-3" />
+              Huérfano
+            </Badge>
+          </div>
+        </TableCell>
+        <TableCell className="text-right tabular-nums">{formatKg(lot.totalWeightKg)}</TableCell>
+        <TableCell className="text-right tabular-nums">{formatNumber(lot.totalBoxes)}</TableCell>
+        <TableCell className="text-right tabular-nums">{formatNumber(lot.totalPallets)}</TableCell>
+        <TableCell className="text-right" onClick={(event) => event.stopPropagation()}>
+          <Button asChild size="sm" variant="outline">
+            <Link href={`/admin/boxes?lot=${encodeURIComponent(lot.lot || '')}`}>
+              <PackageSearch className="mr-2 size-4" />
+              Ver cajas
+            </Link>
+          </Button>
+        </TableCell>
+      </TableRow>
+      {open ? (
+        <TableRow className="bg-muted/20">
+          <TableCell colSpan={5} className="p-0">
+            <div className="space-y-2 p-3">
+              {pallets.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Sin palets asociados en la respuesta.</p>
+              ) : (
+                pallets.map((pallet) => (
+                  <OrphanStockPallet key={pallet.id} pallet={pallet} />
+                ))
+              )}
+            </div>
+          </TableCell>
+        </TableRow>
+      ) : null}
+    </>
+  )
+}
+
+function OrphanStockPallet({ pallet }) {
+  const [open, setOpen] = useState(false)
+  const products = pallet.products || []
+
+  return (
+    <Collapsible open={open} onOpenChange={setOpen}>
+      <div className="rounded-lg border bg-background">
+        <CollapsibleTrigger asChild>
+          <button type="button" className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left hover:bg-muted/40">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-mono text-sm font-medium">Palet #{pallet.id}</span>
+                <Badge variant={pallet.status === 2 ? 'success' : 'secondary'}>{pallet.statusLabel || `Estado ${pallet.status}`}</Badge>
+                <Badge variant="outline">{pallet.location || 'Sin ubicar'}</Badge>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {formatKg(pallet.weightKg)} · {formatNumber(pallet.boxesCount)} cajas · {formatDisplayDate(pallet.createdAt)}
+              </p>
+            </div>
+            {open ? <ChevronUp className="size-4 text-muted-foreground" /> : <ChevronDown className="size-4 text-muted-foreground" />}
+          </button>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="border-t p-2">
+            {products.length === 0 ? (
+              <p className="px-1 py-2 text-sm text-muted-foreground">Sin desglose de productos.</p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Producto</TableHead>
+                    <TableHead className="text-right">Peso</TableHead>
+                    <TableHead className="text-right">Cajas</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {products.map((product) => (
+                    <TableRow key={product.id}>
+                      <TableCell>{product.name || `Producto #${product.id}`}</TableCell>
+                      <TableCell className="text-right tabular-nums">{formatKg(product.weightKg)}</TableCell>
+                      <TableCell className="text-right tabular-nums">{formatNumber(product.boxes)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </div>
+        </CollapsibleContent>
+      </div>
+    </Collapsible>
+  )
+}
+
+function ProductionTable({ productions, selectedProduction, onSelectProduction, loading, filtersControl }) {
   if (loading) {
     return (
       <Card>
@@ -393,11 +571,16 @@ function ProductionTable({ productions, selectedProduction, onSelectProduction, 
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-base">
-          <Factory className="size-4" />
-          Producciones
-        </CardTitle>
-        <CardDescription>Selecciona una fila para ver alertas agrupadas y acciones recomendadas.</CardDescription>
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Factory className="size-4" />
+              Producciones
+            </CardTitle>
+            <CardDescription>Selecciona una fila para ver alertas agrupadas y acciones recomendadas.</CardDescription>
+          </div>
+          {filtersControl ? <div className="shrink-0">{filtersControl}</div> : null}
+        </div>
       </CardHeader>
       <CardContent>
         {productions.length === 0 ? (
@@ -711,6 +894,7 @@ export default function ProductionsControlPanel() {
   const [filters, setFilters] = useState(initialFilters)
   const [appliedFilters, setAppliedFilters] = useState(initialFilters)
   const [page, setPage] = useState(1)
+  const [orphanPage, setOrphanPage] = useState(1)
   const [selectedProduction, setSelectedProduction] = useState(null)
   const [panelOpen, setPanelOpen] = useState(false)
   const [closeTarget, setCloseTarget] = useState(null)
@@ -731,7 +915,21 @@ export default function ProductionsControlPanel() {
     return params
   }, [appliedFilters, page])
 
-  const { summary, alerts, productions, pagination, isLoading, isFetching, error, refetch } = useProductionControlPanel(queryParams)
+  const orphanStockParams = useMemo(() => ({
+    page: orphanPage,
+    per_page: 10,
+    sort_dir: 'asc',
+  }), [orphanPage])
+
+  const { summary, productions, pagination, isLoading, isFetching, error, refetch } = useProductionControlPanel(queryParams)
+  const {
+    lots: orphanLots,
+    pagination: orphanPagination,
+    isLoading: orphanLoading,
+    isFetching: orphanFetching,
+    error: orphanError,
+    refetch: refetchOrphanStock,
+  } = useProductionOrphanStock(orphanStockParams)
 
   const visibleProductions = useMemo(() => {
     if (!appliedFilters.reconciliation_status) return productions
@@ -773,11 +971,15 @@ export default function ProductionsControlPanel() {
   const summaryItems = [
     { icon: Factory, label: 'Abiertas', value: formatNumber(summary?.openProductions) },
     { icon: ClipboardCheck, label: 'Cerradas', value: formatNumber(summary?.closedProductions) },
-    { icon: ShieldAlert, label: 'Lotes sin producción', value: formatNumber(summary?.lotsInStockWithoutProduction), description: `${formatNumber(summary?.lotsInStockWithoutProductionBoxesCount)} cajas` },
+    { icon: ShieldAlert, label: 'Lotes huérfanos', value: formatNumber(orphanPagination.total), description: 'En stock sin producción ni recepción' },
     { icon: Euro, label: 'Cajas sin coste', value: formatNumber(summary?.boxesWithoutCost) },
-    { icon: Warehouse, label: 'Alertas globales', value: formatNumber(alerts.length) },
     { icon: ArrowDownUp, label: 'Total filtrado', value: formatNumber(pagination.total), description: `Página ${pagination.currentPage || page} de ${pagination.lastPage || 1}` },
   ]
+
+  const handleRefresh = () => {
+    refetch()
+    refetchOrphanStock()
+  }
 
   return (
     <div className="h-full w-full overflow-y-auto">
@@ -793,14 +995,8 @@ export default function ProductionsControlPanel() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button asChild variant="outline" size="sm">
-              <Link href="/admin/productions">
-                <Factory className="mr-2 size-4" />
-                Listado
-              </Link>
-            </Button>
-            <Button type="button" variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
-              {isFetching ? <Loader2 className="mr-2 size-4 animate-spin" /> : <RefreshCcw className="mr-2 size-4" />}
+            <Button type="button" variant="outline" size="sm" onClick={handleRefresh} disabled={isFetching || orphanFetching}>
+              {isFetching || orphanFetching ? <Loader2 className="mr-2 size-4 animate-spin" /> : <RefreshCcw className="mr-2 size-4" />}
               Refrescar
             </Button>
           </div>
@@ -814,27 +1010,36 @@ export default function ProductionsControlPanel() {
           </Alert>
         ) : null}
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {summaryItems.map((item) => (
-            <SummaryMetric key={item.label} {...item} loading={isLoading} />
+            <SummaryMetric key={item.label} {...item} loading={isLoading || orphanLoading} />
           ))}
         </div>
 
-        <Filters
-          filters={filters}
-          setFilters={setFilters}
-          onApply={handleApplyFilters}
-          onReset={handleResetFilters}
-          fetching={isFetching}
+        <OrphanStockPanel
+          lots={orphanLots}
+          pagination={orphanPagination}
+          loading={orphanLoading}
+          fetching={orphanFetching}
+          error={orphanError}
+          page={orphanPage}
+          onPageChange={setOrphanPage}
         />
-
-        <GlobalAlerts alerts={alerts} />
 
         <ProductionTable
           productions={visibleProductions}
           selectedProduction={selectedProduction}
           onSelectProduction={handleSelectProduction}
           loading={isLoading}
+          filtersControl={(
+            <Filters
+              filters={filters}
+              setFilters={setFilters}
+              onApply={handleApplyFilters}
+              onReset={handleResetFilters}
+              fetching={isFetching}
+            />
+          )}
         />
 
         <div className="flex flex-col gap-2 rounded-lg border bg-card px-3 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
