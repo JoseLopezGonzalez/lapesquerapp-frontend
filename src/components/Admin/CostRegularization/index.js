@@ -72,6 +72,16 @@ function groupBoxesByLotProduct(boxes) {
     return map
 }
 
+function groupBoxesByLot(boxes) {
+    const map = {}
+    for (const box of (boxes || [])) {
+        const lot = box.lot || '__WITHOUT_LOT__'
+        if (!map[lot]) map[lot] = []
+        map[lot].push(box)
+    }
+    return map
+}
+
 // -------------------------------------------------------------------
 // Small components
 // -------------------------------------------------------------------
@@ -92,12 +102,12 @@ function SummaryMetric({ icon: Icon, label, value }) {
     )
 }
 
-function BoxDetailRow({ box, tab }) {
+function BoxDetailRow({ box, tab, showLot = true }) {
     const date = tab === 'sales' ? box.loadDate : (box.createdAt || box.loadDate)
     return (
         <TableRow className="text-xs">
             <TableCell className="font-mono text-muted-foreground">{box.id}</TableCell>
-            <TableCell>{box.lot || '—'}</TableCell>
+            {showLot && <TableCell>{box.lot || '—'}</TableCell>}
             <TableCell className="text-right tabular-nums">
                 {box.netWeightKg != null ? `${Number(box.netWeightKg).toFixed(2)} kg` : '—'}
             </TableCell>
@@ -120,8 +130,18 @@ function BoxDetailRow({ box, tab }) {
 
 function ProductRow({ product, boxesByProduct, costInput, onCostChange, tab }) {
     const [open, setOpen] = useState(false)
+    const [openLots, setOpenLots] = useState({})
     const pid = product.product.id
     const boxes = boxesByProduct[pid] || []
+    const boxesByLot = useMemo(() => groupBoxesByLot(boxes), [boxes])
+    const lotEntries = useMemo(
+        () => Object.entries(boxesByLot).sort(([a], [b]) => a.localeCompare(b, 'es', { numeric: true, sensitivity: 'base' })),
+        [boxesByLot]
+    )
+
+    function toggleLot(lot) {
+        setOpenLots(prev => ({ ...prev, [lot]: !prev[lot] }))
+    }
 
     return (
         <>
@@ -155,16 +175,59 @@ function ProductRow({ product, boxesByProduct, costInput, onCostChange, tab }) {
                             <Table>
                                 <TableHeader>
                                     <TableRow className="text-xs">
-                                        <TableHead>ID caja</TableHead>
                                         <TableHead>Lote</TableHead>
+                                        <TableHead className="text-right">Cajas</TableHead>
                                         <TableHead className="text-right">Peso neto</TableHead>
-                                        <TableHead>Pedido</TableHead>
-                                        <TableHead>Palet</TableHead>
-                                        <TableHead>{tab === 'sales' ? 'F. carga' : 'F. creación'}</TableHead>
+                                        <TableHead className="w-8" />
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {boxes.map(box => <BoxDetailRow key={box.id} box={box} tab={tab} />)}
+                                    {lotEntries.map(([lot, lotBoxes]) => {
+                                        const isLotOpen = openLots[lot] ?? false
+                                        const lotWeight = lotBoxes.reduce((sum, box) => sum + (Number(box.netWeightKg) || 0), 0)
+                                        const lotLabel = lot === '__WITHOUT_LOT__' ? 'Sin lote' : lot
+
+                                        return (
+                                            <React.Fragment key={lot}>
+                                                <TableRow
+                                                    className="cursor-pointer hover:bg-muted/50"
+                                                    onClick={() => toggleLot(lot)}
+                                                >
+                                                    <TableCell>
+                                                        <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">{lotLabel}</span>
+                                                    </TableCell>
+                                                    <TableCell className="text-right tabular-nums">{lotBoxes.length}</TableCell>
+                                                    <TableCell className="text-right tabular-nums">{lotWeight.toFixed(2)} kg</TableCell>
+                                                    <TableCell className="text-center text-muted-foreground">
+                                                        {isLotOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                                    </TableCell>
+                                                </TableRow>
+
+                                                {isLotOpen && (
+                                                    <TableRow className="bg-background">
+                                                        <TableCell colSpan={4} className="p-0">
+                                                            <div className="border-t max-h-44 overflow-y-auto">
+                                                                <Table>
+                                                                    <TableHeader>
+                                                                        <TableRow className="text-xs">
+                                                                            <TableHead>ID caja</TableHead>
+                                                                            <TableHead className="text-right">Peso neto</TableHead>
+                                                                            <TableHead>Pedido</TableHead>
+                                                                            <TableHead>Palet</TableHead>
+                                                                            <TableHead>{tab === 'sales' ? 'F. carga' : 'F. creación'}</TableHead>
+                                                                        </TableRow>
+                                                                    </TableHeader>
+                                                                    <TableBody>
+                                                                        {lotBoxes.map(box => <BoxDetailRow key={box.id} box={box} tab={tab} showLot={false} />)}
+                                                                    </TableBody>
+                                                                </Table>
+                                                            </div>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                )}
+                                            </React.Fragment>
+                                        )
+                                    })}
                                 </TableBody>
                             </Table>
                         </div>
