@@ -6,7 +6,7 @@ export const metadata = {
 
 export default function CostRegularizationPage() {
     return (
-        <div className="p-6">
+        <div className="h-full p-6 flex flex-col">
             <CostRegularizationClient />
         </div>
     );

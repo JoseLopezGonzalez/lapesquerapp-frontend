@@ -25,11 +25,6 @@ import { costRegularizationService } from '@/services/domain/cost-regularization
 import { notify } from '@/lib/notifications'
 import { formatDateShort } from '@/helpers/formats/dates/formatDates'
 
-// API response shapes:
-// summary: { boxesCount, netWeightKg, productsCount, ordersCount, palletsCount? }
-// products: [{ product: { id, name }, boxesCount, netWeightKg, ordersCount?, suggestedManualCostPerKg }]
-// boxes: [{ id, palletId, orderId, orderFormattedId, loadDate, createdAt?, customer, product: { id, name }, lot, netWeightKg }]
-
 const ALLOWED_ROLES = ['administrador', 'tecnico', 'direccion']
 
 function hasAllowedRole(session) {
@@ -39,7 +34,6 @@ function hasAllowedRole(session) {
     return arr.some(r => ALLOWED_ROLES.includes(r))
 }
 
-/** Group flat boxes array by product id */
 function groupBoxesByProduct(boxes) {
     const map = {}
     for (const box of (boxes || [])) {
@@ -51,18 +45,17 @@ function groupBoxesByProduct(boxes) {
     return map
 }
 
-function SummaryCard({ icon: Icon, label, value, sub }) {
+function SummaryCard({ icon: Icon, label, value }) {
     return (
         <Card>
-            <CardContent className="pt-5 pb-4">
+            <CardContent className="pt-4 pb-3">
                 <div className="flex items-start gap-3">
-                    <div className="rounded-md bg-muted p-2 mt-0.5">
+                    <div className="rounded-md bg-muted p-2 mt-0.5 shrink-0">
                         <Icon className="h-4 w-4 text-muted-foreground" />
                     </div>
                     <div>
-                        <p className="text-sm text-muted-foreground">{label}</p>
-                        <p className="text-2xl font-semibold leading-tight">{value ?? '—'}</p>
-                        {sub && <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>}
+                        <p className="text-xs text-muted-foreground">{label}</p>
+                        <p className="text-xl font-semibold leading-tight">{value ?? '—'}</p>
                     </div>
                 </div>
             </CardContent>
@@ -89,9 +82,7 @@ function BoxDetailRow({ box, tab }) {
             <TableCell>
                 {box.palletId ? <span className="font-mono">{box.palletId}</span> : '—'}
             </TableCell>
-            <TableCell>
-                {date ? formatDateShort(date) : '—'}
-            </TableCell>
+            <TableCell>{date ? formatDateShort(date) : '—'}</TableCell>
         </TableRow>
     )
 }
@@ -137,7 +128,7 @@ function ProductRow({ product, boxesByProduct, costInput, onCostChange, tab }) {
             {open && boxes.length > 0 && (
                 <TableRow className="bg-muted/20">
                     <TableCell colSpan={6} className="p-0">
-                        <div className="px-4 py-2 max-h-64 overflow-y-auto">
+                        <div className="px-4 py-2 max-h-52 overflow-y-auto">
                             <Table>
                                 <TableHeader>
                                     <TableRow className="text-xs">
@@ -292,6 +283,8 @@ function ApplyDialog({ open, onClose, products, costsMap, onApply, applying, res
     )
 }
 
+// Renders summary cards + scrollable product table.
+// Must receive flex-1 min-h-0 from parent to grow into available space.
 function ResultsSection({ data, costsMap, onCostChange, tab }) {
     const summary = data?.summary
     const products = data?.products || []
@@ -302,73 +295,77 @@ function ResultsSection({ data, costsMap, onCostChange, tab }) {
         : { icon: Warehouse, label: 'Palets afectados', value: summary?.palletsCount ?? summary?.ordersCount }
 
     return (
-        <div className="space-y-4 mt-4">
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <SummaryCard
-                    icon={Box}
-                    label="Cajas sin coste"
-                    value={summary?.boxesCount?.toLocaleString('es-ES') ?? '—'}
-                />
-                <SummaryCard
-                    icon={Euro}
-                    label="Kg sin coste"
-                    value={summary?.netWeightKg != null
-                        ? `${Number(summary.netWeightKg).toFixed(0)} kg`
-                        : '—'}
-                />
-                <SummaryCard
-                    icon={Package}
-                    label="Productos distintos"
-                    value={summary?.productsCount?.toLocaleString('es-ES') ?? '—'}
-                />
-                <SummaryCard
-                    icon={countLabel.icon}
-                    label={countLabel.label}
-                    value={countLabel.value?.toLocaleString('es-ES') ?? '—'}
-                />
+        <div className="flex-1 flex flex-col min-h-0 gap-3 mt-3">
+            {/* Summary cards — fixed height */}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 shrink-0">
+                <SummaryCard icon={Box} label="Cajas sin coste"
+                    value={summary?.boxesCount?.toLocaleString('es-ES') ?? '—'} />
+                <SummaryCard icon={Euro} label="Kg sin coste"
+                    value={summary?.netWeightKg != null ? `${Number(summary.netWeightKg).toFixed(0)} kg` : '—'} />
+                <SummaryCard icon={Package} label="Productos distintos"
+                    value={summary?.productsCount?.toLocaleString('es-ES') ?? '—'} />
+                <SummaryCard icon={countLabel.icon} label={countLabel.label}
+                    value={countLabel.value?.toLocaleString('es-ES') ?? '—'} />
             </div>
 
+            {/* Product table — grows to fill remaining space */}
             {products.length === 0 ? (
-                <Alert>
+                <Alert className="shrink-0">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>
                         No se encontraron cajas sin coste calculable para los filtros indicados.
                     </AlertDescription>
                 </Alert>
             ) : (
-                <Card>
-                    <CardHeader className="pb-3">
+                <Card className="flex-1 flex flex-col min-h-0">
+                    <CardHeader className="pb-3 shrink-0">
                         <CardTitle className="text-base">Por producto</CardTitle>
                     </CardHeader>
-                    <CardContent className="p-0">
-                        <div className="overflow-y-auto max-h-[55vh]">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Producto</TableHead>
-                                    <TableHead className="text-right">Cajas</TableHead>
-                                    <TableHead className="text-right">Kg totales</TableHead>
-                                    <TableHead className="text-right">Coste sugerido</TableHead>
-                                    <TableHead className="text-right">Coste a aplicar</TableHead>
-                                    <TableHead className="w-8" />
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {products.map(product => (
-                                    <ProductRow
-                                        key={product.product.id}
-                                        product={product}
-                                        boxesByProduct={boxesByProduct}
-                                        costInput={costsMap[product.product.id] ?? ''}
-                                        onCostChange={onCostChange}
-                                        tab={tab}
-                                    />
-                                ))}
-                            </TableBody>
-                        </Table>
+                    <CardContent className="p-0 flex-1 min-h-0">
+                        <div className="h-full overflow-y-auto">
+                            <Table>
+                                <TableHeader className="sticky top-0 bg-background z-10">
+                                    <TableRow>
+                                        <TableHead>Producto</TableHead>
+                                        <TableHead className="text-right">Cajas</TableHead>
+                                        <TableHead className="text-right">Kg totales</TableHead>
+                                        <TableHead className="text-right">Coste sugerido</TableHead>
+                                        <TableHead className="text-right">Coste a aplicar</TableHead>
+                                        <TableHead className="w-8" />
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {products.map(product => (
+                                        <ProductRow
+                                            key={product.product.id}
+                                            product={product}
+                                            boxesByProduct={boxesByProduct}
+                                            costInput={costsMap[product.product.id] ?? ''}
+                                            onCostChange={onCostChange}
+                                            tab={tab}
+                                        />
+                                    ))}
+                                </TableBody>
+                            </Table>
                         </div>
                     </CardContent>
                 </Card>
+            )}
+        </div>
+    )
+}
+
+function TabPanel({ filterCard, resultsData, costsMap, onCostChange, tab }) {
+    return (
+        <div className="flex-1 flex flex-col min-h-0">
+            <div className="shrink-0">{filterCard}</div>
+            {resultsData && (
+                <ResultsSection
+                    data={resultsData}
+                    costsMap={costsMap}
+                    onCostChange={onCostChange}
+                    tab={tab}
+                />
             )}
         </div>
     )
@@ -378,24 +375,20 @@ export default function CostRegularizationClient() {
     const { data: session } = useSession()
     const [tab, setTab] = useState('sales')
 
-    // Filters
     const [salesFrom, setSalesFrom] = useState('')
     const [salesTo, setSalesTo] = useState('')
     const [stockLot, setStockLot] = useState('')
     const [stockFrom, setStockFrom] = useState('')
     const [stockTo, setStockTo] = useState('')
 
-    // Results
     const [salesData, setSalesData] = useState(null)
     const [stockData, setStockData] = useState(null)
     const [loadingSales, setLoadingSales] = useState(false)
     const [loadingStock, setLoadingStock] = useState(false)
 
-    // Cost inputs: { [productId]: string }
     const [salesCosts, setSalesCosts] = useState({})
     const [stockCosts, setStockCosts] = useState({})
 
-    // Apply dialog
     const [dialogOpen, setDialogOpen] = useState(false)
     const [applying, setApplying] = useState(false)
     const [applyResult, setApplyResult] = useState(null)
@@ -416,11 +409,7 @@ export default function CostRegularizationClient() {
         setSalesData(null)
         setSalesCosts({})
         try {
-            const data = await costRegularizationService.getSalesMissingCost({
-                dateFrom: salesFrom,
-                dateTo: salesTo,
-            })
-            setSalesData(data)
+            setSalesData(await costRegularizationService.getSalesMissingCost({ dateFrom: salesFrom, dateTo: salesTo }))
         } catch {
             notify.error({ title: 'Error al cargar ventas', description: 'No se pudo obtener los datos.' })
         } finally {
@@ -433,12 +422,11 @@ export default function CostRegularizationClient() {
         setStockData(null)
         setStockCosts({})
         try {
-            const data = await costRegularizationService.getStockMissingCost({
+            setStockData(await costRegularizationService.getStockMissingCost({
                 lot: stockLot || undefined,
                 createdFrom: stockFrom || undefined,
                 createdTo: stockTo || undefined,
-            })
-            setStockData(data)
+            }))
         } catch {
             notify.error({ title: 'Error al cargar stock', description: 'No se pudo obtener los datos.' })
         } finally {
@@ -467,22 +455,16 @@ export default function CostRegularizationClient() {
             })),
             ...(tab === 'sales' ? { dateFrom: salesFrom, dateTo: salesTo } : {}),
         }
-
         setApplying(true)
         try {
             const result = await costRegularizationService.applyManualCostsByProduct(payload)
             setApplyResult(result)
             notify.success({
                 title: 'Costes aplicados',
-                description: `${result.updatedCount ?? productsWithFilledCost.reduce((s, p) => s + p.boxesCount, 0)} cajas actualizadas.`,
+                description: `${result.updatedCount ?? ''} cajas actualizadas.`,
             })
-            if (tab === 'sales') {
-                setSalesData(null)
-                setSalesCosts({})
-            } else {
-                setStockData(null)
-                setStockCosts({})
-            }
+            if (tab === 'sales') { setSalesData(null); setSalesCosts({}) }
+            else { setStockData(null); setStockCosts({}) }
         } catch (err) {
             const msg = err?.data?.message || err?.data?.userMessage || 'No se pudo aplicar los costes.'
             notify.error({ title: 'Error al aplicar', description: msg })
@@ -495,26 +477,73 @@ export default function CostRegularizationClient() {
         return (
             <Alert variant="destructive" className="max-w-lg">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                    No tienes permiso para acceder a esta pantalla.
-                </AlertDescription>
+                <AlertDescription>No tienes permiso para acceder a esta pantalla.</AlertDescription>
             </Alert>
         )
     }
 
-    const hasResults = activeData != null
+    const salesFilterCard = (
+        <Card>
+            <CardHeader className="pb-3"><CardTitle className="text-base">Filtros — Ventas</CardTitle></CardHeader>
+            <CardContent>
+                <div className="flex flex-wrap gap-3 items-end">
+                    <div className="space-y-1.5">
+                        <Label>Fecha carga desde</Label>
+                        <Input type="date" value={salesFrom} onChange={e => setSalesFrom(e.target.value)} className="w-40" />
+                    </div>
+                    <div className="space-y-1.5">
+                        <Label>Fecha carga hasta</Label>
+                        <Input type="date" value={salesTo} onChange={e => setSalesTo(e.target.value)} className="w-40" />
+                    </div>
+                    <Button onClick={fetchSales} disabled={loadingSales}>
+                        {loadingSales ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Search className="h-4 w-4 mr-2" />}
+                        Buscar
+                    </Button>
+                </div>
+            </CardContent>
+        </Card>
+    )
+
+    const stockFilterCard = (
+        <Card>
+            <CardHeader className="pb-3"><CardTitle className="text-base">Filtros — Stock actual</CardTitle></CardHeader>
+            <CardContent>
+                <div className="flex flex-wrap gap-3 items-end">
+                    <div className="space-y-1.5">
+                        <Label>Lote</Label>
+                        <Input placeholder="Opcional" value={stockLot} onChange={e => setStockLot(e.target.value)} className="w-36" />
+                    </div>
+                    <div className="space-y-1.5">
+                        <Label>Creación desde</Label>
+                        <Input type="date" value={stockFrom} onChange={e => setStockFrom(e.target.value)} className="w-40" />
+                    </div>
+                    <div className="space-y-1.5">
+                        <Label>Creación hasta</Label>
+                        <Input type="date" value={stockTo} onChange={e => setStockTo(e.target.value)} className="w-40" />
+                    </div>
+                    <Button onClick={fetchStock} disabled={loadingStock}>
+                        {loadingStock ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Search className="h-4 w-4 mr-2" />}
+                        Buscar
+                    </Button>
+                </div>
+            </CardContent>
+        </Card>
+    )
 
     return (
-        <div className="space-y-6">
-            <div>
+        // flex-1 so this fills the h-full flex-col wrapper from page.js
+        <div className="flex-1 flex flex-col min-h-0 gap-4">
+            {/* Page header — fixed */}
+            <div className="shrink-0">
                 <h1 className="text-2xl font-semibold">Regularización de costes manuales</h1>
                 <p className="text-muted-foreground text-sm mt-1">
                     Localiza cajas sin coste calculable y asigna costes manuales por producto.
                 </p>
             </div>
 
-            <Tabs value={tab} onValueChange={v => setTab(v)}>
-                <TabsList>
+            {/* Tabs — grow to fill all remaining space above the bottom bar */}
+            <Tabs value={tab} onValueChange={setTab} className="flex-1 flex flex-col min-h-0">
+                <TabsList className="shrink-0">
                     <TabsTrigger value="sales">
                         <ShoppingCart className="h-4 w-4 mr-1.5" />
                         Ventas sin coste
@@ -525,108 +554,30 @@ export default function CostRegularizationClient() {
                     </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="sales" className="mt-4">
-                    <Card>
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-base">Filtros — Ventas</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex flex-wrap gap-3 items-end">
-                                <div className="space-y-1.5">
-                                    <Label>Fecha carga desde</Label>
-                                    <Input
-                                        type="date"
-                                        value={salesFrom}
-                                        onChange={e => setSalesFrom(e.target.value)}
-                                        className="w-40"
-                                    />
-                                </div>
-                                <div className="space-y-1.5">
-                                    <Label>Fecha carga hasta</Label>
-                                    <Input
-                                        type="date"
-                                        value={salesTo}
-                                        onChange={e => setSalesTo(e.target.value)}
-                                        className="w-40"
-                                    />
-                                </div>
-                                <Button onClick={fetchSales} disabled={loadingSales}>
-                                    {loadingSales
-                                        ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                        : <Search className="h-4 w-4 mr-2" />}
-                                    Buscar
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {salesData && (
-                        <ResultsSection
-                            data={salesData}
-                            costsMap={salesCosts}
-                            onCostChange={(pid, v) => handleCostChange('sales', pid, v)}
-                            tab="sales"
-                        />
-                    )}
+                <TabsContent value="sales" className="flex-1 flex flex-col min-h-0 mt-0 pt-4">
+                    <TabPanel
+                        filterCard={salesFilterCard}
+                        resultsData={salesData}
+                        costsMap={salesCosts}
+                        onCostChange={(pid, v) => handleCostChange('sales', pid, v)}
+                        tab="sales"
+                    />
                 </TabsContent>
 
-                <TabsContent value="stock" className="mt-4">
-                    <Card>
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-base">Filtros — Stock actual</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex flex-wrap gap-3 items-end">
-                                <div className="space-y-1.5">
-                                    <Label>Lote</Label>
-                                    <Input
-                                        placeholder="Opcional"
-                                        value={stockLot}
-                                        onChange={e => setStockLot(e.target.value)}
-                                        className="w-36"
-                                    />
-                                </div>
-                                <div className="space-y-1.5">
-                                    <Label>Creación desde</Label>
-                                    <Input
-                                        type="date"
-                                        value={stockFrom}
-                                        onChange={e => setStockFrom(e.target.value)}
-                                        className="w-40"
-                                    />
-                                </div>
-                                <div className="space-y-1.5">
-                                    <Label>Creación hasta</Label>
-                                    <Input
-                                        type="date"
-                                        value={stockTo}
-                                        onChange={e => setStockTo(e.target.value)}
-                                        className="w-40"
-                                    />
-                                </div>
-                                <Button onClick={fetchStock} disabled={loadingStock}>
-                                    {loadingStock
-                                        ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                        : <Search className="h-4 w-4 mr-2" />}
-                                    Buscar
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {stockData && (
-                        <ResultsSection
-                            data={stockData}
-                            costsMap={stockCosts}
-                            onCostChange={(pid, v) => handleCostChange('stock', pid, v)}
-                            tab="stock"
-                        />
-                    )}
+                <TabsContent value="stock" className="flex-1 flex flex-col min-h-0 mt-0 pt-4">
+                    <TabPanel
+                        filterCard={stockFilterCard}
+                        resultsData={stockData}
+                        costsMap={stockCosts}
+                        onCostChange={(pid, v) => handleCostChange('stock', pid, v)}
+                        tab="stock"
+                    />
                 </TabsContent>
             </Tabs>
 
-            {hasResults && activeProducts.length > 0 && (
-                <>
+            {/* Bottom bar — always visible, only when results exist */}
+            {activeData != null && activeProducts.length > 0 && (
+                <div className="shrink-0 space-y-3">
                     <Separator />
                     <div className="flex items-center justify-between">
                         <p className="text-sm text-muted-foreground">
@@ -642,7 +593,7 @@ export default function CostRegularizationClient() {
                             Aplicar costes medios
                         </Button>
                     </div>
-                </>
+                </div>
             )}
 
             <ApplyDialog
