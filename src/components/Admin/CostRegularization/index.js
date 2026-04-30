@@ -341,6 +341,7 @@ function ResultsSection({ data, costsMap, onCostChange, tab }) {
                         <CardTitle className="text-base">Por producto</CardTitle>
                     </CardHeader>
                     <CardContent className="p-0">
+                        <div className="overflow-y-auto max-h-[55vh]">
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -365,6 +366,7 @@ function ResultsSection({ data, costsMap, onCostChange, tab }) {
                                 ))}
                             </TableBody>
                         </Table>
+                        </div>
                     </CardContent>
                 </Card>
             )}
