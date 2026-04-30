@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import {
     Euro, Search, Package, AlertCircle, Loader2,
@@ -25,6 +25,11 @@ import { costRegularizationService } from '@/services/domain/cost-regularization
 import { notify } from '@/lib/notifications'
 import { formatDateShort } from '@/helpers/formats/dates/formatDates'
 
+// API response shapes:
+// summary: { boxesCount, netWeightKg, productsCount, ordersCount, palletsCount? }
+// products: [{ product: { id, name }, boxesCount, netWeightKg, ordersCount?, suggestedManualCostPerKg }]
+// boxes: [{ id, palletId, orderId, orderFormattedId, loadDate, createdAt?, customer, product: { id, name }, lot, netWeightKg }]
+
 const ALLOWED_ROLES = ['administrador', 'tecnico', 'direccion']
 
 function hasAllowedRole(session) {
@@ -32,6 +37,18 @@ function hasAllowedRole(session) {
     if (!roles) return false
     const arr = Array.isArray(roles) ? roles : [roles]
     return arr.some(r => ALLOWED_ROLES.includes(r))
+}
+
+/** Group flat boxes array by product id */
+function groupBoxesByProduct(boxes) {
+    const map = {}
+    for (const box of (boxes || [])) {
+        const pid = box.product?.id
+        if (pid == null) continue
+        if (!map[pid]) map[pid] = []
+        map[pid].push(box)
+    }
+    return map
 }
 
 function SummaryCard({ icon: Icon, label, value, sub }) {
@@ -53,80 +70,88 @@ function SummaryCard({ icon: Icon, label, value, sub }) {
     )
 }
 
-function ProductRow({ product, costInput, onCostChange, defaultOpen = false }) {
-    const [open, setOpen] = useState(defaultOpen)
+function BoxDetailRow({ box, tab }) {
+    const date = tab === 'sales' ? box.loadDate : (box.createdAt || box.loadDate)
+    return (
+        <TableRow className="text-xs">
+            <TableCell className="font-mono text-muted-foreground">{box.id}</TableCell>
+            <TableCell>{box.lot || '—'}</TableCell>
+            <TableCell className="text-right tabular-nums">
+                {box.netWeightKg != null ? `${Number(box.netWeightKg).toFixed(2)} kg` : '—'}
+            </TableCell>
+            <TableCell>
+                {tab === 'sales' && box.orderFormattedId
+                    ? <span className="text-blue-600">{box.orderFormattedId}</span>
+                    : box.orderId
+                        ? <span className="text-blue-600">#{box.orderId}</span>
+                        : '—'}
+            </TableCell>
+            <TableCell>
+                {box.palletId ? <span className="font-mono">{box.palletId}</span> : '—'}
+            </TableCell>
+            <TableCell>
+                {date ? formatDateShort(date) : '—'}
+            </TableCell>
+        </TableRow>
+    )
+}
+
+function ProductRow({ product, boxesByProduct, costInput, onCostChange, tab }) {
+    const [open, setOpen] = useState(false)
+    const pid = product.product.id
+    const boxes = boxesByProduct[pid] || []
 
     return (
         <>
-            <TableRow className="cursor-pointer hover:bg-muted/40" onClick={() => setOpen(o => !o)}>
-                <TableCell className="font-medium">{product.productName}</TableCell>
-                <TableCell className="text-right tabular-nums">{product.boxCount}</TableCell>
+            <TableRow
+                className="cursor-pointer hover:bg-muted/40"
+                onClick={() => setOpen(o => !o)}
+            >
+                <TableCell className="font-medium">{product.product.name}</TableCell>
+                <TableCell className="text-right tabular-nums">{product.boxesCount}</TableCell>
                 <TableCell className="text-right tabular-nums">
-                    {product.totalNetWeightKg != null ? `${product.totalNetWeightKg.toFixed(2)} kg` : '—'}
+                    {product.netWeightKg != null
+                        ? `${Number(product.netWeightKg).toFixed(2)} kg`
+                        : '—'}
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
-                    {product.suggestedCostPerKg != null
-                        ? `${product.suggestedCostPerKg.toFixed(4)} €/kg`
+                    {product.suggestedManualCostPerKg != null
+                        ? `${Number(product.suggestedManualCostPerKg).toFixed(4)} €/kg`
                         : <span className="text-muted-foreground text-xs">Sin sugerencia</span>}
                 </TableCell>
                 <TableCell onClick={e => e.stopPropagation()} className="w-36">
-                    <div className="flex items-center gap-1">
-                        <Input
-                            type="number"
-                            step="0.0001"
-                            min="0"
-                            placeholder="€/kg"
-                            value={costInput}
-                            onChange={e => onCostChange(product.productId, e.target.value)}
-                            className="text-right h-8 text-sm"
-                        />
-                    </div>
+                    <Input
+                        type="number"
+                        step="0.0001"
+                        min="0"
+                        placeholder="€/kg"
+                        value={costInput}
+                        onChange={e => onCostChange(pid, e.target.value)}
+                        className="text-right h-8 text-sm"
+                    />
                 </TableCell>
-                <TableCell className="w-8 text-center">
-                    {open ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                <TableCell className="w-8 text-center text-muted-foreground">
+                    {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </TableCell>
             </TableRow>
-            {open && product.boxes && product.boxes.length > 0 && (
+            {open && boxes.length > 0 && (
                 <TableRow className="bg-muted/20">
                     <TableCell colSpan={6} className="p-0">
-                        <div className="px-4 py-2">
+                        <div className="px-4 py-2 max-h-64 overflow-y-auto">
                             <Table>
                                 <TableHeader>
                                     <TableRow className="text-xs">
-                                        <TableHead>Caja ID</TableHead>
+                                        <TableHead>ID caja</TableHead>
                                         <TableHead>Lote</TableHead>
                                         <TableHead className="text-right">Peso neto</TableHead>
                                         <TableHead>Pedido</TableHead>
                                         <TableHead>Palet</TableHead>
-                                        <TableHead>Fecha</TableHead>
+                                        <TableHead>{tab === 'sales' ? 'F. carga' : 'F. creación'}</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {product.boxes.map(box => (
-                                        <TableRow key={box.boxId} className="text-xs">
-                                            <TableCell className="font-mono">{box.boxId}</TableCell>
-                                            <TableCell>{box.lot || '—'}</TableCell>
-                                            <TableCell className="text-right tabular-nums">
-                                                {box.netWeightKg != null ? `${box.netWeightKg.toFixed(2)} kg` : '—'}
-                                            </TableCell>
-                                            <TableCell>
-                                                {box.orderId
-                                                    ? <span className="text-blue-600">#{box.orderId}</span>
-                                                    : '—'}
-                                            </TableCell>
-                                            <TableCell>
-                                                {box.palletId
-                                                    ? <span className="font-mono">{box.palletId}</span>
-                                                    : '—'}
-                                            </TableCell>
-                                            <TableCell>
-                                                {box.loadDate
-                                                    ? formatDateShort(box.loadDate)
-                                                    : box.createdAt
-                                                        ? formatDateShort(box.createdAt)
-                                                        : '—'}
-                                            </TableCell>
-                                        </TableRow>
+                                    {boxes.map(box => (
+                                        <BoxDetailRow key={box.id} box={box} tab={tab} />
                                     ))}
                                 </TableBody>
                             </Table>
@@ -138,21 +163,19 @@ function ProductRow({ product, costInput, onCostChange, defaultOpen = false }) {
     )
 }
 
-function ApplyDialog({ open, onClose, products, costsMap, totalBoxes, onApply, applying, result }) {
-    const productsWithCost = products.filter(p => {
-        const v = costsMap[p.productId]
-        return v !== undefined && v !== '' && !isNaN(parseFloat(v)) && parseFloat(v) >= 0
-    })
-    const affectedBoxes = productsWithCost.reduce((sum, p) => sum + p.boxCount, 0)
-    const needsConfirmation = affectedBoxes > 100
+function ApplyDialog({ open, onClose, products, costsMap, onApply, applying, result }) {
     const [confirmed, setConfirmed] = useState(false)
 
-    const payload = {
-        products: productsWithCost.map(p => ({
-            productId: p.productId,
-            manualCostPerKg: parseFloat(costsMap[p.productId]),
-        })),
-    }
+    const productsWithCost = useMemo(
+        () => products.filter(p => {
+            const v = costsMap[p.product.id]
+            return v !== undefined && v !== '' && !isNaN(parseFloat(v)) && parseFloat(v) >= 0
+        }),
+        [products, costsMap]
+    )
+
+    const affectedBoxes = productsWithCost.reduce((s, p) => s + p.boxesCount, 0)
+    const needsConfirmation = affectedBoxes > 100
 
     function handleClose() {
         setConfirmed(false)
@@ -168,7 +191,7 @@ function ApplyDialog({ open, onClose, products, costsMap, totalBoxes, onApply, a
 
                 {result ? (
                     <div className="space-y-3 py-2">
-                        {result.success && (
+                        {result.success !== false && (
                             <div className="flex items-center gap-2 text-green-600">
                                 <CheckCircle2 className="h-5 w-5" />
                                 <span className="font-medium">Costes aplicados correctamente</span>
@@ -201,14 +224,14 @@ function ApplyDialog({ open, onClose, products, costsMap, totalBoxes, onApply, a
                             <>
                                 <div className="space-y-1.5">
                                     <p className="text-sm font-medium">Resumen de cambios</p>
-                                    <div className="rounded-md border text-sm divide-y">
+                                    <div className="rounded-md border text-sm divide-y max-h-60 overflow-y-auto">
                                         {productsWithCost.map(p => (
-                                            <div key={p.productId} className="flex items-center justify-between px-3 py-2">
-                                                <span className="text-muted-foreground truncate max-w-[200px]">{p.productName}</span>
+                                            <div key={p.product.id} className="flex items-center justify-between px-3 py-2">
+                                                <span className="text-muted-foreground truncate max-w-[200px]">{p.product.name}</span>
                                                 <div className="flex items-center gap-3 shrink-0">
-                                                    <Badge variant="secondary">{p.boxCount} cajas</Badge>
+                                                    <Badge variant="secondary">{p.boxesCount} cajas</Badge>
                                                     <span className="font-mono font-medium">
-                                                        {parseFloat(costsMap[p.productId]).toFixed(4)} €/kg
+                                                        {parseFloat(costsMap[p.product.id]).toFixed(4)} €/kg
                                                     </span>
                                                 </div>
                                             </div>
@@ -216,8 +239,11 @@ function ApplyDialog({ open, onClose, products, costsMap, totalBoxes, onApply, a
                                     </div>
                                 </div>
                                 <p className="text-sm text-muted-foreground">
-                                    Total: <strong>{affectedBoxes}</strong> {affectedBoxes === 1 ? 'caja' : 'cajas'} afectadas en{' '}
-                                    <strong>{productsWithCost.length}</strong> {productsWithCost.length === 1 ? 'producto' : 'productos'}.
+                                    Total:{' '}
+                                    <strong>{affectedBoxes}</strong>{' '}
+                                    {affectedBoxes === 1 ? 'caja' : 'cajas'} en{' '}
+                                    <strong>{productsWithCost.length}</strong>{' '}
+                                    {productsWithCost.length === 1 ? 'producto' : 'productos'}.
                                 </p>
                                 {needsConfirmation && (
                                     <Alert variant="destructive">
@@ -227,8 +253,8 @@ function ApplyDialog({ open, onClose, products, costsMap, totalBoxes, onApply, a
                                         </AlertDescription>
                                     </Alert>
                                 )}
-                                {needsConfirmation && !confirmed && (
-                                    <label className="flex items-center gap-2 text-sm cursor-pointer">
+                                {needsConfirmation && (
+                                    <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
                                         <input
                                             type="checkbox"
                                             checked={confirmed}
@@ -249,7 +275,7 @@ function ApplyDialog({ open, onClose, products, costsMap, totalBoxes, onApply, a
                     </Button>
                     {!result && (
                         <Button
-                            onClick={() => onApply(payload)}
+                            onClick={onApply}
                             disabled={
                                 applying ||
                                 productsWithCost.length === 0 ||
@@ -268,8 +294,12 @@ function ApplyDialog({ open, onClose, products, costsMap, totalBoxes, onApply, a
 
 function ResultsSection({ data, costsMap, onCostChange, tab }) {
     const summary = data?.summary
-    const products = data?.byProduct || []
-    const totalBoxes = summary?.totalBoxes ?? 0
+    const products = data?.products || []
+    const boxesByProduct = useMemo(() => groupBoxesByProduct(data?.boxes), [data?.boxes])
+
+    const countLabel = tab === 'sales'
+        ? { icon: ShoppingCart, label: 'Pedidos afectados', value: summary?.ordersCount }
+        : { icon: Warehouse, label: 'Palets afectados', value: summary?.palletsCount ?? summary?.ordersCount }
 
     return (
         <div className="space-y-4 mt-4">
@@ -277,26 +307,24 @@ function ResultsSection({ data, costsMap, onCostChange, tab }) {
                 <SummaryCard
                     icon={Box}
                     label="Cajas sin coste"
-                    value={summary?.totalBoxes?.toLocaleString('es-ES') ?? '—'}
+                    value={summary?.boxesCount?.toLocaleString('es-ES') ?? '—'}
                 />
                 <SummaryCard
                     icon={Euro}
                     label="Kg sin coste"
-                    value={summary?.totalNetWeightKg != null
-                        ? `${summary.totalNetWeightKg.toFixed(0)} kg`
+                    value={summary?.netWeightKg != null
+                        ? `${Number(summary.netWeightKg).toFixed(0)} kg`
                         : '—'}
                 />
                 <SummaryCard
                     icon={Package}
                     label="Productos distintos"
-                    value={summary?.distinctProducts?.toLocaleString('es-ES') ?? '—'}
+                    value={summary?.productsCount?.toLocaleString('es-ES') ?? '—'}
                 />
                 <SummaryCard
-                    icon={tab === 'sales' ? ShoppingCart : Warehouse}
-                    label={tab === 'sales' ? 'Pedidos afectados' : 'Palets afectados'}
-                    value={tab === 'sales'
-                        ? (summary?.distinctOrders?.toLocaleString('es-ES') ?? '—')
-                        : (summary?.distinctPallets?.toLocaleString('es-ES') ?? '—')}
+                    icon={countLabel.icon}
+                    label={countLabel.label}
+                    value={countLabel.value?.toLocaleString('es-ES') ?? '—'}
                 />
             </div>
 
@@ -327,10 +355,12 @@ function ResultsSection({ data, costsMap, onCostChange, tab }) {
                             <TableBody>
                                 {products.map(product => (
                                     <ProductRow
-                                        key={product.productId}
+                                        key={product.product.id}
                                         product={product}
-                                        costInput={costsMap[product.productId] ?? ''}
+                                        boxesByProduct={boxesByProduct}
+                                        costInput={costsMap[product.product.id] ?? ''}
                                         onCostChange={onCostChange}
+                                        tab={tab}
                                     />
                                 ))}
                             </TableBody>
@@ -344,14 +374,11 @@ function ResultsSection({ data, costsMap, onCostChange, tab }) {
 
 export default function CostRegularizationClient() {
     const { data: session } = useSession()
-
     const [tab, setTab] = useState('sales')
 
-    // Sales filters
+    // Filters
     const [salesFrom, setSalesFrom] = useState('')
     const [salesTo, setSalesTo] = useState('')
-
-    // Stock filters
     const [stockLot, setStockLot] = useState('')
     const [stockFrom, setStockFrom] = useState('')
     const [stockTo, setStockTo] = useState('')
@@ -359,12 +386,10 @@ export default function CostRegularizationClient() {
     // Results
     const [salesData, setSalesData] = useState(null)
     const [stockData, setStockData] = useState(null)
-
-    // Loading states
     const [loadingSales, setLoadingSales] = useState(false)
     const [loadingStock, setLoadingStock] = useState(false)
 
-    // Costs map: { [productId]: string }
+    // Cost inputs: { [productId]: string }
     const [salesCosts, setSalesCosts] = useState({})
     const [stockCosts, setStockCosts] = useState({})
 
@@ -382,7 +407,7 @@ export default function CostRegularizationClient() {
 
     async function fetchSales() {
         if (!salesFrom || !salesTo) {
-            notify.error({ title: 'Fechas requeridas', description: 'Indica fecha desde y hasta para buscar ventas.' })
+            notify.error({ title: 'Fechas requeridas', description: 'Indica fecha desde y hasta.' })
             return
         }
         setLoadingSales(true)
@@ -419,36 +444,36 @@ export default function CostRegularizationClient() {
         }
     }
 
-    function openApplyDialog() {
-        setApplyResult(null)
-        setDialogOpen(true)
-    }
+    const activeData = tab === 'sales' ? salesData : stockData
+    const activeCosts = tab === 'sales' ? salesCosts : stockCosts
+    const activeProducts = activeData?.products || []
 
-    async function handleApply(payload) {
-        const costsMap = tab === 'sales' ? salesCosts : stockCosts
-        const currentData = tab === 'sales' ? salesData : stockData
-        const products = currentData?.byProduct || []
-
-        const productsWithCost = products.filter(p => {
-            const v = costsMap[p.productId]
+    const productsWithFilledCost = useMemo(
+        () => activeProducts.filter(p => {
+            const v = activeCosts[p.product.id]
             return v !== undefined && v !== '' && !isNaN(parseFloat(v)) && parseFloat(v) >= 0
-        })
+        }),
+        [activeProducts, activeCosts]
+    )
 
-        const finalPayload = {
+    async function handleApply() {
+        const payload = {
             scope: tab,
-            products: productsWithCost.map(p => ({
-                productId: p.productId,
-                manualCostPerKg: parseFloat(costsMap[p.productId]),
+            products: productsWithFilledCost.map(p => ({
+                productId: p.product.id,
+                manualCostPerKg: parseFloat(activeCosts[p.product.id]),
             })),
             ...(tab === 'sales' ? { dateFrom: salesFrom, dateTo: salesTo } : {}),
         }
 
         setApplying(true)
         try {
-            const result = await costRegularizationService.applyManualCostsByProduct(finalPayload)
+            const result = await costRegularizationService.applyManualCostsByProduct(payload)
             setApplyResult(result)
-            notify.success({ title: 'Costes aplicados', description: `${result.updatedCount ?? ''} cajas actualizadas.` })
-            // Refresh data
+            notify.success({
+                title: 'Costes aplicados',
+                description: `${result.updatedCount ?? productsWithFilledCost.reduce((s, p) => s + p.boxesCount, 0)} cajas actualizadas.`,
+            })
             if (tab === 'sales') {
                 setSalesData(null)
                 setSalesCosts({})
@@ -475,13 +500,7 @@ export default function CostRegularizationClient() {
         )
     }
 
-    const activeData = tab === 'sales' ? salesData : stockData
-    const activeCosts = tab === 'sales' ? salesCosts : stockCosts
     const hasResults = activeData != null
-    const productsWithFilledCost = (activeData?.byProduct || []).filter(p => {
-        const v = activeCosts[p.productId]
-        return v !== undefined && v !== '' && !isNaN(parseFloat(v)) && parseFloat(v) >= 0
-    })
 
     return (
         <div className="space-y-6">
@@ -492,7 +511,7 @@ export default function CostRegularizationClient() {
                 </p>
             </div>
 
-            <Tabs value={tab} onValueChange={v => { setTab(v); }}>
+            <Tabs value={tab} onValueChange={v => setTab(v)}>
                 <TabsList>
                     <TabsTrigger value="sales">
                         <ShoppingCart className="h-4 w-4 mr-1.5" />
@@ -504,7 +523,6 @@ export default function CostRegularizationClient() {
                     </TabsTrigger>
                 </TabsList>
 
-                {/* ── SALES TAB ── */}
                 <TabsContent value="sales" className="mt-4">
                     <Card>
                         <CardHeader className="pb-3">
@@ -550,7 +568,6 @@ export default function CostRegularizationClient() {
                     )}
                 </TabsContent>
 
-                {/* ── STOCK TAB ── */}
                 <TabsContent value="stock" className="mt-4">
                     <Card>
                         <CardHeader className="pb-3">
@@ -606,8 +623,7 @@ export default function CostRegularizationClient() {
                 </TabsContent>
             </Tabs>
 
-            {/* Apply button — sticky at the bottom when there are results */}
-            {hasResults && (activeData?.byProduct?.length ?? 0) > 0 && (
+            {hasResults && activeProducts.length > 0 && (
                 <>
                     <Separator />
                     <div className="flex items-center justify-between">
@@ -617,7 +633,7 @@ export default function CostRegularizationClient() {
                                 : `${productsWithFilledCost.length} ${productsWithFilledCost.length === 1 ? 'producto' : 'productos'} con coste asignado.`}
                         </p>
                         <Button
-                            onClick={openApplyDialog}
+                            onClick={() => { setApplyResult(null); setDialogOpen(true) }}
                             disabled={productsWithFilledCost.length === 0}
                         >
                             <Euro className="h-4 w-4 mr-2" />
@@ -630,9 +646,8 @@ export default function CostRegularizationClient() {
             <ApplyDialog
                 open={dialogOpen}
                 onClose={() => setDialogOpen(false)}
-                products={activeData?.byProduct || []}
+                products={activeProducts}
                 costsMap={activeCosts}
-                totalBoxes={activeData?.summary?.totalBoxes ?? 0}
                 onApply={handleApply}
                 applying={applying}
                 result={applyResult}
