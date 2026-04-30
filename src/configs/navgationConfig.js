@@ -106,6 +106,11 @@ export const navigationConfig = [
                 allowedRoles: ["administrador", "direccion", "tecnico"],
             },
             {
+                name: 'Regularización de costes',
+                href: '/admin/cost-regularization',
+                allowedRoles: ["administrador", "tecnico"],
+            },
+            {
                 name: 'Todos los Almacenes',
                 href: '/admin/stores',
                 allowedRoles: ["administrador", "direccion", "tecnico"],
