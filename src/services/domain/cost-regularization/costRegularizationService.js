@@ -39,4 +39,17 @@ export const costRegularizationService = {
             throw { status: rawResponse?.status, data: errorData };
         }
     },
+
+    async applyManualCostsByLotProduct(payload) {
+        const token = await getAuthToken();
+        try {
+            const response = await performActionGeneric(
+                `${BASE}/manual-costs/apply-by-lot-product`, 'POST', payload, token
+            );
+            return response.json();
+        } catch (rawResponse) {
+            const errorData = await rawResponse?.json?.().catch(() => ({}));
+            throw { status: rawResponse?.status, data: errorData };
+        }
+    },
 };
