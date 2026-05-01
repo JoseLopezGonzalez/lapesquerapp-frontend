@@ -5390,6 +5390,7 @@ export const productos = [
   { nombre: "CENTOLLA / CENTOLLA O CENTOLLO", codA3erp: "10164", codBrisappProducto: "323" },
   { nombre: "Gamba de altura / Gamba de altura", codA3erp: "10163", codBrisappProducto: "324" },
   { nombre: "Camarón megalops / Camarón megalops", codA3erp: "10162", codBrisappProducto: "325" },
+  { nombre: "PERICOS / CAMARONES O", codA3erp: "10162", codBrisappProducto: "325" },
   { nombre: "PUNTILLITA / PUNTILLITA", codA3erp: "10167", codBrisappProducto: "111" },
   { nombre: "Rape / Rape", codA3erp: "10161", codBrisappProducto: "326" },
   { nombre: "SALMONETE DE ROCA / SALMONETE DE ROCA", codA3erp: "10160", codBrisappProducto: "327" },
