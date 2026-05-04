@@ -202,16 +202,30 @@ function SeverityBadge({ severity }) {
 
 function SummaryMetric({ icon: Icon, label, value, description, loading }) {
   return (
-    <div className="rounded-lg border bg-card px-3 py-3">
+    <div className="min-h-24 rounded-lg border bg-card px-3 py-3">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-xs text-muted-foreground">{label}</p>
           {loading ? <Skeleton className="mt-2 h-6 w-16" /> : <p className="mt-1 text-xl font-semibold tabular-nums">{value}</p>}
-          {description ? <p className="mt-1 text-xs text-muted-foreground">{description}</p> : null}
         </div>
-        <div className="rounded-md bg-muted p-2 text-muted-foreground">
-          <Icon className="size-4" />
-        </div>
+        {description ? (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="rounded-md bg-muted p-2 text-muted-foreground">
+                  <Icon className="size-4" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="left" className="max-w-56 text-xs">
+                {description}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        ) : (
+          <div className="rounded-md bg-muted p-2 text-muted-foreground">
+            <Icon className="size-4" />
+          </div>
+        )}
       </div>
     </div>
   )
@@ -358,8 +372,8 @@ function OrphanStockPanel({
   loading,
   fetching,
   error,
-  page,
-  onPageChange,
+  hasMore,
+  onLoadMore,
 }) {
   return (
     <Card>
@@ -368,7 +382,7 @@ function OrphanStockPanel({
           <div>
             <CardTitle className="flex items-center gap-2 text-base">
               <ShieldAlert className="size-4" />
-              Lotes huérfanos en stock
+              {formatNumber(pagination.total)} Lotes huérfanos en stock
             </CardTitle>
             <CardDescription>Stock registrado o almacenado sin producción ni recepción asociada.</CardDescription>
           </div>
@@ -399,7 +413,15 @@ function OrphanStockPanel({
             </EmptyHeader>
           </Empty>
         ) : (
-          <div className="overflow-x-auto rounded-lg border">
+          <div
+            className="max-h-72 overflow-auto rounded-lg border"
+            onScroll={(event) => {
+              if (!hasMore || fetching) return
+              const el = event.currentTarget
+              const nearBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 24
+              if (nearBottom) onLoadMore()
+            }}
+          >
             <Table>
               <TableHeader>
                 <TableRow>
@@ -407,7 +429,6 @@ function OrphanStockPanel({
                   <TableHead className="text-right">Peso</TableHead>
                   <TableHead className="text-right">Cajas</TableHead>
                   <TableHead className="text-right">Palets</TableHead>
-                  <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -420,32 +441,7 @@ function OrphanStockPanel({
         )}
 
         <div className="mt-3 flex flex-col gap-2 text-sm sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-muted-foreground">
-            {formatNumber(pagination.total)} lotes huérfanos distintos.
-          </div>
-          <div className="flex items-center justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => onPageChange(Math.max(1, page - 1))}
-              disabled={page <= 1 || fetching}
-            >
-              <ChevronLeft className="mr-2 size-4" />
-              Anterior
-            </Button>
-            <Badge variant="outline">{page} / {pagination.lastPage || 1}</Badge>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => onPageChange(Math.min(pagination.lastPage || page + 1, page + 1))}
-              disabled={page >= (pagination.lastPage || 1) || fetching}
-            >
-              Siguiente
-              <ChevronRight className="ml-2 size-4" />
-            </Button>
-          </div>
+          {fetching && <div className="text-xs text-muted-foreground">Cargando más...</div>}
         </div>
       </CardContent>
     </Card>
@@ -472,18 +468,10 @@ function OrphanStockLotRow({ lot }) {
         <TableCell className="text-right tabular-nums">{formatKg(lot.totalWeightKg)}</TableCell>
         <TableCell className="text-right tabular-nums">{formatNumber(lot.totalBoxes)}</TableCell>
         <TableCell className="text-right tabular-nums">{formatNumber(lot.totalPallets)}</TableCell>
-        <TableCell className="text-right" onClick={(event) => event.stopPropagation()}>
-          <Button asChild size="sm" variant="outline">
-            <Link href={`/admin/boxes?lot=${encodeURIComponent(lot.lot || '')}`}>
-              <PackageSearch className="mr-2 size-4" />
-              Ver cajas
-            </Link>
-          </Button>
-        </TableCell>
       </TableRow>
       {open ? (
         <TableRow className="bg-muted/20">
-          <TableCell colSpan={5} className="p-0">
+          <TableCell colSpan={4} className="p-0">
             <div className="space-y-2 p-3">
               {pallets.length === 0 ? (
                 <p className="text-sm text-muted-foreground">Sin palets asociados en la respuesta.</p>
@@ -997,6 +985,7 @@ export default function ProductionsControlPanel() {
   const [appliedFilters, setAppliedFilters] = useState(initialFilters)
   const [page, setPage] = useState(1)
   const [orphanPage, setOrphanPage] = useState(1)
+  const [orphanAccumulatedLots, setOrphanAccumulatedLots] = useState([])
   const [selectedProduction, setSelectedProduction] = useState(null)
   const [panelOpen, setPanelOpen] = useState(false)
   const [closeTarget, setCloseTarget] = useState(null)
@@ -1032,6 +1021,22 @@ export default function ProductionsControlPanel() {
     error: orphanError,
     refetch: refetchOrphanStock,
   } = useProductionOrphanStock(orphanStockParams)
+
+  React.useEffect(() => {
+    setOrphanAccumulatedLots((current) => {
+      if (orphanPage === 1) return orphanLots
+      const existing = new Set(current.map((lot) => String(lot.lot)))
+      const next = [...current]
+      for (const lot of orphanLots) {
+        const key = String(lot.lot)
+        if (!existing.has(key)) {
+          existing.add(key)
+          next.push(lot)
+        }
+      }
+      return next
+    })
+  }, [orphanLots, orphanPage])
 
   const visibleProductions = useMemo(() => {
     if (!appliedFilters.reconciliation_status) return productions
@@ -1080,6 +1085,7 @@ export default function ProductionsControlPanel() {
 
   const handleRefresh = () => {
     refetch()
+    setOrphanPage(1)
     refetchOrphanStock()
   }
 
@@ -1112,21 +1118,30 @@ export default function ProductionsControlPanel() {
           </Alert>
         ) : null}
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          {summaryItems.map((item) => (
-            <SummaryMetric key={item.label} {...item} loading={isLoading || orphanLoading} />
-          ))}
-        </div>
+        <div className="grid items-start gap-4 xl:grid-cols-12">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-2 xl:col-span-4">
+            {summaryItems.map((item) => (
+              <SummaryMetric key={item.label} {...item} loading={isLoading || orphanLoading} />
+            ))}
+          </div>
 
-        <OrphanStockPanel
-          lots={orphanLots}
-          pagination={orphanPagination}
-          loading={orphanLoading}
-          fetching={orphanFetching}
-          error={orphanError}
-          page={orphanPage}
-          onPageChange={setOrphanPage}
-        />
+          <div className="xl:col-span-8">
+            <OrphanStockPanel
+              lots={orphanAccumulatedLots}
+              pagination={orphanPagination}
+              loading={orphanLoading && orphanPage === 1 && orphanAccumulatedLots.length === 0}
+              fetching={orphanFetching}
+              error={orphanError}
+              hasMore={orphanPage < (orphanPagination.lastPage || 1)}
+              onLoadMore={() => {
+                if (orphanFetching) return
+                setOrphanPage((current) => (
+                  current < (orphanPagination.lastPage || current) ? current + 1 : current
+                ))
+              }}
+            />
+          </div>
+        </div>
 
         <ProductionTable
           productions={visibleProductions}
