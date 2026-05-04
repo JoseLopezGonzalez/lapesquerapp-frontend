@@ -68,7 +68,7 @@ export default function Dashboard() {
                         <div className="w-full h-full overflow-hidden">
                             <TotalAmountSoldCard />
                         </div>
-                        <div className="w-full overflow-hidden hidden sm:block">
+                        <div className="w-full overflow-hidden">
                             <OrdersProfitabilitySummaryCard />
                         </div>
                     </div>
