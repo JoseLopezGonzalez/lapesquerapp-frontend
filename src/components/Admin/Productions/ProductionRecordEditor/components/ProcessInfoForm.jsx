@@ -9,6 +9,7 @@ import { DatePicker } from '@/components/ui/datePicker'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { dateToYmdLocalString, ymdLocalStringToDate } from '@/helpers/production/dateFormatters'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Combobox } from '@/components/Shadcn/Combobox'
 import { Info, Loader2, Plus, Save } from 'lucide-react'
 
 /**
@@ -67,25 +68,24 @@ export const ProcessInfoForm = ({
                         </div>
                         <div className="flex min-w-0 max-w-full items-center gap-2">
                             {processTypeOptions.length > 0 ? (
-                                <Select
-                                    value={formData.process_id !== 'none' ? formData.process_id : undefined}
-                                    onValueChange={(value) => {
-                                        onFormDataChange({ ...formData, process_id: value })
-                                    }}
+                                <Combobox
+                                    options={processTypeOptions.map((process) => ({
+                                        value: process.valueStr,
+                                        label: process.label,
+                                    }))}
+                                    value={formData.process_id !== 'none' ? formData.process_id : ''}
+                                    onChange={(value) =>
+                                        onFormDataChange({
+                                            ...formData,
+                                            process_id: value || 'none',
+                                        })
+                                    }
+                                    placeholder="Selecciona un tipo de proceso"
+                                    searchPlaceholder="Buscar tipo de proceso..."
+                                    notFoundMessage="No se encontraron tipos de proceso"
                                     disabled={saving}
-                                    required
-                                >
-                                    <SelectTrigger className="h-9 w-full min-w-0 max-w-full">
-                                        <SelectValue placeholder="Selecciona un tipo de proceso" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {processTypeOptions.map((process) => (
-                                            <SelectItem key={process.key} value={process.valueStr}>
-                                                {process.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                    className="h-9 w-full min-w-0 max-w-full"
+                                />
                             ) : (
                                 <div className="flex h-9 w-full min-w-0 items-center rounded-lg border border-input bg-muted/40 px-3 text-sm text-muted-foreground">
                                     {formData.process_id !== 'none'
