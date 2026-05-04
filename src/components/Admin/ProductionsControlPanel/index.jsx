@@ -49,7 +49,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useProductionControlPanel } from '@/hooks/production/useProductionControlPanel'
-import { useProductionOrphanStock } from '@/hooks/production/useProductionOrphanStock'
+import { useProductionOrphanStock, EMPTY_ORPHAN_LOTS } from '@/hooks/production/useProductionOrphanStock'
 import { notify } from '@/lib/notifications'
 import { cn } from '@/lib/utils'
 import { closeProduction } from '@/services/productionService'
@@ -985,7 +985,7 @@ export default function ProductionsControlPanel() {
   const [appliedFilters, setAppliedFilters] = useState(initialFilters)
   const [page, setPage] = useState(1)
   const [orphanPage, setOrphanPage] = useState(1)
-  const [orphanAccumulatedLots, setOrphanAccumulatedLots] = useState([])
+  const [orphanAccumulatedLots, setOrphanAccumulatedLots] = useState(EMPTY_ORPHAN_LOTS)
   const [selectedProduction, setSelectedProduction] = useState(null)
   const [panelOpen, setPanelOpen] = useState(false)
   const [closeTarget, setCloseTarget] = useState(null)
@@ -1024,17 +1024,21 @@ export default function ProductionsControlPanel() {
 
   React.useEffect(() => {
     setOrphanAccumulatedLots((current) => {
-      if (orphanPage === 1) return orphanLots
+      if (orphanPage === 1) {
+        return current === orphanLots ? current : orphanLots
+      }
       const existing = new Set(current.map((lot) => String(lot.lot)))
       const next = [...current]
+      let changed = false
       for (const lot of orphanLots) {
         const key = String(lot.lot)
         if (!existing.has(key)) {
           existing.add(key)
           next.push(lot)
+          changed = true
         }
       }
-      return next
+      return changed ? next : current
     })
   }, [orphanLots, orphanPage])
 
@@ -1084,8 +1088,9 @@ export default function ProductionsControlPanel() {
   ]
 
   const handleRefresh = () => {
-    refetch()
+    setOrphanAccumulatedLots(EMPTY_ORPHAN_LOTS)
     setOrphanPage(1)
+    refetch()
     refetchOrphanStock()
   }
 
