@@ -21,6 +21,32 @@ export function getProductionOrphanStock(token, params = {}) {
   });
 }
 
+/** @param {string} token @param {object} [params] @returns {Promise<Object>} Cajas sin fila en pallet_boxes */
+export function getProductionOrphanBoxes(token, params = {}) {
+  return apiGet(`${API_URL_V2}productions/orphan-boxes`, token, params, {
+    transform: (data) => {
+      const payload = data.data ?? data;
+      const summary = payload.summary ?? {};
+      const pag = payload.pagination ?? {};
+      return {
+        summary: {
+          totalOrphanBoxes:
+            summary.totalOrphanBoxes ?? summary.total_orphan_boxes ?? 0,
+          totalOrphanWeightKg:
+            summary.totalOrphanWeightKg ?? summary.total_orphan_weight_kg ?? 0,
+        },
+        boxes: payload.boxes ?? [],
+        pagination: {
+          currentPage: pag.currentPage ?? pag.current_page ?? 1,
+          perPage: pag.perPage ?? pag.per_page ?? 25,
+          total: pag.total ?? 0,
+          lastPage: pag.lastPage ?? pag.last_page ?? 1,
+        },
+      };
+    },
+  });
+}
+
 /** @param {string|number} productionId @param {string} token @returns {Promise<Object>} */
 export function getProduction(productionId, token) {
   return apiGet(`${API_URL_V2}productions/${productionId}`, token, {}, {

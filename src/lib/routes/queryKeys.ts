@@ -91,6 +91,10 @@ export const productionQueryKeys = {
     tenantId: string | null | undefined,
     params: Record<string, unknown> = {}
   ) => ['productions', 'orphanStock', tenantId ?? 'unknown', normalizeQueryParams(params)] as const,
+  orphanBoxes: (
+    tenantId: string | null | undefined,
+    params: Record<string, unknown> = {}
+  ) => ['productions', 'orphanBoxes', tenantId ?? 'unknown', normalizeQueryParams(params)] as const,
   detail: (
     tenantId: string | null | undefined,
     productionId: number | string | null | undefined

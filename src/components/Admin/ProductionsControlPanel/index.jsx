@@ -23,6 +23,7 @@ import {
   Info,
   Loader2,
   LockKeyhole,
+  Package,
   PackageSearch,
   RefreshCcw,
   Search,
@@ -49,6 +50,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useProductionControlPanel } from '@/hooks/production/useProductionControlPanel'
+import { useProductionOrphanBoxes, EMPTY_ORPHAN_BOXES } from '@/hooks/production/useProductionOrphanBoxes'
 import { useProductionOrphanStock, EMPTY_ORPHAN_LOTS } from '@/hooks/production/useProductionOrphanStock'
 import { notify } from '@/lib/notifications'
 import { cn } from '@/lib/utils'
@@ -197,6 +199,47 @@ function SeverityBadge({ severity }) {
       <Icon className="size-3" />
       {meta.label}
     </Badge>
+  )
+}
+
+function OrphanBoxesSummaryTile({ count, loading, onOpen }) {
+  const description = 'Cajas no están asignadas a ningún palet. Pulsa para ver el listado.'
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      aria-label="Cajas huérfanas. Abrir listado."
+      onClick={onOpen}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          onOpen()
+        }
+      }}
+      className={cn(
+        'min-h-24 cursor-pointer rounded-lg border bg-card px-3 py-3 outline-none transition-colors',
+        'hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
+      )}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-xs text-muted-foreground">Cajas huérfanas</p>
+          {loading ? <Skeleton className="mt-2 h-6 w-16" /> : <p className="mt-1 text-xl font-semibold tabular-nums">{formatNumber(count)}</p>}
+        </div>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="rounded-md bg-muted p-2 text-muted-foreground">
+                <Package className="size-4" />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="left" className="max-w-56 text-xs">
+              {description}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+    </div>
   )
 }
 
@@ -444,6 +487,188 @@ function OrphanStockPanel({
           {fetching && <div className="text-xs text-muted-foreground">Cargando más...</div>}
         </div>
       </CardContent>
+    </Card>
+  )
+}
+
+function getOrphanBoxProductLabel(box) {
+  const product = box.product
+  if (product && typeof product === 'object') {
+    return product.name || product.article_name || `Art. ${product.id ?? ''}`
+  }
+  if (typeof product === 'string' && product.trim()) return product
+  const aid = box.article_id ?? box.articleId
+  return aid ? `Art. ${aid}` : '—'
+}
+
+function getOrphanBoxNetKg(box) {
+  const raw =
+    box.netWeightKg ??
+    box.net_weight_kg ??
+    box.net_weight ??
+    box.netWeight ??
+    box.weightKg ??
+    box.weight_kg
+  return raw != null ? Number(raw) : null
+}
+
+function getOrphanBoxManualCost(box) {
+  const raw =
+    box.manualCost ?? box.manual_cost ?? box.manualCostEuro ?? box.manual_cost_euro
+  return raw != null && raw !== '' ? Number(raw) : null
+}
+
+function getOrphanBoxGs1128(box) {
+  const raw = box.gs1128 ?? box.gs1_128 ?? box.gs1128Code
+  if (raw == null) return ''
+  return typeof raw === 'string' ? raw : JSON.stringify(raw)
+}
+
+function OrphanBoxesPanel({ summary, boxes, pagination, loading, fetching, error, hasMore, onLoadMore, variant = 'card' }) {
+  const tableMaxHeightClass = variant === 'sheet' ? 'max-h-[min(28rem,calc(100vh-16rem))]' : 'max-h-72'
+
+  const body = (
+    <div className="space-y-3">
+      {error ? (
+        <Alert variant="destructive">
+          <AlertCircle className="size-4" />
+          <AlertTitle>No se pudieron cargar las cajas huérfanas</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      ) : null}
+
+      {loading ? (
+        <div className="space-y-2">
+          {Array.from({ length: 4 }).map((_, index) => <Skeleton key={index} className="h-12 w-full" />)}
+        </div>
+      ) : boxes.length === 0 ? (
+        <Empty className="min-h-40 border">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <CheckCircle2 className="size-4" />
+            </EmptyMedia>
+            <EmptyTitle>Sin cajas huérfanas</EmptyTitle>
+            <EmptyDescription>No hay cajas que encajen en este listado.</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      ) : (
+        <TooltipProvider delayDuration={200}>
+          <div
+            className={cn('overflow-auto rounded-lg border', tableMaxHeightClass)}
+            onScroll={(event) => {
+              if (!hasMore || fetching) return
+              const el = event.currentTarget
+              const nearBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 24
+              if (nearBottom) onLoadMore()
+            }}
+          >
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-20">ID</TableHead>
+                  <TableHead className="min-w-28">Lote</TableHead>
+                  <TableHead>Producto</TableHead>
+                  <TableHead className="text-right">Peso</TableHead>
+                  <TableHead>Uso en prod.</TableHead>
+                  <TableHead className="min-w-28">Creado</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {boxes.map((box) => {
+                  const used = box.usedAsProductionInput ?? box.used_as_production_input
+                  const inputCount = box.productionInputsCount ?? box.production_inputs_count ?? 0
+                  const netKg = getOrphanBoxNetKg(box)
+                  const cost = getOrphanBoxManualCost(box)
+                  const gs = getOrphanBoxGs1128(box)
+                  const created = box.createdAt ?? box.created_at
+                  const extraBits = [gs && `GS1: ${gs}`, cost != null && Number.isFinite(cost) && `Coste manual: ${formatNumber(cost, 2)} €`]
+                    .filter(Boolean)
+                    .join(' · ')
+                  const productLabel = getOrphanBoxProductLabel(box)
+                  return (
+                    <TableRow key={box.id}>
+                      <TableCell className="font-mono text-sm">
+                        <Link className="text-primary hover:underline" href={`/admin/boxes/${box.id}`}>
+                          #{box.id}
+                        </Link>
+                      </TableCell>
+                      <TableCell className="font-mono text-sm">{box.lot ?? '—'}</TableCell>
+                      <TableCell className="max-w-[220px]">
+                        {extraBits ? (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="line-clamp-2 cursor-default text-sm">{productLabel}</span>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom" className="max-w-sm text-xs">
+                              {extraBits}
+                            </TooltipContent>
+                          </Tooltip>
+                        ) : (
+                          <span className="line-clamp-2 text-sm">{productLabel}</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums text-sm">
+                        {netKg != null && Number.isFinite(netKg) ? formatKg(netKg) : '—'}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge variant={used ? 'secondary' : 'outline'}>{used ? 'Entrada sí' : 'Sin entrada'}</Badge>
+                          {inputCount > 0 ? (
+                            <span className="text-xs text-muted-foreground tabular-nums">({formatNumber(inputCount)} reg.)</span>
+                          ) : null}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{created ? formatDisplayDate(created) : '—'}</TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        </TooltipProvider>
+      )}
+
+      <div className="flex flex-col gap-2 text-sm sm:flex-row sm:items-center sm:justify-between">
+        <span className="text-xs text-muted-foreground">
+          Mostrando {formatNumber(boxes.length)}
+          {' de '}
+          {formatNumber(pagination.total)} · Página {pagination.currentPage} de {pagination.lastPage || 1}
+        </span>
+        {fetching && !loading ? <div className="text-xs text-muted-foreground">Cargando más…</div> : null}
+      </div>
+    </div>
+  )
+
+  if (variant === 'sheet') {
+    return (
+      <div className="space-y-3">
+        {fetching && !loading ? (
+          <div className="flex justify-end">
+            <Badge variant="outline">Actualizando</Badge>
+          </div>
+        ) : null}
+        {body}
+      </div>
+    )
+  }
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div>
+            <CardTitle className="flex flex-wrap items-center gap-2 text-base">
+              <Package className="size-4 shrink-0" />
+              <span>{formatNumber(summary.totalOrphanBoxes)} Cajas huérfanas</span>
+            </CardTitle>
+            <CardDescription className="mt-1">
+              Cajas no están asignadas a ningún palet.
+            </CardDescription>
+          </div>
+          {fetching && !loading ? <Badge variant="outline">Actualizando</Badge> : null}
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">{body}</CardContent>
     </Card>
   )
 }
@@ -986,6 +1211,9 @@ export default function ProductionsControlPanel() {
   const [page, setPage] = useState(1)
   const [orphanPage, setOrphanPage] = useState(1)
   const [orphanAccumulatedLots, setOrphanAccumulatedLots] = useState(EMPTY_ORPHAN_LOTS)
+  const [orphanBoxPage, setOrphanBoxPage] = useState(1)
+  const [orphanBoxAccumulated, setOrphanBoxAccumulated] = useState(EMPTY_ORPHAN_BOXES)
+  const [orphanBoxesSheetOpen, setOrphanBoxesSheetOpen] = useState(false)
   const [selectedProduction, setSelectedProduction] = useState(null)
   const [panelOpen, setPanelOpen] = useState(false)
   const [closeTarget, setCloseTarget] = useState(null)
@@ -1012,6 +1240,16 @@ export default function ProductionsControlPanel() {
     sort_dir: 'asc',
   }), [orphanPage])
 
+  const orphanBoxesParams = useMemo(
+    () => ({
+      page: orphanBoxPage,
+      per_page: PER_PAGE,
+      sort_by: 'id',
+      sort_dir: 'desc',
+    }),
+    [orphanBoxPage]
+  )
+
   const { summary, productions, pagination, isLoading, isFetching, error, refetch } = useProductionControlPanel(queryParams)
   const {
     lots: orphanLots,
@@ -1021,6 +1259,16 @@ export default function ProductionsControlPanel() {
     error: orphanError,
     refetch: refetchOrphanStock,
   } = useProductionOrphanStock(orphanStockParams)
+
+  const {
+    summary: orphanBoxesSummary,
+    boxes: orphanBoxesPageData,
+    pagination: orphanBoxesPagination,
+    isLoading: orphanBoxesLoading,
+    isFetching: orphanBoxesFetching,
+    error: orphanBoxesError,
+    refetch: refetchOrphanBoxes,
+  } = useProductionOrphanBoxes(orphanBoxesParams)
 
   React.useEffect(() => {
     setOrphanAccumulatedLots((current) => {
@@ -1041,6 +1289,26 @@ export default function ProductionsControlPanel() {
       return changed ? next : current
     })
   }, [orphanLots, orphanPage])
+
+  React.useEffect(() => {
+    setOrphanBoxAccumulated((current) => {
+      if (orphanBoxPage === 1) {
+        return current === orphanBoxesPageData ? current : orphanBoxesPageData
+      }
+      const existing = new Set(current.map((box) => String(box.id)))
+      const next = [...current]
+      let changed = false
+      for (const box of orphanBoxesPageData) {
+        const key = String(box.id)
+        if (!existing.has(key)) {
+          existing.add(key)
+          next.push(box)
+          changed = true
+        }
+      }
+      return changed ? next : current
+    })
+  }, [orphanBoxesPageData, orphanBoxPage])
 
   const visibleProductions = useMemo(() => {
     if (!appliedFilters.reconciliation_status) return productions
@@ -1090,8 +1358,11 @@ export default function ProductionsControlPanel() {
   const handleRefresh = () => {
     setOrphanAccumulatedLots(EMPTY_ORPHAN_LOTS)
     setOrphanPage(1)
+    setOrphanBoxAccumulated(EMPTY_ORPHAN_BOXES)
+    setOrphanBoxPage(1)
     refetch()
     refetchOrphanStock()
+    refetchOrphanBoxes()
   }
 
   return (
@@ -1108,8 +1379,18 @@ export default function ProductionsControlPanel() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button type="button" variant="outline" size="sm" onClick={handleRefresh} disabled={isFetching || orphanFetching}>
-              {isFetching || orphanFetching ? <Loader2 className="mr-2 size-4 animate-spin" /> : <RefreshCcw className="mr-2 size-4" />}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={isFetching || orphanFetching || orphanBoxesFetching}
+            >
+              {isFetching || orphanFetching || orphanBoxesFetching ? (
+                <Loader2 className="mr-2 size-4 animate-spin" />
+              ) : (
+                <RefreshCcw className="mr-2 size-4" />
+              )}
               Refrescar
             </Button>
           </div>
@@ -1128,6 +1409,11 @@ export default function ProductionsControlPanel() {
             {summaryItems.map((item) => (
               <SummaryMetric key={item.label} {...item} loading={isLoading || orphanLoading} />
             ))}
+            <OrphanBoxesSummaryTile
+              count={orphanBoxesSummary.totalOrphanBoxes}
+              loading={orphanBoxesLoading && orphanBoxPage === 1 && orphanBoxAccumulated.length === 0}
+              onOpen={() => setOrphanBoxesSheetOpen(true)}
+            />
           </div>
 
           <div className="xl:col-span-8">
@@ -1187,6 +1473,39 @@ export default function ProductionsControlPanel() {
         }}
         onConfirm={(reason) => closeMutation.mutate({ productionId: closeTarget.id, reason })}
       />
+
+      <Sheet open={orphanBoxesSheetOpen} onOpenChange={setOrphanBoxesSheetOpen}>
+        <SheetContent
+          className={cn(
+            'w-full gap-0 overflow-hidden p-0 sm:max-w-3xl',
+            'flex max-h-[100dvh] flex-col'
+          )}
+          side="right"
+        >
+          <SheetHeader className="shrink-0 border-b px-6 py-6 pr-14 text-left">
+            <SheetTitle>Cajas huérfanas</SheetTitle>
+            <SheetDescription>Cajas no están asignadas a ningún palet.</SheetDescription>
+          </SheetHeader>
+          <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-6 pt-4">
+            <OrphanBoxesPanel
+              variant="sheet"
+              summary={orphanBoxesSummary}
+              boxes={orphanBoxAccumulated}
+              pagination={orphanBoxesPagination}
+              loading={orphanBoxesLoading && orphanBoxPage === 1 && orphanBoxAccumulated.length === 0}
+              fetching={orphanBoxesFetching}
+              error={orphanBoxesError}
+              hasMore={orphanBoxPage < (orphanBoxesPagination.lastPage || 1)}
+              onLoadMore={() => {
+                if (orphanBoxesFetching) return
+                setOrphanBoxPage((current) =>
+                  current < (orphanBoxesPagination.lastPage || current) ? current + 1 : current
+                )
+              }}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   )
 }
