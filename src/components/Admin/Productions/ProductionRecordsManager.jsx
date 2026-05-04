@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
-import { getProductionRecords, deleteProductionRecord } from '@/services/productionService'
+import { getProductionRecords, deleteProductionRecord, updateProductionRecord } from '@/services/productionService'
 import { formatDateLong, formatWeight } from '@/helpers/production/formatters'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Trash2, CheckCircle, Clock, Package, ArrowRight } from 'lucide-react'
+import { Plus, Trash2, CheckCircle, Clock, Package, ArrowRight, Loader2 } from 'lucide-react'
 import Loader from '@/components/Utilities/Loader'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
@@ -15,6 +15,7 @@ import { useRouter } from 'next/navigation'
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
 import { formatInteger, formatDecimal, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
+import { notify } from '@/lib/notifications'
 
 const ProductionRecordsManager = ({ productionId, processTree, onRefresh, onOpenCreateDialog, isClosed = false }) => {
     const { data: session } = useSession()
@@ -25,6 +26,7 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh, onOpen
     const [currentPage, setCurrentPage] = useState(1)
     const [paginationMeta, setPaginationMeta] = useState(null)
     const [deleteConfirmRecord, setDeleteConfirmRecord] = useState(null)
+    const [bulkClosing, setBulkClosing] = useState(false)
     const prevProductionIdRef = useRef(null)
 
     // Resetear página cuando cambia la producción
@@ -107,6 +109,94 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh, onOpen
 
     const handleOnClickDeleteRecord = (record) => {
         setDeleteConfirmRecord(record)
+    }
+
+    const buildRecordUpdatePayload = (record) => {
+        const processId = record?.process?.id ?? record?.processId
+        return {
+            production_id: Number(productionId),
+            process_id: processId ? Number(processId) : null,
+            parent_record_id: record?.parentRecordId ?? null,
+            started_at: record?.startedAt ?? null,
+            finished_at: record?.startedAt ?? null,
+            notes: record?.notes ?? null,
+        }
+    }
+
+    const loadAllRecords = async () => {
+        const token = session?.user?.accessToken
+        if (!token || !productionId) return []
+
+        let page = 1
+        let lastPage = 1
+        const collected = []
+
+        do {
+            const response = await getProductionRecords(token, {
+                production_id: productionId,
+                page,
+                per_page: 100,
+            })
+            const rows = response?.data || []
+            collected.push(...rows)
+            lastPage = response?.meta?.last_page || 1
+            page += 1
+        } while (page <= lastPage)
+
+        return collected
+    }
+
+    const handleCloseAllOpenProcesses = async () => {
+        if (isClosed || bulkClosing) return
+        try {
+            setBulkClosing(true)
+            const token = session?.user?.accessToken
+            if (!token) {
+                notify.error({ title: 'No hay sesión activa' })
+                return
+            }
+
+            const allRecords = await loadAllRecords()
+            const recordsToClose = allRecords.filter((record) => {
+                const hasStart = Boolean(record?.startedAt)
+                const isAlreadyClosed = Boolean(record?.finishedAt)
+                const hasProcess = Boolean(record?.process?.id ?? record?.processId)
+                return hasStart && !isAlreadyClosed && hasProcess
+            })
+
+            if (recordsToClose.length === 0) {
+                notify.info({ title: 'No hay procesos pendientes por cerrar' })
+                return
+            }
+
+            const results = await Promise.allSettled(
+                recordsToClose.map((record) => updateProductionRecord(record.id, buildRecordUpdatePayload(record), token))
+            )
+            const successCount = results.filter((r) => r.status === 'fulfilled').length
+            const failedCount = results.length - successCount
+
+            await loadRecords(currentPage)
+            if (onRefresh) onRefresh()
+
+            if (failedCount === 0) {
+                notify.success({
+                    title: 'Procesos cerrados',
+                    description: `${successCount} proceso${successCount !== 1 ? 's' : ''} actualizado${successCount !== 1 ? 's' : ''}.`,
+                })
+            } else {
+                notify.warning({
+                    title: 'Cierre parcial',
+                    description: `${successCount} cerrados y ${failedCount} con error.`,
+                })
+            }
+        } catch (err) {
+            notify.error({
+                title: 'No se pudieron cerrar los procesos',
+                description: err?.userMessage || err?.message || 'Inténtalo de nuevo.',
+            })
+        } finally {
+            setBulkClosing(false)
+        }
     }
 
     const handleConfirmDeleteRecord = async () => {
@@ -269,10 +359,20 @@ const ProductionRecordsManager = ({ productionId, processTree, onRefresh, onOpen
                         Gestiona los procesos dentro del lote de producción
                     </p>
                 </div>
-                <Button onClick={handleNavigateToCreate} disabled={isClosed}>
-                    <Plus />
-                    Nuevo Proceso
-                </Button>
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        onClick={handleCloseAllOpenProcesses}
+                        disabled={isClosed || bulkClosing || loading}
+                    >
+                        {bulkClosing ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
+                        Cerrar procesos pendientes
+                    </Button>
+                    <Button onClick={handleNavigateToCreate} disabled={isClosed}>
+                        <Plus />
+                        Nuevo Proceso
+                    </Button>
+                </div>
             </div>
 
             {rootRecords.length === 0 && !loading ? (

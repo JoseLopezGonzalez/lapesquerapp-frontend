@@ -11,6 +11,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  ArrowRight,
   ChevronUp,
   CircleX,
   ClipboardCheck,
@@ -24,7 +25,6 @@ import {
   LockKeyhole,
   PackageSearch,
   RefreshCcw,
-  Scale,
   Search,
   ShieldAlert,
   TriangleAlert,
@@ -553,7 +553,7 @@ function OrphanStockPallet({ pallet }) {
   )
 }
 
-function ProductionTable({ productions, selectedProduction, onSelectProduction, loading, filtersControl }) {
+function ProductionTable({ productions, selectedProduction, onSelectProduction, loading, filtersControl, pagination, page, setPage, fetching, appliedFilters }) {
   if (loading) {
     return (
       <Card>
@@ -628,7 +628,6 @@ function ProductionTable({ productions, selectedProduction, onSelectProduction, 
                     >
                       <TableCell>
                         <div className="font-mono text-sm font-medium">{production.lot || 'Sin lote'}</div>
-                        <div className="text-xs text-muted-foreground">#{production.id}</div>
                       </TableCell>
                       <TableCell className="whitespace-nowrap text-sm">{formatDisplayDate(production.date)}</TableCell>
                       <TableCell><StatusBadge status={production.status} /></TableCell>
@@ -660,8 +659,14 @@ function ProductionTable({ productions, selectedProduction, onSelectProduction, 
                                   Coste parcial
                                 </Badge>
                               </TooltipTrigger>
-                              <TooltipContent>
-                                {formatNumber(production.costs?.missingCostBoxesCount)} cajas, {formatKg(production.costs?.missingCostWeightKg)}
+                              <TooltipContent className="max-w-60">
+                                <p>{formatNumber(production.costs?.missingCostBoxesCount)} cajas · {formatKg(production.costs?.missingCostWeightKg)}</p>
+                                {production.costs?.missingCostBoxesSample?.length > 0 ? (
+                                  <p className="mt-1 text-xs text-muted-foreground">
+                                    Ej: {production.costs.missingCostBoxesSample.slice(0, 5).map((b) => `#${b.boxId}`).join(', ')}
+                                    {production.costs.missingCostBoxesSample.length < (production.costs.missingCostBoxesCount ?? 0) ? '…' : ''}
+                                  </p>
+                                ) : null}
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
@@ -674,13 +679,13 @@ function ProductionTable({ productions, selectedProduction, onSelectProduction, 
                       </TableCell>
                       <TableCell className="text-right" onClick={(event) => event.stopPropagation()}>
                         <div className="flex justify-end gap-1">
-                          <Button type="button" variant="ghost" size="icon-sm" onClick={() => onSelectProduction(production)}>
+                          <Button type="button" variant="default" size="icon-sm" onClick={() => onSelectProduction(production)}>
                             <Eye className="size-4" />
                             <span className="sr-only">Ver alertas</span>
                           </Button>
-                          <Button asChild variant="ghost" size="icon-sm">
+                          <Button asChild variant="outline" size="icon-sm">
                             <Link href={`/admin/productions/${production.id}`}>
-                              <Factory className="size-4" />
+                              <ArrowRight className="size-4" />
                               <span className="sr-only">Abrir producción</span>
                             </Link>
                           </Button>
@@ -693,8 +698,102 @@ function ProductionTable({ productions, selectedProduction, onSelectProduction, 
             </Table>
           </div>
         )}
+        <div className="mt-3 flex flex-col gap-2 text-sm sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap items-center gap-2 text-muted-foreground">
+            <span>Mostrando {formatNumber(productions.length)} producciones en esta página (total: {formatNumber(pagination.total)}).</span>
+            {appliedFilters.reconciliation_status ? <span>Conciliación filtrada en cliente en V1.</span> : null}
+          </div>
+          <div className="flex items-center justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((current) => Math.max(1, current - 1))}
+              disabled={page <= 1 || fetching}
+            >
+              <ChevronLeft className="mr-2 size-4" />
+              Anterior
+            </Button>
+            <Badge variant="outline">{page} / {pagination.lastPage || 1}</Badge>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((current) => Math.min(pagination.lastPage || current + 1, current + 1))}
+              disabled={page >= (pagination.lastPage || 1) || fetching}
+            >
+              Siguiente
+              <ChevronRight className="ml-2 size-4" />
+            </Button>
+          </div>
+        </div>
       </CardContent>
     </Card>
+  )
+}
+
+const PALLET_STATUS_LABEL = {
+  1: 'Abierto',
+  2: 'Cerrado',
+  3: 'Expedido',
+}
+
+function MissingCostSampleTable({ sample }) {
+  const [open, setOpen] = useState(false)
+  if (!sample?.length) return null
+
+  return (
+    <Collapsible open={open} onOpenChange={setOpen}>
+      <CollapsibleTrigger asChild>
+        <button
+          type="button"
+          className="mt-3 flex w-full items-center justify-between gap-2 rounded-md border px-3 py-2 text-left text-xs hover:bg-muted/40"
+        >
+          <span className="font-medium">Ver muestra de cajas sin coste ({sample.length})</span>
+          {open ? <ChevronUp className="size-3.5 text-muted-foreground" /> : <ChevronDown className="size-3.5 text-muted-foreground" />}
+        </button>
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <div className="mt-1 overflow-x-auto rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-xs">ID caja</TableHead>
+                <TableHead className="text-xs">Producto</TableHead>
+                <TableHead className="text-right text-xs">Peso neto</TableHead>
+                <TableHead className="text-right text-xs">€/kg</TableHead>
+                <TableHead className="text-xs">Ubicación</TableHead>
+                <TableHead className="text-xs">Motivo</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sample.map((box) => {
+                const palletStatus = PALLET_STATUS_LABEL[box.location?.palletStatus] ?? box.location?.palletStatus ?? '—'
+                const locationParts = []
+                if (box.location?.palletId) locationParts.push(`Palet #${box.location.palletId}`)
+                if (box.location?.orderId) locationParts.push(`Pedido #${box.location.orderId}`)
+                if (box.location?.receptionId) locationParts.push(`Recep. #${box.location.receptionId}`)
+                const locationText = locationParts.length ? locationParts.join(' · ') : '—'
+                return (
+                  <TableRow key={box.boxId}>
+                    <TableCell className="font-mono text-xs">{box.boxId}</TableCell>
+                    <TableCell className="text-xs">{box.product?.name || `#${box.product?.id}` || '—'}</TableCell>
+                    <TableCell className="text-right tabular-nums text-xs">{formatKg(box.netWeightKg, 2)}</TableCell>
+                    <TableCell className="text-right tabular-nums text-xs">
+                      {box.manualCostPerKg != null ? `${Number(box.manualCostPerKg).toFixed(4)} €` : <span className="text-muted-foreground">Sin coste</span>}
+                    </TableCell>
+                    <TableCell className="text-xs">
+                      <span title={`Estado palet: ${palletStatus}`}>{locationText}</span>
+                    </TableCell>
+                    <TableCell className="max-w-40 truncate text-xs text-muted-foreground" title={box.reason}>{box.reason || '—'}</TableCell>
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
   )
 }
 
@@ -713,6 +812,9 @@ function AlertGroup({ title, alerts, production }) {
             </div>
             <p className="mt-2 text-sm leading-relaxed">{alert.message}</p>
             {alert.action ? <p className="mt-1 text-xs text-muted-foreground">{alert.action}</p> : null}
+            {alert.code === 'missing_cost' && production.costs?.missingCostBoxesSample?.length > 0 ? (
+              <MissingCostSampleTable sample={production.costs.missingCostBoxesSample} />
+            ) : null}
             <Button asChild size="sm" variant="outline" className="mt-3">
               <Link href={getProductionActionHref(production, alert)}>
                 {getActionLabel(production, alert)}
@@ -1031,6 +1133,11 @@ export default function ProductionsControlPanel() {
           selectedProduction={selectedProduction}
           onSelectProduction={handleSelectProduction}
           loading={isLoading}
+          pagination={pagination}
+          page={page}
+          setPage={setPage}
+          fetching={isFetching}
+          appliedFilters={appliedFilters}
           filtersControl={(
             <Filters
               filters={filters}
@@ -1041,37 +1148,6 @@ export default function ProductionsControlPanel() {
             />
           )}
         />
-
-        <div className="flex flex-col gap-2 rounded-lg border bg-card px-3 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-wrap items-center gap-2 text-muted-foreground">
-            <Scale className="size-4" />
-            <span>{formatNumber(visibleProductions.length)} filas visibles de {formatNumber(pagination.total)} producciones.</span>
-            {appliedFilters.reconciliation_status ? <span>Conciliación filtrada en cliente en V1.</span> : null}
-          </div>
-          <div className="flex items-center justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((current) => Math.max(1, current - 1))}
-              disabled={page <= 1 || isFetching}
-            >
-              <ChevronLeft className="mr-2 size-4" />
-              Anterior
-            </Button>
-            <Badge variant="outline">{page} / {pagination.lastPage || 1}</Badge>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((current) => Math.min(pagination.lastPage || current + 1, current + 1))}
-              disabled={page >= (pagination.lastPage || 1) || isFetching}
-            >
-              Siguiente
-              <ChevronRight className="ml-2 size-4" />
-            </Button>
-          </div>
-        </div>
       </div>
 
       <ProductionSidePanel
