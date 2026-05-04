@@ -59,7 +59,7 @@ export function OrdersProfitabilitySummaryCard() {
       <CardHeader className="p-0 pb-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <CardDescription>Rentabilidad de pedidos</CardDescription>
+            <CardDescription>Rentabilidad bruta</CardDescription>
             <div className="mt-1 flex items-start gap-2">
               <CardTitle className="text-3xl font-medium tracking-tight">
                 {formatNullableCurrency(data?.grossMargin)}
