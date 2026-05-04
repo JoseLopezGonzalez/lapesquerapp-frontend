@@ -126,6 +126,13 @@ export interface OrdersProfitabilityProductsParams {
   dateTo: string;
 }
 
+/** Alerta: cajas cuyo producto no tiene precio €/kg válido en la previsión del pedido (no suman a totalRevenue). */
+export interface OrdersProfitabilitySalePriceAlert {
+  active: boolean;
+  boxesWithoutSalePrice: number;
+  hint: string | null;
+}
+
 export interface ProfitabilitySummaryResponse {
   period: {
     from: string;
@@ -139,6 +146,7 @@ export interface ProfitabilitySummaryResponse {
   coveredBoxes: number;
   uncoveredBoxes: number;
   costCoverageBoxesPct: number;
+  salePriceAlert?: OrdersProfitabilitySalePriceAlert | null;
 }
 
 export interface ProfitabilityTimelinePoint {

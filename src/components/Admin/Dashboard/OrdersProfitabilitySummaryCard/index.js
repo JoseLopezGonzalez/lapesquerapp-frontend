@@ -1,6 +1,6 @@
 "use client"
 
-import { Calendar, Info } from "lucide-react"
+import { AlertTriangle, Calendar, Info } from "lucide-react"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -29,6 +29,11 @@ export function OrdersProfitabilitySummaryCard() {
   const { data, isLoading } = useOrdersProfitabilitySummary({})
   const costCoverageBoxesPct = Number(data?.costCoverageBoxesPct ?? 0)
   const isLowCoverage = data && costCoverageBoxesPct < LOW_COST_COVERAGE_THRESHOLD
+  const salePriceAlert = data?.salePriceAlert
+  const salePriceAlertMessage =
+    salePriceAlert?.active &&
+    (salePriceAlert.hint?.trim() ||
+      `${formatInteger(salePriceAlert.boxesWithoutSalePrice ?? 0)} caja(s) sin precio unitario (€/kg) en la previsión del pedido.`)
 
   if (isLoading && !data) {
     return (
@@ -66,14 +71,14 @@ export function OrdersProfitabilitySummaryCard() {
                       <Info className="h-4 w-4" />
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent className="w-72 p-4 text-sm">
-                    <div className="grid gap-2">
+                  <TooltipContent className="w-80 max-w-[min(22rem,calc(100vw-2rem))] border border-background/20 p-4 text-sm text-background shadow-md">
+                    <div className="grid gap-3">
                       <div className="flex flex-col gap-0.5">
-                        <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        <span className="text-[11px] font-semibold uppercase tracking-wider text-background/65">
                           Periodo
                         </span>
-                        <span className="flex items-center gap-1 text-xs">
-                          <Calendar className="h-3 w-3" />
+                        <span className="flex items-center gap-1 text-xs text-background">
+                          <Calendar className="h-3 w-3 shrink-0 opacity-90" aria-hidden />
                           {formatDateRange(data.period?.from, data.period?.to)}
                         </span>
                       </div>
@@ -110,10 +115,23 @@ export function OrdersProfitabilitySummaryCard() {
                         <span className="font-medium">{formatInteger(data.uncoveredBoxes ?? 0)}</span>
                       </div>
                       {isLowCoverage && (
-                        <div className="text-xs italic text-muted-foreground">
+                        <div className="rounded-md border border-background/25 bg-background/10 px-2.5 py-2 text-xs italic text-background/85">
                           Cobertura baja: el margen es orientativo.
                         </div>
                       )}
+                      {salePriceAlert?.active && salePriceAlertMessage ? (
+                        <div className="border-t border-background/15 pt-3">
+                          <div className="flex gap-2.5 rounded-lg border border-amber-400/45 bg-background p-3 text-foreground shadow-sm">
+                            <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-600" aria-hidden />
+                            <div className="min-w-0 space-y-2">
+                              <p className="text-sm font-semibold leading-snug">
+                                Precio en previsión del pedido
+                              </p>
+                              <p className="text-sm leading-relaxed text-foreground/90">{salePriceAlertMessage}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ) : null}
                     </div>
                   </TooltipContent>
                 </Tooltip>
