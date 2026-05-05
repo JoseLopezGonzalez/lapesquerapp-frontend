@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react'
 import { toast } from 'sonner'
 import {
     getProductionInputs,
-    createMultipleProductionInputs,
+    syncMultipleProductionInputs,
     deleteProductionInput,
     deleteMultipleProductionInputs
 } from '@/services/productionService'
@@ -322,23 +322,15 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
                 .map((box) => box?.boxId)
                 .filter((id) => id != null && id !== '' && !isNaN(id) && Number(id) > 0)
                 .map((id) => Number(id))
-            if (boxIds.length === 0) {
+            const uniqueBoxIds = [...new Set(boxIds)]
+            if (uniqueBoxIds.length === 0) {
                 toast.error('No se encontraron IDs válidos en las cajas seleccionadas.')
                 return
             }
-            if (inputs.length > 0) {
-                const inputIds = inputs
-                    .map((input) => input.id)
-                    .filter((id) => id != null && !isNaN(id))
-                    .map((id) => Number(id))
-                if (inputIds.length > 0) {
-                    await deleteMultipleProductionInputs(inputIds, token)
-                }
-            }
             try {
-                await createMultipleProductionInputs(Number(productionRecordId), boxIds, token)
+                await syncMultipleProductionInputs(Number(productionRecordId), uniqueBoxIds, token)
             } catch (err) {
-                console.error('Error al crear múltiples inputs:', err)
+                console.error('Error al sincronizar múltiples inputs:', err)
                 const errorMessage = err?.data?.message || err?.message || 'Error al guardar las entradas'
                 toast.error(errorMessage)
                 throw err
@@ -372,7 +364,7 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
         } finally {
             setSavingInputs(false)
         }
-    }, [inputs, onRefresh, productionRecordId, selectedBoxes, session?.user?.accessToken, updateInputs, updateRecord])
+    }, [onRefresh, productionRecordId, selectedBoxes, session?.user?.accessToken, updateInputs, updateRecord])
 
     const handleDeleteInput = useCallback((inputId) => {
         setDeleteInputConfirm({ open: true, inputId, mode: 'single' })

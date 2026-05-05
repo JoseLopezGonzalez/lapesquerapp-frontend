@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiDelete, apiRequest } from '@/lib/api/apiHelpers';
+import { apiGet, apiPost, apiPut, apiDelete, apiRequest } from '@/lib/api/apiHelpers';
 import { API_URL_V2 } from '@/configs/config';
 import { normalizeProductionInput } from '@/helpers/production/normalizers';
 
@@ -60,6 +60,39 @@ export function createMultipleProductionInputs(productionRecordId, boxIds, token
       };
     },
   });
+}
+
+export function syncMultipleProductionInputs(productionRecordId, boxIds, token) {
+  if (!productionRecordId || isNaN(productionRecordId)) {
+    console.error('[syncMultipleProductionInputs] productionRecordId inválido:', productionRecordId);
+    return Promise.reject(new Error('El ID del registro de producción no es válido'));
+  }
+
+  const validBoxIds = Array.isArray(boxIds)
+    ? [...new Set(
+        boxIds
+          .filter((id) => {
+            const isValid = id != null && id !== undefined && id !== '' && !isNaN(id) && Number(id) > 0;
+            if (!isValid) {
+              console.warn('[syncMultipleProductionInputs] ID inválido filtrado:', id, 'tipo:', typeof id);
+            }
+            return isValid;
+          })
+          .map((id) => Number(id))
+      )]
+    : [];
+
+  if (validBoxIds.length === 0) {
+    console.error('[syncMultipleProductionInputs] No hay boxIds válidos. boxIds original:', boxIds);
+    return Promise.reject(new Error('No se han proporcionado IDs válidos de cajas'));
+  }
+
+  const requestBody = {
+    production_record_id: Number(productionRecordId),
+    box_ids: validBoxIds,
+  };
+
+  return apiPut(`${API_URL_V2}production-inputs/multiple`, token, requestBody);
 }
 
 export function deleteProductionInput(inputId, token) {
