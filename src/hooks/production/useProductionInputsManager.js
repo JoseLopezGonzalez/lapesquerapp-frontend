@@ -346,6 +346,7 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
             }
             try {
                 await syncMultipleProductionInputs(Number(productionRecordId), uniqueBoxIds, token)
+                toast.success('Inputs sincronizados correctamente.')
             } catch (err) {
                 console.error('Error al sincronizar múltiples inputs:', err)
                 const errorMessage = err?.data?.message || err?.message || 'Error al guardar las entradas'
