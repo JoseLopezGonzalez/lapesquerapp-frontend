@@ -29,9 +29,16 @@ export const costRegularizationService = {
 
     async applyManualCostsByProduct(payload) {
         const token = await getAuthToken();
+        const body = { ...payload };
+        if (
+            body.scope === 'stock' &&
+            (body.filters == null || typeof body.filters !== 'object' || Array.isArray(body.filters))
+        ) {
+            body.filters = {};
+        }
         try {
             const response = await performActionGeneric(
-                `${BASE}/manual-costs/apply-by-product`, 'POST', payload, token
+                `${BASE}/manual-costs/apply-by-product`, 'POST', body, token
             );
             return response.json();
         } catch (rawResponse) {

@@ -743,13 +743,22 @@ export default function CostRegularizationClient() {
         let result
 
         if (byProduct) {
+            // Backend ApplyManualBoxCostsByProductRequest exige `filters` como array/objeto siempre.
+            const filters =
+                tab === 'sales'
+                    ? { dateFrom: salesFrom, dateTo: salesTo }
+                    : {
+                          ...(stockLot?.trim() ? { lot: stockLot.trim() } : {}),
+                          ...(stockFrom ? { createdFrom: stockFrom } : {}),
+                          ...(stockTo ? { createdTo: stockTo } : {}),
+                      }
             const payload = {
                 scope: tab,
+                filters,
                 products: productsWithCost.map(p => ({
                     productId: p.product.id,
                     manualCostPerKg: parseFloat(activeProductCosts[p.product.id]),
                 })),
-                ...(tab === 'sales' ? { dateFrom: salesFrom, dateTo: salesTo } : {}),
             }
             result = await costRegularizationService.applyManualCostsByProduct(payload)
         } else {
