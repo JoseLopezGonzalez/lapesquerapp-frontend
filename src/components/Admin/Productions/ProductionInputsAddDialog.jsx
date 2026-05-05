@@ -50,6 +50,7 @@ export default function ProductionInputsAddDialog({ api }) {
         setWeightSearch,
         weightTolerance,
         setWeightTolerance,
+        hasSelectionChanges,
         handleSearchByWeight,
         weightSearchResults,
         handleSelectWeightSearchResults,
@@ -61,6 +62,7 @@ export default function ProductionInputsAddDialog({ api }) {
         calculateWeightByPallet,
         handleToggleBox,
         isBoxSelected,
+        wasPreviouslyConsumed,
         setAddDialogOpen,
         resetAddDialog,
         handleAddInputs,
@@ -297,9 +299,12 @@ export default function ProductionInputsAddDialog({ api }) {
                                                         {getPalletBoxes(selectedPalletId)
                                                             .filter(box => isBoxAvailable(box) && !isBoxSelected(box.id, selectedPalletId))
                                                             .map((box) => (
+                                                                (() => {
+                                                                    const isPreviouslyConsumed = inputs.length > 0 && wasPreviouslyConsumed(box.id)
+                                                                    return (
                                                                 <div
                                                                     key={`${selectedPalletId}-${box.id}`}
-                                                                    className="flex items-center gap-2 p-2 hover:bg-muted rounded-md cursor-pointer border"
+                                                                    className={`flex items-center gap-2 p-2 hover:bg-muted rounded-md cursor-pointer border ${isPreviouslyConsumed ? 'border-amber-300 bg-amber-50/80 dark:border-amber-700 dark:bg-amber-950/30' : ''}`}
                                                                     onClick={() => handleToggleBox(box.id, selectedPalletId)}
                                                                 >
                                                                     <Checkbox
@@ -317,7 +322,14 @@ export default function ProductionInputsAddDialog({ api }) {
                                                                             Peso Neto: {formatWeight(box.netWeight)}
                                                                         </p>
                                                                     </div>
+                                                                    {isPreviouslyConsumed && (
+                                                                        <Badge variant="secondary" className="text-[10px] border-amber-300 bg-amber-100 text-amber-800 dark:border-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+                                                                            Consumida antes
+                                                                        </Badge>
+                                                                    )}
                                                                 </div>
+                                                                    )
+                                                                })()
                                                             ))}
                                                         {getPalletBoxes(selectedPalletId).filter(box => isBoxAvailable(box) && !isBoxSelected(box.id, selectedPalletId)).length === 0 && (
                                                             <div className="flex items-center justify-center h-full py-8">
@@ -898,7 +910,7 @@ export default function ProductionInputsAddDialog({ api }) {
                 </Button>
                 <Button
                     onClick={handleAddInputs}
-                    disabled={selectedBoxes.length === 0 || savingInputs}
+                    disabled={selectedBoxes.length === 0 || savingInputs || (inputs.length > 0 && !hasSelectionChanges)}
                     data-icon="inline-start"
                 >
                     {savingInputs ? (

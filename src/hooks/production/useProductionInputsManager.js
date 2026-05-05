@@ -51,8 +51,6 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
     const [palletsDialogOpen, setPalletsDialogOpen] = useState(false)
     const [deleteInputConfirm, setDeleteInputConfirm] = useState({ open: false, inputId: null, mode: 'single' })
 
-    const isBoxAvailable = useCallback((box) => box.isAvailable !== false, [])
-
     const getAllBoxes = useCallback(() =>
         loadedPallets.flatMap((pallet) =>
             (pallet.boxes || []).map((box) => ({ ...box, palletId: pallet.id }))
@@ -76,6 +74,25 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
     const inputs = inputsQuery.data ?? []
     const loading = inputsQuery.isLoading
     const error = inputsQuery.error?.message ?? null
+
+    const editableInputBoxIds = useMemo(() => new Set(
+        inputs
+            .map((input) => Number(input?.box?.id))
+            .filter((id) => Number.isFinite(id) && id > 0)
+    ), [inputs])
+
+    const isBoxAvailable = useCallback((box) => {
+        const boxId = Number(box?.id)
+        if (Number.isFinite(boxId) && editableInputBoxIds.has(boxId)) {
+            return true
+        }
+        return box?.isAvailable !== false
+    }, [editableInputBoxIds])
+
+    const wasPreviouslyConsumed = useCallback((boxId) => {
+        const parsedBoxId = Number(boxId)
+        return Number.isFinite(parsedBoxId) && editableInputBoxIds.has(parsedBoxId)
+    }, [editableInputBoxIds])
 
     const setInputs = useCallback((updater) => {
         queryClient.setQueryData(inputsQueryKey, (previous = []) =>
@@ -755,6 +772,25 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
         setWeightSearch('')
     }, [weightSearchResults])
 
+    const hasSelectionChanges = useMemo(() => {
+        const currentBoxIds = new Set(
+            inputs
+                .map((input) => Number(input?.box?.id))
+                .filter((id) => Number.isFinite(id) && id > 0)
+        )
+        const selectedBoxIds = new Set(
+            selectedBoxes
+                .map((box) => Number(box?.boxId))
+                .filter((id) => Number.isFinite(id) && id > 0)
+        )
+
+        if (currentBoxIds.size !== selectedBoxIds.size) return true
+        for (const selectedId of selectedBoxIds) {
+            if (!currentBoxIds.has(selectedId)) return true
+        }
+        return false
+    }, [inputs, selectedBoxes])
+
     const resetAddDialog = useCallback(() => {
         setPalletSearch('')
         setLoadedPallets([])
@@ -798,6 +834,7 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
         setWeightSearchResults,
         weightTolerance,
         setWeightTolerance,
+        hasSelectionChanges,
         targetWeightResults,
         setTargetWeightResults,
         lotsDialogOpen,
@@ -807,6 +844,7 @@ export function useProductionInputsManager({ productionRecordId, initialInputsPr
         palletsDialogOpen,
         setPalletsDialogOpen,
         isBoxAvailable,
+        wasPreviouslyConsumed,
         getAllBoxes,
         getPalletBoxes,
         getSelectedBoxesForPallet,
