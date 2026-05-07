@@ -4,7 +4,7 @@
  * Contains logic for generating Excel rows and linkedSummary for Cofra documents
  */
 
-import { parseDecimalValue, calculateImporte } from './common';
+import { parseDecimalValue, calculateImporte, formatDateForA3 } from './common';
 import { armadores, barcos, lonjas } from '@/components/Admin/MarketDataExtractor/AlbaranCofraWeb/exportData';
 
 /**
@@ -18,16 +18,17 @@ import { armadores, barcos, lonjas } from '@/components/Admin/MarketDataExtracto
  */
 export function generateCofraExcelRows(document, options = {}) {
     const { CABSERIE: baseCABSERIE = "CF", startSequence = 1 } = options;
-    const { detalles: { numero, fecha, cifLonja } } = document;
+    const { detalles: { numero, fecha: fechaRaw, cifLonja } } = document;
+    const fecha = formatDateForA3(fechaRaw);
     // Extraer año de la fecha (últimos 2 dígitos)
     // Intentar extraer año directamente de la cadena (formato YYYY-MM-DD o YYYY/MM/DD)
     let año = null;
-    const añoMatch = String(fecha).match(/(\d{4})/);
+    const añoMatch = String(fechaRaw).match(/(\d{4})/);
     if (añoMatch) {
         año = añoMatch[1].slice(-2);
     } else {
         // Fallback: usar Date object
-        const fechaObj = new Date(fecha);
+        const fechaObj = new Date(fechaRaw);
         año = fechaObj.getFullYear().toString().slice(-2);
     }
     const CABSERIE = `${baseCABSERIE}${año}`;

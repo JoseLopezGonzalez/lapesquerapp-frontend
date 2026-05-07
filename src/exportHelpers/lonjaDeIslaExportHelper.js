@@ -4,7 +4,7 @@
  * Contains logic for generating Excel rows and linkedSummary for LonjaDeIsla documents
  */
 
-import { parseDecimalValue, calculateImporte } from './common';
+import { parseDecimalValue, calculateImporte, formatDateForA3 } from './common';
 import { findBarcoMatch } from './lonjaDeIslaBarcoMatcher';
 import { parseEuropeanNumber } from '@/helpers/formats/numbers/formatNumbers';
 import { normalizeText } from '@/helpers/formats/texts';
@@ -99,20 +99,21 @@ export function generateLonjaDeIslaExcelRows(document, options = {}) {
         : LONJA_CABNUMDOC_TYPES.SERVICIOS_CONTRATO;
 
     const { CABSERIE: baseCABSERIE = "LI", startSequence = 1, startSequenceVenta } = options;
-    const { details: { fecha }, tables: { ventas, vendidurias } } = document;
+    const { details: { fecha: fechaRaw }, tables: { ventas, vendidurias } } = document;
+    const fecha = formatDateForA3(fechaRaw);
     // Extraer año de la fecha (últimos 2 dígitos)
     // Intentar extraer año directamente de la cadena (formato YYYY-MM-DD o YYYY/MM/DD)
     let año = null;
-    const añoMatch = String(fecha).match(/(\d{4})/);
+    const añoMatch = String(fechaRaw).match(/(\d{4})/);
     if (añoMatch) {
         año = añoMatch[1].slice(-2);
     } else {
         // Fallback: usar Date object
-        const fechaObj = new Date(fecha);
+        const fechaObj = new Date(fechaRaw);
         año = fechaObj.getFullYear().toString().slice(-2);
     }
     const CABSERIE = `${baseCABSERIE}${año}`;
-    const fechaSoloNumeros = String(fecha).replace(/[^0-9]/g, '');
+    const fechaSoloNumeros = String(fechaRaw).replace(/[^0-9]/g, '');
     let albaranSequence = startSequence;
     let ventaAlbaranSequence = startSequenceVenta ?? startSequence;
     const processedRows = [];

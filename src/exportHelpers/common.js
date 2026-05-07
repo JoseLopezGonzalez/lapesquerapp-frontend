@@ -59,6 +59,29 @@ export function calculateImporte(weight, price) {
 }
 
 /**
+ * Normalizes a date string to DD/MM/YYYY for A3ERP export.
+ * Handles yyyy-MM-dd (ChatGPT) and DD/MM/YYYY (Azure raw text).
+ *
+ * @param {string} fecha - Date in any supported format
+ * @returns {string} Date formatted as DD/MM/YYYY
+ */
+export function formatDateForA3(fecha) {
+    if (!fecha) return '';
+    const s = String(fecha).trim();
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) return s;                 // DD/MM/YYYY — already correct
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {                           // yyyy-MM-dd (ChatGPT)
+        const [y, m, d] = s.split('-');
+        return `${d}/${m}/${y}`;
+    }
+    if (/^\d{4}\/\d{2}\/\d{2}$/.test(s)) {                         // yyyy/MM/dd
+        const [y, m, d] = s.split('/');
+        return `${d}/${m}/${y}`;
+    }
+    if (/^\d{2}-\d{2}-\d{4}$/.test(s)) return s.replace(/-/g, '/'); // DD-MM-YYYY
+    return s;
+}
+
+/**
  * Calculates importe from a line item (venta, subasta, etc.)
  * Supports both kilos and pesoNeto as weight field.
  *
