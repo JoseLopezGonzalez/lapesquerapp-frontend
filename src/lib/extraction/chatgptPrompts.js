@@ -76,10 +76,10 @@ Si los subtotales no aparecen en el documento, devuelve 0 en todos sus campos nu
 
 REGLAS CRÍTICAS — aplícalas antes de extraer cualquier dato:
 
-REGLA 1 — Columnas de la tabla ventas y posible desorden por saltos de línea:
-Las columnas son siempre: Venta | Barco | Especie | Cajas | Kilos | Precio | Importe | Nrsi.
-Cuando el nombre del barco o de la especie ocupa dos líneas en el PDF, el extractor de texto puede intercalar números en medio del texto del nombre, desplazándolos de su posición original.
-Usa siempre la verificación round(kilos × precio, 2) = importe para confirmar que has asignado correctamente cada valor.
+REGLA 1 — Columnas de la tabla ventas:
+El orden visual de columnas en la tabla es siempre (de izquierda a derecha): Venta | Barco | Especie | Cajas | Kilos | Precio | Importe | Nrsi.
+ATENCIÓN: cuando el nombre del barco o de la especie ocupa más de una línea, el extractor de texto del PDF entrega los valores de Kilos y Precio en un orden que puede no coincidir con su posición visual en la tabla. Usa el layout visual del PDF — no el orden del texto extraído — para determinar qué número pertenece a la columna Kilos y cuál a la columna Precio.
+Verifica siempre: round(kilos × precio, 2) = importe.
 
 REGLA 2 — Nombres que continúan en línea siguiente (vendidurias):
 Si el nombre de una vendiduria se corta y continúa en la línea siguiente (ej: "PESCADOS DE ISLA CRISTINA" + "S.L."), únelo en un solo string.

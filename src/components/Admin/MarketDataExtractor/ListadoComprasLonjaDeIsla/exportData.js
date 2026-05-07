@@ -5418,6 +5418,7 @@ export const productos = [
   { nombre: "CALAMARES / CALAMAR O CALAMAR EUROPEO", codA3erp: "10179", codBrisappProducto: "106" },
   { nombre: "BROTOLA DE FANGO / BROTOLA DE", codA3erp: "10180", codBrisappProducto: "340" },
   { nombre: "BROTOLA DE FANGO / BROTOLA DE FANGO", codA3erp: "10180", codBrisappProducto: "340" },
+  { nombre: "DORADAS / DORADA", codA3erp: "10195", codBrisappProducto: "108" },
   { nombre: "CINTA / PEZ CINTA O CINTA", codA3erp: "10181", codBrisappProducto: "341" },
   { nombre: "CANGREJO AZUL / CANGREJO AZUL", codA3erp: "10182", codBrisappProducto: "342" },
 ]
