@@ -76,12 +76,7 @@ Si los subtotales no aparecen en el documento, devuelve 0 en todos sus campos nu
 
 REGLAS CRÍTICAS — aplícalas antes de extraer cualquier dato:
 
-REGLA 1 — Campo "especie" en la tabla ventas:
-Copia el texto EXACTAMENTE como aparece en el documento. No completes, no traduzcas, no añadas palabras que no estén escritas. El formato habitual es "{código} {nombre} / {variante}". Cuando el nombre es largo y continúa en la línea siguiente del PDF, únelo en un solo string sin salto de línea ni palabras extra.
-  MAL (inventado): "62 LANGOSTINOS / LANGOSTINO OCCIDENTAL"
-  BIEN (copiado): "62 LANGOSTINOS / LANGOSTINO O LANGOSTINO MEDITERRANEO"
-
-REGLA 2 — Distinguir kilos vs precio en la tabla ventas:
+REGLA 1 — Distinguir kilos vs precio en la tabla ventas:
 Las columnas de esa tabla son siempre: Venta | Barco | Especie | Cajas | Kilos | Precio | Importe | Nrsi.
 Cuando la especie ocupa dos líneas en el PDF, el texto extraído puede mostrar los números fuera de orden. Para identificar correctamente cuál es kilos y cuál es precio usa esta fórmula:
   round(Kilos × Precio, 2) = Importe
@@ -99,10 +94,10 @@ Ejemplos reales de este documento donde el orden del texto engaña:
   Fila 1996: texto "...1 29.00 QUISQUILLAS 1.24 35.96"
     cajas=1, kilos=1.24, precio=29.00, importe=35.96 (1.24×29.00=35.96 ✓)
 
-REGLA 3 — Nombres que continúan en línea siguiente (vendidurias):
+REGLA 2 — Nombres que continúan en línea siguiente (vendidurias):
 Si el nombre de una vendiduria se corta y continúa en la línea siguiente (ej: "PESCADOS DE ISLA CRISTINA" + "S.L."), únelo en un solo string.
 
-REGLA 4 — tipoVentas:
+REGLA 3 — tipoVentas:
 Pon siempre "tipoVentas": []. No extraigas ni proceses esa sección.
 
 El JSON de respuesta debe tener exactamente esta estructura (usa null para campos no presentes en el documento, los números deben ser tipo number —no string—, las fechas en formato yyyy-MM-dd):
