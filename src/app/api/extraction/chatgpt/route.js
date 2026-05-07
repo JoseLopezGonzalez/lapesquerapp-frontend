@@ -5,7 +5,7 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { CHATGPT_EXTRACTION_PROMPTS } from '@/lib/extraction/chatgptPrompts';
 
 export const runtime = 'nodejs';
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 export async function POST(req) {
     try {
