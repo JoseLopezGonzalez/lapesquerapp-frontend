@@ -76,46 +76,10 @@ Si los subtotales no aparecen en el documento, devuelve 0 en todos sus campos nu
 
 REGLAS CRÍTICAS — aplícalas antes de extraer cualquier dato:
 
-REGLA 1 — Identificar kilos, precio e importe en la tabla ventas:
+REGLA 1 — Columnas de la tabla ventas y posible desorden por saltos de línea:
 Las columnas son siempre: Venta | Barco | Especie | Cajas | Kilos | Precio | Importe | Nrsi.
-
-El PDF a veces parte el nombre del barco o de la especie en dos líneas. Cuando esto ocurre, el extractor de texto intercala un número numérico DENTRO del texto del nombre. Este número desplazado es SIEMPRE el PRECIO. Sigue este proceso para cada fila:
-
-PASO 1 — Identifica NRSI (texto final como "12.010500/H", puede ser null) e IMPORTE (último número).
-
-PASO 2 — Detecta si la fila tiene nombre partido: ¿hay algún número con decimales intercalado EN MEDIO del texto del barco o la especie? (es decir, texto → número → más texto que pertenece al mismo nombre)
-
-CASO A — Fila sin nombre partido (todos los números aparecen DESPUÉS de la especie):
-  El orden de izquierda a derecha es el correcto: cajas, kilos, precio, importe.
-  Leyendo de derecha a izquierda: importe ← precio ← kilos ← cajas.
-  Ejemplos reales de este documento:
-    "CF-RUPERTIN  RASCACIOS/ESCORPORA  1  6.64  3.55  23.57" → kilos=6.64, precio=3.55, importe=23.57
-    "CF-N.ESTRELLA POLAR  BRECA PEQUEÑA  1  4.72  2.45  11.56" → kilos=4.72, precio=2.45, importe=11.56
-    "PI-JAVI CALE  GAMBAS  1  5.34  6.90  36.85" → kilos=5.34, precio=6.90, importe=36.85
-
-CASO B — Fila con nombre partido (hay un número intercalado en medio del nombre):
-  El número intercalado entre las dos partes del nombre = PRECIO.
-  El número que aparece DESPUÉS del nombre completo (justo antes del importe) = KILOS.
-  Ejemplos reales de este documento (extraídos tal cual del PDF):
-    "CF-N.ESTRELLA POLAR  BROTOLA DE FANGO / BROTOLA DE  1  8.90  FANGO  1.76  15.66"
-      → precio=8.90 (intercalado), kilos=1.76 (después del nombre), importe=15.66
-      Verificación: 1.76×8.90=15.66 ✓
-    "CF-HNOS CORDERO  CAÑAILLAS  1  28.00  GIL  CAÑAILLAS/CAÑAILLA  3.22  90.16"
-      → precio=28.00 (intercalado entre "CORDERO" y "GIL"), kilos=3.22, importe=90.16
-      Verificación: 3.22×28.00=90.16 ✓
-    "CF-HNOS DIAZ  CHOCOS  2  7.20  VAZQUEZ  CHOCOS/CHOCO  22.70  163.44"
-      → precio=7.20 (intercalado), kilos=22.70, importe=163.44
-      Verificación: 22.70×7.20=163.44 ✓
-    "CF-HNOS VAZQUEZ  PULPOS  1  11.60  MASC  PULPOS/PULPO ROQUERO  6.48  75.17"
-      → precio=11.60 (intercalado), kilos=6.48, importe=75.17
-      Verificación: 6.48×11.60=75.17 ✓
-    "CF-MATEUUSZ  CANGREJO AZUL  1  8.00  KOZLOWSK  CANGREJO AZUL  4.52  36.16"
-      → precio=8.00 (intercalado), kilos=4.52, importe=36.16
-      Verificación: 4.52×8.00=36.16 ✓
-
-PASO 3 — Verificación obligatoria: round(kilos × precio, 2) = importe.
-  Si no cuadra, es que no has identificado correctamente el CASO A o CASO B.
-  El entero sin decimales adyacente al bloque de especie = CAJAS.
+Cuando el nombre del barco o de la especie ocupa dos líneas en el PDF, el extractor de texto puede intercalar números en medio del texto del nombre, desplazándolos de su posición original.
+Usa siempre la verificación round(kilos × precio, 2) = importe para confirmar que has asignado correctamente cada valor.
 
 REGLA 2 — Nombres que continúan en línea siguiente (vendidurias):
 Si el nombre de una vendiduria se corta y continúa en la línea siguiente (ej: "PESCADOS DE ISLA CRISTINA" + "S.L."), únelo en un solo string.
