@@ -58,15 +58,31 @@ export async function processDocument(file, documentType) {
     }
 
     try {
+        console.log("[DocumentProcessor] processing file:", {
+            fileName: file?.name,
+            fileSizeBytes: file?.size,
+            fileType: file?.type,
+            documentType,
+            azureDocumentType: processor.azureType,
+        });
+
         // 1. Extraer datos de Azure Document AI
         let azureData = await extractDataWithAzureDocumentAi({
             file,
             documentType: processor.azureType,
         });
+        console.log("[DocumentProcessor] azureData before preprocess:", {
+            count: Array.isArray(azureData) ? azureData.length : null,
+            firstDocumentKeys: azureData?.[0] ? Object.keys(azureData[0]) : [],
+        });
 
         // 2. Normalizar datos multi-página (si el tipo de documento lo requiere)
         if (processor.preprocess) {
             azureData = processor.preprocess(azureData);
+            console.log("[DocumentProcessor] azureData after preprocess:", {
+                count: Array.isArray(azureData) ? azureData.length : null,
+                firstDocumentKeys: azureData?.[0] ? Object.keys(azureData[0]) : [],
+            });
         }
 
         // 3. Validar estructura
@@ -74,6 +90,10 @@ export async function processDocument(file, documentType) {
 
         // 4. Parsear datos
         const processedData = processor.parser(azureData);
+        console.log("[DocumentProcessor] processedData summary:", {
+            count: Array.isArray(processedData) ? processedData.length : null,
+            firstDocumentKeys: processedData?.[0] ? Object.keys(processedData[0]) : [],
+        });
 
         // 5. Retornar resultado exitoso
         return {
@@ -84,6 +104,12 @@ export async function processDocument(file, documentType) {
         };
 
     } catch (error) {
+        console.error("[DocumentProcessor] processing failed:", {
+            documentType,
+            fileName: file?.name,
+            errorMessage: error?.message,
+            errorType: error?.name,
+        });
         // Manejar errores específicos
         if (error instanceof ValidationError) {
             return {
