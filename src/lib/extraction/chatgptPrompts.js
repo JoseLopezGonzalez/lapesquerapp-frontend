@@ -77,37 +77,45 @@ Si los subtotales no aparecen en el documento, devuelve 0 en todos sus campos nu
 REGLAS CRÍTICAS — aplícalas antes de extraer cualquier dato:
 
 REGLA 1 — Identificar kilos, precio e importe en la tabla ventas:
-Las columnas de esa tabla son siempre, de izquierda a derecha:
-  Venta | Barco | Especie | Cajas | Kilos | Precio | Importe | Nrsi
+Las columnas son siempre: Venta | Barco | Especie | Cajas | Kilos | Precio | Importe | Nrsi.
 
-Cuando la especie ocupa dos líneas en el PDF, el texto extraído puede intercalar números entre las dos partes del nombre. Para evitar confusiones, SIEMPRE reconstruye la fila de derecha a izquierda siguiendo este orden fijo:
+El PDF a veces parte el nombre del barco o de la especie en dos líneas. Cuando esto ocurre, el extractor de texto intercala un número numérico DENTRO del texto del nombre. Este número desplazado es SIEMPRE el PRECIO. Sigue este proceso para cada fila:
 
-  PASO 1 — Identifica NRSI: cadena de texto al final de la línea (opcional, puede ser null).
-  PASO 2 — Identifica IMPORTE: el número más a la derecha antes de NRSI (puede tener decimales).
-  PASO 3 — Identifica PRECIO: el siguiente número a la izquierda del importe (puede tener decimales).
-  PASO 4 — Identifica KILOS: el siguiente número a la izquierda del precio (puede tener decimales).
-  PASO 5 — Identifica CAJAS: el número entero sin decimales más cercano al bloque de especie.
-  PASO 6 — ESPECIE: todo el texto restante entre BARCO y CAJAS, concatenado.
+PASO 1 — Identifica NRSI (texto final como "12.010500/H", puede ser null) e IMPORTE (último número).
 
-Verificación obligatoria: round(KILOS × PRECIO, 2) debe ser igual a IMPORTE.
-Si no lo es, revisa que hayas asignado correctamente KILOS y PRECIO.
+PASO 2 — Detecta si la fila tiene nombre partido: ¿hay algún número con decimales intercalado EN MEDIO del texto del barco o la especie? (es decir, texto → número → más texto que pertenece al mismo nombre)
 
-Ejemplos con especie en una sola línea (texto en orden correcto):
-  Texto: "LI2500001 HERMANOS REYES  ACEDÍA  3  6.64  3.55  23.57"
-    → venta="LI2500001", barco="HERMANOS REYES", especie="ACEDÍA", cajas=3, kilos=6.64, precio=3.55, importe=23.57
-    Verificación: 6.64×3.55=23.57 ✓
+CASO A — Fila sin nombre partido (todos los números aparecen DESPUÉS de la especie):
+  El orden de izquierda a derecha es el correcto: cajas, kilos, precio, importe.
+  Leyendo de derecha a izquierda: importe ← precio ← kilos ← cajas.
+  Ejemplos reales de este documento:
+    "CF-RUPERTIN  RASCACIOS/ESCORPORA  1  6.64  3.55  23.57" → kilos=6.64, precio=3.55, importe=23.57
+    "CF-N.ESTRELLA POLAR  BRECA PEQUEÑA  1  4.72  2.45  11.56" → kilos=4.72, precio=2.45, importe=11.56
+    "PI-JAVI CALE  GAMBAS  1  5.34  6.90  36.85" → kilos=5.34, precio=6.90, importe=36.85
 
-Ejemplos con especie en dos líneas (texto desordenado por salto de línea):
-  Texto: "LI2500002 NUEVO RUMBO  LANGOSTINO  1  43.00  MEDITERRÁNEO  1.16  49.88"
-    — El texto intercala "43.00" entre las dos partes del nombre de especie.
-    — Leyendo de derecha a izquierda: importe=49.88, precio=43.00 (← el primero a la izquierda de 49.88 con decimales), kilos=1.16 (← el siguiente), cajas=1 (entero).
-    → especie="LANGOSTINO MEDITERRÁNEO", cajas=1, kilos=1.16, precio=43.00, importe=49.88
-    Verificación: 1.16×43.00=49.88 ✓
+CASO B — Fila con nombre partido (hay un número intercalado en medio del nombre):
+  El número intercalado entre las dos partes del nombre = PRECIO.
+  El número que aparece DESPUÉS del nombre completo (justo antes del importe) = KILOS.
+  Ejemplos reales de este documento (extraídos tal cual del PDF):
+    "CF-N.ESTRELLA POLAR  BROTOLA DE FANGO / BROTOLA DE  1  8.90  FANGO  1.76  15.66"
+      → precio=8.90 (intercalado), kilos=1.76 (después del nombre), importe=15.66
+      Verificación: 1.76×8.90=15.66 ✓
+    "CF-HNOS CORDERO  CAÑAILLAS  1  28.00  GIL  CAÑAILLAS/CAÑAILLA  3.22  90.16"
+      → precio=28.00 (intercalado entre "CORDERO" y "GIL"), kilos=3.22, importe=90.16
+      Verificación: 3.22×28.00=90.16 ✓
+    "CF-HNOS DIAZ  CHOCOS  2  7.20  VAZQUEZ  CHOCOS/CHOCO  22.70  163.44"
+      → precio=7.20 (intercalado), kilos=22.70, importe=163.44
+      Verificación: 22.70×7.20=163.44 ✓
+    "CF-HNOS VAZQUEZ  PULPOS  1  11.60  MASC  PULPOS/PULPO ROQUERO  6.48  75.17"
+      → precio=11.60 (intercalado), kilos=6.48, importe=75.17
+      Verificación: 6.48×11.60=75.17 ✓
+    "CF-MATEUUSZ  CANGREJO AZUL  1  8.00  KOZLOWSK  CANGREJO AZUL  4.52  36.16"
+      → precio=8.00 (intercalado), kilos=4.52, importe=36.16
+      Verificación: 4.52×8.00=36.16 ✓
 
-  Texto: "LI2500003 NUEVO RUMBO  QUISQUILLAS  1  29.00  1.24  35.96"
-    — Leyendo de derecha a izquierda: importe=35.96, precio=29.00, kilos=1.24, cajas=1.
-    → especie="QUISQUILLAS", cajas=1, kilos=1.24, precio=29.00, importe=35.96
-    Verificación: 1.24×29.00=35.96 ✓
+PASO 3 — Verificación obligatoria: round(kilos × precio, 2) = importe.
+  Si no cuadra, es que no has identificado correctamente el CASO A o CASO B.
+  El entero sin decimales adyacente al bloque de especie = CAJAS.
 
 REGLA 2 — Nombres que continúan en línea siguiente (vendidurias):
 Si el nombre de una vendiduria se corta y continúa en la línea siguiente (ej: "PESCADOS DE ISLA CRISTINA" + "S.L."), únelo en un solo string.
