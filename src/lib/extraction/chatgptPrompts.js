@@ -78,21 +78,28 @@ REGLAS CRÍTICAS — aplícalas antes de extraer cualquier dato:
 
 REGLA 1 — Distinguir kilos vs precio en la tabla ventas:
 Las columnas de esa tabla son siempre: Venta | Barco | Especie | Cajas | Kilos | Precio | Importe | Nrsi.
-Cuando la especie ocupa dos líneas en el PDF, el texto extraído puede mostrar los números fuera de orden. Para identificar correctamente cuál es kilos y cuál es precio usa esta fórmula:
-  round(Kilos × Precio, 2) = Importe
-Comprueba la fórmula en todas las filas. Si no cuadra con el orden del texto, intercambia kilos y precio hasta que cuadre.
+Cuando la especie ocupa dos líneas en el PDF, el texto extraído puede mostrar los números fuera de orden. Para identificar correctamente cuál es kilos y cuál es precio:
 
-Ejemplos reales de este documento donde el orden del texto engaña:
+PASO 1 — Comprueba si el orden del texto satisface la fórmula:
+  round(A × B, 2) = Importe   (donde A y B son los dos valores que aparecen en el texto)
+Si solo UNA ordenación satisface la fórmula, esa es la correcta (A=kilos, B=precio o viceversa).
 
-  Fila 1570: el texto del PDF muestra "...1 43.00 LANGOSTINO MEDITERRANEO 1.16 49.88"
+PASO 2 — Desempate cuando AMBAS ordenaciones satisfacen la fórmula:
+Si A × B = B × A = Importe (porque la multiplicación es conmutativa y ambas dan el mismo resultado), NO intercambies nada. El orden en que aparecen en el texto del PDF es el correcto: el primer número es kilos y el segundo es precio.
+Ejemplos de este caso (no intercambiar):
+  Texto "1 6.64 3.55 23.57" → cajas=1, kilos=6.64, precio=3.55, importe=23.57
+    (6.64×3.55=23.57 ✓ y 3.55×6.64=23.57 ✓ — ambas válidas, se respeta el orden del texto)
+  Texto "1 4.72 2.45 11.56" → cajas=1, kilos=4.72, precio=2.45, importe=11.56
+    (4.72×2.45=11.56 ✓ y 2.45×4.72=11.56 ✓ — ambas válidas, se respeta el orden del texto)
+
+Ejemplos donde SÍ hay que intercambiar (solo una ordenación es válida):
+  Texto "...1 43.00 LANGOSTINO MEDITERRANEO 1.16 49.88"
     cajas=1, kilos=1.16, precio=43.00, importe=49.88
-    (43.00 aparece primero en el texto pero es PRECIO; 1.16 son los KILOS: 1.16×43.00=49.88 ✓)
-
-  Fila 2009: texto "...1 11.10 ROJA DEL MEDITERRANEO 2.04 22.64"
-    cajas=1, kilos=2.04, precio=11.10, importe=22.64 (2.04×11.10=22.644≈22.64 ✓)
-
-  Fila 1996: texto "...1 29.00 QUISQUILLAS 1.24 35.96"
+    (43.00×1.16=49.88 ✓ pero 1.16×43.00 también ✓ — EXCEPTO que aquí el precio aparece ANTES de la especie, lo que indica que el texto está desordenado por el salto de línea)
+  Texto "...1 29.00 QUISQUILLAS 1.24 35.96"
     cajas=1, kilos=1.24, precio=29.00, importe=35.96 (1.24×29.00=35.96 ✓)
+
+REGLA ADICIONAL para detectar texto desordenado: si un número grande (>5.00) aparece ANTES del nombre de la especie en el texto, ese número es probablemente el precio (los precios de lonja suelen ser mayores que los kilos por caja). Si el número aparece DESPUÉS del nombre de la especie junto con otro número más pequeño, el más pequeño suele ser kilos y el más grande precio.
 
 REGLA 2 — Nombres que continúan en línea siguiente (vendidurias):
 Si el nombre de una vendiduria se corta y continúa en la línea siguiente (ej: "PESCADOS DE ISLA CRISTINA" + "S.L."), únelo en un solo string.
