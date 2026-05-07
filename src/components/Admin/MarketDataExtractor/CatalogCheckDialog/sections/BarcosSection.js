@@ -3,7 +3,12 @@
 import { Check, X, Copy } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { findBarcoInConfig, buildBarcoEntry, getDocTypeLabel } from '../catalogCheckUtils';
+import {
+    findBarcoInConfig,
+    buildBarcoEntry,
+    getDocTypeLabel,
+    buildClipboardTextWithDocType,
+} from '../catalogCheckUtils';
 import { notify } from '@/lib/notifications';
 
 function StatusBadge({ found }) {
@@ -85,7 +90,14 @@ export default function BarcosSection({ barcos }) {
             <div className="divide-y rounded-md border text-sm">
                 {enriched.map((item, idx) => (
                     <div key={idx} className="flex items-center gap-3 px-3 py-2.5">
-                        <span className="flex-1 min-w-0 truncate font-medium">{item.nombre}</span>
+                        <div className="flex-1 min-w-0 truncate">
+                            <span className="font-medium">{item.nombre}</span>
+                            {item.rawNombre && item.rawNombre !== item.nombre && (
+                                <span className="ml-1.5 text-xs text-muted-foreground font-mono">
+                                    ({item.rawNombre})
+                                </span>
+                            )}
+                        </div>
                         {item.matricula && (
                             <span className="text-xs text-muted-foreground font-mono shrink-0">{item.matricula}</span>
                         )}
@@ -102,7 +114,9 @@ export default function BarcosSection({ barcos }) {
                                 size="sm"
                                 variant="outline"
                                 className="shrink-0 h-7 text-xs gap-1"
-                                onClick={() => copyToClipboard(buildBarcoEntry(item))}
+                                onClick={() => copyToClipboard(
+                                    buildClipboardTextWithDocType(buildBarcoEntry(item), item.docType)
+                                )}
                             >
                                 <Copy className="h-3 w-3" />
                                 Copiar entrada

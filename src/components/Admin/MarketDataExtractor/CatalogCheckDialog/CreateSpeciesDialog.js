@@ -26,20 +26,38 @@ async function loadFishingGearOptions() {
     return fetchAutocompleteOptionsGeneric(`${API_URL_V2}fishing-gears/options`, token);
 }
 
+// Lazy-loaded once per session; resolves to getScientificNameByFao fn
+let asfisLookupPromise = null;
+function getAsfisLookup() {
+    if (!asfisLookupPromise) {
+        asfisLookupPromise = import('@/data/asfisSpecies').then((m) => m.getScientificNameByFao);
+    }
+    return asfisLookupPromise;
+}
+
+function capitalizeSuggestedName(value) {
+    if (!value) return '';
+    return value
+        .toLowerCase()
+        .replace(/(^|[\s/()-])([a-záéíóúüñ])/g, (_, sep, letter) => `${sep}${letter.toUpperCase()}`);
+}
+
 export default function CreateSpeciesDialog({ open, onOpenChange, prefill, onCreated }) {
     const [fishingGearOptions, setFishingGearOptions] = useState([]);
     const [loadingOptions, setLoadingOptions] = useState(false);
+    const [loadingScientific, setLoadingScientific] = useState(false);
 
     const {
         register,
         handleSubmit,
         control,
         reset,
+        setValue,
         formState: { errors, isSubmitting },
     } = useForm({
         defaultValues: {
             fao: prefill?.fao || '',
-            name: prefill?.name || '',
+            name: capitalizeSuggestedName(prefill?.name || ''),
             scientificName: '',
             fishingGearId: null,
         },
@@ -49,17 +67,28 @@ export default function CreateSpeciesDialog({ open, onOpenChange, prefill, onCre
         if (open) {
             reset({
                 fao: prefill?.fao || '',
-                name: prefill?.name || '',
+                name: capitalizeSuggestedName(prefill?.name || ''),
                 scientificName: '',
                 fishingGearId: null,
             });
+
             setLoadingOptions(true);
             loadFishingGearOptions()
                 .then(setFishingGearOptions)
                 .catch(() => setFishingGearOptions([]))
                 .finally(() => setLoadingOptions(false));
+
+            if (prefill?.fao) {
+                setLoadingScientific(true);
+                getAsfisLookup()
+                    .then((fn) => {
+                        const sciName = fn(prefill.fao);
+                        if (sciName) setValue('scientificName', sciName);
+                    })
+                    .finally(() => setLoadingScientific(false));
+            }
         }
-    }, [open, prefill, reset]);
+    }, [open, prefill, reset, setValue]);
 
     const onSubmit = async (data) => {
         try {
@@ -112,6 +141,7 @@ export default function CreateSpeciesDialog({ open, onOpenChange, prefill, onCre
                                 id="cs-name"
                                 {...register('name', { required: 'Requerido' })}
                                 placeholder="Ej. Pulpo"
+                                className="placeholder:capitalize"
                             />
                             {errors.name && (
                                 <p className="text-red-400 text-xs">* {errors.name.message}</p>
@@ -120,11 +150,17 @@ export default function CreateSpeciesDialog({ open, onOpenChange, prefill, onCre
                     </div>
 
                     <div className="space-y-1.5">
-                        <Label htmlFor="cs-scientific">Nombre científico</Label>
+                        <Label htmlFor="cs-scientific" className="flex items-center gap-2">
+                            Nombre científico
+                            {loadingScientific && (
+                                <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                            )}
+                        </Label>
                         <Input
                             id="cs-scientific"
                             {...register('scientificName', { required: 'Requerido' })}
                             placeholder="Ej. Octopus vulgaris"
+                            className="italic"
                         />
                         {errors.scientificName && (
                             <p className="text-red-400 text-xs">* {errors.scientificName.message}</p>

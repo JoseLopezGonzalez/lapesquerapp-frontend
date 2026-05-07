@@ -1,4 +1,5 @@
 import { normalizeText } from '@/helpers/formats/texts';
+import { parseBoatName, findBarcoMatch } from '@/exportHelpers/lonjaDeIslaBarcoMatcher';
 import { barcos as barcosLonja, datosVendidurias, productos as productosLonja } from '@/components/Admin/MarketDataExtractor/ListadoComprasLonjaDeIsla/exportData';
 import { barcos as barcosCofra } from '@/components/Admin/MarketDataExtractor/AlbaranCofraWeb/exportData';
 import { barcos as barcosAsoc, productos as productosAsoc } from '@/components/Admin/MarketDataExtractor/ListadoComprasAsocPuntaDelMoral/exportData';
@@ -26,8 +27,15 @@ export function extractCatalogData(documents) {
 
         if (docType === DOC_TYPES.LONJA) {
             for (const row of data.tables?.peces || []) {
-                if (row.fao && !speciesFaoMap.has(row.fao)) {
-                    speciesFaoMap.set(row.fao, { fao: row.fao, descripcion: row.descripcion });
+                if (!row.descripcion) continue;
+                // Use FAO as key when available; fall back to normalised description.
+                // This prevents silently dropping rows where the extraction left fao empty.
+                const key = row.fao ? row.fao.toUpperCase() : `_desc:${normalizeText(row.descripcion)}`;
+                if (!speciesFaoMap.has(key)) {
+                    speciesFaoMap.set(key, {
+                        fao: row.fao || null,
+                        descripcion: row.descripcion,
+                    });
                 }
             }
             for (const row of data.tables?.vendidurias || []) {
@@ -46,9 +54,15 @@ export function extractCatalogData(documents) {
             }
             for (const row of data.tables?.ventas || []) {
                 if (row.barco) {
-                    const key = normalizeText(row.barco);
-                    if (!barcoMap.has(key)) {
-                        barcoMap.set(key, { nombre: row.barco, docType });
+                    const { name: cleanName, codVendiduria } = parseBoatName(row.barco);
+                    const key = normalizeText(cleanName);
+                    if (key && !barcoMap.has(key)) {
+                        barcoMap.set(key, {
+                            nombre: cleanName,
+                            rawNombre: row.barco,
+                            codVendiduria: codVendiduria || null,
+                            docType,
+                        });
                     }
                 }
             }
@@ -109,7 +123,9 @@ export function findProductoInConfig(nombre, docType) {
 
 export function findBarcoInConfig(nombre, docType, matricula) {
     if (docType === DOC_TYPES.LONJA) {
-        return barcosLonja.find((b) => normalizeText(b.barco) === normalizeText(nombre)) || null;
+        // nombre is already the clean name (prefix stripped at extraction time).
+        // findBarcoMatch expects a venta-like object with a barco field.
+        return findBarcoMatch(barcosLonja, { barco: nombre }) || null;
     }
     if (docType === DOC_TYPES.COFRA) {
         return barcosCofra.find((b) => normalizeText(b.barco) === normalizeText(nombre)) || null;
@@ -138,7 +154,8 @@ export function buildProductoEntry(item) {
 
 export function buildBarcoEntry(item) {
     if (item.docType === DOC_TYPES.LONJA) {
-        return `{ barco: '${item.nombre}', vendiduria: '', codVendiduria: '' }`;
+        const codVend = item.codVendiduria ? `'${item.codVendiduria}'` : "''";
+        return `{ barco: '${item.nombre}', vendiduria: '', codVendiduria: ${codVend} }`;
     }
     if (item.docType === DOC_TYPES.COFRA) {
         return `{ barco: '${item.nombre}', armador: '${item.armador || ''}', cifArmador: '${item.cifArmador || ''}', codA3erp: '', codBrisapp: '' }`;
@@ -154,4 +171,8 @@ export function getDocTypeLabel(docType) {
     if (docType === DOC_TYPES.COFRA) return 'Cofradía';
     if (docType === DOC_TYPES.ASOC) return 'Asoc. Armadores';
     return docType;
+}
+
+export function buildClipboardTextWithDocType(entryText, docType) {
+    return `// Documento: ${getDocTypeLabel(docType)}\n${entryText}`;
 }

@@ -3,12 +3,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { BookCheck, Loader2, Fish, Store, Package, Anchor } from 'lucide-react';
 import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetDescription,
-} from '@/components/ui/sheet';
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from '@/components/ui/dialog';
 import {
     Accordion,
     AccordionContent,
@@ -49,22 +49,34 @@ export default function CatalogCheckDialog({ open, onOpenChange, documents }) {
         [documents]
     );
 
-    // Load DB species when the sheet opens
+    // Load DB species by FAO code when the dialog opens.
+    // One call per unique FAO — targeted and not limited by a page size.
     useEffect(() => {
         if (!open || catalogData.speciesFao.length === 0) return;
 
         setLoadingSpecies(true);
-        speciesService
-            .list({}, { page: 1, perPage: 500 })
-            .then((response) => {
-                const rows = response?.data || [];
+        const faoCodes = catalogData.speciesFao
+            .map((s) => s.fao)
+            .filter(Boolean); // skip entries where extraction left fao empty
+
+        Promise.all(
+            faoCodes.map((fao) =>
+                speciesService
+                    .list({ fao }, { page: 1, perPage: 10 })
+                    .then((response) => ({ fao, rows: response?.data || [] }))
+                    .catch(() => ({ fao, rows: [] }))
+            )
+        )
+            .then((results) => {
                 const map = {};
-                for (const s of rows) {
-                    if (s.fao) map[s.fao] = s;
+                for (const { fao, rows } of results) {
+                    const match = rows.find(
+                        (s) => s.fao?.toUpperCase() === fao.toUpperCase()
+                    );
+                    if (match) map[fao] = match;
                 }
                 setDbSpeciesMap(map);
             })
-            .catch(() => setDbSpeciesMap({}))
             .finally(() => setLoadingSpecies(false));
     }, [open, catalogData.speciesFao.length]);
 
@@ -74,7 +86,7 @@ export default function CatalogCheckDialog({ open, onOpenChange, documents }) {
         }
     };
 
-    const speciesMissing = catalogData.speciesFao.filter((s) => !dbSpeciesMap[s.fao]).length;
+    const speciesMissing = catalogData.speciesFao.filter((s) => s.fao && !dbSpeciesMap[s.fao]).length;
     const vendiduriasMissing = catalogData.vendidurias.filter((v) => !findVendiduriaInConfig(v.cod)).length;
     const lineProductsMissing = catalogData.lineProducts.filter((p) => !findProductoInConfig(p.nombre, p.docType)).length;
     const barcosMissing = catalogData.barcos.filter((b) => !findBarcoInConfig(b.nombre, b.docType, b.matricula)).length;
@@ -82,20 +94,20 @@ export default function CatalogCheckDialog({ open, onOpenChange, documents }) {
     const hasLonja = documents?.some((d) => d.documentType === 'listadoComprasLonjaDeIsla' && d.status === 'success');
 
     return (
-        <Sheet open={open} onOpenChange={onOpenChange}>
-            <SheetContent
-                side="right"
-                className="w-[520px] sm:w-[620px] sm:max-w-none flex flex-col h-full p-0"
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent
+                size="6xl"
+                className="flex h-[90vh] max-h-[90vh] flex-col overflow-hidden p-0"
             >
-                <SheetHeader className="px-6 pt-6 pb-4 border-b shrink-0">
+                <DialogHeader className="px-6 pt-6 pb-4 border-b shrink-0">
                     <div className="flex items-center gap-2">
                         <BookCheck className="h-5 w-5 text-primary" />
-                        <SheetTitle>Comprobación de catálogos</SheetTitle>
+                        <DialogTitle>Comprobación de catálogos</DialogTitle>
                     </div>
-                    <SheetDescription>
+                    <DialogDescription>
                         Verifica que todos los datos extraídos están correctamente registrados en el sistema.
-                    </SheetDescription>
-                </SheetHeader>
+                    </DialogDescription>
+                </DialogHeader>
 
                 <ScrollArea className="flex-1 min-h-0">
                     <div className="px-6 py-4">
@@ -103,7 +115,10 @@ export default function CatalogCheckDialog({ open, onOpenChange, documents }) {
 
                             {/* ── Especies FAO (only LonjaIsla) ── */}
                             {hasLonja && (
-                                <AccordionItem value="species">
+                                <AccordionItem
+                                    key={`species-${loadingSpecies ? 'loading' : 'ready'}-${catalogData.speciesFao.length}`}
+                                    value="species"
+                                >
                                     <AccordionTrigger className="hover:no-underline">
                                         <div className="flex items-center gap-2">
                                             <Fish className="h-4 w-4 text-muted-foreground" />
@@ -191,7 +206,7 @@ export default function CatalogCheckDialog({ open, onOpenChange, documents }) {
                         </Accordion>
                     </div>
                 </ScrollArea>
-            </SheetContent>
-        </Sheet>
+            </DialogContent>
+        </Dialog>
     );
 }

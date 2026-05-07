@@ -1,9 +1,16 @@
 'use client';
 
-import { Check, X, Copy } from 'lucide-react';
+import { useState } from 'react';
+import { Check, X, Copy, PlusCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { findProductoInConfig, buildProductoEntry, getDocTypeLabel } from '../catalogCheckUtils';
+import {
+    findProductoInConfig,
+    buildProductoEntry,
+    getDocTypeLabel,
+    buildClipboardTextWithDocType,
+} from '../catalogCheckUtils';
+import CreateProductDialog from '../CreateProductDialog';
 import { notify } from '@/lib/notifications';
 
 function StatusBadge({ found }) {
@@ -25,6 +32,8 @@ function copyToClipboard(text) {
 }
 
 export default function LineProductsSection({ lineProducts }) {
+    const [createDialog, setCreateDialog] = useState({ open: false, item: null });
+
     if (lineProducts.length === 0) {
         return (
             <p className="text-sm text-muted-foreground py-2">
@@ -72,15 +81,28 @@ export default function LineProductsSection({ lineProducts }) {
                         )}
                         <StatusBadge found={!!item.config} />
                         {!item.config && (
-                            <Button
-                                size="sm"
-                                variant="outline"
-                                className="shrink-0 h-7 text-xs gap-1"
-                                onClick={() => copyToClipboard(buildProductoEntry(item))}
-                            >
-                                <Copy className="h-3 w-3" />
-                                Copiar entrada
-                            </Button>
+                            <div className="flex gap-1.5 shrink-0">
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-7 text-xs gap-1"
+                                    onClick={() => setCreateDialog({ open: true, item })}
+                                >
+                                    <PlusCircle className="h-3 w-3" />
+                                    Crear en app
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-7 text-xs gap-1 text-muted-foreground"
+                                    onClick={() => copyToClipboard(
+                                        buildClipboardTextWithDocType(buildProductoEntry(item), item.docType)
+                                    )}
+                                >
+                                    <Copy className="h-3 w-3" />
+                                    Copiar
+                                </Button>
+                            </div>
                         )}
                     </div>
                 ))}
@@ -88,11 +110,17 @@ export default function LineProductsSection({ lineProducts }) {
 
             {missing.length > 0 && (
                 <p className="text-xs text-muted-foreground pt-1">
-                    Los artículos sin códigos deben añadirse a{' '}
-                    <span className="font-mono">exportData.js</span> del tipo de documento correspondiente.
-                    Usa el botón &quot;Copiar entrada&quot; para obtener la estructura base.
+                    Crea el producto en la app con &quot;Crear en app&quot; y después añade los códigos a{' '}
+                    <span className="font-mono">exportData.js</span> con &quot;Copiar&quot;.
                 </p>
             )}
+
+            <CreateProductDialog
+                open={createDialog.open}
+                onOpenChange={(v) => setCreateDialog((s) => ({ ...s, open: v }))}
+                prefill={createDialog.item}
+                onCreated={() => setCreateDialog({ open: false, item: null })}
+            />
         </div>
     );
 }

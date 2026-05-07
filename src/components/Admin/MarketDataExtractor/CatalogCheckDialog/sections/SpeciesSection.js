@@ -29,8 +29,10 @@ export default function SpeciesSection({ speciesFao, dbSpeciesMap, onSpeciesCrea
         );
     }
 
-    const missing = speciesFao.filter((s) => !dbSpeciesMap[s.fao]);
-    const found = speciesFao.filter((s) => dbSpeciesMap[s.fao]);
+    const withFao = speciesFao.filter((s) => s.fao);
+    const missing = withFao.filter((s) => !dbSpeciesMap[s.fao]);
+    const found = withFao.filter((s) => dbSpeciesMap[s.fao]);
+    const noFaoCount = speciesFao.length - withFao.length;
 
     return (
         <div className="space-y-2">
@@ -39,36 +41,61 @@ export default function SpeciesSection({ speciesFao, dbSpeciesMap, onSpeciesCrea
                 {missing.length > 0 && (
                     <span className="text-red-600 font-medium">{missing.length} sin registrar</span>
                 )}
+                {noFaoCount > 0 && (
+                    <span className="text-amber-600 font-medium">{noFaoCount} sin código FAO</span>
+                )}
             </div>
 
             <div className="divide-y rounded-md border text-sm">
-                {speciesFao.map((item) => {
-                    const dbEntry = dbSpeciesMap[item.fao];
+                {speciesFao.map((item, index) => {
+                    const dbEntry = item.fao ? dbSpeciesMap[item.fao] : undefined;
                     return (
                         <div
-                            key={item.fao}
-                            className="flex items-center gap-3 px-3 py-2.5"
+                            key={`${item.fao ?? 'nofao'}-${item.descripcion}-${index}`}
+                            className="flex items-center gap-3 px-3 py-1.5"
                         >
-                            <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded shrink-0 w-14 text-center">
-                                {item.fao}
+                            {item.fao ? (
+                                <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded shrink-0 w-14 text-center">
+                                    {item.fao}
+                                </span>
+                            ) : (
+                                <Badge
+                                    variant="outline"
+                                    className="text-amber-600 border-amber-400/60 text-[10px] px-1.5 shrink-0 w-14 justify-center"
+                                >
+                                    Sin FAO
+                                </Badge>
+                            )}
+                            <span className="flex-1 min-w-0 whitespace-normal break-words leading-snug">
+                                {item.descripcion}
                             </span>
-                            <span className="flex-1 min-w-0 truncate">{item.descripcion}</span>
                             {dbEntry && (
                                 <span className="text-xs text-muted-foreground truncate max-w-[160px]">
                                     {dbEntry.name}
                                 </span>
                             )}
-                            <StatusBadge found={!!dbEntry} />
-                            {!dbEntry && (
-                                <Button
-                                    size="sm"
+                            {item.fao ? (
+                                <>
+                                    <StatusBadge found={!!dbEntry} />
+                                    {!dbEntry && (
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="shrink-0 h-7 text-xs gap-1"
+                                            onClick={() => setCreateTarget(item)}
+                                        >
+                                            <Plus className="h-3 w-3" />
+                                            Crear
+                                        </Button>
+                                    )}
+                                </>
+                            ) : (
+                                <Badge
                                     variant="outline"
-                                    className="shrink-0 h-7 text-xs gap-1"
-                                    onClick={() => setCreateTarget(item)}
+                                    className="text-muted-foreground border-muted-foreground/40 text-[10px] px-1.5 shrink-0"
                                 >
-                                    <Plus className="h-3 w-3" />
-                                    Crear
-                                </Button>
+                                    Revisar extracción
+                                </Badge>
                             )}
                         </div>
                     );

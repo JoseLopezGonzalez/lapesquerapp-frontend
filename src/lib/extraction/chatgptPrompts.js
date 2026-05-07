@@ -100,6 +100,30 @@ Si el nombre de una vendiduria se corta y continúa en la línea siguiente (ej: 
 REGLA 3 — Campo "cod" en vendidurias:
 En la tabla vendidurias, el campo "cod" es el prefijo de 2 letras que identifica la vendiduria (ej: "CF", "EX", "PI"). Es la primera palabra del nombre de la vendiduria. Si el nombre en el documento es "CF PESCADOS DE ISLA CRISTINA S.L.", entonces cod="CF" y vendiduria="CF PESCADOS DE ISLA CRISTINA S.L.".
 
+REGLA 4 — Tablas resumen al final del documento, diseño a dos columnas y saltos de página:
+Las tablas resumen ("peces", "vendidurias", "cajas", "tipoVentas") aparecen al final de la tabla de ventas, generalmente en la última página o en las dos últimas. El diseño habitual es dos columnas en la misma página (por ejemplo "Peces" a la izquierda y "Cajas" a la derecha). Cuando no caben en una sola página, continúan en la página siguiente SIN repetir la cabecera. Reglas:
+- Extrae TODAS las filas de todas las páginas para cada tabla y añádelas al mismo array.
+- Si en la página siguiente aparecen filas con la misma estructura que la tabla anterior pero sin título, son la continuación de esa tabla.
+- La fila de TOTAL que cierra cada tabla (solo números, sin FAO ni descripción, p.ej. "20 817,34") NO es un dato individual: no la incluyas en ningún array.
+- Si la cabecera se repite al inicio de una página nueva, no la incluyas como fila de datos.
+
+REGLA 5 — Tabla "ventas" multipágina:
+La tabla de ventas es el cuerpo principal y puede ocupar muchas páginas. Extrae TODAS las filas sin excepción. No te detengas al encontrar tablas resumen intercaladas ni en los saltos de página.
+
+REGLA 6 — Mapeo de títulos del documento a campos del JSON:
+Usa el título de cada sección para identificar a qué array pertenece. Las columnas exactas de cada tabla son:
+- Título "Peces" → array \`peces\`. Columnas: FAO (3 letras mayúsculas) | Descripción | Kilos | Cajas | P.Med | Importe. El campo P.Med (precio medio) NO existe en el esquema: ignóralo.
+- Título "Compras por Vendeduría" o "Compras por Vendeduria" → array \`vendidurias\`. Columnas: Cod (2 letras) + Nombre | Kilos | Cajas | Importe. Las 2 primeras letras del nombre (CF, EX, PI…) son el campo \`cod\`.
+- Título "Cajas" → array \`cajas\`. Columnas: Descripción | Cajas | Importe.
+- Título "TipoSubasta", "Tipo Subasta" o similar → array \`tipoVentas\`. Columnas: Descripción | Cajas | Importe.
+
+REGLA 7 — Tabla Peces: filas con descripción en varias líneas:
+En la tabla Peces el código FAO es siempre exactamente 3 letras mayúsculas (CBC, DPS, PAC, ARA, NEP, SNQ, ARS, NIS, TGS, CTR…). Cuando la descripción de una especie es larga y ocupa dos líneas, la extracción de texto del PDF desordena los datos. Ejemplo real de este documento:
+  Texto extraído: "LANGOSTINO 1\nMORUNO\nARS 1,42 13,50 19,17"
+  Fila correcta: fao="ARS", descripcion="LANGOSTINO MORUNO", kilos=1.42, cajas=1, importe=19.17
+  (El "1" tras "LANGOSTINO" es el valor de Cajas; "ARS" es el FAO desplazado a la línea siguiente)
+Para reconstruir la fila usa el código FAO de 3 letras como ancla: todo el texto que precede al FAO en ese bloque (excluyendo el número de Cajas) es la descripción. Los números que siguen al FAO son Kilos, Cajas (si no apareció antes), P.Med e Importe.
+
 El JSON de respuesta debe tener exactamente esta estructura (usa null para campos no presentes en el documento, los números deben ser tipo number —no string—, las fechas en formato yyyy-MM-dd):
 
 {
