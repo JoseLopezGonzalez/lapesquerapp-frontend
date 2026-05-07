@@ -76,30 +76,38 @@ Si los subtotales no aparecen en el documento, devuelve 0 en todos sus campos nu
 
 REGLAS CRÍTICAS — aplícalas antes de extraer cualquier dato:
 
-REGLA 1 — Distinguir kilos vs precio en la tabla ventas:
-Las columnas de esa tabla son siempre: Venta | Barco | Especie | Cajas | Kilos | Precio | Importe | Nrsi.
-Cuando la especie ocupa dos líneas en el PDF, el texto extraído puede mostrar los números fuera de orden. Para identificar correctamente cuál es kilos y cuál es precio:
+REGLA 1 — Identificar kilos, precio e importe en la tabla ventas:
+Las columnas de esa tabla son siempre, de izquierda a derecha:
+  Venta | Barco | Especie | Cajas | Kilos | Precio | Importe | Nrsi
 
-PASO 1 — Comprueba si el orden del texto satisface la fórmula:
-  round(A × B, 2) = Importe   (donde A y B son los dos valores que aparecen en el texto)
-Si solo UNA ordenación satisface la fórmula, esa es la correcta (A=kilos, B=precio o viceversa).
+Cuando la especie ocupa dos líneas en el PDF, el texto extraído puede intercalar números entre las dos partes del nombre. Para evitar confusiones, SIEMPRE reconstruye la fila de derecha a izquierda siguiendo este orden fijo:
 
-PASO 2 — Desempate cuando AMBAS ordenaciones satisfacen la fórmula:
-Si A × B = B × A = Importe (porque la multiplicación es conmutativa y ambas dan el mismo resultado), NO intercambies nada. El orden en que aparecen en el texto del PDF es el correcto: el primer número es kilos y el segundo es precio.
-Ejemplos de este caso (no intercambiar):
-  Texto "1 6.64 3.55 23.57" → cajas=1, kilos=6.64, precio=3.55, importe=23.57
-    (6.64×3.55=23.57 ✓ y 3.55×6.64=23.57 ✓ — ambas válidas, se respeta el orden del texto)
-  Texto "1 4.72 2.45 11.56" → cajas=1, kilos=4.72, precio=2.45, importe=11.56
-    (4.72×2.45=11.56 ✓ y 2.45×4.72=11.56 ✓ — ambas válidas, se respeta el orden del texto)
+  PASO 1 — Identifica NRSI: cadena de texto al final de la línea (opcional, puede ser null).
+  PASO 2 — Identifica IMPORTE: el número más a la derecha antes de NRSI (puede tener decimales).
+  PASO 3 — Identifica PRECIO: el siguiente número a la izquierda del importe (puede tener decimales).
+  PASO 4 — Identifica KILOS: el siguiente número a la izquierda del precio (puede tener decimales).
+  PASO 5 — Identifica CAJAS: el número entero sin decimales más cercano al bloque de especie.
+  PASO 6 — ESPECIE: todo el texto restante entre BARCO y CAJAS, concatenado.
 
-Ejemplos donde SÍ hay que intercambiar (solo una ordenación es válida):
-  Texto "...1 43.00 LANGOSTINO MEDITERRANEO 1.16 49.88"
-    cajas=1, kilos=1.16, precio=43.00, importe=49.88
-    (43.00×1.16=49.88 ✓ pero 1.16×43.00 también ✓ — EXCEPTO que aquí el precio aparece ANTES de la especie, lo que indica que el texto está desordenado por el salto de línea)
-  Texto "...1 29.00 QUISQUILLAS 1.24 35.96"
-    cajas=1, kilos=1.24, precio=29.00, importe=35.96 (1.24×29.00=35.96 ✓)
+Verificación obligatoria: round(KILOS × PRECIO, 2) debe ser igual a IMPORTE.
+Si no lo es, revisa que hayas asignado correctamente KILOS y PRECIO.
 
-REGLA ADICIONAL para detectar texto desordenado: si un número grande (>5.00) aparece ANTES del nombre de la especie en el texto, ese número es probablemente el precio (los precios de lonja suelen ser mayores que los kilos por caja). Si el número aparece DESPUÉS del nombre de la especie junto con otro número más pequeño, el más pequeño suele ser kilos y el más grande precio.
+Ejemplos con especie en una sola línea (texto en orden correcto):
+  Texto: "LI2500001 HERMANOS REYES  ACEDÍA  3  6.64  3.55  23.57"
+    → venta="LI2500001", barco="HERMANOS REYES", especie="ACEDÍA", cajas=3, kilos=6.64, precio=3.55, importe=23.57
+    Verificación: 6.64×3.55=23.57 ✓
+
+Ejemplos con especie en dos líneas (texto desordenado por salto de línea):
+  Texto: "LI2500002 NUEVO RUMBO  LANGOSTINO  1  43.00  MEDITERRÁNEO  1.16  49.88"
+    — El texto intercala "43.00" entre las dos partes del nombre de especie.
+    — Leyendo de derecha a izquierda: importe=49.88, precio=43.00 (← el primero a la izquierda de 49.88 con decimales), kilos=1.16 (← el siguiente), cajas=1 (entero).
+    → especie="LANGOSTINO MEDITERRÁNEO", cajas=1, kilos=1.16, precio=43.00, importe=49.88
+    Verificación: 1.16×43.00=49.88 ✓
+
+  Texto: "LI2500003 NUEVO RUMBO  QUISQUILLAS  1  29.00  1.24  35.96"
+    — Leyendo de derecha a izquierda: importe=35.96, precio=29.00, kilos=1.24, cajas=1.
+    → especie="QUISQUILLAS", cajas=1, kilos=1.24, precio=29.00, importe=35.96
+    Verificación: 1.24×29.00=35.96 ✓
 
 REGLA 2 — Nombres que continúan en línea siguiente (vendidurias):
 Si el nombre de una vendiduria se corta y continúa en la línea siguiente (ej: "PESCADOS DE ISLA CRISTINA" + "S.L."), únelo en un solo string.

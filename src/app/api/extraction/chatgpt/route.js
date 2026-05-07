@@ -3,7 +3,7 @@ import { generateText } from 'ai';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { CHATGPT_EXTRACTION_PROMPTS } from '@/lib/extraction/chatgptPrompts';
-import { ALLOWED_OPENAI_MODELS } from '@/lib/extraction/extractionModels';
+import { ALLOWED_OPENAI_MODELS, isReasoningModel } from '@/lib/extraction/extractionModels';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -42,7 +42,7 @@ export async function POST(req) {
         const arrayBuffer = await file.arrayBuffer();
         const uint8Array = new Uint8Array(arrayBuffer);
 
-        const { text } = await generateText({
+        const generateOptions = {
             model: openai(requestedModel),
             system: promptConfig.systemPrompt,
             messages: [
@@ -62,8 +62,13 @@ export async function POST(req) {
                     ],
                 },
             ],
-            temperature: 0,
-        });
+        };
+        // Reasoning models (o-series) do not support temperature
+        if (!isReasoningModel(requestedModel)) {
+            generateOptions.temperature = 0;
+        }
+
+        const { text } = await generateText(generateOptions);
 
         let parsedData;
         try {

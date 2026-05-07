@@ -23,10 +23,23 @@ export const EXTRACTION_MODELS = [
         openaiModel: 'gpt-4o',
     },
     {
+        id: 'gpt-4.1-mini',
+        label: 'GPT-4.1 mini',
+        description: 'Eficiente — mejor que 4o, más rápido que 4.1',
+        openaiModel: 'gpt-4.1-mini',
+    },
+    {
         id: 'gpt-4.1',
         label: 'GPT-4.1',
         description: 'Avanzado — documentos complejos o con varias páginas',
         openaiModel: 'gpt-4.1',
+    },
+    {
+        id: 'o4-mini',
+        label: 'o4-mini',
+        description: 'Razonamiento — máxima precisión en documentos difíciles',
+        openaiModel: 'o4-mini',
+        reasoning: true,
     },
 ];
 
@@ -38,6 +51,11 @@ export const ALLOWED_OPENAI_MODELS = EXTRACTION_MODELS
 
 export function isAzureModel(modelId) {
     return modelId === 'azure';
+}
+
+export function isReasoningModel(modelId) {
+    const entry = EXTRACTION_MODELS.find((m) => m.id === modelId);
+    return entry ? entry.reasoning === true : false;
 }
 
 export function getOpenAIModelId(modelId) {
