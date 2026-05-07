@@ -4,7 +4,8 @@ import { useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sparkles, X, FileText, Upload, Download, Link as LinkIcon, Loader2, AlertTriangle } from "lucide-react";import { processDocument } from "../shared/DocumentProcessor";
+import { Sparkles, X, FileText, Upload, Download, Link as LinkIcon, Loader2, AlertTriangle, BookCheck } from "lucide-react";
+import { processDocument } from "../shared/DocumentProcessor";
 import DocumentList from "./DocumentList";
 import { EmptyState } from "@/components/Utilities/EmptyState";
 import { getDocumentTypeLabel } from "../shared/documentTypeLabels";
@@ -15,6 +16,7 @@ import { generateAsocLinkedSummary } from "@/exportHelpers/asocExportHelper";
 import MassiveLinkPurchasesDialog from "./MassiveLinkPurchasesDialog";
 import { notify } from "@/lib/notifications";
 import MassiveExportDialog from "./MassiveExportDialog";
+import CatalogCheckDialog from "../CatalogCheckDialog";
 
 export default function MassiveMode() {
     const [documents, setDocuments] = useState([]);
@@ -22,6 +24,7 @@ export default function MassiveMode() {
     const [isProcessing, setIsProcessing] = useState(false);
     const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
     const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+    const [isCatalogCheckOpen, setIsCatalogCheckOpen] = useState(false);
     const fileInputRef = useRef(null);
 
     const LINKED_SUMMARY_GENERATORS = {
@@ -425,6 +428,14 @@ export default function MassiveMode() {
                             <LinkIcon className="h-4 w-4 mr-2" />
                             Enlazar Compras
                         </Button>
+                        <Button
+                            onClick={() => setIsCatalogCheckOpen(true)}
+                            variant="outline"
+                            size="icon"
+                            title="Comprobar catálogos"
+                        >
+                            <BookCheck className="h-4 w-4" />
+                        </Button>
                     </div>
                 )}
             </Card>
@@ -441,6 +452,13 @@ export default function MassiveMode() {
             <MassiveExportDialog
                 open={isExportDialogOpen}
                 onOpenChange={setIsExportDialogOpen}
+                documents={successfulDocuments}
+            />
+
+            {/* Catalog check panel */}
+            <CatalogCheckDialog
+                open={isCatalogCheckOpen}
+                onOpenChange={setIsCatalogCheckOpen}
                 documents={successfulDocuments}
             />
         </div>

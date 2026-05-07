@@ -4,20 +4,23 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Sparkles, TextSearch } from "lucide-react";
+import { Sparkles, TextSearch, BookCheck } from "lucide-react";
 import SparklesLoader from "@/components/Utilities/SparklesLoader";
-import AlbaranCofraWeb from "../AlbaranCofraWeb";import ListadoComprasAsocPuntaDelMoral from "../ListadoComprasAsocPuntaDelMoral";
+import AlbaranCofraWeb from "../AlbaranCofraWeb";
+import ListadoComprasAsocPuntaDelMoral from "../ListadoComprasAsocPuntaDelMoral";
 import { PdfUpload } from "@/components/Utilities/PdfUpload";
 import ListadoComprasLonjaDeIsla from "../ListadoComprasLonjaDeIsla";
 import { EmptyState } from "@/components/Utilities/EmptyState";
 import { notify } from "@/lib/notifications";
 import { processDocument } from "../shared/DocumentProcessor";
+import CatalogCheckDialog from "../CatalogCheckDialog";
 
 export default function IndividualMode() {
     const [documentType, setDocumentType] = useState("");
     const [provider, setProvider] = useState("chatgpt");
     const [loading, setLoading] = useState(false);
     const [file, setFile] = useState(null);
+    const [isCatalogCheckOpen, setIsCatalogCheckOpen] = useState(false);
     const [processedDocuments, setProcessedDocuments] = useState([]);
     const [viewDocumentType, setViewDocumentType] = useState("");
 
@@ -142,6 +145,17 @@ export default function IndividualMode() {
                             <Sparkles className="h-4 w-4" />
                             Extraer datos con IA
                         </Button>
+
+                        {processedDocuments.length > 0 && (
+                            <Button
+                                variant="outline"
+                                className="w-full"
+                                onClick={() => setIsCatalogCheckOpen(true)}
+                            >
+                                <BookCheck className="h-4 w-4" />
+                                Comprobar catálogos
+                            </Button>
+                        )}
                     </div>
                 </div>
             </Card>
@@ -176,6 +190,16 @@ export default function IndividualMode() {
                     )}
                 </div>
             </div>
+
+            <CatalogCheckDialog
+                open={isCatalogCheckOpen}
+                onOpenChange={setIsCatalogCheckOpen}
+                documents={processedDocuments.length > 0 ? [{
+                    status: 'success',
+                    documentType: viewDocumentType,
+                    processedData: processedDocuments,
+                }] : []}
+            />
         </div>
     );
 }
