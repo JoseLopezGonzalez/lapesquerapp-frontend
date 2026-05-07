@@ -17,10 +17,11 @@ import MassiveLinkPurchasesDialog from "./MassiveLinkPurchasesDialog";
 import { notify } from "@/lib/notifications";
 import MassiveExportDialog from "./MassiveExportDialog";
 import CatalogCheckDialog from "../CatalogCheckDialog";
+import { EXTRACTION_MODELS, DEFAULT_MODEL_ID } from "@/lib/extraction/extractionModels";
 
 export default function MassiveMode() {
     const [documents, setDocuments] = useState([]);
-    const [provider, setProvider] = useState("chatgpt");
+    const [modelId, setModelId] = useState(DEFAULT_MODEL_ID);
     const [isProcessing, setIsProcessing] = useState(false);
     const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
     const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
@@ -126,7 +127,7 @@ export default function MassiveMode() {
             );
 
             try {
-                const result = await processDocument(doc.file, doc.documentType, provider);
+                const result = await processDocument(doc.file, doc.documentType, modelId);
 
                 setDocuments((prev) =>
                     prev.map((d) =>
@@ -208,7 +209,7 @@ export default function MassiveMode() {
         );
 
         try {
-            const result = await processDocument(doc.file, doc.documentType, provider);
+            const result = await processDocument(doc.file, doc.documentType, modelId);
 
             setDocuments((prev) =>
                 prev.map((d) =>
@@ -293,13 +294,17 @@ export default function MassiveMode() {
                     <div className="flex items-center justify-between gap-2">
                         <CardTitle className="text-base">Documentos Pendientes ({pendingDocuments.length})</CardTitle>
                         <div className="flex items-center gap-2 flex-shrink-0">
-                            <Select value={provider} onValueChange={setProvider}>
-                                <SelectTrigger className="w-48 h-8 text-xs">
+                            <Select value={modelId} onValueChange={setModelId}>
+                                <SelectTrigger className="w-56 h-8 text-xs">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="chatgpt">ChatGPT (gpt-4o)</SelectItem>
-                                    <SelectItem value="azure">Azure Document AI (legacy)</SelectItem>
+                                    {EXTRACTION_MODELS.map((m) => (
+                                        <SelectItem key={m.id} value={m.id} className="text-xs">
+                                            <span className="font-medium">{m.label}</span>
+                                            <span className="text-muted-foreground ml-1">— {m.description}</span>
+                                        </SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
                             <Button

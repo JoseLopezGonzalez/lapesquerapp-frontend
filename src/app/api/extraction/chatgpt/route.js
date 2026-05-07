@@ -3,6 +3,7 @@ import { generateText } from 'ai';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { CHATGPT_EXTRACTION_PROMPTS } from '@/lib/extraction/chatgptPrompts';
+import { ALLOWED_OPENAI_MODELS } from '@/lib/extraction/extractionModels';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -23,12 +24,16 @@ export async function POST(req) {
 
         const file = formData.get('file');
         const documentType = formData.get('documentType');
+        const requestedModel = formData.get('model') || 'gpt-4o';
 
         if (!file || typeof file === 'string') {
             return Response.json({ error: 'Archivo PDF requerido' }, { status: 400 });
         }
         if (!documentType || !CHATGPT_EXTRACTION_PROMPTS[documentType]) {
             return Response.json({ error: 'Tipo de documento no válido' }, { status: 400 });
+        }
+        if (!ALLOWED_OPENAI_MODELS.includes(requestedModel)) {
+            return Response.json({ error: 'Modelo no válido' }, { status: 400 });
         }
 
         const promptConfig = CHATGPT_EXTRACTION_PROMPTS[documentType];
@@ -38,7 +43,7 @@ export async function POST(req) {
         const uint8Array = new Uint8Array(arrayBuffer);
 
         const { text } = await generateText({
-            model: openai('gpt-4o'),
+            model: openai(requestedModel),
             system: promptConfig.systemPrompt,
             messages: [
                 {

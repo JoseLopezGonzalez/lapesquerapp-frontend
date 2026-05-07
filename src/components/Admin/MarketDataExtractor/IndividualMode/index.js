@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Sparkles, TextSearch, BookCheck } from "lucide-react";
+import { EXTRACTION_MODELS, DEFAULT_MODEL_ID } from "@/lib/extraction/extractionModels";
 import SparklesLoader from "@/components/Utilities/SparklesLoader";
 import AlbaranCofraWeb from "../AlbaranCofraWeb";
 import ListadoComprasAsocPuntaDelMoral from "../ListadoComprasAsocPuntaDelMoral";
@@ -17,7 +18,7 @@ import CatalogCheckDialog from "../CatalogCheckDialog";
 
 export default function IndividualMode() {
     const [documentType, setDocumentType] = useState("");
-    const [provider, setProvider] = useState("chatgpt");
+    const [modelId, setModelId] = useState(DEFAULT_MODEL_ID);
     const [loading, setLoading] = useState(false);
     const [file, setFile] = useState(null);
     const [isCatalogCheckOpen, setIsCatalogCheckOpen] = useState(false);
@@ -94,7 +95,7 @@ export default function IndividualMode() {
         setLoading(true);
         setProcessedDocuments([]);
 
-        processDocument(file, documentType, provider)
+        processDocument(file, documentType, modelId)
             .then(handleProcessResult)
             .catch(handleProcessError)
             .finally(() => setLoading(false));
@@ -127,16 +128,20 @@ export default function IndividualMode() {
                         </div>
 
                         <div className="space-y-2">
-                            <label htmlFor="extraction-provider" className="text-sm font-medium">
-                                Proveedor de extracción
+                            <label htmlFor="extraction-model" className="text-sm font-medium">
+                                Modelo de extracción
                             </label>
-                            <Select value={provider} onValueChange={setProvider}>
-                                <SelectTrigger id="extraction-provider">
+                            <Select value={modelId} onValueChange={setModelId}>
+                                <SelectTrigger id="extraction-model">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="chatgpt">ChatGPT (gpt-4o)</SelectItem>
-                                    <SelectItem value="azure">Azure Document AI (legacy)</SelectItem>
+                                    {EXTRACTION_MODELS.map((m) => (
+                                        <SelectItem key={m.id} value={m.id}>
+                                            <span className="font-medium">{m.label}</span>
+                                            <span className="text-muted-foreground ml-1 text-xs">— {m.description}</span>
+                                        </SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
                         </div>

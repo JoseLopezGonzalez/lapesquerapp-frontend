@@ -14,6 +14,7 @@ import { normalizeLonjaDeIslaMultiPage } from "@/helpers/azure/lonjaDeIslaMultiP
 import { normalizeAsocMultiPage } from "@/helpers/azure/asocMultiPageNormalizer";
 import { extractWithChatGPT } from "@/services/chatgpt/extractionService";
 import { validateChatGPTAlbaranCofra, validateChatGPTLonjaDeIsla, validateChatGPTAsoc } from "@/validators/lonjas/chatgptValidators";
+import { isAzureModel, getOpenAIModelId } from "@/lib/extraction/extractionModels";
 
 /**
  * Mapeo de tipos de documento a sus procesadores específicos
@@ -46,7 +47,7 @@ const DOCUMENT_PROCESSORS = {
  * 
  * @param {File} file - Archivo PDF a procesar
  * @param {string} documentType - Tipo de documento ('albaranCofradiaPescadoresSantoCristoDelMar', 'listadoComprasLonjaDeIsla', 'listadoComprasAsocArmadoresPuntaDelMoral')
- * @param {'azure' | 'chatgpt'} [provider='azure'] - Proveedor de extracción. Azure usa Document Intelligence; ChatGPT usa gpt-4o vía API route server-side.
+ * @param {string} [modelId='gpt-4o'] - Model ID from EXTRACTION_MODELS. 'azure' uses Azure Document Intelligence; any other value selects the corresponding OpenAI model.
  * @returns {Promise<Object>} Objeto con el resultado del procesamiento:
  *   - success: boolean - Indica si el procesamiento fue exitoso
  *   - documentType: string - Tipo de documento procesado
@@ -56,7 +57,7 @@ const DOCUMENT_PROCESSORS = {
  *   - errorType?: 'validation' | 'parsing' | 'azure' | 'chatgpt' | 'unknown' - Tipo de error
  * @throws {Error} Si el tipo de documento no es válido
  */
-export async function processDocument(file, documentType, provider = 'azure') {
+export async function processDocument(file, documentType, modelId = 'gpt-4o') {
     // Validar que el tipo de documento sea válido
     const processor = DOCUMENT_PROCESSORS[documentType];
     if (!processor) {
@@ -69,12 +70,13 @@ export async function processDocument(file, documentType, provider = 'azure') {
             fileSizeBytes: file?.size,
             fileType: file?.type,
             documentType,
-            provider,
+            modelId,
         });
 
         // ChatGPT path — sin Azure, sin normalizador, sin parser
-        if (provider === 'chatgpt') {
-            return await processWithChatGPT(file, documentType, processor);
+        if (!isAzureModel(modelId)) {
+            const openaiModel = getOpenAIModelId(modelId);
+            return await processWithChatGPT(file, documentType, processor, openaiModel);
         }
 
         // Azure path (sin cambios)
@@ -170,11 +172,11 @@ export async function processDocument(file, documentType, provider = 'azure') {
 }
 
 /**
- * Pipeline ChatGPT: extrae el documento con gpt-4o y valida el formato final.
+ * Pipeline ChatGPT: extrae el documento con el modelo indicado y valida el formato final.
  * No pasa por normalizador ni parser — ChatGPT devuelve el formato final directamente.
  */
-async function processWithChatGPT(file, documentType, processor) {
-    const result = await extractWithChatGPT(file, documentType);
+async function processWithChatGPT(file, documentType, processor, openaiModel) {
+    const result = await extractWithChatGPT(file, documentType, openaiModel);
 
     if (!result.success) {
         return {
