@@ -130,7 +130,9 @@ export default function LonjaDeIslaUnifiedExportTable({
     const azureTotalsByVendiduria = useMemo(() => {
         const map = {};
         for (const row of sourceVendidurias || []) {
-            const cod = row?.cod ? String(row.cod) : null;
+            const cod = row?.cod
+                ? String(row.cod)
+                : (row?.vendiduria ? String(row.vendiduria).split(' ')[0] : null);
             if (!cod) continue;
             if (!map[cod]) {
                 map[cod] = { kilos: 0, importe: 0 };
@@ -174,7 +176,7 @@ export default function LonjaDeIslaUnifiedExportTable({
                                         <span className="text-background/70">Importe app</span>
                                         <span className="text-right">{formatDecimalCurrency(importeCalc)}</span>
                                     </div>
-                                    <p className="text-amber-300">Azure no devolvió registro en tabla vendidurías.</p>
+                                    <p className="text-amber-300">El documento no tiene registro de totales para esta vendiduria.</p>
                                 </div>
                             </TooltipContent>
                         </Tooltip>

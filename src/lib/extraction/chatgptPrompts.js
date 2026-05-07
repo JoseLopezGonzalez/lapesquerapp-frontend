@@ -97,8 +97,8 @@ Ejemplos reales de este documento donde el orden del texto engaña:
 REGLA 2 — Nombres que continúan en línea siguiente (vendidurias):
 Si el nombre de una vendiduria se corta y continúa en la línea siguiente (ej: "PESCADOS DE ISLA CRISTINA" + "S.L."), únelo en un solo string.
 
-REGLA 3 — tipoVentas:
-Pon siempre "tipoVentas": []. No extraigas ni proceses esa sección.
+REGLA 3 — Campo "cod" en vendidurias:
+En la tabla vendidurias, el campo "cod" es el prefijo de 2 letras que identifica la vendiduria (ej: "CF", "EX", "PI"). Es la primera palabra del nombre de la vendiduria. Si el nombre en el documento es "CF PESCADOS DE ISLA CRISTINA S.L.", entonces cod="CF" y vendiduria="CF PESCADOS DE ISLA CRISTINA S.L.".
 
 El JSON de respuesta debe tener exactamente esta estructura (usa null para campos no presentes en el documento, los números deben ser tipo number —no string—, las fechas en formato yyyy-MM-dd):
 
@@ -136,6 +136,7 @@ El JSON de respuesta debe tener exactamente esta estructura (usa null para campo
     ],
     "vendidurias": [
       {
+        "cod": string,
         "vendiduria": string,
         "cajas": number,
         "kilos": number,
@@ -149,7 +150,14 @@ El JSON de respuesta debe tener exactamente esta estructura (usa null para campo
         "importe": number | null
       }
     ],
-    "tipoVentas": []
+    "tipoVentas": [
+      {
+        "cod": string | null,
+        "descripcion": string,
+        "cajas": number,
+        "importe": number | null
+      }
+    ]
   }
 }
 
