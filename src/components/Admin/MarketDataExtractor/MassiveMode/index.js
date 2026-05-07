@@ -323,6 +323,7 @@ export default function MassiveMode() {
                                 onChange={(e) => {
                                     if (e.target.files && e.target.files.length > 0) {
                                         handleAddFiles(e.target.files);
+                                        e.target.value = '';
                                     }
                                 }}
                                 className="hidden"
