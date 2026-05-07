@@ -18,6 +18,7 @@ import MassiveExportDialog from "./MassiveExportDialog";
 
 export default function MassiveMode() {
     const [documents, setDocuments] = useState([]);
+    const [provider, setProvider] = useState("chatgpt");
     const [isProcessing, setIsProcessing] = useState(false);
     const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
     const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
@@ -122,7 +123,7 @@ export default function MassiveMode() {
             );
 
             try {
-                const result = await processDocument(doc.file, doc.documentType);
+                const result = await processDocument(doc.file, doc.documentType, provider);
 
                 setDocuments((prev) =>
                     prev.map((d) =>
@@ -204,7 +205,7 @@ export default function MassiveMode() {
         );
 
         try {
-            const result = await processDocument(doc.file, doc.documentType);
+            const result = await processDocument(doc.file, doc.documentType, provider);
 
             setDocuments((prev) =>
                 prev.map((d) =>
@@ -288,7 +289,16 @@ export default function MassiveMode() {
                 <CardHeader className="flex-shrink-0 border-b px-4 py-3">
                     <div className="flex items-center justify-between gap-2">
                         <CardTitle className="text-base">Documentos Pendientes ({pendingDocuments.length})</CardTitle>
-                        <div className="flex gap-2 flex-shrink-0">
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                            <Select value={provider} onValueChange={setProvider}>
+                                <SelectTrigger className="w-48 h-8 text-xs">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="chatgpt">ChatGPT (gpt-4o)</SelectItem>
+                                    <SelectItem value="azure">Azure Document AI (legacy)</SelectItem>
+                                </SelectContent>
+                            </Select>
                             <Button
                                 variant="outline"
                                 size="sm"

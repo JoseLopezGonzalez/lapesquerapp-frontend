@@ -15,6 +15,7 @@ import { processDocument } from "../shared/DocumentProcessor";
 
 export default function IndividualMode() {
     const [documentType, setDocumentType] = useState("");
+    const [provider, setProvider] = useState("chatgpt");
     const [loading, setLoading] = useState(false);
     const [file, setFile] = useState(null);
     const [processedDocuments, setProcessedDocuments] = useState([]);
@@ -44,7 +45,9 @@ export default function IndividualMode() {
                   description: `${result.error} Contacte al administrador si persiste.`,
                 });
             } else if (result.errorType === 'azure') {
-                notify.error({ title: 'Error en el servicio', description: result.error });
+                notify.error({ title: 'Error en Azure Document AI', description: result.error });
+            } else if (result.errorType === 'chatgpt') {
+                notify.error({ title: 'Error en ChatGPT', description: result.error });
             } else {
                 console.error("Error inesperado:", result.error);
                 notify.error({
@@ -88,7 +91,7 @@ export default function IndividualMode() {
         setLoading(true);
         setProcessedDocuments([]);
 
-        processDocument(file, documentType)
+        processDocument(file, documentType, provider)
             .then(handleProcessResult)
             .catch(handleProcessError)
             .finally(() => setLoading(false));
@@ -116,6 +119,21 @@ export default function IndividualMode() {
                                     <SelectItem value="albaranCofradiaPescadoresSantoCristoDelMar">Albarán - Cofradia Pescadores Santo Cristo del Mar</SelectItem>
                                     <SelectItem value="listadoComprasAsocArmadoresPuntaDelMoral">Listado de compras - Asoc. Armadores Punta del Moral</SelectItem>
                                     <SelectItem value="listadoComprasLonjaDeIsla">Listado de compras - Lonja de Isla</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label htmlFor="extraction-provider" className="text-sm font-medium">
+                                Proveedor de extracción
+                            </label>
+                            <Select value={provider} onValueChange={setProvider}>
+                                <SelectTrigger id="extraction-provider">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="chatgpt">ChatGPT (gpt-4o)</SelectItem>
+                                    <SelectItem value="azure">Azure Document AI (legacy)</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>

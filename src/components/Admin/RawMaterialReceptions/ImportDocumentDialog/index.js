@@ -36,6 +36,7 @@ const DOCUMENT_TYPES = [
 export default function ImportDocumentDialog({ open, onOpenChange, onDocumentProcessed }) {
     const [file, setFile] = useState(null);
     const [documentType, setDocumentType] = useState('');
+    const [provider, setProvider] = useState('chatgpt');
     const [loading, setLoading] = useState(false);
 
     const handleFileChange = (newFile) => {
@@ -62,13 +63,14 @@ export default function ImportDocumentDialog({ open, onOpenChange, onDocumentPro
         setLoading(true);
 
         try {
-            const result = await processDocument(file, documentType);
+            const result = await processDocument(file, documentType, provider);
 
             if (!result.success) {
                 const descriptions = {
                     validation: `${result.error} Verifique que el documento sea del tipo correcto.`,
                     parsing: `${result.error} Contacte al administrador si persiste.`,
                     azure: result.error,
+                    chatgpt: result.error,
                 };
                 notify.error({
                     title: 'Error al procesar documento',
@@ -134,6 +136,21 @@ export default function ImportDocumentDialog({ open, onOpenChange, onDocumentPro
                                         {dt.label}
                                     </SelectItem>
                                 ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label htmlFor="import-provider" className="text-sm font-medium">
+                            Proveedor de extracción
+                        </label>
+                        <Select value={provider} onValueChange={setProvider}>
+                            <SelectTrigger id="import-provider">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="chatgpt">ChatGPT (gpt-4o)</SelectItem>
+                                <SelectItem value="azure">Azure Document AI (legacy)</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
