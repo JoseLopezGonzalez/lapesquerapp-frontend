@@ -74,6 +74,37 @@ Si los subtotales no aparecen en el documento, devuelve 0 en todos sus campos nu
         userPromptTemplate: (filename) =>
             `Extrae todos los datos del siguiente listado de compras de Lonja de Isla (archivo: ${filename}).
 
+REGLAS CRÍTICAS — aplícalas antes de extraer cualquier dato:
+
+REGLA 1 — Campo "especie" en la tabla ventas:
+Copia el texto EXACTAMENTE como aparece en el documento. No completes, no traduzcas, no añadas palabras que no estén escritas. El formato habitual es "{código} {nombre} / {variante}". Cuando el nombre es largo y continúa en la línea siguiente del PDF, únelo en un solo string sin salto de línea ni palabras extra.
+  MAL (inventado): "62 LANGOSTINOS / LANGOSTINO OCCIDENTAL"
+  BIEN (copiado): "62 LANGOSTINOS / LANGOSTINO O LANGOSTINO MEDITERRANEO"
+
+REGLA 2 — Distinguir kilos vs precio en la tabla ventas:
+Las columnas de esa tabla son siempre: Venta | Barco | Especie | Cajas | Kilos | Precio | Importe | Nrsi.
+Cuando la especie ocupa dos líneas en el PDF, el texto extraído puede mostrar los números fuera de orden. Para identificar correctamente cuál es kilos y cuál es precio usa esta fórmula:
+  round(Kilos × Precio, 2) = Importe
+Comprueba la fórmula en todas las filas. Si no cuadra con el orden del texto, intercambia kilos y precio hasta que cuadre.
+
+Ejemplos reales de este documento donde el orden del texto engaña:
+
+  Fila 1570: el texto del PDF muestra "...1 43.00 LANGOSTINO MEDITERRANEO 1.16 49.88"
+    cajas=1, kilos=1.16, precio=43.00, importe=49.88
+    (43.00 aparece primero en el texto pero es PRECIO; 1.16 son los KILOS: 1.16×43.00=49.88 ✓)
+
+  Fila 2009: texto "...1 11.10 ROJA DEL MEDITERRANEO 2.04 22.64"
+    cajas=1, kilos=2.04, precio=11.10, importe=22.64 (2.04×11.10=22.644≈22.64 ✓)
+
+  Fila 1996: texto "...1 29.00 QUISQUILLAS 1.24 35.96"
+    cajas=1, kilos=1.24, precio=29.00, importe=35.96 (1.24×29.00=35.96 ✓)
+
+REGLA 3 — Nombres que continúan en línea siguiente (vendidurias):
+Si el nombre de una vendiduria se corta y continúa en la línea siguiente (ej: "PESCADOS DE ISLA CRISTINA" + "S.L."), únelo en un solo string.
+
+REGLA 4 — tipoVentas:
+Pon siempre "tipoVentas": []. No extraigas ni proceses esa sección.
+
 El JSON de respuesta debe tener exactamente esta estructura (usa null para campos no presentes en el documento, los números deben ser tipo number —no string—, las fechas en formato yyyy-MM-dd):
 
 {
