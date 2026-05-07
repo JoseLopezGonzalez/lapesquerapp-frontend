@@ -5381,6 +5381,7 @@ export const productos = [
   { nombre: "SARGO BREADO / SARGO BREADO", codA3erp: "10154", codBrisappProducto: "320" },
   { nombre: "LANGOSTINOS / LANGOSTINO O", codA3erp: "10155", codBrisappProducto: "321" },
   { nombre: "LANGOSTINOS / LANGOSTINO MEDITERRANEO", codA3erp: "10155", codBrisappProducto: "321" },
+  { nombre: "LANGOSTINOS / LANGOSTINO O LANGOSTINO MEDITERRANEO", codA3erp: "10155", codBrisappProducto: "321" },
   { nombre: "Langostino / Langostino", codA3erp: "10155", codBrisappProducto: "321" },
   { nombre: "CORVINAS / CORVINA", codA3erp: "10166", codBrisappProducto: "112" },
   { nombre: "ALISTADO / GAMBA ROJA O GAMBA", codA3erp: "10139", codBrisappProducto: "307" },
@@ -5414,7 +5415,9 @@ export const productos = [
   { nombre: "LUBINA-ROBALOS / LUBINA", codA3erp: "10176", codBrisappProducto: "107" },
   { nombre: "PEZ BALLESTA / PEZ BALLESTA", codA3erp: "10178", codBrisappProducto: "339" },
   { nombre: "CALAMARES / CALAMAR O CALAMAR", codA3erp: "10179", codBrisappProducto: "106" },
+  { nombre: "CALAMARES / CALAMAR O CALAMAR EUROPEO", codA3erp: "10179", codBrisappProducto: "106" },
   { nombre: "BROTOLA DE FANGO / BROTOLA DE", codA3erp: "10180", codBrisappProducto: "340" },
+  { nombre: "BROTOLA DE FANGO / BROTOLA DE FANGO", codA3erp: "10180", codBrisappProducto: "340" },
   { nombre: "CINTA / PEZ CINTA O CINTA", codA3erp: "10181", codBrisappProducto: "341" },
   { nombre: "CANGREJO AZUL / CANGREJO AZUL", codA3erp: "10182", codBrisappProducto: "342" },
 ]
