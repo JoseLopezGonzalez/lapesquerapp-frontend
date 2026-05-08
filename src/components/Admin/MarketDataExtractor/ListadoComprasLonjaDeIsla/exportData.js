@@ -1730,6 +1730,11 @@ export const barcos = [
     codVendiduria: 'PI'
   },
   {
+    barco: "URTAIN 1º",
+    vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
+    codVendiduria: 'PI'
+  },
+  {
     barco: "BEGOÑAKO AMA",
     vendiduria: "PESCADOS DE ISLA CRISTINA, S.L.U.",
     codVendiduria: 'PI'

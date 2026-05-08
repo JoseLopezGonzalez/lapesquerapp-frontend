@@ -76,11 +76,27 @@ Si los subtotales no aparecen en el documento, devuelve 0 en todos sus campos nu
 
 REGLAS CRÍTICAS — aplícalas antes de extraer cualquier dato:
 
-REGLA 1 — Columnas de la tabla ventas:
-El orden visual de columnas en la tabla es siempre (de izquierda a derecha): Venta | Barco | Especie | Cajas | Kilos | Precio | Importe | Nrsi.
-ATENCIÓN: cuando el nombre del barco o de la especie ocupa más de una línea, el extractor de texto del PDF puede entregar los valores de Kilos y Precio en orden incorrecto. Usa el layout visual del PDF para determinar qué número pertenece a la columna Kilos y cuál a la columna Precio.
-Verifica siempre: round(kilos × precio, 2) = importe.
-NOTA: si no puedes resolver la ambigüedad con el texto extraído, prioriza la lectura visual de las columnas del PDF.
+REGLA 1 — Tabla ventas: inversión de Kilos y Precio en filas multilínea.
+El orden visual de columnas es: Venta | Barco | Especie | Cajas | Kilos | Precio | Importe | Nrsi.
+
+Filas normales (barco y especie en una sola línea): los números siguen el orden visual correcto — primero Kilos, luego Precio.
+
+Filas multilínea (el nombre del barco O el nombre de la especie es tan largo que el extractor de texto lo parte en dos líneas):
+El extractor de texto del PDF entrega Kilos y Precio en orden INVERTIDO. El PRIMER número que aparece tras el valor de Cajas es el PRECIO (€/kg); el SEGUNDO número es los KILOS (kg peso total de la partida).
+
+Ejemplos reales del documento (verificados):
+
+Venta 687 — especie larga "SALMONETE DE ROCA / SALMONETE | DE ROCA":
+  Texto: "...SALMONETE DE ROCA / SALMONETE 1 34.00\nDE ROCA\n1.56 53.04..."
+  → precio = 34.00 €/kg (primer número), kilos = 1.56 kg (segundo número)
+  → 1.56 × 34.00 = 53.04 ✓
+
+Venta 494 — barco largo "CF-HNOS CORDERO | GIL":
+  Texto: "...CF-HNOS CORDERO 29 1 28.00\nGIL\nCAÑAILLAS...3.22 90.16..."
+  → precio = 28.00 €/kg (primer número), kilos = 3.22 kg (segundo número)
+  → 3.22 × 28.00 = 90.16 ✓
+
+IMPORTANTE: la verificación kilos × precio = importe NO detecta la inversión porque la multiplicación es conmutativa. No uses la fórmula para intentar determinar cuál es kilos y cuál es precio — aplica siempre la regla de orden descrita arriba.
 
 REGLA 2 — Nombres que continúan en línea siguiente (vendidurias):
 Si el nombre de una vendiduria se corta y continúa en la línea siguiente (ej: "PESCADOS DE ISLA CRISTINA" + "S.L."), únelo en un solo string.
