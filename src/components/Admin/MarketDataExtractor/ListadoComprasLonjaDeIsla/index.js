@@ -3,16 +3,42 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Download } from 'lucide-react'
-import React, { useState } from 'react'
+import { ArrowLeftRight, Download } from 'lucide-react'
+import React, { useEffect, useState } from 'react'
 import { Dialog, DialogTrigger } from "@/components/ui/dialog"
 import ExportModal from './ExportModal'
 
 const ListadoComprasLonjaDeIsla = ({ document, hideExport = false }) => {
     const [open, setOpen] = useState(false)
+    // Local copy of ventas to allow manual kilos↔precio corrections.
+    // Needed because the PDF text extractor sometimes delivers these columns
+    // inverted on multi-line rows (known upstream bug, pending proper fix).
+    const [localVentas, setLocalVentas] = useState(() => document.tables.ventas)
+    const [swappedRows, setSwappedRows] = useState(new Set())
+
+    useEffect(() => {
+        setLocalVentas(document.tables.ventas)
+        setSwappedRows(new Set())
+    }, [document])
+
+    const handleSwapKilosPrecio = (index) => {
+        setLocalVentas(prev => prev.map((venta, i) => {
+            if (i !== index) return venta
+            return { ...venta, kilos: venta.precio, precio: venta.kilos }
+        }))
+        setSwappedRows(prev => {
+            const next = new Set(prev)
+            if (next.has(index)) next.delete(index)
+            else next.add(index)
+            return next
+        })
+    }
+
     const { details, tables } = document
     const { lonja, cifComprador, comprador, numeroComprador, fecha, importeTotal } = details
-    const { ventas, peces, vendidurias, cajas, tipoVentas } = tables
+    const { peces, vendidurias, cajas, tipoVentas } = tables
+
+    const correctedDocument = { ...document, tables: { ...tables, ventas: localVentas } }
 
     return (
         <div className='py-8'>
@@ -86,11 +112,15 @@ const ListadoComprasLonjaDeIsla = ({ document, hideExport = false }) => {
                                                 <TableHead className="text-right">Precio</TableHead>
                                                 <TableHead className="text-right">Importe</TableHead>
                                                 <TableHead>NRSI</TableHead>
+                                                <TableHead className="w-8" />
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody className=''>
-                                            {ventas.map((venta, index) => (
-                                                <TableRow key={index} className="hover:bg-muted hover:text-white">
+                                            {localVentas.map((venta, index) => (
+                                                <TableRow
+                                                    key={index}
+                                                    className={`hover:bg-muted hover:text-white ${swappedRows.has(index) ? 'bg-amber-50' : ''}`}
+                                                >
                                                     <TableCell>{venta.venta}</TableCell>
                                                     <TableCell>{venta.barco}</TableCell>
                                                     <TableCell>{venta.especie}</TableCell>
@@ -99,6 +129,17 @@ const ListadoComprasLonjaDeIsla = ({ document, hideExport = false }) => {
                                                     <TableCell className="text-right">{venta.precio} €/kg</TableCell>
                                                     <TableCell className="text-right">{venta.importe}€</TableCell>
                                                     <TableCell>{venta.nrsi}</TableCell>
+                                                    <TableCell>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                                                            title="Intercambiar kilos y precio"
+                                                            onClick={() => handleSwapKilosPrecio(index)}
+                                                        >
+                                                            <ArrowLeftRight className="h-3.5 w-3.5" />
+                                                        </Button>
+                                                    </TableCell>
                                                 </TableRow>
                                             ))}
                                         </TableBody>
@@ -247,7 +288,7 @@ const ListadoComprasLonjaDeIsla = ({ document, hideExport = false }) => {
                             </Button>
                         </div>
                     </DialogTrigger>
-                    <ExportModal document={document} />
+                    <ExportModal document={correctedDocument} />
                 </Dialog>
             )}
 
