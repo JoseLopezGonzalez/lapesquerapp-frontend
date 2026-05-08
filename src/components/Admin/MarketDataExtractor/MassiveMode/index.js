@@ -59,6 +59,14 @@ export default function MassiveMode() {
         setDocuments((prev) => prev.filter((doc) => doc.id !== documentId));
     };
 
+    const handleUpdateDocumentData = (documentId, correctedProcessedData) => {
+        setDocuments((prev) =>
+            prev.map((doc) =>
+                doc.id === documentId ? { ...doc, processedData: correctedProcessedData } : doc
+            )
+        );
+    };
+
     const handleDeleteProcessedDocument = (documentId) => {
         setDocuments((prev) => prev.filter((doc) => doc.id !== documentId));
         notify.success({
@@ -416,6 +424,7 @@ export default function MassiveMode() {
                     onRetry={handleRetryDocument}
                     onDelete={handleDeleteProcessedDocument}
                     onDeleteAll={handleDeleteAllProcessedDocuments}
+                    onDocumentUpdate={handleUpdateDocumentData}
                 />
                 {hasSuccessfulDocuments && (
                     <div className="px-4 py-3 border-t flex-shrink-0 bg-card flex gap-2">

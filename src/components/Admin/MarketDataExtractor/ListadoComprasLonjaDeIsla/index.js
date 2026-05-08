@@ -8,7 +8,7 @@ import React, { useEffect, useState } from 'react'
 import { Dialog, DialogTrigger } from "@/components/ui/dialog"
 import ExportModal from './ExportModal'
 
-const ListadoComprasLonjaDeIsla = ({ document, hideExport = false }) => {
+const ListadoComprasLonjaDeIsla = ({ document, hideExport = false, onDocumentCorrection }) => {
     const [open, setOpen] = useState(false)
     // Local copy of ventas to allow manual kilos↔precio corrections.
     // Needed because the PDF text extractor sometimes delivers these columns
@@ -22,16 +22,20 @@ const ListadoComprasLonjaDeIsla = ({ document, hideExport = false }) => {
     }, [document])
 
     const handleSwapKilosPrecio = (index) => {
-        setLocalVentas(prev => prev.map((venta, i) => {
+        const newVentas = localVentas.map((venta, i) => {
             if (i !== index) return venta
             return { ...venta, kilos: venta.precio, precio: venta.kilos }
-        }))
+        })
+        setLocalVentas(newVentas)
         setSwappedRows(prev => {
             const next = new Set(prev)
             if (next.has(index)) next.delete(index)
             else next.add(index)
             return next
         })
+        if (onDocumentCorrection) {
+            onDocumentCorrection({ ...document, tables: { ...document.tables, ventas: newVentas } })
+        }
     }
 
     const { details, tables } = document

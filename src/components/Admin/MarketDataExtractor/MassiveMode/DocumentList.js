@@ -12,7 +12,7 @@ import { EmptyState } from "@/components/Utilities/EmptyState";
 import { getDocumentTypeLabel } from "../shared/documentTypeLabels";
 import { getLonjaDeIslaTradeType } from "@/exportHelpers/lonjaDeIslaExportHelper";
 
-export default function DocumentList({ documents, onRetry, onDelete, onDeleteAll }) {
+export default function DocumentList({ documents, onRetry, onDelete, onDeleteAll, onDocumentUpdate }) {
     const [openDialogId, setOpenDialogId] = useState(null);
 
     const getStatusIcon = (status) => {
@@ -86,7 +86,13 @@ export default function DocumentList({ documents, onRetry, onDelete, onDeleteAll
             case 'albaranCofradiaPescadoresSantoCristoDelMar':
                 return <AlbaranCofraWeb document={doc} hideExport={hideExport} />;
             case 'listadoComprasLonjaDeIsla':
-                return <ListadoComprasLonjaDeIsla document={doc} hideExport={hideExport} />;
+                return (
+                    <ListadoComprasLonjaDeIsla
+                        document={doc}
+                        hideExport={hideExport}
+                        onDocumentCorrection={onDocumentUpdate ? (corrected) => onDocumentUpdate(document.id, [corrected]) : undefined}
+                    />
+                );
             case 'listadoComprasAsocArmadoresPuntaDelMoral':
                 return <ListadoComprasAsocPuntaDelMoral document={doc} hideExport={hideExport} />;
             default:
