@@ -25,6 +25,23 @@ export function canDeletePallet(user?: AuthActorLike | null): boolean {
   return isInternalActor(user);
 }
 
+/** Roles que pueden ver/editar costes de palet y coste manual por caja (API v2). */
+const PALLET_COST_MANAGEMENT_ROLES = new Set([
+  "administrador",
+  "direccion",
+  "tecnico",
+]);
+
+/**
+ * Usuarios internos con rol administrador, dirección o técnico pueden gestionar
+ * costes en palets (coherente con CostRegularization y PalletView).
+ */
+export function canManagePalletCostFields(user?: AuthActorLike | null): boolean {
+  if (!isInternalActor(user)) return false;
+  const role = normalizeRole(user?.role);
+  return role != null && PALLET_COST_MANAGEMENT_ROLES.has(role);
+}
+
 export function getDefaultAuthenticatedRoute(
   user?: AuthActorLike | null
 ): string {

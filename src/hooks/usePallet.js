@@ -4,9 +4,10 @@ import { getProductOptions } from "@/services/productService";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { getAvailableBoxesCount, getAvailableNetWeight } from "@/helpers/pallet/boxAvailability";
+import { stripPalletCostFieldsFromPayload } from "@/helpers/pallet/stripCostFieldsForApi";
 import { notify } from "@/lib/notifications";
 import { parseGs1128Line, normalizeScannedCodeToGs1128 } from "@/lib/gs1128Parser";
-import { isExternalActor } from "@/lib/auth/actor";
+import { isExternalActor, canManagePalletCostFields } from "@/lib/auth/actor";
 
 /**
  * Soporte para códigos GS1-128 con peso en libras (3200):
@@ -822,13 +823,16 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
             }
             const product = getProductById(productId); // Validar que el producto existe
             const parsedCost = manualCostPerKg ? parseFloat(manualCostPerKg) : null;
+            const canCost = canManagePalletCostFields(session?.user);
             const newBox = {
                 product: product,
                 lot,
                 netWeight: roundToTwoDecimals(netWeight),
                 scannedCode,
-                manualCostPerKg: (parsedCost !== null && !isNaN(parsedCost)) ? parsedCost : null,
             };
+            if (canCost && parsedCost !== null && !isNaN(parsedCost)) {
+                newBox.manualCostPerKg = parsedCost;
+            }
             addBox(newBox);
             notify.success({ title: 'Caja creada', description: 'Se ha añadido una caja al palet con el producto y peso indicados.' });
         } else if (method === 'average') {
@@ -1117,10 +1121,15 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
 
         setSaving(true);
 
+        const canCost = canManagePalletCostFields(session?.user);
+        const palletPayload = canCost
+            ? temporalPallet
+            : stripPalletCostFieldsFromPayload(temporalPallet);
+
         // console.log('Saving changes for pallet:', temporalPallet);
 
         if (temporalPallet.id === null) {
-            createPallet(temporalPallet, token)
+            createPallet(palletPayload, token)
                 .then((data) => {
                     // console.log('Pallet created successfully:', data);
                     setPallet(data);
@@ -1138,7 +1147,7 @@ export function usePallet({ id, onChange, initialStoreId = null, initialOrderId 
 
 
         } else {
-            updatePallet(temporalPallet.id, temporalPallet, token)
+            updatePallet(temporalPallet.id, palletPayload, token)
                 .then((data) => {
                     // console.log('Pallet updated successfully:', data);
                     setPallet(data);

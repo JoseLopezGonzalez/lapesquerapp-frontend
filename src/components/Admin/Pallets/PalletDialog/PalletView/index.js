@@ -35,13 +35,14 @@ import { formatDateShort, formatDateHour } from "@/helpers/formats/dates/formatD
 
 import { usePallet, saveDiscountPreferences } from "@/hooks/usePallet";
 import { usePalletTimeline } from "@/hooks/usePalletTimeline";
-import { usePrintElement } from "@/hooks/usePrintElement";import PalletLabel from "@/components/Admin/Pallets/PalletLabel";
+import { usePrintElement } from "@/hooks/usePrintElement";
+import PalletLabel from "@/components/Admin/Pallets/PalletLabel";
 import SummaryPieChart from "./SummaryPieChart";
 import { notify } from "@/lib/notifications";
 import { deletePalletTimeline } from "@/services/palletService";
 import BoxesLabels from "./BoxesLabels";
 import { PalletTimeline } from "./PalletTimeline";
-import { canDeletePallet, isExternalActor } from "@/lib/auth/actor";
+import { canDeletePallet, canManagePalletCostFields, isExternalActor } from "@/lib/auth/actor";
 
 
 export default function PalletView({ palletId, onChange = () => { }, initialStoreId = null, initialOrderId = null, wrappedInDialog = false, onSaveTemporal = null, initialPallet = null, readOnly: readOnlyProp = false }) {
@@ -107,7 +108,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
     const externalActor = isExternalActor(session?.user);
     const canDeleteTimeline = !externalActor && roles.some((r) => r === "administrador" || r === "tecnico");
     const canDeletePalletData = canDeletePallet(session?.user);
-    const canEditCost = !externalActor && roles.some((r) => ['administrador', 'direccion', 'tecnico'].includes(r));
+    const canEditCost = canManagePalletCostFields(session?.user);
 
     const orderIdBlocked = initialOrderId !== null;
 
