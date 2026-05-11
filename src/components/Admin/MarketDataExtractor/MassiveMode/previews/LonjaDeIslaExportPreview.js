@@ -7,14 +7,19 @@ import {
     barcos as barcosLonja,
     barcosVentaDirecta,
     datosVendidurias,
-    serviciosLonjaDeIsla,
-    servicioExtraLonjaDeIsla,
 } from "../../ListadoComprasLonjaDeIsla/exportData";
+import {
+    buildLonjaDeIslaServiciosCalculados,
+    getPorcentajeGastosLonjaOpVendiduria,
+} from "@/exportHelpers/portFeeRepercusion";
 import LonjaDeIslaUnifiedExportTable from "../../ListadoComprasLonjaDeIsla/LonjaDeIslaUnifiedExportTable";
 import LonjaDeIslaVentaDirectaCard from "../../ListadoComprasLonjaDeIsla/LonjaDeIslaVentaDirectaCard";
 import LonjaDeIslaUnresolvedLinesCard from "../../ListadoComprasLonjaDeIsla/LonjaDeIslaUnresolvedLinesCard";
 
-export default function LonjaDeIslaExportPreview({ document }) {
+export default function LonjaDeIslaExportPreview({
+    document,
+    applyFullTasaPescaRepercusion = true,
+}) {
     const { tables: { ventas, vendidurias } } = document;
     const tradeType = getLonjaDeIslaTradeType(document);
 
@@ -58,21 +63,13 @@ export default function LonjaDeIslaExportPreview({ document }) {
         0,
     );
 
-    const servicios = serviciosLonjaDeIsla.map((s) => ({
-        ...s,
-        unidades: 1,
-        base: importeTotalVentasDirectas,
-        precio: (importeTotalVentasDirectas * s.porcentaje) / 100,
-        importe: (importeTotalVentasDirectas * s.porcentaje) / 100,
-    }));
-    const tarifaG4 = servicios.find((s) => s.descripcion === "REPERCUSION TARIFA G-4 COMP.")?.importe || 0;
-    servicios.splice(1, 0, {
-        ...servicioExtraLonjaDeIsla,
-        unidades: 1,
-        base: tarifaG4,
-        precio: tarifaG4 * servicioExtraLonjaDeIsla.porcentaje / 100,
-        importe: tarifaG4 * servicioExtraLonjaDeIsla.porcentaje / 100,
-    });
+    const porcentajeServiciosVendiduria = getPorcentajeGastosLonjaOpVendiduria(
+        applyFullTasaPescaRepercusion,
+    );
+    const servicios = buildLonjaDeIslaServiciosCalculados(
+        applyFullTasaPescaRepercusion,
+        importeTotalVentasDirectas,
+    );
 
     return (
         <div className="space-y-4">
@@ -87,6 +84,7 @@ export default function LonjaDeIslaExportPreview({ document }) {
                 sourceVendidurias={vendidurias}
                 ventasDirectas={ventasDirectas}
                 servicios={servicios}
+                porcentajeServiciosVendiduria={porcentajeServiciosVendiduria}
             />
             <LonjaDeIslaVentaDirectaCard
                 ventasDirectasArray={Object.values(ventasDirectas).filter(Boolean)}

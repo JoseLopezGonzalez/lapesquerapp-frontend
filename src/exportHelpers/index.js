@@ -9,4 +9,10 @@
 export { generateCofraExcelRows, generateCofraLinkedSummary } from './cofraExportHelper';
 export { generateLonjaDeIslaExcelRows, generateLonjaDeIslaLinkedSummary } from './lonjaDeIslaExportHelper';
 export { generateAsocExcelRows, generateAsocLinkedSummary } from './asocExportHelper';
+export {
+    shouldApplyFullTasaPescaRepercusion,
+    getPorcentajeGastosLonjaOpVendiduria,
+    buildLonjaDeIslaServiciosCalculados,
+    buildAsocServiciosCalculados,
+} from './portFeeRepercusion';
 

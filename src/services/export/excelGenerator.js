@@ -16,11 +16,12 @@ import { generateAsocExcelRows } from '@/exportHelpers/asocExportHelper';
  *   - documentType: 'albaranCofradiaPescadoresSantoCristoDelMar' | 'listadoComprasLonjaDeIsla' | 'listadoComprasAsocArmadoresPuntaDelMoral'
  * @param {Object} options - Options for generation
  * @param {string} options.software - Software type ('A3ERP', 'Facilcom', etc.) - default: 'A3ERP'
+ * @param {boolean} [options.applyFullTasaPescaRepercusion=true] - Lonja Isla / ASOC: repercusión completa T4 en gastos
  * @returns {Blob} Excel file blob
  */
 export async function generateMassiveExcel(documents, options = {}) {
     const XLSX = await import('xlsx-js-style');
-    const { software = 'A3ERP' } = options;
+    const { software = 'A3ERP', applyFullTasaPescaRepercusion } = options;
 
     if (documents.length === 0) {
         throw new Error('No hay documentos para exportar');
@@ -51,6 +52,7 @@ export async function generateMassiveExcel(documents, options = {}) {
         const result = helper(document, {
             startSequence: currentSequenceCompra,
             startSequenceVenta: currentSequenceVenta,
+            applyFullTasaPescaRepercusion,
         });
 
         if (result?.rows?.length > 0) {

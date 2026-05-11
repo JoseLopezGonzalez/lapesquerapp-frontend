@@ -6,14 +6,16 @@
 
 import { parseDecimalValue, calculateImporte, formatDateForA3 } from './common';
 import { normalizeText } from '@/helpers/formats/texts';
-import { 
-    asocArmadoresPuntaDelMoral, 
-    asocArmadoresPuntaDelMoralSubasta, 
-    barcos, 
-    productos, 
-    servicioExtraAsocArmadoresPuntaDelMoral, 
-    serviciosAsocArmadoresPuntaDelMoral 
+import {
+    asocArmadoresPuntaDelMoral,
+    asocArmadoresPuntaDelMoralSubasta,
+    barcos,
+    productos,
 } from '@/components/Admin/MarketDataExtractor/ListadoComprasAsocPuntaDelMoral/exportData';
+import {
+    buildAsocServiciosCalculados,
+    shouldApplyFullTasaPescaRepercusion,
+} from './portFeeRepercusion';
 
 const ASOC_CABNUMDOC_TYPES = {
     VENTA_DIRECTA: '1',
@@ -62,6 +64,7 @@ function assertAsocSpeciesMapped(document) {
 export function generateAsocExcelRows(document, options = {}) {
     assertAsocSpeciesMapped(document);
 
+    const applyFullTasaPescaRepercusion = shouldApplyFullTasaPescaRepercusion(options);
     const { CABSERIE: baseCABSERIE = "AS", startSequence = 1 } = options;
     const { details: { fecha: fechaRaw, tipoSubasta }, tables } = document;
     const fecha = formatDateForA3(fechaRaw);
@@ -108,26 +111,10 @@ export function generateAsocExcelRows(document, options = {}) {
         return acc + calculateImporte(linea.pesoNeto, linea.precio);
     }, 0);
 
-    // Generate servicios
-    const servicios = serviciosAsocArmadoresPuntaDelMoral.map((servicio) => {
-        return {
-            ...servicio,
-            unidades: 1,
-            base: importeTotalCalculado,
-            precio: (importeTotalCalculado * servicio.porcentaje) / 100,
-            importe: (importeTotalCalculado * servicio.porcentaje) / 100,
-        };
-    });
-
-    // Add servicioExtra at position 1
-    const servicioExtra = {
-        ...servicioExtraAsocArmadoresPuntaDelMoral,
-        unidades: 1,
-        base: servicios.find((servicio) => servicio.descripcion === 'Tarifa G-4')?.importe || 0,
-        precio: (servicios.find((servicio) => servicio.descripcion === 'Tarifa G-4')?.importe || 0) * servicioExtraAsocArmadoresPuntaDelMoral.porcentaje / 100,
-        importe: (servicios.find((servicio) => servicio.descripcion === 'Tarifa G-4')?.importe || 0) * servicioExtraAsocArmadoresPuntaDelMoral.porcentaje / 100,
-    };
-    servicios.splice(1, 0, servicioExtra);
+    const servicios = buildAsocServiciosCalculados(
+        applyFullTasaPescaRepercusion,
+        importeTotalCalculado,
+    );
 
     // Group by barco (matricula)
     const groupedByBarco = subastas.reduce((acc, line) => {

@@ -8,16 +8,18 @@ import { parseDecimalValue, calculateImporte, formatDateForA3 } from './common';
 import { findBarcoMatch } from './lonjaDeIslaBarcoMatcher';
 import { parseEuropeanNumber } from '@/helpers/formats/numbers/formatNumbers';
 import { normalizeText } from '@/helpers/formats/texts';
-import { 
-    barcos, 
-    barcosVentaDirecta, 
-    datosVendidurias, 
-    lonjaDeIsla, 
-    PORCENTAJE_SERVICIOS_VENDIDURIAS, 
-    productos, 
-    servicioExtraLonjaDeIsla, 
-    serviciosLonjaDeIsla 
+import {
+    barcos,
+    barcosVentaDirecta,
+    datosVendidurias,
+    lonjaDeIsla,
+    productos,
 } from '@/components/Admin/MarketDataExtractor/ListadoComprasLonjaDeIsla/exportData';
+import {
+    buildLonjaDeIslaServiciosCalculados,
+    getPorcentajeGastosLonjaOpVendiduria,
+    shouldApplyFullTasaPescaRepercusion,
+} from './portFeeRepercusion';
 
 const LONJA_CABNUMDOC_TYPES = {
     COMPRA_CONTRATO: '5',
@@ -87,6 +89,9 @@ function groupVentasByVendiduria(ventasVendidurias) {
  * @returns {Object} Object with rows array and nextSequence number
  */
 export function generateLonjaDeIslaExcelRows(document, options = {}) {
+    const applyFullTasaPescaRepercusion = shouldApplyFullTasaPescaRepercusion(options);
+    const porcentajeGastosLonjaOpVendiduria =
+        getPorcentajeGastosLonjaOpVendiduria(applyFullTasaPescaRepercusion);
     const speciesWarnings = getUnmappedSpeciesWarnings(document);
     const tradeType = getLonjaDeIslaTradeType(document);
     const tradeLetter = tradeType === 'SUBASTA' ? 'S' : 'C';
@@ -175,26 +180,10 @@ export function generateLonjaDeIslaExcelRows(document, options = {}) {
         }, 0);
     }, 0);
 
-    // Generate servicios
-    const servicios = serviciosLonjaDeIsla.map((servicio) => {
-        return {
-            ...servicio,
-            unidades: 1,
-            base: importeTotalVentasDirectas,
-            precio: (importeTotalVentasDirectas * servicio.porcentaje) / 100,
-            importe: (importeTotalVentasDirectas * servicio.porcentaje) / 100,
-        };
-    });
-
-    // Add servicioExtra at position 1
-    const servicioExtra = {
-        ...servicioExtraLonjaDeIsla,
-        unidades: 1,
-        base: servicios.find((servicio) => servicio.descripcion === 'REPERCUSION TARIFA G-4 COMP.')?.importe || 0,
-        precio: (servicios.find((servicio) => servicio.descripcion === 'REPERCUSION TARIFA G-4 COMP.')?.importe || 0) * servicioExtraLonjaDeIsla.porcentaje / 100,
-        importe: (servicios.find((servicio) => servicio.descripcion === 'REPERCUSION TARIFA G-4 COMP.')?.importe || 0) * servicioExtraLonjaDeIsla.porcentaje / 100,
-    };
-    servicios.splice(1, 0, servicioExtra);
+    const servicios = buildLonjaDeIslaServiciosCalculados(
+        applyFullTasaPescaRepercusion,
+        importeTotalVentasDirectas,
+    );
 
     // Helper function
     const getImporteTotal = (lineasBarco) => {
@@ -314,7 +303,8 @@ export function generateLonjaDeIslaExcelRows(document, options = {}) {
                 LINCODART: 9999,
                 LINDESCLIN: 'Gastos de Lonja y OP',
                 LINUNIDADES: 1,
-                LINPRCMONEDA: importeTotalVendiduria * PORCENTAJE_SERVICIOS_VENDIDURIAS / 100,
+                LINPRCMONEDA:
+                    (importeTotalVendiduria * porcentajeGastosLonjaOpVendiduria) / 100,
                 LINTIPIVA: 'RED10',
             });
             albaranSequence++;
@@ -355,7 +345,7 @@ export function generateLonjaDeIslaExcelRows(document, options = {}) {
                 LINCODART: 9999,
                 LINDESCLIN: 'Gastos de Lonja y OP',
                 LINUNIDADES: 1,
-                LINPRCMONEDA: importeTotal * PORCENTAJE_SERVICIOS_VENDIDURIAS / 100,
+                LINPRCMONEDA: (importeTotal * porcentajeGastosLonjaOpVendiduria) / 100,
                 LINTIPIVA: 'RED10',
             });
             albaranSequence++;

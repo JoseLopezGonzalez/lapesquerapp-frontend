@@ -5,11 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Download, Loader2, AlertTriangle, CircleX, FileCheck2 } from "lucide-react";import { downloadMassiveExcel } from "@/services/export/excelGenerator";
+import { Download, Loader2, AlertTriangle, CircleX, FileCheck2 } from "lucide-react";
+import { downloadMassiveExcel } from "@/services/export/excelGenerator";
 import { generateCofraExcelRows } from "@/exportHelpers/cofraExportHelper";
 import { generateLonjaDeIslaExcelRows, getLonjaDeIslaTradeType } from "@/exportHelpers/lonjaDeIslaExportHelper";
 import { generateAsocExcelRows } from "@/exportHelpers/asocExportHelper";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { notify } from "@/lib/notifications";
 import { CofraExportPreview, LonjaDeIslaExportPreview, AsocExportPreview } from "./previews";
 
@@ -19,6 +21,7 @@ export default function MassiveExportDialog({
     documents 
 }) {
     const [software, setSoftware] = useState("A3ERP");
+    const [applyFullTasaPescaRepercusion, setApplyFullTasaPescaRepercusion] = useState(true);
     const [isExporting, setIsExporting] = useState(false);
     const [errors, setErrors] = useState([]);
     const [documentsInfo, setDocumentsInfo] = useState([]);
@@ -66,7 +69,10 @@ export default function MassiveExportDialog({
 
             try {
                 // Try to generate rows to detect errors
-                const result = helper(doc.processedData[0], { startSequence: 1 });
+                const result = helper(doc.processedData[0], {
+                    startSequence: 1,
+                    applyFullTasaPescaRepercusion,
+                });
                 
                 if (!result || !result.rows || result.rows.length === 0) {
                     allErrors.push(`Documento "${doc.file?.name || 'Desconocido'}": No se generaron filas para exportar`);
@@ -99,7 +105,7 @@ export default function MassiveExportDialog({
 
         setErrors(allErrors);
         setDocumentsInfo(docsInfo);
-    }, [open, documents]);
+    }, [open, documents, applyFullTasaPescaRepercusion]);
 
     const handleExport = async () => {
         if (errors.length > 0) {
@@ -128,7 +134,10 @@ export default function MassiveExportDialog({
                 return;
             }
 
-            await downloadMassiveExcel(documentsToExport, { software });
+            await downloadMassiveExcel(documentsToExport, {
+                software,
+                applyFullTasaPescaRepercusion,
+            });
             notify.success({
               title: 'Excel generado',
               description: 'El archivo se ha generado correctamente.',
@@ -207,7 +216,7 @@ export default function MassiveExportDialog({
         if (!document || !documentType) return null;
         const PreviewComponent = DOCUMENT_PREVIEW_COMPONENTS[documentType];
         if (!PreviewComponent) return null;
-        return <PreviewComponent document={document} />;
+        return <PreviewComponent document={document} applyFullTasaPescaRepercusion={applyFullTasaPescaRepercusion} />;
     };
 
     return (
@@ -237,6 +246,22 @@ export default function MassiveExportDialog({
                                         <SelectItem value="Otros">Otros</SelectItem>
                                     </SelectContent>
                                 </Select>
+                            </div>
+                        </div>
+
+                        <div className="flex items-start gap-3 rounded-md border border-border bg-muted/30 p-3">
+                            <Checkbox
+                                id="tasa-pesca-repercusion-masivo"
+                                checked={applyFullTasaPescaRepercusion}
+                                onCheckedChange={(v) => setApplyFullTasaPescaRepercusion(v === true)}
+                            />
+                            <div className="grid gap-1.5 leading-none">
+                                <Label htmlFor="tasa-pesca-repercusion-masivo" className="text-sm font-medium cursor-pointer">
+                                    Repercutir tasa pesca fresca (T4) en gastos exportados
+                                </Label>
+                                <p className="text-xs text-muted-foreground">
+                                    Afecta listados Lonja de Isla y ASOC en este Excel. Desmarcar = porcentajes de exención.
+                                </p>
                             </div>
                         </div>
 

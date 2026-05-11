@@ -79,9 +79,9 @@ function BadgeExportable({ cod, tipo }) {
     );
 }
 
-function importeServiciosVendiduria(lineas) {
+function importeServiciosVendiduria(lineas, porcentajeServiciosVendiduria) {
     const imp = aggregateLineasForLonja(lineas).importe;
-    return (imp * PORCENTAJE_SERVICIOS_VENDIDURIAS) / 100;
+    return (imp * porcentajeServiciosVendiduria) / 100;
 }
 
 function round2(value) {
@@ -101,6 +101,7 @@ export default function LonjaDeIslaUnifiedExportTable({
     sourceVendidurias = [],
     ventasDirectas,
     servicios = [],
+    porcentajeServiciosVendiduria = PORCENTAJE_SERVICIOS_VENDIDURIAS,
 }) {
     const [expandedByVendiduria, setExpandedByVendiduria] = useState({});
 
@@ -116,7 +117,7 @@ export default function LonjaDeIslaUnifiedExportTable({
             for (const barco of g.barcos) {
                 const agg = aggregateLineasForLonja(barco.lineas);
                 mercancia += agg.importe;
-                serviciosVendiduria += importeServiciosVendiduria(barco.lineas);
+                serviciosVendiduria += importeServiciosVendiduria(barco.lineas, porcentajeServiciosVendiduria);
             }
         }
         return {
@@ -125,7 +126,7 @@ export default function LonjaDeIslaUnifiedExportTable({
             serviciosLonja: 0,
             general: mercancia + serviciosVendiduria,
         };
-    }, [gruposV]);
+    }, [gruposV, porcentajeServiciosVendiduria]);
 
     const azureTotalsByVendiduria = useMemo(() => {
         const map = {};
@@ -328,7 +329,10 @@ export default function LonjaDeIslaUnifiedExportTable({
                                     </TableRow>
                                     {isExpanded && grupo.barcos.map((barco) => {
                                         const aggBarco = aggregateLineasForLonja(barco.lineas);
-                                        const srvVend = importeServiciosVendiduria(barco.lineas);
+                                        const srvVend = importeServiciosVendiduria(
+                                            barco.lineas,
+                                            porcentajeServiciosVendiduria,
+                                        );
                                         const barcoExportable = true;
                                         return (
                                             <Fragment key={`${grupo.vendiduria.cod}-${barco.cod}`}>
@@ -383,7 +387,7 @@ export default function LonjaDeIslaUnifiedExportTable({
                                                 <TableRow className="italic text-muted-foreground hover:bg-muted/15">
                                                     <TableCell className="pl-8">
                                                         Servicios vendiduría (
-                                                        {PORCENTAJE_SERVICIOS_VENDIDURIAS}%)
+                                                        {porcentajeServiciosVendiduria}%)
                                                     </TableCell>
                                                     <TableCell className="text-right">—</TableCell>
                                                     <TableCell className="text-right">—</TableCell>
@@ -409,7 +413,7 @@ export default function LonjaDeIslaUnifiedExportTable({
                         </TableRow>
                         <TableRow className="bg-muted/20 text-sm">
                             <TableCell colSpan={4}>
-                                Total servicios vendiduría ({PORCENTAJE_SERVICIOS_VENDIDURIAS}%)
+                                Total servicios vendiduría ({porcentajeServiciosVendiduria}%)
                             </TableCell>
                             <TableCell className="text-right">
                                 {formatDecimalCurrency(totales.serviciosVendiduria)}

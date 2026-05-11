@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Download, Link as LinkIcon, Loader2 } from "lucide-react";import { downloadMassiveExcel } from "@/services/export/excelGenerator";
+import { Download, Link as LinkIcon, Loader2 } from "lucide-react";
+import { downloadMassiveExcel } from "@/services/export/excelGenerator";
 import { linkAllPurchases } from "@/services/export/linkService";
 import { generateCofraLinkedSummary } from "@/exportHelpers/cofraExportHelper";
 import { generateLonjaDeIslaLinkedSummary } from "@/exportHelpers/lonjaDeIslaExportHelper";
@@ -14,6 +17,7 @@ export default function MassiveExportModal({ documents }) {
     const [isExporting, setIsExporting] = useState(false);
     const [isLinking, setIsLinking] = useState(false);
     const [open, setOpen] = useState(false);
+    const [applyFullTasaPescaRepercusion, setApplyFullTasaPescaRepercusion] = useState(true);
 
     const LINKED_SUMMARY_GENERATORS = {
         'albaranCofradiaPescadoresSantoCristoDelMar': generateCofraLinkedSummary,
@@ -29,7 +33,7 @@ export default function MassiveExportModal({ documents }) {
                 documentType: doc.documentType,
             }));
 
-            await downloadMassiveExcel(documentsToExport);
+            await downloadMassiveExcel(documentsToExport, { applyFullTasaPescaRepercusion });
             notify.success({
               title: 'Excel generado',
               description: 'El archivo se ha generado correctamente.',
@@ -117,6 +121,21 @@ export default function MassiveExportModal({ documents }) {
                     </DialogDescription>
                 </DialogHeader>
                 <div className="py-4">
+                    <div className="flex items-start gap-3 rounded-md border border-border bg-muted/30 p-3 mb-4">
+                        <Checkbox
+                            id="tasa-pesca-repercusion-export-link"
+                            checked={applyFullTasaPescaRepercusion}
+                            onCheckedChange={(v) => setApplyFullTasaPescaRepercusion(v === true)}
+                        />
+                        <div className="grid gap-1.5 leading-none">
+                            <Label htmlFor="tasa-pesca-repercusion-export-link" className="text-sm font-medium cursor-pointer">
+                                Repercutir tasa pesca fresca (T4) en gastos exportados
+                            </Label>
+                            <p className="text-xs text-muted-foreground">
+                                Desmarcar si aplica exención temporal en Lonja de Isla / ASOC.
+                            </p>
+                        </div>
+                    </div>
                     <p className="text-sm text-muted-foreground mb-4">
                         {documents.length} documento(s) procesado(s) correctamente
                     </p>

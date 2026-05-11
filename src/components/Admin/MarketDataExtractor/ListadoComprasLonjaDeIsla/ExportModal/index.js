@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Check, X, FileSpreadsheet, CircleX, Link } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
@@ -6,10 +6,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Checkbox } from "@/components/ui/checkbox"
-import { barcos, barcosVentaDirecta, datosVendidurias, lonjaDeIsla, productos, servicioExtraLonjaDeIsla, serviciosLonjaDeIsla } from '../exportData'
+import { Label } from "@/components/ui/label"
+import { barcos, barcosVentaDirecta, datosVendidurias, lonjaDeIsla, productos } from '../exportData'
 import { Input } from '@/components/ui/input'
 import { parseDecimalValue, calculateImporteFromLinea } from '@/exportHelpers/common'
 import { getLonjaDeIslaTradeType, validateLonjaDeIslaSpeciesForExport } from '@/exportHelpers/lonjaDeIslaExportHelper'
+import {
+    buildLonjaDeIslaServiciosCalculados,
+    getPorcentajeGastosLonjaOpVendiduria,
+} from '@/exportHelpers/portFeeRepercusion'
 import { findBarcoMatch } from '@/exportHelpers/lonjaDeIslaBarcoMatcher'
 import { normalizeText } from '@/helpers/formats/texts'
 import { formatDecimalCurrency, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
@@ -49,6 +54,8 @@ const ExportModal = ({ document }) => {
     const { details: { fecha }, tables: { ventas, vendidurias } } = document
     const tradeType = getLonjaDeIslaTradeType(document);
     const [software, setSoftware] = useState("A3ERP")
+    /** Repercusión completa tasa pesca fresca (T4). Desmarcar = exención / porcentajes reducidos. */
+    const [applyFullTasaPescaRepercusion, setApplyFullTasaPescaRepercusion] = useState(true)
     const [errors, setErrors] = useState([])
     const [selectedLinks, setSelectedLinks] = useState([])
     const [isValidating, setIsValidating] = useState(false)
@@ -124,15 +131,18 @@ const ExportModal = ({ document }) => {
         }, 0);
     }, 0);
 
-    const servicios = serviciosLonjaDeIsla.map((servicio) => {
-        return {
-            ...servicio,
-            unidades: 1,
-            base: importeTotalVentasDirectas,
-            precio: (importeTotalVentasDirectas * servicio.porcentaje) / 100,
-            importe: (importeTotalVentasDirectas * servicio.porcentaje) / 100,
-        }
-    })
+    const porcentajeServiciosVendiduria = getPorcentajeGastosLonjaOpVendiduria(
+        applyFullTasaPescaRepercusion,
+    );
+
+    const servicios = useMemo(
+        () =>
+            buildLonjaDeIslaServiciosCalculados(
+                applyFullTasaPescaRepercusion,
+                importeTotalVentasDirectas,
+            ),
+        [applyFullTasaPescaRepercusion, importeTotalVentasDirectas],
+    );
 
     const getImporteTotal = (lineasBarco) => {
         const importeTotal = lineasBarco.reduce((acc, linea) => {
@@ -140,16 +150,6 @@ const ExportModal = ({ document }) => {
         }, 0);
         return importeTotal;
     }
-
-    /* Añadir en segunda posicion servvicio extra a servicios */
-    const servicioExtra = {
-        ...servicioExtraLonjaDeIsla,
-        unidades: 1,
-        base: (servicios.find((servicio) => servicio.descripcion === 'REPERCUSION TARIFA G-4 COMP.').importe),
-        precio: (servicios.find((servicio) => servicio.descripcion === 'REPERCUSION TARIFA G-4 COMP.').importe) * servicioExtraLonjaDeIsla.porcentaje / 100,
-        importe: (servicios.find((servicio) => servicio.descripcion === 'REPERCUSION TARIFA G-4 COMP.').importe) * servicioExtraLonjaDeIsla.porcentaje / 100,
-    }
-    servicios.splice(1, 0, servicioExtra)
 
     const handleOnClickExport = () => {
         // Ya no necesitamos initialAlbaranNumber, se usa la fecha como identificador base
@@ -466,7 +466,7 @@ const ExportModal = ({ document }) => {
                     LINCODART: 9999,
                     LINDESCLIN: 'Gastos de Lonja y OP',
                     LINUNIDADES: 1,
-                    LINPRCMONEDA: importeTotalVendiduria * 3.5 / 100,
+                    LINPRCMONEDA: (importeTotalVendiduria * porcentajeServiciosVendiduria) / 100,
                     LINTIPIVA: 'RED10',
                 });
                 albaranSequence++;
@@ -507,7 +507,7 @@ const ExportModal = ({ document }) => {
                     LINCODART: 9999,
                     LINDESCLIN: 'Gastos de Lonja y OP',
                     LINUNIDADES: 1,
-                    LINPRCMONEDA: importeTotal * 3.5 / 100,
+                    LINPRCMONEDA: (importeTotal * porcentajeServiciosVendiduria) / 100,
                     LINTIPIVA: 'RED10',
                 });
                 albaranSequence++;
@@ -595,6 +595,21 @@ const ExportModal = ({ document }) => {
                         </Select>
                     </div>
                 </div>
+                <div className="flex items-start gap-3 rounded-md border border-border bg-muted/30 p-3">
+                    <Checkbox
+                        id="tasa-pesca-repercusion-lonja"
+                        checked={applyFullTasaPescaRepercusion}
+                        onCheckedChange={(v) => setApplyFullTasaPescaRepercusion(v === true)}
+                    />
+                    <div className="grid gap-1.5 leading-none">
+                        <Label htmlFor="tasa-pesca-repercusion-lonja" className="text-sm font-medium cursor-pointer">
+                            Repercutir tasa pesca fresca (T4) en gastos exportados
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                            Desmarcar durante exención (p. ej. decreto-ley): vendiduría/subasta 1,5 %, servicios contrato sin Tarifa G-4 ni recargo. El suplido lonja no cambia.
+                        </p>
+                    </div>
+                </div>
                 <div className='flex flex-col gap-1'>
                     <div className="flex items-center gap-1 p-1 text-white bg-white/30 w-fit px-2 border border-white rounded-md">
                         <span className="text-xs">
@@ -620,6 +635,7 @@ const ExportModal = ({ document }) => {
                         sourceVendidurias={vendidurias}
                         ventasDirectas={ventasDirectas}
                         servicios={servicios}
+                        porcentajeServiciosVendiduria={porcentajeServiciosVendiduria}
                     />
                     <LonjaDeIslaVentaDirectaCard
                         ventasDirectasArray={ventasDirectasArray}

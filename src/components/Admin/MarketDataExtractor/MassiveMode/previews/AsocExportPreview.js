@@ -6,9 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { Check, X } from "lucide-react";
 import { calculateImporteFromLinea } from "@/exportHelpers/common";
 import { normalizeText } from "@/helpers/formats/texts";
-import { barcos as barcosAsoc, serviciosAsocArmadoresPuntaDelMoral, servicioExtraAsocArmadoresPuntaDelMoral } from "../../ListadoComprasAsocPuntaDelMoral/exportData";
+import { barcos as barcosAsoc } from "../../ListadoComprasAsocPuntaDelMoral/exportData";
+import { buildAsocServiciosCalculados } from "@/exportHelpers/portFeeRepercusion";
 
-export default function AsocExportPreview({ document }) {
+export default function AsocExportPreview({
+    document,
+    applyFullTasaPescaRepercusion = true,
+}) {
     const { details: { tipoSubasta }, tables } = document;
     const isVentaDirecta = tipoSubasta === 'M1 M1';
     const isSubasta = tipoSubasta === 'T2 Arrastre';
@@ -25,21 +29,10 @@ export default function AsocExportPreview({ document }) {
     const importeTotalCalculado = tables.subastas.reduce((acc, linea) =>
         acc + calculateImporteFromLinea(linea, 'pesoNeto'), 0);
 
-    const servicios = serviciosAsocArmadoresPuntaDelMoral.map((s) => ({
-        ...s,
-        unidades: 1,
-        base: importeTotalCalculado,
-        precio: (importeTotalCalculado * s.porcentaje) / 100,
-        importe: (importeTotalCalculado * s.porcentaje) / 100,
-    }));
-    const tarifaG4 = servicios.find((s) => s.descripcion === 'Tarifa G-4')?.importe || 0;
-    servicios.splice(1, 0, {
-        ...servicioExtraAsocArmadoresPuntaDelMoral,
-        unidades: 1,
-        base: tarifaG4,
-        precio: tarifaG4 * servicioExtraAsocArmadoresPuntaDelMoral.porcentaje / 100,
-        importe: tarifaG4 * servicioExtraAsocArmadoresPuntaDelMoral.porcentaje / 100,
-    });
+    const servicios = buildAsocServiciosCalculados(
+        applyFullTasaPescaRepercusion,
+        importeTotalCalculado,
+    );
 
     const isConvertibleBarco = (matricula) =>
         barcosAsoc.some((b) => normalizeText(b.matricula) === normalizeText(matricula));
