@@ -12,6 +12,7 @@ import { generateLonjaDeIslaExcelRows, getLonjaDeIslaTradeType } from "@/exportH
 import { generateAsocExcelRows } from "@/exportHelpers/asocExportHelper";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { notify } from "@/lib/notifications";
 import { CofraExportPreview, LonjaDeIslaExportPreview, AsocExportPreview } from "./previews";
 
