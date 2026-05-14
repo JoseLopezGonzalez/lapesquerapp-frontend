@@ -31,7 +31,7 @@ const nodeTypes = {
   restantesNode: RestantesNode
 }
 
-function FlowContent({ processTree, productionId, loading, viewMode, onViewModeChange, viewModes }) {
+function FlowContent({ processTree, productionId, loading, viewMode, onViewModeChange, viewModes, isFiltered = false }) {
   const router = useRouter()
   const { fitView } = useReactFlow()
 
@@ -130,8 +130,8 @@ function FlowContent({ processTree, productionId, loading, viewMode, onViewModeC
       <div className="h-[600px] flex items-center justify-center">
         <EmptyState
           icon={<Package className="h-12 w-12 text-muted-foreground" />}
-          title="No hay procesos registrados"
-          description="Crea procesos de producción para visualizar el diagrama"
+          title={isFiltered ? 'Sin expediciones para este filtro' : 'No hay procesos registrados'}
+          description={isFiltered ? 'No hay cajas expedidas de este lote asociadas al cliente o pedido seleccionado.' : 'Crea procesos de producción para visualizar el diagrama'}
         />
       </div>
     )
@@ -180,7 +180,7 @@ function FlowContent({ processTree, productionId, loading, viewMode, onViewModeC
   )
 }
 
-export default function ProductionDiagram({ processTree, productionId, loading = false, viewMode: externalViewMode, onViewModeChange: externalOnViewModeChange }) {
+export default function ProductionDiagram({ processTree, productionId, loading = false, viewMode: externalViewMode, onViewModeChange: externalOnViewModeChange, isFiltered = false }) {
   const [internalViewMode, setInternalViewMode] = useState('simple')
   
   // Usar viewMode externo si se proporciona, sino usar el interno
@@ -195,6 +195,7 @@ export default function ProductionDiagram({ processTree, productionId, loading =
         loading={loading}
         viewMode={viewMode}
         onViewModeChange={onViewModeChange}
+        isFiltered={isFiltered}
       />
     </ReactFlowProvider>
   )

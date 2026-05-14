@@ -22,7 +22,8 @@ import {
 } from '@/services/generic/entityService';
 import { 
     fetchEntityDataGeneric, 
-    submitEntityFormGeneric
+    submitEntityFormGeneric,
+    fetchAutocompleteOptionsGeneric
 } from '@/services/generic/editEntityService';
 import { addWithParams } from '@/lib/entity/entityRelationsHelper';
 import { addFiltersToParams } from '@/lib/entity/filtersHelper';
@@ -161,6 +162,15 @@ export const orderService = {
             }));
         }
         return options || [];
+    },
+
+    /**
+     * Obtiene opciones de todos los pedidos para filtros históricos.
+     * @returns {Promise<Array<{value: any, label: string}>>}
+     */
+    async getAllOptions() {
+        const token = await getAuthToken();
+        return fetchAutocompleteOptionsGeneric(`${API_URL_V2}${ENDPOINT}/options`, token);
     },
 
     // ========== Métodos específicos de Orders (reexportar del orderService original) ==========
@@ -319,4 +329,3 @@ export const orderService = {
         return orderServiceFunctions.getTransportChartData({ token, ...params });
     },
 };
-

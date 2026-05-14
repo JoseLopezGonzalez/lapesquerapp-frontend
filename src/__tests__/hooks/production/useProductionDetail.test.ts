@@ -66,8 +66,21 @@ describe('useProductionDetail', () => {
     expect(result.current.error).toBeNull();
     expect(typeof result.current.refetch).toBe('function');
     expect(getProduction).toHaveBeenCalledWith(1, 'test-token');
-    expect(getProductionProcessTree).toHaveBeenCalledWith(1, 'test-token');
+    expect(getProductionProcessTree).toHaveBeenCalledWith(1, 'test-token', {});
     expect(getProductionTotals).toHaveBeenCalledWith(1, 'test-token');
+  });
+
+  it('passes processTreeFilter to the process tree service', async () => {
+    const { result } = renderHook(
+      () => useProductionDetail(1, { processTreeFilter: { customerId: 7 } }),
+      { wrapper: createWrapper() }
+    );
+
+    await waitFor(() => {
+      expect(result.current.processTreeLoading).toBe(false);
+    });
+
+    expect(getProductionProcessTree).toHaveBeenCalledWith(1, 'test-token', { customerId: 7 });
   });
 
   it('returns null production when productionId is null', async () => {

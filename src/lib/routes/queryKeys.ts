@@ -105,6 +105,11 @@ export const productionQueryKeys = {
   ) => ['productions', 'totals', tenantId ?? 'unknown', productionId] as const,
   processTree: (
     tenantId: string | null | undefined,
+    productionId: number | string | null | undefined,
+    params: Record<string, unknown> = {}
+  ) => ['productions', 'processTree', tenantId ?? 'unknown', productionId, normalizeQueryParams(params)] as const,
+  processTreePrefix: (
+    tenantId: string | null | undefined,
     productionId: number | string | null | undefined
   ) => ['productions', 'processTree', tenantId ?? 'unknown', productionId] as const,
   recordDetail: (

@@ -24,6 +24,10 @@ export interface UseProductionDetailResult {
 
 export interface UseProductionDetailOptions {
   enableProcessTree?: boolean;
+  processTreeFilter?: {
+    customerId?: string | number | null;
+    orderId?: string | number | null;
+  };
 }
 
 /**
@@ -40,6 +44,13 @@ export function useProductionDetail(
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
   const enableProcessTree = options?.enableProcessTree ?? true;
+  const rawProcessTreeFilter = options?.processTreeFilter ?? {};
+  const processTreeFilter: { customerId?: string | number; orderId?: string | number } =
+    rawProcessTreeFilter.customerId != null && rawProcessTreeFilter.customerId !== ''
+      ? { customerId: rawProcessTreeFilter.customerId }
+      : rawProcessTreeFilter.orderId != null && rawProcessTreeFilter.orderId !== ''
+        ? { orderId: rawProcessTreeFilter.orderId }
+        : {};
   const isEnabled = !!token && !!tenantId && productionId != null && productionId !== '';
 
   const productionQuery = useQuery({
@@ -66,9 +77,9 @@ export function useProductionDetail(
   });
 
   const processTreeQuery = useQuery({
-    queryKey: productionQueryKeys.processTree(tenantId, productionId),
+    queryKey: productionQueryKeys.processTree(tenantId, productionId, processTreeFilter),
     queryFn: () =>
-      getProductionProcessTree(productionId!, token!).catch((err) => {
+      getProductionProcessTree(productionId!, token!, processTreeFilter).catch((err) => {
         console.error('Error al cargar processTree:', err);
         if (err?.message?.includes?.('500')) {
           console.error('Error 500 del backend - posible problema con formato de fechas en nodos');

@@ -36,7 +36,7 @@ export function useProductionRecord(productionId, recordId = null, onRefresh = n
     const recordOptionsKey = productionQueryKeys.recordOptions(tenantId, productionId, currentRecordId);
     const productionDetailKey = productionQueryKeys.detail(tenantId, productionId);
     const productionTotalsKey = productionQueryKeys.totals(tenantId, productionId);
-    const productionProcessTreeKey = productionQueryKeys.processTree(tenantId, productionId);
+    const productionProcessTreeKey = productionQueryKeys.processTreePrefix(tenantId, productionId);
 
     const recordQuery = useQuery({
         queryKey: recordDetailKey,

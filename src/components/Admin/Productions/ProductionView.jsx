@@ -1,8 +1,9 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
+import { useQuery } from '@tanstack/react-query'
 import { useProductionDetail } from '@/hooks/production/useProductionDetail'
 import { formatDateLong, formatWeight } from '@/helpers/production/formatters'
 import { formatDecimal, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
@@ -11,8 +12,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Combobox } from '@/components/Shadcn/Combobox'
 import Loader from '@/components/Utilities/Loader'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ArrowLeft, Calendar, Package, Scale, AlertCircle, TrendingDown, TrendingUp, Fish, MapPin, FileText, CheckCircle2, XCircle, AlertTriangle, AlertOctagon } from 'lucide-react'
@@ -21,6 +25,8 @@ import CreateProductionRecordDialog from './CreateProductionRecordDialog'
 import { ViewModeSelector } from './ProductionDiagram/ViewModeSelector'
 import EditProductionHeaderDialog from './EditProductionHeaderDialog'
 import ProductionClosurePanel from './ProductionClosurePanel'
+import { customerService } from '@/services/domain/customers/customerService'
+import { orderService } from '@/services/domain/orders/orderService'
 
 const ProductionDiagram = dynamic(() => import('./ProductionDiagram'), {
     ssr: false,
@@ -34,11 +40,36 @@ const ProductionDiagram = dynamic(() => import('./ProductionDiagram'), {
 const ProductionView = ({ productionId }) => {
     const router = useRouter()
     const [activeTab, setActiveTab] = useState('info')
-    const { production, processTree, totals, isLoading: loading, totalsLoading, processTreeLoading, error, refetch } = useProductionDetail(productionId, { enableProcessTree: activeTab === 'diagram' })
+    const [treeFilterType, setTreeFilterType] = useState('all')
+    const [treeFilterValue, setTreeFilterValue] = useState('')
+    const processTreeFilter = useMemo(() => {
+        if (!treeFilterValue) return {}
+        if (treeFilterType === 'customer') return { customerId: treeFilterValue }
+        if (treeFilterType === 'order') return { orderId: treeFilterValue }
+        return {}
+    }, [treeFilterType, treeFilterValue])
+    const { production, processTree, totals, isLoading: loading, totalsLoading, processTreeLoading, error, refetch } = useProductionDetail(productionId, { enableProcessTree: activeTab === 'diagram', processTreeFilter })
     const [viewMode, setViewMode] = useState('simple')
     const [reconciliationDialogOpen, setReconciliationDialogOpen] = useState(false)
     const [createRecordOpen, setCreateRecordOpen] = useState(false)
     const [editHeaderOpen, setEditHeaderOpen] = useState(false)
+    const customerOptionsQuery = useQuery({
+        queryKey: ['customers', 'options', 'production-process-tree-filter'],
+        queryFn: () => customerService.getOptions(),
+        enabled: activeTab === 'diagram' && treeFilterType === 'customer',
+        staleTime: 5 * 60 * 1000,
+    })
+    const orderOptionsQuery = useQuery({
+        queryKey: ['orders', 'options', 'production-process-tree-filter'],
+        queryFn: () => orderService.getAllOptions(),
+        enabled: activeTab === 'diagram' && treeFilterType === 'order',
+        staleTime: 5 * 60 * 1000,
+    })
+
+    const handleTreeFilterTypeChange = (value) => {
+        setTreeFilterType(value)
+        setTreeFilterValue('')
+    }
 
 
     if (loading) {
@@ -721,15 +752,58 @@ const ProductionView = ({ productionId }) => {
                 <TabsContent value="diagram" className="mt-4">
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center justify-between gap-4">
+                            <CardTitle className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                                 <div className="flex items-center gap-2">
                                 <Package className="h-5 w-5 text-primary" />
                                 Diagrama de Producción
                                 </div>
-                                <ViewModeSelector
-                                    viewMode={viewMode}
-                                    onViewModeChange={setViewMode}
-                                />
+                                <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+                                    <div className="space-y-1">
+                                        <Label className="text-xs">Filtro</Label>
+                                        <Select value={treeFilterType} onValueChange={handleTreeFilterTypeChange}>
+                                            <SelectTrigger className="w-full sm:w-36">
+                                                <SelectValue placeholder="Árbol completo" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">Completo</SelectItem>
+                                                <SelectItem value="customer">Cliente</SelectItem>
+                                                <SelectItem value="order">Pedido</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    {treeFilterType === 'customer' && (
+                                        <div className="w-full space-y-1 sm:w-72">
+                                            <Label className="text-xs">Cliente</Label>
+                                            <Combobox
+                                                options={customerOptionsQuery.data ?? []}
+                                                value={treeFilterValue}
+                                                onChange={setTreeFilterValue}
+                                                loading={customerOptionsQuery.isLoading}
+                                                placeholder="Selecciona cliente"
+                                                searchPlaceholder="Buscar cliente..."
+                                                notFoundMessage="No se encontraron clientes"
+                                            />
+                                        </div>
+                                    )}
+                                    {treeFilterType === 'order' && (
+                                        <div className="w-full space-y-1 sm:w-72">
+                                            <Label className="text-xs">Pedido</Label>
+                                            <Combobox
+                                                options={orderOptionsQuery.data ?? []}
+                                                value={treeFilterValue}
+                                                onChange={setTreeFilterValue}
+                                                loading={orderOptionsQuery.isLoading}
+                                                placeholder="Selecciona pedido"
+                                                searchPlaceholder="Buscar pedido..."
+                                                notFoundMessage="No se encontraron pedidos"
+                                            />
+                                        </div>
+                                    )}
+                                    <ViewModeSelector
+                                        viewMode={viewMode}
+                                        onViewModeChange={setViewMode}
+                                    />
+                                </div>
                             </CardTitle>
                             <CardDescription>Visualización del flujo de procesos</CardDescription>
                         </CardHeader>
@@ -741,6 +815,7 @@ const ProductionView = ({ productionId }) => {
                                     loading={processTreeLoading}
                                     viewMode={viewMode}
                                     onViewModeChange={setViewMode}
+                                    isFiltered={Boolean(treeFilterValue)}
                                 />
                             ) : null}
                         </CardContent>

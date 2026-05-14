@@ -106,9 +106,9 @@ export function getProductionDiagram(productionId, token) {
   });
 }
 
-/** @param {string|number} productionId @param {string} token @returns {Promise<Object>} */
-export function getProductionProcessTree(productionId, token) {
-  return apiGet(`${API_URL_V2}productions/${productionId}/process-tree`, token, {}, {
+/** @param {string|number} productionId @param {string} token @param {{ customerId?: string|number, orderId?: string|number }} [params] @returns {Promise<Object>} */
+export function getProductionProcessTree(productionId, token, params = {}) {
+  return apiGet(`${API_URL_V2}productions/${productionId}/process-tree`, token, params, {
     transform: (data) => data.data || data,
   });
 }
