@@ -5215,9 +5215,9 @@ export const barcosVentaDirecta = [
     cod: '325',
     barco: "JOSE PRIN",
     armador: {
-      nombre: 'Jose Manuel Evangelista Cordero',
-      codA3erp: '485871',
-      codA3erpCliente: '485871',
+      nombre: 'Alberto Frigolet Hernández',
+      codA3erp: '988340',
+      codA3erpCliente: '988340',
     }
   },
   {
