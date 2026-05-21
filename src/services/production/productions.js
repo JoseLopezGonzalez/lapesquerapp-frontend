@@ -57,6 +57,30 @@ export function getProduction(productionId, token) {
   });
 }
 
+/**
+ * Resuelve una producción por número de lote (match exacto en backend).
+ * @param {string} lot - Valor de productions.lot (sin codificar; se aplica encodeURIComponent en la URL)
+ * @param {string} token
+ * @returns {Promise<{ message?: string, data: { id: number, lot: string } }>}
+ */
+export function getProductionByLot(lot, token) {
+  const trimmedLot = typeof lot === 'string' ? lot.trim() : String(lot ?? '').trim();
+  return apiGet(
+    `${API_URL_V2}productions/by-lot/${encodeURIComponent(trimmedLot)}`,
+    token,
+    {},
+    {
+      transform: (body) => ({
+        message: body.message,
+        data: {
+          id: body.data?.id,
+          lot: body.data?.lot ?? trimmedLot,
+        },
+      }),
+    }
+  );
+}
+
 /** @param {string|number} productionId @param {string} token @returns {Promise<Object>} */
 export function getProductionClosureCheck(productionId, token) {
   return apiGet(`${API_URL_V2}productions/${productionId}/closure-check`, token, {}, {

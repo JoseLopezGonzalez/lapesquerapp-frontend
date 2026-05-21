@@ -40,6 +40,7 @@ import PalletLabel from "@/components/Admin/Pallets/PalletLabel";
 import SummaryPieChart from "./SummaryPieChart";
 import { notify } from "@/lib/notifications";
 import { deletePalletTimeline } from "@/services/palletService";
+import { getProductionByLot } from "@/services/productionService";
 import BoxesLabels from "./BoxesLabels";
 import { PalletTimeline } from "./PalletTimeline";
 import { canDeletePallet, canManagePalletCostFields, isExternalActor } from "@/lib/auth/actor";
@@ -77,6 +78,7 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
     const showHistorialTab = palletId && palletId !== 'new' && !String(palletId).startsWith('temp-');
     const [mainTab, setMainTab] = useState("edicion");
     const [deletingTimeline, setDeletingTimeline] = useState(false);
+    const [resolvingProductionLot, setResolvingProductionLot] = useState(null);
 
     // Estado de expansión de los eventos del historial
     const [timelineOpenStates, setTimelineOpenStates] = useState(() =>
@@ -123,6 +125,37 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
     const handleOnClickPrintLabel = () => {
         onPrint();
     }
+
+    const handleOpenProductionByLot = async (lot) => {
+        const token = session?.user?.accessToken;
+        if (!token) {
+            notify.error({ title: "Sesión no disponible", description: "No se pudo abrir la producción." });
+            return;
+        }
+        const trimmedLot = typeof lot === "string" ? lot.trim() : "";
+        if (!trimmedLot || resolvingProductionLot) return;
+
+        setResolvingProductionLot(trimmedLot);
+        try {
+            const res = await getProductionByLot(trimmedLot, token);
+            const productionId = res?.data?.id;
+            if (productionId) {
+                window.open(`/admin/productions/${productionId}`, "_blank", "noopener,noreferrer");
+            } else {
+                notify.error({
+                    title: "Producción no encontrada",
+                    description: "No existe ninguna producción con ese lote.",
+                });
+            }
+        } catch (err) {
+            notify.error({
+                title: "Producción no encontrada",
+                description: err?.message || "No existe ninguna producción con ese lote.",
+            });
+        } finally {
+            setResolvingProductionLot(null);
+        }
+    };
 
     const handleDeleteTimeline = async () => {
         if (!palletId || deletingTimeline || !session?.user?.accessToken) return;
@@ -1854,10 +1887,26 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                 </CollapsibleTrigger>
 
                                                                 <CollapsibleContent className="space-y-3 mt-4">
-                                                                    {Object.entries(productData.lots).map(([lot, weights]) => (
+                                                                    {Object.entries(productData.lots).map(([lot, weights]) => {
+                                                                        const lotLabel = typeof lot === "string" ? lot.trim() : String(lot ?? "").trim();
+                                                                        const isResolvingLot = resolvingProductionLot === lotLabel;
+                                                                        return (
                                                                         <div key={lot} className="p-3 border rounded-lg bg-muted/50">
                                                                             <div className="flex justify-between items-center mb-2">
-                                                                                <span className="font-medium">Lote: {lot}</span>
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => handleOpenProductionByLot(lotLabel)}
+                                                                                    disabled={isResolvingLot}
+                                                                                    className="font-medium text-primary hover:underline inline-flex items-center gap-1 disabled:opacity-60 disabled:no-underline"
+                                                                                    title="Abrir producción de este lote en una nueva pestaña"
+                                                                                >
+                                                                                    Lote: {lot}
+                                                                                    {isResolvingLot ? (
+                                                                                        <Loader2 className="h-3 w-3 animate-spin" />
+                                                                                    ) : (
+                                                                                        <ExternalLink className="h-3 w-3" />
+                                                                                    )}
+                                                                                </button>
                                                                                 <Badge variant="outline" className="text-xs">
                                                                                     {weights.length} cajas
                                                                                 </Badge>
@@ -1876,7 +1925,8 @@ export default function PalletView({ palletId, onChange = () => { }, initialStor
                                                                                 </div>
                                                                             </div>
                                                                         </div>
-                                                                    ))}
+                                                                    );
+                                                                    })}
                                                                 </CollapsibleContent>
                                                             </Collapsible>
                                                         </CardContent>
