@@ -5217,7 +5217,7 @@ export const barcosVentaDirecta = [
     armador: {
       nombre: 'Alberto Frigolet Hernández',
       codA3erp: '988340',
-      codA3erpCliente: '988340',
+      codA3erpCliente: '988274',
     }
   },
   {
