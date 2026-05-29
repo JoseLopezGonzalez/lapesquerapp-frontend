@@ -60,15 +60,26 @@ export default function ComercialLayoutClient({ children }) {
   const { settings, loading } = useSettings();
 
   const handleLogout = React.useCallback(async () => {
+    sessionStorage.setItem('__is_logging_out__', 'true');
+
     try {
       const { logout: logoutBackend } = await import('@/services/authService');
       await logoutBackend();
     } catch (err) {
       console.error('Error en logout del backend:', err);
     }
-    await signOut({ redirect: false });
+
+    try {
+      await signOut({ redirect: false });
+    } catch (err) {
+      console.error('Error en signOut:', err);
+    }
+
     notify.success({ title: 'Sesión cerrada' });
-    setTimeout(() => window.location.replace('/'), 500);
+    setTimeout(() => {
+      sessionStorage.removeItem('__is_logging_out__');
+      window.location.replace('/');
+    }, 500);
   }, []);
 
   const filteredNavigationConfig = React.useMemo(

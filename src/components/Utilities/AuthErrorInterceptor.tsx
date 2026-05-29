@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
-import { signOut } from "next-auth/react";import { notify } from "@/lib/notifications";
+import { signOut } from "next-auth/react";
+import { notify } from "@/lib/notifications";
+import { clearAuthTokenCache } from "@/lib/auth/getAuthToken";
 import { isAuthError, isUnauthorizedStatusCode, buildLoginUrl, AUTH_ERROR_CONFIG, type AuthErrorLike } from "@/configs/authConfig";
 
 const { AUTH_SESSION_EXPIRED_EVENT } = AUTH_ERROR_CONFIG;
@@ -18,6 +20,10 @@ export default function AuthErrorInterceptor() {
       const alreadyOnLogin = pathname === "/" || pathname === "/auth/verify";
       isRedirecting = true;
       const clearSession = async () => {
+        // Limpiar caché del token antes de signOut para evitar que peticiones
+        // en vuelo durante los 1500ms de delay usen el token stale y generen
+        // más eventos auth:session-expired.
+        clearAuthTokenCache();
         try {
           await signOut({ redirect: false });
         } catch (err) {
@@ -101,14 +107,19 @@ export default function AuthErrorInterceptor() {
       }
     };
 
+    // Usar referencia estable para poder eliminar el listener correctamente.
+    // Sin esto, removeEventListener recibe una función anónima distinta a la
+    // registrada y el listener nunca se elimina, acumulándose en cada montaje.
+    const handleSessionExpiredEvent = () => handleAuthError();
+
     window.addEventListener("error", handleGlobalError);
     window.addEventListener("unhandledrejection", handleUnhandledRejection);
-    window.addEventListener(AUTH_SESSION_EXPIRED_EVENT, () => handleAuthError());
+    window.addEventListener(AUTH_SESSION_EXPIRED_EVENT, handleSessionExpiredEvent);
     return () => {
       window.fetch = originalFetch;
       window.removeEventListener("error", handleGlobalError);
       window.removeEventListener("unhandledrejection", handleUnhandledRejection);
-      window.removeEventListener(AUTH_SESSION_EXPIRED_EVENT, () => handleAuthError());
+      window.removeEventListener(AUTH_SESSION_EXPIRED_EVENT, handleSessionExpiredEvent);
     };
   }, []);
   return null;

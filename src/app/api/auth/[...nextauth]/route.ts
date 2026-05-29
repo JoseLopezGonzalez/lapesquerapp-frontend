@@ -85,6 +85,9 @@ export const authOptions: NextAuthOptions = {
             },
           });
 
+          // NOTA: En contexto servidor, fetchWithTenant lanza una excepción con
+          // code='UNAUTHENTICATED' para 401, por lo que este branch solo es alcanzable
+          // si fetchWithTenant retorna la respuesta (contexto cliente o casos especiales).
           if (response.status === 401 || response.status === 403) {
             console.warn("[NextAuth] Token rechazado por el backend (401/403), invalidando sesión");
             return null as unknown as typeof token;
@@ -118,12 +121,20 @@ export const authOptions: NextAuthOptions = {
             token.lastRefresh = Date.now();
           }
         } catch (error) {
-          console.error("Error refrescando datos del usuario:", error);
+          const err = error as { code?: string; message?: string };
+          // fetchWithTenant lanza con code='UNAUTHENTICATED' cuando el backend rechaza
+          // explícitamente el access token (401 no de validación). Invalidar la sesión
+          // NextAuth para que el middleware y el cliente redirijan a login correctamente.
+          if (err.code === "UNAUTHENTICATED") {
+            console.warn("[NextAuth] Token rechazado por el backend, invalidando sesión");
+            return null as unknown as typeof token;
+          }
+          // Error de red, timeout o backend no disponible: mantener la sesión viva.
+          // El middleware lo detectará en el siguiente request.
+          console.error("Error al verificar sesión con el backend:", error);
         }
       }
 
-      const tokenIsExpired = false;
-      if (tokenIsExpired) return null as unknown as typeof token;
       return token;
     },
     async session({ session, token }) {

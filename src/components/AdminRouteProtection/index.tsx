@@ -22,6 +22,17 @@ export default function AdminRouteProtection({ children }: AdminRouteProtectionP
   const isLoggingOut = useIsLoggingOut();
 
   useEffect(() => {
+    // No redirigir durante un logout activo; el handler de logout se encarga.
+    if (isLoggingOut) return;
+
+    if (status === "unauthenticated") {
+      // Sesión expirada/revocada después del montaje del componente.
+      // El middleware debería haberlo capturado en la carga inicial, pero
+      // si la sesión cae durante el uso, redirigimos a login aquí.
+      router.replace("/");
+      return;
+    }
+
     if (status === "authenticated" && session?.user) {
       const rawRole = session.user.role;
       const userRole = Array.isArray(rawRole) ? rawRole[0] : rawRole;
@@ -31,7 +42,7 @@ export default function AdminRouteProtection({ children }: AdminRouteProtectionP
         router.replace(FIELD_DASHBOARD);
       }
     }
-  }, [status, session, pathname, router]);
+  }, [status, session, pathname, router, isLoggingOut]);
 
   if (isLoggingOut) {
     return <LogoutDialog open={true} />;

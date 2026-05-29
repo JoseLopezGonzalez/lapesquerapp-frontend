@@ -33,6 +33,8 @@ function ExternalLayoutContent({ children }) {
   );
 
   const handleLogout = React.useCallback(async () => {
+    sessionStorage.setItem("__is_logging_out__", "true");
+
     try {
       const { logout: logoutBackend } = await import("@/services/authService");
       await logoutBackend();
@@ -40,9 +42,17 @@ function ExternalLayoutContent({ children }) {
       console.error("Error en logout del backend:", error);
     }
 
-    await signOut({ redirect: false });
-    notify.success({ title: "Sesion cerrada" });
-    window.location.replace("/");
+    try {
+      await signOut({ redirect: false });
+    } catch (err) {
+      console.error("Error en signOut:", err);
+    }
+
+    notify.success({ title: "Sesión cerrada" });
+    setTimeout(() => {
+      sessionStorage.removeItem("__is_logging_out__");
+      window.location.replace("/");
+    }, 500);
   }, []);
 
   React.useEffect(() => {

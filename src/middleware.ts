@@ -17,12 +17,29 @@ interface JWTToken {
 
 function setVerificationCookie(response: NextResponse): void {
   response.cookies.set("__session_verified", "1", {
-    maxAge: 5 * 60,
+    maxAge: 5 * 60, // 5 minutos (300 s)
     httpOnly: true,
     sameSite: "strict",
     path: "/",
     secure: process.env.NODE_ENV === "production",
   });
+}
+
+/**
+ * Redirige a login y borra las cookies de sesión NextAuth para evitar el bucle
+ * "authenticated-loop": sin borrar la cookie, page.js detecta status="authenticated"
+ * y redirige inmediatamente de vuelta a la ruta protegida, que el middleware vuelve
+ * a rechazar, creando un ciclo infinito. Al borrar la cookie aquí, el siguiente
+ * render de page.js obtiene status="unauthenticated" y muestra LoginPage.
+ */
+function redirectToLoginClearing(req: NextRequest, pathname: string): NextResponse {
+  const loginUrl = new URL("/", req.url);
+  loginUrl.searchParams.set("from", pathname);
+  const response = NextResponse.redirect(loginUrl);
+  // Borrar ambas variantes del nombre de cookie (HTTP dev / HTTPS prod)
+  response.cookies.delete("next-auth.session-token");
+  response.cookies.delete("__Secure-next-auth.session-token");
+  return response;
 }
 
 export async function middleware(req: NextRequest) {
@@ -89,12 +106,10 @@ export async function middleware(req: NextRequest) {
 
   const tokenExpiration = (token?.exp ?? 0) * 1000;
   if (Date.now() > tokenExpiration) {
-    const loginUrl = new URL("/", req.url);
-    loginUrl.searchParams.set("from", pathname);
-    return NextResponse.redirect(loginUrl);
+    return redirectToLoginClearing(req, pathname);
   }
 
-  // P-MW — Opción C: cookie-based session verification cache (TTL 60s).
+  // P-MW — Opción C: cookie-based session verification cache (TTL 5 min / 300 s).
   // Skips the /me roundtrip on requests within the TTL window.
   const needsVerification = !req.cookies.get("__session_verified");
   let currentUser: Record<string, unknown> | null = null;
@@ -140,7 +155,7 @@ export async function middleware(req: NextRequest) {
           : verifyData) as Record<string, unknown> | null;
       }
     } catch (error) {
-      const err = error as { message?: string; name?: string };
+      const err = error as { code?: string; message?: string; name?: string };
       logError("🔐 [Middleware] Error al validar el token con el backend:", {
         message: err.message,
         name: err.name,
@@ -149,9 +164,9 @@ export async function middleware(req: NextRequest) {
       });
 
       if (isAuthError(err)) {
-        const loginUrl = new URL("/", req.url);
-        loginUrl.searchParams.set("from", pathname);
-        return NextResponse.redirect(loginUrl);
+        // Usar redirectToLoginClearing para borrar la cookie de sesión NextAuth
+        // y romper el bucle "authenticated-loop" (ver H5 en la auditoría).
+        return redirectToLoginClearing(req, pathname);
       }
     }
   }

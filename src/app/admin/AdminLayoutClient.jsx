@@ -21,26 +21,28 @@ export default function AdminLayoutClient({ children }) {
   const { settings, loading } = useSettings();
 
   const handleLogout = React.useCallback(async () => {
+    // Señalizar que hay un logout en curso para suprimir eventos auth:session-expired
+    // generados por peticiones en vuelo que reciben 401 tras la revocación del token.
+    sessionStorage.setItem('__is_logging_out__', 'true');
+
     try {
-      // Primero revocar el token en el backend
       const { logout: logoutBackend } = await import('@/services/authService');
       await logoutBackend();
-      
-      // Luego cerrar sesión en NextAuth
-      await signOut({ redirect: false });
-      
-      notify.success({ title: 'Sesión cerrada' });
-      setTimeout(() => {
-        window.location.replace('/');
-      }, 500);
     } catch (err) {
-      console.error('Error en logout:', err);
-      await signOut({ redirect: false });
-      notify.success({ title: 'Sesión cerrada' });
-      setTimeout(() => {
-        window.location.replace('/');
-      }, 500);
+      console.error('Error en logout del backend:', err);
     }
+
+    try {
+      await signOut({ redirect: false });
+    } catch (err) {
+      console.error('Error en signOut:', err);
+    }
+
+    notify.success({ title: 'Sesión cerrada' });
+    setTimeout(() => {
+      sessionStorage.removeItem('__is_logging_out__');
+      window.location.replace('/');
+    }, 500);
   }, []);
 
   // Filtrar navegación por roles
