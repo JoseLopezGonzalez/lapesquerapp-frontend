@@ -1,26 +1,16 @@
 {
   "permissions": {
     "allow": [
-      "Bash(grep -n \"getSession\\\\|from ''next-auth\" /home/jose/brisapp-nextjs/src/services/orderService.ts)",
-      "Bash(find /home/jose/brisapp-nextjs/src/hooks/production -type f -name *.ts -o -name *.tsx -o -name *.js -o -name *.jsx)",
-      "Bash(wc -l /home/jose/brisapp-nextjs/src/components/Admin/Productions/*.jsx)",
-      "Bash(find /home/jose/brisapp-nextjs/src/services/production -name index.* -o -name production.*)",
-      "Bash(wc -l /home/jose/brisapp-nextjs/src/app/admin/productions/page.js /home/jose/brisapp-nextjs/src/app/admin/productions/[id]/page.js /home/jose/brisapp-nextjs/src/app/admin/productions/[id]/records/[recordId]/page.js)",
-      "Bash(grep -r \"queryKey\\\\|invalidateQueries\\\\|setQueryData\" /home/jose/brisapp-nextjs/src/hooks/production/*.js /home/jose/brisapp-nextjs/src/hooks/production/*.ts)",
-      "Bash(find /home/jose/brisapp-nextjs -path *context*Production* -type f)",
-      "Bash(find /home/jose/brisapp-nextjs/src -type f \\\\\\(-name *production* -o -name middleware.* \\\\\\))",
-      "Bash(find /home/jose/brisapp-nextjs/src/components/Admin/Productions -name *Diagram*)",
-      "Bash(find /home/jose/brisapp-nextjs/src/hooks -type f -name *production*)",
-      "Bash(grep -A 150 productions.*: /home/jose/brisapp-nextjs/src/configs/entitiesConfig.ts)",
-      "Bash(grep -n \"dynamic\\\\|force-dynamic\\\\|revalidate\" /home/jose/brisapp-nextjs/src/app/admin/layout.js /home/jose/brisapp-nextjs/src/app/admin/productions/page.js /home/jose/brisapp-nextjs/src/app/admin/productions/[id]/page.js)",
-      "Bash(grep -n \"staleTime\\\\|gcTime\\\\|cacheTime\" /home/jose/brisapp-nextjs/src/hooks/production/*.ts /home/jose/brisapp-nextjs/src/hooks/*.js)",
-      "Bash(grep -r prefetch /home/jose/brisapp-nextjs/src/components/Admin --include=*.jsx --include=*.js)",
-      "Bash(wc -l /home/jose/brisapp-nextjs/src/hooks/production/*.js /home/jose/brisapp-nextjs/src/hooks/production/*.ts)",
-      "Bash(wc -l /home/jose/brisapp-nextjs/src/app/admin/productions/[id]/records/create/CreateProductionRecordPage.jsx)",
-      "Bash(ls -la /home/jose/brisapp-nextjs/src/lib/queryClient.*)",
-      "Bash(find /home/jose/brisapp-nextjs -name *login* -o -name *auth*verify*)",
-      "Bash(git mv:*)",
-      "Bash(grep -rn \"useQueryClient\\\\|invalidateQueries\\\\|setQueryData\" /home/jose/brisapp-nextjs/src/components/Comercial/CRM/*.jsx)"
+      "Bash(npm run dev)",
+      "Bash(npm run build)",
+      "Bash(npm run test)",
+      "Bash(npm run test:run)",
+      "Bash(npm run lint)",
+      "Bash(npm run format)"
+    ],
+    "deny": [
+      "Edit(src/configs/entitiesConfig.js)",
+      "Write(src/configs/entitiesConfig.js)"
     ]
   }
 }

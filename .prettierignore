@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Next.js build output
+.next/
+out/
+
+# Generated files
+src/components/ui/*.jsx
+src/components/ui/*.tsx
+
+# Config files that have their own formatting
+*.min.js
+*.min.css
+
+# Public assets
+public/
+
+# Lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Environment files
+.env*
