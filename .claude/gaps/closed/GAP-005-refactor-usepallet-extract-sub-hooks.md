@@ -5,7 +5,7 @@
 - **Tipo:** Refactor
 - **Módulo:** Stock
 - **Prioridad:** Alta
-- **Estado:** in-progress
+- **Estado:** closed
 - **Fecha:** 2026-05-31
 - **Autor:** Jose
 
@@ -94,24 +94,62 @@ El módulo de producción ya sigue este patrón: `src/hooks/production/` tiene s
 
 ## Auditoría
 
-> Rellena el Agente Auditor
+> Auditado por el Agente Auditor — 2026-06-01
 
-### Resultado: ✅ APROBADO | ⚠️ APROBADO CON OBSERVACIONES | ❌ RECHAZADO
+### Resultado: ✅ APROBADO
 
-### Puntuación: [X/10]
+### Puntuación: 9/10
 
 ### Checklist
 
-- [ ] Criterios de aceptación cumplidos
-- [ ] Sin fetch() directo
-- [ ] Sin hardcode de tenant
-- [ ] Sin archivos .js nuevos
-- [ ] Sin any sin justificación
-- [ ] Hooks gigantes no tocados sin permiso
-- [ ] entitiesConfig.js no tocado sin permiso
-- [ ] Patrones de .claude/rules/ respetados
-- [ ] Nomenclatura correcta
+- [x] Criterios de aceptación cumplidos
+- [x] Sin fetch() directo
+- [x] Sin hardcode de tenant
+- [x] Sin archivos .js nuevos
+- [x] Sin any sin justificación
+- [x] Hooks gigantes no tocados sin permiso
+- [x] entitiesConfig.js no tocado sin permiso
+- [x] Patrones de .claude/rules/ respetados
+- [x] Nomenclatura correcta
 
 ### Observaciones para Jose
 
+**Lo que está bien:**
+
+1. **Estructura correcta**: `src/hooks/pallets/` contiene 4 archivos (3 sub-hooks + helpers), todos en `.ts`. El criterio de "al menos 3 sub-hooks" se cumple holgadamente.
+
+2. **API pública intacta**: `PalletDialog/index.js` importa `{ usePallet }` y `PalletView/index.js` importa `{ usePallet, saveDiscountPreferences }` — ambos siguen funcionando sin ningún cambio. La re-exportación vía `export { saveDiscountPreferences } from './pallets/palletHelpers'` es elegante y correcta.
+
+3. **TypeScript limpio**: `npx tsc --noEmit` produce cero salida (cero errores, cero warnings). Strict mode respetado en todos los archivos nuevos. Ningún `any` sin justificación — se usa `unknown` + casting con tipo concreto donde el legacy JS no exporta tipos.
+
+4. **ESLint sin errores nuevos**: `npm run lint` finaliza con 0 errors / 309 warnings — todos los warnings son pre-existentes en otras partes del proyecto. Los nuevos archivos no añaden ni un warning nuevo.
+
+5. **Patrón de orquestador correcto**: Idéntico al de GAP-004 (`useOrder.ts`). Estado en el orquestador, sub-hooks reciben state + setters como parámetros y devuelven solo funciones. Limpio y predecible.
+
+6. **Responsabilidades bien separadas**: La elección de colocar `onDeleteScannedCode` en `usePalletBoxCreation` (en lugar de `usePalletBoxOperations`) está bien justificada en las decisiones de implementación — es conceptualmente parte del flujo de creación por escáner.
+
+7. **`usePallet.js` eliminado**: Confirmado. Solo existe `usePallet.ts`.
+
+8. **Casts de JS legacy documentados**: Los casts `as (args) => ReturnType` sobre `createPallet`, `updatePallet`, `getPallet` etc. son la única forma de tipar llamadas a servicios `.js` sin tipos exportados. Anotados en las decisiones.
+
+**Observaciones menores (no bloqueantes):**
+
+- `React.Dispatch` se usa como tipo en `usePalletBoxOperations.ts` y `usePalletBoxCreation.ts` sin `import React` explícito. Funciona correctamente con `jsx: "react-jsx"` (React en scope automático desde `@types/react`), y tsc lo confirma. No es un error, pero añadir `import type { Dispatch, SetStateAction } from 'react'` haría el código más explícito y portable.
+
+- `console.warn` en `usePalletBoxCreation.ts` (línea 297) para códigos GS1 fallidos, y `console.error` en `usePallet.ts` para errores de carga de opciones. Son debug logs no críticos, presentes también en el `.js` original. No es un problema del refactor, pero podrían migrarse a `notify.warning` en una iteración futura.
+
+- La función `onAddNewBox` con su `setBoxCreationData` final fuera del `if/else` (línea 308) hace que el método `gs1` ejecute el reset dos veces (una dentro del bloque `gs1` y otra en la línea 308). No es un bug visible para el usuario, pero es una pequeña inconsistencia. Documentado por si se revisa en una limpieza posterior.
+
+**Por qué 9/10 y no 10/10:** El punto del `React.Dispatch` sin import explícito y el doble reset en `gs1` son detalles que en un proyecto strict merecen atención, aunque no son bloqueantes ni producen errores.
+
 ### Estado final de la implementación
+
+- **`src/hooks/pallets/palletHelpers.ts`** — creado ✅
+- **`src/hooks/pallets/usePalletBoxOperations.ts`** — creado ✅
+- **`src/hooks/pallets/usePalletBoxCreation.ts`** — creado ✅
+- **`src/hooks/pallets/usePalletSave.ts`** — creado ✅
+- **`src/hooks/usePallet.ts`** — creado (orquestador) ✅
+- **`src/hooks/usePallet.js`** — eliminado ✅
+- Componentes consumidores sin cambios ✅
+- `tsc --noEmit` sin errores ✅
+- `npm run lint` sin errores nuevos ✅
