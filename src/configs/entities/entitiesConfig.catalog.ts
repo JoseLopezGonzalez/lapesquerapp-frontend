@@ -1,0 +1,900 @@
+// src/configs/entities/entitiesConfig.catalog.ts
+// Módulo de configuración de entidades: products, product-categories, product-families, species, fishing-gears, capture-zones, countries
+
+const catalogConfig: Record<string, any> = {
+  products: {
+    title: 'Productos',
+    description: 'Gestiona, edita y consulta productos.',
+    emptyState: {
+      title: 'No existen productos según los filtros',
+      description: 'Ajusta los filtros o crea un nuevo producto.',
+    },
+    endpoint: 'products',
+    viewRoute: '/admin/products/:id',
+    deleteEndpoint: 'products/:id',
+    filtersGroup: {
+      search: {
+        label: 'Buscar',
+        filters: [
+          {
+            name: 'id',
+            label: 'Id',
+            type: 'search',
+            placeholder: 'Buscar por id',
+          },
+        ],
+      },
+      groups: [
+        {
+          name: 'generals',
+          label: 'Generales',
+          filters: [
+            /* NAme */
+            {
+              name: 'name',
+              label: 'Nombre',
+              type: 'text',
+              placeholder: 'Buscar por nombre',
+            },
+            {
+              name: 'ids',
+              label: 'IDs',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por ID',
+            },
+            /* articleGtin */
+            {
+              name: 'articleGtin',
+              label: 'GTIN',
+              type: 'text',
+              placeholder: 'Buscar por GTIN',
+            },
+            /* boxGtin */
+            {
+              name: 'boxGtin',
+              label: 'GTIN Caja',
+              type: 'text',
+              placeholder: 'Buscar por GTIN Caja',
+            },
+            /* palletGtin */
+            {
+              name: 'palletGtin',
+              label: 'GTIN Palet',
+              type: 'text',
+              placeholder: 'Buscar por GTIN Palet',
+            },
+          ],
+        },
+        /* Species */
+        {
+          name: 'species',
+          label: 'Especies',
+          filters: [
+            {
+              name: 'species',
+              label: 'Especies',
+              type: 'autocomplete',
+              placeholder: 'Buscar por especie',
+              endpoint: 'species/options',
+            },
+          ],
+        },
+        /* Capture Zones */
+        {
+          name: 'captureZones',
+          label: 'Zonas de captura',
+          filters: [
+            {
+              name: 'captureZones',
+              label: 'Zonas de captura',
+              type: 'autocomplete',
+              placeholder: 'Buscar por zona de captura',
+              endpoint: 'capture-zones/options',
+            },
+          ],
+        },
+
+        /* Product Families */
+        {
+          name: 'productFamilies',
+          label: 'Familias',
+          filters: [
+            {
+              name: 'productFamilies',
+              label: 'Familias',
+              type: 'autocomplete',
+              placeholder: 'Buscar por familia',
+              endpoint: 'product-families/options',
+            },
+          ],
+        },
+      ],
+    },
+    table: {
+      headers: [
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
+        { name: 'name', label: 'Nombre', type: 'text', path: 'name' },
+        { name: 'family', label: 'Familia', type: 'text', path: 'family.name', hideOnMobile: true },
+        {
+          name: 'a3erp_code',
+          label: 'Código A3ERP',
+          type: 'text',
+          path: 'a3erpCode',
+          hideOnMobile: true,
+        },
+        {
+          name: 'facil_com_code',
+          label: 'Código Facilcom',
+          type: 'text',
+          path: 'facilcomCode',
+          hideOnMobile: true,
+        },
+        {
+          name: 'species',
+          label: 'Especie',
+          type: 'text',
+          path: 'species.name',
+          hideOnMobile: true,
+        },
+        {
+          name: 'captureZone',
+          label: 'Zona de captura',
+          type: 'text',
+          path: 'captureZone.name',
+          hideOnMobile: true,
+        },
+        {
+          name: 'articleGtin',
+          label: 'GTIN',
+          type: 'text',
+          path: 'articleGtin',
+          hideOnMobile: true,
+        },
+        { name: 'boxGtin', label: 'GTIN Caja', type: 'text', path: 'boxGtin', hideOnMobile: true },
+        {
+          name: 'palletGtin',
+          label: 'GTIN Palet',
+          type: 'text',
+          path: 'palletGtin',
+          hideOnMobile: true,
+        },
+      ],
+    },
+    createForm: {
+      title: 'Nuevo Producto',
+      endpoint: 'products',
+      method: 'POST',
+      successMessage: 'Producto creado con éxito',
+      errorMessage: 'Error al crear el producto',
+    },
+    fields: [
+      {
+        name: 'name',
+        label: 'Nombre del producto',
+        type: 'text',
+        validation: {
+          required: 'El nombre es obligatorio',
+          minLength: { value: 3, message: 'Debe tener al menos 3 caracteres' },
+        },
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+      },
+      {
+        name: 'speciesId',
+        path: 'species.id',
+        label: 'Especie',
+        type: 'Autocomplete',
+        placeholder: 'Selecciona la especie',
+        endpoint: 'species/options',
+        validation: {
+          required: 'La especie es obligatoria',
+        },
+        cols: { sm: 3, md: 3, lg: 2, xl: 2 },
+      },
+      {
+        name: 'captureZoneId',
+        path: 'captureZone.id',
+        label: 'Zona de captura',
+        type: 'Autocomplete',
+        placeholder: 'Selecciona la zona de captura',
+        endpoint: 'capture-zones/options',
+        validation: {
+          required: 'La zona de captura es obligatoria',
+        },
+        cols: { sm: 6, md: 3, lg: 2, xl: 2 },
+      },
+
+      {
+        name: 'familyId',
+        path: 'family.id',
+        label: 'Familia',
+        type: 'Autocomplete',
+        placeholder: 'Selecciona la familia',
+        endpoint: 'product-families/options',
+        validation: {
+          required: 'La familia es obligatoria',
+        },
+        cols: { sm: 6, md: 6, lg: 2, xl: 2 },
+      },
+      {
+        name: 'articleGtin',
+        label: 'GTIN-13 del artículo',
+        type: 'text',
+        placeholder: '13 dígitos',
+        validation: {
+          pattern: {
+            value: '/^[0-9]{8,14}$/',
+            message: 'GTIN inválido. Debe contener entre 8 y 14 dígitos.',
+          },
+        },
+        cols: { sm: 4, md: 3, lg: 3, xl: 3 },
+      },
+      {
+        name: 'boxGtin',
+        label: 'GTIN-14 de caja',
+        type: 'text',
+        placeholder: '14 dígitos',
+        validation: {
+          pattern: {
+            value: '/^[0-9]{8,14}$/',
+            message: 'GTIN de caja inválido. Debe contener entre 8 y 14 dígitos.',
+          },
+        },
+        cols: { sm: 4, md: 3, lg: 3, xl: 3 },
+      },
+      {
+        name: 'a3erp_code',
+        path: 'a3erpCode',
+        label: 'Código A3ERP',
+        type: 'text',
+        placeholder: 'Código para exportaciones a "a3ERP - Software ERP"',
+        cols: { sm: 6, md: 6, lg: 3, xl: 3 },
+      },
+      {
+        name: 'facil_com_code',
+        path: 'facilcomCode',
+        label: 'Código Facilcom',
+        type: 'text',
+        placeholder: 'Código para exportaciones a "Facilcom - Gestión comercial integral"',
+        cols: { sm: 6, md: 6, lg: 3, xl: 3 },
+      },
+    ],
+    editForm: {
+      title: 'Editar Producto',
+      endpoint: 'products',
+      method: 'PUT',
+      successMessage: 'Producto actualizado con éxito',
+      errorMessage: 'Error al actualizar el producto',
+    },
+  },
+
+  /* Stores */
+  'product-categories': {
+    title: 'Categorías de Productos',
+    description: 'Gestiona, edita y consulta categorías de productos.',
+    emptyState: {
+      title: 'No existen categorías de productos según los filtros',
+      description: 'Ajusta los filtros o crea una nueva categoría de producto.',
+    },
+    endpoint: 'product-categories',
+    viewRoute: '/admin/product-categories/:id',
+    deleteEndpoint: 'product-categories/:id',
+    filtersGroup: {
+      search: {
+        label: 'Buscar',
+        filters: [
+          {
+            name: 'id',
+            label: 'Id',
+            type: 'search',
+            placeholder: 'Buscar por id',
+          },
+        ],
+      },
+      groups: [
+        {
+          name: 'generals',
+          label: 'Generales',
+          filters: [
+            {
+              name: 'name',
+              label: 'Nombre',
+              type: 'text',
+              placeholder: 'Buscar por nombre',
+            },
+            {
+              name: 'ids',
+              label: 'IDs',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por ID',
+            },
+          ],
+        },
+      ],
+    },
+    table: {
+      headers: [
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
+        { name: 'name', label: 'Nombre', type: 'text', path: 'name' },
+        {
+          name: 'description',
+          label: 'Descripción',
+          type: 'text',
+          path: 'description',
+          hideOnMobile: true,
+        },
+        { name: 'created_at', label: 'Fecha de creación', type: 'date', path: 'createdAt' },
+        { name: 'updated_at', label: 'Fecha de actualización', type: 'date', path: 'updatedAt' },
+      ],
+    },
+    createForm: {
+      title: 'Nueva Categoría de Producto',
+      endpoint: 'product-categories',
+      method: 'POST',
+      successMessage: 'Categoría de producto creada con éxito',
+      errorMessage: 'Error al crear la categoría de producto',
+    },
+    fields: [
+      {
+        name: 'name',
+        label: 'Nombre de la categoría',
+        type: 'text',
+        validation: {
+          required: 'El nombre es obligatorio',
+          minLength: { value: 3, message: 'Debe tener al menos 3 caracteres' },
+        },
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+      },
+      {
+        name: 'description',
+        label: 'Descripción',
+        type: 'textarea',
+        placeholder: 'Descripción opcional de la categoría',
+        validation: {},
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+      },
+    ],
+    editForm: {
+      title: 'Editar Categoría de Producto',
+      endpoint: 'product-categories',
+      method: 'PUT',
+      successMessage: 'Categoría de producto actualizada con éxito',
+      errorMessage: 'Error al actualizar la categoría de producto',
+    },
+  },
+
+  /* Product Families */
+  'product-families': {
+    title: 'Familias de Productos',
+    description: 'Gestiona, edita y consulta familias de productos.',
+    emptyState: {
+      title: 'No existen familias de productos según los filtros',
+      description: 'Ajusta los filtros o crea una nueva familia de producto.',
+    },
+    endpoint: 'product-families',
+    viewRoute: '/admin/product-families/:id',
+    deleteEndpoint: 'product-families/:id',
+    filtersGroup: {
+      search: {
+        label: 'Buscar',
+        filters: [
+          {
+            name: 'id',
+            label: 'Id',
+            type: 'search',
+            placeholder: 'Buscar por id',
+          },
+        ],
+      },
+      groups: [
+        {
+          name: 'generals',
+          label: 'Generales',
+          filters: [
+            {
+              name: 'name',
+              label: 'Nombre',
+              type: 'text',
+              placeholder: 'Buscar por nombre',
+            },
+            {
+              name: 'ids',
+              label: 'IDs',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por ID',
+            },
+          ],
+        },
+        {
+          name: 'category',
+          label: 'Categoría',
+          filters: [
+            {
+              name: 'categoryId',
+              label: 'Categoría',
+              type: 'autocomplete',
+              placeholder: 'Buscar por categoría',
+              endpoint: 'product-categories/options',
+            },
+          ],
+        },
+      ],
+    },
+    table: {
+      headers: [
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
+        { name: 'name', label: 'Nombre', type: 'text', path: 'name' },
+        {
+          name: 'description',
+          label: 'Descripción',
+          type: 'text',
+          path: 'description',
+          hideOnMobile: true,
+        },
+        { name: 'category', label: 'Categoría', type: 'text', path: 'category.name' },
+        { name: 'created_at', label: 'Fecha de creación', type: 'date', path: 'createdAt' },
+        { name: 'updated_at', label: 'Fecha de actualización', type: 'date', path: 'updatedAt' },
+      ],
+    },
+    createForm: {
+      title: 'Nueva Familia de Producto',
+      endpoint: 'product-families',
+      method: 'POST',
+      successMessage: 'Familia de producto creada con éxito',
+      errorMessage: 'Error al crear la familia de producto',
+    },
+    fields: [
+      {
+        name: 'name',
+        label: 'Nombre de la familia',
+        type: 'text',
+        validation: {
+          required: 'El nombre es obligatorio',
+          minLength: { value: 3, message: 'Debe tener al menos 3 caracteres' },
+        },
+        cols: { sm: 6, md: 4, lg: 4, xl: 4 },
+      },
+      {
+        name: 'categoryId',
+        path: 'category.id',
+        label: 'Categoría',
+        type: 'Autocomplete',
+        placeholder: 'Selecciona la categoría',
+        endpoint: 'product-categories/options',
+        validation: {
+          required: 'La categoría es obligatoria',
+        },
+        cols: { sm: 6, md: 2, lg: 2, xl: 2 },
+      },
+      {
+        name: 'description',
+        label: 'Descripción',
+        type: 'textarea',
+        placeholder: 'Descripción opcional de la familia',
+        validation: {},
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+      },
+    ],
+    editForm: {
+      title: 'Editar Familia de Producto',
+      endpoint: 'product-families',
+      method: 'PUT',
+      successMessage: 'Familia de producto actualizada con éxito',
+      errorMessage: 'Error al actualizar la familia de producto',
+    },
+  },
+
+  /* Productions */
+  species: {
+    title: 'Especies',
+    description: 'Gestiona, edita y consulta especies.',
+    emptyState: {
+      title: 'No existen especies según los filtros',
+      description: 'Ajusta los filtros o crea una nueva especie.',
+    },
+    endpoint: 'species',
+    viewRoute: '/admin/species/:id',
+    deleteEndpoint: 'species/:id',
+    filtersGroup: {
+      search: {
+        label: 'Buscar',
+        filters: [
+          {
+            name: 'id',
+            label: 'Id',
+            type: 'search',
+            placeholder: 'Buscar por id',
+          },
+        ],
+      },
+      groups: [
+        {
+          name: 'generals',
+          label: 'Generales',
+          filters: [
+            {
+              name: 'ids',
+              label: 'IDs',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por ID',
+            },
+            /* name */
+            {
+              name: 'name',
+              label: 'Nombre',
+              type: 'text',
+              placeholder: 'Buscar por nombre',
+            },
+            /* scientificName */
+            {
+              name: 'scientificName',
+              label: 'Nombre científico',
+              type: 'text',
+              placeholder: 'Buscar por nombre científico',
+            },
+            /* fao */
+            {
+              name: 'fao',
+              label: 'FAO',
+              type: 'text',
+              placeholder: 'Buscar por FAO',
+            },
+          ],
+        },
+        /* fishingGears */
+        {
+          name: 'fishingGears',
+          label: 'Artes de pesca',
+          filters: [
+            {
+              name: 'fishingGears',
+              label: 'Artes de pesca',
+              type: 'autocomplete',
+              placeholder: 'Buscar por arte de pesca',
+              endpoint: 'fishing-gears/options',
+            },
+          ],
+        },
+      ],
+    },
+    table: {
+      headers: [
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
+        { name: 'name', label: 'Nombre', type: 'text', path: 'name' },
+        {
+          name: 'scientificName',
+          label: 'Nombre científico',
+          type: 'text',
+          path: 'scientificName',
+        },
+        /* fao */
+        { name: 'fao', label: 'FAO', type: 'text', path: 'fao' },
+        /* fishingGear */
+        { name: 'fishingGear', label: 'Arte de pesca', type: 'text', path: 'fishingGear.name' },
+      ],
+    },
+    createForm: {
+      title: 'Nueva Especie',
+      endpoint: 'species',
+      method: 'POST',
+      successMessage: 'Especie creada con éxito',
+      errorMessage: 'Error al crear la especie',
+    },
+    editForm: {
+      title: 'Editar Especie',
+      endpoint: 'species', // sin /:id, lo añadiremos dinámicamente
+      method: 'PUT',
+      successMessage: 'Especie actualizada con éxito',
+      errorMessage: 'Error al actualizar especie',
+    },
+    fields: [
+      {
+        name: 'name',
+        label: 'Nombre común',
+        type: 'text',
+        placeholder: 'Ej. Pulpo',
+        validation: {
+          required: 'El nombre es obligatorio',
+          minLength: {
+            value: 2,
+            message: 'Debe tener al menos 2 caracteres',
+          },
+        },
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+      },
+      {
+        name: 'scientificName',
+        label: 'Nombre científico',
+        type: 'text',
+        placeholder: 'Ej. Octopus vulgaris',
+        validation: {
+          required: 'El nombre científico es obligatorio',
+          minLength: {
+            value: 2,
+            message: 'Debe tener al menos 2 caracteres',
+          },
+        },
+        cols: { sm: 6, md: 4, lg: 4, xl: 4 },
+      },
+      {
+        name: 'fao',
+        label: 'Código FAO',
+        type: 'text',
+        placeholder: 'Ej. OCT',
+        validation: {
+          required: 'El código FAO es obligatorio',
+          pattern: {
+            value: '/^[A-Z]{3,5}$/',
+            message: 'Debe contener entre 3 y 5 letras mayúsculas',
+          },
+        },
+        cols: { sm: 6, md: 2, lg: 2, xl: 2 },
+      },
+      {
+        name: 'fishingGearId',
+        path: 'fishingGear.id',
+        label: 'Arte de pesca',
+        type: 'Autocomplete',
+        placeholder: 'Selecciona un arte de pesca',
+        endpoint: 'fishing-gears/options',
+        validation: {
+          required: 'El arte de pesca es obligatorio',
+        },
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+      },
+    ],
+  },
+
+  /* incoterms */
+  'fishing-gears': {
+    title: 'Artes de pesca',
+    description: 'Gestiona, edita y consulta artes de pesca.',
+    emptyState: {
+      title: 'No existen artes de pesca según los filtros',
+      description: 'Ajusta los filtros o crea un nuevo arte de pesca.',
+    },
+    endpoint: 'fishing-gears',
+    viewRoute: '/admin/fishing-gears/:id',
+    deleteEndpoint: 'fishing-gears/:id',
+    filtersGroup: {
+      search: {
+        label: 'Buscar',
+        filters: [
+          {
+            name: 'id',
+            label: 'Id',
+            type: 'search',
+            placeholder: 'Buscar por id',
+          },
+        ],
+      },
+      groups: [
+        {
+          name: 'generals',
+          label: 'Generales',
+          filters: [
+            {
+              name: 'ids',
+              label: 'IDs',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por ID',
+            },
+            /* name */
+            {
+              name: 'name',
+              label: 'Nombre',
+              type: 'text',
+              placeholder: 'Buscar por nombre',
+            },
+          ],
+        },
+      ],
+    },
+    table: {
+      headers: [
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
+        { name: 'name', label: 'Nombre', type: 'text', path: 'name' },
+      ],
+    },
+    createForm: {
+      title: 'Nuevo Arte de Pesca',
+      endpoint: 'fishing-gears',
+      method: 'POST',
+      successMessage: 'Arte de pesca creado con éxito',
+      errorMessage: 'Error al crear el arte de pesca',
+    },
+    fields: [
+      {
+        name: 'name',
+        label: 'Nombre',
+        type: 'text',
+        placeholder: 'Ej. Nasas, Trasmallo, Arrastre...',
+        validation: {
+          required: 'El nombre es obligatorio',
+          minLength: {
+            value: 2,
+            message: 'Debe tener al menos 2 caracteres',
+          },
+        },
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+      },
+    ],
+    editForm: {
+      title: 'Editar Arte de Pesca',
+      endpoint: 'fishing-gears', // sin /:id, lo añadiremos dinámicamente
+      method: 'PUT',
+      successMessage: 'Arte de pesca actualizado con éxito',
+      errorMessage: 'Error al actualizar el arte de pesca',
+    },
+  },
+
+  /* countries */
+  'capture-zones': {
+    title: 'Zonas de captura',
+    description: 'Gestiona, edita y consulta zonas de captura.',
+    emptyState: {
+      title: 'No existen zonas de captura según los filtros',
+      description: 'Ajusta los filtros o crea una nueva zona de captura.',
+    },
+    endpoint: 'capture-zones',
+    viewRoute: '/admin/capture-zones/:id',
+    deleteEndpoint: 'capture-zones/:id',
+    filtersGroup: {
+      search: {
+        label: 'Buscar',
+        filters: [
+          {
+            name: 'id',
+            label: 'Id',
+            type: 'search',
+            placeholder: 'Buscar por id',
+          },
+        ],
+      },
+      groups: [
+        {
+          name: 'generals',
+          label: 'Generales',
+          filters: [
+            {
+              name: 'ids',
+              label: 'IDs',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por ID',
+            },
+            /* name */
+            {
+              name: 'name',
+              label: 'Nombre',
+              type: 'text',
+              placeholder: 'Buscar por nombre',
+            },
+          ],
+        },
+      ],
+    },
+    table: {
+      headers: [
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
+        { name: 'name', label: 'Nombre', type: 'text', path: 'name' },
+      ],
+    },
+    createForm: {
+      title: 'Nueva Zona de Captura',
+      endpoint: 'capture-zones',
+      method: 'POST',
+      successMessage: 'Zona de captura creada con éxito',
+      errorMessage: 'Error al crear la zona de captura',
+    },
+    editForm: {
+      title: 'Editar Zona de Captura',
+      endpoint: 'capture-zones', // sin /:id, lo añadiremos dinámicamente
+      method: 'PUT',
+      successMessage: 'Zona de captura actualizada con éxito',
+      errorMessage: 'Error al actualizar la zona de captura',
+    },
+    fields: [
+      {
+        name: 'name',
+        label: 'Nombre de la zona',
+        type: 'text',
+        placeholder: 'Ej. Atlántico Noroeste',
+        validation: {
+          required: 'El nombre es obligatorio',
+          minLength: {
+            value: 3,
+            message: 'Debe tener al menos 3 caracteres',
+          },
+        },
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+      },
+    ],
+  },
+  /* species */
+  countries: {
+    title: 'Países',
+    description: 'Gestiona, edita y consulta países.',
+    emptyState: {
+      title: 'No existen países según los filtros',
+      description: 'Ajusta los filtros o crea un nuevo país.',
+    },
+    endpoint: 'countries',
+    viewRoute: '/admin/countries/:id',
+    deleteEndpoint: 'countries/:id',
+    filtersGroup: {
+      search: {
+        label: 'Buscar',
+        filters: [
+          {
+            name: 'id',
+            label: 'Id',
+            type: 'search',
+            placeholder: 'Buscar por id',
+          },
+        ],
+      },
+      groups: [
+        {
+          name: 'generals',
+          label: 'Generales',
+          filters: [
+            {
+              name: 'ids',
+              label: 'IDs',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por ID',
+            },
+            /* name */
+            {
+              name: 'name',
+              label: 'Nombre',
+              type: 'text',
+              placeholder: 'Buscar por nombre',
+            },
+          ],
+        },
+      ],
+    },
+    table: {
+      headers: [
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
+        { name: 'name', label: 'Nombre', type: 'text', path: 'name' },
+        /* action */
+      ],
+    },
+    createForm: {
+      title: 'Crear país',
+      endpoint: 'countries',
+      method: 'POST',
+      successMessage: 'País creado con éxito',
+      errorMessage: 'Error al crear el país',
+    },
+    fields: [
+      {
+        name: 'name',
+        label: 'Nombre',
+        type: 'text',
+        placeholder: 'Introduce el nombre del país',
+        validation: {
+          required: 'El nombre es obligatorio',
+        },
+        cols: {
+          sm: 6,
+          md: 6,
+          lg: 6,
+          xl: 6,
+        },
+      },
+    ],
+    editForm: {
+      title: 'Editar país',
+      endpoint: 'countries', // sin /:id, lo añadiremos dinámicamente
+      method: 'PUT',
+      successMessage: 'País actualizado con éxito',
+      errorMessage: 'Error al actualizar el país',
+    },
+  },
+
+  /* paymentTerms */
+};
+
+export default catalogConfig;
