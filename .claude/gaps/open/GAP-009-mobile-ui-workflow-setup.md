@@ -1,0 +1,159 @@
+# GAP-009 — Setup del workflow Mobile UI: skills, agente y comando /mobile
+
+## Metadata
+
+- **Tipo:** Feature
+- **Módulo:** Global
+- **Prioridad:** Media
+- **Estado:** open
+- **Fecha:** 2026-06-01
+- **Autor:** Jose
+
+---
+
+## Contexto y problema
+
+PesquerApp tiene una infraestructura mobile ya sólida (BottomNav, NavigationSheet via vaul,
+ResponsiveLayout, BottomNavContext, design-tokens-mobile, motion-presets, useIsMobileSafe) y
+documentación detallada en `docs/mobile-app/`. Sin embargo, no existe en `.claude/` ningún
+skill, agente ni comando que codifique esos patrones como contexto reutilizable para Claude Code.
+
+Cada sesión de trabajo en UI mobile hay que re-explicar los patrones desde cero, sin inventario
+de estado por vista, sin flujo de ramas estandarizado y sin un skill que sirva de referencia
+para generar CRUD mobile de forma repetible.
+
+### Análisis del estado actual (Fase 0 ejecutada)
+
+**Infraestructura mobile existente:**
+- `src/components/Admin/Layout/BottomNav/` — BottomNav con framer-motion, 5 slots, CenterActionButton
+- `src/components/Admin/Layout/NavigationSheet/` — Drawer vaul (compatible React 19), navegación completa
+- `src/components/Admin/Layout/ResponsiveLayout/` — Switch desktop/mobile con `useIsMobileSafe`
+- `src/context/BottomNavContext.jsx` — `useHideBottomNav` para ocultar nav en vistas de detalle
+- `src/lib/design-tokens-mobile.js` — Tokens de altura, spacing, radius, safe areas
+- `src/lib/motion-presets.js` — Presets framer-motion para feedback táctil
+- `src/hooks/use-mobile.jsx` — `useIsMobile` (simple) + `useIsMobileSafe` (SSR-safe)
+- Docs en `docs/mobile-app/` — Plan, análisis de vistas, estándares UI
+
+**Vistas con mobile implementado:**
+- OrdersManager lista: ✅ `OrderCard`, `OrdersList` — mobile nativo
+- OrdersManager crear: ✅ `CreateOrderFormMobile.jsx`
+- Order detalle: 🔶 Parcial — `OrderHeaderMobile`, `OrderSectionContentMobile`, `OrderSummaryMobile`
+- EntityClient (CRUD genérico): 🔶 Parcial — `AccordionBody` + `getMobilePrimaryFields`
+- ProductHistoryMobileCard: ✅ Mobile nativo
+
+**Skills en `.claude/skills/` (ya existentes):**
+`caveman`, `find-skills`, `humanizer`, `napkin`, `new-component`, `new-page`,
+`new-service`, `shadcn-component-discovery`, `shadcn-component-review`, `shadcn-ui`,
+`skill-creator`, `task-workflow`, `token-optimizer`
+
+**Agentes en `.claude/agents/` (ya existentes):**
+`code-reviewer`, `db-architect`, `frontend-developer`, `gap-auditor`, `gap-discovery`, `gap-implementor`
+
+**Comandos en `.claude/commands/` (directorio vacío)**
+
+---
+
+## Solución acordada
+
+Crear los archivos de configuración en `.claude/` que codifican los patrones mobile reales del
+proyecto como contexto reutilizable:
+
+1. **Skill `mobile-ui`** — Patterns, restricciones y checklist QA adaptados al stack real
+2. **Skill `mobile-crud-generator`** — Generador repetible de UI mobile para CRUDs simples
+3. **Skill `mobile-preview`** — Flujo de ramas aisladas con integración en el GAP workflow
+4. **Agente `mobile-ui-agent`** — Protocolo completo para sesiones de trabajo mobile
+5. **Comando `/mobile`** — Punto de entrada rápido para el agente
+6. **Inventario `mobile-inventory.md`** — Estado real por vista, prioridades, historial de merges
+
+**Adaptaciones al prompt original respecto al proyecto real:**
+- `useMediaQuery('(max-width: 767px)')` → usar `useIsMobileSafe()` de `src/hooks/use-mobile.jsx`
+- `NavigationSheet` usa `vaul` (no Sheet de shadcn) — no modificar su estructura
+- El skill `find-skills` ya está instalado (no reinstalar)
+- `skill-creator` ya está instalado (no reinstalar)
+- Los archivos `.js` legacy se migran a `.ts` según regla de oro 3 del CLAUDE.md
+- La Fase 6-B (instalación de skills vía `npx skills`) puede no funcionar en el entorno
+  remoto de Claude Code on the web — documentar como paso manual si falla
+
+---
+
+## Criterios de aceptación
+
+- [ ] `.claude/skills/mobile-ui.md` creado con patrones reales del proyecto
+- [ ] `.claude/skills/mobile-crud-generator.md` creado con el hook `useIsMobileSafe` correcto
+- [ ] `.claude/skills/mobile-preview.md` creado con flujo compatible con el GAP workflow
+- [ ] `.claude/agents/mobile-ui-agent.md` creado con protocolo A-B-C-D completo
+- [ ] `.claude/commands/mobile.md` creado con aliases `/mobile status`, `/mobile merge`, `/mobile list`
+- [ ] `.claude/mobile-inventory.md` creado con el inventario real de vistas (basado en Fase 0)
+- [ ] `git status` solo muestra los archivos en `.claude/` — ningún archivo de código fuente tocado
+- [ ] Commit en rama `claude/mobile-ui-workflow-setup-FRHMh` y push
+
+---
+
+## Archivos a crear o modificar
+
+### Crear (todos en `.claude/`)
+```
+.claude/skills/mobile-ui.md
+.claude/skills/mobile-crud-generator.md
+.claude/skills/mobile-preview.md
+.claude/agents/mobile-ui-agent.md
+.claude/commands/mobile.md
+.claude/mobile-inventory.md
+```
+
+### No modificar
+- Ningún archivo de `src/`
+- Ningún archivo de `docs/`
+- Los agentes GAP existentes en `.claude/agents/`
+- El CLAUDE.md ni ningún archivo de configuración del proyecto
+
+---
+
+## Restricciones
+
+- **Cero cambios en código fuente** — Este GAP solo crea archivos en `.claude/`
+- **No reinstalar** `find-skills` ni `skill-creator` (ya existen en `.claude/skills/`)
+- Los skills deben referenciar `useIsMobileSafe` (no inventar un `useMediaQuery`)
+- Los skills deben referenciar `vaul` para NavigationSheet (no Sheet de shadcn)
+- El inventario debe basarse en el análisis real (Fase 0), no en suposiciones
+- La Fase 6-B de skills externos es opcional — documentarla pero no bloquear el GAP por ella
+
+---
+
+## Implementación
+
+> Rellena el Agente Implementador
+
+### Archivos creados
+
+### Archivos modificados
+
+### Decisiones tomadas durante la implementación
+
+### Desviaciones del plan (si las hay)
+
+---
+
+## Auditoría
+
+> Rellena el Agente Auditor
+
+### Resultado: ✅ APROBADO | ⚠️ APROBADO CON OBSERVACIONES | ❌ RECHAZADO
+
+### Puntuación: [X/10]
+
+### Checklist
+
+- [ ] Criterios de aceptación cumplidos
+- [ ] Sin fetch() directo
+- [ ] Sin hardcode de tenant
+- [ ] Sin archivos .js nuevos
+- [ ] Sin any sin justificación
+- [ ] Hooks gigantes no tocados sin permiso
+- [ ] entitiesConfig.js no tocado sin permiso
+- [ ] Patrones de .claude/rules/ respetados
+- [ ] Nomenclatura correcta
+
+### Observaciones para Jose
+
+### Estado final de la implementación
