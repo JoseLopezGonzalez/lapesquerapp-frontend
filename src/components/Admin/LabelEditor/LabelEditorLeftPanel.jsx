@@ -36,7 +36,7 @@ import LabelSelectorSheet from './LabelSelectorSheet';
 import {
   hasElementValidationError,
   getElementValidationErrorReason,
-} from '@/hooks/labelEditorValidation';
+} from '@/hooks/labels/labelValidation';
 
 const titleAdd = 'Selecciona una etiqueta para añadir elementos';
 
