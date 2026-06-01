@@ -214,6 +214,22 @@ Después de modificar:
 - Mantener UI consistente con los patrones shadcn/Tailwind existentes.
 - Mantener formularios consistentes con los patrones React Hook Form/Zod existentes.
 
+## UI Stack
+
+Este proyecto usa shadcn/ui para todos los componentes de UI.
+
+- **Usar siempre componentes shadcn nativamente** — nunca reescribir ni sobrescribir internos
+- **Extender solo via** `className` con `cn()`, variantes CVA, o composición
+- **Nunca hardcodear colores** — usar siempre variables semánticas CSS (`--primary`, `--muted`, `--accent`, etc.)
+- **Antes de escribir cualquier primitivo UI desde cero**, ejecutar: `npx shadcn@latest add <component>`
+- **Verificar primero en `src/components/ui/`** — el proyecto tiene 52 primitivos instalados
+- Usar `gap` en lugar de `space-y` para spacing en flex/grid
+- Siempre incluir `DialogTitle` en componentes `Dialog`
+- Validar correctamente los estados `data-invalid` en campos de formulario
+- Usar `data-slot` para identificar partes de componentes compound
+
+---
+
 ## Contexto adicional
 
 Para documentación extendida, ver `docs/ai-context/`. Para reglas específicas por área, ver `.claude/rules/`. Para agentes especializados, ver `.claude/agents/`.
