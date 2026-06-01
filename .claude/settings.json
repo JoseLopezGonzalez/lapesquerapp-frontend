@@ -9,8 +9,7 @@
       "Bash(npm run format)"
     ],
     "deny": [
-      "Edit(src/configs/entitiesConfig.js)",
-      "Write(src/configs/entitiesConfig.js)"
+      
     ]
   }
 }
