@@ -65,7 +65,7 @@ src/
 │   └── api/apiHelpers.js  # ApiError class · getErrorMessage · apiGet/Post/Put/Delete
 │
 ├── configs/
-│   ├── entitiesConfig.js  # ⛔ 121 KB — ZONA PROTEGIDA (ver sección archivos protegidos)
+│   ├── entitiesConfig.js  # Reexporta desde entities/ — ver src/configs/entities/index.ts
 │   ├── roleConfig.ts      # Mapa rol → rutas permitidas
 │   ├── navigationConfig.js# Menús de navegación por rol
 │   └── config.js          # API_URL_V2, API_BASE_URL
@@ -165,14 +165,14 @@ npm run test:run     # Vitest una ejecución (para CI)
 
 ## Archivos protegidos — detener y preguntar antes de tocar
 
-| Archivo                                | Razón                                                          | Acción requerida                                         |
-| -------------------------------------- | -------------------------------------------------------------- | -------------------------------------------------------- |
-| `src/configs/entitiesConfig.js`        | 121 KB · monolito · afecta a **todas** las entidades del admin | **Detener y preguntar al dev antes de cualquier cambio** |
-| `src/hooks/useOrder.js` (~40 KB)       | Hook gigante — no añadir lógica aquí                           | Crear sub-hook en `src/hooks/orders/useOrderXxx.ts`      |
-| `src/hooks/usePallet.js` (~48 KB)      | Hook gigante — no añadir lógica aquí                           | Crear sub-hook en `src/hooks/pallets/usePalletXxx.ts`    |
-| `src/hooks/useLabelEditor.ts` (~52 KB) | Hook gigante — no añadir lógica aquí                           | Crear sub-hook en `src/hooks/labels/useLabelXxx.ts`      |
-| `src/middleware.ts`                    | Auth + tenant + RBAC crítico                                   | Revisar impacto en todos los roles antes de modificar    |
-| `src/lib/fetchWithTenant.js`           | Único punto HTTP — un cambio aquí afecta a toda la aplicación  | Solo con revisión explícita del dev                      |
+| Archivo                          | Razón                                                                         | Acción requerida                                                     |
+| -------------------------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `src/configs/entitiesConfig.js`  | Punto de entrada del config modular — reexporta desde `src/configs/entities/` | Solo modificar el reexport; nunca añadir entidades directamente aquí |
+| `src/hooks/useOrder.js` (~40 KB) | Hook gigante — no añadir lógica aquí                                          | Crear sub-hook en `src/hooks/orders/useOrderXxx.ts`                  |
+| `src/hooks/usePallet.ts`         | Hook gigante — no añadir lógica aquí                                          | Crear sub-hook en `src/hooks/pallets/usePalletXxx.ts`                |
+| `src/hooks/useLabelEditor.ts`    | Hook gigante refactorizado — no añadir lógica aquí                            | Crear sub-hook en `src/hooks/labels/useLabelXxx.ts`                  |
+| `src/middleware.ts`              | Auth + tenant + RBAC crítico                                                  | Revisar impacto en todos los roles antes de modificar                |
+| `src/lib/fetchWithTenant.js`     | Único punto HTTP — un cambio aquí afecta a toda la aplicación                 | Solo con revisión explícita del dev                                  |
 
 ---
 
@@ -182,7 +182,7 @@ npm run test:run     # Vitest una ejecución (para CI)
 2. **Codebase mixto JS/TS** — servicios legacy en `.js`. Migrar al tocar cualquier archivo legacy.
 3. **Sin pre-commit hooks** — Husky/lint-staged pendiente de configurar en fase posterior.
 4. **Sin tests de UI** — Vitest solo cubre lógica (hooks, services, utils), no componentes React.
-5. **`entitiesConfig.js` de 121 KB** — monolito pendiente de partir en módulos por dominio de negocio.
+5. **`entitiesConfig.js`** — ✅ partido en módulos por dominio en `src/configs/entities/` (GAP-007).
 6. **Hooks gigantes** — `useOrder` 40 KB · `usePallet` 48 KB · `useLabelEditor` 52 KB. Pendiente refactor en sub-hooks.
 7. **Cobertura de tests** — 20 archivos de test para 269 componentes y 84+ hooks.
 8. **`entityServiceMapper.js`** — candidato prioritario de migración a TypeScript.
