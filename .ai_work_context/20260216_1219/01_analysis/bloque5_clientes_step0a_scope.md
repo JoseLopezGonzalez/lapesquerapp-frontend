@@ -16,23 +16,23 @@ El bloque **Clientes** incluye la gestión CRUD de clientes (admin) y su uso en 
 
 ### Entidad principal: Cliente (Customer)
 
-| Tipo | Artefacto | Ruta / Ubicación |
-|------|-----------|------------------|
-| **Pages** | admin/customers (list) | `app/admin/[entity]/page.js` (entity=customers) |
-| | admin/customers/create | `app/admin/[entity]/create/page.js` |
-| | admin/customers/[id] (edit/view) | `app/admin/[entity]/[id]/page.js` |
-| **Components** | EntityClient | `components/Admin/Entity/EntityClient/index.js` (genérico) |
-| | CreateEntityForm | `components/Admin/Entity/EntityClient/EntityForms/CreateEntityForm/index.js` |
-| | EditEntityForm | `components/Admin/Entity/EntityClient/EntityForms/EditEntityForm/index.js` |
-| | OrderCustomerHistory | `components/Admin/OrdersManager/Order/OrderCustomerHistory/index.js` |
-| | CreateOrderForm (usa cliente) | `components/Admin/OrdersManager/CreateOrderForm/index.js` |
-| **Hooks** | useCustomerHistory | `hooks/useCustomerHistory.js` |
-| | useOrderCreateFormConfig | `hooks/useOrderCreateFormConfig.js` |
-| **Services** | customerService (domain CRUD) | `services/domain/customers/customerService.js` |
-| | customerService (options, history) | `services/customerService.ts` |
-| **Config** | entitiesConfig.customers | `configs/entitiesConfig.js` |
-| **Types** | — | No existen tipos para Customer (solo interfaces en customerService.ts parciales) |
-| **Tests** | useCustomerHistory.test.js | `__tests__/hooks/useCustomerHistory.test.js` |
+| Tipo           | Artefacto                          | Ruta / Ubicación                                                                 |
+| -------------- | ---------------------------------- | -------------------------------------------------------------------------------- |
+| **Pages**      | admin/customers (list)             | `app/admin/[entity]/page.js` (entity=customers)                                  |
+|                | admin/customers/create             | `app/admin/[entity]/create/page.js`                                              |
+|                | admin/customers/[id] (edit/view)   | `app/admin/[entity]/[id]/page.js`                                                |
+| **Components** | EntityClient                       | `components/Admin/Entity/EntityClient/index.js` (genérico)                       |
+|                | CreateEntityForm                   | `components/Admin/Entity/EntityClient/EntityForms/CreateEntityForm/index.js`     |
+|                | EditEntityForm                     | `components/Admin/Entity/EntityClient/EntityForms/EditEntityForm/index.js`       |
+|                | OrderCustomerHistory               | `components/Admin/OrdersManager/Order/OrderCustomerHistory/index.js`             |
+|                | CreateOrderForm (usa cliente)      | `components/Admin/OrdersManager/CreateOrderForm/index.js`                        |
+| **Hooks**      | useCustomerHistory                 | `hooks/useCustomerHistory.js`                                                    |
+|                | useOrderCreateFormConfig           | `hooks/useOrderCreateFormConfig.js`                                              |
+| **Services**   | customerService (domain CRUD)      | `services/domain/customers/customerService.js`                                   |
+|                | customerService (options, history) | `services/customerService.ts`                                                    |
+| **Config**     | entitiesConfig.customers           | `configs/entitiesConfig.js`                                                      |
+| **Types**      | —                                  | No existen tipos para Customer (solo interfaces en customerService.ts parciales) |
+| **Tests**      | useCustomerHistory.test.js         | `__tests__/hooks/useCustomerHistory.test.js`                                     |
 
 ### Flujos de datos
 
@@ -52,6 +52,7 @@ Existen **dos** servicios relacionados con clientes:
 ## Resumen de alcance
 
 **Bloque 5 (Clientes) incluye:**
+
 - **Entidades**: Cliente (CRUD admin) + uso en pedidos (selector + historial)
 - **Artefactos**: 2 servicios, 2 hooks, 5+ componentes (EntityClient/Create/Edit genéricos, OrderCustomerHistory, CreateOrderForm), 1 test
 - **Scope rule**: Las mejoras deben cubrir todos los artefactos en alcance (servicios, hooks, componentes que consumen datos de clientes)

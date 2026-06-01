@@ -7,6 +7,7 @@
 **Entidades**: Users (usuarios), Sessions (sesiones). Relacionado: Roles (solo getOptions para formularios).
 
 **Artefactos**:
+
 - **Users**: userService.js (list, getById, create, update, delete, getOptions, resendInvitation); entitiesConfig.users; EntityClient + generateColumns (acción Reenviar invitación).
 - **Sessions**: sessionService.js (list, getById, create, update, delete, getOptions); entitiesConfig.sessions; EntityClient.
 - **Roles**: roleService.js (getOptions). Sin página; usado en filtros y createForm de users.

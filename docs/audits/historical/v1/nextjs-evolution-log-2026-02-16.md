@@ -11,12 +11,14 @@ Registro de mejoras aplicadas al frontend Next.js (PesquerApp) siguiendo el fluj
 **Rating antes: 4/10** | **Rating después: 9/10**
 
 ### Problems Addressed
+
 - P0: supplierService.js sin tipos; supplierLiquidationService.js sin tipos
 - P0: Sin tests para servicios de proveedores/liquidaciones
 - P1: Data fetching manual en EntityClient para suppliers (sin React Query)
 - P1: SupplierLiquidationList y SupplierLiquidationDetail con useEffect + useState (sin React Query)
 
 ### Changes Applied
+
 - **Tipos**: `src/types/catalog.ts` (Supplier); `src/types/supplierLiquidation.ts` (SupplierWithActivity, LiquidationDetails, LiquidationReception, LiquidationDispatch, etc.).
 - **Servicios TypeScript**: `supplierService.ts` (migrado desde .js, eliminado .js); `supplierLiquidationService.ts` (en domain/supplier-liquidations, migrado con getAuthToken, eliminado .js en services/).
 - **React Query**: `useSuppliersList.ts` (listado proveedores para EntityClient); `useSuppliersWithActivity.ts` (listado liquidaciones); `useSupplierLiquidationDetails.ts` (detalle liquidación).
@@ -25,15 +27,18 @@ Registro de mejoras aplicadas al frontend Next.js (PesquerApp) siguiendo el fluj
 - **Tests**: supplierService.test.ts (4 tests), supplierLiquidationService.test.ts (4 tests). Total 8 tests.
 
 ### Verification Results
+
 - Build exitoso (next build)
 - 8 tests nuevos pasan (supplierService, supplierLiquidationService)
 - Comportamiento preservado: listado proveedores, liquidaciones, detalle, PDF
 
 ### Gap to 10/10
+
 - useSupplierOptions sigue usando RawMaterialReceptionsOptionsContext + getSupplierOptions (rawMaterialReceptionService); opcional migrar a supplierService.getOptions + React Query.
 - SupplierLiquidationList/Detail usan @ts-nocheck por UI components; completar .d.ts para Table, Checkbox, etc.
 
 ### Next Steps
+
 - Bloque siguiente según CORE Plan (Orquestador, etc.).
 
 ---
@@ -53,11 +58,13 @@ Tipos en src/types/catalog.ts. Servicios domain en TS: transportService, incoter
 **Rating antes: 4/10** | **Rating después: 9/10**
 
 ### Problems Addressed
+
 - P0: userService, sessionService, roleService en JavaScript sin tipos
 - P0: Sin tests para servicios de usuarios/sesiones/roles
 - P1: Data fetching manual (useEffect + useState) en EntityClient para users/sessions
 
 ### Changes Applied
+
 - **Tipos**: `src/types/user.ts` (User, UsersListResponse, UserListFilters, PaginationMeta, UserOption); `src/types/session.ts` (Session, SessionsListResponse, SessionListFilters).
 - **Servicios TypeScript**: `userService.ts`, `sessionService.ts`, `roleService.ts`; eliminados .js. Tipado de list/getById/create/update/delete/getOptions; userService.resendInvitation tipado.
 - **React Query**: `useUsersList.ts`, `useSessionsList.ts`, `useRoleOptions.ts` con cache key tenant-aware (getCurrentTenant).
@@ -65,14 +72,17 @@ Tipos en src/types/catalog.ts. Servicios domain en TS: transportService, incoter
 - **Tests**: userService.test.ts (5 tests), sessionService.test.ts (4 tests), roleService.test.ts (1 test). Total 10 tests.
 
 ### Verification Results
+
 - Build exitoso (next build)
 - 10 tests nuevos pasan (userService, sessionService, roleService)
 - Comportamiento preservado: listado, filtros, paginación, eliminar, reenviar invitación (users)
 
 ### Gap to 10/10
+
 - EntityClient sigue en .js; resto del bloque en TS. Opcional: migrar CreateEntityForm/EditEntityForm para users cuando se habilite crear/editar.
 
 ### Next Steps
+
 - Siguiente bloque según CORE Plan (p. ej. Clientes, Proveedores, Catálogos auxiliares).
 
 ---
@@ -84,11 +94,13 @@ Tipos en src/types/catalog.ts. Servicios domain en TS: transportService, incoter
 **Rating antes: 7/10** | **Rating después: 9/10**
 
 ### Problems Addressed
+
 - P1: useDashboardCharts, useOrdersStats, useStockStats en .js (sin tipos)
 - P1: getReceptionChartData, getDispatchChartData en .js (sin tipos)
 - P2: Sin tests para chart services
 
 ### Changes Applied
+
 - **getReceptionChartData.ts**: Migración desde .js; interfaces ReceptionChartDataParams, ChartDataPoint; tipado de retorno Promise<ChartDataPoint[]>. Eliminado getReceptionChartData.js.
 - **getDispatchChartData.ts**: Migración desde .js; interfaces DispatchChartDataParams, ChartDataPoint; tipado de retorno Promise<ChartDataPoint[]>. Eliminado getDispatchChartData.js.
 - **useDashboardCharts.ts**: Migración desde .js; interfaces ChartDataParams, UseChartDataReturn; tipado de params en useSalesChartData, useReceptionChartData, useDispatchChartData, useTransportChartData. Eliminado useDashboardCharts.js.
@@ -98,15 +110,18 @@ Tipos en src/types/catalog.ts. Servicios domain en TS: transportService, incoter
 - **getDispatchChartData.test.ts**: 4 tests Vitest (fetch array, extract data.data, optional filters, API error).
 
 ### Verification Results
+
 - ✅ Build exitoso (next build)
 - ✅ 144 tests pasan (21 archivos)
 - ✅ Sin cambios de comportamiento; contratos preservados
 
 ### Gap to 10/10
+
 - usePunches.js sigue en .js (compartido con Bloque 9 Fichajes).
 - Tests de integración para hooks de charts (opcional).
 
 ### Next Steps
+
 - Bloque siguiente: Clientes, Proveedores o Catálogos auxiliares.
 
 ---
@@ -118,20 +133,24 @@ Tipos en src/types/catalog.ts. Servicios domain en TS: transportService, incoter
 **Rating antes: 3/10** | **Rating después: 4/10** (parcial; pendiente división componente/hook)
 
 ### Problems Addressed
+
 - P0: Sin tests para lógica crítica del editor
 - P1: useLabelEditor > 1100 líneas (lógica de validación mezclada)
 
 ### Changes Applied
+
 - **labelEditorValidation.js** (nuevo): validateLabelName, hasDuplicateFieldKeys, hasElementValidationError, getElementValidationErrorReason, hasAnyElementValidationErrors, KEY_FIELD_TYPES. Extraído de useLabelEditor.
 - **useLabelEditor.js**: Importa desde labelEditorValidation; eliminadas ~55 líneas de definiciones locales. Líneas: 1132 → 1087.
 - **labelEditorValidation.test.js** (nuevo): 6 tests Vitest para validación (nombre, duplicados, errores por elemento).
 
 ### Verification Results
+
 - ✅ Build exitoso (next build)
 - ✅ 6 tests pasan (vitest run src/hooks/labelEditorValidation.test.js)
 - ✅ Sin cambios de comportamiento; contratos LabelRender/useLabel preservados
 
 ### Gap to 10/10
+
 - LabelEditor/index.js sigue ~1903 líneas (P0: dividir en subcomponentes: toolbar, panel izquierdo, panel derecho).
 - useLabelEditor.js ~1087 líneas (extraer useLabelEditorCanvas, labelEditorElementDefaults).
 - TypeScript para labelService y tipos.
@@ -139,6 +158,7 @@ Tipos en src/types/catalog.ts. Servicios domain en TS: transportService, incoter
 - Más tests (labelService, useLabelEditor).
 
 ### Next Steps
+
 - Sub-bloque 1 continuación: extraer LabelEditorLeftPanel y/o LabelEditorToolbar desde index.js para bajar < 200 L por archivo.
 - Luego sub-bloques 2–5 (TypeScript, React Query, tests servicios, refino).
 
@@ -151,22 +171,27 @@ Tipos en src/types/catalog.ts. Servicios domain en TS: transportService, incoter
 **Rating antes: 4/10** | **Rating después: 5/10**
 
 ### Problems Addressed
+
 - P0: LabelEditor/index.js ~1903 líneas (componente monolítico).
 
 ### Changes Applied
+
 - **LabelEditorLeftPanel.jsx** (nuevo, ~345 L): Panel izquierdo con botones Crear/Seleccionar etiqueta, grid "Añadir Elementos", lista de elementos con cards (scroll, selección, duplicar/eliminar). Usa hasElementValidationError y getElementValidationErrorReason desde labelEditorValidation.
 - **LabelEditor/index.js**: Sustituido el bloque del sidebar izquierdo por `<LabelEditorLeftPanel ... />`; eliminadas ~310 líneas. Total: 1903 → 1593 L. Eliminados hasElementValidationError y getElementValidationErrorReason del destructuring (ahora solo en LeftPanel).
 
 ### Verification Results
+
 - ✅ Build exitoso (next build).
 - ✅ Comportamiento preservado; contratos intactos.
 
 ### Gap to 10/10
+
 - index.js sigue ~1593 L (objetivo < 200; extraer toolbar y panel propiedades).
 - useLabelEditor ~1087 L.
 - TypeScript, React Query, más tests.
 
 ### Next Steps
+
 - Extraer LabelEditorToolbar y/o LabelEditorPropertyPanel para seguir reduciendo index.js.
 - Sub-bloques 2–5 según plan.
 
@@ -179,23 +204,28 @@ Tipos en src/types/catalog.ts. Servicios domain en TS: transportService, incoter
 **Rating antes: 5/10** | **Rating después: 6/10**
 
 ### Problems Addressed
+
 - LabelEditor/index.js aún ~1473 L (toolbar y panel derecho monolíticos).
 
 ### Changes Applied
+
 - **LabelEditorToolbar.jsx** (nuevo, ~149 L): Barra superior (dimensiones canvas, rotar, Valores de Ejemplo, atajos, Guardar, menú Import/Export/Imprimir/Eliminar) y barra inferior (zoom, nombre etiqueta). Acepta `children` para insertar el canvas entre ambas.
 - **LabelEditorPropertyPanel.jsx** (nuevo, ~943 L): Panel derecho completo (Card con cabecera por tipo de elemento, formularios por tipo, QRConfigPanel/BarcodeConfigPanel/RichParagraphConfigPanel, formato, texto, rotación, alineación). Extraído con script (líneas 463–1367 re-indentadas).
 - **LabelEditor/index.js**: Sustituidos toolbar + canvas + zoom por `<LabelEditorToolbar>…</LabelEditorToolbar>` y bloque panel (460–1369) por `<LabelEditorPropertyPanel ... />`. **1903 → 582 L.**
 
 ### Verification Results
+
 - ✅ Build exitoso.
 - ✅ Sin errores de lint.
 
 ### Gap to 10/10
+
 - index.js 582 L (objetivo < 200: opcional extraer más o dejar como orquestador).
 - useLabelEditor ~1087 L.
 - TypeScript, React Query, más tests (labelService, useLabelEditor).
 
 ### Next Steps
+
 - Sub-bloques 2–5: TypeScript (labelService, tipos), React Query (getLabels/getLabel), tests, refino hasta 9/10.
 
 ---
@@ -207,11 +237,13 @@ Tipos en src/types/catalog.ts. Servicios domain en TS: transportService, incoter
 **Rating antes: 6/10** | **Rating después: 8/10**
 
 ### Problems Addressed
+
 - Sin tipos en labelService ni en respuestas API.
 - Data fetching manual (getLabels en LabelSelectorSheet, create/update/delete en useLabelEditor) sin caché ni invalidación.
 - Sin tests para labelService.
 
 ### Changes Applied
+
 - **src/types/labelEditor.ts**: Tipos Label, LabelFormat, LabelCanvas, LabelElement, LabelElementType, LabelApiResponse.
 - **labelService.ts** (nuevo): Migración desde labelService.js; funciones tipadas (getLabel, getLabels, createLabel, updateLabel, deleteLabel, getLabelsOptions, duplicateLabel). Eliminado labelService.js.
 - **src/hooks/useLabels.ts**: useLabelsQuery(extraEnabled), useDeleteLabelMutation(), useDuplicateLabelMutation(); queryKey con getCurrentTenant(); invalidación en mutaciones.
@@ -220,15 +252,18 @@ Tipos en src/types/catalog.ts. Servicios domain en TS: transportService, incoter
 - **src/services/labelService.test.ts**: 6 tests (getLabels, getLabel, createLabel, updateLabel, deleteLabel, duplicateLabel) con fetchWithTenant y labelServiceHelpers mockeados.
 
 ### Verification Results
+
 - ✅ Build exitoso.
 - ✅ 12 tests pasan (6 labelEditorValidation + 6 labelService).
 
 ### Gap to 10/10
+
 - useLabelEditor sigue en .js y ~1087 L; opcional migrar a TypeScript y/o extraer más lógica.
 - LabelEditorPropertyPanel ~943 L (aceptable por alcance).
 - E2E o tests de integración para flujo completo del editor (opcional).
 
 ### Next Steps
+
 - Opcional: migrar useLabelEditor a .ts y reducir tamaño; más tests de integración.
 
 ---
@@ -240,22 +275,27 @@ Tipos en src/types/catalog.ts. Servicios domain en TS: transportService, incoter
 **Rating antes: 8/10** | **Rating después: 9/10**
 
 ### Problems Addressed
+
 - useLabelEditor.js sin tipos; difícil mantenimiento y refactor seguro.
 
 ### Changes Applied
+
 - **src/types/labelEditor.ts**: Añadidos LabelFieldDef, LabelFieldsMap, LabelFieldOption, DataContext, LabelDraft.
 - **src/hooks/useLabelEditor.ts** (nuevo): Migración completa desde useLabelEditor.js; interfaz UseLabelEditorReturn; tipado de estado, refs, handlers (MouseEvent para document listeners); labelFields tipado como LabelFieldsMap; eliminado useLabelEditor.js.
 - **Consumidores**: LabelEditor/index.js y FieldExamplesDialog.jsx siguen importando desde @/hooks/useLabelEditor (resolución a .ts).
 
 ### Verification Results
+
 - ✅ Build exitoso (next build).
 - ✅ 12 tests pasan (labelService.test.ts + labelEditorValidation.test.js).
 
 ### Gap to 10/10
+
 - LabelEditorPropertyPanel ~943 L (aceptable).
 - E2E o tests de integración para flujo completo del editor (opcional).
 
 ### Next Steps
+
 - Cerrar Bloque 13; opcional sub-bloque 5 (useFieldEditor, sanitización RichParagraph, a11y).
 
 ---
@@ -267,6 +307,7 @@ Tipos en src/types/catalog.ts. Servicios domain en TS: transportService, incoter
 **Rating antes: 4/10** | **Rating después: 9/10**
 
 ### Problems Addressed
+
 - P0: Sin tests para settingsService (requisito CORE)
 - P0: settingsService en JavaScript sin tipos
 - P1: useEffect + useState para data fetching (SettingsContext, SettingsForm)
@@ -274,6 +315,7 @@ Tipos en src/types/catalog.ts. Servicios domain en TS: transportService, incoter
 - P1: SettingsForm > 150 líneas (~428)
 
 ### Changes Applied
+
 - **settingsService.ts**: Migración desde .js; tipos SettingsData, UpdateSettingsAuthError
 - **settingsService.test.ts**: 11 tests (getSettings, updateSettings, 401/403, authError, userMessage)
 - **useSettingsData.js**: Hook con React Query (queryKey ['settings', tenantId]); detección cambio tenant
@@ -284,6 +326,7 @@ Tipos en src/types/catalog.ts. Servicios domain en TS: transportService, incoter
 - **config/sectionsConfig.js**: SECTIONS extraído
 
 ### Verification Results
+
 - ✅ Build exitoso
 - ✅ 11 tests settingsService pasan
 - ✅ SettingsForm < 150 líneas
@@ -292,11 +335,13 @@ Tipos en src/types/catalog.ts. Servicios domain en TS: transportService, incoter
 - ✅ Comportamiento preservado
 
 ### Gap to 10/10
+
 - Tests para useSettingsData
 - Migrar useSettingsData, SettingsContext, getSettingValue a TypeScript
 - TenantContext en lugar de getCurrentTenant (cuando exista)
 
 ### Next Steps
+
 - Siguiente bloque recomendado: Productos, Clientes o Informes
 
 ---
@@ -308,6 +353,7 @@ Tipos en src/types/catalog.ts. Servicios domain en TS: transportService, incoter
 **Rating antes: 5/10** | **Rating después: 9/10**
 
 ### Problems Addressed
+
 - 11 componentes con useEffect + useState en lugar de React Query
 - useStockStats, useOrdersStats, usePunches, useReceptionsList, useDispatchesList: migración completa
 - Dashboard/index.js: comentarios {true && ...} innecesarios
@@ -315,6 +361,7 @@ Tipos en src/types/catalog.ts. Servicios domain en TS: transportService, incoter
 - ReceptionsListCard, DispatchesListCard: datos vía rawMaterialReceptionService/ceboDispatchService manual
 
 ### Changes Applied
+
 - **useOrdersStats.js**: useOrdersTotalNetWeightStats, useOrdersTotalAmountStats, useOrderRankingStats, useSalesBySalesperson
 - **useSpeciesOptions.js**: useSpeciesOptions (React Query)
 - **useProductOptions.js**: useProductCategoryOptions, useProductFamilyOptions; restaurado useProductOptions (productos para formularios)
@@ -327,17 +374,20 @@ Tipos en src/types/catalog.ts. Servicios domain en TS: transportService, incoter
 - Dashboard/index.js: eliminación de comentarios {true && ...}
 
 ### Verification Results
+
 - ✅ Build exitoso
 - ✅ Todos los componentes Dashboard usan React Query
 - ✅ Caché compartida por tenant en todas las queries
 - ✅ useProductOptions restaurado para useAdminReceptionForm, CreateOrderForm, EditReceptionForm
 
 ### Gap to 10/10
+
 - TenantContext en lugar de getCurrentTenant (cuando exista)
 - Tests unitarios para hooks nuevos
 - Migración a TypeScript de componentes Dashboard
 
 ### Next Steps
+
 - Siguiente bloque recomendado: Productos, Clientes o Informes
 
 ---
@@ -349,17 +399,21 @@ Tipos en src/types/catalog.ts. Servicios domain en TS: transportService, incoter
 **Rating antes: 7.5/10** | **Rating después: 8/10**
 
 ### Problems Addressed
+
 - CreateReceptionForm (Admin) 1093 líneas con lógica inline (P1: dividir UI y lógica)
 
 ### Changes Applied
+
 - **useAdminReceptionForm.js** (nuevo): Hook con form (react-hook-form), modo automático/manual, temporalPallets, usePriceSynchronization, PalletDialog state, mode-change dialog, handleCreate (líneas y palets), handleSaveClick, keyboard shortcut Ctrl+S
 - **CreateReceptionForm**: Refactorizado para usar el hook; componente reducido a ~580 líneas (UI pura)
 
 ### Verification Results
+
 - ✅ Build exitoso
 - ✅ Tests existentes pasan
 
 ### Gap to 10/10
+
 - Tests unitarios para useAdminReceptionForm
 - Posible extracción de AutomaticLinesTable y ManualPalletsTable como subcomponentes
 
@@ -372,21 +426,26 @@ Tipos en src/types/catalog.ts. Servicios domain en TS: transportService, incoter
 **Rating antes: 7/10** | **Rating después: 7.5/10**
 
 ### Problems Addressed
+
 - OperarioCreateReceptionForm ~928 líneas con lógica inline (P1: dividir UI y lógica)
 
 ### Changes Applied
+
 - **useOperarioReceptionForm.js** (nuevo): Hook con form (react-hook-form), steps, species/supplier/product options, line dialog state, handleCreate, goNext/goBack, handleLineDialogNext
 - **OperarioCreateReceptionForm**: Refactorizado para usar el hook; componente reducido a ~450 líneas (UI pura)
 - Exportados: STEPS, getQuickPickProductIds, pushProductToHistory
 
 ### Verification Results
+
 - ✅ Build exitoso
 - ✅ Tests existentes pasan (excepto fallo preexistente en home/page.test.js)
 
 ### Gap to 10/10
+
 - CreateReceptionForm (Admin) 1093 líneas: refactor pendiente (modo automático/manual, usePriceSynchronization, dos flujos líneas vs palets)
 
 ### Next Steps
+
 Sub-bloque 5 (opcional): dividir CreateReceptionForm (Admin) siguiendo patrón similar
 
 ---
@@ -398,12 +457,14 @@ Sub-bloque 5 (opcional): dividir CreateReceptionForm (Admin) siguiendo patrón s
 **Rating antes: 4/10** | **Rating después: 5/10**
 
 ### Problems Addressed
+
 - Dashboard Stock cards usando useEffect + useState (P1: migrar a React Query)
 - ScrollShadow de NextUI en StoresManager (P1: design system)
 - console.log de debug en StoresManager
 - Sin tests para storeService (P0)
 
 ### Changes Applied
+
 - Creación de useStockStats.js con useTotalStockStats, useStockBySpeciesStats, useStockByProductsStats
 - Migración de CurrentStockCard, StockBySpeciesCard, StockByProductsCard a React Query
 - Sustitución de ScrollShadow por div con overflow-x-auto (shadcn-native)
@@ -411,23 +472,27 @@ Sub-bloque 5 (opcional): dividir CreateReceptionForm (Admin) siguiendo patrón s
 - Tests unitarios para storeService (7 tests)
 
 ### Verification Results
+
 - ✅ storeService tests: 7 tests passed
 - ✅ Build exitoso
 - ✅ Sin linter errors en archivos modificados
 - ✅ No imports de @nextui-org en StoresManager
 
 ### Gap to 10/10
+
 - useStore 766 líneas (dividir), CreateReceptionForm 1093 líneas, OperarioCreateReceptionForm 928 líneas
 - Store 244 líneas (P1)
 - Migrar useStores a React Query, TenantContext, tests para hooks
 
 ### Rollback Plan
+
 ```bash
 git revert <commit-hash>
 npm run build
 ```
 
 ### Next Steps
+
 Sub-bloque 2: dividir useStore, migrar useStores a React Query
 
 ---
@@ -439,18 +504,22 @@ Sub-bloque 2: dividir useStore, migrar useStores a React Query
 **Rating antes: 6/10** | **Rating después: 7/10**
 
 ### Problems Addressed
+
 - useStore ~530 líneas (P0/P1: componente/hook muy grande)
 
 ### Changes Applied
+
 - **useStorePositions.js** (nuevo): Filtros, filteredPositionsMap, speciesSummary, unlocatedPallets, isPositionRelevant/Filled, getPositionPallets, changePalletsPosition, removePalletFromPosition
 - **useStoreDialogs.js** (nuevo): Estado y handlers de todos los diálogos/slideovers (Position, Unallocated, AddElement, Pallet, Label, MovePallet, MoveMultiple)
 - **useStore.js**: Orquestador que compone useStoreData + useStorePositions + useStoreDialogs (~105 líneas)
 
 ### Verification Results
+
 - ✅ Build exitoso
 - ✅ Tests pasan
 
 ### Gap to 10/10
+
 - CreateReceptionForm 1093 líneas, OperarioCreateReceptionForm 928 líneas
 
 ---
@@ -462,11 +531,13 @@ Sub-bloque 2: dividir useStore, migrar useStores a React Query
 **Rating antes: 5/10** | **Rating después: 6/10**
 
 ### Problems Addressed
+
 - useStore 766 líneas con fetch manual (P0)
 - useStores con useEffect + useState (P1: migrar a React Query)
 - console.log/commented code en useStore
 
 ### Changes Applied
+
 - **useStoreData.js** (nuevo): Hook con useQuery para getStore/getRegisteredPallets
 - **useStore**: Usa useStoreData; eliminado useEffect de fetch y logs de debug
 - **useStores**: Migrado a useInfiniteQuery; ghost store + paginación
@@ -474,15 +545,18 @@ Sub-bloque 2: dividir useStore, migrar useStores a React Query
 - **useStores.test.js** (nuevo): 3 tests (stores con ghost, error, loadMore)
 
 ### Verification Results
+
 - ✅ Build exitoso
 - ✅ useStores + storeService tests: 10 tests passed
 - ✅ Sin linter errors
 
 ### Gap to 10/10
+
 - useStore sigue ~700 líneas (extraer useStoreDialogs, useStorePositions en sub-bloque 3)
 - CreateReceptionForm 1093 líneas, OperarioCreateReceptionForm 928 líneas
 
 ### Rollback Plan
+
 ```bash
 git revert <commit-hash>
 ```
@@ -496,29 +570,34 @@ git revert <commit-hash>
 **Rating antes: 4/10** | **Rating después: 5,5/10**
 
 ### Problems Addressed
+
 - P0: authService en JavaScript sin tipos (requisito TypeScript en servicios)
 - P0: Sin tests para authService ni authConfig (módulo crítico)
 - Respuestas de API de auth sin interfaces reutilizables
 
 ### Changes Applied
+
 1. **Tipos** (`src/types/auth.ts`): RequestAccessResponse, AuthUser, VerifyAuthResponse, GetCurrentUserResponse, AuthApiError. Alineados con next-auth y respuestas del backend (snake_case donde aplica).
 2. **authService.ts**: Migrado desde authService.js; firmas públicas idénticas; parámetros y retornos tipados. Eliminado authService.js. Ajustes de tipos para getCurrentUser (data wrapper vs raíz) y para err.data (cast vía unknown).
 3. **Tests authService** (`src/__tests__/services/authService.test.ts`): 16 tests; mock de fetchWithTenant y getSession. requestAccess (éxito, 429, error backend), requestOtp (éxito, error), verifyOtp (éxito, error con status/data), verifyMagicLinkToken (éxito, 429), logout (sin sesión, con token, backend falla), getCurrentUser (data wrapper, raíz, sin sesión, not ok).
 4. **Tests authConfig** (`src/__tests__/configs/authConfig.test.ts`): 11 tests; isAuthError (null/undefined, UNAUTHENTICATED, mensajes, case insensitive), isAuthStatusCode (401/403, otros), buildLoginUrl (sin path, con from, query string). vi.stubGlobal('window') para buildLoginUrl en Node.
 
 ### Verification Results
+
 - ✅ Build exitoso: `npm run build`
 - ✅ 27 tests Auth pasan: `npm run test:run -- src/__tests__/services/authService.test.ts src/__tests__/configs/authConfig.test.ts`
 - ✅ Sin cambios en UI ni en comportamiento; consumidores (LoginPage, auth/verify, AdminLayoutClient) sin modificar
 - ⚠️ home/page.test.js sigue fallando (preexistente); 2 tests authService corregidos para reflejar prioridad message sobre userMessage
 
 ### Gap to 10/10 (obligatorio si Rating después < 9)
+
 - Sub-bloque 2: Dividir LoginPage en subcomponentes/hooks (<150 líneas)
 - Sub-bloque 3: Zod + react-hook-form en login/verify
 - Sub-bloque 4: Migrar a TS resto del bloque (middleware, NextAuth route, componentes)
 - P2: getAuthToken logs; decisión ProtectedRoute; logs middleware
 
 ### Rollback Plan
+
 ```bash
 git revert <commit-hash>
 # Restaurar src/services/authService.js desde commit anterior
@@ -528,6 +607,7 @@ npm run test:run
 ```
 
 ### Next Steps
+
 - Usuario puede indicar siguiente sub-bloque del bloque Auth (p. ej. dividir LoginPage) o cambiar de módulo
 
 ---
@@ -539,10 +619,12 @@ npm run test:run
 **Rating antes: 5,5/10** | **Rating después: 6,5/10**
 
 ### Problems Addressed
+
 - P0: LoginPage ~610 líneas (bloqueante >200)
 - Mantenibilidad y pruebas del flujo de login
 
 ### Changes Applied
+
 1. **Util** `src/utils/loginUtils.js`: safeRedirectFrom(from), getRedirectUrl(user, searchString).
 2. **useLoginTenant** (`src/hooks/useLoginTenant.js`): useEffect de comprobación de tenant, branding y demo; retorna tenantChecked, tenantActive, brandingImageUrl, isDemo, demoEmail.
 3. **useLoginActions** (`src/hooks/useLoginActions.js`): handleAcceder, handleVerifyOtp, backToEmail, handleOtpPaste y efecto de rellenar OTP desde portapapeles.
@@ -552,17 +634,20 @@ npm run test:run
 7. **LoginPage** (`src/components/LoginPage/index.js`): orquesta hooks y subcomponentes; **108 líneas** (antes ~610). Todos los archivos &lt;150 líneas.
 
 ### Verification Results
+
 - ✅ Build exitoso: `npm run build`
 - ✅ 27 tests Auth pasan
 - ✅ Comportamiento preservado (misma UI y flujos; sin cambios de diseño)
 - Líneas: index 108, LoginWelcomeStep 122, LoginFormContent 119, LoginFormDesktop 115, LoginFormMobile 111, useLoginActions 133, useLoginTenant 56, loginUtils 40
 
 ### Gap to 10/10 (obligatorio si Rating después < 9)
+
 - Sub-bloque 3: Zod + react-hook-form en login/verify
 - Sub-bloque 4: Migrar a TS resto del bloque (middleware, NextAuth route, componentes Auth)
 - P2: getAuthToken logs; decisión ProtectedRoute; logs middleware
 
 ### Rollback Plan
+
 ```bash
 git revert <commit-hash>
 # Restaurar src/components/LoginPage/index.js desde commit anterior (monolito)
@@ -571,6 +656,7 @@ npm run build
 ```
 
 ### Next Steps
+
 - Siguiente sub-bloque Auth: Zod + react-hook-form en login, o cambiar de módulo
 
 ---
@@ -582,10 +668,12 @@ npm run build
 **Rating antes: 6,5/10** | **Rating después: 7,5/10**
 
 ### Problems Addressed
+
 - P1: Formularios de login sin validación cliente con Zod (solo backend)
 - Alineación con stack del proyecto (react-hook-form + zod en todos los formularios)
 
 ### Changes Applied
+
 1. **Schemas** `src/schemas/loginSchema.js`: loginEmailSchema (email requerido, formato email), loginOtpSchema (code 6 dígitos, solo números), magicLinkTokenSchema (string no vacío para verify).
 2. **LoginPage**: Dos useForm con zodResolver(loginEmailSchema) y zodResolver(loginOtpSchema). emailForm.handleSubmit(actions.handleAcceder) y otpForm.handleSubmit(actions.handleVerifyOtp). setCodeValue = otpForm.setValue('code') para paste/clipboard. handleBackToEmail resetea otpForm.
 3. **useLoginActions**: Acepta datos del form: handleAcceder(data) con data.email, handleVerifyOtp(data) con data.code (email desde closure). Parámetro setCodeValue en lugar de setCode para rellenar OTP desde portapapeles/pegado.
@@ -594,15 +682,18 @@ npm run build
 6. **auth/verify**: Validación del token con magicLinkTokenSchema.safeParse antes de llamar a verifyMagicLinkToken. Uso de getRedirectUrl desde loginUtils.
 
 ### Verification Results
+
 - ✅ Build exitoso: `npm run build`
 - ✅ 27 tests Auth pasan
 - ✅ Validación cliente: email vacío/inválido y código distinto de 6 dígitos muestran error sin llamar al backend
 
 ### Gap to 10/10 (obligatorio si Rating después < 9)
+
 - Sub-bloque 4: Migrar a TS resto del bloque (middleware, NextAuth route, componentes Auth)
 - P2: getAuthToken logs; decisión ProtectedRoute; logs middleware
 
 ### Rollback Plan
+
 ```bash
 git revert <commit-hash>
 # Restaurar useLoginActions, LoginFormContent, LoginFormDesktop, LoginFormMobile, LoginPage index, auth/verify/page
@@ -611,6 +702,7 @@ npm run build
 ```
 
 ### Next Steps
+
 - Sub-bloque 4 Auth (TS en middleware/NextAuth/componentes) u otro módulo
 
 ---
@@ -622,10 +714,12 @@ npm run build
 **Rating antes: 7,5/10** | **Rating después: 8/10**
 
 ### Problems Addressed
+
 - P0: Middleware, ruta NextAuth, configs y lib/auth en JavaScript
 - Componentes Auth (AdminRouteProtection, ProtectedRoute, LogoutDialog, LogoutContext, AuthErrorInterceptor, LoginPage, auth/verify) en .js/.jsx
 
 ### Changes Applied
+
 1. **Configs** (ya en TS): authConfig.ts (AUTH_ERROR_CONFIG, isAuthError, isAuthStatusCode, buildLoginUrl, AuthErrorLike), roleConfig.ts (roleConfig, RoleKey). Eliminados .js.
 2. **Middleware** `src/middleware.ts`: NextRequest, JWTToken, getToken, fetchWithTenant con req.headers; lib/fetchWithTenant.d.ts para tercer parámetro Headers | null.
 3. **NextAuth** `src/app/api/auth/[...nextauth]/route.ts`: NextAuthOptions, User, Session; authorize retorna User con id; jwt/session callbacks con retornos tipados (null as unknown as JWT/Session donde aplica).
@@ -634,15 +728,18 @@ npm run build
 6. **Tipos para UI en JSX**: alert.d.ts, card.d.ts, button.d.ts (componentes ui); RotatingText/index.d.ts; casts locales en LoginFormContent (Label, Input, Button, InputOTP/Group/Slot) y en auth/verify (Button asChild). AuthErrorInterceptor: AuthErrorLike en isAuthError(error as AuthErrorLike | null).
 
 ### Verification Results
+
 - ✅ Build exitoso: `npm run build`
 - ✅ 27 tests Auth pasan: `npm run test:run -- auth`
 - ✅ Sin cambios de comportamiento; imports sin extensión resuelven a .ts/.tsx
 
 ### Gap to 10/10 (obligatorio si Rating después < 9)
+
 - ~~P2: getAuthToken logs; decisión ProtectedRoute; logs middleware~~ → ver entrada Mejoras P2
 - Opcional: migrar useLoginTenant/useLoginActions y loginSchema a TS; migrar fetchWithTenant.js a TS
 
 ### Rollback Plan
+
 ```bash
 git revert <commit-hash>
 # Restaurar archivos .js/.jsx eliminados desde commit anterior
@@ -652,6 +749,7 @@ npm run test:run -- auth
 ```
 
 ### Next Steps
+
 - Mejoras P2 del bloque Auth (getAuthToken, ProtectedRoute, logs middleware) → ver entrada siguiente
 
 ---
@@ -663,20 +761,24 @@ npm run test:run -- auth
 **Rating**: 8/10 (sin cambio)
 
 ### Problems Addressed
+
 - P2: Revisar getAuthToken (quitar o condicionar console.log en producción)
 - P2: Decidir uso de ProtectedRoute (documentar si no usado)
 - P2: Reducir logs del middleware en producción (nivel configurable)
 
 ### Changes Applied
+
 1. **getAuthToken** (`src/lib/auth/getAuthToken.ts`): No había console.log en el código actual. Añadidos JSDoc: contexto de serverTokenContext y que el helper no hace log para evitar ruido en producción; el caller puede registrar errores si lo necesita.
 2. **ProtectedRoute** (`src/components/ProtectedRoute/index.tsx`): Añadido JSDoc explicando que es protección genérica por rol (allowedRoles), que actualmente no está usado por ninguna ruta (/admin usa AdminRouteProtection) y que se puede usar en layouts/páginas que necesiten restricción por allowedRoles sin la lógica de operario. Decisión: mantener el componente como código disponible, documentado.
 3. **middleware** (`src/middleware.ts`): Uso del logger del proyecto (`@/lib/logger`): el mensaje "Token inválido o sesión cancelada" (status, tenant, pathname, errorText) pasa a `devLog` (solo desarrollo); los dos console.error en catch (error al obtener token, error al validar con backend) pasan a `logError` (warn/error se mantienen en producción según el logger). En producción se reduce el ruido de logs de validación; se mantienen los errores reales.
 
 ### Verification Results
+
 - ✅ Build exitoso: `npm run build`
 - ✅ 27 tests Auth pasan: `npm run test:run -- auth`
 
 ### Next Steps
+
 - Mejoras opcionales: useLoginTenant/useLoginActions y loginSchema a TS → ver entrada siguiente
 
 ---
@@ -688,6 +790,7 @@ npm run test:run -- auth
 **Rating**: 8/10 (sin cambio)
 
 ### Cambios realizados
+
 1. **loginSchema.ts**: Migrado desde loginSchema.js; exportados tipos `LoginEmailForm` y `LoginOtpForm` (z.infer). Eliminado loginSchema.js.
 2. **useLoginTenant.ts**: Migrado desde useLoginTenant.js; interfaz `TenantApiResponse` para la respuesta de la API; estado `demoEmail` tipado como `string | null`. Eliminado useLoginTenant.js.
 3. **useLoginActions.ts**: Migrado desde useLoginActions.js; interfaces `UseLoginActionsParams`, `AccederData`, `VerifyOtpData`, `AuthErrorLike`; tipo `ClipboardEvent` para handleOtpPaste. Eliminado useLoginActions.js.
@@ -695,6 +798,7 @@ npm run test:run -- auth
 5. **Tipos desde schema**: LoginFormContent, LoginFormDesktop y LoginFormMobile usan `LoginEmailForm` y `LoginOtpForm` importados de `@/schemas/loginSchema` en lugar de interfaces locales duplicadas; una sola fuente de verdad para las formas de login.
 
 ### Verificación
+
 - ✅ Build: `npm run build`
 - ✅ Tests Auth: 27 pasan (`npm run test:run -- auth`)
 
@@ -707,10 +811,12 @@ npm run test:run -- auth
 **Rating antes: 4/10** | **Rating después: 4.5/10**
 
 ### Problems Addressed
+
 - P0: Sin tests para orderService (requisito CORE)
 - Riesgo de regresión al refactorizar servicios críticos
 
 ### Changes Applied
+
 1. **Vitest setup**:
    - Añadido Vitest, jsdom, @vitejs/plugin-react a devDependencies
    - Creado `vitest.config.js` con path aliases (@/, @lib/), environment: node (evita conflicto ESM con @csstools/css-calc), pool: threads, server.deps.external para paquetes problemáticos
@@ -722,11 +828,13 @@ npm run test:run -- auth
    - Cobertura: casos exitosos, errores, token faltante, estructuras de respuesta (data wrapper, array directo)
 
 ### Verification Results
+
 - ✅ 14/14 tests orderService pasan: `npm run test:run -- src/__tests__/services/orderService.test.js`
 - ✅ Sin cambios en UI ni comportamiento del servicio
 - ⚠️ Otros tests: home/page.test.js (parse error JSX), receptionCalculations (1 assertion fallida preexistente) — fuera de scope
 
 ### Gap to 10/10 (obligatorio si Rating después < 9)
+
 - Sub-bloque 2: Migrar data fetching a React Query
 - Sub-bloque 3: Extraer StatusBadge, reducir Order
 - Sub-bloque 4: Dividir OrderPallets
@@ -734,6 +842,7 @@ npm run test:run -- auth
 - Sub-bloque 6: TypeScript en servicios
 
 ### Rollback Plan
+
 ```bash
 git revert <commit-hash>
 npm install
@@ -741,6 +850,7 @@ npm run test:run
 ```
 
 ### Next Steps
+
 - Propuesta: Sub-bloque 2 (React Query) o Sub-bloque 3 (StatusBadge)
 - Usuario indica siguiente sub-bloque a ejecutar
 
@@ -753,10 +863,12 @@ npm run test:run
 **Rating antes: 4.5/10** | **Rating después: 5.5/10**
 
 ### Problems Addressed
+
 - P1: Data fetching manual (useEffect + useState) sin caché ni invalidación
 - Inconsistencia de datos entre lista y detalle
 
 ### Changes Applied
+
 1. **QueryClientProvider** en ClientLayout; queryClient singleton en `src/lib/queryClient.js`
 2. **useOrders** (`src/hooks/useOrders.js`): useQuery para getActiveOrders; queryKey ['orders', tenantId]; getCurrentTenant para tenant-aware cache
 3. **useOrder** (refactor): useQuery para getOrder; queryKey ['order', orderId]; updateOrderCache para mutaciones; elimina loadingPromises Map
@@ -764,18 +876,21 @@ npm run test:run
 5. **Invalidación**: al crear pedido (handleOnCreatedOrder) y al actualizar (handleOnChange(null))
 
 ### Verification Results
+
 - ✅ Build exitoso (Next.js 16)
 - ✅ 14/14 tests orderService pasan
 - ✅ Sin errores de linter
 - ✅ Comportamiento preservado: lista, detalle, crear, actualizar
 
 ### Gap to 10/10 (obligatorio si Rating después < 9)
+
 - Sub-bloque 3: Extraer StatusBadge, reducir Order
 - Sub-bloque 4: Dividir OrderPallets
 - Sub-bloque 5: Dividir OrderCustomerHistory
 - Sub-bloque 6: TypeScript en servicios
 
 ### Rollback Plan
+
 ```bash
 git revert <commit-hash>
 npm install
@@ -784,6 +899,7 @@ npm run test:run
 ```
 
 ### Next Steps
+
 - Usuario indica siguiente sub-bloque (3, 4, 5 o 6)
 
 ---
@@ -795,30 +911,36 @@ npm run test:run
 **Rating antes: 5.5/10** | **Rating después: 5.5/10**
 
 ### Problems Addressed
+
 - P0 parcial: Badge inline en Order; duplicación en OrderCard
 
 ### Changes Applied
+
 1. **StatusBadge** (`src/components/Admin/OrdersManager/StatusBadge.jsx`): componente reutilizable extraído; props color, label
 2. **Order** (`Order/index.js`): importa StatusBadge; eliminada definición inline (~30 líneas)
 3. **OrderCard** (`OrdersList/OrderCard/index.js`): importa StatusBadge; eliminada definición duplicada (~35 líneas)
 
 ### Verification Results
+
 - ✅ Build exitoso
 - ✅ Sin errores de linter
 - ✅ Comportamiento preservado (Order y OrderCard usan StatusBadge)
 
 ### Gap to 10/10 (obligatorio si Rating después < 9)
+
 - Sub-bloque 4: Dividir OrderPallets
 - Sub-bloque 5: Dividir OrderCustomerHistory
 - Sub-bloque 6: TypeScript en servicios
 - Order sigue >200 líneas; reducción de StatusBadge es incremental
 
 ### Rollback Plan
+
 ```bash
 git revert <commit-hash>
 ```
 
 ### Next Steps
+
 - Usuario indica siguiente sub-bloque (4, 5 o 6)
 
 ---
@@ -830,10 +952,12 @@ git revert <commit-hash>
 **Rating antes: 5.5/10** | **Rating después: 5.5/10** (incremental)
 
 ### Problems Addressed
+
 - P1: OrderPallets ~1475 líneas, monolítico
 - Duplicación de UI móvil/desktop; diálogos inline
 
 ### Changes Applied
+
 1. **Dialogs extraídos**:
    - `StoreSelectionDialog.jsx` (54 líneas) — selección de almacén
    - `ConfirmActionDialog.jsx` (59 líneas) — confirmar eliminar/desvincular
@@ -849,21 +973,25 @@ git revert <commit-hash>
 4. **Fix test**: receptionCalculations — expectativa corregida (49 vs 50) según implementación
 
 ### Verification Results
+
 - ✅ Build exitoso (Next.js 16)
 - ✅ Tests pasan (incl. receptionCalculations corregido)
 - ✅ Sin errores de linter
 - ✅ Comportamiento preservado
 
 ### Gap to 10/10 (obligatorio si Rating después < 9)
+
 - Sub-bloque 5: Dividir OrderCustomerHistory (~1225 líneas)
 - Sub-bloque 6: TypeScript en servicios
 
 ### Rollback Plan
+
 ```bash
 git revert <commit-hash>
 ```
 
 ### Next Steps
+
 - Sub-bloque 5: OrderCustomerHistory (extraer secciones, diálogos, tablas)
 
 ---
@@ -875,9 +1003,11 @@ git revert <commit-hash>
 **Rating antes: 5.5/10** | **Rating después: 5.5/10** (incremental)
 
 ### Problems Addressed
+
 - P1: OrderCustomerHistory ~1225 líneas, lógica de datos mezclada con UI
 
 ### Changes Applied
+
 1. **useCustomerHistory** (`src/hooks/useCustomerHistory.js`, 282 líneas):
    - Data fetching (getCustomerOrderHistory)
    - Date range calculation (getDateRange)
@@ -889,20 +1019,24 @@ git revert <commit-hash>
 2. **OrderCustomerHistory/index.js**: de ~1225 a 966 líneas (−259 líneas)
 
 ### Verification Results
+
 - ✅ Build exitoso (Next.js 16)
 - ✅ Tests orderService y receptionCalculations pasan
 - ✅ Comportamiento preservado (historial, filtros, tendencias, gráficos)
 
 ### Gap to 10/10 (obligatorio si Rating después < 9)
+
 - Sub-bloque 6: TypeScript en servicios
 - OrderCustomerHistory aún ~966 líneas; posibles extracciones: GeneralMetricsGrid, DateFilterTabs, ProductHistoryItem
 
 ### Rollback Plan
+
 ```bash
 git revert <commit-hash>
 ```
 
 ### Next Steps
+
 - Sub-bloque 6: TypeScript en servicios (opcional)
 - O continuar reduciendo OrderCustomerHistory con componentes extraídos
 
@@ -915,13 +1049,15 @@ git revert <commit-hash>
 **Rating antes: 5.5/10** | **Rating después: 6/10**
 
 ### Problems Addressed
+
 - Sin TypeScript en el proyecto
 - orderService en JS sin tipos estáticos
 
 ### Changes Applied
+
 1. **TypeScript setup**:
    - `npm install -D typescript @types/react @types/node`
-   - `tsconfig.json` con allowJs, strict, paths (@/*, @lib/*)
+   - `tsconfig.json` con allowJs, strict, paths (@/_, @lib/_)
    - `next-env.d.ts` para tipos Next.js
 
 2. **orderService.ts** (migración de orderService.js):
@@ -932,16 +1068,19 @@ git revert <commit-hash>
 3. **orderService.js eliminado** — orderService.ts es la fuente única
 
 ### Verification Results
+
 - ✅ Build exitoso (Next.js 16 + TypeScript)
 - ✅ 14/14 tests orderService pasan
 - ✅ Imports existentes (@/services/orderService) resuelven a .ts sin cambios
 
 ### Gap to 10/10 (obligatorio si Rating después < 9)
+
 - Migrar más servicios a TypeScript (customerService, palletService, etc.)
 - Extender tipos NextAuth para accessToken en Session
 - OrderCustomerHistory aún ~966 líneas
 
 ### Rollback Plan
+
 ```bash
 git revert <commit-hash>
 npm uninstall typescript @types/react @types/node
@@ -949,6 +1088,7 @@ npm uninstall typescript @types/react @types/node
 ```
 
 ### Next Steps
+
 - Migrar customerService, palletService a TypeScript
 - Declarar tipos NextAuth extendidos (auth.d.ts)
 
@@ -961,10 +1101,12 @@ npm uninstall typescript @types/react @types/node
 **Rating antes: 6/10** | **Rating después: 6/10** (incremental)
 
 ### Problems Addressed
+
 - Session.user.accessToken sin tipos (requería type assertion en orderService)
 - customerService en JS sin tipos estáticos
 
 ### Changes Applied
+
 1. **NextAuth types** (`src/types/next-auth.d.ts`):
    - Extensión de Session.user: accessToken, role, assignedStoreId, companyName, companyLogoUrl
    - Extensión de User: accessToken, role, assignedStoreId, etc.
@@ -978,21 +1120,25 @@ npm uninstall typescript @types/react @types/node
 3. **customerService.js eliminado**
 
 ### Verification Results
+
 - ✅ Build exitoso
 - ✅ Tests orderService pasan
 - ✅ Imports @/services/customerService resuelven a .ts
 
 ### Gap to 10/10
+
 - Migrar palletService, otros servicios a TypeScript
 - OrderCustomerHistory ~966 líneas
 
 ### Rollback Plan
+
 ```bash
 git revert <commit-hash>
 # Restaurar customerService.js
 ```
 
 ### Next Steps
+
 - Migrar palletService a TypeScript
 - Continuar reduciendo OrderCustomerHistory
 
@@ -1005,9 +1151,11 @@ git revert <commit-hash>
 **Rating antes: 6/10** | **Rating después: 6/10** (incremental)
 
 ### Problems Addressed
+
 - palletService en JS sin tipos estáticos
 
 ### Changes Applied
+
 1. **palletService.ts** (migración de palletService.js):
    - Tipos: AuthToken, PalletPayload, AvailablePalletsParams, AvailablePalletsResponse, LinkPalletPayload
    - Funciones tipadas: getPallet, updatePallet, createPallet, assignPalletsToPosition, movePalletToStore, moveMultiplePalletsToStore, removePalletPosition, deletePallet, unlinkPalletFromOrder, unlinkPalletsFromOrders, searchPalletsByLot, getAvailablePalletsForOrder, linkPalletToOrder, linkPalletsToOrders
@@ -1015,21 +1163,25 @@ git revert <commit-hash>
 2. **palletService.js eliminado**
 
 ### Verification Results
+
 - ✅ Build exitoso
 - ✅ Tests orderService pasan
 - ✅ Imports @/services/palletService resuelven a .ts
 
 ### Gap to 10/10
+
 - Migrar más servicios a TypeScript (productService, storeService, etc.)
 - OrderCustomerHistory ~966 líneas
 
 ### Rollback Plan
+
 ```bash
 git revert <commit-hash>
 # Restaurar palletService.js
 ```
 
 ### Next Steps
+
 - Migrar productService, storeService a TypeScript
 - Continuar reduciendo OrderCustomerHistory
 
@@ -1042,9 +1194,11 @@ git revert <commit-hash>
 **Rating antes: 6/10** | **Rating después: 6/10** (incremental)
 
 ### Problems Addressed
+
 - productService y storeService en JS sin tipos estáticos
 
 ### Changes Applied
+
 1. **productService.ts** (migración de productService.js):
    - getProductOptions(token): Promise<unknown>
 
@@ -1056,20 +1210,24 @@ git revert <commit-hash>
 3. **productService.js y storeService.js eliminados**
 
 ### Verification Results
+
 - ✅ Build exitoso
 - ✅ Imports @/services/productService y @/services/storeService resuelven a .ts
 
 ### Gap to 10/10
+
 - Migrar más servicios a TypeScript
 - OrderCustomerHistory ~966 líneas
 
 ### Rollback Plan
+
 ```bash
 git revert <commit-hash>
 # Restaurar productService.js y storeService.js
 ```
 
 ### Next Steps
+
 - Continuar migrando servicios a TypeScript
 - Reducir OrderCustomerHistory con componentes extraídos
 
@@ -1082,11 +1240,13 @@ git revert <commit-hash>
 **Rating antes: 6/10** | **Rating después: 6.5/10**
 
 ### Problems Addressed
+
 - OrderCustomerHistory ~966 líneas, componente monolítico
 - UI inline difícil de mantener y testear
 - Duplicación de lógica entre vista móvil y desktop
 
 ### Changes Applied
+
 1. **Componentes extraídos**:
    - `GeneralMetricsGrid.jsx` — grid de métricas (Total Pedidos, Valor Total, Frecuencia, Último Pedido)
    - `DateFilterTabs.jsx` — tabs de filtro por fecha (Mes, Trimestre, año actual/pasado, selector de años)
@@ -1105,17 +1265,20 @@ git revert <commit-hash>
    - `OrderCustomerHistory/utils/` — transformaciones puras
 
 ### Verification Results
+
 - ✅ Build exitoso (Next.js 16)
 - ✅ Sin errores de linter
 - ✅ Comportamiento preservado (historial, filtros, tendencias, gráficos móvil/desktop)
 
 ### Gap to 10/10 (obligatorio si Rating después < 9)
+
 - Order/index.js ~647 líneas (>200)
 - OrderPallets ~903 líneas
 - Migrar componentes OrderCustomerHistory a TypeScript (opcional)
 - Formularios + Zod (validación cliente)
 
 ### Rollback Plan
+
 ```bash
 git revert <commit-hash>
 # Restaurar OrderCustomerHistory/index.js monolítico
@@ -1123,6 +1286,7 @@ git revert <commit-hash>
 ```
 
 ### Next Steps
+
 - Reducir Order (~647 líneas) si prioridad
 - O migrar componentes OrderCustomerHistory a TypeScript
 - O pasar a otro bloque del CORE (Productos, Clientes, Stock)
@@ -1136,9 +1300,11 @@ git revert <commit-hash>
 **Plan**: docs/plan-ventas-9-10.md
 
 ### Problems Addressed
+
 - Configuración y helpers inline en Order (~40 líneas)
 
 ### Changes Applied
+
 1. **config/sectionsConfig.js**:
    - SECTIONS_CONFIG (componentes, iconos, lazy loading)
    - PRIMARY_SECTION_IDS_MOBILE
@@ -1149,17 +1315,20 @@ git revert <commit-hash>
 3. **Order/index.js**: eliminadas ~40 líneas (imports config y utils)
 
 ### Verification Results
+
 - ✅ Build exitoso (Next.js 16)
 - ✅ Sin errores de linter
 - ✅ Comportamiento preservado
 
 ### Rollback Plan
+
 ```bash
 git revert <commit-hash>
 # Eliminar config/ y utils/, restaurar inline en Order
 ```
 
 ### Next Steps
+
 - Sub-bloque 1.2: Extraer OrderHeaderMobile
 
 ---
@@ -1171,9 +1340,11 @@ git revert <commit-hash>
 **Plan**: docs/plan-ventas-9-10.md
 
 ### Problems Addressed
+
 - Header móvil inline en Order (~55 líneas)
 
 ### Changes Applied
+
 1. **Order/components/OrderHeaderMobile.jsx**:
    - Botón back + título (#orderId) + menú ⋮
    - Secciones overflow, Editar pedido, Imprimir
@@ -1182,17 +1353,20 @@ git revert <commit-hash>
 2. **Order/index.js**: reemplazado header inline por `<OrderHeaderMobile />`
 
 ### Verification Results
+
 - ✅ Build exitoso (Next.js 16)
 - ✅ Sin errores de linter
 - ✅ Comportamiento preservado
 
 ### Rollback Plan
+
 ```bash
 git revert <commit-hash>
 # Eliminar OrderHeaderMobile.jsx, restaurar inline en Order
 ```
 
 ### Next Steps
+
 - Sub-bloque 1.3: Extraer OrderSummaryMobile
 
 ---
@@ -1204,9 +1378,11 @@ git revert <commit-hash>
 **Plan**: docs/plan-ventas-9-10.md
 
 ### Problems Addressed
+
 - Cabecera móvil centrada inline en Order (~75 líneas)
 
 ### Changes Applied
+
 1. **Order/components/OrderSummaryMobile.jsx**:
    - Cliente, transporte, badge estado, fecha carga, temperatura, palets, importe
    - Dropdowns de estado y temperatura incluidos
@@ -1215,17 +1391,20 @@ git revert <commit-hash>
 2. **Order/index.js**: reemplazado bloque inline por `<OrderSummaryMobile />`
 
 ### Verification Results
+
 - ✅ Build exitoso (Next.js 16)
 - ✅ Sin errores de linter
 - ✅ Comportamiento preservado
 
 ### Rollback Plan
+
 ```bash
 git revert <commit-hash>
 # Eliminar OrderSummaryMobile.jsx, restaurar inline en Order
 ```
 
 ### Next Steps
+
 - Sub-bloque 1.4: Extraer OrderSectionList
 
 ---
@@ -1237,9 +1416,11 @@ git revert <commit-hash>
 **Plan**: docs/plan-ventas-9-10.md
 
 ### Problems Addressed
+
 - Lista de secciones móvil inline en Order (~35 líneas)
 
 ### Changes Applied
+
 1. **Order/components/OrderSectionList.jsx**:
    - ScrollArea + Card con botones de secciones primarias (Previsión, Producción, Envío de Documentos)
    - Props: onSelectSection, hasSafeAreaPadding
@@ -1248,17 +1429,20 @@ git revert <commit-hash>
    - Eliminado import ChevronRight (no usado)
 
 ### Verification Results
+
 - ✅ Build exitoso (Next.js 16)
 - ✅ Sin errores de linter
 - ✅ Comportamiento preservado
 
 ### Rollback Plan
+
 ```bash
 git revert <commit-hash>
 # Eliminar OrderSectionList.jsx, restaurar inline en Order
 ```
 
 ### Next Steps
+
 - Sub-bloque 1.5: Extraer OrderStatusDropdown y OrderTemperatureDropdown (desktop)
 
 ---
@@ -1270,9 +1454,11 @@ git revert <commit-hash>
 **Plan**: docs/plan-ventas-9-10.md
 
 ### Problems Addressed
+
 - renderStatusBadge y dropdown temperatura inline en Order (~60 líneas)
 
 ### Changes Applied
+
 1. **Order/components/OrderStatusDropdown.jsx**:
    - StatusBadge + DropdownMenu (En producción, Terminado, Incidencia)
    - Props: status, onStatusChange
@@ -1287,17 +1473,20 @@ git revert <commit-hash>
    - Eliminados imports: StatusBadge, ThermometerSnowflake
 
 ### Verification Results
+
 - ✅ Build exitoso (Next.js 16)
 - ✅ Sin errores de linter
 - ✅ Comportamiento preservado
 
 ### Rollback Plan
+
 ```bash
 git revert <commit-hash>
 # Eliminar OrderStatusDropdown.jsx, OrderTemperatureDropdown.jsx, restaurar inline en Order
 ```
 
 ### Next Steps
+
 - Sub-bloque 1.6: Extraer OrderHeaderDesktop y OrderTabsDesktop
 - O verificar líneas Order y pasar a Fase 2 (OrderPallets)
 
@@ -1310,9 +1499,11 @@ git revert <commit-hash>
 **Plan**: docs/plan-ventas-9-10.md
 
 ### Problems Addressed
+
 - Header desktop, Tabs desktop y contenido de sección móvil inline en Order (~100 líneas)
 
 ### Changes Applied
+
 1. **Order/components/OrderHeaderDesktop.jsx**:
    - Estado, id, cliente, fecha, temperatura; botones Editar/Imprimir/⋮; imagen transporte
    - Props: order, transportImage, onStatusChange, onTemperatureChange, onPrint
@@ -1329,17 +1520,20 @@ git revert <commit-hash>
 4. **Order/index.js**: reemplazado ~100 líneas por componentes; eliminados imports no usados
 
 ### Verification Results
+
 - ✅ Build exitoso (Next.js 16)
 - ✅ Sin errores de linter
 - ✅ Comportamiento preservado
 
 ### Rollback Plan
+
 ```bash
 git revert <commit-hash>
 # Eliminar OrderHeaderDesktop, OrderTabsDesktop, OrderSectionContentMobile; restaurar inline
 ```
 
 ### Next Steps
+
 - Fase 1 completada. Order ~280 líneas (objetivo <250 cercano)
 - Fase 2: Reducir OrderPallets
 
@@ -1352,9 +1546,11 @@ git revert <commit-hash>
 **Plan**: docs/plan-ventas-9-10.md
 
 ### Problems Addressed
+
 - Toolbar (botones Crear, Vincular, Desde previsión, Desvincular todos) inline en OrderPallets (~80 líneas)
 
 ### Changes Applied
+
 1. **OrderPallets/components/OrderPalletsToolbar.jsx**:
    - Mobile: fixed footer con 3 botones + DropdownMenu (Desvincular todos)
    - Desktop: CardHeader con título, CardDescription y botones
@@ -1365,16 +1561,19 @@ git revert <commit-hash>
    - Eliminados imports: Plus, Unlink, Link2, Loader2, MoreVertical, PackagePlus, Button, DropdownMenu, CardHeader/CardTitle/CardDescription
 
 ### Verification Results
+
 - ✅ Build exitoso (Next.js 16)
 - ✅ Comportamiento preservado
 
 ### Rollback Plan
+
 ```bash
 git revert <commit-hash>
 # Eliminar OrderPalletsToolbar.jsx, restaurar inline en OrderPallets
 ```
 
 ### Next Steps
+
 - Fase 2.3: Extraer OrderPalletsContent
 
 ---
@@ -1386,9 +1585,11 @@ git revert <commit-hash>
 **Plan**: docs/plan-ventas-9-10.md
 
 ### Problems Addressed
+
 - Render condicional móvil (cards) vs desktop (tabla) inline en OrderPallets (~90 líneas)
 
 ### Changes Applied
+
 1. **OrderPallets/components/OrderPalletsContent.jsx**:
    - EmptyState cuando pallets.length === 0
    - Mobile: lista de OrderPalletCard
@@ -1400,16 +1601,19 @@ git revert <commit-hash>
    - Eliminados imports: EmptyState, Table, OrderPalletCard, OrderPalletTableRow
 
 ### Verification Results
+
 - ✅ Build exitoso (Next.js 16)
 - ✅ Comportamiento preservado
 
 ### Rollback Plan
+
 ```bash
 git revert <commit-hash>
 # Eliminar OrderPalletsContent.jsx, restaurar inline en OrderPallets
 ```
 
 ### Next Steps
+
 - Fase 2 completada. OrderPallets reducido (~250 líneas)
 - Fase 3: Formularios + Zod
 
@@ -1422,31 +1626,37 @@ git revert <commit-hash>
 **Plan**: docs/plan-ventas-9-10.md
 
 ### Problems Addressed
+
 - Validación solo en backend (422) sin feedback inmediato en cliente
 
 ### Changes Applied
 
 **Sub-bloque 3.1: CreateOrderForm + Zod**
+
 1. `CreateOrderForm/schemas/orderCreateSchema.js`: esquema Zod con customer, entryDate, loadDate, salesperson, payment, incoterm, buyerReference, transport, addresses, notes, emails, plannedProducts
 2. CreateOrderForm: `useForm({ resolver: zodResolver(orderCreateSchema), ... })`
 3. Eliminadas reglas inline de register/Controller (validación delegada a Zod)
 4. setErrorsFrom422 permanece como fallback en catch de handleCreate
 
 **Sub-bloque 3.2: OrderEditSheet + Zod**
+
 1. `OrderEditSheet/schemas/orderEditSchema.js`: esquema para campos editables (entryDate, loadDate, salesperson, payment, incoterm, buyerReference, transport, addresses, notes, emails)
 2. OrderEditSheet: `useForm({ resolver: zodResolver(orderEditSchema), ... })`
 3. Eliminadas reglas inline de register/Controller
 4. setErrorsFrom422 como fallback en catch de onSubmit
 
 **Dependencia**
+
 - Añadido @hookform/resolvers para zodResolver
 
 ### Verification Results
+
 - ✅ Build exitoso (Next.js 16)
 - ✅ Validación cliente con feedback inmediato
 - ✅ Backend 422 sigue mapeándose con setErrorsFrom422
 
 ### Rollback Plan
+
 ```bash
 git revert <commit-hash>
 npm uninstall @hookform/resolvers
@@ -1454,6 +1664,7 @@ npm uninstall @hookform/resolvers
 ```
 
 ### Next Steps
+
 - Fase 4: Tests useOrder, useCustomerHistory, useOrders
 
 ---
@@ -1465,17 +1676,20 @@ npm uninstall @hookform/resolvers
 **Plan**: docs/plan-ventas-9-10.md
 
 ### Problems Addressed
+
 - Sin cobertura de tests para hooks críticos (useOrder, useCustomerHistory, useOrders)
 
 ### Changes Applied
 
 **Sub-bloque 4.1: Tests useOrder** (`src/__tests__/hooks/useOrder.test.js`)
+
 - Devuelve order, loading, error cuando carga
 - updateOrderStatus actualiza caché y llama onChange
 - exportDocument llama fetchWithTenant
 - Manejo de error 401
 
 **Sub-bloque 4.2: Tests useCustomerHistory** (`src/__tests__/hooks/useCustomerHistory.test.js`)
+
 - Devuelve filteredHistory, generalMetrics, loading
 - dateFilter cambia getDateRange
 - calculateTrend devuelve direction y percentage
@@ -1483,21 +1697,25 @@ npm uninstall @hookform/resolvers
 - Estados de loading
 
 **Sub-bloque 4.3: Tests useOrders** (`src/__tests__/hooks/useOrders.test.js`)
+
 - Devuelve orders, isLoading
 - Array vacío cuando no hay pedidos
 - Error cuando falla la petición
 - Expone queryKey y refetch
 
 **Setup**
+
 - @vitest-environment happy-dom en tests de hooks (evita conflicto ESM con jsdom)
 - @testing-library/react, @testing-library/dom, happy-dom como devDependencies
 - Renombrado OrdersManagerOptionsContext.js → .jsx para parse correcto de JSX
 
 ### Verification Results
+
 - ✅ 27 tests pasan (14 orderService + 4 useOrder + 5 useCustomerHistory + 4 useOrders)
 - ✅ Build exitoso
 
 ### Rollback Plan
+
 ```bash
 git revert <commit-hash>
 # Restaurar OrdersManagerOptionsContext.jsx → .js
@@ -1505,6 +1723,7 @@ git revert <commit-hash>
 ```
 
 ### Next Steps
+
 - Plan Ventas 9/10 completado (Fases 1-4)
 
 ---
@@ -1516,20 +1735,24 @@ git revert <commit-hash>
 **Rating antes: 4/10** | **Rating después: 5/10** (parcial)
 
 ### Problems Addressed
+
 - IndividualMode: 3 handlers duplicados (processAlbaran..., processListadoAsoc..., processListadoLonja...)
 - MassiveExportDialog: helpers parseDecimalValueHelper, calculateImporte, calculateImporteFromLinea duplicados respecto a exportHelpers/common.js
 
 ### Changes Applied
+
 - **IndividualMode/index.js**: Unificado en handleProcess(documentType) con handleProcessResult y handleProcessError. Eliminadas ~90 líneas duplicadas.
 - **exportHelpers/common.js**: Añadido calculateImporteFromLinea(linea, weightKey) para soportar kilos/pesoNeto.
 - **MassiveExportDialog.js**: Import de parseDecimalValue, calculateImporte, calculateImporteFromLinea desde common; eliminados helpers locales (~25 líneas).
 
 ### Verification Results
+
 - ✅ Build exitoso (npm run build)
 - ✅ Sin errores de lint
 - ✅ Comportamiento preservado (flujo Individual/Masivo, export)
 
 ### Gap to 10/10
+
 - MassiveExportDialog sigue ~870 líneas (P0: extraer CofraExportPreview, LonjaDeIslaExportPreview, AsocExportPreview).
 - ExportModal LonjaDeIsla 868 L, ExportModal ASOC 700 L, ExportModal AlbaranCofra 651 L (P0).
 - MassiveLinkPurchasesDialog 389 L (P1).
@@ -1537,6 +1760,7 @@ git revert <commit-hash>
 - Sin TypeScript.
 
 ### Next Steps
+
 - Sub-bloque 2: Extraer previews de MassiveExportDialog.
 - Sub-bloque 3: Refactor ExportModals (hook + utils).
 - Sub-bloque 4: Tests DocumentProcessor y validators.
@@ -1550,25 +1774,30 @@ git revert <commit-hash>
 **Rating antes: 6/10** | **Rating después: 8/10**
 
 ### Problems Addressed
+
 - ExportModals: parseDecimalValue, calculateImporte, calculateImporteFromLinea duplicados (Sub-bloques 3–5)
 - Sin tests para DocumentProcessor y validators (Sub-bloque 7)
 
 ### Changes Applied
+
 - **Sub-bloque 2** (sesión anterior): MassiveExportDialog 893→299 L; previews Cofra/Lonja/Asoc.
 - **Sub-bloques 3–5**: ListadoComprasLonjaDeIsla, ListadoComprasAsoc, AlbaranCofra ExportModals: importan parseDecimalValue, calculateImporte, calculateImporteFromLinea desde common.js; eliminadas ~35 L de helpers locales por archivo. LonjaDeIsla: parseEuropeanNumber(importe) → parseDecimalValue(importe).
 - **Sub-bloque 7**: lonjaDeIslaValidator.test.js (9 tests); DocumentProcessor.test.js (8 tests: getAzureDocumentType, isValidDocumentType, getAvailableDocumentTypes, processDocument con mock Azure).
 
 ### Verification Results
+
 - ✅ Build exitoso
 - ✅ 18 tests nuevos pasan
 - ✅ Sin errores de lint
 
 ### Gap to 10/10
+
 - ExportModals siguen ~600–830 L (división en hooks pendiente).
 - MassiveLinkPurchasesDialog 389 L.
 - TypeScript para validators/parsers.
 
 ### Next Steps
+
 - Sub-bloque 6: Refactor MassiveLinkPurchasesDialog (useLinkPurchases).
 - Extracción de hooks en ExportModals si se requiere 9+/10.
 
@@ -1581,17 +1810,21 @@ git revert <commit-hash>
 **Rating antes: 8/10** | **Rating después: 9/10**
 
 ### Problems Addressed
+
 - MassiveLinkPurchasesDialog 389 líneas (P1)
 
 ### Changes Applied
+
 - **useLinkPurchases.js** (nuevo, 165 L): Hook con estado (selectedLinks, allLinkedSummary, validationResults), efectos (generar summary, validar, inicializar selección), handlers (handleToggleLink, handleToggleAll, handleLinkPurchases, getValidationStatus).
 - **MassiveLinkPurchasesDialog.js**: 389 → 217 L. Usa useLinkPurchases; solo UI (Dialog, Table, Checkbox, estados).
 
 ### Verification Results
+
 - ✅ Build exitoso
 - ✅ Comportamiento preservado
 
 ### Gap to 10/10
+
 - ExportModals ~600–830 L (opcional para 10/10).
 - TypeScript.
 

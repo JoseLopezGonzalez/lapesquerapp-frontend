@@ -19,27 +19,27 @@ const CHATGPT_EXTRACTION_ENDPOINT = '/api/extraction/chatgpt';
  * @returns {Promise<{ success: true, data: Array } | { success: false, error: string }>}
  */
 export async function extractWithChatGPT(file, documentType, model = 'gpt-4o') {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('documentType', documentType);
-    formData.append('model', model);
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('documentType', documentType);
+  formData.append('model', model);
 
-    // Do NOT set Content-Type — browser sets it with the correct boundary automatically
-    const response = await fetch(CHATGPT_EXTRACTION_ENDPOINT, {
-        method: 'POST',
-        body: formData,
-    });
+  // Do NOT set Content-Type — browser sets it with the correct boundary automatically
+  const response = await fetch(CHATGPT_EXTRACTION_ENDPOINT, {
+    method: 'POST',
+    body: formData,
+  });
 
-    if (!response.ok) {
-        let errorMessage = 'Error al comunicarse con ChatGPT';
-        try {
-            const errorBody = await response.json();
-            errorMessage = errorBody.error || errorMessage;
-        } catch {
-            // ignore json parse error on error body
-        }
-        throw new Error(errorMessage);
+  if (!response.ok) {
+    let errorMessage = 'Error al comunicarse con ChatGPT';
+    try {
+      const errorBody = await response.json();
+      errorMessage = errorBody.error || errorMessage;
+    } catch {
+      // ignore json parse error on error body
     }
+    throw new Error(errorMessage);
+  }
 
-    return response.json();
+  return response.json();
 }

@@ -16,7 +16,8 @@ const IMPROVEMENT_CONFIG = {
     emptyError: 'El resumen es obligatorio',
     resultError: 'No se pudo generar un resumen válido',
     internalError: 'Error interno al mejorar el resumen',
-    promptIntro: 'Reescribe el siguiente resumen para CRM corrigiendo gramática y semántica cuando sea necesario.',
+    promptIntro:
+      'Reescribe el siguiente resumen para CRM corrigiendo gramática y semántica cuando sea necesario.',
     promptRules: [
       'Mantén el significado, los datos y el contexto comercial.',
       'No inventes información nueva.',

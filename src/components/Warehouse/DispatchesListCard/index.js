@@ -1,32 +1,20 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import {
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import TablePagination from "../TablePagination";
-import { useDispatchesList } from "@/hooks/useDispatchesList";
-import { ceboDispatchService } from "@/services/domain/cebo-dispatches/ceboDispatchService";
-import { formatDate } from "@/helpers/formats/dates/formatDates";
-import { Printer, Loader2, Eye, EyeOff, Truck } from "lucide-react";
-import Loader from "@/components/Utilities/Loader";
-import { EmptyState } from "@/components/Utilities/EmptyState";
-import { notify } from "@/lib/notifications";
-import { operatorRoutes } from "@/configs/roleRoutesConfig";
-import DispatchPrintDialog from "../DispatchPrintDialog";
+import { useState, useEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import TablePagination from '../TablePagination';
+import { useDispatchesList } from '@/hooks/useDispatchesList';
+import { ceboDispatchService } from '@/services/domain/cebo-dispatches/ceboDispatchService';
+import { formatDate } from '@/helpers/formats/dates/formatDates';
+import { Printer, Loader2, Eye, EyeOff, Truck } from 'lucide-react';
+import Loader from '@/components/Utilities/Loader';
+import { EmptyState } from '@/components/Utilities/EmptyState';
+import { notify } from '@/lib/notifications';
+import { operatorRoutes } from '@/configs/roleRoutesConfig';
+import DispatchPrintDialog from '../DispatchPrintDialog';
 
 function getDispatchNetWeight(dispatch) {
   if (dispatch.netWeight != null) return Number(dispatch.netWeight);
@@ -83,7 +71,7 @@ export default function DispatchesListCard({ storeId = null }) {
       });
       setPrintDialogOpen(true);
     } catch (err) {
-      console.error("Error al cargar salida para imprimir:", err);
+      console.error('Error al cargar salida para imprimir:', err);
       notify.error({
         title: 'Error al cargar salida',
         description: 'No se pudo cargar la salida de cebo. Intente de nuevo.',
@@ -93,11 +81,11 @@ export default function DispatchesListCard({ storeId = null }) {
     }
   };
 
-  const cardClass = "flex flex-col h-full min-h-0";
+  const cardClass = 'flex flex-col h-full min-h-0';
 
   return (
     <Card className={cardClass}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 shrink-0">
+      <CardHeader className="flex shrink-0 flex-row items-center justify-between space-y-0">
         <div>
           <CardTitle>Salidas de cebo</CardTitle>
           <CardDescription>Lista de salidas</CardDescription>
@@ -107,17 +95,15 @@ export default function DispatchesListCard({ storeId = null }) {
             variant="outline"
             size="icon"
             className="h-8 w-8"
-            title={showAllQuantities ? "Ocultar todas las cantidades" : "Mostrar todas las cantidades"}
+            title={
+              showAllQuantities ? 'Ocultar todas las cantidades' : 'Mostrar todas las cantidades'
+            }
             onClick={() => {
               setShowAllQuantities((v) => !v);
               setRevealedRowIds(new Set());
             }}
           >
-            {showAllQuantities ? (
-              <EyeOff className="h-4 w-4" />
-            ) : (
-              <Eye className="h-4 w-4" />
-            )}
+            {showAllQuantities ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </Button>
           <Button
             size="sm"
@@ -127,31 +113,31 @@ export default function DispatchesListCard({ storeId = null }) {
           >
             {isNavigating ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Cargando...
               </>
             ) : (
-              "Nueva Salida +"
+              'Nueva Salida +'
             )}
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="flex flex-col flex-1 min-h-0 overflow-hidden pt-0">
+      <CardContent className="flex min-h-0 flex-1 flex-col overflow-hidden pt-0">
         {loading ? (
-          <div className="flex justify-center py-8 flex-1">
+          <div className="flex flex-1 justify-center py-8">
             <Loader />
           </div>
         ) : (
           <>
-            <div className="rounded-md border overflow-auto flex-1 min-h-0">
+            <div className="min-h-0 flex-1 overflow-auto rounded-md border">
               <table className="w-full caption-bottom text-sm">
-                <TableHeader className="sticky top-0 z-10 bg-card shadow-[0_1px_3px_0_rgba(0,0,0,0.1)]">
+                <TableHeader className="bg-card sticky top-0 z-10 shadow-[0_1px_3px_0_rgba(0,0,0,0.1)]">
                   <TableRow className="bg-card hover:bg-card border-b">
-                    <TableHead className="w-16 bg-card">N°</TableHead>
+                    <TableHead className="bg-card w-16">N°</TableHead>
                     <TableHead className="bg-card">PROVEEDOR</TableHead>
-                    <TableHead className="text-right bg-card">CANTIDAD</TableHead>
+                    <TableHead className="bg-card text-right">CANTIDAD</TableHead>
                     <TableHead className="bg-card">FECHA</TableHead>
-                    <TableHead className="w-12 bg-card" />
+                    <TableHead className="bg-card w-12" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -160,11 +146,11 @@ export default function DispatchesListCard({ storeId = null }) {
                       <TableCell colSpan={5} className="p-0 align-top">
                         <div className="flex min-h-[280px] w-full items-center justify-center py-12">
                           <EmptyState
-                            icon={<Truck className="h-12 w-12 text-primary" strokeWidth={1.5} />}
+                            icon={<Truck className="text-primary h-12 w-12" strokeWidth={1.5} />}
                             title="No hay salidas de cebo"
                             description="Aún no se ha registrado ninguna salida de cebo. Crea la primera desde el botón superior."
                             button={{
-                              name: "Nueva salida",
+                              name: 'Nueva salida',
                               onClick: handleNavigateToCreate,
                             }}
                           />
@@ -175,14 +161,16 @@ export default function DispatchesListCard({ storeId = null }) {
                     data.map((row) => (
                       <TableRow key={row.id}>
                         <TableCell>{row.id}</TableCell>
-                        <TableCell>{row.supplier?.name ?? "—"}</TableCell>
+                        <TableCell>{row.supplier?.name ?? '—'}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1">
                             <Button
                               variant="ghost"
                               size="icon"
                               className="h-7 w-7 shrink-0"
-                              title={isQuantityVisible(row.id) ? "Ocultar cantidad" : "Mostrar cantidad"}
+                              title={
+                                isQuantityVisible(row.id) ? 'Ocultar cantidad' : 'Mostrar cantidad'
+                              }
                               onClick={() => toggleRowQuantity(row.id)}
                             >
                               {isQuantityVisible(row.id) ? (
@@ -191,14 +179,14 @@ export default function DispatchesListCard({ storeId = null }) {
                                 <Eye className="h-4 w-4" />
                               )}
                             </Button>
-                            <span className="tabular-nums min-w-[4rem]">
+                            <span className="min-w-[4rem] tabular-nums">
                               {isQuantityVisible(row.id)
                                 ? `${getDispatchNetWeight(row).toFixed(2)} kg`
-                                : "*****"}
+                                : '*****'}
                             </span>
                           </div>
                         </TableCell>
-                        <TableCell>{row.date ? formatDate(row.date) : "—"}</TableCell>
+                        <TableCell>{row.date ? formatDate(row.date) : '—'}</TableCell>
                         <TableCell>
                           <Button
                             variant="outline"

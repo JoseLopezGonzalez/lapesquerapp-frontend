@@ -17,12 +17,12 @@ export function RouteMapSection({
   return (
     <>
       {routeGeometryError ? (
-        <p className="mb-3 px-1 text-sm text-muted-foreground">{routeGeometryError}</p>
+        <p className="text-muted-foreground mb-3 px-1 text-sm">{routeGeometryError}</p>
       ) : null}
       {isCalculatingRoute ? (
-        <p className="mb-3 px-1 text-sm text-muted-foreground">Calculando ruta por carretera...</p>
+        <p className="text-muted-foreground mb-3 px-1 text-sm">Calculando ruta por carretera...</p>
       ) : null}
-      <div className="relative min-h-[320px] flex-1 overflow-hidden rounded-[28px] border bg-background shadow-sm">
+      <div className="bg-background relative min-h-[320px] flex-1 overflow-hidden rounded-[28px] border shadow-sm">
         <RouteMap
           stops={mapStops}
           routeGeometry={routeGeometry}
@@ -31,7 +31,7 @@ export function RouteMapSection({
           onStopClick={onStopClick}
         />
         {!stopSheetOpen && !stopsSheetOpen && (
-          <div className="pointer-events-none absolute right-4 top-4 z-[60] flex justify-end">
+          <div className="pointer-events-none absolute top-4 right-4 z-[60] flex justify-end">
             <div className="pointer-events-auto flex items-center gap-2">
               <Button variant="outline" className="shadow-lg" onClick={onShowStopsList}>
                 <List className="mr-2 h-4 w-4" />

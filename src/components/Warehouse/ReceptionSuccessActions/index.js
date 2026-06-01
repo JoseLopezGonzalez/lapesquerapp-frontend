@@ -48,7 +48,9 @@ export default function ReceptionSuccessActions({ reception, onExit, createCeboH
       date: reception.date,
       notes: reception.notes ?? '',
       details,
-      pallets: (reception.pallets || []).map((p) => (p && typeof p === 'object' && 'pallet' in p ? p : { pallet: p })),
+      pallets: (reception.pallets || []).map((p) =>
+        p && typeof p === 'object' && 'pallet' in p ? p : { pallet: p }
+      ),
       creationMode: reception.creationMode || 'lines',
     });
   };
@@ -93,10 +95,10 @@ export default function ReceptionSuccessActions({ reception, onExit, createCeboH
   };
 
   return (
-    <div className="w-full flex flex-col items-center justify-center flex-1 min-h-0 py-6 px-4 gap-8">
+    <div className="flex min-h-0 w-full flex-1 flex-col items-center justify-center gap-8 px-4 py-6">
       {/* Icono y título fuera del card */}
       <motion.div
-        className="flex flex-col items-center gap-4 w-full max-w-md"
+        className="flex w-full max-w-md flex-col items-center gap-4"
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: 'easeOut' }}
@@ -147,12 +149,12 @@ export default function ReceptionSuccessActions({ reception, onExit, createCeboH
         transition={{ duration: 0.35, ease: 'easeOut', delay: 0.15 }}
       >
         <Card className="w-full">
-          <CardContent className="pt-6 pb-6 px-6">
+          <CardContent className="px-6 pt-6 pb-6">
             <div className="flex flex-row flex-wrap justify-center gap-4">
               <Button
                 variant="default"
                 size="lg"
-                className="flex-1 min-w-[160px] max-w-[260px] gap-3 min-h-[64px] py-4 text-xl touch-manipulation active:scale-[0.98] transition-transform"
+                className="min-h-[64px] max-w-[260px] min-w-[160px] flex-1 touch-manipulation gap-3 py-4 text-xl transition-transform active:scale-[0.98]"
                 onClick={handlePrintRecibo}
               >
                 <Printer className="h-6 w-6 shrink-0" />
@@ -161,7 +163,7 @@ export default function ReceptionSuccessActions({ reception, onExit, createCeboH
               <Button
                 variant="outline"
                 size="lg"
-                className="flex-1 min-w-[160px] max-w-[260px] gap-3 min-h-[64px] py-4 text-xl touch-manipulation active:scale-[0.98] transition-transform"
+                className="min-h-[64px] max-w-[260px] min-w-[160px] flex-1 touch-manipulation gap-3 py-4 text-xl transition-transform active:scale-[0.98]"
                 onClick={handlePrintLabels}
               >
                 <Tag className="h-6 w-6 shrink-0" />
@@ -170,7 +172,7 @@ export default function ReceptionSuccessActions({ reception, onExit, createCeboH
               <Button
                 variant="outline"
                 size="lg"
-                className="flex-1 min-w-[160px] max-w-[260px] gap-3 min-h-[64px] py-4 text-xl touch-manipulation active:scale-[0.98] transition-transform"
+                className="min-h-[64px] max-w-[260px] min-w-[160px] flex-1 touch-manipulation gap-3 py-4 text-xl transition-transform active:scale-[0.98]"
                 onClick={handleSalidaCebo}
               >
                 <PlusCircle className="h-6 w-6 shrink-0" />
@@ -179,7 +181,7 @@ export default function ReceptionSuccessActions({ reception, onExit, createCeboH
               <Button
                 variant="ghost"
                 size="lg"
-                className="flex-1 min-w-[160px] max-w-[260px] gap-3 min-h-[64px] py-4 text-xl touch-manipulation active:scale-[0.98] transition-transform"
+                className="min-h-[64px] max-w-[260px] min-w-[160px] flex-1 touch-manipulation gap-3 py-4 text-xl transition-transform active:scale-[0.98]"
                 onClick={onExit}
               >
                 <LogOut className="h-6 w-6 shrink-0" />
@@ -208,14 +210,14 @@ export default function ReceptionSuccessActions({ reception, onExit, createCeboH
       {/* Contenido oculto para impresión de letreros: se monta al pulsar Letreros y se imprime directamente */}
       {labelsToPrint?.length > 0 && (
         <div id={LABELS_PRINT_ID} className="hidden print:block">
-          <div className="p-4 space-y-4">
+          <div className="space-y-4 p-4">
             {labelsToPrint.map((name, i) => (
               <div
                 key={`${name}-${i}`}
-                className="border border-black rounded-lg p-6 flex items-center justify-center min-h-[80px]"
+                className="flex min-h-[80px] items-center justify-center rounded-lg border border-black p-6"
                 style={{ pageBreakAfter: i < labelsToPrint.length - 1 ? 'always' : 'auto' }}
               >
-                <span className="text-3xl font-bold text-center break-words">{name}</span>
+                <span className="text-center text-3xl font-bold break-words">{name}</span>
               </div>
             ))}
           </div>

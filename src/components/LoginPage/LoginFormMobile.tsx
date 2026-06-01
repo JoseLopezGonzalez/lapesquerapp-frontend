@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { appName, supportEmail } from "@/configs/branding";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircleIcon, ArrowLeft } from "lucide-react";
-import RotatingText from "@/components/Utilities/RotatingText";
-import LoginFormContent from "./LoginFormContent";
-import type { UseFormRegister, Control, FieldErrors } from "react-hook-form";
-import type { LoginEmailForm, LoginOtpForm } from "@/schemas/loginSchema";
+import Link from 'next/link';
+import { appName, supportEmail } from '@/configs/branding';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircleIcon, ArrowLeft } from 'lucide-react';
+import RotatingText from '@/components/Utilities/RotatingText';
+import LoginFormContent from './LoginFormContent';
+import type { UseFormRegister, Control, FieldErrors } from 'react-hook-form';
+import type { LoginEmailForm, LoginOtpForm } from '@/schemas/loginSchema';
 
 interface LoginFormMobileProps {
   tenantActive: boolean;
@@ -42,14 +42,14 @@ export default function LoginFormMobile({
   onOtpPaste,
 }: LoginFormMobileProps) {
   return (
-    <div className="md:hidden relative w-full min-h-screen flex flex-col px-6 py-safe">
+    <div className="py-safe relative flex min-h-screen w-full flex-col px-6 md:hidden">
       {!tenantActive && (
-        <Alert variant="destructive" className="mb-4 mt-4">
+        <Alert variant="destructive" className="mt-4 mb-4">
           <AlertCircleIcon />
           <AlertTitle className="text-sm">Cuentas deshabilitadas para esta empresa</AlertTitle>
           <AlertDescription className="text-xs">
             <p>La suscripción de esta empresa está caducada o pendiente de renovación.</p>
-            <ul className="list-inside list-disc text-xs mt-2">
+            <ul className="mt-2 list-inside list-disc text-xs">
               <li>
                 Contacta con soporte para más información (
                 <Link href={`mailto:${supportEmail}`}>{supportEmail}</Link>)
@@ -60,7 +60,7 @@ export default function LoginFormMobile({
       )}
 
       {isDemo && (
-        <div className="absolute top-4 right-4 z-10 bg-lime-100 text-lime-800 text-xs font-semibold px-3 py-1 rounded-lg shadow">
+        <div className="absolute top-4 right-4 z-10 rounded-lg bg-lime-100 px-3 py-1 text-xs font-semibold text-lime-800 shadow">
           MODO DEMO
         </div>
       )}
@@ -74,24 +74,24 @@ export default function LoginFormMobile({
         <ArrowLeft className="h-5 w-5" />
       </Button>
 
-      <div className="flex-1 flex flex-col justify-center w-full max-w-sm mx-auto py-12">
+      <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-12">
         <div className="w-full space-y-8">
-          <div className="text-center flex flex-col gap-4">
-            <h2 className="text-4xl font-bold text-primary bg-clip-text bg-gradient-to-tr from-primary to-muted-foreground text-transparent leading-tight">
+          <div className="flex flex-col gap-4 text-center">
+            <h2 className="text-primary from-primary to-muted-foreground bg-gradient-to-tr bg-clip-text text-4xl leading-tight font-bold text-transparent">
               {appName}
             </h2>
-            <div className="flex items-center justify-center gap-1 text-nowrap flex-wrap">
-              <span className="text-base text-primary">Mantén tu producción</span>
+            <div className="flex flex-wrap items-center justify-center gap-1 text-nowrap">
+              <span className="text-primary text-base">Mantén tu producción</span>
               <RotatingText
-                texts={["al día.", "segura.", "eficiente.", "organizada."]}
+                texts={['al día.', 'segura.', 'eficiente.', 'organizada.']}
                 mainClassName="text-base text-primary font-medium"
                 staggerFrom="last"
-                initial={{ y: "100%" }}
+                initial={{ y: '100%' }}
                 animate={{ y: 0 }}
-                exit={{ y: "-120%" }}
+                exit={{ y: '-120%' }}
                 staggerDuration={0.025}
                 splitLevelClassName="overflow-hidden"
-                transition={{ type: "spring", damping: 30, stiffness: 400 }}
+                transition={{ type: 'spring', damping: 30, stiffness: 400 }}
                 rotationInterval={6000}
               />
             </div>
@@ -113,8 +113,8 @@ export default function LoginFormMobile({
               onOtpPaste={onOtpPaste}
             />
 
-            <p className="text-center text-sm text-muted-foreground pt-2">
-              ¿Algún problema?{" "}
+            <p className="text-muted-foreground pt-2 text-center text-sm">
+              ¿Algún problema?{' '}
               <Link
                 href={`mailto:${supportEmail}`}
                 className="text-primary hover:text-muted-foreground underline underline-offset-2"

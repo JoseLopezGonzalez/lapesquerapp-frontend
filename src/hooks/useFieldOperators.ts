@@ -47,7 +47,9 @@ export function useFieldOperatorMutations() {
   const invalidate = async (id?: number | string | null) => {
     await queryClient.invalidateQueries({ queryKey: ['field-operators', 'list', tenantId] });
     if (id != null) {
-      await queryClient.invalidateQueries({ queryKey: ['field-operators', 'detail', tenantId, id] });
+      await queryClient.invalidateQueries({
+        queryKey: ['field-operators', 'detail', tenantId, id],
+      });
     }
     await queryClient.invalidateQueries({ queryKey: ['field-operators', 'options', tenantId] });
   };
@@ -56,7 +58,11 @@ export function useFieldOperatorMutations() {
     mutationFn: (payload) => fieldOperatorAdminService.create(payload),
     onSuccess: () => invalidate(),
   });
-  const updateMutation = useMutation<unknown, Error, { id: number | string; payload: MutationPayload }>({
+  const updateMutation = useMutation<
+    unknown,
+    Error,
+    { id: number | string; payload: MutationPayload }
+  >({
     mutationFn: ({ id, payload }) => fieldOperatorAdminService.update(id, payload),
     onSuccess: (_, variables) => invalidate(variables.id),
   });

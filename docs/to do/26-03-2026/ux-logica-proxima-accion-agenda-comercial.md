@@ -11,7 +11,7 @@ Documento vivo para discusión y aterrizaje técnico del flujo UX de **Próxima 
 > Este bloque resume solo la lógica de negocio acordada para que puedas confirmarla sin revisar todo el detalle técnico.
 
 1. En cada target (prospecto o cliente) solo puede existir **una** acción pendiente activa a la vez (la “próxima acción”). ✅ confirmado
-2. Registrar una interacción y gestionar la próxima acción se separa en **dos pasos**: primero se guarda la interacción, luego se resuelve la próxima acción.  ✅ confirmado
+2. Registrar una interacción y gestionar la próxima acción se separa en **dos pasos**: primero se guarda la interacción, luego se resuelve la próxima acción. ✅ confirmado
 3. El sistema debe permitir registrar interacción aunque haya conflictos de agenda; un error de agenda no debe impedir guardar la interacción. ✅ confirmado
 4. Si el comercial decide “sobreescribir” la próxima acción, la acción pendiente anterior pasa a `cancelled` y se crea una nueva `pending` como activa. ✅ confirmado
 5. Al sobrescribir se debe guardar motivo (predefinido por defecto y/o texto libre del usuario). ✅ confirmado
@@ -46,25 +46,23 @@ Fuera del cierre explícito de una acción, la próxima acción se gestiona solo
 
 ## Estado de implementación
 
-
-| Componente                                                               | Estado         | Notas                                                    |
-| ------------------------------------------------------------------------ | -------------- | -------------------------------------------------------- |
-| Fundación agenda: CRUD (crear/listar/cancelar/reprogramar)               | ✅ IMPLEMENTADO | `CrmAgendaService`, `CrmAgendaController`                |
-| `POST /commercial-interactions` (flujo actual acoplado)                  | ✅ IMPLEMENTADO | Guarda interacción + sync agenda en una sola transacción |
-| Reprogramación con cadena (`previous_action_id`)                         | ✅ IMPLEMENTADO | `CrmAgendaService::reschedule()`                         |
-| Status `reprogrammed` en `agenda_actions`                                | ✅ IMPLEMENTADO | Migración `2026_03_19`                                   |
-| Campos `source_interaction_id` y `previous_action_id`                    | ✅ IMPLEMENTADO | Modelo y migración `2026_03_18`                          |
-| Campo `description` canónico en `agenda_actions`                         | ✅ IMPLEMENTADO | En fillable y `toArrayAssoc()`                           |
+| Componente                                                               | Estado          | Notas                                                        |
+| ------------------------------------------------------------------------ | --------------- | ------------------------------------------------------------ |
+| Fundación agenda: CRUD (crear/listar/cancelar/reprogramar)               | ✅ IMPLEMENTADO | `CrmAgendaService`, `CrmAgendaController`                    |
+| `POST /commercial-interactions` (flujo actual acoplado)                  | ✅ IMPLEMENTADO | Guarda interacción + sync agenda en una sola transacción     |
+| Reprogramación con cadena (`previous_action_id`)                         | ✅ IMPLEMENTADO | `CrmAgendaService::reschedule()`                             |
+| Status `reprogrammed` en `agenda_actions`                                | ✅ IMPLEMENTADO | Migración `2026_03_19`                                       |
+| Campos `source_interaction_id` y `previous_action_id`                    | ✅ IMPLEMENTADO | Modelo y migración `2026_03_18`                              |
+| Campo `description` canónico en `agenda_actions`                         | ✅ IMPLEMENTADO | En fillable y `toArrayAssoc()`                               |
 | `POST /commercial-interactions` — Paso 1 desacoplado ("siempre guardar") | ✅ IMPLEMENTADO | Interacción libre guardable cuando no llega `agendaActionId` |
-| `agendaActionId` opcional en `StoreCommercialInteractionRequest`         | ✅ IMPLEMENTADO | Paso 1 admite ausencia de `agendaActionId` |
-| Desacoplar interacción de agenda (transacción separada)                  | ✅ IMPLEMENTADO | Fallos de agenda no provocan rollback de interacción |
-| Endpoint `POST /crm/agenda/resolve-next-action` (Paso 2)                 | ✅ IMPLEMENTADO | Ruta + request + controlador + servicio |
-| Estrategias `keep/update/reschedule/override/create_if_none`             | ✅ IMPLEMENTADO | Implementadas en `CrmAgendaService::resolveNextAction()` |
-| Campo `reason`/`cancel_reason` en `agenda_actions`                       | ✅ IMPLEMENTADO | Campo `reason` añadido en migración 2026-03-26 |
-| Endpoint `GET /crm/agenda/pending` (preflight)                           | ✅ IMPLEMENTADO | Devuelve pending + `isOverdue`/`daysOverdue` |
-| Códigos de error estables (`PENDING_EXISTS`, `STALE_PENDING`…)           | ✅ IMPLEMENTADO | Códigos de dominio + validación estandarizada |
-| Contrato de respuesta enriquecido (`previousPending`/`currentPending`)   | ✅ IMPLEMENTADO | Respuesta uniforme en `resolve-next-action` |
-
+| `agendaActionId` opcional en `StoreCommercialInteractionRequest`         | ✅ IMPLEMENTADO | Paso 1 admite ausencia de `agendaActionId`                   |
+| Desacoplar interacción de agenda (transacción separada)                  | ✅ IMPLEMENTADO | Fallos de agenda no provocan rollback de interacción         |
+| Endpoint `POST /crm/agenda/resolve-next-action` (Paso 2)                 | ✅ IMPLEMENTADO | Ruta + request + controlador + servicio                      |
+| Estrategias `keep/update/reschedule/override/create_if_none`             | ✅ IMPLEMENTADO | Implementadas en `CrmAgendaService::resolveNextAction()`     |
+| Campo `reason`/`cancel_reason` en `agenda_actions`                       | ✅ IMPLEMENTADO | Campo `reason` añadido en migración 2026-03-26               |
+| Endpoint `GET /crm/agenda/pending` (preflight)                           | ✅ IMPLEMENTADO | Devuelve pending + `isOverdue`/`daysOverdue`                 |
+| Códigos de error estables (`PENDING_EXISTS`, `STALE_PENDING`…)           | ✅ IMPLEMENTADO | Códigos de dominio + validación estandarizada                |
+| Contrato de respuesta enriquecido (`previousPending`/`currentPending`)   | ✅ IMPLEMENTADO | Respuesta uniforme en `resolve-next-action`                  |
 
 ---
 
@@ -294,7 +292,6 @@ Si existe `pending` vencida, mostrar bloque fijo:
 
 ## Decisiones cerradas
 
-
 | ID     | Decisión                                                                                                                                                   |
 | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **D1** | **1 sola próxima acción activa** por target.                                                                                                               |
@@ -306,7 +303,6 @@ Si existe `pending` vencida, mostrar bloque fijo:
 | **D7** | Flujo en **2 pasos siempre**: Interacción → Próxima acción.                                                                                                |
 | **D8** | **Preflight siempre** que haya `pending` activa. Opciones: Retomar / Continuar / Ver detalle.                                                              |
 | **D9** | Terminología: "Acción pendiente" = "próxima acción" = la única activa (`pending`) por target.                                                              |
-
 
 **D10 (pendiente):** Definir si el panel contextual es copia adaptada de las vistas existentes de cliente/prospecto y qué recortes/añadidos.
 
@@ -332,13 +328,11 @@ Esta sección aterriza el contrato backend necesario para soportar el UX acordad
 
 ### Convención de nombres
 
-
 | Contexto                                        | Campo de texto   | Notas                                                                                               |
 | ----------------------------------------------- | ---------------- | --------------------------------------------------------------------------------------------------- |
 | `POST /commercial-interactions` (Paso 1)        | `nextActionNote` | Legacy; el backend mapea a `agenda_actions.description`. No exponer `description` en este endpoint. |
 | `POST /crm/agenda/resolve-next-action` (Paso 2) | `description`    | 1:1 con el modelo `AgendaAction`.                                                                   |
 | Tabla `agenda_actions` (backend)                | `description`    | Nombre canónico.                                                                                    |
-
 
 ### Gobierno de dato (fuente de verdad)
 
@@ -359,14 +353,12 @@ Cambios de contrato:
 
 **Semántica cerrada:**
 
-
 | `agendaActionId` | `nextActionAt` | Comportamiento                                                                                       |
 | ---------------- | -------------- | ---------------------------------------------------------------------------------------------------- |
 | presente         | ausente        | Marcar acción como `done`                                                                            |
 | presente         | presente       | `done` + crear nueva `pending` (`completed_and_created`) — compat con flujo lineal                   |
 | ausente          | ausente        | Guardar interacción. Agenda no se toca.                                                              |
 | ausente          | presente       | **422 fail fast**: forzar al Paso 2 (`resolve-next-action`). El comercial cree que programó pero no. |
-
 
 ---
 
@@ -390,7 +382,6 @@ Diseño: **S1** — un endpoint + `strategy` obligatorio, con validación estric
 
 **Validación estricta por estrategia:**
 
-
 | Estrategia       | Requiere                 | Permite       | Prohíbe                                                        |
 | ---------------- | ------------------------ | ------------- | -------------------------------------------------------------- |
 | `keep`           | —                        | —             | `nextActionAt`, `description`, `reason`, `sourceInteractionId` |
@@ -398,7 +389,6 @@ Diseño: **S1** — un endpoint + `strategy` obligatorio, con validación estric
 | `reschedule`     | `nextActionAt`           | `description` | `reason`                                                       |
 | `override`       | `nextActionAt`, `reason` | `description` | —                                                              |
 | `create_if_none` | `nextActionAt`           | `description` | `reason`                                                       |
-
 
 **Semántica:**
 
@@ -419,9 +409,9 @@ Diseño: **S1** — un endpoint + `strategy` obligatorio, con validación estric
 - Si la `pending` cambia entre preflight y submit → `422` con `code: STALE_PENDING`.
 - Nota MySQL: un "índice único parcial por `status=pending`" no es trivial; el enfoque recomendado es locking transaccional.
 
-*Coherencia con legacy `prospects.next_action_` (V1):**
+\*Coherencia con legacy `prospects.next_action_` (V1):\*\*
 
-- Cuando `targetType = prospect`, el backend replica a `prospects.next_action_`* el estado de la `pending` actual (fecha + `description`) para compatibilidad con vistas/queries existentes.
+- Cuando `targetType = prospect`, el backend replica a `prospects.next_action_`\* el estado de la `pending` actual (fecha + `description`) para compatibilidad con vistas/queries existentes.
 
 ---
 
@@ -440,7 +430,6 @@ Formato `422`:
 }
 ```
 
-
 | Código                    | Cuándo                                                                     |
 | ------------------------- | -------------------------------------------------------------------------- |
 | `PENDING_EXISTS`          | Ya existe `pending` activa y `create_if_none` no puede continuar           |
@@ -449,7 +438,6 @@ Formato `422`:
 | `INVALID_STRATEGY_FIELDS` | Campos presentes/ausentes no cumplen la tabla de validación                |
 | `TARGET_MISMATCH`         | La `pending` encontrada no corresponde al target indicado                  |
 | `PENDING_NOT_ACTIVE`      | La acción a transicionar ya no está en `pending`                           |
-
 
 **Regla explícita (`update` sin pending):** si `strategy=update` y no existe `pending` activa, el backend devuelve `422` con `code = NO_PENDING_TO_UPDATE` y `errors` apuntando a `strategy` y/o `target`.
 
@@ -585,7 +573,7 @@ Siempre devuelve: `previousPending`, `currentPending`, `changed`.
 
 Caso real: dos pestañas o dos usuarios resolviendo el mismo target.
 
-- Si la `pending` cambia entre **preflight** y **submit**, el backend responde `422` con `code = STALE_PENDING` y `userMessage` accionable: *"La próxima acción ha cambiado. Recarga y revisa el estado actual."*
+- Si la `pending` cambia entre **preflight** y **submit**, el backend responde `422` con `code = STALE_PENDING` y `userMessage` accionable: _"La próxima acción ha cambiado. Recarga y revisa el estado actual."_
 - **UX**: el frontend debe mostrar aviso y **recargar la `pending` actual** (re-ejecutar preflight).
 
 ---
@@ -670,7 +658,7 @@ Devuelve:
 
 ## Pendientes de definir
 
-- **D10**: Definir si el panel contextual se basa en una copia adaptada de las vistas existentes de cliente/prospecto y qué recortes/añadidos. *(Nota: se sugiere partir de las vistas existentes, añadiendo contexto de agenda.)*
+- **D10**: Definir si el panel contextual se basa en una copia adaptada de las vistas existentes de cliente/prospecto y qué recortes/añadidos. _(Nota: se sugiere partir de las vistas existentes, añadiendo contexto de agenda.)_
 - **Copy definitivo** de los CTAs y flujo guiado (textos exactos para el comercial).
 
 ## Siguiente afinado recomendado
@@ -729,4 +717,3 @@ Esta sección aterriza cómo deben cambiar las pantallas de frontend que hoy mez
 
 - Agenda, alta de prospecto y ficha de prospecto/cliente deben usar el mismo motor de resolución de próxima acción (Paso 2), variando solo el punto de entrada UX.
 - Evitar formularios mixtos nuevos que vuelvan a mezclar, en un único submit, la lógica completa de interacción + próxima acción fuera de los casos de compatibilidad explícitos del backend.
-

@@ -19,12 +19,54 @@ export { MOCK_PALLETS_INITIAL } from './pallets';
  */
 function seedAvailableBoxes(products) {
   return [
-    { id: 10001, productId: 501, productName: 'Atún fresco', lot: 'LOT-2025-001', netWeight: 20.5, status: 'available' },
-    { id: 10002, productId: 501, productName: 'Atún fresco', lot: 'LOT-2025-001', netWeight: 19.8, status: 'available' },
-    { id: 10003, productId: 501, productName: 'Atún fresco', lot: 'LOT-2025-001', netWeight: 21.2, status: 'available' },
-    { id: 10004, productId: 502, productName: 'Salmón entero', lot: 'LOT-2025-002', netWeight: 18.0, status: 'available' },
-    { id: 10005, productId: 502, productName: 'Salmón entero', lot: 'LOT-2025-002', netWeight: 20.1, status: 'available' },
-    { id: 10006, productId: 503, productName: 'Merluza', lot: 'LOT-2025-003', netWeight: 15.5, status: 'available' },
+    {
+      id: 10001,
+      productId: 501,
+      productName: 'Atún fresco',
+      lot: 'LOT-2025-001',
+      netWeight: 20.5,
+      status: 'available',
+    },
+    {
+      id: 10002,
+      productId: 501,
+      productName: 'Atún fresco',
+      lot: 'LOT-2025-001',
+      netWeight: 19.8,
+      status: 'available',
+    },
+    {
+      id: 10003,
+      productId: 501,
+      productName: 'Atún fresco',
+      lot: 'LOT-2025-001',
+      netWeight: 21.2,
+      status: 'available',
+    },
+    {
+      id: 10004,
+      productId: 502,
+      productName: 'Salmón entero',
+      lot: 'LOT-2025-002',
+      netWeight: 18.0,
+      status: 'available',
+    },
+    {
+      id: 10005,
+      productId: 502,
+      productName: 'Salmón entero',
+      lot: 'LOT-2025-002',
+      netWeight: 20.1,
+      status: 'available',
+    },
+    {
+      id: 10006,
+      productId: 503,
+      productName: 'Merluza',
+      lot: 'LOT-2025-003',
+      netWeight: 15.5,
+      status: 'available',
+    },
   ];
 }
 

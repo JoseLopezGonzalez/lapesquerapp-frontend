@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 /**
  * Client-side payload transforms for entity forms.
@@ -8,7 +8,7 @@
 export function transformStoresPayload(data) {
   const nextData = { ...data, store_type: data.storeType };
   delete nextData.storeType;
-  if (data.storeType === "interno") {
+  if (data.storeType === 'interno') {
     nextData.external_user_id = null;
   }
   return nextData;

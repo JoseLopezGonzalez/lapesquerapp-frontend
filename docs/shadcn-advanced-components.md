@@ -6,20 +6,20 @@ Lista de componentes que **no** se han sobrescrito en la pasada actual de alinea
 
 ## Inventario
 
-| Componente | Ubicación | Peculiaridades / personalizaciones |
-|------------|-----------|-------------------------------------|
-| **sidebar** | `src/components/ui/sidebar.jsx` | Cookie de estado, atajo teclado (Ctrl/Cmd+B), ancho icon/expandido, integración con Sheet móvil, `useIsMobile`, ~630 líneas. Muy acoplado al layout. |
-| **theme-toggle** | `src/components/ui/theme-toggle.jsx` | next-themes, labels en español, estilos sidebar (border, bg), placeholder antes de mount para hidratación. |
-| **datePicker** | `src/components/ui/datePicker.jsx` | Locale `es`, formato short/long, `parseShortDate` (dd/mm/yyyy), input manual + calendar, validación de fechas. |
-| **dateRangePicker** | `src/components/ui/dateRangePicker.jsx` | Locale `es`, botones "año anterior", "último año", "año actual", `useIsMobileSafe`, ancho popover móvil, `differenceInCalendarDays` para mantener longitud del rango. |
-| **calendar** | `src/components/ui/calendar.jsx` | Usado por DatePicker y DateRangePicker, `classNames` extensos, soporte `mode="range"`, botones nav con `buttonVariants`. |
-| **command** | `src/components/ui/command.jsx` | Base del Combobox; `CommandDialog` con clases propias; usado en búsquedas/selects. Revisar si Nova cambia estilos de lista/input. |
-| **Combobox** | `src/components/Shadcn/Combobox/index.js` | No es componente de `ui/`; usa Command + Popover + Button; loading, onBlur, búsqueda, scroll al cambiar búsqueda. No sobrescribir; al actualizar Command, comprobar compatibilidad. |
-| **input-otp** | `src/components/ui/input-otp.jsx` | Estilo de slots (bordes, ring), caret blink; depende de librería `input-otp`. |
-| **emailListInput** | `src/components/ui/emailListInput.jsx` | Componente propio (no shadcn): validación email, badges con eliminación, Heroicons X. |
-| **CustomSkeleton** | `src/components/ui/CustomSkeleton.jsx` | Componente propio: shimmer, `neutral-800/700`, no es skeleton de shadcn. |
-| **chart** | `src/components/ui/chart.jsx` | Wrapper de recharts; si usáis chart primitives de shadcn, anotar si hay colores/ejes custom. |
-| **carousel** | `src/components/ui/carousel.jsx` | Embla; anotar si hay breakpoints o estilos propios. |
+| Componente          | Ubicación                                 | Peculiaridades / personalizaciones                                                                                                                                                  |
+| ------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **sidebar**         | `src/components/ui/sidebar.jsx`           | Cookie de estado, atajo teclado (Ctrl/Cmd+B), ancho icon/expandido, integración con Sheet móvil, `useIsMobile`, ~630 líneas. Muy acoplado al layout.                                |
+| **theme-toggle**    | `src/components/ui/theme-toggle.jsx`      | next-themes, labels en español, estilos sidebar (border, bg), placeholder antes de mount para hidratación.                                                                          |
+| **datePicker**      | `src/components/ui/datePicker.jsx`        | Locale `es`, formato short/long, `parseShortDate` (dd/mm/yyyy), input manual + calendar, validación de fechas.                                                                      |
+| **dateRangePicker** | `src/components/ui/dateRangePicker.jsx`   | Locale `es`, botones "año anterior", "último año", "año actual", `useIsMobileSafe`, ancho popover móvil, `differenceInCalendarDays` para mantener longitud del rango.               |
+| **calendar**        | `src/components/ui/calendar.jsx`          | Usado por DatePicker y DateRangePicker, `classNames` extensos, soporte `mode="range"`, botones nav con `buttonVariants`.                                                            |
+| **command**         | `src/components/ui/command.jsx`           | Base del Combobox; `CommandDialog` con clases propias; usado en búsquedas/selects. Revisar si Nova cambia estilos de lista/input.                                                   |
+| **Combobox**        | `src/components/Shadcn/Combobox/index.js` | No es componente de `ui/`; usa Command + Popover + Button; loading, onBlur, búsqueda, scroll al cambiar búsqueda. No sobrescribir; al actualizar Command, comprobar compatibilidad. |
+| **input-otp**       | `src/components/ui/input-otp.jsx`         | Estilo de slots (bordes, ring), caret blink; depende de librería `input-otp`.                                                                                                       |
+| **emailListInput**  | `src/components/ui/emailListInput.jsx`    | Componente propio (no shadcn): validación email, badges con eliminación, Heroicons X.                                                                                               |
+| **CustomSkeleton**  | `src/components/ui/CustomSkeleton.jsx`    | Componente propio: shimmer, `neutral-800/700`, no es skeleton de shadcn.                                                                                                            |
+| **chart**           | `src/components/ui/chart.jsx`             | Wrapper de recharts; si usáis chart primitives de shadcn, anotar si hay colores/ejes custom.                                                                                        |
+| **carousel**        | `src/components/ui/carousel.jsx`          | Embla; anotar si hay breakpoints o estilos propios.                                                                                                                                 |
 
 ## Nota sobre la instalación de básicos
 

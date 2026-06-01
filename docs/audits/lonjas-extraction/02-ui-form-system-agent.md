@@ -1,4 +1,5 @@
 # Auditoría: UI/Form System Agent
+
 # Bloque: MarketDataExtractor — Extracción de datos de documentos de lonjas
 
 **Fecha:** 2026-04-26
@@ -9,11 +10,11 @@
 
 ## 1. Archivos inspeccionados
 
-| Archivo | Relevancia |
-|---|---|
-| `src/components/Admin/MarketDataExtractor/AlbaranCofraWeb/ExportModal/index.js` | Modal con estado gestionado con `useState` |
-| `src/components/Admin/MarketDataExtractor/shared/DocumentProcessor.js` | Pipeline de procesamiento — no es formulario |
-| `src/components/Admin/MarketDataExtractor/index.js` | Entry point — no tiene campos de formulario |
+| Archivo                                                                         | Relevancia                                   |
+| ------------------------------------------------------------------------------- | -------------------------------------------- |
+| `src/components/Admin/MarketDataExtractor/AlbaranCofraWeb/ExportModal/index.js` | Modal con estado gestionado con `useState`   |
+| `src/components/Admin/MarketDataExtractor/shared/DocumentProcessor.js`          | Pipeline de procesamiento — no es formulario |
+| `src/components/Admin/MarketDataExtractor/index.js`                             | Entry point — no tiene campos de formulario  |
 
 ---
 
@@ -34,17 +35,17 @@ No hay formularios de creación/edición de entidades en este bloque. La única 
 
 ### ExportModal (AlbaranCofraWeb)
 
-| Campo | Tipo componente | Gestión estado | Validación |
-|---|---|---|---|
-| Software destino | `<Select>` shadcn | `useState(software)` | Ninguna |
-| Checkboxes de selección | `<Checkbox>` shadcn | `useState(selectedLinks[])` | Ninguna |
+| Campo                   | Tipo componente     | Gestión estado              | Validación |
+| ----------------------- | ------------------- | --------------------------- | ---------- |
+| Software destino        | `<Select>` shadcn   | `useState(software)`        | Ninguna    |
+| Checkboxes de selección | `<Checkbox>` shadcn | `useState(selectedLinks[])` | Ninguna    |
 
 ### Flujo de procesamiento (IndividualMode / MassiveMode)
 
-| Campo | Tipo componente | Gestión estado | Validación |
-|---|---|---|---|
-| File upload | Input nativo (inferido) | `useState` o handler | Ninguna explícita |
-| Tipo de documento | Select o similar | `useState` | Ninguna |
+| Campo             | Tipo componente         | Gestión estado       | Validación        |
+| ----------------- | ----------------------- | -------------------- | ----------------- |
+| File upload       | Input nativo (inferido) | `useState` o handler | Ninguna explícita |
+| Tipo de documento | Select o similar        | `useState`           | Ninguna           |
 
 ---
 
@@ -79,6 +80,7 @@ Los checkboxes usan `selectedLinks` (array de índices). La gestión es correcta
 ### 4.3 Estado del botón de submit
 
 El botón "Enlazar Compras" tiene disabled correcto:
+
 ```javascript
 disabled={selectedLinks.length === 0 || isValidating}
 ```
@@ -98,16 +100,18 @@ El botón "Exportar a A3ERP" **no tiene disabled** durante la generación del Ex
 No hay reglas de validación Zod ni de RHF en este bloque. El sistema de validación está en los **validators de estructura** (`src/validators/lonjas/`), que validan los datos extraídos de Azure, no los inputs de usuario.
 
 La única "validación de usuario" es:
+
 ```javascript
 // ExportModal/index.js:249-254
 if (comprasSeleccionadas.length === 0) {
-    notify.error({
-      title: 'Sin compras seleccionadas',
-      description: 'Seleccione al menos una compra para vincular.',
-    });
-    return;
+  notify.error({
+    title: 'Sin compras seleccionadas',
+    description: 'Seleccione al menos una compra para vincular.',
+  });
+  return;
 }
 ```
+
 Correcto — usa `notify.error` con título y descripción, consistente con el sistema de notificaciones.
 
 ---
@@ -131,13 +135,13 @@ Correcto — usa `notify.error` con título y descripción, consistente con el s
 
 ## 7. Hallazgos
 
-| # | Severidad | Hallazgo | Ubicación |
-|---|---|---|---|
-| 7.1 | **Alta** | El campo `date` en `linkedSummary` se construye como `fecha` (string del documento, formato no normalizado). Luego en `getValidationStatus()` se hace `.split('/').reverse().join('-')` para convertirlo — lógica de formato de fecha embebida en la función de validación. Si el formato de `fecha` cambia (el OCR puede extraer formatos distintos), la key de validación falla silenciosamente. | `ExportModal/index.js:209` |
-| 7.2 | **Media** | El botón "Exportar a A3ERP" siempre dice "A3ERP" aunque el Select permita elegir Facilcom u Otros. No hay feedback para opciones no implementadas. | `ExportModal/index.js:617-621` |
-| 7.3 | **Media** | `generateExcelForA3erp` no tiene estado `isLoading` — el botón no se deshabilita durante la generación. Riesgo de doble clic. | `ExportModal/index.js:50-143` |
-| 7.4 | **Baja** | `useEffect` con dependencia `[groupedLinkedSummary.length]` puede no re-ejecutarse si el array cambia de contenido sin cambiar de longitud. | `ExportModal/index.js:178-205` |
-| 7.5 | **Info** | Ausencia de React Hook Form / Zod es correcta para este tipo de bloque. | — |
+| #   | Severidad | Hallazgo                                                                                                                                                                                                                                                                                                                                                                                           | Ubicación                      |
+| --- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| 7.1 | **Alta**  | El campo `date` en `linkedSummary` se construye como `fecha` (string del documento, formato no normalizado). Luego en `getValidationStatus()` se hace `.split('/').reverse().join('-')` para convertirlo — lógica de formato de fecha embebida en la función de validación. Si el formato de `fecha` cambia (el OCR puede extraer formatos distintos), la key de validación falla silenciosamente. | `ExportModal/index.js:209`     |
+| 7.2 | **Media** | El botón "Exportar a A3ERP" siempre dice "A3ERP" aunque el Select permita elegir Facilcom u Otros. No hay feedback para opciones no implementadas.                                                                                                                                                                                                                                                 | `ExportModal/index.js:617-621` |
+| 7.3 | **Media** | `generateExcelForA3erp` no tiene estado `isLoading` — el botón no se deshabilita durante la generación. Riesgo de doble clic.                                                                                                                                                                                                                                                                      | `ExportModal/index.js:50-143`  |
+| 7.4 | **Baja**  | `useEffect` con dependencia `[groupedLinkedSummary.length]` puede no re-ejecutarse si el array cambia de contenido sin cambiar de longitud.                                                                                                                                                                                                                                                        | `ExportModal/index.js:178-205` |
+| 7.5 | **Info**  | Ausencia de React Hook Form / Zod es correcta para este tipo de bloque.                                                                                                                                                                                                                                                                                                                            | —                              |
 
 ---
 

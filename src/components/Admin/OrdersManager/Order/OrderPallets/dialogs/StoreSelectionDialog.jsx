@@ -20,16 +20,26 @@ export default function StoreSelectionDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className={isMobile ? "max-w-full w-full h-full max-h-full m-0 rounded-none flex flex-col" : "sm:max-w-md"}>
-        <DialogHeader className={isMobile ? "text-center" : ""}>
-          <DialogTitle className={`flex items-center gap-2 ${isMobile ? "justify-center" : ""}`}>
+      <DialogContent
+        className={
+          isMobile
+            ? 'm-0 flex h-full max-h-full w-full max-w-full flex-col rounded-none'
+            : 'sm:max-w-md'
+        }
+      >
+        <DialogHeader className={isMobile ? 'text-center' : ''}>
+          <DialogTitle className={`flex items-center gap-2 ${isMobile ? 'justify-center' : ''}`}>
             <Warehouse className="h-5 w-5" />
             Seleccionar Almacén
           </DialogTitle>
         </DialogHeader>
-        <div className={`space-y-4 ${isMobile ? "flex flex-col items-center justify-center flex-1" : ""}`}>
-          <div className={`space-y-2 ${isMobile ? "w-full max-w-md" : ""}`}>
-            <Label htmlFor="store-select" className={isMobile ? "text-center block" : ""}>Almacén donde se creará el palet</Label>
+        <div
+          className={`space-y-4 ${isMobile ? 'flex flex-1 flex-col items-center justify-center' : ''}`}
+        >
+          <div className={`space-y-2 ${isMobile ? 'w-full max-w-md' : ''}`}>
+            <Label htmlFor="store-select" className={isMobile ? 'block text-center' : ''}>
+              Almacén donde se creará el palet
+            </Label>
             <Combobox
               options={storeOptions}
               value={selectedStoreId || ''}
@@ -44,8 +54,9 @@ export default function StoreSelectionDialog({
               loading={loading}
             />
           </div>
-          <p className={`text-sm text-muted-foreground ${isMobile ? "text-center max-w-md" : ""}`}>
-            El palet se creará en el almacén seleccionado y se vinculará automáticamente a este pedido.
+          <p className={`text-muted-foreground text-sm ${isMobile ? 'max-w-md text-center' : ''}`}>
+            El palet se creará en el almacén seleccionado y se vinculará automáticamente a este
+            pedido.
           </p>
         </div>
       </DialogContent>

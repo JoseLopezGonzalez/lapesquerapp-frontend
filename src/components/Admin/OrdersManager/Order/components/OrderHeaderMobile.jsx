@@ -46,18 +46,16 @@ export default function OrderHeaderMobile({
           variant="ghost"
           size="icon"
           onClick={onClose}
-          className="absolute left-4 w-12 h-12 rounded-full hover:bg-muted min-w-[44px] min-h-[44px]"
+          className="hover:bg-muted absolute left-4 h-12 min-h-[44px] w-12 min-w-[44px] rounded-full"
           aria-label="Volver"
         >
           <ArrowLeft className="h-6 w-6" />
         </Button>
         <div className="flex flex-col items-center gap-1">
-          <h2 className="text-xl font-normal dark:text-white text-center">
-            #{order.id}
-          </h2>
+          <h2 className="text-center text-xl font-normal dark:text-white">#{order.id}</h2>
           {(order?.orderType ?? order?.order_type) === 'autoventa' && (
             <span
-              className="inline-flex items-center gap-1 bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 text-[10px] font-medium px-2 py-0.5 rounded-full border border-slate-400 dark:border-slate-500"
+              className="inline-flex items-center gap-1 rounded-full border border-slate-400 bg-slate-200 px-2 py-0.5 text-[10px] font-medium text-slate-800 dark:border-slate-500 dark:bg-slate-700 dark:text-slate-200"
               aria-label="Tipo de pedido: Autoventa"
             >
               <ShoppingBag className="h-3 w-3" aria-hidden />
@@ -65,7 +63,10 @@ export default function OrderHeaderMobile({
             </span>
           )}
           {order?.offerId && (
-            <Link href={`/comercial/ofertas/${order.offerId}`} className="text-xs text-primary hover:underline">
+            <Link
+              href={`/comercial/ofertas/${order.offerId}`}
+              className="text-primary text-xs hover:underline"
+            >
               Ver oferta #{order.offerId}
             </Link>
           )}
@@ -75,7 +76,7 @@ export default function OrderHeaderMobile({
             <Button
               variant="ghost"
               size="icon"
-              className="absolute right-4 w-12 h-12 rounded-full hover:bg-muted min-w-[44px] min-h-[44px]"
+              className="hover:bg-muted absolute right-4 h-12 min-h-[44px] w-12 min-w-[44px] rounded-full"
               aria-label="Más opciones"
             >
               <MoreVertical className="h-6 w-6" />
@@ -85,11 +86,8 @@ export default function OrderHeaderMobile({
             {visibleOverflowSections.map((section) => {
               const Icon = section.icon;
               return (
-                <DropdownMenuItem
-                  key={section.id}
-                  onClick={() => onNavigateSection(section.id)}
-                >
-                  <Icon className="h-4 w-4 mr-2" />
+                <DropdownMenuItem key={section.id} onClick={() => onNavigateSection(section.id)}>
+                  <Icon className="mr-2 h-4 w-4" />
                   {section.title}
                 </DropdownMenuItem>
               );
@@ -97,12 +95,12 @@ export default function OrderHeaderMobile({
             <DropdownMenuSeparator />
             {!readOnly && (
               <DropdownMenuItem onClick={onEdit}>
-                <Pencil className="h-4 w-4 mr-2" />
+                <Pencil className="mr-2 h-4 w-4" />
                 Editar pedido
               </DropdownMenuItem>
             )}
             <DropdownMenuItem onClick={onPrint}>
-              <Printer className="h-4 w-4 mr-2" />
+              <Printer className="mr-2 h-4 w-4" />
               Imprimir
             </DropdownMenuItem>
           </DropdownMenuContent>

@@ -22,13 +22,13 @@ export function Chat() {
   const [input, setInput] = useState('');
   const scrollAreaRef = useRef(null);
   const messagesEndRef = useRef(null);
-  
+
   const { messages, sendMessage, status, error } = useChat({
     api: '/api/chat',
     maxSteps: 10, // ✅ CRÍTICO: Debe coincidir con maxSteps del servidor
     // Si maxSteps difiere entre cliente y servidor, puede causar problemas con tools
   });
-  
+
   // isLoading basado en el status
   const isLoading = status === 'streaming' || status === 'in_progress';
 
@@ -37,9 +37,10 @@ export function Chat() {
     const scrollToBottom = () => {
       if (scrollAreaRef.current) {
         // Buscar el viewport del ScrollArea (Radix UI)
-        const viewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]') ||
-                         scrollAreaRef.current.querySelector('.rt-ScrollAreaViewport');
-        
+        const viewport =
+          scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]') ||
+          scrollAreaRef.current.querySelector('.rt-ScrollAreaViewport');
+
         if (viewport) {
           // Usar requestAnimationFrame para asegurar que el DOM se haya actualizado
           requestAnimationFrame(() => {
@@ -66,29 +67,35 @@ export function Chat() {
       }
     };
   }, [messages, isLoading]);
-  
+
   // Manejar cambios en el input
   const handleInputChange = useCallback((e) => {
     setInput(e.target?.value || '');
   }, []);
-  
+
   // Manejar submit del formulario
   // En AI SDK v6, sendMessage acepta { text: string } o directamente el texto
-  const handleSubmit = useCallback((e) => {
-    e?.preventDefault?.();
-    const message = input.trim();
-    if (message && !isLoading) {
-      sendMessage({ text: message });
-      setInput(''); // Limpiar input después de enviar
-    }
-  }, [input, sendMessage, isLoading]);
+  const handleSubmit = useCallback(
+    (e) => {
+      e?.preventDefault?.();
+      const message = input.trim();
+      if (message && !isLoading) {
+        sendMessage({ text: message });
+        setInput(''); // Limpiar input después de enviar
+      }
+    },
+    [input, sendMessage, isLoading]
+  );
 
   // Manejar acciones rápidas (envía mensaje al hacer clic)
-  const handleQuickAction = useCallback((message) => {
-    if (!isLoading) {
-      sendMessage({ text: message });
-    }
-  }, [sendMessage, isLoading]);
+  const handleQuickAction = useCallback(
+    (message) => {
+      if (!isLoading) {
+        sendMessage({ text: message });
+      }
+    },
+    [sendMessage, isLoading]
+  );
 
   // Acciones rápidas disponibles
   const quickActions = [
@@ -100,30 +107,29 @@ export function Chat() {
   ];
 
   return (
-    <div className="relative flex flex-col h-full border rounded-lg bg-background overflow-hidden">
+    <div className="bg-background relative flex h-full flex-col overflow-hidden rounded-lg border">
       {/* Mensajes */}
       <ScrollArea ref={scrollAreaRef} className="flex-1 p-4 pb-28">
         {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center gap-6 px-4">
+          <div className="flex h-full min-h-[400px] flex-col items-center justify-center gap-6 px-4 text-center">
             <div className="flex flex-col items-center gap-4">
-              <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
-                <Sparkles className="h-8 w-8 text-primary opacity-70" />
+              <div className="bg-primary/10 flex h-16 w-16 items-center justify-center rounded-full">
+                <Sparkles className="text-primary h-8 w-8 opacity-70" />
               </div>
               <div className="flex flex-col items-center gap-2">
-                <h3 className="text-lg font-semibold text-foreground">
-                  Hola, soy tu asistente AI
-                </h3>
-                <p className="text-sm text-muted-foreground max-w-md">
-                  Puedo ayudarte a consultar información sobre pedidos, clientes, proveedores, productos y más.
+                <h3 className="text-foreground text-lg font-semibold">Hola, soy tu asistente AI</h3>
+                <p className="text-muted-foreground max-w-md text-sm">
+                  Puedo ayudarte a consultar información sobre pedidos, clientes, proveedores,
+                  productos y más.
                 </p>
               </div>
             </div>
 
-            <div className="flex flex-col items-center gap-3 w-full max-w-2xl">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            <div className="flex w-full max-w-2xl flex-col items-center gap-3">
+              <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
                 Acciones Rápidas
               </p>
-              <div className="flex flex-wrap items-center justify-center gap-2 w-full">
+              <div className="flex w-full flex-wrap items-center justify-center gap-2">
                 {quickActions.map((action, index) => {
                   const Icon = action.icon;
                   return (
@@ -134,8 +140,8 @@ export function Chat() {
                       onClick={() => handleQuickAction(action.text)}
                       disabled={isLoading}
                       className={cn(
-                        "h-auto py-2 px-4 gap-2 text-sm",
-                        "hover:bg-primary hover:text-primary-foreground transition-colors"
+                        'h-auto gap-2 px-4 py-2 text-sm',
+                        'hover:bg-primary hover:text-primary-foreground transition-colors'
                       )}
                     >
                       <Icon className="h-4 w-4" />
@@ -152,11 +158,16 @@ export function Chat() {
       </ScrollArea>
 
       {/* Input flotante */}
-      <div className="absolute bottom-4 left-4 right-4">
-        <div className="bg-background/95 backdrop-blur-md rounded-lg shadow-lg border p-2">
+      <div className="absolute right-4 bottom-4 left-4">
+        <div className="bg-background/95 rounded-lg border p-2 shadow-lg backdrop-blur-md">
           {error && (
-            <div className="mb-2 text-sm text-destructive">
-              Error: {error.userMessage || error.data?.userMessage || error.response?.data?.userMessage || error.message || 'Ocurrió un error. Por favor intenta de nuevo.'}
+            <div className="text-destructive mb-2 text-sm">
+              Error:{' '}
+              {error.userMessage ||
+                error.data?.userMessage ||
+                error.response?.data?.userMessage ||
+                error.message ||
+                'Ocurrió un error. Por favor intenta de nuevo.'}
             </div>
           )}
           <MessageInput
@@ -170,4 +181,3 @@ export function Chat() {
     </div>
   );
 }
-

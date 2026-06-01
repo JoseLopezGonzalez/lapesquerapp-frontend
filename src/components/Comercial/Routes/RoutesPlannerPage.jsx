@@ -39,7 +39,11 @@ import { CreatePlannerItemDialog } from './CreatePlannerItemDialog';
 
 const MEDIUM_VAN_DIESEL_CONSUMPTION_L_PER_100KM = 9.5;
 
-export default function RoutesPlannerPage({ initialTab = 'routes', routeId = null, templateId = null }) {
+export default function RoutesPlannerPage({
+  initialTab = 'routes',
+  routeId = null,
+  templateId = null,
+}) {
   const router = useRouter();
   const loadedRouteIdRef = useRef(null);
   const loadedTemplateIdRef = useRef(null);
@@ -62,7 +66,10 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
   const stopEditorOpen = Boolean(editingStop || creatingStop);
   const { data: customersData } = useCustomersList({ perPage: 250, enabled: stopEditorOpen });
   const { data: prospectsData } = useProspectsList({ perPage: 250, enabled: stopEditorOpen });
-  const { data: routesData, isLoading: loadingRoutes } = useRoutes({ perPage: 50 }, { enabled: isRoutesTab });
+  const { data: routesData, isLoading: loadingRoutes } = useRoutes(
+    { perPage: 50 },
+    { enabled: isRoutesTab }
+  );
   const { data: templatesData, isLoading: loadingTemplates } = useRouteTemplates(
     { perPage: 50 },
     { enabled: !isRoutesTab }
@@ -74,11 +81,19 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
   const routes = useMemo(() => routesData?.items ?? [], [routesData]);
   const templates = useMemo(() => templatesData?.items ?? [], [templatesData]);
   const routeTemplateOptions = useMemo(
-    () => templates.map((template) => ({ value: String(template.id), label: template.name ?? `Plantilla ${template.id}` })),
+    () =>
+      templates.map((template) => ({
+        value: String(template.id),
+        label: template.name ?? `Plantilla ${template.id}`,
+      })),
     [templates]
   );
   const customerOptions = useMemo(
-    () => (customersData ?? []).map((customer) => ({ value: String(customer.id), label: customer.name })),
+    () =>
+      (customersData ?? []).map((customer) => ({
+        value: String(customer.id),
+        label: customer.name,
+      })),
     [customersData]
   );
   const prospectOptions = useMemo(
@@ -94,28 +109,33 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
     if (tab === 'routes') {
       return Boolean(
         routeDraft.id ||
-          routeDraft.name ||
-          routeDraft.description ||
-          routeDraft.routeDate ||
-          routeDraft.fieldOperatorId ||
-          routeDraft.routeTemplateId ||
-          routeDraft.stops.length
+        routeDraft.name ||
+        routeDraft.description ||
+        routeDraft.routeDate ||
+        routeDraft.fieldOperatorId ||
+        routeDraft.routeTemplateId ||
+        routeDraft.stops.length
       );
     }
 
     return Boolean(
       templateDraft.id ||
-        templateDraft.name ||
-        templateDraft.description ||
-        templateDraft.fieldOperatorId ||
-        templateDraft.stops.length
+      templateDraft.name ||
+      templateDraft.description ||
+      templateDraft.fieldOperatorId ||
+      templateDraft.stops.length
     );
   }, [routeDraft, tab, templateDraft]);
-  const { routeGeometry, directionsError, isCalculatingRoute } = useRouteGeometry(currentDraft.stops, {
-    enabled: detailMode,
-  });
+  const { routeGeometry, directionsError, isCalculatingRoute } = useRouteGeometry(
+    currentDraft.stops,
+    {
+      enabled: detailMode,
+    }
+  );
   const routeMetrics = useMemo(() => {
-    const coordinatesCount = currentDraft.stops.filter((stop) => stop?.lat != null && stop?.lng != null).length;
+    const coordinatesCount = currentDraft.stops.filter(
+      (stop) => stop?.lat != null && stop?.lng != null
+    ).length;
     const distanceMeters = routeGeometry?.properties?.distance ?? null;
     const distanceKm = Number.isFinite(distanceMeters) ? distanceMeters / 1000 : null;
     return {
@@ -132,7 +152,8 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
       return null;
     }
 
-    const litersNeeded = (routeMetrics.distanceKm * MEDIUM_VAN_DIESEL_CONSUMPTION_L_PER_100KM) / 100;
+    const litersNeeded =
+      (routeMetrics.distanceKm * MEDIUM_VAN_DIESEL_CONSUMPTION_L_PER_100KM) / 100;
     const totalCost = litersNeeded * dieselAverage.value;
 
     return {
@@ -182,7 +203,9 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
     const payload = {
       name: currentDraft.name,
       description: currentDraft.description || undefined,
-      fieldOperatorId: currentDraft.fieldOperatorId ? Number(currentDraft.fieldOperatorId) : undefined,
+      fieldOperatorId: currentDraft.fieldOperatorId
+        ? Number(currentDraft.fieldOperatorId)
+        : undefined,
       ...(tab === 'routes' ? { routeDate: routeDraft.routeDate || undefined } : {}),
     };
 
@@ -190,7 +213,10 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
 
     if (tab === 'routes') {
       const canInstantiateFromTemplate =
-        !routeDraft.id && routeDraft.routeTemplateId && routeDraft.sourceMode === 'template' && !routeDraft.stopsEdited;
+        !routeDraft.id &&
+        routeDraft.routeTemplateId &&
+        routeDraft.sourceMode === 'template' &&
+        !routeDraft.stopsEdited;
 
       if (canInstantiateFromTemplate) {
         payload.routeTemplateId = Number(routeDraft.routeTemplateId);
@@ -204,56 +230,62 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
     try {
       if (tab === 'routes') {
         if (routeDraft.id) {
-          await notify.promise(
-            updateRoute({ routeId: routeDraft.id, payload }),
-            {
-              loading: { title: 'Actualizando ruta', description: 'Guardando cambios en la ruta programada.' },
-              success: { title: 'Ruta actualizada', description: 'La ruta se ha guardado correctamente.' },
-              error: (err) => ({
-                title: 'No se pudo guardar la ruta',
-                description: err?.message ?? 'Inténtalo de nuevo.',
-              }),
-            }
-          );
+          await notify.promise(updateRoute({ routeId: routeDraft.id, payload }), {
+            loading: {
+              title: 'Actualizando ruta',
+              description: 'Guardando cambios en la ruta programada.',
+            },
+            success: {
+              title: 'Ruta actualizada',
+              description: 'La ruta se ha guardado correctamente.',
+            },
+            error: (err) => ({
+              title: 'No se pudo guardar la ruta',
+              description: err?.message ?? 'Inténtalo de nuevo.',
+            }),
+          });
         } else {
-          const response = await notify.promise(
-            createRoute(payload),
-            {
-              loading: { title: 'Creando ruta', description: 'Guardando la nueva ruta programada.' },
-              success: { title: 'Ruta creada', description: 'La ruta se ha creado correctamente.' },
-              error: (err) => ({
-                title: 'No se pudo crear la ruta',
-                description: err?.message ?? 'Inténtalo de nuevo.',
-              }),
-            }
-          );
+          const response = await notify.promise(createRoute(payload), {
+            loading: { title: 'Creando ruta', description: 'Guardando la nueva ruta programada.' },
+            success: { title: 'Ruta creada', description: 'La ruta se ha creado correctamente.' },
+            error: (err) => ({
+              title: 'No se pudo crear la ruta',
+              description: err?.message ?? 'Inténtalo de nuevo.',
+            }),
+          });
           const created = response?.data ?? response;
           if (created?.id) router.push(`/comercial/rutas/${created.id}`);
         }
       } else if (templateDraft.id) {
-        await notify.promise(
-          updateTemplate({ templateId: templateDraft.id, payload }),
-          {
-            loading: { title: 'Actualizando plantilla', description: 'Guardando cambios en la plantilla de ruta.' },
-            success: { title: 'Plantilla actualizada', description: 'La plantilla se ha guardado correctamente.' },
-            error: (err) => ({
-              title: 'No se pudo guardar la plantilla',
-              description: err?.message ?? 'Inténtalo de nuevo.',
-            }),
-          }
-        );
+        await notify.promise(updateTemplate({ templateId: templateDraft.id, payload }), {
+          loading: {
+            title: 'Actualizando plantilla',
+            description: 'Guardando cambios en la plantilla de ruta.',
+          },
+          success: {
+            title: 'Plantilla actualizada',
+            description: 'La plantilla se ha guardado correctamente.',
+          },
+          error: (err) => ({
+            title: 'No se pudo guardar la plantilla',
+            description: err?.message ?? 'Inténtalo de nuevo.',
+          }),
+        });
       } else {
-        const response = await notify.promise(
-          createTemplate(payload),
-          {
-            loading: { title: 'Creando plantilla', description: 'Guardando la nueva plantilla de ruta.' },
-            success: { title: 'Plantilla creada', description: 'La plantilla se ha creado correctamente.' },
-            error: (err) => ({
-              title: 'No se pudo crear la plantilla',
-              description: err?.message ?? 'Inténtalo de nuevo.',
-            }),
-          }
-        );
+        const response = await notify.promise(createTemplate(payload), {
+          loading: {
+            title: 'Creando plantilla',
+            description: 'Guardando la nueva plantilla de ruta.',
+          },
+          success: {
+            title: 'Plantilla creada',
+            description: 'La plantilla se ha creado correctamente.',
+          },
+          error: (err) => ({
+            title: 'No se pudo crear la plantilla',
+            description: err?.message ?? 'Inténtalo de nuevo.',
+          }),
+        });
         const created = response?.data ?? response;
         if (created?.id) router.push(`/comercial/rutas/plantillas/${created.id}`);
       }
@@ -370,16 +402,19 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
     }));
   };
 
-  const handleMapClick = useCallback((event) => {
-    openCreateStopDialog({
-      label: `Parada ${currentDraft.stops.length + 1}`,
-      address: `${event.lngLat.lat.toFixed(5)}, ${event.lngLat.lng.toFixed(5)}`,
-      lat: event.lngLat.lat,
-      lng: event.lngLat.lng,
-      targetType: 'location',
-      stopType: 'oportunidad',
-    });
-  }, [currentDraft.stops.length]);
+  const handleMapClick = useCallback(
+    (event) => {
+      openCreateStopDialog({
+        label: `Parada ${currentDraft.stops.length + 1}`,
+        address: `${event.lngLat.lat.toFixed(5)}, ${event.lngLat.lng.toFixed(5)}`,
+        lat: event.lngLat.lat,
+        lng: event.lngLat.lng,
+        targetType: 'location',
+        stopType: 'oportunidad',
+      });
+    },
+    [currentDraft.stops.length]
+  );
 
   const handleDragEnd = (event) => {
     const { active, over } = event;
@@ -401,14 +436,20 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
   const selectedId = tab === 'routes' ? routeDraft.id : templateDraft.id;
   const detailTitle =
     tab === 'routes'
-      ? routeDraft.id ? 'Editar ruta' : 'Nueva ruta'
-      : templateDraft.id ? 'Editar plantilla' : 'Nueva plantilla';
+      ? routeDraft.id
+        ? 'Editar ruta'
+        : 'Nueva ruta'
+      : templateDraft.id
+        ? 'Editar plantilla'
+        : 'Nueva plantilla';
   const detailDescription =
     tab === 'routes'
       ? 'Edita la ruta con el mapa como herramienta principal y valida si es viable antes de guardarla.'
       : 'Define una plantilla reutilizable con la misma lógica visual de planificación.';
   const selectedFieldOperatorLabel = useMemo(
-    () => fieldOperatorOptions.find((option) => option.value === currentDraft.fieldOperatorId)?.label ?? 'Sin repartidor',
+    () =>
+      fieldOperatorOptions.find((option) => option.value === currentDraft.fieldOperatorId)?.label ??
+      'Sin repartidor',
     [currentDraft.fieldOperatorId, fieldOperatorOptions]
   );
   const detailEntityLabel = tab === 'routes' ? 'ruta' : 'plantilla';
@@ -459,11 +500,13 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
           isLoading={isLoading}
           items={sidebarItems}
           selectedId={selectedId}
-          onSelectItem={(item) => (tab === 'routes' ? handleSelectRoute(item) : handleSelectTemplate(item))}
+          onSelectItem={(item) =>
+            tab === 'routes' ? handleSelectRoute(item) : handleSelectTemplate(item)
+          }
         />
       ) : (
         <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col gap-4">
-          <div className="relative min-h-[72vh] w-full min-w-0 flex-1 overflow-hidden rounded-[28px] border bg-muted/20 shadow-sm">
+          <div className="bg-muted/20 relative min-h-[72vh] w-full min-w-0 flex-1 overflow-hidden rounded-[28px] border shadow-sm">
             {loadingSelectedItem ? (
               <div className="flex h-full min-h-[72vh] items-center justify-center p-6">
                 <Loader />
@@ -471,8 +514,10 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
             ) : detailNotFound ? (
               <div className="flex h-full min-h-[72vh] items-center justify-center p-6">
                 <EmptyState
-                  icon={<Route className="h-10 w-10 text-primary" />}
-                  title={detailNotFound === 'route' ? 'Ruta no encontrada' : 'Plantilla no encontrada'}
+                  icon={<Route className="text-primary h-10 w-10" />}
+                  title={
+                    detailNotFound === 'route' ? 'Ruta no encontrada' : 'Plantilla no encontrada'
+                  }
                   description="No hemos podido cargar el elemento seleccionado. Vuelve al listado y prueba de nuevo."
                   className="min-h-[260px] bg-transparent"
                 />
@@ -480,7 +525,7 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
             ) : (
               <>
                 {directionsError && (
-                  <div className="absolute top-4 left-4 right-4 z-20 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900 md:right-auto md:max-w-md">
+                  <div className="absolute top-4 right-4 left-4 z-20 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900 md:right-auto md:max-w-md">
                     {directionsError} Mostramos una línea estimada mientras tanto.
                   </div>
                 )}
@@ -528,12 +573,16 @@ export default function RoutesPlannerPage({ initialTab = 'routes', routeId = nul
           if (tab === 'routes') {
             markRouteStopsEdited((current) => ({
               ...current,
-              stops: current.stops.map((item) => (item.id === enrichedStop.id ? enrichedStop : item)),
+              stops: current.stops.map((item) =>
+                item.id === enrichedStop.id ? enrichedStop : item
+              ),
             }));
           } else {
             setTemplateDraft((current) => ({
               ...current,
-              stops: current.stops.map((item) => (item.id === enrichedStop.id ? enrichedStop : item)),
+              stops: current.stops.map((item) =>
+                item.id === enrichedStop.id ? enrichedStop : item
+              ),
             }));
           }
           setEditingStop(null);

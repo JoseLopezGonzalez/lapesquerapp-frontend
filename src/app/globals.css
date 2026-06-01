@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 /* radix-nova: componentes que usan data-active: (ej. Tabs) reciben estilos cuando Radix pone data-state="active" */
@@ -204,8 +204,8 @@
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible,
-[role="combobox"]:focus-visible,
-[role="listbox"]:focus-visible,
+[role='combobox']:focus-visible,
+[role='listbox']:focus-visible,
 .command-input-wrapper input:focus-visible,
 [cmdk-input-wrapper] input:focus-visible,
 [cmdk-input]:focus-visible {
@@ -215,12 +215,15 @@ select:focus-visible,
 
 /* ---- TU CSS CUSTOM (igual que lo tenías) ---- */
 /* Login background */
-.login-background { position: relative; z-index: 0; }
+.login-background {
+  position: relative;
+  z-index: 0;
+}
 .login-background::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
-  background-image: url("/images/background-light-v2.png");
+  background-image: url('/images/background-light-v2.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -229,15 +232,23 @@ select:focus-visible,
   z-index: -1;
 }
 .dark .login-background::before {
-  background-image: url("/images/background-dark.png");
+  background-image: url('/images/background-dark.png');
   opacity: 0.15;
 }
 
-.preserve-line-breaks { white-space: pre-line; }
-.bold-first-line::first-line { font-weight: bold; }
+.preserve-line-breaks {
+  white-space: pre-line;
+}
+.bold-first-line::first-line {
+  font-weight: bold;
+}
 
 /* Scrollbar */
-::-webkit-scrollbar { width: 10px; height: 10px; background: transparent; }
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+  background: transparent;
+}
 ::-webkit-scrollbar-thumb {
   background: var(--border);
   border-radius: 9999px;
@@ -245,61 +256,115 @@ select:focus-visible,
   min-width: 24px;
   transition: background 0.2s;
 }
-::-webkit-scrollbar-thumb:hover { background: var(--muted-foreground); }
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
 ::-webkit-scrollbar-track,
 ::-webkit-scrollbar-button,
 ::-webkit-scrollbar-button:start,
 ::-webkit-scrollbar-button:end,
-::-webkit-scrollbar-corner { display: none; }
-* { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+::-webkit-scrollbar-corner {
+  display: none;
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
 
 /* print */
-@media print { #headlessui-portal-root { display: none; } }
+@media print {
+  #headlessui-portal-root {
+    display: none;
+  }
+}
 
 /* postit */
 .postit::after {
-  content: "";
+  content: '';
   position: absolute;
   bottom: 0;
   right: 0;
   width: 50px;
   height: 50px;
-  background-color: rgba(255,255,255,0.6);
+  background-color: rgba(255, 255, 255, 0.6);
   border-bottom-left-radius: 12px;
-  box-shadow: -3px -3px 4px rgba(0,0,0,0.2);
+  box-shadow: -3px -3px 4px rgba(0, 0, 0, 0.2);
   clip-path: polygon(0 0, 100% 0, 0 100%);
 }
 
 /* flash */
-.flash { animation: flash 1s linear infinite; }
-@keyframes flash { 0%{opacity:1;} 50%{opacity:0;} 100%{opacity:1;} }
+.flash {
+  animation: flash 1s linear infinite;
+}
+@keyframes flash {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
 
-.z-max { z-index: 9999; }
-[data-sonner-toaster] { z-index: 9999 !important; }
+.z-max {
+  z-index: 9999;
+}
+[data-sonner-toaster] {
+  z-index: 9999 !important;
+}
 
-.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
 
-.lottie { display: flex; justify-content: center; align-items: center; }
+.lottie {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
-.masonry-column { background-clip: padding-box; }
-.masonry-grid { display: flex; width: auto; margin-left: -1rem; }
+.masonry-column {
+  background-clip: padding-box;
+}
+.masonry-grid {
+  display: flex;
+  width: auto;
+  margin-left: -1rem;
+}
 .masonry-grid_column {
   padding-left: 1rem;
   background-clip: padding-box;
   min-width: 320px;
 }
-.masonry-grid_column > div { display: block; margin-bottom: 1rem; }
+.masonry-grid_column > div {
+  display: block;
+  margin-bottom: 1rem;
+}
 
 /* Sidebar layout: ensure spacer and fixed panel have width when expanded (Tailwind v4 compat) */
-[data-sidebar-root][data-state="expanded"] > div:first-child {
+[data-sidebar-root][data-state='expanded'] > div:first-child {
   width: var(--sidebar-width);
 }
-[data-sidebar-root][data-state="expanded"] > div:nth-child(2) {
+[data-sidebar-root][data-state='expanded'] > div:nth-child(2) {
   width: var(--sidebar-width);
 }
 
 @layer utilities {
-  @keyframes shimmer { 0%{transform:translateX(-100%);} 100%{transform:translateX(100%);} }
-  .animate-shimmer { animation: shimmer 1.5s infinite; }
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+  .animate-shimmer {
+    animation: shimmer 1.5s infinite;
+  }
 }

@@ -2,10 +2,25 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { format } from 'date-fns';
-import { Calendar, CalendarClock, CalendarOff, FilePen, Loader2, Lock, Sparkles } from 'lucide-react';
+import {
+  Calendar,
+  CalendarClock,
+  CalendarOff,
+  FilePen,
+  Loader2,
+  Lock,
+  Sparkles,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/datePicker';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { notify } from '@/lib/notifications';
@@ -52,9 +67,20 @@ function getAllowedStrategies(hasPending) {
   return ['create_if_none'];
 }
 
-export default function ResolveNextActionDialog({ open, onOpenChange, targetType, targetId, sourceInteractionId = null, onViewAction = null }) {
+export default function ResolveNextActionDialog({
+  open,
+  onOpenChange,
+  targetType,
+  targetId,
+  sourceInteractionId = null,
+  onViewAction = null,
+}) {
   const { resolveNextAction } = useAgendaMutations();
-  const { data: pendingData, isLoading: pendingLoading, refetch: refetchPending } = usePendingAgendaAction(targetType, targetId, open);
+  const {
+    data: pendingData,
+    isLoading: pendingLoading,
+    refetch: refetchPending,
+  } = usePendingAgendaAction(targetType, targetId, open);
   const pending = pendingData?.pendingAction ?? null;
 
   const [strategy, setStrategy] = useState('create_if_none');
@@ -94,9 +120,18 @@ export default function ResolveNextActionDialog({ open, onOpenChange, targetType
   // override: fecha + reason requeridos; description opcional
   // create_if_none: fecha requerida; description opcional; prohíbe reason
   // keep: sin campos adicionales
-  const requiresDate = useMemo(() => ['create_if_none', 'reschedule', 'reschedule_with_description', 'override'].includes(strategy), [strategy]);
+  const requiresDate = useMemo(
+    () =>
+      ['create_if_none', 'reschedule', 'reschedule_with_description', 'override'].includes(
+        strategy
+      ),
+    [strategy]
+  );
   const requiresDescription = strategy === 'reschedule_with_description';
-  const showsDescription = useMemo(() => ['reschedule_with_description', 'override', 'create_if_none'].includes(strategy), [strategy]);
+  const showsDescription = useMemo(
+    () => ['reschedule_with_description', 'override', 'create_if_none'].includes(strategy),
+    [strategy]
+  );
   const requiresReason = strategy === 'override';
   const allowsSourceInteraction = strategy !== 'keep';
 
@@ -130,13 +165,15 @@ export default function ResolveNextActionDialog({ open, onOpenChange, targetType
     if (requiresDate && nextActionAt) payload.nextActionAt = format(nextActionAt, 'yyyy-MM-dd');
     if (showsDescription) payload.description = description.trim() || null;
     if (requiresReason) payload.reason = reason.trim();
-    if (allowsSourceInteraction && sourceInteractionId) payload.sourceInteractionId = sourceInteractionId;
+    if (allowsSourceInteraction && sourceInteractionId)
+      payload.sourceInteractionId = sourceInteractionId;
 
     try {
       await notify.promise(resolveNextAction.mutateAsync(payload), {
         loading: 'Resolviendo próxima acción...',
         success: 'Próxima acción actualizada',
-        error: (error) => getAgendaDomainErrorMessage(error, 'No se pudo resolver la próxima acción'),
+        error: (error) =>
+          getAgendaDomainErrorMessage(error, 'No se pudo resolver la próxima acción'),
       });
       onOpenChange(false);
     } catch (error) {
@@ -197,7 +234,9 @@ export default function ResolveNextActionDialog({ open, onOpenChange, targetType
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent size="md">
         <DialogHeader>
-          <DialogTitle>{hasPending ? 'Gestionar próxima acción' : 'Nueva próxima acción'}</DialogTitle>
+          <DialogTitle>
+            {hasPending ? 'Gestionar próxima acción' : 'Nueva próxima acción'}
+          </DialogTitle>
           <DialogDescription>
             {hasPending
               ? 'Ya hay una acción pendiente. Elige qué hacer con ella.'
@@ -207,32 +246,31 @@ export default function ResolveNextActionDialog({ open, onOpenChange, targetType
 
         <div className="grid gap-4">
           {/* Bloque de pendiente: solo si hay una o está cargando */}
-          {(pendingLoading || hasPending) && (
-            pendingLoading ? (
-              <div className="rounded-xl border bg-muted/10 p-4">
-                <p className="text-sm text-muted-foreground">Consultando acción pendiente...</p>
+          {(pendingLoading || hasPending) &&
+            (pendingLoading ? (
+              <div className="bg-muted/10 rounded-xl border p-4">
+                <p className="text-muted-foreground text-sm">Consultando acción pendiente...</p>
               </div>
             ) : (
               <button
                 type="button"
                 disabled={!onViewAction}
                 onClick={() => onViewAction?.(pending)}
-                className="w-full rounded-xl border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30 p-3 flex items-start gap-3 text-left transition-colors enabled:hover:bg-amber-100 dark:enabled:hover:bg-amber-900/40 enabled:cursor-pointer disabled:cursor-default"
+                className="flex w-full items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-left transition-colors enabled:cursor-pointer enabled:hover:bg-amber-100 disabled:cursor-default dark:border-amber-800 dark:bg-amber-950/30 dark:enabled:hover:bg-amber-900/40"
               >
-                <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 mt-0.5">
+                <div className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-600 dark:bg-amber-900/50 dark:text-amber-400">
                   <Calendar className="size-3.5" />
                 </div>
-                <div className="space-y-0.5 min-w-0">
+                <div className="min-w-0 space-y-0.5">
                   <p className="text-xs font-medium text-amber-700 dark:text-amber-400">
                     {formatDateValue(pending.scheduledAt)}
                   </p>
                   {pending.description && (
-                    <p className="text-sm text-foreground leading-snug">{pending.description}</p>
+                    <p className="text-foreground text-sm leading-snug">{pending.description}</p>
                   )}
                 </div>
               </button>
-            )
-          )}
+            ))}
 
           {hasPending && step === 'strategy' ? (
             <div className="grid gap-2">
@@ -248,20 +286,26 @@ export default function ResolveNextActionDialog({ open, onOpenChange, targetType
                       onClick={() => setStrategy(item.value)}
                       className={`flex items-start gap-3 rounded-xl border p-3 text-left transition-colors ${
                         selected
-                          ? 'border-primary bg-primary/5 ring-1 ring-primary/30'
+                          ? 'border-primary bg-primary/5 ring-primary/30 ring-1'
                           : 'border-border bg-background hover:bg-muted/50'
                       }`}
                     >
-                      <div className={`flex size-8 shrink-0 items-center justify-center rounded-lg mt-0.5 ${
-                        selected ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
-                      }`}>
+                      <div
+                        className={`mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg ${
+                          selected ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+                        }`}
+                      >
                         <Icon className="size-4" />
                       </div>
                       <div className="space-y-0.5">
-                        <p className={`text-sm font-medium leading-none ${selected ? 'text-primary' : 'text-foreground'}`}>
+                        <p
+                          className={`text-sm leading-none font-medium ${selected ? 'text-primary' : 'text-foreground'}`}
+                        >
                           {item.label}
                         </p>
-                        <p className="text-xs text-muted-foreground leading-snug">{item.description}</p>
+                        <p className="text-muted-foreground text-xs leading-snug">
+                          {item.description}
+                        </p>
                       </div>
                     </button>
                   );
@@ -270,7 +314,6 @@ export default function ResolveNextActionDialog({ open, onOpenChange, targetType
             </div>
           ) : (
             <>
-
               {requiresDate && (
                 <div className="grid gap-2">
                   <Label>Fecha</Label>
@@ -282,7 +325,12 @@ export default function ResolveNextActionDialog({ open, onOpenChange, targetType
                 <div className="grid gap-2">
                   <div className="flex items-center justify-between gap-2">
                     <Label htmlFor="resolve-next-action-description">
-                      Descripción{!requiresDescription && <span className="ml-1 text-xs font-normal text-muted-foreground">(opcional)</span>}
+                      Descripción
+                      {!requiresDescription && (
+                        <span className="text-muted-foreground ml-1 text-xs font-normal">
+                          (opcional)
+                        </span>
+                      )}
                     </Label>
                     <Button
                       type="button"

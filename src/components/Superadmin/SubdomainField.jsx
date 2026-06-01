@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, useRef } from "react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
-import { fetchSuperadmin } from "@/lib/superadminApi";
+import React, { useState, useEffect, useRef } from 'react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { fetchSuperadmin } from '@/lib/superadminApi';
 
 const SUBDOMAIN_RE = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/;
 const DEBOUNCE_MS = 300;
@@ -12,26 +12,28 @@ const DEBOUNCE_MS = 300;
 export default function SubdomainField({ value, onChange, error: externalError }) {
   const [checking, setChecking] = useState(false);
   const [available, setAvailable] = useState(null);
-  const [formatError, setFormatError] = useState("");
+  const [formatError, setFormatError] = useState('');
   const debounceRef = useRef(null);
 
   const validate = (v) => {
     if (!v) {
-      setFormatError("");
+      setFormatError('');
       setAvailable(null);
       return;
     }
     if (!SUBDOMAIN_RE.test(v)) {
-      setFormatError("Solo letras minusculas, numeros y guiones. No puede empezar/terminar con guion.");
+      setFormatError(
+        'Solo letras minusculas, numeros y guiones. No puede empezar/terminar con guion.'
+      );
       setAvailable(null);
       return;
     }
     if (v.length > 63) {
-      setFormatError("Maximo 63 caracteres.");
+      setFormatError('Maximo 63 caracteres.');
       setAvailable(null);
       return;
     }
-    setFormatError("");
+    setFormatError('');
   };
 
   useEffect(() => {
@@ -43,7 +45,9 @@ export default function SubdomainField({ value, onChange, error: externalError }
     setChecking(true);
     debounceRef.current = setTimeout(async () => {
       try {
-        const res = await fetchSuperadmin(`/tenants?search=${encodeURIComponent(value)}&per_page=1`);
+        const res = await fetchSuperadmin(
+          `/tenants?search=${encodeURIComponent(value)}&per_page=1`
+        );
         const json = await res.json();
         const taken = (json.data || []).some(
           (t) => t.subdomain.toLowerCase() === value.toLowerCase()
@@ -60,7 +64,7 @@ export default function SubdomainField({ value, onChange, error: externalError }
   }, [value]);
 
   const handleChange = (e) => {
-    const v = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "");
+    const v = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
     validate(v);
     onChange(v);
   };
@@ -79,22 +83,18 @@ export default function SubdomainField({ value, onChange, error: externalError }
           maxLength={63}
           className="pr-10"
         />
-        <div className="absolute right-3 top-1/2 -translate-y-1/2">
-          {checking && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+        <div className="absolute top-1/2 right-3 -translate-y-1/2">
+          {checking && <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />}
           {!checking && available === true && <CheckCircle2 className="h-4 w-4 text-green-500" />}
-          {!checking && available === false && <XCircle className="h-4 w-4 text-destructive" />}
+          {!checking && available === false && <XCircle className="text-destructive h-4 w-4" />}
         </div>
       </div>
       {value && !displayError && (
-        <p className="text-xs text-muted-foreground">
-          {value}.lapesquerapp.es
-        </p>
+        <p className="text-muted-foreground text-xs">{value}.lapesquerapp.es</p>
       )}
-      {displayError && (
-        <p className="text-xs text-destructive">{displayError}</p>
-      )}
+      {displayError && <p className="text-destructive text-xs">{displayError}</p>}
       {!checking && available === false && !displayError && (
-        <p className="text-xs text-destructive">Este subdominio ya esta en uso.</p>
+        <p className="text-destructive text-xs">Este subdominio ya esta en uso.</p>
       )}
     </div>
   );

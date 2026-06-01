@@ -70,6 +70,7 @@ Si el diff incluye cambios en `src/configs/entitiesConfig.js` y no hay indicaci�
 ### 5. ¿Se añadió lógica a los hooks gigantes?
 
 Si el diff muestra líneas añadidas en:
+
 - `src/hooks/useOrder.js`
 - `src/hooks/usePallet.js`
 - `src/hooks/useLabelEditor.ts`
@@ -86,10 +87,10 @@ Si el diff muestra líneas añadidas en:
 // ⚠️ WARNING
 const data: any = response;
 function process(input: any) {}
-(something as any).method()
+(something as any).method();
 
 // ✅ Corrección propuesta
-const data: unknown = response;          // luego narrowing
+const data: unknown = response; // luego narrowing
 function process(input: Record<string, unknown>) {}
 ```
 
@@ -108,7 +109,7 @@ someCode();
 
 ```typescript
 // ⚠️ WARNING — al importar en un archivo nuevo un legacy .js
-import { something } from '@/lib/fetchWithTenant.js';  // TODO: migrate to .ts
+import { something } from '@/lib/fetchWithTenant.js'; // TODO: migrate to .ts
 
 // Si el archivo importado es legacy, añadir comentario
 // TODO: migrate to .ts
@@ -136,10 +137,10 @@ enabled: !!tenantId && enabled,
 
 ```typescript
 // ❌ PROBLEMA — queryKey sin tenant, datos de un tenant pueden contaminar a otro
-queryKey: customerListKeys.list(filters, page)
+queryKey: customerListKeys.list(filters, page);
 
 // ✅ Correcto
-queryKey: customerListKeys.list(tenantId, filters, page)
+queryKey: customerListKeys.list(tenantId, filters, page);
 ```
 
 ---
@@ -219,9 +220,12 @@ function CustomerList() {
   const [loading, setLoading] = useState(false);
   useEffect(() => {
     setLoading(true);
-    fetch('/api/v2/customers')  // ← fetch directo + lógica en componente
-      .then(r => r.json())
-      .then(data => { setCustomers(data); setLoading(false); });
+    fetch('/api/v2/customers') // ← fetch directo + lógica en componente
+      .then((r) => r.json())
+      .then((data) => {
+        setCustomers(data);
+        setLoading(false);
+      });
   }, []);
   // ...
 }
@@ -233,10 +237,10 @@ function CustomerList() {
 
 ```typescript
 // ❌ Lógica de API en el componente o hook directamente
-const data = await apiGet(`${API_URL_V2}customers`, token);  // en un hook
+const data = await apiGet(`${API_URL_V2}customers`, token); // en un hook
 
 // ✅ En el service
-const data = await customerService.list();  // el hook solo llama al service
+const data = await customerService.list(); // el hook solo llama al service
 ```
 
 ---

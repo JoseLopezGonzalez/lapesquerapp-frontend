@@ -3,14 +3,44 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { CalendarClock, CircleDot, MapPin, Mail, MessageCircle, Phone, Loader2, Plus, MoreVertical, Pencil } from 'lucide-react';
+import {
+  CalendarClock,
+  CircleDot,
+  MapPin,
+  Mail,
+  MessageCircle,
+  Phone,
+  Loader2,
+  Plus,
+  MoreVertical,
+  Pencil,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components/ui/input-group';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from '@/components/ui/input-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useCustomersList } from '@/hooks/useCustomersList';
@@ -24,15 +54,32 @@ import { getCustomer } from '@/services/customerService';
 import { useSession } from 'next-auth/react';
 import QuickInteractionModal from './QuickInteractionModal';
 import ResolveNextActionDialog from './ResolveNextActionDialog';
-import { formatDateValue, formatDateTimeValue, interactionResultLabels, interactionTypeLabels, offerStatusLabels } from './utils';
+import {
+  formatDateValue,
+  formatDateTimeValue,
+  interactionResultLabels,
+  interactionTypeLabels,
+  offerStatusLabels,
+} from './utils';
 import StatusPill from './StatusPill';
 import ProspectLocationMap from './ProspectLocationMap';
 import CustomerEditDialog from './CustomerEditDialog';
 import Loader from '@/components/Utilities/Loader';
 import CustomerOrderHistoryView from '@/components/Shared/CustomerOrderHistoryView';
 import StatusBadge from '@/components/Admin/OrdersManager/StatusBadge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { formatDecimalCurrency, formatDecimalWeight, formatInteger } from '@/helpers/formats/numbers/formatNumbers';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  formatDecimalCurrency,
+  formatDecimalWeight,
+  formatInteger,
+} from '@/helpers/formats/numbers/formatNumbers';
 import { customerListKeys } from '@/lib/routes/queryKeys';
 
 const CUSTOMERS_PER_PAGE = 12;
@@ -50,7 +97,8 @@ function getInteractionOriginMeta(interaction) {
   if (interaction?.isFromProspect === true) {
     return {
       label: 'Histórico de prospecto',
-      className: 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
+      className:
+        'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
     };
   }
 
@@ -114,7 +162,11 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
   });
   const [interactionsPage, setInteractionsPage] = useState(1);
   const [loadedInteractions, setLoadedInteractions] = useState([]);
-  const { data: interactions, isLoading: interactionsLoading, meta: interactionsMeta } = useCommercialInteractions({
+  const {
+    data: interactions,
+    isLoading: interactionsLoading,
+    meta: interactionsMeta,
+  } = useCommercialInteractions({
     customerId,
     perPage: 20,
     page: interactionsPage,
@@ -143,8 +195,10 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
   const handleStartInteraction = async () => {
     const response = await refetchPendingPreflight();
     const rawPending = response?.data?.data ?? null;
-    const pendingAction = rawPending?.pendingAction ?? (rawPending?.agendaActionId ? rawPending : null);
-    const hasPending = typeof rawPending?.hasPending === 'boolean' ? rawPending.hasPending : Boolean(pendingAction);
+    const pendingAction =
+      rawPending?.pendingAction ?? (rawPending?.agendaActionId ? rawPending : null);
+    const hasPending =
+      typeof rawPending?.hasPending === 'boolean' ? rawPending.hasPending : Boolean(pendingAction);
     if (hasPending) {
       setPreflightDialogOpen(true);
       return;
@@ -155,7 +209,6 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
     setInteractionNextActionNote('');
     setInteractionOpen(true);
   };
-
 
   useEffect(() => {
     setActiveTab('data');
@@ -181,13 +234,16 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
   const interactionsLastPage = Math.max(1, interactionsMeta?.last_page ?? 1);
   const canLoadMoreInteractions = interactionsPage < interactionsLastPage && !interactionsLoading;
 
-  const handleInteractionsScroll = useCallback((event) => {
-    if (!canLoadMoreInteractions) return;
-    const el = event.currentTarget;
-    if (el.scrollHeight - el.scrollTop - el.clientHeight < 180) {
-      setInteractionsPage((prev) => prev + 1);
-    }
-  }, [canLoadMoreInteractions]);
+  const handleInteractionsScroll = useCallback(
+    (event) => {
+      if (!canLoadMoreInteractions) return;
+      const el = event.currentTarget;
+      if (el.scrollHeight - el.scrollTop - el.clientHeight < 180) {
+        setInteractionsPage((prev) => prev + 1);
+      }
+    },
+    [canLoadMoreInteractions]
+  );
 
   const operationalStatusLabel = useMemo(() => {
     const status = customer?.operationalStatus ?? customer?.operational_status ?? null;
@@ -205,18 +261,22 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
 
   const renderMultiline = (value, fallback = 'Sin dato') => {
     const text = typeof value === 'string' ? value.trim() : value;
-    return text ? <p className="whitespace-pre-wrap leading-6 text-foreground">{String(text)}</p> : <p className="text-muted-foreground">{fallback}</p>;
+    return text ? (
+      <p className="text-foreground leading-6 whitespace-pre-wrap">{String(text)}</p>
+    ) : (
+      <p className="text-muted-foreground">{fallback}</p>
+    );
   };
 
   const renderEmailChips = (list, fallback = 'Sin emails') => {
     const emails = Array.isArray(list) ? list.filter(Boolean) : [];
-    if (emails.length === 0) return <p className="text-sm text-muted-foreground">{fallback}</p>;
+    if (emails.length === 0) return <p className="text-muted-foreground text-sm">{fallback}</p>;
     return (
       <div className="flex flex-wrap gap-2">
         {emails.map((email) => (
           <span
             key={email}
-            className="inline-flex items-center rounded-full border border-primary/15 bg-primary/8 px-2.5 py-1 text-xs font-medium text-primary"
+            className="border-primary/15 bg-primary/8 text-primary inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium"
           >
             {email}
           </span>
@@ -245,7 +305,7 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
       <Loader />
     </div>
   ) : !customer ? (
-    <div className="flex min-h-0 flex-1 items-center justify-center p-4 text-sm text-muted-foreground">
+    <div className="text-muted-foreground flex min-h-0 flex-1 items-center justify-center p-4 text-sm">
       No se ha encontrado el cliente.
     </div>
   ) : (
@@ -254,7 +314,7 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="space-y-2">
             <CardTitle className="text-2xl">{customer.name}</CardTitle>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               {customer.country?.name ?? 'Sin país'} · Comercial #{customer.salesperson?.id ?? '-'}
             </p>
           </div>
@@ -283,11 +343,11 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="flex w-full min-w-0 flex-1 min-h-0 flex-col py-4">
+      <CardContent className="flex min-h-0 w-full min-w-0 flex-1 flex-col py-4">
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
-          className="flex h-full w-full min-w-0 flex-1 min-h-0 flex-col overflow-hidden"
+          className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden"
         >
           <TabsList>
             <TabsTrigger value="data">Datos</TabsTrigger>
@@ -297,22 +357,31 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
             <TabsTrigger value="offers">Ofertas</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="data" className="flex h-full w-full min-w-0 min-h-0 flex-1 flex-col pt-1">
-            <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border bg-card">
+          <TabsContent
+            value="data"
+            className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col pt-1"
+          >
+            <section className="bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border">
               <div className="min-h-0 flex-1 overflow-y-auto p-4">
                 <div className="flex flex-col gap-4">
-                  <div className="overflow-hidden rounded-2xl border bg-card">
+                  <div className="bg-card overflow-hidden rounded-2xl border">
                     <div className="grid gap-0 lg:grid-cols-[minmax(0,1.15fr)_minmax(340px,0.85fr)]">
                       <div className="space-y-5 p-5">
                         <div className="space-y-2">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Ficha cliente</span>
+                            <span className="text-muted-foreground text-xs font-medium tracking-[0.18em] uppercase">
+                              Ficha cliente
+                            </span>
                             {operationalStatusLabel ? (
-                              <StatusPill label={operationalStatusLabel} status={customer.operationalStatus ?? customer.operational_status} />
+                              <StatusPill
+                                label={operationalStatusLabel}
+                                status={customer.operationalStatus ?? customer.operational_status}
+                              />
                             ) : null}
                           </div>
-                          <p className="text-sm text-muted-foreground">
-                            Información general y operativa del cliente para el seguimiento comercial.
+                          <p className="text-muted-foreground text-sm">
+                            Información general y operativa del cliente para el seguimiento
+                            comercial.
                           </p>
                         </div>
 
@@ -320,22 +389,28 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
                           <div className="grid divide-y sm:grid-cols-3 sm:divide-x sm:divide-y-0">
                             <div className="flex items-start gap-3 px-4 py-3">
                               <div className="min-w-0">
-                                <p className="text-xs text-muted-foreground">Nombre</p>
-                                <p className="mt-1 text-sm font-medium text-foreground">{renderValue(customer.name, 'Sin nombre')}</p>
+                                <p className="text-muted-foreground text-xs">Nombre</p>
+                                <p className="text-foreground mt-1 text-sm font-medium">
+                                  {renderValue(customer.name, 'Sin nombre')}
+                                </p>
                               </div>
                             </div>
 
                             <div className="flex items-start gap-3 px-4 py-3">
                               <div className="min-w-0">
-                                <p className="text-xs text-muted-foreground">Alias</p>
-                                <p className="mt-1 text-sm font-medium text-foreground">{renderValue(customer.alias, '—')}</p>
+                                <p className="text-muted-foreground text-xs">Alias</p>
+                                <p className="text-foreground mt-1 text-sm font-medium">
+                                  {renderValue(customer.alias, '—')}
+                                </p>
                               </div>
                             </div>
 
                             <div className="flex items-start gap-3 px-4 py-3">
                               <div className="min-w-0">
-                                <p className="text-xs text-muted-foreground">NIF</p>
-                                <p className="mt-1 text-sm font-medium text-foreground">{renderValue(customer.vatNumber ?? customer.vat_number, '—')}</p>
+                                <p className="text-muted-foreground text-xs">NIF</p>
+                                <p className="text-foreground mt-1 text-sm font-medium">
+                                  {renderValue(customer.vatNumber ?? customer.vat_number, '—')}
+                                </p>
                               </div>
                             </div>
                           </div>
@@ -343,98 +418,139 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
                           <div className="divide-y border-t">
                             <div className="grid gap-3 px-4 py-3 sm:grid-cols-2">
                               <div className="min-w-0">
-                                <p className="text-xs text-muted-foreground">Comercial asignado</p>
-                                <p className="mt-1 text-sm font-medium text-foreground">{renderValue(customer.salesperson?.name, '—')}</p>
+                                <p className="text-muted-foreground text-xs">Comercial asignado</p>
+                                <p className="text-foreground mt-1 text-sm font-medium">
+                                  {renderValue(customer.salesperson?.name, '—')}
+                                </p>
                               </div>
                               <div className="min-w-0">
-                                <p className="text-xs text-muted-foreground">Repartidor</p>
-                                <p className="mt-1 text-sm font-medium text-foreground">{renderValue(customer.fieldOperator?.name, '—')}</p>
+                                <p className="text-muted-foreground text-xs">Repartidor</p>
+                                <p className="text-foreground mt-1 text-sm font-medium">
+                                  {renderValue(customer.fieldOperator?.name, '—')}
+                                </p>
                               </div>
                             </div>
 
                             <div className="grid gap-3 px-4 py-3 sm:grid-cols-3">
                               <div className="min-w-0">
-                                <p className="text-xs text-muted-foreground">Forma de pago</p>
-                                <p className="mt-1 text-sm font-medium text-foreground">{renderValue(customer.paymentTerm?.name, '—')}</p>
+                                <p className="text-muted-foreground text-xs">Forma de pago</p>
+                                <p className="text-foreground mt-1 text-sm font-medium">
+                                  {renderValue(customer.paymentTerm?.name, '—')}
+                                </p>
                               </div>
                               <div className="min-w-0">
-                                <p className="text-xs text-muted-foreground">País</p>
-                                <p className="mt-1 text-sm font-medium text-foreground">{renderValue(customer.country?.name, '—')}</p>
+                                <p className="text-muted-foreground text-xs">País</p>
+                                <p className="text-foreground mt-1 text-sm font-medium">
+                                  {renderValue(customer.country?.name, '—')}
+                                </p>
                               </div>
                               <div className="min-w-0">
-                                <p className="text-xs text-muted-foreground">Transporte</p>
-                                <p className="mt-1 text-sm font-medium text-foreground">{renderValue(customer.transport?.name, '—')}</p>
+                                <p className="text-muted-foreground text-xs">Transporte</p>
+                                <p className="text-foreground mt-1 text-sm font-medium">
+                                  {renderValue(customer.transport?.name, '—')}
+                                </p>
                               </div>
                             </div>
                           </div>
                         </div>
                       </div>
 
-                      <section className="overflow-hidden border-t bg-muted/15 lg:border-t-0 lg:border-l">
+                      <section className="bg-muted/15 overflow-hidden border-t lg:border-t-0 lg:border-l">
                         <ProspectLocationMap address={mapAddress} companyName={customer.name} />
                       </section>
                     </div>
                   </div>
 
                   <div className="grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.85fr)]">
-                    <section className="rounded-2xl border bg-card p-5">
+                    <section className="bg-card rounded-2xl border p-5">
                       <div className="space-y-3">
-                        <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Direcciones</p>
+                        <p className="text-muted-foreground text-[11px] font-medium tracking-[0.16em] uppercase">
+                          Direcciones
+                        </p>
                         <div className="grid gap-4 md:grid-cols-2">
-                          <div className="rounded-xl border bg-card p-4">
-                            <p className="text-xs text-muted-foreground mb-2">Dirección de facturación</p>
-                            {renderMultiline(customer.billingAddress ?? customer.billing_address, 'Sin dirección de facturación')}
+                          <div className="bg-card rounded-xl border p-4">
+                            <p className="text-muted-foreground mb-2 text-xs">
+                              Dirección de facturación
+                            </p>
+                            {renderMultiline(
+                              customer.billingAddress ?? customer.billing_address,
+                              'Sin dirección de facturación'
+                            )}
                           </div>
-                          <div className="rounded-xl border bg-card p-4">
-                            <p className="text-xs text-muted-foreground mb-2">Dirección de envío</p>
-                            {renderMultiline(customer.shippingAddress ?? customer.shipping_address, 'Sin dirección de envío')}
+                          <div className="bg-card rounded-xl border p-4">
+                            <p className="text-muted-foreground mb-2 text-xs">Dirección de envío</p>
+                            {renderMultiline(
+                              customer.shippingAddress ?? customer.shipping_address,
+                              'Sin dirección de envío'
+                            )}
                           </div>
                         </div>
                       </div>
                     </section>
 
                     <div className="space-y-4">
-                      <section className="rounded-2xl border bg-card p-5">
+                      <section className="bg-card rounded-2xl border p-5">
                         <div className="space-y-3">
-                          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Emails</p>
+                          <p className="text-muted-foreground text-[11px] font-medium tracking-[0.16em] uppercase">
+                            Emails
+                          </p>
                           <div className="space-y-3">
                             <div>
-                              <p className="text-xs text-muted-foreground mb-2">Principales</p>
+                              <p className="text-muted-foreground mb-2 text-xs">Principales</p>
                               {renderEmailChips(customer.emails, 'Sin emails principales')}
                             </div>
                             <div>
-                              <p className="text-xs text-muted-foreground mb-2">En copia (CC)</p>
-                              {renderEmailChips(customer.ccEmails ?? customer.cc_emails, 'Sin emails en copia')}
+                              <p className="text-muted-foreground mb-2 text-xs">En copia (CC)</p>
+                              {renderEmailChips(
+                                customer.ccEmails ?? customer.cc_emails,
+                                'Sin emails en copia'
+                              )}
                             </div>
                           </div>
                         </div>
                       </section>
 
-                      <section className="rounded-2xl border bg-card p-5">
+                      <section className="bg-card rounded-2xl border p-5">
                         <div className="space-y-3">
-                          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Contacto</p>
-                          <div className="rounded-xl border bg-muted/10 p-4">
-                            {renderMultiline(customer.contactInfo ?? customer.contact_info, 'Sin información de contacto')}
+                          <p className="text-muted-foreground text-[11px] font-medium tracking-[0.16em] uppercase">
+                            Contacto
+                          </p>
+                          <div className="bg-muted/10 rounded-xl border p-4">
+                            {renderMultiline(
+                              customer.contactInfo ?? customer.contact_info,
+                              'Sin información de contacto'
+                            )}
                           </div>
                         </div>
                       </section>
                     </div>
 
-                    <section className="rounded-2xl border bg-card p-5 xl:col-span-2">
+                    <section className="bg-card rounded-2xl border p-5 xl:col-span-2">
                       <div className="space-y-4">
-                        <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Notas operativas</p>
+                        <p className="text-muted-foreground text-[11px] font-medium tracking-[0.16em] uppercase">
+                          Notas operativas
+                        </p>
                         <div className="grid gap-4 md:grid-cols-3">
-                          <div className="rounded-xl border bg-card p-4">
-                            <p className="text-xs text-muted-foreground mb-2">Transporte</p>
-                            {renderMultiline(customer.transportationNotes ?? customer.transportation_notes, 'Sin notas de transporte')}
+                          <div className="bg-card rounded-xl border p-4">
+                            <p className="text-muted-foreground mb-2 text-xs">Transporte</p>
+                            {renderMultiline(
+                              customer.transportationNotes ?? customer.transportation_notes,
+                              'Sin notas de transporte'
+                            )}
                           </div>
-                          <div className="rounded-xl border bg-card p-4">
-                            <p className="text-xs text-muted-foreground mb-2">Producción</p>
-                            {renderMultiline(customer.productionNotes ?? customer.production_notes, 'Sin notas de producción')}
+                          <div className="bg-card rounded-xl border p-4">
+                            <p className="text-muted-foreground mb-2 text-xs">Producción</p>
+                            {renderMultiline(
+                              customer.productionNotes ?? customer.production_notes,
+                              'Sin notas de producción'
+                            )}
                           </div>
-                          <div className="rounded-xl border bg-card p-4">
-                            <p className="text-xs text-muted-foreground mb-2">Contables</p>
-                            {renderMultiline(customer.accountingNotes ?? customer.accounting_notes, 'Sin notas contables')}
+                          <div className="bg-card rounded-xl border p-4">
+                            <p className="text-muted-foreground mb-2 text-xs">Contables</p>
+                            {renderMultiline(
+                              customer.accountingNotes ?? customer.accounting_notes,
+                              'Sin notas contables'
+                            )}
                           </div>
                         </div>
                       </div>
@@ -445,8 +561,11 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
             </section>
           </TabsContent>
 
-          <TabsContent value="orders" className="flex h-full w-full min-w-0 min-h-0 flex-1 flex-col pt-1">
-            <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border bg-card">
+          <TabsContent
+            value="orders"
+            className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col pt-1"
+          >
+            <section className="bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border">
               {ordersTableLoading ? (
                 <div className="flex min-h-0 flex-1 items-center justify-center">
                   <Loader />
@@ -456,7 +575,7 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
                   <EmptyState
                     title="Error cargando pedidos"
                     description={ordersTableError}
-                    className="h-full w-full border bg-muted/20 min-h-0!"
+                    className="bg-muted/20 h-full min-h-0! w-full border"
                   />
                 </div>
               ) : customerOrders.length === 0 ? (
@@ -464,7 +583,7 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
                   <EmptyState
                     title="Sin pedidos"
                     description="Este cliente no tiene pedidos."
-                    className="h-full w-full border bg-muted/20 min-h-0!"
+                    className="bg-muted/20 h-full min-h-0! w-full border"
                   />
                 </div>
               ) : (
@@ -492,8 +611,18 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
                       <TableBody>
                         {customerOrders.map((order) => {
                           const status = order.status;
-                          const statusColor = status === 'finished' ? 'green' : status === 'incident' ? 'red' : 'orange';
-                          const statusLabel = status === 'finished' ? 'Finalizado' : status === 'incident' ? 'Incidencia' : 'Pendiente';
+                          const statusColor =
+                            status === 'finished'
+                              ? 'green'
+                              : status === 'incident'
+                                ? 'red'
+                                : 'orange';
+                          const statusLabel =
+                            status === 'finished'
+                              ? 'Finalizado'
+                              : status === 'incident'
+                                ? 'Incidencia'
+                                : 'Pendiente';
                           return (
                             <TableRow key={order.id}>
                               <TableCell className="font-medium">#{order.id}</TableCell>
@@ -503,12 +632,24 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
                               <TableCell>
                                 <StatusBadge color={statusColor} label={statusLabel} />
                               </TableCell>
-                              <TableCell>{order.orderType === 'autoventa' ? 'Autoventa' : 'Estándar'}</TableCell>
-                              <TableCell className="text-right">{formatDecimalWeight(order.totalNetWeight ?? 0)}</TableCell>
-                              <TableCell className="text-right">{formatInteger(order.totalBoxes ?? 0)}</TableCell>
-                              <TableCell className="text-right">{formatInteger(order.pallets ?? 0)}</TableCell>
-                              <TableCell className="text-right">{formatDecimalCurrency(order.subtotalAmount ?? 0)}</TableCell>
-                              <TableCell className="text-right">{formatDecimalCurrency(order.totalAmount ?? 0)}</TableCell>
+                              <TableCell>
+                                {order.orderType === 'autoventa' ? 'Autoventa' : 'Estándar'}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                {formatDecimalWeight(order.totalNetWeight ?? 0)}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                {formatInteger(order.totalBoxes ?? 0)}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                {formatInteger(order.pallets ?? 0)}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                {formatDecimalCurrency(order.subtotalAmount ?? 0)}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                {formatDecimalCurrency(order.totalAmount ?? 0)}
+                              </TableCell>
                               <TableCell>{order.salesperson?.name ?? '-'}</TableCell>
                               <TableCell>{order.incoterm?.code ?? '-'}</TableCell>
                               <TableCell>{order.transport?.name ?? '-'}</TableCell>
@@ -519,8 +660,9 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
                     </Table>
                   </div>
                   <div className="flex items-center justify-between">
-                    <p className="text-xs text-muted-foreground">
-                      Página {customerOrdersMeta.current_page} de {customerOrdersMeta.last_page} · {customerOrdersMeta.total} pedidos
+                    <p className="text-muted-foreground text-xs">
+                      Página {customerOrdersMeta.current_page} de {customerOrdersMeta.last_page} ·{' '}
+                      {customerOrdersMeta.total} pedidos
                     </p>
                     <div className="flex items-center gap-2">
                       <Button
@@ -546,8 +688,11 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
             </section>
           </TabsContent>
 
-          <TabsContent value="history" className="flex h-full w-full min-w-0 min-h-0 flex-1 flex-col pt-1">
-            <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border bg-card">
+          <TabsContent
+            value="history"
+            className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col pt-1"
+          >
+            <section className="bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border">
               <div className="min-h-0 flex-1 overflow-hidden">
                 <CustomerOrderHistoryView
                   customerHistory={customerHistory}
@@ -572,8 +717,11 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
             </section>
           </TabsContent>
 
-          <TabsContent value="interactions" className="flex h-full w-full min-w-0 min-h-0 flex-1 flex-col pt-1">
-            <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border bg-card">
+          <TabsContent
+            value="interactions"
+            className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col pt-1"
+          >
+            <section className="bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border">
               {interactionsLoading && interactionsPage === 1 ? (
                 <div className="flex min-h-0 flex-1 items-center justify-center">
                   <Loader />
@@ -583,36 +731,50 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
                   <EmptyState
                     title="Sin interacciones"
                     description="Registra seguimiento para alimentar la agenda comercial."
-                    className="h-full w-full border bg-muted/20 min-h-0!"
+                    className="bg-muted/20 h-full min-h-0! w-full border"
                   />
                 </div>
               ) : (
-                <div className="min-h-0 flex-1 overflow-y-auto p-4" onScroll={handleInteractionsScroll}>
+                <div
+                  className="min-h-0 flex-1 overflow-y-auto p-4"
+                  onScroll={handleInteractionsScroll}
+                >
                   <div className="space-y-4">
-                    <div className="relative w-full pl-1 py-2 space-y-4">
+                    <div className="relative w-full space-y-4 py-2 pl-1">
                       {loadedInteractions.map((interaction, index, array) => {
                         const isLast = index === array.length - 1;
-                        const typeLabel = interactionTypeLabels[interaction.type] ?? interaction.type;
-                        const resultLabel = interactionResultLabels[interaction.result] ?? interaction.result;
+                        const typeLabel =
+                          interactionTypeLabels[interaction.type] ?? interaction.type;
+                        const resultLabel =
+                          interactionResultLabels[interaction.result] ?? interaction.result;
                         const TypeIcon = interactionTypeIcons[interaction.type] ?? CircleDot;
                         const originMeta = getInteractionOriginMeta(interaction);
 
                         return (
-                          <div key={interaction.id} className="flex gap-2 items-stretch">
+                          <div key={interaction.id} className="flex items-stretch gap-2">
                             {/* columna pista */}
-                            <div className="flex flex-col items-center shrink-0 w-6 self-stretch">
-                              <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground border-0 shadow-sm">
+                            <div className="flex w-6 shrink-0 flex-col items-center self-stretch">
+                              <div className="bg-primary text-primary-foreground flex size-6 shrink-0 items-center justify-center rounded-full border-0 shadow-sm">
                                 <TypeIcon className="size-3 stroke-2" />
                               </div>
-                              {!isLast && <div className="w-0.5 flex-1 min-h-0 mt-1 bg-muted-foreground/50" aria-hidden />}
+                              {!isLast && (
+                                <div
+                                  className="bg-muted-foreground/50 mt-1 min-h-0 w-0.5 flex-1"
+                                  aria-hidden
+                                />
+                              )}
                             </div>
 
                             {/* columna contenido */}
-                            <div className={`flex-1 min-w-0 ${!isLast ? 'pb-4' : ''}`}>
+                            <div className={`min-w-0 flex-1 ${!isLast ? 'pb-4' : ''}`}>
                               <div className="flex flex-col gap-0.5">
-                                <p className="text-xs text-muted-foreground font-normal">{formatDateTimeValue(interaction.occurredAt)}</p>
+                                <p className="text-muted-foreground text-xs font-normal">
+                                  {formatDateTimeValue(interaction.occurredAt)}
+                                </p>
                                 <div className="flex flex-wrap items-center gap-2">
-                                  <span className="text-sm font-semibold leading-tight text-foreground truncate">{typeLabel}</span>
+                                  <span className="text-foreground truncate text-sm leading-tight font-semibold">
+                                    {typeLabel}
+                                  </span>
                                   <StatusPill label={resultLabel} status={interaction.result} />
                                   {originMeta ? (
                                     <span
@@ -624,18 +786,24 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
                                 </div>
                               </div>
 
-                              <div className="mt-2 rounded-xl border bg-card p-3 space-y-3">
-                                <p className="text-sm text-foreground leading-snug whitespace-pre-wrap wrap-break-word">{interaction.summary}</p>
+                              <div className="bg-card mt-2 space-y-3 rounded-xl border p-3">
+                                <p className="text-foreground text-sm leading-snug wrap-break-word whitespace-pre-wrap">
+                                  {interaction.summary}
+                                </p>
 
                                 {interaction.nextActionAt && (
-                                  <div className="pt-2 border-t border-border/60 space-y-1">
-                                    <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                                  <div className="border-border/60 space-y-1 border-t pt-2">
+                                    <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
                                       <CalendarClock className="size-3 shrink-0" />
-                                      <span>Próxima acción: {formatDateValue(interaction.nextActionAt)}</span>
+                                      <span>
+                                        Próxima acción: {formatDateValue(interaction.nextActionAt)}
+                                      </span>
                                     </p>
 
                                     {interaction.nextActionNote && (
-                                      <p className="text-xs text-muted-foreground whitespace-pre-wrap wrap-break-word pl-4">{interaction.nextActionNote}</p>
+                                      <p className="text-muted-foreground pl-4 text-xs wrap-break-word whitespace-pre-wrap">
+                                        {interaction.nextActionNote}
+                                      </p>
                                     )}
                                   </div>
                                 )}
@@ -647,7 +815,7 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
                     </div>
                   </div>
                   {interactionsLoading && interactionsPage > 1 && (
-                    <div className="flex items-center justify-center py-4 text-muted-foreground">
+                    <div className="text-muted-foreground flex items-center justify-center py-4">
                       <Loader2 className="size-4 animate-spin" />
                     </div>
                   )}
@@ -656,14 +824,17 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
             </section>
           </TabsContent>
 
-          <TabsContent value="offers" className="flex h-full w-full min-w-0 min-h-0 flex-1 flex-col pt-1">
-            <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border bg-card">
+          <TabsContent
+            value="offers"
+            className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col pt-1"
+          >
+            <section className="bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border">
               {offers.length === 0 ? (
                 <div className="min-h-0 flex-1 p-4">
                   <EmptyState
                     title="Sin ofertas"
                     description="No hay ofertas vinculadas a este cliente."
-                    className="h-full w-full border bg-muted/20 min-h-0!"
+                    className="bg-muted/20 h-full min-h-0! w-full border"
                   />
                 </div>
               ) : (
@@ -673,16 +844,21 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
                       <Link
                         key={offer.id}
                         href={`/comercial/ofertas/${offer.id}`}
-                        className="block rounded-xl border p-4 hover:bg-accent/40"
+                        className="hover:bg-accent/40 block rounded-xl border p-4"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div>
                             <p className="font-medium">Oferta #{offer.id}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {offer.validUntil ? `Validez: ${formatDateValue(offer.validUntil)}` : 'Sin validez definida'}
+                            <p className="text-muted-foreground text-sm">
+                              {offer.validUntil
+                                ? `Validez: ${formatDateValue(offer.validUntil)}`
+                                : 'Sin validez definida'}
                             </p>
                           </div>
-                          <StatusPill label={offerStatusLabels[offer.status] ?? offer.status} status={offer.status} />
+                          <StatusPill
+                            label={offerStatusLabels[offer.status] ?? offer.status}
+                            status={offer.status}
+                          />
                         </div>
                       </Link>
                     ))}
@@ -697,7 +873,7 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
   );
 
   return embedded ? (
-    <Card className="flex h-full w-full max-w-none min-h-0 min-w-0 flex-1 basis-0 self-stretch flex-col overflow-hidden">
+    <Card className="flex h-full min-h-0 w-full max-w-none min-w-0 flex-1 basis-0 flex-col self-stretch overflow-hidden">
       {body}
       <CustomerEditDialog
         open={editCustomerOpen}
@@ -706,7 +882,8 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
         initialCustomer={customer ?? null}
         onSaved={(updatedCustomer) => {
           refetchCustomer();
-          if (updatedCustomer && typeof onCustomerUpdated === 'function') onCustomerUpdated(updatedCustomer);
+          if (updatedCustomer && typeof onCustomerUpdated === 'function')
+            onCustomerUpdated(updatedCustomer);
         }}
       />
       <QuickInteractionModal
@@ -740,7 +917,9 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Ahora no</AlertDialogCancel>
-            <AlertDialogAction onClick={() => setResolveNextActionOpen(true)}>Sí, gestionar</AlertDialogAction>
+            <AlertDialogAction onClick={() => setResolveNextActionOpen(true)}>
+              Sí, gestionar
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -752,10 +931,16 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
               <div>
                 {pendingPreflightData?.pendingAction ? (
                   <>
-                    <span className="block text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground mb-1">Acción pendiente activa</span>
-                    <span className="block font-semibold text-foreground">{formatDateValue(pendingPreflightData.pendingAction.scheduledAt)}</span>
+                    <span className="text-muted-foreground mb-1 block text-xs font-medium tracking-[0.14em] uppercase">
+                      Acción pendiente activa
+                    </span>
+                    <span className="text-foreground block font-semibold">
+                      {formatDateValue(pendingPreflightData.pendingAction.scheduledAt)}
+                    </span>
                     {pendingPreflightData.pendingAction.description && (
-                      <span className="block mt-0.5 text-sm text-muted-foreground">{pendingPreflightData.pendingAction.description}</span>
+                      <span className="text-muted-foreground mt-0.5 block text-sm">
+                        {pendingPreflightData.pendingAction.description}
+                      </span>
                     )}
                   </>
                 ) : (
@@ -811,7 +996,8 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
         initialCustomer={customer ?? null}
         onSaved={(updatedCustomer) => {
           refetchCustomer();
-          if (updatedCustomer && typeof onCustomerUpdated === 'function') onCustomerUpdated(updatedCustomer);
+          if (updatedCustomer && typeof onCustomerUpdated === 'function')
+            onCustomerUpdated(updatedCustomer);
         }}
       />
       <QuickInteractionModal
@@ -845,7 +1031,9 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Ahora no</AlertDialogCancel>
-            <AlertDialogAction onClick={() => setResolveNextActionOpen(true)}>Sí, gestionar</AlertDialogAction>
+            <AlertDialogAction onClick={() => setResolveNextActionOpen(true)}>
+              Sí, gestionar
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -857,10 +1045,16 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
               <div>
                 {pendingPreflightData?.pendingAction ? (
                   <>
-                    <span className="block text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground mb-1">Acción pendiente activa</span>
-                    <span className="block font-semibold text-foreground">{formatDateValue(pendingPreflightData.pendingAction.scheduledAt)}</span>
+                    <span className="text-muted-foreground mb-1 block text-xs font-medium tracking-[0.14em] uppercase">
+                      Acción pendiente activa
+                    </span>
+                    <span className="text-foreground block font-semibold">
+                      {formatDateValue(pendingPreflightData.pendingAction.scheduledAt)}
+                    </span>
                     {pendingPreflightData.pendingAction.description && (
-                      <span className="block mt-0.5 text-sm text-muted-foreground">{pendingPreflightData.pendingAction.description}</span>
+                      <span className="text-muted-foreground mt-0.5 block text-sm">
+                        {pendingPreflightData.pendingAction.description}
+                      </span>
                     )}
                   </>
                 ) : (
@@ -912,8 +1106,8 @@ function CustomerDetail({ customerId, embedded = false, onCustomerUpdated }) {
 function CustomerCard({ customer, selected, onClick }) {
   return (
     <Card
-      className={`w-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ring transition-colors hover:bg-accent/50 ${
-        selected ? 'ring-2 ring-offset-2 ring-primary' : ''
+      className={`focus-visible:ring-ring hover:bg-accent/50 w-full cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none ${
+        selected ? 'ring-primary ring-2 ring-offset-2' : ''
       }`}
       onClick={onClick}
       role="button"
@@ -927,13 +1121,15 @@ function CustomerCard({ customer, selected, onClick }) {
       }}
     >
       <CardContent className="py-0">
-        <div className="grow w-full space-y-2 sm:space-y-2">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="text-base font-medium truncate">{customer.name}</h3>
+        <div className="w-full grow space-y-2 sm:space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="truncate text-base font-medium">{customer.name}</h3>
           </div>
 
           <div>
-            <p className="text-sm text-muted-foreground truncate">{customer.country?.name ?? 'Sin país'}</p>
+            <p className="text-muted-foreground truncate text-sm">
+              {customer.country?.name ?? 'Sin país'}
+            </p>
           </div>
         </div>
       </CardContent>
@@ -950,7 +1146,11 @@ export default function CustomersPageClient({ initialCustomerId = null }) {
   const [page, setPage] = useState(1);
   const [loadedCustomers, setLoadedCustomers] = useState([]);
   const searchParam = appliedNameFilter.trim() || undefined;
-  const { data: customers, isLoading, meta } = useCustomersList({
+  const {
+    data: customers,
+    isLoading,
+    meta,
+  } = useCustomersList({
     page,
     perPage: CUSTOMERS_PER_PAGE,
     filters: searchParam ? { search: searchParam } : {},
@@ -983,7 +1183,8 @@ export default function CustomersPageClient({ initialCustomerId = null }) {
   }, [customers, page]);
 
   const orderedCustomers = useMemo(
-    () => [...loadedCustomers].sort((a, b) => String(a.name ?? '').localeCompare(String(b.name ?? ''))),
+    () =>
+      [...loadedCustomers].sort((a, b) => String(a.name ?? '').localeCompare(String(b.name ?? ''))),
     [loadedCustomers]
   );
 
@@ -995,7 +1196,9 @@ export default function CustomersPageClient({ initialCustomerId = null }) {
   useEffect(() => {
     if (isMobile || !selectedId) return;
 
-    const selectedCustomerStillVisible = orderedCustomers.some((customer) => String(customer.id) === String(selectedId));
+    const selectedCustomerStillVisible = orderedCustomers.some(
+      (customer) => String(customer.id) === String(selectedId)
+    );
     if (!selectedCustomerStillVisible) {
       setSelectedId(null);
     }
@@ -1022,10 +1225,12 @@ export default function CustomersPageClient({ initialCustomerId = null }) {
   };
 
   return (
-    <div className="flex h-full w-full min-h-0 min-w-0 flex-col gap-4 overflow-hidden px-4 py-3 md:px-6">
+    <div className="flex h-full min-h-0 w-full min-w-0 flex-col gap-4 overflow-hidden px-4 py-3 md:px-6">
       <div>
         <h1 className="text-3xl font-light">Mis clientes</h1>
-        <p className="text-sm text-muted-foreground">Solo lectura sobre clientes asignados y seguimiento CRM.</p>
+        <p className="text-muted-foreground text-sm">
+          Solo lectura sobre clientes asignados y seguimiento CRM.
+        </p>
       </div>
 
       <InputGroup className="w-full md:max-w-md">
@@ -1070,11 +1275,14 @@ export default function CustomersPageClient({ initialCustomerId = null }) {
                     ? 'Prueba con otro nombre o limpia el filtro de búsqueda.'
                     : 'Cuando existan clientes vinculados a tu comercial aparecerán aquí.'
                 }
-                className="h-full w-full border bg-muted/20 min-h-0!"
+                className="bg-muted/20 h-full min-h-0! w-full border"
               />
             </div>
           ) : (
-            <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4" onScroll={handleCustomersScroll}>
+            <div
+              className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4"
+              onScroll={handleCustomersScroll}
+            >
               {orderedCustomers.map((customer) => (
                 <CustomerCard
                   key={customer.id}
@@ -1085,27 +1293,33 @@ export default function CustomersPageClient({ initialCustomerId = null }) {
               ))}
 
               {isLoadingMore ? (
-                <div className="flex items-center justify-center py-2 text-sm text-muted-foreground">
+                <div className="text-muted-foreground flex items-center justify-center py-2 text-sm">
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Cargando más clientes...
                 </div>
               ) : null}
 
               {!canLoadMore && orderedCustomers.length > 0 ? (
-                <p className="py-2 text-center text-xs text-muted-foreground">No hay más clientes para mostrar.</p>
+                <p className="text-muted-foreground py-2 text-center text-xs">
+                  No hay más clientes para mostrar.
+                </p>
               ) : null}
             </div>
           )}
         </div>
 
-        {!isMobile && (
-          selectedId ? (
+        {!isMobile &&
+          (selectedId ? (
             <CustomerDetail
               customerId={selectedId}
               embedded
               onCustomerUpdated={(updatedCustomer) => {
                 setLoadedCustomers((prev) =>
-                  prev.map((item) => (String(item.id) === String(updatedCustomer.id) ? { ...item, ...updatedCustomer } : item))
+                  prev.map((item) =>
+                    String(item.id) === String(updatedCustomer.id)
+                      ? { ...item, ...updatedCustomer }
+                      : item
+                  )
                 );
                 const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
                 queryClient.invalidateQueries({ queryKey: customerListKeys.listPrefix(tenantId) });
@@ -1115,10 +1329,9 @@ export default function CustomersPageClient({ initialCustomerId = null }) {
             <EmptyState
               title="Selecciona un cliente"
               description="El panel derecho mostrará sus pedidos, ofertas e interacciones."
-              className="w-full min-w-0 border bg-muted/20 min-h-[360px]"
+              className="bg-muted/20 min-h-[360px] w-full min-w-0 border"
             />
-          )
-        )}
+          ))}
       </div>
     </div>
   );

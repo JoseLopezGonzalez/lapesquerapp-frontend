@@ -12,7 +12,7 @@
 // src/app/admin/[entity]/page.js
 export default async function EntityPage({ params }) {
   const { entity } = await params;
-  const config = configs[entity];        // configs viene de entitiesConfig.js
+  const config = configs[entity]; // configs viene de entitiesConfig.js
   if (!config) notFound();
   return <EntityClient config={config} />;
 }
@@ -114,6 +114,7 @@ configs['raw-material-receptions'] = {
 ## Comportamiento interno de EntityClient
 
 **Estado interno:**
+
 - `data`: `{ loading: boolean, rows: [] }` — datos del listado
 - `filters`: array de `{ name, value, type }` — filtros activos
 - `paginationMeta`: `{ currentPage, totalPages, totalItems, perPage }`
@@ -125,6 +126,7 @@ configs['raw-material-receptions'] = {
 `getEntityService(config.endpoint)` mapea el string del endpoint al servicio de dominio correspondiente (e.g., `"customers"` → `customerService`).
 
 **Subcomponentes internos:**
+
 - `EntityTableHeader` — título, descripción, filtros, botones de acción
 - `EntityBody` — filas con `generateColumns2()`, checkboxes de selección
 - `EntityFooter` — paginación + resumen
@@ -136,11 +138,13 @@ configs['raw-material-receptions'] = {
 ## Cuándo usar EntityClient y cuándo NO
 
 **Usar EntityClient cuando:**
+
 - Se trata de un CRUD estándar de una entidad del admin.
 - El listado + crear + editar + eliminar caben en el patrón config.
 - Los filtros, columnas y formulario son configurables desde el config.
 
 **NO usar EntityClient cuando:**
+
 - La pantalla tiene lógica de negocio muy específica (e.g., `usePallet.js`, `useOrder.js`).
 - La entidad necesita un formulario complejo con campos dinámicos no soportados por `createForm`.
 - La pantalla tiene múltiples estados o flujos que no caben en el patrón lista/modal.
@@ -150,12 +154,12 @@ configs['raw-material-receptions'] = {
 
 El bloque de pedidos combina un listado EntityClient con gestores operativos dedicados:
 
-| Ruta | Implementación | Propósito |
-|---|---|---|
-| `/admin/orders` | Ruta dinámica `src/app/admin/[entity]/page.js` + `configs.orders` en `src/configs/entitiesConfig.js` | Listado administrativo EntityClient: filtros, tabla, selección y exportaciones. No existe `src/app/admin/orders/page.js`. |
-| `/admin/orders-manager` | `src/app/admin/orders-manager/page.js` + `src/components/Admin/OrdersManager/` | Gestor operacional admin: creación, detalle/editor, producción, documentos, palets y rentabilidad. |
-| `/comercial/orders` | `src/app/comercial/orders/page.js` con config de pedidos adaptada | Listado comercial read-only basado en EntityClient. |
-| `/comercial/orders-manager` | `src/app/comercial/orders-manager/page.js` + gestor comercial | Gestor operacional comercial con restricciones por rol. |
+| Ruta                        | Implementación                                                                                       | Propósito                                                                                                                 |
+| --------------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `/admin/orders`             | Ruta dinámica `src/app/admin/[entity]/page.js` + `configs.orders` en `src/configs/entitiesConfig.js` | Listado administrativo EntityClient: filtros, tabla, selección y exportaciones. No existe `src/app/admin/orders/page.js`. |
+| `/admin/orders-manager`     | `src/app/admin/orders-manager/page.js` + `src/components/Admin/OrdersManager/`                       | Gestor operacional admin: creación, detalle/editor, producción, documentos, palets y rentabilidad.                        |
+| `/comercial/orders`         | `src/app/comercial/orders/page.js` con config de pedidos adaptada                                    | Listado comercial read-only basado en EntityClient.                                                                       |
+| `/comercial/orders-manager` | `src/app/comercial/orders-manager/page.js` + gestor comercial                                        | Gestor operacional comercial con restricciones por rol.                                                                   |
 
 Cuando se modifique el listado de pedidos, revisar `configs.orders` y el flujo EntityClient. Cuando se modifique la operación diaria de pedidos, revisar `OrdersManager` y sus hooks/servicios relacionados. No crear un `src/app/admin/orders/page.js` salvo decisión arquitectónica explícita: la ruta ya está cubierta por `/admin/[entity]`.
 

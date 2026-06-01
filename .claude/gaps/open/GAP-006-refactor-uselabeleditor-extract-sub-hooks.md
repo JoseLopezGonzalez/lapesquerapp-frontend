@@ -1,6 +1,7 @@
 # GAP-006 — Refactor useLabelEditor.ts — extraer sub-hooks en hooks/labels/
 
 ## Metadata
+
 - **Tipo:** Refactor
 - **Módulo:** Etiquetas
 - **Prioridad:** Media
@@ -31,6 +32,7 @@ El módulo de etiquetas está activo. Cuando llegan nuevas features (nuevos tipo
 La validación del label editor ya está parcialmente extraída en `src/hooks/labelEditorValidation.js` — migrarla a `src/hooks/labels/useLabelValidation.ts` como parte de este GAP si aplica.
 
 ## Criterios de aceptación
+
 - [ ] Existe el directorio `src/hooks/labels/` con al menos 3 sub-hooks extraídos
 - [ ] Cada sub-hook está en `.ts` con tipos explícitos importados de `src/types/labelEditor.ts`
 - [ ] `useLabelEditor.ts` reexporta todo lo que exportaba antes — API pública inalterada
@@ -40,6 +42,7 @@ La validación del label editor ya está parcialmente extraída en `src/hooks/la
 - [ ] Si `labelEditorValidation.js` se migra, su test `labelEditorValidation.test.js` también se actualiza con el nuevo path
 
 ## Archivos a crear o modificar
+
 - **Leer primero:** `src/hooks/useLabelEditor.ts` y `src/hooks/labelEditorValidation.js`
 - `src/hooks/labels/` — directorio nuevo con sub-hooks extraídos
 - `src/hooks/useLabelEditor.ts` — convertir en orquestador que importa sub-hooks (mantener el nombre)
@@ -47,6 +50,7 @@ La validación del label editor ya está parcialmente extraída en `src/hooks/la
 - `src/__tests__/` — actualizar paths de los tests afectados si se mueven archivos
 
 ## Restricciones
+
 - **No cambiar el comportamiento del editor** — este GAP es pura reorganización de código
 - No tocar ningún componente de `src/components/Admin/LabelEditor/`
 - No añadir nuevas funcionalidades al editor en este GAP — solo extraer lo existente
@@ -55,16 +59,21 @@ La validación del label editor ya está parcialmente extraída en `src/hooks/la
 ---
 
 ## Implementación
+
 > Rellena el Agente Implementador
 
 ### Archivos creados
+
 ### Archivos modificados
+
 ### Decisiones tomadas durante la implementación
+
 ### Desviaciones del plan (si las hay)
 
 ---
 
 ## Auditoría
+
 > Rellena el Agente Auditor
 
 ### Resultado: ✅ APROBADO | ⚠️ APROBADO CON OBSERVACIONES | ❌ RECHAZADO
@@ -72,6 +81,7 @@ La validación del label editor ya está parcialmente extraída en `src/hooks/la
 ### Puntuación: [X/10]
 
 ### Checklist
+
 - [ ] Criterios de aceptación cumplidos
 - [ ] Sin fetch() directo
 - [ ] Sin hardcode de tenant
@@ -83,4 +93,5 @@ La validación del label editor ya está parcialmente extraída en `src/hooks/la
 - [ ] Nomenclatura correcta
 
 ### Observaciones para Jose
+
 ### Estado final de la implementación

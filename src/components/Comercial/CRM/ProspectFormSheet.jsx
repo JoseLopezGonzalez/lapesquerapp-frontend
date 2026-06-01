@@ -10,8 +10,20 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { notify } from '@/lib/notifications';
 import { ApiError } from '@/lib/api/apiHelpers';
@@ -45,7 +57,8 @@ function RequiredMark() {
 export default function ProspectFormSheet({ open, onOpenChange, initialData = null }) {
   const isEditing = Boolean(initialData);
   const { data: countries } = useCountriesList({ page: 1, perPage: 250, enabled: open });
-  const { data: categoryOptions = [], isLoading: categoriesLoading } = useProspectCategoryOptions(open);
+  const { data: categoryOptions = [], isLoading: categoriesLoading } =
+    useProspectCategoryOptions(open);
   const { createProspect, updateProspect } = useProspectMutations();
   const [warnings, setWarnings] = useState([]);
   const [isImprovingCommercialInterest, setIsImprovingCommercialInterest] = useState(false);
@@ -74,7 +87,10 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
     reset(prospectFormValuesFromInitial(initialData));
   }, [open, initialData, reset]);
 
-  const title = useMemo(() => (initialData ? 'Editar prospecto' : 'Nuevo prospecto'), [initialData]);
+  const title = useMemo(
+    () => (initialData ? 'Editar prospecto' : 'Nuevo prospecto'),
+    [initialData]
+  );
   const includePrimaryContact = watch('includePrimaryContact');
   const commercialInterestNotes = watch('commercialInterestNotes');
   const notes = watch('notes');
@@ -82,7 +98,9 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
   const categorySelectOptions = useMemo(() => {
     const currentCategory = initialData?.category;
     if (!currentCategory?.id || !currentCategory?.name) return categoryOptions;
-    const exists = categoryOptions.some((option) => String(option.value) === String(currentCategory.id));
+    const exists = categoryOptions.some(
+      (option) => String(option.value) === String(currentCategory.id)
+    );
     if (exists) return categoryOptions;
     return [{ value: currentCategory.id, label: currentCategory.name }, ...categoryOptions];
   }, [categoryOptions, initialData?.category]);
@@ -139,11 +157,19 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
     const n = Object.keys(formErrors).length;
     notify.error({
       title: 'Revisa el formulario',
-      description: n > 1 ? `Hay ${n} campos con errores.` : 'Corrige el error indicado antes de guardar.',
+      description:
+        n > 1 ? `Hay ${n} campos con errores.` : 'Corrige el error indicado antes de guardar.',
     });
   };
 
-  const improveProspectText = async ({ kind, text, setLoading, onSuccess, emptyTextErrorTitle, genericErrorTitle }) => {
+  const improveProspectText = async ({
+    kind,
+    text,
+    setLoading,
+    onSuccess,
+    emptyTextErrorTitle,
+    genericErrorTitle,
+  }) => {
     const rawText = String(text ?? '').trim();
     if (!rawText) {
       notify.error({ title: emptyTextErrorTitle });
@@ -306,7 +332,10 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
                         value={field.value || undefined}
                         onValueChange={(v) => field.onChange(v ?? '')}
                       >
-                        <SelectTrigger className="w-full" aria-invalid={errors.countryId ? 'true' : undefined}>
+                        <SelectTrigger
+                          className="w-full"
+                          aria-invalid={errors.countryId ? 'true' : undefined}
+                        >
                           <SelectValue placeholder="Selecciona un país" />
                         </SelectTrigger>
                         <SelectContent>
@@ -331,8 +360,13 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
                         value={field.value ? String(field.value) : CATEGORY_NONE_VALUE}
                         onValueChange={(v) => field.onChange(v === CATEGORY_NONE_VALUE ? '' : v)}
                       >
-                        <SelectTrigger className="w-full" aria-invalid={errors.categoryId ? 'true' : undefined}>
-                          <SelectValue placeholder={categoriesLoading ? 'Cargando…' : 'Sin categoría'} />
+                        <SelectTrigger
+                          className="w-full"
+                          aria-invalid={errors.categoryId ? 'true' : undefined}
+                        >
+                          <SelectValue
+                            placeholder={categoriesLoading ? 'Cargando…' : 'Sin categoría'}
+                          />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value={CATEGORY_NONE_VALUE}>Sin categoría</SelectItem>
@@ -360,7 +394,10 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
                         value={field.value || undefined}
                         onValueChange={(v) => field.onChange(v ?? '')}
                       >
-                        <SelectTrigger className="w-full" aria-invalid={errors.origin ? 'true' : undefined}>
+                        <SelectTrigger
+                          className="w-full"
+                          aria-invalid={errors.origin ? 'true' : undefined}
+                        >
                           <SelectValue placeholder="Origen del lead" />
                         </SelectTrigger>
                         <SelectContent>
@@ -461,15 +498,16 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
                 <div className="rounded-xl border p-4">
                   <div className="mb-4">
                     <h3 className="font-medium">Contacto principal</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Opcional. Sirve para precargar ofertas y convertir el prospecto en cliente cuando lo indiques.
+                    <p className="text-muted-foreground text-sm">
+                      Opcional. Sirve para precargar ofertas y convertir el prospecto en cliente
+                      cuando lo indiques.
                     </p>
                   </div>
                   <Controller
                     name="includePrimaryContact"
                     control={control}
                     render={({ field }) => (
-                      <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
+                      <label className="text-muted-foreground flex cursor-pointer items-center gap-2 text-sm">
                         <Checkbox
                           id="prospect-include-primary-contact"
                           checked={field.value}
@@ -489,7 +527,7 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
                     )}
                   />
                   {includePrimaryContact ? (
-                    <div className="mt-4 grid gap-4 md:grid-cols-2 rounded-xl border bg-muted/10 p-4">
+                    <div className="bg-muted/10 mt-4 grid gap-4 rounded-xl border p-4 md:grid-cols-2">
                       <div className="grid gap-2">
                         <Label htmlFor="primary-contact-name">Nombre</Label>
                         <Input
@@ -540,7 +578,7 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
             </div>
           </ScrollArea>
 
-          <div className="flex flex-col-reverse gap-2 border-t bg-background p-4 sm:flex-row sm:justify-end">
+          <div className="bg-background flex flex-col-reverse gap-2 border-t p-4 sm:flex-row sm:justify-end">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>

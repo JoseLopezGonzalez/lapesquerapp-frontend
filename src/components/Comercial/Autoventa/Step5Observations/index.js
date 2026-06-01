@@ -8,7 +8,7 @@ export default function Step5Observations({ state, setObservations }) {
   const maxLength = 1000;
 
   return (
-    <div className="space-y-2 w-full rounded-lg border p-4">
+    <div className="w-full space-y-2 rounded-lg border p-4">
       <Label htmlFor="observations">Observaciones</Label>
       <Textarea
         id="observations"
@@ -19,7 +19,7 @@ export default function Step5Observations({ state, setObservations }) {
         rows={4}
         className="resize-none"
       />
-      <p className="text-xs text-muted-foreground">
+      <p className="text-muted-foreground text-xs">
         {value.length}/{maxLength}
       </p>
     </div>

@@ -26,13 +26,11 @@ export function getProductOptions(token: AuthToken): Promise<ProductOption[]> {
   })
     .then(async (response) => {
       if (!response.ok) {
-        const errorData = await response.json() as { message?: string };
-        throw new Error(
-          getErrorMessage(errorData) || 'Error al obtener los productos'
-        );
+        const errorData = (await response.json()) as { message?: string };
+        throw new Error(getErrorMessage(errorData) || 'Error al obtener los productos');
       }
       const data = await response.json();
-      return (Array.isArray(data) ? data : data?.data ?? []) as ProductOption[];
+      return (Array.isArray(data) ? data : (data?.data ?? [])) as ProductOption[];
     })
     .catch((error) => {
       throw error;

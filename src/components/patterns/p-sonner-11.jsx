@@ -1,13 +1,12 @@
-import { toast } from "sonner"
+import { toast } from 'sonner';
 
-import { Button } from "@/components/ui/button"
-import { ExternalLinkIcon } from "lucide-react"
+import { Button } from '@/components/ui/button';
+import { ExternalLinkIcon } from 'lucide-react';
 
 export function Pattern() {
   const showStatusToast = () => {
     toast.custom(() => (
-      <div
-        className="bg-popover text-popover-foreground border-border rounded-md flex w-[356px] flex-col gap-2 border p-4 shadow-lg">
+      <div className="bg-popover text-popover-foreground border-border flex w-[356px] flex-col gap-2 rounded-md border p-4 shadow-lg">
         <div className="flex items-center gap-2">
           <span className="flex size-2 rounded-full bg-green-500" />
           <p className="text-sm font-medium">Deployment Successful</p>
@@ -23,17 +22,11 @@ export function Pattern() {
           </div>
           <div className="flex items-center justify-between">
             <span>Commit</span>
-            <span className="text-foreground font-mono font-medium">
-              a1b2c3d
-            </span>
+            <span className="text-foreground font-mono font-medium">a1b2c3d</span>
           </div>
         </div>
         <div className="mt-1 flex gap-2">
-          <Button
-            size="xs"
-            variant="outline"
-            className="flex-1"
-            onClick={() => toast.dismiss()}>
+          <Button size="xs" variant="outline" className="flex-1" onClick={() => toast.dismiss()}>
             <ExternalLinkIcon className="size-3" aria-hidden="true" />
             View Logs
           </Button>
@@ -42,8 +35,8 @@ export function Pattern() {
           </Button>
         </div>
       </div>
-    ))
-  }
+    ));
+  };
 
   return (
     <div className="flex items-center justify-center">

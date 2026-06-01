@@ -25,16 +25,25 @@ export function createProductionInput(inputData, token) {
 
 export function createMultipleProductionInputs(productionRecordId, boxIds, token) {
   if (!productionRecordId || isNaN(productionRecordId)) {
-    console.error('[createMultipleProductionInputs] productionRecordId inválido:', productionRecordId);
+    console.error(
+      '[createMultipleProductionInputs] productionRecordId inválido:',
+      productionRecordId
+    );
     return Promise.reject(new Error('El ID del registro de producción no es válido'));
   }
 
   const validBoxIds = Array.isArray(boxIds)
     ? boxIds
         .filter((id) => {
-          const isValid = id != null && id !== undefined && id !== '' && !isNaN(id) && Number(id) > 0;
+          const isValid =
+            id != null && id !== undefined && id !== '' && !isNaN(id) && Number(id) > 0;
           if (!isValid) {
-            console.warn('[createMultipleProductionInputs] ID inválido filtrado:', id, 'tipo:', typeof id);
+            console.warn(
+              '[createMultipleProductionInputs] ID inválido filtrado:',
+              id,
+              'tipo:',
+              typeof id
+            );
           }
           return isValid;
         })
@@ -42,7 +51,10 @@ export function createMultipleProductionInputs(productionRecordId, boxIds, token
     : [];
 
   if (validBoxIds.length === 0) {
-    console.error('[createMultipleProductionInputs] No hay boxIds válidos. boxIds original:', boxIds);
+    console.error(
+      '[createMultipleProductionInputs] No hay boxIds válidos. boxIds original:',
+      boxIds
+    );
     return Promise.reject(new Error('No se han proporcionado IDs válidos de cajas'));
   }
 
@@ -64,22 +76,33 @@ export function createMultipleProductionInputs(productionRecordId, boxIds, token
 
 export function syncMultipleProductionInputs(productionRecordId, boxIds, token) {
   if (!productionRecordId || isNaN(productionRecordId)) {
-    console.error('[syncMultipleProductionInputs] productionRecordId inválido:', productionRecordId);
+    console.error(
+      '[syncMultipleProductionInputs] productionRecordId inválido:',
+      productionRecordId
+    );
     return Promise.reject(new Error('El ID del registro de producción no es válido'));
   }
 
   const validBoxIds = Array.isArray(boxIds)
-    ? [...new Set(
-        boxIds
-          .filter((id) => {
-            const isValid = id != null && id !== undefined && id !== '' && !isNaN(id) && Number(id) > 0;
-            if (!isValid) {
-              console.warn('[syncMultipleProductionInputs] ID inválido filtrado:', id, 'tipo:', typeof id);
-            }
-            return isValid;
-          })
-          .map((id) => Number(id))
-      )]
+    ? [
+        ...new Set(
+          boxIds
+            .filter((id) => {
+              const isValid =
+                id != null && id !== undefined && id !== '' && !isNaN(id) && Number(id) > 0;
+              if (!isValid) {
+                console.warn(
+                  '[syncMultipleProductionInputs] ID inválido filtrado:',
+                  id,
+                  'tipo:',
+                  typeof id
+                );
+              }
+              return isValid;
+            })
+            .map((id) => Number(id))
+        ),
+      ]
     : [];
 
   if (validBoxIds.length === 0) {
@@ -107,7 +130,10 @@ export function deleteMultipleProductionInputs(inputIds, token) {
     : [];
 
   if (validInputIds.length === 0) {
-    console.error('[deleteMultipleProductionInputs] No hay inputIds válidos. inputIds original:', inputIds);
+    console.error(
+      '[deleteMultipleProductionInputs] No hay inputIds válidos. inputIds original:',
+      inputIds
+    );
     return Promise.reject(new Error('No se han proporcionado IDs válidos de inputs'));
   }
 

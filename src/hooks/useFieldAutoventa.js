@@ -48,7 +48,12 @@ function aggregateItemsFromBoxes(boxes) {
   return items;
 }
 
-export function useFieldAutoventa({ createAutoventa, routeId = null, routeStopId = null, customerId = null } = {}) {
+export function useFieldAutoventa({
+  createAutoventa,
+  routeId = null,
+  routeStopId = null,
+  customerId = null,
+} = {}) {
   const [state, setState] = useState({
     ...initialState,
     customerId: customerId ? String(customerId) : null,
@@ -90,7 +95,10 @@ export function useFieldAutoventa({ createAutoventa, routeId = null, routeStopId
   const addBox = useCallback((box) => {
     setState((s) => ({
       ...s,
-      boxes: [...(s.boxes || []), { ...box, productId: Number(box.productId), netWeight: Number(box.netWeight) || 0 }],
+      boxes: [
+        ...(s.boxes || []),
+        { ...box, productId: Number(box.productId), netWeight: Number(box.netWeight) || 0 },
+      ],
     }));
   }, []);
 
@@ -139,7 +147,7 @@ export function useFieldAutoventa({ createAutoventa, routeId = null, routeStopId
     const payload = {
       orderType: 'autoventa',
       customer: state.customerId ? Number(state.customerId) : undefined,
-      newCustomerName: state.customerId ? undefined : (state.newCustomerName || undefined),
+      newCustomerName: state.customerId ? undefined : state.newCustomerName || undefined,
       entryDate: state.entryDate,
       loadDate: state.loadDate,
       invoiceRequired: Boolean(state.invoiceRequired),
@@ -201,7 +209,10 @@ export function useFieldAutoventa({ createAutoventa, routeId = null, routeStopId
     });
   }, [routeId, routeStopId]);
 
-  const totalAmount = (state.items || []).reduce((sum, item) => sum + (Number(item.subtotal) || 0), 0);
+  const totalAmount = (state.items || []).reduce(
+    (sum, item) => sum + (Number(item.subtotal) || 0),
+    0
+  );
 
   return {
     state,

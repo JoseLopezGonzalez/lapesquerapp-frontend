@@ -14,27 +14,32 @@ Se ha integrado exitosamente el template de Vercel AI Chatbot en La PesquerApp, 
 ## 🎯 Objetivos Cumplidos
 
 ✅ **Infraestructura base del template integrada**
+
 - Endpoint `/api/chat` implementado con Vercel AI SDK
 - Streaming de mensajes configurado
 - Autenticación integrada con NextAuth
 
 ✅ **Comportamiento del asistente definido**
+
 - System prompt específico para La PesquerApp
 - Reglas de negocio documentadas
 - Estilo de comunicación establecido
 
 ✅ **Chat conectado con el dominio**
+
 - Tools genéricas para entidades (`listEntities`, `getEntity`, `getEntityOptions`)
 - Tools específicas para orders (`getActiveOrders`, `getOrderRankingStats`, `getSalesBySalesperson`)
 - Reutilización completa de servicios de dominio existentes
 
 ✅ **UI integrada en la aplicación**
+
 - Componente `Chat` reutilizable
 - `ChatButton` para integración no invasiva
 - Integrado en el sidebar (nav-user dropdown)
 - Modal con Dialog de shadcn/ui
 
 ✅ **Sistema preparado para crecer**
+
 - Estructura modular de tools
 - Fácil agregar nuevas tools específicas
 - Código desacoplado y extensible
@@ -44,6 +49,7 @@ Se ha integrado exitosamente el template de Vercel AI Chatbot en La PesquerApp, 
 ## 📁 Archivos Creados
 
 ### Infraestructura AI
+
 ```
 src/lib/ai/
 ├── config.js                    # System prompt y configuración
@@ -54,12 +60,14 @@ src/lib/ai/
 ```
 
 ### API Route
+
 ```
 src/app/api/chat/
 └── route.js                     # Endpoint del chat con AI SDK
 ```
 
 ### Componentes UI
+
 ```
 src/components/AI/
 ├── Chat/
@@ -70,6 +78,7 @@ src/components/AI/
 ```
 
 ### Integración
+
 ```
 src/components/Admin/Layout/SideBar/
 └── nav-user.js                  # Integración del ChatButton en el sidebar
@@ -105,6 +114,7 @@ AI_GATEWAY_MODEL=grok-2-vision-1212
 ### Abrir el Chat
 
 El chat está integrado en el sidebar:
+
 1. Hacer clic en el usuario en el sidebar (bottom)
 2. Seleccionar "Asistente AI" en el dropdown
 3. Se abre un modal con el chat
@@ -149,11 +159,13 @@ Usuario → Chat UI → /api/chat → AI SDK → Tools → Servicios de Dominio 
 ### Tools Disponibles
 
 #### Tools Genéricas (`entityTools`)
+
 - `listEntities`: Lista cualquier entidad con filtros
 - `getEntity`: Obtiene una entidad por ID
 - `getEntityOptions`: Obtiene opciones para autocompletado
 
 **Entidades disponibles:**
+
 - suppliers, orders, customers, products, stores
 - species, transports, employees, salespeople
 - product-categories, product-families, payment-terms
@@ -162,6 +174,7 @@ Usuario → Chat UI → /api/chat → AI SDK → Tools → Servicios de Dominio 
 - boxes, countries, pallets, productions, punches, roles, sessions, users
 
 #### Tools Específicas (`orderTools`)
+
 - `getActiveOrders`: Pedidos activos
 - `getOrderRankingStats`: Estadísticas de ranking
 - `getSalesBySalesperson`: Ventas por comercial
@@ -230,14 +243,17 @@ export const allTools = {
 ## 🔐 Seguridad
 
 ✅ **Autenticación**
+
 - Verifica sesión con `getServerSession` en API route
 - Usa `authOptions` de NextAuth
 
 ✅ **Autorización**
+
 - Los servicios de dominio ya validan permisos
 - El chat hereda los mismos permisos del usuario
 
 ✅ **Validación**
+
 - Tools usan Zod para validar parámetros
 - Manejo de errores estructurado
 
@@ -302,9 +318,8 @@ El AI Chat está **completamente integrado** en La PesquerApp:
 ✅ Comparte la misma capa de services que el resto de la app  
 ✅ El código es claro, extensible y alineado con el dominio  
 ✅ La base está preparada para ampliar el uso de AI sin refactorizaciones  
-✅ El AI Chat nunca conoce URLs, endpoints ni lógica genérica  
+✅ El AI Chat nunca conoce URLs, endpoints ni lógica genérica
 
 ---
 
 **Última actualización:** Enero 2025
-

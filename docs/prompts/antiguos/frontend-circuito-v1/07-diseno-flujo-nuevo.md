@@ -24,11 +24,10 @@ Tu trabajo será:
 2. Esquematizar el flujo en formato claro (Paso 1 → Paso 2 → Decisión → Estado).
 3. Explicar qué modelo mental está imponiendo la pantalla.
 4. Detectar:
-
-   * Qué prioriza visualmente.
-   * Qué decisiones fuerza.
-   * Qué tipo de empresa encaja bien aquí.
-   * Qué tipo de empresa encajaría mal.
+   - Qué prioriza visualmente.
+   - Qué decisiones fuerza.
+   - Qué tipo de empresa encaja bien aquí.
+   - Qué tipo de empresa encajaría mal.
 
 No propongas solución todavía.
 
@@ -54,12 +53,12 @@ Ahora deberás diseñar una vista alternativa explicando:
 
 Define el paradigma estructural. Ejemplos:
 
-* Layout dividido en 2 columnas
-* Header fijo + panel lateral derecho
-* Vista tipo kanban
-* Vista tipo timeline vertical
-* Vista maestro-detalle
-* Dashboard operativo por bloques
+- Layout dividido en 2 columnas
+- Header fijo + panel lateral derecho
+- Vista tipo kanban
+- Vista tipo timeline vertical
+- Vista maestro-detalle
+- Dashboard operativo por bloques
 
 Explica por qué ese layout encaja con el flujo analizado.
 
@@ -69,18 +68,18 @@ Explica por qué ese layout encaja con el flujo analizado.
 
 Describe con precisión:
 
-* Header (qué contiene)
-* Zona izquierda (qué muestra y porcentaje aproximado si aplica)
-* Zona central (contenido principal)
-* Zona derecha (si existe)
-* Footer o acciones fijas (si aplica)
+- Header (qué contiene)
+- Zona izquierda (qué muestra y porcentaje aproximado si aplica)
+- Zona central (contenido principal)
+- Zona derecha (si existe)
+- Footer o acciones fijas (si aplica)
 
 Usa lenguaje estructural como:
 
-* "Columna izquierda (30%) → listado en formato tabla resumida"
-* "Zona principal → cards agrupadas por estado"
-* "Panel lateral derecho → acciones contextuales"
-* "Tabs superiores para segmentar estados"
+- "Columna izquierda (30%) → listado en formato tabla resumida"
+- "Zona principal → cards agrupadas por estado"
+- "Panel lateral derecho → acciones contextuales"
+- "Tabs superiores para segmentar estados"
 
 No describas estilos visuales. Solo estructura y distribución.
 
@@ -90,14 +89,14 @@ No describas estilos visuales. Solo estructura y distribución.
 
 Especifica componentes adecuados para representar el flujo:
 
-* Tabla compacta
-* Cards con estados
-* Tabs tipo badges
-* Timeline vertical
-* Kanban por estados
-* Panel colapsable
-* Modal vs drawer lateral
-* Acciones inline vs menú contextual
+- Tabla compacta
+- Cards con estados
+- Tabs tipo badges
+- Timeline vertical
+- Kanban por estados
+- Panel colapsable
+- Modal vs drawer lateral
+- Acciones inline vs menú contextual
 
 Justifica brevemente cada elección en relación al flujo.
 
@@ -119,21 +118,21 @@ Indica cómo cada etapa se refleja visualmente dentro de la pantalla.
 
 Explica:
 
-* Qué bloques podrían activarse o desactivarse.
-* Qué estados podrían configurarse.
-* Qué partes deberían ser opcionales.
-* Cómo evitar que la vista quede demasiado específica para un solo tipo de empresa.
+- Qué bloques podrían activarse o desactivarse.
+- Qué estados podrían configurarse.
+- Qué partes deberían ser opcionales.
+- Cómo evitar que la vista quede demasiado específica para un solo tipo de empresa.
 
 ---
 
 ## REGLAS IMPORTANTES
 
-* No escribir código.
-* No hablar de backend.
-* No describir colores ni estilos visuales.
-* No dar opiniones superficiales.
-* Ser estructural, claro y concreto.
-* Diseñar como si fuese una funcionalidad core de un SaaS ERP profesional.
+- No escribir código.
+- No hablar de backend.
+- No describir colores ni estilos visuales.
+- No dar opiniones superficiales.
+- Ser estructural, claro y concreto.
+- Diseñar como si fuese una funcionalidad core de un SaaS ERP profesional.
 
 ---
 

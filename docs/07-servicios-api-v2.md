@@ -21,38 +21,39 @@ Todos los servicios que interactúan con la API v2 del backend están ubicados e
 Todos los servicios siguen un patrón similar:
 
 ```javascript
-import { fetchWithTenant } from "@lib/fetchWithTenant";
-import { API_URL_V2 } from "@/configs/config";
+import { fetchWithTenant } from '@lib/fetchWithTenant';
+import { API_URL_V2 } from '@/configs/config';
 
 export function serviceFunction(params, token) {
   return fetchWithTenant(`${API_URL_V2}endpoint`, {
     method: 'GET' | 'POST' | 'PUT' | 'DELETE',
     headers: {
       'Content-Type': 'application/json',
-      'Accept': 'application/json', // Solo en POST/PUT
+      Accept: 'application/json', // Solo en POST/PUT
       Authorization: `Bearer ${token}`,
       'User-Agent': navigator.userAgent,
     },
     body: JSON.stringify(data), // Solo en POST/PUT
   })
-  .then(response => {
-    if (!response.ok) {
-      return response.json().then(errorData => {
-        throw new Error(errorData.message || 'Error...');
-      });
-    }
-    return response.json();
-  })
-  .then(data => {
-    return data.data; // O data según el caso
-  })
-  .catch(error => {
-    throw error;
-  });
+    .then((response) => {
+      if (!response.ok) {
+        return response.json().then((errorData) => {
+          throw new Error(errorData.message || 'Error...');
+        });
+      }
+      return response.json();
+    })
+    .then((data) => {
+      return data.data; // O data según el caso
+    })
+    .catch((error) => {
+      throw error;
+    });
 }
 ```
 
 **Características comunes**:
+
 - Todos usan `fetchWithTenant` (multi-tenant automático)
 - Todos usan `API_URL_V2` (versión activa)
 - Todos requieren `token` como parámetro
@@ -68,6 +69,7 @@ export function serviceFunction(params, token) {
 **Archivo**: `/src/services/orderService.js`
 
 **Endpoints v2 utilizados**:
+
 - `GET /api/v2/orders/{id}` - Obtener pedido
 - `PUT /api/v2/orders/{id}` - Actualizar pedido
 - `PUT /api/v2/orders/{id}/status?status={status}` - Cambiar estado
@@ -84,24 +86,28 @@ export function serviceFunction(params, token) {
 - `POST /api/v2/orders` - Crear pedido
 
 **Endpoints v1 (obsoletos)**:
+
 - `GET /api/v1/orders?active=true` - Obtener pedidos activos (usado en `getActiveOrders`)
 
 #### Funciones Principales
 
 ##### `getOrder(orderId, token)`
+
 - **Método**: GET
 - **Endpoint**: `/api/v2/orders/{orderId}`
 - **Retorna**: `Promise<Object>` - Datos del pedido
 - **Uso**: Obtener detalles completos de un pedido
 
 ##### `updateOrder(orderId, orderData, token)`
+
 - **Método**: PUT
 - **Endpoint**: `/api/v2/orders/{orderId}`
-- **Parámetros**: 
+- **Parámetros**:
   - `orderData` - Objeto con datos a actualizar
 - **Retorna**: `Promise<Object>` - Pedido actualizado
 
 ##### `setOrderStatus(orderId, status, token)`
+
 - **Método**: PUT
 - **Endpoint**: `/api/v2/orders/{orderId}/status?status={status}`
 - **Parámetros**:
@@ -109,6 +115,7 @@ export function serviceFunction(params, token) {
 - **Retorna**: `Promise<Object>` - Pedido con nuevo estado
 
 ##### `createOrder(orderData, token)`
+
 - **Método**: POST
 - **Endpoint**: `/api/v2/orders`
 - **Parámetros**:
@@ -118,58 +125,70 @@ export function serviceFunction(params, token) {
 #### Productos Planificados
 
 ##### `createOrderPlannedProductDetail(detailData, token)`
+
 - **Método**: POST
 - **Endpoint**: `/api/v2/order-planned-product-details`
 - **Retorna**: `Promise<Object>` - Detalle creado
 
 ##### `updateOrderPlannedProductDetail(detailId, detailData, token)`
+
 - **Método**: PUT
 - **Endpoint**: `/api/v2/order-planned-product-details/{detailId}`
 
 ##### `deleteOrderPlannedProductDetail(detailId, token)`
+
 - **Método**: DELETE
 - **Endpoint**: `/api/v2/order-planned-product-details/{detailId}`
 
 #### Incidencias
 
 ##### `createOrderIncident(orderId, description, token)`
+
 - **Método**: POST
 - **Endpoint**: `/api/v2/orders/{orderId}/incident`
 - **Body**: `{ description: string }`
 
 ##### `updateOrderIncident(orderId, resolutionType, resolutionNotes, token)`
+
 - **Método**: PUT
 - **Endpoint**: `/api/v2/orders/{orderId}/incident`
 - **Body**: `{ resolution_type: string, resolution_notes: string }`
 
 ##### `destroyOrderIncident(orderId, token)`
+
 - **Método**: DELETE
 - **Endpoint**: `/api/v2/orders/{orderId}/incident`
 
 #### Estadísticas
 
 ##### `getOrderRankingStats(queryParams, token)`
+
 - **Método**: GET
 - **Endpoint**: `/api/v2/statistics/orders/ranking?{queryParams}`
 - **Query params**: Filtros de fecha, etc.
 
 ##### `getSalesBySalespersonStats(queryParams, token)`
+
 - **Método**: GET
 - **Endpoint**: `/api/v2/orders/sales-by-salesperson?{queryParams}`
 
 ##### `getTotalNetWeightStats(queryParams, token)`
+
 - **Método**: GET
 - **Endpoint**: `/api/v2/statistics/orders/total-net-weight?{queryParams}`
 
 ##### `getTotalAmountStats(queryParams, token)`
+
 - **Método**: GET
 - **Endpoint**: `/api/v2/statistics/orders/total-amount?{queryParams}`
 
 ##### `getSalesChartData(queryParams, token)`
+
 - **Método**: GET
 - **Endpoint**: `/api/v2/orders/sales-chart-data?{queryParams}`
 
 ##### `getTransportChartData(queryParams, token)`
+
 - **Método**: GET
 - **Endpoint**: `/api/v2/orders/transport-chart-data?{queryParams}`
 
@@ -182,6 +201,7 @@ export function serviceFunction(params, token) {
 **Estado**: ⚠️ Módulo en construcción
 
 **Endpoints v2 utilizados**:
+
 - `GET /api/v2/productions` - Lista de producciones
 - `GET /api/v2/productions/{id}` - Obtener producción
 - `POST /api/v2/productions` - Crear producción
@@ -236,6 +256,7 @@ export function serviceFunction(params, token) {
 #### Funciones Principales
 
 Todas las funciones siguen el patrón estándar:
+
 - `getProductions(token, params)` - Con query params para filtros
 - `getProduction(productionId, token)`
 - `createProduction(productionData, token)`
@@ -251,6 +272,7 @@ Y similares para records, inputs, outputs, consumptions, etc.
 **Archivo**: `/src/services/storeService.js`
 
 **Endpoints v2 utilizados**:
+
 - `GET /api/v2/stores/{id}` - Obtener almacén
 - `GET /api/v2/stores` - Lista de almacenes
 - `GET /api/v2/stores/options` - Opciones de almacenes
@@ -261,31 +283,37 @@ Y similares para records, inputs, outputs, consumptions, etc.
 #### Funciones
 
 ##### `getStore(id, token)`
+
 - **Método**: GET
 - **Endpoint**: `/api/v2/stores/{id}`
 - **Retorna**: `Promise<Object>` - Datos del almacén con posiciones y pallets
 
 ##### `getStores(token)`
+
 - **Método**: GET
 - **Endpoint**: `/api/v2/stores`
 - **Retorna**: `Promise<Array>` - Lista de almacenes
 
 ##### `getStoreOptions(token)`
+
 - **Método**: GET
 - **Endpoint**: `/api/v2/stores/options`
 - **Retorna**: `Promise<Array>` - Opciones para selects/combobox
 
 ##### `getTotalStockStats(token)`
+
 - **Método**: GET
 - **Endpoint**: `/api/v2/statistics/stock/total`
 - **Retorna**: `Promise<Object>` - Estadísticas de stock total
 
 ##### `getStockBySpeciesStats(token)`
+
 - **Método**: GET
 - **Endpoint**: `/api/v2/statistics/stock/total-by-species`
 - **Retorna**: `Promise<Array>` - Stock agrupado por especies
 
 ##### `getStockByProducts(token)`
+
 - **Método**: GET
 - **Endpoint**: `/api/v2/stores/total-stock-by-products`
 - **Retorna**: `Promise<Array>` - Stock agrupado por productos
@@ -297,6 +325,7 @@ Y similares para records, inputs, outputs, consumptions, etc.
 **Archivo**: `/src/services/palletService.ts`
 
 **Endpoints v2 utilizados**:
+
 - `GET /api/v2/pallets/{id}` - Obtener pallet
 - `GET /api/v2/pallets/{id}/timeline` - Obtener historial de modificaciones del palet (véase [pallet-timeline-api.md](../implementaciones/pallet-timeline-api.md))
 - `PUT /api/v2/pallets/{id}` - Actualizar pallet
@@ -310,40 +339,48 @@ Y similares para records, inputs, outputs, consumptions, etc.
 #### Funciones
 
 ##### `getPallet(palletId, token)`
+
 - **Método**: GET
 - **Endpoint**: `/api/v2/pallets/{palletId}`
 - **Retorna**: `Promise<Object>` - Datos del pallet con cajas
 
 ##### `getPalletTimeline(palletId, token)`
+
 - **Método**: GET
 - **Endpoint**: `/api/v2/pallets/{palletId}/timeline`
 - **Retorna**: `Promise<PalletTimelineResponse>` - `{ timeline: PalletTimelineEntry[] }` (eventos más recientes primero). Especificación completa en [docs/implementaciones/pallet-timeline-api.md](../implementaciones/pallet-timeline-api.md).
 
 ##### `updatePallet(palletId, palletData, token)`
+
 - **Método**: PUT
 - **Endpoint**: `/api/v2/pallets/{palletId}`
 - **Body**: Datos del pallet a actualizar
 
 ##### `createPallet(palletData, token)`
+
 - **Método**: POST
 - **Endpoint**: `/api/v2/pallets`
 - **Body**: Datos del nuevo pallet
 
 ##### `assignPalletToPosition(palletId, positionId, token)`
+
 - **Método**: POST
 - **Endpoint**: `/api/v2/pallets/assign-to-position`
 - **Body**: `{ pallet_id: number, position_id: string }`
 
 ##### `movePalletToStore(palletId, storeId, token)`
+
 - **Método**: POST
 - **Endpoint**: `/api/v2/pallets/move-to-store`
 - **Body**: `{ pallet_id: number, store_id: number }`
 
 ##### `removePalletPosition(palletId, token)`
+
 - **Método**: DELETE
 - **Endpoint**: `/api/v2/pallets/{palletId}/unassign-position`
 
 ##### `unlinkPalletFromOrder(palletId, token)`
+
 - **Método**: DELETE
 - **Endpoint**: `/api/v2/pallets/{palletId}/unlink-order`
 
@@ -354,17 +391,20 @@ Y similares para records, inputs, outputs, consumptions, etc.
 **Archivo**: `/src/services/customerService.js`
 
 **Endpoints v2 utilizados**:
+
 - `GET /api/v2/customers/options` - Opciones de clientes
 - `GET /api/v2/customers/{id}` - Obtener cliente
 
 #### Funciones
 
 ##### `getCustomersOptions(token)`
+
 - **Método**: GET
 - **Endpoint**: `/api/v2/customers/options`
 - **Retorna**: `Promise<Array>` - Opciones para selects
 
 ##### `getCustomer(id, token)`
+
 - **Método**: GET
 - **Endpoint**: `/api/v2/customers/{id}`
 - **Retorna**: `Promise<Object>` - Datos del cliente
@@ -376,11 +416,13 @@ Y similares para records, inputs, outputs, consumptions, etc.
 **Archivo**: `/src/services/productService.js`
 
 **Endpoints v2 utilizados**:
+
 - `GET /api/v2/products/options` - Opciones de productos
 
 #### Funciones
 
 ##### `getProductOptions(token)`
+
 - **Método**: GET
 - **Endpoint**: `/api/v2/products/options`
 - **Retorna**: `Promise<Array>` - Opciones de productos
@@ -392,6 +434,7 @@ Y similares para records, inputs, outputs, consumptions, etc.
 **Archivo**: `/src/services/labelService.js`
 
 **Endpoints v2 utilizados**:
+
 - `GET /api/v2/labels/{id}` - Obtener etiqueta
 - `GET /api/v2/labels` - Lista de etiquetas
 - `POST /api/v2/labels` - Crear etiqueta
@@ -402,25 +445,31 @@ Y similares para records, inputs, outputs, consumptions, etc.
 #### Funciones
 
 ##### `getLabel(labelId, token)`
+
 - **Método**: GET
 - **Retorna**: `Promise<Object>` - Datos de la etiqueta
 
 ##### `getLabels(token)`
+
 - **Método**: GET
 - **Retorna**: `Promise<Array>` - Lista de etiquetas
 
 ##### `createLabel(labelName, labelFormat, token)`
+
 - **Método**: POST
 - **Body**: `{ name: string, format: string }`
 
 ##### `updateLabel(labelId, labelName, labelFormat, token)`
+
 - **Método**: PUT
 - **Body**: `{ name: string, format: string }`
 
 ##### `deleteLabel(labelId, token)`
+
 - **Método**: DELETE
 
 ##### `getLabelsOptions(token)`
+
 - **Método**: GET
 - **Retorna**: `Promise<Array>` - Opciones para selects
 
@@ -431,18 +480,21 @@ Y similares para records, inputs, outputs, consumptions, etc.
 **Archivo**: `/src/services/settingsService.js`
 
 **Endpoints v2 utilizados**:
+
 - `GET /api/v2/settings` - Obtener configuraciones
 - `PUT /api/v2/settings` - Actualizar configuraciones
 
 #### Funciones
 
 ##### `getSettings()`
+
 - **Método**: GET
 - **Endpoint**: `/api/v2/settings`
 - **Nota**: Obtiene token automáticamente con `getSession()`
 - **Retorna**: `Promise<Object>` - Configuraciones del sistema
 
 ##### `updateSettings(data)`
+
 - **Método**: PUT
 - **Endpoint**: `/api/v2/settings`
 - **Body**: Objeto con configuraciones a actualizar
@@ -455,36 +507,43 @@ Y similares para records, inputs, outputs, consumptions, etc.
 Estos servicios proporcionan opciones para componentes Select y Combobox:
 
 #### SalespersonService
+
 - **Archivo**: `/src/services/salespersonService.js`
 - **Endpoint**: `GET /api/v2/salespeople/options`
 - **Función**: `getSalespeopleOptions(token)`
 
 #### TransportService
+
 - **Archivo**: `/src/services/transportService.js`
 - **Endpoint**: `GET /api/v2/transports/options`
 - **Función**: `getTransportsOptions(token)`
 
 #### PaymentTernService
+
 - **Archivo**: `/src/services/paymentTernService.js`
 - **Endpoint**: `GET /api/v2/payment-terms/options`
 - **Función**: `getPaymentTermsOptions(token)`
 
 #### IncotermService
+
 - **Archivo**: `/src/services/incotermService.js`
 - **Endpoint**: `GET /api/v2/incoterms/options`
 - **Función**: `getIncotermsOptions(token)`
 
 #### TaxService
+
 - **Archivo**: `/src/services/taxService.js`
 - **Endpoint**: `GET /api/v2/taxes/options`
 - **Función**: `getTaxOptions(token)`
 
 #### SpeciesService
+
 - **Archivo**: `/src/services/speciesService.js`
 - **Endpoint**: `GET /api/v2/species/options`
 - **Función**: `getSpeciesOptions(token)`
 
 #### ProductCategoryService
+
 - **Archivo**: `/src/services/productCategoryService.js`
 - **Endpoints**:
   - `GET /api/v2/product-categories/options`
@@ -495,6 +554,7 @@ Estos servicios proporcionan opciones para componentes Select y Combobox:
   - `DELETE /api/v2/product-categories/{id}`
 
 #### ProductFamilyService
+
 - **Archivo**: `/src/services/productFamilyService.js`
 - **Endpoints similares a ProductCategoryService**
 
@@ -507,6 +567,7 @@ Estos servicios proporcionan opciones para componentes Select y Combobox:
 **Funciones**:
 
 ##### `fetchAutocompleteFilterOptions(endpoint)`
+
 - **Método**: GET
 - **Endpoint**: `/api/v2/{endpoint}` (dinámico)
 - **Nota**: Obtiene token automáticamente con `getSession()`
@@ -525,6 +586,7 @@ Estos servicios proporcionan opciones para componentes Select y Combobox:
 **Funciones genéricas** para el sistema de entidades dinámicas:
 
 ##### `fetchEntities(url)`
+
 - **Método**: GET
 - **Endpoint**: URL completa (debe incluir `/api/v2/...`)
 - **Nota**: Obtiene token automáticamente
@@ -532,18 +594,21 @@ Estos servicios proporcionan opciones para componentes Select y Combobox:
 - **Uso**: Para listar entidades genéricas
 
 ##### `deleteEntity(url, body)`
+
 - **Método**: DELETE
 - **Endpoint**: URL completa
 - **Body**: Opcional
 - **Retorna**: `Promise<Response>`
 
 ##### `performAction(url, method, body)`
+
 - **Método**: Dinámico (GET, POST, PUT, DELETE)
 - **Endpoint**: URL completa
 - **Body**: Opcional
 - **Retorna**: `Promise<Response>`
 
 **Archivos relacionados**:
+
 - `createEntityService.js` - Creación genérica
 - `editEntityService.js` - Edición genérica
 
@@ -552,10 +617,12 @@ Estos servicios proporcionan opciones para componentes Select y Combobox:
 ### 12. Servicios de Estadísticas y Gráficos
 
 #### Raw Material Reception
+
 - **Archivo**: `/src/services/rawMaterialReception/getReceptionChartData.js`
 - **Endpoint**: `GET /api/v2/raw-material-receptions/reception-chart-data?{queryParams}`
 
 #### Cebo Dispatch
+
 - **Archivo**: `/src/services/ceboDispatch/getDispatchChartData.js`
 - **Endpoint**: `GET /api/v2/cebo-dispatches/dispatch-chart-data?{queryParams}`
 
@@ -584,6 +651,7 @@ Todos los servicios siguen este patrón de manejo de errores:
 ### Errores de Autenticación
 
 Los errores de autenticación (401, 403) son interceptados por:
+
 - `AuthErrorInterceptor` (componente)
 - `fetchWithTenant` (función base)
 
@@ -604,6 +672,7 @@ La mayoría de endpoints retornan:
 ```
 
 Por eso los servicios hacen:
+
 ```javascript
 .then((data) => {
   return data.data; // Extrae solo los datos
@@ -611,6 +680,7 @@ Por eso los servicios hacen:
 ```
 
 Algunos endpoints (como opciones) retornan directamente el array:
+
 ```javascript
 .then((data) => {
   return data; // Sin extraer .data
@@ -632,23 +702,23 @@ Algunos endpoints (como opciones) retornan directamente el array:
 ### Ejemplo Básico
 
 ```javascript
-import { getOrder } from "@/services/orderService";
-import { useSession } from "next-auth/react";
+import { getOrder } from '@/services/orderService';
+import { useSession } from 'next-auth/react';
 
 function OrderComponent({ orderId }) {
   const { data: session } = useSession();
   const [order, setOrder] = useState(null);
-  
+
   useEffect(() => {
     if (!session?.user?.accessToken) return;
-    
+
     getOrder(orderId, session.user.accessToken)
       .then(setOrder)
-      .catch(error => {
+      .catch((error) => {
         toast.error(error.message);
       });
   }, [orderId, session]);
-  
+
   // ...
 }
 ```
@@ -660,15 +730,13 @@ function OrderComponent({ orderId }) {
 export function useOrder(orderId) {
   const { data: session } = useSession();
   const [order, setOrder] = useState(null);
-  
+
   useEffect(() => {
     if (!session?.user?.accessToken) return;
-    
-    getOrder(orderId, session.user.accessToken)
-      .then(setOrder)
-      .catch(setError);
+
+    getOrder(orderId, session.user.accessToken).then(setOrder).catch(setError);
   }, [orderId, session]);
-  
+
   return { order, loading, error };
 }
 ```
@@ -678,6 +746,7 @@ export function useOrder(orderId) {
 ## 📈 Estadísticas
 
 Según análisis del código:
+
 - **~91 funciones exportadas** en servicios
 - **18 archivos de servicios** principales
 - **Todos usan API v2** excepto algunas funciones obsoletas en `orderService.js`
@@ -687,6 +756,7 @@ Según análisis del código:
 ## ⚠️ Observaciones Críticas y Mejoras Recomendadas
 
 ### 1. Uso de API v1 en orderService
+
 - **Archivo**: `/src/services/orderService.js`
 - **Línea**: 94
 - **Problema**: `getActiveOrders()` usa `API_URL_V1` en lugar de v2
@@ -694,24 +764,28 @@ Según análisis del código:
 - **Recomendación**: Migrar a v2 o marcar como deprecated
 
 ### 2. Comentarios Incorrectos en Servicios
+
 - **Archivo**: Múltiples servicios
 - **Problema**: Comentarios JSDoc que dicen "pedido" en servicios de otros módulos (customerService, palletService, etc.)
 - **Impacto**: Confusión al leer código
 - **Recomendación**: Corregir comentarios para que reflejen el módulo correcto
 
 ### 3. Inconsistencia en Extracción de Datos
+
 - **Archivo**: Múltiples servicios
 - **Problema**: Algunos servicios retornan `data.data`, otros retornan `data` directamente
 - **Impacto**: Inconsistencia, posible confusión
 - **Recomendación**: Estandarizar (preferiblemente siempre extraer `data.data` si existe)
 
 ### 4. Falta de Validación de Parámetros
+
 - **Archivo**: Todos los servicios
 - **Problema**: No se valida que `token` exista antes de hacer fetch
 - **Impacto**: Errores en tiempo de ejecución si token es undefined
 - **Recomendación**: Validar token al inicio de cada función o usar función helper
 
 ### 5. SettingsService con getSession() Interno
+
 - **Archivo**: `/src/services/settingsService.js`
 - **Línea**: 5-6, 21-22
 - **Problema**: Obtiene sesión internamente, diferente a otros servicios que reciben token
@@ -719,12 +793,14 @@ Según análisis del código:
 - **Recomendación**: Estandarizar (recibir token como parámetro o todos obtenerlo internamente)
 
 ### 6. AutocompleteService con getSession() Interno
+
 - **Archivo**: `/src/services/autocompleteService.js`
 - **Problema**: Similar a SettingsService, obtiene sesión internamente
 - **Impacto**: Inconsistencia
 - **Recomendación**: Estandarizar patrón
 
 ### 7. EntityService Lanza Response en lugar de Error
+
 - **Archivo**: `/src/services/entityService.js`
 - **Línea**: 21, 37, 50
 - **Problema**: Lanza `response` directamente en lugar de `Error`
@@ -732,18 +808,21 @@ Según análisis del código:
 - **Recomendación**: Lanzar Error con mensaje extraído de response
 
 ### 8. Falta de Timeout en Requests
+
 - **Archivo**: Todos los servicios
 - **Problema**: No hay timeout configurado en fetch
 - **Impacto**: Requests pueden colgarse indefinidamente
 - **Recomendación**: Implementar timeout (ej: AbortController con timeout)
 
 ### 9. Falta de Retry Logic
+
 - **Archivo**: Todos los servicios
 - **Problema**: No hay lógica de reintento para errores transitorios
 - **Impacto**: Errores temporales de red causan fallos inmediatos
 - **Recomendación**: Considerar implementar retry para errores 5xx
 
 ### 10. Headers Comentados en storeService
+
 - **Archivo**: `/src/services/storeService.js`
 - **Línea**: 14, 44
 - **Problema**: `'Content-Type': 'application/json'` está comentado
@@ -751,14 +830,15 @@ Según análisis del código:
 - **Recomendación**: Descomentar o documentar por qué está comentado
 
 ### 11. Falta de TypeScript
+
 - **Archivo**: Todos los servicios
 - **Problema**: Sin tipos, no hay validación de parámetros ni retornos
 - **Impacto**: Errores en tiempo de ejecución, menos productividad
 - **Recomendación**: Migrar a TypeScript o añadir PropTypes/JSDoc más completo
 
 ### 12. User-Agent en Todos los Requests
+
 - **Archivo**: Todos los servicios
 - **Problema**: Se envía `navigator.userAgent` en todos los requests (incluso en servidor)
 - **Impacto**: Puede fallar en SSR si `navigator` no existe
 - **Recomendación**: Validar que `navigator` exista antes de usarlo o usar valor por defecto
-

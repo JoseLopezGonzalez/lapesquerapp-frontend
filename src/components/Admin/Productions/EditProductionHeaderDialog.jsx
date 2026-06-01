@@ -1,125 +1,134 @@
-'use client'
+'use client';
 
-import React, { useEffect } from 'react'
-import { Controller, useForm } from 'react-hook-form'
-import { useSession } from 'next-auth/react'
-import { toast } from 'sonner'
-import { useMutation } from '@tanstack/react-query'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useSpeciesOptions } from '@/hooks/useSpeciesOptions'
-import { useCaptureZoneOptions } from '@/hooks/useProductBlockCatalogOptions'
-import { updateProduction } from '@/services/productionService'
-import { Loader2, Lock } from 'lucide-react'
+import React, { useEffect } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { useSession } from 'next-auth/react';
+import { toast } from 'sonner';
+import { useMutation } from '@tanstack/react-query';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useSpeciesOptions } from '@/hooks/useSpeciesOptions';
+import { useCaptureZoneOptions } from '@/hooks/useProductBlockCatalogOptions';
+import { updateProduction } from '@/services/productionService';
+import { Loader2, Lock } from 'lucide-react';
 
-const EMPTY_OPTION = '__none__'
+const EMPTY_OPTION = '__none__';
 
 function normalizeSelectOptions(options) {
-  if (!Array.isArray(options)) return []
+  if (!Array.isArray(options)) return [];
 
   return options
     .map((option, index) => {
-      if (!option) return null
+      if (!option) return null;
 
-      const rawValue = option.value ?? option.id ?? null
-      const rawLabel = option.label ?? option.name ?? null
+      const rawValue = option.value ?? option.id ?? null;
+      const rawLabel = option.label ?? option.name ?? null;
 
-      if (rawValue === null || rawValue === undefined) return null
+      if (rawValue === null || rawValue === undefined) return null;
 
       return {
         value: String(rawValue),
         label: rawLabel || `Opción ${index + 1}`,
         key: `${String(rawValue)}-${rawLabel || index}-${index}`,
-      }
+      };
     })
-    .filter(Boolean)
+    .filter(Boolean);
 }
 
 function getDefaultValues(production) {
   return {
     lot: production?.lot ?? '',
     speciesId: production?.species?.id != null ? String(production.species.id) : EMPTY_OPTION,
-    captureZoneId: production?.captureZone?.id != null ? String(production.captureZone.id) : EMPTY_OPTION,
+    captureZoneId:
+      production?.captureZone?.id != null ? String(production.captureZone.id) : EMPTY_OPTION,
     notes: production?.notes ?? '',
-  }
+  };
 }
 
-export default function EditProductionHeaderDialog({
-  open,
-  onOpenChange,
-  production,
-  onSaved,
-}) {
-  const { data: session } = useSession()
-  const token = session?.user?.accessToken
-  const isClosed = production?.isClosed === true
-  const { data: speciesOptions = [], isLoading: speciesLoading } = useSpeciesOptions()
-  const { data: captureZoneOptions = [], isLoading: captureZonesLoading } = useCaptureZoneOptions()
-  const normalizedSpeciesOptions = normalizeSelectOptions(speciesOptions)
-  const normalizedCaptureZoneOptions = normalizeSelectOptions(captureZoneOptions)
+export default function EditProductionHeaderDialog({ open, onOpenChange, production, onSaved }) {
+  const { data: session } = useSession();
+  const token = session?.user?.accessToken;
+  const isClosed = production?.isClosed === true;
+  const { data: speciesOptions = [], isLoading: speciesLoading } = useSpeciesOptions();
+  const { data: captureZoneOptions = [], isLoading: captureZonesLoading } = useCaptureZoneOptions();
+  const normalizedSpeciesOptions = normalizeSelectOptions(speciesOptions);
+  const normalizedCaptureZoneOptions = normalizeSelectOptions(captureZoneOptions);
 
   const {
     register,
     control,
     handleSubmit,
     reset,
-    formState: { isDirty }
+    formState: { isDirty },
   } = useForm({
-    defaultValues: getDefaultValues(production)
-  })
+    defaultValues: getDefaultValues(production),
+  });
 
   useEffect(() => {
     if (open) {
-      reset(getDefaultValues(production))
+      reset(getDefaultValues(production));
     }
-  }, [open, production, reset])
+  }, [open, production, reset]);
 
   const updateMutation = useMutation({
     mutationFn: async (values) => {
       if (!token || !production?.id) {
-        throw new Error('No se pudo autenticar la actualización de la producción')
+        throw new Error('No se pudo autenticar la actualización de la producción');
       }
 
       if (isClosed) {
-        throw new Error('La producción está cerrada definitivamente. Reábrela antes de realizar cambios.')
+        throw new Error(
+          'La producción está cerrada definitivamente. Reábrela antes de realizar cambios.'
+        );
       }
 
       const payload = {
         lot: values.lot?.trim() || null,
         species_id: values.speciesId !== EMPTY_OPTION ? Number(values.speciesId) : null,
-        capture_zone_id: values.captureZoneId !== EMPTY_OPTION ? Number(values.captureZoneId) : null,
+        capture_zone_id:
+          values.captureZoneId !== EMPTY_OPTION ? Number(values.captureZoneId) : null,
         notes: values.notes?.trim() || null,
-      }
+      };
 
-      return updateProduction(production.id, payload, token)
+      return updateProduction(production.id, payload, token);
     },
     onSuccess: async () => {
-      toast.success('Cabecera de producción actualizada')
-      onOpenChange(false)
-      reset(getDefaultValues(production))
+      toast.success('Cabecera de producción actualizada');
+      onOpenChange(false);
+      reset(getDefaultValues(production));
       if (onSaved) {
-        await onSaved()
+        await onSaved();
       }
     },
     onError: (error) => {
-      toast.error(error?.message || 'No se pudo actualizar la producción')
-    }
-  })
+      toast.error(error?.message || 'No se pudo actualizar la producción');
+    },
+  });
 
-  const onSubmit = handleSubmit((values) => updateMutation.mutate(values))
+  const onSubmit = handleSubmit((values) => updateMutation.mutate(values));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent size="lg" className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Editar cabecera de producción</DialogTitle>
-          <DialogDescription>
-            Actualiza los datos principales de la producción.
-          </DialogDescription>
+          <DialogDescription>Actualiza los datos principales de la producción.</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={onSubmit} className="space-y-4">
@@ -153,7 +162,11 @@ export default function EditProductionHeaderDialog({
                     disabled={isClosed || speciesLoading || updateMutation.isPending}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder={speciesLoading ? 'Cargando especies...' : 'Selecciona una especie'} />
+                      <SelectValue
+                        placeholder={
+                          speciesLoading ? 'Cargando especies...' : 'Selecciona una especie'
+                        }
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value={EMPTY_OPTION}>Sin especie</SelectItem>
@@ -180,7 +193,11 @@ export default function EditProductionHeaderDialog({
                     disabled={isClosed || captureZonesLoading || updateMutation.isPending}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder={captureZonesLoading ? 'Cargando zonas...' : 'Selecciona una zona'} />
+                      <SelectValue
+                        placeholder={
+                          captureZonesLoading ? 'Cargando zonas...' : 'Selecciona una zona'
+                        }
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value={EMPTY_OPTION}>Sin zona</SelectItem>
@@ -230,5 +247,5 @@ export default function EditProductionHeaderDialog({
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

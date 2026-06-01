@@ -2,17 +2,17 @@
 
 ## Stack real
 
-| Tecnología | Versión | Rol |
-|---|---|---|
-| Tailwind CSS | **v4.2.1** | Sistema de utilidades CSS |
-| shadcn/ui | estilo `radix-nova` | Librería de componentes |
-| Radix UI | v1.4.3 + primitivos | Base headless de los componentes |
-| class-variance-authority | ^0.7.1 | Variantes de componentes con `cva()` |
-| tailwind-merge | **v3.0.1** | Merge de clases con `twMerge()` / `cn()` |
-| clsx | ^2.1.1 | Helper condicional de clases |
-| lucide-react | ^0.575.0 | Iconos (única librería aprobada) |
-| tw-animate-css | ^1.4.0 | Animaciones Tailwind v4 |
-| @reui | registry externo | Componentes adicionales (reui.io) |
+| Tecnología               | Versión             | Rol                                      |
+| ------------------------ | ------------------- | ---------------------------------------- |
+| Tailwind CSS             | **v4.2.1**          | Sistema de utilidades CSS                |
+| shadcn/ui                | estilo `radix-nova` | Librería de componentes                  |
+| Radix UI                 | v1.4.3 + primitivos | Base headless de los componentes         |
+| class-variance-authority | ^0.7.1              | Variantes de componentes con `cva()`     |
+| tailwind-merge           | **v3.0.1**          | Merge de clases con `twMerge()` / `cn()` |
+| clsx                     | ^2.1.1              | Helper condicional de clases             |
+| lucide-react             | ^0.575.0            | Iconos (única librería aprobada)         |
+| tw-animate-css           | ^1.4.0              | Animaciones Tailwind v4                  |
+| @reui                    | registry externo    | Componentes adicionales (reui.io)        |
 
 ---
 
@@ -22,8 +22,8 @@ Este proyecto usa **Tailwind CSS v4**, que es fundamentalmente diferente a v3:
 
 ```css
 /* globals.css — Tailwind v4 */
-@import "tailwindcss";           /* no más @tailwind base/components/utilities */
-@import "tw-animate-css";
+@import 'tailwindcss'; /* no más @tailwind base/components/utilities */
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 @custom-variant data-active (&[data-state="active"]);
@@ -124,6 +124,7 @@ tabs         textarea       theme-toggle  toggle  tooltip
 ```
 
 **Componentes custom del proyecto** (NO son shadcn estándar):
+
 - `src/components/Shadcn/Combobox/` — select con búsqueda y carga desde API
 - `src/components/Shadcn/SelectionDialog/` — dialog de selección múltiple
 - `src/components/reui/phone-input.jsx` — input de teléfono internacional
@@ -136,25 +137,27 @@ tabs         textarea       theme-toggle  toggle  tooltip
 
 ```javascript
 // Siempre desde el alias @/components/ui/
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 // Para combinar clases
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 ```
 
 ### Combinación de clases con cn()
 
 ```javascript
 // tailwind-merge v3 + clsx
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
-<div className={cn(
-  "base-classes",
-  isActive && "conditional-class",
-  variant === "ghost" && "ghost-classes",
-  className    // siempre pasar className como prop
-)} />
+<div
+  className={cn(
+    'base-classes',
+    isActive && 'conditional-class',
+    variant === 'ghost' && 'ghost-classes',
+    className // siempre pasar className como prop
+  )}
+/>;
 ```
 
 ### Variantes con cva()
@@ -199,9 +202,9 @@ En Tailwind: `dark:bg-background`, `dark:text-foreground`, etc.
 El proyecto usa **lucide-react** como única librería de iconos:
 
 ```javascript
-import { ChevronDown, Trash2, Plus, Search } from "lucide-react";
+import { ChevronDown, Trash2, Plus, Search } from 'lucide-react';
 
-<ChevronDown className="size-4" />        // preferir size-4 sobre w-4 h-4
+<ChevronDown className="size-4" />; // preferir size-4 sobre w-4 h-4
 ```
 
 No introducir heroicons, phosphor icons u otras librerías.

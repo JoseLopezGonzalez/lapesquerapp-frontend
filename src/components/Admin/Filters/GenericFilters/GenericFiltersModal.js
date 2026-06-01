@@ -9,45 +9,36 @@ import { Button } from '@/components/ui/button';
 import { CircleXIcon } from 'lucide-react';
 
 export const GenericFiltersModal = ({
-    filtersGroup,
-    isOpen,
-    onClose,
-    onFilterChange,
-    onSubmit,
-    onReset,
+  filtersGroup,
+  isOpen,
+  onClose,
+  onFilterChange,
+  onSubmit,
+  onReset,
 }) => {
-    const applyFilters = () => {
-        onSubmit();
-    };
+  const applyFilters = () => {
+    onSubmit();
+  };
 
-    const resetFilters = () => {
-        onReset();
-    };
+  const resetFilters = () => {
+    onReset();
+  };
 
-    return (
-        <div className='py-3 pt-8 flex flex-col gap-2'>
-            <div>
-                <GenericFiltersModalContent
-                    filtersGroup={filtersGroup}
-                    onFilterChange={onFilterChange}
-                />
-            </div>
-            <div className='flex justify-end gap-3 '>
-                <Button
-                    onClick={resetFilters}
-                    variant='outline'
-                >
-                    <CircleXIcon className="h-4 w-4" />
-                    Resetear
-                </Button>
-                <Button
-                    onClick={applyFilters}
-                >
-                    <CheckIcon className="h-4 w-4" />
-                    Aplicar
-                </Button>
-            </div>
-
-        </div>
-    );
+  return (
+    <div className="flex flex-col gap-2 py-3 pt-8">
+      <div>
+        <GenericFiltersModalContent filtersGroup={filtersGroup} onFilterChange={onFilterChange} />
+      </div>
+      <div className="flex justify-end gap-3">
+        <Button onClick={resetFilters} variant="outline">
+          <CircleXIcon className="h-4 w-4" />
+          Resetear
+        </Button>
+        <Button onClick={applyFilters}>
+          <CheckIcon className="h-4 w-4" />
+          Aplicar
+        </Button>
+      </div>
+    </div>
+  );
 };

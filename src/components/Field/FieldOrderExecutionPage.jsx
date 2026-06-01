@@ -92,10 +92,7 @@ export default function FieldOrderExecutionPage({ orderId }) {
     [boxes, servedItems, order]
   );
 
-  const totalAmount = useMemo(
-    () => calculateServedItemsTotal(servedItems),
-    [servedItems]
-  );
+  const totalAmount = useMemo(() => calculateServedItemsTotal(servedItems), [servedItems]);
 
   const addBox = (box) => setBoxes((current) => [...current, box]);
   const removeBox = (index) => {
@@ -135,14 +132,18 @@ export default function FieldOrderExecutionPage({ orderId }) {
   };
 
   if (isLoading) {
-    return <div className="flex flex-1 items-center justify-center"><Loader /></div>;
+    return (
+      <div className="flex flex-1 items-center justify-center">
+        <Loader />
+      </div>
+    );
   }
 
   if (errorMessage || !order) {
     return (
       <div className="flex flex-1 items-center justify-center">
         <EmptyState
-          icon={<PackageOpen className="h-10 w-10 text-primary" />}
+          icon={<PackageOpen className="text-primary h-10 w-10" />}
           title="No se pudo abrir el pedido"
           description={errorMessage ?? 'El pedido no está disponible.'}
         />
@@ -194,8 +195,14 @@ export default function FieldOrderExecutionPage({ orderId }) {
           },
         }),
         {
-          loading: { title: 'Guardando pedido', description: 'Actualizando el contenido operativo servido.' },
-          success: { title: 'Pedido operativo actualizado', description: 'Los cambios se han guardado correctamente.' },
+          loading: {
+            title: 'Guardando pedido',
+            description: 'Actualizando el contenido operativo servido.',
+          },
+          success: {
+            title: 'Pedido operativo actualizado',
+            description: 'Los cambios se han guardado correctamente.',
+          },
           error: (err) => ({
             title: 'No se pudo guardar el pedido',
             description: err?.message ?? 'Inténtalo de nuevo.',
@@ -215,7 +222,7 @@ export default function FieldOrderExecutionPage({ orderId }) {
 
   return (
     <div className="flex h-full min-h-0 w-full flex-col">
-      <div className="shrink-0 flex flex-col items-center gap-3 px-2 pb-6 pt-2 sm:pb-4 sm:pt-0">
+      <div className="flex shrink-0 flex-col items-center gap-3 px-2 pt-2 pb-6 sm:pt-0 sm:pb-4">
         <h2 className="text-lg font-semibold">
           {showSuccess ? 'Pedido actualizado' : 'Ejecución de pedido'}
         </h2>
@@ -227,7 +234,7 @@ export default function FieldOrderExecutionPage({ orderId }) {
               const visibleSteps = [];
               for (let n = start; n <= end; n++) visibleSteps.push(n);
               return (
-                <div className="flex items-center gap-2 w-full max-w-[min(100%,280px)]">
+                <div className="flex w-full max-w-[min(100%,280px)] items-center gap-2">
                   {visibleSteps.map((stepNum, idx) => {
                     const currentStep = STEPS[stepNum - 1];
                     const isCurrent = step === stepNum;
@@ -243,8 +250,9 @@ export default function FieldOrderExecutionPage({ orderId }) {
                           onClick={() => canGo && setStep(stepNum)}
                           disabled={!canGo}
                           className={cn(
-                            'flex items-center justify-center min-w-10 h-10 shrink-0 rounded-full text-sm font-medium touch-manipulation transition-colors',
-                            isCurrent && 'bg-primary text-primary-foreground ring-2 ring-primary/30 ring-offset-2 ring-offset-background',
+                            'flex h-10 min-w-10 shrink-0 touch-manipulation items-center justify-center rounded-full text-sm font-medium transition-colors',
+                            isCurrent &&
+                              'bg-primary text-primary-foreground ring-primary/30 ring-offset-background ring-2 ring-offset-2',
                             isCompleted && !isCurrent && 'bg-primary/20 text-primary',
                             !isCurrent && !isCompleted && 'bg-muted text-muted-foreground',
                             !canGo && 'cursor-not-allowed opacity-60'
@@ -254,9 +262,9 @@ export default function FieldOrderExecutionPage({ orderId }) {
                           {isCompleted ? <Check className="h-4 w-4" /> : stepNum}
                         </button>
                         {showBarAfter ? (
-                          <div className="flex-1 h-1.5 rounded-full min-w-[12px] overflow-hidden bg-muted">
+                          <div className="bg-muted h-1.5 min-w-[12px] flex-1 overflow-hidden rounded-full">
                             <div
-                              className="h-full rounded-full bg-primary/30 transition-[width] duration-300 ease-out"
+                              className="bg-primary/30 h-full rounded-full transition-[width] duration-300 ease-out"
                               style={{ width: barFilled ? '100%' : '0%' }}
                             />
                           </div>
@@ -267,8 +275,10 @@ export default function FieldOrderExecutionPage({ orderId }) {
                 </div>
               );
             })()}
-            <p className="text-center text-sm text-muted-foreground">
-              <span className="font-medium text-foreground/80">Paso {step} de {STEPS.length}</span>
+            <p className="text-muted-foreground text-center text-sm">
+              <span className="text-foreground/80 font-medium">
+                Paso {step} de {STEPS.length}
+              </span>
               {' · '}
               {STEPS[step - 1]?.description}
             </p>
@@ -276,19 +286,24 @@ export default function FieldOrderExecutionPage({ orderId }) {
         ) : null}
       </div>
 
-      <div className={cn('flex flex-1 min-h-0 w-full mx-auto flex-col overflow-y-auto px-4 pt-8 sm:pt-6', contentMaxWidth)}>
+      <div
+        className={cn(
+          'mx-auto flex min-h-0 w-full flex-1 flex-col overflow-y-auto px-4 pt-8 sm:pt-6',
+          contentMaxWidth
+        )}
+      >
         {!showSuccess && step === 1 ? (
-          <div className="flex flex-1 min-h-0 w-full justify-center overflow-y-auto">
+          <div className="flex min-h-0 w-full flex-1 justify-center overflow-y-auto">
             <ReadonlyOrderStep order={order} />
           </div>
         ) : null}
         {!showSuccess && step === 2 ? (
-          <div className="flex flex-1 min-h-0 w-full items-start justify-center overflow-y-auto">
+          <div className="flex min-h-0 w-full flex-1 items-start justify-center overflow-y-auto">
             <ForecastStep items={forecastItems} />
           </div>
         ) : null}
         {!showSuccess && step === 3 ? (
-          <div className="flex flex-1 min-h-0 w-full justify-center overflow-y-auto">
+          <div className="flex min-h-0 w-full flex-1 justify-center overflow-y-auto">
             <Step2QRScan
               state={state}
               addBox={addBox}
@@ -299,7 +314,7 @@ export default function FieldOrderExecutionPage({ orderId }) {
           </div>
         ) : null}
         {!showSuccess && step === 4 ? (
-          <div className="flex flex-1 min-h-0 w-full items-center justify-center overflow-y-auto">
+          <div className="flex min-h-0 w-full flex-1 items-center justify-center overflow-y-auto">
             {servedItems.length > 0 ? (
               <Step3Pricing
                 state={state}
@@ -316,16 +331,12 @@ export default function FieldOrderExecutionPage({ orderId }) {
           </div>
         ) : null}
         {!showSuccess && step === 5 ? (
-          <div className="flex flex-1 min-h-0 w-full items-start justify-center overflow-y-auto">
-            <OrderSummaryStep
-              order={order}
-              items={servedItems}
-              totalAmount={totalAmount}
-            />
+          <div className="flex min-h-0 w-full flex-1 items-start justify-center overflow-y-auto">
+            <OrderSummaryStep order={order} items={servedItems} totalAmount={totalAmount} />
           </div>
         ) : null}
         {!showSuccess && step === 6 ? (
-          <div className="flex flex-1 min-h-0 w-full items-center justify-center overflow-y-auto">
+          <div className="flex min-h-0 w-full flex-1 items-center justify-center overflow-y-auto">
             <OrderConfirmationStep totalAmount={totalAmount} />
           </div>
         ) : null}
@@ -339,7 +350,7 @@ export default function FieldOrderExecutionPage({ orderId }) {
       </div>
 
       {!showSuccess ? (
-        <div className="shrink-0 flex w-full justify-center gap-2 px-4 pb-4 pt-4">
+        <div className="flex w-full shrink-0 justify-center gap-2 px-4 pt-4 pb-4">
           <div className="flex w-full max-w-[420px] gap-2">
             {step > 1 ? (
               <Button
@@ -349,13 +360,19 @@ export default function FieldOrderExecutionPage({ orderId }) {
                 onClick={goBack}
                 className="min-h-[40px] flex-1 touch-manipulation text-sm"
               >
-                <ArrowLeft className="h-4 w-4 mr-1.5" />
+                <ArrowLeft className="mr-1.5 h-4 w-4" />
                 Anterior
               </Button>
             ) : (
-              <Button asChild type="button" variant="outline" size="sm" className="min-h-[40px] flex-1 touch-manipulation text-sm">
+              <Button
+                asChild
+                type="button"
+                variant="outline"
+                size="sm"
+                className="min-h-[40px] flex-1 touch-manipulation text-sm"
+              >
                 <Link href="/field/pedidos">
-                  <ArrowLeft className="h-4 w-4 mr-1.5" />
+                  <ArrowLeft className="mr-1.5 h-4 w-4" />
                   Volver
                 </Link>
               </Button>
@@ -371,13 +388,13 @@ export default function FieldOrderExecutionPage({ orderId }) {
               >
                 {isUpdating ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                    <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
                     Guardando...
                   </>
                 ) : (
                   <>
                     Guardar pedido
-                    <Save className="h-4 w-4 ml-1.5" />
+                    <Save className="ml-1.5 h-4 w-4" />
                   </>
                 )}
               </Button>
@@ -390,7 +407,7 @@ export default function FieldOrderExecutionPage({ orderId }) {
                 className="min-h-[40px] flex-1 touch-manipulation text-sm"
               >
                 Siguiente
-                <ArrowRight className="h-4 w-4 ml-1.5" />
+                <ArrowRight className="ml-1.5 h-4 w-4" />
               </Button>
             )}
           </div>

@@ -1,5 +1,5 @@
 ---
-applyTo: "components/**/*Entity*.{js,jsx,ts,tsx},features/**/*Entity*.{js,jsx,ts,tsx},app/**/*.{js,jsx,ts,tsx}"
+applyTo: 'components/**/*Entity*.{js,jsx,ts,tsx},features/**/*Entity*.{js,jsx,ts,tsx},app/**/*.{js,jsx,ts,tsx}'
 ---
 
 # EntityClient instructions

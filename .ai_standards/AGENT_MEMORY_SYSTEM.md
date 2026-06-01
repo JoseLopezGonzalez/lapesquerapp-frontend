@@ -1,9 +1,11 @@
 # SISTEMA PROFESIONAL DE MEMORIA DE TRABAJO PARA AGENTES IA
+
 ## v1.0 - Working Memory Management Framework
 
 ---
 
 ## 📋 DOCUMENTO REFERENCIA
+
 Este documento debe estar **SIEMPRE DISPONIBLE** para consulta por el agente IA en Cursor cuando se pase cualquier prompt.
 
 **Propósito**: Estandarizar cómo los agentes gestionan contexto, memoria y documentación sin perder coherencia en tareas complejas.
@@ -15,9 +17,11 @@ Este documento debe estar **SIEMPRE DISPONIBLE** para consulta por el agente IA 
 ## 🧠 TRES CAPAS DE MEMORIA
 
 ### 1️⃣ MEMORIA CORTO PLAZO (Short-Term / Working Memory)
+
 **Propósito**: Mantener contexto ACTIVO de la tarea en progreso
 
 **Características**:
+
 - Válida SOLO dentro de una sesión/ejecución
 - Máximo 3-5 documentos vivos simultáneamente
 - Se BORRA al final de la sesión (o cuando la tarea termina)
@@ -26,6 +30,7 @@ Este documento debe estar **SIEMPRE DISPONIBLE** para consulta por el agente IA 
 **Ubicación**: `.ai_work_context/00_working/`
 
 **Contenido típico**:
+
 ```
 00_working/
 ├── active_task.md          # Tarea actual EN PROGRESO
@@ -37,9 +42,11 @@ Este documento debe estar **SIEMPRE DISPONIBLE** para consulta por el agente IA 
 ---
 
 ### 2️⃣ MEMORIA MEDIO PLAZO (Mid-Term / Reference Memory)
+
 **Propósito**: Documentación que EVOLUCIONA durante la tarea
 
 **Características**:
+
 - Persiste mientras se ejecuta la tarea general
 - Se actualiza/refina con cada iteración
 - Se ENTREGA al usuario como parte del output
@@ -48,6 +55,7 @@ Este documento debe estar **SIEMPRE DISPONIBLE** para consulta por el agente IA 
 **Ubicación**: `.ai_work_context/01_analysis/`, `02_planning/`, `03_execution/`, etc.
 
 **Contenido típico**:
+
 ```
 01_analysis/
 ├── schema_mapping.md          # Mapeo inicial → actualizaciones
@@ -67,9 +75,11 @@ Este documento debe estar **SIEMPRE DISPONIBLE** para consulta por el agente IA 
 ---
 
 ### 3️⃣ MEMORIA LARGO PLAZO (Long-Term / Reference)
+
 **Propósito**: Documentación REUTILIZABLE entre sesiones
 
 **Características**:
+
 - Persiste permanentemente en tu proyecto
 - Se consulta pero NO se modifica durante ejecución
 - Se actualiza SOLO después de validación manual
@@ -78,6 +88,7 @@ Este documento debe estar **SIEMPRE DISPONIBLE** para consulta por el agente IA 
 **Ubicación**: `.ai_standards/` (fuera del contexto de trabajo)
 
 **Contenido típico**:
+
 ```
 .ai_standards/
 ├── AGENT_MEMORY_SYSTEM.md          # ← ESTE DOCUMENTO
@@ -152,6 +163,7 @@ proyecto_pesquerapp/
 ## 🔄 PROTOCOLO DE DECISIÓN CRÍTICA vs AUTOMÁTICA
 
 ### ✅ AUTOMÁTICAS (Ejecutar sin intervención)
+
 - Análisis técnico (sintaxis, estructura, patrones)
 - Generación de código que sigue estándares establecidos
 - Validaciones contra reglas documentadas
@@ -160,7 +172,9 @@ proyecto_pesquerapp/
 - Creación de estructura de archivos/carpetas
 
 ### 🔴 CRÍTICAS (PAUSAR y preguntar)
+
 Guardar en `00_working/decisions_pending.md` y preguntar:
+
 - Ambigüedad en especificación del usuario
 - Conflicto entre requisitos
 - Necesidad de contexto de negocio no documentado
@@ -174,6 +188,7 @@ Guardar en `00_working/decisions_pending.md` y preguntar:
 ## 📝 FORMATO ESTÁNDAR DE DOCUMENTOS
 
 Todos los documentos en carpeta de trabajo deben incluir:
+
 - **Estado**: [🟢 Activo | 🟡 En Revisión | 🔴 Crítica | ✅ Completado]
 - **Última actualización**: [AUTO TIMESTAMP]
 - **Sesión**: [AUTO SESSION_ID]
@@ -190,7 +205,7 @@ Todos los documentos en carpeta de trabajo deben incluir:
 
 ## 🎯 CHECKLIST DE GESTIÓN DE MEMORIA
 
-✅ Al INICIO: Cargar .ai_standards/, crear .ai_work_context/[TIMESTAMP]/, inicializar 00_working/ y 01_/02_/03_/04_/05_/, crear active_task.md.
+✅ Al INICIO: Cargar .ai*standards/, crear .ai_work_context/[TIMESTAMP]/, inicializar 00_working/ y 01*/02*/03*/04*/05*/, crear active_task.md.
 
 ✅ DURANTE: Actualizar active_task.md, documentar en execution_timeline.md, si CRÍTICA → decisions_pending.md.
 
@@ -222,6 +237,7 @@ Todos los documentos en carpeta de trabajo deben incluir:
 ## 🎬 PROTOCOLO DE INICIO (Para CADA prompt nuevo)
 
 El agente SIEMPRE comienza con:
+
 1. ✅ Cargar AGENT_MEMORY_SYSTEM.md (este documento)
 2. ✅ Crear carpeta: .ai_work_context/[TIMESTAMP_SESION]/
 3. ✅ Inicializar estructura de directorios

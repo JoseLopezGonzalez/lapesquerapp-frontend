@@ -1,7 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -9,7 +15,13 @@ import { Badge } from '@/components/ui/badge';
 import { Link2, Search, Loader2 } from 'lucide-react';
 import { XMarkIcon } from '@heroicons/react/20/solid';
 import { Combobox } from '@/components/Shadcn/Combobox';
-import { Pagination, PaginationContent, PaginationItem, PaginationPrevious, PaginationNext } from '@/components/ui/pagination';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationPrevious,
+  PaginationNext,
+} from '@/components/ui/pagination';
 import Masonry from 'react-masonry-css';
 import SearchPalletCard from '../SearchPalletCard';
 import Loader from '@/components/Utilities/Loader';
@@ -51,7 +63,13 @@ export default function LinkPalletsDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className={isMobile ? "max-w-full w-full h-full max-h-full m-0 rounded-none flex flex-col" : "sm:max-w-4xl max-h-[85vh] flex flex-col"}>
+      <DialogContent
+        className={
+          isMobile
+            ? 'm-0 flex h-full max-h-full w-full max-w-full flex-col rounded-none'
+            : 'flex max-h-[85vh] flex-col sm:max-w-4xl'
+        }
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Link2 className="h-5 w-5" />
@@ -63,16 +81,15 @@ export default function LinkPalletsDialog({
             <Loader />
           </div>
         ) : (
-          <div className="flex-1 overflow-hidden flex flex-col min-h-0">
-            <div className="flex-shrink-0 pb-3 space-y-2">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <div className="flex-shrink-0 space-y-2 pb-3">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <div className="space-y-1">
-                  <Label htmlFor="store-filter" className="text-xs text-muted-foreground">Filtrar por almacén</Label>
+                  <Label htmlFor="store-filter" className="text-muted-foreground text-xs">
+                    Filtrar por almacén
+                  </Label>
                   <Combobox
-                    options={[
-                      { value: 'all', label: 'Todos los almacenes' },
-                      ...storeOptions
-                    ]}
+                    options={[{ value: 'all', label: 'Todos los almacenes' }, ...storeOptions]}
                     value={filterStoreId || 'all'}
                     onChange={(value) => {
                       const newStoreId = value === 'all' || value === '' ? null : value;
@@ -89,7 +106,9 @@ export default function LinkPalletsDialog({
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="pallet-id-input" className="text-xs text-muted-foreground">Buscar por ID de palet</Label>
+                  <Label htmlFor="pallet-id-input" className="text-muted-foreground text-xs">
+                    Buscar por ID de palet
+                  </Label>
                   <div className="flex gap-2">
                     <Input
                       type="text"
@@ -112,18 +131,21 @@ export default function LinkPalletsDialog({
                 </div>
               </div>
               {palletIds.length > 0 && (
-                <div className="flex flex-wrap gap-2 items-center">
-                  <span className="text-xs text-muted-foreground">IDs:</span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-muted-foreground text-xs">IDs:</span>
                   {palletIds.map((id) => (
                     <Badge key={id} className="flex items-center gap-1">
                       {id}
                       <button
                         onClick={() => onRemovePalletId(id)}
                         type="button"
-                        className="group hover:bg-white/95 bg-foreground-700 rounded-full text-md font-bold text-black-500 p-0.5 shadow-sm"
+                        className="group bg-foreground-700 text-md text-black-500 rounded-full p-0.5 font-bold shadow-sm hover:bg-white/95"
                         disabled={isSearching || isInitialLoading}
                       >
-                        <XMarkIcon className="h-3 w-3 group-hover:text-primary" aria-hidden="true" />
+                        <XMarkIcon
+                          className="group-hover:text-primary h-3 w-3"
+                          aria-hidden="true"
+                        />
                       </button>
                     </Badge>
                   ))}
@@ -132,8 +154,8 @@ export default function LinkPalletsDialog({
             </div>
 
             {searchResults.length > 0 && (
-              <div className="flex-1 overflow-hidden flex flex-col min-h-0 space-y-3">
-                <div className="flex items-center justify-between flex-shrink-0">
+              <div className="flex min-h-0 flex-1 flex-col space-y-3 overflow-hidden">
+                <div className="flex flex-shrink-0 items-center justify-between">
                   <Label className="text-sm font-medium">
                     Palets encontrados ({paginationMeta?.total || searchResults.length})
                   </Label>
@@ -148,10 +170,12 @@ export default function LinkPalletsDialog({
                       }
                     }}
                   >
-                    {selectedPalletIds.length === searchResults.length ? 'Deseleccionar todos' : 'Seleccionar todos'}
+                    {selectedPalletIds.length === searchResults.length
+                      ? 'Deseleccionar todos'
+                      : 'Seleccionar todos'}
                   </Button>
                 </div>
-                <div className="flex-1 overflow-y-auto min-h-0 pr-2 pb-2">
+                <div className="min-h-0 flex-1 overflow-y-auto pr-2 pb-2">
                   <Masonry
                     breakpointCols={{
                       default: 2,
@@ -182,7 +206,7 @@ export default function LinkPalletsDialog({
             )}
 
             {searchResults.length === 0 && !isSearching && (
-              <div className="text-center py-8 text-muted-foreground">
+              <div className="text-muted-foreground py-8 text-center">
                 <p>
                   {palletIds.length === 0
                     ? 'No hay palets disponibles para vincular.'
@@ -193,61 +217,62 @@ export default function LinkPalletsDialog({
           </div>
         )}
         <DialogFooter>
-          <div className="flex items-center gap-2 mr-auto">
-            {paginationMeta && paginationMeta.last_page > 1 && (() => {
-              const totalPages = paginationMeta.last_page;
-              const page = paginationMeta.current_page;
-              const prevDisabled = page === 1 || isSearching;
-              const nextDisabled = page === totalPages || isSearching;
-              const handlePrev = (e) => {
-                e.preventDefault();
-                if (!prevDisabled) onSearch(page - 1);
-              };
-              const handleNext = (e) => {
-                e.preventDefault();
-                if (!nextDisabled) onSearch(page + 1);
-              };
-              return (
-                <>
-                  <Pagination className="justify-start">
-                    <PaginationContent className="gap-0 divide-x overflow-hidden rounded-lg border">
-                      <PaginationItem>
-                        <PaginationPrevious
-                          size="icon-sm"
-                          href="#"
-                          onClick={handlePrev}
-                          className={cn("rounded-none border-0", prevDisabled && "pointer-events-none opacity-50")}
-                        />
-                      </PaginationItem>
-                      <PaginationItem>
-                        <PaginationNext
-                          size="icon-sm"
-                          href="#"
-                          onClick={handleNext}
-                          className={cn("rounded-none border-0", nextDisabled && "pointer-events-none opacity-50")}
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                  <span className="whitespace-nowrap text-sm text-muted-foreground">
-                    Página {page} de {totalPages}
-                  </span>
-                </>
-              );
-            })()}
+          <div className="mr-auto flex items-center gap-2">
+            {paginationMeta &&
+              paginationMeta.last_page > 1 &&
+              (() => {
+                const totalPages = paginationMeta.last_page;
+                const page = paginationMeta.current_page;
+                const prevDisabled = page === 1 || isSearching;
+                const nextDisabled = page === totalPages || isSearching;
+                const handlePrev = (e) => {
+                  e.preventDefault();
+                  if (!prevDisabled) onSearch(page - 1);
+                };
+                const handleNext = (e) => {
+                  e.preventDefault();
+                  if (!nextDisabled) onSearch(page + 1);
+                };
+                return (
+                  <>
+                    <Pagination className="justify-start">
+                      <PaginationContent className="gap-0 divide-x overflow-hidden rounded-lg border">
+                        <PaginationItem>
+                          <PaginationPrevious
+                            size="icon-sm"
+                            href="#"
+                            onClick={handlePrev}
+                            className={cn(
+                              'rounded-none border-0',
+                              prevDisabled && 'pointer-events-none opacity-50'
+                            )}
+                          />
+                        </PaginationItem>
+                        <PaginationItem>
+                          <PaginationNext
+                            size="icon-sm"
+                            href="#"
+                            onClick={handleNext}
+                            className={cn(
+                              'rounded-none border-0',
+                              nextDisabled && 'pointer-events-none opacity-50'
+                            )}
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                    <span className="text-muted-foreground text-sm whitespace-nowrap">
+                      Página {page} de {totalPages}
+                    </span>
+                  </>
+                );
+              })()}
           </div>
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={handleClose}
-              disabled={isLinking}
-            >
+            <Button variant="outline" onClick={handleClose} disabled={isLinking}>
               Cancelar
             </Button>
-            <Button
-              onClick={onLinkSelected}
-              disabled={selectedPalletIds.length === 0 || isLinking}
-            >
+            <Button onClick={onLinkSelected} disabled={selectedPalletIds.length === 0 || isLinking}>
               {isLinking ? (
                 <>
                   <Loader2 className="animate-spin" />

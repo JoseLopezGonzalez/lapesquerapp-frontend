@@ -1,62 +1,88 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
-import { fetchSuperadmin, SuperadminApiError } from "@/lib/superadminApi";
-import { notify } from "@/lib/notifications";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { fetchSuperadmin, SuperadminApiError } from '@/lib/superadminApi';
+import { notify } from '@/lib/notifications';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
-import StatusBadge from "../StatusBadge";
-import { Pencil, Loader2 } from "lucide-react";
+} from '@/components/ui/dialog';
+import StatusBadge from '../StatusBadge';
+import { Pencil, Loader2 } from 'lucide-react';
 
-const READONLY_FIELDS = ["subdomain", "database"];
+const READONLY_FIELDS = ['subdomain', 'database'];
 
 const FIELD_LABELS = {
-  name: "Nombre",
-  subdomain: "Subdominio",
-  database: "Base de datos",
-  status: "Estado",
-  plan: "Plan",
-  renewal_at: "Renovación",
-  timezone: "Zona horaria",
-  branding_image_url: "Logo URL",
-  admin_email: "Email admin",
-  created_at: "Creado",
-  updated_at: "Actualizado",
+  name: 'Nombre',
+  subdomain: 'Subdominio',
+  database: 'Base de datos',
+  status: 'Estado',
+  plan: 'Plan',
+  renewal_at: 'Renovación',
+  timezone: 'Zona horaria',
+  branding_image_url: 'Logo URL',
+  admin_email: 'Email admin',
+  created_at: 'Creado',
+  updated_at: 'Actualizado',
 };
 
 const DISPLAY_ORDER = [
-  "name", "subdomain", "database", "status", "plan",
-  "admin_email", "timezone", "renewal_at", "branding_image_url",
-  "created_at", "updated_at",
+  'name',
+  'subdomain',
+  'database',
+  'status',
+  'plan',
+  'admin_email',
+  'timezone',
+  'renewal_at',
+  'branding_image_url',
+  'created_at',
+  'updated_at',
 ];
 
-const EDITABLE_FIELDS = ["name", "plan", "renewal_at", "timezone", "branding_image_url", "admin_email"];
+const EDITABLE_FIELDS = [
+  'name',
+  'plan',
+  'renewal_at',
+  'timezone',
+  'branding_image_url',
+  'admin_email',
+];
 
-const PLAN_OPTIONS = ["basic", "pro", "enterprise"];
+const PLAN_OPTIONS = ['basic', 'pro', 'enterprise'];
 const TIMEZONE_OPTIONS = [
-  "Europe/Madrid", "Atlantic/Canary", "Europe/London", "Europe/Lisbon",
-  "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles",
-  "America/Sao_Paulo", "America/Mexico_City",
+  'Europe/Madrid',
+  'Atlantic/Canary',
+  'Europe/London',
+  'Europe/Lisbon',
+  'America/New_York',
+  'America/Chicago',
+  'America/Denver',
+  'America/Los_Angeles',
+  'America/Sao_Paulo',
+  'America/Mexico_City',
 ];
 
 function formatValue(key, value) {
-  if (value === null || value === undefined) return "-";
-  if (key === "created_at" || key === "updated_at" || key === "renewal_at") {
+  if (value === null || value === undefined) return '-';
+  if (key === 'created_at' || key === 'updated_at' || key === 'renewal_at') {
     try {
-      return new Intl.DateTimeFormat("es-ES", {
-        day: "2-digit", month: "2-digit", year: "numeric",
+      return new Intl.DateTimeFormat('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
       }).format(new Date(value));
-    } catch { return value; }
+    } catch {
+      return value;
+    }
   }
   return String(value);
 }
@@ -64,9 +90,14 @@ function formatValue(key, value) {
 export default function GeneralData({ tenant, onRefresh }) {
   const [editOpen, setEditOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const { register, handleSubmit, setError, formState: { errors } } = useForm({
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors },
+  } = useForm({
     defaultValues: EDITABLE_FIELDS.reduce((acc, f) => {
-      acc[f] = tenant[f] || "";
+      acc[f] = tenant[f] || '';
       return acc;
     }, {}),
   });
@@ -75,10 +106,10 @@ export default function GeneralData({ tenant, onRefresh }) {
     setSaving(true);
     try {
       await fetchSuperadmin(`/tenants/${tenant.id}`, {
-        method: "PUT",
+        method: 'PUT',
         body: JSON.stringify(values),
       });
-      notify.success({ title: "Tenant actualizado" });
+      notify.success({ title: 'Tenant actualizado' });
       setEditOpen(false);
       onRefresh();
     } catch (err) {
@@ -87,7 +118,7 @@ export default function GeneralData({ tenant, onRefresh }) {
           setError(field, { message: msgs[0] });
         });
       } else {
-        notify.error({ title: err.message || "Error al guardar" });
+        notify.error({ title: err.message || 'Error al guardar' });
       }
     } finally {
       setSaving(false);
@@ -109,16 +140,15 @@ export default function GeneralData({ tenant, onRefresh }) {
             const value = tenant[key];
             const isReadonly = READONLY_FIELDS.includes(key);
             return (
-              <div key={key} className={`flex items-center gap-4 px-6 py-2.5 ${isReadonly ? "bg-muted/50" : ""}`}>
-                <span className="w-36 shrink-0 text-sm text-muted-foreground">
+              <div
+                key={key}
+                className={`flex items-center gap-4 px-6 py-2.5 ${isReadonly ? 'bg-muted/50' : ''}`}
+              >
+                <span className="text-muted-foreground w-36 shrink-0 text-sm">
                   {FIELD_LABELS[key] || key}
                 </span>
                 <span className="text-sm">
-                  {key === "status" ? (
-                    <StatusBadge status={value} />
-                  ) : (
-                    formatValue(key, value)
-                  )}
+                  {key === 'status' ? <StatusBadge status={value} /> : formatValue(key, value)}
                 </span>
               </div>
             );
@@ -134,38 +164,42 @@ export default function GeneralData({ tenant, onRefresh }) {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {EDITABLE_FIELDS.map((field) => (
               <div key={field} className="grid w-full items-center gap-1.5">
-                <Label htmlFor={`edit-${field}`}>
-                  {FIELD_LABELS[field] || field}
-                </Label>
-                {field === "plan" ? (
+                <Label htmlFor={`edit-${field}`}>{FIELD_LABELS[field] || field}</Label>
+                {field === 'plan' ? (
                   <select
                     id={`edit-${field}`}
-                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    className="border-input focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
                     {...register(field)}
                   >
                     {PLAN_OPTIONS.map((p) => (
-                      <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>
+                      <option key={p} value={p}>
+                        {p.charAt(0).toUpperCase() + p.slice(1)}
+                      </option>
                     ))}
                   </select>
-                ) : field === "timezone" ? (
+                ) : field === 'timezone' ? (
                   <select
                     id={`edit-${field}`}
-                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    className="border-input focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
                     {...register(field)}
                   >
                     {TIMEZONE_OPTIONS.map((tz) => (
-                      <option key={tz} value={tz}>{tz}</option>
+                      <option key={tz} value={tz}>
+                        {tz}
+                      </option>
                     ))}
                   </select>
                 ) : (
                   <Input
                     id={`edit-${field}`}
-                    type={field === "admin_email" ? "email" : field === "renewal_at" ? "date" : "text"}
+                    type={
+                      field === 'admin_email' ? 'email' : field === 'renewal_at' ? 'date' : 'text'
+                    }
                     {...register(field)}
                   />
                 )}
                 {errors[field] && (
-                  <p className="text-xs text-destructive">{errors[field].message}</p>
+                  <p className="text-destructive text-xs">{errors[field].message}</p>
                 )}
               </div>
             ))}
@@ -174,7 +208,7 @@ export default function GeneralData({ tenant, onRefresh }) {
                 Cancelar
               </Button>
               <Button type="submit" disabled={saving}>
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Guardar"}
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Guardar'}
               </Button>
             </DialogFooter>
           </form>

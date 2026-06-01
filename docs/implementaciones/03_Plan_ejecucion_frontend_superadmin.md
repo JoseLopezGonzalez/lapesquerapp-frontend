@@ -11,9 +11,9 @@
 
 ### 1.1 Especificación vs plan de infraestructura
 
-| Fuente | Enfoque |
-|--------|--------|
-| **Spec 02** | "Proyecto Next.js independiente", URL `admin.lapesquerapp.es`, puerto 3001 |
+| Fuente      | Enfoque                                                                                   |
+| ----------- | ----------------------------------------------------------------------------------------- |
+| **Spec 02** | "Proyecto Next.js independiente", URL `admin.lapesquerapp.es`, puerto 3001                |
 | **Plan 00** | "Ruta separada `/superadmin` con su propio layout", "Login propio en `/superadmin/login`" |
 
 ### 1.2 Recomendación: integrado en el mismo repo
@@ -124,77 +124,77 @@ src/
 
 ### Fase 0: Preparación (orden recomendado)
 
-| # | Tarea | Archivos | Notas |
-|---|--------|----------|--------|
-| 0.1 | Añadir variable de entorno y config superadmin | `.env.example`, `src/configs/config.js` o `superadminConfig.js` | Documentar `NEXT_PUBLIC_SUPERADMIN_API_URL` |
-| 0.2 | Crear cliente HTTP superadmin (sin X-Tenant, Bearer, 401/429) | `src/lib/superadminApi.ts` | Token inyectado desde contexto/store |
-| 0.3 | Crear contexto/store de auth superadmin (token, user, logout, fetchMe) | `src/context/SuperadminAuthContext.tsx` | Integrar con cliente HTTP |
-| 0.4 | Ajustar middleware: no aplicar lógica tenant a `/superadmin` | `src/middleware.ts` | `pathname.startsWith('/superadmin') → next()` y no incluir en matcher O incluir y solo redirigir si no cookie; recomendación: no matcher superadmin |
+| #   | Tarea                                                                  | Archivos                                                        | Notas                                                                                                                                               |
+| --- | ---------------------------------------------------------------------- | --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.1 | Añadir variable de entorno y config superadmin                         | `.env.example`, `src/configs/config.js` o `superadminConfig.js` | Documentar `NEXT_PUBLIC_SUPERADMIN_API_URL`                                                                                                         |
+| 0.2 | Crear cliente HTTP superadmin (sin X-Tenant, Bearer, 401/429)          | `src/lib/superadminApi.ts`                                      | Token inyectado desde contexto/store                                                                                                                |
+| 0.3 | Crear contexto/store de auth superadmin (token, user, logout, fetchMe) | `src/context/SuperadminAuthContext.tsx`                         | Integrar con cliente HTTP                                                                                                                           |
+| 0.4 | Ajustar middleware: no aplicar lógica tenant a `/superadmin`           | `src/middleware.ts`                                             | `pathname.startsWith('/superadmin') → next()` y no incluir en matcher O incluir y solo redirigir si no cookie; recomendación: no matcher superadmin |
 
 ### Fase 1: Autenticación y layout
 
-| # | Tarea | Descripción |
-|---|--------|-------------|
-| 1.1 | Página login `/superadmin/login` | Formulario email → POST request-access; transición a paso OTP (campo 6 dígitos, "Verificar", "Reenviar código" con cooldown 60s). Auto-verificar si `?token=xxx` (magic link). |
-| 1.2 | Integración verify-otp y verify-magic-link | Al verificar, guardar `access_token` y user en contexto; redirigir a `/superadmin`. |
-| 1.3 | Layout superadmin | `layout.js` que envuelve con `SuperadminAuthContext` y `SuperadminLayoutClient`. En cliente: si no hay token y ruta no es login, redirigir a `/superadmin/login`. |
-| 1.4 | Sidebar y header | Navegación: Dashboard (`/superadmin`), Tenants (`/superadmin/tenants`). Header: nombre usuario (de `/me`), botón Cerrar sesión (POST logout + limpiar token). |
-| 1.5 | Verificación inicial con `/me` | Al montar layout (o app), llamar GET `/auth/me`; si 401, redirigir a login. |
+| #   | Tarea                                      | Descripción                                                                                                                                                                    |
+| --- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1.1 | Página login `/superadmin/login`           | Formulario email → POST request-access; transición a paso OTP (campo 6 dígitos, "Verificar", "Reenviar código" con cooldown 60s). Auto-verificar si `?token=xxx` (magic link). |
+| 1.2 | Integración verify-otp y verify-magic-link | Al verificar, guardar `access_token` y user en contexto; redirigir a `/superadmin`.                                                                                            |
+| 1.3 | Layout superadmin                          | `layout.js` que envuelve con `SuperadminAuthContext` y `SuperadminLayoutClient`. En cliente: si no hay token y ruta no es login, redirigir a `/superadmin/login`.              |
+| 1.4 | Sidebar y header                           | Navegación: Dashboard (`/superadmin`), Tenants (`/superadmin/tenants`). Header: nombre usuario (de `/me`), botón Cerrar sesión (POST logout + limpiar token).                  |
+| 1.5 | Verificación inicial con `/me`             | Al montar layout (o app), llamar GET `/auth/me`; si 401, redirigir a login.                                                                                                    |
 
 ### Fase 2: Dashboard
 
-| # | Tarea | Descripción |
-|---|--------|-------------|
+| #   | Tarea                          | Descripción                                                                                                      |
+| --- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
 | 2.1 | Página dashboard `/superadmin` | GET `/dashboard`. Mostrar cards: Total, Activos, Suspendidos, Pendientes (y Cancelled si viene en la respuesta). |
-| 2.2 | Bloque "Últimos tenants" | Usar `last_onboarding` (o lista si el backend lo amplía). Tabla: Nombre, Subdominio, Status, Fecha. |
-| 2.3 | Acciones | Botones "Crear tenant" (→ `/superadmin/tenants/new`) y "Ver todos" (→ `/superadmin/tenants`). |
+| 2.2 | Bloque "Últimos tenants"       | Usar `last_onboarding` (o lista si el backend lo amplía). Tabla: Nombre, Subdominio, Status, Fecha.              |
+| 2.3 | Acciones                       | Botones "Crear tenant" (→ `/superadmin/tenants/new`) y "Ver todos" (→ `/superadmin/tenants`).                    |
 
 ### Fase 3: Lista de tenants
 
-| # | Tarea | Descripción |
-|---|--------|-------------|
-| 3.1 | Página `/superadmin/tenants` | GET `/tenants` con query params: `status`, `search`, `per_page`, `page`. |
-| 3.2 | Filtros y búsqueda | Tabs o botones: Todos, Activos, Suspendidos, Pendientes, Cancelados. Campo búsqueda (debounce) por nombre/subdominio. |
-| 3.3 | Tabla | Columnas: Nombre, Subdominio, Plan, Status (badge por color), Última actividad. Enlace a detalle por fila. |
-| 3.4 | Paginación | Usar `meta` y `links` de la respuesta. Botón "+ Nuevo" → `/superadmin/tenants/new`. |
+| #   | Tarea                        | Descripción                                                                                                           |
+| --- | ---------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| 3.1 | Página `/superadmin/tenants` | GET `/tenants` con query params: `status`, `search`, `per_page`, `page`.                                              |
+| 3.2 | Filtros y búsqueda           | Tabs o botones: Todos, Activos, Suspendidos, Pendientes, Cancelados. Campo búsqueda (debounce) por nombre/subdominio. |
+| 3.3 | Tabla                        | Columnas: Nombre, Subdominio, Plan, Status (badge por color), Última actividad. Enlace a detalle por fila.            |
+| 3.4 | Paginación                   | Usar `meta` y `links` de la respuesta. Botón "+ Nuevo" → `/superadmin/tenants/new`.                                   |
 
 ### Fase 4: Detalle de tenant
 
-| # | Tarea | Descripción |
-|---|--------|-------------|
-| 4.1 | Página `/superadmin/tenants/[id]` | GET `/tenants/{id}`. Secciones: A. Datos generales, B. Acciones de estado, C. Onboarding (si pending y step < 8), D. Usuarios, E. Impersonación. |
-| 4.2 | Datos generales | Tabla de solo lectura con botón "Editar". Modal o inline para PUT con campos editables (name, plan, renewal_at, timezone, branding_image_url, admin_email). subdomain y database solo lectura. |
-| 4.3 | Acciones de estado | Botones según status: active → Suspender, Cancelar; suspended → Activar, Cancelar; pending → Activar, Cancelar, Reintentar onboarding; cancelled → Activar. Diálogo de confirmación antes de cada POST. |
-| 4.4 | Barra de onboarding | Solo si `status === 'pending'` y `onboarding_step < 8`. 8 segmentos; completados en verde, actual animado. Polling GET `/tenants/{id}` cada 3–5 s. Botón "Reintentar" si >30 s en el mismo paso. Al llegar a paso 8: parar polling, toast "Onboarding completado", refrescar datos. |
-| 4.5 | Tabla usuarios | GET `/tenants/{id}/users`. Columnas: Nombre, Email, Rol (badge), Activo, Último acceso, Acciones. |
-| 4.6 | Impersonación | Por cada admin: "Solicitar acceso" (consentimiento) y "Acceso directo" (silencioso). Flujos según spec (request → toast; silent → confirmación → window.open). Opcional: UI para terminar sesión de impersonación (POST `/impersonate/end` con log_id). |
+| #   | Tarea                             | Descripción                                                                                                                                                                                                                                                                         |
+| --- | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.1 | Página `/superadmin/tenants/[id]` | GET `/tenants/{id}`. Secciones: A. Datos generales, B. Acciones de estado, C. Onboarding (si pending y step < 8), D. Usuarios, E. Impersonación.                                                                                                                                    |
+| 4.2 | Datos generales                   | Tabla de solo lectura con botón "Editar". Modal o inline para PUT con campos editables (name, plan, renewal_at, timezone, branding_image_url, admin_email). subdomain y database solo lectura.                                                                                      |
+| 4.3 | Acciones de estado                | Botones según status: active → Suspender, Cancelar; suspended → Activar, Cancelar; pending → Activar, Cancelar, Reintentar onboarding; cancelled → Activar. Diálogo de confirmación antes de cada POST.                                                                             |
+| 4.4 | Barra de onboarding               | Solo si `status === 'pending'` y `onboarding_step < 8`. 8 segmentos; completados en verde, actual animado. Polling GET `/tenants/{id}` cada 3–5 s. Botón "Reintentar" si >30 s en el mismo paso. Al llegar a paso 8: parar polling, toast "Onboarding completado", refrescar datos. |
+| 4.5 | Tabla usuarios                    | GET `/tenants/{id}/users`. Columnas: Nombre, Email, Rol (badge), Activo, Último acceso, Acciones.                                                                                                                                                                                   |
+| 4.6 | Impersonación                     | Por cada admin: "Solicitar acceso" (consentimiento) y "Acceso directo" (silencioso). Flujos según spec (request → toast; silent → confirmación → window.open). Opcional: UI para terminar sesión de impersonación (POST `/impersonate/end` con log_id).                             |
 
 ### Fase 5: Crear tenant
 
-| # | Tarea | Descripción |
-|---|--------|-------------|
-| 5.1 | Página `/superadmin/tenants/new` | Formulario: nombre empresa, subdominio, email administrador, plan (select), timezone (select), URL logo. |
-| 5.2 | Validación subdominio | Regex formato en tiempo real; al blur o debounce 300 ms comprobar disponibilidad (lista cargada o endpoint dedicado). Preview: `{subdominio}.lapesquerapp.es`. |
-| 5.3 | Envío | POST `/tenants`. 201: redirigir a `/superadmin/tenants/{id}`. 422: mostrar `errors` en campos. |
+| #   | Tarea                            | Descripción                                                                                                                                                    |
+| --- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 5.1 | Página `/superadmin/tenants/new` | Formulario: nombre empresa, subdominio, email administrador, plan (select), timezone (select), URL logo.                                                       |
+| 5.2 | Validación subdominio            | Regex formato en tiempo real; al blur o debounce 300 ms comprobar disponibilidad (lista cargada o endpoint dedicado). Preview: `{subdominio}.lapesquerapp.es`. |
+| 5.3 | Envío                            | POST `/tenants`. 201: redirigir a `/superadmin/tenants/{id}`. 422: mostrar `errors` en campos.                                                                 |
 
 ### Fase 6: Errores y pulido
 
-| # | Tarea | Descripción |
-|---|--------|-------------|
+| #   | Tarea                       | Descripción                                                                                                           |
+| --- | --------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | 6.1 | Tratamiento de errores HTTP | 400: mensaje del body. 422: errores por campo. 429: mensaje fijo. 500: genérico. Usar toasts o inline según contexto. |
-| 6.2 | Responsive | Sidebar colapsable / hamburger en móvil/tablet. Contenido full-width. |
-| 6.3 | Loading y estados | Skeletons o spinners en listas y detalle. Disabled en botones durante submit. |
+| 6.2 | Responsive                  | Sidebar colapsable / hamburger en móvil/tablet. Contenido full-width.                                                 |
+| 6.3 | Loading y estados           | Skeletons o spinners en listas y detalle. Disabled en botones durante submit.                                         |
 
 ---
 
 ## 5. Orden de ejecución resumido
 
-1. **Fase 0** (config, API client, auth context, middleware).  
-2. **Fase 1** (login + layout + protección).  
-3. **Fase 2** (dashboard).  
-4. **Fase 3** (lista tenants).  
-5. **Fase 4** (detalle tenant: datos, acciones, onboarding, usuarios, impersonación).  
-6. **Fase 5** (crear tenant).  
+1. **Fase 0** (config, API client, auth context, middleware).
+2. **Fase 1** (login + layout + protección).
+3. **Fase 2** (dashboard).
+4. **Fase 3** (lista tenants).
+5. **Fase 4** (detalle tenant: datos, acciones, onboarding, usuarios, impersonación).
+6. **Fase 5** (crear tenant).
 7. **Fase 6** (errores, responsive, loading).
 
 Las fases 4 y 5 pueden solaparse (p. ej. formulario crear tenant antes de todas las secciones del detalle), pero conviene tener lista la lista y el detalle básico antes de impersonación.
@@ -221,13 +221,13 @@ Las fases 4 y 5 pueden solaparse (p. ej. formulario crear tenant antes de todas 
 
 ## 7. Diferencias clave con el resto de la app
 
-| Aspecto | App tenant (admin/operator/comercial) | Panel superadmin |
-|---------|--------------------------------------|-------------------|
-| Auth | next-auth (JWT) + Bearer a `/api/v2/me` (tenant) | Token Sanctum en contexto; GET `/api/v2/superadmin/auth/me` |
-| Cliente HTTP | `fetchWithTenant` + header `X-Tenant` | `fetchSuperadmin` sin `X-Tenant` |
-| Base API | `API_URL_V2` (tenant) | `SUPERADMIN_API_URL` |
-| Middleware | Incluido en matcher; roles con roleConfig | No incluido en matcher (o lógica propia solo redirigir a login) |
-| Rutas | `/admin`, `/operator`, `/comercial`, etc. | `/superadmin`, `/superadmin/login`, `/superadmin/tenants/*` |
+| Aspecto      | App tenant (admin/operator/comercial)            | Panel superadmin                                                |
+| ------------ | ------------------------------------------------ | --------------------------------------------------------------- |
+| Auth         | next-auth (JWT) + Bearer a `/api/v2/me` (tenant) | Token Sanctum en contexto; GET `/api/v2/superadmin/auth/me`     |
+| Cliente HTTP | `fetchWithTenant` + header `X-Tenant`            | `fetchSuperadmin` sin `X-Tenant`                                |
+| Base API     | `API_URL_V2` (tenant)                            | `SUPERADMIN_API_URL`                                            |
+| Middleware   | Incluido en matcher; roles con roleConfig        | No incluido en matcher (o lógica propia solo redirigir a login) |
+| Rutas        | `/admin`, `/operator`, `/comercial`, etc.        | `/superadmin`, `/superadmin/login`, `/superadmin/tenants/*`     |
 
 ---
 

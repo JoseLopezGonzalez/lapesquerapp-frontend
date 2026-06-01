@@ -69,14 +69,13 @@
 El backend debe calcular y devolver el `status` según:
 
 1. **`"completed"`** (Estado Verde):
-
    - `remainingQuantity <= 0` O
    - `Math.abs(completedQuantity - quantity) < 0.01`
+
 2. **`"exceeded"`** (Estado Rojo):
-
    - `completedQuantity > quantity`
-3. **`"pending"`** (Estado Naranja):
 
+3. **`"pending"`** (Estado Naranja):
    - `completedQuantity < quantity` Y `remainingQuantity > 0`
 
 El frontend usa este `status` para determinar los colores y el comportamiento visual de cada card.

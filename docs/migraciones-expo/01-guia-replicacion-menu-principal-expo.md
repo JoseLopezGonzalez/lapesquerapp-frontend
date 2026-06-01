@@ -97,6 +97,7 @@ AppSidebar (index.js)
 **Archivo**: `src/components/Admin/Layout/SideBar/index.js`
 
 **Responsabilidades**:
+
 - Orquestación general del sidebar
 - Obtención de datos de usuario y configuración
 - Filtrado de navegación por roles
@@ -106,6 +107,7 @@ AppSidebar (index.js)
 **Props**: Ninguno (usa hooks internos)
 
 **Hooks utilizados**:
+
 - `usePathname()` - Next.js navigation
 - `useSession()` - NextAuth
 - `useSettings()` - Context personalizado
@@ -144,6 +146,7 @@ AppSidebar (index.js)
 ```
 
 **Características clave**:
+
 - Filtrado por roles recursivo (incluye hijos)
 - Detección de rutas activas (soporta rutas anidadas)
 - Memoización de datos para optimización
@@ -156,12 +159,14 @@ AppSidebar (index.js)
 **Archivo**: `src/components/Admin/Layout/SideBar/nav-main.js`
 
 **Responsabilidades**:
+
 - Renderizar items de navegación principal
 - Manejar items con/sin hijos (colapsables)
 - Mostrar iconos y labels
 - Gestionar estado activo/inactivo
 
 **Props**:
+
 ```javascript
 {
   items: Array<{
@@ -175,6 +180,7 @@ AppSidebar (index.js)
 ```
 
 **Componentes utilizados**:
+
 - `SidebarGroup` (shadcn/ui)
 - `SidebarMenu` (shadcn/ui)
 - `SidebarMenuItem` (shadcn/ui)
@@ -186,12 +192,14 @@ AppSidebar (index.js)
 - `ChevronRight` (Lucide React)
 
 **Lógica**:
+
 - Si item tiene `childrens`: Renderiza como Collapsible con trigger
 - Si item NO tiene `childrens`: Renderiza como Link directo
 - Usa `defaultOpen={item.isActive}` para abrir items activos
 - Animación de rotación para ChevronRight (90deg cuando abierto)
 
 **Estilos clave**:
+
 - Tooltip en modo colapsado (iconos solo)
 - Transición de rotación para chevron
 - Estilos hover/active del sidebar
@@ -203,11 +211,13 @@ AppSidebar (index.js)
 **Archivo**: `src/components/Admin/Layout/SideBar/nav-managers.js`
 
 **Responsabilidades**:
+
 - Renderizar sección especial de "Gestores"
 - Items sin hijos (navegación simple)
 - Ocultarse en modo icono colapsado
 
 **Props**:
+
 ```javascript
 {
   items: Array<{
@@ -220,6 +230,7 @@ AppSidebar (index.js)
 ```
 
 **Componentes utilizados**:
+
 - `SidebarGroup`
 - `SidebarGroupLabel` ("Gestores")
 - `SidebarMenu`
@@ -228,6 +239,7 @@ AppSidebar (index.js)
 - `Link` (Next.js)
 
 **Características**:
+
 - Se oculta en modo colapsado: `className="group-data-[collapsible=icon]:hidden"`
 - Label fijo: "Gestores"
 - Estilos activos: `font-medium bg-foreground-200`
@@ -239,12 +251,14 @@ AppSidebar (index.js)
 **Archivo**: `src/components/Admin/Layout/SideBar/nav-user.js`
 
 **Responsabilidades**:
+
 - Mostrar información del usuario (avatar, nombre, email)
 - Menú dropdown con opciones
 - Toggle de tema claro/oscuro
 - Logout
 
 **Props**:
+
 ```javascript
 {
   user: {
@@ -257,6 +271,7 @@ AppSidebar (index.js)
 ```
 
 **Componentes utilizados**:
+
 - `SidebarMenu`
 - `SidebarMenuItem`
 - `SidebarMenuButton`
@@ -266,11 +281,12 @@ AppSidebar (index.js)
 - `useRouter` (Next.js)
 
 **Estructura del dropdown**:
+
 1. **Header**: Avatar + nombre + email
 2. **Separador**
 3. **Grupo 1**: Planes (Sparkles icon)
 4. **Separador**
-5. **Grupo 2**: 
+5. **Grupo 2**:
    - Cuenta (BadgeCheck icon)
    - Notificaciones (Bell icon)
    - Configuración (Settings icon, navega a /admin/settings)
@@ -280,6 +296,7 @@ AppSidebar (index.js)
 9. **Footer**: Cerrar Sesión (LogOut icon)
 
 **Características**:
+
 - Iniciales del nombre como fallback del avatar
 - Posicionamiento del dropdown: `bottom` en mobile, `right` en desktop
 - Toggle de tema integrado
@@ -292,11 +309,13 @@ AppSidebar (index.js)
 **Archivo**: `src/components/Admin/Layout/SideBar/app-switcher.js`
 
 **Responsabilidades**:
+
 - Mostrar aplicación actual
 - Dropdown para cambiar entre aplicaciones
 - Loading state mientras carga nombre de empresa
 
 **Props**:
+
 ```javascript
 {
   apps: Array<{
@@ -310,6 +329,7 @@ AppSidebar (index.js)
 ```
 
 **Componentes utilizados**:
+
 - `SidebarMenu`
 - `SidebarMenuItem`
 - `SidebarMenuButton`
@@ -319,6 +339,7 @@ AppSidebar (index.js)
 - `CircleHelp` (Lucide React)
 
 **Características**:
+
 - Logo renderizado en contenedor cuadrado blanco con icono negro
 - Skeleton mientras carga (`loading` prop)
 - Lista de apps en dropdown
@@ -334,25 +355,29 @@ AppSidebar (index.js)
 Este es el componente base que proporciona toda la funcionalidad del sidebar. **No es necesario replicarlo completamente** en Expo, pero es importante entender su arquitectura.
 
 **Constantes importantes**:
+
 ```javascript
-const SIDEBAR_WIDTH = "16rem"           // 256px
-const SIDEBAR_WIDTH_MOBILE = "18rem"    // 288px
-const SIDEBAR_WIDTH_ICON = "3rem"       // 48px
-const SIDEBAR_KEYBOARD_SHORTCUT = "b"
-const MOBILE_BREAKPOINT = 768           // pixels
+const SIDEBAR_WIDTH = '16rem'; // 256px
+const SIDEBAR_WIDTH_MOBILE = '18rem'; // 288px
+const SIDEBAR_WIDTH_ICON = '3rem'; // 48px
+const SIDEBAR_KEYBOARD_SHORTCUT = 'b';
+const MOBILE_BREAKPOINT = 768; // pixels
 ```
 
 **Variantes**:
+
 - `collapsible`: "none" | "icon" | "offcanvas"
 - `variant`: "sidebar" | "floating" | "inset"
 - `side`: "left" | "right"
 
 **Funcionalidad móvil**:
+
 - Detecta mobile con `useIsMobile()`
 - En mobile: Renderiza como `Sheet` (drawer lateral)
 - En desktop: Renderiza como sidebar fijo
 
 **Context API**:
+
 ```javascript
 SidebarContext proporciona:
 - state: "expanded" | "collapsed"
@@ -371,6 +396,7 @@ SidebarContext proporciona:
 ### Dependencias Principales
 
 #### React y Next.js
+
 ```json
 {
   "react": "19.0.0-rc-66855b96-20241106",
@@ -380,6 +406,7 @@ SidebarContext proporciona:
 ```
 
 #### Radix UI (Primitivos)
+
 ```json
 {
   "@radix-ui/react-avatar": "^1.1.3",
@@ -393,6 +420,7 @@ SidebarContext proporciona:
 ```
 
 #### UI y Estilos
+
 ```json
 {
   "tailwindcss": "^3.4.1",
@@ -404,6 +432,7 @@ SidebarContext proporciona:
 ```
 
 #### Iconos
+
 ```json
 {
   "lucide-react": "^0.475.0",
@@ -413,6 +442,7 @@ SidebarContext proporciona:
 ```
 
 #### Utilidades
+
 ```json
 {
   "next-auth": "^4.24.13",
@@ -423,18 +453,18 @@ SidebarContext proporciona:
 
 ### Equivalencias para Expo/React Native
 
-| Web (Next.js) | Expo/React Native | Notas |
-|---------------|-------------------|-------|
-| `@radix-ui/react-*` | `react-native` + librerías nativas | Usar componentes nativos o librerías específicas |
-| `tailwindcss` | `nativewind` o `react-native-tailwindcss` | Tailwind para React Native |
-| `class-variance-authority` | Implementación propia | Lógica de variantes |
-| `clsx` + `tailwind-merge` | `clsx` + merge manual | `clsx` funciona igual |
-| `lucide-react` | `lucide-react-native` | Mismo set de iconos |
-| `@heroicons/react` | `@expo/vector-icons` o `react-native-vector-icons` | Iconos alternativos |
-| `next-auth` | `expo-auth-session` o `@react-native-async-storage/async-storage` | Autenticación |
-| `next-themes` | `react-native-dark-mode` o `@react-native-community/async-storage` | Tema claro/oscuro |
-| `react-hot-toast` | `react-native-toast-message` o `react-native-flash-message` | Notificaciones |
-| `next/navigation` | `@react-navigation/native` | Navegación |
+| Web (Next.js)              | Expo/React Native                                                  | Notas                                            |
+| -------------------------- | ------------------------------------------------------------------ | ------------------------------------------------ |
+| `@radix-ui/react-*`        | `react-native` + librerías nativas                                 | Usar componentes nativos o librerías específicas |
+| `tailwindcss`              | `nativewind` o `react-native-tailwindcss`                          | Tailwind para React Native                       |
+| `class-variance-authority` | Implementación propia                                              | Lógica de variantes                              |
+| `clsx` + `tailwind-merge`  | `clsx` + merge manual                                              | `clsx` funciona igual                            |
+| `lucide-react`             | `lucide-react-native`                                              | Mismo set de iconos                              |
+| `@heroicons/react`         | `@expo/vector-icons` o `react-native-vector-icons`                 | Iconos alternativos                              |
+| `next-auth`                | `expo-auth-session` o `@react-native-async-storage/async-storage`  | Autenticación                                    |
+| `next-themes`              | `react-native-dark-mode` o `@react-native-community/async-storage` | Tema claro/oscuro                                |
+| `react-hot-toast`          | `react-native-toast-message` o `react-native-flash-message`        | Notificaciones                                   |
+| `next/navigation`          | `@react-navigation/native`                                         | Navegación                                       |
 
 ---
 
@@ -447,27 +477,29 @@ El sistema usa **variables CSS** definidas en `globals.css` para el tema claro/o
 #### Variables del Sidebar
 
 **Tema Claro** (`:root`):
+
 ```css
---sidebar-background: 0 0% 98%;           /* neutral-50 */
---sidebar-foreground: 0 0% 26.1%;         /* neutral-800 */
---sidebar-primary: 0 0% 10%;              /* neutral-900 */
---sidebar-primary-foreground: 0 0% 98%;   /* neutral-50 */
---sidebar-accent: 0 0% 95.9%;             /* neutral-100 */
---sidebar-accent-foreground: 0 0% 10%;    /* neutral-900 */
---sidebar-border: 0 0% 91%;               /* neutral-200 */
---sidebar-ring: 217.2 91.2% 59.8%;        /* base ring color */
+--sidebar-background: 0 0% 98%; /* neutral-50 */
+--sidebar-foreground: 0 0% 26.1%; /* neutral-800 */
+--sidebar-primary: 0 0% 10%; /* neutral-900 */
+--sidebar-primary-foreground: 0 0% 98%; /* neutral-50 */
+--sidebar-accent: 0 0% 95.9%; /* neutral-100 */
+--sidebar-accent-foreground: 0 0% 10%; /* neutral-900 */
+--sidebar-border: 0 0% 91%; /* neutral-200 */
+--sidebar-ring: 217.2 91.2% 59.8%; /* base ring color */
 ```
 
 **Tema Oscuro** (`.dark`):
+
 ```css
---sidebar-background: 0 0% 7%;            /* neutral-900 */
---sidebar-foreground: 0 0% 95.9%;         /* neutral-100 */
---sidebar-primary: 224.3 76.3% 48%;       /* blue-600 */
---sidebar-primary-foreground: 0 0% 100%;  /* white */
---sidebar-accent: 0 0% 15.9%;             /* neutral-800 */
---sidebar-accent-foreground: 0 0% 95.9%;  /* neutral-100 */
---sidebar-border: 0 0% 15.9%;             /* neutral-800 */
---sidebar-ring: 217.2 91.2% 59.8%;        /* base ring color */
+--sidebar-background: 0 0% 7%; /* neutral-900 */
+--sidebar-foreground: 0 0% 95.9%; /* neutral-100 */
+--sidebar-primary: 224.3 76.3% 48%; /* blue-600 */
+--sidebar-primary-foreground: 0 0% 100%; /* white */
+--sidebar-accent: 0 0% 15.9%; /* neutral-800 */
+--sidebar-accent-foreground: 0 0% 95.9%; /* neutral-100 */
+--sidebar-border: 0 0% 15.9%; /* neutral-800 */
+--sidebar-ring: 217.2 91.2% 59.8%; /* base ring color */
 ```
 
 **Formato**: Valores HSL sin la función `hsl()`, solo números separados por espacios.
@@ -475,6 +507,7 @@ El sistema usa **variables CSS** definidas en `globals.css` para el tema claro/o
 ### Colores Generales (Base)
 
 **Tema Claro**:
+
 ```css
 --background: 0 0% 100%;
 --foreground: 0 0% 5%;
@@ -490,6 +523,7 @@ El sistema usa **variables CSS** definidas en `globals.css` para el tema claro/o
 ```
 
 **Tema Oscuro**:
+
 ```css
 --background: 0 0% 6%;
 --foreground: 0 0% 98%;
@@ -507,8 +541,8 @@ El sistema usa **variables CSS** definidas en `globals.css` para el tema claro/o
 
 ```javascript
 // src/lib/utils.js
-import { clsx } from "clsx";
-import { twMerge } from "tailwind-merge"
+import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs) {
   return twMerge(clsx(inputs));
@@ -526,6 +560,7 @@ export function cn(...inputs) {
 **Archivo**: `src/configs/navgationConfig.js`
 
 **Estructura de un item de navegación**:
+
 ```javascript
 {
   name: string,                    // Nombre visible
@@ -541,6 +576,7 @@ export function cn(...inputs) {
 ```
 
 **Ejemplo real**:
+
 ```javascript
 {
   name: 'Almacenes',
@@ -573,24 +609,21 @@ Filtra items de navegación basándose en roles del usuario.
 
 ```javascript
 export function filterNavigationByRoles(items, userRoles) {
-    const roles = Array.isArray(userRoles) ? userRoles : [userRoles];
-    
-    return items
-        .filter((item) =>
-            item.allowedRoles?.some((role) => roles.includes(role))
-        )
-        .map((item) => ({
-            ...item,
-            childrens: item.childrens
-                ? item.childrens.filter((child) =>
-                    child.allowedRoles?.some((role) => roles.includes(role))
-                )
-                : null,
-        }));
+  const roles = Array.isArray(userRoles) ? userRoles : [userRoles];
+
+  return items
+    .filter((item) => item.allowedRoles?.some((role) => roles.includes(role)))
+    .map((item) => ({
+      ...item,
+      childrens: item.childrens
+        ? item.childrens.filter((child) => child.allowedRoles?.some((role) => roles.includes(role)))
+        : null,
+    }));
 }
 ```
 
 **Lógica**:
+
 1. Normaliza `userRoles` a array
 2. Filtra items principales que tengan roles permitidos
 3. Filtra recursivamente `childrens` de cada item
@@ -602,14 +635,15 @@ Verifica si una ruta está activa (incluye rutas anidadas).
 
 ```javascript
 export function isActiveRoute(itemHref, currentPath) {
-    if (!itemHref) return false;
-    if (itemHref === currentPath) return true;
-    if (currentPath.startsWith(itemHref + '/')) return true;
-    return false;
+  if (!itemHref) return false;
+  if (itemHref === currentPath) return true;
+  if (currentPath.startsWith(itemHref + '/')) return true;
+  return false;
 }
 ```
 
 **Lógica**:
+
 - Compara exacto: `/admin/products` === `/admin/products`
 - Compara prefijo: `/admin/products` === `/admin/products/123` (ruta anidada)
 
@@ -622,6 +656,7 @@ export function isActiveRoute(itemHref, currentPath) {
 **Ubicación**: `AppSidebar` → `filterNavigationByRoles()`
 
 **Flujo**:
+
 1. Obtiene roles del usuario desde `session.user.role`
 2. Normaliza roles a array
 3. Filtra `navigationConfig` y `navigationManagerConfig`
@@ -635,6 +670,7 @@ export function isActiveRoute(itemHref, currentPath) {
 **Ubicación**: `AppSidebar` → `isActiveRoute()`
 
 **Flujo**:
+
 1. Obtiene ruta actual con `usePathname()` (Next.js)
 2. Compara cada item con ruta actual
 3. Marca item como `current: true` si coincide
@@ -647,6 +683,7 @@ export function isActiveRoute(itemHref, currentPath) {
 **Ubicación**: `Sidebar` base component
 
 **Comportamiento**:
+
 - En desktop: Sidebar se colapsa a ancho de iconos (`3rem`)
 - Tooltips aparecen al hover en modo colapsado
 - Labels y grupos se ocultan
@@ -659,28 +696,30 @@ export function isActiveRoute(itemHref, currentPath) {
 **Ubicación**: `Sidebar` base component → `useIsMobile()`
 
 **Comportamiento**:
+
 - Breakpoint: `768px`
 - En mobile: Renderiza como `Sheet` (drawer lateral)
 - En desktop: Renderiza como sidebar fijo
 
 **Hook `useIsMobile()`**:
+
 ```javascript
-const MOBILE_BREAKPOINT = 768
+const MOBILE_BREAKPOINT = 768;
 
 export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState(undefined)
+  const [isMobile, setIsMobile] = React.useState(undefined);
 
   React.useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
+    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
     const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    }
-    mql.addEventListener("change", onChange)
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    return () => mql.removeEventListener("change", onChange);
-  }, [])
+      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    };
+    mql.addEventListener('change', onChange);
+    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    return () => mql.removeEventListener('change', onChange);
+  }, []);
 
-  return !!isMobile
+  return !!isMobile;
 }
 ```
 
@@ -693,6 +732,7 @@ export function useIsMobile() {
 **Componente**: `src/components/ui/theme-toggle.jsx`
 
 **Funcionalidad**:
+
 - Usa `next-themes` para gestión de tema
 - Toggle visual con animación
 - Persistencia en localStorage
@@ -705,20 +745,22 @@ export function useIsMobile() {
 **Ubicación**: `AppSidebar` → `handleLogout`
 
 **Flujo**:
+
 1. Llama `signOut()` de NextAuth
 2. Redirige a `/`
 3. Muestra toast de éxito/error
 
 **Código**:
+
 ```javascript
 const handleLogout = React.useCallback(async () => {
-    try {
-        await signOut({ redirect: false });
-        window.location.href = '/';
-        toast.success('Sesión cerrada correctamente', getToastTheme());
-    } catch (err) {
-        toast.error(err.message || 'Error al cerrar sesión', getToastTheme());
-    }
+  try {
+    await signOut({ redirect: false });
+    window.location.href = '/';
+    toast.success('Sesión cerrada correctamente', getToastTheme());
+  } catch (err) {
+    toast.error(err.message || 'Error al cerrar sesión', getToastTheme());
+  }
 }, []);
 ```
 
@@ -728,34 +770,34 @@ const handleLogout = React.useCallback(async () => {
 
 ### Componentes Base
 
-| Componente Web | Componente Native | Notas |
-|----------------|-------------------|-------|
-| `div` | `View` | Contenedor base |
-| `ul` / `li` | `View` | Listas como Views |
-| `button` | `Pressable` o `TouchableOpacity` | Botones |
-| `span` | `Text` | Texto |
-| `img` | `Image` | Imágenes |
-| `a` (Link) | `TouchableOpacity` + `navigation.navigate()` | Links |
+| Componente Web | Componente Native                            | Notas             |
+| -------------- | -------------------------------------------- | ----------------- |
+| `div`          | `View`                                       | Contenedor base   |
+| `ul` / `li`    | `View`                                       | Listas como Views |
+| `button`       | `Pressable` o `TouchableOpacity`             | Botones           |
+| `span`         | `Text`                                       | Texto             |
+| `img`          | `Image`                                      | Imágenes          |
+| `a` (Link)     | `TouchableOpacity` + `navigation.navigate()` | Links             |
 
 ### Componentes shadcn/ui → Native
 
-| shadcn/ui | Alternativa Native | Librería |
-|-----------|-------------------|----------|
-| `Sidebar` | `Drawer` de React Navigation | `@react-navigation/drawer` |
-| `Collapsible` | `Accordion` o implementar con `Animated` | Custom o `react-native-collapsible` |
-| `DropdownMenu` | `Modal` + `View` o librería | `react-native-dropdown-picker` o custom |
-| `Avatar` | `Image` + `View` o librería | `react-native-avatar` o custom |
-| `Tooltip` | Librería o custom | `react-native-tooltip` o custom |
-| `Skeleton` | `View` animado o librería | `react-native-skeleton-placeholder` |
-| `Separator` | `View` con altura 1px | Custom |
+| shadcn/ui      | Alternativa Native                       | Librería                                |
+| -------------- | ---------------------------------------- | --------------------------------------- |
+| `Sidebar`      | `Drawer` de React Navigation             | `@react-navigation/drawer`              |
+| `Collapsible`  | `Accordion` o implementar con `Animated` | Custom o `react-native-collapsible`     |
+| `DropdownMenu` | `Modal` + `View` o librería              | `react-native-dropdown-picker` o custom |
+| `Avatar`       | `Image` + `View` o librería              | `react-native-avatar` o custom          |
+| `Tooltip`      | Librería o custom                        | `react-native-tooltip` o custom         |
+| `Skeleton`     | `View` animado o librería                | `react-native-skeleton-placeholder`     |
+| `Separator`    | `View` con altura 1px                    | Custom                                  |
 
 ### Iconos
 
-| Web | Native | Notas |
-|-----|--------|-------|
-| `lucide-react` | `lucide-react-native` | Mismo set de iconos |
-| `@heroicons/react` | `@expo/vector-icons` | Iconos alternativos |
-| `react-icons` | `@expo/vector-icons` | Varios sets de iconos |
+| Web                | Native                | Notas                 |
+| ------------------ | --------------------- | --------------------- |
+| `lucide-react`     | `lucide-react-native` | Mismo set de iconos   |
+| `@heroicons/react` | `@expo/vector-icons`  | Iconos alternativos   |
+| `react-icons`      | `@expo/vector-icons`  | Varios sets de iconos |
 
 ---
 
@@ -764,16 +806,19 @@ const handleLogout = React.useCallback(async () => {
 ### 1. Navegación
 
 **Web (Next.js)**:
+
 - Usa rutas basadas en archivos (`/admin/products`)
 - `usePathname()` obtiene ruta actual
 - `Link` componente para navegación
 
 **Native (Expo)**:
+
 - Usa nombres de pantallas (`Products`, `ProductDetail`)
 - `useRoute()` obtiene ruta actual
 - `navigation.navigate()` para navegar
 
 **Consideraciones**:
+
 - Se debe mapear rutas a nombres de pantallas
 - La función `isActiveRoute()` debe adaptarse para trabajar con nombres de pantallas
 - Los valores `href` deben convertirse a llamadas de navegación
@@ -783,16 +828,19 @@ const handleLogout = React.useCallback(async () => {
 ### 2. Estilos
 
 **Web (Tailwind CSS)**:
+
 - Clases utility: `flex`, `p-2`, `bg-sidebar`
 - Variables CSS para colores
 - Responsive con breakpoints
 
 **Native (StyleSheet)**:
+
 - Objetos de estilo: `{ flex: 1, padding: 8 }`
 - Colores como valores JS
 - Media queries no disponibles (usar `Dimensions` de React Native)
 
 **Consideraciones**:
+
 - Los colores del tema deben definirse como objetos JavaScript
 - Las clases Tailwind deben convertirse a objetos StyleSheet
 - Los valores de colores HSL deben convertirse a RGB/hex
@@ -802,16 +850,19 @@ const handleLogout = React.useCallback(async () => {
 ### 3. Animaciones
 
 **Web (CSS)**:
+
 - Transiciones CSS: `transition-transform duration-200`
 - Animaciones con `@keyframes`
 - Radix UI maneja animaciones automáticamente
 
 **Native (Animated API)**:
+
 - `Animated.Value` y `Animated.timing()`
 - `LayoutAnimation` para transiciones automáticas
 - `react-native-reanimated` para animaciones avanzadas
 
 **Consideraciones**:
+
 - Las animaciones de colapso/expansión del sidebar requieren implementación con Animated API
 - Las animaciones de dropdown/modal deben implementarse manualmente
 - Las duraciones y curvas de animación deben definirse en código
@@ -821,16 +872,19 @@ const handleLogout = React.useCallback(async () => {
 ### 4. Estado del Sidebar
 
 **Web**:
+
 - Estado en Context API
 - Persistencia en cookies del navegador
 - Keyboard shortcut (Cmd/Ctrl + B) para abrir/cerrar
 
 **Native**:
+
 - Estado en Context API (mismo patrón)
 - Persistencia en AsyncStorage
 - Keyboard shortcut no aplicable (opcional con librería)
 
 **Consideraciones**:
+
 - La persistencia del estado debe usar AsyncStorage en lugar de cookies
 - El estado colapsado/expandido debe persistirse localmente
 - Los gestures nativos pueden usarse para abrir/cerrar el sidebar
@@ -840,16 +894,19 @@ const handleLogout = React.useCallback(async () => {
 ### 5. Tooltips
 
 **Web (Radix UI)**:
+
 - Tooltips nativos con hover del mouse
 - Posicionamiento automático
 - Animaciones incluidas
 
 **Native**:
+
 - No existe hover, se debe usar press largo o librería
 - Posicionamiento manual o mediante librería
 - Alternativas: `react-native-tooltip`, `react-native-popover-view`, o custom con `Modal`
 
 **Consideraciones**:
+
 - Los tooltips solo aparecen en modo colapsado del sidebar
 - Requiere implementación manual o librería especializada
 
@@ -858,21 +915,25 @@ const handleLogout = React.useCallback(async () => {
 ### 6. Dropdown Menu
 
 **Web (Radix UI)**:
+
 - Portal para posicionamiento
 - Overlay automático
 - Animaciones incluidas
 
 **Native**:
+
 - `Modal` con posicionamiento absoluto
 - Overlay manual
 - Animaciones con `Animated`
 
 **Consideraciones**:
+
 - El dropdown de usuario debe implementarse como Modal o componente especializado
 - El posicionamiento debe calcularse manualmente
 - Las animaciones de entrada/salida deben implementarse
 
 **Alternativas**:
+
 - `react-native-dropdown-picker`
 - `react-native-modal-dropdown`
 - Custom con `Modal` + `Animated`
@@ -904,6 +965,7 @@ El menú principal debe incluir los siguientes componentes:
 ### Estilos y Dimensiones
 
 **Dimensiones del Sidebar**:
+
 - Ancho expandido: `256px` (16rem)
 - Ancho colapsado: `48px` (3rem)
 - Ancho mobile: `288px` (18rem)
@@ -911,6 +973,7 @@ El menú principal debe incluir los siguientes componentes:
 **Colores del Tema**: Ver sección [Sistema de Estilos](#-sistema-de-estilos) para valores HSL completos
 
 **Espaciado**:
+
 - Padding general: `8px` (0.5rem)
 - Gap entre items: `4px` (0.25rem)
 - Border radius: `6px` (0.375rem)
@@ -920,6 +983,7 @@ El menú principal debe incluir los siguientes componentes:
 **Estructura de Datos**: Ver sección [Configuración y Datos](#-configuración-y-datos)
 
 **Utilidades Necesarias**:
+
 - `filterNavigationByRoles()` - Filtrado por roles
 - `isActiveRoute()` - Detección de rutas activas
 
@@ -949,5 +1013,4 @@ La lógica de negocio (filtrado por roles, detección de rutas activas, etc.) se
 
 **Fin del Documento**
 
-*Última actualización: 2024*
-
+_Última actualización: 2024_

@@ -17,11 +17,11 @@ Todas las rutas son relativas a la base de la API: **`/api/v2`** (el host lo def
 
 En **todas** las peticiones:
 
-| Header | Valor | Descripción |
-|--------|--------|-------------|
-| `Authorization` | `Bearer {access_token}` | Token Sanctum del usuario logueado |
-| `X-Tenant` | `{subdomain}` | Subdominio del tenant (empresa) |
-| `Content-Type` | `application/json` | Solo en peticiones con body (POST, PUT, PATCH) |
+| Header          | Valor                   | Descripción                                    |
+| --------------- | ----------------------- | ---------------------------------------------- |
+| `Authorization` | `Bearer {access_token}` | Token Sanctum del usuario logueado             |
+| `X-Tenant`      | `{subdomain}`           | Subdominio del tenant (empresa)                |
+| `Content-Type`  | `application/json`      | Solo en peticiones con body (POST, PUT, PATCH) |
 
 ### Rol y permisos
 
@@ -39,13 +39,13 @@ En **todas** las peticiones:
 
 ## 2. Endpoints del flujo Autoventa
 
-| Método | Ruta | Uso |
-|--------|------|-----|
-| GET | `/api/v2/customers/options` | Selector de cliente (solo clientes del comercial) |
-| POST | `/api/v2/customers` | Creación rápida de cliente (solo nombre; comercial asignado por backend) |
-| POST | `/api/v2/orders` | Crear autoventa (body con `orderType: 'autoventa'`, `items`, `boxes`, etc.) |
-| GET | `/api/v2/orders?orderType=autoventa` | Listar solo autoventas del comercial (paginado) |
-| GET | `/api/v2/orders/{id}` | Ver detalle de una autoventa (resumen, ticket, reimpresión) |
+| Método | Ruta                                 | Uso                                                                         |
+| ------ | ------------------------------------ | --------------------------------------------------------------------------- |
+| GET    | `/api/v2/customers/options`          | Selector de cliente (solo clientes del comercial)                           |
+| POST   | `/api/v2/customers`                  | Creación rápida de cliente (solo nombre; comercial asignado por backend)    |
+| POST   | `/api/v2/orders`                     | Crear autoventa (body con `orderType: 'autoventa'`, `items`, `boxes`, etc.) |
+| GET    | `/api/v2/orders?orderType=autoventa` | Listar solo autoventas del comercial (paginado)                             |
+| GET    | `/api/v2/orders/{id}`                | Ver detalle de una autoventa (resumen, ticket, reimpresión)                 |
 
 ---
 
@@ -61,27 +61,27 @@ POST /api/v2/orders
 
 **Body (campos para autoventa):**
 
-| Campo | Tipo | Obligatorio | Descripción |
-|-------|------|-------------|-------------|
-| `orderType` | string | Sí (para autoventa) | Debe ser `"autoventa"` |
-| `customer` | number | Sí | ID del cliente (tenant) |
-| `entryDate` | string | Sí | Fecha de entrada en formato `Y-m-d` (ej. `"2026-02-18"`) |
-| `loadDate` | string | Sí | Fecha de carga en formato `Y-m-d`; debe ser ≥ `entryDate` |
-| `invoiceRequired` | boolean | Sí | `true` = con factura, `false` = solo recibo |
-| `observations` | string | No | Texto libre; máximo 1000 caracteres |
-| `items` | array | Sí | Líneas agregadas por producto (al menos una) |
-| `items[].productId` | number | Sí | ID del producto (tenant) |
-| `items[].boxesCount` | number | Sí | Número de cajas de ese producto (entero ≥ 1) |
-| `items[].totalWeight` | number | Sí | Peso total de la línea (kg) |
-| `items[].unitPrice` | number | Sí | Precio unitario (≥ 0) |
-| `items[].subtotal` | number | No | Solo informativo; el backend no lo usa para validar |
-| `items[].tax` | number | No | ID del impuesto (tenant); si no se envía, el backend usa el primero del tenant |
-| `boxes` | array | Sí | Una entrada por caja física (al menos una) |
-| `boxes[].productId` | number | Sí | ID del producto (tenant) |
-| `boxes[].lot` | string | No | Lote; si no se envía, el backend genera uno (ej. `AUTOVENTA-{orderId}-{index}`) |
-| `boxes[].netWeight` | number | Sí | Peso neto de la caja (kg); debe ser > 0 |
-| `boxes[].gs1128` | string | No | Código GS1-128 escaneado (opcional) |
-| `boxes[].grossWeight` | number | No | Peso bruto; si no se envía, se usa el mismo que `netWeight` |
+| Campo                 | Tipo    | Obligatorio         | Descripción                                                                     |
+| --------------------- | ------- | ------------------- | ------------------------------------------------------------------------------- |
+| `orderType`           | string  | Sí (para autoventa) | Debe ser `"autoventa"`                                                          |
+| `customer`            | number  | Sí                  | ID del cliente (tenant)                                                         |
+| `entryDate`           | string  | Sí                  | Fecha de entrada en formato `Y-m-d` (ej. `"2026-02-18"`)                        |
+| `loadDate`            | string  | Sí                  | Fecha de carga en formato `Y-m-d`; debe ser ≥ `entryDate`                       |
+| `invoiceRequired`     | boolean | Sí                  | `true` = con factura, `false` = solo recibo                                     |
+| `observations`        | string  | No                  | Texto libre; máximo 1000 caracteres                                             |
+| `items`               | array   | Sí                  | Líneas agregadas por producto (al menos una)                                    |
+| `items[].productId`   | number  | Sí                  | ID del producto (tenant)                                                        |
+| `items[].boxesCount`  | number  | Sí                  | Número de cajas de ese producto (entero ≥ 1)                                    |
+| `items[].totalWeight` | number  | Sí                  | Peso total de la línea (kg)                                                     |
+| `items[].unitPrice`   | number  | Sí                  | Precio unitario (≥ 0)                                                           |
+| `items[].subtotal`    | number  | No                  | Solo informativo; el backend no lo usa para validar                             |
+| `items[].tax`         | number  | No                  | ID del impuesto (tenant); si no se envía, el backend usa el primero del tenant  |
+| `boxes`               | array   | Sí                  | Una entrada por caja física (al menos una)                                      |
+| `boxes[].productId`   | number  | Sí                  | ID del producto (tenant)                                                        |
+| `boxes[].lot`         | string  | No                  | Lote; si no se envía, el backend genera uno (ej. `AUTOVENTA-{orderId}-{index}`) |
+| `boxes[].netWeight`   | number  | Sí                  | Peso neto de la caja (kg); debe ser > 0                                         |
+| `boxes[].gs1128`      | string  | No                  | Código GS1-128 escaneado (opcional)                                             |
+| `boxes[].grossWeight` | number  | No                  | Peso bruto; si no se envía, se usa el mismo que `netWeight`                     |
 
 **Ejemplo de body (request):**
 
@@ -98,8 +98,8 @@ POST /api/v2/orders
       "productId": 45,
       "boxesCount": 3,
       "totalWeight": 37.5,
-      "unitPrice": 15.00,
-      "subtotal": 562.50,
+      "unitPrice": 15.0,
+      "subtotal": 562.5,
       "tax": 1
     }
   ],
@@ -142,7 +142,14 @@ El cuerpo incluye `message` y `data` con el pedido creado en formato detalle (Or
       "transportationNotes": null,
       "productionNotes": null,
       "accountingNotes": null,
-      "salesperson": { "id": 2, "name": "Comercial 1", "emails": [], "ccEmails": [], "createdAt": "...", "updatedAt": "..." },
+      "salesperson": {
+        "id": 2,
+        "name": "Comercial 1",
+        "emails": [],
+        "ccEmails": [],
+        "createdAt": "...",
+        "updatedAt": "..."
+      },
       "emails": [],
       "ccEmails": [],
       "contactInfo": null,
@@ -157,7 +164,14 @@ El cuerpo incluye `message` y `data` con el pedido creado en formato detalle (Or
     "transportationNotes": null,
     "productionNotes": null,
     "accountingNotes": "Con factura\nEntrega en puerto",
-    "salesperson": { "id": 2, "name": "Comercial 1", "emails": [], "ccEmails": [], "createdAt": "...", "updatedAt": "..." },
+    "salesperson": {
+      "id": 2,
+      "name": "Comercial 1",
+      "emails": [],
+      "ccEmails": [],
+      "createdAt": "...",
+      "updatedAt": "..."
+    },
     "transport": null,
     "entryDate": "2026-02-18",
     "loadDate": "2026-02-18",
@@ -171,7 +185,19 @@ El cuerpo incluye `message` y `data` con el pedido creado en formato detalle (Or
           {
             "id": 501,
             "palletId": 101,
-            "product": { "id": 45, "name": "Merluza", "species": [], "captureZone": [], "category": null, "family": null, "articleGtin": null, "boxGtin": null, "palletGtin": null, "a3erpCode": null, "facilcomCode": null },
+            "product": {
+              "id": 45,
+              "name": "Merluza",
+              "species": [],
+              "captureZone": [],
+              "category": null,
+              "family": null,
+              "articleGtin": null,
+              "boxGtin": null,
+              "palletGtin": null,
+              "a3erpCode": null,
+              "facilcomCode": null
+            },
             "lot": "LOT-2024-001",
             "gs1128": "011234567890123131000012510LOT-2024-001",
             "grossWeight": 12.6,
@@ -195,7 +221,19 @@ El cuerpo incluye `message` y `data` con el pedido creado en formato detalle (Or
       {
         "id": 88,
         "orderId": 42,
-        "product": { "id": 45, "name": "Merluza", "species": [], "captureZone": [], "category": null, "family": null, "articleGtin": null, "boxGtin": null, "palletGtin": null, "a3erpCode": null, "facilcomCode": null },
+        "product": {
+          "id": 45,
+          "name": "Merluza",
+          "species": [],
+          "captureZone": [],
+          "category": null,
+          "family": null,
+          "articleGtin": null,
+          "boxGtin": null,
+          "palletGtin": null,
+          "a3erpCode": null,
+          "facilcomCode": null
+        },
         "tax": { "id": 1, "name": "IVA 10%", "rate": 10, "createdAt": "...", "updatedAt": "..." },
         "quantity": 37.5,
         "boxes": 3,
@@ -290,13 +328,13 @@ GET /api/v2/orders?orderType=autoventa&perPage=20&page=1
 
 **Query params (opcionales):**
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| `orderType` | string | `autoventa` para listar solo autoventas |
-| `perPage` | number | Elementos por página (p. ej. 10–100) |
-| `page` | number | Página (por defecto 1) |
-| `status` | string | Filtrar por estado: `pending`, `finished`, `incident` |
-| `loadDate` | object | Rango: `{ "start": "2026-01-01", "end": "2026-02-18" }` |
+| Parámetro   | Tipo   | Descripción                                             |
+| ----------- | ------ | ------------------------------------------------------- |
+| `orderType` | string | `autoventa` para listar solo autoventas                 |
+| `perPage`   | number | Elementos por página (p. ej. 10–100)                    |
+| `page`      | number | Página (por defecto 1)                                  |
+| `status`    | string | Filtrar por estado: `pending`, `finished`, `incident`   |
+| `loadDate`  | object | Rango: `{ "start": "2026-01-01", "end": "2026-02-18" }` |
 
 ### Respuesta éxito (200 OK)
 
@@ -319,7 +357,14 @@ Respuesta paginada estándar Laravel. Cada elemento del array `data` sigue el fo
         "transportationNotes": null,
         "productionNotes": null,
         "accountingNotes": null,
-        "salesperson": { "id": 2, "name": "Comercial 1", "emails": [], "ccEmails": [], "createdAt": "...", "updatedAt": "..." },
+        "salesperson": {
+          "id": 2,
+          "name": "Comercial 1",
+          "emails": [],
+          "ccEmails": [],
+          "createdAt": "...",
+          "updatedAt": "..."
+        },
         "emails": [],
         "ccEmails": [],
         "contactInfo": null,
@@ -331,7 +376,14 @@ Respuesta paginada estándar Laravel. Cada elemento del array `data` sigue el fo
       "buyerReference": null,
       "status": "pending",
       "loadDate": "2026-02-18",
-      "salesperson": { "id": 2, "name": "Comercial 1", "emails": [], "ccEmails": [], "createdAt": "...", "updatedAt": "..." },
+      "salesperson": {
+        "id": 2,
+        "name": "Comercial 1",
+        "emails": [],
+        "ccEmails": [],
+        "createdAt": "...",
+        "updatedAt": "..."
+      },
       "transport": null,
       "pallets": 1,
       "totalBoxes": 3,
@@ -501,15 +553,15 @@ Tras crear, el frontend puede usar `data.id` como `customer` en el body de la au
 
 ## 7. Resumen de códigos HTTP y formato de error
 
-| Código | Significado | Formato típico del cuerpo |
-|--------|-------------|----------------------------|
-| **200** | OK (listado, detalle, options) | `data` o array según endpoint |
-| **201** | Created (crear pedido, crear cliente) | `message` + `data` |
-| **401** | No autenticado | `{ "message": "No autenticado." }` |
-| **403** | No autorizado | `{ "message": "..." }` (o mensaje de policy) |
-| **404** | Recurso no encontrado | `{ "message": "..." }` |
-| **422** | Validación fallida | `{ "message": "...", "errors": { "campo": ["mensaje1", "mensaje2"] } }`; a veces `userMessage` |
-| **500** | Error interno | `{ "message": "Error al crear el pedido", "error": "detalle técnico" }` |
+| Código  | Significado                           | Formato típico del cuerpo                                                                      |
+| ------- | ------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| **200** | OK (listado, detalle, options)        | `data` o array según endpoint                                                                  |
+| **201** | Created (crear pedido, crear cliente) | `message` + `data`                                                                             |
+| **401** | No autenticado                        | `{ "message": "No autenticado." }`                                                             |
+| **403** | No autorizado                         | `{ "message": "..." }` (o mensaje de policy)                                                   |
+| **404** | Recurso no encontrado                 | `{ "message": "..." }`                                                                         |
+| **422** | Validación fallida                    | `{ "message": "...", "errors": { "campo": ["mensaje1", "mensaje2"] } }`; a veces `userMessage` |
+| **500** | Error interno                         | `{ "message": "Error al crear el pedido", "error": "detalle técnico" }`                        |
 
 Para **422**, el frontend debe mostrar al usuario los mensajes de `errors` (por campo o concatenados). No exponer el contenido de `error` de un **500** como mensaje principal al usuario.
 

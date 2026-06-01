@@ -8,27 +8,32 @@
 ### ✅ Tareas Completadas (8/12)
 
 **Fase 1 - Crítico (2/2):**
+
 - ✅ Corregir llamada a getActiveOrders con token
 - ✅ Agregar manejo de errores básico
 
 **Fase 2 - Importante (4/4):**
+
 - ✅ Implementar debouncing en búsqueda
 - ✅ Migrar a API v2 (GET /api/v2/orders/active)
 - ✅ Mejorar estado de recarga (función explícita)
 - ✅ Agregar indicador de cantidad de resultados
 
 **Fase 3 - Nice-to-have (2/6):**
+
 - ✅ Limpiar código comentado
 - ✅ Usar helper formatDate en OrderCard
 
 ### ❌ No Implementadas (4/12)
 
 **Razones:**
+
 - Virtualización y paginación: Usuario indicó "no pagines ni hagas virtualización por lo pronto"
 - Componentes compartidos: Pendiente para futuro (no crítico)
 - Caché: Pendiente para futuro (optimización adicional)
 
 **Lista completa:**
+
 - ❌ Virtualización para listas largas (según decisión del usuario)
 - ❌ Paginación (según decisión del usuario)
 - ❌ Extraer componente StatusBadge compartido (pendiente)
@@ -42,6 +47,7 @@
 El apartado de **Orders Manager** es el componente principal para gestionar pedidos activos. Permite listar, filtrar, buscar, crear y editar pedidos en una interfaz de dos paneles (lista lateral + detalle). Está estrechamente vinculado con el editor de pedidos (`OrderEditSheet`) y el componente de detalle (`Order`).
 
 **Problemas principales detectados:**
+
 - ✅ **🔴 CRÍTICO**: `getActiveOrders()` se llama sin token - **RESUELTO**
 - ✅ **🟠 IMPORTANTE**: Sin manejo de errores en carga inicial - **RESUELTO**
 - ✅ **🟠 IMPORTANTE**: Uso de API v1 en lugar de v2 - **RESUELTO** (migrado a v2)
@@ -50,6 +56,7 @@ El apartado de **Orders Manager** es el componente principal para gestionar pedi
 - ❌ **🟡 NICE-TO-HAVE**: Sin virtualización para listas largas - **NO IMPLEMENTADO** (según decisión del usuario)
 
 **Impacto logrado:**
+
 - ✅ Corrección del bug crítico: **100% completado** - La aplicación funciona correctamente
 - ✅ Reducción de cálculos de búsqueda: **~80-90%** (con debouncing)
 - ✅ Mejora en experiencia de usuario: **Alta** (mejor feedback, búsqueda más fluida, indicador de resultados)
@@ -61,6 +68,7 @@ El apartado de **Orders Manager** es el componente principal para gestionar pedi
 ### ¿Qué hace el apartado?
 
 El Orders Manager es el punto central de gestión de pedidos activos. Proporciona:
+
 - **Lista de pedidos activos** con filtrado por estado (Todos, En producción, Terminados)
 - **Búsqueda** por ID de pedido o nombre de cliente
 - **Vista de detalle** del pedido seleccionado (componente `Order`)
@@ -70,18 +78,18 @@ El Orders Manager es el punto central de gestión de pedidos activos. Proporcion
 
 ### Capas involucradas
 
-| Capa | Componentes/Archivos | Responsabilidad |
-|------|----------------------|-----------------|
-| **UI Principal** | `OrdersManager/index.js` | Componente contenedor principal |
-| **UI Lista** | `OrdersList/index.js` | Lista de pedidos con filtros y búsqueda |
-| **UI Tarjeta** | `OrderCard/index.js` | Tarjeta individual de pedido |
-| **UI Detalle** | `Order/index.js` | Vista de detalle del pedido (vinculado) |
-| **UI Creación** | `CreateOrderForm/index.js` | Formulario de creación de pedidos |
-| **Hooks** | `useOrder.js` | Lógica de pedido individual (compartido) |
-| **Contexto** | `OrderContext.js` | Estado global del pedido (compartido) |
-| **Servicios API** | `orderService.js` | `getActiveOrders()`, `getOrder()` |
-| **Backend** | Laravel API (`GET /api/v2/orders/active`) ✅ **v2** | Listado de pedidos activos |
-| **DB** | Base de datos (implícito) | Almacenamiento de datos |
+| Capa              | Componentes/Archivos                                | Responsabilidad                          |
+| ----------------- | --------------------------------------------------- | ---------------------------------------- |
+| **UI Principal**  | `OrdersManager/index.js`                            | Componente contenedor principal          |
+| **UI Lista**      | `OrdersList/index.js`                               | Lista de pedidos con filtros y búsqueda  |
+| **UI Tarjeta**    | `OrderCard/index.js`                                | Tarjeta individual de pedido             |
+| **UI Detalle**    | `Order/index.js`                                    | Vista de detalle del pedido (vinculado)  |
+| **UI Creación**   | `CreateOrderForm/index.js`                          | Formulario de creación de pedidos        |
+| **Hooks**         | `useOrder.js`                                       | Lógica de pedido individual (compartido) |
+| **Contexto**      | `OrderContext.js`                                   | Estado global del pedido (compartido)    |
+| **Servicios API** | `orderService.js`                                   | `getActiveOrders()`, `getOrder()`        |
+| **Backend**       | Laravel API (`GET /api/v2/orders/active`) ✅ **v2** | Listado de pedidos activos               |
+| **DB**            | Base de datos (implícito)                           | Almacenamiento de datos                  |
 
 ### Archivos implicados
 
@@ -118,6 +126,7 @@ src/
 ### Vinculación con Editor de Pedidos
 
 El Orders Manager está estrechamente vinculado con el editor de pedidos:
+
 - Cuando se edita un pedido desde `OrderEditSheet`, se actualiza el listado mediante `handleOnChange(updatedOrder)`
 - El componente `Order` usa el mismo `OrderContext` que `OrderEditSheet`
 - Comparten el hook `useOrder` para la lógica de negocio
@@ -135,35 +144,37 @@ El Orders Manager está estrechamente vinculado con el editor de pedidos:
 
 **Estado**: ✅ Completado
 
-**Cambio implementado**: 
+**Cambio implementado**:
+
 ```javascript
 // ✅ CORRECTO: Con token
 const { data: session } = useSession();
 const token = session?.user?.accessToken;
 
 useEffect(() => {
-    if (!token) {
-        setLoading(false);
-        setError('No hay sesión autenticada');
-        return;
-    }
-    
-    getActiveOrders(token)
-        .then((data) => {
-            setOrders(data || []);
-            setLoading(false);
-            setError(null);
-        })
-        .catch((error) => {
-            const errorMessage = error?.message || 'Error al obtener los pedidos activos';
-            setError(errorMessage);
-            toast.error(errorMessage, getToastTheme());
-            setLoading(false);
-        });
+  if (!token) {
+    setLoading(false);
+    setError('No hay sesión autenticada');
+    return;
+  }
+
+  getActiveOrders(token)
+    .then((data) => {
+      setOrders(data || []);
+      setLoading(false);
+      setError(null);
+    })
+    .catch((error) => {
+      const errorMessage = error?.message || 'Error al obtener los pedidos activos';
+      setError(errorMessage);
+      toast.error(errorMessage, getToastTheme());
+      setLoading(false);
+    });
 }, [reloadCounter, token]);
 ```
 
-**Impacto logrado**: 
+**Impacto logrado**:
+
 - ✅ La petición funciona correctamente
 - ✅ El listado se carga correctamente
 - ✅ Manejo de errores mejorado
@@ -176,13 +187,15 @@ useEffect(() => {
 
 **Estado**: ✅ Completado
 
-**Cambio implementado**: 
+**Cambio implementado**:
+
 ```javascript
 // ✅ ACTUAL: API v2
 return fetchWithTenant(`${API_URL_V2}orders/active`, {
 ```
 
-**Impacto logrado**: 
+**Impacto logrado**:
+
 - Consistencia en la aplicación
 - Uso del endpoint correcto: `GET /api/v2/orders/active`
 
@@ -194,13 +207,15 @@ return fetchWithTenant(`${API_URL_V2}orders/active`, {
 
 **Estado**: ✅ Completado
 
-**Cambio implementado**: 
+**Cambio implementado**:
+
 - Estado de error (`error`) agregado
 - Toast de error con mensaje específico
 - UI de error con botón "Reintentar" en `OrdersList`
 - Validación de sesión antes de cargar
 
-**Impacto logrado**: 
+**Impacto logrado**:
+
 - ✅ Usuario recibe feedback claro de errores
 - ✅ Opción de reintentar sin recargar la página
 
@@ -212,12 +227,14 @@ return fetchWithTenant(`${API_URL_V2}orders/active`, {
 
 **Estado**: ✅ Completado
 
-**Cambio implementado**: 
+**Cambio implementado**:
+
 - Nuevo hook `useDebounce` creado
 - Búsqueda con debouncing de 300ms
 - Filtrado usa `debouncedSearchText` en lugar de `searchText`
 
-**Impacto logrado**: 
+**Impacto logrado**:
+
 - ✅ 80-90% reducción de cálculos innecesarios
 - ✅ Búsqueda más fluida
 - ✅ Mejor rendimiento
@@ -230,12 +247,14 @@ return fetchWithTenant(`${API_URL_V2}orders/active`, {
 
 **Estado**: ✅ Completado
 
-**Cambio implementado**: 
+**Cambio implementado**:
+
 - Eliminado código comentado obsoleto
 - Eliminado comentario deprecado sobre ordenamiento
 - Código más limpio y mantenible
 
-**Impacto logrado**: 
+**Impacto logrado**:
+
 - ✅ Código más claro
 - ✅ Menos confusión
 
@@ -249,10 +268,10 @@ return fetchWithTenant(`${API_URL_V2}orders/active`, {
 
 ```javascript
 <OrderCard
-    onClick={() => onClickOrderCard(order.id)}
-    order={order} 
-    isOrderSelected={() => false}  // ❌ Siempre false, no se usa
-    disabled={disabled}
+  onClick={() => onClickOrderCard(order.id)}
+  order={order}
+  isOrderSelected={() => false} // ❌ Siempre false, no se usa
+  disabled={disabled}
 />
 ```
 
@@ -266,14 +285,16 @@ return fetchWithTenant(`${API_URL_V2}orders/active`, {
 
 **Estado**: ✅ Completado
 
-**Cambio implementado**: 
+**Cambio implementado**:
+
 ```javascript
 // ✅ ACTUAL: Usando helper
 import { formatDate } from '@/helpers/formats/dates/formatDates';
 const loadDate = order.loadDate ? formatDate(order.loadDate) : 'N/A';
 ```
 
-**Impacto logrado**: 
+**Impacto logrado**:
+
 - ✅ Consistencia con el resto de la aplicación
 - ✅ Manejo seguro de fechas null/undefined
 - ✅ Menos errores potenciales
@@ -288,17 +309,19 @@ const loadDate = order.loadDate ? formatDate(order.loadDate) : 'N/A';
 
 **Estado**: ✅ Completado
 
-**Cambio implementado**: 
+**Cambio implementado**:
+
 ```javascript
 // ✅ ACTUAL: Contador explícito
 const [reloadCounter, setReloadCounter] = useState(0);
 
 const reloadOrders = useCallback(() => {
-    setReloadCounter(prev => prev + 1);
+  setReloadCounter((prev) => prev + 1);
 }, []);
 ```
 
-**Impacto logrado**: 
+**Impacto logrado**:
+
 - ✅ Código más claro y mantenible
 - ✅ Función explícita `reloadOrders()`
 - ✅ Evita problemas de toggle rápido
@@ -338,26 +361,26 @@ const reloadOrders = useCallback(() => {
 import { useSession } from 'next-auth/react';
 
 export default function OrdersManager() {
-    const { data: session } = useSession();
-    const token = session?.user?.accessToken;
-    
-    useEffect(() => {
-        if (!token) {
-            setLoading(false);
-            return;
-        }
-        
-        getActiveOrders(token)
-            .then((data) => {
-                setOrders(data);
-                setLoading(false);
-            })
-            .catch((error) => {
-                console.error('Error al obtener los pedidos activos', error);
-                toast.error('Error al cargar los pedidos activos', getToastTheme());
-                setLoading(false);
-            });
-    }, [reload, token]);
+  const { data: session } = useSession();
+  const token = session?.user?.accessToken;
+
+  useEffect(() => {
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    getActiveOrders(token)
+      .then((data) => {
+        setOrders(data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Error al obtener los pedidos activos', error);
+        toast.error('Error al cargar los pedidos activos', getToastTheme());
+        setLoading(false);
+      });
+  }, [reload, token]);
 }
 ```
 
@@ -370,21 +393,23 @@ export default function OrdersManager() {
 import { useDebouncedCallback } from 'use-debounce'; // O implementar propio
 
 const debouncedSearch = useDebouncedCallback((value) => {
-    setSearchText(value);
-    setSelectedOrder(null);
-    setCategories(categories.map((cat) => ({
-        ...cat,
-        current: cat.name === 'all',
-    })));
+  setSearchText(value);
+  setSelectedOrder(null);
+  setCategories(
+    categories.map((cat) => ({
+      ...cat,
+      current: cat.name === 'all',
+    }))
+  );
 }, 300);
 
 // En OrdersList
-<Input 
-    onChange={(e) => debouncedSearch(e.target.value)} 
-    value={searchText}
-    type="text" 
-    placeholder='Buscar por id o cliente' 
-/>
+<Input
+  onChange={(e) => debouncedSearch(e.target.value)}
+  value={searchText}
+  type="text"
+  placeholder="Buscar por id o cliente"
+/>;
 ```
 
 ---
@@ -395,33 +420,35 @@ const debouncedSearch = useDebouncedCallback((value) => {
 const [error, setError] = useState(null);
 
 useEffect(() => {
-    if (!token) {
-        setError('No hay sesión autenticada');
-        setLoading(false);
-        return;
-    }
-    
-    getActiveOrders(token)
-        .then((data) => {
-            setOrders(data);
-            setLoading(false);
-            setError(null);
-        })
-        .catch((error) => {
-            const errorMessage = error?.message || 'Error al obtener los pedidos activos';
-            setError(errorMessage);
-            toast.error(errorMessage, getToastTheme());
-            setLoading(false);
-        });
+  if (!token) {
+    setError('No hay sesión autenticada');
+    setLoading(false);
+    return;
+  }
+
+  getActiveOrders(token)
+    .then((data) => {
+      setOrders(data);
+      setLoading(false);
+      setError(null);
+    })
+    .catch((error) => {
+      const errorMessage = error?.message || 'Error al obtener los pedidos activos';
+      setError(errorMessage);
+      toast.error(errorMessage, getToastTheme());
+      setLoading(false);
+    });
 }, [reload, token]);
 
 // Mostrar error en UI
-{error && (
-    <div className="p-4 bg-red-50 border border-red-200 rounded">
-        <p className="text-red-800">{error}</p>
-        <Button onClick={() => setReload(prev => !prev)}>Reintentar</Button>
+{
+  error && (
+    <div className="rounded border border-red-200 bg-red-50 p-4">
+      <p className="text-red-800">{error}</p>
+      <Button onClick={() => setReload((prev) => !prev)}>Reintentar</Button>
     </div>
-)}
+  );
+}
 ```
 
 ---
@@ -431,12 +458,18 @@ useEffect(() => {
 ```javascript
 // components/Shared/StatusBadge.jsx
 export const StatusBadge = ({ color = 'green', label = 'Terminado' }) => {
-    const colorVariants = {
-        green: { /* ... */ },
-        orange: { /* ... */ },
-        red: { /* ... */ },
-    };
-    // ... implementación
+  const colorVariants = {
+    green: {
+      /* ... */
+    },
+    orange: {
+      /* ... */
+    },
+    red: {
+      /* ... */
+    },
+  };
+  // ... implementación
 };
 ```
 
@@ -453,6 +486,7 @@ export const StatusBadge = ({ color = 'green', label = 'Terminado' }) => {
 **Impacto UX**: Usuario no sabe qué hacer si algo falla.
 
 **Solución propuesta**:
+
 - Mostrar mensaje de error claro
 - Botón de "Reintentar"
 - Estado de error visible
@@ -502,11 +536,13 @@ export const StatusBadge = ({ color = 'green', label = 'Terminado' }) => {
 ### Consistencia visual
 
 **Estado actual**: ✅ Buena
+
 - Usa componentes ShadCN consistentes
 - Layout responsive
 - Estados visuales claros (colores por estado)
 
 **Mejoras sugeridas**:
+
 - Indicador de cantidad de resultados
 - Mejor feedback de estados vacíos
 
@@ -527,10 +563,12 @@ export const StatusBadge = ({ color = 'green', label = 'Terminado' }) => {
 #### 🟠 **IMPORTANTE**: Sin debouncing en búsqueda
 
 **Métrica actual**:
+
 - Filtrado en cada keystroke: ~10-20ms × número de pedidos
 - Con 50 pedidos: **500-1000ms** de cálculos por tecla
 
 **Métrica optimizada** (con debouncing):
+
 - Filtrado solo después de 300ms sin escribir: **1 cálculo** en lugar de N
 
 **Mejora esperada**: **~80-90% reducción** de cálculos innecesarios
@@ -543,7 +581,8 @@ export const StatusBadge = ({ color = 'green', label = 'Terminado' }) => {
 
 **Impacto**: Requests innecesarios cuando se actualiza un pedido.
 
-**Solución propuesta**: 
+**Solución propuesta**:
+
 - Actualización local (ya implementada parcialmente)
 - Caché con TTL corto (1-2 minutos)
 - Invalidación inteligente
@@ -556,7 +595,8 @@ export const StatusBadge = ({ color = 'green', label = 'Terminado' }) => {
 
 **Problema**: Si hay >100 pedidos, renderiza todos a la vez.
 
-**Impacto**: 
+**Impacto**:
+
 - Tiempo de render inicial: ~200-500ms con 100 pedidos
 - Scroll puede ser laggy
 
@@ -629,12 +669,12 @@ const debouncedSearch = useDebouncedValue(searchText, 300);
 
 ### Métricas a medir
 
-| Métrica | Antes | Después (implementado) | Objetivo (futuro) | Dónde medir |
-|---------|-------|------------------------|-------------------|-------------|
-| Tiempo de carga inicial | ❌ Falla (sin token) | ✅ ~500-800ms | ~500-800ms | Network tab |
-| Cálculos de búsqueda | ~10-20 por keystroke | ✅ ~1 por búsqueda (con debouncing) | ~1 por búsqueda | React DevTools |
-| Requests HTTP | 1 por recarga | ✅ 1 por recarga | ~0.5 (con caché futuro) | Network tab |
-| Tiempo de render (100 pedidos) | ~200-500ms | ✅ ~200-500ms | ~50-100ms (virtualizado futuro) | React DevTools Profiler |
+| Métrica                        | Antes                | Después (implementado)              | Objetivo (futuro)               | Dónde medir             |
+| ------------------------------ | -------------------- | ----------------------------------- | ------------------------------- | ----------------------- |
+| Tiempo de carga inicial        | ❌ Falla (sin token) | ✅ ~500-800ms                       | ~500-800ms                      | Network tab             |
+| Cálculos de búsqueda           | ~10-20 por keystroke | ✅ ~1 por búsqueda (con debouncing) | ~1 por búsqueda                 | React DevTools          |
+| Requests HTTP                  | 1 por recarga        | ✅ 1 por recarga                    | ~0.5 (con caché futuro)         | Network tab             |
+| Tiempo de render (100 pedidos) | ~200-500ms           | ✅ ~200-500ms                       | ~50-100ms (virtualizado futuro) | React DevTools Profiler |
 
 ---
 
@@ -648,12 +688,14 @@ const debouncedSearch = useDebouncedValue(searchText, 300);
 
 **Estado**: ✅ Completado
 
-**Cambio implementado**: 
+**Cambio implementado**:
+
 - Endpoint actualizado de `GET /api/v1/orders?active=true` a `GET /api/v2/orders/active`
 - Consistencia con el resto de la aplicación
 - Uso de `API_URL_V2` en lugar de `API_URL_V1`
 
-**Impacto logrado**: 
+**Impacto logrado**:
+
 - ✅ Consistencia en la aplicación
 - ✅ Mantenimiento más simple (una sola versión de API)
 
@@ -672,10 +714,12 @@ const debouncedSearch = useDebouncedValue(searchText, 300);
 ### Payloads y serialización
 
 **Estado actual**: ✅ Adecuado
+
 - Solo se carga lo necesario
 - El listado es ligero (solo datos básicos)
 
-**Mejora sugerida**: 
+**Mejora sugerida**:
+
 - Si el backend soporta, pedir solo campos necesarios para el listado
 - Considerar endpoint específico para listado ligero
 
@@ -684,10 +728,12 @@ const debouncedSearch = useDebouncedValue(searchText, 300);
 ### Validaciones
 
 **Estado actual**: ✅ Básico
+
 - Validación de sesión implícita (debería ser explícita)
 - Sin validación de datos recibidos
 
-**Mejora sugerida**: 
+**Mejora sugerida**:
+
 - Validar estructura de datos recibidos
 - Manejar casos edge (array vacío, null, etc.)
 
@@ -703,7 +749,7 @@ const debouncedSearch = useDebouncedValue(searchText, 300);
    - **Archivo**: `src/components/Admin/OrdersManager/index.js`
    - **Estado**: ✅ Completado
    - **Impacto logrado**: **CRÍTICO** - La aplicación funciona correctamente
-   - **Cambios**: 
+   - **Cambios**:
      - Agregado `useSession()` para obtener token
      - Validación de token antes de cargar
      - Token pasado correctamente a `getActiveOrders(token)`
@@ -712,7 +758,7 @@ const debouncedSearch = useDebouncedValue(searchText, 300);
    - **Archivo**: `src/components/Admin/OrdersManager/index.js`
    - **Estado**: ✅ Completado
    - **Impacto logrado**: Mejor UX, debugging más fácil
-   - **Cambios**: 
+   - **Cambios**:
      - Estado de error (`error`) agregado
      - Toast de error con mensaje específico
      - UI de error con botón "Reintentar" en `OrdersList`
@@ -726,7 +772,7 @@ const debouncedSearch = useDebouncedValue(searchText, 300);
    - **Archivo**: `src/components/Admin/OrdersManager/index.js`, nuevo `src/hooks/useDebounce.js`
    - **Estado**: ✅ Completado
    - **Impacto logrado**: 80-90% reducción de cálculos innecesarios
-   - **Cambios**: 
+   - **Cambios**:
      - Nuevo hook `useDebounce` creado
      - Debouncing de 300ms implementado
      - Filtrado usa `debouncedSearchText` en lugar de `searchText` directo
@@ -793,16 +839,17 @@ const debouncedSearch = useDebouncedValue(searchText, 300);
 
 ### Resumen de tareas por prioridad
 
-| Prioridad | Tareas | Estado | Esfuerzo Real | Impacto |
-|-----------|--------|--------|---------------|---------|
-| 🔴 Crítico | 2 tareas | ✅ **2/2 completadas (100%)** | ~45 minutos | **CRÍTICO** |
-| 🟠 Importante | 4 tareas | ✅ **4/4 completadas (100%)** | ~2 horas | Alto |
-| 🟡 Nice-to-have | 6 tareas | ✅ **2/6 completadas (33%)**, ❌ **4 no implementadas** | ~30 minutos | Medio |
-| **TOTAL** | **12 tareas** | **✅ 8 completadas (67%), ❌ 4 no implementadas (33%)** | **~3 horas** | - |
+| Prioridad       | Tareas        | Estado                                                  | Esfuerzo Real | Impacto     |
+| --------------- | ------------- | ------------------------------------------------------- | ------------- | ----------- |
+| 🔴 Crítico      | 2 tareas      | ✅ **2/2 completadas (100%)**                           | ~45 minutos   | **CRÍTICO** |
+| 🟠 Importante   | 4 tareas      | ✅ **4/4 completadas (100%)**                           | ~2 horas      | Alto        |
+| 🟡 Nice-to-have | 6 tareas      | ✅ **2/6 completadas (33%)**, ❌ **4 no implementadas** | ~30 minutos   | Medio       |
+| **TOTAL**       | **12 tareas** | **✅ 8 completadas (67%), ❌ 4 no implementadas (33%)** | **~3 horas**  | -           |
 
 ### Detalle de implementación
 
 **✅ Implementadas (8 tareas):**
+
 1. ✅ Corregir llamada a getActiveOrders con token
 2. ✅ Agregar manejo de errores básico
 3. ✅ Implementar debouncing en búsqueda
@@ -813,6 +860,7 @@ const debouncedSearch = useDebouncedValue(searchText, 300);
 8. ✅ Usar helper formatDate en OrderCard
 
 **❌ No implementadas (4 tareas):**
+
 1. ❌ Virtualización para listas largas (decisión del usuario)
 2. ❌ Paginación (decisión del usuario)
 3. ❌ Extraer componente StatusBadge compartido (pendiente)
@@ -826,11 +874,13 @@ const debouncedSearch = useDebouncedValue(searchText, 300);
 #### Alternativa 1: Debouncing nativo vs librería
 
 **Opción A**: Implementar debouncing propio (recomendado)
+
 - ✅ Sin dependencias
 - ✅ Control total
 - ❌ Más código
 
 **Opción B**: Usar librería (`use-debounce`, `lodash.debounce`)
+
 - ✅ Menos código
 - ✅ Probado y mantenido
 - ❌ Nueva dependencia
@@ -842,11 +892,13 @@ const debouncedSearch = useDebouncedValue(searchText, 300);
 #### Alternativa 2: Virtualización vs Paginación
 
 **Opción A**: Virtualización (recomendado para listas largas)
+
 - ✅ Mejor UX (scroll continuo)
 - ✅ Renderiza solo lo visible
 - ❌ Más complejo de implementar
 
 **Opción B**: Paginación
+
 - ✅ Más simple
 - ✅ Mejor para muy grandes volúmenes
 - ❌ UX menos fluida
@@ -892,12 +944,12 @@ const debouncedSearch = useDebouncedValue(searchText, 300);
 
 ### Origen de las peticiones en el código
 
-| Endpoint (API externa) | Origen en código | Cuándo se dispara |
-|------------------------|------------------|-------------------|
-| `GET /api/v2/orders/active` | `OrdersManager/index.js` → `getActiveOrders(token)` en un `useEffect` con dependencias `[reloadCounter, token]` | Al montar la página cuando hay token; y al incrementar `reloadCounter`. |
-| `GET /api/v2/products/options` | **OptionsProvider** (`context/OptionsContext.js`): un `useEffect` con `[token]` que llama a `getProductOptions(token)`. También **useProductOptions** hace fallback a `getProductOptions` si el contexto no tiene datos. | En cuanto hay `token`, a nivel de **toda la app** (ClientLayout envuelve con OptionsProvider). No depende de estar en orders-manager. |
-| `GET /api/v2/suppliers/options` | **OptionsProvider** (`context/OptionsContext.js`): otro `useEffect` con `[token]` que llama a `getSupplierOptions(token)`. | Mismo que products: en cuanto hay token, a nivel app. |
-| `GET /api/v2/settings` | **SettingsProvider** (`context/SettingsContext.js`) y consumo con **useSettings()** en `admin/layout.js` y **SideBar**. | En cuanto hay sesión autenticada y tenant; layout y sidebar los usan para nombre de empresa, etc. |
+| Endpoint (API externa)          | Origen en código                                                                                                                                                                                                         | Cuándo se dispara                                                                                                                     |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/v2/orders/active`     | `OrdersManager/index.js` → `getActiveOrders(token)` en un `useEffect` con dependencias `[reloadCounter, token]`                                                                                                          | Al montar la página cuando hay token; y al incrementar `reloadCounter`.                                                               |
+| `GET /api/v2/products/options`  | **OptionsProvider** (`context/OptionsContext.js`): un `useEffect` con `[token]` que llama a `getProductOptions(token)`. También **useProductOptions** hace fallback a `getProductOptions` si el contexto no tiene datos. | En cuanto hay `token`, a nivel de **toda la app** (ClientLayout envuelve con OptionsProvider). No depende de estar en orders-manager. |
+| `GET /api/v2/suppliers/options` | **OptionsProvider** (`context/OptionsContext.js`): otro `useEffect` con `[token]` que llama a `getSupplierOptions(token)`.                                                                                               | Mismo que products: en cuanto hay token, a nivel app.                                                                                 |
+| `GET /api/v2/settings`          | **SettingsProvider** (`context/SettingsContext.js`) y consumo con **useSettings()** en `admin/layout.js` y **SideBar**.                                                                                                  | En cuanto hay sesión autenticada y tenant; layout y sidebar los usan para nombre de empresa, etc.                                     |
 
 Además, en la misma carga aparecen peticiones a **brisamar.lapesquerapp.es** (Next.js): documento, **varias** `GET /api/auth/session`, y prefetches RSC de otras rutas admin (`salespeople`, `incoterms`, `transports`, `orders`, `productions`, etc.) por el comportamiento de Next.js al navegar.
 
@@ -908,9 +960,9 @@ Además, en la misma carga aparecen peticiones a **brisamar.lapesquerapp.es** (N
 1. **Solo un componente llama a `getActiveOrders`**  
    En el código, el único lugar que llama a `getActiveOrders()` es **OrdersManager** (`src/components/Admin/OrdersManager/index.js`), dentro de un único `useEffect`. No hay otro componente de la página que llame a este endpoint. La duplicación no viene de dos sitios distintos, sino de **ese mismo efecto ejecutado dos veces** cuando la sesión se pide/proporciona dos veces.
 
-2. **Cadena causa-efecto**  
-   - **Session se pide dos veces** → más de un consumidor de `useSession()` o refetch de sesión.  
-   - Eso hace que los componentes que dependen de `token` se re-rendericen y sus `useEffect([token])` se ejecuten dos veces.  
+2. **Cadena causa-efecto**
+   - **Session se pide dos veces** → más de un consumidor de `useSession()` o refetch de sesión.
+   - Eso hace que los componentes que dependen de `token` se re-rendericen y sus `useEffect([token])` se ejecuten dos veces.
    - Resultado: **orders/active**, **products/options**, **suppliers/options** (y posiblemente **settings**) se disparan dos veces cada uno.
 
 3. **Duplicados en otros endpoints**  
@@ -931,18 +983,19 @@ No es que el código llame explícitamente a `orders/active` después de setting
 3. **orders/active**  
    Es el único que realmente pertenece al gestor de pedidos en esta página. Se dispara cuando **OrdersManager** monta y tiene `token`. En la práctica va en paralelo con settings, products y suppliers; no hay una secuencia “primero orders/active, luego el resto”.
 
-**Resumen**:  
-- **Settings** se carga “antes” porque el **layout/sidebar** lo necesita.  
-- **Products** y **suppliers** se cargan “antes” de lo estrictamente necesario para la página porque **OptionsProvider** los carga por token a nivel app, no bajo demanda.  
+**Resumen**:
+
+- **Settings** se carga “antes” porque el **layout/sidebar** lo necesita.
+- **Products** y **suppliers** se cargan “antes” de lo estrictamente necesario para la página porque **OptionsProvider** los carga por token a nivel app, no bajo demanda.
 - **orders/active** es el único específico del gestor y se carga a la vez que los anteriores; la sensación de “otros antes” viene de que layout y providers globales piden settings y options en cuanto hay sesión.
 
 ### Resumen de causas y posibles mejoras
 
-| Observación | Causa en código | Posible mejora |
-|-------------|-----------------|----------------|
-| Dos llamadas a `orders/active` (y a session, products, suppliers, settings) | **Causa raíz**: la sesión se pide dos veces; los efectos que dependen de `token` se ejecutan dos veces. | Reducir duplicación de **session** (menos consumidores de useSession o un único punto de refetch). Opcional: deduplicar en cada efecto con un ref (evitar segunda petición si ya hay una en vuelo). |
-| Products/suppliers en ClientLayout (OptionsProvider) | Caché global para useProductOptions/useSupplierOptions; solo dos zonas los usan (gestor de pedidos y recepciones). | **Quitar OptionsProvider global**. Usar **contexto por gestor**: OrdersManagerOptionsProvider (solo productOptions/taxOptions) en la página del gestor de pedidos; otro provider similar en recepciones (productOptions + supplierOptions). |
-| Settings/products/suppliers “antes” de orders/active | Layout y OptionsProvider montan con la app y disparan en cuanto hay token. | Aceptar que settings es de layout. Para products/suppliers: al moverlos a contexto por gestor, solo se piden al entrar en cada gestor. |
+| Observación                                                                 | Causa en código                                                                                                    | Posible mejora                                                                                                                                                                                                                              |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dos llamadas a `orders/active` (y a session, products, suppliers, settings) | **Causa raíz**: la sesión se pide dos veces; los efectos que dependen de `token` se ejecutan dos veces.            | Reducir duplicación de **session** (menos consumidores de useSession o un único punto de refetch). Opcional: deduplicar en cada efecto con un ref (evitar segunda petición si ya hay una en vuelo).                                         |
+| Products/suppliers en ClientLayout (OptionsProvider)                        | Caché global para useProductOptions/useSupplierOptions; solo dos zonas los usan (gestor de pedidos y recepciones). | **Quitar OptionsProvider global**. Usar **contexto por gestor**: OrdersManagerOptionsProvider (solo productOptions/taxOptions) en la página del gestor de pedidos; otro provider similar en recepciones (productOptions + supplierOptions). |
+| Settings/products/suppliers “antes” de orders/active                        | Layout y OptionsProvider montan con la app y disparan en cuanto hay token.                                         | Aceptar que settings es de layout. Para products/suppliers: al moverlos a contexto por gestor, solo se piden al entrar en cada gestor.                                                                                                      |
 
 Con esto se explica en el código **por qué** se ven dos llamadas a orders/active y por qué endpoints que conceptualmente “deberían” ir después se cargan antes o en paralelo al abrir el gestor de pedidos.
 
@@ -952,10 +1005,10 @@ Con esto se explica en el código **por qué** se ven dos llamadas a orders/acti
 
 **Quién consume esas opciones** (vía **useProductOptions()** y **useSupplierOptions()**):
 
-| Consumidor | productOptions | supplierOptions |
-|------------|----------------|-----------------|
-| **Orders Manager** → CreateOrderForm, OrderPlannedProductDetails | ✅ | — |
-| **Recepciones de materia prima** → CreateReceptionForm, EditReceptionForm | ✅ | ✅ |
+| Consumidor                                                                | productOptions | supplierOptions |
+| ------------------------------------------------------------------------- | -------------- | --------------- |
+| **Orders Manager** → CreateOrderForm, OrderPlannedProductDetails          | ✅             | —               |
+| **Recepciones de materia prima** → CreateReceptionForm, EditReceptionForm | ✅             | ✅              |
 
 **Problema con el contexto global**: Cargar products y suppliers a nivel de toda la app (OptionsProvider en ClientLayout) no aporta mucho: solo dos zonas los usan (gestor de pedidos y recepciones), y en cada carga de la app se piden aunque el usuario no entre en ninguna de esas pantallas.
 
@@ -977,16 +1030,19 @@ El Orders Manager ha sido analizado y las correcciones críticas e importantes h
 ### ✅ Implementación completada
 
 **Fase 1 (Crítico)**: ✅ **100% completada**
+
 - Bug crítico de token corregido
 - Manejo de errores implementado
 
 **Fase 2 (Importante)**: ✅ **100% completada**
+
 - Debouncing en búsqueda implementado
 - Migración a API v2 completada
 - Estado de recarga mejorado
 - Indicador de cantidad de resultados agregado
 
 **Fase 3 (Nice-to-have)**: ✅ **33% completada**
+
 - Código comentado limpiado
 - Helper formatDate implementado
 - Virtualización y paginación no implementadas (según decisión del usuario)
@@ -1002,6 +1058,7 @@ El Orders Manager ha sido analizado y las correcciones críticas e importantes h
 ### 🔄 Próximos pasos (opcionales)
 
 Las siguientes mejoras quedan pendientes para implementación futura según necesidades:
+
 - Virtualización (si hay >50 pedidos frecuentemente)
 - Paginación (si hay >500 pedidos)
 - Caché de pedidos activos (si se requiere optimización adicional)
@@ -1013,4 +1070,3 @@ Las siguientes mejoras quedan pendientes para implementación futura según nece
 **Analista**: AI Code Reviewer  
 **Versión**: 1.1  
 **Última actualización**: Implementación completada - 8/12 tareas implementadas
-

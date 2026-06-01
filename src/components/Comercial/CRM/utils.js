@@ -89,15 +89,19 @@ export const offerStatusOptions = Object.entries(offerStatusLabels).map(([value,
   label,
 }));
 
-export const interactionTypeOptions = Object.entries(interactionTypeLabels).map(([value, label]) => ({
-  value,
-  label,
-}));
+export const interactionTypeOptions = Object.entries(interactionTypeLabels).map(
+  ([value, label]) => ({
+    value,
+    label,
+  })
+);
 
-export const interactionResultOptions = Object.entries(interactionResultLabels).map(([value, label]) => ({
-  value,
-  label,
-}));
+export const interactionResultOptions = Object.entries(interactionResultLabels).map(
+  ([value, label]) => ({
+    value,
+    label,
+  })
+);
 
 export function formatDateValue(value, pattern = 'dd/MM/yyyy') {
   if (!value) return 'Sin fecha';
@@ -111,7 +115,9 @@ export function formatDateValue(value, pattern = 'dd/MM/yyyy') {
 export function formatDateTimeValue(value) {
   if (!value) return 'Sin fecha';
   try {
-    return format(typeof value === 'string' ? parseISO(value) : value, 'dd/MM/yyyy HH:mm', { locale: es });
+    return format(typeof value === 'string' ? parseISO(value) : value, 'dd/MM/yyyy HH:mm', {
+      locale: es,
+    });
   } catch {
     return String(value);
   }

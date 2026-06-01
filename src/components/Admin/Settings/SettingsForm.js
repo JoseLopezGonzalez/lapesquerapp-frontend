@@ -23,7 +23,14 @@ export default function SettingsForm() {
   const [emailPassword, setEmailPassword] = useState('');
   const [hadPreviousConfig, setHadPreviousConfig] = useState(false);
 
-  const { register, handleSubmit: formHandleSubmit, formState: { errors }, setValue, watch, reset } = useForm({
+  const {
+    register,
+    handleSubmit: formHandleSubmit,
+    formState: { errors },
+    setValue,
+    watch,
+    reset,
+  } = useForm({
     resolver: zodResolver(settingsSchema),
     defaultValues: {},
   });
@@ -35,7 +42,11 @@ export default function SettingsForm() {
     if (!loading && settings && Object.keys(settings).length > 0) {
       reset(settings);
       setEmailPassword('');
-      if (settings['company.mail.host'] && settings['company.mail.username'] && settings['company.mail.from_address']) {
+      if (
+        settings['company.mail.host'] &&
+        settings['company.mail.username'] &&
+        settings['company.mail.from_address']
+      ) {
         setHadPreviousConfig(true);
       }
     }
@@ -63,7 +74,11 @@ export default function SettingsForm() {
         description: 'Los cambios de configuración se han guardado correctamente.',
       });
     } catch (error) {
-      const msg = error?.userMessage ?? (error?.message?.includes('configuración de email') ? 'La configuración de email no está completa.' : error?.message ?? 'Error al guardar.');
+      const msg =
+        error?.userMessage ??
+        (error?.message?.includes('configuración de email')
+          ? 'La configuración de email no está completa.'
+          : (error?.message ?? 'Error al guardar.'));
       notify.error({ title: 'Error al guardar configuración', description: msg });
     } finally {
       setSaving(false);
@@ -72,25 +87,30 @@ export default function SettingsForm() {
 
   if (loading)
     return (
-      <div className="w-full h-full flex items-center justify-center">
+      <div className="flex h-full w-full items-center justify-center">
         <Loader />
       </div>
     );
 
   return (
-    <div className="h-full w-full flex flex-col">
-      <ScrollArea className="flex-1 h-full w-full">
-        <form onSubmit={formHandleSubmit(onValidSubmit)} className="max-w-7xl mx-auto p-6 space-y-8 min-h-full">
-          <h1 className="text-xl font-light mb-4">Configuración de la empresa</h1>
+    <div className="flex h-full w-full flex-col">
+      <ScrollArea className="h-full w-full flex-1">
+        <form
+          onSubmit={formHandleSubmit(onValidSubmit)}
+          className="mx-auto min-h-full max-w-7xl space-y-8 p-6"
+        >
+          <h1 className="mb-4 text-xl font-light">Configuración de la empresa</h1>
           {SECTIONS.map((section, idx) => (
-            <div key={section.title} className="p-0 space-y-4">
-              <h2 className="text-lg font-semibold mb-2">{section.title}</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4">
+            <div key={section.title} className="space-y-4 p-0">
+              <h2 className="mb-2 text-lg font-semibold">{section.title}</h2>
+              <div className="grid grid-cols-1 gap-4 pb-4 md:grid-cols-2">
                 {section.fields.map((field) => (
                   <div key={field.name}>
                     <Label htmlFor={field.name}>{field.label}</Label>
                     <Input id={field.name} {...register(field.name)} autoComplete="off" />
-                    {errors[field.name] && <p className="text-sm text-destructive mt-1">{errors[field.name].message}</p>}
+                    {errors[field.name] && (
+                      <p className="text-destructive mt-1 text-sm">{errors[field.name].message}</p>
+                    )}
                   </div>
                 ))}
               </div>

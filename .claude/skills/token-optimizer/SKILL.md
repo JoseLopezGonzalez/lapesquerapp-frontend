@@ -1,6 +1,7 @@
 # Skill: Token Optimizer
 
 ## Categoría
+
 Optimización de tokens
 
 ## Cuándo se activa
@@ -17,12 +18,12 @@ Analiza un prompt, conversación o bloque de contexto y produce una **estrategia
 
 ## Diferencia con Caveman
 
-| | Caveman | Token Optimizer |
-|---|---|---|
-| Enfoque | Comprime sin pensar | Analiza antes de cortar |
-| Output | Texto comprimido directo | Estrategia + versión optimizada |
-| Cuándo | "Hazlo más corto" | "Ayúdame a reducir este contexto" |
-| Resultado | Máxima compresión | Compresión inteligente |
+|           | Caveman                  | Token Optimizer                   |
+| --------- | ------------------------ | --------------------------------- |
+| Enfoque   | Comprime sin pensar      | Analiza antes de cortar           |
+| Output    | Texto comprimido directo | Estrategia + versión optimizada   |
+| Cuándo    | "Hazlo más corto"        | "Ayúdame a reducir este contexto" |
+| Resultado | Máxima compresión        | Compresión inteligente            |
 
 ---
 
@@ -63,6 +64,7 @@ Contexto implícito:
 ### 3. Estrategia por tipo de contenido
 
 **Para prompts de desarrollo:**
+
 ```
 - Eliminar: descripciones de lo que YA está hecho
 - Comprimir: contexto de arquitectura → 3 bullets máximo
@@ -71,6 +73,7 @@ Contexto implícito:
 ```
 
 **Para contexto de CLAUDE.md / reglas:**
+
 ```
 - Eliminar: ejemplos que duplican la misma regla
 - Comprimir: secciones de "qué no hacer" → lista corta
@@ -79,6 +82,7 @@ Contexto implícito:
 ```
 
 **Para conversaciones largas:**
+
 ```
 - Eliminar: saludos, confirmaciones, "gracias"
 - Comprimir: el hilo de razonamiento → solo las conclusiones
@@ -95,7 +99,7 @@ Contexto implícito:
 ## Auditoría de tokens
 
 **Tokens estimados (input):** ~X
-**Tokens estimados (output optimizado):** ~Y  
+**Tokens estimados (output optimizado):** ~Y
 **Reducción:** Z%
 
 ### Lo que se puede eliminar 🔴
@@ -124,6 +128,7 @@ Contexto implícito:
 **Input:** Un prompt de 800 tokens que pide implementar un filtro en el módulo de pedidos, con todo el contexto de arquitectura repetido.
 
 **Análisis:**
+
 - 🔴 Eliminar: la descripción de cómo funciona fetchWithTenant (está en las reglas)
 - 🔴 Eliminar: los ejemplos negativos del patrón de hooks (con el positivo es suficiente)
 - 🟡 Comprimir: "el proyecto usa Next.js 16 con App Router, React 19-rc canary, TypeScript strict..." → "Stack: Next.js 16, React 19-rc, TS strict. Ver CLAUDE.md."

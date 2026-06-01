@@ -75,23 +75,23 @@ export function ProductLabelsPrintDialog({ receptionId, isOpen, onClose }) {
         </DialogHeader>
         <div className="flex flex-col gap-4">
           {loading ? (
-            <div className="flex items-center justify-center min-h-[200px]">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <div className="flex min-h-[200px] items-center justify-center">
+              <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
             </div>
           ) : productNames.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">
+            <p className="text-muted-foreground py-8 text-center text-sm">
               No hay productos en esta recepción.
             </p>
           ) : (
             <>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 Vista previa ({productNames.length} letrero{productNames.length !== 1 ? 's' : ''}):
               </p>
-              <div className="flex flex-wrap gap-3 max-h-[280px] overflow-y-auto">
+              <div className="flex max-h-[280px] flex-wrap gap-3 overflow-y-auto">
                 {productNames.map((name, i) => (
                   <div
                     key={`${name}-${i}`}
-                    className="border rounded-lg p-4 min-w-[140px] bg-muted/30 text-center"
+                    className="bg-muted/30 min-w-[140px] rounded-lg border p-4 text-center"
                   >
                     <span className="text-lg font-semibold break-words">{name}</span>
                   </div>
@@ -106,14 +106,14 @@ export function ProductLabelsPrintDialog({ receptionId, isOpen, onClose }) {
         </div>
         {/* Contenido oculto para impresión: un bloque por letrero, nombre grande sin fecha */}
         <div id="product-labels-print-content" className="hidden print:block">
-          <div className="p-4 space-y-4">
+          <div className="space-y-4 p-4">
             {productNames.map((name, i) => (
               <div
                 key={`print-${i}`}
-                className="border border-black rounded-lg p-6 flex items-center justify-center min-h-[80px]"
+                className="flex min-h-[80px] items-center justify-center rounded-lg border border-black p-6"
                 style={{ pageBreakAfter: i < productNames.length - 1 ? 'always' : 'auto' }}
               >
-                <span className="text-3xl font-bold text-center break-words">{name}</span>
+                <span className="text-center text-3xl font-bold break-words">{name}</span>
               </div>
             ))}
           </div>

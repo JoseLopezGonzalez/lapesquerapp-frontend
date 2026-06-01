@@ -41,9 +41,9 @@ const customerService = {
     const token = await getAuthToken();
     const { page = 1, perPage = 12 } = pagination;
     const queryParams = new URLSearchParams();
-    addFiltersToParams(queryParams, filters);    // helper de src/helpers/
+    addFiltersToParams(queryParams, filters); // helper de src/helpers/
     const url = `${API_URL_V2}customers?${queryParams.toString()}`;
-    return fetchEntitiesGeneric(url, token);     // helper genérico
+    return fetchEntitiesGeneric(url, token); // helper genérico
   },
 
   async getById(id) {
@@ -70,7 +70,7 @@ const customerService = {
     // Listado ligero para selects/combobox — minimal payload
     const token = await getAuthToken();
     return fetchEntitiesGeneric(`${API_URL_V2}customers/options`, token);
-  }
+  },
 };
 ```
 
@@ -80,13 +80,13 @@ const customerService = {
 
 Los servicios de dominio no hacen fetch directamente. Usan:
 
-| Helper | Uso |
-|---|---|
-| `fetchEntitiesGeneric(url, token)` | GET — listados y detalles |
-| `createEntityGeneric(url, data, token)` | POST — creación |
-| `editEntityGeneric(url, data, token)` | PUT/PATCH — edición |
-| `deleteEntityGeneric(url, token)` | DELETE — eliminación |
-| `performActionGeneric(url, data, token)` | POST — acciones custom |
+| Helper                                      | Uso                       |
+| ------------------------------------------- | ------------------------- |
+| `fetchEntitiesGeneric(url, token)`          | GET — listados y detalles |
+| `createEntityGeneric(url, data, token)`     | POST — creación           |
+| `editEntityGeneric(url, data, token)`       | PUT/PATCH — edición       |
+| `deleteEntityGeneric(url, token)`           | DELETE — eliminación      |
+| `performActionGeneric(url, data, token)`    | POST — acciones custom    |
 | `downloadFileGeneric(url, token, fileName)` | GET — descarga de archivo |
 
 Todos estos helpers llaman a `fetchWithTenant()` internamente.
@@ -98,11 +98,13 @@ Todos estos helpers llaman a `fetchWithTenant()` internamente.
 `src/lib/fetchWithTenant.js` es el único punto de salida HTTP del frontend.
 
 Añade automáticamente:
+
 - `X-Tenant: {tenant}` — extraído del subdominio del Host
 - `Authorization: Bearer {token}` — si se pasa token
 - `Content-Type: application/json`
 
 Gestiona automáticamente:
+
 - **401 JWT expirado/inválido** → dispara `AUTH_SESSION_EXPIRED_EVENT` → logout automático
 - **401 error de validación** → deja pasar (no dispara logout)
 - **403 Forbidden** → devuelve el error con `userMessage` — la UI lo gestiona
@@ -129,6 +131,7 @@ Gestiona automáticamente:
 ## Gestión de errores
 
 ### Estructura de error del backend
+
 ```json
 {
   "message": "Error genérico",
@@ -140,6 +143,7 @@ Gestiona automáticamente:
 ```
 
 ### En el frontend
+
 - Usar `getErrorMessage(errorData)` para extraer el mensaje más apropiado (`userMessage` > `message`).
 - Errores 422 con `errors{}`: mapear con `setErrorsFrom422(setError, errorData.errors)`.
 - Errores de red o inesperados: mostrar toast de error genérico.
@@ -158,6 +162,7 @@ GET /api/v2/customers?page=1&per_page=15&search=brisamar&supplier_id=5
 Los servicios usan `URLSearchParams` y helpers como `addFiltersToParams()` para construir la query string.
 
 La respuesta paginada tiene estructura:
+
 ```json
 {
   "data": [...],

@@ -21,15 +21,25 @@ export function getProductionRecordsOptions(token, productionId, excludeId = nul
 }
 
 export function getProductionRecord(recordId, token) {
-  return apiGet(`${API_URL_V2}production-records/${recordId}`, token, {}, {
-    transform: normalizeProductionRecordResponse,
-  });
+  return apiGet(
+    `${API_URL_V2}production-records/${recordId}`,
+    token,
+    {},
+    {
+      transform: normalizeProductionRecordResponse,
+    }
+  );
 }
 
 export function getProductionRecordSourcesData(recordId, token) {
-  return apiGet(`${API_URL_V2}production-records/${recordId}/sources-data`, token, {}, {
-    transform: (data) => data.data || data,
-  });
+  return apiGet(
+    `${API_URL_V2}production-records/${recordId}/sources-data`,
+    token,
+    {},
+    {
+      transform: (data) => data.data || data,
+    }
+  );
 }
 
 export function createProductionRecord(recordData, token) {
@@ -55,10 +65,15 @@ export function deleteProductionRecord(recordId, token) {
 }
 
 export function finishProductionRecord(recordId, token) {
-  return apiPost(`${API_URL_V2}production-records/${recordId}/finish`, token, {}, {
-    transform: (data) => {
-      const record = data.data || data;
-      return { ...data, data: normalizeProductionRecord(record) };
-    },
-  });
+  return apiPost(
+    `${API_URL_V2}production-records/${recordId}/finish`,
+    token,
+    {},
+    {
+      transform: (data) => {
+        const record = data.data || data;
+        return { ...data, data: normalizeProductionRecord(record) };
+      },
+    }
+  );
 }

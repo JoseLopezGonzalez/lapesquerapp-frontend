@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useRouter, useParams } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import WarehouseOperatorLayout from "@/components/WarehouseOperatorLayout";
-import Loader from "@/components/Utilities/Loader";
-import { getStore } from "@/services/storeService";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, Construction } from "lucide-react";
-import Link from "next/link";
+import { useRouter, useParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { useEffect, useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import WarehouseOperatorLayout from '@/components/WarehouseOperatorLayout';
+import Loader from '@/components/Utilities/Loader';
+import { getStore } from '@/services/storeService';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft, Construction } from 'lucide-react';
+import Link from 'next/link';
 
 export default function WarehouseDispatchCreatePage() {
   const router = useRouter();
@@ -20,16 +20,17 @@ export default function WarehouseDispatchCreatePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/");
+    if (status === 'unauthenticated') {
+      router.push('/');
       return;
     }
-    if (status === "authenticated" && session?.user && storeId) {
+    if (status === 'authenticated' && session?.user && storeId) {
       const role = Array.isArray(session.user.role) ? session.user.role[0] : session.user.role;
-      if (role === "operario") {
-        const assignedId = session.user.assignedStoreId != null ? Number(session.user.assignedStoreId) : null;
+      if (role === 'operario') {
+        const assignedId =
+          session.user.assignedStoreId != null ? Number(session.user.assignedStoreId) : null;
         if (!assignedId || assignedId !== Number(storeId)) {
-          router.replace(assignedId ? `/warehouse/${assignedId}` : "/unauthorized");
+          router.replace(assignedId ? `/warehouse/${assignedId}` : '/unauthorized');
           return;
         }
       }
@@ -42,15 +43,15 @@ export default function WarehouseDispatchCreatePage() {
       const data = await getStore(storeId, session?.user?.accessToken);
       setStoreData({ id: data.id, name: data.name });
     } catch (e) {
-      router.push("/unauthorized");
+      router.push('/unauthorized');
     } finally {
       setLoading(false);
     }
   };
 
-  if (status === "loading" || loading || !storeId) {
+  if (status === 'loading' || loading || !storeId) {
     return (
-      <div className="flex justify-center items-center h-screen">
+      <div className="flex h-screen items-center justify-center">
         <Loader />
       </div>
     );
@@ -62,7 +63,7 @@ export default function WarehouseDispatchCreatePage() {
 
   return (
     <WarehouseOperatorLayout storeName={storeData.name}>
-      <div className="w-full max-w-2xl mx-auto space-y-4">
+      <div className="mx-auto w-full max-w-2xl space-y-4">
         <Button variant="ghost" size="sm" asChild>
           <Link href={`/warehouse/${storeId}`} className="gap-2">
             <ArrowLeft className="h-4 w-4" />
@@ -70,7 +71,7 @@ export default function WarehouseDispatchCreatePage() {
           </Link>
         </Button>
         <Card className="w-full p-8">
-          <CardContent className="flex flex-col items-center justify-center gap-4 text-center text-muted-foreground">
+          <CardContent className="text-muted-foreground flex flex-col items-center justify-center gap-4 text-center">
             <Construction className="h-12 w-12" />
             <p className="font-medium">Nueva Salida de cebo</p>
             <p className="text-sm">Esta pantalla estará disponible próximamente.</p>

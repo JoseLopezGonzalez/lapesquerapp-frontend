@@ -1,4 +1,9 @@
-import { isAuthError, isAuthStatusCode, isUnauthorizedStatusCode, AUTH_ERROR_CONFIG } from '@/configs/authConfig';
+import {
+  isAuthError,
+  isAuthStatusCode,
+  isUnauthorizedStatusCode,
+  AUTH_ERROR_CONFIG,
+} from '@/configs/authConfig';
 import { log } from '@/lib/logger';
 
 export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
@@ -26,7 +31,9 @@ export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
       const parts = host.split('.');
       const isLocal = host.includes('localhost');
       tenant = isLocal
-        ? (parts.length > 1 && parts[0] !== 'localhost' ? parts[0] : DEFAULT_DEV_TENANT)
+        ? parts.length > 1 && parts[0] !== 'localhost'
+          ? parts[0]
+          : DEFAULT_DEV_TENANT
         : host.split('.')[0];
     }
 
@@ -38,7 +45,9 @@ export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
     const isLocal = clientHost.includes('localhost');
 
     tenant = isLocal
-      ? (parts.length > 1 && parts[0] !== 'localhost' ? parts[0] : DEFAULT_DEV_TENANT)
+      ? parts.length > 1 && parts[0] !== 'localhost'
+        ? parts[0]
+        : DEFAULT_DEV_TENANT
       : parts[0];
   }
 
@@ -59,23 +68,24 @@ export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
 
   if (!res.ok) {
     // Verificar si hay un logout en curso ANTES de procesar el error
-    const isLoggingOut = typeof window !== 'undefined' && 
-                         typeof sessionStorage !== 'undefined' && 
-                         sessionStorage.getItem('__is_logging_out__') === 'true';
-    
+    const isLoggingOut =
+      typeof window !== 'undefined' &&
+      typeof sessionStorage !== 'undefined' &&
+      sessionStorage.getItem('__is_logging_out__') === 'true';
+
     // Si es una llamada al endpoint /logout, permitir que continúe aunque devuelva 401/403
     // ya que es esperado cuando se está cerrando sesión
-    const urlString = typeof url === 'string' ? url : (url?.href || url?.url || '');
+    const urlString = typeof url === 'string' ? url : url?.href || url?.url || '';
     const isLogoutRequest = urlString.includes('/logout') || urlString.endsWith('logout');
-    
+
     // Leer el cuerpo de la respuesta una sola vez
     const responseClone = res.clone();
     const contentType = res.headers.get('content-type');
     const isJson = contentType && contentType.includes('application/json');
-    
+
     let errorJson = {};
     let errorText = '';
-    
+
     // Leer el cuerpo de la respuesta
     try {
       if (isJson) {
@@ -90,7 +100,7 @@ export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
       // Si falla el parseo, continuar con errorJson vacío
       log('⚠️ No se pudo parsear la respuesta de error:', parseError);
     }
-    
+
     // 401 = no autenticado (sin token, inválido o expirado) → signOut + redirect a login.
     // 403 = autenticado pero sin permiso (rol/policy) → NO redirigir; mostrar userMessage y dejar que la UI maneje.
     if (isUnauthorizedStatusCode(res.status)) {
@@ -105,21 +115,22 @@ export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
       }
 
       const errorMessage = (errorJson.message || errorJson.userMessage || '').toLowerCase();
-      const isValidationError = errorMessage.includes('validation') ||
-                               errorMessage.includes('validación') ||
-                               errorMessage.includes('invalid') ||
-                               errorMessage.includes('inválido') ||
-                               errorMessage.includes('required') ||
-                               errorMessage.includes('requerido') ||
-                               errorMessage.includes('error al crear') ||
-                               errorMessage.includes('error al registrar') ||
-                               errorMessage.includes('employee') ||
-                               errorMessage.includes('empleado') ||
-                               errorMessage.includes('timestamp') ||
-                               errorMessage.includes('event_type') ||
-                               errorMessage.includes('requieren autenticación') ||
-                               errorMessage.includes('require authentication') ||
-                               errorMessage.includes('fichajes manuales');
+      const isValidationError =
+        errorMessage.includes('validation') ||
+        errorMessage.includes('validación') ||
+        errorMessage.includes('invalid') ||
+        errorMessage.includes('inválido') ||
+        errorMessage.includes('required') ||
+        errorMessage.includes('requerido') ||
+        errorMessage.includes('error al crear') ||
+        errorMessage.includes('error al registrar') ||
+        errorMessage.includes('employee') ||
+        errorMessage.includes('empleado') ||
+        errorMessage.includes('timestamp') ||
+        errorMessage.includes('event_type') ||
+        errorMessage.includes('requieren autenticación') ||
+        errorMessage.includes('require authentication') ||
+        errorMessage.includes('fichajes manuales');
 
       if (!isValidationError) {
         if (typeof window !== 'undefined') {
@@ -139,12 +150,13 @@ export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
       if (process.env.NODE_ENV === 'development') {
         console.error('❌ Error JSON recibido:', errorJson);
       }
-      
+
       // Verificar si hay un logout en curso antes de lanzar errores de autenticación
-      const isLoggingOut2 = typeof window !== 'undefined' && 
-                           typeof sessionStorage !== 'undefined' && 
-                           sessionStorage.getItem('__is_logging_out__') === 'true';
-      
+      const isLoggingOut2 =
+        typeof window !== 'undefined' &&
+        typeof sessionStorage !== 'undefined' &&
+        sessionStorage.getItem('__is_logging_out__') === 'true';
+
       // Verificar si el error contiene mensaje de autenticación (solo si NO es 401/403 ya procesado)
       if (!isAuthStatusCode(res.status) && isAuthError({ message: errorJson.message })) {
         // Si hay un logout en curso, no lanzar error
@@ -157,10 +169,14 @@ export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
         err.code = 'UNAUTHENTICATED';
         throw err;
       }
-      
+
       // Priorizar userMessage sobre message para mostrar errores en formato natural
-      const finalErrorMessage = errorJson.userMessage || errorJson.message || errorText || `Error HTTP ${res.status}: ${res.statusText}`;
-      
+      const finalErrorMessage =
+        errorJson.userMessage ||
+        errorJson.message ||
+        errorText ||
+        `Error HTTP ${res.status}: ${res.statusText}`;
+
       // Crear un error que preserve la información completa del error
       const error = new Error(finalErrorMessage);
       error.status = res.status;
@@ -171,12 +187,12 @@ export async function fetchWithTenant(url, options = {}, reqHeaders = null) {
       if (e.message === 'No autenticado') {
         throw e;
       }
-      
+
       // Si el error ya tiene un mensaje útil (no es un error de parseo genérico), re-lanzarlo
       if (e.message && !e.message.startsWith('Error HTTP')) {
         throw e;
       }
-      
+
       // Si no se pudo leer el body, crear un error genérico
       throw new Error(`Error HTTP ${res.status}: ${res.statusText}`);
     }

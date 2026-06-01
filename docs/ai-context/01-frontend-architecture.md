@@ -2,22 +2,22 @@
 
 ## Stack real
 
-| Tecnología | Versión | Uso |
-|---|---|---|
-| Next.js | 16 (App Router) | Framework principal |
-| React | 19 RC | UI |
-| TypeScript | 5.9 | Tipado |
-| Tailwind CSS | 4 | Estilos |
-| shadcn/ui + Radix UI | — | Componentes UI |
-| TanStack Query | 5 | Data fetching y caché |
-| TanStack Table | 8 | Tablas |
-| React Hook Form | 7 | Estado de formularios |
-| Zod | 3 | Validación y schemas |
-| NextAuth | 4 | Autenticación JWT |
-| Mapbox GL JS | — | Mapas |
-| Recharts | 2 | Gráficos |
-| Framer Motion | 11 | Animaciones (uso puntual) |
-| AI SDK | 6 | Integración IA (@ai-sdk/openai, @ai-sdk/react) |
+| Tecnología           | Versión         | Uso                                            |
+| -------------------- | --------------- | ---------------------------------------------- |
+| Next.js              | 16 (App Router) | Framework principal                            |
+| React                | 19 RC           | UI                                             |
+| TypeScript           | 5.9             | Tipado                                         |
+| Tailwind CSS         | 4               | Estilos                                        |
+| shadcn/ui + Radix UI | —               | Componentes UI                                 |
+| TanStack Query       | 5               | Data fetching y caché                          |
+| TanStack Table       | 8               | Tablas                                         |
+| React Hook Form      | 7               | Estado de formularios                          |
+| Zod                  | 3               | Validación y schemas                           |
+| NextAuth             | 4               | Autenticación JWT                              |
+| Mapbox GL JS         | —               | Mapas                                          |
+| Recharts             | 2               | Gráficos                                       |
+| Framer Motion        | 11              | Animaciones (uso puntual)                      |
+| AI SDK               | 6               | Integración IA (@ai-sdk/openai, @ai-sdk/react) |
 
 ---
 
@@ -181,15 +181,15 @@ user: {
 
 ### Roles del sistema
 
-| Rol | Ruta base |
-|---|---|
-| `administrador` | `/admin`, `/production`, `/warehouse` |
-| `direccion` | `/admin`, `/production`, `/warehouse` |
-| `tecnico` | `/admin`, `/production`, `/warehouse` |
-| `operario` | `/operator`, `/production` |
-| `comercial` | `/comercial` |
-| `repartidor_autoventa` | `/field` |
-| `external_user` | `/external` |
+| Rol                    | Ruta base                             |
+| ---------------------- | ------------------------------------- |
+| `administrador`        | `/admin`, `/production`, `/warehouse` |
+| `direccion`            | `/admin`, `/production`, `/warehouse` |
+| `tecnico`              | `/admin`, `/production`, `/warehouse` |
+| `operario`             | `/operator`, `/production`            |
+| `comercial`            | `/comercial`                          |
+| `repartidor_autoventa` | `/field`                              |
+| `external_user`        | `/external`                           |
 
 La configuración de roles vive en `src/configs/roleConfig.ts`.
 
@@ -216,7 +216,7 @@ El middleware protege todas las rutas de la aplicación:
 ```typescript
 export function useCustomersList(params = {}) {
   const tenantId = getCurrentTenant();
-  
+
   const query = useQuery({
     queryKey: customerKeys.list(tenantId, params),
     queryFn: () => customerService.list(params),
@@ -226,7 +226,7 @@ export function useCustomersList(params = {}) {
       meta: response.meta,
     }),
   });
-  
+
   return {
     data: query.data?.data ?? [],
     meta: query.data?.meta ?? { current_page: 1, last_page: 1, per_page: 15, total: 0 },
@@ -251,15 +251,15 @@ export function useCustomersList(params = {}) {
 
 El estado global se usa con moderación. Hay 7 providers:
 
-| Context | Propósito |
-|---|---|
-| `OrderContext.jsx` | Estado de edición de pedido (usa `useOrder`) |
-| `ProductionRecordContext.js` | Estado de registro de producción |
-| `OptionsContext.js` | Opciones compartidas de selects/autocomplete |
-| `BottomNavContext.jsx` | Navegación inferior móvil |
-| `FieldOperatorContext.tsx` | Estado de rutas del operador de campo |
-| `LogoutContext.tsx` | Coordinación de logout |
-| `StoreContext.js` | Tienda actual |
+| Context                      | Propósito                                    |
+| ---------------------------- | -------------------------------------------- |
+| `OrderContext.jsx`           | Estado de edición de pedido (usa `useOrder`) |
+| `ProductionRecordContext.js` | Estado de registro de producción             |
+| `OptionsContext.js`          | Opciones compartidas de selects/autocomplete |
+| `BottomNavContext.jsx`       | Navegación inferior móvil                    |
+| `FieldOperatorContext.tsx`   | Estado de rutas del operador de campo        |
+| `LogoutContext.tsx`          | Coordinación de logout                       |
+| `StoreContext.js`            | Tienda actual                                |
 
 La mayor parte del estado de datos fluye por TanStack Query, no por Context.
 
@@ -286,14 +286,14 @@ Componente
 
 ## Configuración clave (`src/configs/`)
 
-| Archivo | Contenido |
-|---|---|
-| `config.js` | `API_URL_V2`, `COMPANY_NAME`, `PALLET_LABEL_SIZE` |
-| `roleConfig.ts` | Mapa rol → rutas permitidas |
-| `navigationConfig.js` | Menús de navegación por rol |
-| `authConfig.ts` | `isAuthError()`, `buildLoginUrl()`, delay de redirección |
-| `entitiesConfig.js` | **117KB** — Configuración masiva de todas las entidades: formularios, columnas, filtros, iconos |
-| `branding.js` | Logos y URLs de fallback |
+| Archivo               | Contenido                                                                                       |
+| --------------------- | ----------------------------------------------------------------------------------------------- |
+| `config.js`           | `API_URL_V2`, `COMPANY_NAME`, `PALLET_LABEL_SIZE`                                               |
+| `roleConfig.ts`       | Mapa rol → rutas permitidas                                                                     |
+| `navigationConfig.js` | Menús de navegación por rol                                                                     |
+| `authConfig.ts`       | `isAuthError()`, `buildLoginUrl()`, delay de redirección                                        |
+| `entitiesConfig.js`   | **117KB** — Configuración masiva de todas las entidades: formularios, columnas, filtros, iconos |
+| `branding.js`         | Logos y URLs de fallback                                                                        |
 
 **Nota**: `entitiesConfig.js` es el archivo más complejo del proyecto. No modificarlo sin entender su impacto total.
 
@@ -316,9 +316,7 @@ En desarrollo, para evitar CORS:
 
 ```javascript
 // next.config.mjs
-rewrites: [
-  { source: '/api-backend/:path*', destination: 'http://localhost:8000/:path*' }
-]
+rewrites: [{ source: '/api-backend/:path*', destination: 'http://localhost:8000/:path*' }];
 ```
 
 Las variables de entorno relevantes:

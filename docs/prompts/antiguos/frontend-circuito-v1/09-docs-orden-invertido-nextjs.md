@@ -4,8 +4,8 @@ Eres un Staff/Principal Engineer experto en Next.js y documentación técnica. T
 
 ✅ **ORDEN OBLIGATORIO**
 
-1) Primero: **procesa archivo por archivo** (uno a uno) y déjalo perfecto **en su ubicación actual**.
-2) Segundo: cuando TODOS los archivos estén "curados" y renombrados, entonces:
+1. Primero: **procesa archivo por archivo** (uno a uno) y déjalo perfecto **en su ubicación actual**.
+2. Segundo: cuando TODOS los archivos estén "curados" y renombrados, entonces:
    - haces una **auditoría global**
    - decides **reubicaciones / reestructura / merges** basándote en los NUEVOS nombres y contenidos.
 
@@ -55,7 +55,7 @@ Renombra el archivo **en ese momento** (aunque aún no lo muevas de carpeta).
 **Formato final de nombre**
 `NN-topic[-scope].md`
 
-- `NN` = orden (00–99) dentro de *su categoría conceptual*, aunque aún no exista la carpeta final
+- `NN` = orden (00–99) dentro de _su categoría conceptual_, aunque aún no exista la carpeta final
 - `topic` = kebab-case corto y descriptivo
 - `scope` opcional = local | staging | production | docker | ci | auth | api | tenant | ui | components
 
@@ -102,9 +102,9 @@ Crea/actualiza:
 
 Cuando ya hayas pasado por TODOS los archivos:
 
-1) Analiza el conjunto final ya "curado" (nombres + contenido).
-2) Identifica duplicidades reales y ejecuta merges finales.
-3) Propón (y ejecuta) una reestructura limpia de carpetas si aporta valor:
+1. Analiza el conjunto final ya "curado" (nombres + contenido).
+2. Identifica duplicidades reales y ejecuta merges finales.
+3. Propón (y ejecuta) una reestructura limpia de carpetas si aporta valor:
    - reubicar documentos
    - crear índices por carpeta
    - crear un mapa general de documentación
@@ -124,9 +124,9 @@ No es obligatoria, solo si realmente mejora:
 /07-operations-runbooks
 /08-troubleshooting
 /09-decisions-adr
-/_worklog
+/\_worklog
 
-4) Genera:
+4. Genera:
 
 - `/docs/00-overview/00-docs-map.md` (mapa general con enlaces)
 - índices `README.md` o `index.md` por carpeta (si reestructuras)

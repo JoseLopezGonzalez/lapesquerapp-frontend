@@ -817,4 +817,3 @@ Puedes pedirle que revise específicamente:
 4. Si el CRUD inline de contactos de prospecto es suficiente o debería migrar a un patrón más estructurado.
 5. Si el uso de `order.offerId` con fallback por lookup adicional es una compatibilidad razonable o una deuda innecesaria.
 6. Si el nivel actual de integración del `OrdersManager` para `/comercial/pedidos` es suficiente para considerar el flujo bien resuelto.
-

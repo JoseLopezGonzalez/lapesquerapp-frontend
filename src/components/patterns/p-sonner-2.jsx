@@ -1,13 +1,13 @@
-import { toast } from "sonner"
+import { toast } from 'sonner';
 
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button';
 
 export function Pattern() {
   const showToast = () => {
-    toast("Event has been created", {
-      description: "Monday, January 3rd at 6:00pm",
-    })
-  }
+    toast('Event has been created', {
+      description: 'Monday, January 3rd at 6:00pm',
+    });
+  };
 
   return (
     <div className="flex items-center justify-center">

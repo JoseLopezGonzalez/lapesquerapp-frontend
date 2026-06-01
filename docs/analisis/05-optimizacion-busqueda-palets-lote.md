@@ -3,11 +3,13 @@
 ## Problema Actual
 
 Cuando se busca por lote, el frontend:
+
 1. Obtiene TODOS los palets registrados (`GET /api/v2/pallets/registered`)
 2. Filtra en el frontend los que tienen el lote
 3. Hace múltiples llamadas individuales (`GET /api/v2/pallets/{id}`) para cada palet encontrado
 
 **Problemas:**
+
 - ❌ Trae datos innecesarios (todos los palets cuando solo necesitamos algunos)
 - ❌ Filtrado en el frontend (debería ser en el backend)
 - ❌ Múltiples llamadas HTTP (N+1 problem)
@@ -23,9 +25,11 @@ GET /api/v2/pallets/search-by-lot?lot={lote}
 ```
 
 **Parámetros:**
+
 - `lot` (query string, requerido): El lote a buscar
 
 **Respuesta:**
+
 ```json
 {
   "data": {
@@ -52,6 +56,7 @@ GET /api/v2/pallets/search-by-lot?lot={lote}
 ```
 
 **Características:**
+
 - ✅ Busca directamente en la base de datos por lote
 - ✅ Retorna solo los palets que tienen cajas con ese lote
 - ✅ Incluye solo cajas disponibles (isAvailable = true)
@@ -85,11 +90,11 @@ Route::get('/pallets/search-by-lot', [PalletController::class, 'searchByLot']);
 public function searchByLot(Request $request)
 {
     $lot = $request->query('lot');
-    
+
     if (!$lot) {
         return response()->json(['message' => 'El parámetro lot es requerido'], 400);
     }
-    
+
     $pallets = Pallet::whereHas('boxes', function ($query) use ($lot) {
         $query->where('lot', $lot)
               ->where('is_available', true);
@@ -101,7 +106,7 @@ public function searchByLot(Request $request)
               ->with('product');
     }])
     ->get();
-    
+
     return response()->json([
         'data' => [
             'pallets' => PalletResource::collection($pallets),
@@ -119,85 +124,83 @@ Una vez implementado el endpoint, el código quedaría así:
 ```javascript
 // Búsqueda por lote optimizada
 const handleSearchByLot = async (lot) => {
-    try {
-        setLoadingPallet(true)
-        const token = session.user.accessToken
-        
-        // Una sola llamada al nuevo endpoint
-        const response = await fetchWithTenant(
-            `${API_URL_V2}pallets/search-by-lot?lot=${encodeURIComponent(lot)}`,
-            {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-            }
-        )
-        
-        if (!response.ok) {
-            throw new Error('Error al buscar palets por lote')
-        }
-        
-        const data = await response.json()
-        const pallets = data.data?.pallets || []
-        
-        if (pallets.length === 0) {
-            alert(`No se encontraron palets con el lote "${lot}"`)
-            return
-        }
-        
-        // Los palets ya vienen con todos los datos necesarios
-        setLoadedPallets(prev => {
-            const newPallets = pallets.filter(p => 
-                !prev.some(loaded => loaded.id === p.id)
-            )
-            if (newPallets.length === 0) {
-                alert('Todos los palets con este lote ya están cargados')
-                return prev
-            }
-            const updated = [...prev, ...newPallets]
-            if (prev.length === 0 && updated.length > 0) {
-                setSelectedPalletId(updated[0].id)
-            }
-            return updated
-        })
-        
-        // Seleccionar automáticamente las cajas con el lote
-        const boxesToSelect = []
-        pallets.forEach(pallet => {
-            pallet.boxes?.forEach(box => {
-                if (
-                    box.lot?.toString().toLowerCase() === lot.toLowerCase() &&
-                    box.isAvailable &&
-                    !isBoxSelected(box.id, pallet.id)
-                ) {
-                    boxesToSelect.push({
-                        boxId: box.id,
-                        palletId: pallet.id
-                    })
-                }
-            })
-        })
-        
-        if (boxesToSelect.length > 0) {
-            setSelectedBoxes(prev => {
-                const newBoxes = [...prev]
-                boxesToSelect.forEach(box => {
-                    if (!newBoxes.some(b => b.boxId === box.boxId && b.palletId === box.palletId)) {
-                        newBoxes.push(box)
-                    }
-                })
-                return newBoxes
-            })
-        }
-    } catch (err) {
-        console.error('Error searching by lot:', err)
-        alert(err.message || 'Error al buscar palets por lote')
-    } finally {
-        setLoadingPallet(false)
+  try {
+    setLoadingPallet(true);
+    const token = session.user.accessToken;
+
+    // Una sola llamada al nuevo endpoint
+    const response = await fetchWithTenant(
+      `${API_URL_V2}pallets/search-by-lot?lot=${encodeURIComponent(lot)}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error('Error al buscar palets por lote');
     }
-}
+
+    const data = await response.json();
+    const pallets = data.data?.pallets || [];
+
+    if (pallets.length === 0) {
+      alert(`No se encontraron palets con el lote "${lot}"`);
+      return;
+    }
+
+    // Los palets ya vienen con todos los datos necesarios
+    setLoadedPallets((prev) => {
+      const newPallets = pallets.filter((p) => !prev.some((loaded) => loaded.id === p.id));
+      if (newPallets.length === 0) {
+        alert('Todos los palets con este lote ya están cargados');
+        return prev;
+      }
+      const updated = [...prev, ...newPallets];
+      if (prev.length === 0 && updated.length > 0) {
+        setSelectedPalletId(updated[0].id);
+      }
+      return updated;
+    });
+
+    // Seleccionar automáticamente las cajas con el lote
+    const boxesToSelect = [];
+    pallets.forEach((pallet) => {
+      pallet.boxes?.forEach((box) => {
+        if (
+          box.lot?.toString().toLowerCase() === lot.toLowerCase() &&
+          box.isAvailable &&
+          !isBoxSelected(box.id, pallet.id)
+        ) {
+          boxesToSelect.push({
+            boxId: box.id,
+            palletId: pallet.id,
+          });
+        }
+      });
+    });
+
+    if (boxesToSelect.length > 0) {
+      setSelectedBoxes((prev) => {
+        const newBoxes = [...prev];
+        boxesToSelect.forEach((box) => {
+          if (!newBoxes.some((b) => b.boxId === box.boxId && b.palletId === box.palletId)) {
+            newBoxes.push(box);
+          }
+        });
+        return newBoxes;
+      });
+    }
+  } catch (err) {
+    console.error('Error searching by lot:', err);
+    alert(err.message || 'Error al buscar palets por lote');
+  } finally {
+    setLoadingPallet(false);
+  }
+};
 ```
 
 ## Beneficios
@@ -217,4 +220,3 @@ GET /api/v2/pallets/search?lot={lote}&product_id={id}&store_id={id}&state={state
 ```
 
 Esto permitiría búsquedas más complejas en el futuro.
-

@@ -4,7 +4,14 @@ import { useEffect, useMemo } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -25,7 +32,12 @@ function FieldError({ message }) {
   return <p className="text-sm text-red-500">{message}</p>;
 }
 
-export default function ProspectContactFormDialog({ open, onOpenChange, prospectId, contact = null }) {
+export default function ProspectContactFormDialog({
+  open,
+  onOpenChange,
+  prospectId,
+  contact = null,
+}) {
   const isEditing = Boolean(contact);
   const { createContact, updateContact } = useProspectMutations();
 
@@ -79,7 +91,8 @@ export default function ProspectContactFormDialog({ open, onOpenChange, prospect
     const n = Object.keys(formErrors).length;
     notify.error({
       title: 'Revisa el formulario',
-      description: n > 1 ? `Hay ${n} campos con errores.` : 'Corrige el error indicado antes de guardar.',
+      description:
+        n > 1 ? `Hay ${n} campos con errores.` : 'Corrige el error indicado antes de guardar.',
     });
   };
 
@@ -93,20 +106,36 @@ export default function ProspectContactFormDialog({ open, onOpenChange, prospect
       <DialogContent size="md">
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Editar contacto' : 'Añadir contacto'}</DialogTitle>
-          <DialogDescription>Puedes registrar varios contactos. Solo uno quedará como principal.</DialogDescription>
+          <DialogDescription>
+            Puedes registrar varios contactos. Solo uno quedará como principal.
+          </DialogDescription>
         </DialogHeader>
 
-        <form id="prospect-contact-form" className="grid gap-4" onSubmit={handleSubmit(onValidSubmit, onInvalidSubmit)} noValidate>
+        <form
+          id="prospect-contact-form"
+          className="grid gap-4"
+          onSubmit={handleSubmit(onValidSubmit, onInvalidSubmit)}
+          noValidate
+        >
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="contact-name">Nombre</Label>
-              <Input id="contact-name" autoComplete="name" aria-invalid={errors.name ? 'true' : undefined} {...register('name')} />
+              <Input
+                id="contact-name"
+                autoComplete="name"
+                aria-invalid={errors.name ? 'true' : undefined}
+                {...register('name')}
+              />
               <FieldError message={errors.name?.message} />
             </div>
 
             <div className="grid gap-2">
               <Label htmlFor="contact-role">Cargo</Label>
-              <Input id="contact-role" aria-invalid={errors.role ? 'true' : undefined} {...register('role')} />
+              <Input
+                id="contact-role"
+                aria-invalid={errors.role ? 'true' : undefined}
+                {...register('role')}
+              />
               <FieldError message={errors.role?.message} />
             </div>
 
@@ -151,7 +180,7 @@ export default function ProspectContactFormDialog({ open, onOpenChange, prospect
               name="isPrimary"
               control={control}
               render={({ field }) => (
-                <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                <label className="text-muted-foreground flex items-center gap-2 text-sm">
                   <Checkbox
                     checked={field.value}
                     onCheckedChange={(checked) => field.onChange(Boolean(checked))}
@@ -175,4 +204,3 @@ export default function ProspectContactFormDialog({ open, onOpenChange, prospect
     </Dialog>
   );
 }
-

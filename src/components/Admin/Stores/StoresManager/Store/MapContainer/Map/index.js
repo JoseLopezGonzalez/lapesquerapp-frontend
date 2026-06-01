@@ -1,86 +1,108 @@
 import { useStoreContext } from '@/context/StoreContext';
 import Position from './Position';
 
-const Map = ({ onClickPosition , isPositionEmpty  }) => {
+const Map = ({ onClickPosition, isPositionEmpty }) => {
+  const { store } = useStoreContext();
 
-    const { store } = useStoreContext();
+  const map = store?.map;
 
-    const map = store?.map;
+  // Usar un viewBox más amplio que garantice ver todos los módulos
+  const calculateViewBox = () => {
+    if (!map) return '-100 -100 10000 3000';
 
-    // Usar un viewBox más amplio que garantice ver todos los módulos
-    const calculateViewBox = () => {
-        if (!map) return "-100 -100 10000 3000";
-        
-        // Para almacenes grandes, usar un viewBox más amplio
-        // Esto asegura que se vean todos los módulos sin importar su posición
-        return "-100 -100 10000 3000";
-    };
+    // Para almacenes grandes, usar un viewBox más amplio
+    // Esto asegura que se vean todos los módulos sin importar su posición
+    return '-100 -100 10000 3000';
+  };
 
-    const viewBox = calculateViewBox();
-    
-    // Si no hay mapa (almacén fantasma), mostrar un mensaje
-    if (!map) {
-        return (
-            <div className="flex items-center justify-center h-full w-full">
-                <div className="text-center text-muted-foreground">
-                    <p className="text-lg font-medium">Almacén Fantasma</p>
-                    <p className="text-sm mt-2">Este almacén no tiene mapa de posiciones</p>
-                </div>
-            </div>
-        );
-    }
-    
-    // Debug temporal para ver las dimensiones
-    // console.log('Map dimensions:', {
-    //     map: map,
-    //     viewBox: viewBox,
-    //     fondos: map?.elementos?.fondos?.length || 0,
-    //     posiciones: map?.posiciones?.length || 0,
-    //     textos: map?.elementos?.textos?.length || 0
-    // });
+  const viewBox = calculateViewBox();
 
+  // Si no hay mapa (almacén fantasma), mostrar un mensaje
+  if (!map) {
     return (
-        <>
-            <svg id="a" height="100%" width="100%" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" viewBox={viewBox}>
-                <defs>
-                    <filter id="f1">
-                        <feGaussianBlur stdDeviation="4" />
-                    </filter>
-                </defs>
+      <div className="flex h-full w-full items-center justify-center">
+        <div className="text-muted-foreground text-center">
+          <p className="text-lg font-medium">Almacén Fantasma</p>
+          <p className="mt-2 text-sm">Este almacén no tiene mapa de posiciones</p>
+        </div>
+      </div>
+    );
+  }
 
-                {/* Fondos */}
-                {map?.elementos?.fondos?.map((fondo, index) => {
-                    return (
-                        <rect key={index} id="rect-contenedor" className="fill-neutral-100 dark:fill-neutral-800" x={fondo.x} y={fondo.y} width={fondo.width} height={fondo.height} rx="14" ry="14" />
-                    )
-                })}
+  // Debug temporal para ver las dimensiones
+  // console.log('Map dimensions:', {
+  //     map: map,
+  //     viewBox: viewBox,
+  //     fondos: map?.elementos?.fondos?.length || 0,
+  //     posiciones: map?.posiciones?.length || 0,
+  //     textos: map?.elementos?.textos?.length || 0
+  // });
 
-                {/* Textos */}
-                {map?.elementos?.textos?.map((texto, index) => {
-                    return (
-                        <text key={index} className="fill-neutral-500 dark:fill-white group-hover:fill-sky-600" fill="#575756"
-                            fontFamily="Arial-BoldMT, Arial" fontSize="60px">
-                            <tspan x={texto.x} y={texto.y}>{texto.contenido}</tspan>
-                        </text>
-                    )
-                })}
+  return (
+    <>
+      <svg
+        id="a"
+        height="100%"
+        width="100%"
+        xmlns="http://www.w3.org/2000/svg"
+        xlink="http://www.w3.org/1999/xlink"
+        viewBox={viewBox}
+      >
+        <defs>
+          <filter id="f1">
+            <feGaussianBlur stdDeviation="4" />
+          </filter>
+        </defs>
 
-                {/* Posiciones */}
-                {map?.posiciones?.map((posicion, index) => {
-                    const formatedPosition = {
-                        position: posicion,
-                        id: posicion.id,
-                        type: posicion.tipo,
-                        name: posicion.nombre,
-                        coordenates: { x: posicion.x, y: posicion.y },
-                        onClick: () => onClickPosition(posicion),
-                    };
-                    return <Position key={index} posicion={formatedPosition} />
-                })}
+        {/* Fondos */}
+        {map?.elementos?.fondos?.map((fondo, index) => {
+          return (
+            <rect
+              key={index}
+              id="rect-contenedor"
+              className="fill-neutral-100 dark:fill-neutral-800"
+              x={fondo.x}
+              y={fondo.y}
+              width={fondo.width}
+              height={fondo.height}
+              rx="14"
+              ry="14"
+            />
+          );
+        })}
 
-            </svg>
-        </>
-    )
-}
+        {/* Textos */}
+        {map?.elementos?.textos?.map((texto, index) => {
+          return (
+            <text
+              key={index}
+              className="fill-neutral-500 group-hover:fill-sky-600 dark:fill-white"
+              fill="#575756"
+              fontFamily="Arial-BoldMT, Arial"
+              fontSize="60px"
+            >
+              <tspan x={texto.x} y={texto.y}>
+                {texto.contenido}
+              </tspan>
+            </text>
+          );
+        })}
 
-export default Map
+        {/* Posiciones */}
+        {map?.posiciones?.map((posicion, index) => {
+          const formatedPosition = {
+            position: posicion,
+            id: posicion.id,
+            type: posicion.tipo,
+            name: posicion.nombre,
+            coordenates: { x: posicion.x, y: posicion.y },
+            onClick: () => onClickPosition(posicion),
+          };
+          return <Position key={index} posicion={formatedPosition} />;
+        })}
+      </svg>
+    </>
+  );
+};
+
+export default Map;

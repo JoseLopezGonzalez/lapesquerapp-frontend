@@ -47,6 +47,7 @@ El endpoint actual devuelve el historial completo del cliente con todos los pedi
 ### Comportamiento Actual del Frontend
 
 El frontend:
+
 1. **Calcula años disponibles** desde los datos recibidos (extrae años de `lines[].load_date`)
 2. **Muestra tabs condicionalmente**:
    - Tab "Mes" - siempre visible

@@ -50,9 +50,7 @@ describe('settingsService', () => {
 
   describe('getSettings', () => {
     it('fetches settings and returns data', async () => {
-      vi.mocked(fetchWithTenant).mockResolvedValueOnce(
-        mockJsonResponse(mockSettings)
-      );
+      vi.mocked(fetchWithTenant).mockResolvedValueOnce(mockJsonResponse(mockSettings));
 
       const result = await getSettings();
 
@@ -69,18 +67,14 @@ describe('settingsService', () => {
     });
 
     it('returns null on 401', async () => {
-      vi.mocked(fetchWithTenant).mockResolvedValueOnce(
-        mockJsonResponse({}, false, 401)
-      );
+      vi.mocked(fetchWithTenant).mockResolvedValueOnce(mockJsonResponse({}, false, 401));
 
       const result = await getSettings();
       expect(result).toBeNull();
     });
 
     it('returns null on 403', async () => {
-      vi.mocked(fetchWithTenant).mockResolvedValueOnce(
-        mockJsonResponse({}, false, 403)
-      );
+      vi.mocked(fetchWithTenant).mockResolvedValueOnce(mockJsonResponse({}, false, 403));
 
       const result = await getSettings();
       expect(result).toBeNull();
@@ -102,13 +96,9 @@ describe('settingsService', () => {
     });
 
     it('throws on 5xx error', async () => {
-      vi.mocked(fetchWithTenant).mockResolvedValueOnce(
-        mockJsonResponse({}, false, 500)
-      );
+      vi.mocked(fetchWithTenant).mockResolvedValueOnce(mockJsonResponse({}, false, 500));
 
-      await expect(getSettings()).rejects.toThrow(
-        'Error al obtener configuración'
-      );
+      await expect(getSettings()).rejects.toThrow('Error al obtener configuración');
     });
   });
 
@@ -133,24 +123,18 @@ describe('settingsService', () => {
           body: expect.stringContaining('Updated'),
         })
       );
-      expect(result).toEqual(
-        expect.objectContaining({ 'company.name': 'Updated' })
-      );
+      expect(result).toEqual(expect.objectContaining({ 'company.name': 'Updated' }));
     });
 
     it('returns authError object on 401', async () => {
-      vi.mocked(fetchWithTenant).mockResolvedValueOnce(
-        mockJsonResponse({}, false, 401)
-      );
+      vi.mocked(fetchWithTenant).mockResolvedValueOnce(mockJsonResponse({}, false, 401));
 
       const result = await updateSettings(mockSettings);
       expect(result).toEqual({ success: false, authError: true });
     });
 
     it('returns authError object on 403', async () => {
-      vi.mocked(fetchWithTenant).mockResolvedValueOnce(
-        mockJsonResponse({}, false, 403)
-      );
+      vi.mocked(fetchWithTenant).mockResolvedValueOnce(mockJsonResponse({}, false, 403));
 
       const result = await updateSettings(mockSettings);
       expect(result).toEqual({ success: false, authError: true });
@@ -174,9 +158,7 @@ describe('settingsService', () => {
     it('throws when not authenticated', async () => {
       vi.mocked(getSession).mockResolvedValueOnce(null as never);
 
-      await expect(updateSettings(mockSettings)).rejects.toThrow(
-        'No autenticado'
-      );
+      await expect(updateSettings(mockSettings)).rejects.toThrow('No autenticado');
     });
   });
 });

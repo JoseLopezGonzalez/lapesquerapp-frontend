@@ -32,6 +32,7 @@ Este documento describe la implementación de una **pantalla de transición a pa
 ```
 
 **Problemas identificados**:
+
 - ❌ No hay transición visual durante el proceso
 - ❌ Toast aparece brevemente antes de redirección
 - ❌ No hay feedback visual del progreso
@@ -50,6 +51,7 @@ Este documento describe la implementación de una **pantalla de transición a pa
 ```
 
 **Problemas identificados**:
+
 - ❌ LogoutDialog existe pero es básico
 - ❌ Aparecen loaders genéricos durante redirección
 - ❌ No hay transición fluida
@@ -72,6 +74,7 @@ Este documento describe la implementación de una **pantalla de transición a pa
 **Ubicación**: `src/components/Auth/AuthTransitionScreen.jsx`
 
 **Responsabilidades**:
+
 - Renderizar pantalla completa con overlay
 - Gestionar estados: `login`, `logout`, `success`, `error`
 - Coordinar animaciones progresivas
@@ -83,6 +86,7 @@ Este documento describe la implementación de una **pantalla de transición a pa
 **Ubicación**: `src/hooks/useAuthTransition.js`
 
 **Responsabilidades**:
+
 - Gestionar estado global de transición
 - Sincronizar con sessionStorage para persistencia
 - Proporcionar API simple para activar/desactivar
@@ -91,6 +95,7 @@ Este documento describe la implementación de una **pantalla de transición a pa
 ### Integración con NextAuth
 
 **Estrategia**:
+
 - Interceptar `signIn()` y `signOut()` de NextAuth
 - Activar transición antes de operaciones async
 - Mantener transición durante todo el proceso
@@ -105,12 +110,14 @@ Este documento describe la implementación de una **pantalla de transición a pa
 #### 1. **LOGIN** - Iniciando Sesión
 
 **Elementos visuales**:
+
 - Logo de La PesquerApp (entrada desde abajo con fade)
 - Texto: "Iniciando sesión..." → "Validando credenciales..." → "Casi listo..."
 - Indicador de progreso animado (barra progresiva)
 - Fondo: Gradiente sutil con branding
 
 **Animaciones**:
+
 - Logo: `scale: 0.8 → 1` con `opacity: 0 → 1` (400ms)
 - Texto: Stagger animation (cada cambio de texto)
 - Barra: Progreso de 0% → 100% (sincronizado con estados)
@@ -118,12 +125,14 @@ Este documento describe la implementación de una **pantalla de transición a pa
 #### 2. **LOGOUT** - Cerrando Sesión
 
 **Elementos visuales**:
+
 - Icono de logout (rotación suave)
 - Texto: "Cerrando sesión..." → "Finalizando..." → "Redirigiendo..."
 - Indicador circular animado
 - Fondo: Gradiente más oscuro
 
 **Animaciones**:
+
 - Icono: Rotación continua + pulso
 - Texto: Fade in/out entre cambios
 - Indicador: Spinner circular con gradiente
@@ -131,12 +140,14 @@ Este documento describe la implementación de una **pantalla de transición a pa
 #### 3. **SUCCESS** - Sesión Iniciada Exitosamente
 
 **Elementos visuales**:
+
 - Checkmark animado (scale + fade)
 - Texto: "¡Bienvenido de nuevo!"
 - Logo con brillo sutil
 - Transición rápida antes de redirección
 
 **Animaciones**:
+
 - Checkmark: `scale: 0 → 1.2 → 1` (spring)
 - Logo: Brillo pulsante
 - Fade out completo antes de redirección
@@ -144,12 +155,14 @@ Este documento describe la implementación de una **pantalla de transición a pa
 #### 4. **ERROR** - Error de Autenticación
 
 **Elementos visuales**:
+
 - Icono de error (shake animation)
 - Texto: Mensaje de error específico
 - Botón "Reintentar" (opcional)
 - Fondo: Tono ligeramente rojizo
 
 **Animaciones**:
+
 - Icono: Shake horizontal
 - Texto: Fade in con slide up
 - Botón: Aparece después de 500ms
@@ -157,11 +170,13 @@ Este documento describe la implementación de una **pantalla de transición a pa
 ### Paleta de Colores y Branding
 
 **Colores base**:
+
 - Fondo: `bg-background` (soporta dark mode)
 - Primary: `text-primary` (color de marca)
 - Overlay: `bg-background/95 backdrop-blur-sm`
 
 **Branding dinámico**:
+
 - Logo: `/images/tenants/{subdomain}/image.png` (fallback a `/images/landing.png`)
 - Nombre: "La PesquerApp" (configurable)
 - Gradientes: Basados en colores primarios del tenant
@@ -217,85 +232,85 @@ import { useReducedMotion } from 'framer-motion';
  * Logo entrance - Entrada del logo principal
  */
 export const logoEntrance = {
-  initial: { 
-    opacity: 0, 
-    scale: 0.8, 
-    y: 30 
+  initial: {
+    opacity: 0,
+    scale: 0.8,
+    y: 30,
   },
-  animate: { 
-    opacity: 1, 
-    scale: 1, 
-    y: 0 
+  animate: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
   },
-  exit: { 
-    opacity: 0, 
-    scale: 0.9, 
-    y: -20 
+  exit: {
+    opacity: 0,
+    scale: 0.9,
+    y: -20,
   },
-  transition: { 
-    type: "spring",
+  transition: {
+    type: 'spring',
     damping: 20,
     stiffness: 300,
-    duration: 0.4
-  }
+    duration: 0.4,
+  },
 };
 
 /**
  * Text stagger - Animación de texto con stagger
  */
 export const textStagger = {
-  initial: { 
-    opacity: 0, 
-    y: 10 
+  initial: {
+    opacity: 0,
+    y: 10,
   },
-  animate: { 
-    opacity: 1, 
-    y: 0 
+  animate: {
+    opacity: 1,
+    y: 0,
   },
-  exit: { 
-    opacity: 0, 
-    y: -10 
+  exit: {
+    opacity: 0,
+    y: -10,
   },
-  transition: { 
-    duration: 0.3, 
-    ease: "easeOut" 
-  }
+  transition: {
+    duration: 0.3,
+    ease: 'easeOut',
+  },
 };
 
 /**
  * Progress bar - Barra de progreso animada
  */
 export const progressBar = {
-  initial: { 
-    scaleX: 0 
+  initial: {
+    scaleX: 0,
   },
-  animate: { 
-    scaleX: 1 
+  animate: {
+    scaleX: 1,
   },
-  transition: { 
-    duration: 0.6, 
-    ease: "easeInOut" 
-  }
+  transition: {
+    duration: 0.6,
+    ease: 'easeInOut',
+  },
 };
 
 /**
  * Success checkmark - Checkmark de éxito
  */
 export const successCheckmark = {
-  initial: { 
-    scale: 0, 
-    opacity: 0 
+  initial: {
+    scale: 0,
+    opacity: 0,
   },
-  animate: { 
-    scale: [0, 1.2, 1], 
-    opacity: 1 
+  animate: {
+    scale: [0, 1.2, 1],
+    opacity: 1,
   },
-  transition: { 
-    type: "spring",
+  transition: {
+    type: 'spring',
     damping: 15,
     stiffness: 400,
-    duration: 0.5
-  }
+    duration: 0.5,
+  },
 };
 
 /**
@@ -307,8 +322,8 @@ export const errorShake = {
   },
   transition: {
     duration: 0.5,
-    ease: "easeInOut"
-  }
+    ease: 'easeInOut',
+  },
 };
 
 /**
@@ -316,14 +331,14 @@ export const errorShake = {
  */
 export function useAuthTransition(preset) {
   const prefersReducedMotion = useReducedMotion();
-  
+
   if (prefersReducedMotion) {
     return {
       ...preset,
-      transition: { duration: 0 }
+      transition: { duration: 0 },
     };
   }
-  
+
   return preset;
 }
 ```
@@ -335,7 +350,7 @@ export function useAuthTransition(preset) {
 **Archivo**: `src/hooks/useAuthTransition.js`
 
 ```javascript
-"use client";
+'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 
@@ -352,7 +367,7 @@ export const AUTH_TRANSITION_STATES = {
 
 /**
  * Hook para controlar la pantalla de transición de autenticación
- * 
+ *
  * @returns {object} { state, setState, isActive, showLogin, showLogout, showSuccess, showError, hide }
  */
 export function useAuthTransition() {
@@ -426,17 +441,17 @@ export function useAuthTransition() {
 **Archivo**: `src/components/Auth/AuthTransitionScreen.jsx`
 
 ```javascript
-"use client";
+'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { useReducedMotion } from 'framer-motion';
 import { useAuthTransition, AUTH_TRANSITION_STATES } from '@/hooks/useAuthTransition';
-import { 
-  logoEntrance, 
-  textStagger, 
-  progressBar, 
-  successCheckmark, 
-  errorShake 
+import {
+  logoEntrance,
+  textStagger,
+  progressBar,
+  successCheckmark,
+  errorShake,
 } from '@/lib/auth-transition-presets';
 import { CheckCircle2, XCircle, LogOut, Loader2 } from 'lucide-react';
 import Image from 'next/image';
@@ -445,7 +460,7 @@ import { cn } from '@/lib/utils';
 
 /**
  * AuthTransitionScreen - Pantalla de transición a pantalla completa
- * 
+ *
  * Experiencia tipo App Launch para procesos de autenticación.
  * Bloquea toda interacción y sustituye loaders/toasts.
  */
@@ -462,17 +477,9 @@ export function AuthTransitionScreen() {
       'Validando credenciales...',
       'Casi listo...',
     ],
-    [AUTH_TRANSITION_STATES.LOGOUT]: [
-      'Cerrando sesión...',
-      'Finalizando...',
-      'Redirigiendo...',
-    ],
-    [AUTH_TRANSITION_STATES.SUCCESS]: [
-      '¡Bienvenido de nuevo!',
-    ],
-    [AUTH_TRANSITION_STATES.ERROR]: [
-      errorMessage || 'Error de autenticación',
-    ],
+    [AUTH_TRANSITION_STATES.LOGOUT]: ['Cerrando sesión...', 'Finalizando...', 'Redirigiendo...'],
+    [AUTH_TRANSITION_STATES.SUCCESS]: ['¡Bienvenido de nuevo!'],
+    [AUTH_TRANSITION_STATES.ERROR]: [errorMessage || 'Error de autenticación'],
   };
 
   // Simular progreso para estados async
@@ -511,7 +518,7 @@ export function AuthTransitionScreen() {
 
   // Obtener branding
   const [brandingImageUrl, setBrandingImageUrl] = useState('/images/landing.png');
-  
+
   useEffect(() => {
     const hostname = window.location.hostname;
     const subdomain = hostname.split('.')[0];
@@ -529,11 +536,11 @@ export function AuthTransitionScreen() {
         exit={{ opacity: 0 }}
         transition={{ duration: prefersReducedMotion ? 0 : 0.3 }}
         className={cn(
-          "fixed inset-0 z-[99999]",
-          "bg-background/95 backdrop-blur-sm",
-          "flex items-center justify-center",
-          "overflow-hidden",
-          "pointer-events-auto"
+          'fixed inset-0 z-[99999]',
+          'bg-background/95 backdrop-blur-sm',
+          'flex items-center justify-center',
+          'overflow-hidden',
+          'pointer-events-auto'
         )}
         style={{
           position: 'fixed',
@@ -549,25 +556,22 @@ export function AuthTransitionScreen() {
           isolation: 'isolate',
         }}
       >
-        <div className="flex flex-col items-center justify-center gap-8 px-4 max-w-md w-full">
+        <div className="flex w-full max-w-md flex-col items-center justify-center gap-8 px-4">
           {/* Logo/Icono Principal */}
-          <motion.div
-            {...(prefersReducedMotion ? {} : logoEntrance)}
-            className="relative"
-          >
+          <motion.div {...(prefersReducedMotion ? {} : logoEntrance)} className="relative">
             {state === AUTH_TRANSITION_STATES.SUCCESS ? (
               <motion.div
                 {...(prefersReducedMotion ? {} : successCheckmark)}
-                className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center border-2 border-primary/30"
+                className="bg-primary/10 border-primary/30 flex h-24 w-24 items-center justify-center rounded-full border-2"
               >
-                <CheckCircle2 className="w-12 h-12 text-primary" />
+                <CheckCircle2 className="text-primary h-12 w-12" />
               </motion.div>
             ) : state === AUTH_TRANSITION_STATES.ERROR ? (
               <motion.div
                 {...(prefersReducedMotion ? {} : errorShake)}
-                className="w-24 h-24 rounded-full bg-destructive/10 flex items-center justify-center border-2 border-destructive/30"
+                className="bg-destructive/10 border-destructive/30 flex h-24 w-24 items-center justify-center rounded-full border-2"
               >
-                <XCircle className="w-12 h-12 text-destructive" />
+                <XCircle className="text-destructive h-12 w-12" />
               </motion.div>
             ) : state === AUTH_TRANSITION_STATES.LOGOUT ? (
               <motion.div
@@ -575,16 +579,14 @@ export function AuthTransitionScreen() {
                 transition={{
                   duration: prefersReducedMotion ? 0 : 2,
                   repeat: Infinity,
-                  ease: "linear"
+                  ease: 'linear',
                 }}
-                className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center border-2 border-primary/30"
+                className="bg-primary/10 border-primary/30 flex h-24 w-24 items-center justify-center rounded-full border-2"
               >
-                <LogOut className="w-12 h-12 text-primary" />
+                <LogOut className="text-primary h-12 w-12" />
               </motion.div>
             ) : (
-              <motion.div
-                className="relative w-32 h-32"
-              >
+              <motion.div className="relative h-32 w-32">
                 <Image
                   src={brandingImageUrl}
                   alt="La PesquerApp"
@@ -601,10 +603,10 @@ export function AuthTransitionScreen() {
                     transition={{
                       duration: prefersReducedMotion ? 0 : 2,
                       repeat: Infinity,
-                      ease: "linear"
+                      ease: 'linear',
                     }}
                   >
-                    <Loader2 className="w-40 h-40 text-primary/20 absolute" />
+                    <Loader2 className="text-primary/20 absolute h-40 w-40" />
                   </motion.div>
                 )}
               </motion.div>
@@ -620,29 +622,27 @@ export function AuthTransitionScreen() {
             transition={{ duration: prefersReducedMotion ? 0 : 0.3 }}
             className="flex flex-col items-center gap-2 text-center"
           >
-            <h2 className={cn(
-              "text-2xl font-semibold",
-              state === AUTH_TRANSITION_STATES.ERROR ? "text-destructive" : "text-foreground"
-            )}>
+            <h2
+              className={cn(
+                'text-2xl font-semibold',
+                state === AUTH_TRANSITION_STATES.ERROR ? 'text-destructive' : 'text-foreground'
+              )}
+            >
               {currentText}
             </h2>
             {state === AUTH_TRANSITION_STATES.SUCCESS && (
-              <p className="text-muted-foreground text-sm">
-                Redirigiendo...
-              </p>
+              <p className="text-muted-foreground text-sm">Redirigiendo...</p>
             )}
           </motion.div>
 
           {/* Barra de Progreso (solo para login/logout) */}
           {(state === AUTH_TRANSITION_STATES.LOGIN || state === AUTH_TRANSITION_STATES.LOGOUT) && (
-            <motion.div
-              className="w-full max-w-xs h-1 bg-muted rounded-full overflow-hidden"
-            >
+            <motion.div className="bg-muted h-1 w-full max-w-xs overflow-hidden rounded-full">
               <motion.div
-                className="h-full bg-primary rounded-full"
+                className="bg-primary h-full rounded-full"
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: progress / 100 }}
-                transition={{ duration: prefersReducedMotion ? 0 : 0.3, ease: "easeOut" }}
+                transition={{ duration: prefersReducedMotion ? 0 : 0.3, ease: 'easeOut' }}
               />
             </motion.div>
           )}
@@ -674,60 +674,59 @@ export default function LoginPage() {
     e.preventDefault();
 
     if (!tenantActive) {
-      toast.error("La suscripción está caducada o no ha sido renovada", getToastTheme());
+      toast.error('La suscripción está caducada o no ha sido renovada', getToastTheme());
       return;
     }
 
     // ✅ Activar transición ANTES de iniciar proceso
     showLogin();
-    
+
     // ❌ NO usar setLoading(true) - la transición lo reemplaza
     // setLoading(true); // ELIMINAR
-    
+
     try {
       const params = new URLSearchParams(window.location.search);
-      const redirectTo = params.get("from") || "/admin/home";
+      const redirectTo = params.get('from') || '/admin/home';
 
-      const result = await signIn("credentials", {
+      const result = await signIn('credentials', {
         redirect: false,
         email,
         password,
       });
 
       if (!result || result.error) {
-        setEmail("");
-        setPassword("");
-        
+        setEmail('');
+        setPassword('');
+
         // ✅ Mostrar error en transición
         showError(
-          result?.error === "CredentialsSignin"
-            ? "Datos de acceso incorrectos"
-            : result?.error || "Error al iniciar sesión"
+          result?.error === 'CredentialsSignin'
+            ? 'Datos de acceso incorrectos'
+            : result?.error || 'Error al iniciar sesión'
         );
-        
+
         // Esperar 2 segundos antes de ocultar
         setTimeout(() => {
           hide();
         }, 2000);
-        
+
         return;
       }
 
       // ✅ Mostrar éxito en transición
       showSuccess();
-      
+
       // ❌ NO usar toast - la transición lo reemplaza
       // toast.success("Inicio de sesión exitoso", getToastTheme()); // ELIMINAR
-      
+
       // Redirigir después de mostrar éxito brevemente
       setTimeout(() => {
         window.location.href = redirectTo;
       }, 1000);
-      
     } catch (err) {
       // ✅ Mostrar error en transición
       showError(err.message);
-      
+
       setTimeout(() => {
         hide();
       }, 2000);
@@ -741,7 +740,7 @@ export default function LoginPage() {
     <div className="relative min-h-screen w-full overflow-hidden">
       {/* ✅ Renderizar pantalla de transición */}
       <AuthTransitionScreen />
-      
+
       {/* ... resto del componente ... */}
     </div>
   );
@@ -768,25 +767,24 @@ export function AppSidebar() {
   const handleLogout = async () => {
     // ✅ Activar transición INMEDIATAMENTE
     showLogout();
-    
+
     try {
       // Importar servicio de logout
       const { logout: logoutBackend } = await import('@/services/authService');
-      
+
       // Ejecutar logout backend
       await logoutBackend();
-      
+
       // Cerrar sesión NextAuth
       await signOut({ redirect: false });
-      
+
       // ❌ NO usar toast - la transición lo reemplaza
       // toast.success('Sesión cerrada correctamente'); // ELIMINAR
-      
+
       // Redirigir después de un breve delay
       setTimeout(() => {
         window.location.replace('/');
       }, 800);
-      
     } catch (error) {
       console.error('Error en logout:', error);
       // Continuar con logout incluso si falla
@@ -801,7 +799,7 @@ export function AppSidebar() {
     <>
       {/* ✅ Renderizar pantalla de transición */}
       <AuthTransitionScreen />
-      
+
       {/* ... resto del componente ... */}
     </>
   );
@@ -824,7 +822,7 @@ export default function ClientLayout({ children }) {
     <>
       {/* ✅ Renderizar pantalla de transición globalmente */}
       <AuthTransitionScreen />
-      
+
       {children}
     </>
   );
@@ -849,7 +847,7 @@ export default function HomePage() {
 
   // Limpiar estado de transición cuando se carga la página de login
   useEffect(() => {
-    if (isSubdomain && status === "unauthenticated") {
+    if (isSubdomain && status === 'unauthenticated') {
       // Si llegamos a la página de login, limpiar cualquier transición activa
       const timer = setTimeout(() => {
         hide();
@@ -890,7 +888,7 @@ export default function HomePage() {
     → showSuccess() → Checkmark aparece
     → Texto: "¡Bienvenido de nuevo!"
     → Redirección después de 1s
-   
+
 7b. Si error:
     → showError(message) → Icono de error + shake
     → Texto: Mensaje de error
@@ -946,16 +944,8 @@ Los textos pueden personalizarse mediante props o configuración:
 
 ```javascript
 <AuthTransitionScreen
-  loginTexts={[
-    'Conectando...',
-    'Verificando...',
-    'Listo!',
-  ]}
-  logoutTexts={[
-    'Desconectando...',
-    'Limpiando datos...',
-    'Hasta pronto!',
-  ]}
+  loginTexts={['Conectando...', 'Verificando...', 'Listo!']}
+  logoutTexts={['Desconectando...', 'Limpiando datos...', 'Hasta pronto!']}
 />
 ```
 
@@ -973,6 +963,7 @@ Los colores se adaptan automáticamente al tema (light/dark) y usan los tokens d
 ## ✅ Checklist de Implementación
 
 ### Fase 1: Presets de Animación
+
 - [ ] Crear `src/lib/auth-transition-presets.js`
 - [ ] Implementar `logoEntrance`
 - [ ] Implementar `textStagger`
@@ -982,6 +973,7 @@ Los colores se adaptan automáticamente al tema (light/dark) y usan los tokens d
 - [ ] Agregar soporte para `prefers-reduced-motion`
 
 ### Fase 2: Hook de Control
+
 - [ ] Crear `src/hooks/useAuthTransition.js`
 - [ ] Implementar estados: IDLE, LOGIN, LOGOUT, SUCCESS, ERROR
 - [ ] Implementar sincronización con sessionStorage
@@ -989,6 +981,7 @@ Los colores se adaptan automáticamente al tema (light/dark) y usan los tokens d
 - [ ] Probar persistencia entre recargas
 
 ### Fase 3: Componente Principal
+
 - [ ] Crear `src/components/Auth/AuthTransitionScreen.jsx`
 - [ ] Implementar renderizado por estado
 - [ ] Implementar animaciones con Framer Motion
@@ -999,6 +992,7 @@ Los colores se adaptan automáticamente al tema (light/dark) y usan los tokens d
 - [ ] Agregar accesibilidad (ARIA labels)
 
 ### Fase 4: Integración Login
+
 - [ ] Modificar `src/components/LoginPage/index.js`
 - [ ] Reemplazar `setLoading` con `showLogin`
 - [ ] Reemplazar `toast` con transición
@@ -1006,6 +1000,7 @@ Los colores se adaptan automáticamente al tema (light/dark) y usan los tokens d
 - [ ] Probar flujo completo
 
 ### Fase 5: Integración Logout
+
 - [ ] Modificar `src/components/Admin/Layout/SideBar/index.js`
 - [ ] Modificar otros puntos de logout (Navbar, etc.)
 - [ ] Reemplazar `toast` con transición
@@ -1013,11 +1008,13 @@ Los colores se adaptan automáticamente al tema (light/dark) y usan los tokens d
 - [ ] Probar flujo completo
 
 ### Fase 6: Integración Global
+
 - [ ] Agregar `AuthTransitionScreen` a layout principal
 - [ ] Verificar que funciona en todas las rutas
 - [ ] Probar transiciones entre páginas
 
 ### Fase 7: Limpieza y Optimización
+
 - [ ] Limpiar estado en `src/app/page.js`
 - [ ] Eliminar `LogoutDialog` antiguo (opcional)
 - [ ] Eliminar toasts de login/logout
@@ -1025,6 +1022,7 @@ Los colores se adaptan automáticamente al tema (light/dark) y usan los tokens d
 - [ ] Probar en diferentes navegadores
 
 ### Fase 8: Testing
+
 - [ ] Probar login exitoso
 - [ ] Probar login con error
 - [ ] Probar logout desde diferentes ubicaciones
@@ -1062,4 +1060,3 @@ Los colores se adaptan automáticamente al tema (light/dark) y usan los tokens d
 **Fecha de creación**: 2024  
 **Última actualización**: 2024  
 **Autor**: Sistema de Documentación
-

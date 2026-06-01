@@ -1,11 +1,13 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';import { format } from 'date-fns';
+import { useForm, useFieldArray } from 'react-hook-form';
+import { format } from 'date-fns';
 import { createRawMaterialReception } from '@/services/rawMaterialReceptionService';
 import { useSupplierOptions } from '@/hooks/useSupplierOptions';
 import { speciesService } from '@/services/domain/species/speciesService';
-import { productService } from '@/services/domain/products/productService';import { notify } from '@/lib/notifications';
+import { productService } from '@/services/domain/products/productService';
+import { notify } from '@/lib/notifications';
 import { calculateNetWeight } from '@/helpers/receptionCalculations';
 
 const CACHE_KEY_LAST_SPECIES = 'operario-reception-last-species';
@@ -145,9 +147,7 @@ export function useOperarioReceptionForm({ onSuccess }) {
       .sort((a, b) => (a === '#' ? 1 : b === '#' ? -1 : a.localeCompare(b)))
       .map((letter) => ({
         letter,
-        options: groups[letter].sort((a, b) =>
-          (a.label || '').localeCompare(b.label || '', 'es')
-        ),
+        options: groups[letter].sort((a, b) => (a.label || '').localeCompare(b.label || '', 'es')),
       }));
   }, [supplierOptions]);
 
@@ -203,9 +203,7 @@ export function useOperarioReceptionForm({ onSuccess }) {
     setProductsBySpeciesLoading(true);
     setProductsBySpeciesLoadingMore(false);
     const speciesId =
-      typeof speciesValue === 'object'
-        ? speciesValue?.id ?? speciesValue?.value
-        : speciesValue;
+      typeof speciesValue === 'object' ? (speciesValue?.id ?? speciesValue?.value) : speciesValue;
     const loadInitial = async () => {
       try {
         const res = await productService.list(
@@ -260,9 +258,7 @@ export function useOperarioReceptionForm({ onSuccess }) {
             return merged;
           });
         }
-        const quickPickOpts = quickPickIds
-          .map((id) => byId.get(String(id)))
-          .filter(Boolean);
+        const quickPickOpts = quickPickIds.map((id) => byId.get(String(id))).filter(Boolean);
         setQuickPickOptionsBySpecies(quickPickOpts);
       } catch {
         if (!cancelled) {
@@ -293,9 +289,7 @@ export function useOperarioReceptionForm({ onSuccess }) {
     if (!canLoadMoreProductsBySpecies) return;
     setProductsBySpeciesLoadingMore(true);
     const speciesId =
-      typeof speciesValue === 'object'
-        ? speciesValue?.id ?? speciesValue?.value
-        : speciesValue;
+      typeof speciesValue === 'object' ? (speciesValue?.id ?? speciesValue?.value) : speciesValue;
     try {
       const nextPage = productsBySpeciesPage + 1;
       const res = await productService.list(
@@ -326,11 +320,7 @@ export function useOperarioReceptionForm({ onSuccess }) {
     } finally {
       setProductsBySpeciesLoadingMore(false);
     }
-  }, [
-    speciesValue,
-    canLoadMoreProductsBySpecies,
-    productsBySpeciesPage,
-  ]);
+  }, [speciesValue, canLoadMoreProductsBySpecies, productsBySpeciesPage]);
 
   const handleCreate = useCallback(
     async (data) => {
@@ -345,19 +335,13 @@ export function useOperarioReceptionForm({ onSuccess }) {
 
       const validDetails = (data.details || [])
         .map((d) => {
-          const net = calculateNetWeight(
-            d?.grossWeight,
-            d?.boxes ?? 0,
-            d?.tare ?? '3'
-          );
+          const net = calculateNetWeight(d?.grossWeight, d?.boxes ?? 0, d?.tare ?? '3');
           return { ...d, _calculatedNet: net };
         })
         .filter((d) => d.product && d._calculatedNet > 0)
         .map((d) => {
           const productId =
-            typeof d.product === 'object'
-              ? d.product?.id ?? d.product?.value
-              : d.product;
+            typeof d.product === 'object' ? (d.product?.id ?? d.product?.value) : d.product;
           const boxesVal = d.boxes != null && d.boxes !== '' ? parseInt(d.boxes, 10) : 0;
           return {
             product: { id: parseInt(productId) },
@@ -369,7 +353,8 @@ export function useOperarioReceptionForm({ onSuccess }) {
       if (validDetails.length === 0) {
         notify.error({
           title: 'Líneas incompletas',
-          description: 'Añada al menos una línea con producto, peso bruto y (si aplica) cajas y tara para poder crear la recepción.',
+          description:
+            'Añada al menos una línea con producto, peso bruto y (si aplica) cajas y tara para poder crear la recepción.',
         });
         return;
       }
@@ -403,7 +388,10 @@ export function useOperarioReceptionForm({ onSuccess }) {
     const data = getValues();
     const supplierId = data.supplier?.id ?? data.supplier;
     if (!supplierId) {
-      notify.error({ title: 'Falta proveedor', description: 'Seleccione un proveedor para continuar.' });
+      notify.error({
+        title: 'Falta proveedor',
+        description: 'Seleccione un proveedor para continuar.',
+      });
       return;
     }
     const validDetails = (data.details || [])
@@ -415,7 +403,8 @@ export function useOperarioReceptionForm({ onSuccess }) {
     if (validDetails.length === 0) {
       notify.error({
         title: 'Líneas incompletas',
-        description: 'Añada al menos una línea con producto, peso bruto y (si aplica) cajas y tara para poder crear la recepción.',
+        description:
+          'Añada al menos una línea con producto, peso bruto y (si aplica) cajas y tara para poder crear la recepción.',
       });
       return;
     }
@@ -527,9 +516,7 @@ export function useOperarioReceptionForm({ onSuccess }) {
       const net = calculateNetWeight(d?.grossWeight, d?.boxes ?? 0, d?.tare ?? '3');
       if (!d?.product || net <= 0) return;
       const productId =
-        typeof d.product === 'object'
-          ? d.product?.id ?? d.product?.value
-          : d.product;
+        typeof d.product === 'object' ? (d.product?.id ?? d.product?.value) : d.product;
       if (editingLineIndex !== null) {
         handleCloseLineDialog();
       } else {

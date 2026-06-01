@@ -1,13 +1,12 @@
-import { toast } from "sonner"
+import { toast } from 'sonner';
 
-import { Button } from "@/components/ui/button"
-import { InfoIcon } from "lucide-react"
+import { Button } from '@/components/ui/button';
+import { InfoIcon } from 'lucide-react';
 
 export function Pattern() {
   const showToast = () => {
     toast.custom(() => (
-      <div
-        className="bg-popover text-popover-foreground border-border rounded-md flex w-[356px] items-start gap-3 border border-l-4 border-l-blue-500 p-4 shadow-lg">
+      <div className="bg-popover text-popover-foreground border-border flex w-[356px] items-start gap-3 rounded-md border border-l-4 border-l-blue-500 p-4 shadow-lg">
         <div className="text-blue-500">
           <InfoIcon className="size-5 shrink-0" aria-hidden="true" />
         </div>
@@ -26,8 +25,8 @@ export function Pattern() {
           </div>
         </div>
       </div>
-    ))
-  }
+    ));
+  };
 
   return (
     <div className="flex items-center justify-center">

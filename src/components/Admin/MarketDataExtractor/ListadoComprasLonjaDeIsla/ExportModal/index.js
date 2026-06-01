@@ -1,801 +1,873 @@
-import React, { useState, useEffect, useMemo } from 'react'
-import { Check, X, FileSpreadsheet, CircleX, Link } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
-import { barcos, barcosVentaDirecta, datosVendidurias, lonjaDeIsla, productos } from '../exportData'
-import { Input } from '@/components/ui/input'
-import { parseDecimalValue, calculateImporteFromLinea } from '@/exportHelpers/common'
-import { getLonjaDeIslaTradeType, validateLonjaDeIslaSpeciesForExport } from '@/exportHelpers/lonjaDeIslaExportHelper'
+import React, { useState, useEffect, useMemo } from 'react';
+import { Check, X, FileSpreadsheet, CircleX, Link } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
-    buildLonjaDeIslaServiciosCalculados,
-    getPorcentajeGastosLonjaOpVendiduria,
-} from '@/exportHelpers/portFeeRepercusion'
-import { findBarcoMatch } from '@/exportHelpers/lonjaDeIslaBarcoMatcher'
-import { normalizeText } from '@/helpers/formats/texts'
-import { formatDecimalCurrency, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
-import { notify } from '@/lib/notifications'
-import { linkAllPurchases, validatePurchases, groupLinkedSummaryBySupplier } from "@/services/export/linkService"
-import { Loader2 } from "lucide-react"
-import LonjaDeIslaUnifiedExportTable from '../LonjaDeIslaUnifiedExportTable'
-import LonjaDeIslaVentaDirectaCard from '../LonjaDeIslaVentaDirectaCard'
-import LonjaDeIslaUnresolvedLinesCard from '../LonjaDeIslaUnresolvedLinesCard'
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import {
+  barcos,
+  barcosVentaDirecta,
+  datosVendidurias,
+  lonjaDeIsla,
+  productos,
+} from '../exportData';
+import { Input } from '@/components/ui/input';
+import { parseDecimalValue, calculateImporteFromLinea } from '@/exportHelpers/common';
+import {
+  getLonjaDeIslaTradeType,
+  validateLonjaDeIslaSpeciesForExport,
+} from '@/exportHelpers/lonjaDeIslaExportHelper';
+import {
+  buildLonjaDeIslaServiciosCalculados,
+  getPorcentajeGastosLonjaOpVendiduria,
+} from '@/exportHelpers/portFeeRepercusion';
+import { findBarcoMatch } from '@/exportHelpers/lonjaDeIslaBarcoMatcher';
+import { normalizeText } from '@/helpers/formats/texts';
+import {
+  formatDecimalCurrency,
+  formatDecimalWeight,
+} from '@/helpers/formats/numbers/formatNumbers';
+import { notify } from '@/lib/notifications';
+import {
+  linkAllPurchases,
+  validatePurchases,
+  groupLinkedSummaryBySupplier,
+} from '@/services/export/linkService';
+import { Loader2 } from 'lucide-react';
+import LonjaDeIslaUnifiedExportTable from '../LonjaDeIslaUnifiedExportTable';
+import LonjaDeIslaVentaDirectaCard from '../LonjaDeIslaVentaDirectaCard';
+import LonjaDeIslaUnresolvedLinesCard from '../LonjaDeIslaUnresolvedLinesCard';
 
 const LONJA_CABNUMDOC_TYPES = {
-    COMPRA_CONTRATO: '5',
-    COMPRA_SUBASTA: '6',
-    SERVICIOS_CONTRATO: '7',
-    SERVICIOS_SUBASTA: '9',
-    VENTA: '8',
+  COMPRA_CONTRATO: '5',
+  COMPRA_SUBASTA: '6',
+  SERVICIOS_CONTRATO: '7',
+  SERVICIOS_SUBASTA: '9',
+  VENTA: '8',
 };
 
 const buildCabNumDoc = (fechaSoloNumeros, typeDigit, sequence) =>
-    `${fechaSoloNumeros}${typeDigit}${sequence}`;
+  `${fechaSoloNumeros}${typeDigit}${sequence}`;
 
 const groupVentasByVendiduria = (ventasVendiduriasArray) =>
-    ventasVendiduriasArray.reduce((acc, barco) => {
-        const codVendiduria = barco?.vendiduria?.cod;
-        if (!codVendiduria) return acc;
-        if (!acc[codVendiduria]) {
-            acc[codVendiduria] = {
-                vendiduria: barco.vendiduria,
-                barcos: [],
-            };
-        }
-        acc[codVendiduria].barcos.push(barco);
-        return acc;
-    }, {});
+  ventasVendiduriasArray.reduce((acc, barco) => {
+    const codVendiduria = barco?.vendiduria?.cod;
+    if (!codVendiduria) return acc;
+    if (!acc[codVendiduria]) {
+      acc[codVendiduria] = {
+        vendiduria: barco.vendiduria,
+        barcos: [],
+      };
+    }
+    acc[codVendiduria].barcos.push(barco);
+    return acc;
+  }, {});
 
 const ExportModal = ({ document }) => {
-    const { details: { fecha }, tables: { ventas, vendidurias } } = document
-    const tradeType = getLonjaDeIslaTradeType(document);
-    const [software, setSoftware] = useState("A3ERP")
-    /** Repercusión completa tasa pesca fresca (T4). Desmarcar = exención / porcentajes reducidos. */
-    const [applyFullTasaPescaRepercusion, setApplyFullTasaPescaRepercusion] = useState(true)
-    const [errors, setErrors] = useState([])
-    const [selectedLinks, setSelectedLinks] = useState([])
-    const [isValidating, setIsValidating] = useState(false)
-    const [validationResults, setValidationResults] = useState({})
-    const ventasVendidurias = {}
-    const ventasDirectas = {}
-    const unresolvedLines = []
+  const {
+    details: { fecha },
+    tables: { ventas, vendidurias },
+  } = document;
+  const tradeType = getLonjaDeIslaTradeType(document);
+  const [software, setSoftware] = useState('A3ERP');
+  /** Repercusión completa tasa pesca fresca (T4). Desmarcar = exención / porcentajes reducidos. */
+  const [applyFullTasaPescaRepercusion, setApplyFullTasaPescaRepercusion] = useState(true);
+  const [errors, setErrors] = useState([]);
+  const [selectedLinks, setSelectedLinks] = useState([]);
+  const [isValidating, setIsValidating] = useState(false);
+  const [validationResults, setValidationResults] = useState({});
+  const ventasVendidurias = {};
+  const ventasDirectas = {};
+  const unresolvedLines = [];
 
-    const addError = (error) => {
-        if (!errors.includes(error)) {
-            setErrors((prevErrors) => [...prevErrors, error]);
-        }
-    };
+  const addError = (error) => {
+    if (!errors.includes(error)) {
+      setErrors((prevErrors) => [...prevErrors, error]);
+    }
+  };
 
-    ventas.map((venta, index) => {
+  ventas.map((venta, index) => {
+    const barcoEncontrado = findBarcoMatch(barcos, venta);
 
-        const barcoEncontrado = findBarcoMatch(barcos, venta);
-
-        if (!barcoEncontrado) {
-            addError(`Barco no encontrado: ${venta.codBarco} - ${venta.barco}`)
-            unresolvedLines.push({ reason: 'barco_not_found', venta })
-            return null;
-        }
-
-        if (venta.codBarco && barcoEncontrado.cod !== venta.codBarco) {
-            addError(`Barco encontrado por nombre: ${venta.codBarco} - ${venta.barco} → ${barcoEncontrado.barco}`)
-        }
-
-        const nombreBarco = barcoEncontrado.barco;
-        const codBarco = `${barcoEncontrado.cod}`;
-
-        const barcoVentaDirectaEntontrado = barcosVentaDirecta.find((barco) => barco.cod === codBarco);
-
-        if (!barcoVentaDirectaEntontrado) {
-            const vendiduria = datosVendidurias.find((vendiduria) => vendiduria.cod === barcoEncontrado.codVendiduria);
-
-            if (!vendiduria) {
-                addError(`Vendiduria no encontrada para el barco: ${codBarco} - ${nombreBarco}`)
-                unresolvedLines.push({ reason: 'vendiduria_not_found', venta })
-                return null;
-            }
-
-            if (!ventasVendidurias[codBarco]) {
-                ventasVendidurias[codBarco] = {
-                    cod: codBarco,
-                    nombre: nombreBarco,
-                    vendiduria: vendiduria,
-                    lineas: [],
-                };
-            }
-            ventasVendidurias[codBarco].lineas.push(venta);
-
-        } else if (barcoVentaDirectaEntontrado) {
-            const armador = barcoVentaDirectaEntontrado.armador;
-            if (!ventasDirectas[codBarco]) {
-                ventasDirectas[codBarco] = {
-                    cod: codBarco,
-                    nombre: nombreBarco,
-                    armador: armador,
-                    lineas: [],
-                };
-            }
-            ventasDirectas[codBarco].lineas.push(venta);
-        }
-    });
-
-    const ventasDirectasArray = Object.values(ventasDirectas);
-    const ventasVendiduriasArray = Object.values(ventasVendidurias);
-
-    const importeTotalVentasDirectas = ventasDirectasArray.reduce((acc, barco) => {
-        return acc + barco.lineas.reduce((acc, linea) => {
-            return acc + calculateImporteFromLinea(linea);
-        }, 0);
-    }, 0);
-
-    const porcentajeServiciosVendiduria = getPorcentajeGastosLonjaOpVendiduria(
-        applyFullTasaPescaRepercusion,
-    );
-
-    const servicios = useMemo(
-        () =>
-            buildLonjaDeIslaServiciosCalculados(
-                applyFullTasaPescaRepercusion,
-                importeTotalVentasDirectas,
-            ),
-        [applyFullTasaPescaRepercusion, importeTotalVentasDirectas],
-    );
-
-    const getImporteTotal = (lineasBarco) => {
-        const importeTotal = lineasBarco.reduce((acc, linea) => {
-            return acc + calculateImporteFromLinea(linea);
-        }, 0);
-        return importeTotal;
+    if (!barcoEncontrado) {
+      addError(`Barco no encontrado: ${venta.codBarco} - ${venta.barco}`);
+      unresolvedLines.push({ reason: 'barco_not_found', venta });
+      return null;
     }
 
-    const handleOnClickExport = () => {
-        // Ya no necesitamos initialAlbaranNumber, se usa la fecha como identificador base
+    if (venta.codBarco && barcoEncontrado.cod !== venta.codBarco) {
+      addError(
+        `Barco encontrado por nombre: ${venta.codBarco} - ${venta.barco} → ${barcoEncontrado.barco}`
+      );
+    }
 
-        if (software === "A3ERP") {
-            try {
-                generateExcelForA3erp();
-            } catch (error) {
-                notify.error({
-                    title: 'Error al exportar',
-                    description: error.message || 'Error desconocido al generar el Excel',
-                });
-            }
-        } else if (software === "Facilcom") {
-            // generateExcelForFacilcom();
-        } else {
-            // generateExcelForOtros();
-        }
-    };
+    const nombreBarco = barcoEncontrado.barco;
+    const codBarco = `${barcoEncontrado.cod}`;
 
-    const linkedSummary = Object.values(ventasVendidurias).filter(Boolean).map((venta) => {
-        const declaredTotalNetWeight = venta.lineas.reduce((acc, linea) => acc + parseDecimalValue(linea.kilos), 0);
-        const declaredTotalAmount = venta.lineas.reduce((acc, linea) => acc + calculateImporteFromLinea(linea), 0);
-        const codBrisappBarco = barcos.find((barco) => barco.cod === venta.cod)?.codBrisapp ?? null;
+    const barcoVentaDirectaEntontrado = barcosVentaDirecta.find((barco) => barco.cod === codBarco);
 
-        return {
-            supplierId: codBrisappBarco,
-            date: fecha,
-            declaredTotalNetWeight: parseFloat(declaredTotalNetWeight.toFixed(2)),
-            declaredTotalAmount: parseFloat(declaredTotalAmount.toFixed(2)),
-            barcoNombre: venta.nombre,
-            error: codBrisappBarco === null ? true : false,
+    if (!barcoVentaDirectaEntontrado) {
+      const vendiduria = datosVendidurias.find(
+        (vendiduria) => vendiduria.cod === barcoEncontrado.codVendiduria
+      );
+
+      if (!vendiduria) {
+        addError(`Vendiduria no encontrada para el barco: ${codBarco} - ${nombreBarco}`);
+        unresolvedLines.push({ reason: 'vendiduria_not_found', venta });
+        return null;
+      }
+
+      if (!ventasVendidurias[codBarco]) {
+        ventasVendidurias[codBarco] = {
+          cod: codBarco,
+          nombre: nombreBarco,
+          vendiduria: vendiduria,
+          lineas: [],
         };
-    }).concat(Object.values(ventasDirectas).filter(Boolean).map((venta) => {
-        const declaredTotalNetWeight = venta.lineas.reduce((acc, linea) => acc + parseDecimalValue(linea.kilos), 0);
-        const declaredTotalAmount = venta.lineas.reduce((acc, linea) => acc + calculateImporteFromLinea(linea), 0);
-        const codBrisappBarco = barcos.find((barco) => barco.cod === venta.cod)?.codBrisapp ?? null;
-
-        return {
-            supplierId: codBrisappBarco,
-            date: fecha,
-            declaredTotalNetWeight: parseFloat(declaredTotalNetWeight.toFixed(2)),
-            declaredTotalAmount: parseFloat(declaredTotalAmount.toFixed(2)),
-            barcoNombre: venta.nombre,
-            error: codBrisappBarco === null ? true : false,
+      }
+      ventasVendidurias[codBarco].lineas.push(venta);
+    } else if (barcoVentaDirectaEntontrado) {
+      const armador = barcoVentaDirectaEntontrado.armador;
+      if (!ventasDirectas[codBarco]) {
+        ventasDirectas[codBarco] = {
+          cod: codBarco,
+          nombre: nombreBarco,
+          armador: armador,
+          lineas: [],
         };
+      }
+      ventasDirectas[codBarco].lineas.push(venta);
+    }
+  });
+
+  const ventasDirectasArray = Object.values(ventasDirectas);
+  const ventasVendiduriasArray = Object.values(ventasVendidurias);
+
+  const importeTotalVentasDirectas = ventasDirectasArray.reduce((acc, barco) => {
+    return (
+      acc +
+      barco.lineas.reduce((acc, linea) => {
+        return acc + calculateImporteFromLinea(linea);
+      }, 0)
+    );
+  }, 0);
+
+  const porcentajeServiciosVendiduria = getPorcentajeGastosLonjaOpVendiduria(
+    applyFullTasaPescaRepercusion
+  );
+
+  const servicios = useMemo(
+    () =>
+      buildLonjaDeIslaServiciosCalculados(
+        applyFullTasaPescaRepercusion,
+        importeTotalVentasDirectas
+      ),
+    [applyFullTasaPescaRepercusion, importeTotalVentasDirectas]
+  );
+
+  const getImporteTotal = (lineasBarco) => {
+    const importeTotal = lineasBarco.reduce((acc, linea) => {
+      return acc + calculateImporteFromLinea(linea);
+    }, 0);
+    return importeTotal;
+  };
+
+  const handleOnClickExport = () => {
+    // Ya no necesitamos initialAlbaranNumber, se usa la fecha como identificador base
+
+    if (software === 'A3ERP') {
+      try {
+        generateExcelForA3erp();
+      } catch (error) {
+        notify.error({
+          title: 'Error al exportar',
+          description: error.message || 'Error desconocido al generar el Excel',
+        });
+      }
+    } else if (software === 'Facilcom') {
+      // generateExcelForFacilcom();
+    } else {
+      // generateExcelForOtros();
+    }
+  };
+
+  const linkedSummary = Object.values(ventasVendidurias)
+    .filter(Boolean)
+    .map((venta) => {
+      const declaredTotalNetWeight = venta.lineas.reduce(
+        (acc, linea) => acc + parseDecimalValue(linea.kilos),
+        0
+      );
+      const declaredTotalAmount = venta.lineas.reduce(
+        (acc, linea) => acc + calculateImporteFromLinea(linea),
+        0
+      );
+      const codBrisappBarco = barcos.find((barco) => barco.cod === venta.cod)?.codBrisapp ?? null;
+
+      return {
+        supplierId: codBrisappBarco,
+        date: fecha,
+        declaredTotalNetWeight: parseFloat(declaredTotalNetWeight.toFixed(2)),
+        declaredTotalAmount: parseFloat(declaredTotalAmount.toFixed(2)),
+        barcoNombre: venta.nombre,
+        error: codBrisappBarco === null ? true : false,
+      };
     })
+    .concat(
+      Object.values(ventasDirectas)
+        .filter(Boolean)
+        .map((venta) => {
+          const declaredTotalNetWeight = venta.lineas.reduce(
+            (acc, linea) => acc + parseDecimalValue(linea.kilos),
+            0
+          );
+          const declaredTotalAmount = venta.lineas.reduce(
+            (acc, linea) => acc + calculateImporteFromLinea(linea),
+            0
+          );
+          const codBrisappBarco =
+            barcos.find((barco) => barco.cod === venta.cod)?.codBrisapp ?? null;
+
+          return {
+            supplierId: codBrisappBarco,
+            date: fecha,
+            declaredTotalNetWeight: parseFloat(declaredTotalNetWeight.toFixed(2)),
+            declaredTotalAmount: parseFloat(declaredTotalAmount.toFixed(2)),
+            barcoNombre: venta.nombre,
+            error: codBrisappBarco === null ? true : false,
+          };
+        })
     );
 
-    // Group linkedSummary by supplier and initialize selections
-    const groupedLinkedSummary = groupLinkedSummaryBySupplier(linkedSummary);
+  // Group linkedSummary by supplier and initialize selections
+  const groupedLinkedSummary = groupLinkedSummaryBySupplier(linkedSummary);
 
-    // Inicializar las selecciones cuando cambia linkedSummary y validar
-    useEffect(() => {
-        // Seleccionar por defecto solo las que no tienen error
-        const initialSelection = groupedLinkedSummary
-            .map((linea, index) => (!linea.error ? index : null))
-            .filter(index => index !== null);
-        setSelectedLinks(initialSelection);
+  // Inicializar las selecciones cuando cambia linkedSummary y validar
+  useEffect(() => {
+    // Seleccionar por defecto solo las que no tienen error
+    const initialSelection = groupedLinkedSummary
+      .map((linea, index) => (!linea.error ? index : null))
+      .filter((index) => index !== null);
+    setSelectedLinks(initialSelection);
 
-        // Validar recepciones cuando cambia linkedSummary
-        const validItems = groupedLinkedSummary.filter(item => !item.error);
-        if (validItems.length > 0) {
-            setIsValidating(true);
-            validatePurchases(groupedLinkedSummary)
-                .then((validation) => {
-                    const validationMap = {};
-                    validation.validationResults.forEach((result) => {
-                        const key = `${result.supplierId}_${result.date}`;
-                        validationMap[key] = result;
-                    });
-                    setValidationResults(validationMap);
-                })
-                .catch((error) => {
-                    console.error('Error al validar:', error);
-                })
-                .finally(() => {
-                    setIsValidating(false);
-                });
-        }
-    }, [groupedLinkedSummary.length]);
-
-    // Get validation status for a linea
-    const getValidationStatus = (linea) => {
-        const key = `${linea.supplierId}_${linea.date.split('/').reverse().join('-')}`;
-        return validationResults[key] || null;
-    };
-
-    // Función para manejar selección/deselección de una línea
-    const handleToggleLink = (index) => {
-        setSelectedLinks(prev => {
-            if (prev.includes(index)) {
-                return prev.filter(i => i !== index);
-            } else {
-                return [...prev, index];
-            }
+    // Validar recepciones cuando cambia linkedSummary
+    const validItems = groupedLinkedSummary.filter((item) => !item.error);
+    if (validItems.length > 0) {
+      setIsValidating(true);
+      validatePurchases(groupedLinkedSummary)
+        .then((validation) => {
+          const validationMap = {};
+          validation.validationResults.forEach((result) => {
+            const key = `${result.supplierId}_${result.date}`;
+            validationMap[key] = result;
+          });
+          setValidationResults(validationMap);
+        })
+        .catch((error) => {
+          console.error('Error al validar:', error);
+        })
+        .finally(() => {
+          setIsValidating(false);
         });
-    };
+    }
+  }, [groupedLinkedSummary.length]);
 
-    // Función para seleccionar/deseleccionar todas las líneas válidas y que pueden actualizarse
-    const handleToggleAll = () => {
-        const validIndices = linkedSummary
-            .map((linea, index) => {
-                if (linea.error) return null;
-                const validation = getValidationStatus(linea);
-                return (validation?.valid && validation?.canUpdate) ? index : null;
-            })
-            .filter(index => index !== null);
-        
-        if (selectedLinks.length === validIndices.length) {
-            // Si todas están seleccionadas, deseleccionar todas
-            setSelectedLinks([]);
-        } else {
-            // Si no todas están seleccionadas, seleccionar todas las válidas
-            setSelectedLinks(validIndices);
+  // Get validation status for a linea
+  const getValidationStatus = (linea) => {
+    const key = `${linea.supplierId}_${linea.date.split('/').reverse().join('-')}`;
+    return validationResults[key] || null;
+  };
+
+  // Función para manejar selección/deselección de una línea
+  const handleToggleLink = (index) => {
+    setSelectedLinks((prev) => {
+      if (prev.includes(index)) {
+        return prev.filter((i) => i !== index);
+      } else {
+        return [...prev, index];
+      }
+    });
+  };
+
+  // Función para seleccionar/deseleccionar todas las líneas válidas y que pueden actualizarse
+  const handleToggleAll = () => {
+    const validIndices = linkedSummary
+      .map((linea, index) => {
+        if (linea.error) return null;
+        const validation = getValidationStatus(linea);
+        return validation?.valid && validation?.canUpdate ? index : null;
+      })
+      .filter((index) => index !== null);
+
+    if (selectedLinks.length === validIndices.length) {
+      // Si todas están seleccionadas, deseleccionar todas
+      setSelectedLinks([]);
+    } else {
+      // Si no todas están seleccionadas, seleccionar todas las válidas
+      setSelectedLinks(validIndices);
+    }
+  };
+
+  const handleOnClickLinkPurchases = async () => {
+    // Filtrar solo las compras seleccionadas (usar groupedLinkedSummary)
+    const comprasSeleccionadas = groupedLinkedSummary.filter(
+      (linea, index) => selectedLinks.includes(index) && !linea.error
+    );
+
+    if (comprasSeleccionadas.length === 0) {
+      notify.error({
+        title: 'Sin compras seleccionadas',
+        description: 'Seleccione al menos una compra para vincular.',
+      });
+      return;
+    }
+
+    try {
+      // Use bulk endpoint for better performance
+      const result = await linkAllPurchases(comprasSeleccionadas);
+
+      if (result.correctas > 0) {
+        notify.success({
+          title: 'Compras enlazadas',
+          description: `Se enlazaron ${result.correctas} compras correctamente.`,
+        });
+      }
+
+      if (result.errores > 0) {
+        // Show detailed errors for first few failures
+        const erroresAMostrar = result.erroresDetalles.slice(0, 3);
+        erroresAMostrar.forEach((errorDetail) => {
+          const barcoInfo = errorDetail.barcoNombre ? `${errorDetail.barcoNombre}: ` : '';
+          notify.error(
+            {
+              title: 'Error al enlazar compra',
+              description: `${barcoInfo}${errorDetail.error}`,
+            },
+            { duration: 6000 }
+          );
+        });
+
+        if (result.errores > 3) {
+          notify.error({
+            title: 'Varios errores al enlazar',
+            description: `${result.errores - 3} error(es) adicional(es). Revisa la consola para más detalles.`,
+          });
         }
-    };
+      }
+    } catch (error) {
+      console.error('Error al enlazar compras:', error);
+      notify.error({
+        title: 'Error al enlazar compras',
+        description: error.message,
+      });
+    }
+  };
 
-    const handleOnClickLinkPurchases = async () => {
-        // Filtrar solo las compras seleccionadas (usar groupedLinkedSummary)
-        const comprasSeleccionadas = groupedLinkedSummary.filter((linea, index) => 
-            selectedLinks.includes(index) && !linea.error
+  const generateExcelForA3erp = async () => {
+    const unmappedSpecies = validateLonjaDeIslaSpeciesForExport(document);
+    if (unmappedSpecies.length > 0) {
+      notify.warning(
+        {
+          title: 'Especies sin código A3',
+          description: `${unmappedSpecies.join(', ')}. Se exportarán con LINCODART vacío.`,
+        },
+        { duration: 8000 }
+      );
+    }
+
+    const [XLSX, { saveAs }] = await Promise.all([import('xlsx-js-style'), import('file-saver')]);
+    const processedRows = [];
+    const ventaRows = [];
+    // Extraer año de la fecha (últimos 2 dígitos)
+    // Intentar extraer año directamente de la cadena (formato YYYY-MM-DD o YYYY/MM/DD)
+    let año = null;
+    const añoMatch = String(fecha).match(/(\d{4})/);
+    if (añoMatch) {
+      año = añoMatch[1].slice(-2);
+    } else {
+      // Fallback: usar Date object
+      const fechaObj = new Date(fecha);
+      año = fechaObj.getFullYear().toString().slice(-2);
+    }
+    const CABSERIE = `LI${año}`;
+    // Convertir fecha a formato solo números: eliminar todos los caracteres no numéricos (ej: "2024-12-17" -> "20241217")
+    const fechaSoloNumeros = String(fecha).replace(/[^0-9]/g, '');
+    const tradeLetter = tradeType === 'SUBASTA' ? 'S' : 'C';
+    const shouldGenerateServicios = tradeType !== 'SUBASTA';
+    const compraTypeDigit =
+      tradeType === 'SUBASTA'
+        ? LONJA_CABNUMDOC_TYPES.COMPRA_SUBASTA
+        : LONJA_CABNUMDOC_TYPES.COMPRA_CONTRATO;
+    const serviciosTypeDigit =
+      tradeType === 'SUBASTA'
+        ? LONJA_CABNUMDOC_TYPES.SERVICIOS_SUBASTA
+        : LONJA_CABNUMDOC_TYPES.SERVICIOS_CONTRATO;
+    let albaranSequence = 1; // Contador secuencial para distinguir diferentes albaranes del mismo documento
+    let ventaAlbaranSequence = 1; // Secuencia separada para albaranes de venta
+
+    ventasDirectasArray.forEach((barco) => {
+      const cabNumDoc = buildCabNumDoc(fechaSoloNumeros, compraTypeDigit, albaranSequence);
+      const cabNumDocVenta = buildCabNumDoc(
+        fechaSoloNumeros,
+        LONJA_CABNUMDOC_TYPES.VENTA,
+        ventaAlbaranSequence
+      );
+      const importeBase = getImporteTotal(barco.lineas); // base = Σ(kilos*precio)
+      const codCliente = barco.armador?.codA3erpCliente;
+
+      // Para ALBARANESVENTA necesitamos el código de cliente (si está vacío, abortamos).
+      if (codCliente === undefined || codCliente === null || String(codCliente).trim() === '') {
+        throw new Error(`Falta CABCODCLI (cod cliente) para el barco "${barco.nombre}"`);
+      }
+
+      // Hoja ALBARANESVENTA: 1 albarán por cada "venta directa" (grupo de barco) con 2 líneas
+      ventaRows.push({
+        CABSERIE: CABSERIE,
+        CABNUMDOC: cabNumDocVenta,
+        CABFECHA: fecha,
+        CABCODCLI: codCliente,
+        CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
+        LINCODART: 10136, // Suplido lonja (iva exento - SUPLIDO)
+        LINDESCLIN: 'Suplido lonja',
+        LINBULTOS: 1,
+        LINUNIDADES: 1,
+        LINPRCMONEDA: importeBase * 0.015,
+        LINTIPIVA: 'SUPLIDOS',
+      });
+      ventaRows.push({
+        CABSERIE: CABSERIE,
+        CABNUMDOC: cabNumDocVenta,
+        CABFECHA: fecha,
+        CABCODCLI: codCliente,
+        CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
+        LINCODART: 9998, // Gasto gestión (iva normal 21%)
+        LINDESCLIN: 'Gasto gestion',
+        LINBULTOS: 1,
+        LINUNIDADES: 1,
+        LINPRCMONEDA: importeBase * 0.01,
+        LINTIPIVA: 'ORD21',
+      });
+      ventaAlbaranSequence++;
+
+      barco.lineas.forEach((linea) => {
+        const producto = productos.find(
+          (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
         );
+        processedRows.push({
+          CABSERIE: CABSERIE,
+          CABNUMDOC: cabNumDoc,
+          CABFECHA: fecha,
+          CABCODPRO: barco.armador.codA3erp,
+          CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
+          LINCODART: producto?.codA3erp || '',
+          LINDESCLIN: linea.especie,
+          LINUNIDADES: parseDecimalValue(linea.kilos),
+          LINPRCMONEDA: parseDecimalValue(linea.precio),
+          LINTIPIVA: 'RED10',
+        });
+      });
+      albaranSequence++;
+    });
 
-        if (comprasSeleccionadas.length === 0) {
-            notify.error({
-              title: 'Sin compras seleccionadas',
-              description: 'Seleccione al menos una compra para vincular.',
-            });
-            return;
-        }
+    if (tradeType === 'SUBASTA') {
+      const ventasPorVendiduria = groupVentasByVendiduria(ventasVendiduriasArray);
 
-        try {
-            // Use bulk endpoint for better performance
-            const result = await linkAllPurchases(comprasSeleccionadas);
+      Object.values(ventasPorVendiduria).forEach(({ vendiduria, barcos }) => {
+        const cabNumDoc = buildCabNumDoc(fechaSoloNumeros, compraTypeDigit, albaranSequence);
+        let importeTotalVendiduria = 0;
 
-            if (result.correctas > 0) {
-                notify.success({
-                  title: 'Compras enlazadas',
-                  description: `Se enlazaron ${result.correctas} compras correctamente.`,
-                });
-            }
-
-            if (result.errores > 0) {
-                // Show detailed errors for first few failures
-                const erroresAMostrar = result.erroresDetalles.slice(0, 3);
-                erroresAMostrar.forEach((errorDetail) => {
-                    const barcoInfo = errorDetail.barcoNombre ? `${errorDetail.barcoNombre}: ` : '';
-                    notify.error({
-                      title: 'Error al enlazar compra',
-                      description: `${barcoInfo}${errorDetail.error}`,
-                    }, { duration: 6000 });
-                });
-                
-                if (result.errores > 3) {
-                    notify.error({
-                      title: 'Varios errores al enlazar',
-                      description: `${result.errores - 3} error(es) adicional(es). Revisa la consola para más detalles.`,
-                    });
-                }
-            }
-        } catch (error) {
-            console.error('Error al enlazar compras:', error);
-            notify.error({
-              title: 'Error al enlazar compras',
-              description: error.message,
-            });
-        }
-    };
-
-    const generateExcelForA3erp = async () => {
-        const unmappedSpecies = validateLonjaDeIslaSpeciesForExport(document);
-        if (unmappedSpecies.length > 0) {
-            notify.warning({
-                title: 'Especies sin código A3',
-                description: `${unmappedSpecies.join(', ')}. Se exportarán con LINCODART vacío.`,
-            }, { duration: 8000 });
-        }
-
-        const [XLSX, { saveAs }] = await Promise.all([import('xlsx-js-style'), import('file-saver')]);
-        const processedRows = [];
-        const ventaRows = [];
-        // Extraer año de la fecha (últimos 2 dígitos)
-        // Intentar extraer año directamente de la cadena (formato YYYY-MM-DD o YYYY/MM/DD)
-        let año = null;
-        const añoMatch = String(fecha).match(/(\d{4})/);
-        if (añoMatch) {
-            año = añoMatch[1].slice(-2);
-        } else {
-            // Fallback: usar Date object
-            const fechaObj = new Date(fecha);
-            año = fechaObj.getFullYear().toString().slice(-2);
-        }
-        const CABSERIE = `LI${año}`;
-        // Convertir fecha a formato solo números: eliminar todos los caracteres no numéricos (ej: "2024-12-17" -> "20241217")
-        const fechaSoloNumeros = String(fecha).replace(/[^0-9]/g, '');
-        const tradeLetter = tradeType === 'SUBASTA' ? 'S' : 'C';
-        const shouldGenerateServicios = tradeType !== 'SUBASTA';
-        const compraTypeDigit = tradeType === 'SUBASTA'
-            ? LONJA_CABNUMDOC_TYPES.COMPRA_SUBASTA
-            : LONJA_CABNUMDOC_TYPES.COMPRA_CONTRATO;
-        const serviciosTypeDigit = tradeType === 'SUBASTA'
-            ? LONJA_CABNUMDOC_TYPES.SERVICIOS_SUBASTA
-            : LONJA_CABNUMDOC_TYPES.SERVICIOS_CONTRATO;
-        let albaranSequence = 1; // Contador secuencial para distinguir diferentes albaranes del mismo documento
-        let ventaAlbaranSequence = 1; // Secuencia separada para albaranes de venta
-
-        ventasDirectasArray.forEach(barco => {
-            const cabNumDoc = buildCabNumDoc(
-                fechaSoloNumeros,
-                compraTypeDigit,
-                albaranSequence
+        barcos.forEach((barco) => {
+          barco.lineas.forEach((linea) => {
+            const producto = productos.find(
+              (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
             );
-            const cabNumDocVenta = buildCabNumDoc(
-                fechaSoloNumeros,
-                LONJA_CABNUMDOC_TYPES.VENTA,
-                ventaAlbaranSequence
-            );
-            const importeBase = getImporteTotal(barco.lineas); // base = Σ(kilos*precio)
-            const codCliente = barco.armador?.codA3erpCliente;
-
-            // Para ALBARANESVENTA necesitamos el código de cliente (si está vacío, abortamos).
-            if (codCliente === undefined || codCliente === null || String(codCliente).trim() === '') {
-                throw new Error(`Falta CABCODCLI (cod cliente) para el barco "${barco.nombre}"`);
-            }
-
-            // Hoja ALBARANESVENTA: 1 albarán por cada "venta directa" (grupo de barco) con 2 líneas
-            ventaRows.push({
-                CABSERIE: CABSERIE,
-                CABNUMDOC: cabNumDocVenta,
-                CABFECHA: fecha,
-                CABCODCLI: codCliente,
-                CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
-                LINCODART: 10136, // Suplido lonja (iva exento - SUPLIDO)
-                LINDESCLIN: 'Suplido lonja',
-                LINBULTOS: 1,
-                LINUNIDADES: 1,
-                LINPRCMONEDA: importeBase * 0.015,
-                LINTIPIVA: 'SUPLIDOS',
+            processedRows.push({
+              CABSERIE: CABSERIE,
+              CABNUMDOC: cabNumDoc,
+              CABFECHA: fecha,
+              CABCODPRO: vendiduria.codA3erp,
+              CABREFERENCIA: `LONJA - ${fecha} - ${vendiduria.nombre} ${tradeLetter}`,
+              LINCODART: producto?.codA3erp || '',
+              LINDESCLIN: linea.especie,
+              LINUNIDADES: parseDecimalValue(linea.kilos),
+              LINPRCMONEDA: parseDecimalValue(linea.precio),
+              LINTIPIVA: 'RED10',
             });
-            ventaRows.push({
-                CABSERIE: CABSERIE,
-                CABNUMDOC: cabNumDocVenta,
-                CABFECHA: fecha,
-                CABCODCLI: codCliente,
-                CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
-                LINCODART: 9998, // Gasto gestión (iva normal 21%)
-                LINDESCLIN: 'Gasto gestion',
-                LINBULTOS: 1,
-                LINUNIDADES: 1,
-                LINPRCMONEDA: importeBase * 0.01,
-                LINTIPIVA: 'ORD21',
-            });
-            ventaAlbaranSequence++;
-
-            barco.lineas.forEach(linea => {
-                const producto = productos.find(
-                    (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
-                );
-                processedRows.push({
-                    CABSERIE: CABSERIE,
-                    CABNUMDOC: cabNumDoc,
-                    CABFECHA: fecha,
-                    CABCODPRO: barco.armador.codA3erp,
-                    CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
-                    LINCODART: producto?.codA3erp || '',
-                    LINDESCLIN: linea.especie,
-                    LINUNIDADES: parseDecimalValue(linea.kilos),
-                    LINPRCMONEDA: parseDecimalValue(linea.precio),
-                    LINTIPIVA: 'RED10',
-                });
-            });
-            albaranSequence++;
+            importeTotalVendiduria += calculateImporteFromLinea(linea);
+          });
         });
 
-        if (tradeType === 'SUBASTA') {
-            const ventasPorVendiduria = groupVentasByVendiduria(ventasVendiduriasArray);
+        processedRows.push({
+          CABSERIE: CABSERIE,
+          CABNUMDOC: cabNumDoc,
+          CABFECHA: fecha,
+          CABCODPRO: lonjaDeIsla.codA3erp,
+          CABREFERENCIA: `LONJA - ${fecha} - ${vendiduria.nombre} ${tradeLetter}`,
+          LINCODART: 9999,
+          LINDESCLIN: 'Gastos de Lonja y OP',
+          LINUNIDADES: 1,
+          LINPRCMONEDA: (importeTotalVendiduria * porcentajeServiciosVendiduria) / 100,
+          LINTIPIVA: 'RED10',
+        });
+        albaranSequence++;
+      });
+    } else {
+      ventasVendiduriasArray.forEach((barco) => {
+        const cabNumDoc = buildCabNumDoc(fechaSoloNumeros, compraTypeDigit, albaranSequence);
+        barco.lineas.forEach((linea) => {
+          const producto = productos.find(
+            (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
+          );
+          processedRows.push({
+            CABSERIE: CABSERIE,
+            CABNUMDOC: cabNumDoc,
+            CABFECHA: fecha,
+            CABCODPRO: barco.vendiduria.codA3erp,
+            CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre} ${tradeLetter}`,
+            LINCODART: producto?.codA3erp || '',
+            LINDESCLIN: linea.especie,
+            LINUNIDADES: parseDecimalValue(linea.kilos),
+            LINPRCMONEDA: parseDecimalValue(linea.precio),
+            LINTIPIVA: 'RED10',
+          });
+        });
 
-            Object.values(ventasPorVendiduria).forEach(({ vendiduria, barcos }) => {
-                const cabNumDoc = buildCabNumDoc(
-                    fechaSoloNumeros,
-                    compraTypeDigit,
-                    albaranSequence
-                );
-                let importeTotalVendiduria = 0;
+        const importeTotal = getImporteTotal(barco.lineas);
 
-                barcos.forEach((barco) => {
-                    barco.lineas.forEach((linea) => {
-                        const producto = productos.find(
-                            (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
-                        );
-                        processedRows.push({
-                            CABSERIE: CABSERIE,
-                            CABNUMDOC: cabNumDoc,
-                            CABFECHA: fecha,
-                            CABCODPRO: vendiduria.codA3erp,
-                            CABREFERENCIA: `LONJA - ${fecha} - ${vendiduria.nombre} ${tradeLetter}`,
-                            LINCODART: producto?.codA3erp || '',
-                            LINDESCLIN: linea.especie,
-                            LINUNIDADES: parseDecimalValue(linea.kilos),
-                            LINPRCMONEDA: parseDecimalValue(linea.precio),
-                            LINTIPIVA: 'RED10',
-                        });
-                        importeTotalVendiduria += calculateImporteFromLinea(linea);
-                    });
-                });
+        processedRows.push({
+          CABSERIE: CABSERIE,
+          CABNUMDOC: cabNumDoc,
+          CABFECHA: fecha,
+          CABCODPRO: lonjaDeIsla.codA3erp,
+          CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre} ${tradeLetter}`,
+          LINCODART: 9999,
+          LINDESCLIN: 'Gastos de Lonja y OP',
+          LINUNIDADES: 1,
+          LINPRCMONEDA: (importeTotal * porcentajeServiciosVendiduria) / 100,
+          LINTIPIVA: 'RED10',
+        });
+        albaranSequence++;
+      });
+    }
 
-                processedRows.push({
-                    CABSERIE: CABSERIE,
-                    CABNUMDOC: cabNumDoc,
-                    CABFECHA: fecha,
-                    CABCODPRO: lonjaDeIsla.codA3erp,
-                    CABREFERENCIA: `LONJA - ${fecha} - ${vendiduria.nombre} ${tradeLetter}`,
-                    LINCODART: 9999,
-                    LINDESCLIN: 'Gastos de Lonja y OP',
-                    LINUNIDADES: 1,
-                    LINPRCMONEDA: (importeTotalVendiduria * porcentajeServiciosVendiduria) / 100,
-                    LINTIPIVA: 'RED10',
-                });
-                albaranSequence++;
-            });
-        } else {
-            ventasVendiduriasArray.forEach(barco => {
-                const cabNumDoc = buildCabNumDoc(
-                    fechaSoloNumeros,
-                    compraTypeDigit,
-                    albaranSequence
-                );
-                barco.lineas.forEach(linea => {
-                    const producto = productos.find(
-                        (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
-                    );
-                    processedRows.push({
-                        CABSERIE: CABSERIE,
-                        CABNUMDOC: cabNumDoc,
-                        CABFECHA: fecha,
-                        CABCODPRO: barco.vendiduria.codA3erp,
-                        CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre} ${tradeLetter}`,
-                        LINCODART: producto?.codA3erp || '',
-                        LINDESCLIN: linea.especie,
-                        LINUNIDADES: parseDecimalValue(linea.kilos),
-                        LINPRCMONEDA: parseDecimalValue(linea.precio),
-                        LINTIPIVA: 'RED10',
-                    });
-                });
+    if (shouldGenerateServicios) {
+      const cabNumDocServicios = buildCabNumDoc(
+        fechaSoloNumeros,
+        serviciosTypeDigit,
+        albaranSequence
+      );
+      servicios.forEach((line) => {
+        processedRows.push({
+          CABSERIE: CABSERIE,
+          CABNUMDOC: cabNumDocServicios,
+          CABFECHA: fecha,
+          CABCODPRO: lonjaDeIsla.codA3erp,
+          CABREFERENCIA: `LONJA - ${fecha} - SERVICIOS ${tradeLetter}`,
+          LINCODART: 9999,
+          LINDESCLIN: line.descripcion,
+          LINUNIDADES: line.unidades,
+          LINPRCMONEDA: line.precio,
+          LINTIPIVA: 'RED10',
+        });
+      });
 
-                const importeTotal = getImporteTotal(barco.lineas);
+      albaranSequence++;
+    }
 
-                processedRows.push({
-                    CABSERIE: CABSERIE,
-                    CABNUMDOC: cabNumDoc,
-                    CABFECHA: fecha,
-                    CABCODPRO: lonjaDeIsla.codA3erp,
-                    CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre} ${tradeLetter}`,
-                    LINCODART: 9999,
-                    LINDESCLIN: 'Gastos de Lonja y OP',
-                    LINUNIDADES: 1,
-                    LINPRCMONEDA: (importeTotal * porcentajeServiciosVendiduria) / 100,
-                    LINTIPIVA: 'RED10',
-                });
-                albaranSequence++;
-            });
+    const yellowFill = { fill: { fgColor: { rgb: 'FFFF00' } } };
+    const headers = Object.keys(processedRows[0] || {});
+    const lincodartCol = headers.indexOf('LINCODART');
+
+    const worksheet = XLSX.utils.json_to_sheet(processedRows);
+
+    if (lincodartCol >= 0) {
+      for (let r = 0; r < processedRows.length; r++) {
+        if (!processedRows[r].LINCODART && processedRows[r].LINCODART !== 0) {
+          const cellRef = XLSX.utils.encode_cell({ r: r + 1, c: lincodartCol });
+          if (!worksheet[cellRef]) worksheet[cellRef] = { v: '', t: 's' };
+          worksheet[cellRef].s = yellowFill;
         }
+      }
+    }
 
-        if (shouldGenerateServicios) {
-            const cabNumDocServicios = buildCabNumDoc(
-                fechaSoloNumeros,
-                serviciosTypeDigit,
-                albaranSequence
-            );
-            servicios.forEach(line => {
-                processedRows.push({
-                    CABSERIE: CABSERIE,
-                    CABNUMDOC: cabNumDocServicios,
-                    CABFECHA: fecha,
-                    CABCODPRO: lonjaDeIsla.codA3erp,
-                    CABREFERENCIA: `LONJA - ${fecha} - SERVICIOS ${tradeLetter}`,
-                    LINCODART: 9999,
-                    LINDESCLIN: line.descripcion,
-                    LINUNIDADES: line.unidades,
-                    LINPRCMONEDA: line.precio,
-                    LINTIPIVA: 'RED10',
-                });
-            });
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'ALBARANESCOMPRA');
 
-            albaranSequence++;
-        }
+    if (ventaRows.length > 0) {
+      const worksheetVenta = XLSX.utils.json_to_sheet(ventaRows);
+      XLSX.utils.book_append_sheet(workbook, worksheetVenta, 'ALBARANESVENTA');
+    }
 
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([excelBuffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+    saveAs(blob, `ALBARANES_A3ERP_LONJA_ISLA_${fecha}.xlsx`);
+  };
 
-        const yellowFill = { fill: { fgColor: { rgb: "FFFF00" } } };
-        const headers = Object.keys(processedRows[0] || {});
-        const lincodartCol = headers.indexOf('LINCODART');
+  return (
+    <DialogContent size="4xl" className="flex max-h-[90vh] flex-col">
+      <DialogHeader>
+        <DialogTitle>Exportar Datos de Factura</DialogTitle>
+        <DialogDescription>
+          Seleccione el software de destino y verifique los datos antes de exportar.
+        </DialogDescription>
+      </DialogHeader>
 
-        const worksheet = XLSX.utils.json_to_sheet(processedRows);
+      <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto py-4">
+        <div className="grid grid-cols-2 items-center gap-4">
+          <div className="flex flex-col gap-1">
+            <label htmlFor="software" className="font-medium">
+              Software
+            </label>
+            <Select value={software} onValueChange={setSoftware}>
+              <SelectTrigger id="software" className="col-span-3">
+                <SelectValue placeholder="Seleccione software de destino" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="A3ERP">A3ERP</SelectItem>
+                <SelectItem value="Facilcom">Facilcom</SelectItem>
+                <SelectItem value="Otros">Otros</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <div className="border-border bg-muted/30 flex items-start gap-3 rounded-md border p-3">
+          <Checkbox
+            id="tasa-pesca-repercusion-lonja"
+            checked={applyFullTasaPescaRepercusion}
+            onCheckedChange={(v) => setApplyFullTasaPescaRepercusion(v === true)}
+          />
+          <div className="grid gap-1.5 leading-none">
+            <Label
+              htmlFor="tasa-pesca-repercusion-lonja"
+              className="cursor-pointer text-sm font-medium"
+            >
+              Repercutir tasa pesca fresca (T4) en gastos exportados
+            </Label>
+            <p className="text-muted-foreground text-xs">
+              Desmarcar durante exención (p. ej. decreto-ley): vendiduría/subasta 1,5 %, servicios
+              contrato sin Tarifa G-4 ni recargo. El suplido lonja no cambia.
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-col gap-1">
+          <div className="flex w-fit items-center gap-1 rounded-md border border-white bg-white/30 p-1 px-2 text-white">
+            <span className="text-xs">
+              Tipo documento: {tradeType === 'SUBASTA' ? 'Subasta' : 'Contrato'}
+            </span>
+          </div>
+          {errors.length > 0 && (
+            <ul className="flex list-inside list-disc flex-col gap-2 text-red-500">
+              {errors.map((error, index) => (
+                <li key={index} className="flex gap-1 text-xs">
+                  <CircleX className="h-4 w-4" />
+                  {error}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
 
-        if (lincodartCol >= 0) {
-            for (let r = 0; r < processedRows.length; r++) {
-                if (!processedRows[r].LINCODART && processedRows[r].LINCODART !== 0) {
-                    const cellRef = XLSX.utils.encode_cell({ r: r + 1, c: lincodartCol });
-                    if (!worksheet[cellRef]) worksheet[cellRef] = { v: '', t: 's' };
-                    worksheet[cellRef].s = yellowFill;
-                }
-            }
-        }
-
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'ALBARANESCOMPRA');
-
-        if (ventaRows.length > 0) {
-            const worksheetVenta = XLSX.utils.json_to_sheet(ventaRows);
-            XLSX.utils.book_append_sheet(workbook, worksheetVenta, 'ALBARANESVENTA');
-        }
-
-        const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-        const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-        saveAs(blob, `ALBARANES_A3ERP_LONJA_ISLA_${fecha}.xlsx`);
-    };
-
-    return (
-        <DialogContent size="4xl" className="max-h-[90vh] flex flex-col">
-            <DialogHeader>
-                <DialogTitle>Exportar Datos de Factura</DialogTitle>
-                <DialogDescription>
-                    Seleccione el software de destino y verifique los datos antes de exportar.
-                </DialogDescription>
-            </DialogHeader>
-
-            <div className="grid gap-4 py-4 overflow-y-auto flex-1 min-h-0">
-                <div className="grid grid-cols-2 items-center gap-4">
-                    <div className='flex flex-col gap-1'>
-                        <label htmlFor="software" className=" font-medium">
-                            Software
-                        </label>
-                        <Select value={software} onValueChange={setSoftware}>
-                            <SelectTrigger id="software" className="col-span-3">
-                                <SelectValue placeholder="Seleccione software de destino" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="A3ERP">A3ERP</SelectItem>
-                                <SelectItem value="Facilcom">Facilcom</SelectItem>
-                                <SelectItem value="Otros">Otros</SelectItem>
-                            </SelectContent>
-                        </Select>
+        <div className="mt-2 space-y-4">
+          <LonjaDeIslaUnresolvedLinesCard unresolvedLines={unresolvedLines} />
+          <LonjaDeIslaUnifiedExportTable
+            ventasVendidurias={ventasVendidurias}
+            sourceVendidurias={vendidurias}
+            ventasDirectas={ventasDirectas}
+            servicios={servicios}
+            porcentajeServiciosVendiduria={porcentajeServiciosVendiduria}
+          />
+          <LonjaDeIslaVentaDirectaCard
+            ventasDirectasArray={ventasDirectasArray}
+            servicios={servicios}
+          />
+          {linkedSummary.length > 0 && (
+            <Card>
+              <CardHeader className="pb-2">
+                <div className="flex items-start justify-between">
+                  <CardTitle>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-lg">Enlaces de compra/recepción</span>
+                      <span className="text-muted-foreground text-sm">
+                        {groupedLinkedSummary.length} Compras{' '}
+                        {groupedLinkedSummary.length !== linkedSummary.length
+                          ? `(${linkedSummary.length} originales agrupadas)`
+                          : ''}
+                      </span>
                     </div>
+                  </CardTitle>
                 </div>
-                <div className="flex items-start gap-3 rounded-md border border-border bg-muted/30 p-3">
-                    <Checkbox
-                        id="tasa-pesca-repercusion-lonja"
-                        checked={applyFullTasaPescaRepercusion}
-                        onCheckedChange={(v) => setApplyFullTasaPescaRepercusion(v === true)}
-                    />
-                    <div className="grid gap-1.5 leading-none">
-                        <Label htmlFor="tasa-pesca-repercusion-lonja" className="text-sm font-medium cursor-pointer">
-                            Repercutir tasa pesca fresca (T4) en gastos exportados
-                        </Label>
-                        <p className="text-xs text-muted-foreground">
-                            Desmarcar durante exención (p. ej. decreto-ley): vendiduría/subasta 1,5 %, servicios contrato sin Tarifa G-4 ni recargo. El suplido lonja no cambia.
-                        </p>
-                    </div>
-                </div>
-                <div className='flex flex-col gap-1'>
-                    <div className="flex items-center gap-1 p-1 text-white bg-white/30 w-fit px-2 border border-white rounded-md">
-                        <span className="text-xs">
-                            Tipo documento: {tradeType === 'SUBASTA' ? 'Subasta' : 'Contrato'}
-                        </span>
-                    </div>
-                    {errors.length > 0 && (
-                        <ul className="list-disc list-inside text-red-500 flex flex-col gap-2">
-                            {errors.map((error, index) => (
-                                <li key={index} className="text-xs flex gap-1">
-                                    <CircleX className="h-4 w-4" />
-                                    {error}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
+              </CardHeader>
+              <CardContent>
+                {isValidating && (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    <span className="text-muted-foreground text-sm">Validando recepciones...</span>
+                  </div>
+                )}
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12">
+                        <Checkbox
+                          checked={
+                            linkedSummary.filter((l, idx) => {
+                              if (l.error) return false;
+                              const validation = getValidationStatus(l);
+                              return validation?.valid && validation?.canUpdate;
+                            }).length > 0 &&
+                            selectedLinks.length ===
+                              linkedSummary.filter((l, idx) => {
+                                if (l.error) return false;
+                                const validation = getValidationStatus(l);
+                                return validation?.valid && validation?.canUpdate;
+                              }).length
+                          }
+                          onCheckedChange={handleToggleAll}
+                          disabled={isValidating}
+                        />
+                      </TableHead>
+                      <TableHead>Barco</TableHead>
+                      <TableHead>Fecha</TableHead>
+                      <TableHead className="text-right">Peso Neto</TableHead>
+                      <TableHead className="text-right">Importe</TableHead>
+                      <TableHead>Estado</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {linkedSummary.map((linea, index) => {
+                      const validation = getValidationStatus(linea);
+                      const isDisabled = linea.error || (validation && !validation.valid);
+                      const canSelect = !linea.error && validation?.valid && validation?.canUpdate;
 
-                <div className="space-y-4 mt-2">
-                    <LonjaDeIslaUnresolvedLinesCard unresolvedLines={unresolvedLines} />
-                    <LonjaDeIslaUnifiedExportTable
-                        ventasVendidurias={ventasVendidurias}
-                        sourceVendidurias={vendidurias}
-                        ventasDirectas={ventasDirectas}
-                        servicios={servicios}
-                        porcentajeServiciosVendiduria={porcentajeServiciosVendiduria}
-                    />
-                    <LonjaDeIslaVentaDirectaCard
-                        ventasDirectasArray={ventasDirectasArray}
-                        servicios={servicios}
-                    />
-                    {linkedSummary.length > 0 && (
-                        <Card>
-                            <CardHeader className="pb-2">
-                                <div className="flex justify-between items-start">
-                                    <CardTitle>
-                                        <div className='flex flex-col gap-1'>
-                                            <span className="text-lg">Enlaces de compra/recepción</span>
-                                            <span className="text-sm text-muted-foreground">
-                                                {groupedLinkedSummary.length} Compras {groupedLinkedSummary.length !== linkedSummary.length ? `(${linkedSummary.length} originales agrupadas)` : ''}
-                                            </span>
-                                        </div>
-                                    </CardTitle>
+                      return (
+                        <TableRow key={index} className="hover:bg-muted/50">
+                          <TableCell>
+                            <Checkbox
+                              checked={selectedLinks.includes(index)}
+                              disabled={isDisabled || isValidating}
+                              onCheckedChange={() => handleToggleLink(index)}
+                            />
+                          </TableCell>
+                          <TableCell className="font-medium">{linea.barcoNombre}</TableCell>
+                          <TableCell className="font-medium">{linea.date}</TableCell>
+                          <TableCell className="text-right">
+                            {formatDecimalWeight(linea.declaredTotalNetWeight)}
+                          </TableCell>
+                          <TableCell className="text-right font-medium">
+                            {formatDecimalCurrency(linea.declaredTotalAmount)}
+                          </TableCell>
+                          <TableCell>
+                            {linea.error ? (
+                              <div className="flex items-center gap-2 text-red-500">
+                                <X className="h-4 w-4" />
+                                <span className="text-xs">No enlazable</span>
+                              </div>
+                            ) : isValidating ? (
+                              <div className="text-muted-foreground flex items-center gap-2">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <span className="text-xs">Validando...</span>
+                              </div>
+                            ) : validation ? (
+                              validation.valid && validation.canUpdate ? (
+                                <div className="flex items-center gap-2 text-green-500">
+                                  <Check className="h-4 w-4" />
+                                  <span className="text-xs">
+                                    {validation.hasChanges
+                                      ? 'Listo para actualizar'
+                                      : 'Sin cambios'}
+                                  </span>
                                 </div>
-                            </CardHeader>
-                            <CardContent>
-                                {isValidating && (
-                                    <div className="flex items-center justify-center py-4">
-                                        <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                                        <span className="text-sm text-muted-foreground">Validando recepciones...</span>
-                                    </div>
-                                )}
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead className="w-12">
-                                                <Checkbox 
-                                                    checked={
-                                                        linkedSummary.filter((l, idx) => {
-                                                            if (l.error) return false;
-                                                            const validation = getValidationStatus(l);
-                                                            return validation?.valid && validation?.canUpdate;
-                                                        }).length > 0 &&
-                                                        selectedLinks.length === linkedSummary.filter((l, idx) => {
-                                                            if (l.error) return false;
-                                                            const validation = getValidationStatus(l);
-                                                            return validation?.valid && validation?.canUpdate;
-                                                        }).length
-                                                    }
-                                                    onCheckedChange={handleToggleAll}
-                                                    disabled={isValidating}
-                                                />
-                                            </TableHead>
-                                            <TableHead>Barco</TableHead>
-                                            <TableHead>Fecha</TableHead>
-                                            <TableHead className="text-right">Peso Neto</TableHead>
-                                            <TableHead className="text-right">Importe</TableHead>
-                                            <TableHead>Estado</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {linkedSummary.map((linea, index) => {
-                                            const validation = getValidationStatus(linea);
-                                            const isDisabled = linea.error || (validation && !validation.valid);
-                                            const canSelect = !linea.error && validation?.valid && validation?.canUpdate;
-                                            
-                                            return (
-                                                <TableRow key={index} className="hover:bg-muted/50">
-                                                    <TableCell>
-                                                        <Checkbox 
-                                                            checked={selectedLinks.includes(index)}
-                                                            disabled={isDisabled || isValidating}
-                                                            onCheckedChange={() => handleToggleLink(index)}
-                                                        />
-                                                    </TableCell>
-                                                    <TableCell className="font-medium">{linea.barcoNombre}</TableCell>
-                                                    <TableCell className="font-medium">{linea.date}</TableCell>
-                                                    <TableCell className="text-right">{formatDecimalWeight(linea.declaredTotalNetWeight)}</TableCell>
-                                                    <TableCell className="text-right font-medium">
-                                                        {formatDecimalCurrency(linea.declaredTotalAmount)}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {linea.error ? (
-                                                            <div className="flex items-center gap-2 text-red-500">
-                                                                <X className="h-4 w-4" />
-                                                                <span className="text-xs">No enlazable</span>
-                                                            </div>
-                                                        ) : isValidating ? (
-                                                            <div className="flex items-center gap-2 text-muted-foreground">
-                                                                <Loader2 className="h-4 w-4 animate-spin" />
-                                                                <span className="text-xs">Validando...</span>
-                                                            </div>
-                                                        ) : validation ? (
-                                                            validation.valid && validation.canUpdate ? (
-                                                                <div className="flex items-center gap-2 text-green-500">
-                                                                    <Check className="h-4 w-4" />
-                                                                    <span className="text-xs">
-                                                                        {validation.hasChanges ? 'Listo para actualizar' : 'Sin cambios'}
-                                                                    </span>
-                                                                </div>
-                                                            ) : (
-                                                                <div className="flex items-start gap-2 text-red-500">
-                                                                    <X className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                                                                    <div className="flex flex-col gap-0.5">
-                                                                        <span className="text-xs font-medium">No se puede enlazar</span>
-                                                                        {validation.message && (
-                                                                            <span 
-                                                                                className="text-xs text-red-400 cursor-help" 
-                                                                                title={validation.tooltip || validation.message}
-                                                                            >
-                                                                                {validation.message}
-                                                                            </span>
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-                                                            )
-                                                        ) : (
-                                                            <div className="flex items-center gap-2 text-muted-foreground">
-                                                                <span className="text-xs">Pendiente</span>
-                                                            </div>
-                                                        )}
-                                                    </TableCell>
-                                                </TableRow>
-                                            );
-                                        })}
-                                    </TableBody>
-                                </Table>
-                            </CardContent>
-                            <div className="flex justify-between items-center p-2 mb-2">
-                                <span className="text-sm text-muted-foreground">
-                                    {selectedLinks.length} de {groupedLinkedSummary.filter((l, idx) => {
-                                        if (l.error) return false;
-                                        const validation = getValidationStatus(l);
-                                        return validation?.valid && validation?.canUpdate;
-                                    }).length} seleccionadas
-                                </span>
-                                <Button 
-                                    variant="" 
-                                    className="" 
-                                    onClick={() => handleOnClickLinkPurchases()}
-                                    disabled={selectedLinks.length === 0 || isValidating}
-                                >
-                                    <Link className="h-4 w-4" />
-                                    Enlazar Compras ({selectedLinks.length})
-                                </Button>
-                            </div>
-
-                        </Card>
-                    )}
-
-                </div>
-            </div>
-
-            <DialogFooter>
-                <DialogTrigger asChild>
-                    <Button variant="outline">
-                        Cancelar
-                    </Button>
-                </DialogTrigger>
-                <Button className="gap-2" onClick={() => handleOnClickExport()}>
-                    <FileSpreadsheet className="h-4 w-4" />
-                    Exportar a A3ERP
+                              ) : (
+                                <div className="flex items-start gap-2 text-red-500">
+                                  <X className="mt-0.5 h-4 w-4 flex-shrink-0" />
+                                  <div className="flex flex-col gap-0.5">
+                                    <span className="text-xs font-medium">No se puede enlazar</span>
+                                    {validation.message && (
+                                      <span
+                                        className="cursor-help text-xs text-red-400"
+                                        title={validation.tooltip || validation.message}
+                                      >
+                                        {validation.message}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              )
+                            ) : (
+                              <div className="text-muted-foreground flex items-center gap-2">
+                                <span className="text-xs">Pendiente</span>
+                              </div>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </CardContent>
+              <div className="mb-2 flex items-center justify-between p-2">
+                <span className="text-muted-foreground text-sm">
+                  {selectedLinks.length} de{' '}
+                  {
+                    groupedLinkedSummary.filter((l, idx) => {
+                      if (l.error) return false;
+                      const validation = getValidationStatus(l);
+                      return validation?.valid && validation?.canUpdate;
+                    }).length
+                  }{' '}
+                  seleccionadas
+                </span>
+                <Button
+                  variant=""
+                  className=""
+                  onClick={() => handleOnClickLinkPurchases()}
+                  disabled={selectedLinks.length === 0 || isValidating}
+                >
+                  <Link className="h-4 w-4" />
+                  Enlazar Compras ({selectedLinks.length})
                 </Button>
-            </DialogFooter>
-        </DialogContent>
-    )
-}
+              </div>
+            </Card>
+          )}
+        </div>
+      </div>
 
-export default ExportModal
+      <DialogFooter>
+        <DialogTrigger asChild>
+          <Button variant="outline">Cancelar</Button>
+        </DialogTrigger>
+        <Button className="gap-2" onClick={() => handleOnClickExport()}>
+          <FileSpreadsheet className="h-4 w-4" />
+          Exportar a A3ERP
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  );
+};
+
+export default ExportModal;

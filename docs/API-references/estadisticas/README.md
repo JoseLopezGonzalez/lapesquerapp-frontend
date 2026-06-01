@@ -22,6 +22,7 @@ GET /api/v2/statistics/orders/total-net-weight
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -29,19 +30,19 @@ Authorization: Bearer {access_token}
 
 #### Query Parameters (Opcionales)
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| startDate | date | Fecha de inicio (YYYY-MM-DD) |
-| endDate | date | Fecha de fin (YYYY-MM-DD) |
-| status | string | Estado del pedido |
-| customer_id | integer | ID del cliente |
+| Parámetro   | Tipo    | Descripción                  |
+| ----------- | ------- | ---------------------------- |
+| startDate   | date    | Fecha de inicio (YYYY-MM-DD) |
+| endDate     | date    | Fecha de fin (YYYY-MM-DD)    |
+| status      | string  | Estado del pedido            |
+| customer_id | integer | ID del cliente               |
 
 #### Response Exitosa (200)
 
 ```json
 {
   "data": {
-    "total_net_weight": 15000.50,
+    "total_net_weight": 15000.5,
     "count": 25,
     "period": {
       "start": "2024-01-01",
@@ -68,9 +69,9 @@ Mismos que [Peso Neto Total](#peso-neto-total-de-pedidos).
 ```json
 {
   "data": {
-    "total_amount": 450000.00,
+    "total_amount": 450000.0,
     "count": 25,
-    "average_amount": 18000.00,
+    "average_amount": 18000.0,
     "period": {
       "start": "2024-01-01",
       "end": "2024-01-31"
@@ -89,11 +90,11 @@ GET /api/v2/statistics/orders/ranking
 
 #### Query Parameters (Opcionales)
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| limit | integer | Número de resultados (default: 10) |
-| sortBy | string | Campo de ordenamiento (`amount`, `weight`, `count`) |
-| order | string | Orden (`asc`, `desc`) |
+| Parámetro | Tipo    | Descripción                                         |
+| --------- | ------- | --------------------------------------------------- |
+| limit     | integer | Número de resultados (default: 10)                  |
+| sortBy    | string  | Campo de ordenamiento (`amount`, `weight`, `count`) |
+| order     | string  | Orden (`asc`, `desc`)                               |
 
 #### Response Exitosa (200)
 
@@ -103,16 +104,16 @@ GET /api/v2/statistics/orders/ranking
     {
       "customer_id": 1,
       "customer_name": "Cliente A",
-      "total_amount": 150000.00,
-      "total_weight": 5000.00,
+      "total_amount": 150000.0,
+      "total_weight": 5000.0,
       "order_count": 10,
       "rank": 1
     },
     {
       "customer_id": 2,
       "customer_name": "Cliente B",
-      "total_amount": 120000.00,
-      "total_weight": 4000.00,
+      "total_amount": 120000.0,
+      "total_weight": 4000.0,
       "order_count": 8,
       "rank": 2
     }
@@ -130,10 +131,10 @@ GET /api/v2/orders/sales-by-salesperson
 
 #### Query Parameters (Opcionales)
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
+| Parámetro | Tipo | Descripción     |
+| --------- | ---- | --------------- |
 | startDate | date | Fecha de inicio |
-| endDate | date | Fecha de fin |
+| endDate   | date | Fecha de fin    |
 
 #### Response Exitosa (200)
 
@@ -143,8 +144,8 @@ GET /api/v2/orders/sales-by-salesperson
     {
       "salesperson_id": 1,
       "salesperson_name": "Vendedor A",
-      "total_amount": 200000.00,
-      "total_weight": 6000.00,
+      "total_amount": 200000.0,
+      "total_weight": 6000.0,
       "order_count": 15
     }
   ]
@@ -161,11 +162,11 @@ GET /api/v2/orders/sales-chart-data
 
 #### Query Parameters (Opcionales)
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| startDate | date | Fecha de inicio |
-| endDate | date | Fecha de fin |
-| groupBy | string | Agrupación (`day`, `week`, `month`) |
+| Parámetro | Tipo   | Descripción                         |
+| --------- | ------ | ----------------------------------- |
+| startDate | date   | Fecha de inicio                     |
+| endDate   | date   | Fecha de fin                        |
+| groupBy   | string | Agrupación (`day`, `week`, `month`) |
 
 #### Response Exitosa (200)
 
@@ -174,20 +175,20 @@ GET /api/v2/orders/sales-chart-data
   "data": [
     {
       "period": "2024-01-01",
-      "amount": 15000.00,
-      "weight": 500.00,
+      "amount": 15000.0,
+      "weight": 500.0,
       "count": 5
     },
     {
       "period": "2024-01-02",
-      "amount": 18000.00,
-      "weight": 600.00,
+      "amount": 18000.0,
+      "weight": 600.0,
       "count": 6
     }
   ],
   "total": {
-    "amount": 33000.00,
-    "weight": 1100.00,
+    "amount": 33000.0,
+    "weight": 1100.0,
     "count": 11
   }
 }
@@ -210,7 +211,7 @@ GET /api/v2/orders/transport-chart-data
       "transport_id": 1,
       "transport_name": "Transporte A",
       "order_count": 20,
-      "total_weight": 8000.00
+      "total_weight": 8000.0
     }
   ]
 }
@@ -228,10 +229,10 @@ GET /api/v2/statistics/stock/total
 
 #### Query Parameters (Opcionales)
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| store_id | integer | ID del almacén |
-| species_id | integer | ID de especie |
+| Parámetro  | Tipo    | Descripción     |
+| ---------- | ------- | --------------- |
+| store_id   | integer | ID del almacén  |
+| species_id | integer | ID de especie   |
 | product_id | integer | ID del producto |
 
 #### Response Exitosa (200)
@@ -239,14 +240,14 @@ GET /api/v2/statistics/stock/total
 ```json
 {
   "data": {
-    "total_quantity": 50000.00,
+    "total_quantity": 50000.0,
     "total_boxes": 3500,
     "total_pallets": 500,
     "by_store": [
       {
         "store_id": 1,
         "store_name": "Almacén Principal",
-        "quantity": 30000.00,
+        "quantity": 30000.0,
         "boxes": 2000,
         "pallets": 300
       }
@@ -271,14 +272,14 @@ GET /api/v2/statistics/stock/total-by-species
     {
       "species_id": 1,
       "species_name": "Especie A",
-      "total_quantity": 25000.00,
+      "total_quantity": 25000.0,
       "total_boxes": 1500,
       "total_pallets": 250
     },
     {
       "species_id": 2,
       "species_name": "Especie B",
-      "total_quantity": 25000.00,
+      "total_quantity": 25000.0,
       "total_boxes": 2000,
       "total_pallets": 250
     }
@@ -296,10 +297,10 @@ GET /api/v2/stores/total-stock-by-products
 
 #### Query Parameters (Opcionales)
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| store_id | integer | ID del almacén |
-| species_id | integer | ID de especie |
+| Parámetro  | Tipo    | Descripción    |
+| ---------- | ------- | -------------- |
+| store_id   | integer | ID del almacén |
+| species_id | integer | ID de especie  |
 
 #### Response Exitosa (200)
 
@@ -309,13 +310,13 @@ GET /api/v2/stores/total-stock-by-products
     {
       "product_id": 1,
       "product_name": "Producto A",
-      "total_quantity": 10000.00,
+      "total_quantity": 10000.0,
       "total_boxes": 500,
       "stores": [
         {
           "store_id": 1,
           "store_name": "Almacén Principal",
-          "quantity": 7000.00,
+          "quantity": 7000.0,
           "boxes": 350
         }
       ]
@@ -336,11 +337,11 @@ GET /api/v2/raw-material-receptions/reception-chart-data
 
 #### Query Parameters (Opcionales)
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| startDate | date | Fecha de inicio |
-| endDate | date | Fecha de fin |
-| groupBy | string | Agrupación (`day`, `week`, `month`) |
+| Parámetro | Tipo   | Descripción                         |
+| --------- | ------ | ----------------------------------- |
+| startDate | date   | Fecha de inicio                     |
+| endDate   | date   | Fecha de fin                        |
+| groupBy   | string | Agrupación (`day`, `week`, `month`) |
 
 #### Response Exitosa (200)
 
@@ -350,14 +351,14 @@ GET /api/v2/raw-material-receptions/reception-chart-data
     {
       "period": "2024-01-01",
       "count": 5,
-      "total_weight": 2000.00,
-      "total_amount": 60000.00
+      "total_weight": 2000.0,
+      "total_amount": 60000.0
     }
   ],
   "total": {
     "count": 150,
-    "weight": 60000.00,
-    "amount": 1800000.00
+    "weight": 60000.0,
+    "amount": 1800000.0
   }
 }
 ```
@@ -384,14 +385,14 @@ Mismos que [Datos para Gráfico de Recepciones](#datos-para-gráfico-de-recepcio
     {
       "period": "2024-01-01",
       "count": 3,
-      "total_weight": 1500.00,
-      "total_amount": 45000.00
+      "total_weight": 1500.0,
+      "total_amount": 45000.0
     }
   ],
   "total": {
     "count": 90,
-    "weight": 45000.00,
-    "amount": 1350000.00
+    "weight": 45000.0,
+    "amount": 1350000.0
   }
 }
 ```
@@ -435,4 +436,3 @@ Authorization: Bearer {access_token}
 - Los valores numéricos pueden ser decimales
 - Las estadísticas pueden estar sujetas a caché para mejor rendimiento
 - Los parámetros de fecha son opcionales, pero recomendados para obtener resultados precisos
-

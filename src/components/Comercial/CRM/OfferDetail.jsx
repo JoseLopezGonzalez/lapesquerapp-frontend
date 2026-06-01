@@ -3,15 +3,45 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Check, Copy, FileDown, Mail, MessageSquare, MoreVertical, Pencil, ShoppingCart, X, Clock3 } from 'lucide-react';
+import {
+  Check,
+  Copy,
+  FileDown,
+  Mail,
+  MessageSquare,
+  MoreVertical,
+  Pencil,
+  ShoppingCart,
+  X,
+  Clock3,
+} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { useOffer, useOfferMutations } from '@/hooks/useOffers';
@@ -40,7 +70,8 @@ function ActionDialog({ open, onOpenChange, title, description, children, footer
 export default function OfferDetail({ offerId, embedded = false }) {
   const router = useRouter();
   const { data: offer, isLoading } = useOffer(offerId);
-  const { acceptOffer, rejectOffer, expireOffer, sendOffer, sendOfferEmail, createOrderFromOffer } = useOfferMutations();
+  const { acceptOffer, rejectOffer, expireOffer, sendOffer, sendOfferEmail, createOrderFromOffer } =
+    useOfferMutations();
   const [editOpen, setEditOpen] = useState(false);
   const [sendOpen, setSendOpen] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
@@ -68,7 +99,11 @@ export default function OfferDetail({ offerId, embedded = false }) {
     createOrderFromOffer.isPending;
 
   const incompleteLinesForOrder = (offer?.lines ?? []).filter(
-    (line) => !line.product?.id && !line.productId || !line.tax?.id && !line.taxId || line.boxes == null || line.boxes === ''
+    (line) =>
+      (!line.product?.id && !line.productId) ||
+      (!line.tax?.id && !line.taxId) ||
+      line.boxes == null ||
+      line.boxes === ''
   );
 
   const handleDownloadPdf = async () => {
@@ -129,7 +164,9 @@ export default function OfferDetail({ offerId, embedded = false }) {
 
   const handleCreateOrder = async () => {
     if (incompleteLinesForOrder.length > 0) {
-      notify.error({ title: 'Completa producto, impuesto y cajas en todas las líneas antes de crear el pedido' });
+      notify.error({
+        title: 'Completa producto, impuesto y cajas en todas las líneas antes de crear el pedido',
+      });
       return;
     }
     try {
@@ -144,8 +181,18 @@ export default function OfferDetail({ offerId, embedded = false }) {
             loadDate: orderPayload.loadDate,
             transport: orderPayload.transport ? Number(orderPayload.transport) : null,
             buyerReference: orderPayload.buyerReference || null,
-            emails: orderPayload.emails ? orderPayload.emails.split(',').map((value) => value.trim()).filter(Boolean) : [],
-            ccEmails: orderPayload.ccEmails ? orderPayload.ccEmails.split(',').map((value) => value.trim()).filter(Boolean) : [],
+            emails: orderPayload.emails
+              ? orderPayload.emails
+                  .split(',')
+                  .map((value) => value.trim())
+                  .filter(Boolean)
+              : [],
+            ccEmails: orderPayload.ccEmails
+              ? orderPayload.ccEmails
+                  .split(',')
+                  .map((value) => value.trim())
+                  .filter(Boolean)
+              : [],
             plannedProducts,
           },
         }),
@@ -171,7 +218,9 @@ export default function OfferDetail({ offerId, embedded = false }) {
       <Loader />
     </div>
   ) : !offer ? (
-    <div className="flex min-h-0 flex-1 items-center justify-center p-4 text-sm text-muted-foreground">No se ha encontrado la oferta.</div>
+    <div className="text-muted-foreground flex min-h-0 flex-1 items-center justify-center p-4 text-sm">
+      No se ha encontrado la oferta.
+    </div>
   ) : (
     <>
       <CardHeader className="w-full min-w-0">
@@ -179,14 +228,28 @@ export default function OfferDetail({ offerId, embedded = false }) {
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
               <CardTitle className="text-2xl">Oferta #{offer.id}</CardTitle>
-              <StatusPill label={offerStatusLabels[offer.status] ?? offer.status} status={offer.status} />
+              <StatusPill
+                label={offerStatusLabels[offer.status] ?? offer.status}
+                status={offer.status}
+              />
             </div>
-            <p className="text-sm text-muted-foreground">
-              {offer.prospect?.companyName ?? offer.customer?.name ?? 'Sin destinatario'} · {offer.validUntil ? `Válida hasta ${formatDateValue(offer.validUntil)}` : 'Sin fecha de validez'}
+            <p className="text-muted-foreground text-sm">
+              {offer.prospect?.companyName ?? offer.customer?.name ?? 'Sin destinatario'} ·{' '}
+              {offer.validUntil
+                ? `Válida hasta ${formatDateValue(offer.validUntil)}`
+                : 'Sin fecha de validez'}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            {offer.status === 'draft' && <Button variant="outline" onClick={() => setEditOpen(true)} disabled={isMutatingOffer}>Editar</Button>}
+            {offer.status === 'draft' && (
+              <Button
+                variant="outline"
+                onClick={() => setEditOpen(true)}
+                disabled={isMutatingOffer}
+              >
+                Editar
+              </Button>
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -256,35 +319,44 @@ export default function OfferDetail({ offerId, embedded = false }) {
         </div>
       </CardHeader>
 
-      <CardContent className="flex w-full min-w-0 flex-1 min-h-0 flex-col py-4">
-        <Tabs defaultValue="offer" className="flex h-full w-full min-w-0 flex-1 min-h-0 flex-col overflow-hidden">
+      <CardContent className="flex min-h-0 w-full min-w-0 flex-1 flex-col py-4">
+        <Tabs
+          defaultValue="offer"
+          className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden"
+        >
           <TabsList>
             <TabsTrigger value="offer">Oferta</TabsTrigger>
             <TabsTrigger value="send">Envío</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="offer" className="flex h-full w-full min-w-0 min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
+          <TabsContent
+            value="offer"
+            className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col gap-4 overflow-y-auto"
+          >
             <div className="grid gap-4 md:grid-cols-2">
               <div className="rounded-xl border p-4">
-                <p className="text-sm text-muted-foreground">Incoterm</p>
+                <p className="text-muted-foreground text-sm">Incoterm</p>
                 <p className="font-medium">{offer.incoterm?.name ?? 'Sin incoterm'}</p>
               </div>
               <div className="rounded-xl border p-4">
-                <p className="text-sm text-muted-foreground">Forma de pago</p>
+                <p className="text-muted-foreground text-sm">Forma de pago</p>
                 <p className="font-medium">{offer.paymentTerm?.name ?? 'Sin forma de pago'}</p>
               </div>
             </div>
 
             <div className="rounded-xl border p-4">
-              <p className="text-sm text-muted-foreground mb-1">Notas</p>
+              <p className="text-muted-foreground mb-1 text-sm">Notas</p>
               <p className="whitespace-pre-wrap">{offer.notes || 'Sin notas'}</p>
             </div>
 
             {offer.status === 'accepted' && incompleteLinesForOrder.length > 0 && (
               <div className="rounded-xl border border-amber-300 bg-amber-50/70 p-4 dark:border-amber-900 dark:bg-amber-950/20">
-                <p className="font-medium text-amber-800 dark:text-amber-300">La oferta no está lista para crear pedido</p>
+                <p className="font-medium text-amber-800 dark:text-amber-300">
+                  La oferta no está lista para crear pedido
+                </p>
                 <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">
-                  Faltan `producto`, `impuesto` o `cajas` en {incompleteLinesForOrder.length} línea(s). Corrige la oferta antes de continuar.
+                  Faltan `producto`, `impuesto` o `cajas` en {incompleteLinesForOrder.length}{' '}
+                  línea(s). Corrige la oferta antes de continuar.
                 </p>
                 <div className="mt-3">
                   <Button variant="outline" onClick={() => setEditOpen(true)}>
@@ -299,7 +371,7 @@ export default function OfferDetail({ offerId, embedded = false }) {
                 <EmptyState
                   title="Sin líneas"
                   description="Esta oferta no tiene líneas visibles."
-                  className="h-full w-full border bg-muted/20 !min-h-0"
+                  className="bg-muted/20 h-full !min-h-0 w-full border"
                 />
               </div>
             ) : (
@@ -320,7 +392,10 @@ export default function OfferDetail({ offerId, embedded = false }) {
                   <TableBody>
                     {offer.lines.map((line, index) => {
                       const isIncomplete =
-                        ((!line.product?.id && !line.productId) || (!line.tax?.id && !line.taxId) || line.boxes == null || line.boxes === '');
+                        (!line.product?.id && !line.productId) ||
+                        (!line.tax?.id && !line.taxId) ||
+                        line.boxes == null ||
+                        line.boxes === '';
 
                       return (
                         <TableRow key={line.id ?? `${line.description}-${index}`}>
@@ -329,23 +404,18 @@ export default function OfferDetail({ offerId, embedded = false }) {
                               <p className="font-medium">{line.description}</p>
                             </div>
                           </TableCell>
-                          <TableCell className="align-top whitespace-normal text-muted-foreground">
+                          <TableCell className="text-muted-foreground align-top whitespace-normal">
                             {line.product?.name ?? 'Sin producto vinculado'}
                           </TableCell>
-                          <TableCell className="align-top text-right">
-                            {line.quantity}
-                          </TableCell>
-                          <TableCell className="align-top">
-                            {line.unit || 'kg'}
-                          </TableCell>
-                          <TableCell className="align-top">
-                            {line.boxes ?? 'Sin'}
-                          </TableCell>
-                          <TableCell className="align-top">
-                            {line.tax?.rate ?? '—'}
-                          </TableCell>
-                          <TableCell className="align-top text-right">
-                            {formatCurrency(line.unitPrice, line.currency ?? offer.currency ?? 'EUR')}
+                          <TableCell className="text-right align-top">{line.quantity}</TableCell>
+                          <TableCell className="align-top">{line.unit || 'kg'}</TableCell>
+                          <TableCell className="align-top">{line.boxes ?? 'Sin'}</TableCell>
+                          <TableCell className="align-top">{line.tax?.rate ?? '—'}</TableCell>
+                          <TableCell className="text-right align-top">
+                            {formatCurrency(
+                              line.unitPrice,
+                              line.currency ?? offer.currency ?? 'EUR'
+                            )}
                           </TableCell>
                           <TableCell className="align-top whitespace-normal">
                             {isIncomplete ? (
@@ -353,7 +423,7 @@ export default function OfferDetail({ offerId, embedded = false }) {
                                 Incompleta para crear pedido
                               </span>
                             ) : (
-                              <span className="text-sm text-muted-foreground">Completa</span>
+                              <span className="text-muted-foreground text-sm">Completa</span>
                             )}
                           </TableCell>
                         </TableRow>
@@ -365,7 +435,10 @@ export default function OfferDetail({ offerId, embedded = false }) {
             )}
           </TabsContent>
 
-          <TabsContent value="send" className="flex h-full w-full min-w-0 min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
+          <TabsContent
+            value="send"
+            className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col gap-4 overflow-y-auto"
+          >
             <div className="grid gap-3">
               <Button variant="outline" className="justify-start" onClick={handleDownloadPdf}>
                 <FileDown className="mr-2 size-4" />
@@ -393,9 +466,7 @@ export default function OfferDetail({ offerId, embedded = false }) {
                 <MessageSquare className="mr-2 size-4" />
                 Copiar texto WhatsApp
               </Button>
-              {whatsappText && (
-                <Textarea rows={8} readOnly value={whatsappText} />
-              )}
+              {whatsappText && <Textarea rows={8} readOnly value={whatsappText} />}
             </div>
 
             {offer.orderId && (
@@ -414,7 +485,7 @@ export default function OfferDetail({ offerId, embedded = false }) {
 
   return (
     <>
-      <Card className="flex h-full w-full max-w-none min-h-0 min-w-0 flex-1 basis-0 self-stretch flex-col overflow-hidden">
+      <Card className="flex h-full min-h-0 w-full max-w-none min-w-0 flex-1 basis-0 flex-col self-stretch overflow-hidden">
         {body}
       </Card>
 
@@ -427,8 +498,12 @@ export default function OfferDetail({ offerId, embedded = false }) {
         description="Registra el canal de envío y, si aplica, los datos del email."
         footer={
           <>
-            <Button variant="outline" onClick={() => setSendOpen(false)} disabled={isMutatingOffer}>Cancelar</Button>
-            <Button onClick={handleSend} disabled={isMutatingOffer}>Enviar</Button>
+            <Button variant="outline" onClick={() => setSendOpen(false)} disabled={isMutatingOffer}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSend} disabled={isMutatingOffer}>
+              Enviar
+            </Button>
           </>
         }
       >
@@ -436,7 +511,7 @@ export default function OfferDetail({ offerId, embedded = false }) {
           <div className="grid gap-2">
             <Label>Canal</Label>
             <select
-              className="h-10 rounded-md border bg-background px-3 text-sm"
+              className="bg-background h-10 rounded-md border px-3 text-sm"
               value={sendChannel}
               onChange={(event) => setSendChannel(event.target.value)}
             >
@@ -449,11 +524,19 @@ export default function OfferDetail({ offerId, embedded = false }) {
             <>
               <div className="grid gap-2">
                 <Label htmlFor="send-email">Email</Label>
-                <Input id="send-email" value={sendEmail} onChange={(event) => setSendEmail(event.target.value)} />
+                <Input
+                  id="send-email"
+                  value={sendEmail}
+                  onChange={(event) => setSendEmail(event.target.value)}
+                />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="send-subject">Asunto</Label>
-                <Input id="send-subject" value={sendSubject} onChange={(event) => setSendSubject(event.target.value)} />
+                <Input
+                  id="send-subject"
+                  value={sendSubject}
+                  onChange={(event) => setSendSubject(event.target.value)}
+                />
               </div>
             </>
           )}
@@ -467,17 +550,26 @@ export default function OfferDetail({ offerId, embedded = false }) {
         description="Registra el motivo para mantener histórico comercial útil."
         footer={
           <>
-            <Button variant="outline" onClick={() => setRejectOpen(false)} disabled={isMutatingOffer}>Cancelar</Button>
+            <Button
+              variant="outline"
+              onClick={() => setRejectOpen(false)}
+              disabled={isMutatingOffer}
+            >
+              Cancelar
+            </Button>
             <Button
               variant="destructive"
               disabled={isMutatingOffer}
               onClick={async () => {
                 try {
-                  await notify.promise(rejectOffer.mutateAsync({ id: offer.id, reason: rejectionReason }), {
-                    loading: 'Rechazando oferta...',
-                    success: 'Oferta rechazada',
-                    error: (error) => error?.message || 'No se pudo rechazar la oferta',
-                  });
+                  await notify.promise(
+                    rejectOffer.mutateAsync({ id: offer.id, reason: rejectionReason }),
+                    {
+                      loading: 'Rechazando oferta...',
+                      success: 'Oferta rechazada',
+                      error: (error) => error?.message || 'No se pudo rechazar la oferta',
+                    }
+                  );
                   setRejectOpen(false);
                 } catch {}
               }}
@@ -489,7 +581,12 @@ export default function OfferDetail({ offerId, embedded = false }) {
       >
         <div className="grid gap-2">
           <Label htmlFor="rejection-reason">Motivo</Label>
-          <Textarea id="rejection-reason" rows={4} value={rejectionReason} onChange={(event) => setRejectionReason(event.target.value)} />
+          <Textarea
+            id="rejection-reason"
+            rows={4}
+            value={rejectionReason}
+            onChange={(event) => setRejectionReason(event.target.value)}
+          />
         </div>
       </ActionDialog>
 
@@ -500,8 +597,16 @@ export default function OfferDetail({ offerId, embedded = false }) {
         description="Completa los campos que exige el flujo estándar de pedidos y añade líneas extra si hace falta."
         footer={
           <>
-            <Button variant="outline" onClick={() => setCreateOrderOpen(false)} disabled={isMutatingOffer}>Cancelar</Button>
-            <Button onClick={handleCreateOrder} disabled={isMutatingOffer}>Crear pedido</Button>
+            <Button
+              variant="outline"
+              onClick={() => setCreateOrderOpen(false)}
+              disabled={isMutatingOffer}
+            >
+              Cancelar
+            </Button>
+            <Button onClick={handleCreateOrder} disabled={isMutatingOffer}>
+              Crear pedido
+            </Button>
           </>
         }
       >
@@ -509,30 +614,69 @@ export default function OfferDetail({ offerId, embedded = false }) {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="entry-date">Fecha entrada</Label>
-              <Input id="entry-date" type="date" value={orderPayload.entryDate} onChange={(event) => setOrderPayload((current) => ({ ...current, entryDate: event.target.value }))} />
+              <Input
+                id="entry-date"
+                type="date"
+                value={orderPayload.entryDate}
+                onChange={(event) =>
+                  setOrderPayload((current) => ({ ...current, entryDate: event.target.value }))
+                }
+              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="load-date">Fecha carga</Label>
-              <Input id="load-date" type="date" value={orderPayload.loadDate} onChange={(event) => setOrderPayload((current) => ({ ...current, loadDate: event.target.value }))} />
+              <Input
+                id="load-date"
+                type="date"
+                value={orderPayload.loadDate}
+                onChange={(event) =>
+                  setOrderPayload((current) => ({ ...current, loadDate: event.target.value }))
+                }
+              />
             </div>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="transport">Transporte</Label>
-              <Input id="transport" value={orderPayload.transport} onChange={(event) => setOrderPayload((current) => ({ ...current, transport: event.target.value }))} />
+              <Input
+                id="transport"
+                value={orderPayload.transport}
+                onChange={(event) =>
+                  setOrderPayload((current) => ({ ...current, transport: event.target.value }))
+                }
+              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="buyer-reference">Referencia comprador</Label>
-              <Input id="buyer-reference" value={orderPayload.buyerReference} onChange={(event) => setOrderPayload((current) => ({ ...current, buyerReference: event.target.value }))} />
+              <Input
+                id="buyer-reference"
+                value={orderPayload.buyerReference}
+                onChange={(event) =>
+                  setOrderPayload((current) => ({ ...current, buyerReference: event.target.value }))
+                }
+              />
             </div>
           </div>
           <div className="grid gap-2">
             <Label htmlFor="emails">Emails</Label>
-            <Input id="emails" value={orderPayload.emails} onChange={(event) => setOrderPayload((current) => ({ ...current, emails: event.target.value }))} placeholder="compras@cliente.test, logistica@cliente.test" />
+            <Input
+              id="emails"
+              value={orderPayload.emails}
+              onChange={(event) =>
+                setOrderPayload((current) => ({ ...current, emails: event.target.value }))
+              }
+              placeholder="compras@cliente.test, logistica@cliente.test"
+            />
           </div>
           <div className="grid gap-2">
             <Label htmlFor="cc-emails">CC</Label>
-            <Input id="cc-emails" value={orderPayload.ccEmails} onChange={(event) => setOrderPayload((current) => ({ ...current, ccEmails: event.target.value }))} />
+            <Input
+              id="cc-emails"
+              value={orderPayload.ccEmails}
+              onChange={(event) =>
+                setOrderPayload((current) => ({ ...current, ccEmails: event.target.value }))
+              }
+            />
           </div>
           <div className="grid gap-2">
             <Label htmlFor="planned-products">plannedProducts extra (JSON)</Label>
@@ -540,11 +684,14 @@ export default function OfferDetail({ offerId, embedded = false }) {
               id="planned-products"
               rows={6}
               value={orderPayload.plannedProducts}
-              onChange={(event) => setOrderPayload((current) => ({ ...current, plannedProducts: event.target.value }))}
+              onChange={(event) =>
+                setOrderPayload((current) => ({ ...current, plannedProducts: event.target.value }))
+              }
               placeholder='[{"product":99,"quantity":2,"boxes":1,"unitPrice":8.5,"tax":1}]'
             />
-            <p className="text-xs text-muted-foreground">
-              Este JSON solo añade líneas extra al pedido. No corrige líneas incompletas de la oferta aceptada.
+            <p className="text-muted-foreground text-xs">
+              Este JSON solo añade líneas extra al pedido. No corrige líneas incompletas de la
+              oferta aceptada.
             </p>
           </div>
         </div>

@@ -33,13 +33,18 @@ export function RouteDetailHeader({
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-2xl font-semibold tracking-tight">{headerTitle}</h1>
               {detailMode && (
-                <Badge variant="outline">{tab === 'routes' ? 'Ruta programada' : 'Plantilla'}</Badge>
+                <Badge variant="outline">
+                  {tab === 'routes' ? 'Ruta programada' : 'Plantilla'}
+                </Badge>
               )}
-              {detailMode && tab === 'routes' && routeDraft.sourceMode === 'template' && routeDraft.routeTemplateId && (
-                <Badge variant="secondary">Basada en plantilla</Badge>
-              )}
+              {detailMode &&
+                tab === 'routes' &&
+                routeDraft.sourceMode === 'template' &&
+                routeDraft.routeTemplateId && (
+                  <Badge variant="secondary">Basada en plantilla</Badge>
+                )}
             </div>
-            <p className="text-sm text-muted-foreground">{headerDescription}</p>
+            <p className="text-muted-foreground text-sm">{headerDescription}</p>
             {detailMode && !loadingSelectedItem && !detailNotFound && (
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="secondary">{selectedFieldOperatorLabel}</Badge>
@@ -58,7 +63,10 @@ export function RouteDetailHeader({
             <Pencil className="mr-2 h-4 w-4" />
             Editar
           </Button>
-          <Button onClick={saveCurrent} disabled={isSavingRoute || isSavingTemplate || !currentDraftName.trim()}>
+          <Button
+            onClick={saveCurrent}
+            disabled={isSavingRoute || isSavingTemplate || !currentDraftName.trim()}
+          >
             <Save className="mr-2 h-4 w-4" />
             Guardar
           </Button>

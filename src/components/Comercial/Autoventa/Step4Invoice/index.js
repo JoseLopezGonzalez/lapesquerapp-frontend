@@ -7,7 +7,7 @@ export default function Step4Invoice({ state, setInvoiceRequired }) {
   const checked = Boolean(state.invoiceRequired);
 
   return (
-    <div className="space-y-4 w-full rounded-lg border p-4">
+    <div className="w-full space-y-4 rounded-lg border p-4">
       <div className="flex items-center space-x-2">
         <Checkbox
           id="invoice-required"
@@ -18,7 +18,7 @@ export default function Step4Invoice({ state, setInvoiceRequired }) {
           Con factura
         </Label>
       </div>
-      <p className="text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-sm">
         {checked ? 'Se emitirá factura para esta autoventa.' : 'Solo recibo (sin factura).'}
       </p>
     </div>

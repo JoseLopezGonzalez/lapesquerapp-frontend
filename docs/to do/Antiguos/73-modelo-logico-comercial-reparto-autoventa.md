@@ -29,13 +29,13 @@ En una frase:
 
 **el comercial gestiona la relación y planifica; el repartidor ejecuta en ruta y vende de forma oportunista; el sistema debe permitir esa colaboración sin mezclar significados.**
 
-| Tema | Idea clave |
-|------|------------|
-| Actor comercial | Lleva CRM, relación, cartera, ofertas y planificación |
-| Actor repartidor/autoventa | Ejecuta entregas, trabaja en ruta y abre ventas oportunistas |
-| Cliente | Puede existir sin owner comercial y con acceso operativo |
-| Pedido | Debe separar previsión, planificación y ejecución real |
-| Ruta | Organiza la actividad de campo sin convertir al repartidor en administrativo |
+| Tema                       | Idea clave                                                                   |
+| -------------------------- | ---------------------------------------------------------------------------- |
+| Actor comercial            | Lleva CRM, relación, cartera, ofertas y planificación                        |
+| Actor repartidor/autoventa | Ejecuta entregas, trabaja en ruta y abre ventas oportunistas                 |
+| Cliente                    | Puede existir sin owner comercial y con acceso operativo                     |
+| Pedido                     | Debe separar previsión, planificación y ejecución real                       |
+| Ruta                       | Organiza la actividad de campo sin convertir al repartidor en administrativo |
 
 ### 1.2. Decisiones de negocio ya validadas en este documento
 
@@ -59,40 +59,40 @@ Estas son las decisiones que ya han quedado fijadas durante la discusión:
   - integrada con `shadcn/ui`
   - construida con stack sin coste
 
-| Decisión | Estado validado |
-|----------|-----------------|
-| El repartidor/autoventa es un actor distinto del comercial CRM | Sí |
-| Un cliente puede existir sin owner comercial | Sí |
-| Un cliente creado en autoventa entra automáticamente en CRM | No |
-| El repartidor puede operar sobre cualquier cliente del sistema | No |
-| El repartidor puede operar sobre clientes habilitados operativamente | Sí |
-| El repartidor puede crear clientes nuevos en autoventa | Sí |
-| Los clientes creados por autoventa nacen con owner comercial | No |
-| Los clientes creados por autoventa nacen con ejecutor operativo definido | Sí |
-| El repartidor debe ver CRM completo | No |
-| Deben existir rutas como capa operativa | Sí |
-| La UI de rutas debe ser móvil-first en ejecución | Sí |
-| El stack de rutas debe evitar coste | Sí |
+| Decisión                                                                 | Estado validado |
+| ------------------------------------------------------------------------ | --------------- |
+| El repartidor/autoventa es un actor distinto del comercial CRM           | Sí              |
+| Un cliente puede existir sin owner comercial                             | Sí              |
+| Un cliente creado en autoventa entra automáticamente en CRM              | No              |
+| El repartidor puede operar sobre cualquier cliente del sistema           | No              |
+| El repartidor puede operar sobre clientes habilitados operativamente     | Sí              |
+| El repartidor puede crear clientes nuevos en autoventa                   | Sí              |
+| Los clientes creados por autoventa nacen con owner comercial             | No              |
+| Los clientes creados por autoventa nacen con ejecutor operativo definido | Sí              |
+| El repartidor debe ver CRM completo                                      | No              |
+| Deben existir rutas como capa operativa                                  | Sí              |
+| La UI de rutas debe ser móvil-first en ejecución                         | Sí              |
+| El stack de rutas debe evitar coste                                      | Sí              |
 
 ### 1.3. Cómo leer este documento
 
-| Si quieres entender... | Lee sobre todo... |
-|------------------------|-------------------|
-| El problema de negocio | Secciones 2, 3, 4 |
-| El estado técnico real del backend | Secciones 3.1 y 3.2 |
-| El modelo final de actores y entidades | Secciones 5, 6, 10 |
-| Las rutas como capa operativa | Sección 8 |
-| UI y frontend | Secciones 11, 12 |
-| Análisis backend detallado | Secciones 13, 14 |
-| Propuesta técnica de implementación | Sección 16 |
-| Diseño de entidades (incluyendo `route_template_stops`) | Sección 16.3 |
-| Flujo de gestión de acceso operativo a cliente | Sección 16.3.B |
-| Estrategia de reporting por actor | Sección 16.11 |
-| Plan de PRs y desglose | Secciones 17–26 |
-| Auditoría de autorización del actor operativo (PR 2B) | Sección 17.5B |
-| Ajuste fino y riesgos transversales | Secciones 27, 28 |
-| Estrategia de testing con setup multi-tenant | Sección 30 |
-| Lo que no cambia al implementar | Sección 31 |
+| Si quieres entender...                                  | Lee sobre todo...   |
+| ------------------------------------------------------- | ------------------- |
+| El problema de negocio                                  | Secciones 2, 3, 4   |
+| El estado técnico real del backend                      | Secciones 3.1 y 3.2 |
+| El modelo final de actores y entidades                  | Secciones 5, 6, 10  |
+| Las rutas como capa operativa                           | Sección 8           |
+| UI y frontend                                           | Secciones 11, 12    |
+| Análisis backend detallado                              | Secciones 13, 14    |
+| Propuesta técnica de implementación                     | Sección 16          |
+| Diseño de entidades (incluyendo `route_template_stops`) | Sección 16.3        |
+| Flujo de gestión de acceso operativo a cliente          | Sección 16.3.B      |
+| Estrategia de reporting por actor                       | Sección 16.11       |
+| Plan de PRs y desglose                                  | Secciones 17–26     |
+| Auditoría de autorización del actor operativo (PR 2B)   | Sección 17.5B       |
+| Ajuste fino y riesgos transversales                     | Secciones 27, 28    |
+| Estrategia de testing con setup multi-tenant            | Sección 30          |
+| Lo que no cambia al implementar                         | Sección 31          |
 
 ---
 
@@ -110,13 +110,13 @@ En el flujo actual, el espacio funcional del rol `comercial` agrupa realidades d
 
 Esto funciona como punto de partida, pero mezcla dos naturalezas operativas que no son equivalentes.
 
-| Hoy se mezcla en `comercial` | Pero en realidad responde a |
-|------------------------------|-----------------------------|
-| CRM y cartera | Comercial relacional |
-| Agenda e interacciones | Comercial relacional |
-| Ofertas | Comercial relacional |
-| Autoventa | Repartidor / distribuidor |
-| Ejecución de pedidos prefijados | Repartidor / distribuidor |
+| Hoy se mezcla en `comercial`    | Pero en realidad responde a |
+| ------------------------------- | --------------------------- |
+| CRM y cartera                   | Comercial relacional        |
+| Agenda e interacciones          | Comercial relacional        |
+| Ofertas                         | Comercial relacional        |
+| Autoventa                       | Repartidor / distribuidor   |
+| Ejecución de pedidos prefijados | Repartidor / distribuidor   |
 
 ### 2.1. Actor 1: comercial relacional
 
@@ -132,8 +132,8 @@ Este actor trabaja la cuenta desde una lógica comercial clásica:
 
 Su foco es la **relación**, la **conversión** y la **gestión de cartera**.
 
-| Actor | Foco | Núcleo funcional |
-|-------|------|------------------|
+| Actor         | Foco                  | Núcleo funcional                                          |
+| ------------- | --------------------- | --------------------------------------------------------- |
 | Comercial CRM | Relación y conversión | Prospectos, agenda, ofertas, cartera, pedidos comerciales |
 
 ### 2.2. Actor 2: repartidor o distribuidor propio
@@ -147,8 +147,8 @@ Este actor trabaja en movilidad y en ejecución:
 
 Su foco es la **ruta**, la **entrega**, la **lectura de cajas reales** y la **venta oportunista en campo**.
 
-| Actor | Foco | Núcleo funcional |
-|-------|------|------------------|
+| Actor                  | Foco                             | Núcleo funcional                                |
+| ---------------------- | -------------------------------- | ----------------------------------------------- |
 | Repartidor / Autoventa | Ejecución y oportunidad en calle | Rutas, entregas, autoventa, clientes operativos |
 
 ### 2.3. Tensión del modelo actual
@@ -178,12 +178,12 @@ El contexto funcional deducido a partir del proyecto es el siguiente:
 
 Desde esta lectura, la autoventa no es simplemente “otra pantalla del comercial”, sino un comportamiento operativo distinto que convive con el circuito comercial clásico.
 
-| Flujo actual observado | Lectura funcional |
-|------------------------|------------------|
-| `prospecto -> interacción/agenda -> oferta -> pedido` | Circuito CRM/comercial clásico |
-| autoventa | Venta directa en campo |
-| pedido | Entidad transaccional central |
-| cliente | Nexo entre CRM, pedido y autoventa |
+| Flujo actual observado                                | Lectura funcional                  |
+| ----------------------------------------------------- | ---------------------------------- |
+| `prospecto -> interacción/agenda -> oferta -> pedido` | Circuito CRM/comercial clásico     |
+| autoventa                                             | Venta directa en campo             |
+| pedido                                                | Entidad transaccional central      |
+| cliente                                               | Nexo entre CRM, pedido y autoventa |
 
 ### 3.1. El CRM ya está modelado y es maduro
 
@@ -238,11 +238,11 @@ La propuesta de fondo es separar con claridad:
 
 La clave no es duplicar clientes ni fragmentar el dominio, sino distinguir mejor las relaciones entre actores y entidades.
 
-| Concepto | No debería significar | Sí debería significar |
-|----------|------------------------|-----------------------|
-| Cliente “de alguien” | Propiedad exclusiva rígida | Entidad compartida con relaciones distintas |
-| Autoventa | CRM simplificado | Alta/venta operativa en contexto de ruta |
-| Pedido | Solo documento comercial | Unidad transaccional con planificación y ejecución |
+| Concepto             | No debería significar      | Sí debería significar                              |
+| -------------------- | -------------------------- | -------------------------------------------------- |
+| Cliente “de alguien” | Propiedad exclusiva rígida | Entidad compartida con relaciones distintas        |
+| Autoventa            | CRM simplificado           | Alta/venta operativa en contexto de ruta           |
+| Pedido               | Solo documento comercial   | Unidad transaccional con planificación y ejecución |
 
 ### 4.1. El cliente no debe depender de un único significado de propiedad
 
@@ -317,10 +317,10 @@ Responsabilidades principales:
 
 La clave no es que uno sustituya al otro, sino que ambos colaboren sobre algunas entidades compartidas.
 
-| Espacio lógico | Actor principal | Qué hace | Qué no debería absorber |
-|----------------|-----------------|----------|--------------------------|
-| Comercial CRM | Comercial | Prospectos, agenda, ofertas, cartera, pedidos comerciales | Operativa de calle y ejecución de reparto |
-| Reparto / Autoventa | Repartidor | Ruta, entrega, autoventa, alta operativa | CRM relacional completo |
+| Espacio lógico      | Actor principal | Qué hace                                                  | Qué no debería absorber                   |
+| ------------------- | --------------- | --------------------------------------------------------- | ----------------------------------------- |
+| Comercial CRM       | Comercial       | Prospectos, agenda, ofertas, cartera, pedidos comerciales | Operativa de calle y ejecución de reparto |
+| Reparto / Autoventa | Repartidor      | Ruta, entrega, autoventa, alta operativa                  | CRM relacional completo                   |
 
 ### 5.2. Mantener el cliente como entidad compartida
 
@@ -338,11 +338,11 @@ Esto permite que:
 - un repartidor entregue pedidos o haga autoventa sobre ella
 - el sistema conserve una visión completa del historial
 
-| Cliente | Puede tener |
-|---------|-------------|
-| Relación comercial | Owner comercial principal |
-| Relación operativa | Acceso operativo para uno o varios actores |
-| Historial | Actividad comercial y operativa sobre la misma cuenta |
+| Cliente            | Puede tener                                           |
+| ------------------ | ----------------------------------------------------- |
+| Relación comercial | Owner comercial principal                             |
+| Relación operativa | Acceso operativo para uno o varios actores            |
+| Historial          | Actividad comercial y operativa sobre la misma cuenta |
 
 ### 5.3. Acceso operativo del repartidor
 
@@ -359,11 +359,11 @@ Esto permite mantener un modelo acotado y escalable:
 - el acceso operativo no depende de la propiedad comercial
 - el cliente puede existir para operación aunque todavía no tenga owner comercial
 
-| El repartidor puede operar sobre... | Sí / No |
-|------------------------------------|---------|
-| Clientes habilitados operativamente | Sí |
-| Clientes nuevos creados por él en autoventa | Sí |
-| Cualquier cliente visible del sistema | No |
+| El repartidor puede operar sobre...         | Sí / No |
+| ------------------------------------------- | ------- |
+| Clientes habilitados operativamente         | Sí      |
+| Clientes nuevos creados por él en autoventa | Sí      |
+| Cualquier cliente visible del sistema       | No      |
 
 ### 5.4. Alta de clientes en autoventa
 
@@ -383,11 +383,11 @@ Ese cliente:
 No debe asumirse que toda alta desde autoventa entra automáticamente en un circuito comercial formal.
 
 | Cliente creado en autoventa | Estado inicial recomendado |
-|-----------------------------|----------------------------|
-| Owner comercial | No definido |
-| Ejecutor operativo | Definido |
-| Uso operativo | Sí |
-| Entrada automática en CRM | No |
+| --------------------------- | -------------------------- |
+| Owner comercial             | No definido                |
+| Ejecutor operativo          | Definido                   |
+| Uso operativo               | Sí                         |
+| Entrada automática en CRM   | No                         |
 
 ### 5.5. Diferenciar ownership de acceso operativo
 
@@ -437,10 +437,10 @@ No es, por defecto, responsable de:
 - ofertas
 - ficha comercial completa del cliente
 
-| Actor | Responsable de | No responsable de |
-|-------|----------------|-------------------|
-| Comercial CRM | Cuenta, relación, oportunidad, negociación, continuidad comercial | Ejecución de ruta |
-| Repartidor/autoventa | Ejecución física, ruta, entrega, venta espontánea en campo | CRM, prospectos, agenda, ofertas, ficha comercial rica |
+| Actor                | Responsable de                                                    | No responsable de                                      |
+| -------------------- | ----------------------------------------------------------------- | ------------------------------------------------------ |
+| Comercial CRM        | Cuenta, relación, oportunidad, negociación, continuidad comercial | Ejecución de ruta                                      |
+| Repartidor/autoventa | Ejecución física, ruta, entrega, venta espontánea en campo        | CRM, prospectos, agenda, ofertas, ficha comercial rica |
 
 ### 6.3. El cliente
 
@@ -455,11 +455,11 @@ Además, un cliente puede existir en uno de estos estados lógicos:
 - cliente sin owner comercial pero con acceso operativo
 - cliente nacido desde autoventa y pendiente de eventual asignación comercial
 
-| Estado del cliente | Descripción |
-|--------------------|-------------|
-| Con owner comercial y acceso operativo | Cliente maduro compartido |
-| Sin owner comercial pero con acceso operativo | Cliente operativo |
-| Nacido desde autoventa | Cliente pendiente de eventual asignación comercial |
+| Estado del cliente                            | Descripción                                        |
+| --------------------------------------------- | -------------------------------------------------- |
+| Con owner comercial y acceso operativo        | Cliente maduro compartido                          |
+| Sin owner comercial pero con acceso operativo | Cliente operativo                                  |
+| Nacido desde autoventa                        | Cliente pendiente de eventual asignación comercial |
 
 ### 6.4. El pedido
 
@@ -472,12 +472,12 @@ Debe soportar, al menos a nivel conceptual, varias lecturas:
 
 No se trata de multiplicar entidades necesariamente, sino de no reducir el pedido a un único significado organizativo.
 
-| El pedido puede leerse como... |
-|--------------------------------|
-| pedido planificado |
-| pedido originado desde oferta |
+| El pedido puede leerse como...         |
+| -------------------------------------- |
+| pedido planificado                     |
+| pedido originado desde oferta          |
 | pedido servido por un agente operativo |
-| autoventa como venta directa en campo |
+| autoventa como venta directa en campo  |
 
 ### 6.5. Pedido prefijado y ejecución real
 
@@ -506,10 +506,10 @@ Esto no debe entenderse como una automatización rígida del sistema, sino como 
 
 > **Nota técnica**: la `OrderPolicy` actual impide que el rol `comercial` modifique pedidos (`update` → solo roles distintos de comercial). Al diseñar los permisos del repartidor habrá que decidir explícitamente qué partes del pedido puede ajustar durante la ejecución y con qué mecanismo se autoriza esa acción.
 
-| Pedido prefijado | Pedido ejecutado |
-|------------------|------------------|
-| sirve como previsión | refleja lo servido realmente |
-| lo planifica negocio/comercial | lo ajusta el ejecutor operativo |
+| Pedido prefijado                             | Pedido ejecutado                                      |
+| -------------------------------------------- | ----------------------------------------------------- |
+| sirve como previsión                         | refleja lo servido realmente                          |
+| lo planifica negocio/comercial               | lo ajusta el ejecutor operativo                       |
 | no debe absorber toda la casuística de campo | puede convivir con incidencias o autoventas separadas |
 
 ---
@@ -528,12 +528,12 @@ Si el sistema sigue tratando todo esto como variantes del mismo rol lógico, es 
 
 El mayor riesgo no es de UX, sino de **modelo de negocio mal expresado**.
 
-| Riesgo | Efecto |
-|--------|--------|
+| Riesgo                                  | Efecto                           |
+| --------------------------------------- | -------------------------------- |
 | Mezclar actividad comercial y operativa | Reportes y permisos incoherentes |
-| No separar ownership y acceso operativo | Confusión sobre clientes |
-| Sobredimensionar al repartidor | UX pesada y uso pobre en calle |
-| No modelar bien la colaboración | Escalabilidad limitada |
+| No separar ownership y acceso operativo | Confusión sobre clientes         |
+| Sobredimensionar al repartidor          | UX pesada y uso pobre en calle   |
+| No modelar bien la colaboración         | Escalabilidad limitada           |
 
 ---
 
@@ -545,11 +545,11 @@ La ruta no debe entenderse únicamente como un recorrido geográfico, sino como 
 
 > **Requisito arquitectónico**: todos los modelos de ruta (`RouteTemplate`, `Route`, `RouteStop`) deben usar el trait `UsesTenantConnection` y pertenecer a la base de datos del tenant activo. Las validaciones de paradas que referencien clientes, prospectos o usuarios deben usar la notación `exists:tenant.customers,id` para garantizar el aislamiento multi-tenant.
 
-| La ruta sirve para unir... |
-|----------------------------|
-| pedidos prefijados |
-| clientes donde se recomienda parar |
-| oportunidades de autoventa |
+| La ruta sirve para unir...            |
+| ------------------------------------- |
+| pedidos prefijados                    |
+| clientes donde se recomienda parar    |
+| oportunidades de autoventa            |
 | zonas o puntos geográficos de interés |
 
 ### 8.1. Qué resuelve la ruta
@@ -592,10 +592,10 @@ Puede:
 
 Este nivel permite que una ruta habitual siga existiendo como patrón sin impedir que cada día real se ajuste según necesidad.
 
-| Concepto | Qué representa |
-|----------|----------------|
-| Plantilla de ruta | Patrón reutilizable |
-| Ruta programada | Instancia concreta para una fecha |
+| Concepto          | Qué representa                    |
+| ----------------- | --------------------------------- |
+| Plantilla de ruta | Patrón reutilizable               |
+| Ruta programada   | Instancia concreta para una fecha |
 
 ### 8.3. Quién crea la ruta y quién la ejecuta
 
@@ -627,10 +627,10 @@ Esto ayuda a separar:
 - visitas recomendadas
 - oportunidades abiertas que el repartidor puede aprovechar si la jornada lo permite
 
-| Tipo de parada | Significado |
-|----------------|-------------|
-| Obligatoria | Compromiso claro de visita o entrega |
-| Sugerida | Recomendación operativa |
+| Tipo de parada          | Significado                             |
+| ----------------------- | --------------------------------------- |
+| Obligatoria             | Compromiso claro de visita o entrega    |
+| Sugerida                | Recomendación operativa                 |
 | Oportunidad / autoventa | Visita abierta si la jornada lo permite |
 
 ### 8.5. Qué puede apuntar una parada
@@ -649,10 +649,10 @@ Esto permite que la ruta soporte:
 - visitas a oportunidades abiertas
 - recorridos de exploración o mantenimiento comercial ligero
 
-| Una parada puede apuntar a... |
-|-------------------------------|
-| Cliente |
-| Prospecto |
+| Una parada puede apuntar a...            |
+| ---------------------------------------- |
+| Cliente                                  |
+| Prospecto                                |
 | Zona / pueblo / calle / punto geográfico |
 
 ### 8.6. Relación entre ruta y pedido
@@ -676,10 +676,10 @@ Y un pedido puede:
 - cambiar de ruta
 - quedar fuera de una ruta concreta si negocio lo necesita
 
-| Entidad | Función principal |
-|---------|-------------------|
-| Pedido | Necesidad comercial o transaccional |
-| Ruta | Organización operativa de ejecución |
+| Entidad | Función principal                   |
+| ------- | ----------------------------------- |
+| Pedido  | Necesidad comercial o transaccional |
+| Ruta    | Organización operativa de ejecución |
 
 ### 8.7. Flexibilidad durante la ejecución
 
@@ -736,9 +736,9 @@ Ejemplos:
 
 La idea no es pedir texto largo, sino permitir un marcado rápido.
 
-| Capa | Ejemplos |
-|------|----------|
-| Estado operativo | pendiente, realizada, omitida |
+| Capa             | Ejemplos                                                      |
+| ---------------- | ------------------------------------------------------------- |
+| Estado operativo | pendiente, realizada, omitida                                 |
 | Resultado ligero | entrega realizada, autoventa realizada, sin venta, incidencia |
 
 ### 8.10. Resultado explícito e inferido
@@ -818,13 +818,13 @@ En otras palabras:
 
 **el comercial CRM gestiona la relación y planifica la actividad; el repartidor/autoventa ejecuta y vende en ruta dentro de su universo operativo; la ruta organiza esa ejecución sin confundir responsabilidades comerciales y operativas.**
 
-| Resumen final | Definición |
-|---------------|------------|
-| Comercial CRM | Lleva relación, cartera y planificación |
-| Repartidor/autoventa | Ejecuta y vende en ruta |
-| Cliente | Compartido, con ownership y acceso operativo separados |
-| Ruta | Capa operativa flexible |
-| UI | Ligera, móvil-first para ejecución, sin coste |
+| Resumen final        | Definición                                             |
+| -------------------- | ------------------------------------------------------ |
+| Comercial CRM        | Lleva relación, cartera y planificación                |
+| Repartidor/autoventa | Ejecuta y vende en ruta                                |
+| Cliente              | Compartido, con ownership y acceso operativo separados |
+| Ruta                 | Capa operativa flexible                                |
+| UI                   | Ligera, móvil-first para ejecución, sin coste          |
 
 ---
 
@@ -856,11 +856,11 @@ La clave no es solo “mostrar un mapa”, sino ofrecer una interfaz suficientem
 
 Por eso, aunque la navegación final del repartidor pueda delegarse fuera de la app, la **configuración de rutas** sí requiere una capa geográfica más potente y usable.
 
-| Necesidad | Solución recomendada |
-|----------|----------------------|
-| Configuración avanzada de rutas | Mapbox dentro de la app |
-| Navegación real del repartidor en Fase 1 | Google Maps o Waze |
-| Evolución futura | Navegación propia integrada en Fase 2 |
+| Necesidad                                | Solución recomendada                  |
+| ---------------------------------------- | ------------------------------------- |
+| Configuración avanzada de rutas          | Mapbox dentro de la app               |
+| Navegación real del repartidor en Fase 1 | Google Maps o Waze                    |
+| Evolución futura                         | Navegación propia integrada en Fase 2 |
 
 ### 11.2. Stack recomendado para Fase 1
 
@@ -913,13 +913,13 @@ Y como base visual:
 
 todo ello desde el ecosistema **`shadcn/ui` nativo**.
 
-| Capa | Herramienta |
-|------|-------------|
-| Mapa y edición geográfica | Mapbox |
-| Reordenación manual de paradas | dnd-kit |
-| Agrupación de puntos | supercluster |
-| Sistema visual | shadcn/ui |
-| Datos y estado | React Query + React Hook Form |
+| Capa                           | Herramienta                   |
+| ------------------------------ | ----------------------------- |
+| Mapa y edición geográfica      | Mapbox                        |
+| Reordenación manual de paradas | dnd-kit                       |
+| Agrupación de puntos           | supercluster                  |
+| Sistema visual                 | shadcn/ui                     |
+| Datos y estado                 | React Query + React Hook Form |
 
 ### 11.3. Flujo funcional de Fase 1
 
@@ -954,9 +954,9 @@ El repartidor:
 
 Esto evita construir navegación propia en la primera fase y reduce muchísimo la complejidad.
 
-| Actor | Qué hace en Fase 1 |
-|-------|--------------------|
-| Comercial | Configura y planifica la ruta dentro de la app |
+| Actor      | Qué hace en Fase 1                                                      |
+| ---------- | ----------------------------------------------------------------------- |
+| Comercial  | Configura y planifica la ruta dentro de la app                          |
 | Repartidor | Ejecuta la ruta dentro de la app pero navega fuera con Google Maps/Waze |
 
 ### 11.4. Encaje con los layouts actuales de la app
@@ -1113,10 +1113,10 @@ La validación posterior del flujo frontend apunta a que la UI del pedido operat
 - foco en servir y ajustar contenido real
 - sin carga visual ni semántica propia de backoffice
 
-| Vista | Centro de la experiencia |
-|-------|--------------------------|
-| Planificación | Lista + mapa |
-| Ejecución | Bottom sheet + siguiente parada + botón navegar |
+| Vista         | Centro de la experiencia                        |
+| ------------- | ----------------------------------------------- |
+| Planificación | Lista + mapa                                    |
+| Ejecución     | Bottom sheet + siguiente parada + botón navegar |
 
 ### 11.7. Fase 2: evolución hacia navegación integrada
 
@@ -1190,10 +1190,10 @@ La recomendación final para el frontend del módulo de rutas es:
 - ejecutar la navegación real del repartidor en **Google Maps** como opción principal y **Waze** como alternativa visible durante la Fase 1
 - dejar abierta una **Fase 2** para una navegación propia integrada y progresiva
 
-| Fase | Objetivo | Herramientas principales |
-|------|----------|--------------------------|
+| Fase   | Objetivo                                      | Herramientas principales                                               |
+| ------ | --------------------------------------------- | ---------------------------------------------------------------------- |
 | Fase 1 | Configurar rutas bien y ejecutar sin fricción | Mapbox + shadcn/ui + dnd-kit + Google Maps principal + Waze secundario |
-| Fase 2 | Evolucionar a navegación propia integrada | Revisión futura basada en la experiencia real de uso |
+| Fase 2 | Evolucionar a navegación propia integrada     | Revisión futura basada en la experiencia real de uso                   |
 
 En términos prácticos:
 
@@ -1357,15 +1357,15 @@ En otras palabras:
 
 Hay varias decisiones de backend que encajan muy bien con la dirección propuesta y la convierten en implementable.
 
-| Área | Encaje real con el modelo |
-|------|----------------------------|
-| CRM | Sigue separado y maduro sobre `Salesperson` y `salesperson_id` |
-| Ownership comercial | Se preserva como eje independiente del operativo |
-| Actor operativo | Ya existe como `FieldOperator` |
-| Cliente operativo | Ya puede vivir sin owner comercial y con `field_operator_id` |
-| Autoventa | Sigue generando `Order`, pero ya registra actor operativo y autoría |
-| Rutas | Ya existen plantillas, rutas programadas y paradas |
-| Permisos | El actor operativo usa perímetro `field/*`, no endpoints generales |
+| Área                | Encaje real con el modelo                                           |
+| ------------------- | ------------------------------------------------------------------- |
+| CRM                 | Sigue separado y maduro sobre `Salesperson` y `salesperson_id`      |
+| Ownership comercial | Se preserva como eje independiente del operativo                    |
+| Actor operativo     | Ya existe como `FieldOperator`                                      |
+| Cliente operativo   | Ya puede vivir sin owner comercial y con `field_operator_id`        |
+| Autoventa           | Sigue generando `Order`, pero ya registra actor operativo y autoría |
+| Rutas               | Ya existen plantillas, rutas programadas y paradas                  |
+| Permisos            | El actor operativo usa perímetro `field/*`, no endpoints generales  |
 
 Esto significa que el backend no solo permite la separación; ya la obliga en varios puntos.
 
@@ -1390,15 +1390,15 @@ La tensión central, por tanto, ya no es "si el backend lo soporta", sino:
 
 Hay varios condicionantes ya fijados por backend que conviene tratar como marco estable para el frontend:
 
-| Peculiaridad backend | Implicación práctica |
-|----------------------|----------------------|
-| `repartidor_autoventa` + `FieldOperator` | El actor operativo ya no debe presentarse como "comercial reducido" |
-| `customers/options` mínimo | El selector operativo de clientes será ligero y sin navegación rica |
-| `field/orders` con edición acotada | La UI de pedido operativo debe ser simple y disciplinada |
-| `plannedProducts` como reemplazo total | Conviene una edición cerrada y guiada, no granular dispersa |
-| `field/routes` y `route-stops` reales | La ejecución de rutas ya tiene un centro natural en backend |
-| `route_stops.result_type` y `result_notes` | El cierre de parada debe mapearse a opciones concretas |
-| `field_operator_id` único por cliente | La UI no debe insinuar copropiedad operativa simultánea |
+| Peculiaridad backend                       | Implicación práctica                                                |
+| ------------------------------------------ | ------------------------------------------------------------------- |
+| `repartidor_autoventa` + `FieldOperator`   | El actor operativo ya no debe presentarse como "comercial reducido" |
+| `customers/options` mínimo                 | El selector operativo de clientes será ligero y sin navegación rica |
+| `field/orders` con edición acotada         | La UI de pedido operativo debe ser simple y disciplinada            |
+| `plannedProducts` como reemplazo total     | Conviene una edición cerrada y guiada, no granular dispersa         |
+| `field/routes` y `route-stops` reales      | La ejecución de rutas ya tiene un centro natural en backend         |
+| `route_stops.result_type` y `result_notes` | El cierre de parada debe mapearse a opciones concretas              |
+| `field_operator_id` único por cliente      | La UI no debe insinuar copropiedad operativa simultánea             |
 
 ### 13.5. Riesgos o puntos de atención al implementar en backend
 
@@ -1608,22 +1608,26 @@ Desde aquí ya pueden pasar a especificación técnica, al menos, estas piezas:
 La secuencia recomendada de implementación, dado que backend ya ha resuelto gran parte del dominio, es:
 
 **Paso 1 — Tomar backend real como fuente de verdad**
+
 - usar la sección 16 y la sección 17 como contrato efectivo
 - eliminar en frontend supuestos anteriores donde contradigan ese contrato
 - definir claramente qué pantallas son CRM y cuáles son operación
 
 **Paso 2 — Reorganizar superficies frontend**
+
 - conservar el espacio CRM del comercial
 - diseñar un espacio operativo ligero para `repartidor_autoventa`
 - decidir el encaje temporal o definitivo de rutas y ejecución en la navegación actual
 
 **Paso 3 — Implementar Fase 1 de rutas**
+
 - Mapbox para creación y edición avanzada de rutas
 - `shadcn/ui` como sistema visual principal
 - ejecución móvil ligera
 - navegación externa parada a parada con Google Maps/Waze
 
 **Paso 4 — Conectar UI operativa con endpoints reales**
+
 - `field/customers/options`
 - `field/orders`
 - `field/routes`
@@ -1631,6 +1635,7 @@ La secuencia recomendada de implementación, dado que backend ya ha resuelto gra
 - respetando los límites de edición y visibilidad ya definidos
 
 **Paso 5 — Consolidar experiencia y evaluar Fase 2**
+
 - observar uso real de comercial y repartidor
 - medir si compensa una navegación más integrada
 - decidir la evolución posterior sin romper la simplicidad conseguida en la Fase 1
@@ -2007,10 +2012,10 @@ Regla recomendada de lectura:
 
 #### Resumen rápido por perímetro
 
-| Actor | Debe usar | No debe usar |
-|-------|-----------|--------------|
-| Comercial / backoffice | Endpoints generales + gestión de `FieldOperator`, clientes, rutas y plantillas | `field/*` salvo que se quiera reutilizar puntualmente lectura operativa |
-| Repartidor / autoventa | `GET /api/v2/me` + endpoints `field/*` | CRUD general de clientes/pedidos, CRM, catálogos generales, exports, PDFs |
+| Actor                  | Debe usar                                                                      | No debe usar                                                              |
+| ---------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------- |
+| Comercial / backoffice | Endpoints generales + gestión de `FieldOperator`, clientes, rutas y plantillas | `field/*` salvo que se quiera reutilizar puntualmente lectura operativa   |
+| Repartidor / autoventa | `GET /api/v2/me` + endpoints `field/*`                                         | CRUD general de clientes/pedidos, CRM, catálogos generales, exports, PDFs |
 
 #### Comercial / backoffice
 
@@ -2083,12 +2088,12 @@ Estos endpoints devuelven directamente un array simple, no una colección pagina
 
 #### Resumen de shapes
 
-| Tipo de endpoint | Shape esperado |
-|------------------|----------------|
+| Tipo de endpoint | Shape esperado            |
+| ---------------- | ------------------------- |
 | Listado paginado | `data` + `links` + `meta` |
-| Detalle | `data` |
-| Acción mutadora | `message` + `data` |
-| `options` | array simple |
+| Detalle          | `data`                    |
+| Acción mutadora  | `message` + `data`        |
+| `options`        | array simple              |
 
 ### 17.5. Contrato real de clientes para frontend
 
@@ -2129,11 +2134,11 @@ Esto es relevante para frontend porque la asignación operativa **no se hace des
 
 #### Resumen de interacción de cliente
 
-| Caso | Endpoint | Qué obtiene o envía frontend |
-|------|----------|------------------------------|
-| Selector operativo de clientes | `GET /api/v2/field/customers/options` | `id`, `name`, `operationalStatus` |
-| Asignación desde backoffice | `PUT /api/v2/customers/{customer}/assignment` | `salesperson_id`, `field_operator_id`, `operational_status` |
-| Ficha de cliente para repartidor | No existe | No debe implementarse contra backend actual |
+| Caso                             | Endpoint                                      | Qué obtiene o envía frontend                                |
+| -------------------------------- | --------------------------------------------- | ----------------------------------------------------------- |
+| Selector operativo de clientes   | `GET /api/v2/field/customers/options`         | `id`, `name`, `operationalStatus`                           |
+| Asignación desde backoffice      | `PUT /api/v2/customers/{customer}/assignment` | `salesperson_id`, `field_operator_id`, `operational_status` |
+| Ficha de cliente para repartidor | No existe                                     | No debe implementarse contra backend actual                 |
 
 ### 17.6. Contrato real de productos para frontend
 
@@ -2153,10 +2158,10 @@ Reglas reales:
 
 #### Resumen de catálogo operativo
 
-| Endpoint | Actor | Respuesta mínima |
-|----------|-------|------------------|
+| Endpoint                             | Actor                | Respuesta mínima        |
+| ------------------------------------ | -------------------- | ----------------------- |
 | `GET /api/v2/field/products/options` | Repartidor/autoventa | `id`, `name`, `species` |
-| `GET /api/v2/products/options` | Repartidor/autoventa | `403` esperado |
+| `GET /api/v2/products/options`       | Repartidor/autoventa | `403` esperado          |
 
 ### 17.7. Contrato real de pedidos operativos
 
@@ -2178,12 +2183,12 @@ Filtros admitidos:
 
 Solo devuelve pedidos cuyo `field_operator_id` coincide con el actor operativo actual.
 
-| Filtro | Valores |
-|--------|---------|
-| `status` | `pending`, `finished`, `incident` |
-| `orderType` | `standard`, `autoventa` |
-| `routeId` | `id` de ruta |
-| `perPage` | `1..100` |
+| Filtro      | Valores                           |
+| ----------- | --------------------------------- |
+| `status`    | `pending`, `finished`, `incident` |
+| `orderType` | `standard`, `autoventa`           |
+| `routeId`   | `id` de ruta                      |
+| `perPage`   | `1..100`                          |
 
 #### B. Shape real del recurso de pedido operativo
 
@@ -2256,10 +2261,10 @@ Reglas importantes para frontend:
 
 #### Resumen de interacción de pedido operativo
 
-| Caso | Endpoint | Claves principales |
-|------|----------|--------------------|
-| Listado | `GET /api/v2/field/orders` | scope por `field_operator_id` |
-| Detalle | `GET /api/v2/field/orders/{order}` | `403` si no pertenece al actor |
+| Caso          | Endpoint                           | Claves principales                                                  |
+| ------------- | ---------------------------------- | ------------------------------------------------------------------- |
+| Listado       | `GET /api/v2/field/orders`         | scope por `field_operator_id`                                       |
+| Detalle       | `GET /api/v2/field/orders/{order}` | `403` si no pertenece al actor                                      |
 | Actualización | `PUT /api/v2/field/orders/{order}` | `boxes`, `plannedExtras`, `plannedAdjustments` (y `items` opcional) |
 
 ### 17.8. Contrato real de autoventa operativa
@@ -2290,18 +2295,18 @@ Si no envía ninguna, backend devuelve error de validación.
 - `routeId`
 - `routeStopId`
 
-| Campo | Obligatorio | Observaciones |
-|-------|-------------|---------------|
-| `customer` | no | Alternativa a `newCustomerName` |
-| `newCustomerName` | no | Alternativa a `customer` |
-| `entryDate` | sí | Debe ser `<= loadDate` |
-| `loadDate` | sí | Debe ser `>= entryDate` |
-| `invoiceRequired` | sí | boolean |
-| `observations` | no | texto libre |
-| `items` | sí | mínimo 1 |
-| `boxes` | sí | mínimo 1 |
-| `routeId` | no | debe pertenecer al actor |
-| `routeStopId` | no | debe pertenecer a `routeId` y al actor |
+| Campo             | Obligatorio | Observaciones                          |
+| ----------------- | ----------- | -------------------------------------- |
+| `customer`        | no          | Alternativa a `newCustomerName`        |
+| `newCustomerName` | no          | Alternativa a `customer`               |
+| `entryDate`       | sí          | Debe ser `<= loadDate`                 |
+| `loadDate`        | sí          | Debe ser `>= entryDate`                |
+| `invoiceRequired` | sí          | boolean                                |
+| `observations`    | no          | texto libre                            |
+| `items`           | sí          | mínimo 1                               |
+| `boxes`           | sí          | mínimo 1                               |
+| `routeId`         | no          | debe pertenecer al actor               |
+| `routeStopId`     | no          | debe pertenecer a `routeId` y al actor |
 
 #### C. Shape de `items`
 
@@ -2348,12 +2353,12 @@ Es decir, la autoventa devuelve ya el pedido operativo creado, no una entidad di
 
 #### Resumen de interacción de autoventa
 
-| Caso | Comportamiento backend |
-|------|------------------------|
-| Cliente existente con acceso | crea autoventa |
-| Cliente existente sin acceso | `422` / rechazo funcional |
-| Cliente nuevo | crea cliente + pedido en la misma transacción |
-| Ruta/parada incoherente | error de validación |
+| Caso                         | Comportamiento backend                        |
+| ---------------------------- | --------------------------------------------- |
+| Cliente existente con acceso | crea autoventa                                |
+| Cliente existente sin acceso | `422` / rechazo funcional                     |
+| Cliente nuevo                | crea cliente + pedido en la misma transacción |
+| Ruta/parada incoherente      | error de validación                           |
 
 ### 17.9. Contrato real de rutas para frontend
 
@@ -2369,11 +2374,11 @@ Regla real:
 
 - solo devuelve rutas con `field_operator_id = actor actual`
 
-| Endpoint | Tipo | Scope |
-|----------|------|-------|
-| `GET /api/v2/field/routes` | listado paginado | solo rutas del actor actual |
-| `GET /api/v2/field/routes/{route}` | detalle | solo rutas asignadas |
-| `PUT /api/v2/field/routes/{route}/stops/{routeStop}` | acción | solo paradas de rutas asignadas |
+| Endpoint                                             | Tipo             | Scope                           |
+| ---------------------------------------------------- | ---------------- | ------------------------------- |
+| `GET /api/v2/field/routes`                           | listado paginado | solo rutas del actor actual     |
+| `GET /api/v2/field/routes/{route}`                   | detalle          | solo rutas asignadas            |
+| `PUT /api/v2/field/routes/{route}/stops/{routeStop}` | acción           | solo paradas de rutas asignadas |
 
 #### B. Detalle de ruta del actor operativo
 
@@ -2448,11 +2453,11 @@ El endpoint devuelve `message` + `data`, pero `data` es la **ruta completa** act
 
 #### Resumen de payload de parada
 
-| Campo | Obligatorio | Regla |
-|-------|-------------|-------|
-| `status` | sí | `pending`, `completed` o `skipped` |
-| `result_type` | condicional | obligatorio si `status = completed` |
-| `result_notes` | no | texto libre, máx. 1000 |
+| Campo          | Obligatorio | Regla                               |
+| -------------- | ----------- | ----------------------------------- |
+| `status`       | sí          | `pending`, `completed` o `skipped`  |
+| `result_type`  | condicional | obligatorio si `status = completed` |
+| `result_notes` | no          | texto libre, máx. 1000              |
 
 ### 17.10. Contrato real de plantillas y rutas para backoffice
 
@@ -2479,14 +2484,14 @@ Restricción real relevante para frontend:
 - si se intenta enlazar un `user_id` que no tenga rol `repartidor_autoventa`, backend devuelve validación
 - si se intenta enlazar un `user_id` que ya tiene `Salesperson`, backend devuelve validación
 
-| Endpoint | Uso |
-|----------|-----|
-| `GET /api/v2/field-operators` | listado paginado |
-| `POST /api/v2/field-operators` | creación |
-| `GET /api/v2/field-operators/{field_operator}` | detalle |
-| `PUT /api/v2/field-operators/{field_operator}` | edición |
-| `DELETE /api/v2/field-operators/{field_operator}` | borrado |
-| `GET /api/v2/field-operators/options` | selector simple |
+| Endpoint                                          | Uso              |
+| ------------------------------------------------- | ---------------- |
+| `GET /api/v2/field-operators`                     | listado paginado |
+| `POST /api/v2/field-operators`                    | creación         |
+| `GET /api/v2/field-operators/{field_operator}`    | detalle          |
+| `PUT /api/v2/field-operators/{field_operator}`    | edición          |
+| `DELETE /api/v2/field-operators/{field_operator}` | borrado          |
+| `GET /api/v2/field-operators/options`             | selector simple  |
 
 #### B. `RouteTemplate`
 
@@ -2523,14 +2528,14 @@ Regla importante:
 
 - si frontend envía `stops` en update, backend reemplaza completamente el conjunto actual de paradas de la plantilla
 
-| Campo | Observación |
-|-------|-------------|
-| `name` | obligatorio en creación |
-| `description` | opcional |
-| `salespersonId` | opcional |
-| `fieldOperatorId` | opcional |
-| `isActive` | opcional |
-| `stops` | si se envía en update, reemplaza todo |
+| Campo             | Observación                           |
+| ----------------- | ------------------------------------- |
+| `name`            | obligatorio en creación               |
+| `description`     | opcional                              |
+| `salespersonId`   | opcional                              |
+| `fieldOperatorId` | opcional                              |
+| `isActive`        | opcional                              |
+| `stops`           | si se envía en update, reemplaza todo |
 
 #### C. `Route`
 
@@ -2562,16 +2567,16 @@ Reglas reales importantes:
 - si frontend envía `stops`, backend reemplaza completamente las paradas actuales de la ruta
 - al instanciar desde plantilla, backend preserva vínculo con `route_template_stop_id` para trazabilidad interna
 
-| Campo | Observación |
-|-------|-------------|
+| Campo             | Observación                                                  |
+| ----------------- | ------------------------------------------------------------ |
 | `routeTemplateId` | opcional; si se envía sin `stops`, instancia desde plantilla |
-| `name` | obligatorio en creación |
-| `description` | opcional |
-| `routeDate` | opcional |
-| `status` | opcional |
-| `salespersonId` | opcional |
-| `fieldOperatorId` | opcional |
-| `stops` | si se envía, reemplaza el conjunto actual |
+| `name`            | obligatorio en creación                                      |
+| `description`     | opcional                                                     |
+| `routeDate`       | opcional                                                     |
+| `status`          | opcional                                                     |
+| `salespersonId`   | opcional                                                     |
+| `fieldOperatorId` | opcional                                                     |
+| `stops`           | si se envía, reemplaza el conjunto actual                    |
 
 ### 17.11. Estados y enums que frontend debe tratar como contrato
 
@@ -2627,15 +2632,15 @@ Nota: cuando el backend recibe `status = completed`, fija automáticamente `comp
 
 #### Tabla compacta de enums
 
-| Dominio | Valores |
-|---------|---------|
-| Pedido operativo `status` | `pending`, `finished`, `incident` |
-| Pedido `orderType` | `standard`, `autoventa` |
-| Cliente `operational_status` | `normal`, `alta_operativa` |
-| Stop `stopType` | `obligatoria`, `sugerida`, `oportunidad` |
-| Stop `targetType` | `customer`, `prospect`, `location` |
-| Stop `status` | `pending`, `completed`, `skipped` |
-| Stop `resultType` | `delivery`, `autoventa`, `no_contact`, `incident`, `visit` |
+| Dominio                      | Valores                                                    |
+| ---------------------------- | ---------------------------------------------------------- |
+| Pedido operativo `status`    | `pending`, `finished`, `incident`                          |
+| Pedido `orderType`           | `standard`, `autoventa`                                    |
+| Cliente `operational_status` | `normal`, `alta_operativa`                                 |
+| Stop `stopType`              | `obligatoria`, `sugerida`, `oportunidad`                   |
+| Stop `targetType`            | `customer`, `prospect`, `location`                         |
+| Stop `status`                | `pending`, `completed`, `skipped`                          |
+| Stop `resultType`            | `delivery`, `autoventa`, `no_contact`, `incident`, `visit` |
 
 ### 17.12. Errores y respuestas que frontend debe considerar normales
 
@@ -2668,11 +2673,11 @@ Frontend debe tratar estos errores como parte normal del flujo y no como fallos 
 
 #### Resumen rápido de errores
 
-| Código | Lectura frontend |
-|--------|------------------|
-| `403` | fuera de perímetro o sin identidad operativa |
-| `404` | recurso no encontrado o relación de ruta/parada incoherente |
-| `422` | payload inválido o regla funcional incumplida |
+| Código | Lectura frontend                                            |
+| ------ | ----------------------------------------------------------- |
+| `403`  | fuera de perímetro o sin identidad operativa                |
+| `404`  | recurso no encontrado o relación de ruta/parada incoherente |
+| `422`  | payload inválido o regla funcional incumplida               |
 
 ### 17.13. Invariantes que frontend no debe romper conceptualmente
 
@@ -2752,14 +2757,14 @@ Justificación:
 
 ### 18.2. Estructura de páginas del segmento `/reparto`
 
-| URL | Función |
-|-----|---------|
-| `/reparto` | Dashboard operativo del repartidor |
-| `/reparto/rutas` | Listado de rutas asignadas |
-| `/reparto/rutas/[id]` | Detalle y ejecución de una ruta |
-| `/reparto/pedidos` | Listado de pedidos operativos |
+| URL                     | Función                                  |
+| ----------------------- | ---------------------------------------- |
+| `/reparto`              | Dashboard operativo del repartidor       |
+| `/reparto/rutas`        | Listado de rutas asignadas               |
+| `/reparto/rutas/[id]`   | Detalle y ejecución de una ruta          |
+| `/reparto/pedidos`      | Listado de pedidos operativos            |
 | `/reparto/pedidos/[id]` | Detalle y edición operativa de un pedido |
-| `/reparto/autoventa` | Flujo de autoventa operativa |
+| `/reparto/autoventa`    | Flujo de autoventa operativa             |
 
 ### 18.3. Layout del segmento `/reparto`
 
@@ -2778,12 +2783,12 @@ El layout debe:
 
 El menú del repartidor debe ser ligero, con máximo 4 ítems.
 
-| Ítem | Ruta | Icono shadcn/ui |
-|------|------|-----------------|
-| Inicio | `/reparto` | `Home` |
-| Mis Rutas | `/reparto/rutas` | `Map` |
-| Pedidos | `/reparto/pedidos` | `Package` |
-| Autoventa | `/reparto/autoventa` | `ShoppingCart` |
+| Ítem      | Ruta                 | Icono shadcn/ui |
+| --------- | -------------------- | --------------- |
+| Inicio    | `/reparto`           | `Home`          |
+| Mis Rutas | `/reparto/rutas`     | `Map`           |
+| Pedidos   | `/reparto/pedidos`   | `Package`       |
+| Autoventa | `/reparto/autoventa` | `ShoppingCart`  |
 
 No incluye: prospectos, agenda, ofertas, clientes completos, CRM.
 
@@ -2852,7 +2857,7 @@ function RepartoRouteProtection({ children }) {
 
   useEffect(() => {
     if (status === 'unauthenticated') {
-      router.replace('/');           // igual que comercial: redirect a '/', no a '/auth/login'
+      router.replace('/'); // igual que comercial: redirect a '/', no a '/auth/login'
       return;
     }
     if (status === 'authenticated' && session?.user) {
@@ -2870,12 +2875,12 @@ function RepartoRouteProtection({ children }) {
 }
 ```
 
-| Estado | Comportamiento |
-|--------|----------------|
-| Sin sesión | Redirect a `/` (patrón actual del proyecto) |
-| Sesión con rol incorrecto | Redirect a `/admin/home` |
+| Estado                                        | Comportamiento                                                             |
+| --------------------------------------------- | -------------------------------------------------------------------------- |
+| Sin sesión                                    | Redirect a `/` (patrón actual del proyecto)                                |
+| Sesión con rol incorrecto                     | Redirect a `/admin/home`                                                   |
 | Sesión correcta pero `fieldOperatorId = null` | Mostrar `ErrorFieldOperatorNotLinked` — pantalla informativa, sin redirect |
-| Sesión correcta con `fieldOperatorId` válido | Renderizar normalmente |
+| Sesión correcta con `fieldOperatorId` válido  | Renderizar normalmente                                                     |
 
 El caso `fieldOperatorId = null` no debe redirigir automáticamente porque el administrador puede vincular el operador en cualquier momento; el usuario solo necesita recargar.
 
@@ -2916,14 +2921,14 @@ El dashboard no muestra CRM, prospectos, agenda ni métricas comerciales.
 
 Las rutas de planificación (gestión de plantillas y rutas programadas) viven en el segmento `/comercial`, no en `/reparto`, porque las crea el comercial.
 
-| URL | Función |
-|-----|---------|
-| `/comercial/rutas` | Listado de rutas programadas |
-| `/comercial/rutas/nueva` | Crear ruta programada (desde plantilla o desde cero) |
-| `/comercial/rutas/[id]` | Detalle y edición de ruta programada |
-| `/comercial/rutas/plantillas` | Listado de plantillas de ruta |
-| `/comercial/rutas/plantillas/nueva` | Crear plantilla |
-| `/comercial/rutas/plantillas/[id]` | Detalle y edición de plantilla |
+| URL                                 | Función                                              |
+| ----------------------------------- | ---------------------------------------------------- |
+| `/comercial/rutas`                  | Listado de rutas programadas                         |
+| `/comercial/rutas/nueva`            | Crear ruta programada (desde plantilla o desde cero) |
+| `/comercial/rutas/[id]`             | Detalle y edición de ruta programada                 |
+| `/comercial/rutas/plantillas`       | Listado de plantillas de ruta                        |
+| `/comercial/rutas/plantillas/nueva` | Crear plantilla                                      |
+| `/comercial/rutas/plantillas/[id]`  | Detalle y edición de plantilla                       |
 
 Estas páginas usan el mapa Mapbox (sección 21) para la UI de planificación avanzada.
 
@@ -2935,10 +2940,10 @@ Estas páginas usan el mapa Mapbox (sección 21) para la UI de planificación av
 
 El CRUD de `FieldOperator` vive en el segmento `/admin`, como entidad administrativa. No crea un segmento propio; se añade dentro de `/admin` siguiendo el patrón ya existente de otras entidades.
 
-| URL | Función |
-|-----|---------|
-| `/admin/field-operators` | Listado de operadores de campo |
-| `/admin/field-operators/[id]` | Detalle y edición |
+| URL                           | Función                        |
+| ----------------------------- | ------------------------------ |
+| `/admin/field-operators`      | Listado de operadores de campo |
+| `/admin/field-operators/[id]` | Detalle y edición              |
 
 Acceso: roles `administrador` y `direccion`.
 
@@ -2962,12 +2967,12 @@ Endpoint: `GET /api/v2/field-operators`
 
 Campos:
 
-| Campo | Tipo | Notas |
-|-------|------|-------|
-| `name` | texto | obligatorio |
-| `userId` | selector | solo usuarios con rol `repartidor_autoventa` sin `Salesperson` vinculado |
-| `emails` | lista de emails | notificaciones operativas |
-| `ccEmails` | lista de emails | copia en notificaciones |
+| Campo      | Tipo            | Notas                                                                    |
+| ---------- | --------------- | ------------------------------------------------------------------------ |
+| `name`     | texto           | obligatorio                                                              |
+| `userId`   | selector        | solo usuarios con rol `repartidor_autoventa` sin `Salesperson` vinculado |
+| `emails`   | lista de emails | notificaciones operativas                                                |
+| `ccEmails` | lista de emails | copia en notificaciones                                                  |
 
 Validaciones de frontend alineadas con las del backend:
 
@@ -2996,10 +3001,10 @@ Qué muestra y permite:
 
 Quién puede usar este panel:
 
-| Rol | Acceso |
-|-----|--------|
-| `administrador`, `direccion` | Todos los campos |
-| `comercial` | Solo visible; sin permiso de update según `CustomerPolicy` actual. Decisión pendiente: ampliar permiso solo para este endpoint de asignación. |
+| Rol                          | Acceso                                                                                                                                        |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `administrador`, `direccion` | Todos los campos                                                                                                                              |
+| `comercial`                  | Solo visible; sin permiso de update según `CustomerPolicy` actual. Decisión pendiente: ampliar permiso solo para este endpoint de asignación. |
 
 Hook: `useCustomerAssignmentMutation()` wrapping `PUT /api/v2/customers/{customer}/assignment`.
 
@@ -3046,33 +3051,33 @@ El nuevo flujo operativo usa `POST /api/v2/field/autoventas` y está diseñado p
 
 **No se elimina ni modifica el flujo actual.** Son flujos distintos para actores distintos.
 
-| | Flujo actual (comercial) | Flujo nuevo (repartidor) |
-|--|--------------------------|--------------------------|
-| Ruta | `/comercial/autoventa` | `/reparto/autoventa` |
-| Endpoint | `POST /api/v2/orders` | `POST /api/v2/field/autoventas` |
-| Actor | Rol `comercial` | Rol `repartidor_autoventa` |
-| Requiere | `salesperson` vinculado | `FieldOperator` vinculado |
-| Clientes accesibles | Todos los del comercial | Solo `field/customers/options` del actor |
-| Cliente nuevo | No aplicable | Crea cliente `alta_operativa` sin owner comercial |
-| Paso de contexto de ruta | No | Sí (opcional: `routeId`, `routeStopId`) |
+|                          | Flujo actual (comercial) | Flujo nuevo (repartidor)                          |
+| ------------------------ | ------------------------ | ------------------------------------------------- |
+| Ruta                     | `/comercial/autoventa`   | `/reparto/autoventa`                              |
+| Endpoint                 | `POST /api/v2/orders`    | `POST /api/v2/field/autoventas`                   |
+| Actor                    | Rol `comercial`          | Rol `repartidor_autoventa`                        |
+| Requiere                 | `salesperson` vinculado  | `FieldOperator` vinculado                         |
+| Clientes accesibles      | Todos los del comercial  | Solo `field/customers/options` del actor          |
+| Cliente nuevo            | No aplicable             | Crea cliente `alta_operativa` sin owner comercial |
+| Paso de contexto de ruta | No                       | Sí (opcional: `routeId`, `routeStopId`)           |
 
 ### 20.3. Reutilización del código existente
 
 El flujo del repartidor parte de cero en su servicio y hook, pero puede tomar como referencia la estructura del flujo actual. El wizard tiene una arquitectura similar (pasos secuenciales con estado compartido).
 
-| Existente | Nuevo equivalente |
-|-----------|-------------------|
-| `autoventaService.js` | `fieldAutoventaService.ts` |
-| `useAutoventa.js` | `useFieldAutoventa.ts` |
-| `AutoventaWizard/` | `FieldAutoventaWizard/` |
-| `Step1ClientSelection/` | `FieldStep1ClientSelection/` — usa `field/customers/options` |
-| `Step2QRScan/` | Reutilizable sin cambios |
-| `Step3Pricing/` | Adaptado |
-| `Step4Invoice/` | Reutilizable sin cambios |
-| `Step5Observations/` | Reutilizable sin cambios |
-| `Step6Summary/` | Adaptado |
-| `Step7Confirmation/` | Adaptado |
-| `CreateCustomerQuickForm/` | Adaptado: solo campo `newCustomerName`, sin campos CRM |
+| Existente                  | Nuevo equivalente                                            |
+| -------------------------- | ------------------------------------------------------------ |
+| `autoventaService.js`      | `fieldAutoventaService.ts`                                   |
+| `useAutoventa.js`          | `useFieldAutoventa.ts`                                       |
+| `AutoventaWizard/`         | `FieldAutoventaWizard/`                                      |
+| `Step1ClientSelection/`    | `FieldStep1ClientSelection/` — usa `field/customers/options` |
+| `Step2QRScan/`             | Reutilizable sin cambios                                     |
+| `Step3Pricing/`            | Adaptado                                                     |
+| `Step4Invoice/`            | Reutilizable sin cambios                                     |
+| `Step5Observations/`       | Reutilizable sin cambios                                     |
+| `Step6Summary/`            | Adaptado                                                     |
+| `Step7Confirmation/`       | Adaptado                                                     |
+| `CreateCustomerQuickForm/` | Adaptado: solo campo `newCustomerName`, sin campos CRM       |
 
 ### 20.4. Diferencias clave en el wizard del repartidor
 
@@ -3102,9 +3107,9 @@ El wizard puede recibir `routeId` y `routeStopId` como props cuando se lanza des
 
 El flujo de autoventa del repartidor puede iniciarse de dos formas:
 
-| Origen | Comportamiento |
-|--------|----------------|
-| `/reparto/autoventa` directamente | Sin contexto de ruta; `routeId` y `routeStopId` omitidos del payload |
+| Origen                                     | Comportamiento                                                            |
+| ------------------------------------------ | ------------------------------------------------------------------------- |
+| `/reparto/autoventa` directamente          | Sin contexto de ruta; `routeId` y `routeStopId` omitidos del payload      |
 | Botón "Autoventa" en `/reparto/rutas/[id]` | Recibe `routeId` y `routeStopId` como contexto; los incluye en el payload |
 
 Este comportamiento se gestiona con props al montar el wizard, no como variación de la URL. El wizard acepta `routeContext?: { routeId: number; routeStopId: number }` como prop opcional.
@@ -3142,11 +3147,11 @@ Justificación:
 
 ### 21.2. APIs de Mapbox utilizadas en Fase 1
 
-| API | Para qué | Cómo se accede |
-|-----|----------|----------------|
-| Mapbox GL JS | Renderizar el mapa, markers, trazados | via `react-map-gl` |
+| API                  | Para qué                                     | Cómo se accede              |
+| -------------------- | -------------------------------------------- | --------------------------- |
+| Mapbox GL JS         | Renderizar el mapa, markers, trazados        | via `react-map-gl`          |
 | Mapbox Geocoding API | Buscar direcciones y convertir a coordenadas | `fetch` directo al endpoint |
-| Mapbox Static Tiles | Teselas del mapa base | automático via token |
+| Mapbox Static Tiles  | Teselas del mapa base                        | automático via token        |
 
 **No se usa en Fase 1:**
 
@@ -3290,7 +3295,7 @@ export function useMe() {
 
   return useQuery({
     queryKey: ['me', tenantId, token],
-    queryFn: () => getCurrentUser(),   // función existente, no crear duplicado
+    queryFn: () => getCurrentUser(), // función existente, no crear duplicado
     enabled: !!token && !!tenantId,
     staleTime: 5 * 60 * 1000,
   });
@@ -3320,11 +3325,13 @@ export function FieldOperatorProvider({ children }: { children: React.ReactNode 
   const { data, isLoading } = useMe();
 
   return (
-    <FieldOperatorContext.Provider value={{
-      fieldOperatorId: data?.fieldOperatorId ?? null,
-      isFieldOperator: data?.isFieldOperator ?? false,
-      isLoading,
-    }}>
+    <FieldOperatorContext.Provider
+      value={{
+        fieldOperatorId: data?.fieldOperatorId ?? null,
+        isFieldOperator: data?.isFieldOperator ?? false,
+        isLoading,
+      }}
+    >
       {children}
     </FieldOperatorContext.Provider>
   );
@@ -3353,10 +3360,10 @@ No debe redirigir automáticamente; debe mostrar el mensaje con un botón de "Re
 
 El actor se determina en dos capas independientes:
 
-| Capa | Fuente | Cuándo usarla |
-|------|--------|---------------|
-| `session.user.role` | NextAuth / `useSession()` | Para decidir qué layout y segmento renderizar |
-| `fieldOperatorId` | `useMe()` / `useFieldOperator()` | Para construir queries operativas y verificar acceso real antes de llamar a `field/*` |
+| Capa                | Fuente                           | Cuándo usarla                                                                         |
+| ------------------- | -------------------------------- | ------------------------------------------------------------------------------------- |
+| `session.user.role` | NextAuth / `useSession()`        | Para decidir qué layout y segmento renderizar                                         |
+| `fieldOperatorId`   | `useMe()` / `useFieldOperator()` | Para construir queries operativas y verificar acceso real antes de llamar a `field/*` |
 
 El `role` decide qué layout cargar. El `fieldOperatorId` determina si el actor tiene identidad operativa real y activa.
 
@@ -3385,31 +3392,31 @@ El `enabled` incluye `!!fieldOperatorId` para evitar llamadas si el actor no tie
 
 Para el actor operativo (`/reparto`):
 
-| Hook | Endpoint |
-|------|----------|
-| `useMe()` | `GET /api/v2/me` |
-| `useFieldCustomerOptions()` | `GET /api/v2/field/customers/options` |
-| `useFieldProductOptions()` | `GET /api/v2/field/products/options` |
-| `useFieldOrders(params)` | `GET /api/v2/field/orders` |
-| `useFieldOrder(id)` | `GET /api/v2/field/orders/{id}` |
-| `useFieldOrderMutations()` | `PUT /api/v2/field/orders/{id}` |
-| `useFieldRoutes(params)` | `GET /api/v2/field/routes` |
-| `useFieldRoute(id)` | `GET /api/v2/field/routes/{id}` |
+| Hook                          | Endpoint                                       |
+| ----------------------------- | ---------------------------------------------- |
+| `useMe()`                     | `GET /api/v2/me`                               |
+| `useFieldCustomerOptions()`   | `GET /api/v2/field/customers/options`          |
+| `useFieldProductOptions()`    | `GET /api/v2/field/products/options`           |
+| `useFieldOrders(params)`      | `GET /api/v2/field/orders`                     |
+| `useFieldOrder(id)`           | `GET /api/v2/field/orders/{id}`                |
+| `useFieldOrderMutations()`    | `PUT /api/v2/field/orders/{id}`                |
+| `useFieldRoutes(params)`      | `GET /api/v2/field/routes`                     |
+| `useFieldRoute(id)`           | `GET /api/v2/field/routes/{id}`                |
 | `useFieldRouteStopMutation()` | `PUT /api/v2/field/routes/{id}/stops/{stopId}` |
-| `useFieldAutoventa()` | `POST /api/v2/field/autoventas` |
+| `useFieldAutoventa()`         | `POST /api/v2/field/autoventas`                |
 
 Para backoffice y planificación:
 
-| Hook | Endpoint |
-|------|----------|
-| `useFieldOperators(params)` | `GET /api/v2/field-operators` |
-| `useFieldOperatorOptions()` | `GET /api/v2/field-operators/options` |
-| `useFieldOperatorMutations()` | `POST/PUT/DELETE /api/v2/field-operators/{id}` |
-| `useCustomerAssignmentMutation()` | `PUT /api/v2/customers/{id}/assignment` |
-| `useRouteTemplates(params)` | `GET /api/v2/route-templates` |
-| `useRouteTemplateMutations()` | `POST/PUT/DELETE /api/v2/route-templates/{id}` |
-| `useRoutes(params)` | `GET /api/v2/routes` |
-| `useRouteMutations()` | `POST/PUT/DELETE /api/v2/routes/{id}` |
+| Hook                              | Endpoint                                       |
+| --------------------------------- | ---------------------------------------------- |
+| `useFieldOperators(params)`       | `GET /api/v2/field-operators`                  |
+| `useFieldOperatorOptions()`       | `GET /api/v2/field-operators/options`          |
+| `useFieldOperatorMutations()`     | `POST/PUT/DELETE /api/v2/field-operators/{id}` |
+| `useCustomerAssignmentMutation()` | `PUT /api/v2/customers/{id}/assignment`        |
+| `useRouteTemplates(params)`       | `GET /api/v2/route-templates`                  |
+| `useRouteTemplateMutations()`     | `POST/PUT/DELETE /api/v2/route-templates/{id}` |
+| `useRoutes(params)`               | `GET /api/v2/routes`                           |
+| `useRouteMutations()`             | `POST/PUT/DELETE /api/v2/routes/{id}`          |
 
 ### 22.7. Servicio de API para el actor operativo
 
@@ -3421,39 +3428,39 @@ Sigue el mismo patrón de `crmService.ts`: `getAuthHeaders()`, `buildQuery()`, m
 
 ### 22.8. Resumen de ficheros nuevos a crear
 
-| Fichero | Tipo |
-|---------|------|
-| `src/app/reparto/layout.js` | Layout server |
-| `src/app/reparto/RepartoLayoutClient.jsx` | Layout client |
-| `src/app/reparto/page.js` | Dashboard del repartidor |
-| `src/app/reparto/rutas/page.js` | Listado de rutas |
-| `src/app/reparto/rutas/[id]/page.js` | Ejecución de ruta |
-| `src/app/reparto/pedidos/page.js` | Listado de pedidos operativos |
-| `src/app/reparto/pedidos/[id]/page.js` | Detalle de pedido operativo |
-| `src/app/reparto/autoventa/page.js` | Flujo de autoventa del repartidor |
-| `src/app/comercial/rutas/page.js` | Listado de rutas (planificación) |
-| `src/app/comercial/rutas/[id]/page.js` | Edición de ruta programada |
-| `src/app/comercial/rutas/plantillas/page.js` | Listado de plantillas |
-| `src/app/admin/field-operators/page.js` | Listado de FieldOperators |
-| `src/context/FieldOperatorContext.tsx` | Contexto del actor operativo |
-| `src/hooks/useMe.ts` | Hook GET /api/v2/me |
-| `src/hooks/useFieldOrders.ts` | Hooks de pedidos operativos |
-| `src/hooks/useFieldRoutes.ts` | Hooks de rutas operativas |
-| `src/hooks/useFieldAutoventa.ts` | Hook de autoventa operativa |
-| `src/hooks/useFieldOperators.ts` | Hooks de gestión de FieldOperator |
-| `src/hooks/useRouteTemplates.ts` | Hooks de plantillas |
-| `src/hooks/useRoutes.ts` | Hooks de rutas (backoffice/comercial) |
-| `src/services/fieldOperatorService.ts` | Servicio API del actor operativo |
-| `src/components/Reparto/RepartoNav.jsx` | Navegación del repartidor |
-| `src/components/Reparto/ErrorFieldOperatorNotLinked.jsx` | Error de identidad no vinculada |
-| `src/components/Reparto/FieldAutoventaWizard/` | Wizard de autoventa del repartidor |
-| `src/components/Reparto/Routes/` | Componentes de ejecución de ruta |
-| `src/components/Comercial/Routes/` | Componentes de planificación de ruta |
-| `src/components/Admin/FieldOperators/` | Componentes CRUD de FieldOperator |
-| `src/components/Comercial/CRM/CustomerAssignmentPanel.jsx` | Panel de asignación de cliente |
-| `src/components/Maps/RouteMap.tsx` | Mapa Mapbox base |
-| `src/lib/maps/geocoding.ts` | Helper de geocoding Mapbox |
-| `src/lib/maps/navigation.ts` | Helper de navegación externa |
+| Fichero                                                    | Tipo                                  |
+| ---------------------------------------------------------- | ------------------------------------- |
+| `src/app/reparto/layout.js`                                | Layout server                         |
+| `src/app/reparto/RepartoLayoutClient.jsx`                  | Layout client                         |
+| `src/app/reparto/page.js`                                  | Dashboard del repartidor              |
+| `src/app/reparto/rutas/page.js`                            | Listado de rutas                      |
+| `src/app/reparto/rutas/[id]/page.js`                       | Ejecución de ruta                     |
+| `src/app/reparto/pedidos/page.js`                          | Listado de pedidos operativos         |
+| `src/app/reparto/pedidos/[id]/page.js`                     | Detalle de pedido operativo           |
+| `src/app/reparto/autoventa/page.js`                        | Flujo de autoventa del repartidor     |
+| `src/app/comercial/rutas/page.js`                          | Listado de rutas (planificación)      |
+| `src/app/comercial/rutas/[id]/page.js`                     | Edición de ruta programada            |
+| `src/app/comercial/rutas/plantillas/page.js`               | Listado de plantillas                 |
+| `src/app/admin/field-operators/page.js`                    | Listado de FieldOperators             |
+| `src/context/FieldOperatorContext.tsx`                     | Contexto del actor operativo          |
+| `src/hooks/useMe.ts`                                       | Hook GET /api/v2/me                   |
+| `src/hooks/useFieldOrders.ts`                              | Hooks de pedidos operativos           |
+| `src/hooks/useFieldRoutes.ts`                              | Hooks de rutas operativas             |
+| `src/hooks/useFieldAutoventa.ts`                           | Hook de autoventa operativa           |
+| `src/hooks/useFieldOperators.ts`                           | Hooks de gestión de FieldOperator     |
+| `src/hooks/useRouteTemplates.ts`                           | Hooks de plantillas                   |
+| `src/hooks/useRoutes.ts`                                   | Hooks de rutas (backoffice/comercial) |
+| `src/services/fieldOperatorService.ts`                     | Servicio API del actor operativo      |
+| `src/components/Reparto/RepartoNav.jsx`                    | Navegación del repartidor             |
+| `src/components/Reparto/ErrorFieldOperatorNotLinked.jsx`   | Error de identidad no vinculada       |
+| `src/components/Reparto/FieldAutoventaWizard/`             | Wizard de autoventa del repartidor    |
+| `src/components/Reparto/Routes/`                           | Componentes de ejecución de ruta      |
+| `src/components/Comercial/Routes/`                         | Componentes de planificación de ruta  |
+| `src/components/Admin/FieldOperators/`                     | Componentes CRUD de FieldOperator     |
+| `src/components/Comercial/CRM/CustomerAssignmentPanel.jsx` | Panel de asignación de cliente        |
+| `src/components/Maps/RouteMap.tsx`                         | Mapa Mapbox base                      |
+| `src/lib/maps/geocoding.ts`                                | Helper de geocoding Mapbox            |
+| `src/lib/maps/navigation.ts`                               | Helper de navegación externa          |
 
 ---
 
@@ -3481,12 +3488,12 @@ El backend registra el estado de la ruta en el campo `status` de `Route`. Los va
 
 La UI usa el estado de las paradas para inferir el progreso real:
 
-| Indicador | Cómo se calcula |
-|-----------|-----------------|
+| Indicador           | Cómo se calcula                                      |
+| ------------------- | ---------------------------------------------------- |
 | Paradas completadas | `stops.filter(s => s.status === 'completed').length` |
-| Paradas omitidas | `stops.filter(s => s.status === 'skipped').length` |
-| Paradas pendientes | `stops.filter(s => s.status === 'pending').length` |
-| Progreso `X/Y` | completadas + omitidas sobre total |
+| Paradas omitidas    | `stops.filter(s => s.status === 'skipped').length`   |
+| Paradas pendientes  | `stops.filter(s => s.status === 'pending').length`   |
+| Progreso `X/Y`      | completadas + omitidas sobre total                   |
 
 ### 23.3. Vista de ejecución de ruta (`/reparto/rutas/[id]`)
 
@@ -3499,11 +3506,11 @@ El bottom sheet es la zona principal de trabajo. El mapa es apoyo visual, no el 
 
 #### Colores de marker por estado de parada
 
-| Estado | Color sugerido |
-|--------|----------------|
-| `pending` | Gris / neutro |
-| `completed` | Verde |
-| `skipped` | Naranja |
+| Estado                    | Color sugerido   |
+| ------------------------- | ---------------- |
+| `pending`                 | Gris / neutro    |
+| `completed`               | Verde            |
+| `skipped`                 | Naranja          |
 | Parada activa (siguiente) | Azul / destacado |
 
 ### 23.4. Flujo de trabajo por parada
@@ -3567,17 +3574,17 @@ No usar `toast` de sonner ni `react-hot-toast` directamente; toda notificación 
 
 ### 24.2. Tabla de comportamiento por código de error
 
-| Código | Contexto | Comportamiento en UI |
-|--------|----------|----------------------|
-| `401` | Cualquiera | Automático: `fetchWithTenant` despacha `AUTH_SESSION_EXPIRED_EVENT`; la sesión expira y el usuario es llevado al login. El componente no necesita hacer nada. |
-| `403` | Navegación a recurso | Mostrar página de error inline: "No tienes acceso a este recurso." Sin redirect automático. |
-| `403` | Acción (botón, mutación) | `notify.error({ title: 'Sin permiso', description: error.message })` |
-| `403` | `fieldOperatorId = null` | Pantalla `ErrorFieldOperatorNotLinked` (ver §22.3); no es un error genérico, es un estado conocido del actor |
-| `404` | Navegación a recurso | Mostrar mensaje inline "No encontrado" en la propia página, no redirect |
-| `404` | Acción rápida (ej: marcar parada) | `notify.error({ title: 'Recurso no encontrado', description: error.message })` |
-| `422` | Formulario (wizard autoventa, formulario plantilla) | Mapear errores a campos del formulario via React Hook Form `setError()`; no usar toast |
-| `422` | Acción rápida (ej: marcar resultado de parada) | `notify.error({ title: error.message })` |
-| Red / timeout | Cualquiera | `notify.error({ title: 'Error de conexión', description: 'Comprueba tu conexión e inténtalo de nuevo.' })` |
+| Código        | Contexto                                            | Comportamiento en UI                                                                                                                                          |
+| ------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `401`         | Cualquiera                                          | Automático: `fetchWithTenant` despacha `AUTH_SESSION_EXPIRED_EVENT`; la sesión expira y el usuario es llevado al login. El componente no necesita hacer nada. |
+| `403`         | Navegación a recurso                                | Mostrar página de error inline: "No tienes acceso a este recurso." Sin redirect automático.                                                                   |
+| `403`         | Acción (botón, mutación)                            | `notify.error({ title: 'Sin permiso', description: error.message })`                                                                                          |
+| `403`         | `fieldOperatorId = null`                            | Pantalla `ErrorFieldOperatorNotLinked` (ver §22.3); no es un error genérico, es un estado conocido del actor                                                  |
+| `404`         | Navegación a recurso                                | Mostrar mensaje inline "No encontrado" en la propia página, no redirect                                                                                       |
+| `404`         | Acción rápida (ej: marcar parada)                   | `notify.error({ title: 'Recurso no encontrado', description: error.message })`                                                                                |
+| `422`         | Formulario (wizard autoventa, formulario plantilla) | Mapear errores a campos del formulario via React Hook Form `setError()`; no usar toast                                                                        |
+| `422`         | Acción rápida (ej: marcar resultado de parada)      | `notify.error({ title: error.message })`                                                                                                                      |
+| Red / timeout | Cualquiera                                          | `notify.error({ title: 'Error de conexión', description: 'Comprueba tu conexión e inténtalo de nuevo.' })`                                                    |
 
 ### 24.3. Patrón de mutación con notificación
 
@@ -3597,14 +3604,11 @@ await notify.promise(
 
 ```ts
 // Autoventa operativa
-await notify.promise(
-  createAutoventa.mutateAsync(payload),
-  {
-    loading: 'Creando autoventa...',
-    success: 'Autoventa creada correctamente',
-    error: (err) => err?.message || 'No se pudo crear la autoventa',
-  }
-);
+await notify.promise(createAutoventa.mutateAsync(payload), {
+  loading: 'Creando autoventa...',
+  success: 'Autoventa creada correctamente',
+  error: (err) => err?.message || 'No se pudo crear la autoventa',
+});
 ```
 
 ### 24.4. Errores de validación en formularios (422)
@@ -3620,7 +3624,7 @@ onError: (error) => {
   } else {
     notify.error({ title: error.message || 'Error al guardar' });
   }
-}
+};
 ```
 
 Este patrón es coherente con el existente en `src/lib/api/apiHelpers.js`, que ya prioriza `userMessage` sobre `message` y expone `error.data` con el detalle de validación.
@@ -3643,10 +3647,10 @@ No debe mostrarse como un error genérico de sistema.
 
 La página muestra el detalle de un `FieldOrderResource` y permite dos tipos de acción independientes:
 
-| Acción | Campo backend | Patrón |
-|--------|---------------|--------|
-| Cambiar estado del pedido | `status` | Selector o botones de acción directa |
-| Editar líneas servidas | `plannedProducts` (reemplazo completo) | Editor de líneas con guardado explícito |
+| Acción                    | Campo backend                          | Patrón                                  |
+| ------------------------- | -------------------------------------- | --------------------------------------- |
+| Cambiar estado del pedido | `status`                               | Selector o botones de acción directa    |
+| Editar líneas servidas    | `plannedProducts` (reemplazo completo) | Editor de líneas con guardado explícito |
 
 Estas dos acciones se envían en la misma llamada `PUT /api/v2/field/orders/{order}`, pero la UI puede ofrecerlas de forma separada para reducir la carga cognitiva del repartidor en calle.
 
@@ -3677,15 +3681,15 @@ Componente principal: `FieldOrderDetail.jsx` en `src/components/Reparto/Orders/`
 
 Campos del `FieldOrderResource` que se muestran siempre en modo lectura:
 
-| Campo | Cómo se muestra |
-|-------|-----------------|
-| `id` | `#00001` (formato padded, igual que `OrderCard` existente) |
-| `customer.name` | Nombre prominente |
-| `orderType` | Badge: `Autoventa` / `Estándar` |
-| `entryDate` | Fecha de entrada |
-| `loadDate` | Fecha de carga (destacada) |
-| `buyerReference` | Si existe, en gris secundario |
-| `routeId` | Si existe, enlace "Ver ruta" a `/reparto/rutas/[routeId]` |
+| Campo            | Cómo se muestra                                            |
+| ---------------- | ---------------------------------------------------------- |
+| `id`             | `#00001` (formato padded, igual que `OrderCard` existente) |
+| `customer.name`  | Nombre prominente                                          |
+| `orderType`      | Badge: `Autoventa` / `Estándar`                            |
+| `entryDate`      | Fecha de entrada                                           |
+| `loadDate`       | Fecha de carga (destacada)                                 |
+| `buyerReference` | Si existe, en gris secundario                              |
+| `routeId`        | Si existe, enlace "Ver ruta" a `/reparto/rutas/[routeId]`  |
 
 El repartidor **no puede editar** estos campos. Son propiedades comerciales del pedido fuera de su perímetro (`PUT /api/v2/field/orders/{order}` no acepta cliente, fechas ni referencia).
 
@@ -3695,11 +3699,11 @@ El estado actual (`status`) se muestra como Badge y se puede cambiar con un sele
 
 Estados válidos para el actor operativo:
 
-| Valor | Etiqueta UI | Badge color |
-|-------|-------------|-------------|
-| `pending` | En curso | Naranja |
-| `finished` | Terminado | Verde |
-| `incident` | Incidencia | Rojo |
+| Valor      | Etiqueta UI | Badge color |
+| ---------- | ----------- | ----------- |
+| `pending`  | En curso    | Naranja     |
+| `finished` | Terminado   | Verde       |
+| `incident` | Incidencia  | Rojo        |
 
 La transición se hace con tres botones compactos o un `Select` de shadcn/ui. Al cambiar el estado se llama directamente a `PUT` con solo `{ status: nuevoEstado }` (sin `plannedProducts`), usando `notify.promise()`.
 
@@ -3710,6 +3714,7 @@ No se requiere que el repartidor guarde estado y líneas al mismo tiempo. Son ac
 Muestra `plannedProductDetails` como lista compacta:
 
 Por línea:
+
 - Nombre del producto (`product.name`)
 - Especie (`product.species.name`) en gris secundario
 - Cantidad (`quantity`) y cajas (`boxes`)
@@ -3717,6 +3722,7 @@ Por línea:
 - Subtotal calculado (`quantity × unitPrice`)
 
 Al final del bloque:
+
 - Total de cajas: suma de `boxes` de todas las líneas (`totalBoxes` del resource)
 - Total de peso neto: `totalNetWeight` del resource
 
@@ -3734,7 +3740,7 @@ Al abrir el Sheet, se inicializa con los `plannedProductDetails` actuales del pe
 
 ```ts
 // De plannedProductDetails a líneas editables
-const initialLines = order.plannedProductDetails.map(d => ({
+const initialLines = order.plannedProductDetails.map((d) => ({
   productId: d.product.id,
   productName: d.product.name,
   quantity: d.quantity,
@@ -3746,12 +3752,12 @@ const initialLines = order.plannedProductDetails.map(d => ({
 
 #### B. Por línea, el repartidor puede editar
 
-| Campo | Tipo de input | Notas |
-|-------|---------------|-------|
-| `quantity` | Número (peso neto) | Campo principal; mínimo 0.01 |
-| `boxes` | Número entero | Cajas servidas realmente |
-| `unitPrice` | Número (€/kg) | Pre-cargado del pedido; editable pero no incentivado |
-| `taxId` | Solo lectura | No se permite cambiar el impuesto desde campo |
+| Campo       | Tipo de input      | Notas                                                |
+| ----------- | ------------------ | ---------------------------------------------------- |
+| `quantity`  | Número (peso neto) | Campo principal; mínimo 0.01                         |
+| `boxes`     | Número entero      | Cajas servidas realmente                             |
+| `unitPrice` | Número (€/kg)      | Pre-cargado del pedido; editable pero no incentivado |
+| `taxId`     | Solo lectura       | No se permite cambiar el impuesto desde campo        |
 
 El `productId` **no se puede cambiar** por línea existente. Solo se puede eliminar la línea y añadir una nueva.
 
@@ -3768,7 +3774,7 @@ Al pulsar "Guardar", se construye el payload completo con todas las líneas del 
 
 ```ts
 const payload = {
-  plannedProducts: localLines.map(line => ({
+  plannedProducts: localLines.map((line) => ({
     product: line.productId,
     quantity: line.quantity,
     boxes: line.boxes,
@@ -3784,21 +3790,21 @@ La respuesta actualiza todo el estado del pedido en el cliente (React Query `inv
 
 #### E. Validaciones antes de enviar
 
-| Validación | Mensaje |
-|------------|---------|
-| Sin líneas | "El pedido debe tener al menos un producto" |
-| `quantity` ≤ 0 en alguna línea | "La cantidad de [producto] debe ser mayor que 0" |
-| `boxes` < 0 en alguna línea | "El número de cajas no puede ser negativo" |
-| `unitPrice` < 0 en alguna línea | "El precio no puede ser negativo" |
+| Validación                      | Mensaje                                          |
+| ------------------------------- | ------------------------------------------------ |
+| Sin líneas                      | "El pedido debe tener al menos un producto"      |
+| `quantity` ≤ 0 en alguna línea  | "La cantidad de [producto] debe ser mayor que 0" |
+| `boxes` < 0 en alguna línea     | "El número de cajas no puede ser negativo"       |
+| `unitPrice` < 0 en alguna línea | "El precio no puede ser negativo"                |
 
 ### 25.7. Componentes a crear
 
-| Componente | Ubicación | Función |
-|------------|-----------|---------|
-| `FieldOrderDetail.jsx` | `src/components/Reparto/Orders/` | Contenedor principal de la página |
-| `FieldOrderHeader.jsx` | `src/components/Reparto/Orders/` | Cabecera con datos del pedido |
-| `FieldOrderStatusControl.jsx` | `src/components/Reparto/Orders/` | Selector/botones de estado |
-| `FieldOrderProductsList.jsx` | `src/components/Reparto/Orders/` | Lista de líneas en modo lectura |
+| Componente                     | Ubicación                        | Función                                     |
+| ------------------------------ | -------------------------------- | ------------------------------------------- |
+| `FieldOrderDetail.jsx`         | `src/components/Reparto/Orders/` | Contenedor principal de la página           |
+| `FieldOrderHeader.jsx`         | `src/components/Reparto/Orders/` | Cabecera con datos del pedido               |
+| `FieldOrderStatusControl.jsx`  | `src/components/Reparto/Orders/` | Selector/botones de estado                  |
+| `FieldOrderProductsList.jsx`   | `src/components/Reparto/Orders/` | Lista de líneas en modo lectura             |
 | `FieldOrderProductsEditor.jsx` | `src/components/Reparto/Orders/` | Sheet editor de líneas (reemplazo completo) |
 
 ### 25.8. Relación con el listado `/reparto/pedidos`

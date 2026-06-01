@@ -20,6 +20,7 @@ Preparar la base del proyecto para integrar un **AI Chat (Vercel AI)** sin rompe
 **Objetivo:** Integrar Vercel AI SDK y crear tools/functions que usen los servicios de dominio.
 
 **Tareas:**
+
 1. Instalar Vercel AI SDK
    ```bash
    npm install ai @ai-sdk/openai
@@ -36,6 +37,7 @@ Preparar la base del proyecto para integrar un **AI Chat (Vercel AI)** sin rompe
    - Integrar con Vercel AI SDK
 
 **Beneficios:**
+
 - ✅ Cumple el objetivo original del proyecto
 - ✅ Los servicios de dominio están listos para esto
 - ✅ El AI Chat nunca conoce URLs ni endpoints (como se diseñó)
@@ -49,6 +51,7 @@ Preparar la base del proyecto para integrar un **AI Chat (Vercel AI)** sin rompe
 **Objetivo:** Eliminar código antiguo y optimizar la estructura.
 
 **Tareas:**
+
 1. **Validar que no hay usos de servicios genéricos originales:**
    - Verificar que ningún componente usa `entityService.js`, `createEntityService.js`, `editEntityService.js` de la raíz
    - Buscar imports y eliminar si no se usan
@@ -67,6 +70,7 @@ Preparar la base del proyecto para integrar un **AI Chat (Vercel AI)** sin rompe
    - Eliminar imports no usados
 
 **Beneficios:**
+
 - ✅ Código más limpio
 - ✅ Menos confusión entre servicios antiguos y nuevos
 - ✅ Reduce tamaño del bundle
@@ -80,6 +84,7 @@ Preparar la base del proyecto para integrar un **AI Chat (Vercel AI)** sin rompe
 **Objetivo:** Asegurar que todo funciona correctamente con pruebas.
 
 **Tareas:**
+
 1. **Testing manual de componentes migrados:**
    - Probar `EntityClient` con diferentes entidades
    - Probar `CreateEntityForm` con diferentes configuraciones
@@ -100,6 +105,7 @@ Preparar la base del proyecto para integrar un **AI Chat (Vercel AI)** sin rompe
    - E2E tests para flujos completos
 
 **Beneficios:**
+
 - ✅ Confianza en la estabilidad
 - ✅ Detección temprana de bugs
 - ✅ Documentación implícita de cómo funciona
@@ -113,6 +119,7 @@ Preparar la base del proyecto para integrar un **AI Chat (Vercel AI)** sin rompe
 **Objetivo:** Agregar más servicios de dominio o métodos específicos.
 
 **Tareas:**
+
 1. **Revisar `entitiesConfig.js` para entidades sin servicio:**
    - Identificar entidades que usan `EntityClient` pero no tienen servicio de dominio
    - Crear servicios faltantes
@@ -127,6 +134,7 @@ Preparar la base del proyecto para integrar un **AI Chat (Vercel AI)** sin rompe
    - Otros servicios específicos
 
 **Beneficios:**
+
 - ✅ Cobertura completa de todas las entidades
 - ✅ Métodos específicos de negocio disponibles
 - ✅ Consistencia en toda la aplicación
@@ -140,6 +148,7 @@ Preparar la base del proyecto para integrar un **AI Chat (Vercel AI)** sin rompe
 **Objetivo:** Mejorar la documentación para desarrolladores.
 
 **Tareas:**
+
 1. **Guía de uso para desarrolladores:**
    - Cómo crear un nuevo servicio de dominio
    - Cómo usar servicios de dominio en componentes
@@ -154,6 +163,7 @@ Preparar la base del proyecto para integrar un **AI Chat (Vercel AI)** sin rompe
    - Guías de contribución
 
 **Beneficios:**
+
 - ✅ Onboarding más fácil para nuevos desarrolladores
 - ✅ Referencia rápida para desarrollo
 - ✅ Mejor mantenibilidad a largo plazo
@@ -171,6 +181,7 @@ Preparar la base del proyecto para integrar un **AI Chat (Vercel AI)** sin rompe
 **Plan Detallado:** Ver [Plan de Integración](../chat-ai/PLAN-INTEGRACION-VERCEL-AI-CHATBOT.md) en la documentación del Chat AI
 
 **Resumen de Pasos:**
+
 1. Instalar Vercel AI SDK y dependencias
 2. Configurar variables de entorno (API keys, modelo, etc.)
 3. Crear estructura de tools que mapeen a servicios de dominio
@@ -185,6 +196,7 @@ Preparar la base del proyecto para integrar un **AI Chat (Vercel AI)** sin rompe
 **Razón:** Importante validar que todo funciona antes de hacer limpieza.
 
 **Pasos:**
+
 1. Testing manual de funcionalidad
 2. Validar servicios individualmente
 3. Probar flujos completos
@@ -194,6 +206,7 @@ Preparar la base del proyecto para integrar un **AI Chat (Vercel AI)** sin rompe
 **Razón:** Después de validar que todo funciona, se puede limpiar código antiguo con seguridad.
 
 **Pasos:**
+
 1. Verificar usos de servicios antiguos
 2. Eliminar servicios genéricos originales si no se usan
 3. Limpiar funciones de compatibilidad
@@ -238,20 +251,20 @@ export const supplierTools = {
     description: 'Lista todos los proveedores con filtros opcionales',
     parameters: {
       filters: { type: 'object', optional: true },
-      pagination: { type: 'object', optional: true }
+      pagination: { type: 'object', optional: true },
     },
     execute: async ({ filters, pagination }) => {
       return await supplierService.list(filters || {}, pagination || {});
-    }
+    },
   },
   getSupplier: {
     description: 'Obtiene un proveedor por ID',
     parameters: {
-      id: { type: 'number', required: true }
+      id: { type: 'number', required: true },
     },
     execute: async ({ id }) => {
       return await supplierService.getById(id);
-    }
+    },
   },
   // ... más tools
 };
@@ -269,4 +282,3 @@ export const supplierTools = {
 ---
 
 **Nota:** Todas las opciones son válidas, pero recomendamos empezar con la integración de AI Chat ya que es el objetivo original y los servicios están diseñados para eso.
-

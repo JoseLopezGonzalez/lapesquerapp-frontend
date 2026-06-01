@@ -23,14 +23,17 @@ GET /api/v2/customers/123/order-history?date_from=2025-01-01&date_to=2025-12-31
 ```
 
 **Comportamiento:**
+
 - Solo devuelve pedidos con `load_date` entre esas fechas (inclusive)
 - Las líneas en `data` solo incluyen pedidos de ese rango
 - Los totales (`total_boxes`, `total_net_weight`, `total_amount`, `average_unit_price`) se calculan solo de ese período
 
 **Ejemplo:**
+
 ```
 GET /api/v2/customers/123/order-history?date_from=2025-06-01&date_to=2025-06-30
 ```
+
 - Devuelve solo pedidos de junio 2025
 - Totales calculados solo de junio 2025
 
@@ -43,6 +46,7 @@ GET /api/v2/customers/123/order-history?year=2025
 ```
 
 **Comportamiento:**
+
 - Solo devuelve pedidos del año especificado
 - Las líneas en `data` solo incluyen pedidos de ese año
 - Los totales se calculan solo de ese año
@@ -58,11 +62,13 @@ GET /api/v2/customers/123/order-history?period=year
 ```
 
 **Valores posibles:**
+
 - `month`: Solo mes actual
 - `quarter`: Solo trimestre actual
 - `year`: Solo año actual
 
 **Comportamiento:**
+
 - Calcula el período automáticamente desde la fecha actual
 - Solo devuelve pedidos del período actual
 - Los totales se calculan solo del período actual
@@ -78,6 +84,7 @@ GET /api/v2/customers/123/order-history
 ```
 
 **Comportamiento:**
+
 - Devuelve todos los pedidos históricos
 - Los totales se calculan de todo el historial
 
@@ -92,6 +99,7 @@ GET /api/v2/customers/123/order-history
 - Independientemente del período que esté visualizando, el frontend puede ver qué años tienen datos
 
 **Ejemplo:**
+
 ```
 Request: GET /api/v2/customers/123/order-history?date_from=2025-06-01&date_to=2025-06-30
 
@@ -140,7 +148,7 @@ GET /api/v2/customers/123/order-history?date_from=2025-06-01&date_to=2025-06-30
       },
       "total_boxes": 200,
       "total_net_weight": 1000,
-      "average_unit_price": 12.50,
+      "average_unit_price": 12.5,
       "last_order_date": "2025-06-28",
       "total_amount": 12500,
       "lines": [

@@ -1,6 +1,6 @@
 /**
  * Tools específicas para Orders (Pedidos)
- * 
+ *
  * Estas tools exponen métodos de negocio específicos de pedidos que no son genéricos.
  * Usan directamente orderService para operaciones complejas.
  */
@@ -26,8 +26,8 @@ export const orderTools = {
       const orders = await orderService.getActiveOrders();
       return {
         success: true,
-        data: Array.isArray(orders) ? orders : (orders?.data || []),
-        count: Array.isArray(orders) ? orders.length : (orders?.data?.length || 0),
+        data: Array.isArray(orders) ? orders : orders?.data || [],
+        count: Array.isArray(orders) ? orders.length : orders?.data?.length || 0,
       };
     },
   },
@@ -79,4 +79,3 @@ export const orderTools = {
     },
   },
 };
-

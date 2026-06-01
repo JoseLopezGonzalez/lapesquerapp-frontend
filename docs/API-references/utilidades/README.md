@@ -33,9 +33,9 @@ GET /api/v2/orders/{orderId}/pdf/order-sheet
 
 #### Path Parameters
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| orderId | integer | ID del pedido |
+| Parámetro | Tipo    | Descripción   |
+| --------- | ------- | ------------- |
+| orderId   | integer | ID del pedido |
 
 #### Response Exitosa (200)
 
@@ -187,9 +187,9 @@ GET /api/v2/orders/{orderId}/xlsx/lots-report
 
 #### Path Parameters
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| orderId | integer | ID del pedido |
+| Parámetro | Tipo    | Descripción   |
+| --------- | ------- | ------------- |
+| orderId   | integer | ID del pedido |
 
 #### Response Exitosa (200)
 
@@ -229,12 +229,12 @@ GET /api/v2/orders/xls/A3ERP-sales-delivery-note-filtered
 
 #### Query Parameters
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| startDate | date | Fecha de inicio |
-| endDate | date | Fecha de fin |
-| customer_ids | array | IDs de clientes |
-| status | string | Estado del pedido |
+| Parámetro    | Tipo   | Descripción       |
+| ------------ | ------ | ----------------- |
+| startDate    | date   | Fecha de inicio   |
+| endDate      | date   | Fecha de fin      |
+| customer_ids | array  | IDs de clientes   |
+| status       | string | Estado del pedido |
 
 ---
 
@@ -391,6 +391,7 @@ POST /api/v2/orders/{orderId}/send-custom-documents
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -399,9 +400,9 @@ Content-Type: application/json
 
 #### Path Parameters
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| orderId | integer | ID del pedido |
+| Parámetro | Tipo    | Descripción   |
+| --------- | ------- | ------------- |
+| orderId   | integer | ID del pedido |
 
 #### Request Body
 
@@ -426,9 +427,9 @@ Content-Type: application/json
 
 #### Campos Requeridos
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| emails | array | Array de emails destinatarios |
+| Campo     | Tipo  | Descripción                          |
+| --------- | ----- | ------------------------------------ |
+| emails    | array | Array de emails destinatarios        |
 | documents | array | Array de documentos a generar/enviar |
 
 #### Response Exitosa (200)
@@ -524,4 +525,3 @@ POST /api/v2/orders/{orderId}/send-standard-documents
 - Los archivos pueden ser grandes; asegúrate de tener suficiente tiempo de espera en el cliente
 - Algunos endpoints pueden requerir roles específicos (ver documentación de cada endpoint)
 - Los documentos se generan según la configuración del tenant actual
-

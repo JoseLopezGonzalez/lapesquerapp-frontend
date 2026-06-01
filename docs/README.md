@@ -66,9 +66,10 @@ Los prompts y auditorías movidos a `antiguos/` pasan a ser referencia históric
 ### Análisis y Auditorías
 
 17. **[analisis/README.md](./analisis/README.md)** - Análisis técnicos, auditorías y optimizaciones
-   - Análisis de componentes y módulos
-   - Optimizaciones implementadas
-   - Propuestas de refactorización
+
+- Análisis de componentes y módulos
+- Optimizaciones implementadas
+- Propuestas de refactorización
 
 ### Histórico del Circuito Anterior
 

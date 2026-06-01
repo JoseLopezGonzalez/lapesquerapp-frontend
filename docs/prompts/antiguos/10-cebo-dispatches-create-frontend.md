@@ -19,35 +19,35 @@ Implementar de forma **planificada** el apartado de **crear salidas de cebo** en
 ### Flujo operario (cebo)
 
 - **Página create**  
-  `src/app/admin/raw-material-receptions/create/page.js`  
+  `src/app/admin/raw-material-receptions/create/page.js`
   - Sesión, `role === 'operario'`, operario sin Card y estado de éxito/formulario; otros con Card.
 
 - **Formulario**  
-  `src/components/Warehouse/OperarioCreateReceptionForm/index.js`  
+  `src/components/Warehouse/OperarioCreateReceptionForm/index.js`
   - Stepper, diálogo de línea, empty state, "Añadir línea".
 
 - **Hook**  
-  `src/hooks/useOperarioReceptionForm.js`  
+  `src/hooks/useOperarioReceptionForm.js`
   - Pasos, validación, **aquí está el aviso "Algunas líneas no tienen cajas"** con `notify.action` y `someLinesWithoutBoxes`. En cebo operario **no** ejecutar esa rama.
 
 - **Pantalla de éxito**  
-  `src/components/Warehouse/ReceptionSuccessActions/index.js`  
+  `src/components/Warehouse/ReceptionSuccessActions/index.js`
   - Referencia para una pantalla de éxito de cebo si se desea.
 
 ### Flujo resto de roles (cebo)
 
 - **Formulario admin**  
-  `src/components/Admin/RawMaterialReceptions/CreateReceptionForm/index.js`  
+  `src/components/Admin/RawMaterialReceptions/CreateReceptionForm/index.js`
   - Tabs "Por líneas" y "Por palets". Para cebo **solo** modo líneas: sin Tabs de palets, sin `PalletDialog`, sin `temporalPallets`.
 
 - **Hook admin**  
-  `src/hooks/useAdminReceptionForm.js`  
+  `src/hooks/useAdminReceptionForm.js`
   - Modo `automatic`: `validateReceptionDetails`, `transformDetailsToApiFormat`, payload `supplier`, `date`, `notes`, `details`. En cebo usar solo esta rama; no `mode === 'manual'` ni payload con `pallets`.
 
 ### Servicios y rutas
 
 - **Cebo**  
-  `src/services/domain/cebo-dispatches/ceboDispatchService.js`  
+  `src/services/domain/cebo-dispatches/ceboDispatchService.js`
   - Ya tiene `create(data)`. Definir payload según backend (solo líneas).
 
 - **Ruta create**  
@@ -86,16 +86,16 @@ Implementar de forma **planificada** el apartado de **crear salidas de cebo** en
 
 ## Checklist diferencias
 
-| Aspecto | Recepciones operario | Cebo operario |
-|---------|----------------------|---------------|
-| Aviso "Algunas líneas no tienen cajas" | Sí | **No** |
-| Resto del flujo | Igual | Igual (API cebo) |
+| Aspecto                                | Recepciones operario | Cebo operario    |
+| -------------------------------------- | -------------------- | ---------------- |
+| Aviso "Algunas líneas no tienen cajas" | Sí                   | **No**           |
+| Resto del flujo                        | Igual                | Igual (API cebo) |
 
-| Aspecto | Recepciones otros roles | Cebo otros roles |
-|---------|------------------------|------------------|
-| Modo líneas | Sí | Sí (único) |
-| Modo palets | Sí | **No** |
-| Payload create | details o pallets | Solo **details** |
+| Aspecto        | Recepciones otros roles | Cebo otros roles |
+| -------------- | ----------------------- | ---------------- |
+| Modo líneas    | Sí                      | Sí (único)       |
+| Modo palets    | Sí                      | **No**           |
+| Payload create | details o pallets       | Solo **details** |
 
 ---
 

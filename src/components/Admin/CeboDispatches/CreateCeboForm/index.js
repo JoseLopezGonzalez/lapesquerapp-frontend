@@ -71,18 +71,18 @@ export default function CreateCeboForm({ onSuccess }) {
 
   if (suppliersLoading) {
     return (
-      <div className="w-full h-full flex items-center justify-center">
+      <div className="flex h-full w-full items-center justify-center">
         <Loader />
       </div>
     );
   }
 
   return (
-    <div className="w-full h-full p-6">
+    <div className="h-full w-full p-6">
       <Announcer />
 
-      <div className="flex justify-between items-start mb-6">
-        <h1 className="text-2xl font-semibold mb-4">Nueva salida de cebo</h1>
+      <div className="mb-6 flex items-start justify-between">
+        <h1 className="mb-4 text-2xl font-semibold">Nueva salida de cebo</h1>
         <Button
           type="button"
           onClick={handleSaveClick}
@@ -92,7 +92,7 @@ export default function CreateCeboForm({ onSuccess }) {
         >
           {isSubmitting ? (
             <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Guardando
             </>
           ) : (
@@ -106,9 +106,7 @@ export default function CreateCeboForm({ onSuccess }) {
 
       <form onSubmit={handleSubmit(handleCreate)} className="flex flex-col gap-8">
         <div className="w-full">
-          <h3 className="text-sm font-medium text-muted-foreground">
-            Información General
-          </h3>
+          <h3 className="text-muted-foreground text-sm font-medium">Información General</h3>
           <Separator className="my-2" />
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -161,9 +159,7 @@ export default function CreateCeboForm({ onSuccess }) {
                   );
                 }}
               />
-              {errors.date && (
-                <p className="text-destructive text-sm">{errors.date.message}</p>
-              )}
+              {errors.date && <p className="text-destructive text-sm">{errors.date.message}</p>}
             </div>
 
             <div className="space-y-2">
@@ -194,9 +190,7 @@ export default function CreateCeboForm({ onSuccess }) {
         </div>
 
         <div className="w-full">
-          <h3 className="text-sm font-medium text-muted-foreground">
-            Observaciones
-          </h3>
+          <h3 className="text-muted-foreground text-sm font-medium">Observaciones</h3>
           <Separator className="my-2" />
           <div className="space-y-2">
             <Label htmlFor="notes">Observaciones / Lonja</Label>
@@ -210,9 +204,7 @@ export default function CreateCeboForm({ onSuccess }) {
         </div>
 
         <div className="w-full">
-          <h3 className="text-sm font-medium text-muted-foreground mb-2">
-            Líneas de Producto
-          </h3>
+          <h3 className="text-muted-foreground mb-2 text-sm font-medium">Líneas de Producto</h3>
           <Separator className="my-2" />
           <div className="space-y-4">
             <div className="overflow-x-auto">
@@ -252,7 +244,7 @@ export default function CreateCeboForm({ onSuccess }) {
                           )}
                         />
                         {errors.details?.[index]?.product && (
-                          <p className="text-destructive text-xs mt-1">
+                          <p className="text-destructive mt-1 text-xs">
                             {errors.details[index].product.message}
                           </p>
                         )}
@@ -284,7 +276,7 @@ export default function CreateCeboForm({ onSuccess }) {
                           )}
                         />
                         {errors.details?.[index]?.grossWeight && (
-                          <p className="text-destructive text-xs mt-1">
+                          <p className="text-destructive mt-1 text-xs">
                             {errors.details[index].grossWeight.message}
                           </p>
                         )}
@@ -306,10 +298,7 @@ export default function CreateCeboForm({ onSuccess }) {
                               </SelectTrigger>
                               <SelectContent>
                                 {TARE_OPTIONS.map((option) => (
-                                  <SelectItem
-                                    key={option.value}
-                                    value={option.value}
-                                  >
+                                  <SelectItem key={option.value} value={option.value}>
                                     {option.label}
                                   </SelectItem>
                                 ))}
@@ -321,17 +310,13 @@ export default function CreateCeboForm({ onSuccess }) {
                       <TableCell>
                         <Input
                           readOnly
-                          className="w-32 bg-muted"
+                          className="bg-muted w-32"
                           placeholder="0,00"
-                          value={
-                            (() => {
-                              const detail = currentDetails?.[index];
-                              const netWeight = detail?.netWeight;
-                              return netWeight
-                                ? formatDecimal(parseFloat(netWeight) || 0)
-                                : '0,00';
-                            })()
-                          }
+                          value={(() => {
+                            const detail = currentDetails?.[index];
+                            const netWeight = detail?.netWeight;
+                            return netWeight ? formatDecimal(parseFloat(netWeight) || 0) : '0,00';
+                          })()}
                           aria-label={`Peso neto calculado para línea ${index + 1}`}
                           aria-readonly="true"
                         />
@@ -361,16 +346,14 @@ export default function CreateCeboForm({ onSuccess }) {
                       <TableCell>
                         <Input
                           readOnly
-                          className="w-32 bg-muted"
+                          className="bg-muted w-32"
                           placeholder="0,00 €"
-                          value={
-                            (() => {
-                              const detail = currentDetails?.[index];
-                              const netWeight = parseFloat(detail?.netWeight) || 0;
-                              const price = parseFloat(detail?.price) || 0;
-                              return formatDecimalCurrency(netWeight * price);
-                            })()
-                          }
+                          value={(() => {
+                            const detail = currentDetails?.[index];
+                            const netWeight = parseFloat(detail?.netWeight) || 0;
+                            const price = parseFloat(detail?.price) || 0;
+                            return formatDecimalCurrency(netWeight * price);
+                          })()}
                           aria-label={`Importe para línea ${index + 1}`}
                           aria-readonly="true"
                         />
@@ -415,7 +398,7 @@ export default function CreateCeboForm({ onSuccess }) {
               className="w-full"
               aria-label="Agregar nueva línea de producto"
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="mr-2 h-4 w-4" />
               Agregar línea
             </Button>
           </div>

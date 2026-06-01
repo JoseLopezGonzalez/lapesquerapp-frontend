@@ -3,6 +3,7 @@
 ## Situación Actual
 
 ### OrderPallets (Tabla)
+
 - **Layout**: Tabla HTML (`<Table>`)
 - **Información mostrada**:
   - ID del palet
@@ -13,6 +14,7 @@
   - Botones de acción (Editar, Clonar, Desvincular, Eliminar)
 
 ### Stores Manager (PalletCard)
+
 - **Layout**: Cards con diseño visual
 - **Información mostrada**:
   - ID del palet con icono
@@ -29,6 +31,7 @@
 ### 1. Cambiar Layout de Table a Grid/Cards
 
 **Actual:**
+
 ```jsx
 <Table>
   <TableHeader>...</TableHeader>
@@ -41,8 +44,9 @@
 ```
 
 **Nuevo:**
+
 ```jsx
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
   {pallets.map((pallet) => (
     <PalletCard key={pallet.id} pallet={pallet} />
   ))}
@@ -50,12 +54,13 @@
 ```
 
 O usar Masonry (como en PalletKanbanView):
+
 ```jsx
 <Masonry
   breakpointCols={{
     default: 3,
     1280: 2,
-    768: 1
+    768: 1,
   }}
   className="masonry-grid"
 >
@@ -72,6 +77,7 @@ O usar Masonry (como en PalletKanbanView):
 **Solución**: Crear una versión adaptada o pasar las funciones como props.
 
 **Opción A: Crear OrderPalletCard (Recomendado)**
+
 - Copiar `PalletCard` y adaptarlo para usar las funciones de `useOrderContext()`
 - Cambiar las acciones del dropdown:
   - ✅ Mantener: Editar, Clonar, Imprimir etiqueta
@@ -79,6 +85,7 @@ O usar Masonry (como en PalletKanbanView):
   - ✅ Agregar: Desvincular, Eliminar
 
 **Opción B: Hacer PalletCard más flexible**
+
 - Modificar `PalletCard` para aceptar props opcionales:
   - `onEdit`, `onClone`, `onUnlink`, `onDelete`
   - `onPrintLabel`, `onMove` (opcional)
@@ -88,12 +95,14 @@ O usar Masonry (como en PalletKanbanView):
 ### 3. Adaptar Acciones del Dropdown
 
 **Acciones actuales en OrderPallets:**
+
 - Editar palet
 - Clonar palet
 - Desvincular palet
 - Eliminar palet
 
 **Acciones en PalletCard:**
+
 - Imprimir etiqueta
 - Reubicar (no aplica en pedidos)
 - Duplicar (equivalente a clonar)
@@ -101,6 +110,7 @@ O usar Masonry (como en PalletKanbanView):
 - Quitar de posición (no aplica en pedidos)
 
 **Acciones adaptadas para OrderPalletCard:**
+
 ```jsx
 <DropdownMenuContent>
   <DropdownMenuItem onClick={() => openPalletLabelDialog(pallet.id)}>
@@ -114,13 +124,10 @@ O usar Masonry (como en PalletKanbanView):
     <Edit /> Editar
   </DropdownMenuItem>
   <DropdownMenuSeparator />
-  <DropdownMenuItem 
-    onClick={() => handleUnlinkPallet(pallet.id)}
-    disabled={!!pallet.receptionId}
-  >
+  <DropdownMenuItem onClick={() => handleUnlinkPallet(pallet.id)} disabled={!!pallet.receptionId}>
     <Unlink /> Desvincular
   </DropdownMenuItem>
-  <DropdownMenuItem 
+  <DropdownMenuItem
     onClick={() => handleDeletePallet(pallet.id)}
     className="text-destructive"
     disabled={!!pallet.receptionId}
@@ -133,6 +140,7 @@ O usar Masonry (como en PalletKanbanView):
 ### 4. Verificar Estructura de Datos del Palet
 
 **Campos necesarios que debe tener el palet:**
+
 - ✅ `id` - Ya existe
 - ✅ `boxes` - Array de cajas (necesario para calcular productos y disponibilidad)
 - ✅ `lots` - Array de lotes (ya existe)
@@ -144,6 +152,7 @@ O usar Masonry (como en PalletKanbanView):
 - ✅ `numberOfBoxes` - Número de cajas (ya existe)
 
 **Helpers necesarios:**
+
 - `getAvailableBoxes(pallet.boxes)` - Ya existe en PalletCard
 - `getAvailableBoxesCount(pallet)` - Ya existe en PalletCard
 - `getAvailableNetWeight(pallet)` - Ya existe en PalletCard
@@ -152,45 +161,52 @@ O usar Masonry (como en PalletKanbanView):
 
 ```jsx
 // Componentes UI
-import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import Link from 'next/link'
+} from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import Link from 'next/link';
 
 // Iconos
-import { Layers, Package, Printer, Edit, Copy, Unlink, Trash2, ExternalLink } from 'lucide-react'
+import { Layers, Package, Printer, Edit, Copy, Unlink, Trash2, ExternalLink } from 'lucide-react';
 
 // Helpers
-import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
-import { getAvailableBoxes, getAvailableBoxesCount, getAvailableNetWeight } from '@/helpers/pallet/boxAvailability'
+import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
+import {
+  getAvailableBoxes,
+  getAvailableBoxesCount,
+  getAvailableNetWeight,
+} from '@/helpers/pallet/boxAvailability';
 
 // Si usas Masonry
-import Masonry from 'react-masonry-css'
+import Masonry from 'react-masonry-css';
 ```
 
 ### 6. Funciones Necesarias del Contexto
 
 **De useOrderContext:**
+
 - ✅ `onEditingPallet` → `handleOpenEditPallet`
 - ✅ `onCreatingPallet` → No necesario (solo para crear)
 - ✅ `onDeletePallet` → `handleDeletePallet`
 - ✅ `onUnlinkPallet` → `handleUnlinkPallet`
 
 **Nuevas funciones necesarias:**
+
 - `openPalletLabelDialog(palletId)` - Para imprimir etiqueta
   - Puede usar el mismo diálogo que Stores Manager o crear uno nuevo
 
 ### 7. Estado Vacío
 
 **Actual:**
+
 ```jsx
 <EmptyState
   title={'No existen palets vinculados'}
@@ -199,8 +215,9 @@ import Masonry from 'react-masonry-css'
 ```
 
 **Nuevo:** Mantener el mismo, pero adaptado al layout de cards:
+
 ```jsx
-<div className="flex flex-col items-center justify-center w-full h-full min-h-[400px]">
+<div className="flex h-full min-h-[400px] w-full flex-col items-center justify-center">
   <EmptyState
     title={'No existen palets vinculados'}
     description={'No se han añadido palets a este pedido'}
@@ -211,22 +228,26 @@ import Masonry from 'react-masonry-css'
 ## Plan de Implementación
 
 ### Paso 1: Crear OrderPalletCard
+
 1. Copiar `PalletCard` a `OrderPalletCard`
 2. Cambiar `useStoreContext()` por props
 3. Adaptar acciones del dropdown
 4. Eliminar lógica de posición/almacén
 
 ### Paso 2: Integrar en OrderPallets
+
 1. Importar `OrderPalletCard`
 2. Reemplazar `<Table>` por grid/masonry
 3. Pasar funciones necesarias como props
 4. Mantener estado vacío
 
 ### Paso 3: Agregar Funcionalidad de Etiquetas
+
 1. Crear función `openPalletLabelDialog` o usar la existente
 2. Verificar si existe el diálogo de etiquetas en el contexto de pedidos
 
 ### Paso 4: Testing
+
 1. Verificar que todos los palets se muestran correctamente
 2. Verificar que las acciones funcionan
 3. Verificar responsive design

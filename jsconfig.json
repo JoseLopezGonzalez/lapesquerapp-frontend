@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",            // ⬅️ ¡Esto es obligatorio!
+    "baseUrl": ".", // ⬅️ ¡Esto es obligatorio!
     "paths": {
       "@/*": ["src/*"],
       "@lib/*": ["src/lib/*"]

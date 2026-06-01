@@ -26,7 +26,7 @@ export default function OffersHistoryPanel({
       <EmptyState
         title={emptyTitle}
         description={emptyDescription}
-        className="h-full w-full border bg-muted/20 !min-h-[220px]"
+        className="bg-muted/20 h-full !min-h-[220px] w-full border"
       />
     );
   }
@@ -37,16 +37,21 @@ export default function OffersHistoryPanel({
         <Link
           key={offer.id}
           href={`${linkBasePath}/${offer.id}`}
-          className="block rounded-xl border p-4 hover:bg-accent/40"
+          className="hover:bg-accent/40 block rounded-xl border p-4"
         >
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="font-medium">Oferta #{offer.id}</p>
-              <p className="text-sm text-muted-foreground">
-                {offer.validUntil ? `Validez: ${formatDateValue(offer.validUntil)}` : 'Sin validez definida'}
+              <p className="text-muted-foreground text-sm">
+                {offer.validUntil
+                  ? `Validez: ${formatDateValue(offer.validUntil)}`
+                  : 'Sin validez definida'}
               </p>
             </div>
-            <StatusPill label={offerStatusLabels[offer.status] ?? offer.status} status={offer.status} />
+            <StatusPill
+              label={offerStatusLabels[offer.status] ?? offer.status}
+              status={offer.status}
+            />
           </div>
         </Link>
       ))}

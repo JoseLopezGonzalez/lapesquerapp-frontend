@@ -35,12 +35,12 @@ describe('buildOrderEditPayload', () => {
   });
 
   it('normalizes fieldOperator to integer or null', () => {
-    expect(
-      buildOrderEditPayload({ fieldOperator: '42' }, { fieldOperator: true })
-    ).toEqual({ fieldOperator: 42 });
+    expect(buildOrderEditPayload({ fieldOperator: '42' }, { fieldOperator: true })).toEqual({
+      fieldOperator: 42,
+    });
 
-    expect(
-      buildOrderEditPayload({ fieldOperator: '' }, { fieldOperator: true })
-    ).toEqual({ fieldOperator: null });
+    expect(buildOrderEditPayload({ fieldOperator: '' }, { fieldOperator: true })).toEqual({
+      fieldOperator: null,
+    });
   });
 });

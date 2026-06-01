@@ -10,26 +10,27 @@ La UI de La PesquerApp es operativa, no decorativa. Las pantallas están diseña
 
 El proyecto tiene 52 componentes shadcn en `src/components/ui/`. Los más usados:
 
-| Componente | Uso principal | Importación |
-|---|---|---|
-| `Button` | Acciones (265+ usos) | `@/components/ui/button` |
-| `Input` | Campos de texto | `@/components/ui/input` |
-| `Label` | Etiquetas de campo | `@/components/ui/label` |
-| `Badge` | Estados, etiquetas (100+ usos) | `@/components/ui/badge` |
-| `Card` + CardContent/Header/Title | Contenedores de sección | `@/components/ui/card` |
-| `Select` + SelectTrigger/Value/Content/Item | Desplegables | `@/components/ui/select` |
-| `Dialog` + DialogContent/Header/Title | Modales | `@/components/ui/dialog` |
-| `ScrollArea` | Scroll personalizado | `@/components/ui/scroll-area` |
-| `Textarea` | Texto multilínea | `@/components/ui/textarea` |
-| `Table` + TableHeader/Body/Row/Cell | Tablas | `@/components/ui/table` |
-| `Accordion` + AccordionItem/Trigger/Content | Secciones colapsables | `@/components/ui/accordion` |
-| `Pagination` | Paginación | `@/components/ui/pagination` |
-| `DatePicker` | Selector de fecha | `@/components/ui/datePicker` |
-| `Tabs` | Pestañas | `@/components/ui/tabs` |
-| `Separator` | Línea divisoria | `@/components/ui/separator` |
-| `Skeleton` | Estados de carga | `@/components/ui/skeleton` |
+| Componente                                  | Uso principal                  | Importación                   |
+| ------------------------------------------- | ------------------------------ | ----------------------------- |
+| `Button`                                    | Acciones (265+ usos)           | `@/components/ui/button`      |
+| `Input`                                     | Campos de texto                | `@/components/ui/input`       |
+| `Label`                                     | Etiquetas de campo             | `@/components/ui/label`       |
+| `Badge`                                     | Estados, etiquetas (100+ usos) | `@/components/ui/badge`       |
+| `Card` + CardContent/Header/Title           | Contenedores de sección        | `@/components/ui/card`        |
+| `Select` + SelectTrigger/Value/Content/Item | Desplegables                   | `@/components/ui/select`      |
+| `Dialog` + DialogContent/Header/Title       | Modales                        | `@/components/ui/dialog`      |
+| `ScrollArea`                                | Scroll personalizado           | `@/components/ui/scroll-area` |
+| `Textarea`                                  | Texto multilínea               | `@/components/ui/textarea`    |
+| `Table` + TableHeader/Body/Row/Cell         | Tablas                         | `@/components/ui/table`       |
+| `Accordion` + AccordionItem/Trigger/Content | Secciones colapsables          | `@/components/ui/accordion`   |
+| `Pagination`                                | Paginación                     | `@/components/ui/pagination`  |
+| `DatePicker`                                | Selector de fecha              | `@/components/ui/datePicker`  |
+| `Tabs`                                      | Pestañas                       | `@/components/ui/tabs`        |
+| `Separator`                                 | Línea divisoria                | `@/components/ui/separator`   |
+| `Skeleton`                                  | Estados de carga               | `@/components/ui/skeleton`    |
 
 **Componentes especializados propios:**
+
 - `Combobox` — autocomplete con búsqueda, en `src/components/Shadcn/Combobox`
 - `DatePicker` — selector de fecha con popover calendario (custom, no el de shadcn)
 - `InputOTP` — entrada de código OTP de 6 dígitos con slots
@@ -51,6 +52,7 @@ El proyecto tiene 52 componentes shadcn en `src/components/ui/`. Los más usados
 ## Patrones de pantalla
 
 ### Pantalla de listado (EntityClient)
+
 ```
 ┌─────────────────────────────────────────────┐
 │ Título + Descripción                        │
@@ -64,6 +66,7 @@ El proyecto tiene 52 componentes shadcn en `src/components/ui/`. Los más usados
 ```
 
 ### Pantalla de detalle
+
 ```
 ┌─────────────────────────────────────────────┐
 │ [← Volver] Título de la entidad             │
@@ -77,6 +80,7 @@ El proyecto tiene 52 componentes shadcn en `src/components/ui/`. Los más usados
 ```
 
 ### Modal de formulario
+
 ```
 ┌─────────────────────────────────────────────┐
 │ Título del modal                     [X]    │

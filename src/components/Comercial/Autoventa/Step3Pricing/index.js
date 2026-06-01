@@ -11,19 +11,23 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-export default function Step3Pricing({ state, setItemPrice, taxOptions = null, setItemTax = null }) {
+export default function Step3Pricing({
+  state,
+  setItemPrice,
+  taxOptions = null,
+  setItemTax = null,
+}) {
   const items = state.items ?? [];
-  const showTaxSelect = Array.isArray(taxOptions) && taxOptions.length > 0 && typeof setItemTax === 'function';
+  const showTaxSelect =
+    Array.isArray(taxOptions) && taxOptions.length > 0 && typeof setItemTax === 'function';
 
   return (
-    <div className="w-full flex flex-col items-center mx-auto max-w-[420px]">
+    <div className="mx-auto flex w-full max-w-[420px] flex-col items-center">
       <div className="w-full space-y-3">
         {items.map((item, idx) => (
           <Card key={idx} className="overflow-hidden">
-            <CardContent className="p-4 space-y-3">
-              <p className="font-medium text-foreground">
-                {item.productName ?? item.productId}
-              </p>
+            <CardContent className="space-y-3 p-4">
+              <p className="text-foreground font-medium">{item.productName ?? item.productId}</p>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
                   <span className="text-muted-foreground">Cajas</span>
@@ -68,7 +72,8 @@ export default function Step3Pricing({ state, setItemPrice, taxOptions = null, s
                     <SelectContent>
                       {taxOptions.map((tax) => (
                         <SelectItem key={String(tax.id)} value={String(tax.id)}>
-                          {tax.name ?? `IVA ${tax.rate ?? ''}`}{tax.rate != null ? ` (${tax.rate}%)` : ''}
+                          {tax.name ?? `IVA ${tax.rate ?? ''}`}
+                          {tax.rate != null ? ` (${tax.rate}%)` : ''}
                         </SelectItem>
                       ))}
                     </SelectContent>

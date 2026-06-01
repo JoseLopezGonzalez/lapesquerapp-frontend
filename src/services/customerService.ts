@@ -50,9 +50,7 @@ export function getCustomersOptions(token: AuthToken): Promise<unknown> {
     .then((response) => {
       if (!response.ok) {
         return response.json().then((errorData: { message?: string }) => {
-          throw new Error(
-            getErrorMessage(errorData) || 'Error al obtener customers'
-          );
+          throw new Error(getErrorMessage(errorData) || 'Error al obtener customers');
         });
       }
       return response.json();
@@ -65,10 +63,7 @@ export function getCustomersOptions(token: AuthToken): Promise<unknown> {
 /**
  * Obtiene los detalles de un cliente por ID.
  */
-export async function getCustomer(
-  id: string | number,
-  token: AuthToken
-): Promise<unknown> {
+export async function getCustomer(id: string | number, token: AuthToken): Promise<unknown> {
   const response = await fetchWithTenant(`${API_URL_V2}customers/${id}`, {
     method: 'GET',
     headers: {
@@ -79,9 +74,7 @@ export async function getCustomer(
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(
-      getErrorMessage(errorData) || 'Error al obtener customer'
-    );
+    throw new Error(getErrorMessage(errorData) || 'Error al obtener customer');
   }
 
   const data = await response.json();
@@ -119,9 +112,7 @@ export async function getCustomerOrderHistory(
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(
-      getErrorMessage(errorData) || 'Error al obtener historial del cliente'
-    );
+    throw new Error(getErrorMessage(errorData) || 'Error al obtener historial del cliente');
   }
 
   const data = await response.json();
@@ -138,14 +129,17 @@ export async function getCustomerOrderHistoryRanges(
   customerId: string | number,
   token: AuthToken
 ): Promise<CustomerOrderHistoryRangesResponse> {
-  const response = await fetchWithTenant(`${API_URL_V2}customers/${customerId}/order-history/ranges`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-      'User-Agent': getUserAgent(),
-    },
-  });
+  const response = await fetchWithTenant(
+    `${API_URL_V2}customers/${customerId}/order-history/ranges`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        'User-Agent': getUserAgent(),
+      },
+    }
+  );
 
   if (!response.ok) {
     const errorData = await response.json();

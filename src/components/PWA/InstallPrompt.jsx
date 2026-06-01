@@ -1,25 +1,25 @@
-"use client";
+'use client';
 
 /**
  * InstallPrompt - Componente para instalación PWA en Android/Chrome
- * 
+ *
  * Muestra un botón de instalación cuando la PWA está disponible para instalar.
  * Solo aparece en Android/Chrome (no en iOS).
- * 
+ *
  * Referencia: docs/mobile-adaptation/00-PLAN-GENERAL.md
  */
 
-import * as React from "react";
-import { usePWAInstall } from "@/hooks/use-pwa-install";
-import { Button } from "@/components/ui/button";
-import { Download, X } from "lucide-react";
-import { cn } from "@/lib/utils";
+import * as React from 'react';
+import { usePWAInstall } from '@/hooks/use-pwa-install';
+import { Button } from '@/components/ui/button';
+import { Download, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-export function InstallPrompt({ 
-  onDismiss, 
+export function InstallPrompt({
+  onDismiss,
   className,
-  variant = "default",
-  showDismissButton = true
+  variant = 'default',
+  showDismissButton = true,
 }) {
   const { canInstall, isInstalled, isIOS, install } = usePWAInstall();
   const [dismissed, setDismissed] = React.useState(false);
@@ -44,20 +44,21 @@ export function InstallPrompt({
   };
 
   // Si está dentro de un contenedor con bg-primary, ajustar estilos
-  const isPrimaryContext = className?.includes('bg-primary') || className?.includes('bg-transparent');
-  
+  const isPrimaryContext =
+    className?.includes('bg-primary') || className?.includes('bg-transparent');
+
   return (
     <div className={className || ''}>
       <Button
         onClick={handleInstall}
-        size={variant === "default" ? "lg" : "sm"}
-        variant={variant === "default" ? "default" : variant}
+        size={variant === 'default' ? 'lg' : 'sm'}
+        variant={variant === 'default' ? 'default' : variant}
         className={cn(
-          "w-full",
-          isPrimaryContext && "bg-primary-foreground text-primary hover:bg-primary-foreground/90"
+          'w-full',
+          isPrimaryContext && 'bg-primary-foreground text-primary hover:bg-primary-foreground/90'
         )}
       >
-        <Download className="w-4 h-4 mr-2" />
+        <Download className="mr-2 h-4 w-4" />
         Instalar
       </Button>
       {showDismissButton && (
@@ -67,7 +68,7 @@ export function InstallPrompt({
           variant="ghost"
           className="absolute top-2 right-2 h-8 w-8 p-0"
         >
-          <X className="w-4 h-4" />
+          <X className="h-4 w-4" />
           <span className="sr-only">Cerrar</span>
         </Button>
       )}
@@ -77,4 +78,3 @@ export function InstallPrompt({
 
 // InstallPromptBanner se movió a un archivo separado
 // Ver: src/components/PWA/InstallPromptBanner.jsx
-

@@ -13,7 +13,13 @@ type UseOffersListParams = Record<string, unknown> & {
 export function useOffersList(params: UseOffersListParams = {}) {
   const { enabled = true, ...queryParams } = params;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
-  const queryKey = ['crm', 'offers', 'list', tenantId ?? 'unknown', normalizeQueryParams(queryParams)];
+  const queryKey = [
+    'crm',
+    'offers',
+    'list',
+    tenantId ?? 'unknown',
+    normalizeQueryParams(queryParams),
+  ];
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey,
@@ -53,7 +59,7 @@ export function useOffer(id: number | string | null | undefined) {
 
 export function useOfferMutations() {
   const queryClient = useQueryClient();
-  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() ?? 'unknown' : 'unknown';
+  const tenantId = typeof window !== 'undefined' ? (getCurrentTenant() ?? 'unknown') : 'unknown';
 
   const invalidate = async ({
     id,
@@ -72,7 +78,9 @@ export function useOfferMutations() {
       includeProspectsList
         ? queryClient.invalidateQueries({ queryKey: ['crm', 'prospects', 'list', tenantId] })
         : Promise.resolve(),
-      id ? queryClient.invalidateQueries({ queryKey: ['crm', 'offer', 'detail', tenantId, id] }) : Promise.resolve(),
+      id
+        ? queryClient.invalidateQueries({ queryKey: ['crm', 'offer', 'detail', tenantId, id] })
+        : Promise.resolve(),
     ]);
   };
 
@@ -98,8 +106,7 @@ export function useOfferMutations() {
         id: number | string;
         payload: { channel: string; email?: string; subject?: string };
       }) => crmService.sendOffer(id, payload),
-      onSuccess: (_, variables) =>
-        invalidate({ id: variables.id, includeProspectsList: true }),
+      onSuccess: (_, variables) => invalidate({ id: variables.id, includeProspectsList: true }),
     }),
     sendOfferEmail: useMutation({
       mutationFn: ({
@@ -109,13 +116,11 @@ export function useOfferMutations() {
         id: number | string;
         payload: { email: string; subject?: string };
       }) => crmService.sendOfferEmail(id, payload),
-      onSuccess: (_, variables) =>
-        invalidate({ id: variables.id, includeProspectsList: true }),
+      onSuccess: (_, variables) => invalidate({ id: variables.id, includeProspectsList: true }),
     }),
     acceptOffer: useMutation({
       mutationFn: (id: number | string) => crmService.acceptOffer(id),
-      onSuccess: (_, id) =>
-        invalidate({ id, includeDashboard: true, includeProspectsList: true }),
+      onSuccess: (_, id) => invalidate({ id, includeDashboard: true, includeProspectsList: true }),
     }),
     rejectOffer: useMutation({
       mutationFn: ({ id, reason }: { id: number | string; reason: string }) =>
@@ -125,19 +130,12 @@ export function useOfferMutations() {
     }),
     expireOffer: useMutation({
       mutationFn: (id: number | string) => crmService.expireOffer(id),
-      onSuccess: (_, id) =>
-        invalidate({ id, includeDashboard: true, includeProspectsList: true }),
+      onSuccess: (_, id) => invalidate({ id, includeDashboard: true, includeProspectsList: true }),
     }),
     createOrderFromOffer: useMutation({
-      mutationFn: ({
-        id,
-        payload,
-      }: {
-        id: number | string;
-        payload: Record<string, unknown>;
-      }) => crmService.createOrderFromOffer(id, payload),
-      onSuccess: (_, variables) =>
-        invalidate({ id: variables.id, includeDashboard: true }),
+      mutationFn: ({ id, payload }: { id: number | string; payload: Record<string, unknown> }) =>
+        crmService.createOrderFromOffer(id, payload),
+      onSuccess: (_, variables) => invalidate({ id: variables.id, includeDashboard: true }),
     }),
   };
 }

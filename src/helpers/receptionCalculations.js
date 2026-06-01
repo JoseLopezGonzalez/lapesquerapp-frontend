@@ -11,11 +11,11 @@
  * @returns {number} Net weight in kg (always >= 0)
  */
 export const calculateNetWeight = (grossWeight, boxes, tare) => {
-    const gross = parseFloat(grossWeight) || 0;
-    const parsed = parseInt(boxes, 10);
-    const boxCount = Number.isNaN(parsed) ? 0 : Math.max(0, parsed);
-    const tareWeight = parseFloat(tare) || 0;
-    return Math.max(0, gross - (tareWeight * boxCount));
+  const gross = parseFloat(grossWeight) || 0;
+  const parsed = parseInt(boxes, 10);
+  const boxCount = Number.isNaN(parsed) ? 0 : Math.max(0, parsed);
+  const tareWeight = parseFloat(tare) || 0;
+  return Math.max(0, gross - tareWeight * boxCount);
 };
 
 /**
@@ -24,14 +24,8 @@ export const calculateNetWeight = (grossWeight, boxes, tare) => {
  * @returns {Array} Array of net weights
  */
 export const calculateNetWeights = (details) => {
-    if (!Array.isArray(details)) return [];
-    return details.map(detail => 
-        calculateNetWeight(
-            detail.grossWeight,
-            detail.boxes,
-            detail.tare
-        )
-    );
+  if (!Array.isArray(details)) return [];
+  return details.map((detail) => calculateNetWeight(detail.grossWeight, detail.boxes, detail.tare));
 };
 
 /**
@@ -41,20 +35,20 @@ export const calculateNetWeights = (details) => {
  * @returns {Date} Normalized date
  */
 export const normalizeDate = (date) => {
-    if (!date) {
-        const today = new Date();
-        today.setHours(12, 0, 0, 0);
-        return today;
-    }
-    const normalized = date instanceof Date ? new Date(date) : new Date(date);
-    if (isNaN(normalized.getTime())) {
-        // Invalid date, return today
-        const today = new Date();
-        today.setHours(12, 0, 0, 0);
-        return today;
-    }
-    normalized.setHours(12, 0, 0, 0);
-    return normalized;
+  if (!date) {
+    const today = new Date();
+    today.setHours(12, 0, 0, 0);
+    return today;
+  }
+  const normalized = date instanceof Date ? new Date(date) : new Date(date);
+  if (isNaN(normalized.getTime())) {
+    // Invalid date, return today
+    const today = new Date();
+    today.setHours(12, 0, 0, 0);
+    return today;
+  }
+  normalized.setHours(12, 0, 0, 0);
+  return normalized;
 };
 
 /**
@@ -63,8 +57,7 @@ export const normalizeDate = (date) => {
  * @returns {boolean} True if date is valid
  */
 export const isValidDate = (date) => {
-    if (!date) return false;
-    const d = date instanceof Date ? date : new Date(date);
-    return !isNaN(d.getTime());
+  if (!date) return false;
+  const d = date instanceof Date ? date : new Date(date);
+  return !isNaN(d.getTime());
 };
-

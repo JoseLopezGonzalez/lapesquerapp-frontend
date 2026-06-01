@@ -36,25 +36,25 @@ Your mission is to keep the repository documentation always current, clear and u
 
 ## Documentation files and their purpose
 
-| File | Purpose | Update trigger |
-|---|---|---|
-| `AGENTS.md` | Project overview + agent rules | Stack change, new agent role, new forbidden behavior |
-| `CLAUDE.md` | Claude Code instructions | Workflow change, new mandatory reads |
-| `.cursor/rules/00-project-overview.mdc` | Always-on Cursor rules | Core rules change |
-| `.cursor/rules/10-90-*.mdc` | Agent-specific Cursor rules | Role change, new constraint |
-| `docs/ai-context/00-project-brief.md` | Product scope | New business domain added |
-| `docs/ai-context/01-frontend-architecture.md` | Real architecture | New service, new pattern, new dependency |
-| `docs/ai-context/02-ui-conventions.md` | UI rules | New component pattern, new UX rule |
-| `docs/ai-context/03-form-system.md` | Form conventions | New form pattern or tool |
-| `docs/ai-context/04-api-services.md` | API integration rules | New service, new endpoint pattern |
-| `docs/ai-context/05-entity-client.md` | Entity screen rules | New entity pattern |
-| `docs/ai-context/06-design-system.md` | Design rules | New shadcn component, new token |
-| `docs/ai-context/07-testing-qa.md` | QA guidelines | New QA process |
-| `docs/ai-context/08-performance.md` | Performance rules | New known bottleneck |
-| `docs/ai-context/09-security-frontend.md` | Security rules | New security concern |
-| `docs/ai-context/10-current-priorities.md` | Current sprint focus | Each sprint or after a major implementation |
-| `docs/ai-context/11-glossary.md` | Domain terms | New term introduced in the codebase |
-| `docs/decisions/ADR-*.md` | Architecture decisions | New pattern, new library, new convention adopted |
+| File                                          | Purpose                        | Update trigger                                       |
+| --------------------------------------------- | ------------------------------ | ---------------------------------------------------- |
+| `AGENTS.md`                                   | Project overview + agent rules | Stack change, new agent role, new forbidden behavior |
+| `CLAUDE.md`                                   | Claude Code instructions       | Workflow change, new mandatory reads                 |
+| `.cursor/rules/00-project-overview.mdc`       | Always-on Cursor rules         | Core rules change                                    |
+| `.cursor/rules/10-90-*.mdc`                   | Agent-specific Cursor rules    | Role change, new constraint                          |
+| `docs/ai-context/00-project-brief.md`         | Product scope                  | New business domain added                            |
+| `docs/ai-context/01-frontend-architecture.md` | Real architecture              | New service, new pattern, new dependency             |
+| `docs/ai-context/02-ui-conventions.md`        | UI rules                       | New component pattern, new UX rule                   |
+| `docs/ai-context/03-form-system.md`           | Form conventions               | New form pattern or tool                             |
+| `docs/ai-context/04-api-services.md`          | API integration rules          | New service, new endpoint pattern                    |
+| `docs/ai-context/05-entity-client.md`         | Entity screen rules            | New entity pattern                                   |
+| `docs/ai-context/06-design-system.md`         | Design rules                   | New shadcn component, new token                      |
+| `docs/ai-context/07-testing-qa.md`            | QA guidelines                  | New QA process                                       |
+| `docs/ai-context/08-performance.md`           | Performance rules              | New known bottleneck                                 |
+| `docs/ai-context/09-security-frontend.md`     | Security rules                 | New security concern                                 |
+| `docs/ai-context/10-current-priorities.md`    | Current sprint focus           | Each sprint or after a major implementation          |
+| `docs/ai-context/11-glossary.md`              | Domain terms                   | New term introduced in the codebase                  |
+| `docs/decisions/ADR-*.md`                     | Architecture decisions         | New pattern, new library, new convention adopted     |
 
 ## Decision records (ADRs)
 

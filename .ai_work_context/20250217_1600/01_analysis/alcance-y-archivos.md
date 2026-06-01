@@ -10,16 +10,16 @@
 
 ## Archivos en alcance (según auditoría sección 1)
 
-| Área | Archivo | Cambios |
-|------|---------|---------|
-| Layout/metadatos | `src/app/layout.js` | metadata (title, template, metadataBase, openGraph, twitter), apple-mobile-web-app-title |
-| Config API | `src/configs/config.js` | Comentario y fallback API URL desde branding |
-| PWA manifest | `public/site.webmanifest` | Servir por API route que lee branding (opción B) |
-| Login | `LoginFormMobile.tsx`, `LoginFormDesktop.tsx`, `LoginFormContent.tsx`, `LoginWelcomeStep.tsx` | appName, supportEmail, exampleEmail placeholder |
-| PWA UI | `InstallPromptBanner.jsx`, `InstallGuideIOS.jsx` | appShortName en textos "Instala(r) PesquerApp" |
-| Landing | `LandingPage/index.js` | h1, demo URL, footer (nombre, infoEmail, ©) |
-| Lógica | `useLoginTenant.ts`, `src/app/page.js` | demoEmail, baseDomain |
-| Comentario/alt | `Chat/index.js`, `Admin/Layout/Navbar/index.js` | Comentario genérico, logoAlt |
+| Área             | Archivo                                                                                       | Cambios                                                                                  |
+| ---------------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Layout/metadatos | `src/app/layout.js`                                                                           | metadata (title, template, metadataBase, openGraph, twitter), apple-mobile-web-app-title |
+| Config API       | `src/configs/config.js`                                                                       | Comentario y fallback API URL desde branding                                             |
+| PWA manifest     | `public/site.webmanifest`                                                                     | Servir por API route que lee branding (opción B)                                         |
+| Login            | `LoginFormMobile.tsx`, `LoginFormDesktop.tsx`, `LoginFormContent.tsx`, `LoginWelcomeStep.tsx` | appName, supportEmail, exampleEmail placeholder                                          |
+| PWA UI           | `InstallPromptBanner.jsx`, `InstallGuideIOS.jsx`                                              | appShortName en textos "Instala(r) PesquerApp"                                           |
+| Landing          | `LandingPage/index.js`                                                                        | h1, demo URL, footer (nombre, infoEmail, ©)                                              |
+| Lógica           | `useLoginTenant.ts`, `src/app/page.js`                                                        | demoEmail, baseDomain                                                                    |
+| Comentario/alt   | `Chat/index.js`, `Admin/Layout/Navbar/index.js`                                               | Comentario genérico, logoAlt                                                             |
 
 ## Fuera de alcance
 

@@ -3,18 +3,18 @@
 > Estado documental: histórico/global. No usar este documento como fuente principal de verdad del frontend para bloques o puntuaciones.
 > La referencia activa del frontend está en `docs/prompts/15-fuente-de-verdad-bloques-y-puntuaciones-frontend.md`.
 
-**Objetivo:**  ** **Consolidar el Core existente del ERP para declararlo estable (v1.0), eliminando inconsistencias, deuda técnica y riesgos, garantizando:
+**Objetivo:** \*\* \*\*Consolidar el Core existente del ERP para declararlo estable (v1.0), eliminando inconsistencias, deuda técnica y riesgos, garantizando:
 
-* **Funcionalidad completa y coherente**
-* **Lógica de negocio sólida**
-* **Base de datos consistente**
-* **Buenas prácticas reales (Next.js + Laravel)**
-* **Rendimiento y caché controlados**
-* **Seguridad y permisos correctos**
-* **Documentación técnica y para usuario final**
-* **Preparación para escalar a nuevos tenants**
+- **Funcionalidad completa y coherente**
+- **Lógica de negocio sólida**
+- **Base de datos consistente**
+- **Buenas prácticas reales (Next.js + Laravel)**
+- **Rendimiento y caché controlados**
+- **Seguridad y permisos correctos**
+- **Documentación técnica y para usuario final**
+- **Preparación para escalar a nuevos tenants**
 
-**Este documento NO es para construir desde cero.**  ** **Es para AUDITAR, MEJORAR y CONSOLIDAR lo que ya existe.
+**Este documento NO es para construir desde cero.** \*\* \*\*Es para AUDITAR, MEJORAR y CONSOLIDAR lo que ya existe.
 
 ---
 
@@ -24,22 +24,22 @@
 
 **Bloques identificados en el frontend** (rutas, entidades, managers):
 
-* 1. Auth + Roles/Permisos
-* 2. Dashboard (Admin + Operario)
-* 3. Ventas (Orders + líneas + estados)
-* 4. Productos (productos, categorías, familias, especies, artes pesca, zonas captura)
-* 5. Clientes (clientes, formas pago, países)
-* 6. Proveedores (proveedores, liquidaciones)
-* 7. Stock / Almacenes (stores, cajas, palets, stores-manager, warehouse operario, recepciones MP, salidas cebo)
-* 8. Producciones
-* 9. Fichajes / Gestión horaria (empleados, punches, manual-punches, calendario, time-punch-manager, nfc-punch-manager)
-* 10. Catálogos auxiliares (transportes, incoterms, comerciales)
-* 11. Usuarios y sesiones
-* 12. Orquestador (preparación pedidos)
-* 13. Editor de etiquetas
-* 14. Extracción datos lonja
-* 15. Informes básicos (gráficos Dashboard)
-* 16. Configuración por tenant
+- 1. Auth + Roles/Permisos
+- 2. Dashboard (Admin + Operario)
+- 3. Ventas (Orders + líneas + estados)
+- 4. Productos (productos, categorías, familias, especies, artes pesca, zonas captura)
+- 5. Clientes (clientes, formas pago, países)
+- 6. Proveedores (proveedores, liquidaciones)
+- 7. Stock / Almacenes (stores, cajas, palets, stores-manager, warehouse operario, recepciones MP, salidas cebo)
+- 8. Producciones
+- 9. Fichajes / Gestión horaria (empleados, punches, manual-punches, calendario, time-punch-manager, nfc-punch-manager)
+- 10. Catálogos auxiliares (transportes, incoterms, comerciales)
+- 11. Usuarios y sesiones
+- 12. Orquestador (preparación pedidos)
+- 13. Editor de etiquetas
+- 14. Extracción datos lonja
+- 15. Informes básicos (gráficos Dashboard)
+- 16. Configuración por tenant
 
 **⚠️ Todo lo que quede fuera es “roadmap”, no core.**
 
@@ -49,24 +49,24 @@
 
 **Última actualización**: 2026-02-16
 
-| # | Bloque | Rating | Notas | Fecha |
-|---|--------|--------|-------|-------|
-| 1 | **Auth + Roles/Permisos** | **8/10** | authService TS + tipos API + tests; LoginPage dividida; Zod en login/verify; middleware, NextAuth, componentes Auth en TS. Ver `docs/audits/nextjs-evolution-log.md`. | 2026-02-15 |
-| 2 | **Dashboard** (Admin + Operario) | **9/10** | React Query: useOrdersStats, useSpeciesOptions, useProductOptions, useDashboardCharts, usePunches, useReceptionsList, useDispatchesList. 14 cards/charts. Ver evolution-log. | 2026-02-15 |
-| 3 | **Ventas** (Orders + líneas + estados) | **9/10** | Order y OrderPallets refactorizados; Zod en formularios; tests useOrder/useCustomerHistory/useOrders. Ver `docs/plan-ventas-9-10.md`. | 2026-02-14 |
-| 4 | **Productos** (productos, categorías, familias, especies, artes, zonas) | **9/10** | useProductOptions, useProductCategoryOptions, useProductFamilyOptions, useSpeciesOptions (React Query); useCaptureZoneOptions, useFishingGearOptions en useProductBlockCatalogOptions; productService.ts tipado (ProductOption); tipos en src/types/product.ts. Listados vía EntityClient. | 2026-02-15 |
-| 5 | **Clientes** (clientes, formas pago, países) | **9/10** | customerService, paymentTermService, countryService en TS; useCustomersList, usePaymentTermsList, useCountriesList; EntityClient hooks. Ver evolution-log. | 2026-02-16 |
-| 6 | **Proveedores** (proveedores, liquidaciones) | **9/10** | supplierService.ts, supplierLiquidationService.ts; useSuppliersList, useSuppliersWithActivity, useSupplierLiquidationDetails (React Query); EntityClient isQueryDriven para suppliers; SupplierLiquidationList/Detail migrados a TSX; 8 tests. Ver evolution-log. | 2026-02-16 |
-| 7 | **Stock / Almacenes** (stores, cajas, palets, recepciones MP, salidas cebo, warehouse operario) | **8/10** | useStockStats, useStoreData, useStores (React Query); useStoreDialogs + useStorePositions; useOperarioReceptionForm; useAdminReceptionForm. Ver evolution-log. | 2026-02-15 |
-| 8 | **Producciones** | **9/10** | useProductionDetail, useProduction, useProcessOptions (React Query); useProductionRecord migrado a React Query + useMutation; ProductionView y editor con invalidación coordinada; tipos en src/types/production.ts. Pendiente: reducción de ProductionInputsManager/OutputsManager/ConsumptionsManager (P0, +200 líneas). Ver .ai_work_context/20260215_1313/01_analysis y 02_planning bloque-8. | 2026-02-15 |
-| 9 | **Fichajes / Gestión horaria** (empleados, punches, manual-punches, calendario, time-punch-manager, nfc-punch-manager) | **9/10** | usePunchesDashboard, usePunchesStatistics, usePunchesList, usePunchesByMonth; useEmployeeOptions, useEmployeesWithLastPunch; IndividualPunchForm Zod + RHF + useMutation; TimePunch/NFCPunch useMutation; BulkPunchForm/Excel useMutation + useEmployeeOptions; tipos en `src/types/punch.ts`. Ver `.ai_work_context/20260215_1313/`. | 2026-02-15 |
-| 10 | **Catálogos auxiliares** (transportes, incoterms, comerciales) | **9/10** | transportService, incotermService, salespersonService en TS + tipos; useTransportsList, useIncotermsList, useSalespeopleList (React Query); EntityClient usa hooks. Ver evolution-log. | 2026-02-16 |
-| 11 | **Usuarios y sesiones** | **9/10** | userService, sessionService, roleService en TS + tipos; useUsersList, useSessionsList, useRoleOptions (React Query); EntityClient usa hooks para users/sessions; 10 tests. Ver evolution-log. | 2026-02-16 |
-| 12 | **Orquestador** (preparación pedidos) | — | Pendiente auditoría | — |
-| 13 | **Editor de etiquetas** | **9/10** | labelEditorValidation + tests; LabelEditorLeftPanel, LabelEditorToolbar, LabelEditorPropertyPanel; labelService.ts + useLabels; useLabelEditor.ts; 18 tests. Ver evolution-log. | 2026-02-15 |
-| 14 | **Extracción datos lonja** | **9/10** | IndividualMode unificado; MassiveExportDialog 893→299 L; ExportModals common.js; useLinkPurchases (MassiveLink 389→217 L); 18 tests. Ver evolution-log. | 2026-02-16 |
-| 15 | **Informes básicos** (gráficos Dashboard) | **9/10** | useDashboardCharts, useOrdersStats, useStockStats, getReceptionChartData, getDispatchChartData en TypeScript; 8 tests chart services. Ver evolution-log. | 2026-02-16 |
-| 16 | **Configuración por tenant** | **9/10** | settingsService TS + tests; useSettingsData React Query; SettingsForm Zod + react-hook-form; subcomponentes extraídos. Ver evolution-log. | 2026-02-15 |
+| #   | Bloque                                                                                                                 | Rating   | Notas                                                                                                                                                                                                                                                                                                                                                                                             | Fecha      |
+| --- | ---------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| 1   | **Auth + Roles/Permisos**                                                                                              | **8/10** | authService TS + tipos API + tests; LoginPage dividida; Zod en login/verify; middleware, NextAuth, componentes Auth en TS. Ver `docs/audits/nextjs-evolution-log.md`.                                                                                                                                                                                                                             | 2026-02-15 |
+| 2   | **Dashboard** (Admin + Operario)                                                                                       | **9/10** | React Query: useOrdersStats, useSpeciesOptions, useProductOptions, useDashboardCharts, usePunches, useReceptionsList, useDispatchesList. 14 cards/charts. Ver evolution-log.                                                                                                                                                                                                                      | 2026-02-15 |
+| 3   | **Ventas** (Orders + líneas + estados)                                                                                 | **9/10** | Order y OrderPallets refactorizados; Zod en formularios; tests useOrder/useCustomerHistory/useOrders. Ver `docs/plan-ventas-9-10.md`.                                                                                                                                                                                                                                                             | 2026-02-14 |
+| 4   | **Productos** (productos, categorías, familias, especies, artes, zonas)                                                | **9/10** | useProductOptions, useProductCategoryOptions, useProductFamilyOptions, useSpeciesOptions (React Query); useCaptureZoneOptions, useFishingGearOptions en useProductBlockCatalogOptions; productService.ts tipado (ProductOption); tipos en src/types/product.ts. Listados vía EntityClient.                                                                                                        | 2026-02-15 |
+| 5   | **Clientes** (clientes, formas pago, países)                                                                           | **9/10** | customerService, paymentTermService, countryService en TS; useCustomersList, usePaymentTermsList, useCountriesList; EntityClient hooks. Ver evolution-log.                                                                                                                                                                                                                                        | 2026-02-16 |
+| 6   | **Proveedores** (proveedores, liquidaciones)                                                                           | **9/10** | supplierService.ts, supplierLiquidationService.ts; useSuppliersList, useSuppliersWithActivity, useSupplierLiquidationDetails (React Query); EntityClient isQueryDriven para suppliers; SupplierLiquidationList/Detail migrados a TSX; 8 tests. Ver evolution-log.                                                                                                                                 | 2026-02-16 |
+| 7   | **Stock / Almacenes** (stores, cajas, palets, recepciones MP, salidas cebo, warehouse operario)                        | **8/10** | useStockStats, useStoreData, useStores (React Query); useStoreDialogs + useStorePositions; useOperarioReceptionForm; useAdminReceptionForm. Ver evolution-log.                                                                                                                                                                                                                                    | 2026-02-15 |
+| 8   | **Producciones**                                                                                                       | **9/10** | useProductionDetail, useProduction, useProcessOptions (React Query); useProductionRecord migrado a React Query + useMutation; ProductionView y editor con invalidación coordinada; tipos en src/types/production.ts. Pendiente: reducción de ProductionInputsManager/OutputsManager/ConsumptionsManager (P0, +200 líneas). Ver .ai_work_context/20260215_1313/01_analysis y 02_planning bloque-8. | 2026-02-15 |
+| 9   | **Fichajes / Gestión horaria** (empleados, punches, manual-punches, calendario, time-punch-manager, nfc-punch-manager) | **9/10** | usePunchesDashboard, usePunchesStatistics, usePunchesList, usePunchesByMonth; useEmployeeOptions, useEmployeesWithLastPunch; IndividualPunchForm Zod + RHF + useMutation; TimePunch/NFCPunch useMutation; BulkPunchForm/Excel useMutation + useEmployeeOptions; tipos en `src/types/punch.ts`. Ver `.ai_work_context/20260215_1313/`.                                                             | 2026-02-15 |
+| 10  | **Catálogos auxiliares** (transportes, incoterms, comerciales)                                                         | **9/10** | transportService, incotermService, salespersonService en TS + tipos; useTransportsList, useIncotermsList, useSalespeopleList (React Query); EntityClient usa hooks. Ver evolution-log.                                                                                                                                                                                                            | 2026-02-16 |
+| 11  | **Usuarios y sesiones**                                                                                                | **9/10** | userService, sessionService, roleService en TS + tipos; useUsersList, useSessionsList, useRoleOptions (React Query); EntityClient usa hooks para users/sessions; 10 tests. Ver evolution-log.                                                                                                                                                                                                     | 2026-02-16 |
+| 12  | **Orquestador** (preparación pedidos)                                                                                  | —        | Pendiente auditoría                                                                                                                                                                                                                                                                                                                                                                               | —          |
+| 13  | **Editor de etiquetas**                                                                                                | **9/10** | labelEditorValidation + tests; LabelEditorLeftPanel, LabelEditorToolbar, LabelEditorPropertyPanel; labelService.ts + useLabels; useLabelEditor.ts; 18 tests. Ver evolution-log.                                                                                                                                                                                                                   | 2026-02-15 |
+| 14  | **Extracción datos lonja**                                                                                             | **9/10** | IndividualMode unificado; MassiveExportDialog 893→299 L; ExportModals common.js; useLinkPurchases (MassiveLink 389→217 L); 18 tests. Ver evolution-log.                                                                                                                                                                                                                                           | 2026-02-16 |
+| 15  | **Informes básicos** (gráficos Dashboard)                                                                              | **9/10** | useDashboardCharts, useOrdersStats, useStockStats, getReceptionChartData, getDispatchChartData en TypeScript; 8 tests chart services. Ver evolution-log.                                                                                                                                                                                                                                          | 2026-02-16 |
+| 16  | **Configuración por tenant**                                                                                           | **9/10** | settingsService TS + tests; useSettingsData React Query; SettingsForm Zod + react-hook-form; subcomponentes extraídos. Ver evolution-log.                                                                                                                                                                                                                                                         | 2026-02-15 |
 
 ---
 
@@ -76,24 +76,24 @@
 
 **Revisar:**
 
-* **Separación correcta entre Server Components y Client Components**
-* **Fetching consistente (sin duplicidades innecesarias)**
-* **Manejo homogéneo de errores**
-* **Estado global controlado (evitar renders innecesarios)**
-* **Componentes reutilizables limpios**
-* **Eliminación de lógica de negocio en UI**
+- **Separación correcta entre Server Components y Client Components**
+- **Fetching consistente (sin duplicidades innecesarias)**
+- **Manejo homogéneo de errores**
+- **Estado global controlado (evitar renders innecesarios)**
+- **Componentes reutilizables limpios**
+- **Eliminación de lógica de negocio en UI**
 
 **Verificar:**
 
-* **No hay lógica crítica en el frontend que deba estar en backend**
-* **Formularios correctamente validados**
-* **Estructura coherente por features**
+- **No hay lógica crítica en el frontend que deba estar en backend**
+- **Formularios correctamente validados**
+- **Estructura coherente por features**
 
 **Resultado esperado:**
 
-* **Código legible**
-* **Estructura consistente**
-* **Sin patrones improvisados**
+- **Código legible**
+- **Estructura consistente**
+- **Sin patrones improvisados**
 
 ---
 
@@ -101,25 +101,25 @@
 
 **Revisar:**
 
-* **Controllers finos**
-* **Validaciones en FormRequest**
-* **Lógica de negocio en Services / Actions**
-* **Uso correcto de Policies**
-* **Eager loading correcto (sin N+1)**
-* **Transacciones en operaciones críticas**
-* **Uso consistente de Resources / DTOs**
+- **Controllers finos**
+- **Validaciones en FormRequest**
+- **Lógica de negocio en Services / Actions**
+- **Uso correcto de Policies**
+- **Eager loading correcto (sin N+1)**
+- **Transacciones en operaciones críticas**
+- **Uso consistente de Resources / DTOs**
 
 **Eliminar:**
 
-* **Lógica duplicada**
-* **Métodos gigantes**
-* **Consultas repetidas**
+- **Lógica duplicada**
+- **Métodos gigantes**
+- **Consultas repetidas**
 
 **Resultado esperado:**
 
-* **Backend limpio**
-* **Separación clara de responsabilidades**
-* **Código escalable**
+- **Backend limpio**
+- **Separación clara de responsabilidades**
+- **Código escalable**
 
 ---
 
@@ -135,20 +135,20 @@
 
 **Entidades involucradas:**
 
-* **Productos**
-* **Clientes**
-* **Salesperson**
-* **Orders**
-* **OrderLines**
-* **StockMovements**
+- **Productos**
+- **Clientes**
+- **Salesperson**
+- **Orders**
+- **OrderLines**
+- **StockMovements**
 
 **Estados existentes:**
 
-* **draft**
-* **confirmed**
-* **shipped**
-* **canceled**
-* **etc.**
+- **draft**
+- **confirmed**
+- **shipped**
+- **canceled**
+- **etc.**
 
 **Documentar cómo funciona HOY.**
 
@@ -158,11 +158,11 @@
 
 **Comprobar:**
 
-* **¿Cuándo se impacta el stock?**
-* **¿Se permite stock negativo?**
-* **¿Qué campos se bloquean según estado?**
-* **¿Los totales son 100% consistentes?**
-* **¿Las anulaciones revierten correctamente?**
+- **¿Cuándo se impacta el stock?**
+- **¿Se permite stock negativo?**
+- **¿Qué campos se bloquean según estado?**
+- **¿Los totales son 100% consistentes?**
+- **¿Las anulaciones revierten correctamente?**
 
 **Detectar incoherencias.**
 
@@ -172,10 +172,10 @@
 
 **Definir una única verdad:**
 
-* **Regla clara de estados**
-* **Regla clara de stock**
-* **Regla clara de permisos**
-* **Regla clara de numeración**
+- **Regla clara de estados**
+- **Regla clara de stock**
+- **Regla clara de permisos**
+- **Regla clara de numeración**
 
 **Eliminar ambigüedades.**
 
@@ -187,26 +187,26 @@
 
 ## 3.1 Revisar integridad
 
-* **Claves foráneas correctas**
-* **Índices en campos críticos**
-* **Unique constraints necesarias**
-* **Eliminaciones coherentes (soft delete o no)**
+- **Claves foráneas correctas**
+- **Índices en campos críticos**
+- **Unique constraints necesarias**
+- **Eliminaciones coherentes (soft delete o no)**
 
 ## 3.2 Normalización
 
 **Verificar:**
 
-* **No hay duplicación innecesaria**
-* **Relaciones bien definidas**
-* **Estructura preparada para multi-tenant**
+- **No hay duplicación innecesaria**
+- **Relaciones bien definidas**
+- **Estructura preparada para multi-tenant**
 
 ## 3.3 Rendimiento
 
 **Añadir:**
 
-* **Índices en filtros habituales**
-* **Índices compuestos (tenant + fecha + estado)**
-* **Optimización de queries pesadas**
+- **Índices en filtros habituales**
+- **Índices compuestos (tenant + fecha + estado)**
+- **Optimización de queries pesadas**
 
 **Resultado:** **BD sólida y eficiente.**
 
@@ -218,15 +218,15 @@
 
 **Definir:**
 
-* **Qué se cachea**
-* **Qué no se cachea**
-* **TTL**
-* **Estrategia de invalidación**
+- **Qué se cachea**
+- **Qué no se cachea**
+- **TTL**
+- **Estrategia de invalidación**
 
 **Evitar:**
 
-* **Datos cacheados inconsistentes**
-* **Datos sensibles compartidos**
+- **Datos cacheados inconsistentes**
+- **Datos sensibles compartidos**
 
 ---
 
@@ -234,15 +234,15 @@
 
 **Aplicar cache solo en:**
 
-* **Catálogos**
-* **Configuraciones**
-* **Lecturas pesadas**
+- **Catálogos**
+- **Configuraciones**
+- **Lecturas pesadas**
 
 **Implementar:**
 
-* **Invalidación por evento**
-* **TTL razonable**
-* **No cachear datos transaccionales críticos sin control**
+- **Invalidación por evento**
+- **TTL razonable**
+- **No cachear datos transaccionales críticos sin control**
 
 **Resultado:** **Mejor rendimiento sin incoherencias.**
 
@@ -256,15 +256,15 @@
 
 ## Backend
 
-* **Tests de estados**
-* **Tests de totales**
-* **Tests de permisos**
-* **Tests de stock**
+- **Tests de estados**
+- **Tests de totales**
+- **Tests de permisos**
+- **Tests de stock**
 
 ## Frontend
 
-* **Checklist reproducible por bloque**
-* **Flujos críticos probados manualmente**
+- **Checklist reproducible por bloque**
+- **Flujos críticos probados manualmente**
 
 **Resultado:** **No se rompe al añadir nuevos tenants.**
 
@@ -272,11 +272,11 @@
 
 # FASE 6 — Seguridad y Multi-Tenant Readiness
 
-* **Aislamiento correcto por tenant**
-* **Permisos revisados**
-* **Auditoría mínima activada**
-* **Logs con contexto (tenantId, userId)**
-* **Backups probados**
+- **Aislamiento correcto por tenant**
+- **Permisos revisados**
+- **Auditoría mínima activada**
+- **Logs con contexto (tenantId, userId)**
+- **Backups probados**
 
 ---
 
@@ -286,13 +286,13 @@
 
 **Debe incluir:**
 
-* **Arquitectura general**
-* **Flujo de datos**
-* **Estados por bloque**
-* **Reglas de negocio consolidadas**
-* **Estrategia de caché**
-* **Modelo de BD simplificado**
-* **Guía de despliegue**
+- **Arquitectura general**
+- **Flujo de datos**
+- **Estados por bloque**
+- **Reglas de negocio consolidadas**
+- **Estrategia de caché**
+- **Modelo de BD simplificado**
+- **Guía de despliegue**
 
 **Objetivo:** **Cualquier desarrollador nuevo puede entender el sistema.**
 
@@ -304,19 +304,19 @@
 
 **Crear documentación tipo:**
 
-* **Manual por bloques**
-* **Cómo crear un pedido**
-* **Cómo gestionar stock**
-* **Estados y su significado**
-* **FAQ**
-* **Buenas prácticas de uso**
+- **Manual por bloques**
+- **Cómo crear un pedido**
+- **Cómo gestionar stock**
+- **Estados y su significado**
+- **FAQ**
+- **Buenas prácticas de uso**
 
 **Formato recomendado:**
 
-* **Web tipo documentation site (Docusaurus / Nextra / similar)**
-* **Buscable**
-* **Con capturas reales**
-* **Actualizable por versión**
+- **Web tipo documentation site (Docusaurus / Nextra / similar)**
+- **Buscable**
+- **Con capturas reales**
+- **Actualizable por versión**
 
 **Esto reduce soporte y aumenta profesionalidad.**
 
@@ -326,19 +326,19 @@
 
 **Se puede declarar Core estable cuando:**
 
-* **Lógica coherente y documentada**
-* **BD consistente**
-* **Sin incoherencias graves**
-* **Caché controlada**
-* **Tests básicos superados**
-* **Documentación publicada**
-* **No hay cambios estructurales constantes**
+- **Lógica coherente y documentada**
+- **BD consistente**
+- **Sin incoherencias graves**
+- **Caché controlada**
+- **Tests básicos superados**
+- **Documentación publicada**
+- **No hay cambios estructurales constantes**
 
 **A partir de aquí:**
 
-* **Nuevas funcionalidades → roadmap**
-* **Cambios estructurales → versionados**
-* **Foco en estabilidad y nuevos tenants**
+- **Nuevas funcionalidades → roadmap**
+- **Cambios estructurales → versionados**
+- **Foco en estabilidad y nuevos tenants**
 
 ---
 
@@ -346,9 +346,9 @@
 
 **Un ERP:**
 
-* **Sólido**
-* **Predecible**
-* **Escalable**
-* **Profesional**
-* **Documentado**
-* **Listo para vender e implantar**
+- **Sólido**
+- **Predecible**
+- **Escalable**
+- **Profesional**
+- **Documentado**
+- **Listo para vender e implantar**

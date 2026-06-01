@@ -90,19 +90,19 @@ Véase `docs/audits/findings/data-fetching-patterns.md` y `state-management-anal
 
 ## 8. Uso de patrones estructurales Next.js/React
 
-| Patrón | Presencia | Corrección | Consistencia |
-|--------|------------|------------|--------------|
-| Server / Client Components | Parcial | Aceptable donde hay RSC | Baja: predominio de cliente |
-| Custom Hooks | Sí | Correcta convención use* | Alta en dominios cubiertos |
-| Data Fetching | Manual | Sin caché/invalidación | Repetido en muchos sitios |
-| Formularios | react-hook-form + zod | Correcto | Alta |
-| State Management | Context API | Correcto | Múltiples contextos |
-| API Layer | fetchWithTenant + servicios | Correcto | Alta |
-| TypeScript | No | N/A | N/A |
-| UI Library | shadcn/ui + Radix | Consistente | Alta en primitivos |
-| Testing | Mínimo | 3 archivos | Muy baja |
-| Layouts / loading / error | Sí | error.js, loading.js | Aceptable |
-| Suspense | Sí | En Order y auth/verify | Parcial (lazy) |
+| Patrón                     | Presencia                   | Corrección                | Consistencia                |
+| -------------------------- | --------------------------- | ------------------------- | --------------------------- |
+| Server / Client Components | Parcial                     | Aceptable donde hay RSC   | Baja: predominio de cliente |
+| Custom Hooks               | Sí                          | Correcta convención use\* | Alta en dominios cubiertos  |
+| Data Fetching              | Manual                      | Sin caché/invalidación    | Repetido en muchos sitios   |
+| Formularios                | react-hook-form + zod       | Correcto                  | Alta                        |
+| State Management           | Context API                 | Correcto                  | Múltiples contextos         |
+| API Layer                  | fetchWithTenant + servicios | Correcto                  | Alta                        |
+| TypeScript                 | No                          | N/A                       | N/A                         |
+| UI Library                 | shadcn/ui + Radix           | Consistente               | Alta en primitivos          |
+| Testing                    | Mínimo                      | 3 archivos                | Muy baja                    |
+| Layouts / loading / error  | Sí                          | error.js, loading.js      | Aceptable                   |
+| Suspense                   | Sí                          | En Order y auth/verify    | Parcial (lazy)              |
 
 ---
 
@@ -164,7 +164,7 @@ Véase `docs/audits/findings/ui-design-system-review.md`.
 4. **Tipado progresivo con TypeScript**: empezar por API y modelos compartidos, luego componentes críticos (medio impacto, esfuerzo alto).
 5. **Dividir componentes gigantes** (EntityClient, PalletView, Order) en subcomponentes o vistas por pestaña/paso (medio impacto, esfuerzo medio).
 6. **Definir estrategia de tests**: añadir Jest o Vitest, tests de integración para flujos críticos y de componentes para UI reutilizable (medio impacto, esfuerzo medio).
-7. **Revisar uso de NEXT_PUBLIC_*** para Azure/AI: asegurar que solo se exponen variables necesarias en cliente (medio impacto, bajo esfuerzo).
+7. **Revisar uso de NEXT*PUBLIC*\*** para Azure/AI: asegurar que solo se exponen variables necesarias en cliente (medio impacto, bajo esfuerzo).
 8. **Sanitización de HTML** donde se use `dangerouslySetInnerHTML` (medio impacto, bajo esfuerzo).
 9. **Documentar cuándo usar shadcn vs NextUI vs Headless** para evitar mezclas innecesarias (bajo impacto, bajo esfuerzo).
 10. **Suspense/lazy**: extender el uso de lazy + Suspense a otras rutas pesadas para mejorar tiempo de carga percibido (bajo impacto, esfuerzo bajo-medio).
@@ -173,7 +173,7 @@ Véase `docs/audits/findings/ui-design-system-review.md`.
 
 ## 16. Trayectoria de evolución sugerida
 
-- **Fase 1 (corto plazo)**: Corregir seguridad (Google Maps key, revisión NEXT_PUBLIC_*, sanitización HTML). Añadir React Query y migrar 1–2 flujos piloto (p. ej. listado de entidades o almacenes).
+- **Fase 1 (corto plazo)**: Corregir seguridad (Google Maps key, revisión NEXT*PUBLIC*\*, sanitización HTML). Añadir React Query y migrar 1–2 flujos piloto (p. ej. listado de entidades o almacenes).
 - **Fase 2 (medio plazo)**: Aumentar Server Components para páginas de listado y detalle que no requieran interactividad inmediata; tipar contratos de API y modelos compartidos con TypeScript; descomponer 1–2 componentes grandes (Order o PalletView).
 - **Fase 3 (largo plazo)**: Estrategia de testing (unit + integración), documentación de arquitectura y de sistema de diseño; optimización de bundle y lazy loading donde sea necesario.
 
@@ -191,7 +191,7 @@ Véase `docs/audits/findings/ui-design-system-review.md`.
 ## Top 5 riesgos sistémicos
 
 1. **Data fetching sin caché**: Inconsistencia de datos entre pantallas, recargas innecesarias y dificultad para evolucionar a un modelo server-first.
-2. **Exposición de clave de Google Maps** (y posiblemente otros secretos en NEXT_PUBLIC_): Riesgo de abuso y coste si el repositorio es accesible.
+2. **Exposición de clave de Google Maps** (y posiblemente otros secretos en NEXT*PUBLIC*): Riesgo de abuso y coste si el repositorio es accesible.
 3. **Ausencia de TypeScript**: Refactors y cambios en API más costosos y propensos a regresiones.
 4. **Componentes monolíticos**: Dificultan pruebas, revisión y onboarding; acoplan UI y lógica.
 5. **Cobertura de tests mínima**: Cambios sin red de seguridad automatizada; riesgo en despliegues y evolución.
@@ -200,21 +200,21 @@ Véase `docs/audits/findings/ui-design-system-review.md`.
 
 ## Framework de madurez arquitectónica (1–10)
 
-| Dimensión | Puntuación | Comentario |
-|-----------|------------|------------|
-| Multi-tenant | 8 | Tenant en headers, middleware y getCurrentTenant bien integrados; falta posible contexto React de tenant para UI. |
-| Arquitectura de componentes | 5 | Buena base en UI y servicios; componentes muy grandes y poca separación en dominios complejos. |
-| Data fetching y estado | 4 | API y servicios bien; sin caché, sin invalidación, patrón repetitivo. |
-| TypeScript | 1 | No adoptado. |
-| UI / design system | 7 | shadcn/ui consistente; coexistencia con NextUI/Headless sin documentar. |
-| Rendimiento y optimización | 5 | Algunos lazy/Suspense; mucho cliente y dependencias pesadas sin análisis de bundle. |
-| Testing | 2 | 3 archivos; sin estrategia ni herramienta explícita. |
-| Accesibilidad | 5 | Uso de aria/role y Radix; sin auditoría WCAG. |
-| Documentación | 5 | Docs y prompts presentes; falta documentación de arquitectura y decisiones. |
-| Deuda técnica | 5 | Estructura clara; componentes grandes, JS sin tipos y datos en cliente acumulan deuda. |
+| Dimensión                   | Puntuación | Comentario                                                                                                        |
+| --------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------- |
+| Multi-tenant                | 8          | Tenant en headers, middleware y getCurrentTenant bien integrados; falta posible contexto React de tenant para UI. |
+| Arquitectura de componentes | 5          | Buena base en UI y servicios; componentes muy grandes y poca separación en dominios complejos.                    |
+| Data fetching y estado      | 4          | API y servicios bien; sin caché, sin invalidación, patrón repetitivo.                                             |
+| TypeScript                  | 1          | No adoptado.                                                                                                      |
+| UI / design system          | 7          | shadcn/ui consistente; coexistencia con NextUI/Headless sin documentar.                                           |
+| Rendimiento y optimización  | 5          | Algunos lazy/Suspense; mucho cliente y dependencias pesadas sin análisis de bundle.                               |
+| Testing                     | 2          | 3 archivos; sin estrategia ni herramienta explícita.                                                              |
+| Accesibilidad               | 5          | Uso de aria/role y Radix; sin auditoría WCAG.                                                                     |
+| Documentación               | 5          | Docs y prompts presentes; falta documentación de arquitectura y decisiones.                                       |
+| Deuda técnica               | 5          | Estructura clara; componentes grandes, JS sin tipos y datos en cliente acumulan deuda.                            |
 
 **Puntuación global ponderada**: **~4,7 / 10** (promedio aproximado; se puede afinar con pesos por prioridad de negocio).
 
 ---
 
-*Documento generado en el marco de la auditoría frontend Next.js/React. Detalle por área en `docs/audits/findings/`.*
+_Documento generado en el marco de la auditoría frontend Next.js/React. Detalle por área en `docs/audits/findings/`._

@@ -17,8 +17,8 @@ export interface AuthUser {
   fieldOperatorId?: number | null;
   isFieldOperator?: boolean;
   salespersonId?: number | null;
-  actorType?: "internal_user" | "external_user" | null;
-  externalUserType?: "maquilador" | null;
+  actorType?: 'internal_user' | 'external_user' | null;
+  externalUserType?: 'maquilador' | null;
   allowedStoreIds?: number[];
   assigned_store_id?: number | null;
   company_name?: string | null;

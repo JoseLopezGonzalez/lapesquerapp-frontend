@@ -1,12 +1,18 @@
 type QueryValue = string | number | boolean | null | undefined;
 type QueryParams = Record<string, QueryValue | QueryValue[]>;
 
-export function normalizeQueryParams(params: Record<string, unknown> = {}): Record<string, unknown> {
+export function normalizeQueryParams(
+  params: Record<string, unknown> = {}
+): Record<string, unknown> {
   return Object.entries(params)
-    .filter(([, value]) => value != null && value !== '' && (!Array.isArray(value) || value.length > 0))
+    .filter(
+      ([, value]) => value != null && value !== '' && (!Array.isArray(value) || value.length > 0)
+    )
     .sort(([left], [right]) => left.localeCompare(right))
     .reduce<Record<string, unknown>>((accumulator, [key, value]) => {
-      accumulator[key] = Array.isArray(value) ? [...value].map((item) => String(item)).sort() : value;
+      accumulator[key] = Array.isArray(value)
+        ? [...value].map((item) => String(item)).sort()
+        : value;
       return accumulator;
     }, {});
 }
@@ -26,21 +32,67 @@ export const routeTemplateKeys = {
 };
 
 export const fieldRouteKeys = {
-  all: (tenantId: string | null | undefined, fieldOperatorId: number | string | null | undefined = 'unknown') =>
-    ['field', 'routes', tenantId ?? 'unknown', fieldOperatorId ?? 'unknown'] as const,
-  list: (tenantId: string | null | undefined, fieldOperatorId: number | string | null | undefined = 'unknown', params: QueryParams = {}) =>
-    ['field', 'routes', tenantId ?? 'unknown', fieldOperatorId ?? 'unknown', normalizeQueryParams(params)] as const,
-  detail: (tenantId: string | null | undefined, fieldOperatorId: number | string | null | undefined = 'unknown', routeId: number | string | null | undefined) =>
-    ['field', 'routes', 'detail', tenantId ?? 'unknown', fieldOperatorId ?? 'unknown', routeId] as const,
+  all: (
+    tenantId: string | null | undefined,
+    fieldOperatorId: number | string | null | undefined = 'unknown'
+  ) => ['field', 'routes', tenantId ?? 'unknown', fieldOperatorId ?? 'unknown'] as const,
+  list: (
+    tenantId: string | null | undefined,
+    fieldOperatorId: number | string | null | undefined = 'unknown',
+    params: QueryParams = {}
+  ) =>
+    [
+      'field',
+      'routes',
+      tenantId ?? 'unknown',
+      fieldOperatorId ?? 'unknown',
+      normalizeQueryParams(params),
+    ] as const,
+  detail: (
+    tenantId: string | null | undefined,
+    fieldOperatorId: number | string | null | undefined = 'unknown',
+    routeId: number | string | null | undefined
+  ) =>
+    [
+      'field',
+      'routes',
+      'detail',
+      tenantId ?? 'unknown',
+      fieldOperatorId ?? 'unknown',
+      routeId,
+    ] as const,
 };
 
 export const fieldOrderKeys = {
-  all: (tenantId: string | null | undefined, fieldOperatorId: number | string | null | undefined = 'unknown') =>
-    ['field', 'orders', tenantId ?? 'unknown', fieldOperatorId ?? 'unknown'] as const,
-  list: (tenantId: string | null | undefined, fieldOperatorId: number | string | null | undefined = 'unknown', params: QueryParams = {}) =>
-    ['field', 'orders', tenantId ?? 'unknown', fieldOperatorId ?? 'unknown', normalizeQueryParams(params)] as const,
-  detail: (tenantId: string | null | undefined, fieldOperatorId: number | string | null | undefined = 'unknown', orderId: number | string | null | undefined) =>
-    ['field', 'orders', 'detail', tenantId ?? 'unknown', fieldOperatorId ?? 'unknown', orderId] as const,
+  all: (
+    tenantId: string | null | undefined,
+    fieldOperatorId: number | string | null | undefined = 'unknown'
+  ) => ['field', 'orders', tenantId ?? 'unknown', fieldOperatorId ?? 'unknown'] as const,
+  list: (
+    tenantId: string | null | undefined,
+    fieldOperatorId: number | string | null | undefined = 'unknown',
+    params: QueryParams = {}
+  ) =>
+    [
+      'field',
+      'orders',
+      tenantId ?? 'unknown',
+      fieldOperatorId ?? 'unknown',
+      normalizeQueryParams(params),
+    ] as const,
+  detail: (
+    tenantId: string | null | undefined,
+    fieldOperatorId: number | string | null | undefined = 'unknown',
+    orderId: number | string | null | undefined
+  ) =>
+    [
+      'field',
+      'orders',
+      'detail',
+      tenantId ?? 'unknown',
+      fieldOperatorId ?? 'unknown',
+      orderId,
+    ] as const,
 };
 
 // P05 — clave de opciones de clientes para field (autoventa y listados)
@@ -57,8 +109,7 @@ export const fieldProductOptionKeys = {
 
 // P01 — pedidos comerciales CRM
 export const comercialOrderKeys = {
-  all: (tenantId: string | null | undefined) =>
-    ['crm', 'orders', tenantId ?? 'unknown'] as const,
+  all: (tenantId: string | null | undefined) => ['crm', 'orders', tenantId ?? 'unknown'] as const,
   list: (tenantId: string | null | undefined, params: Record<string, unknown> = {}) =>
     ['crm', 'orders', tenantId ?? 'unknown', normalizeQueryParams(params)] as const,
 };
@@ -67,8 +118,20 @@ export const comercialOrderKeys = {
 export const customerListKeys = {
   listPrefix: (tenantId: string | null | undefined) =>
     ['customers', 'list', tenantId ?? 'unknown'] as const,
-  list: (tenantId: string | null | undefined, filters: Record<string, unknown> = {}, page = 1, perPage = 12) =>
-    ['customers', 'list', tenantId ?? 'unknown', normalizeQueryParams(filters), page, perPage] as const,
+  list: (
+    tenantId: string | null | undefined,
+    filters: Record<string, unknown> = {},
+    page = 1,
+    perPage = 12
+  ) =>
+    [
+      'customers',
+      'list',
+      tenantId ?? 'unknown',
+      normalizeQueryParams(filters),
+      page,
+      perPage,
+    ] as const,
 };
 
 // P10 — claves de cliente usadas en useCustomerAssignment
@@ -83,31 +146,28 @@ export const adminCustomerKeys = {
 };
 
 export const productionQueryKeys = {
-  controlPanel: (
-    tenantId: string | null | undefined,
-    params: Record<string, unknown> = {}
-  ) => ['productions', 'controlPanel', tenantId ?? 'unknown', normalizeQueryParams(params)] as const,
-  orphanStock: (
-    tenantId: string | null | undefined,
-    params: Record<string, unknown> = {}
-  ) => ['productions', 'orphanStock', tenantId ?? 'unknown', normalizeQueryParams(params)] as const,
-  orphanBoxes: (
-    tenantId: string | null | undefined,
-    params: Record<string, unknown> = {}
-  ) => ['productions', 'orphanBoxes', tenantId ?? 'unknown', normalizeQueryParams(params)] as const,
-  detail: (
-    tenantId: string | null | undefined,
-    productionId: number | string | null | undefined
-  ) => ['productions', 'detail', tenantId ?? 'unknown', productionId] as const,
-  totals: (
-    tenantId: string | null | undefined,
-    productionId: number | string | null | undefined
-  ) => ['productions', 'totals', tenantId ?? 'unknown', productionId] as const,
+  controlPanel: (tenantId: string | null | undefined, params: Record<string, unknown> = {}) =>
+    ['productions', 'controlPanel', tenantId ?? 'unknown', normalizeQueryParams(params)] as const,
+  orphanStock: (tenantId: string | null | undefined, params: Record<string, unknown> = {}) =>
+    ['productions', 'orphanStock', tenantId ?? 'unknown', normalizeQueryParams(params)] as const,
+  orphanBoxes: (tenantId: string | null | undefined, params: Record<string, unknown> = {}) =>
+    ['productions', 'orphanBoxes', tenantId ?? 'unknown', normalizeQueryParams(params)] as const,
+  detail: (tenantId: string | null | undefined, productionId: number | string | null | undefined) =>
+    ['productions', 'detail', tenantId ?? 'unknown', productionId] as const,
+  totals: (tenantId: string | null | undefined, productionId: number | string | null | undefined) =>
+    ['productions', 'totals', tenantId ?? 'unknown', productionId] as const,
   processTree: (
     tenantId: string | null | undefined,
     productionId: number | string | null | undefined,
     params: Record<string, unknown> = {}
-  ) => ['productions', 'processTree', tenantId ?? 'unknown', productionId, normalizeQueryParams(params)] as const,
+  ) =>
+    [
+      'productions',
+      'processTree',
+      tenantId ?? 'unknown',
+      productionId,
+      normalizeQueryParams(params),
+    ] as const,
   processTreePrefix: (
     tenantId: string | null | undefined,
     productionId: number | string | null | undefined
@@ -121,10 +181,8 @@ export const productionQueryKeys = {
     productionId: number | string | null | undefined,
     recordId: number | string | null | undefined
   ) => ['productionRecords', 'options', tenantId ?? 'unknown', productionId, recordId] as const,
-  inputs: (
-    tenantId: string | null | undefined,
-    recordId: number | string | null | undefined
-  ) => ['productionInputs', tenantId ?? 'unknown', recordId] as const,
+  inputs: (tenantId: string | null | undefined, recordId: number | string | null | undefined) =>
+    ['productionInputs', tenantId ?? 'unknown', recordId] as const,
   outputs: (
     tenantId: string | null | undefined,
     recordId: number | string | null | undefined,
@@ -152,6 +210,5 @@ export const productFamilyOptionKeys = {
 };
 
 export const settingsQueryKeys = {
-  detail: (tenantId: string | null | undefined) =>
-    ['settings', tenantId ?? 'unknown'] as const,
+  detail: (tenantId: string | null | undefined) => ['settings', tenantId ?? 'unknown'] as const,
 };

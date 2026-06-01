@@ -50,15 +50,10 @@ import { useAdminReceptionForm } from '@/hooks/useAdminReceptionForm';
 import { VirtualizedTable } from '../VirtualizedTable';
 import ImportDocumentDialog from '../ImportDocumentDialog';
 
-const PalletDialog = dynamic(
-  () => import('@/components/Admin/Pallets/PalletDialog'),
-  {
-    loading: () => (
-      <div className="flex items-center justify-center p-4">Cargando...</div>
-    ),
-    ssr: false,
-  }
-);
+const PalletDialog = dynamic(() => import('@/components/Admin/Pallets/PalletDialog'), {
+  loading: () => <div className="flex items-center justify-center p-4">Cargando...</div>,
+  ssr: false,
+});
 
 const TARE_OPTIONS = [
   { value: '0', label: '0kg' },
@@ -116,18 +111,18 @@ export default function CreateReceptionForm({ onSuccess }) {
 
   if (suppliersLoading) {
     return (
-      <div className="w-full h-full flex items-center justify-center">
+      <div className="flex h-full w-full items-center justify-center">
         <Loader />
       </div>
     );
   }
 
   return (
-    <div className="w-full h-full p-6">
+    <div className="h-full w-full p-6">
       <Announcer />
 
-      <div className="flex justify-between items-start mb-6">
-        <h1 className="text-2xl font-semibold mb-4">Recepción de materia prima</h1>
+      <div className="mb-6 flex items-start justify-between">
+        <h1 className="mb-4 text-2xl font-semibold">Recepción de materia prima</h1>
         <div className="flex items-center gap-2">
           <Button
             type="button"
@@ -136,7 +131,7 @@ export default function CreateReceptionForm({ onSuccess }) {
             disabled={isSubmitting}
             aria-label="Importar desde documento de lonja"
           >
-            <FileText className="h-4 w-4 mr-2" />
+            <FileText className="mr-2 h-4 w-4" />
             Importar desde documento
           </Button>
           <Button
@@ -146,17 +141,17 @@ export default function CreateReceptionForm({ onSuccess }) {
             aria-label="Guardar recepción"
             title="Guardar recepción (Ctrl+S)"
           >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Guardando
-            </>
-          ) : (
-            <>
-              Aceptar
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </>
-          )}
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Guardando
+              </>
+            ) : (
+              <>
+                Aceptar
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </>
+            )}
           </Button>
         </div>
       </div>
@@ -164,9 +159,7 @@ export default function CreateReceptionForm({ onSuccess }) {
       <form onSubmit={handleSubmit(handleCreate)} className="flex flex-col gap-8">
         {/* Supplier and Date */}
         <div className="w-full">
-          <h3 className="text-sm font-medium text-muted-foreground">
-            Información General
-          </h3>
+          <h3 className="text-muted-foreground text-sm font-medium">Información General</h3>
           <Separator className="my-2" />
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -219,18 +212,14 @@ export default function CreateReceptionForm({ onSuccess }) {
                   );
                 }}
               />
-              {errors.date && (
-                <p className="text-destructive text-sm">{errors.date.message}</p>
-              )}
+              {errors.date && <p className="text-destructive text-sm">{errors.date.message}</p>}
             </div>
           </div>
         </div>
 
         {/* Notes */}
         <div className="w-full">
-          <h3 className="text-sm font-medium text-muted-foreground">
-            Observaciones
-          </h3>
+          <h3 className="text-muted-foreground text-sm font-medium">Observaciones</h3>
           <Separator className="my-2" />
           <div className="space-y-2">
             <Label htmlFor="notes">Observaciones / Lonja</Label>
@@ -248,18 +237,18 @@ export default function CreateReceptionForm({ onSuccess }) {
           <Tabs value={mode} onValueChange={handleModeChange} className="w-full">
             <TabsList className="w-fit">
               <TabsTrigger value="automatic">
-                <List className="h-4 w-4 mr-2" />
+                <List className="mr-2 h-4 w-4" />
                 Por Líneas
               </TabsTrigger>
               <TabsTrigger value="manual">
-                <Package className="h-4 w-4 mr-2" />
+                <Package className="mr-2 h-4 w-4" />
                 Por Palets
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="automatic" className="mt-4">
               <div className="w-full">
-                <h3 className="text-sm font-medium text-muted-foreground mb-2">
+                <h3 className="text-muted-foreground mb-2 text-sm font-medium">
                   Líneas de Producto
                 </h3>
                 <Separator className="my-2" />
@@ -290,9 +279,7 @@ export default function CreateReceptionForm({ onSuccess }) {
 
                           const availableProductOptions = productOptions.filter(
                             (opt) =>
-                              !usedProductIds
-                                .map((id) => String(id))
-                                .includes(String(opt.value))
+                              !usedProductIds.map((id) => String(id)).includes(String(opt.value))
                           );
 
                           return (
@@ -303,9 +290,7 @@ export default function CreateReceptionForm({ onSuccess }) {
                                   control={control}
                                   rules={{
                                     required:
-                                      mode === 'automatic'
-                                        ? 'El producto es obligatorio'
-                                        : false,
+                                      mode === 'automatic' ? 'El producto es obligatorio' : false,
                                   }}
                                   render={({ field: { onChange, value } }) => (
                                     <Combobox
@@ -323,273 +308,232 @@ export default function CreateReceptionForm({ onSuccess }) {
                                   )}
                                 />
                                 {errors.details?.[index]?.product && (
-                                  <p className="text-destructive text-xs mt-1">
-                                    {
-                                      errors.details[index].product.message
-                                    }
+                                  <p className="text-destructive mt-1 text-xs">
+                                    {errors.details[index].product.message}
                                   </p>
                                 )}
                               </TableCell>
-                            <TableCell>
-                              <Controller
-                                name={`details.${index}.grossWeight`}
-                                control={control}
-                                rules={{
-                                  required:
-                                    mode === 'automatic'
-                                      ? 'El peso bruto es obligatorio'
-                                      : false,
-                                  min:
-                                    mode === 'automatic'
-                                      ? {
-                                          value: 0.01,
-                                          message: 'El peso debe ser mayor que 0',
-                                        }
-                                      : undefined,
-                                }}
-                                render={({ field: { onChange, value, ...field } }) => (
-                                  <Input
-                                    {...field}
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    value={value || ''}
-                                    onChange={(e) => {
-                                      onChange(e.target.value);
-                                      setTimeout(() => triggerRecalc(), 0);
-                                    }}
-                                    placeholder="0.00"
-                                    className="w-32"
-                                    aria-label={`Peso bruto para línea ${index + 1}`}
-                                    aria-required={mode === 'automatic'}
-                                  />
-                                )}
-                              />
-                              {errors.details?.[index]?.grossWeight && (
-                                <p className="text-destructive text-xs mt-1">
-                                  {
-                                    errors.details[index].grossWeight.message
-                                  }
-                                </p>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-1">
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => {
-                                    const currentBoxes =
-                                      parseInt(watch(`details.${index}.boxes`), 10) ||
-                                      0;
-                                    if (currentBoxes > 0) {
-                                      setValue(
-                                        `details.${index}.boxes`,
-                                        currentBoxes - 1
-                                      );
-                                      setTimeout(() => triggerRecalc(), 0);
-                                    }
-                                  }}
-                                  className="h-8 w-8 p-0"
-                                >
-                                  -
-                                </Button>
+                              <TableCell>
                                 <Controller
-                                  name={`details.${index}.boxes`}
+                                  name={`details.${index}.grossWeight`}
                                   control={control}
                                   rules={{
-                                    // Cajas opcionales: solo se validan si hay valor
+                                    required:
+                                      mode === 'automatic' ? 'El peso bruto es obligatorio' : false,
+                                    min:
+                                      mode === 'automatic'
+                                        ? {
+                                            value: 0.01,
+                                            message: 'El peso debe ser mayor que 0',
+                                          }
+                                        : undefined,
                                   }}
-                                  render={({
-                                    field: { onChange, value, ...field },
-                                  }) => (
+                                  render={({ field: { onChange, value, ...field } }) => (
                                     <Input
                                       {...field}
                                       type="number"
+                                      step="0.01"
                                       min="0"
-                                      value={value ?? 0}
-                                      onChange={(e) => onChange(e.target.value)}
-                                      className="w-16 text-center"
-                                      aria-label={`Número de cajas para línea ${index + 1}`}
+                                      value={value || ''}
+                                      onChange={(e) => {
+                                        onChange(e.target.value);
+                                        setTimeout(() => triggerRecalc(), 0);
+                                      }}
+                                      placeholder="0.00"
+                                      className="w-32"
+                                      aria-label={`Peso bruto para línea ${index + 1}`}
                                       aria-required={mode === 'automatic'}
                                     />
                                   )}
                                 />
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => {
-                                    const currentBoxes =
-                                      parseInt(
-                                        watch(`details.${index}.boxes`),
-                                        10
-                                      ) || 0;
-                                    setValue(
-                                      `details.${index}.boxes`,
-                                      currentBoxes + 1
-                                    );
-                                    setTimeout(() => triggerRecalc(), 0);
-                                  }}
-                                  className="h-8 w-8 p-0"
-                                >
-                                  +
-                                </Button>
-                              </div>
-                              {errors.details?.[index]?.boxes && (
-                                <p className="text-destructive text-xs mt-1">
-                                  {
-                                    errors.details[index].boxes.message
-                                  }
-                                </p>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              {(() => {
-                                const boxesVal = watch(
-                                  `details.${index}.boxes`
-                                );
-                                const hasBoxes =
-                                  boxesVal != null &&
-                                  boxesVal !== '' &&
-                                  parseInt(boxesVal, 10) > 0;
-                                if (!hasBoxes) {
-                                  return (
-                                    <span className="text-xs text-muted-foreground">
-                                      Sin cajas
-                                    </span>
-                                  );
-                                }
-                                return (
+                                {errors.details?.[index]?.grossWeight && (
+                                  <p className="text-destructive mt-1 text-xs">
+                                    {errors.details[index].grossWeight.message}
+                                  </p>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-1">
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      const currentBoxes =
+                                        parseInt(watch(`details.${index}.boxes`), 10) || 0;
+                                      if (currentBoxes > 0) {
+                                        setValue(`details.${index}.boxes`, currentBoxes - 1);
+                                        setTimeout(() => triggerRecalc(), 0);
+                                      }
+                                    }}
+                                    className="h-8 w-8 p-0"
+                                  >
+                                    -
+                                  </Button>
                                   <Controller
-                                    name={`details.${index}.tare`}
+                                    name={`details.${index}.boxes`}
                                     control={control}
-                                    render={({ field: { onChange, value } }) => (
-                                      <Select
-                                        value={value}
-                                        onValueChange={(newValue) => {
-                                          onChange(newValue);
-                                          setTimeout(
-                                            () => triggerRecalc(),
-                                            0
-                                          );
-                                        }}
-                                      >
-                                        <SelectTrigger className="w-24">
-                                          <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                          {TARE_OPTIONS.map((option) => (
-                                            <SelectItem
-                                              key={option.value}
-                                              value={option.value}
-                                            >
-                                              {option.label}
-                                            </SelectItem>
-                                          ))}
-                                        </SelectContent>
-                                      </Select>
+                                    rules={
+                                      {
+                                        // Cajas opcionales: solo se validan si hay valor
+                                      }
+                                    }
+                                    render={({ field: { onChange, value, ...field } }) => (
+                                      <Input
+                                        {...field}
+                                        type="number"
+                                        min="0"
+                                        value={value ?? 0}
+                                        onChange={(e) => onChange(e.target.value)}
+                                        className="w-16 text-center"
+                                        aria-label={`Número de cajas para línea ${index + 1}`}
+                                        aria-required={mode === 'automatic'}
+                                      />
                                     )}
                                   />
-                                );
-                              })()}
-                            </TableCell>
-                            <TableCell>
-                              <Input
-                                readOnly
-                                className="w-32 bg-muted"
-                                placeholder="0,00"
-                                value={
-                                  (() => {
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      const currentBoxes =
+                                        parseInt(watch(`details.${index}.boxes`), 10) || 0;
+                                      setValue(`details.${index}.boxes`, currentBoxes + 1);
+                                      setTimeout(() => triggerRecalc(), 0);
+                                    }}
+                                    className="h-8 w-8 p-0"
+                                  >
+                                    +
+                                  </Button>
+                                </div>
+                                {errors.details?.[index]?.boxes && (
+                                  <p className="text-destructive mt-1 text-xs">
+                                    {errors.details[index].boxes.message}
+                                  </p>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                {(() => {
+                                  const boxesVal = watch(`details.${index}.boxes`);
+                                  const hasBoxes =
+                                    boxesVal != null &&
+                                    boxesVal !== '' &&
+                                    parseInt(boxesVal, 10) > 0;
+                                  if (!hasBoxes) {
+                                    return (
+                                      <span className="text-muted-foreground text-xs">
+                                        Sin cajas
+                                      </span>
+                                    );
+                                  }
+                                  return (
+                                    <Controller
+                                      name={`details.${index}.tare`}
+                                      control={control}
+                                      render={({ field: { onChange, value } }) => (
+                                        <Select
+                                          value={value}
+                                          onValueChange={(newValue) => {
+                                            onChange(newValue);
+                                            setTimeout(() => triggerRecalc(), 0);
+                                          }}
+                                        >
+                                          <SelectTrigger className="w-24">
+                                            <SelectValue />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            {TARE_OPTIONS.map((option) => (
+                                              <SelectItem key={option.value} value={option.value}>
+                                                {option.label}
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                      )}
+                                    />
+                                  );
+                                })()}
+                              </TableCell>
+                              <TableCell>
+                                <Input
+                                  readOnly
+                                  className="bg-muted w-32"
+                                  placeholder="0,00"
+                                  value={(() => {
                                     const detail = currentDetails?.[index];
                                     const netWeight = detail?.netWeight;
                                     return netWeight
-                                      ? formatDecimal(
-                                          parseFloat(netWeight) || 0
-                                        )
+                                      ? formatDecimal(parseFloat(netWeight) || 0)
                                       : '0,00';
-                                  })()
-                                }
-                                aria-label={`Peso neto calculado para línea ${index + 1}`}
-                                aria-readonly="true"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Controller
-                                name={`details.${index}.price`}
-                                control={control}
-                                render={({
-                                  field: { onChange, value, ...field },
-                                }) => (
-                                  <Input
-                                    {...field}
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    value={value || ''}
-                                    onChange={(e) => {
-                                      onChange(e.target.value);
-                                      setTimeout(() => triggerRecalc(), 0);
-                                    }}
-                                    placeholder="0.00"
-                                    className="w-32"
-                                    aria-label={`Precio por kilogramo para línea ${index + 1}`}
-                                  />
-                                )}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Input
-                                readOnly
-                                className="w-32 bg-muted"
-                                placeholder="0,00 €"
-                                value={
-                                  (() => {
+                                  })()}
+                                  aria-label={`Peso neto calculado para línea ${index + 1}`}
+                                  aria-readonly="true"
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <Controller
+                                  name={`details.${index}.price`}
+                                  control={control}
+                                  render={({ field: { onChange, value, ...field } }) => (
+                                    <Input
+                                      {...field}
+                                      type="number"
+                                      step="0.01"
+                                      min="0"
+                                      value={value || ''}
+                                      onChange={(e) => {
+                                        onChange(e.target.value);
+                                        setTimeout(() => triggerRecalc(), 0);
+                                      }}
+                                      placeholder="0.00"
+                                      className="w-32"
+                                      aria-label={`Precio por kilogramo para línea ${index + 1}`}
+                                    />
+                                  )}
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <Input
+                                  readOnly
+                                  className="bg-muted w-32"
+                                  placeholder="0,00 €"
+                                  value={(() => {
                                     const detail = currentDetails?.[index];
-                                    const netWeight =
-                                      parseFloat(detail?.netWeight) || 0;
-                                    const price =
-                                      parseFloat(detail?.price) || 0;
-                                    return formatDecimalCurrency(
-                                      netWeight * price
-                                    );
-                                  })()
-                                }
-                                aria-label={`Importe para línea ${index + 1}`}
-                                aria-readonly="true"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Input
-                                {...register(`details.${index}.lot`)}
-                                placeholder="Lote (opcional)"
-                                className="w-32"
-                                aria-label={`Lote para línea ${index + 1}`}
-                              />
-                            </TableCell>
-                          <TableCell>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => remove(index)}
-                              className="text-destructive hover:text-destructive"
-                              aria-label={`Eliminar línea ${index + 1}`}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                        );
-                      })}
+                                    const netWeight = parseFloat(detail?.netWeight) || 0;
+                                    const price = parseFloat(detail?.price) || 0;
+                                    return formatDecimalCurrency(netWeight * price);
+                                  })()}
+                                  aria-label={`Importe para línea ${index + 1}`}
+                                  aria-readonly="true"
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <Input
+                                  {...register(`details.${index}.lot`)}
+                                  placeholder="Lote (opcional)"
+                                  className="w-32"
+                                  aria-label={`Lote para línea ${index + 1}`}
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => remove(index)}
+                                  className="text-destructive hover:text-destructive"
+                                  aria-label={`Eliminar línea ${index + 1}`}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
                       </TableBody>
                       <TableFooter>
                         <TableRow>
-                          <TableCell
-                            colSpan={4}
-                            className="text-right font-semibold"
-                          >
+                          <TableCell colSpan={4} className="text-right font-semibold">
                             Total
                           </TableCell>
                           <TableCell className="font-semibold">
@@ -612,7 +556,7 @@ export default function CreateReceptionForm({ onSuccess }) {
                     className="w-full"
                     aria-label="Agregar nueva línea de producto"
                   >
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Plus className="mr-2 h-4 w-4" />
                     Agregar línea
                   </Button>
                 </div>
@@ -621,12 +565,12 @@ export default function CreateReceptionForm({ onSuccess }) {
 
             <TabsContent value="manual" className="mt-4">
               <div className="w-full space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-sm font-medium text-muted-foreground">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-muted-foreground text-sm font-medium">
                     Palets de la Recepción
                   </h3>
                   <Button type="button" variant="outline" onClick={openAddPallet}>
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Plus className="mr-2 h-4 w-4" />
                     Agregar Palet
                   </Button>
                 </div>
@@ -658,15 +602,12 @@ export default function CreateReceptionForm({ onSuccess }) {
                     threshold={50}
                     rowHeight={80}
                     renderRow={(displayItem, index) => {
-                      const { item, pallet, productLotCombinations } =
-                        displayItem;
+                      const { item, pallet, productLotCombinations } = displayItem;
                       const prices = item.prices || {};
 
                       return (
                         <>
-                          <TableCell className="font-medium">
-                            {index + 1}
-                          </TableCell>
+                          <TableCell className="font-medium">{index + 1}</TableCell>
                           <TableCell className="max-w-[200px]">
                             <div className="text-sm">
                               {item.observations || (
@@ -676,16 +617,12 @@ export default function CreateReceptionForm({ onSuccess }) {
                               )}
                             </div>
                           </TableCell>
-                          <TableCell>
-                            {pallet.numberOfBoxes || pallet.boxes?.length || 0}
-                          </TableCell>
-                          <TableCell>
-                            {formatDecimalWeight(pallet.netWeight || 0)}
-                          </TableCell>
+                          <TableCell>{pallet.numberOfBoxes || pallet.boxes?.length || 0}</TableCell>
+                          <TableCell>{formatDecimalWeight(pallet.netWeight || 0)}</TableCell>
                           <TableCell>
                             <div className="space-y-2">
                               {productLotCombinations.length === 0 ? (
-                                <span className="text-sm text-muted-foreground">
+                                <span className="text-muted-foreground text-sm">
                                   No hay productos
                                 </span>
                               ) : (
@@ -696,21 +633,19 @@ export default function CreateReceptionForm({ onSuccess }) {
                                   return (
                                     <div
                                       key={comboIdx}
-                                      className="flex items-center gap-3 py-1 border-b last:border-0"
+                                      className="flex items-center gap-3 border-b py-1 last:border-0"
                                     >
-                                      <div className="flex-1 min-w-0">
+                                      <div className="min-w-0 flex-1">
                                         <div className="flex items-center gap-2">
-                                          <span className="font-medium text-sm">
+                                          <span className="text-sm font-medium">
                                             {combo.productName}
                                           </span>
-                                          <span className="text-xs text-muted-foreground font-mono">
+                                          <span className="text-muted-foreground font-mono text-xs">
                                             ({combo.lot})
                                           </span>
-                                          <span className="text-xs text-muted-foreground">
+                                          <span className="text-muted-foreground text-xs">
                                             {combo.boxesCount} cajas ·{' '}
-                                            {formatDecimalWeight(
-                                              combo.totalNetWeight
-                                            )}
+                                            {formatDecimalWeight(combo.totalNetWeight)}
                                           </span>
                                         </div>
                                       </div>
@@ -721,18 +656,14 @@ export default function CreateReceptionForm({ onSuccess }) {
                                         value={currentPrice}
                                         onChange={(e) => {
                                           const newPrice = e.target.value;
-                                          updatePalletPrice(
-                                            index,
-                                            priceKey,
-                                            newPrice
-                                          );
+                                          updatePalletPrice(index, priceKey, newPrice);
                                           announce(
                                             `Precio actualizado para ${combo.productName}`,
                                             'polite'
                                           );
                                         }}
                                         placeholder="0.00"
-                                        className="w-28 h-8"
+                                        className="h-8 w-28"
                                         aria-label={`Precio para ${combo.productName}, lote ${combo.lot}`}
                                       />
                                     </div>
@@ -757,7 +688,7 @@ export default function CreateReceptionForm({ onSuccess }) {
                                 type="button"
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-destructive hover:text-destructive"
+                                className="text-destructive hover:text-destructive h-8 w-8"
                                 onClick={() => removePallet(index)}
                                 aria-label={`Eliminar palet ${index + 1}`}
                               >
@@ -785,10 +716,7 @@ export default function CreateReceptionForm({ onSuccess }) {
         onCloseDialog={handlePalletClose}
       />
 
-      <Dialog
-        open={isModeChangeDialogOpen}
-        onOpenChange={setIsModeChangeDialogOpen}
-      >
+      <Dialog open={isModeChangeDialogOpen} onOpenChange={setIsModeChangeDialogOpen}>
         <DialogContent size="md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -802,9 +730,9 @@ export default function CreateReceptionForm({ onSuccess }) {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              ¿Estás seguro de que deseas cambiar de modo? Esta acción eliminará
-              todos los datos del modo actual y no se puede deshacer.
+            <p className="text-muted-foreground text-sm">
+              ¿Estás seguro de que deseas cambiar de modo? Esta acción eliminará todos los datos del
+              modo actual y no se puede deshacer.
             </p>
           </div>
           <DialogFooter className="flex gap-2">

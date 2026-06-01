@@ -2,7 +2,14 @@
 
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import Loader from '@/components/Utilities/Loader';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 export default function ProspectContactsPanel({ contacts = [], isLoading = false }) {
   if (isLoading) {
@@ -18,7 +25,7 @@ export default function ProspectContactsPanel({ contacts = [], isLoading = false
       <EmptyState
         title="Sin contactos"
         description="Añade al menos un contacto para convertir o ofertar con contexto."
-        className="h-full w-full border bg-muted/20 !min-h-[220px]"
+        className="bg-muted/20 h-full !min-h-[220px] w-full border"
       />
     );
   }
@@ -30,7 +37,7 @@ export default function ProspectContactsPanel({ contacts = [], isLoading = false
   });
 
   return (
-    <section className="overflow-hidden rounded-2xl border bg-card">
+    <section className="bg-card overflow-hidden rounded-2xl border">
       <div className="overflow-y-auto p-4">
         <div className="overflow-hidden rounded-xl border">
           <Table>
@@ -52,7 +59,7 @@ export default function ProspectContactsPanel({ contacts = [], isLoading = false
                   <TableCell className="text-muted-foreground">{contact.email || '—'}</TableCell>
                   <TableCell>
                     {contact.isPrimary ? (
-                      <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                      <span className="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-xs font-medium">
                         Principal
                       </span>
                     ) : (

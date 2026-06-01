@@ -12,7 +12,9 @@ export function getProductionOutputConsumptions(token, params = {}) {
       const consumptions = data.data || data || [];
       return {
         ...data,
-        data: Array.isArray(consumptions) ? consumptions.map(normalizeProductionOutputConsumption) : [],
+        data: Array.isArray(consumptions)
+          ? consumptions.map(normalizeProductionOutputConsumption)
+          : [],
       };
     },
   });
@@ -40,12 +42,17 @@ export function createProductionOutputConsumption(consumptionData, token) {
 
 /** @param {string|number} consumptionId @param {Object} consumptionData @param {string} token @returns {Promise<Object>} */
 export function updateProductionOutputConsumption(consumptionId, consumptionData, token) {
-  return apiPut(`${API_URL_V2}production-output-consumptions/${consumptionId}`, token, consumptionData, {
-    transform: (data) => {
-      const consumption = data.data || data;
-      return { ...data, data: normalizeProductionOutputConsumption(consumption) };
-    },
-  });
+  return apiPut(
+    `${API_URL_V2}production-output-consumptions/${consumptionId}`,
+    token,
+    consumptionData,
+    {
+      transform: (data) => {
+        const consumption = data.data || data;
+        return { ...data, data: normalizeProductionOutputConsumption(consumption) };
+      },
+    }
+  );
 }
 
 /** @param {string|number} consumptionId @param {string} token @returns {Promise<Object>} */
@@ -60,7 +67,9 @@ export function createMultipleProductionOutputConsumptions(data, token) {
       const consumptions = response.data || response || [];
       return {
         ...response,
-        data: Array.isArray(consumptions) ? consumptions.map(normalizeProductionOutputConsumption) : [],
+        data: Array.isArray(consumptions)
+          ? consumptions.map(normalizeProductionOutputConsumption)
+          : [],
       };
     },
   });

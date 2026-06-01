@@ -31,6 +31,7 @@ src/
 **Propósito**: Contiene todas las rutas de la aplicación usando el sistema de enrutamiento basado en archivos de Next.js 16.
 
 **Estructura**:
+
 ```
 app/
 ├── layout.js              # Layout raíz (Server Component)
@@ -54,6 +55,7 @@ app/
 ```
 
 **Características**:
+
 - Usa App Router de Next.js 16
 - Mezcla de Server Components y Client Components
 - Layouts anidados
@@ -69,6 +71,7 @@ app/
 **Propósito**: Contiene todos los componentes React reutilizables de la aplicación.
 
 **Estructura**:
+
 ```
 components/
 ├── Admin/                 # Componentes específicos del módulo Admin
@@ -102,6 +105,7 @@ components/
 ```
 
 **Organización**:
+
 - Componentes UI base en `/ui` (ShadCN)
 - Componentes de negocio en `/Admin`
 - Componentes de utilidad en `/Utilities`
@@ -116,16 +120,18 @@ components/
 **Propósito**: Contiene los providers de Context API para estado global.
 
 **Archivos**:
+
 - `OrderContext.js` - Context para gestión de pedidos
 - `StoreContext.js` - Context para gestión de almacenes
 - `SettingsContext.js` - Context para configuraciones globales
 
 **Uso**:
+
 ```javascript
 // Provider
 <OrderProvider orderId={id}>
   <Component />
-</OrderProvider>
+</OrderProvider>;
 
 // Consumo
 const { order, loading } = useOrderContext();
@@ -140,6 +146,7 @@ const { order, loading } = useOrderContext();
 **Propósito**: Contiene hooks personalizados que encapsulan lógica de negocio reutilizable.
 
 **Archivos principales**:
+
 - `useOrder.js` - Hook para gestión de pedidos
 - `useStore.js` - Hook para gestión de almacenes
 - `useStores.js` - Hook para lista de almacenes
@@ -155,6 +162,7 @@ const { order, loading } = useOrderContext();
 - `use-mobile.jsx` - Detección de dispositivos móviles
 
 **Patrón común**:
+
 ```javascript
 export function useOrder(orderId) {
   const [order, setOrder] = useState(null);
@@ -173,6 +181,7 @@ export function useOrder(orderId) {
 **Propósito**: Contiene todos los servicios que interactúan con la API v2 del backend.
 
 **Estructura**:
+
 ```
 services/
 ├── orderService.js              # CRUD de pedidos
@@ -201,9 +210,10 @@ services/
 ```
 
 **Patrón común**:
+
 ```javascript
-import { fetchWithTenant } from "@lib/fetchWithTenant";
-import { API_URL_V2 } from "@/configs/config";
+import { fetchWithTenant } from '@lib/fetchWithTenant';
+import { API_URL_V2 } from '@/configs/config';
 
 export function getOrder(orderId, token) {
   return fetchWithTenant(`${API_URL_V2}orders/${orderId}`, {
@@ -213,12 +223,13 @@ export function getOrder(orderId, token) {
       Authorization: `Bearer ${token}`,
     },
   })
-  .then(response => response.json())
-  .then(data => data.data);
+    .then((response) => response.json())
+    .then((data) => data.data);
 }
 ```
 
 **Características**:
+
 - Todos usan `fetchWithTenant` para multi-tenant
 - Todos usan `API_URL_V2` (versión activa)
 - Reciben `token` como parámetro
@@ -234,44 +245,52 @@ export function getOrder(orderId, token) {
 **Propósito**: Contiene funciones utilitarias fundamentales y helpers base.
 
 **Archivos**:
+
 - `logger.js` - Logger condicional: `log`/`info`/`debug` no-op en producción; `warn`/`error` siempre activos
 - `utils.js` - Función `cn()` para merge de clases Tailwind
 - `fetchWithTenant.js` - Función base para fetch con soporte multi-tenant
 - `barcodes.js` - Utilidades para códigos de barras (EAN13, EAN14, GS1-128)
 
 ### `logger.js`
+
 **Propósito**: Reducir ruido y overhead en producción. Usar `log()` en lugar de `console.log()` para depuración.
 
 ```javascript
-import { log, warn, error } from "@/lib/logger";
+import { log, warn, error } from '@/lib/logger';
 
-log("solo en desarrollo");   // no-op en producción
-warn("siempre visible");
-error("siempre visible");
+log('solo en desarrollo'); // no-op en producción
+warn('siempre visible');
+error('siempre visible');
 ```
 
 **Documentación detallada**: Ver `12-utilidades-helpers.md` sección Logger.
 
 ### `utils.js`
+
 ```javascript
-import { clsx } from "clsx";
-import { twMerge } from "tailwind-merge"
+import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
 ```
+
 **Uso**: Merge inteligente de clases Tailwind, usado en todos los componentes.
 
 ### `fetchWithTenant.js`
+
 **Funcionalidad**:
+
 - Detecta tenant automáticamente (cliente y servidor)
 - Añade header `X-Tenant` a todas las peticiones
 - Maneja errores de autenticación
 - Usado por todos los servicios API v2
 
 ### `barcodes.js`
+
 **Funciones**:
+
 - `eanChecksum()` - Calcula checksum EAN
 - `serializeBarcode()` - Serializa códigos de barras según tipo
 - `formatMap` - Mapeo de formatos
@@ -285,6 +304,7 @@ export function cn(...inputs) {
 **Propósito**: Contiene todas las configuraciones centralizadas del proyecto.
 
 **Archivos**:
+
 - `config.js` - Configuración general (API URLs, constantes)
 - `roleConfig.js` - Configuración de roles y permisos
 - `navgationConfig.js` - Configuración de navegación (sidebar)
@@ -292,27 +312,31 @@ export function cn(...inputs) {
 - `authConfig.js` - Configuración de autenticación y manejo de errores
 
 ### `config.js`
+
 ```javascript
 export const API_URL = 'https://api.lapesquerapp.es/api/';
-export const API_URL_V1 = `${API_URL}v1/`;  // Obsoleta
-export const API_URL_V2 = `${API_URL}v2/`;  // Activa
+export const API_URL_V1 = `${API_URL}v1/`; // Obsoleta
+export const API_URL_V2 = `${API_URL}v2/`; // Activa
 export const COMPANY_NAME = 'Congelados Brisamar S.L.';
-export const UNLOCATED_POSITION_ID = "unlocated";
-export const PALLET_LABEL_SIZE = { width: "110mm", height: "90mm" };
+export const UNLOCATED_POSITION_ID = 'unlocated';
+export const PALLET_LABEL_SIZE = { width: '110mm', height: '90mm' };
 ```
 
 ### `roleConfig.js`
+
 ```javascript
 const roleConfig = {
-  "/admin": ["admin", "manager", "superuser"],
-  "/production": ["admin", "worker", "superuser"],
-  "/admin/orders": ["admin", "manager", "superuser"],
-  "/warehouse": ["store_operator", "superuser"],
+  '/admin': ['admin', 'manager', 'superuser'],
+  '/production': ['admin', 'worker', 'superuser'],
+  '/admin/orders': ['admin', 'manager', 'superuser'],
+  '/warehouse': ['store_operator', 'superuser'],
 };
 ```
 
 ### `navgationConfig.js`
+
 Configuración del sidebar con:
+
 - Nombre de cada item
 - Icono
 - Ruta (`href`)
@@ -320,7 +344,9 @@ Configuración del sidebar con:
 - Items anidados (children)
 
 ### `entitiesConfig.js`
+
 Configuración extensa (3500+ líneas) para el sistema genérico de entidades:
+
 - Configuración por entidad (raw-material-receptions, etc.)
 - Filtros personalizados
 - Endpoints
@@ -329,6 +355,7 @@ Configuración extensa (3500+ líneas) para el sistema genérico de entidades:
 - Paginación
 
 ### `authConfig.js`
+
 ```javascript
 export const AUTH_ERROR_CONFIG = {
   AUTH_ERROR_MESSAGES: ['No autenticado', 'Unauthorized', ...],
@@ -349,6 +376,7 @@ export function buildLoginUrl(currentPath) { ... }
 **Propósito**: Contiene personalizaciones y estilos custom para librerías de terceros.
 
 **Estructura**:
+
 ```
 customs/
 └── reactDayPicker/
@@ -364,6 +392,7 @@ customs/
 **Propósito**: Contiene datos estáticos y constantes que se usan en la aplicación.
 
 **Estructura**:
+
 ```
 data/
 └── dates/
@@ -379,6 +408,7 @@ data/
 **Propósito**: Contiene funciones auxiliares organizadas por categoría.
 
 **Estructura**:
+
 ```
 helpers/
 ├── getSettingValue.js              # Helper para obtener settings con caché
@@ -403,6 +433,7 @@ helpers/
 ### Helpers Principales
 
 #### `getSettingValue.js`
+
 ```javascript
 let cachedSettings = null;
 
@@ -417,9 +448,11 @@ export function invalidateSettingsCache() {
   cachedSettings = null;
 }
 ```
+
 **Funcionalidad**: Caché de settings para evitar múltiples llamadas API.
 
 #### `formats/dates/formatDates.js`
+
 ```javascript
 export const formatDate = (date) => { ... }           // DD/MM/YYYY
 export const formatDateHour = (date) => { ... }        // DD/MM/YYYY - HH:MM
@@ -427,6 +460,7 @@ export const formatDateShort = (dateString) => { ... } // 26 feb 2025
 ```
 
 #### `formats/numbers/formatNumbers.js`
+
 ```javascript
 export const formatInteger = (number) => { ... }           // 1.234
 export const formatIntegerCurrency = (number) => { ... }   // 1.234 €
@@ -438,38 +472,44 @@ export const parseEuropeanNumber = (str) => { ... }         // Parsea formato eu
 ```
 
 #### `formats/texts/index.js`
+
 ```javascript
 export const normalizeText = (nombre) => {
   return nombre
-    ?.normalize('NFD')                    // quitar tildes
+    ?.normalize('NFD') // quitar tildes
     .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[.,]/g, '')                 // quitar puntos y comas
+    .replace(/[.,]/g, '') // quitar puntos y comas
     .toLowerCase()
     .trim();
 };
 ```
 
 #### `dates/index.js`
+
 ```javascript
-export const today = new Date()
-export const firstDayOfCurrentYear = new Date(today.getFullYear(), 0, 1)
-export const firstDayOfCurrentYearLocaleDateString = firstDayOfCurrentYear.toLocaleDateString('sv-SE')
-export const todayLocaleDateString = today.toLocaleDateString('sv-SE')
+export const today = new Date();
+export const firstDayOfCurrentYear = new Date(today.getFullYear(), 0, 1);
+export const firstDayOfCurrentYearLocaleDateString =
+  firstDayOfCurrentYear.toLocaleDateString('sv-SE');
+export const todayLocaleDateString = today.toLocaleDateString('sv-SE');
 export const actualYearRange = {
   from: firstDayOfCurrentYear,
-  to: today
-}
+  to: today,
+};
 ```
 
 #### `styles/classNames.js`
+
 ```javascript
 export function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
 }
 ```
+
 **Nota**: Similar a `clsx`, pero más simple. La función `cn()` en `lib/utils.js` es más completa.
 
 #### `window/goBack.js`
+
 ```javascript
 export const goBack = () => {
   if (typeof window !== 'undefined') {
@@ -487,6 +527,7 @@ export const goBack = () => {
 **Propósito**: Middleware que se ejecuta antes de cada request para validar autenticación y autorización.
 
 **Funcionalidad**:
+
 1. Valida token de NextAuth
 2. Verifica expiración
 3. Valida token con backend (`/api/v2/me`)
@@ -504,6 +545,7 @@ export const goBack = () => {
 **Archivo**: `/jsconfig.json`
 
 **Configuración**:
+
 ```json
 {
   "compilerOptions": {
@@ -517,13 +559,15 @@ export const goBack = () => {
 ```
 
 **Uso en imports**:
+
 ```javascript
-import { cn } from "@/lib/utils";
-import { getOrder } from "@/services/orderService";
-import { Button } from "@/components/ui/button";
+import { cn } from '@/lib/utils';
+import { getOrder } from '@/services/orderService';
+import { Button } from '@/components/ui/button';
 ```
 
 **Aliases disponibles**:
+
 - `@/` → `/src/`
 - `@lib/` → `/src/lib/`
 
@@ -549,6 +593,7 @@ Componente
 ## 🎯 Convenciones de Organización
 
 ### Nomenclatura de Archivos
+
 - **Componentes**: PascalCase (`OrderManager.jsx`)
 - **Hooks**: camelCase con prefijo `use` (`useOrder.js`)
 - **Servicios**: camelCase (`orderService.js`)
@@ -556,7 +601,9 @@ Componente
 - **Configs**: camelCase (`roleConfig.js`)
 
 ### Estructura de Módulos
+
 Cada módulo principal sigue esta estructura:
+
 ```
 /admin/{modulo}/
   ├── page.js              # Página principal
@@ -570,6 +617,7 @@ Cada módulo principal sigue esta estructura:
 ```
 
 ### Separación de Responsabilidades
+
 - **Components**: Solo presentación y lógica de UI
 - **Hooks**: Lógica de negocio y estado
 - **Services**: Comunicación con API
@@ -581,12 +629,14 @@ Cada módulo principal sigue esta estructura:
 ## ⚠️ Observaciones Críticas y Mejoras Recomendadas
 
 ### 1. Duplicación de Funciones de Clases
+
 - **Archivo**: `/src/helpers/styles/classNames.js` y `/src/lib/utils.js`
 - **Problema**: `classNames()` en helpers hace lo mismo que `cn()` en lib/utils, pero `cn()` es más completo (usa `twMerge`)
 - **Impacto**: Inconsistencia, posible uso de función menos completa
 - **Recomendación**: Eliminar `classNames()` y usar solo `cn()` de `lib/utils.js`
 
 ### 2. Configuración de Entidades Muy Grande
+
 - **Archivo**: `/src/configs/entitiesConfig.js`
 - **Línea**: ~3500 líneas
 - **Problema**: Un solo archivo con toda la configuración de entidades
@@ -594,36 +644,42 @@ Cada módulo principal sigue esta estructura:
 - **Recomendación**: Dividir en archivos por entidad o usar sistema de carga dinámica
 
 ### 3. Falta de Index Files en Helpers
+
 - **Archivo**: `/src/helpers/`
 - **Problema**: No hay archivos `index.js` que exporten todas las funciones de cada subdirectorio
 - **Impacto**: Imports más largos y menos organizados
 - **Recomendación**: Crear `index.js` en cada subdirectorio de helpers para exports centralizados
 
 ### 4. Helpers de Fechas Duplicados
+
 - **Archivo**: `/src/helpers/dates/` y `/src/data/dates/`
 - **Problema**: Posible duplicación de lógica relacionada con fechas
 - **Impacto**: Confusión sobre dónde buscar funciones de fechas
 - **Recomendación**: Consolidar en un solo lugar o documentar claramente la diferencia
 
 ### 5. Falta de Organización en Services
+
 - **Archivo**: `/src/services/`
 - **Problema**: Algunos servicios están en subdirectorios (azure/, rawMaterialReception/, ceboDispatch/) pero otros no
 - **Impacto**: Inconsistencia en organización
 - **Recomendación**: Estandarizar organización (todos en raíz o todos en subdirectorios por módulo)
 
 ### 6. Archivo de Configuración con Typo
+
 - **Archivo**: `/src/configs/navgationConfig.js`
 - **Problema**: Nombre tiene typo: "navgation" en lugar de "navigation"
 - **Impacto**: Confusión, inconsistencia
 - **Recomendación**: Renombrar a `navigationConfig.js` (requiere actualizar imports)
 
 ### 7. Falta de Documentación de Helpers
+
 - **Archivo**: Múltiples archivos en `/src/helpers/`
 - **Problema**: Funciones sin JSDoc o comentarios explicativos
 - **Impacto**: Dificulta entender el propósito y uso de cada función
 - **Recomendación**: Añadir JSDoc a todas las funciones exportadas
 
 ### 8. Helper getSettingValue con Caché Global
+
 - **Archivo**: `/src/helpers/getSettingValue.js`
 - **Línea**: 3
 - **Problema**: Caché global (`let cachedSettings`) puede causar problemas en SSR si no se maneja correctamente
@@ -631,12 +687,14 @@ Cada módulo principal sigue esta estructura:
 - **Recomendación**: Usar Context API o estado de React para caché en lugar de variable global
 
 ### 9. Falta de Validación en Helpers de Formato
+
 - **Archivo**: `/src/helpers/formats/`
 - **Problema**: Funciones de formato no validan inputs (pueden recibir null, undefined, etc.)
 - **Impacto**: Posibles errores en tiempo de ejecución
 - **Recomendación**: Añadir validación y valores por defecto
 
 ### 10. Estructura de Components/Utilities
+
 - **Archivo**: `/src/components/Utilities/`
 - **Problema**: Algunos componentes utilitarios están en `/Utilities/` y otros podrían estar en `/ui/`
 - **Impacto**: Confusión sobre dónde buscar componentes

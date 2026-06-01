@@ -18,13 +18,13 @@ Se han aplicado en el frontend los cambios necesarios para alinear la UI con el 
 
 ## Deliverables
 
-| Ubicación | Contenido |
-|-----------|-----------|
-| 01_analysis/ | campos_nullable_y_archivos.md |
-| 02_planning/ | execution_plan.md |
-| 03_execution/ | implementation_log.md |
-| 04_logs/ | execution_timeline.md |
-| 05_outputs/ | FINAL_REPORT.md (este archivo) |
+| Ubicación     | Contenido                      |
+| ------------- | ------------------------------ |
+| 01_analysis/  | campos_nullable_y_archivos.md  |
+| 02_planning/  | execution_plan.md              |
+| 03_execution/ | implementation_log.md          |
+| 04_logs/      | execution_timeline.md          |
+| 05_outputs/   | FINAL_REPORT.md (este archivo) |
 
 Archivos de código modificados (en el repo):
 

@@ -1,4 +1,5 @@
 # Auditoría: Documentation Agent
+
 # Bloque: MarketDataExtractor — Extracción de datos de documentos de lonjas
 
 **Fecha:** 2026-04-26
@@ -9,15 +10,15 @@
 
 ## 1. Archivos revisados
 
-| Archivo | Estado |
-|---|---|
-| `docs/ai-context/00-project-brief.md` | No menciona MarketDataExtractor |
-| `docs/ai-context/01-frontend-architecture.md` | No menciona el bloque ni sus patrones propios |
-| `docs/ai-context/04-api-services.md` | No menciona el servicio Azure |
-| `docs/ai-context/10-current-priorities.md` | Menciona "exportaciones de datos" vagamente |
-| `docs/decisions/` | No existe ADR para ninguna decisión del bloque de lonjas |
-| `AGENTS.md` | No menciona MarketDataExtractor como funcionalidad |
-| `docs/agents/*.md` | 9 agentes definidos — ninguno específico para lonjas |
+| Archivo                                       | Estado                                                   |
+| --------------------------------------------- | -------------------------------------------------------- |
+| `docs/ai-context/00-project-brief.md`         | No menciona MarketDataExtractor                          |
+| `docs/ai-context/01-frontend-architecture.md` | No menciona el bloque ni sus patrones propios            |
+| `docs/ai-context/04-api-services.md`          | No menciona el servicio Azure                            |
+| `docs/ai-context/10-current-priorities.md`    | Menciona "exportaciones de datos" vagamente              |
+| `docs/decisions/`                             | No existe ADR para ninguna decisión del bloque de lonjas |
+| `AGENTS.md`                                   | No menciona MarketDataExtractor como funcionalidad       |
+| `docs/agents/*.md`                            | 9 agentes definidos — ninguno específico para lonjas     |
 
 ---
 
@@ -26,6 +27,7 @@
 ### 2.1 No existe doc `docs/ai-context/` para el bloque de lonjas
 
 El bloque MarketDataExtractor es **el sistema más complejo y específico del dominio** del proyecto. Tiene:
+
 - Su propio servicio externo (Azure Document AI)
 - 3 tipos de documento con parsers y validadores propios
 - Catálogos estáticos de datos de negocio
@@ -37,6 +39,7 @@ A pesar de su complejidad, **no existe ningún archivo en `docs/ai-context/`** q
 **Archivo recomendado**: `docs/ai-context/12-market-data-extractor.md`
 
 Contenido mínimo sugerido:
+
 - Descripción del bloque y su propósito
 - Los 3 tipos de documento soportados
 - Pipeline de procesamiento paso a paso
@@ -50,23 +53,25 @@ Contenido mínimo sugerido:
 
 Las siguientes decisiones arquitectónicas significativas **no tienen ADR**:
 
-| Decisión | Impacto | ADR sugerido |
-|---|---|---|
-| Usar Azure Document AI (en lugar de Tesseract, Google Vision, etc.) | Coste, dependencia de proveedor, capacidad de los modelos | `ADR-001-azure-document-ai.md` |
-| Catálogos estáticos en `exportData.js` (en lugar de API backend) | Mantenimiento manual, riesgo de desactualización | `ADR-002-exportdata-static-catalogs.md` |
-| Pipeline en cliente (en lugar de procesamiento server-side) | Exposición de API key, carga en browser | `ADR-003-client-side-azure-pipeline.md` |
-| Tres parsers con patrones distintos (Cofra en español, otros en inglés) | Inconsistencia, dificultad de mantenimiento | `ADR-004-parser-key-conventions.md` |
-| `fetchWithTenant` para llamadas a Azure (servicio externo) | Acoplamiento innecesario, X-Tenant en requests externos | Puede documentarse en ADR-003 |
+| Decisión                                                                | Impacto                                                   | ADR sugerido                            |
+| ----------------------------------------------------------------------- | --------------------------------------------------------- | --------------------------------------- |
+| Usar Azure Document AI (en lugar de Tesseract, Google Vision, etc.)     | Coste, dependencia de proveedor, capacidad de los modelos | `ADR-001-azure-document-ai.md`          |
+| Catálogos estáticos en `exportData.js` (en lugar de API backend)        | Mantenimiento manual, riesgo de desactualización          | `ADR-002-exportdata-static-catalogs.md` |
+| Pipeline en cliente (en lugar de procesamiento server-side)             | Exposición de API key, carga en browser                   | `ADR-003-client-side-azure-pipeline.md` |
+| Tres parsers con patrones distintos (Cofra en español, otros en inglés) | Inconsistencia, dificultad de mantenimiento               | `ADR-004-parser-key-conventions.md`     |
+| `fetchWithTenant` para llamadas a Azure (servicio externo)              | Acoplamiento innecesario, X-Tenant en requests externos   | Puede documentarse en ADR-003           |
 
 ### 2.3 `10-current-priorities.md` desactualizada respecto al bloque
 
 ```markdown
 ### 3. Exportaciones de datos
+
 - Integración con Facilcom, A3ERP y Excel.
 - Actualización de catálogos de productos y barcos en `exportData.js`.
 ```
 
 Esta sección menciona la actualización de `exportData.js` como prioridad activa, pero no documenta:
+
 - Qué archivos `exportData.js` existen (hay 3, uno por tipo de lonja)
 - Cómo añadir un nuevo barco o armador (no hay guía de mantenimiento)
 - Qué campos son obligatorios en cada entrada del catálogo
@@ -94,6 +99,7 @@ Documento que explique el bloque completo para agentes IA futuros.
 ### 3.2 Crear ADRs pendientes
 
 En `docs/decisions/`:
+
 - `ADR-001-azure-document-ai.md` — Por qué Azure Document AI, qué alternativas se evaluaron, coste estimado, cómo actualizar los modelos
 - `ADR-002-exportdata-static-catalogs.md` — Por qué catálogos estáticos, cuándo migrar a backend, cómo mantenerlos
 - `ADR-003-client-side-pipeline.md` — Por qué el pipeline corre en cliente, qué riesgos implica (API key), plan de migración a server-side
@@ -118,11 +124,11 @@ Dentro del nuevo doc de arquitectura o como documento independiente: cómo añad
 
 ## 4. Documentación existente que necesita revisión humana
 
-| Archivo | Qué revisar |
-|---|---|
-| `docs/ai-context/10-current-priorities.md` | ¿Sigue siendo prioridad actualizar `exportData.js`? ¿Hay una hoja de ruta para Facilcom? |
-| `AGENTS.md` | ¿Debe añadirse un agente específico de lonjas/MarketDataExtractor? |
-| `docs/agents/` | ¿Se necesita un agente "MarketDataExtractor Agent" con reglas específicas de este bloque? |
+| Archivo                                    | Qué revisar                                                                               |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| `docs/ai-context/10-current-priorities.md` | ¿Sigue siendo prioridad actualizar `exportData.js`? ¿Hay una hoja de ruta para Facilcom?  |
+| `AGENTS.md`                                | ¿Debe añadirse un agente específico de lonjas/MarketDataExtractor?                        |
+| `docs/agents/`                             | ¿Se necesita un agente "MarketDataExtractor Agent" con reglas específicas de este bloque? |
 
 ---
 

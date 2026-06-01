@@ -15,12 +15,12 @@
 
 No solo el nombre literal **"La Pesquerapp"**. Incluir **todo** lo que haga referencia a la aplicación o provenga de su identidad:
 
-| Categoría | Qué incluir | Ejemplos |
-|-----------|-------------|----------|
-| **Nombre directo** | El nombre completo y variantes de grafía y mayúsculas. | `La Pesquerapp`, `Pesquerapp`, `LA PESQUERAPP`, `la pesquerapp` |
-| **Referencias indirectas** | Textos, enlaces o metadatos que aludan a “esta app”, al producto o al dominio sin citar el nombre. | "nuestra aplicación", "la app", "esta plataforma", URLs con dominio propio (ej. `pesquerapp.com`), `og:site_name`, nombre del tenant o producto en config. |
-| **Derivados e identificadores** | Cualquier identificador, slug o marca que provenga del nombre o del proyecto. | `pesquerapp` en slugs, IDs, env vars (`PESQUERAPP_*`, `NEXT_PUBLIC_APP_*` con valor pesquerapp), nombres de paquete/repo, nombres de proyecto en config (Vercel, etc.). |
-| **Branding y presencia** | Elementos de marca que identifiquen la aplicación. | Nombre en logos, favicon, manifest, PWA; textos legales o de ayuda que nombren el producto; firmas de email o PDFs; documentación que nombre "La Pesquerapp" o el proyecto asociado. |
+| Categoría                       | Qué incluir                                                                                        | Ejemplos                                                                                                                                                                             |
+| ------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Nombre directo**              | El nombre completo y variantes de grafía y mayúsculas.                                             | `La Pesquerapp`, `Pesquerapp`, `LA PESQUERAPP`, `la pesquerapp`                                                                                                                      |
+| **Referencias indirectas**      | Textos, enlaces o metadatos que aludan a “esta app”, al producto o al dominio sin citar el nombre. | "nuestra aplicación", "la app", "esta plataforma", URLs con dominio propio (ej. `pesquerapp.com`), `og:site_name`, nombre del tenant o producto en config.                           |
+| **Derivados e identificadores** | Cualquier identificador, slug o marca que provenga del nombre o del proyecto.                      | `pesquerapp` en slugs, IDs, env vars (`PESQUERAPP_*`, `NEXT_PUBLIC_APP_*` con valor pesquerapp), nombres de paquete/repo, nombres de proyecto en config (Vercel, etc.).              |
+| **Branding y presencia**        | Elementos de marca que identifiquen la aplicación.                                                 | Nombre en logos, favicon, manifest, PWA; textos legales o de ayuda que nombren el producto; firmas de email o PDFs; documentación que nombre "La Pesquerapp" o el proyecto asociado. |
 
 En caso de duda, **incluir** la referencia en el reporte y clasificarla; es preferible un falso positivo que omitir algo que luego revele la identidad.
 
@@ -63,14 +63,14 @@ Se debe aplicar la búsqueda anterior en:
 
 El reporte debe ser un **documento estructurado** (por ejemplo un `.md` en `docs/` o en la carpeta de prompts/salidas) que incluya:
 
-| Campo / Sección | Descripción |
-|-----------------|-------------|
-| **Ubicación** | Ruta del archivo (y línea si aplica). |
-| **Clase** | `nombre directo` \| `referencia indirecta` \| `derivado/identificador` \| `branding` (según la tabla "Qué rastrear"). |
-| **Tipo** | Categoría: pestaña del navegador, meta, config, UI, recurso estático, string en código, etc. |
-| **Contexto** | Fragmento de código o texto donde aparece la referencia (1–3 líneas). |
-| **Visibilidad** | Si es visible al usuario final (sí/no) y dónde (ej. "pestaña del navegador", "cabecera", "footer"). |
-| **Notas** | Observaciones (ej. "fácil de parametrizar por tenant", "hardcodeado", "viene de env"). |
+| Campo / Sección | Descripción                                                                                                           |
+| --------------- | --------------------------------------------------------------------------------------------------------------------- |
+| **Ubicación**   | Ruta del archivo (y línea si aplica).                                                                                 |
+| **Clase**       | `nombre directo` \| `referencia indirecta` \| `derivado/identificador` \| `branding` (según la tabla "Qué rastrear"). |
+| **Tipo**        | Categoría: pestaña del navegador, meta, config, UI, recurso estático, string en código, etc.                          |
+| **Contexto**    | Fragmento de código o texto donde aparece la referencia (1–3 líneas).                                                 |
+| **Visibilidad** | Si es visible al usuario final (sí/no) y dónde (ej. "pestaña del navegador", "cabecera", "footer").                   |
+| **Notas**       | Observaciones (ej. "fácil de parametrizar por tenant", "hardcodeado", "viene de env").                                |
 
 Opcionalmente, al final del reporte:
 

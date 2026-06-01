@@ -23,13 +23,13 @@ API Laravel /api/v2/
 ```typescript
 // ✅ Correcto — desde la constante de configuración
 import { API_URL_V2 } from '@/configs/config';
-const url = `${API_URL_V2}customers`;         // → /api-backend/api/v2/customers (dev)
-                                               // → https://api.lapesquerapp.es/api/v2/customers (prod)
+const url = `${API_URL_V2}customers`; // → /api-backend/api/v2/customers (dev)
+// → https://api.lapesquerapp.es/api/v2/customers (prod)
 
 // ❌ Nunca hardcodear URLs
 const url = 'http://localhost:8000/api/v2/customers';
 const url = '/api/v2/customers';
-const url = `${process.env.NEXT_PUBLIC_API_URL}/api/v2/customers`;  // ← usar API_URL_V2 en su lugar
+const url = `${process.env.NEXT_PUBLIC_API_URL}/api/v2/customers`; // ← usar API_URL_V2 en su lugar
 ```
 
 En desarrollo, `next.config.mjs` proxifica `/api-backend/*` → `http://localhost:8000/*`.
@@ -50,6 +50,7 @@ En desarrollo, `next.config.mjs` proxifica `/api-backend/*` → `http://localhos
 ```
 
 **Gestión de errores automática:**
+
 - **401 JWT expirado/inválido** → dispara `AUTH_SESSION_EXPIRED_EVENT` → logout automático
 - **401 error de validación** → deja pasar (no dispara logout)
 - **403 Forbidden** → devuelve el error con `userMessage` — la UI lo gestiona
@@ -98,10 +99,7 @@ await downloadFileGeneric(`${API_URL_V2}orders/${id}/pdf`, token, 'pedido.pdf');
 import { API_URL_V2 } from '@/configs/config';
 import { getAuthToken } from '@/lib/auth/getAuthToken';
 import { addFiltersToParams } from '@/helpers/params/addFiltersToParams';
-import {
-  fetchEntitiesGeneric,
-  deleteEntityGeneric,
-} from '@/services/generic/entityService';
+import { fetchEntitiesGeneric, deleteEntityGeneric } from '@/services/generic/entityService';
 import { createEntityGeneric } from '@/services/generic/createEntityService';
 import { editEntityGeneric } from '@/services/generic/editEntityService';
 import type { CatalogListFilters, CatalogListResponse, CatalogOption } from '@/types/catalog';
@@ -177,7 +175,7 @@ import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
 if (error instanceof ApiError && error.status === 422) {
   const errorData = error.data as { errors?: Record<string, string[]> };
   if (errorData.errors) {
-    setErrorsFrom422(setError, errorData.errors);  // ← mapear a campos del form
+    setErrorsFrom422(setError, errorData.errors); // ← mapear a campos del form
   }
 }
 

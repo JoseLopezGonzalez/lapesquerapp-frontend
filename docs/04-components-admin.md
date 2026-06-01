@@ -46,6 +46,7 @@ Admin/
 **Funcionalidad**: Panel principal con métricas, gráficos y resúmenes.
 
 **Componentes incluidos**:
+
 - `CurrentStockCard` - Stock actual
 - `TotalQuantitySoldCard` - Cantidad total vendida
 - `TotalAmountSoldCard` - Importe total vendido
@@ -60,14 +61,16 @@ Admin/
 - `TransportRadarChart` - Gráfico radar de transportes
 
 **Características**:
+
 - Saludo dinámico según hora del día (Buenos días/tardes/noches)
 - Layout responsive con grid de columnas
 - ScrollArea para contenido largo
 - Layout tipo masonry comentado (no activo)
 
 **Uso**:
+
 ```javascript
-import Dashboard from "@/components/Admin/Dashboard";
+import Dashboard from '@/components/Admin/Dashboard';
 
 function AdminPage() {
   return <Dashboard />;
@@ -83,6 +86,7 @@ function AdminPage() {
 **Funcionalidad**: Gestión completa de pedidos activos.
 
 **Estado**:
+
 ```javascript
 {
   orders: Array,              // Lista de pedidos
@@ -95,11 +99,13 @@ function AdminPage() {
 ```
 
 **Categorías**:
+
 - `all` - Todos los pedidos
 - `pending` - En producción
 - `finished` - Terminados
 
 **Funcionalidad**:
+
 1. **Carga inicial**: Obtiene pedidos activos desde API v2
 2. **Filtrado**: Por categoría y texto de búsqueda (cliente o ID)
 3. **Ordenamiento**: Por fecha de carga (`loadDate`)
@@ -107,13 +113,15 @@ function AdminPage() {
 5. **Creación**: Botón para crear nuevo pedido
 
 **Componentes hijos**:
+
 - `OrdersList` - Lista de pedidos (tarjetas)
 - `Order` - Vista detallada del pedido seleccionado
 - `CreateOrderForm` - Formulario de creación
 
 **Uso**:
+
 ```javascript
-import OrdersManager from "@/components/Admin/OrdersManager";
+import OrdersManager from '@/components/Admin/OrdersManager';
 
 function OrdersPage() {
   return <OrdersManager />;
@@ -127,6 +135,7 @@ function OrdersPage() {
 **Funcionalidad**: Vista completa de un pedido con múltiples tabs.
 
 **Tabs disponibles**:
+
 - `details` - Detalles del pedido
 - `products` - Productos planificados y reales
 - `pallets` - Pallets del pedido
@@ -138,6 +147,7 @@ function OrdersPage() {
 - `customer-history` - Historial del cliente
 
 **Componentes hijos**:
+
 - `OrderDetails` - Detalles generales
 - `OrderProductDetails` - Productos reales (desde pallets)
 - `OrderPlannedProductDetails` - Productos planificados
@@ -153,6 +163,7 @@ function OrdersPage() {
 - `OrderSkeleton` - Skeleton de carga
 
 **Características**:
+
 - Usa `OrderContext` para estado global
 - Badges de estado (pending, finished, incident)
 - Cambio de estado del pedido
@@ -161,8 +172,9 @@ function OrdersPage() {
 - Gestión de incidencias
 
 **Uso**:
+
 ```javascript
-import { OrderProvider } from "@/context/OrderContext";
+import { OrderProvider } from '@/context/OrderContext';
 
 function OrderView({ orderId }) {
   return (
@@ -182,11 +194,13 @@ function OrderView({ orderId }) {
 **Funcionalidad**: Cliente genérico para CRUD de cualquier entidad configurada en `entitiesConfig.js`.
 
 **Props**:
+
 ```javascript
 <EntityClient config={entityConfig} />
 ```
 
 **Configuración** (desde `entitiesConfig.js`):
+
 ```javascript
 {
   endpoint: "users",              // Endpoint API v2
@@ -201,6 +215,7 @@ function OrderView({ orderId }) {
 ```
 
 **Funcionalidad**:
+
 1. **Tabla de datos**: Muestra entidades con paginación
 2. **Filtros genéricos**: Sistema de filtros configurable
 3. **Búsqueda**: Búsqueda por texto
@@ -210,6 +225,7 @@ function OrderView({ orderId }) {
 7. **Selección múltiple**: Seleccionar múltiples filas
 
 **Componentes hijos**:
+
 - `EntityTable` - Tabla principal
 - `EntityTableHeader` - Encabezado con acciones
 - `EntityTableBody` - Cuerpo de la tabla
@@ -219,6 +235,7 @@ function OrderView({ orderId }) {
 - `EditEntityForm` - Formulario de edición
 
 **Formato de filtros**:
+
 ```javascript
 // Filtros se formatean para API v2
 {
@@ -230,9 +247,10 @@ function OrderView({ orderId }) {
 ```
 
 **Uso**:
+
 ```javascript
-import EntityClient from "@/components/Admin/Entity/EntityClient";
-import { configs } from "@/configs/entitiesConfig";
+import EntityClient from '@/components/Admin/Entity/EntityClient';
+import { configs } from '@/configs/entitiesConfig';
 
 function UsersPage() {
   const config = configs['users'];
@@ -247,6 +265,7 @@ function UsersPage() {
 El sistema de entidades se configura mediante un objeto de configuración que define cómo se visualizan y manejan las entidades. Cada entidad tiene su propia configuración.
 
 **Estructura básica**:
+
 ```javascript
 {
   'instance-key': {
@@ -267,12 +286,14 @@ El sistema de entidades se configura mediante un objeto de configuración que de
 ```
 
 **Opciones de control de acciones**:
+
 - `hideCreateButton: true` - Oculta el botón de crear
 - `hideActions: true` - Oculta toda la columna de acciones
 - `hideViewButton: true` - Oculta solo el botón de ver
 - `hideEditButton: true` - Oculta solo el botón de editar
 
 **Tipos de filtros soportados**:
+
 - `search` - Búsqueda por texto general
 - `text` - Campo de texto simple
 - `textarea` - Campo de texto multilínea
@@ -284,6 +305,7 @@ El sistema de entidades se configura mediante un objeto de configuración que de
 - `autocomplete` - Selector con opciones dinámicas desde endpoint
 
 **Tipos de columnas de tabla**:
+
 - `text` - Columna de texto simple
 - `badge` - Columna con indicadores visuales (requiere `options` con `label`, `color`, `outline`)
 - `date` - Columna para mostrar fechas
@@ -292,39 +314,40 @@ El sistema de entidades se configura mediante un objeto de configuración que de
 - `button` - Columna de acciones (se genera automáticamente, no necesita definirse)
 
 **Ejemplo completo**:
+
 ```javascript
 export const configs = {
   orders: {
-    title: "Pedidos",
-    description: "Gestión completa de pedidos",
-    endpoint: "orders",
-    viewRoute: "/admin/orders/:id",
-    deleteEndpoint: "/orders/:id",
-    createPath: "/admin/orders/create",
+    title: 'Pedidos',
+    description: 'Gestión completa de pedidos',
+    endpoint: 'orders',
+    viewRoute: '/admin/orders/:id',
+    deleteEndpoint: '/orders/:id',
+    createPath: '/admin/orders/create',
     filtersGroup: {
       search: {
-        label: "Buscar",
+        label: 'Buscar',
         filters: [
           {
-            name: "id",
-            label: "Buscar por ID",
-            type: "search",
-            placeholder: "Escribe un ID",
+            name: 'id',
+            label: 'Buscar por ID',
+            type: 'search',
+            placeholder: 'Escribe un ID',
           },
         ],
       },
       groups: [
         {
-          name: "generals",
-          label: "Generales",
+          name: 'generals',
+          label: 'Generales',
           filters: [
             {
-              name: "status",
-              label: "Estado",
-              type: "pairSelectBoxes",
+              name: 'status',
+              label: 'Estado',
+              type: 'pairSelectBoxes',
               options: [
-                { name: "pending", label: "Pendiente", value: false },
-                { name: "completed", label: "Completado", value: false },
+                { name: 'pending', label: 'Pendiente', value: false },
+                { name: 'completed', label: 'Completado', value: false },
               ],
             },
           ],
@@ -333,10 +356,10 @@ export const configs = {
     },
     table: {
       headers: [
-        { name: "id", label: "ID", type: "text", path: "id" },
-        { name: "customer", label: "Cliente", type: "text", path: "customer.name" },
-        { name: "status", label: "Estado", type: "badge", path: "status" },
-        { name: "total", label: "Total", type: "currency", path: "total" },
+        { name: 'id', label: 'ID', type: 'text', path: 'id' },
+        { name: 'customer', label: 'Cliente', type: 'text', path: 'customer.name' },
+        { name: 'status', label: 'Estado', type: 'badge', path: 'status' },
+        { name: 'total', label: 'Total', type: 'currency', path: 'total' },
         // La columna de acciones se genera automáticamente
       ],
     },
@@ -355,6 +378,7 @@ export const configs = {
 **Funcionalidad**: Gestión de almacenes con visualización de posiciones.
 
 **Estado**:
+
 ```javascript
 {
   stores: Array,              // Lista de almacenes
@@ -364,19 +388,22 @@ export const configs = {
 ```
 
 **Funcionalidad**:
+
 1. **Lista de almacenes**: Tarjetas horizontales con scroll
 2. **Selección**: Click en tarjeta para ver almacén
 3. **Visualización**: Mapa de posiciones del almacén
 4. **Gestión**: Añadir/quitar pallets, mover elementos
 
 **Componentes hijos**:
+
 - `StoreCard` - Tarjeta de almacén
 - `Store` - Vista detallada del almacén
 - `SkeletonStoreCard` - Skeleton de carga
 
 **Uso**:
+
 ```javascript
-import StoresManager from "@/components/Admin/Stores";
+import StoresManager from '@/components/Admin/Stores';
 
 function StoresPage() {
   return <StoresManager />;
@@ -390,6 +417,7 @@ function StoresPage() {
 **Funcionalidad**: Vista completa de un almacén con mapa de posiciones.
 
 **Características**:
+
 - Mapa visual de posiciones
 - Filtros por tipo (pallet, box, tub), productos, pallets
 - Resumen por especies y productos
@@ -413,6 +441,7 @@ function StoresPage() {
 **Funcionalidad**: Vista de producción individual con múltiples tabs.
 
 **Estado**:
+
 ```javascript
 {
   production: Object|null,
@@ -425,6 +454,7 @@ function StoresPage() {
 ```
 
 **Tabs**:
+
 - Información general
 - Registros de producción
 - Inputs (entradas)
@@ -432,6 +462,7 @@ function StoresPage() {
 - Consumos
 
 **Componentes hijos**:
+
 - `ProductionRecordsManager` - Gestión de registros
 - `ProductionInputsManager` - Gestión de inputs
 - `ProductionOutputsManager` - Gestión de outputs
@@ -440,14 +471,16 @@ function StoresPage() {
 - `ProductionRecordImagesManager` - Gestión de imágenes
 
 **Funcionalidad**:
+
 1. **Carga de datos**: Carga producción, árbol de procesos, totales, reconciliación
 2. **Visualización**: Muestra información general, fechas, pesos
 3. **Gestión**: Crear/editar registros, inputs, outputs
 4. **Imágenes**: Subir y gestionar imágenes de registros
 
 **Uso**:
+
 ```javascript
-import ProductionView from "@/components/Admin/Productions/ProductionView";
+import ProductionView from '@/components/Admin/Productions/ProductionView';
 
 function ProductionPage({ productionId }) {
   return <ProductionView productionId={productionId} />;
@@ -461,12 +494,14 @@ function ProductionPage({ productionId }) {
 **Ubicación**: `/src/components/Admin/Pallets/`
 
 **Componentes**:
+
 - `PalletDialog` - Diálogo principal para ver/editar pallet
 - `PalletView` - Vista principal del editor de pallet con todas las funcionalidades
 - `PalletLabel` - Componente de etiqueta de pallet
 - `PalletLabelDialog` - Diálogo para imprimir etiqueta
 
 **Funcionalidad**:
+
 - Visualización de pallet con cajas
 - Edición de cajas (añadir, eliminar, editar)
 - **Acciones masivas**: Cambiar lote o peso de múltiples cajas simultáneamente
@@ -478,13 +513,15 @@ function ProductionPage({ productionId }) {
 
 **Acciones Masivas**:
 El editor de pallet incluye un sistema de acciones masivas que permite:
+
 - **Cambiar lote masivamente**: Aplicar un nuevo lote a todas las cajas disponibles
 - **Cambiar peso masivamente**: Aplicar un nuevo peso neto a todas las cajas disponibles
 - **Restricción de seguridad**: Los cambios solo se aplican a cajas disponibles (no en producción). Las cajas en producción no pueden ser modificadas mediante acciones masivas.
 
 **Uso**:
+
 ```javascript
-import PalletView from "@/components/Admin/Pallets/PalletDialog/PalletView";
+import PalletView from '@/components/Admin/Pallets/PalletDialog/PalletView';
 
 function PalletPage({ palletId }) {
   return <PalletView palletId={palletId} />;
@@ -492,6 +529,7 @@ function PalletPage({ palletId }) {
 ```
 
 **Acceso a acciones masivas**:
+
 - Pestaña "Acciones Masivas" en el menú principal de pestañas del editor
 - Interfaz dedicada con vista previa de todas las cajas
 - Validación automática de datos antes de aplicar cambios
@@ -506,9 +544,11 @@ function PalletPage({ palletId }) {
 **Ubicación**: `/src/components/Admin/Labels/`
 
 **Componentes**:
+
 - `BoxLabelPrintDialog` - Diálogo para imprimir etiquetas de cajas
 
 **Funcionalidad**:
+
 - Selección de etiqueta
 - Relleno automático de campos desde cajas
 - Campos manuales
@@ -525,6 +565,7 @@ function PalletPage({ palletId }) {
 **Funcionalidad**: Editor visual WYSIWYG para diseñar etiquetas.
 
 **Características**:
+
 - Canvas interactivo
 - Tipos de elementos:
   - Texto
@@ -546,6 +587,7 @@ function PalletPage({ palletId }) {
 - Impresión: Integración con `usePrintElement`
 
 **Componentes hijos**:
+
 - `LabelSelectorSheet` - Selector de etiqueta existente
 - `LabelEditorPreview` - Preview de la etiqueta
 - `LabelRender` - Renderizado de la etiqueta
@@ -556,8 +598,9 @@ function PalletPage({ palletId }) {
 **Usa `useLabelEditor` hook** para lógica.
 
 **Uso**:
+
 ```javascript
-import LabelEditor from "@/components/Admin/LabelEditor";
+import LabelEditor from '@/components/Admin/LabelEditor';
 
 function LabelsPage() {
   return <LabelEditor />;
@@ -577,12 +620,14 @@ function LabelsPage() {
 **Funcionalidad**: Barra lateral de navegación.
 
 **Componentes**:
+
 - `AppSwitcher` - Selector de aplicación (Admin, Producción, World Trade)
 - `NavManagers` - Navegación de gestores (Orders, Stores, etc.)
 - `NavMain` - Navegación principal
 - `NavUser` - Información del usuario y logout
 
 **Características**:
+
 - Colapsable (modo icono)
 - Variante flotante
 - Filtrado por roles (si aplica)
@@ -590,8 +635,9 @@ function LabelsPage() {
 - Logout con confirmación
 
 **Uso**:
+
 ```javascript
-import { AppSidebar } from "@/components/Admin/Layout/SideBar";
+import { AppSidebar } from '@/components/Admin/Layout/SideBar';
 
 function AdminLayout({ children }) {
   return (
@@ -610,6 +656,7 @@ function AdminLayout({ children }) {
 **Funcionalidad**: Barra de navegación superior (alternativa al Sidebar).
 
 **Características**:
+
 - Logo de la aplicación
 - Navegación con filtrado por roles
 - Logout
@@ -628,6 +675,7 @@ function AdminLayout({ children }) {
 **Funcionalidad**: Sistema de filtros genérico y reutilizable.
 
 **Tipos de filtros soportados**:
+
 - `search` - Búsqueda por texto
 - `text` - Input de texto
 - `textarea` - Campo de texto multilínea
@@ -640,6 +688,7 @@ function AdminLayout({ children }) {
 - `pairSelectBoxes` - Filtro con opciones seleccionables en dos listas
 
 **Características**:
+
 - Modal para mostrar filtros
 - Contador de filtros activos
 - Reset de filtros
@@ -647,6 +696,7 @@ function AdminLayout({ children }) {
 
 **Componentes de filtros individuales**:
 Cada tipo de filtro tiene su propio componente en `/src/components/Admin/Filters/GenericFilters/Types/`:
+
 - `TextFilter` - Campo de texto optimizado con `React.memo`
 - `SearchFilter` - Búsqueda con debounce
 - `NumberFilter` - Campo numérico con validación
@@ -657,19 +707,14 @@ Cada tipo de filtro tiene su propio componente en `/src/components/Admin/Filters
 - `PairSelectBoxesFilter` - Dos listas de selección
 
 **Uso**:
+
 ```javascript
-import { GenericFilters } from "@/components/Admin/Filters/GenericFilters";
+import { GenericFilters } from '@/components/Admin/Filters/GenericFilters';
 
 function FilteredTable() {
   const [filters, setFilters] = useState([]);
-  
-  return (
-    <GenericFilters
-      filters={filters}
-      onChange={setFilters}
-      config={filterConfig}
-    />
-  );
+
+  return <GenericFilters filters={filters} onChange={setFilters} config={filterConfig} />;
 }
 ```
 
@@ -686,6 +731,7 @@ function FilteredTable() {
 **⚠️ IMPORTANTE**: Este formulario **NO usa React Hook Form**, usa `useState` directamente.
 
 **Secciones**:
+
 - Datos generales (nombre, CIF, registro sanitario)
 - Dirección (calle, código postal, ciudad, provincia, país)
 - Web y Logo
@@ -694,13 +740,15 @@ function FilteredTable() {
 - Legales (URLs de términos y privacidad)
 
 **Características**:
+
 - Carga configuración desde API v2
 - Actualiza `SettingsContext` al guardar
 - Campos anidados (ej: `company.name`, `company.address.street`)
 
 **Uso**:
+
 ```javascript
-import SettingsForm from "@/components/Admin/Settings/SettingsForm";
+import SettingsForm from '@/components/Admin/Settings/SettingsForm';
 
 function SettingsPage() {
   return <SettingsForm />;
@@ -716,6 +764,7 @@ function SettingsPage() {
 **Funcionalidad**: Panel de control alternativo con gráficos de inventario.
 
 **Componentes**:
+
 - `SpeciesInventoryOverview` - Resumen de inventario por especies
 - `RawMaterialRadialBarChart` - Gráfico radial de materias primas
 - `ProductsInventoryOverview` - Resumen de inventario de productos
@@ -724,8 +773,9 @@ function SettingsPage() {
 **Layout**: Grid responsive de 10 columnas.
 
 **Uso**:
+
 ```javascript
-import Home from "@/components/Admin/Home";
+import Home from '@/components/Admin/Home';
 
 function HomePage() {
   return <Home />;
@@ -741,18 +791,21 @@ function HomePage() {
 **Funcionalidad**: Extracción de datos de documentos PDF de diferentes fuentes de mercado.
 
 **Fuentes soportadas**:
+
 - `AlbaranCofraWeb` - Albaranes de Cofra Web
 - `ListadoComprasAsocPuntaDelMoral` - Listado de compras de Asociación Punta del Moral
 - `ListadoComprasLonjaDeIsla` - Listado de compras de Lonja de Isla
 - `FacturaDocapesca` - Facturas de Docapesca
 
 **Funcionalidad**:
+
 1. **Subida de PDF**: Componente `PdfUpload` para subir archivos
 2. **Extracción con Azure Document AI**: Usa Azure Document AI para extraer texto y tablas
 3. **Parsing específico**: Cada fuente tiene su parser específico
 4. **Exportación**: Exportar datos extraídos a Excel
 
 **Flujo**:
+
 ```javascript
 1. Usuario sube PDF
 2. Se envía a Azure Document AI
@@ -762,8 +815,9 @@ function HomePage() {
 ```
 
 **Uso**:
+
 ```javascript
-import MarketDataExtractor from "@/components/Admin/MarketDataExtractor";
+import MarketDataExtractor from '@/components/Admin/MarketDataExtractor';
 
 function MarketDataPage() {
   return <MarketDataExtractor />;
@@ -777,6 +831,7 @@ function MarketDataPage() {
 ### 1. Uso de Context API
 
 Muchos componentes usan Context para estado global:
+
 - `OrderContext` - Estado del pedido
 - `StoreContext` - Estado del almacén
 - `SettingsContext` - Configuración global
@@ -784,6 +839,7 @@ Muchos componentes usan Context para estado global:
 ### 2. Hooks Personalizados
 
 Los componentes usan hooks personalizados para lógica:
+
 - `useOrder` - Lógica de pedidos
 - `useStore` - Lógica de almacenes
 - `usePallet` - Lógica de pallets
@@ -793,6 +849,7 @@ Los componentes usan hooks personalizados para lógica:
 ### 3. Servicios API v2
 
 Todos los componentes usan servicios de API v2:
+
 - `orderService`
 - `storeService`
 - `productionService`
@@ -802,6 +859,7 @@ Todos los componentes usan servicios de API v2:
 ### 4. Toast Notifications
 
 `notify` como fachada estable del sistema de toasts (título y descripción separados, posición top-center, tema dark/light automático):
+
 ```javascript
 import { notify } from '@/lib/notifications';
 
@@ -810,20 +868,21 @@ notify.success('Éxito');
 notify.error('Algo falló');
 
 // Título + descripción (recomendado para errores y contexto)
-notify.error({ title: "Algo falló", description: "Por favor, inténtalo de nuevo más tarde." });
-notify.success({ title: "Guardado", description: "Los cambios se aplicaron correctamente." });
+notify.error({ title: 'Algo falló', description: 'Por favor, inténtalo de nuevo más tarde.' });
+notify.success({ title: 'Guardado', description: 'Los cambios se aplicaron correctamente.' });
 
 // Flujos async: usar siempre notify.promise (muestra loading → success/error nativo)
 await notify.promise(fetchAlgo(), {
-  loading: "Cargando...",
-  success: "Listo",
-  error: (err) => err?.message ?? "Error",
+  loading: 'Cargando...',
+  success: 'Listo',
+  error: (err) => err?.message ?? 'Error',
 });
 ```
 
 ### 5. Loading States
 
 Patrón común de loading:
+
 ```javascript
 const [loading, setLoading] = useState(true);
 
@@ -833,6 +892,7 @@ if (loading) return <Loader />;
 ### 6. Skeleton Components
 
 Componentes skeleton para mejor UX:
+
 - `OrderSkeleton`
 - `SkeletonStoreCard`
 - `Skeleton` (ShadCN)
@@ -856,12 +916,14 @@ Componentes skeleton para mejor UX:
 ## ⚠️ Observaciones Críticas y Mejoras Recomendadas
 
 ### 1. Archivo Duplicado en Dashboard
+
 - **Archivo**: `/src/components/Admin/Dashboard/index copy.js`
 - **Problema**: Archivo duplicado con "copy" en el nombre
 - **Impacto**: Confusión sobre cuál usar
 - **Recomendación**: Eliminar archivo duplicado
 
 ### 2. Código Comentado en Dashboard
+
 - **Archivo**: `/src/components/Admin/Dashboard/index.js`
 - **Línea**: 63-74
 - **Problema**: Código de Masonry comentado, posible código muerto
@@ -869,6 +931,7 @@ Componentes skeleton para mejor UX:
 - **Recomendación**: Eliminar si no se va a usar o documentar por qué está comentado
 
 ### 3. Timeout Hardcodeado en OrdersManager
+
 - **Archivo**: `/src/components/Admin/OrdersManager/index.js`
 - **Línea**: 40-46
 - **Problema**: Timeout de 6 segundos hardcodeado para setLoading(false)
@@ -876,36 +939,42 @@ Componentes skeleton para mejor UX:
 - **Recomendación**: Eliminar timeout, usar estado real de carga
 
 ### 4. EntityClient con Lógica Compleja
+
 - **Archivo**: `/src/components/Admin/Entity/EntityClient/index.js`
 - **Problema**: Componente muy grande (~429 líneas) con múltiples responsabilidades
 - **Impacto**: Difícil de mantener y testear
 - **Recomendación**: Dividir en componentes más pequeños
 
 ### 5. Falta de Manejo de Errores en MarketDataExtractor
+
 - **Archivo**: `/src/components/Admin/MarketDataExtractor/index.js`
 - **Problema**: Parsers específicos pueden fallar sin manejo adecuado
 - **Impacto**: Errores no manejados pueden romper la UI
 - **Recomendación**: Añadir try-catch y manejo de errores en parsers
 
 ### 6. SettingsForm sin React Hook Form
+
 - **Archivo**: `/src/components/Admin/Settings/SettingsForm.js`
 - **Problema**: Único formulario que no usa React Hook Form
 - **Impacto**: Inconsistencia con el resto de formularios
 - **Recomendación**: Migrar a React Hook Form
 
 ### 7. LabelEditor Muy Grande
+
 - **Archivo**: `/src/components/Admin/LabelEditor/index.js`
 - **Problema**: Componente de ~1100+ líneas, demasiado grande
 - **Impacto**: Muy difícil de mantener
 - **Recomendación**: Dividir en múltiples componentes más pequeños
 
 ### 8. Falta de Validación de Permisos
+
 - **Archivo**: Múltiples componentes
 - **Problema**: Algunos componentes no validan permisos antes de mostrar acciones
 - **Impacto**: Usuarios pueden ver botones que no pueden usar
 - **Recomendación**: Añadir validación de permisos consistente
 
 ### 9. Uso de window.confirm en EntityClient
+
 - **Archivo**: `/src/components/Admin/Entity/EntityClient/index.js`
 - **Línea**: 99
 - **Problema**: Usa `window.confirm` nativo en lugar de componente de diálogo
@@ -913,12 +982,14 @@ Componentes skeleton para mejor UX:
 - **Recomendación**: Usar Dialog component de ShadCN
 
 ### 10. Falta de Memoización en Componentes con Cálculos
+
 - **Archivo**: Múltiples componentes
 - **Problema**: Cálculos costosos no están memoizados
 - **Impacto**: Re-renders innecesarios
 - **Recomendación**: Usar `useMemo` para cálculos costosos
 
 ### 11. ProductionView con Carga en Paralelo sin Manejo de Errores Parciales
+
 - **Archivo**: `/src/components/Admin/Productions/ProductionView.jsx`
 - **Línea**: 40-45
 - **Problema**: Usa `Promise.all` con `.catch(() => null)`, puede ocultar errores importantes
@@ -926,6 +997,7 @@ Componentes skeleton para mejor UX:
 - **Recomendación**: Manejar errores individualmente y mostrar mensajes apropiados
 
 ### 12. StoresManager con Código Comentado
+
 - **Archivo**: `/src/components/Admin/Stores/index.js`
 - **Línea**: 4-13, 32-33, 38
 - **Problema**: Código comentado extenso
@@ -933,18 +1005,21 @@ Componentes skeleton para mejor UX:
 - **Recomendación**: Eliminar código comentado o documentar por qué está
 
 ### 13. Falta de TypeScript
+
 - **Archivo**: Todos los componentes
 - **Problema**: Sin tipos, no hay validación de props ni retornos
 - **Impacto**: Errores en tiempo de ejecución, menos productividad
 - **Recomendación**: Migrar a TypeScript o añadir PropTypes completo
 
 ### 14. Navbar y Sidebar Duplicados
+
 - **Archivo**: `/src/components/Admin/Layout/Navbar/` y `/src/components/Admin/Layout/SideBar/`
 - **Problema**: Dos sistemas de navegación diferentes
 - **Impacto**: Confusión sobre cuál usar, posible duplicación de lógica
 - **Recomendación**: Documentar cuándo usar cada uno o unificar
 
 ### 15. Falta de Tests
+
 - **Archivo**: Todos los componentes
 - **Problema**: No se encontraron archivos de tests
 - **Impacto**: Sin garantía de que los componentes funcionen correctamente

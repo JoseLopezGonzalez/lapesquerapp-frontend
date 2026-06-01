@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import React, { createContext, useContext, useEffect, useState, useMemo } from "react";
-import { getProductOptions } from "@/services/productService";
-import { getTaxOptions } from "@/services/taxService";
-import { useSession } from "next-auth/react";
+import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
+import { getProductOptions } from '@/services/productService';
+import { getTaxOptions } from '@/services/taxService';
+import { useSession } from 'next-auth/react';
 
 /**
  * Contexto de opciones solo para el Gestor de pedidos.
@@ -44,7 +44,7 @@ export function OrdersManagerOptionsProvider({ children }) {
         setTaxOptions(taxes);
       })
       .catch((err) => {
-        console.error("Error al cargar opciones del gestor de pedidos:", err);
+        console.error('Error al cargar opciones del gestor de pedidos:', err);
       })
       .finally(() => {
         setProductsLoading(false);

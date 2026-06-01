@@ -22,6 +22,7 @@ GET /api/v2/productions
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -29,12 +30,12 @@ Authorization: Bearer {access_token}
 
 #### Query Parameters (Opcionales)
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| lot | string | Número de lote |
-| species_id | integer | ID de especie |
-| status | string | Estado del lote |
-| perPage | integer | Elementos por página (default: 15) |
+| Parámetro  | Tipo    | Descripción                        |
+| ---------- | ------- | ---------------------------------- |
+| lot        | string  | Número de lote                     |
+| species_id | integer | ID de especie                      |
+| status     | string  | Estado del lote                    |
+| perPage    | integer | Elementos por página (default: 15) |
 
 #### Response Exitosa (200)
 
@@ -111,9 +112,9 @@ GET /api/v2/productions/{id}
     },
     "status": "in_progress",
     "reconciliation": {
-      "total_input": 1000.00,
-      "total_output": 950.00,
-      "difference": 50.00
+      "total_input": 1000.0,
+      "total_output": 950.0,
+      "difference": 50.0
     },
     "created_at": "2024-01-15T10:00:00.000000Z"
   }
@@ -265,6 +266,7 @@ GET /api/v2/production-records/options
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -272,10 +274,10 @@ Authorization: Bearer {access_token}
 
 #### Query Parameters (Opcionales)
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
+| Parámetro     | Tipo    | Descripción                    |
+| ------------- | ------- | ------------------------------ |
 | production_id | integer | Filtrar por lote de producción |
-| exclude_id | integer | Excluir registro por ID |
+| exclude_id    | integer | Excluir registro por ID        |
 
 #### Response Exitosa (200)
 
@@ -309,6 +311,7 @@ GET /api/v2/production-records/{id}/sources-data
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -316,9 +319,9 @@ Authorization: Bearer {access_token}
 
 #### Path Parameters
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| id | integer | ID del registro de producción |
+| Parámetro | Tipo    | Descripción                   |
+| --------- | ------- | ----------------------------- |
+| id        | integer | ID del registro de producción |
 
 #### Response Exitosa (200)
 
@@ -332,8 +335,8 @@ Authorization: Bearer {access_token}
       "processName": "Proceso A",
       "productionId": 1,
       "productionLot": "LOT-001",
-      "totalInputWeight": 1500.00,
-      "totalInputCost": 7500.00
+      "totalInputWeight": 1500.0,
+      "totalInputCost": 7500.0
     },
     "stockBoxes": [
       {
@@ -344,10 +347,10 @@ Authorization: Bearer {access_token}
           "name": "Producto A"
         },
         "lot": "LOT-001",
-        "netWeight": 20.00,
-        "grossWeight": 25.00,
-        "costPerKg": 5.00,
-        "totalCost": 100.00,
+        "netWeight": 20.0,
+        "grossWeight": 25.0,
+        "costPerKg": 5.0,
+        "totalCost": 100.0,
         "gs1128": "1234567890123",
         "palletId": 1
       }
@@ -361,14 +364,14 @@ Authorization: Bearer {access_token}
           "name": "Producto B"
         },
         "lotId": 1,
-        "consumedWeightKg": 50.00,
+        "consumedWeightKg": 50.0,
         "consumedBoxes": 2,
-        "outputTotalWeight": 100.00,
+        "outputTotalWeight": 100.0,
         "outputTotalBoxes": 4,
-        "outputAvailableWeight": 50.00,
+        "outputAvailableWeight": 50.0,
         "outputAvailableBoxes": 2,
-        "costPerKg": 10.00,
-        "totalCost": 500.00,
+        "costPerKg": 10.0,
+        "totalCost": 500.0,
         "parentProcess": {
           "id": 2,
           "name": "Proceso Padre",
@@ -379,20 +382,20 @@ Authorization: Bearer {access_token}
     "totals": {
       "stock": {
         "count": 10,
-        "totalWeight": 1000.00,
-        "totalCost": 5000.00,
-        "averageCostPerKg": 5.00
+        "totalWeight": 1000.0,
+        "totalCost": 5000.0,
+        "averageCostPerKg": 5.0
       },
       "parent": {
         "count": 2,
-        "totalWeight": 500.00,
-        "totalCost": 2500.00,
-        "averageCostPerKg": 5.00
+        "totalWeight": 500.0,
+        "totalCost": 2500.0,
+        "averageCostPerKg": 5.0
       },
       "combined": {
-        "totalWeight": 1500.00,
-        "totalCost": 7500.00,
-        "averageCostPerKg": 5.00
+        "totalWeight": 1500.0,
+        "totalCost": 7500.0,
+        "averageCostPerKg": 5.0
       }
     }
   }
@@ -400,6 +403,7 @@ Authorization: Bearer {access_token}
 ```
 
 **Descripción:** Este endpoint devuelve toda la información necesaria para crear sources (fuentes) de outputs, incluyendo:
+
 - Inputs de stock (cajas) disponibles con sus costes
 - Consumos de outputs del padre disponibles con sus costes
 - Información del proceso actual
@@ -414,6 +418,7 @@ GET /api/v2/production-records/{id}/tree
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -421,9 +426,9 @@ Authorization: Bearer {access_token}
 
 #### Path Parameters
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| id | integer | ID del registro de producción |
+| Parámetro | Tipo    | Descripción                   |
+| --------- | ------- | ----------------------------- |
+| id        | integer | ID del registro de producción |
 
 #### Response Exitosa (200)
 
@@ -478,6 +483,7 @@ PUT /api/v2/production-records/{id}/outputs
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -486,9 +492,9 @@ Content-Type: application/json
 
 #### Path Parameters
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| id | integer | ID del registro de producción |
+| Parámetro | Tipo    | Descripción                   |
+| --------- | ------- | ----------------------------- |
+| id        | integer | ID del registro de producción |
 
 #### Request Body
 
@@ -500,7 +506,7 @@ Content-Type: application/json
       "product": {
         "id": 1
       },
-      "weight_kg": 100.00,
+      "weight_kg": 100.0,
       "boxes": 5,
       "lot_id": 1
     }
@@ -536,6 +542,7 @@ PUT /api/v2/production-records/{id}/parent-output-consumptions
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -544,9 +551,9 @@ Content-Type: application/json
 
 #### Path Parameters
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| id | integer | ID del registro de producción |
+| Parámetro | Tipo    | Descripción                   |
+| --------- | ------- | ----------------------------- |
+| id        | integer | ID del registro de producción |
 
 #### Request Body
 
@@ -556,7 +563,7 @@ Content-Type: application/json
     {
       "id": 1,
       "production_output_id": 1,
-      "consumed_weight_kg": 50.00,
+      "consumed_weight_kg": 50.0,
       "consumed_boxes": 2
     }
   ]
@@ -606,7 +613,7 @@ POST /api/v2/production-inputs
 {
   "production_record_id": 1,
   "product_id": 1,
-  "quantity": 100.50,
+  "quantity": 100.5,
   "unit": "kg"
 }
 ```
@@ -627,7 +634,7 @@ POST /api/v2/production-inputs/multiple
     {
       "production_record_id": 1,
       "product_id": 1,
-      "quantity": 100.50,
+      "quantity": 100.5,
       "unit": "kg"
     },
     {
@@ -704,7 +711,7 @@ POST /api/v2/production-outputs
 {
   "production_record_id": 1,
   "product_id": 1,
-  "quantity": 95.00,
+  "quantity": 95.0,
   "unit": "kg"
 }
 ```
@@ -755,24 +762,24 @@ GET /api/v2/production-outputs/{id}/cost-breakdown
 {
   "data": {
     "output_id": 1,
-    "total_cost": 1500.00,
+    "total_cost": 1500.0,
     "cost_per_kg": 15.79,
     "breakdown": [
       {
         "type": "input",
         "product": "Materia Prima A",
-        "quantity": 100.00,
-        "cost": 1000.00
+        "quantity": 100.0,
+        "cost": 1000.0
       },
       {
         "type": "labor",
         "name": "Mano de Obra",
-        "cost": 300.00
+        "cost": 300.0
       },
       {
         "type": "operational",
         "name": "Electricidad",
-        "cost": 200.00
+        "cost": 200.0
       }
     ]
   }
@@ -803,7 +810,7 @@ POST /api/v2/production-output-consumptions
 {
   "parent_output_id": 1,
   "consumed_output_id": 2,
-  "quantity": 50.00
+  "quantity": 50.0
 }
 ```
 
@@ -848,6 +855,7 @@ GET /api/v2/production-output-consumptions/available-outputs/{productionRecordId
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -855,8 +863,8 @@ Authorization: Bearer {access_token}
 
 #### Path Parameters
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
+| Parámetro          | Tipo    | Descripción                   |
+| ------------------ | ------- | ----------------------------- |
 | productionRecordId | integer | ID del registro de producción |
 
 #### Response Exitosa (200)
@@ -870,12 +878,12 @@ Authorization: Bearer {access_token}
         "id": 1,
         "name": "Producto A"
       },
-      "weight_kg": 100.00,
+      "weight_kg": 100.0,
       "boxes": 5,
-      "available_weight_kg": 50.00,
+      "available_weight_kg": 50.0,
       "available_boxes": 2,
-      "cost_per_kg": 5.00,
-      "total_cost": 500.00,
+      "cost_per_kg": 5.0,
+      "total_cost": 500.0,
       "production_record": {
         "id": 2,
         "process": {
@@ -980,4 +988,3 @@ GET /api/v2/processes/options
   "message": "Producción no encontrada."
 }
 ```
-

@@ -47,11 +47,7 @@ export function useSettingsData() {
   const externalUser = isExternalActor(session?.user);
   const isFieldOperator = primaryRole === 'repartidor_autoventa';
   const enabled = Boolean(
-    tenantId &&
-    status !== 'loading' &&
-    accessToken &&
-    !externalUser &&
-    !isFieldOperator
+    tenantId && status !== 'loading' && accessToken && !externalUser && !isFieldOperator
   );
 
   const query = useQuery({

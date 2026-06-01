@@ -64,15 +64,15 @@ El backend unifica el manejo de fechas y horas: **todos los instantes (datetime)
 
 Los siguientes campos vendrán en formato ISO 8601 **con zona** (p. ej. `Z` o `+01:00`). El frontend debe tratarlos como **instante** (p. ej. `new Date(value)` en JS) y formatear en la zona local del usuario para la UI.
 
-| Recurso / contexto | Campo(s) |
-|--------------------|----------|
+| Recurso / contexto     | Campo(s)                                                                                  |
+| ---------------------- | ----------------------------------------------------------------------------------------- |
 | **Punches (fichajes)** | `timestamp` (listado, detalle, dashboard, calendario, estadísticas, respuesta NFC, bulk). |
-| **Employees** | `lastPunchEvent.timestamp` |
-| **Productions** | `openedAt`, `closedAt`, `date` (solo fecha, ver abajo) |
-| **ProductionRecords** | `startedAt`, `finishedAt` |
-| **Incidents** | `resolvedAt`, `createdAt`, `updatedAt` (en `toArrayAssoc`) |
-| **Users** | `created_at`, `updated_at` (UserResource) |
-| **Sessions** | `last_used_at`, `created_at`, `expires_at` |
+| **Employees**          | `lastPunchEvent.timestamp`                                                                |
+| **Productions**        | `openedAt`, `closedAt`, `date` (solo fecha, ver abajo)                                    |
+| **ProductionRecords**  | `startedAt`, `finishedAt`                                                                 |
+| **Incidents**          | `resolvedAt`, `createdAt`, `updatedAt` (en `toArrayAssoc`)                                |
+| **Users**              | `created_at`, `updated_at` (UserResource)                                                 |
+| **Sessions**           | `last_used_at`, `created_at`, `expires_at`                                                |
 
 No asumir que las fechas vienen en “hora local” o sin zona. Parsear siempre como instante y formatear a local para mostrar.
 
@@ -80,32 +80,32 @@ No asumir que las fechas vienen en “hora local” o sin zona. Parsear siempre 
 
 Representan el **día en la zona de negocio** (Europe/Madrid). No incluyen hora; no hay desfase de zona.
 
-| Recurso | Campo(s) |
-|---------|----------|
-| **Orders** | `entryDate`, `loadDate` |
-| **RawMaterialReceptions** | `date` |
-| **CeboDispatches** | `date` |
-| **Production** | `date` (cuando se expone como fecha) |
-| **ProductionCost** | `costDate` |
+| Recurso                   | Campo(s)                             |
+| ------------------------- | ------------------------------------ |
+| **Orders**                | `entryDate`, `loadDate`              |
+| **RawMaterialReceptions** | `date`                               |
+| **CeboDispatches**        | `date`                               |
+| **Production**            | `date` (cuando se expone como fecha) |
+| **ProductionCost**        | `costDate`                           |
 
 ---
 
 ## 4. Listado de entidades y campos afectados
 
-| Entidad | Campo API | Formato en respuesta |
-|---------|-----------|----------------------|
-| Punches | `timestamp` | ISO 8601 con zona |
-| Employees | `lastPunchEvent.timestamp` | ISO 8601 con zona |
-| Orders | `entryDate`, `loadDate` | Y-m-d (solo fecha) |
-| Productions | `openedAt`, `closedAt` | ISO 8601 con zona |
-| Productions | `date` | Y-m-d (solo fecha) |
-| ProductionRecords | `startedAt`, `finishedAt` | ISO 8601 con zona |
-| Incidents | `resolvedAt`, `createdAt`, `updatedAt` | ISO 8601 con zona |
-| Users | `created_at`, `updated_at` | ISO 8601 con zona |
-| Sessions | `last_used_at`, `created_at`, `expires_at` | ISO 8601 con zona |
-| RawMaterialReceptions | `date` | Y-m-d (solo fecha) |
-| CeboDispatches | `date` | Y-m-d (solo fecha) |
-| ProductionCosts | `costDate` | Y-m-d (solo fecha) |
+| Entidad               | Campo API                                  | Formato en respuesta |
+| --------------------- | ------------------------------------------ | -------------------- |
+| Punches               | `timestamp`                                | ISO 8601 con zona    |
+| Employees             | `lastPunchEvent.timestamp`                 | ISO 8601 con zona    |
+| Orders                | `entryDate`, `loadDate`                    | Y-m-d (solo fecha)   |
+| Productions           | `openedAt`, `closedAt`                     | ISO 8601 con zona    |
+| Productions           | `date`                                     | Y-m-d (solo fecha)   |
+| ProductionRecords     | `startedAt`, `finishedAt`                  | ISO 8601 con zona    |
+| Incidents             | `resolvedAt`, `createdAt`, `updatedAt`     | ISO 8601 con zona    |
+| Users                 | `created_at`, `updated_at`                 | ISO 8601 con zona    |
+| Sessions              | `last_used_at`, `created_at`, `expires_at` | ISO 8601 con zona    |
+| RawMaterialReceptions | `date`                                     | Y-m-d (solo fecha)   |
+| CeboDispatches        | `date`                                     | Y-m-d (solo fecha)   |
+| ProductionCosts       | `costDate`                                 | Y-m-d (solo fecha)   |
 
 ---
 
@@ -128,10 +128,10 @@ Representan el **día en la zona de negocio** (Europe/Madrid). No incluyen hora;
 ## 6. Referencias
 
 - **Plan de implementación backend:** Unificación de timezone (UTC) — fases 1–7 en el plan de Cursor.
-- **Archivos relevantes:**  
-  - `app/Casts/DateTimeUtcCast.php`  
-  - `app/Services/PunchEventWriteService.php`  
-  - `config/app.php` (`business_timezone`)  
-  - Resources v2 que exponen `timestamp`, `openedAt`, `closedAt`, `startedAt`, `finishedAt`, `resolvedAt`, etc.  
-- **Nullable en Orders/Customers:** [72-nullables-orders-customers-frontend.md](72-nullables-orders-customers-frontend.md)  
+- **Archivos relevantes:**
+  - `app/Casts/DateTimeUtcCast.php`
+  - `app/Services/PunchEventWriteService.php`
+  - `config/app.php` (`business_timezone`)
+  - Resources v2 que exponen `timestamp`, `openedAt`, `closedAt`, `startedAt`, `finishedAt`, `resolvedAt`, etc.
+- **Nullable en Orders/Customers:** [72-nullables-orders-customers-frontend.md](72-nullables-orders-customers-frontend.md)
 - **Autoventa API:** [71-autoventa-api-frontend.md](71-autoventa-api-frontend.md)

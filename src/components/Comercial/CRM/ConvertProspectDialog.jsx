@@ -4,13 +4,26 @@ import { useEffect, useMemo } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { notify } from '@/lib/notifications';
 import { ApiError } from '@/lib/api/apiHelpers';
 import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
@@ -99,7 +112,9 @@ export default function ConvertProspectDialog({ open, onOpenChange, prospect }) 
             onOpenChange(false);
             router.push(`/comercial/clientes/${existingCustomerId}`);
           } else {
-            notify.error({ title: err.data.errors.status[0] ?? 'Este prospecto ya ha sido convertido a cliente.' });
+            notify.error({
+              title: err.data.errors.status[0] ?? 'Este prospecto ya ha sido convertido a cliente.',
+            });
           }
         } else {
           setErrorsFrom422(setError, err.data.errors);
@@ -112,7 +127,8 @@ export default function ConvertProspectDialog({ open, onOpenChange, prospect }) 
     const n = Object.keys(formErrors).length;
     notify.error({
       title: 'Revisa el formulario',
-      description: n > 1 ? `Hay ${n} campos con errores.` : 'Corrige el error indicado antes de continuar.',
+      description:
+        n > 1 ? `Hay ${n} campos con errores.` : 'Corrige el error indicado antes de continuar.',
     });
   };
 
@@ -122,7 +138,8 @@ export default function ConvertProspectDialog({ open, onOpenChange, prospect }) 
         <DialogHeader className="border-b p-4">
           <DialogTitle>Convertir a cliente</DialogTitle>
           <DialogDescription>
-            Revisa y completa los datos del nuevo cliente. Los campos de dirección se pre-rellenan con la dirección del prospecto.
+            Revisa y completa los datos del nuevo cliente. Los campos de dirección se pre-rellenan
+            con la dirección del prospecto.
           </DialogDescription>
         </DialogHeader>
 
@@ -132,9 +149,8 @@ export default function ConvertProspectDialog({ open, onOpenChange, prospect }) 
           onSubmit={handleSubmit(onValidSubmit, onInvalidSubmit)}
           noValidate
         >
-          <ScrollArea className="min-h-0 flex-1 max-h-[calc(100vh-16rem)]">
+          <ScrollArea className="max-h-[calc(100vh-16rem)] min-h-0 flex-1">
             <div className="grid gap-4 p-4">
-
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="grid gap-2">
                   <Label htmlFor="convert-billing">Dirección de facturación</Label>
@@ -172,7 +188,7 @@ export default function ConvertProspectDialog({ open, onOpenChange, prospect }) 
               </div>
 
               <div className="border-t pt-4">
-                <p className="text-sm font-medium text-muted-foreground mb-3">Datos adicionales</p>
+                <p className="text-muted-foreground mb-3 text-sm font-medium">Datos adicionales</p>
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="grid gap-2">
@@ -185,7 +201,10 @@ export default function ConvertProspectDialog({ open, onOpenChange, prospect }) 
                           value={field.value && field.value !== '' ? field.value : NONE_VALUE}
                           onValueChange={(v) => field.onChange(v === NONE_VALUE ? '' : v)}
                         >
-                          <SelectTrigger className="w-full" aria-invalid={errors.paymentTermId ? 'true' : undefined}>
+                          <SelectTrigger
+                            className="w-full"
+                            aria-invalid={errors.paymentTermId ? 'true' : undefined}
+                          >
                             <SelectValue placeholder="Sin especificar" />
                           </SelectTrigger>
                           <SelectContent>
@@ -212,7 +231,10 @@ export default function ConvertProspectDialog({ open, onOpenChange, prospect }) 
                           value={field.value && field.value !== '' ? field.value : NONE_VALUE}
                           onValueChange={(v) => field.onChange(v === NONE_VALUE ? '' : v)}
                         >
-                          <SelectTrigger className="w-full" aria-invalid={errors.transportId ? 'true' : undefined}>
+                          <SelectTrigger
+                            className="w-full"
+                            aria-invalid={errors.transportId ? 'true' : undefined}
+                          >
                             <SelectValue placeholder="Sin especificar" />
                           </SelectTrigger>
                           <SelectContent>
@@ -230,7 +252,7 @@ export default function ConvertProspectDialog({ open, onOpenChange, prospect }) 
                   </div>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2 mt-4">
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
                   <div className="grid gap-2">
                     <Label htmlFor="convert-a3erp">Código A3ERP</Label>
                     <Input
@@ -253,7 +275,7 @@ export default function ConvertProspectDialog({ open, onOpenChange, prospect }) 
                   </div>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-3 mt-4">
+                <div className="mt-4 grid gap-4 md:grid-cols-3">
                   <div className="grid gap-2">
                     <Label htmlFor="convert-transport-notes">Notas de transporte</Label>
                     <Textarea
@@ -286,12 +308,16 @@ export default function ConvertProspectDialog({ open, onOpenChange, prospect }) 
                   </div>
                 </div>
               </div>
-
             </div>
           </ScrollArea>
 
           <DialogFooter className="border-t p-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isSubmitting}
+            >
               Cancelar
             </Button>
             <Button type="submit" form="convert-prospect-form" disabled={isSubmitting}>

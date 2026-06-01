@@ -18,6 +18,7 @@ Este documento describe los flujos funcionales completos de la aplicación, desd
 ## 🔄 Flujo 1: Crear Pedido
 
 ### Descripción
+
 Flujo completo para crear un nuevo pedido con cliente, fechas, productos planificados y configuración comercial.
 
 ### Componentes Implicados
@@ -62,6 +63,7 @@ Flujo completo para crear un nuevo pedido con cliente, fechas, productos planifi
 ### Flujo Paso a Paso
 
 1. **Usuario hace click en "Crear pedido"**
+
    ```javascript
    // OrdersManager
    setOnCreatingNewOrder(true);
@@ -73,40 +75,42 @@ Flujo completo para crear un nuevo pedido con cliente, fechas, productos planifi
    - Carga opciones de productos e impuestos
 
 3. **Usuario selecciona cliente**
+
    ```javascript
    // CreateOrderForm - useEffect
    const customerId = watch('customer');
    if (!customerId) return;
-   
-   getCustomer(customerId, token)
-     .then((customer) => {
-       setValue('salesperson', customer.salesperson?.id);
-       setValue('payment', customer.paymentTerm?.id);
-       setValue('incoterm', customer.incoterm?.id);
-       // ... más campos
-     });
+
+   getCustomer(customerId, token).then((customer) => {
+     setValue('salesperson', customer.salesperson?.id);
+     setValue('payment', customer.paymentTerm?.id);
+     setValue('incoterm', customer.incoterm?.id);
+     // ... más campos
+   });
    ```
 
 4. **Usuario añade productos planificados**
+
    ```javascript
    // useFieldArray
    const { fields, append, remove } = useFieldArray({
      control,
      name: 'plannedProducts',
    });
-   
+
    // Añadir producto
    append({ product: '', quantity: 0, boxes: 0, unitPrice: 0, tax: '' });
    ```
 
 5. **Usuario envía formulario**
+
    ```javascript
    const handleCreate = async (formData) => {
      const payload = {
        customer: parseInt(formData.customer),
        entryDate: format(formData.entryDate, 'yyyy-MM-dd'),
        loadDate: format(formData.loadDate, 'yyyy-MM-dd'),
-       plannedProducts: formData.plannedProducts.map(line => ({
+       plannedProducts: formData.plannedProducts.map((line) => ({
          product: parseInt(line.product),
          quantity: parseFloat(line.quantity),
          boxes: parseInt(line.boxes),
@@ -114,7 +118,7 @@ Flujo completo para crear un nuevo pedido con cliente, fechas, productos planifi
          tax: parseInt(line.tax),
        })),
      };
-     
+
      const newOrder = await createOrder(payload);
      onCreate(newOrder.id); // Redirige a vista del pedido
    };
@@ -140,6 +144,7 @@ Flujo completo para crear un nuevo pedido con cliente, fechas, productos planifi
 ## 🔄 Flujo 2: Editar Pedido
 
 ### Descripción
+
 Flujo para editar un pedido existente (sin cambiar cliente).
 
 ### Componentes Implicados
@@ -175,16 +180,19 @@ Flujo para editar un pedido existente (sin cambiar cliente).
 ### Flujo Paso a Paso
 
 1. **Usuario hace click en "Editar"**
+
    ```javascript
    // OrderEditSheet se abre en Sheet lateral
    ```
 
 2. **Se carga configuración del formulario**
+
    ```javascript
    const { formGroups, defaultValues } = useOrderFormConfig({ orderData: order });
    ```
 
 3. **Se inicializa formulario con datos del pedido**
+
    ```javascript
    useEffect(() => {
      reset(defaultValues); // Datos del pedido
@@ -195,6 +203,7 @@ Flujo para editar un pedido existente (sin cambiar cliente).
    - Fechas, comerciales, direcciones, notas, etc.
 
 5. **Usuario envía formulario**
+
    ```javascript
    const onSubmit = async (data) => {
      const payload = {
@@ -202,7 +211,7 @@ Flujo para editar un pedido existente (sin cambiar cliente).
        entryDate: format(data.entryDate, 'yyyy-MM-dd'),
        loadDate: format(data.loadDate, 'yyyy-MM-dd'),
      };
-     
+
      await updateOrderData(payload); // Desde OrderContext
    };
    ```
@@ -226,6 +235,7 @@ Flujo para editar un pedido existente (sin cambiar cliente).
 ## 🔄 Flujo 3: Proceso de Incidencias
 
 ### Descripción
+
 Flujo completo para crear, resolver y eliminar incidencias en pedidos.
 
 ### Componentes Implicados
@@ -262,15 +272,17 @@ Flujo completo para crear, resolver y eliminar incidencias en pedidos.
 #### Crear Incidencia
 
 1. **Usuario escribe descripción**
+
    ```javascript
-   const [newDescription, setNewDescription] = useState("");
+   const [newDescription, setNewDescription] = useState('');
    ```
 
 2. **Usuario hace click en "Crear incidencia"**
+
    ```javascript
    const handleCreate = async () => {
-     if (!newDescription) return toast.error("La descripción es obligatoria");
-     
+     if (!newDescription) return toast.error('La descripción es obligatoria');
+
      await openOrderIncident(newDescription);
      // Cambia estado del pedido a 'incident'
    };
@@ -284,14 +296,16 @@ Flujo completo para crear, resolver y eliminar incidencias en pedidos.
 #### Resolver Incidencia
 
 1. **Usuario selecciona tipo de resolución**
+
    ```javascript
-   const [resolutionType, setResolutionType] = useState("");
+   const [resolutionType, setResolutionType] = useState('');
    // Opciones: 'resolved', 'cancelled', etc.
    ```
 
 2. **Usuario escribe notas (opcional)**
+
    ```javascript
-   const [resolutionNotes, setResolutionNotes] = useState("");
+   const [resolutionNotes, setResolutionNotes] = useState('');
    ```
 
 3. **Usuario hace click en "Resolver"**
@@ -324,6 +338,7 @@ Flujo completo para crear, resolver y eliminar incidencias en pedidos.
 ## 🔄 Flujo 4: Exportación de Documentos
 
 ### Descripción
+
 Flujo para exportar documentos del pedido en diferentes formatos (PDF, Excel).
 
 ### Componentes Implicados
@@ -366,30 +381,32 @@ Flujo para exportar documentos del pedido en diferentes formatos (PDF, Excel).
 ### Flujo Paso a Paso
 
 1. **Usuario selecciona documento**
+
    ```javascript
    const [selectedDocument, setSelectedDocument] = useState('loading-note');
    const [selectedType, setSelectedType] = useState('pdf');
    ```
 
 2. **Usuario hace click en "Exportar"**
+
    ```javascript
    const handleOnClickSelectExport = () => {
-     const documentLabel = exportDocuments.find(doc => doc.name === selectedDocument)?.label;
+     const documentLabel = exportDocuments.find((doc) => doc.name === selectedDocument)?.label;
      exportDocument(selectedDocument, selectedType, documentLabel);
    };
    ```
 
 3. **Exportación rápida**
+
    ```javascript
    // Botones directos para documentos comunes
    fastExportDocuments.map((doc) => (
-     <Button onClick={() => exportDocument(doc.name, doc.type, doc.label)}>
-       {doc.label}
-     </Button>
+     <Button onClick={() => exportDocument(doc.name, doc.type, doc.label)}>{doc.label}</Button>
    ));
    ```
 
 4. **Exportación múltiple**
+
    ```javascript
    const handleOnClickExportAll = async () => {
      for (const doc of fastExportDocuments) {
@@ -416,6 +433,7 @@ Flujo para exportar documentos del pedido en diferentes formatos (PDF, Excel).
 ## 🔄 Flujo 5: Crear y Gestionar Pallets
 
 ### Descripción
+
 Flujo completo para crear pallets, añadir cajas (múltiples métodos), escanear códigos GS1-128, y guardar.
 
 ### Componentes Implicados
@@ -448,6 +466,7 @@ Flujo completo para crear pallets, añadir cajas (múltiples métodos), escanear
 ### Métodos de Creación de Cajas
 
 #### 1. Manual
+
 ```javascript
 // Campos individuales
 {
@@ -458,6 +477,7 @@ Flujo completo para crear pallets, añadir cajas (múltiples métodos), escanear
 ```
 
 #### 2. Promedio
+
 ```javascript
 // Total de peso y número de cajas
 {
@@ -468,23 +488,26 @@ Flujo completo para crear pallets, añadir cajas (múltiples métodos), escanear
 ```
 
 #### 3. Masiva
+
 ```javascript
 // Lista de pesos (una por línea)
-weights: "10.5\n11.2\n9.8"
+weights: '10.5\n11.2\n9.8';
 // Crea una caja por cada peso
 ```
 
 #### 4. Lector (GS1-128)
+
 ```javascript
 // Escaneo de código
-scannedCode: "(01)12345678901234(3100)001000(10)LOT001"
+scannedCode: '(01)12345678901234(3100)001000(10)LOT001';
 // Parsea automáticamente: GTIN, peso (kg), lote
 ```
 
 #### 5. GS1 (Múltiples códigos)
+
 ```javascript
 // Pegado de múltiples códigos
-gs1codes: "(01)12345678901234(3100)001000(10)LOT001\n(01)12345678901234(3200)002204(10)LOT002"
+gs1codes: '(01)12345678901234(3100)001000(10)LOT001\n(01)12345678901234(3200)002204(10)LOT002';
 // Crea una caja por cada código
 // Soporta libras (3200) con conversión a kg
 ```
@@ -492,23 +515,20 @@ gs1codes: "(01)12345678901234(3100)001000(10)LOT001\n(01)12345678901234(3200)002
 ### Flujo Paso a Paso
 
 1. **Usuario abre diálogo de pallet**
+
    ```javascript
    // Desde Order o Store
    <PalletDialog palletId={null} /> // Nuevo pallet
    ```
 
 2. **Se inicializa hook**
+
    ```javascript
-   const {
-     temporalPallet,
-     boxCreationData,
-     onAddNewBox,
-     onSavingChanges
-   } = usePallet({
+   const { temporalPallet, boxCreationData, onAddNewBox, onSavingChanges } = usePallet({
      id: null, // Nuevo pallet
      onChange: (pallet) => {
        // Callback cuando se guarda
-     }
+     },
    });
    ```
 
@@ -516,16 +536,18 @@ gs1codes: "(01)12345678901234(3100)001000(10)LOT001\n(01)12345678901234(3200)002
    - Manual, Promedio, Masiva, Lector, GS1
 
 4. **Usuario añade cajas**
+
    ```javascript
    // Ejemplo: Método manual
    boxCreationDataChange('productId', '123');
    boxCreationDataChange('lot', 'LOT-001');
    boxCreationDataChange('netWeight', '10.5');
-   
+
    onAddNewBox({ method: 'manual' });
    ```
 
 5. **Escaneo automático (si es lector)**
+
    ```javascript
    // useEffect detecta cuando scannedCode >= 42 caracteres
    useEffect(() => {
@@ -537,6 +559,7 @@ gs1codes: "(01)12345678901234(3100)001000(10)LOT001\n(01)12345678901234(3200)002
    ```
 
 6. **Usuario guarda pallet**
+
    ```javascript
    onSavingChanges();
    // Si id === null: crea nuevo pallet
@@ -552,13 +575,16 @@ gs1codes: "(01)12345678901234(3100)001000(10)LOT001\n(01)12345678901234(3200)002
 ### Soporte GS1-128
 
 **Formato**:
+
 - `(01)GTIN(3100)peso(10)lote` - Peso en kg
 - `(01)GTIN(3200)peso(10)lote` - Peso en libras
 
 **Conversión**:
+
 - Libras → kg: `peso * 0.453592`
 
 **Ejemplo**:
+
 ```
 (01)12345678901234(3200)002204(10)LOT001
 → GTIN: 12345678901234
@@ -578,6 +604,7 @@ gs1codes: "(01)12345678901234(3100)001000(10)LOT001\n(01)12345678901234(3200)002
 ## 🔄 Flujo 6: Subida y Procesamiento de PDFs de Lonja
 
 ### Descripción
+
 Flujo completo para subir PDFs de documentos de lonja, extraer datos con Azure Document AI, parsear según fuente, y exportar a Excel.
 
 ### Componentes Implicados
@@ -617,39 +644,40 @@ Flujo completo para subir PDFs de documentos de lonja, extraer datos con Azure D
 ### Flujo Paso a Paso
 
 1. **Usuario selecciona tipo de documento**
+
    ```javascript
-   const [documentType, setDocumentType] = useState("");
+   const [documentType, setDocumentType] = useState('');
    // Opciones: albaranCofradiaPescadoresSantoCristoDelMar, etc.
    ```
 
 2. **Usuario sube PDF**
+
    ```javascript
-   <PdfUpload 
-     onChange={handleOnSetFile}
-     maxSizeMB={10}
-   />
+   <PdfUpload onChange={handleOnSetFile} maxSizeMB={10} />
    ```
 
 3. **Usuario hace click en "Extraer datos con IA"**
+
    ```javascript
    const handleProcess = async () => {
      setProcessing(true);
-     
+
      // Extraer con Azure Document AI
      const result = await extractDataWithAzureDocumentAi({
        file: pdfFile,
-       documentType: documentType
+       documentType: documentType,
      });
-     
+
      // Parsear según fuente
      const parsedData = parseDocument(result, documentType);
-     
+
      setExtractedData(parsedData);
      setProcessing(false);
    };
    ```
 
 4. **Azure Document AI - Proceso**
+
    ```javascript
    // 1. Enviar PDF a Azure
    const response = await fetchWithTenant(url, {
@@ -660,10 +688,10 @@ Flujo completo para subir PDFs de documentos de lonja, extraer datos con Azure D
      },
      body: fileBuffer,
    });
-   
+
    // 2. Obtener Operation-Location
    const operationLocation = response.headers.get('Operation-Location');
-   
+
    // 3. Polling hasta obtener resultado
    do {
      await sleep(5000);
@@ -676,6 +704,7 @@ Flujo completo para subir PDFs de documentos de lonja, extraer datos con Azure D
    ```
 
 5. **Parsing específico por fuente**
+
    ```javascript
    // Ejemplo: AlbaranCofraWeb
    const parseAlbaranesCofraWeb = (data) => {
@@ -685,14 +714,14 @@ Flujo completo para subir PDFs de documentos de lonja, extraer datos con Azure D
        fecha: data.details.fecha,
        // ...
      };
-     
-     const tablaSubastas = data.tables.subastas.map(row => ({
+
+     const tablaSubastas = data.tables.subastas.map((row) => ({
        cajas: row.Cajas,
        kilos: row.Kilos,
        pescado: row.Pescado,
        // ...
      }));
-     
+
      return { detalles, tablaSubastas, tablaServicios, subtotales };
    };
    ```
@@ -702,6 +731,7 @@ Flujo completo para subir PDFs de documentos de lonja, extraer datos con Azure D
    - Usuario puede revisar y corregir
 
 7. **Exportación a Excel**
+
    ```javascript
    // ExportModal
    const generateExcelForA3erp = () => {
@@ -710,7 +740,7 @@ Flujo completo para subir PDFs de documentos de lonja, extraer datos con Azure D
      const worksheet = XLSX.utils.json_to_sheet(processedRows);
      const workbook = XLSX.utils.book_new();
      XLSX.utils.book_append_sheet(workbook, worksheet, 'ALBARANESCOMPRA');
-     
+
      const excelBuffer = XLSX.write(workbook, { bookType: 'xls', type: 'array' });
      const blob = new Blob([excelBuffer], { type: 'application/vnd.ms-excel' });
      saveAs(blob, `ALBARANES_A3ERP_${fecha}.xls`);
@@ -730,6 +760,7 @@ Flujo completo para subir PDFs de documentos de lonja, extraer datos con Azure D
 ## 🔄 Flujo 7: Sistema de Etiquetas
 
 ### Descripción
+
 Flujo completo para seleccionar etiqueta, rellenar campos automáticamente desde cajas, añadir campos manuales, e imprimir.
 
 ### Componentes Implicados
@@ -769,24 +800,28 @@ Flujo completo para seleccionar etiqueta, rellenar campos automáticamente desde
 ### Flujo Paso a Paso
 
 1. **Usuario selecciona cajas**
+
    ```javascript
    const boxes = [
-     { id: 1, product: { name: "Producto A" }, lot: "LOT-001", netWeight: 10.5 },
-     { id: 2, product: { name: "Producto B" }, lot: "LOT-002", netWeight: 12.3 }
+     { id: 1, product: { name: 'Producto A' }, lot: 'LOT-001', netWeight: 10.5 },
+     { id: 2, product: { name: 'Producto B' }, lot: 'LOT-002', netWeight: 12.3 },
    ];
    ```
 
 2. **Usuario abre diálogo de etiquetas**
+
    ```javascript
    <BoxLabelPrintDialog boxes={boxes} open={true} />
    ```
 
 3. **Se cargan opciones de etiquetas**
+
    ```javascript
    const { labelsOptions, selectLabel } = useLabel({ boxes, open: true });
    ```
 
 4. **Usuario selecciona etiqueta**
+
    ```javascript
    selectLabel(labelId);
    // Se carga estructura de etiqueta
@@ -794,38 +829,42 @@ Flujo completo para seleccionar etiqueta, rellenar campos automáticamente desde
    ```
 
 5. **Extracción automática de campos**
+
    ```javascript
    // De elementos tipo 'field'
    // De placeholders en HTML: {{field}}
    // De contenido de QR y códigos de barras
-   
+
    // Ejemplo: {{product.name}} → "Producto A"
    ```
 
 6. **Relleno automático desde cajas**
+
    ```javascript
    // Usa paths como product.name, lot, netWeight
    fields = [
      { name: 'product', path: 'product.name', value: 'Producto A' },
      { name: 'lot', path: 'lot', value: 'LOT-001' },
-     { name: 'weight', path: 'netWeight', value: '10.5' }
+     { name: 'weight', path: 'netWeight', value: '10.5' },
    ];
    ```
 
 7. **Usuario añade campos manuales (opcional)**
+
    ```javascript
    changeManualField('operator', 'Juan Pérez');
    changeManualField('date', '2024-01-15');
    ```
 
 8. **Usuario hace click en "Imprimir"**
+
    ```javascript
-   const { onPrint } = usePrintElement({ 
+   const { onPrint } = usePrintElement({
      id: 'label-content',
      width: 110,
-     height: 90 
+     height: 90,
    });
-   
+
    onPrint();
    ```
 
@@ -848,6 +887,7 @@ Flujo completo para seleccionar etiqueta, rellenar campos automáticamente desde
 ## 🔄 Flujo 8: Crear Producción (En Construcción)
 
 ### Descripción
+
 Flujo para crear una nueva producción. **Nota**: El módulo de producción está en construcción.
 
 ### Componentes Implicados
@@ -903,6 +943,7 @@ Flujo para crear una nueva producción. **Nota**: El módulo de producción est�
    - Notas (opcional)
 
 4. **Usuario envía formulario**
+
    ```javascript
    // CreateEntityForm
    const onSubmit = async (data) => {
@@ -936,34 +977,37 @@ Flujo para crear una nueva producción. **Nota**: El módulo de producción est�
 
 ## 📊 Resumen de Flujos
 
-| Flujo | Componentes | Hooks | Servicios | Contexto |
-|-------|------------|-------|-----------|----------|
-| Crear Pedido | CreateOrderForm | useOrderCreateFormConfig, useProductOptions, useTaxOptions | createOrder, getCustomer | - |
-| Editar Pedido | OrderEditSheet | useOrderFormConfig, useOrder | updateOrder | OrderContext |
-| Incidencias | OrderIncident | useOrder | createOrderIncident, updateOrderIncident, destroyOrderIncident | OrderContext |
-| Exportación | OrderExport | useOrder | exportOrderDocument | OrderContext |
-| Pallets | PalletDialog | usePallet | createPallet, updatePallet | - |
-| PDFs Lonja | MarketDataExtractor | - | extractDataWithAzureDocumentAi | - |
-| Etiquetas | BoxLabelPrintDialog | useLabel, usePrintElement | getLabel, getLabelsOptions | - |
-| Producción | EntityClient | - | createEntity | - |
+| Flujo         | Componentes         | Hooks                                                      | Servicios                                                      | Contexto     |
+| ------------- | ------------------- | ---------------------------------------------------------- | -------------------------------------------------------------- | ------------ |
+| Crear Pedido  | CreateOrderForm     | useOrderCreateFormConfig, useProductOptions, useTaxOptions | createOrder, getCustomer                                       | -            |
+| Editar Pedido | OrderEditSheet      | useOrderFormConfig, useOrder                               | updateOrder                                                    | OrderContext |
+| Incidencias   | OrderIncident       | useOrder                                                   | createOrderIncident, updateOrderIncident, destroyOrderIncident | OrderContext |
+| Exportación   | OrderExport         | useOrder                                                   | exportOrderDocument                                            | OrderContext |
+| Pallets       | PalletDialog        | usePallet                                                  | createPallet, updatePallet                                     | -            |
+| PDFs Lonja    | MarketDataExtractor | -                                                          | extractDataWithAzureDocumentAi                                 | -            |
+| Etiquetas     | BoxLabelPrintDialog | useLabel, usePrintElement                                  | getLabel, getLabelsOptions                                     | -            |
+| Producción    | EntityClient        | -                                                          | createEntity                                                   | -            |
 
 ---
 
 ## ⚠️ Observaciones Críticas y Mejoras Recomendadas
 
 ### 1. Flujo de Crear Pedido sin Validación de Productos
+
 - **Archivo**: `/src/components/Admin/OrdersManager/CreateOrderForm/index.js`
 - **Problema**: No hay validación de que `plannedProducts` tenga al menos un elemento
 - **Impacto**: Se puede crear pedido sin productos
 - **Recomendación**: Añadir validación `minLength: 1` al array
 
 ### 2. Flujo de Exportación sin Manejo de Errores de Red
+
 - **Archivo**: `/src/hooks/useOrder.js`
 - **Problema**: Si falla la descarga, no hay manejo de errores específico
 - **Impacto**: Usuario no sabe qué pasó
 - **Recomendación**: Añadir manejo de errores con mensajes claros
 
 ### 3. Flujo de Pallets con IDs Temporales Débiles
+
 - **Archivo**: `/src/hooks/usePallet.js`
 - **Línea**: 43-47
 - **Problema**: Usa `Date.now()` para IDs temporales, puede causar colisiones
@@ -971,24 +1015,28 @@ Flujo para crear una nueva producción. **Nota**: El módulo de producción est�
 - **Recomendación**: Usar UUID o contador más robusto
 
 ### 4. Flujo de PDFs sin Validación de Tamaño en Azure
+
 - **Archivo**: `/src/services/azure/index.js`
 - **Problema**: No valida tamaño máximo antes de enviar a Azure
 - **Impacto**: Puede fallar en Azure sin feedback claro
 - **Recomendación**: Validar tamaño antes de enviar
 
 ### 5. Flujo de Etiquetas sin Validación de Campos Requeridos
+
 - **Archivo**: `/src/hooks/useLabel.js`
 - **Problema**: Solo valida campos manuales, no campos requeridos de la etiqueta
 - **Impacto**: Puede imprimir etiquetas incompletas
 - **Recomendación**: Validar campos requeridos antes de imprimir
 
 ### 6. Flujo de Producción Incompleto
+
 - **Archivo**: Múltiples archivos
 - **Problema**: Módulo en construcción, funcionalidades incompletas
 - **Impacto**: Algunas operaciones pueden no funcionar
 - **Recomendación**: Documentar claramente qué está completo y qué no
 
 ### 7. Flujo de Exportación Múltiple sin Control de Concurrencia
+
 - **Archivo**: `/src/components/Admin/OrdersManager/Order/OrderExport/index.js`
 - **Línea**: 27-31
 - **Problema**: Exporta todos los documentos en secuencia sin control
@@ -996,21 +1044,23 @@ Flujo para crear una nueva producción. **Nota**: El módulo de producción est�
 - **Recomendación**: Añadir delay entre exportaciones o control de concurrencia
 
 ### 8. Flujo de Incidencias sin Confirmación de Eliminación
+
 - **Archivo**: `/src/components/Admin/OrdersManager/Order/OrderIncident/index.js`
 - **Problema**: Elimina incidencia sin confirmación
 - **Impacto**: Posible eliminación accidental
 - **Recomendación**: Añadir diálogo de confirmación
 
 ### 9. Flujo de Pallets sin Validación de Peso Total
+
 - **Archivo**: `/src/hooks/usePallet.js`
 - **Problema**: No valida que el peso total del pallet sea razonable
 - **Impacto**: Puede crear pallets con pesos incorrectos
 - **Recomendación**: Añadir validación de peso máximo
 
 ### 10. Flujo de PDFs sin Manejo de Timeout
+
 - **Archivo**: `/src/services/azure/index.js`
 - **Línea**: 75
 - **Problema**: Timeout de 45 intentos (~15 minutos) puede ser muy largo
 - **Impacto**: Usuario espera mucho tiempo sin feedback
 - **Recomendación**: Mostrar progreso o reducir timeout con mejor manejo de errores
-

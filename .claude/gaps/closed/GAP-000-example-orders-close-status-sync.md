@@ -1,6 +1,7 @@
 # GAP-000 — Cerrar pedido no actualiza el estado en el listado sin recargar
 
 ## Metadata
+
 - **Tipo:** Bug
 - **Módulo:** Ventas
 - **Prioridad:** Alta
@@ -31,15 +32,18 @@ Patrón de invalidación real del proyecto: `useCustomerCreate` invalida con `cu
 Ver `.claude/agents/db-architect.md` — sección "Estrategias de invalidación".
 
 ## Criterios de aceptación
+
 - [ ] Al pulsar "Cerrar pedido", el pedido desaparece del listado de pedidos abiertos en menos de 2 segundos, sin recargar la página manualmente
 - [ ] La notificación toast de éxito sigue mostrándose tras el cierre
 - [ ] Si el cierre falla (error de API), el listado NO se invalida y el pedido sigue apareciendo como abierto
 - [ ] El hook sigue el patrón de mutación del proyecto (onSuccess, onError con notify)
 
 ## Archivos a crear o modificar
+
 - `src/hooks/useOrderClose.ts` — añadir `invalidateQueries` en `onSuccess`
 
 ## Restricciones
+
 - No tocar `src/hooks/useOrder.js` directamente — si `useOrderClose` está dentro de ese archivo, extraerlo como sub-hook en `src/hooks/orders/useOrderClose.ts`
 - No modificar el componente que llama al hook — el fix es solo en el hook
 - No tocar el service `orderService` — la llamada al backend ya funciona correctamente
@@ -47,12 +51,15 @@ Ver `.claude/agents/db-architect.md` — sección "Estrategias de invalidación"
 ---
 
 ## Implementación
+
 > Rellena el Agente Implementador
 
 ### Archivos creados
+
 - `src/hooks/orders/useOrderClose.ts` — sub-hook extraído con la mutación y la invalidación correcta
 
 ### Archivos modificados
+
 - `src/hooks/useOrder.js` — añadida importación y re-exportación de `useOrderClose` desde el sub-hook (sin añadir lógica nueva al hook gigante)
 
 ### Decisiones tomadas durante la implementación
@@ -64,11 +71,13 @@ Ver `.claude/agents/db-architect.md` — sección "Estrategias de invalidación"
 3. Se mantuvo el mismo contrato de retorno que tenía la función original (`mutate`, `isPending`) para no romper los componentes que la consumen.
 
 ### Desviaciones del plan (si las hay)
+
 Ninguna. La extracción fue directa, el patrón de invalidación ya existía en `useCustomerCreate`.
 
 ---
 
 ## Auditoría
+
 > Rellena el Agente Auditor
 
 ### Resultado: ✅ APROBADO
@@ -76,6 +85,7 @@ Ninguna. La extracción fue directa, el patrón de invalidación ya existía en 
 ### Puntuación: 10/10
 
 ### Checklist
+
 - [x] Criterios de aceptación cumplidos
 - [x] Sin fetch() directo
 - [x] Sin hardcode de tenant

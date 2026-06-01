@@ -43,6 +43,7 @@ La composición es buena donde hay abstracción (config-driven); en flujos muy e
 - **Formularios largos**: CreateReceptionForm, EditReceptionForm, CreateOrderForm y variantes móvil tienen muchas líneas; podrían extraer pasos o secciones a subcomponentes/hooks.
 
 En estos archivos se mezcla:
+
 - Estado y efectos (fetch, validación).
 - Lógica de negocio (cálculos, reglas).
 - Render (JSX extenso con condicionales y listas).

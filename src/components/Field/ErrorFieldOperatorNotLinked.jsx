@@ -7,7 +7,7 @@ import { AlertTriangle, RefreshCcw } from 'lucide-react';
 export default function ErrorFieldOperatorNotLinked({ onRetry, isLoading = false }) {
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-lg border-border/70 shadow-sm">
+      <Card className="border-border/70 w-full max-w-lg shadow-sm">
         <CardHeader className="space-y-3 text-center">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600">
             <AlertTriangle className="h-7 w-7" />
@@ -15,7 +15,7 @@ export default function ErrorFieldOperatorNotLinked({ onRetry, isLoading = false
           <CardTitle>Acceso operativo no activado</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 text-center">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Tu usuario tiene rol de reparto, pero todavía no tiene un operador de campo vinculado.
             Contacta con administración para activar tu acceso operativo.
           </p>

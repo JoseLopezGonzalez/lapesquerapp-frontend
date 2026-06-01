@@ -36,7 +36,10 @@ export default function FieldDashboard() {
   const { data: session } = useSession();
   const userName = session?.user?.name || 'Usuario';
   const today = getTodayDateString();
-  const { data: routesData, isLoading: loadingRoutes } = useFieldRoutes({ routeDate: today, perPage: 5 });
+  const { data: routesData, isLoading: loadingRoutes } = useFieldRoutes({
+    routeDate: today,
+    perPage: 5,
+  });
   const { data: ordersData, isLoading: loadingOrders } = useFieldOrders({ perPage: 20 });
 
   const todayRoute = routesData?.items?.[0] ?? null;
@@ -48,7 +51,11 @@ export default function FieldDashboard() {
   const skippedStops = routeStops.filter((stop) => stop.status === 'skipped').length;
 
   if (loadingRoutes || loadingOrders) {
-    return <div className="flex flex-1 items-center justify-center"><Loader /></div>;
+    return (
+      <div className="flex flex-1 items-center justify-center">
+        <Loader />
+      </div>
+    );
   }
 
   return (
@@ -65,7 +72,7 @@ export default function FieldDashboard() {
           <div className="grid gap-4 md:grid-cols-3">
             <Card className="border-border/70 shadow-sm">
               <CardHeader className="space-y-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                <div className="bg-primary/10 text-primary flex h-12 w-12 items-center justify-center rounded-2xl">
                   <MapPinned className="h-6 w-6" />
                 </div>
                 <div>
@@ -80,8 +87,9 @@ export default function FieldDashboard() {
                   <>
                     <div className="space-y-1">
                       <p className="font-medium">{todayRoute.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {getFieldStatusLabel(todayRoute.status)} · {completedStops + skippedStops}/{routeStops.length || 0} paradas procesadas
+                      <p className="text-muted-foreground text-sm">
+                        {getFieldStatusLabel(todayRoute.status)} · {completedStops + skippedStops}/
+                        {routeStops.length || 0} paradas procesadas
                       </p>
                     </div>
                     <Button asChild className="w-full justify-between">
@@ -93,10 +101,10 @@ export default function FieldDashboard() {
                   </>
                 ) : (
                   <EmptyState
-                    icon={<Clock3 className="h-10 w-10 text-primary" />}
+                    icon={<Clock3 className="text-primary h-10 w-10" />}
                     title="Sin ruta hoy"
                     description="Cuando tengas una ruta programada para hoy aparecerá aquí."
-                    className="min-h-[180px] border bg-muted/20"
+                    className="bg-muted/20 min-h-[180px] border"
                   />
                 )}
               </CardContent>
@@ -104,7 +112,7 @@ export default function FieldDashboard() {
 
             <Card className="border-border/70 shadow-sm">
               <CardHeader className="space-y-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                <div className="bg-primary/10 text-primary flex h-12 w-12 items-center justify-center rounded-2xl">
                   <PackageOpen className="h-6 w-6" />
                 </div>
                 <div>
@@ -116,12 +124,16 @@ export default function FieldDashboard() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="rounded-xl border bg-muted/20 p-4">
-                    <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Pendientes</p>
+                  <div className="bg-muted/20 rounded-xl border p-4">
+                    <p className="text-muted-foreground text-xs tracking-[0.14em] uppercase">
+                      Pendientes
+                    </p>
                     <p className="mt-2 text-2xl font-semibold">{pendingOrders}</p>
                   </div>
-                  <div className="rounded-xl border bg-muted/20 p-4">
-                    <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Finalizados</p>
+                  <div className="bg-muted/20 rounded-xl border p-4">
+                    <p className="text-muted-foreground text-xs tracking-[0.14em] uppercase">
+                      Finalizados
+                    </p>
                     <p className="mt-2 text-2xl font-semibold">{finishedOrders}</p>
                   </div>
                 </div>
@@ -136,7 +148,7 @@ export default function FieldDashboard() {
 
             <Card className="border-border/70 shadow-sm">
               <CardHeader className="space-y-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                <div className="bg-primary/10 text-primary flex h-12 w-12 items-center justify-center rounded-2xl">
                   <Activity className="h-6 w-6" />
                 </div>
                 <div>
@@ -147,13 +159,17 @@ export default function FieldDashboard() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="rounded-xl border bg-muted/20 p-4 text-sm">
+                <div className="bg-muted/20 rounded-xl border p-4 text-sm">
                   <p className="font-medium">Paradas completadas</p>
-                  <p className="mt-1 text-muted-foreground">{completedStops} completadas · {skippedStops} omitidas</p>
+                  <p className="text-muted-foreground mt-1">
+                    {completedStops} completadas · {skippedStops} omitidas
+                  </p>
                 </div>
-                <div className="rounded-xl border bg-muted/20 p-4 text-sm">
+                <div className="bg-muted/20 rounded-xl border p-4 text-sm">
                   <p className="font-medium">Acción rápida</p>
-                  <p className="mt-1 text-muted-foreground">Crea una autoventa rápida si surge una oportunidad en ruta.</p>
+                  <p className="text-muted-foreground mt-1">
+                    Crea una autoventa rápida si surge una oportunidad en ruta.
+                  </p>
                 </div>
                 <Button asChild variant="outline" className="w-full justify-between">
                   <Link href="/field/autoventa">

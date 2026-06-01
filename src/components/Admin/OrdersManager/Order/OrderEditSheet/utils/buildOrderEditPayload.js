@@ -8,9 +8,8 @@ export function buildOrderEditPayload(data = {}, dirtyFields = {}) {
     const fieldValue = data[fieldName];
 
     if (DATE_FIELDS.has(fieldName)) {
-      payload[fieldName] = fieldValue instanceof Date
-        ? format(fieldValue, 'yyyy-MM-dd')
-        : fieldValue;
+      payload[fieldName] =
+        fieldValue instanceof Date ? format(fieldValue, 'yyyy-MM-dd') : fieldValue;
       return payload;
     }
 

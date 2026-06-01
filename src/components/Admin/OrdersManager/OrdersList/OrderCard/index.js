@@ -6,147 +6,181 @@ import { cn } from '@/lib/utils';
 import StatusBadge from '../../StatusBadge';
 
 const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
-    const isMobile = useIsMobile();
+  const isMobile = useIsMobile();
 
-    const orderId = order.id.toString().padStart(5, '0');
-    const loadDate = order.loadDate ? formatDate(order.loadDate) : 'N/A';
+  const orderId = order.id.toString().padStart(5, '0');
+  const loadDate = order.loadDate ? formatDate(order.loadDate) : 'N/A';
 
-    const loadDateObj = order.loadDate ? new Date(order.loadDate) : null;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const loadDateOnly = loadDateObj ? new Date(loadDateObj.getFullYear(), loadDateObj.getMonth(), loadDateObj.getDate()) : null;
-    const dateLabel = loadDateOnly
-        ? loadDateOnly.getTime() === today.getTime()
-            ? 'Hoy'
-            : loadDateOnly.getTime() === tomorrow.getTime()
-                ? 'Mañana'
-                : null
-        : null;
+  const loadDateObj = order.loadDate ? new Date(order.loadDate) : null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const loadDateOnly = loadDateObj
+    ? new Date(loadDateObj.getFullYear(), loadDateObj.getMonth(), loadDateObj.getDate())
+    : null;
+  const dateLabel = loadDateOnly
+    ? loadDateOnly.getTime() === today.getTime()
+      ? 'Hoy'
+      : loadDateOnly.getTime() === tomorrow.getTime()
+        ? 'Mañana'
+        : null
+    : null;
 
-    const statusLabel = order.status === 'pending' ? 'En producción' : order.status === 'finished' ? 'Terminado' : 'Incidencia';
+  const statusLabel =
+    order.status === 'pending'
+      ? 'En producción'
+      : order.status === 'finished'
+        ? 'Terminado'
+        : 'Incidencia';
 
-    const ringColor = order.status === 'pending' ? 'orange' : order.status === 'finished' ? 'green' : 'red';
-    const ringColorClass = ringColor === 'orange' ? 'ring-orange-500' : ringColor === 'green' ? 'ring-green-500' : 'ring-red-500';
-    const focusRingClass = ringColor === 'orange' ? 'focus-visible:ring-orange-500' : ringColor === 'green' ? 'focus-visible:ring-green-500' : 'focus-visible:ring-red-500';
+  const ringColor =
+    order.status === 'pending' ? 'orange' : order.status === 'finished' ? 'green' : 'red';
+  const ringColorClass =
+    ringColor === 'orange'
+      ? 'ring-orange-500'
+      : ringColor === 'green'
+        ? 'ring-green-500'
+        : 'ring-red-500';
+  const focusRingClass =
+    ringColor === 'orange'
+      ? 'focus-visible:ring-orange-500'
+      : ringColor === 'green'
+        ? 'focus-visible:ring-green-500'
+        : 'focus-visible:ring-red-500';
 
-    return (
-        <Card
-            className={cn(
-                disabled && 'cursor-not-allowed pointer-events-none',
-                !disabled && [
-                    'cursor-pointer',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-                    focusRingClass,
-                ],
-                isSelected && 'ring-2',
-                isSelected && ringColorClass
-            )}
-            onClick={() => !disabled && onClick()}
-            role="button"
-            tabIndex={disabled ? -1 : 0}
-            aria-label={`Pedido ${orderId} - ${order.customer?.name ?? '—'}`}
-            onKeyDown={(e) => {
-                if (!disabled && (e.key === 'Enter' || e.key === ' ')) {
-                    e.preventDefault();
-                    onClick();
+  return (
+    <Card
+      className={cn(
+        disabled && 'pointer-events-none cursor-not-allowed',
+        !disabled && [
+          'cursor-pointer',
+          'focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
+          focusRingClass,
+        ],
+        isSelected && 'ring-2',
+        isSelected && ringColorClass
+      )}
+      onClick={() => !disabled && onClick()}
+      role="button"
+      tabIndex={disabled ? -1 : 0}
+      aria-label={`Pedido ${orderId} - ${order.customer?.name ?? '—'}`}
+      onKeyDown={(e) => {
+        if (!disabled && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+    >
+      <CardContent className="py-0">
+        {isMobile ? (
+          /* Mobile: Cliente protagonista → ID · Fecha (secundario) → estado badge discreto */
+          <div className="flex w-full min-w-0 grow items-center gap-3 pr-1">
+            <div className="min-w-0 flex-1 space-y-1">
+              <p
+                className="truncate text-base leading-tight font-medium"
+                title={order.customer?.name ?? '—'}
+              >
+                {order.customer?.name ?? '—'}
+              </p>
+              <p className="text-muted-foreground text-sm tabular-nums">
+                #{orderId} · {loadDate}
+                {order.numberOfBoxes != null ? ` · ${order.numberOfBoxes} cajas` : ''}
+              </p>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span
+                  className={cn(
+                    'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium',
+                    order.status === 'pending' &&
+                      'bg-orange-500/15 text-orange-700 dark:text-orange-300',
+                    order.status === 'finished' &&
+                      'bg-green-500/15 text-green-700 dark:text-green-300',
+                    order.status === 'incident' && 'bg-red-500/15 text-red-700 dark:text-red-300'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'h-1.5 w-1.5 rounded-full',
+                      order.status === 'pending' && 'bg-orange-500',
+                      order.status === 'finished' && 'bg-green-500',
+                      order.status === 'incident' && 'bg-red-500'
+                    )}
+                  />
+                  {statusLabel}
+                </span>
+                {order?.orderType === 'autoventa' && (
+                  <span className="inline-flex items-center rounded-full border border-neutral-400/50 bg-neutral-500/15 px-2 py-0.5 text-[11px] font-medium text-neutral-700 dark:border-neutral-500/50 dark:text-neutral-300">
+                    Autoventa
+                  </span>
+                )}
+                {order?.offerId && (
+                  <span className="inline-flex items-center rounded-full border border-blue-400/50 bg-blue-500/15 px-2 py-0.5 text-[11px] font-medium text-blue-700 dark:border-blue-500/50 dark:text-blue-300">
+                    Desde oferta
+                  </span>
+                )}
+              </div>
+            </div>
+            <ChevronRight className="text-muted-foreground h-5 w-5 flex-shrink-0" aria-hidden />
+          </div>
+        ) : (
+          <div className="w-full max-w-xs grow space-y-2 sm:space-y-2 xl:max-w-none">
+            <div
+              className={cn('flex flex-wrap items-center gap-2', dateLabel && 'justify-between')}
+            >
+              <StatusBadge
+                color={
+                  order.status === 'pending'
+                    ? 'orange'
+                    : order.status === 'finished'
+                      ? 'green'
+                      : 'red'
                 }
-            }}
-        >
-            <CardContent className="py-0">
-            {isMobile ? (
-                /* Mobile: Cliente protagonista → ID · Fecha (secundario) → estado badge discreto */
-                <div className="grow w-full min-w-0 flex items-center gap-3 pr-1">
-                    <div className="flex-1 min-w-0 space-y-1">
-                        <p className="font-medium text-base truncate leading-tight" title={order.customer?.name ?? '—'}>
-                            {order.customer?.name ?? '—'}
-                        </p>
-                        <p className="text-sm text-muted-foreground tabular-nums">
-                            #{orderId} · {loadDate}
-                            {order.numberOfBoxes != null ? ` · ${order.numberOfBoxes} cajas` : ''}
-                        </p>
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                            <span
-                                className={cn(
-                                    'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium',
-                                    order.status === 'pending' && 'bg-orange-500/15 text-orange-700 dark:text-orange-300',
-                                    order.status === 'finished' && 'bg-green-500/15 text-green-700 dark:text-green-300',
-                                    order.status === 'incident' && 'bg-red-500/15 text-red-700 dark:text-red-300'
-                                )}
-                            >
-                                <span
-                                    className={cn(
-                                        'h-1.5 w-1.5 rounded-full',
-                                        order.status === 'pending' && 'bg-orange-500',
-                                        order.status === 'finished' && 'bg-green-500',
-                                        order.status === 'incident' && 'bg-red-500'
-                                    )}
-                                />
-                                {statusLabel}
-                            </span>
-                            {order?.orderType === 'autoventa' && (
-                                <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-neutral-500/15 text-neutral-700 dark:text-neutral-300 border border-neutral-400/50 dark:border-neutral-500/50">
-                                    Autoventa
-                                </span>
-                            )}
-                            {order?.offerId && (
-                                <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-400/50 dark:border-blue-500/50">
-                                    Desde oferta
-                                </span>
-                            )}
-                        </div>
-                    </div>
-                    <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" aria-hidden />
+                label={statusLabel}
+              />
+              {dateLabel && (
+                <span
+                  className="text-muted-foreground text-xs font-medium tabular-nums"
+                  title={loadDate}
+                >
+                  {dateLabel}
+                </span>
+              )}
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="text-base font-medium">#{orderId}</h3>
+              {order?.orderType === 'autoventa' && (
+                <span className="inline-flex items-center rounded-full border border-neutral-400/50 bg-neutral-500/15 px-2 py-0.5 text-[11px] font-medium text-neutral-700 dark:border-neutral-500/50 dark:text-neutral-300">
+                  Autoventa
+                </span>
+              )}
+              {order?.offerId && (
+                <span className="inline-flex items-center rounded-full border border-blue-400/50 bg-blue-500/15 px-2 py-0.5 text-[11px] font-medium text-blue-700 dark:border-blue-500/50 dark:text-blue-300">
+                  Desde oferta
+                </span>
+              )}
+            </div>
+            <div>
+              <p className="truncate text-base font-medium" title={order.customer?.name ?? '—'}>
+                {order.customer?.name ?? '—'}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-4">
+              <div>
+                <p className="text-muted-foreground mb-1 text-xs">Fecha de Carga</p>
+                <p className="text-sm font-medium">{loadDate}</p>
+              </div>
+              {order.numberOfBoxes != null && (
+                <div>
+                  <p className="text-muted-foreground mb-1 text-xs">Cajas</p>
+                  <p className="text-sm font-medium">{order.numberOfBoxes}</p>
                 </div>
-            ) : (
-                <div className="grow w-full max-w-xs xl:max-w-none space-y-2 sm:space-y-2">
-                    <div className={cn('flex items-center gap-2 flex-wrap', dateLabel && 'justify-between')}>
-                        <StatusBadge
-                            color={order.status === 'pending' ? 'orange' : order.status === 'finished' ? 'green' : 'red'}
-                            label={statusLabel}
-                        />
-                        {dateLabel && (
-                            <span className="text-xs font-medium text-muted-foreground tabular-nums" title={loadDate}>
-                                {dateLabel}
-                            </span>
-                        )}
-                    </div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="text-base font-medium">#{orderId}</h3>
-                        {order?.orderType === 'autoventa' && (
-                            <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-neutral-500/15 text-neutral-700 dark:text-neutral-300 border border-neutral-400/50 dark:border-neutral-500/50">
-                                Autoventa
-                            </span>
-                        )}
-                        {order?.offerId && (
-                            <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-400/50 dark:border-blue-500/50">
-                                Desde oferta
-                            </span>
-                        )}
-                    </div>
-                    <div>
-                        <p className="font-medium text-base truncate" title={order.customer?.name ?? '—'}>
-                            {order.customer?.name ?? '—'}
-                        </p>
-                    </div>
-                    <div className="flex items-center gap-4 flex-wrap">
-                        <div>
-                            <p className="text-muted-foreground mb-1 text-xs">Fecha de Carga</p>
-                            <p className="text-sm font-medium">{loadDate}</p>
-                        </div>
-                        {order.numberOfBoxes != null && (
-                            <div>
-                                <p className="text-xs text-muted-foreground mb-1">Cajas</p>
-                                <p className="text-sm font-medium">{order.numberOfBoxes}</p>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
-            </CardContent>
-        </Card>
-    )
-}
+              )}
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
 
-export default OrderCard
+export default OrderCard;

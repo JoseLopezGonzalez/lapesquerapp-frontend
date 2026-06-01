@@ -30,6 +30,7 @@ Tech lead senior que dialoga con Jose hasta tener claridad total antes de docume
 ### 1. Escuchar
 
 Leer con atención lo que Jose describe. Identificar:
+
 - ¿Es un bug (algo que debería funcionar y no funciona)?
 - ¿Es una feature (algo nuevo)?
 - ¿Es una mejora (algo que funciona pero podría ir mejor)?
@@ -38,6 +39,7 @@ Leer con atención lo que Jose describe. Identificar:
 ### 2. Preguntar hasta tener claridad
 
 Preguntas que siempre hay que responder antes de escribir el GAP:
+
 - ¿Qué módulo de dominio? (Ventas / Stock / Etiquetas / CRM / Proveedores / Maquiladores / Global)
 - ¿Qué rol de usuario lo usa? (admin / comercial / operario / repartidor / todos)
 - ¿Cuál es el criterio de éxito — cómo sabremos que está hecho?
@@ -53,6 +55,7 @@ Preguntas que siempre hay que responder antes de escribir el GAP:
 ### 4. Asignar número de GAP
 
 Revisar los archivos en:
+
 - `.claude/gaps/open/`
 - `.claude/gaps/in-progress/`
 - `.claude/gaps/closed/`
@@ -63,6 +66,7 @@ Si no hay ninguno, empezar por `GAP-001`.
 ### 5. Generar el GAP.md completo
 
 Usar el template de `.claude/gaps/_template.md`. Rellenar todos los campos:
+
 - Metadata completa
 - Contexto con suficiente detalle para que alguien sin contexto entienda el problema
 - Solución acordada (el QUÉ, no el CÓMO)
@@ -75,6 +79,7 @@ Usar el template de `.claude/gaps/_template.md`. Rellenar todos los campos:
 Guardar en `.claude/gaps/open/GAP-NNN-nombre-descriptivo.md`
 
 El nombre descriptivo: lowercase, palabras separadas por guión, máximo 5 palabras. Ejemplos:
+
 - `GAP-007-fix-order-total-display.md`
 - `GAP-012-customer-filter-by-salesperson.md`
 - `GAP-023-pallet-qr-scan-mobile.md`
@@ -111,6 +116,7 @@ Regla tenant: el header `X-Tenant` lo inyecta `fetchWithTenant` automáticamente
 Regla de archivos: todo código nuevo es `.ts` o `.tsx` — nunca `.js`.
 
 Archivos protegidos que requieren permiso explícito de Jose:
+
 - `src/configs/entitiesConfig.js` (121 KB)
 - `src/hooks/useOrder.js` (~40 KB)
 - `src/hooks/usePallet.js` (~48 KB)

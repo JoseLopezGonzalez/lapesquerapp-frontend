@@ -1,4 +1,5 @@
 # Auditoría: Frontend Performance Agent
+
 # Bloque: MarketDataExtractor — Extracción de datos de documentos de lonjas
 
 **Fecha:** 2026-04-26
@@ -9,13 +10,13 @@
 
 ## 1. Archivos inspeccionados
 
-| Archivo | Relevancia |
-|---|---|
-| `src/services/azure/index.js` | Polling loop — 45 iteraciones |
-| `src/exportHelpers/lonjaDeIslaExportHelper.js` | 492 líneas — lógica de generación por fila |
-| `src/exportHelpers/common.js` | Helpers de cálculo usados en cada fila |
-| `src/components/Admin/MarketDataExtractor/ListadoComprasLonjaDeIsla/exportData.js` | Catálogo estático masivo |
-| `src/components/Admin/MarketDataExtractor/AlbaranCofraWeb/ExportModal/index.js` | Lógica de generación Excel inline |
+| Archivo                                                                            | Relevancia                                 |
+| ---------------------------------------------------------------------------------- | ------------------------------------------ |
+| `src/services/azure/index.js`                                                      | Polling loop — 45 iteraciones              |
+| `src/exportHelpers/lonjaDeIslaExportHelper.js`                                     | 492 líneas — lógica de generación por fila |
+| `src/exportHelpers/common.js`                                                      | Helpers de cálculo usados en cada fila     |
+| `src/components/Admin/MarketDataExtractor/ListadoComprasLonjaDeIsla/exportData.js` | Catálogo estático masivo                   |
+| `src/components/Admin/MarketDataExtractor/AlbaranCofraWeb/ExportModal/index.js`    | Lógica de generación Excel inline          |
 
 ---
 
@@ -47,9 +48,9 @@ Esto significa que **todo el catálogo se incluye en el bundle** del cliente aun
 ```javascript
 // azure/index.js:74-114
 do {
-    attempts += 1;
-    await sleep(defaultPollingDelay);
-    // ... fetch ...
+  attempts += 1;
+  await sleep(defaultPollingDelay);
+  // ... fetch ...
 } while (status === 'running' || status === 'notStarted');
 ```
 
@@ -111,13 +112,13 @@ Esta función se llama para cada fila de subasta. Para documentos con 100+ líne
 
 ## 3. Prioridad de correcciones
 
-| Prioridad | Bottleneck | Solución mínima |
-|---|---|---|
-| P0 | exportData.js masivo en bundle | Lazy import o mover a API Route |
-| P0 | Polling sin AbortController | Añadir AbortController con cleanup en useEffect |
-| P1 | Concurrencia sin límite en modo masivo | Queue con límite de 3 paralelos |
-| P2 | `groupedLinkedSummary` recalculado en cada render | `useMemo` |
-| P3 | `calculateImporteFromLinea` doble cálculo | Simplificar lógica |
+| Prioridad | Bottleneck                                        | Solución mínima                                 |
+| --------- | ------------------------------------------------- | ----------------------------------------------- |
+| P0        | exportData.js masivo en bundle                    | Lazy import o mover a API Route                 |
+| P0        | Polling sin AbortController                       | Añadir AbortController con cleanup en useEffect |
+| P1        | Concurrencia sin límite en modo masivo            | Queue con límite de 3 paralelos                 |
+| P2        | `groupedLinkedSummary` recalculado en cada render | `useMemo`                                       |
+| P3        | `calculateImporteFromLinea` doble cálculo         | Simplificar lógica                              |
 
 ---
 

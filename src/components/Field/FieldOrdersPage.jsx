@@ -15,7 +15,12 @@ import { Button } from '@/components/ui/button';
 import { usePrintElement } from '@/hooks/usePrintElement';
 import AutoventaTicketPrint from '@/components/Comercial/Autoventa/AutoventaTicketPrint';
 import { mapPlannedProductDetailsToTicketItems } from '@/lib/field/fieldOrderTicket';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   Dialog,
   DialogContent,
@@ -45,7 +50,11 @@ function getDateMeta(loadDate) {
   today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
-  const loadDateOnly = new Date(loadDateObj.getFullYear(), loadDateObj.getMonth(), loadDateObj.getDate());
+  const loadDateOnly = new Date(
+    loadDateObj.getFullYear(),
+    loadDateObj.getMonth(),
+    loadDateObj.getDate()
+  );
 
   const relativeLabel =
     loadDateOnly.getTime() === today.getTime()
@@ -60,7 +69,8 @@ function getDateMeta(loadDate) {
 function getStatusColor(status) {
   const normalized = typeof status === 'string' ? status.trim().toLowerCase() : status;
   if (normalized === 'finished' || normalized === 'completed') return 'green';
-  if (normalized === 'incident' || normalized === 'cancelled' || normalized === 'canceled') return 'red';
+  if (normalized === 'incident' || normalized === 'cancelled' || normalized === 'canceled')
+    return 'red';
   return 'orange';
 }
 
@@ -77,8 +87,8 @@ function FieldOrderCard({ order, onClick, onQuickPrint }) {
   return (
     <Card
       className={cn(
-        'cursor-pointer transition-colors hover:bg-accent/30',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+        'hover:bg-accent/30 cursor-pointer transition-colors',
+        'focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
         statusColor === 'orange' && 'focus-visible:ring-orange-500',
         statusColor === 'green' && 'focus-visible:ring-green-500',
         statusColor === 'red' && 'focus-visible:ring-red-500'
@@ -133,19 +143,20 @@ function FieldOrderCard({ order, onClick, onQuickPrint }) {
           </DropdownMenu>
         </div>
         {isMobile ? (
-          <div className="grow w-full min-w-0 flex items-center gap-3 pr-1 pt-2">
-            <div className="flex-1 min-w-0 space-y-1">
-              <p className="font-medium text-base truncate leading-tight" title={customerName}>
+          <div className="flex w-full min-w-0 grow items-center gap-3 pt-2 pr-1">
+            <div className="min-w-0 flex-1 space-y-1">
+              <p className="truncate text-base leading-tight font-medium" title={customerName}>
                 {customerName}
               </p>
-              <p className="text-sm text-muted-foreground tabular-nums">
+              <p className="text-muted-foreground text-sm tabular-nums">
                 #{orderId} · {formattedDate} · {totalBoxes} cajas · {totalNetWeight} kg
               </p>
-              <div className="flex items-center gap-1.5 flex-wrap">
+              <div className="flex flex-wrap items-center gap-1.5">
                 <span
                   className={cn(
                     'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium',
-                    statusColor === 'orange' && 'bg-orange-500/15 text-orange-700 dark:text-orange-300',
+                    statusColor === 'orange' &&
+                      'bg-orange-500/15 text-orange-700 dark:text-orange-300',
                     statusColor === 'green' && 'bg-green-500/15 text-green-700 dark:text-green-300',
                     statusColor === 'red' && 'bg-red-500/15 text-red-700 dark:text-red-300'
                   )}
@@ -161,48 +172,56 @@ function FieldOrderCard({ order, onClick, onQuickPrint }) {
                   {statusLabel}
                 </span>
                 {order?.orderType === 'autoventa' ? (
-                  <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-neutral-500/15 text-neutral-700 dark:text-neutral-300 border border-neutral-400/50 dark:border-neutral-500/50">
+                  <span className="inline-flex items-center rounded-full border border-neutral-400/50 bg-neutral-500/15 px-2 py-0.5 text-[11px] font-medium text-neutral-700 dark:border-neutral-500/50 dark:text-neutral-300">
                     Autoventa
                   </span>
                 ) : null}
               </div>
             </div>
-            <div className="flex items-center gap-1 shrink-0 pt-2" />
+            <div className="flex shrink-0 items-center gap-1 pt-2" />
           </div>
         ) : (
-          <div className="grow w-full max-w-xs xl:max-w-none space-y-2 sm:space-y-2">
-            <div className={cn('flex items-center gap-2 flex-wrap', relativeLabel && 'justify-between')}>
+          <div className="w-full max-w-xs grow space-y-2 sm:space-y-2 xl:max-w-none">
+            <div
+              className={cn(
+                'flex flex-wrap items-center gap-2',
+                relativeLabel && 'justify-between'
+              )}
+            >
               <StatusBadge color={statusColor} label={statusLabel} />
               {relativeLabel ? (
-                <span className="text-xs font-medium text-muted-foreground tabular-nums" title={formattedDate}>
+                <span
+                  className="text-muted-foreground text-xs font-medium tabular-nums"
+                  title={formattedDate}
+                >
                   {relativeLabel}
                 </span>
               ) : null}
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex flex-wrap items-center gap-2">
               <h3 className="text-base font-medium">#{orderId}</h3>
               {order?.orderType === 'autoventa' ? (
-                <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium bg-neutral-500/15 text-neutral-700 dark:text-neutral-300 border border-neutral-400/50 dark:border-neutral-500/50">
+                <span className="inline-flex items-center rounded-full border border-neutral-400/50 bg-neutral-500/15 px-2 py-0.5 text-[11px] font-medium text-neutral-700 dark:border-neutral-500/50 dark:text-neutral-300">
                   Autoventa
                 </span>
               ) : null}
             </div>
             <div>
-              <p className="font-medium text-base truncate" title={customerName}>
+              <p className="truncate text-base font-medium" title={customerName}>
                 {customerName}
               </p>
             </div>
-            <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex flex-wrap items-center gap-4">
               <div>
                 <p className="text-muted-foreground mb-1 text-xs">Fecha de Carga</p>
                 <p className="text-sm font-medium">{formattedDate}</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Cajas</p>
+                <p className="text-muted-foreground mb-1 text-xs">Cajas</p>
                 <p className="text-sm font-medium">{totalBoxes}</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Peso neto</p>
+                <p className="text-muted-foreground mb-1 text-xs">Peso neto</p>
                 <p className="text-sm font-medium">{totalNetWeight} kg</p>
               </div>
             </div>
@@ -219,8 +238,15 @@ export default function FieldOrdersPage() {
   const orders = data?.items ?? [];
   const [printOrderId, setPrintOrderId] = useState(null);
   const [printOpen, setPrintOpen] = useState(false);
-  const { data: printOrder, isLoading: printLoading, errorMessage: printError } = useFieldOrder(printOrderId, { enabled: printOpen });
-  const printId = useMemo(() => `field-order-ticket-print-${printOrderId ?? 'unknown'}`, [printOrderId]);
+  const {
+    data: printOrder,
+    isLoading: printLoading,
+    errorMessage: printError,
+  } = useFieldOrder(printOrderId, { enabled: printOpen });
+  const printId = useMemo(
+    () => `field-order-ticket-print-${printOrderId ?? 'unknown'}`,
+    [printOrderId]
+  );
   const { onPrint } = usePrintElement({ id: printId, freeSize: true });
 
   const ticketData = useMemo(() => {
@@ -236,14 +262,18 @@ export default function FieldOrdersPage() {
   }, [printOrder]);
 
   if (isLoading) {
-    return <div className="flex flex-1 items-center justify-center"><Loader /></div>;
+    return (
+      <div className="flex flex-1 items-center justify-center">
+        <Loader />
+      </div>
+    );
   }
 
   if (errorMessage) {
     return (
       <div className="flex flex-1 items-center justify-center">
         <EmptyState
-          icon={<PackageOpen className="h-10 w-10 text-primary" />}
+          icon={<PackageOpen className="text-primary h-10 w-10" />}
           title="No se pudieron cargar los pedidos"
           description={errorMessage}
         />
@@ -255,7 +285,7 @@ export default function FieldOrdersPage() {
     return (
       <div className="flex flex-1 items-center justify-center">
         <EmptyState
-          icon={<PackageOpen className="h-10 w-10 text-primary" />}
+          icon={<PackageOpen className="text-primary h-10 w-10" />}
           title="Sin pedidos operativos"
           description="Cuando tengas pedidos asignados aparecerán aquí."
         />
@@ -267,7 +297,9 @@ export default function FieldOrdersPage() {
     <div className="flex h-full min-h-0 flex-col gap-4">
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">Pedidos operativos</h1>
-        <p className="text-sm text-muted-foreground">Abre un pedido prefijado y ajusta el contenido real servido.</p>
+        <p className="text-muted-foreground text-sm">
+          Abre un pedido prefijado y ajusta el contenido real servido.
+        </p>
       </div>
 
       <div className="grid gap-4">
@@ -289,7 +321,9 @@ export default function FieldOrdersPage() {
           <DialogHeader>
             <DialogTitle>Imprimir ticket</DialogTitle>
             <DialogDescription>
-              {printOrderId ? `Pedido #${String(printOrderId).padStart(5, '0')}` : 'Selecciona un pedido'}
+              {printOrderId
+                ? `Pedido #${String(printOrderId).padStart(5, '0')}`
+                : 'Selecciona un pedido'}
             </DialogDescription>
           </DialogHeader>
 
@@ -299,17 +333,19 @@ export default function FieldOrdersPage() {
             </div>
           ) : printError ? (
             <EmptyState
-              icon={<PackageOpen className="h-10 w-10 text-primary" />}
+              icon={<PackageOpen className="text-primary h-10 w-10" />}
               title="No se pudo cargar el pedido"
               description={printError}
             />
           ) : ticketData ? (
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">
-                Cliente: <span className="text-foreground">{ticketData.customerName || 'Sin cliente'}</span>
+              <p className="text-muted-foreground text-sm">
+                Cliente:{' '}
+                <span className="text-foreground">{ticketData.customerName || 'Sin cliente'}</span>
               </p>
-              <p className="text-sm text-muted-foreground">
-                Fecha: <span className="text-foreground">{ticketData.entryDate || 'Sin fecha'}</span>
+              <p className="text-muted-foreground text-sm">
+                Fecha:{' '}
+                <span className="text-foreground">{ticketData.entryDate || 'Sin fecha'}</span>
               </p>
             </div>
           ) : null}
@@ -319,7 +355,7 @@ export default function FieldOrdersPage() {
               type="button"
               variant="default"
               size="sm"
-              className="w-full gap-2 min-h-[40px] touch-manipulation active:scale-[0.98] transition-transform text-sm sm:w-auto sm:min-w-[200px]"
+              className="min-h-[40px] w-full touch-manipulation gap-2 text-sm transition-transform active:scale-[0.98] sm:w-auto sm:min-w-[200px]"
               onClick={onPrint}
               disabled={!ticketData || printLoading}
             >

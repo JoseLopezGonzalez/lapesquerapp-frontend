@@ -89,11 +89,7 @@ export interface OrdersProfitabilityExportJobParams extends OrdersProfitabilityS
   onlyMissingCosts?: boolean;
 }
 
-export type OrdersProfitabilityExportJobStatus =
-  | 'pending'
-  | 'processing'
-  | 'finished'
-  | 'failed';
+export type OrdersProfitabilityExportJobStatus = 'pending' | 'processing' | 'finished' | 'failed';
 
 export interface OrdersProfitabilityExportJob {
   id: string;
@@ -250,9 +246,9 @@ function normalizeProfitabilityProductIds(productIds?: Array<string | number>): 
     .filter((productId) => Number.isFinite(productId));
 }
 
-function buildProfitabilityExportJobPayload(
-  params: OrdersProfitabilityExportJobParams
-): Required<Pick<OrdersProfitabilityExportJobParams, 'dateFrom' | 'dateTo' | 'onlyMissingCosts'>> & {
+function buildProfitabilityExportJobPayload(params: OrdersProfitabilityExportJobParams): Required<
+  Pick<OrdersProfitabilityExportJobParams, 'dateFrom' | 'dateTo' | 'onlyMissingCosts'>
+> & {
   productIds: number[];
 } {
   return {
@@ -329,7 +325,11 @@ export function getOrderCostAnalysis(
     },
   })
     .then(async (response) => {
-      const data = await handleServiceResponse(response, null, 'Error al obtener el análisis económico');
+      const data = await handleServiceResponse(
+        response,
+        null,
+        'Error al obtener el análisis económico'
+      );
       if (!data) return null;
       return (data.data || data) as OrderCostAnalysisResponse;
     })
@@ -367,7 +367,10 @@ export function updateOrder(
       }
       return response.json();
     })
-    .then((data: { data?: Order } | Order) => (data && typeof data === 'object' && 'data' in data ? data.data : data) as Order | undefined)
+    .then(
+      (data: { data?: Order } | Order) =>
+        (data && typeof data === 'object' && 'data' in data ? data.data : data) as Order | undefined
+    )
     .catch((error) => {
       throw error;
     });
@@ -393,9 +396,7 @@ export function getActiveOrders(token: AuthToken): Promise<Order[]> {
     .then((response) => {
       if (!response.ok) {
         return response.json().then((errorData: { message?: string }) => {
-          throw new Error(
-            getErrorMessage(errorData) || 'Error al obtener los pedidos activos'
-          );
+          throw new Error(getErrorMessage(errorData) || 'Error al obtener los pedidos activos');
         });
       }
       return response.json();
@@ -433,19 +434,16 @@ export async function updateOrderPlannedProductDetail(
   detailData: OrderPlannedProductDetailPayload,
   token: AuthToken
 ): Promise<unknown> {
-  const response = await fetchWithTenant(
-    `${API_URL_V2}order-planned-product-details/${detailId}`,
-    {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
-        'User-Agent': getUserAgent(),
-      },
-      body: JSON.stringify(detailData),
-    }
-  );
+  const response = await fetchWithTenant(`${API_URL_V2}order-planned-product-details/${detailId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      Authorization: `Bearer ${token}`,
+      'User-Agent': getUserAgent(),
+    },
+    body: JSON.stringify(detailData),
+  });
 
   if (!response.ok) {
     const errorData = await response.json();
@@ -463,18 +461,15 @@ export async function deleteOrderPlannedProductDetail(
   detailId: string,
   token: AuthToken
 ): Promise<unknown> {
-  const response = await fetchWithTenant(
-    `${API_URL_V2}order-planned-product-details/${detailId}`,
-    {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
-        'User-Agent': getUserAgent(),
-      },
-    }
-  );
+  const response = await fetchWithTenant(`${API_URL_V2}order-planned-product-details/${detailId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      Authorization: `Bearer ${token}`,
+      'User-Agent': getUserAgent(),
+    },
+  });
 
   if (!response.ok) {
     const errorData = await response.json();
@@ -601,10 +596,7 @@ export async function updateOrderIncident(
 /**
  * Deletes an order incident.
  */
-export async function destroyOrderIncident(
-  orderId: string,
-  token: AuthToken
-): Promise<unknown> {
+export async function destroyOrderIncident(orderId: string, token: AuthToken): Promise<unknown> {
   const response = await fetchWithTenant(`${API_URL_V2}orders/${orderId}/incident`, {
     method: 'DELETE',
     headers: {
@@ -638,9 +630,7 @@ export function getActiveOrdersOptions(token: AuthToken): Promise<unknown> {
     .then((response) => {
       if (!response.ok) {
         return response.json().then((errorData: { message?: string }) => {
-          throw new Error(
-            getErrorMessage(errorData) || 'Error al obtener los pedidos activos'
-          );
+          throw new Error(getErrorMessage(errorData) || 'Error al obtener los pedidos activos');
         });
       }
       return response.json();
@@ -669,9 +659,7 @@ export function getProductionViewData(token: AuthToken): Promise<unknown[]> {
     .then((response) => {
       if (!response.ok) {
         return response.json().then((errorData: { message?: string }) => {
-          throw new Error(
-            getErrorMessage(errorData) || 'Error al obtener los datos de producción'
-          );
+          throw new Error(getErrorMessage(errorData) || 'Error al obtener los datos de producción');
         });
       }
       return response.json();
@@ -721,9 +709,7 @@ export async function getOrderRankingStats(
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(
-      getErrorMessage(errorData) || 'Error al obtener el ranking de pedidos'
-    );
+    throw new Error(getErrorMessage(errorData) || 'Error al obtener el ranking de pedidos');
   }
 
   return response.json();
@@ -752,9 +738,7 @@ export async function getSalesBySalesperson(
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(
-      getErrorMessage(errorData) || 'Error al obtener las ventas por comercial'
-    );
+    throw new Error(getErrorMessage(errorData) || 'Error al obtener las ventas por comercial');
   }
 
   return response.json();
@@ -783,9 +767,7 @@ export async function getOrdersTotalNetWeightStats(
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(
-      getErrorMessage(errorData) || 'Error al obtener la cantidad total vendida'
-    );
+    throw new Error(getErrorMessage(errorData) || 'Error al obtener la cantidad total vendida');
   }
 
   return response.json();
@@ -814,9 +796,7 @@ export async function getOrdersTotalAmountStats(
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(
-      getErrorMessage(errorData) || 'Error al obtener el importe total vendido'
-    );
+    throw new Error(getErrorMessage(errorData) || 'Error al obtener el importe total vendido');
   }
 
   return response.json();
@@ -919,17 +899,14 @@ export async function downloadOrdersProfitabilityExportJob(
   downloadUrl: string,
   token: AuthToken
 ): Promise<OrdersProfitabilityExportDownload> {
-  const response = await fetchWithTenant(
-    normalizeProfitabilityExportDownloadUrl(downloadUrl),
-    {
-      method: 'GET',
-      headers: {
-        Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        Authorization: `Bearer ${token}`,
-        'User-Agent': getUserAgent(),
-      },
-    }
-  );
+  const response = await fetchWithTenant(normalizeProfitabilityExportDownloadUrl(downloadUrl), {
+    method: 'GET',
+    headers: {
+      Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      Authorization: `Bearer ${token}`,
+      'User-Agent': getUserAgent(),
+    },
+  });
 
   if (!response.ok) {
     let errorData: unknown = null;
@@ -1039,16 +1016,13 @@ export async function getSalesChartData(params: SalesChartParams): Promise<unkno
     query.append('familyId', params.familyId);
   }
 
-  const data = await fetchWithTenant(
-    `${API_URL_V2}orders/sales-chart-data?${query.toString()}`,
-    {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${params.token}`,
-        'User-Agent': getUserAgent(),
-      },
-    }
-  ).then(async (response) => {
+  const data = await fetchWithTenant(`${API_URL_V2}orders/sales-chart-data?${query.toString()}`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${params.token}`,
+      'User-Agent': getUserAgent(),
+    },
+  }).then(async (response) => {
     const result = await handleServiceResponse(
       response,
       [],
@@ -1093,9 +1067,7 @@ export async function getTransportChartData(params: TransportChartParams): Promi
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(
-      getErrorMessage(errorData) || 'Error al obtener los datos de transporte'
-    );
+    throw new Error(getErrorMessage(errorData) || 'Error al obtener los datos de transporte');
   }
 
   return response.json();

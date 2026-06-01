@@ -422,7 +422,7 @@ Check these files when relevant:
 ```md
 ---
 description: Frontend Next.js Agent rules
-globs: "app/**/*.{js,jsx,ts,tsx},pages/**/*.{js,jsx,ts,tsx},components/**/*.{js,jsx,ts,tsx},features/**/*.{js,jsx,ts,tsx}"
+globs: 'app/**/*.{js,jsx,ts,tsx},pages/**/*.{js,jsx,ts,tsx},components/**/*.{js,jsx,ts,tsx},features/**/*.{js,jsx,ts,tsx}'
 alwaysApply: false
 ---
 
@@ -471,7 +471,7 @@ Return:
 ```md
 ---
 description: UI and form system rules for React Hook Form, Zod and business forms
-globs: "app/**/*Form*.{js,jsx,ts,tsx},components/**/*Form*.{js,jsx,ts,tsx},features/**/*Form*.{js,jsx,ts,tsx},hooks/**/*.{js,jsx,ts,tsx}"
+globs: 'app/**/*Form*.{js,jsx,ts,tsx},components/**/*Form*.{js,jsx,ts,tsx},features/**/*Form*.{js,jsx,ts,tsx},hooks/**/*.{js,jsx,ts,tsx}'
 alwaysApply: false
 ---
 
@@ -519,7 +519,7 @@ Return:
 ```md
 ---
 description: API client and services layer rules
-globs: "lib/**/*.{js,jsx,ts,tsx},services/**/*.{js,jsx,ts,tsx},api/**/*.{js,jsx,ts,tsx},features/**/services/**/*.{js,jsx,ts,tsx}"
+globs: 'lib/**/*.{js,jsx,ts,tsx},services/**/*.{js,jsx,ts,tsx},api/**/*.{js,jsx,ts,tsx},features/**/services/**/*.{js,jsx,ts,tsx}'
 alwaysApply: false
 ---
 
@@ -567,7 +567,7 @@ Return:
 ```md
 ---
 description: EntityClient, data table and entity screen rules
-globs: "components/**/*Entity*.{js,jsx,ts,tsx},features/**/*Entity*.{js,jsx,ts,tsx},app/**/*.{js,jsx,ts,tsx}"
+globs: 'components/**/*Entity*.{js,jsx,ts,tsx},features/**/*Entity*.{js,jsx,ts,tsx},app/**/*.{js,jsx,ts,tsx}'
 alwaysApply: false
 ---
 
@@ -614,7 +614,7 @@ Return:
 ```md
 ---
 description: Design system and shadcn/ui rules
-globs: "components/ui/**/*.{js,jsx,ts,tsx},components/**/*.{js,jsx,ts,tsx},app/globals.css,tailwind.config.*"
+globs: 'components/ui/**/*.{js,jsx,ts,tsx},components/**/*.{js,jsx,ts,tsx},app/globals.css,tailwind.config.*'
 alwaysApply: false
 ---
 
@@ -661,7 +661,7 @@ Return:
 ```md
 ---
 description: Frontend performance rules
-globs: "app/**/*.{js,jsx,ts,tsx},components/**/*.{js,jsx,ts,tsx},features/**/*.{js,jsx,ts,tsx},services/**/*.{js,jsx,ts,tsx}"
+globs: 'app/**/*.{js,jsx,ts,tsx},components/**/*.{js,jsx,ts,tsx},features/**/*.{js,jsx,ts,tsx},services/**/*.{js,jsx,ts,tsx}'
 alwaysApply: false
 ---
 
@@ -817,7 +817,7 @@ Crear carpeta:
 
 ```md
 ---
-applyTo: "app/**/*.{js,jsx,ts,tsx},components/**/*.{js,jsx,ts,tsx},features/**/*.{js,jsx,ts,tsx}"
+applyTo: 'app/**/*.{js,jsx,ts,tsx},components/**/*.{js,jsx,ts,tsx},features/**/*.{js,jsx,ts,tsx}'
 ---
 
 # Next.js UI instructions
@@ -836,7 +836,7 @@ applyTo: "app/**/*.{js,jsx,ts,tsx},components/**/*.{js,jsx,ts,tsx},features/**/*
 
 ```md
 ---
-applyTo: "app/**/*Form*.{js,jsx,ts,tsx},components/**/*Form*.{js,jsx,ts,tsx},features/**/*Form*.{js,jsx,ts,tsx}"
+applyTo: 'app/**/*Form*.{js,jsx,ts,tsx},components/**/*Form*.{js,jsx,ts,tsx},features/**/*Form*.{js,jsx,ts,tsx}'
 ---
 
 # Form instructions
@@ -854,7 +854,7 @@ applyTo: "app/**/*Form*.{js,jsx,ts,tsx},components/**/*Form*.{js,jsx,ts,tsx},fea
 
 ```md
 ---
-applyTo: "services/**/*.{js,jsx,ts,tsx},lib/**/*.{js,jsx,ts,tsx},features/**/services/**/*.{js,jsx,ts,tsx}"
+applyTo: 'services/**/*.{js,jsx,ts,tsx},lib/**/*.{js,jsx,ts,tsx},features/**/services/**/*.{js,jsx,ts,tsx}'
 ---
 
 # API client instructions
@@ -872,7 +872,7 @@ applyTo: "services/**/*.{js,jsx,ts,tsx},lib/**/*.{js,jsx,ts,tsx},features/**/ser
 
 ```md
 ---
-applyTo: "components/**/*Entity*.{js,jsx,ts,tsx},features/**/*Entity*.{js,jsx,ts,tsx},app/**/*.{js,jsx,ts,tsx}"
+applyTo: 'components/**/*Entity*.{js,jsx,ts,tsx},features/**/*Entity*.{js,jsx,ts,tsx},app/**/*.{js,jsx,ts,tsx}'
 ---
 
 # EntityClient instructions
@@ -889,7 +889,7 @@ applyTo: "components/**/*Entity*.{js,jsx,ts,tsx},features/**/*Entity*.{js,jsx,ts
 
 ```md
 ---
-applyTo: "**/*.{js,jsx,ts,tsx}"
+applyTo: '**/*.{js,jsx,ts,tsx}'
 ---
 
 # QA review instructions

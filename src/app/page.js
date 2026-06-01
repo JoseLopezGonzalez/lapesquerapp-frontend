@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import LandingPage from "@/components/LandingPage";
-import LoginPage from "@/components/LoginPage";
-import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import Loader from "@/components/Utilities/Loader";
-import { baseDomain, isGenericBranding } from "@/configs/branding";
-import { getDefaultAuthenticatedRoute } from "@/lib/auth/actor";
+import LandingPage from '@/components/LandingPage';
+import LoginPage from '@/components/LoginPage';
+import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import Loader from '@/components/Utilities/Loader';
+import { baseDomain, isGenericBranding } from '@/configs/branding';
+import { getDefaultAuthenticatedRoute } from '@/lib/auth/actor';
 
 export default function HomePage() {
   // ✅ CRÍTICO: Todos los hooks DEBEN ejecutarse ANTES de cualquier return condicional
@@ -21,19 +21,19 @@ export default function HomePage() {
     const hostname = window.location.hostname;
 
     // Sin subdominio → landing; con subdominio (ej. dev.localhost) → login
-    const parts = hostname.split(".");
-    const isLocal = hostname.includes("localhost") || hostname === "127.0.0.1";
+    const parts = hostname.split('.');
+    const isLocal = hostname.includes('localhost') || hostname === '127.0.0.1';
 
     if (isLocal) {
       // Ej: localhost → landing; dev.localhost → login (tenant dev)
-      setIsSubdomain(parts.length > 1 && parts[0] !== "localhost");
+      setIsSubdomain(parts.length > 1 && parts[0] !== 'localhost');
     } else {
-      const domain = baseDomain || "example.com";
+      const domain = baseDomain || 'example.com';
       if (!domain) {
         setIsSubdomain(false);
-      } else if (hostname === domain || hostname === "www." + domain) {
+      } else if (hostname === domain || hostname === 'www.' + domain) {
         setIsSubdomain(false);
-      } else if (hostname.endsWith("." + domain)) {
+      } else if (hostname.endsWith('.' + domain)) {
         setIsSubdomain(true);
       } else {
         setIsSubdomain(false); // fallback
@@ -42,16 +42,15 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    if (isSubdomain && status === "authenticated" && session?.user) {
+    if (isSubdomain && status === 'authenticated' && session?.user) {
       router.replace(getDefaultAuthenticatedRoute(session.user));
     }
   }, [isSubdomain, status, session, router]);
 
-
   // ✅ Si no hay logout, mostrar la página normalmente
   if (isSubdomain === null) {
     return (
-      <div className="flex justify-center items-center h-screen w-full">
+      <div className="flex h-screen w-full items-center justify-center">
         <Loader />
       </div>
     );
@@ -59,14 +58,14 @@ export default function HomePage() {
 
   if (isSubdomain) {
     // 2️⃣ Usuario autenticado → mostrar loader mientras redirige
-    if (status === "authenticated") {
+    if (status === 'authenticated') {
       return (
-        <div className="flex justify-center items-center h-screen w-full">
+        <div className="flex h-screen w-full items-center justify-center">
           <Loader />
         </div>
       );
     }
-    
+
     // 3️⃣ TODO lo demás (loading + unauthenticated) → LOGIN
     // ❌ NO bloquear por status === "loading"
     // El login se puede renderizar aunque NextAuth esté resolviendo
@@ -76,10 +75,10 @@ export default function HomePage() {
       </div>
     );
   }
-  
+
   // Modo genérico: landing no accesible; no mostrar nada en la raíz (página en blanco)
   if (isGenericBranding) {
-    return <div className="min-h-screen bg-background" />;
+    return <div className="bg-background min-h-screen" />;
   }
   return <LandingPage />;
 }

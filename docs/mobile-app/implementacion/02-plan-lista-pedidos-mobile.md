@@ -15,11 +15,11 @@ Transformar la pantalla de **lista de pedidos** en mobile de “listado web con 
 
 ### Alcance
 
-| Incluido | No incluido |
-|----------|-------------|
-| Pantalla lista de pedidos en mobile (`OrdersList` cuando `isMobile`) | Pantalla overview/detalle del pedido (`Order`) |
-| Header, búsqueda, filtros, acciones secundarias, cards | Otras pantallas del gestor |
-| Componentes `OrdersList`, `OrderCard` (variantes mobile) | Cambios en desktop (se mantiene comportamiento actual) |
+| Incluido                                                             | No incluido                                            |
+| -------------------------------------------------------------------- | ------------------------------------------------------ |
+| Pantalla lista de pedidos en mobile (`OrdersList` cuando `isMobile`) | Pantalla overview/detalle del pedido (`Order`)         |
+| Header, búsqueda, filtros, acciones secundarias, cards               | Otras pantallas del gestor                             |
+| Componentes `OrdersList`, `OrderCard` (variantes mobile)             | Cambios en desktop (se mantiene comportamiento actual) |
 
 ### Principios
 
@@ -51,11 +51,11 @@ sin pararse arriba (búsqueda, filtros, exportar).
 
 ### Componentes implicados
 
-| Archivo | Rol |
-|---------|-----|
-| `src/components/Admin/OrdersManager/OrdersList/index.js` | Lista: header, búsqueda, filtros (tabs), acciones, scroll de cards |
-| `src/components/Admin/OrdersManager/OrdersList/OrderCard/index.js` | Card de un pedido (estado, ID, cliente, fecha) |
-| `src/components/Admin/OrdersManager/index.js` | Contenedor: estado (categories, searchText, orders), pasa props a OrdersList |
+| Archivo                                                            | Rol                                                                          |
+| ------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
+| `src/components/Admin/OrdersManager/OrdersList/index.js`           | Lista: header, búsqueda, filtros (tabs), acciones, scroll de cards           |
+| `src/components/Admin/OrdersManager/OrdersList/OrderCard/index.js` | Card de un pedido (estado, ID, cliente, fecha)                               |
+| `src/components/Admin/OrdersManager/index.js`                      | Contenedor: estado (categories, searchText, orders), pasa props a OrdersList |
 
 ### Qué hay hoy en mobile (OrdersList)
 
@@ -86,11 +86,11 @@ Las fases siguen los micro-pasos sugeridos en el análisis (7.10): **A** Header 
 
 **Tareas:**
 
-| # | Tarea | Detalle |
-|---|--------|--------|
+| #   | Tarea                                                       | Detalle                                                                                                                                                                     |
+| --- | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1.1 | Dejar en header mobile solo: Back, “Pedidos Activos”, Crear | Quitar del header la fila de búsqueda + Vista producción + Crear. Crear pasa a ser el único botón de acción en el header (p. ej. icono + en el mismo bloque que el título). |
-| 1.2 | Añadir icono “Más” (overflow) en header mobile | Botón que abrirá el sheet de búsqueda y filtros (Fase 3). Por ahora puede ser un placeholder o abrir un menú mínimo (solo “Exportar”, “Vista producción”). |
-| 1.3 | Reducir espacio entre header y lista | Menos padding/márgenes entre el bloque del header y el primer elemento de la lista para que los pedidos aparezcan antes. |
+| 1.2 | Añadir icono “Más” (overflow) en header mobile              | Botón que abrirá el sheet de búsqueda y filtros (Fase 3). Por ahora puede ser un placeholder o abrir un menú mínimo (solo “Exportar”, “Vista producción”).                  |
+| 1.3 | Reducir espacio entre header y lista                        | Menos padding/márgenes entre el bloque del header y el primer elemento de la lista para que los pedidos aparezcan antes.                                                    |
 
 **Archivos:** `OrdersList/index.js` (bloque `isMobile` del header y zona siguiente).
 
@@ -104,11 +104,11 @@ Las fases siguen los micro-pasos sugeridos en el análisis (7.10): **A** Header 
 
 **Tareas:**
 
-| # | Tarea | Detalle |
-|---|--------|--------|
+| #   | Tarea                                                  | Detalle                                                                                                                                                                                                          |
+| --- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2.1 | Sustituir tabs por indicador de filtro activo (mobile) | Una línea o chip que diga “Todos” / “En producción” / “Terminados” según `activeTab`, con touch target ≥ 44px que abra el sheet de filtros (o, en una versión mínima, un pequeño dropdown/sheet solo de estado). |
-| 2.2 | Mantener filtros por estado en desktop | En desktop no cambiar: seguir con `TabsList` + `TabsTrigger` como ahora. |
-| 2.3 | Opcional: contador junto al indicador | Ej. “En producción (3)” para dar contexto global sin ocupar mucho. |
+| 2.2 | Mantener filtros por estado en desktop                 | En desktop no cambiar: seguir con `TabsList` + `TabsTrigger` como ahora.                                                                                                                                         |
+| 2.3 | Opcional: contador junto al indicador                  | Ej. “En producción (3)” para dar contexto global sin ocupar mucho.                                                                                                                                               |
 
 **Archivos:** `OrdersList/index.js` (render condicional `isMobile` para la zona de filtros).
 
@@ -122,13 +122,13 @@ Las fases siguen los micro-pasos sugeridos en el análisis (7.10): **A** Header 
 
 **Tareas:**
 
-| # | Tarea | Detalle |
-|---|--------|--------|
-| 3.1 | Crear componente `OrdersListFiltersSheet` (o nombre similar) | Sheet (`side="bottom"`) que contenga: (1) Input de búsqueda, (2) Filtros por estado (Todos / En producción / Terminados), (3) Opcional: “Vista producción”, “Exportar”. Usar ShadCN `Sheet`. |
-| 3.2 | Abrir sheet desde header mobile | Desde el icono “Más” (o icono de búsqueda) en el header, abrir el sheet. Estado `open` en `OrdersList` o en padre que pase callback. |
-| 3.3 | Conectar búsqueda y categoría con el estado existente | El sheet debe usar los mismos `searchText`, `categories`, `onChangeSearch`, `onClickCategory` que ya usa la lista. Al cambiar algo en el sheet, se actualiza la lista y se puede cerrar el sheet (o dejar abierto según preferencia). |
-| 3.4 | Cerrar sheet al aplicar (opcional) | Al elegir un filtro o al “buscar”, cerrar el sheet para volver a la lista. |
-| 3.5 | Acciones secundarias en el sheet | Mover “Exportar” y “Vista de Producción” dentro del sheet en mobile; en desktop se mantienen en la barra superior. |
+| #   | Tarea                                                        | Detalle                                                                                                                                                                                                                               |
+| --- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 3.1 | Crear componente `OrdersListFiltersSheet` (o nombre similar) | Sheet (`side="bottom"`) que contenga: (1) Input de búsqueda, (2) Filtros por estado (Todos / En producción / Terminados), (3) Opcional: “Vista producción”, “Exportar”. Usar ShadCN `Sheet`.                                          |
+| 3.2 | Abrir sheet desde header mobile                              | Desde el icono “Más” (o icono de búsqueda) en el header, abrir el sheet. Estado `open` en `OrdersList` o en padre que pase callback.                                                                                                  |
+| 3.3 | Conectar búsqueda y categoría con el estado existente        | El sheet debe usar los mismos `searchText`, `categories`, `onChangeSearch`, `onClickCategory` que ya usa la lista. Al cambiar algo en el sheet, se actualiza la lista y se puede cerrar el sheet (o dejar abierto según preferencia). |
+| 3.4 | Cerrar sheet al aplicar (opcional)                           | Al elegir un filtro o al “buscar”, cerrar el sheet para volver a la lista.                                                                                                                                                            |
+| 3.5 | Acciones secundarias en el sheet                             | Mover “Exportar” y “Vista de Producción” dentro del sheet en mobile; en desktop se mantienen en la barra superior.                                                                                                                    |
 
 **Archivos:** Nuevo componente (p. ej. `OrdersList/OrdersListFiltersSheet.jsx` o en la misma carpeta), `OrdersList/index.js` (estado open/close, botón que abre).
 
@@ -144,13 +144,13 @@ Las fases siguen los micro-pasos sugeridos en el análisis (7.10): **A** Header 
 
 **Tareas:**
 
-| # | Tarea | Detalle |
-|---|--------|--------|
-| 4.1 | Estado más integrado en la card (mobile) | En mobile, no solo un badge suelto: usar el **borde izquierdo** (ya existe) como señal de estado y/o un pequeño indicador de estado integrado en el título (ej. “En producción · Cliente”). Evitar que el estado parezca un “chip flotante” desconectado. |
-| 4.2 | Jerarquía visual explícita: Cliente > Fecha > ID | En mobile: **Cliente** como título principal (más tamaño/peso). Fecha de carga como secundaria. **ID** más pequeño y menos prominente (ej. “#02424” en texto menor, arriba o abajo). Revisar orden y tamaños en `OrderCard` para variante mobile. |
-| 4.3 | Pistas de navegación | Añadir chevron (>) a la derecha de la card en mobile, o layout que sugiera “entrar”. Mantener card completa clickable. |
-| 4.4 | Feedback táctil | Refinar `active:scale-[0.98]` y/o sombra al tap; asegurar que el área de toque sea cómoda (ya hay `min-h-[130px]`). Respetar pilares: touch target, feedback inmediato. |
-| 4.5 | No romper desktop | Cambios solo cuando `isMobile` en `OrderCard` (o clases responsive). Desktop mantiene la card actual. |
+| #   | Tarea                                            | Detalle                                                                                                                                                                                                                                                   |
+| --- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.1 | Estado más integrado en la card (mobile)         | En mobile, no solo un badge suelto: usar el **borde izquierdo** (ya existe) como señal de estado y/o un pequeño indicador de estado integrado en el título (ej. “En producción · Cliente”). Evitar que el estado parezca un “chip flotante” desconectado. |
+| 4.2 | Jerarquía visual explícita: Cliente > Fecha > ID | En mobile: **Cliente** como título principal (más tamaño/peso). Fecha de carga como secundaria. **ID** más pequeño y menos prominente (ej. “#02424” en texto menor, arriba o abajo). Revisar orden y tamaños en `OrderCard` para variante mobile.         |
+| 4.3 | Pistas de navegación                             | Añadir chevron (>) a la derecha de la card en mobile, o layout que sugiera “entrar”. Mantener card completa clickable.                                                                                                                                    |
+| 4.4 | Feedback táctil                                  | Refinar `active:scale-[0.98]` y/o sombra al tap; asegurar que el área de toque sea cómoda (ya hay `min-h-[130px]`). Respetar pilares: touch target, feedback inmediato.                                                                                   |
+| 4.5 | No romper desktop                                | Cambios solo cuando `isMobile` en `OrderCard` (o clases responsive). Desktop mantiene la card actual.                                                                                                                                                     |
 
 **Archivos:** `OrdersList/OrderCard/index.js` (variantes mobile con `useIsMobile()` o clases `md:`).
 
@@ -168,10 +168,10 @@ Las fases siguen los micro-pasos sugeridos en el análisis (7.10): **A** Header 
 
 **Tareas:**
 
-| # | Tarea | Detalle |
-|---|--------|--------|
+| #   | Tarea                                    | Detalle                                                                                                                                                                             |
+| --- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 5.1 | Mostrar contador de resultados en mobile | Cerca del indicador de filtro (Fase 2) o en la primera línea bajo el header: “3 pedidos” / “N pedidos encontrados”. Reutilizar `orders.length` y el texto que ya existe en desktop. |
-| 5.2 | Opcional: mensaje “al día” / “retrasado” | Solo si hay datos en el backend (ej. pedidos con fecha de carga hoy vs atrasados). Si no hay API, posponer. |
+| 5.2 | Opcional: mensaje “al día” / “retrasado” | Solo si hay datos en el backend (ej. pedidos con fecha de carga hoy vs atrasados). Si no hay API, posponer.                                                                         |
 
 **Archivos:** `OrdersList/index.js` (una línea de texto condicional en mobile).
 
@@ -209,11 +209,11 @@ Las fases 1, 2 y 3 se pueden considerar un mismo “bloque” (header + filtros 
 
 ## 6. Resumen de archivos afectados
 
-| Archivo | Fases |
-|---------|--------|
-| `src/components/Admin/OrdersManager/OrdersList/index.js` | 1, 2, 3, 5, 7 (empty state) |
-| `src/components/Admin/OrdersManager/OrdersList/OrderCard/index.js` | 4, 7 (feedback tap, aire) |
-| `OrdersListFiltersSheet.jsx` | 3, 6 (CTAs Listo / Limpiar) |
+| Archivo                                                            | Fases                       |
+| ------------------------------------------------------------------ | --------------------------- |
+| `src/components/Admin/OrdersManager/OrdersList/index.js`           | 1, 2, 3, 5, 7 (empty state) |
+| `src/components/Admin/OrdersManager/OrdersList/OrderCard/index.js` | 4, 7 (feedback tap, aire)   |
+| `OrdersListFiltersSheet.jsx`                                       | 3, 6 (CTAs Listo / Limpiar) |
 
 No se modifican: `OrdersManager/index.js` (salvo si se pasa alguna prop nueva al sheet), pantalla de detalle `Order`, ni lógica de datos (getActiveOrders, categories, search).
 
@@ -222,6 +222,7 @@ No se modifican: `OrdersManager/index.js` (salvo si se pasa alguna prop nueva al
 ## 7. Checklist de validación final (mobile)
 
 **Header (análisis 7.11):**
+
 - [x] No más de 2 acciones visibles en header (Crear + Overflow).
 - [x] No filtros persistentes ocupando altura.
 - [x] Lista visible lo antes posible.
@@ -229,6 +230,7 @@ No se modifican: `OrdersManager/index.js` (salvo si se pasa alguna prop nueva al
 - [x] Búsqueda/filtros como acción secundaria (sheet).
 
 **Sheet (análisis 7.12):**
+
 - [x] No search input visible por defecto.
 - [x] No tabs de estado persistentes.
 - [x] Sheet se abre desde header.
@@ -236,12 +238,14 @@ No se modifican: `OrdersManager/index.js` (salvo si se pasa alguna prop nueva al
 - [x] Estado visible pero discreto al volver (indicador “Viendo: …”).
 
 **Cards (análisis 7.13):**
+
 - [x] Estado no depende solo de texto (borde + contexto).
 - [x] ID no es lo más grande (cliente protagonista).
 - [x] Card se siente tocable (chevron, feedback).
 - [x] Lista se escanea rápido.
 
 **Micro-interacciones (7.14–7.16):**
+
 - [x] Tap en card responde al instante (pressed state).
 - [x] Estado vacío: acción “Cambiar filtros” cuando hay filtro/búsqueda activa.
 - [x] Desktop: sin cambios.
@@ -260,4 +264,4 @@ No se modifican: `OrdersManager/index.js` (salvo si se pasa alguna prop nueva al
 
 ---
 
-*Documento vivo: actualizar al completar fases o al ajustar alcance.*
+_Documento vivo: actualizar al completar fases o al ajustar alcance._

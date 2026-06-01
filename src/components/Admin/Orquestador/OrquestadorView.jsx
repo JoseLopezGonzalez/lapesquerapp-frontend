@@ -9,13 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
   Dialog,
   DialogContent,
@@ -169,10 +163,7 @@ export default function OrquestadorView() {
     [pallets, addCajasOrderId]
   );
 
-  const activeOrders = useMemo(
-    () => filterOrdersByDate(orders, dateFilter),
-    [orders, dateFilter]
-  );
+  const activeOrders = useMemo(() => filterOrdersByDate(orders, dateFilter), [orders, dateFilter]);
 
   const selectedOrder = useMemo(
     () => orders.find((o) => o.id === selectedOrderId) || null,
@@ -193,7 +184,13 @@ export default function OrquestadorView() {
     const labelFormatId = (emisionForm.labelFormatId || '').trim();
 
     // Validación: 3 primeros campos y al menos una caja generable
-    const missingField = !productId ? 'producto' : !lot ? 'lote' : !labelFormatId ? 'formato de etiqueta' : null;
+    const missingField = !productId
+      ? 'producto'
+      : !lot
+        ? 'lote'
+        : !labelFormatId
+          ? 'formato de etiqueta'
+          : null;
     if (missingField) {
       notify.error({
         title: 'Campos obligatorios',
@@ -214,11 +211,22 @@ export default function OrquestadorView() {
       const numberOfBoxes = (emisionForm.numberOfBoxes || '').trim();
       const n = parseInt(numberOfBoxes, 10);
       const netTotalWeight = parseFloat(totalWeight);
-      canGenerateAtLeastOne = totalWeight !== '' && numberOfBoxes !== '' && Number.isInteger(n) && n >= 1 && netTotalWeight > 0 && !Number.isNaN(netTotalWeight);
+      canGenerateAtLeastOne =
+        totalWeight !== '' &&
+        numberOfBoxes !== '' &&
+        Number.isInteger(n) &&
+        n >= 1 &&
+        netTotalWeight > 0 &&
+        !Number.isNaN(netTotalWeight);
     } else {
       const weightsString = (emisionForm.weightsString || '').trim();
-      const weightsLines = weightsString.split('\n').map((l) => l.trim().replace(',', '.')).filter(Boolean);
-      const weights = weightsLines.map((w) => parseFloat(w)).filter((n) => !Number.isNaN(n) && n > 0);
+      const weightsLines = weightsString
+        .split('\n')
+        .map((l) => l.trim().replace(',', '.'))
+        .filter(Boolean);
+      const weights = weightsLines
+        .map((w) => parseFloat(w))
+        .filter((n) => !Number.isNaN(n) && n > 0);
       canGenerateAtLeastOne = weights.length >= 1;
     }
     if (!canGenerateAtLeastOne) {
@@ -269,9 +277,8 @@ export default function OrquestadorView() {
       let accumulatedWeight = 0;
       const newBoxes = [];
       for (let i = 0; i < n; i++) {
-        const boxWeight = i === n - 1
-          ? roundToTwoDecimals(netTotalWeight - accumulatedWeight)
-          : standardWeight;
+        const boxWeight =
+          i === n - 1 ? roundToTwoDecimals(netTotalWeight - accumulatedWeight) : standardWeight;
         accumulatedWeight += boxWeight;
         newBoxes.push({
           id: nextBoxId + i,
@@ -483,9 +490,7 @@ export default function OrquestadorView() {
     }
     setMockState((prev) => ({
       ...prev,
-      orders: prev.orders.map((o) =>
-        o.id === selectedOrderId ? { ...o, status: 'finished' } : o
-      ),
+      orders: prev.orders.map((o) => (o.id === selectedOrderId ? { ...o, status: 'finished' } : o)),
     }));
     notify.success({
       title: 'Pedido marcado como Terminado (simulado)',
@@ -545,9 +550,9 @@ export default function OrquestadorView() {
   }, []);
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col bg-muted/30">
+    <div className="bg-muted/30 flex h-[calc(100vh-4rem)] flex-col">
       {/* Tabs: Pantalla 1 vs Pantalla 2 */}
-      <header className="flex shrink-0 flex-col gap-2 border-b bg-card px-4 py-2">
+      <header className="bg-card flex shrink-0 flex-col gap-2 border-b px-4 py-2">
         <div className="flex items-center gap-2">
           {SCREENS.map(({ id, label, icon: Icon }) => (
             <button
@@ -585,7 +590,12 @@ export default function OrquestadorView() {
                   className="mt-1"
                   options={products.map((prod) => ({ value: prod.id, label: prod.name }))}
                   value={emisionForm.productId === '' ? '' : Number(emisionForm.productId)}
-                  onChange={(v) => setEmisionForm((p) => ({ ...p, productId: v === '' || v == null ? '' : String(v) }))}
+                  onChange={(v) =>
+                    setEmisionForm((p) => ({
+                      ...p,
+                      productId: v === '' || v == null ? '' : String(v),
+                    }))
+                  }
                   placeholder="Selecciona producto"
                   searchPlaceholder="Buscar producto..."
                   notFoundMessage="Ningún producto encontrado."
@@ -598,7 +608,7 @@ export default function OrquestadorView() {
                   value={emisionForm.lot}
                   onChange={(e) => setEmisionForm((p) => ({ ...p, lot: e.target.value }))}
                   placeholder="Ej. LOT-2025-001"
-                  className={`mt-1 ${emisionForm.lot.length > 0 && emisionForm.lot.length !== 14 ? 'border-amber-300 dark:border-amber-600 focus-visible:ring-amber-500/30' : ''}`}
+                  className={`mt-1 ${emisionForm.lot.length > 0 && emisionForm.lot.length !== 14 ? 'border-amber-300 focus-visible:ring-amber-500/30 dark:border-amber-600' : ''}`}
                   aria-invalid={emisionForm.lot.length > 0 && emisionForm.lot.length !== 14}
                   maxLength={14}
                 />
@@ -615,7 +625,12 @@ export default function OrquestadorView() {
                   className="mt-1"
                   options={LABEL_FORMAT_OPTIONS.map((opt) => ({ value: opt.id, label: opt.label }))}
                   value={emisionForm.labelFormatId}
-                  onChange={(v) => setEmisionForm((p) => ({ ...p, labelFormatId: v === '' || v == null ? '' : String(v) }))}
+                  onChange={(v) =>
+                    setEmisionForm((p) => ({
+                      ...p,
+                      labelFormatId: v === '' || v == null ? '' : String(v),
+                    }))
+                  }
                   placeholder="Selecciona formato"
                   searchPlaceholder="Buscar formato..."
                   notFoundMessage="Ningún formato encontrado."
@@ -636,20 +651,22 @@ export default function OrquestadorView() {
                     Promedio
                   </TabsTrigger>
                 </TabsList>
-                <TabsContent value="lines" className="space-y-0 mt-3">
+                <TabsContent value="lines" className="mt-3 space-y-0">
                   <div>
                     <Label htmlFor="em-weights">Pesos en kg (uno por línea = una caja)</Label>
                     <Textarea
                       id="em-weights"
                       value={emisionForm.weightsString}
-                      onChange={(e) => setEmisionForm((p) => ({ ...p, weightsString: e.target.value }))}
+                      onChange={(e) =>
+                        setEmisionForm((p) => ({ ...p, weightsString: e.target.value }))
+                      }
                       placeholder={'20.5\n19.8\n21.2'}
                       rows={5}
                       className="mt-1 font-mono text-sm"
                     />
                   </div>
                 </TabsContent>
-                <TabsContent value="average" className="space-y-4 mt-3">
+                <TabsContent value="average" className="mt-3 space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="em-total-weight">Peso total (kg)</Label>
@@ -659,7 +676,9 @@ export default function OrquestadorView() {
                         step="0.01"
                         placeholder="0.00"
                         value={emisionForm.totalWeight}
-                        onChange={(e) => setEmisionForm((p) => ({ ...p, totalWeight: e.target.value }))}
+                        onChange={(e) =>
+                          setEmisionForm((p) => ({ ...p, totalWeight: e.target.value }))
+                        }
                         className="mt-1 text-right"
                       />
                     </div>
@@ -671,7 +690,9 @@ export default function OrquestadorView() {
                         min="1"
                         placeholder="0"
                         value={emisionForm.numberOfBoxes}
-                        onChange={(e) => setEmisionForm((p) => ({ ...p, numberOfBoxes: e.target.value }))}
+                        onChange={(e) =>
+                          setEmisionForm((p) => ({ ...p, numberOfBoxes: e.target.value }))
+                        }
                         className="mt-1 text-right"
                       />
                     </div>
@@ -691,23 +712,25 @@ export default function OrquestadorView() {
               <CardTitle className="text-base">Cajas ({availableBoxes.length})</CardTitle>
             </CardHeader>
             <CardContent className="flex min-h-0 flex-1 flex-col p-4 pt-0">
-              <div className="border rounded-lg overflow-hidden flex-1 flex flex-col min-h-0">
+              <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border">
                 {availableBoxes.length === 0 ? (
-                  <div className="flex-1 min-h-0 flex items-center justify-center p-4">
+                  <div className="flex min-h-0 flex-1 items-center justify-center p-4">
                     <EmptyState
-                      icon={<Package className="h-12 w-12 text-primary" strokeWidth={1.5} />}
+                      icon={<Package className="text-primary h-12 w-12" strokeWidth={1.5} />}
                       title="No hay cajas disponibles"
                       description="Genera cajas en el formulario de la izquierda"
                     />
                   </div>
                 ) : (
-                  <div className="overflow-y-auto flex-1 min-h-0 w-full">
+                  <div className="min-h-0 w-full flex-1 overflow-y-auto">
                     <table className="w-full caption-bottom text-sm">
-                      <TableHeader className="sticky top-0 z-10 bg-background shadow-[0_1px_0_0_hsl(var(--border))]">
+                      <TableHeader className="bg-background sticky top-0 z-10 shadow-[0_1px_0_0_hsl(var(--border))]">
                         <TableRow>
                           <TableHead className="min-w-[200px]">Artículo</TableHead>
-                          <TableHead className="min-w-[170px] w-[170px]">Lote</TableHead>
-                          <TableHead className="min-w-[100px] w-[100px] text-right">Peso Neto</TableHead>
+                          <TableHead className="w-[170px] min-w-[170px]">Lote</TableHead>
+                          <TableHead className="w-[100px] min-w-[100px] text-right">
+                            Peso Neto
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -735,8 +758,8 @@ export default function OrquestadorView() {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader className="items-center">
-                    <div className="mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10">
-                      <OctagonAlert className="h-7 w-7 text-destructive" />
+                    <div className="bg-destructive/10 mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-full">
+                      <OctagonAlert className="text-destructive h-7 w-7" />
                     </div>
                     <AlertDialogTitle>¿Vaciar lista de cajas?</AlertDialogTitle>
                     <AlertDialogDescription className="text-center text-[15px]">
@@ -746,7 +769,7 @@ export default function OrquestadorView() {
                   <AlertDialogFooter className="mt-2 sm:justify-center">
                     <AlertDialogCancel>Cancelar</AlertDialogCancel>
                     <AlertDialogAction
-                      className="bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90"
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm"
                       onClick={handleLimpiarCajasEmision}
                     >
                       Vaciar lista
@@ -776,13 +799,16 @@ export default function OrquestadorView() {
                 <Scan className="h-5 w-5" />
                 Escanear etiquetas
               </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                {scannedLabelsBoxes.length} caja{scannedLabelsBoxes.length !== 1 ? 's' : ''} escaneada{scannedLabelsBoxes.length !== 1 ? 's' : ''}
+              <p className="text-muted-foreground text-sm">
+                {scannedLabelsBoxes.length} caja{scannedLabelsBoxes.length !== 1 ? 's' : ''}{' '}
+                escaneada{scannedLabelsBoxes.length !== 1 ? 's' : ''}
               </p>
             </CardHeader>
             <CardContent className="flex min-h-0 flex-1 flex-col gap-4 pt-0">
               <form onSubmit={handleScanLabelSubmit}>
-                <Label htmlFor="scan-labels-input" className="sr-only">Código o referencia</Label>
+                <Label htmlFor="scan-labels-input" className="sr-only">
+                  Código o referencia
+                </Label>
                 <Input
                   id="scan-labels-input"
                   ref={scanLabelsInputRef}
@@ -790,13 +816,13 @@ export default function OrquestadorView() {
                   placeholder="Escanea etiqueta o introduce referencia..."
                   value={scanLabelsInput}
                   onChange={(e) => setScanLabelsInput(e.target.value)}
-                  className="font-mono w-full"
+                  className="w-full font-mono"
                 />
               </form>
-              <div className="min-h-0 flex-1 rounded-lg border overflow-hidden flex flex-col">
-                <div className="overflow-y-auto flex-1 min-h-0">
+              <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border">
+                <div className="min-h-0 flex-1 overflow-y-auto">
                   <table className="w-full caption-bottom text-sm">
-                    <TableHeader className="sticky top-0 z-10 bg-background shadow-[0_1px_0_0_hsl(var(--border))]">
+                    <TableHeader className="bg-background sticky top-0 z-10 shadow-[0_1px_0_0_hsl(var(--border))]">
                       <TableRow>
                         <TableHead className="min-w-[180px]">Artículo</TableHead>
                         <TableHead className="min-w-[120px]">Lote</TableHead>
@@ -807,7 +833,10 @@ export default function OrquestadorView() {
                     <TableBody>
                       {scannedLabelsBoxes.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={4} className="py-12 text-center text-muted-foreground">
+                          <TableCell
+                            colSpan={4}
+                            className="text-muted-foreground py-12 text-center"
+                          >
                             Escanea etiquetas para ir generando cajas en la tabla.
                           </TableCell>
                         </TableRow>
@@ -816,13 +845,15 @@ export default function OrquestadorView() {
                           <TableRow key={b.id} className="cursor-default">
                             <TableCell className="font-medium">{b.productName}</TableCell>
                             <TableCell className="text-muted-foreground">{b.lot}</TableCell>
-                            <TableCell className="text-right tabular-nums">{formatDecimalWeight(b.netWeight)}</TableCell>
+                            <TableCell className="text-right tabular-nums">
+                              {formatDecimalWeight(b.netWeight)}
+                            </TableCell>
                             <TableCell>
                               <Button
                                 type="button"
                                 variant="ghost"
                                 size="sm"
-                                className="h-7 text-muted-foreground hover:text-destructive"
+                                className="text-muted-foreground hover:text-destructive h-7"
                                 onClick={() => removeScannedLabelBox(b)}
                               >
                                 Quitar
@@ -840,9 +871,7 @@ export default function OrquestadorView() {
               <Button variant="outline" onClick={goToPreparacionWithoutSaving}>
                 Volver
               </Button>
-              <Button onClick={finishScanLabels}>
-                Crear palet
-              </Button>
+              <Button onClick={finishScanLabels}>Crear palet</Button>
             </CardFooter>
           </Card>
         </main>
@@ -850,19 +879,22 @@ export default function OrquestadorView() {
         /* ——— Pantalla: Preparación de pedidos (por escaneo) ——— */
         <>
           <div className="flex min-h-0 flex-1">
-            <aside className="flex w-full sm:w-[300px] flex-shrink-0 flex-col border-r bg-card">
-              <div className="flex-shrink-0 border-b px-3 pt-2 sm:pt-3 pb-3">
+            <aside className="bg-card flex w-full flex-shrink-0 flex-col border-r sm:w-[300px]">
+              <div className="flex-shrink-0 border-b px-3 pt-2 pb-3 sm:pt-3">
                 <div className="flex items-center justify-between gap-2">
                   <div>
-                    <h2 className="text-lg sm:text-xl font-semibold dark:text-white">Pedidos activos</h2>
+                    <h2 className="text-lg font-semibold sm:text-xl dark:text-white">
+                      Pedidos activos
+                    </h2>
                     {activeOrders.length > 0 && (
-                      <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                        {activeOrders.length} pedido{activeOrders.length !== 1 ? 's' : ''} encontrado{activeOrders.length !== 1 ? 's' : ''}
+                      <p className="text-muted-foreground mt-0.5 text-xs sm:text-sm">
+                        {activeOrders.length} pedido{activeOrders.length !== 1 ? 's' : ''}{' '}
+                        encontrado{activeOrders.length !== 1 ? 's' : ''}
                       </p>
                     )}
                   </div>
                   <Select value={dateFilter} onValueChange={setDateFilter}>
-                    <SelectTrigger className="w-[120px] shrink-0 h-9">
+                    <SelectTrigger className="h-9 w-[120px] shrink-0">
                       <SelectValue placeholder="Fecha" />
                     </SelectTrigger>
                     <SelectContent>
@@ -875,155 +907,162 @@ export default function OrquestadorView() {
                   </Select>
                 </div>
               </div>
-              <div className="flex-1 min-h-0 overflow-hidden px-3">
+              <div className="min-h-0 flex-1 overflow-hidden px-3">
                 <ScrollArea className="h-full">
-                  <div className={`flex flex-col gap-3 pt-2 pb-4 ${activeOrders.length === 0 ? 'min-h-[70vh]' : ''}`}>
-                  {activeOrders.length === 0 ? (
-                    <div className="flex flex-1 min-h-[60vh] items-center justify-center px-2 py-6">
-                      <EmptyState
-                        icon={<ClipboardList className="h-12 w-12 text-muted-foreground" strokeWidth={1.5} />}
-                        title="Sin pedidos activos"
-                        description={`No hay pedidos para ${dateFilter === 'today' ? 'hoy' : 'mañana'}. Cambia la fecha o espera a que se asignen pedidos.`}
-                      />
-                    </div>
-                  ) : (
-                    activeOrders.map((order) => {
-                      const orderForCard = {
-                        ...order,
-                        customer: { name: order.customer?.name ?? 'Sin cliente' },
-                        numberOfBoxes: null,
-                      };
-                      return (
-                        <div key={order.id}>
-                          <OrderCard
-                            order={orderForCard}
-                            onClick={() => setSelectedOrderId(order.id)}
-                            disabled={false}
-                            isSelected={selectedOrderId === order.id}
-                          />
-                        </div>
-                      );
-                    })
-                  )}
+                  <div
+                    className={`flex flex-col gap-3 pt-2 pb-4 ${activeOrders.length === 0 ? 'min-h-[70vh]' : ''}`}
+                  >
+                    {activeOrders.length === 0 ? (
+                      <div className="flex min-h-[60vh] flex-1 items-center justify-center px-2 py-6">
+                        <EmptyState
+                          icon={
+                            <ClipboardList
+                              className="text-muted-foreground h-12 w-12"
+                              strokeWidth={1.5}
+                            />
+                          }
+                          title="Sin pedidos activos"
+                          description={`No hay pedidos para ${dateFilter === 'today' ? 'hoy' : 'mañana'}. Cambia la fecha o espera a que se asignen pedidos.`}
+                        />
+                      </div>
+                    ) : (
+                      activeOrders.map((order) => {
+                        const orderForCard = {
+                          ...order,
+                          customer: { name: order.customer?.name ?? 'Sin cliente' },
+                          numberOfBoxes: null,
+                        };
+                        return (
+                          <div key={order.id}>
+                            <OrderCard
+                              order={orderForCard}
+                              onClick={() => setSelectedOrderId(order.id)}
+                              disabled={false}
+                              isSelected={selectedOrderId === order.id}
+                            />
+                          </div>
+                        );
+                      })
+                    )}
                   </div>
                 </ScrollArea>
               </div>
             </aside>
 
-            <main className="flex min-w-0 flex-1 flex-col min-h-0 p-4">
+            <main className="flex min-h-0 min-w-0 flex-1 flex-col p-4">
               {!selectedOrder ? (
-                <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed bg-muted/20 p-8 text-center text-muted-foreground">
+                <div className="bg-muted/20 text-muted-foreground flex flex-1 items-center justify-center rounded-lg border border-dashed p-8 text-center">
                   Selecciona un pedido de la lista.
                 </div>
               ) : (
-                <Card className="flex flex-1 flex-col min-h-0 overflow-hidden">
-                  <CardContent className="flex flex-col gap-4 pt-4 flex-1 min-h-0 overflow-auto">
-                  <Card className="shrink-0">
-                    <CardContent className="space-y-3 pt-4">
-                      {(selectedOrder.productProgress || []).map((line) => (
-                        <div key={line.product.id}>
-                          <div className="flex justify-between text-sm">
-                            <span>{line.product.name}</span>
-                            <span className="tabular-nums">
-                              {line.completedBoxes}/{line.plannedBoxes} cajas ·{' '}
-                              {formatDecimalWeight(line.completedQuantity)} / {formatDecimalWeight(line.plannedQuantity)}
-                            </span>
-                          </div>
-                          <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-muted">
-                            <div
-                              className={`h-full rounded-full ${lineStatusColor(line.status)}`}
-                              style={{
-                                width: `${Math.min(100, (line.completedBoxes / line.plannedBoxes) * 100)}%`,
-                              }}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </CardContent>
-                  </Card>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 min-h-0">
-                    <div className="flex flex-col gap-4 min-h-0">
-                      <div className="grid grid-cols-2 gap-2 shrink-0">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="lg"
-                          onClick={() => setActiveScreen('escanear')}
-                          className="gap-2 py-6"
-                        >
-                          <QrCode className="h-5 w-5" />
-                          Crear palet
-                        </Button>
-                        <Button type="button" variant="outline" size="lg" className="gap-2 py-6">
-                          <Link2 className="h-5 w-5" />
-                          Vincular palet
-                        </Button>
-                      </div>
-                      <Card className="flex-1 min-h-0 flex flex-col overflow-hidden">
-                        <CardHeader className="pb-2 shrink-0">
-                          <CardTitle className="text-base">Observaciones de producción</CardTitle>
-                        </CardHeader>
-                        <CardContent className="flex-1 min-h-0 overflow-auto">
-                          <p className="whitespace-pre-wrap text-sm text-muted-foreground">
-                            Prioridad carga por la mañana. Cliente confirma llegada camión 12:00.
-
-                            Atún fresco salida de túnel a las 10:30. Lote LOT-2025-001 listo para etiquetado.
-
-                            Control OK en primera partida. Segunda partida en proceso.
-                          </p>
-                        </CardContent>
-                      </Card>
-                      <Card className="shrink-0">
-                        <CardContent className="pt-4">
-                          <div className="grid gap-2">
-                            {ORDER_EXPORT_DOCUMENTS.map((doc) => (
-                              <Button
-                                key={doc.id}
-                                variant="outline"
-                                className="justify-start"
-                                onClick={() => {
-                                  notify.success({
-                                    title: 'Descarga simulada',
-                                    description: `"${doc.label}" para pedido #${selectedOrderId}. En producción usarás el gestor de pedidos.`,
-                                  });
+                <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                  <CardContent className="flex min-h-0 flex-1 flex-col gap-4 overflow-auto pt-4">
+                    <Card className="shrink-0">
+                      <CardContent className="space-y-3 pt-4">
+                        {(selectedOrder.productProgress || []).map((line) => (
+                          <div key={line.product.id}>
+                            <div className="flex justify-between text-sm">
+                              <span>{line.product.name}</span>
+                              <span className="tabular-nums">
+                                {line.completedBoxes}/{line.plannedBoxes} cajas ·{' '}
+                                {formatDecimalWeight(line.completedQuantity)} /{' '}
+                                {formatDecimalWeight(line.plannedQuantity)}
+                              </span>
+                            </div>
+                            <div className="bg-muted mt-1 h-2 w-full overflow-hidden rounded-full">
+                              <div
+                                className={`h-full rounded-full ${lineStatusColor(line.status)}`}
+                                style={{
+                                  width: `${Math.min(100, (line.completedBoxes / line.plannedBoxes) * 100)}%`,
                                 }}
-                              >
-                                <BsFileEarmarkPdf className="h-4 w-4 mr-2 shrink-0" />
-                                {doc.label}
-                              </Button>
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </CardContent>
+                    </Card>
+
+                    <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 md:grid-cols-2">
+                      <div className="flex min-h-0 flex-col gap-4">
+                        <div className="grid shrink-0 grid-cols-2 gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="lg"
+                            onClick={() => setActiveScreen('escanear')}
+                            className="gap-2 py-6"
+                          >
+                            <QrCode className="h-5 w-5" />
+                            Crear palet
+                          </Button>
+                          <Button type="button" variant="outline" size="lg" className="gap-2 py-6">
+                            <Link2 className="h-5 w-5" />
+                            Vincular palet
+                          </Button>
+                        </div>
+                        <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                          <CardHeader className="shrink-0 pb-2">
+                            <CardTitle className="text-base">Observaciones de producción</CardTitle>
+                          </CardHeader>
+                          <CardContent className="min-h-0 flex-1 overflow-auto">
+                            <p className="text-muted-foreground text-sm whitespace-pre-wrap">
+                              Prioridad carga por la mañana. Cliente confirma llegada camión 12:00.
+                              Atún fresco salida de túnel a las 10:30. Lote LOT-2025-001 listo para
+                              etiquetado. Control OK en primera partida. Segunda partida en proceso.
+                            </p>
+                          </CardContent>
+                        </Card>
+                        <Card className="shrink-0">
+                          <CardContent className="pt-4">
+                            <div className="grid gap-2">
+                              {ORDER_EXPORT_DOCUMENTS.map((doc) => (
+                                <Button
+                                  key={doc.id}
+                                  variant="outline"
+                                  className="justify-start"
+                                  onClick={() => {
+                                    notify.success({
+                                      title: 'Descarga simulada',
+                                      description: `"${doc.label}" para pedido #${selectedOrderId}. En producción usarás el gestor de pedidos.`,
+                                    });
+                                  }}
+                                >
+                                  <BsFileEarmarkPdf className="mr-2 h-4 w-4 shrink-0" />
+                                  {doc.label}
+                                </Button>
+                              ))}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
+                      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+                        {palletsForSelectedOrder.length === 0 ? (
+                          <p className="text-muted-foreground rounded-lg border border-dashed p-4 text-center text-sm">
+                            Aún no hay palets para este pedido.
+                          </p>
+                        ) : (
+                          <div className="min-h-0 flex-1 space-y-2 overflow-y-auto">
+                            {palletsForSelectedOrder.map((pallet) => (
+                              <Card key={pallet.id} className="shrink-0 p-3">
+                                <div>
+                                  <p className="font-medium">Palet #{pallet.id}</p>
+                                  <p className="text-muted-foreground text-xs">
+                                    {pallet.productsNames.join(', ')}
+                                  </p>
+                                  <p className="text-muted-foreground text-xs">
+                                    {pallet.lots.join(', ')}
+                                  </p>
+                                  <p className="mt-1 text-sm tabular-nums">
+                                    {formatInteger(pallet.numberOfBoxes)} cajas ·{' '}
+                                    {formatDecimalWeight(pallet.netWeight)}
+                                  </p>
+                                </div>
+                              </Card>
                             ))}
                           </div>
-                        </CardContent>
-                      </Card>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex flex-col min-h-0 flex-1 min-w-0 overflow-hidden">
-                      {palletsForSelectedOrder.length === 0 ? (
-                        <p className="rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">
-                          Aún no hay palets para este pedido.
-                        </p>
-                      ) : (
-                        <div className="flex-1 min-h-0 space-y-2 overflow-y-auto">
-                          {palletsForSelectedOrder.map((pallet) => (
-                            <Card key={pallet.id} className="p-3 shrink-0">
-                              <div>
-                                <p className="font-medium">Palet #{pallet.id}</p>
-                                <p className="text-xs text-muted-foreground">
-                                  {pallet.productsNames.join(', ')}
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                  {pallet.lots.join(', ')}
-                                </p>
-                                <p className="mt-1 text-sm tabular-nums">
-                                  {formatInteger(pallet.numberOfBoxes)} cajas · {formatDecimalWeight(pallet.netWeight)}
-                                </p>
-                              </div>
-                            </Card>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
                   </CardContent>
                   <CardFooter className="flex shrink-0 items-center justify-end gap-3 border-t px-4 py-3">
                     <AlertDialog>
@@ -1032,18 +1071,19 @@ export default function OrquestadorView() {
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader className="items-center">
-                          <div className="mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
-                            <OctagonAlert className="h-7 w-7 text-muted-foreground" />
+                          <div className="bg-muted mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-full">
+                            <OctagonAlert className="text-muted-foreground h-7 w-7" />
                           </div>
                           <AlertDialogTitle>¿Finalizar pedido #{selectedOrderId}?</AlertDialogTitle>
                           <AlertDialogDescription className="text-center text-[15px]">
-                            El pedido se marcará como terminado. Puedes revertir esta acción desde el gestor de pedidos si es necesario.
+                            El pedido se marcará como terminado. Puedes revertir esta acción desde
+                            el gestor de pedidos si es necesario.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter className="mt-2 sm:justify-center">
                           <AlertDialogCancel>Cancelar</AlertDialogCancel>
                           <AlertDialogAction
-                            className="bg-foreground text-background shadow-sm hover:bg-foreground/90"
+                            className="bg-foreground text-background hover:bg-foreground/90 shadow-sm"
                             onClick={handleFinishOrder}
                           >
                             Finalizar
@@ -1073,7 +1113,9 @@ export default function OrquestadorView() {
             <ScrollArea className="max-h-[min(60vh,320px)] pr-3">
               <div className="flex flex-col gap-2 py-1">
                 {pendingOrders.length === 0 ? (
-                  <p className="py-6 text-center text-sm text-muted-foreground">No hay pedidos pendientes.</p>
+                  <p className="text-muted-foreground py-6 text-center text-sm">
+                    No hay pedidos pendientes.
+                  </p>
                 ) : (
                   pendingOrders.map((order) => {
                     const isSelected = addCajasOrderId === String(order.id);
@@ -1081,20 +1123,22 @@ export default function OrquestadorView() {
                     return (
                       <Card
                         key={order.id}
-                        className={`cursor-pointer border-l-4 py-2.5 px-3 transition-colors hover:bg-accent/50 ${
+                        className={`hover:bg-accent/50 cursor-pointer border-l-4 px-3 py-2.5 transition-colors ${
                           isSelected ? 'border-l-primary bg-primary/10' : 'border-l-orange-500'
                         }`}
                         onClick={() => setAddCajasOrderId(String(order.id))}
                       >
                         <div className="flex items-center justify-between gap-2">
                           <div className="min-w-0">
-                            <p className="font-medium text-sm truncate">#{order.id} · {order.customer?.name ?? 'Sin cliente'}</p>
+                            <p className="truncate text-sm font-medium">
+                              #{order.id} · {order.customer?.name ?? 'Sin cliente'}
+                            </p>
                             {loadDateStr && (
-                              <p className="text-xs text-muted-foreground">{loadDateStr}</p>
+                              <p className="text-muted-foreground text-xs">{loadDateStr}</p>
                             )}
                           </div>
                           {isSelected && (
-                            <div className="h-2 w-2 shrink-0 rounded-full bg-primary" aria-hidden />
+                            <div className="bg-primary h-2 w-2 shrink-0 rounded-full" aria-hidden />
                           )}
                         </div>
                       </Card>
@@ -1106,24 +1150,28 @@ export default function OrquestadorView() {
           )}
 
           {addCajasStep === 2 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 py-2">
+            <div className="grid grid-cols-1 gap-3 py-2 sm:grid-cols-2">
               <Card
-                className={`cursor-pointer transition-colors border py-6 px-4 flex flex-col items-center justify-center gap-2 hover:bg-accent/50 ${
-                  addCajasMode === 'new' ? 'bg-accent border-primary/30 ring-1 ring-primary/30' : 'border-border bg-card'
+                className={`hover:bg-accent/50 flex cursor-pointer flex-col items-center justify-center gap-2 border px-4 py-6 transition-colors ${
+                  addCajasMode === 'new'
+                    ? 'bg-accent border-primary/30 ring-primary/30 ring-1'
+                    : 'border-border bg-card'
                 }`}
                 onClick={() => setAddCajasMode('new')}
               >
-                <PackagePlus className="h-10 w-10 text-muted-foreground" />
-                <span className="text-sm font-medium text-center">Añadir como nuevo palet</span>
+                <PackagePlus className="text-muted-foreground h-10 w-10" />
+                <span className="text-center text-sm font-medium">Añadir como nuevo palet</span>
               </Card>
               <Card
-                className={`cursor-pointer transition-colors border py-6 px-4 flex flex-col items-center justify-center gap-2 hover:bg-accent/50 ${
-                  addCajasMode === 'existing' ? 'bg-accent border-primary/30 ring-1 ring-primary/30' : 'border-border bg-card'
+                className={`hover:bg-accent/50 flex cursor-pointer flex-col items-center justify-center gap-2 border px-4 py-6 transition-colors ${
+                  addCajasMode === 'existing'
+                    ? 'bg-accent border-primary/30 ring-primary/30 ring-1'
+                    : 'border-border bg-card'
                 }`}
                 onClick={() => setAddCajasMode('existing')}
               >
-                <Layers className="h-10 w-10 text-muted-foreground" />
-                <span className="text-sm font-medium text-center">Añadir a un palet existente</span>
+                <Layers className="text-muted-foreground h-10 w-10" />
+                <span className="text-center text-sm font-medium">Añadir a un palet existente</span>
               </Card>
             </div>
           )}
@@ -1132,27 +1180,32 @@ export default function OrquestadorView() {
             <ScrollArea className="max-h-[min(60vh,280px)] pr-3">
               <div className="flex flex-col gap-2 py-1">
                 {addCajasPalletsForOrder.length === 0 ? (
-                  <p className="py-6 text-center text-sm text-muted-foreground">Este pedido no tiene palets.</p>
+                  <p className="text-muted-foreground py-6 text-center text-sm">
+                    Este pedido no tiene palets.
+                  </p>
                 ) : (
                   addCajasPalletsForOrder.map((palet) => {
                     const isSelected = addCajasPaletId === String(palet.id);
                     return (
                       <Card
                         key={palet.id}
-                        className={`cursor-pointer border-l-4 py-2.5 px-3 transition-colors hover:bg-accent/50 ${
-                          isSelected ? 'border-l-primary bg-primary/10' : 'border-l-muted-foreground/50'
+                        className={`hover:bg-accent/50 cursor-pointer border-l-4 px-3 py-2.5 transition-colors ${
+                          isSelected
+                            ? 'border-l-primary bg-primary/10'
+                            : 'border-l-muted-foreground/50'
                         }`}
                         onClick={() => setAddCajasPaletId(String(palet.id))}
                       >
                         <div className="flex items-center justify-between gap-2">
                           <div className="min-w-0">
-                            <p className="font-medium text-sm">Palet #{palet.id}</p>
-                            <p className="text-xs text-muted-foreground truncate">
-                              {palet.productsNames?.join(', ') ?? '-'} · {formatInteger(palet.numberOfBoxes)} cajas
+                            <p className="text-sm font-medium">Palet #{palet.id}</p>
+                            <p className="text-muted-foreground truncate text-xs">
+                              {palet.productsNames?.join(', ') ?? '-'} ·{' '}
+                              {formatInteger(palet.numberOfBoxes)} cajas
                             </p>
                           </div>
                           {isSelected && (
-                            <div className="h-2 w-2 shrink-0 rounded-full bg-primary" aria-hidden />
+                            <div className="bg-primary h-2 w-2 shrink-0 rounded-full" aria-hidden />
                           )}
                         </div>
                       </Card>
@@ -1176,25 +1229,18 @@ export default function OrquestadorView() {
             </div>
             <div>
               {addCajasStep === 1 && (
-                <Button
-                  onClick={() => setAddCajasStep(2)}
-                  disabled={!addCajasOrderId}
-                >
+                <Button onClick={() => setAddCajasStep(2)} disabled={!addCajasOrderId}>
                   Siguiente
                 </Button>
               )}
-              {addCajasStep === 2 && (
-                addCajasMode === 'new' ? (
+              {addCajasStep === 2 &&
+                (addCajasMode === 'new' ? (
                   <Button onClick={handleAddCajasConfirm}>Añadir cajas</Button>
                 ) : (
                   <Button onClick={() => setAddCajasStep(3)}>Siguiente</Button>
-                )
-              )}
+                ))}
               {addCajasStep === 3 && (
-                <Button
-                  onClick={handleAddCajasConfirm}
-                  disabled={!addCajasPaletId}
-                >
+                <Button onClick={handleAddCajasConfirm} disabled={!addCajasPaletId}>
                   Añadir cajas
                 </Button>
               )}

@@ -96,6 +96,7 @@ El diagnóstico debe ser **evidence-first**: cada hallazgo apunta a código real
 Baja a nivel de hook, componente, query key, endpoint, payload y dependencia.
 
 Distingue claramente entre:
+
 - **causa raíz**: el defecto estructural,
 - **síntoma**: lo que el usuario o el sistema percibe,
 - **amplificador**: lo que agrava el impacto,

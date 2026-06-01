@@ -41,11 +41,11 @@
 
 ## Evaluación de riesgos
 
-| Riesgo | Nivel | Mitigación |
-|--------|-------|------------|
-| Cambio de ScrollShadow a ScrollArea altera UX | Bajo | Verificar scroll horizontal y comportamiento táctil |
-| React Query sin TenantContext | Bajo | Usar getCurrentTenant() en queryKey como interim |
-| Tests rompen por mocks incorrectos | Bajo | Verificar estructura de respuesta API en docs |
+| Riesgo                                        | Nivel | Mitigación                                          |
+| --------------------------------------------- | ----- | --------------------------------------------------- |
+| Cambio de ScrollShadow a ScrollArea altera UX | Bajo  | Verificar scroll horizontal y comportamiento táctil |
+| React Query sin TenantContext                 | Bajo  | Usar getCurrentTenant() en queryKey como interim    |
+| Tests rompen por mocks incorrectos            | Bajo  | Verificar estructura de respuesta API en docs       |
 
 **Nivel global**: Bajo
 

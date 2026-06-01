@@ -1,9 +1,9 @@
 /**
  * Validator for ListadoComprasAsocArmadoresPuntaDelMoral
- * 
+ *
  * Validates the structure of Azure Document AI data for Asoc documents
  * before processing.
- * 
+ *
  * IMPORTANT: Asoc does NOT transform the data structure (unlike Cofra).
  * It uses data directly from Azure with keys in English (details, tables).
  */
@@ -17,17 +17,17 @@ import { ValidationError } from '@/errors/lonjasErrors';
  * @throws {ValidationError} If validation fails
  */
 export function validateAsocStructure(azureData) {
-    const validator = new BaseValidator();
+  const validator = new BaseValidator();
 
-    // Validar estructura raíz
-    if (!azureData || !Array.isArray(azureData) || azureData.length === 0) {
-        throw new ValidationError('Se esperaba un array de documentos de Azure no vacío');
-    }
+  // Validar estructura raíz
+  if (!azureData || !Array.isArray(azureData) || azureData.length === 0) {
+    throw new ValidationError('Se esperaba un array de documentos de Azure no vacío');
+  }
 
-    // Validar cada documento
-    azureData.forEach((document, index) => {
-        validateDocument(document, index, validator);
-    });
+  // Validar cada documento
+  azureData.forEach((document, index) => {
+    validateDocument(document, index, validator);
+  });
 }
 
 /**
@@ -38,27 +38,46 @@ export function validateAsocStructure(azureData) {
  * @throws {ValidationError} If validation fails
  */
 function validateDocument(document, index, validator) {
-    // Validar details (mantener inglés, sin transformar)
-    validator.requireObject(document.details, 'details', `document[${index}]`);
-    validator.requireNonEmptyString(document.details.lonja, 'lonja', `document[${index}].details`);
-    validator.requireNonEmptyString(document.details.fecha, 'fecha', `document[${index}].details`);
-    validator.requireNonEmptyString(document.details.tipoSubasta, 'tipoSubasta', `document[${index}].details`);
-    // Campos opcionales: cifComprador, comprador, importeTotal
-    // Se validan si existen, pero pueden ser undefined/null
+  // Validar details (mantener inglés, sin transformar)
+  validator.requireObject(document.details, 'details', `document[${index}]`);
+  validator.requireNonEmptyString(document.details.lonja, 'lonja', `document[${index}].details`);
+  validator.requireNonEmptyString(document.details.fecha, 'fecha', `document[${index}].details`);
+  validator.requireNonEmptyString(
+    document.details.tipoSubasta,
+    'tipoSubasta',
+    `document[${index}].details`
+  );
+  // Campos opcionales: cifComprador, comprador, importeTotal
+  // Se validan si existen, pero pueden ser undefined/null
 
-    // Validar tables (mantener inglés, sin transformar)
-    validator.requireObject(document.tables, 'tables', `document[${index}]`);
-    validator.requireNonEmptyArray(document.tables.subastas, 'subastas', `document[${index}].tables`);
+  // Validar tables (mantener inglés, sin transformar)
+  validator.requireObject(document.tables, 'tables', `document[${index}]`);
+  validator.requireNonEmptyArray(document.tables.subastas, 'subastas', `document[${index}].tables`);
 
-    // Validar estructura de cada fila de subastas
-    document.tables.subastas.forEach((row, rowIndex) => {
-        validator.requireField(row.barco, 'barco', `document[${index}].tables.subastas[${rowIndex}]`);
-        validator.requireField(row.matricula, 'matricula', `document[${index}].tables.subastas[${rowIndex}]`);
-        validator.requireField(row.cajas, 'cajas', `document[${index}].tables.subastas[${rowIndex}]`);
-        validator.requireField(row.especie, 'especie', `document[${index}].tables.subastas[${rowIndex}]`);
-        validator.requireField(row.pesoNeto, 'pesoNeto', `document[${index}].tables.subastas[${rowIndex}]`);
-        validator.requireField(row.precio, 'precio', `document[${index}].tables.subastas[${rowIndex}]`);
-        validator.requireField(row.importe, 'importe', `document[${index}].tables.subastas[${rowIndex}]`);
-    });
+  // Validar estructura de cada fila de subastas
+  document.tables.subastas.forEach((row, rowIndex) => {
+    validator.requireField(row.barco, 'barco', `document[${index}].tables.subastas[${rowIndex}]`);
+    validator.requireField(
+      row.matricula,
+      'matricula',
+      `document[${index}].tables.subastas[${rowIndex}]`
+    );
+    validator.requireField(row.cajas, 'cajas', `document[${index}].tables.subastas[${rowIndex}]`);
+    validator.requireField(
+      row.especie,
+      'especie',
+      `document[${index}].tables.subastas[${rowIndex}]`
+    );
+    validator.requireField(
+      row.pesoNeto,
+      'pesoNeto',
+      `document[${index}].tables.subastas[${rowIndex}]`
+    );
+    validator.requireField(row.precio, 'precio', `document[${index}].tables.subastas[${rowIndex}]`);
+    validator.requireField(
+      row.importe,
+      'importe',
+      `document[${index}].tables.subastas[${rowIndex}]`
+    );
+  });
 }
-

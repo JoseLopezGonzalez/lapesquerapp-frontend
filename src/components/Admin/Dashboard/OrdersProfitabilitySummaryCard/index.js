@@ -1,39 +1,43 @@
-"use client"
+'use client';
 
-import { AlertTriangle, Calendar, Info } from "lucide-react"
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { useOrdersProfitabilitySummary } from "@/hooks/useOrdersStats"
-import { formatDecimal, formatDecimalCurrency, formatInteger } from "@/helpers/formats/numbers/formatNumbers"
+import { AlertTriangle, Calendar, Info } from 'lucide-react';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useOrdersProfitabilitySummary } from '@/hooks/useOrdersStats';
+import {
+  formatDecimal,
+  formatDecimalCurrency,
+  formatInteger,
+} from '@/helpers/formats/numbers/formatNumbers';
 
-const LOW_COST_COVERAGE_THRESHOLD = 80
+const LOW_COST_COVERAGE_THRESHOLD = 80;
 
 function formatDateRange(from, to) {
-  if (!from || !to) return "Rango no definido"
-  const start = new Date(from).toLocaleDateString("es-ES")
-  const end = new Date(to).toLocaleDateString("es-ES")
-  return `${start} → ${end}`
+  if (!from || !to) return 'Rango no definido';
+  const start = new Date(from).toLocaleDateString('es-ES');
+  const end = new Date(to).toLocaleDateString('es-ES');
+  return `${start} → ${end}`;
 }
 
 function formatNullableCurrency(value) {
-  return typeof value === "number" ? formatDecimalCurrency(value) : "—"
+  return typeof value === 'number' ? formatDecimalCurrency(value) : '—';
 }
 
 function formatNullablePercentage(value) {
-  return typeof value === "number" ? `${formatDecimal(value)} %` : "—"
+  return typeof value === 'number' ? `${formatDecimal(value)} %` : '—';
 }
 
 export function OrdersProfitabilitySummaryCard() {
-  const { data, isLoading } = useOrdersProfitabilitySummary({})
-  const costCoverageBoxesPct = Number(data?.costCoverageBoxesPct ?? 0)
-  const isLowCoverage = data && costCoverageBoxesPct < LOW_COST_COVERAGE_THRESHOLD
-  const salePriceAlert = data?.salePriceAlert
+  const { data, isLoading } = useOrdersProfitabilitySummary({});
+  const costCoverageBoxesPct = Number(data?.costCoverageBoxesPct ?? 0);
+  const isLowCoverage = data && costCoverageBoxesPct < LOW_COST_COVERAGE_THRESHOLD;
+  const salePriceAlert = data?.salePriceAlert;
   const salePriceAlertMessage =
     salePriceAlert?.active &&
     (salePriceAlert.hint?.trim() ||
-      `${formatInteger(salePriceAlert.boxesWithoutSalePrice ?? 0)} caja(s) sin precio unitario (€/kg) en la previsión del pedido.`)
+      `${formatInteger(salePriceAlert.boxesWithoutSalePrice ?? 0)} caja(s) sin precio unitario (€/kg) en la previsión del pedido.`);
 
   if (isLoading && !data) {
     return (
@@ -51,7 +55,7 @@ export function OrdersProfitabilitySummaryCard() {
           </div>
         </CardHeader>
       </Card>
-    )
+    );
   }
 
   return (
@@ -67,17 +71,20 @@ export function OrdersProfitabilitySummaryCard() {
               {data && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button type="button" className="mt-1 shrink-0 text-muted-foreground transition-colors hover:text-foreground">
+                    <button
+                      type="button"
+                      className="text-muted-foreground hover:text-foreground mt-1 shrink-0 transition-colors"
+                    >
                       <Info className="h-4 w-4" />
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent className="w-80 max-w-[min(22rem,calc(100vw-2rem))] border border-background/20 p-4 text-sm text-background shadow-md">
+                  <TooltipContent className="border-background/20 text-background w-80 max-w-[min(22rem,calc(100vw-2rem))] border p-4 text-sm shadow-md">
                     <div className="grid gap-3">
                       <div className="flex flex-col gap-0.5">
-                        <span className="text-[11px] font-semibold uppercase tracking-wider text-background/65">
+                        <span className="text-background/65 text-[11px] font-semibold tracking-wider uppercase">
                           Periodo
                         </span>
-                        <span className="flex items-center gap-1 text-xs text-background">
+                        <span className="text-background flex items-center gap-1 text-xs">
                           <Calendar className="h-3 w-3 shrink-0 opacity-90" aria-hidden />
                           {formatDateRange(data.period?.from, data.period?.to)}
                         </span>
@@ -88,23 +95,33 @@ export function OrdersProfitabilitySummaryCard() {
                       </div>
                       <div className="flex justify-between gap-3">
                         <span>Importe</span>
-                        <span className="font-medium">{formatNullableCurrency(data.totalRevenue)}</span>
+                        <span className="font-medium">
+                          {formatNullableCurrency(data.totalRevenue)}
+                        </span>
                       </div>
                       <div className="flex justify-between gap-3">
                         <span>Coste</span>
-                        <span className="font-medium">{formatNullableCurrency(data.totalCost)}</span>
+                        <span className="font-medium">
+                          {formatNullableCurrency(data.totalCost)}
+                        </span>
                       </div>
                       <div className="flex justify-between gap-3">
                         <span>Margen bruto</span>
-                        <span className="font-medium">{formatNullableCurrency(data.grossMargin)}</span>
+                        <span className="font-medium">
+                          {formatNullableCurrency(data.grossMargin)}
+                        </span>
                       </div>
                       <div className="flex justify-between gap-3">
                         <span>Margen %</span>
-                        <span className="font-medium">{formatNullablePercentage(data.marginPercentage)}</span>
+                        <span className="font-medium">
+                          {formatNullablePercentage(data.marginPercentage)}
+                        </span>
                       </div>
                       <div className="flex justify-between gap-3">
                         <span>% cajas con coste</span>
-                        <span className="font-medium">{formatNullablePercentage(data.costCoverageBoxesPct)}</span>
+                        <span className="font-medium">
+                          {formatNullablePercentage(data.costCoverageBoxesPct)}
+                        </span>
                       </div>
                       <div className="flex justify-between gap-3">
                         <span>Cajas con coste</span>
@@ -112,22 +129,29 @@ export function OrdersProfitabilitySummaryCard() {
                       </div>
                       <div className="flex justify-between gap-3">
                         <span>Cajas sin coste</span>
-                        <span className="font-medium">{formatInteger(data.uncoveredBoxes ?? 0)}</span>
+                        <span className="font-medium">
+                          {formatInteger(data.uncoveredBoxes ?? 0)}
+                        </span>
                       </div>
                       {isLowCoverage && (
-                        <div className="rounded-md border border-background/25 bg-background/10 px-2.5 py-2 text-xs italic text-background/85">
+                        <div className="border-background/25 bg-background/10 text-background/85 rounded-md border px-2.5 py-2 text-xs italic">
                           Cobertura baja: el margen es orientativo.
                         </div>
                       )}
                       {salePriceAlert?.active && salePriceAlertMessage ? (
-                        <div className="border-t border-background/15 pt-3">
-                          <div className="flex gap-2.5 rounded-lg border border-amber-400/45 bg-background p-3 text-foreground shadow-sm">
-                            <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-600" aria-hidden />
+                        <div className="border-background/15 border-t pt-3">
+                          <div className="bg-background text-foreground flex gap-2.5 rounded-lg border border-amber-400/45 p-3 shadow-sm">
+                            <AlertTriangle
+                              className="mt-0.5 size-4 shrink-0 text-amber-600"
+                              aria-hidden
+                            />
                             <div className="min-w-0 space-y-2">
-                              <p className="text-sm font-semibold leading-snug">
+                              <p className="text-sm leading-snug font-semibold">
                                 Precio en previsión del pedido
                               </p>
-                              <p className="text-sm leading-relaxed text-foreground/90">{salePriceAlertMessage}</p>
+                              <p className="text-foreground/90 text-sm leading-relaxed">
+                                {salePriceAlertMessage}
+                              </p>
                             </div>
                           </div>
                         </div>
@@ -138,7 +162,7 @@ export function OrdersProfitabilitySummaryCard() {
               )}
             </div>
             {data && (
-              <div className="mt-1 text-xs text-muted-foreground">
+              <div className="text-muted-foreground mt-1 text-xs">
                 {formatNullablePercentage(data.costCoverageBoxesPct)} cajas con coste
               </div>
             )}
@@ -149,5 +173,5 @@ export function OrdersProfitabilitySummaryCard() {
         </div>
       </CardHeader>
     </Card>
-  )
+  );
 }

@@ -1,10 +1,7 @@
-
-import PalletClient from "./PalletClient";
+import PalletClient from './PalletClient';
 
 export default async function PalletPage({ params }) {
-    const { id } = await params;
+  const { id } = await params;
 
-    return (
-        <PalletClient palletId={id} />
-    );
+  return <PalletClient palletId={id} />;
 }

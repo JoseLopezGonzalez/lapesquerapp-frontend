@@ -5,7 +5,11 @@ import { useSession } from 'next-auth/react';
 import { fieldRouteKeys } from '@/lib/routes/queryKeys';
 import { normalizeRouteCollection, normalizeRouteEntity } from '@/lib/routes/routeStops';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
-import { getFieldRoute, getFieldRoutes, updateFieldRouteStop } from '@/services/fieldOperatorService';
+import {
+  getFieldRoute,
+  getFieldRoutes,
+  updateFieldRouteStop,
+} from '@/services/fieldOperatorService';
 import { useFieldOperator } from '@/context/FieldOperatorContext';
 
 type FieldParams = Record<string, string | number | boolean | null | undefined>;
@@ -57,12 +61,18 @@ export function useFieldRouteStopMutation(routeId: number | string | null | unde
   const { token, tenantId, fieldOperatorId } = useFieldRouteBase();
   const queryClient = useQueryClient();
   const mutation = useMutation<unknown, Error, { stopId: number | string; payload: StopPayload }>({
-    mutationFn: ({ stopId, payload }) => updateFieldRouteStop(token as string, routeId as number | string, stopId, payload),
+    mutationFn: ({ stopId, payload }) =>
+      updateFieldRouteStop(token as string, routeId as number | string, stopId, payload),
     onSuccess: (response) => {
       const updatedRoute = normalizeRouteEntity(
-        ((response as { data?: unknown } | undefined)?.data ?? response) as Partial<import('@/types/field').DeliveryRoute>
+        ((response as { data?: unknown } | undefined)?.data ?? response) as Partial<
+          import('@/types/field').DeliveryRoute
+        >
       );
-      queryClient.setQueryData(fieldRouteKeys.detail(tenantId, fieldOperatorId, routeId), updatedRoute);
+      queryClient.setQueryData(
+        fieldRouteKeys.detail(tenantId, fieldOperatorId, routeId),
+        updatedRoute
+      );
       const listEntries = queryClient.getQueriesData<{
         items?: ReturnType<typeof normalizeRouteCollection>;
         meta?: unknown;

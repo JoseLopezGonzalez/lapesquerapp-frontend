@@ -51,16 +51,26 @@ export function useRouteMutations() {
 
   const createMutation = useMutation<unknown, Error, RoutePayload>({
     mutationFn: (payload) => createRoute(token as string, payload),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: commercialRouteKeys.list(tenantId) }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: commercialRouteKeys.list(tenantId) }),
   });
 
-  const updateMutation = useMutation<unknown, Error, { routeId: number | string; payload: RoutePayload }>({
+  const updateMutation = useMutation<
+    unknown,
+    Error,
+    { routeId: number | string; payload: RoutePayload }
+  >({
     mutationFn: ({ routeId, payload }) => updateRoute(token as string, routeId, payload),
     onSuccess: (response, variables) => {
       const updatedRoute = normalizeRouteEntity(
-        ((response as { data?: unknown } | undefined)?.data ?? response) as Partial<import('@/types/field').DeliveryRoute>
+        ((response as { data?: unknown } | undefined)?.data ?? response) as Partial<
+          import('@/types/field').DeliveryRoute
+        >
       );
-      queryClient.setQueryData(commercialRouteKeys.detail(tenantId, variables.routeId), updatedRoute);
+      queryClient.setQueryData(
+        commercialRouteKeys.detail(tenantId, variables.routeId),
+        updatedRoute
+      );
       const listEntries = queryClient.getQueriesData<{
         items?: ReturnType<typeof normalizeRouteCollection>;
         meta?: unknown;

@@ -32,18 +32,21 @@ function OperatorRouteProtection({ children }) {
 
   if (status === 'loading') {
     return (
-      <div className="flex justify-center items-center min-h-screen">
+      <div className="flex min-h-screen items-center justify-center">
         <Loader />
       </div>
     );
   }
 
-  const role = session?.user?.role != null
-    ? (Array.isArray(session.user.role) ? session.user.role[0] : session.user.role)
-    : null;
+  const role =
+    session?.user?.role != null
+      ? Array.isArray(session.user.role)
+        ? session.user.role[0]
+        : session.user.role
+      : null;
   if (status === 'authenticated' && role !== 'operario') {
     return (
-      <div className="flex justify-center items-center min-h-screen">
+      <div className="flex min-h-screen items-center justify-center">
         <Loader />
       </div>
     );
@@ -111,7 +114,8 @@ export default function OperatorLayoutClient({ children }) {
   );
 
   const apps = React.useMemo(() => {
-    const companyName = !loading && settings?.['company.name'] ? settings['company.name'] : 'Empresa';
+    const companyName =
+      !loading && settings?.['company.name'] ? settings['company.name'] : 'Empresa';
     return [
       { name: companyName, logo: GalleryVerticalEnd, description: 'Administración', current: true },
       { name: companyName, logo: AudioWaveform, description: 'Producción', current: false },

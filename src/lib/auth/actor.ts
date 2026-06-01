@@ -1,5 +1,5 @@
-export type ActorType = "internal_user" | "external_user";
-export type ExternalUserType = "maquilador" | null;
+export type ActorType = 'internal_user' | 'external_user';
+export type ExternalUserType = 'maquilador' | null;
 
 export interface AuthActorLike {
   actorType?: ActorType | null;
@@ -8,17 +8,17 @@ export interface AuthActorLike {
   role?: string | string[] | null;
 }
 
-function normalizeRole(role: AuthActorLike["role"]): string | null {
+function normalizeRole(role: AuthActorLike['role']): string | null {
   if (Array.isArray(role)) return role[0] ?? null;
   return role ?? null;
 }
 
 export function isExternalActor(user?: AuthActorLike | null): boolean {
-  return user?.actorType === "external_user";
+  return user?.actorType === 'external_user';
 }
 
 export function isInternalActor(user?: AuthActorLike | null): boolean {
-  return user?.actorType !== "external_user";
+  return user?.actorType !== 'external_user';
 }
 
 export function canDeletePallet(user?: AuthActorLike | null): boolean {
@@ -26,11 +26,7 @@ export function canDeletePallet(user?: AuthActorLike | null): boolean {
 }
 
 /** Roles que pueden ver/editar costes de palet y coste manual por caja (API v2). */
-const PALLET_COST_MANAGEMENT_ROLES = new Set([
-  "administrador",
-  "direccion",
-  "tecnico",
-]);
+const PALLET_COST_MANAGEMENT_ROLES = new Set(['administrador', 'direccion', 'tecnico']);
 
 /**
  * Usuarios internos con rol administrador, dirección o técnico pueden gestionar
@@ -42,14 +38,12 @@ export function canManagePalletCostFields(user?: AuthActorLike | null): boolean 
   return role != null && PALLET_COST_MANAGEMENT_ROLES.has(role);
 }
 
-export function getDefaultAuthenticatedRoute(
-  user?: AuthActorLike | null
-): string {
-  if (isExternalActor(user)) return "/external/stores-manager";
+export function getDefaultAuthenticatedRoute(user?: AuthActorLike | null): string {
+  if (isExternalActor(user)) return '/external/stores-manager';
 
   const role = normalizeRole(user?.role);
-  if (role === "operario") return "/operator";
-  if (role === "comercial") return "/comercial";
-  if (role === "repartidor_autoventa") return "/field";
-  return "/admin/home";
+  if (role === 'operario') return '/operator';
+  if (role === 'comercial') return '/comercial';
+  if (role === 'repartidor_autoventa') return '/field';
+  return '/admin/home';
 }

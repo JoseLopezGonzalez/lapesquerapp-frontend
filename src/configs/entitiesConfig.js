@@ -3,178 +3,202 @@ export const configs = {
     hideCreateButton: false,
     hideEditButton: false,
     hideViewButton: true,
-    editRedirect: "/admin/raw-material-receptions/:id/edit",
-    title: "Recepciones de materia prima",
-    description: "Crea, edita, genera reportes y más.",
+    editRedirect: '/admin/raw-material-receptions/:id/edit',
+    title: 'Recepciones de materia prima',
+    description: 'Crea, edita, genera reportes y más.',
     emptyState: {
-      title: "No existen recepciones según los filtros",
-      description: "Ajusta los filtros o crea una nueva recepción.",
+      title: 'No existen recepciones según los filtros',
+      description: 'Ajusta los filtros o crea una nueva recepción.',
     },
     perPage: 17,
-    endpoint: "raw-material-receptions",
-    viewRoute: "/admin/raw-material-receptions/:id",
-    deleteEndpoint: "raw-material-receptions/:id",
-    createRedirect: "/admin/raw-material-receptions/create",
+    endpoint: 'raw-material-receptions',
+    viewRoute: '/admin/raw-material-receptions/:id',
+    deleteEndpoint: 'raw-material-receptions/:id',
+    createRedirect: '/admin/raw-material-receptions/create',
     filtersGroup: {
       search: {
-        name: "search",
-        label: "Buscar",
+        name: 'search',
+        label: 'Buscar',
         filters: [
           {
-            name: "id",
-            label: "Buscar",
-            type: "search",
-            placeholder: "Buscar por ID, proveedor o notas",
-          }
+            name: 'id',
+            label: 'Buscar',
+            type: 'search',
+            placeholder: 'Buscar por ID, proveedor o notas',
+          },
         ],
       },
       groups: [
         {
-          name: "generals",
-          label: "Generales",
+          name: 'generals',
+          label: 'Generales',
           filters: [
             {
-              name: "ids",
-              label: "Números de ID",
-              type: "textAccumulator",
-              placeholder: "Buscar por IDs",
+              name: 'ids',
+              label: 'Números de ID',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por IDs',
             },
             {
-              name: "notes",
-              label: "Notas",
-              type: "textarea",
-              placeholder: "Buscar por notas",
+              name: 'notes',
+              label: 'Notas',
+              type: 'textarea',
+              placeholder: 'Buscar por notas',
             },
             {
-              name: "dates",
-              label: "Fecha",
-              type: "dateRange",
-            }
+              name: 'dates',
+              label: 'Fecha',
+              type: 'dateRange',
+            },
           ],
         },
         {
-          name: "suppliers",
-          label: "Proveedor",
+          name: 'suppliers',
+          label: 'Proveedor',
           filters: [
             {
-              name: "suppliers",
-              label: "Proveedor",
-              type: "autocomplete",
-              placeholder: "Buscar por proveedor",
-              endpoint: "suppliers/options",
-            }
+              name: 'suppliers',
+              label: 'Proveedor',
+              type: 'autocomplete',
+              placeholder: 'Buscar por proveedor',
+              endpoint: 'suppliers/options',
+            },
           ],
         },
         {
-          name: "species",
-          label: "Especie",
+          name: 'species',
+          label: 'Especie',
           filters: [
             {
-              name: "species",
-              label: "Especie",
-              type: "autocomplete",
-              placeholder: "Buscar por especie",
-              endpoint: "species/options",
-            }
+              name: 'species',
+              label: 'Especie',
+              type: 'autocomplete',
+              placeholder: 'Buscar por especie',
+              endpoint: 'species/options',
+            },
           ],
         },
         /* Products */
         {
-          name: "products",
-          label: "Productos",
+          name: 'products',
+          label: 'Productos',
           filters: [
             {
-              name: "products",
-              label: "Productos",
-              type: "autocomplete",
-              placeholder: "Buscar por producto",
-              endpoint: "products/options",
-            }
+              name: 'products',
+              label: 'Productos',
+              type: 'autocomplete',
+              placeholder: 'Buscar por producto',
+              endpoint: 'products/options',
+            },
           ],
-        }
+        },
       ],
     },
     table: {
       headers: [
-        { name: "id", label: "ID", type: "id", path: "id" },
-        { name: "date", label: "Fecha", type: "date", path: "date" },
-        { name: "supplier", label: "Proveedor", type: "text", path: "supplier.name" },
-        { name: "species", label: "Especie", type: "text", path: "species.name", hideOnMobile: true },
-        { name: "notes", label: "Notas", type: "text", path: "notes", hideOnMobile: true },
-        { name: "netWeight", label: "Peso Neto", type: "weight", path: "netWeight" },
-        { name: "totalAmount", label: "Importe Total", type: "currency", path: "totalAmount", hideOnMobile: true },
-        { name: "declaredTotalAmount", label: "Importe Total Declarado", type: "currency", path: "declaredTotalAmount", hideOnMobile: true },
-        { name: "declaredTotalNetWeight", label: "Peso Neto Total Declarado", type: "weight", path: "declaredTotalNetWeight", hideOnMobile: true }
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
+        { name: 'date', label: 'Fecha', type: 'date', path: 'date' },
+        { name: 'supplier', label: 'Proveedor', type: 'text', path: 'supplier.name' },
+        {
+          name: 'species',
+          label: 'Especie',
+          type: 'text',
+          path: 'species.name',
+          hideOnMobile: true,
+        },
+        { name: 'notes', label: 'Notas', type: 'text', path: 'notes', hideOnMobile: true },
+        { name: 'netWeight', label: 'Peso Neto', type: 'weight', path: 'netWeight' },
+        {
+          name: 'totalAmount',
+          label: 'Importe Total',
+          type: 'currency',
+          path: 'totalAmount',
+          hideOnMobile: true,
+        },
+        {
+          name: 'declaredTotalAmount',
+          label: 'Importe Total Declarado',
+          type: 'currency',
+          path: 'declaredTotalAmount',
+          hideOnMobile: true,
+        },
+        {
+          name: 'declaredTotalNetWeight',
+          label: 'Peso Neto Total Declarado',
+          type: 'weight',
+          path: 'declaredTotalNetWeight',
+          hideOnMobile: true,
+        },
       ],
     },
 
     exports: [
       {
-        title: "Exportar a Facilcom",
-        endpoint: "raw-material-receptions/facilcom-xls",
-        type: "excel",
-        waitingMessage: "Generando exportación a Facilcom",
-        fileName: "Exportacion_recepciones_Facilcom",
+        title: 'Exportar a Facilcom',
+        endpoint: 'raw-material-receptions/facilcom-xls',
+        type: 'excel',
+        waitingMessage: 'Generando exportación a Facilcom',
+        fileName: 'Exportacion_recepciones_Facilcom',
       },
       /* raw-material-receptions/a3erp-xlsx */
       {
-        title: "Exportar a A3ERP",
-        endpoint: "raw-material-receptions/a3erp-xls",
-        type: "excel",
-        waitingMessage: "Generando exportación a A3ERP",
-        fileName: "Exportacion_recepciones_A3ERP",
+        title: 'Exportar a A3ERP',
+        endpoint: 'raw-material-receptions/a3erp-xls',
+        type: 'excel',
+        waitingMessage: 'Generando exportación a A3ERP',
+        fileName: 'Exportacion_recepciones_A3ERP',
       },
     ],
   },
   orders: {
     /* hideCreateButton: true, */
     hideEditButton: true,
-    title: "Pedidos",
-    description: "Gestiona, edita, y consulta pedidos.",
+    title: 'Pedidos',
+    description: 'Gestiona, edita, y consulta pedidos.',
     emptyState: {
-      title: "No existen pedidos según los filtros",
-      description: "Modifica los filtros o crea un nuevo pedido.",
+      title: 'No existen pedidos según los filtros',
+      description: 'Modifica los filtros o crea un nuevo pedido.',
     },
     perPage: 12,
-    endpoint: "orders",
-    viewRoute: "/admin/orders/:id",
-    deleteEndpoint: "orders/:id",
-    createRedirect: "/admin/orders-manager",
+    endpoint: 'orders',
+    viewRoute: '/admin/orders/:id',
+    deleteEndpoint: 'orders/:id',
+    createRedirect: '/admin/orders-manager',
     exports: [
       {
-        title: "Exportar a A3ERP",
-        endpoint: "orders/xls/A3ERP-sales-delivery-note-filtered",
-        type: "excel",
-        waitingMessage: "Generando exportación a A3ERP",
-        fileName: "Exportacion_pedidos_A3ERP",
+        title: 'Exportar a A3ERP',
+        endpoint: 'orders/xls/A3ERP-sales-delivery-note-filtered',
+        type: 'excel',
+        waitingMessage: 'Generando exportación a A3ERP',
+        fileName: 'Exportacion_pedidos_A3ERP',
       },
       {
-        title: "Exportar a A3ERP2",
-        endpoint: "orders/xls/A3ERP2-sales-delivery-note-filtered",
-        type: "excel",
-        waitingMessage: "Generando exportación a A3ERP2",
-        fileName: "Exportacion_pedidos_A3ERP2",
+        title: 'Exportar a A3ERP2',
+        endpoint: 'orders/xls/A3ERP2-sales-delivery-note-filtered',
+        type: 'excel',
+        waitingMessage: 'Generando exportación a A3ERP2',
+        fileName: 'Exportacion_pedidos_A3ERP2',
       },
       {
-        title: "Exportar a Facilcom",
-        endpoint: "orders/xls/facilcom-sales-delivery-note",
-        type: "excel",
-        waitingMessage: "Generando exportación a Facilcom",
-        fileName: "Exportacion_pedidos_Facilcom",
+        title: 'Exportar a Facilcom',
+        endpoint: 'orders/xls/facilcom-sales-delivery-note',
+        type: 'excel',
+        waitingMessage: 'Generando exportación a Facilcom',
+        fileName: 'Exportacion_pedidos_Facilcom',
       },
       {
-        title: "Exportar a Excel",
-        endpoint: "orders_report",
-        type: "excel",
-        waitingMessage: "Generando exportación a excel",
-        fileName: "export_pedidos",
+        title: 'Exportar a Excel',
+        endpoint: 'orders_report',
+        type: 'excel',
+        waitingMessage: 'Generando exportación a excel',
+        fileName: 'export_pedidos',
       },
       {
-        title: "Imprimir Hojas de Pedidos",
-        endpoint: "orders/pdf/order-sheets-filtered",
-        type: "pdf",
-        waitingMessage: "Generando hojas de pedidos",
-        fileName: "Hojas_de_pedido_masivas",
+        title: 'Imprimir Hojas de Pedidos',
+        endpoint: 'orders/pdf/order-sheets-filtered',
+        type: 'pdf',
+        waitingMessage: 'Generando hojas de pedidos',
+        fileName: 'Hojas_de_pedido_masivas',
       },
       /* {
         title: "Exportar a PDF",
@@ -194,262 +218,310 @@ export const configs = {
     ], */
     filtersGroup: {
       search: {
-        label: "Buscar",
+        label: 'Buscar',
         filters: [
           {
-            name: "id",
-            label: "Buscar",
-            type: "search",
-            placeholder: "Buscar por id",
-          }
+            name: 'id',
+            label: 'Buscar',
+            type: 'search',
+            placeholder: 'Buscar por id',
+          },
         ],
       },
       groups: [
         {
-          name: "generals",
-          label: "Generales",
+          name: 'generals',
+          label: 'Generales',
           filters: [
             /* ids */
             {
-              name: "ids",
-              label: "Números de ID",
-              type: "textAccumulator",
-              placeholder: "Buscar por IDs",
+              name: 'ids',
+              label: 'Números de ID',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por IDs',
             },
             {
-              name: "loadDate",
-              label: "Fecha de carga",
-              type: "dateRange",
+              name: 'loadDate',
+              label: 'Fecha de carga',
+              type: 'dateRange',
               visibleMonths: 1,
             },
 
             /* Buyer reference */
             {
-              name: "buyerReference",
-              label: "Referencia",
-              type: "text",
-              placeholder: "Buscar por referencia",
+              name: 'buyerReference',
+              label: 'Referencia',
+              type: 'text',
+              placeholder: 'Buscar por referencia',
             },
             {
-              name: "status",
-              label: "Estado",
-              type: "pairSelectBoxes",
+              name: 'status',
+              label: 'Estado',
+              type: 'pairSelectBoxes',
               options: [
-                { name: "pending", label: "Pendiente", value: false },
-                { name: "finished", label: "Finalizado", value: false }
+                { name: 'pending', label: 'Pendiente', value: false },
+                { name: 'finished', label: 'Finalizado', value: false },
               ],
             },
             {
-              name: "orderType",
-              label: "Tipo de pedido",
-              type: "pairSelectBoxes",
+              name: 'orderType',
+              label: 'Tipo de pedido',
+              type: 'pairSelectBoxes',
               options: [
-                { name: "standard", label: "Pedido estándar", value: false },
-                { name: "autoventa", label: "Autoventa", value: false }
+                { name: 'standard', label: 'Pedido estándar', value: false },
+                { name: 'autoventa', label: 'Autoventa', value: false },
               ],
-            }
+            },
           ],
         },
 
         /* Customers */
         {
-          name: "customers",
-          label: "Clientes",
+          name: 'customers',
+          label: 'Clientes',
           filters: [
             {
-              name: "customers",
-              label: "Clientes",
-              type: "autocomplete",
-              placeholder: "Buscar por cliente",
-              endpoint: "customers/options",
-            }
+              name: 'customers',
+              label: 'Clientes',
+              type: 'autocomplete',
+              placeholder: 'Buscar por cliente',
+              endpoint: 'customers/options',
+            },
           ],
         },
         /* Species */
         {
-          name: "species",
-          label: "Especies",
+          name: 'species',
+          label: 'Especies',
           filters: [
             {
-              name: "species",
-              label: "Especies",
-              type: "autocomplete",
-              placeholder: "Buscar por especie",
-              endpoint: "species/options",
-            }
+              name: 'species',
+              label: 'Especies',
+              type: 'autocomplete',
+              placeholder: 'Buscar por especie',
+              endpoint: 'species/options',
+            },
           ],
         },
         /* Products */
         {
-          name: "products",
-          label: "Productos",
+          name: 'products',
+          label: 'Productos',
           filters: [
             {
-              name: "products",
-              label: "Productos",
-              type: "autocomplete",
-              placeholder: "Buscar por producto",
-              endpoint: "products/options",
-            }
+              name: 'products',
+              label: 'Productos',
+              type: 'autocomplete',
+              placeholder: 'Buscar por producto',
+              endpoint: 'products/options',
+            },
           ],
         },
         /* salesperson */
         {
-          name: "salespeple",
-          label: "Comerciales",
+          name: 'salespeple',
+          label: 'Comerciales',
           filters: [
             {
-              name: "salespeople",
-              label: "Comerciales",
-              type: "autocomplete",
-              placeholder: "Buscar por comercial",
-              endpoint: "salespeople/options",
-            }
+              name: 'salespeople',
+              label: 'Comerciales',
+              type: 'autocomplete',
+              placeholder: 'Buscar por comercial',
+              endpoint: 'salespeople/options',
+            },
           ],
         },
         /* Transporte */
         {
-          name: "transport",
-          label: "Transporte",
+          name: 'transport',
+          label: 'Transporte',
           filters: [
             {
-              name: "transport",
-              label: "Transporte",
-              type: "autocomplete",
-              placeholder: "Buscar por transporte",
-              endpoint: "transports/options",
-            }
+              name: 'transport',
+              label: 'Transporte',
+              type: 'autocomplete',
+              placeholder: 'Buscar por transporte',
+              endpoint: 'transports/options',
+            },
           ],
         },
         /* incoterm */
         {
-          name: "incoterm",
-          label: "Incoterm",
+          name: 'incoterm',
+          label: 'Incoterm',
           filters: [
             {
-              name: "incoterm",
-              label: "Incoterm",
-              type: "autocomplete",
-              placeholder: "Buscar por incoterm",
-              endpoint: "incoterms/options",
-            }
+              name: 'incoterm',
+              label: 'Incoterm',
+              type: 'autocomplete',
+              placeholder: 'Buscar por incoterm',
+              endpoint: 'incoterms/options',
+            },
           ],
-        }
+        },
       ],
     },
     table: {
       headers: [
-        { name: "id", label: "ID", type: "id", path: "id" },
-        { name: "loadDate", label: "Fecha Salida", type: "date", path: "loadDate" },
-        { name: "customerName", label: "Cliente", type: "text", path: "customer.name" },
-        { name: "buyerReference", label: "Referencia", type: "text", path: "buyerReference", hideOnMobile: true },
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
+        { name: 'loadDate', label: 'Fecha Salida', type: 'date', path: 'loadDate' },
+        { name: 'customerName', label: 'Cliente', type: 'text', path: 'customer.name' },
         {
-          name: "status",
-          label: "Estado",
-          type: "badge",
+          name: 'buyerReference',
+          label: 'Referencia',
+          type: 'text',
+          path: 'buyerReference',
+          hideOnMobile: true,
+        },
+        {
+          name: 'status',
+          label: 'Estado',
+          type: 'badge',
           options: {
-            pending: { label: "Pendiente", color: "warning", outline: true },
-            finished: { label: "Finalizado", color: "success", outline: true },
-            incident: { label: "Incidencia", color: "danger", outline: true },
-            default: { label: "Desconocido", color: "secondary", outline: true },
+            pending: { label: 'Pendiente', color: 'warning', outline: true },
+            finished: { label: 'Finalizado', color: 'success', outline: true },
+            incident: { label: 'Incidencia', color: 'danger', outline: true },
+            default: { label: 'Desconocido', color: 'secondary', outline: true },
           },
         },
         {
-          name: "orderType",
-          label: "Tipo",
-          type: "text",
-          path: "orderType",
+          name: 'orderType',
+          label: 'Tipo',
+          type: 'text',
+          path: 'orderType',
           hideOnMobile: true,
           options: {
-            standard: { label: "Estándar" },
-            autoventa: { label: "Autoventa" },
-            default: { label: "—" },
+            standard: { label: 'Estándar' },
+            autoventa: { label: 'Autoventa' },
+            default: { label: '—' },
           },
         },
-        { name: "totalNetWeight", label: "Peso total", type: "weight", path: "totalNetWeight", hideOnMobile: true },
-        { name: "totalBoxes", label: "Cajas", type: "text", path: "totalBoxes", hideOnMobile: true },
-        { name: "pallets", label: "Palets", type: "text", path: "pallets", hideOnMobile: true },
+        {
+          name: 'totalNetWeight',
+          label: 'Peso total',
+          type: 'weight',
+          path: 'totalNetWeight',
+          hideOnMobile: true,
+        },
+        {
+          name: 'totalBoxes',
+          label: 'Cajas',
+          type: 'text',
+          path: 'totalBoxes',
+          hideOnMobile: true,
+        },
+        { name: 'pallets', label: 'Palets', type: 'text', path: 'pallets', hideOnMobile: true },
         /* subtotalAmount */
-        { name: "subtotalAmount", label: "Subtotal", type: "currency", path: "subtotalAmount", hideOnMobile: true },
+        {
+          name: 'subtotalAmount',
+          label: 'Subtotal',
+          type: 'currency',
+          path: 'subtotalAmount',
+          hideOnMobile: true,
+        },
         /* totalAmount */
-        { name: "totalAmount", label: "Total", type: "currency", path: "totalAmount", hideOnMobile: true },
-        { name: "salesperson", label: "Vendedor", type: "text", path: "salesperson.name", hideOnMobile: true },
-        { name: "incoterm", label: "Incoterm", type: "text", path: "incoterm.code", hideOnMobile: true },
-        { name: "transport", label: "Transporte", type: "text", path: "transport.name", hideOnMobile: true }
+        {
+          name: 'totalAmount',
+          label: 'Total',
+          type: 'currency',
+          path: 'totalAmount',
+          hideOnMobile: true,
+        },
+        {
+          name: 'salesperson',
+          label: 'Vendedor',
+          type: 'text',
+          path: 'salesperson.name',
+          hideOnMobile: true,
+        },
+        {
+          name: 'incoterm',
+          label: 'Incoterm',
+          type: 'text',
+          path: 'incoterm.code',
+          hideOnMobile: true,
+        },
+        {
+          name: 'transport',
+          label: 'Transporte',
+          type: 'text',
+          path: 'transport.name',
+          hideOnMobile: true,
+        },
       ],
     },
     createForm: {
-      title: "Nuevo Pedido",
-      endpoint: "v3/orders",
-      method: "POST",
+      title: 'Nuevo Pedido',
+      endpoint: 'v3/orders',
+      method: 'POST',
       /* success Message */
-      successMessage: "Pedido creado con éxito",
+      successMessage: 'Pedido creado con éxito',
       /* error message */
-      errorMessage: "Error al crear el pedido",
+      errorMessage: 'Error al crear el pedido',
       fields: [
         /* Cliente Autocomplete */
         {
-          name: "customer",
-          label: "Cliente",
-          type: "Autocomplete",
-          endpoint: "customers/options",
+          name: 'customer',
+          label: 'Cliente',
+          type: 'Autocomplete',
+          endpoint: 'customers/options',
           validation: {
-            required: "Seleccionar un cliente es obligatorio"
+            required: 'Seleccionar un cliente es obligatorio',
           },
           cols: {
             sm: 3,
             md: 3,
             lg: 2,
             xl: 2,
-          }
+          },
         },
         /* Buyer reference input */
         {
-          name: "buyerReference",
-          label: "Referencia",
-          type: "text",
+          name: 'buyerReference',
+          label: 'Referencia',
+          type: 'text',
           validation: {
-            required: "La referencia es obligatoria",
+            required: 'La referencia es obligatoria',
             minLength: {
               value: 3,
-              message: "La referencia debe tener al menos 3 caracteres"
+              message: 'La referencia debe tener al menos 3 caracteres',
             },
             maxLength: {
               value: 20,
-              message: "La referencia no puede tener más de 20 caracteres"
-            }
+              message: 'La referencia no puede tener más de 20 caracteres',
+            },
           },
           cols: {
             sm: 3,
             md: 3,
             lg: 2,
             xl: 1,
-          }
+          },
         },
 
         /* Incoterm Autocomplete */
         {
-          name: "incoterm",
-          label: "Incoterm",
-          type: "Autocomplete",
-          endpoint: "incoterms/options",
+          name: 'incoterm',
+          label: 'Incoterm',
+          type: 'Autocomplete',
+          endpoint: 'incoterms/options',
           validation: {
-            required: "Seleccionar un Incoterm es obligatorio"
+            required: 'Seleccionar un Incoterm es obligatorio',
           },
           cols: {
             sm: 6,
             md: 6,
             lg: 2,
             xl: 1,
-          }
+          },
         },
         /* entryDate */
         {
-          name: "entryDate",
-          label: "Fecha de entrada",
-          type: "date",
+          name: 'entryDate',
+          label: 'Fecha de entrada',
+          type: 'date',
           validation: {
-            required: "La fecha de entrada es obligatoria",
+            required: 'La fecha de entrada es obligatoria',
             /* validate: {
               validDate: value => (new Date(value) >= new Date()) || "La fecha debe ser hoy o futura"
             } */
@@ -459,15 +531,15 @@ export const configs = {
             md: 3,
             lg: 3,
             xl: 1,
-          }
+          },
         },
         /* loadDate */
         {
-          name: "loadDate",
-          label: "Fecha de carga",
-          type: "date",
+          name: 'loadDate',
+          label: 'Fecha de carga',
+          type: 'date',
           validation: {
-            required: "La fecha de carga es obligatoria",
+            required: 'La fecha de carga es obligatoria',
             /* validate: {
               validDate: value => (new Date(value) >= new Date()) || "La fecha debe ser hoy o futura"
             } */
@@ -477,573 +549,600 @@ export const configs = {
             md: 3,
             lg: 3,
             xl: 1,
-          }
+          },
         },
         /* Salesperson Autocomplete */
         {
-          name: "salesperson",
-          label: "Comercial",
-          type: "Autocomplete",
-          endpoint: "salespeople/options",
+          name: 'salesperson',
+          label: 'Comercial',
+          type: 'Autocomplete',
+          endpoint: 'salespeople/options',
           validation: {
-            required: "Seleccionar un comercial es obligatorio"
+            required: 'Seleccionar un comercial es obligatorio',
           },
           cols: {
             sm: 2,
             md: 2,
             lg: 2,
             xl: 2,
-          }
+          },
         },
         /* Transport Autocomplete */
         {
-          name: "transport",
-          label: "Transporte",
-          type: "Autocomplete",
-          endpoint: "transports/options",
+          name: 'transport',
+          label: 'Transporte',
+          type: 'Autocomplete',
+          endpoint: 'transports/options',
           validation: {
-            required: "Seleccionar un transporte es obligatorio"
+            required: 'Seleccionar un transporte es obligatorio',
           },
           cols: {
             sm: 2,
             md: 2,
             lg: 2,
             xl: 2,
-          }
+          },
         },
         /* paymentTerm Autocomplete */
         {
-          name: "paymentTerm",
-          label: "Forma de pago",
-          type: "Autocomplete",
-          endpoint: "payment-terms/options",
+          name: 'paymentTerm',
+          label: 'Forma de pago',
+          type: 'Autocomplete',
+          endpoint: 'payment-terms/options',
           validation: {
-            required: "Seleccionar una forma de pago es obligatorio"
+            required: 'Seleccionar una forma de pago es obligatorio',
           },
           cols: {
             sm: 2,
             md: 2,
             lg: 2,
             xl: 2,
-          }
+          },
         },
         /* billingAddress */
         {
-          name: "billingAddress",
-          label: "Dirección de facturación",
-          type: "textarea",
+          name: 'billingAddress',
+          label: 'Dirección de facturación',
+          type: 'textarea',
           validation: {
-            required: "La dirección de facturación es obligatoria",
+            required: 'La dirección de facturación es obligatoria',
             minLength: {
               value: 10,
-              message: "Debe contener al menos 10 caracteres"
-            }
+              message: 'Debe contener al menos 10 caracteres',
+            },
           },
           cols: {
             sm: 3,
             md: 3,
             lg: 3,
             xl: 3,
-          }
+          },
         },
         /* shippingAddress */
         {
-          name: "shippingAddress",
-          label: "Dirección de envío",
-          type: "textarea",
+          name: 'shippingAddress',
+          label: 'Dirección de envío',
+          type: 'textarea',
           validation: {
-            required: "La dirección de envío es obligatoria",
+            required: 'La dirección de envío es obligatoria',
             minLength: {
               value: 10,
-              message: "Debe contener al menos 10 caracteres"
-            }
+              message: 'Debe contener al menos 10 caracteres',
+            },
           },
           cols: {
             sm: 3,
             md: 3,
             lg: 3,
             xl: 3,
-          }
+          },
         },
         /* productionNotes */
         {
-          name: "productionNotes",
-          label: "Notas de producción",
-          type: "textarea",
+          name: 'productionNotes',
+          label: 'Notas de producción',
+          type: 'textarea',
           validation: {
             maxLength: {
               value: 200,
-              message: "No puede exceder los 200 caracteres"
-            }
+              message: 'No puede exceder los 200 caracteres',
+            },
           },
           cols: {
             sm: 2,
             md: 2,
             lg: 2,
             xl: 2,
-          }
+          },
         },
         /* accountingNotes */
         {
-          name: "accountingNotes",
-          label: "Notas de contabilidad",
-          type: "textarea",
+          name: 'accountingNotes',
+          label: 'Notas de contabilidad',
+          type: 'textarea',
           validation: {
             maxLength: {
               value: 200,
-              message: "No puede exceder los 200 caracteres"
-            }
+              message: 'No puede exceder los 200 caracteres',
+            },
           },
           cols: {
             sm: 2,
             md: 2,
             lg: 2,
             xl: 2,
-          }
+          },
         },
         /* emails */
         {
-          name: "emails",
-          label: "Emails",
-          type: "textarea",
+          name: 'emails',
+          label: 'Emails',
+          type: 'textarea',
           validation: {
-            required: "El campo de emails es obligatorio",
+            required: 'El campo de emails es obligatorio',
             pattern: {
-              value: "/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/",
-              message: "Formato de email no válido"
-            }
+              value: '/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/',
+              message: 'Formato de email no válido',
+            },
           },
           cols: {
             sm: 2,
             md: 2,
             lg: 2,
             xl: 2,
-          }
-        }
-      ]
-    }
-
+          },
+        },
+      ],
+    },
   },
   users: {
-    title: "Usuarios",
+    title: 'Usuarios',
     hideEditButton: true,
     hideViewButton: true,
     hideCreateButton: true,
-    description: "Gestiona, edita y consulta usuarios.",
+    description: 'Gestiona, edita y consulta usuarios.',
     emptyState: {
-      title: "No existen usuarios según los filtros",
-      description: "Ajusta los filtros o crea un nuevo usuario.",
+      title: 'No existen usuarios según los filtros',
+      description: 'Ajusta los filtros o crea un nuevo usuario.',
     },
-    endpoint: "users",
-    viewRoute: "/admin/users/:id",
-    deleteEndpoint: "/users/:id",
+    endpoint: 'users',
+    viewRoute: '/admin/users/:id',
+    deleteEndpoint: '/users/:id',
     filtersGroup: {
       search: {
-        label: "Buscar",
+        label: 'Buscar',
         filters: [
           {
-            name: "name",
-            label: "Nombre",
-            type: "search",
-            placeholder: "Buscar por nombre",
-          }
+            name: 'name',
+            label: 'Nombre',
+            type: 'search',
+            placeholder: 'Buscar por nombre',
+          },
         ],
       },
       groups: [
         {
-          name: "generals",
-          label: "Generales",
+          name: 'generals',
+          label: 'Generales',
           filters: [
             {
-              name: "id",
-              label: "ID",
-              type: "textAccumulator",
-              placeholder: "Buscar por ID",
+              name: 'id',
+              label: 'ID',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por ID',
             },
             {
-              name: "role",
-              label: "Rol",
-              type: "autocomplete",
-              placeholder: "Seleccionar rol",
-              endpoint: "roles/options",
-            }
+              name: 'role',
+              label: 'Rol',
+              type: 'autocomplete',
+              placeholder: 'Seleccionar rol',
+              endpoint: 'roles/options',
+            },
           ],
         },
         {
-          name: "dates",
-          label: "Fechas",
+          name: 'dates',
+          label: 'Fechas',
           filters: [
             {
-              name: "created_at",
-              label: "Fecha de creación",
-              type: "dateRange",
+              name: 'created_at',
+              label: 'Fecha de creación',
+              type: 'dateRange',
               visibleMonths: 1,
-            }
+            },
           ],
-        }
+        },
       ],
     },
     table: {
       headers: [
-        { name: "id", label: "ID", type: "id", path: "id" },
-        { name: "name", label: "Nombre", type: "text", path: "name" },
-        { name: "email", label: "Correo electrónico", type: "text", path: "email", hideOnMobile: true },
-        { name: "role", label: "Rol", type: "text", path: "role", hideOnMobile: true },
-        { name: "created_at", label: "Fecha de creación", type: "date", path: "created_at", hideOnMobile: true }
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
+        { name: 'name', label: 'Nombre', type: 'text', path: 'name' },
+        {
+          name: 'email',
+          label: 'Correo electrónico',
+          type: 'text',
+          path: 'email',
+          hideOnMobile: true,
+        },
+        { name: 'role', label: 'Rol', type: 'text', path: 'role', hideOnMobile: true },
+        {
+          name: 'created_at',
+          label: 'Fecha de creación',
+          type: 'date',
+          path: 'created_at',
+          hideOnMobile: true,
+        },
       ],
     },
     /* createForm */
     createForm: {
-      title: "Nuevo Usuario",
-      endpoint: "users",
-      method: "POST",
-      successMessage: "Usuario creado con éxito",
-      errorMessage: "Error al crear el usuario",
+      title: 'Nuevo Usuario',
+      endpoint: 'users',
+      method: 'POST',
+      successMessage: 'Usuario creado con éxito',
+      errorMessage: 'Error al crear el usuario',
       fields: [
         {
-          name: "name",
-          label: "Nombre",
-          type: "text",
+          name: 'name',
+          label: 'Nombre',
+          type: 'text',
           validation: {
-            required: "El nombre es obligatorio",
+            required: 'El nombre es obligatorio',
             minLength: {
               value: 3,
-              message: "El nombre debe tener al menos 3 caracteres"
+              message: 'El nombre debe tener al menos 3 caracteres',
             },
             maxLength: {
               value: 50,
-              message: "El nombre no puede tener más de 50 caracteres"
-            }
+              message: 'El nombre no puede tener más de 50 caracteres',
+            },
           },
           cols: {
             sm: 3,
             md: 3,
             lg: 3,
             xl: 3,
-          }
+          },
         },
         {
-          name: "email",
-          label: "Correo electrónico",
-          type: "text",
+          name: 'email',
+          label: 'Correo electrónico',
+          type: 'text',
           validation: {
-            required: "El correo electrónico es obligatorio",
+            required: 'El correo electrónico es obligatorio',
             pattern: {
-              value: "^[\\w.-]+@([\\w-]+\\.)+[\\w-]{2,4}$",
-              message: "Formato de email no válido"
-            }
-
+              value: '^[\\w.-]+@([\\w-]+\\.)+[\\w-]{2,4}$',
+              message: 'Formato de email no válido',
+            },
           },
           cols: {
             sm: 3,
             md: 3,
             lg: 3,
             xl: 3,
-          }
+          },
         },
         {
-          name: "role",
-          label: "Rol",
-          type: "Autocomplete",
-          placeholder: "Selecciona el rol",
-          endpoint: "roles/options",
+          name: 'role',
+          label: 'Rol',
+          type: 'Autocomplete',
+          placeholder: 'Selecciona el rol',
+          endpoint: 'roles/options',
           validation: {
-            required: "Seleccionar un rol es obligatorio"
+            required: 'Seleccionar un rol es obligatorio',
           },
           cols: {
             sm: 3,
             md: 3,
             lg: 3,
             xl: 3,
-          }
-        }
-      ]
-    }
+          },
+        },
+      ],
+    },
   },
   'external-users': {
-    title: "Usuarios externos",
-    description: "Gestiona, edita y consulta accesos externos.",
+    title: 'Usuarios externos',
+    description: 'Gestiona, edita y consulta accesos externos.',
     emptyState: {
-      title: "No existen usuarios externos según los filtros",
-      description: "Ajusta los filtros o crea un nuevo usuario externo.",
+      title: 'No existen usuarios externos según los filtros',
+      description: 'Ajusta los filtros o crea un nuevo usuario externo.',
     },
-    endpoint: "external-users",
-    viewRoute: "/admin/external-users/:id",
-    deleteEndpoint: "external-users/:id",
+    endpoint: 'external-users',
+    viewRoute: '/admin/external-users/:id',
+    deleteEndpoint: 'external-users/:id',
     filtersGroup: {
       search: {
-        label: "Buscar",
+        label: 'Buscar',
         filters: [
           {
-            name: "search",
-            label: "Buscar",
-            type: "search",
-            placeholder: "Buscar por nombre, email o empresa",
-          }
+            name: 'search',
+            label: 'Buscar',
+            type: 'search',
+            placeholder: 'Buscar por nombre, email o empresa',
+          },
         ],
       },
       groups: [
         {
-          name: "generals",
-          label: "Generales",
+          name: 'generals',
+          label: 'Generales',
           filters: [
             {
-              name: "type",
-              label: "Tipo",
-              type: "text",
-              placeholder: "maquilador",
+              name: 'type',
+              label: 'Tipo',
+              type: 'text',
+              placeholder: 'maquilador',
             },
             {
-              name: "is_active",
-              label: "Activo",
-              type: "text",
-              placeholder: "1 o 0",
-            }
+              name: 'is_active',
+              label: 'Activo',
+              type: 'text',
+              placeholder: '1 o 0',
+            },
           ],
-        }
+        },
       ],
     },
     table: {
       headers: [
-        { name: "id", label: "ID", type: "id", path: "id" },
-        { name: "name", label: "Nombre", type: "text", path: "name" },
-        { name: "companyName", label: "Empresa", type: "text", path: "companyName" },
-        { name: "email", label: "Email", type: "text", path: "email", hideOnMobile: true },
-        { name: "type", label: "Tipo", type: "text", path: "type" },
-        { name: "isActive", label: "Activo", type: "badge", path: "isActive", options: {
-          true: { label: "Activo", color: "success", outline: true },
-          false: { label: "Inactivo", color: "secondary", outline: true },
-        } },
-        { name: "storesCount", label: "Almacenes", type: "text", path: "storesCount", hideOnMobile: true },
-        { name: "created_at", label: "Creado", type: "date", path: "created_at", hideOnMobile: true },
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
+        { name: 'name', label: 'Nombre', type: 'text', path: 'name' },
+        { name: 'companyName', label: 'Empresa', type: 'text', path: 'companyName' },
+        { name: 'email', label: 'Email', type: 'text', path: 'email', hideOnMobile: true },
+        { name: 'type', label: 'Tipo', type: 'text', path: 'type' },
+        {
+          name: 'isActive',
+          label: 'Activo',
+          type: 'badge',
+          path: 'isActive',
+          options: {
+            true: { label: 'Activo', color: 'success', outline: true },
+            false: { label: 'Inactivo', color: 'secondary', outline: true },
+          },
+        },
+        {
+          name: 'storesCount',
+          label: 'Almacenes',
+          type: 'text',
+          path: 'storesCount',
+          hideOnMobile: true,
+        },
+        {
+          name: 'created_at',
+          label: 'Creado',
+          type: 'date',
+          path: 'created_at',
+          hideOnMobile: true,
+        },
       ],
     },
     rowActions: [
       {
-        key: "resend-access",
-        label: "Reenviar acceso",
-        shortLabel: "R",
-        serviceMethod: "resendAccess",
-        successMessage: "Acceso reenviado correctamente.",
-        confirmation: "¿Reenviar acceso a {{name}}?",
+        key: 'resend-access',
+        label: 'Reenviar acceso',
+        shortLabel: 'R',
+        serviceMethod: 'resendAccess',
+        successMessage: 'Acceso reenviado correctamente.',
+        confirmation: '¿Reenviar acceso a {{name}}?',
       },
       {
-        key: "activate",
-        label: "Activar",
-        shortLabel: "A",
-        serviceMethod: "activate",
-        successMessage: "Usuario externo activado.",
-        confirmation: "¿Activar a {{name}}?",
-        hiddenWhen: { path: "isActive", value: true },
+        key: 'activate',
+        label: 'Activar',
+        shortLabel: 'A',
+        serviceMethod: 'activate',
+        successMessage: 'Usuario externo activado.',
+        confirmation: '¿Activar a {{name}}?',
+        hiddenWhen: { path: 'isActive', value: true },
       },
       {
-        key: "deactivate",
-        label: "Desactivar",
-        shortLabel: "D",
-        serviceMethod: "deactivate",
-        successMessage: "Usuario externo desactivado.",
-        confirmation: "¿Desactivar a {{name}}?",
-        hiddenWhen: { path: "isActive", value: false },
+        key: 'deactivate',
+        label: 'Desactivar',
+        shortLabel: 'D',
+        serviceMethod: 'deactivate',
+        successMessage: 'Usuario externo desactivado.',
+        confirmation: '¿Desactivar a {{name}}?',
+        hiddenWhen: { path: 'isActive', value: false },
       },
     ],
     createForm: {
-      title: "Crear usuario externo",
-      endpoint: "external-users",
-      method: "POST",
-      successMessage: "Usuario externo creado con éxito",
-      errorMessage: "Error al crear el usuario externo",
+      title: 'Crear usuario externo',
+      endpoint: 'external-users',
+      method: 'POST',
+      successMessage: 'Usuario externo creado con éxito',
+      errorMessage: 'Error al crear el usuario externo',
     },
     editForm: {
-      title: "Editar usuario externo",
-      endpoint: "external-users",
-      method: "PUT",
-      successMessage: "Usuario externo actualizado con éxito",
-      errorMessage: "Error al actualizar el usuario externo",
+      title: 'Editar usuario externo',
+      endpoint: 'external-users',
+      method: 'PUT',
+      successMessage: 'Usuario externo actualizado con éxito',
+      errorMessage: 'Error al actualizar el usuario externo',
     },
     beforeSubmit: {
-      defaults: { type: "maquilador" },
-      booleanFields: ["is_active"],
+      defaults: { type: 'maquilador' },
+      booleanFields: ['is_active'],
     },
     fields: [
       {
-        name: "name",
-        label: "Nombre",
-        type: "text",
-        placeholder: "Nombre del usuario externo",
-        validation: { required: "El nombre es obligatorio" },
+        name: 'name',
+        label: 'Nombre',
+        type: 'text',
+        placeholder: 'Nombre del usuario externo',
+        validation: { required: 'El nombre es obligatorio' },
         cols: { sm: 3, md: 3, lg: 3, xl: 3 },
       },
       {
-        name: "company_name",
-        path: "companyName",
-        label: "Empresa",
-        type: "text",
-        placeholder: "Empresa del colaborador",
-        validation: { required: "La empresa es obligatoria" },
+        name: 'company_name',
+        path: 'companyName',
+        label: 'Empresa',
+        type: 'text',
+        placeholder: 'Empresa del colaborador',
+        validation: { required: 'La empresa es obligatoria' },
         cols: { sm: 3, md: 3, lg: 3, xl: 3 },
       },
       {
-        name: "email",
-        label: "Email",
-        type: "text",
-        placeholder: "correo@empresa.com",
+        name: 'email',
+        label: 'Email',
+        type: 'text',
+        placeholder: 'correo@empresa.com',
         validation: {
-          required: "El email es obligatorio",
+          required: 'El email es obligatorio',
           pattern: {
-            value: "^[\\w.-]+@([\\w-]+\\.)+[\\w-]{2,4}$",
-            message: "Formato de email no válido"
-          }
+            value: '^[\\w.-]+@([\\w-]+\\.)+[\\w-]{2,4}$',
+            message: 'Formato de email no válido',
+          },
         },
         cols: { sm: 3, md: 3, lg: 3, xl: 3 },
       },
       {
-        name: "type",
-        label: "Tipo",
-        type: "select",
-        placeholder: "Selecciona el tipo",
-        options: [{ value: "maquilador", label: "Maquilador" }],
-        validation: { required: "El tipo es obligatorio" },
+        name: 'type',
+        label: 'Tipo',
+        type: 'select',
+        placeholder: 'Selecciona el tipo',
+        options: [{ value: 'maquilador', label: 'Maquilador' }],
+        validation: { required: 'El tipo es obligatorio' },
         cols: { sm: 3, md: 3, lg: 3, xl: 3 },
       },
       {
-        name: "is_active",
-        path: "isActive",
-        label: "Activo",
-        type: "select",
-        placeholder: "Estado",
+        name: 'is_active',
+        path: 'isActive',
+        label: 'Activo',
+        type: 'select',
+        placeholder: 'Estado',
         options: [
-          { value: "1", label: "Activo" },
-          { value: "0", label: "Inactivo" },
+          { value: '1', label: 'Activo' },
+          { value: '0', label: 'Inactivo' },
         ],
         cols: { sm: 3, md: 3, lg: 3, xl: 3 },
       },
       {
-        name: "notes",
-        label: "Notas",
-        type: "textarea",
-        placeholder: "Notas internas",
+        name: 'notes',
+        label: 'Notas',
+        type: 'textarea',
+        placeholder: 'Notas internas',
         cols: { sm: 6, md: 6, lg: 6, xl: 6 },
       },
     ],
   },
   /* Transports */
   transports: {
-    title: "Transportes",
-    description: "Gestiona, edita y consulta transportes.",
+    title: 'Transportes',
+    description: 'Gestiona, edita y consulta transportes.',
     emptyState: {
-      title: "No existen transportes según los filtros",
-      description: "Ajusta los filtros o crea un nuevo transporte.",
+      title: 'No existen transportes según los filtros',
+      description: 'Ajusta los filtros o crea un nuevo transporte.',
     },
-    endpoint: "transports",
-    viewRoute: "/admin/transports/:id",
-    deleteEndpoint: "transports/:id",
+    endpoint: 'transports',
+    viewRoute: '/admin/transports/:id',
+    deleteEndpoint: 'transports/:id',
     filtersGroup: {
       search: {
-        label: "Buscar",
+        label: 'Buscar',
         filters: [
           {
-            name: "id",
-            label: "Id",
-            type: "search",
-            placeholder: "Buscar por id",
-          }
+            name: 'id',
+            label: 'Id',
+            type: 'search',
+            placeholder: 'Buscar por id',
+          },
         ],
       },
       groups: [
         {
-          name: "generals",
-          label: "Generales",
+          name: 'generals',
+          label: 'Generales',
           filters: [
             {
-              name: "ids",
-              label: "IDs",
-              type: "textAccumulator",
-              placeholder: "Buscar por ID",
+              name: 'ids',
+              label: 'IDs',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por ID',
             },
             /* name */
             {
-              name: "name",
-              label: "Nombre",
-              type: "text",
-              placeholder: "Buscar por nombre",
+              name: 'name',
+              label: 'Nombre',
+              type: 'text',
+              placeholder: 'Buscar por nombre',
             },
             /* address text area*/
             {
-              name: "address",
-              label: "Dirección",
-              type: "textarea",
-              placeholder: "Buscar por dirección",
-            }
+              name: 'address',
+              label: 'Dirección',
+              type: 'textarea',
+              placeholder: 'Buscar por dirección',
+            },
           ],
-        }
+        },
       ],
     },
     table: {
       headers: [
-        { name: "id", label: "ID", type: "id", path: "id" },
-        { name: "name", label: "Nombre", type: "text", path: "name" },
-        { name: "vatNumber", label: "NIF/CIF", type: "text", path: "vatNumber" },
-        { name: "address", label: "Dirección", type: "text", path: "address" },
-        { name: "emails", label: "Emails", type: "list", path: "emails" },
-        { name: "ccEmails", label: "Emails en copia (CC)", type: "list", path: "ccEmails" }
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
+        { name: 'name', label: 'Nombre', type: 'text', path: 'name' },
+        { name: 'vatNumber', label: 'NIF/CIF', type: 'text', path: 'vatNumber' },
+        { name: 'address', label: 'Dirección', type: 'text', path: 'address' },
+        { name: 'emails', label: 'Emails', type: 'list', path: 'emails' },
+        { name: 'ccEmails', label: 'Emails en copia (CC)', type: 'list', path: 'ccEmails' },
       ],
     },
     createForm: {
-      title: "Nuevo Transporte",
-      endpoint: "transports",
-      method: "POST",
-      successMessage: "Transporte creado con éxito",
-      errorMessage: "Error al crear el transporte",
-
+      title: 'Nuevo Transporte',
+      endpoint: 'transports',
+      method: 'POST',
+      successMessage: 'Transporte creado con éxito',
+      errorMessage: 'Error al crear el transporte',
     },
     editForm: {
-      title: "Editar Transporte",
-      endpoint: "transports",
-      method: "PUT",
-      successMessage: "Transporte actualizado con éxito",
-      errorMessage: "Error al actualizar el transporte",
+      title: 'Editar Transporte',
+      endpoint: 'transports',
+      method: 'PUT',
+      successMessage: 'Transporte actualizado con éxito',
+      errorMessage: 'Error al actualizar el transporte',
     },
     fields: [
       {
-        name: "name",
-        label: "Nombre",
-        type: "text",
+        name: 'name',
+        label: 'Nombre',
+        type: 'text',
         validation: {
-          required: "El nombre es obligatorio",
-          minLength: { value: 3, message: "Debe tener al menos 3 caracteres" },
+          required: 'El nombre es obligatorio',
+          minLength: { value: 3, message: 'Debe tener al menos 3 caracteres' },
         },
         cols: { sm: 6, md: 6, lg: 4, xl: 4 },
       },
       {
-        name: "vatNumber",
-        label: "CIF",
-        type: "text",
+        name: 'vatNumber',
+        label: 'CIF',
+        type: 'text',
         validation: {
-          required: "El CIF es obligatorio",
+          required: 'El CIF es obligatorio',
           pattern: {
             value: '/^[A-Z0-9]{8,12}$/',
-            message: "Formato no válido",
+            message: 'Formato no válido',
           },
         },
         cols: { sm: 6, md: 6, lg: 2, xl: 2 },
       },
       {
-        name: "address",
-        label: "Dirección",
-        type: "textarea",
+        name: 'address',
+        label: 'Dirección',
+        type: 'textarea',
         validation: {
-          required: "La dirección es obligatoria",
-          minLength: { value: 10, message: "Debe contener al menos 10 caracteres" },
+          required: 'La dirección es obligatoria',
+          minLength: { value: 10, message: 'Debe contener al menos 10 caracteres' },
         },
         cols: { sm: 6, md: 6, lg: 6, xl: 6 },
       },
       {
-        name: "emails",
-        label: "Emails de contacto",
-        type: "emailList",
+        name: 'emails',
+        label: 'Emails de contacto',
+        type: 'emailList',
         placeholder: "Introduce cada email individualmente y pulsa 'Enter'",
         validation: {
-          required: "Al menos un email es obligatorio",
+          required: 'Al menos un email es obligatorio',
         },
         cols: {
           sm: 6,
@@ -1053,421 +1152,472 @@ export const configs = {
         },
       },
       {
-        name: "ccEmails",
-        label: "Emails en copia",
-        type: "emailList",
+        name: 'ccEmails',
+        label: 'Emails en copia',
+        type: 'emailList',
         placeholder: "Introduce cada email individualmente y pulsa 'Enter' para confirmarlo",
         cols: { sm: 6, md: 6, lg: 3, xl: 3 },
-      }
+      },
     ],
   },
 
   /* Products */
   products: {
-    title: "Productos",
-    description: "Gestiona, edita y consulta productos.",
+    title: 'Productos',
+    description: 'Gestiona, edita y consulta productos.',
     emptyState: {
-      title: "No existen productos según los filtros",
-      description: "Ajusta los filtros o crea un nuevo producto.",
+      title: 'No existen productos según los filtros',
+      description: 'Ajusta los filtros o crea un nuevo producto.',
     },
-    endpoint: "products",
-    viewRoute: "/admin/products/:id",
-    deleteEndpoint: "products/:id",
+    endpoint: 'products',
+    viewRoute: '/admin/products/:id',
+    deleteEndpoint: 'products/:id',
     filtersGroup: {
       search: {
-        label: "Buscar",
+        label: 'Buscar',
         filters: [
           {
-            name: "id",
-            label: "Id",
-            type: "search",
-            placeholder: "Buscar por id",
-          }
+            name: 'id',
+            label: 'Id',
+            type: 'search',
+            placeholder: 'Buscar por id',
+          },
         ],
       },
       groups: [
         {
-          name: "generals",
-          label: "Generales",
+          name: 'generals',
+          label: 'Generales',
           filters: [
             /* NAme */
             {
-              name: "name",
-              label: "Nombre",
-              type: "text",
-              placeholder: "Buscar por nombre",
+              name: 'name',
+              label: 'Nombre',
+              type: 'text',
+              placeholder: 'Buscar por nombre',
             },
             {
-              name: "ids",
-              label: "IDs",
-              type: "textAccumulator",
-              placeholder: "Buscar por ID",
+              name: 'ids',
+              label: 'IDs',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por ID',
             },
             /* articleGtin */
             {
-              name: "articleGtin",
-              label: "GTIN",
-              type: "text",
-              placeholder: "Buscar por GTIN",
+              name: 'articleGtin',
+              label: 'GTIN',
+              type: 'text',
+              placeholder: 'Buscar por GTIN',
             },
             /* boxGtin */
             {
-              name: "boxGtin",
-              label: "GTIN Caja",
-              type: "text",
-              placeholder: "Buscar por GTIN Caja",
+              name: 'boxGtin',
+              label: 'GTIN Caja',
+              type: 'text',
+              placeholder: 'Buscar por GTIN Caja',
             },
             /* palletGtin */
             {
-              name: "palletGtin",
-              label: "GTIN Palet",
-              type: "text",
-              placeholder: "Buscar por GTIN Palet",
-            }
+              name: 'palletGtin',
+              label: 'GTIN Palet',
+              type: 'text',
+              placeholder: 'Buscar por GTIN Palet',
+            },
           ],
         },
         /* Species */
         {
-          name: "species",
-          label: "Especies",
+          name: 'species',
+          label: 'Especies',
           filters: [
             {
-              name: "species",
-              label: "Especies",
-              type: "autocomplete",
-              placeholder: "Buscar por especie",
-              endpoint: "species/options",
-            }
+              name: 'species',
+              label: 'Especies',
+              type: 'autocomplete',
+              placeholder: 'Buscar por especie',
+              endpoint: 'species/options',
+            },
           ],
         },
         /* Capture Zones */
         {
-          name: "captureZones",
-          label: "Zonas de captura",
+          name: 'captureZones',
+          label: 'Zonas de captura',
           filters: [
             {
-              name: "captureZones",
-              label: "Zonas de captura",
-              type: "autocomplete",
-              placeholder: "Buscar por zona de captura",
-              endpoint: "capture-zones/options",
-            }
+              name: 'captureZones',
+              label: 'Zonas de captura',
+              type: 'autocomplete',
+              placeholder: 'Buscar por zona de captura',
+              endpoint: 'capture-zones/options',
+            },
           ],
         },
 
         /* Product Families */
         {
-          name: "productFamilies",
-          label: "Familias",
+          name: 'productFamilies',
+          label: 'Familias',
           filters: [
             {
-              name: "productFamilies",
-              label: "Familias",
-              type: "autocomplete",
-              placeholder: "Buscar por familia",
-              endpoint: "product-families/options",
-            }
+              name: 'productFamilies',
+              label: 'Familias',
+              type: 'autocomplete',
+              placeholder: 'Buscar por familia',
+              endpoint: 'product-families/options',
+            },
           ],
-        }
+        },
       ],
     },
     table: {
       headers: [
-        { name: "id", label: "ID", type: "id", path: "id" },
-        { name: "name", label: "Nombre", type: "text", path: "name" },
-        { name: "family", label: "Familia", type: "text", path: "family.name", hideOnMobile: true },
-        { name: "a3erp_code", label: "Código A3ERP", type: "text", path: "a3erpCode", hideOnMobile: true },
-        { name: "facil_com_code", label: "Código Facilcom", type: "text", path: "facilcomCode", hideOnMobile: true },
-        { name: "species", label: "Especie", type: "text", path: "species.name", hideOnMobile: true },
-        { name: "captureZone", label: "Zona de captura", type: "text", path: "captureZone.name", hideOnMobile: true },
-        { name: "articleGtin", label: "GTIN", type: "text", path: "articleGtin", hideOnMobile: true },
-        { name: "boxGtin", label: "GTIN Caja", type: "text", path: "boxGtin", hideOnMobile: true },
-        { name: "palletGtin", label: "GTIN Palet", type: "text", path: "palletGtin", hideOnMobile: true }
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
+        { name: 'name', label: 'Nombre', type: 'text', path: 'name' },
+        { name: 'family', label: 'Familia', type: 'text', path: 'family.name', hideOnMobile: true },
+        {
+          name: 'a3erp_code',
+          label: 'Código A3ERP',
+          type: 'text',
+          path: 'a3erpCode',
+          hideOnMobile: true,
+        },
+        {
+          name: 'facil_com_code',
+          label: 'Código Facilcom',
+          type: 'text',
+          path: 'facilcomCode',
+          hideOnMobile: true,
+        },
+        {
+          name: 'species',
+          label: 'Especie',
+          type: 'text',
+          path: 'species.name',
+          hideOnMobile: true,
+        },
+        {
+          name: 'captureZone',
+          label: 'Zona de captura',
+          type: 'text',
+          path: 'captureZone.name',
+          hideOnMobile: true,
+        },
+        {
+          name: 'articleGtin',
+          label: 'GTIN',
+          type: 'text',
+          path: 'articleGtin',
+          hideOnMobile: true,
+        },
+        { name: 'boxGtin', label: 'GTIN Caja', type: 'text', path: 'boxGtin', hideOnMobile: true },
+        {
+          name: 'palletGtin',
+          label: 'GTIN Palet',
+          type: 'text',
+          path: 'palletGtin',
+          hideOnMobile: true,
+        },
       ],
     },
     createForm: {
-      title: "Nuevo Producto",
-      endpoint: "products",
-      method: "POST",
-      successMessage: "Producto creado con éxito",
-      errorMessage: "Error al crear el producto",
+      title: 'Nuevo Producto',
+      endpoint: 'products',
+      method: 'POST',
+      successMessage: 'Producto creado con éxito',
+      errorMessage: 'Error al crear el producto',
     },
     fields: [
       {
-        name: "name",
-        label: "Nombre del producto",
-        type: "text",
+        name: 'name',
+        label: 'Nombre del producto',
+        type: 'text',
         validation: {
-          required: "El nombre es obligatorio",
-          minLength: { value: 3, message: "Debe tener al menos 3 caracteres" },
+          required: 'El nombre es obligatorio',
+          minLength: { value: 3, message: 'Debe tener al menos 3 caracteres' },
         },
         cols: { sm: 6, md: 6, lg: 6, xl: 6 },
       },
       {
-        name: "speciesId",
-        path: "species.id",
-        label: "Especie",
-        type: "Autocomplete",
-        placeholder: "Selecciona la especie",
-        endpoint: "species/options",
+        name: 'speciesId',
+        path: 'species.id',
+        label: 'Especie',
+        type: 'Autocomplete',
+        placeholder: 'Selecciona la especie',
+        endpoint: 'species/options',
         validation: {
-          required: "La especie es obligatoria",
+          required: 'La especie es obligatoria',
         },
         cols: { sm: 3, md: 3, lg: 2, xl: 2 },
       },
       {
-        name: "captureZoneId",
-        path: "captureZone.id",
-        label: "Zona de captura",
-        type: "Autocomplete",
-        placeholder: "Selecciona la zona de captura",
-        endpoint: "capture-zones/options",
+        name: 'captureZoneId',
+        path: 'captureZone.id',
+        label: 'Zona de captura',
+        type: 'Autocomplete',
+        placeholder: 'Selecciona la zona de captura',
+        endpoint: 'capture-zones/options',
         validation: {
-          required: "La zona de captura es obligatoria",
+          required: 'La zona de captura es obligatoria',
         },
         cols: { sm: 6, md: 3, lg: 2, xl: 2 },
       },
 
       {
-        name: "familyId",
-        path: "family.id",
-        label: "Familia",
-        type: "Autocomplete",
-        placeholder: "Selecciona la familia",
-        endpoint: "product-families/options",
+        name: 'familyId',
+        path: 'family.id',
+        label: 'Familia',
+        type: 'Autocomplete',
+        placeholder: 'Selecciona la familia',
+        endpoint: 'product-families/options',
         validation: {
-          required: "La familia es obligatoria",
+          required: 'La familia es obligatoria',
         },
         cols: { sm: 6, md: 6, lg: 2, xl: 2 },
       },
       {
-        name: "articleGtin",
-        label: "GTIN-13 del artículo",
-        type: "text",
-        placeholder: "13 dígitos",
+        name: 'articleGtin',
+        label: 'GTIN-13 del artículo',
+        type: 'text',
+        placeholder: '13 dígitos',
         validation: {
           pattern: {
             value: '/^[0-9]{8,14}$/',
-            message: "GTIN inválido. Debe contener entre 8 y 14 dígitos.",
+            message: 'GTIN inválido. Debe contener entre 8 y 14 dígitos.',
           },
         },
         cols: { sm: 4, md: 3, lg: 3, xl: 3 },
       },
       {
-        name: "boxGtin",
-        label: "GTIN-14 de caja",
-        type: "text",
-        placeholder: "14 dígitos",
+        name: 'boxGtin',
+        label: 'GTIN-14 de caja',
+        type: 'text',
+        placeholder: '14 dígitos',
         validation: {
           pattern: {
             value: '/^[0-9]{8,14}$/',
-            message: "GTIN de caja inválido. Debe contener entre 8 y 14 dígitos.",
+            message: 'GTIN de caja inválido. Debe contener entre 8 y 14 dígitos.',
           },
         },
         cols: { sm: 4, md: 3, lg: 3, xl: 3 },
       },
       {
-        name: "a3erp_code",
-        path: "a3erpCode",
-        label: "Código A3ERP",
-        type: "text",
+        name: 'a3erp_code',
+        path: 'a3erpCode',
+        label: 'Código A3ERP',
+        type: 'text',
         placeholder: 'Código para exportaciones a "a3ERP - Software ERP"',
         cols: { sm: 6, md: 6, lg: 3, xl: 3 },
       },
       {
-        name: "facil_com_code",
-        path: "facilcomCode",
-        label: "Código Facilcom",
-        type: "text",
+        name: 'facil_com_code',
+        path: 'facilcomCode',
+        label: 'Código Facilcom',
+        type: 'text',
         placeholder: 'Código para exportaciones a "Facilcom - Gestión comercial integral"',
         cols: { sm: 6, md: 6, lg: 3, xl: 3 },
-      }
+      },
     ],
     editForm: {
-      title: "Editar Producto",
-      endpoint: "products",
-      method: "PUT",
-      successMessage: "Producto actualizado con éxito",
-      errorMessage: "Error al actualizar el producto",
+      title: 'Editar Producto',
+      endpoint: 'products',
+      method: 'PUT',
+      successMessage: 'Producto actualizado con éxito',
+      errorMessage: 'Error al actualizar el producto',
     },
   },
 
   /* Stores */
   stores: {
-    title: "Almacenes",
-    description: "Gestiona, edita y consulta almacenes.",
+    title: 'Almacenes',
+    description: 'Gestiona, edita y consulta almacenes.',
     hideViewButton: true,
     emptyState: {
-      title: "No existen almacenes según los filtros",
-      description: "Ajusta los filtros o crea un nuevo almacén.",
+      title: 'No existen almacenes según los filtros',
+      description: 'Ajusta los filtros o crea un nuevo almacén.',
     },
-    endpoint: "stores",
-    viewRoute: "/admin/stores/:id",
-    deleteEndpoint: "stores/:id",
+    endpoint: 'stores',
+    viewRoute: '/admin/stores/:id',
+    deleteEndpoint: 'stores/:id',
     filtersGroup: {
       search: {
-        label: "Buscar",
+        label: 'Buscar',
         filters: [
           {
-            name: "id",
-            label: "Id",
-            type: "search",
-            placeholder: "Buscar por id",
-          }
+            name: 'id',
+            label: 'Id',
+            type: 'search',
+            placeholder: 'Buscar por id',
+          },
         ],
       },
       groups: [
         {
-          name: "generals",
-          label: "Generales",
+          name: 'generals',
+          label: 'Generales',
           filters: [
             {
-              name: "ids",
-              label: "IDs",
-              type: "textAccumulator",
-              placeholder: "Buscar por ID",
+              name: 'ids',
+              label: 'IDs',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por ID',
             },
             /* name */
             {
-              name: "name",
-              label: "Nombre",
-              type: "text",
-              placeholder: "Buscar por nombre",
+              name: 'name',
+              label: 'Nombre',
+              type: 'text',
+              placeholder: 'Buscar por nombre',
             },
             {
-              name: "store_type",
-              label: "Tipo",
-              type: "text",
-              placeholder: "interno o externo",
+              name: 'store_type',
+              label: 'Tipo',
+              type: 'text',
+              placeholder: 'interno o externo',
             },
             {
-              name: "external_user_id",
-              label: "Usuario externo",
-              type: "autocomplete",
-              placeholder: "Filtrar por usuario externo",
-              endpoint: "external-users/options",
-            }
+              name: 'external_user_id',
+              label: 'Usuario externo',
+              type: 'autocomplete',
+              placeholder: 'Filtrar por usuario externo',
+              endpoint: 'external-users/options',
+            },
           ],
-        }
+        },
       ],
     },
     table: {
       headers: [
-        { name: "id", label: "ID", type: "id", path: "id" },
-        { name: "name", label: "Nombre", type: "text", path: "name" },
-        { name: "storeType", label: "Tipo", type: "text", path: "storeType" },
-        { name: "externalUser", label: "Usuario externo", type: "text", path: "externalUser.name" },
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
+        { name: 'name', label: 'Nombre', type: 'text', path: 'name' },
+        { name: 'storeType', label: 'Tipo', type: 'text', path: 'storeType' },
+        { name: 'externalUser', label: 'Usuario externo', type: 'text', path: 'externalUser.name' },
         /* temperatur */
-        { name: "temperature", label: "Temperatura", type: "text", path: "temperature" },
+        { name: 'temperature', label: 'Temperatura', type: 'text', path: 'temperature' },
         /* totalNetWeight */
-        { name: "totalNetWeight", label: "Peso total", type: "weight", path: "totalNetWeight" },
+        { name: 'totalNetWeight', label: 'Peso total', type: 'weight', path: 'totalNetWeight' },
         /* Capacity */
-        { name: "capacity", label: "Capacidad", type: "weight", path: "capacity" }
+        { name: 'capacity', label: 'Capacidad', type: 'weight', path: 'capacity' },
       ],
     },
     createForm: {
-      title: "Crear almacén",
-      endpoint: "stores",
-      method: "POST",
-      successMessage: "Almacén creado con éxito",
-      errorMessage: "Error al crear el almacén",
+      title: 'Crear almacén',
+      endpoint: 'stores',
+      method: 'POST',
+      successMessage: 'Almacén creado con éxito',
+      errorMessage: 'Error al crear el almacén',
     },
     editForm: {
-      title: "Editar Almacén",
-      endpoint: "stores", // sin /:id, lo añadiremos dinámicamente
-      method: "PUT",
-      successMessage: "Almacén actualizado con éxito",
-      errorMessage: "Error al actualizar el almacén",
+      title: 'Editar Almacén',
+      endpoint: 'stores', // sin /:id, lo añadiremos dinámicamente
+      method: 'PUT',
+      successMessage: 'Almacén actualizado con éxito',
+      errorMessage: 'Error al actualizar el almacén',
     },
     // beforeSubmit para stores se aplica en cliente (entityFormTransforms.js) para que la config sea serializable
     fields: [
       {
-        name: "name",
-        label: "Nombre",
-        type: "text",
-        placeholder: "Introduce el nombre del almacén",
+        name: 'name',
+        label: 'Nombre',
+        type: 'text',
+        placeholder: 'Introduce el nombre del almacén',
         validation: {
-          required: "El nombre es obligatorio",
+          required: 'El nombre es obligatorio',
           minLength: {
             value: 3,
-            message: "Debe tener al menos 3 caracteres",
+            message: 'Debe tener al menos 3 caracteres',
           },
           maxLength: {
             value: 255,
-            message: "No puede exceder los 255 caracteres",
+            message: 'No puede exceder los 255 caracteres',
           },
         },
         cols: {
-          sm: 3, md: 3, lg: 3, xl: 6,
+          sm: 3,
+          md: 3,
+          lg: 3,
+          xl: 6,
         },
       },
       {
-        name: "temperature",
-        label: "Temperatura",
-        type: "number",
-        placeholder: "Ej. -18",
+        name: 'temperature',
+        label: 'Temperatura',
+        type: 'number',
+        placeholder: 'Ej. -18',
         validation: {
-          required: "La temperatura es obligatoria",
+          required: 'La temperatura es obligatoria',
           valueAsNumber: true,
           min: {
             value: -99.99,
-            message: "La temperatura debe ser mayor o igual a -99.99",
+            message: 'La temperatura debe ser mayor o igual a -99.99',
           },
           max: {
             value: 99.99,
-            message: "La temperatura debe ser menor o igual a 99.99",
+            message: 'La temperatura debe ser menor o igual a 99.99',
           },
         },
         cols: {
-          sm: 3, md: 3, lg: 3, xl: 3,
+          sm: 3,
+          md: 3,
+          lg: 3,
+          xl: 3,
         },
       },
       {
-        name: "capacity",
-        label: "Capacidad (kg)",
-        type: "number",
-        placeholder: "Capacidad máxima en kg",
+        name: 'capacity',
+        label: 'Capacidad (kg)',
+        type: 'number',
+        placeholder: 'Capacidad máxima en kg',
         validation: {
-          required: "La capacidad es obligatoria",
+          required: 'La capacidad es obligatoria',
           valueAsNumber: true,
           min: {
             value: 0,
-            message: "Debe ser un valor mayor o igual a 0",
+            message: 'Debe ser un valor mayor o igual a 0',
           },
         },
         cols: {
-          sm: 3, md: 3, lg: 3, xl: 3,
+          sm: 3,
+          md: 3,
+          lg: 3,
+          xl: 3,
         },
       },
       {
-        name: "storeType",
-        label: "Tipo de almacén",
-        type: "select",
-        placeholder: "Selecciona el tipo",
+        name: 'storeType',
+        label: 'Tipo de almacén',
+        type: 'select',
+        placeholder: 'Selecciona el tipo',
         options: [
-          { value: "interno", label: "Interno" },
-          { value: "externo", label: "Externo" },
+          { value: 'interno', label: 'Interno' },
+          { value: 'externo', label: 'Externo' },
         ],
         validation: {
-          required: "El tipo de almacén es obligatorio",
+          required: 'El tipo de almacén es obligatorio',
         },
         cols: {
-          sm: 3, md: 3, lg: 3, xl: 3,
+          sm: 3,
+          md: 3,
+          lg: 3,
+          xl: 3,
         },
       },
       {
-        name: "external_user_id",
-        path: "externalUser.id",
-        label: "Usuario externo",
-        type: "Autocomplete",
-        placeholder: "Selecciona un usuario externo",
-        endpoint: "external-users/options",
+        name: 'external_user_id',
+        path: 'externalUser.id',
+        label: 'Usuario externo',
+        type: 'Autocomplete',
+        placeholder: 'Selecciona un usuario externo',
+        endpoint: 'external-users/options',
         validation: {},
-        displayWhen: { field: "storeType", eq: "externo" },
+        displayWhen: { field: 'storeType', eq: 'externo' },
         cols: {
-          sm: 3, md: 3, lg: 3, xl: 3,
+          sm: 3,
+          md: 3,
+          lg: 3,
+          xl: 3,
         },
-      }
+      },
     ],
   },
   /* boxes */
@@ -1475,123 +1625,123 @@ export const configs = {
     hideCreateButton: true,
     hideEditButton: true,
     hideViewButton: true,
-    title: "Cajas",
-    description: "Gestiona, edita y consulta cajas.",
+    title: 'Cajas',
+    description: 'Gestiona, edita y consulta cajas.',
     emptyState: {
-      title: "No existen cajas según los filtros",
-      description: "Ajusta los filtros o crea una nueva caja.",
+      title: 'No existen cajas según los filtros',
+      description: 'Ajusta los filtros o crea una nueva caja.',
     },
     perPage: 17,
-    endpoint: "boxes",
-    viewRoute: "/admin/boxes/:id",
-    deleteEndpoint: "boxes/:id",
+    endpoint: 'boxes',
+    viewRoute: '/admin/boxes/:id',
+    deleteEndpoint: 'boxes/:id',
     filtersGroup: {
       search: {
-        label: "Buscar",
+        label: 'Buscar',
         filters: [
           {
-            name: "id",
-            label: "Id",
-            type: "search",
-            placeholder: "Buscar por id",
-          }
+            name: 'id',
+            label: 'Id',
+            type: 'search',
+            placeholder: 'Buscar por id',
+          },
         ],
       },
       groups: [
         {
-          name: "generals",
-          label: "Generales",
+          name: 'generals',
+          label: 'Generales',
           filters: [
             {
-              name: "ids",
-              label: "IDs",
-              type: "textAccumulator",
-              placeholder: "Introduce un ID",
+              name: 'ids',
+              label: 'IDs',
+              type: 'textAccumulator',
+              placeholder: 'Introduce un ID',
             },
             {
-              name: "lots",
-              label: "Lotes",
-              type: "textAccumulator",
-              placeholder: "Introduce un lote",
+              name: 'lots',
+              label: 'Lotes',
+              type: 'textAccumulator',
+              placeholder: 'Introduce un lote',
             },
             /* gs1128 */
             {
-              name: "gs1128",
-              label: "GS1128",
-              type: "textAccumulator",
-              placeholder: "Introduce un GS1128",
+              name: 'gs1128',
+              label: 'GS1128',
+              type: 'textAccumulator',
+              placeholder: 'Introduce un GS1128',
             },
 
             /* createdAt */
             {
-              name: "createdAt",
-              label: "Fecha de lectura",
-              type: "dateRange",
+              name: 'createdAt',
+              label: 'Fecha de lectura',
+              type: 'dateRange',
               visibleMonths: 1,
-            }
+            },
           ],
         },
         {
-          name: "products",
-          label: "Productos",
+          name: 'products',
+          label: 'Productos',
           filters: [
             {
-              name: "products",
-              label: "Productos",
-              type: "autocomplete",
-              placeholder: "Selecciona un producto",
-              endpoint: "products/options",
-            }
+              name: 'products',
+              label: 'Productos',
+              type: 'autocomplete',
+              placeholder: 'Selecciona un producto',
+              endpoint: 'products/options',
+            },
           ],
         },
         {
-          name: "species",
-          label: "Especies",
+          name: 'species',
+          label: 'Especies',
           filters: [
             {
-              name: "species",
-              label: "Especies",
-              type: "autocomplete",
-              placeholder: "Selecciona una especie",
-              endpoint: "species/options",
-            }
+              name: 'species',
+              label: 'Especies',
+              type: 'autocomplete',
+              placeholder: 'Selecciona una especie',
+              endpoint: 'species/options',
+            },
           ],
         },
         /* ordersGroup - orderIds - orderDates - orderBuyerReference- orderState */
         {
-          name: "ordersGroup",
-          label: "Pedidos",
+          name: 'ordersGroup',
+          label: 'Pedidos',
           filters: [
             /* orderIds - options */
             {
-              name: "orderIds",
-              label: "IDs de pedidos",
-              type: "autocomplete",
-              placeholder: "Buscar por IDs de pedidos",
-              endpoint: "orders/options",
+              name: 'orderIds',
+              label: 'IDs de pedidos',
+              type: 'autocomplete',
+              placeholder: 'Buscar por IDs de pedidos',
+              endpoint: 'orders/options',
             },
             /* orderDates */
             {
-              name: "orderDates",
-              label: "Fechas de pedidos",
-              type: "dateRange",
+              name: 'orderDates',
+              label: 'Fechas de pedidos',
+              type: 'dateRange',
               visibleMonths: 1,
             },
             /* orderBuyerReference */
             {
-              name: "orderBuyerReference",
-              label: "Referencia de cliente",
-              type: "text",
-              placeholder: "Buscar por referencia de compra",
+              name: 'orderBuyerReference',
+              label: 'Referencia de cliente',
+              type: 'text',
+              placeholder: 'Buscar por referencia de compra',
             },
             /* orderState */
             {
-              name: "orderState",
-              label: "Estado del Pedido",
-              type: "pairSelectBoxes",
+              name: 'orderState',
+              label: 'Estado del Pedido',
+              type: 'pairSelectBoxes',
               options: [
-                { name: "pending", label: "Pendiente", value: false },
-                { name: "finished", label: "Finalizado", value: false },
+                { name: 'pending', label: 'Pendiente', value: false },
+                { name: 'finished', label: 'Finalizado', value: false },
               ],
             },
           ],
@@ -1599,294 +1749,316 @@ export const configs = {
 
         /* Pallets */
         {
-          name: "pallets",
-          label: "Palets",
+          name: 'pallets',
+          label: 'Palets',
           filters: [
             {
-              name: "pallets",
-              label: "Palets",
-              type: "textAccumulator",
+              name: 'pallets',
+              label: 'Palets',
+              type: 'textAccumulator',
               placeholder: 'Introduce un número de palet',
             },
             {
-              name: "palletState",
-              label: "Estado del Palet",
-              type: "pairSelectBoxes",
+              name: 'palletState',
+              label: 'Estado del Palet',
+              type: 'pairSelectBoxes',
               options: [
-                { name: "registered", label: "Registrado", value: false },
-                { name: "stored", label: "Almacenado", value: false },
-                { name: "shipped", label: "Enviado", value: false },
-                { name: "processed", label: "Procesado", value: false },
+                { name: 'registered', label: 'Registrado', value: false },
+                { name: 'stored', label: 'Almacenado', value: false },
+                { name: 'shipped', label: 'Enviado', value: false },
+                { name: 'processed', label: 'Procesado', value: false },
               ],
             },
             {
-              name: "orderState",
-              label: "Estado del Pedido",
-              type: "pairSelectBoxes",
+              name: 'orderState',
+              label: 'Estado del Pedido',
+              type: 'pairSelectBoxes',
               options: [
-                { name: "pending", label: "Pendiente", value: false },
-                { name: "finished", label: "Finalizado", value: false },
+                { name: 'pending', label: 'Pendiente', value: false },
+                { name: 'finished', label: 'Finalizado', value: false },
               ],
             },
             {
-              name: "position",
-              label: "Posición",
-              type: "pairSelectBoxes",
+              name: 'position',
+              label: 'Posición',
+              type: 'pairSelectBoxes',
               options: [
-                { name: "located", label: "Ubicado", value: false },
-                { name: "unlocated", label: "Sin Ubicar", value: false },
+                { name: 'located', label: 'Ubicado', value: false },
+                { name: 'unlocated', label: 'Sin Ubicar', value: false },
               ],
             },
             {
-              name: "stores",
-              label: "Almacenes",
-              type: "autocomplete",
-              placeholder: "Selecciona almacenes",
-              endpoint: "stores/options",
+              name: 'stores',
+              label: 'Almacenes',
+              type: 'autocomplete',
+              placeholder: 'Selecciona almacenes',
+              endpoint: 'stores/options',
               multiple: true,
             },
             {
-              name: "orders",
-              label: "Pedidos",
-              type: "autocomplete",
-              placeholder: "Selecciona órdenes",
-              endpoint: "orders/options",
+              name: 'orders',
+              label: 'Pedidos',
+              type: 'autocomplete',
+              placeholder: 'Selecciona órdenes',
+              endpoint: 'orders/options',
               multiple: true,
             },
             {
-              name: "notes",
-              label: "Observaciones del Palet",
-              type: "text",
-              placeholder: "Buscar en observaciones del palet",
-            }
+              name: 'notes',
+              label: 'Observaciones del Palet',
+              type: 'text',
+              placeholder: 'Buscar en observaciones del palet',
+            },
           ],
         },
         /* Stores */
         {
-          name: "stores",
-          label: "Almacenes",
+          name: 'stores',
+          label: 'Almacenes',
           filters: [
             {
-              name: "stores",
-              label: "Almacenes",
-              type: "autocomplete",
-              placeholder: "Selecciona almacenes",
-              endpoint: "stores/options",
-            }
+              name: 'stores',
+              label: 'Almacenes',
+              type: 'autocomplete',
+              placeholder: 'Selecciona almacenes',
+              endpoint: 'stores/options',
+            },
           ],
-        }
+        },
       ],
     },
     table: {
       headers: [
-        { name: "id", label: "ID", type: "id", path: "id" },
-        { name: "name", label: "Nombre", type: "text", path: "product.name" },
-        { name: "lot", label: "Lote", type: "text", path: "lot" },
-        { name: "gs1128", label: "GS1128", type: "text", path: "gs1128" },
-        { name: "netWeight", label: "Peso neto", type: "weight", path: "netWeight" },
-        { name: "palletId", label: "Palet", type: "text", path: "palletId" }
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
+        { name: 'name', label: 'Nombre', type: 'text', path: 'product.name' },
+        { name: 'lot', label: 'Lote', type: 'text', path: 'lot' },
+        { name: 'gs1128', label: 'GS1128', type: 'text', path: 'gs1128' },
+        { name: 'netWeight', label: 'Peso neto', type: 'weight', path: 'netWeight' },
+        { name: 'palletId', label: 'Palet', type: 'text', path: 'palletId' },
       ],
     },
     exports: [
       {
-        title: "Exportar a excel",
-        endpoint: "boxes/xlsx",
-        type: "xlsx",
-        waitingMessage: "Generando exportación a excel",
-        fileName: "Cajas",
+        title: 'Exportar a excel',
+        endpoint: 'boxes/xlsx',
+        type: 'xlsx',
+        waitingMessage: 'Generando exportación a excel',
+        fileName: 'Cajas',
       },
     ],
   },
   /* Pallets */
   pallets: {
     hideEditButton: true,
-    title: "Palets",
-    description: "Gestiona, edita y consulta palets.",
+    title: 'Palets',
+    description: 'Gestiona, edita y consulta palets.',
     emptyState: {
-      title: "No existen palets según los filtros",
-      description: "Ajusta los filtros o crea un nuevo palet.",
+      title: 'No existen palets según los filtros',
+      description: 'Ajusta los filtros o crea un nuevo palet.',
     },
-    endpoint: "pallets",
-    viewRoute: "/admin/pallets/:id",
-    deleteEndpoint: "pallets/:id",
-    createRedirect: "/admin/pallets/create",
+    endpoint: 'pallets',
+    viewRoute: '/admin/pallets/:id',
+    deleteEndpoint: 'pallets/:id',
+    createRedirect: '/admin/pallets/create',
     filtersGroup: {
       search: {
-        label: "Buscar",
+        label: 'Buscar',
         filters: [
           {
-            name: "id",
-            label: "Id",
-            type: "search",
-            placeholder: "Buscar por id",
-          }
+            name: 'id',
+            label: 'Id',
+            type: 'search',
+            placeholder: 'Buscar por id',
+          },
         ],
       },
       groups: [
         {
-          name: "generals",
-          label: "Generales",
+          name: 'generals',
+          label: 'Generales',
           filters: [
             {
-              name: "ids",
-              label: "IDs",
-              type: "textAccumulator",
-              placeholder: "Buscar por ID",
+              name: 'ids',
+              label: 'IDs',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por ID',
             },
             /* state */
             {
-              name: "state",
-              label: "Estado",
-              type: "pairSelectBoxes",
+              name: 'state',
+              label: 'Estado',
+              type: 'pairSelectBoxes',
               options: [
-                { name: "registered", label: "Registrado", value: false },
-                { name: "stored", label: "Almacenado", value: false },
-                { name: "shipped", label: "Enviado", value: false },
-                { name: "processed", label: "Procesado", value: false }
-              ]
+                { name: 'registered', label: 'Registrado', value: false },
+                { name: 'stored', label: 'Almacenado', value: false },
+                { name: 'shipped', label: 'Enviado', value: false },
+                { name: 'processed', label: 'Procesado', value: false },
+              ],
             },
             /* orderState */
             {
-              name: "orderState",
-              label: "Estado del pedido",
-              type: "pairSelectBoxes",
+              name: 'orderState',
+              label: 'Estado del pedido',
+              type: 'pairSelectBoxes',
               options: [
-                { name: "pending", label: "Pendiente", value: false },
-                { name: "finished", label: "Finalizado", value: false }
-              ]
+                { name: 'pending', label: 'Pendiente', value: false },
+                { name: 'finished', label: 'Finalizado', value: false },
+              ],
             },
             /*  Position; locatd, unlocated*/
             {
-              name: "position",
-              label: "Posición",
-              type: "pairSelectBoxes",
+              name: 'position',
+              label: 'Posición',
+              type: 'pairSelectBoxes',
               options: [
-                { name: "located", label: "Ubicado", value: false },
-                { name: "unlocated", label: "No ubicado", value: false }
-              ]
+                { name: 'located', label: 'Ubicado', value: false },
+                { name: 'unlocated', label: 'No ubicado', value: false },
+              ],
             },
             /* Notes */
             {
-              name: "notes",
-              label: "Notas",
-              type: "textarea",
-              placeholder: "Buscar por notas",
+              name: 'notes',
+              label: 'Notas',
+              type: 'textarea',
+              placeholder: 'Buscar por notas',
             },
             /* lots */
             {
-              name: "lots",
-              label: "Lotes",
-              type: "textAccumulator",
-              placeholder: "Buscar por lotes",
-            }
+              name: 'lots',
+              label: 'Lotes',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por lotes',
+            },
           ],
         },
         {
-          name: "dates",
-          label: "Fechas",
+          name: 'dates',
+          label: 'Fechas',
           filters: [
             {
-              name: "dates",
-              label: "Fecha de creación",
-              type: "dateRange",
+              name: 'dates',
+              label: 'Fecha de creación',
+              type: 'dateRange',
               visibleMonths: 1,
-            }
+            },
           ],
         },
         /* products */
         {
-          name: "products",
-          label: "Productos",
+          name: 'products',
+          label: 'Productos',
           filters: [
             {
-              name: "products",
-              label: "Productos",
-              type: "autocomplete",
-              placeholder: "Buscar por producto",
-              endpoint: "products/options",
-            }
+              name: 'products',
+              label: 'Productos',
+              type: 'autocomplete',
+              placeholder: 'Buscar por producto',
+              endpoint: 'products/options',
+            },
           ],
         },
         /* Species   */
         {
-          name: "species",
-          label: "Especies",
+          name: 'species',
+          label: 'Especies',
           filters: [
             {
-              name: "species",
-              label: "Especies",
-              type: "autocomplete",
-              placeholder: "Buscar por especie",
-              endpoint: "species/options",
-            }
+              name: 'species',
+              label: 'Especies',
+              type: 'autocomplete',
+              placeholder: 'Buscar por especie',
+              endpoint: 'species/options',
+            },
           ],
         },
         /* Stores */
         {
-          name: "stores",
-          label: "Almacenes",
+          name: 'stores',
+          label: 'Almacenes',
           filters: [
             {
-              name: "stores",
-              label: "Almacenes",
-              type: "autocomplete",
-              placeholder: "Buscar por almacén",
-              endpoint: "stores/options",
-            }
+              name: 'stores',
+              label: 'Almacenes',
+              type: 'autocomplete',
+              placeholder: 'Buscar por almacén',
+              endpoint: 'stores/options',
+            },
           ],
         },
         /* Order */
         {
-          name: "orders",
-          label: "Pedidos",
+          name: 'orders',
+          label: 'Pedidos',
           filters: [
             {
-              name: "orders",
-              label: "Pedidos",
-              type: "textAccumulator",
-              placeholder: "Buscar por pedidos",
-            }
+              name: 'orders',
+              label: 'Pedidos',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por pedidos',
+            },
           ],
-        }
+        },
       ],
     },
     table: {
       headers: [
-        { name: "id", label: "ID", type: "id", path: "id" },
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
         /* productsNames */
-        { name: "productsNames", label: "Artículos", type: "list", path: "productsNames" },
+        { name: 'productsNames', label: 'Artículos', type: 'list', path: 'productsNames' },
         /* lots */
-        { name: "lots", label: "Lotes", type: "list", path: "lots" },
+        { name: 'lots', label: 'Lotes', type: 'list', path: 'lots' },
         /* observations */
-        { name: "observations", label: "Observaciones", type: "text", path: "observations" },
+        { name: 'observations', label: 'Observaciones', type: 'text', path: 'observations' },
         /* store */
-        { name: "store", label: "Almacén", type: "text", path: "store.name" },
+        { name: 'store', label: 'Almacén', type: 'text', path: 'store.name' },
         /* orderId*/
-        { name: "orderId", label: "Pedido", type: "text", path: "orderId" },
+        { name: 'orderId', label: 'Pedido', type: 'text', path: 'orderId' },
         /* { name: "name", label: "Nombre", type: "text", path: "article.name" }, */
         {
-          name: "state", label: "Estado", type: "badge", path: "state.name",
-          options:
-          {
-            registered: { label: "Registrado", color: "secondary", outline: true },
-            stored: { label: "Almacenado", color: "warning", outline: true },
-            shipped: { label: "Enviado", color: "success", outline: true },
-            processed: { label: "Procesado", color: "primary", outline: true },
-            default: { label: "Desconocido", color: "secondary", outline: true },
-          }
+          name: 'state',
+          label: 'Estado',
+          type: 'badge',
+          path: 'state.name',
+          options: {
+            registered: { label: 'Registrado', color: 'secondary', outline: true },
+            stored: { label: 'Almacenado', color: 'warning', outline: true },
+            shipped: { label: 'Enviado', color: 'success', outline: true },
+            processed: { label: 'Procesado', color: 'primary', outline: true },
+            default: { label: 'Desconocido', color: 'secondary', outline: true },
+          },
         },
         /* numberOfBoxes */
-        { name: "numberOfBoxes", label: "Cajas", type: "text", path: "numberOfBoxes" },
+        { name: 'numberOfBoxes', label: 'Cajas', type: 'text', path: 'numberOfBoxes' },
         /* netWeight */
-        { name: "netWeight", label: "Peso neto", type: "weight", path: "netWeight" },
+        { name: 'netWeight', label: 'Peso neto', type: 'weight', path: 'netWeight' },
         /* availableBoxesCount */
-        { name: "availableBoxesCount", label: "Cajas Disponibles", type: "text", path: "availableBoxesCount" },
+        {
+          name: 'availableBoxesCount',
+          label: 'Cajas Disponibles',
+          type: 'text',
+          path: 'availableBoxesCount',
+        },
         /* usedBoxesCount */
-        { name: "usedBoxesCount", label: "Cajas en Producción", type: "text", path: "usedBoxesCount" },
+        {
+          name: 'usedBoxesCount',
+          label: 'Cajas en Producción',
+          type: 'text',
+          path: 'usedBoxesCount',
+        },
         /* totalAvailableWeight */
-        { name: "totalAvailableWeight", label: "Peso Disponible", type: "weight", path: "totalAvailableWeight" },
+        {
+          name: 'totalAvailableWeight',
+          label: 'Peso Disponible',
+          type: 'weight',
+          path: 'totalAvailableWeight',
+        },
         /* totalUsedWeight */
-        { name: "totalUsedWeight", label: "Peso en Producción", type: "weight", path: "totalUsedWeight" }
+        {
+          name: 'totalUsedWeight',
+          label: 'Peso en Producción',
+          type: 'weight',
+          path: 'totalUsedWeight',
+        },
       ],
     },
     actions: [
@@ -1913,7 +2085,7 @@ export const configs = {
         successMessage: 'Palets actualizados correctamente.',
         errorMessage: 'Hubo un error al actualizar los palets.',
         method: 'POST',
-        body: { status: 1 } // Estado "registered"
+        body: { status: 1 }, // Estado "registered"
       },
       {
         title: 'Cambiar estado a Almacenado',
@@ -1922,7 +2094,7 @@ export const configs = {
         successMessage: 'Palets actualizados correctamente.',
         errorMessage: 'Hubo un error al actualizar los palets.',
         method: 'POST',
-        body: { status: 2 } // Estado "stored"
+        body: { status: 2 }, // Estado "stored"
       },
       {
         title: 'Cambiar estado a Enviado',
@@ -1931,7 +2103,7 @@ export const configs = {
         successMessage: 'Palets actualizados correctamente.',
         errorMessage: 'Hubo un error al actualizar los palets.',
         method: 'POST',
-        body: { status: 3 } // Estado "shipped"
+        body: { status: 3 }, // Estado "shipped"
       },
       {
         title: 'Cambiar estado a Procesado',
@@ -1940,760 +2112,756 @@ export const configs = {
         successMessage: 'Palets actualizados correctamente.',
         errorMessage: 'Hubo un error al actualizar los palets.',
         method: 'POST',
-        body: { status: 4 } // Estado "processed"
-      }
+        body: { status: 4 }, // Estado "processed"
+      },
     ],
   },
   /* customers */
   customers: {
-    title: "Clientes",
-    description: "Gestiona, edita y consulta clientes.",
+    title: 'Clientes',
+    description: 'Gestiona, edita y consulta clientes.',
     emptyState: {
-      title: "No existen clientes según los filtros",
-      description: "Ajusta los filtros o crea un nuevo cliente.",
+      title: 'No existen clientes según los filtros',
+      description: 'Ajusta los filtros o crea un nuevo cliente.',
     },
-    endpoint: "customers",
-    viewRoute: "/admin/customers/:id",
-    deleteEndpoint: "customers/:id",
+    endpoint: 'customers',
+    viewRoute: '/admin/customers/:id',
+    deleteEndpoint: 'customers/:id',
     filtersGroup: {
       search: {
-        label: "Buscar",
+        label: 'Buscar',
         filters: [
           {
-            name: "id",
-            label: "Id",
-            type: "search",
-            placeholder: "Buscar por id",
-          }
+            name: 'id',
+            label: 'Id',
+            type: 'search',
+            placeholder: 'Buscar por id',
+          },
         ],
       },
       groups: [
         {
-          name: "generals",
-          label: "Generales",
+          name: 'generals',
+          label: 'Generales',
           filters: [
             {
-              name: "ids",
-              label: "IDs",
-              type: "textAccumulator",
-              placeholder: "Buscar por ID",
+              name: 'ids',
+              label: 'IDs',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por ID',
             },
             /* name */
             {
-              name: "name",
-              label: "Nombre",
-              type: "text",
-              placeholder: "Buscar por nombre",
+              name: 'name',
+              label: 'Nombre',
+              type: 'text',
+              placeholder: 'Buscar por nombre',
             },
             /* vat_number */
             {
-              name: "vatNumber",
-              label: "NIF",
-              type: "text",
-              placeholder: "Buscar por NIF",
+              name: 'vatNumber',
+              label: 'NIF',
+              type: 'text',
+              placeholder: 'Buscar por NIF',
             },
             /* country */
             {
-              name: "country",
-              label: "País",
-              type: "text",
-              placeholder: "Buscar por país",
-            }
+              name: 'country',
+              label: 'País',
+              type: 'text',
+              placeholder: 'Buscar por país',
+            },
           ],
         },
         /* Salespeople */
         {
-          name: "salespeople",
-          label: "Comerciales",
+          name: 'salespeople',
+          label: 'Comerciales',
           filters: [
             {
-              name: "salespeople",
-              label: "Comerciales",
-              type: "autocomplete",
-              placeholder: "Buscar por comercial",
-              endpoint: "salespeople/options",
-            }
+              name: 'salespeople',
+              label: 'Comerciales',
+              type: 'autocomplete',
+              placeholder: 'Buscar por comercial',
+              endpoint: 'salespeople/options',
+            },
           ],
         },
 
         /* countries */
         {
-          name: "countries",
-          label: "Países",
+          name: 'countries',
+          label: 'Países',
           filters: [
             {
-              name: "countries",
-              label: "Países",
-              type: "autocomplete",
-              placeholder: "Buscar por país",
-              endpoint: "countries/options",
-            }
+              name: 'countries',
+              label: 'Países',
+              type: 'autocomplete',
+              placeholder: 'Buscar por país',
+              endpoint: 'countries/options',
+            },
           ],
         },
         /* paymentTerms */
         {
-          name: "paymentTerms",
-          label: "Formas de pago",
+          name: 'paymentTerms',
+          label: 'Formas de pago',
           filters: [
             {
-              name: "paymentTerms",
-              label: "Formas de pago",
-              type: "autocomplete",
-              placeholder: "Buscar por forma de pago",
-              endpoint: "payment-terms/options",
-            }
+              name: 'paymentTerms',
+              label: 'Formas de pago',
+              type: 'autocomplete',
+              placeholder: 'Buscar por forma de pago',
+              endpoint: 'payment-terms/options',
+            },
           ],
-        }
+        },
       ],
     },
     table: {
       headers: [
-        { name: "id", label: "ID", type: "id", path: "id" },
-        { name: "name", label: "Nombre", type: "text", path: "name" },
-        { name: "vatNumber", label: "NIF", type: "text", path: "vatNumber" },
-        { name: "facilcom_code", label: "Código Facilcom", type: "text", path: "facilcomCode" },
-        { name: "a3erp_code", label: "Código A3ERP", type: "text", path: "a3erpCode" },
-        { name: "paymentTerm", label: "Plazo de pago", type: "text", path: "paymentTerm.name" },
-        { name: "salesperson", label: "Comercial", type: "text", path: "salesperson.name" },
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
+        { name: 'name', label: 'Nombre', type: 'text', path: 'name' },
+        { name: 'vatNumber', label: 'NIF', type: 'text', path: 'vatNumber' },
+        { name: 'facilcom_code', label: 'Código Facilcom', type: 'text', path: 'facilcomCode' },
+        { name: 'a3erp_code', label: 'Código A3ERP', type: 'text', path: 'a3erpCode' },
+        { name: 'paymentTerm', label: 'Plazo de pago', type: 'text', path: 'paymentTerm.name' },
+        { name: 'salesperson', label: 'Comercial', type: 'text', path: 'salesperson.name' },
         /* emails */
-        { name: "emails", label: "Emails", type: "list", path: "emails" },
+        { name: 'emails', label: 'Emails', type: 'list', path: 'emails' },
         /* ccEmails */
-        { name: "ccEmails", label: "Emails en copia (CC)", type: "list", path: "ccEmails" },
-        { name: "country", label: "País", type: "text", path: "country.name" }
+        { name: 'ccEmails', label: 'Emails en copia (CC)', type: 'list', path: 'ccEmails' },
+        { name: 'country', label: 'País', type: 'text', path: 'country.name' },
       ],
     },
     createForm: {
-      title: "Crear cliente",
-      endpoint: "customers",
-      method: "POST",
-      successMessage: "Cliente creado con éxito",
-      errorMessage: "Error al crear el cliente",
-
+      title: 'Crear cliente',
+      endpoint: 'customers',
+      method: 'POST',
+      successMessage: 'Cliente creado con éxito',
+      errorMessage: 'Error al crear el cliente',
     },
     fields: [
       {
-        name: "name",
-        label: "Nombre",
-        type: "text",
-        placeholder: "Introduce el nombre del cliente",
+        name: 'name',
+        label: 'Nombre',
+        type: 'text',
+        placeholder: 'Introduce el nombre del cliente',
         validation: {
-          required: "El nombre es obligatorio",
+          required: 'El nombre es obligatorio',
         },
         cols: { sm: 6, md: 4, lg: 4, xl: 4 },
       },
       {
-        name: "vatNumber",
-        label: "NIF",
-        type: "text",
-        placeholder: "Introduce el NIF",
+        name: 'vatNumber',
+        label: 'NIF',
+        type: 'text',
+        placeholder: 'Introduce el NIF',
         cols: { sm: 6, md: 2, lg: 2, xl: 2 },
       },
       {
-        name: "billing_address",
-        path: "billingAddress",
-        label: "Dirección de facturación",
-        type: "textarea",
+        name: 'billing_address',
+        path: 'billingAddress',
+        label: 'Dirección de facturación',
+        type: 'textarea',
         cols: { sm: 3, md: 3, lg: 3, xl: 3 },
       },
       {
-        name: "shipping_address",
-        path: "shippingAddress",
-        label: "Dirección de envío",
-        type: "textarea",
+        name: 'shipping_address',
+        path: 'shippingAddress',
+        label: 'Dirección de envío',
+        type: 'textarea',
         cols: { sm: 3, md: 3, lg: 3, xl: 3 },
       },
       {
-        name: "transportation_notes",
-        path: "transportationNotes",
-        label: "Notas para transporte",
-        type: "textarea",
+        name: 'transportation_notes',
+        path: 'transportationNotes',
+        label: 'Notas para transporte',
+        type: 'textarea',
         cols: { sm: 6, md: 6, lg: 6, xl: 2 },
       },
       {
-        name: "production_notes",
-        path: "productionNotes",
-        label: "Notas para producción",
-        type: "textarea",
+        name: 'production_notes',
+        path: 'productionNotes',
+        label: 'Notas para producción',
+        type: 'textarea',
         cols: { sm: 3, md: 3, lg: 3, xl: 2 },
       },
       {
-        name: "accounting_notes",
-        path: "accountingNotes",
-        label: "Notas contables",
-        type: "textarea",
+        name: 'accounting_notes',
+        path: 'accountingNotes',
+        label: 'Notas contables',
+        type: 'textarea',
         cols: { sm: 3, md: 3, lg: 3, xl: 2 },
       },
       {
-        name: "emails",
-        label: "Emails",
-        type: "emailList",
-        placeholder: "Introduce correos electrónicos y pulsa Enter",
+        name: 'emails',
+        label: 'Emails',
+        type: 'emailList',
+        placeholder: 'Introduce correos electrónicos y pulsa Enter',
         cols: { sm: 6, md: 3, lg: 3, xl: 3 },
       },
       /* ccEmails */
       {
-        name: "ccEmails",
-        label: "Emails en copia (CC)",
-        type: "emailList",
-        placeholder: "Introduce correos electrónicos en copia y pulsa Enter",
+        name: 'ccEmails',
+        label: 'Emails en copia (CC)',
+        type: 'emailList',
+        placeholder: 'Introduce correos electrónicos en copia y pulsa Enter',
         cols: { sm: 6, md: 3, lg: 3, xl: 3 },
       },
       {
-        name: "contact_info",
-        path: "contactInfo",
-        label: "Información de contacto",
-        type: "textarea",
-        placeholder: "Introduce teléfonos u otra información de contacto",
+        name: 'contact_info',
+        path: 'contactInfo',
+        label: 'Información de contacto',
+        type: 'textarea',
+        placeholder: 'Introduce teléfonos u otra información de contacto',
         cols: { sm: 6, md: 6, lg: 6, xl: 6 },
       },
       {
-        name: "salesperson_id",
-        path: "salesperson.id",
-        label: "Comercial",
-        type: "Autocomplete",
-        placeholder: "Selecciona el comercial",
-        endpoint: "salespeople/options",
+        name: 'salesperson_id',
+        path: 'salesperson.id',
+        label: 'Comercial',
+        type: 'Autocomplete',
+        placeholder: 'Selecciona el comercial',
+        endpoint: 'salespeople/options',
         validation: {
-          required: "El comercial es obligatorio",
+          required: 'El comercial es obligatorio',
         },
         cols: { sm: 3, md: 3, lg: 3, xl: 3 },
       },
       {
-        name: "field_operator_id",
-        path: "fieldOperator.id",
-        label: "Repartidor",
-        type: "Autocomplete",
-        endpoint: "field-operators/options",
-        placeholder: "Selecciona el repartidor",
+        name: 'field_operator_id',
+        path: 'fieldOperator.id',
+        label: 'Repartidor',
+        type: 'Autocomplete',
+        endpoint: 'field-operators/options',
+        placeholder: 'Selecciona el repartidor',
         cols: { sm: 3, md: 3, lg: 3, xl: 3 },
       },
       {
-        name: "operational_status",
-        path: "operationalStatus",
-        label: "Estado operativo",
-        type: "select",
-        placeholder: "Selecciona el estado operativo",
-        defaultValue: "normal",
+        name: 'operational_status',
+        path: 'operationalStatus',
+        label: 'Estado operativo',
+        type: 'select',
+        placeholder: 'Selecciona el estado operativo',
+        defaultValue: 'normal',
         options: [
-          { value: "normal", label: "Normal" },
-          { value: "alta_operativa", label: "Alta operativa" },
+          { value: 'normal', label: 'Normal' },
+          { value: 'alta_operativa', label: 'Alta operativa' },
         ],
         cols: { sm: 3, md: 3, lg: 3, xl: 3 },
       },
       {
-        name: "country_id",
-        path: "country.id",
-        label: "País",
-        type: "Autocomplete",
-        endpoint: "countries/options",
+        name: 'country_id',
+        path: 'country.id',
+        label: 'País',
+        type: 'Autocomplete',
+        endpoint: 'countries/options',
         validation: {
-          required: "El país es obligatorio",
+          required: 'El país es obligatorio',
         },
-        placeholder: "Selecciona el país",
+        placeholder: 'Selecciona el país',
         cols: { sm: 3, md: 3, lg: 3, xl: 3 },
       },
       {
-        name: "payment_term_id",
-        path: "paymentTerm.id",
-        label: "Forma de pago",
-        type: "Autocomplete",
-        endpoint: "payment-terms/options",
+        name: 'payment_term_id',
+        path: 'paymentTerm.id',
+        label: 'Forma de pago',
+        type: 'Autocomplete',
+        endpoint: 'payment-terms/options',
         validation: {
-          required: "La forma de pago es obligatoria",
+          required: 'La forma de pago es obligatoria',
         },
-        placeholder: "Selecciona la forma de pago",
+        placeholder: 'Selecciona la forma de pago',
         cols: { sm: 3, md: 3, lg: 3, xl: 3 },
       },
       {
-        name: "transport_id",
-        path: "transport.id",
-        label: "Transporte",
-        type: "Autocomplete",
-        endpoint: "transports/options",
+        name: 'transport_id',
+        path: 'transport.id',
+        label: 'Transporte',
+        type: 'Autocomplete',
+        endpoint: 'transports/options',
         validation: {
-          required: "El transporte es obligatorio",
+          required: 'El transporte es obligatorio',
         },
-        placeholder: "Selecciona el transporte",
+        placeholder: 'Selecciona el transporte',
         cols: { sm: 3, md: 3, lg: 3, xl: 3 },
       },
       {
-        name: "a3erp_code",
-        path: "a3erpCode",
-        label: "Código A3ERP",
-        type: "text",
+        name: 'a3erp_code',
+        path: 'a3erpCode',
+        label: 'Código A3ERP',
+        type: 'text',
         placeholder: "Código para exportaciones a 'a3ERP - Software ERP'",
         cols: { sm: 6, md: 6, lg: 3, xl: 3 },
       },
       {
-        name: "facilcom_code",
-        path: "facilcomCode",
-        label: "Código Facilcom",
-        type: "text",
+        name: 'facilcom_code',
+        path: 'facilcomCode',
+        label: 'Código Facilcom',
+        type: 'text',
         placeholder: "Código para exportaciones a 'Facilcom - Gestión comercial integral'",
         cols: { sm: 6, md: 6, lg: 3, xl: 3 },
-      }
+      },
     ],
     editForm: {
-      title: "Editar Cliente",
-      endpoint: "customers", // sin /:id, lo añadiremos dinámicamente
-      method: "PUT",
-      successMessage: "Cliente actualizado con éxito",
-      errorMessage: "Error al actualizar el cliente",
+      title: 'Editar Cliente',
+      endpoint: 'customers', // sin /:id, lo añadiremos dinámicamente
+      method: 'PUT',
+      successMessage: 'Cliente actualizado con éxito',
+      errorMessage: 'Error al actualizar el cliente',
     },
-
-
-
-
-
   },
   /* suppliers */
   suppliers: {
-    title: "Proveedores",
-    description: "Gestiona, edita y consulta proveedores.",
+    title: 'Proveedores',
+    description: 'Gestiona, edita y consulta proveedores.',
     emptyState: {
-      title: "No existen proveedores según los filtros",
-      description: "Ajusta los filtros o crea un nuevo proveedor.",
+      title: 'No existen proveedores según los filtros',
+      description: 'Ajusta los filtros o crea un nuevo proveedor.',
     },
-    endpoint: "suppliers",
-    viewRoute: "/admin/suppliers/:id",
-    deleteEndpoint: "suppliers/:id",
+    endpoint: 'suppliers',
+    viewRoute: '/admin/suppliers/:id',
+    deleteEndpoint: 'suppliers/:id',
     filtersGroup: {
       search: {
-        label: "Buscar",
+        label: 'Buscar',
         filters: [
           {
-            name: "id",
-            label: "Id",
-            type: "search",
-            placeholder: "Buscar por id",
-          }
+            name: 'id',
+            label: 'Id',
+            type: 'search',
+            placeholder: 'Buscar por id',
+          },
         ],
       },
       groups: [
         {
-          name: "generals",
-          label: "Generales",
+          name: 'generals',
+          label: 'Generales',
           filters: [
             {
-              name: "ids",
-              label: "IDs",
-              type: "textAccumulator",
-              placeholder: "Buscar por ID",
+              name: 'ids',
+              label: 'IDs',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por ID',
             },
             /* name */
             {
-              name: "name",
-              label: "Nombre",
-              type: "text",
-              placeholder: "Buscar por nombre",
-            }
+              name: 'name',
+              label: 'Nombre',
+              type: 'text',
+              placeholder: 'Buscar por nombre',
+            },
           ],
-        }
+        },
       ],
     },
     table: {
       headers: [
-        { name: "id", label: "ID", type: "id", path: "id" },
-        { name: "name", label: "Nombre", type: "text", path: "name" },
-        { name: "facil_com_code", label: "Código Facilcom", type: "text", path: "facilcomCode" },
-        { name: "address", label: "Dirección", type: "text", path: "address" },
-        { name: "contactPerson", label: "Persona de contacto", type: "text", path: "contactPerson" },
-        { name: "phone", label: "Teléfono", type: "text", path: "phone" },
-        { name: "emails", label: "Emails", type: "list", path: "emails" },
-        { name: "ccEmails", label: "Emails (CC)", type: "list", path: "ccEmails" }
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
+        { name: 'name', label: 'Nombre', type: 'text', path: 'name' },
+        { name: 'facil_com_code', label: 'Código Facilcom', type: 'text', path: 'facilcomCode' },
+        { name: 'address', label: 'Dirección', type: 'text', path: 'address' },
+        {
+          name: 'contactPerson',
+          label: 'Persona de contacto',
+          type: 'text',
+          path: 'contactPerson',
+        },
+        { name: 'phone', label: 'Teléfono', type: 'text', path: 'phone' },
+        { name: 'emails', label: 'Emails', type: 'list', path: 'emails' },
+        { name: 'ccEmails', label: 'Emails (CC)', type: 'list', path: 'ccEmails' },
       ],
     },
     createForm: {
-      title: "Crear proveedor",
-      endpoint: "suppliers",
-      method: "POST",
-      successMessage: "Proveedor creado con éxito",
-      errorMessage: "Error al crear el proveedor",
-
+      title: 'Crear proveedor',
+      endpoint: 'suppliers',
+      method: 'POST',
+      successMessage: 'Proveedor creado con éxito',
+      errorMessage: 'Error al crear el proveedor',
     },
     fields: [
       {
-        name: "name",
-        label: "Nombre",
-        type: "text",
-        placeholder: "Introduce el nombre del proveedor",
+        name: 'name',
+        label: 'Nombre',
+        type: 'text',
+        placeholder: 'Introduce el nombre del proveedor',
         validation: {
-          required: "El nombre es obligatorio",
+          required: 'El nombre es obligatorio',
         },
         cols: { sm: 6, md: 6, lg: 6, xl: 6 },
       },
       {
-        name: "contact_person",
-        label: "Persona de contacto",
-        type: "text",
-        placeholder: "Introduce la persona de contacto",
+        name: 'contact_person',
+        label: 'Persona de contacto',
+        type: 'text',
+        placeholder: 'Introduce la persona de contacto',
         cols: { sm: 6, md: 3, lg: 3, xl: 3 },
       },
       {
-        name: "phone",
-        label: "Teléfono",
-        type: "text",
-        placeholder: "Introduce el teléfono",
+        name: 'phone',
+        label: 'Teléfono',
+        type: 'text',
+        placeholder: 'Introduce el teléfono',
         cols: { sm: 6, md: 3, lg: 3, xl: 3 },
       },
       {
-        name: "emails",
-        label: "Emails principales",
-        type: "emailList",
-        placeholder: "Introduce un correo electronico y pulsa Enter",
+        name: 'emails',
+        label: 'Emails principales',
+        type: 'emailList',
+        placeholder: 'Introduce un correo electronico y pulsa Enter',
         cols: { sm: 6, md: 6, lg: 3, xl: 3 },
       },
       {
-        name: "ccEmails",
-        label: "Emails en copia (CC)",
-        type: "emailList",
-        placeholder: "Introduce un correo electronico y pulsa Enter",
+        name: 'ccEmails',
+        label: 'Emails en copia (CC)',
+        type: 'emailList',
+        placeholder: 'Introduce un correo electronico y pulsa Enter',
         cols: { sm: 6, md: 6, lg: 3, xl: 3 },
       },
       {
-        name: "address",
-        label: "Dirección",
-        type: "textarea",
-        placeholder: "Introduce la dirección del proveedor",
+        name: 'address',
+        label: 'Dirección',
+        type: 'textarea',
+        placeholder: 'Introduce la dirección del proveedor',
         cols: { sm: 6, md: 6, lg: 6, xl: 6 },
       },
       {
-        name: "facil_com_code",
-        path: "facilcomCode",
-        label: "Código Facilcom",
-        type: "text",
+        name: 'facil_com_code',
+        path: 'facilcomCode',
+        label: 'Código Facilcom',
+        type: 'text',
         placeholder: "Código para exportaciones a 'Facilcom - Gestión comercial integral'",
         cols: { sm: 6, md: 6, lg: 6, xl: 6 },
-      }
+      },
     ],
     editForm: {
-      title: "Editar Proveedor",
-      endpoint: "suppliers", // sin /:id, lo añadiremos dinámicamente
-      method: "PUT",
-      successMessage: "Proveedor actualizado con éxito",
-      errorMessage: "Error al actualizar el proveedor",
+      title: 'Editar Proveedor',
+      endpoint: 'suppliers', // sin /:id, lo añadiremos dinámicamente
+      method: 'PUT',
+      successMessage: 'Proveedor actualizado con éxito',
+      errorMessage: 'Error al actualizar el proveedor',
     },
-
-
   },
   /* CaptureZones */
   'capture-zones': {
-    title: "Zonas de captura",
-    description: "Gestiona, edita y consulta zonas de captura.",
+    title: 'Zonas de captura',
+    description: 'Gestiona, edita y consulta zonas de captura.',
     emptyState: {
-      title: "No existen zonas de captura según los filtros",
-      description: "Ajusta los filtros o crea una nueva zona de captura.",
+      title: 'No existen zonas de captura según los filtros',
+      description: 'Ajusta los filtros o crea una nueva zona de captura.',
     },
-    endpoint: "capture-zones",
-    viewRoute: "/admin/capture-zones/:id",
-    deleteEndpoint: "capture-zones/:id",
+    endpoint: 'capture-zones',
+    viewRoute: '/admin/capture-zones/:id',
+    deleteEndpoint: 'capture-zones/:id',
     filtersGroup: {
       search: {
-        label: "Buscar",
+        label: 'Buscar',
         filters: [
           {
-            name: "id",
-            label: "Id",
-            type: "search",
-            placeholder: "Buscar por id",
-          }
+            name: 'id',
+            label: 'Id',
+            type: 'search',
+            placeholder: 'Buscar por id',
+          },
         ],
       },
       groups: [
         {
-          name: "generals",
-          label: "Generales",
+          name: 'generals',
+          label: 'Generales',
           filters: [
             {
-              name: "ids",
-              label: "IDs",
-              type: "textAccumulator",
-              placeholder: "Buscar por ID",
+              name: 'ids',
+              label: 'IDs',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por ID',
             },
             /* name */
             {
-              name: "name",
-              label: "Nombre",
-              type: "text",
-              placeholder: "Buscar por nombre",
-            }
+              name: 'name',
+              label: 'Nombre',
+              type: 'text',
+              placeholder: 'Buscar por nombre',
+            },
           ],
-        }
+        },
       ],
     },
     table: {
       headers: [
-        { name: "id", label: "ID", type: "id", path: "id" },
-        { name: "name", label: "Nombre", type: "text", path: "name" }
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
+        { name: 'name', label: 'Nombre', type: 'text', path: 'name' },
       ],
     },
     createForm: {
-      title: "Nueva Zona de Captura",
-      endpoint: "capture-zones",
-      method: "POST",
-      successMessage: "Zona de captura creada con éxito",
-      errorMessage: "Error al crear la zona de captura",
-
+      title: 'Nueva Zona de Captura',
+      endpoint: 'capture-zones',
+      method: 'POST',
+      successMessage: 'Zona de captura creada con éxito',
+      errorMessage: 'Error al crear la zona de captura',
     },
     editForm: {
-      title: "Editar Zona de Captura",
-      endpoint: "capture-zones", // sin /:id, lo añadiremos dinámicamente
-      method: "PUT",
-      successMessage: "Zona de captura actualizada con éxito",
-      errorMessage: "Error al actualizar la zona de captura",
+      title: 'Editar Zona de Captura',
+      endpoint: 'capture-zones', // sin /:id, lo añadiremos dinámicamente
+      method: 'PUT',
+      successMessage: 'Zona de captura actualizada con éxito',
+      errorMessage: 'Error al actualizar la zona de captura',
     },
     fields: [
       {
-        name: "name",
-        label: "Nombre de la zona",
-        type: "text",
-        placeholder: "Ej. Atlántico Noroeste",
+        name: 'name',
+        label: 'Nombre de la zona',
+        type: 'text',
+        placeholder: 'Ej. Atlántico Noroeste',
         validation: {
-          required: "El nombre es obligatorio",
+          required: 'El nombre es obligatorio',
           minLength: {
             value: 3,
-            message: "Debe tener al menos 3 caracteres",
+            message: 'Debe tener al menos 3 caracteres',
           },
         },
         cols: { sm: 6, md: 6, lg: 6, xl: 6 },
-      }
+      },
     ],
-
   },
   /* species */
   species: {
-    title: "Especies",
-    description: "Gestiona, edita y consulta especies.",
+    title: 'Especies',
+    description: 'Gestiona, edita y consulta especies.',
     emptyState: {
-      title: "No existen especies según los filtros",
-      description: "Ajusta los filtros o crea una nueva especie.",
+      title: 'No existen especies según los filtros',
+      description: 'Ajusta los filtros o crea una nueva especie.',
     },
-    endpoint: "species",
-    viewRoute: "/admin/species/:id",
-    deleteEndpoint: "species/:id",
+    endpoint: 'species',
+    viewRoute: '/admin/species/:id',
+    deleteEndpoint: 'species/:id',
     filtersGroup: {
       search: {
-        label: "Buscar",
+        label: 'Buscar',
         filters: [
           {
-            name: "id",
-            label: "Id",
-            type: "search",
-            placeholder: "Buscar por id",
-          }
+            name: 'id',
+            label: 'Id',
+            type: 'search',
+            placeholder: 'Buscar por id',
+          },
         ],
       },
       groups: [
         {
-          name: "generals",
-          label: "Generales",
+          name: 'generals',
+          label: 'Generales',
           filters: [
             {
-              name: "ids",
-              label: "IDs",
-              type: "textAccumulator",
-              placeholder: "Buscar por ID",
+              name: 'ids',
+              label: 'IDs',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por ID',
             },
             /* name */
             {
-              name: "name",
-              label: "Nombre",
-              type: "text",
-              placeholder: "Buscar por nombre",
+              name: 'name',
+              label: 'Nombre',
+              type: 'text',
+              placeholder: 'Buscar por nombre',
             },
             /* scientificName */
             {
-              name: "scientificName",
-              label: "Nombre científico",
-              type: "text",
-              placeholder: "Buscar por nombre científico",
+              name: 'scientificName',
+              label: 'Nombre científico',
+              type: 'text',
+              placeholder: 'Buscar por nombre científico',
             },
             /* fao */
             {
-              name: "fao",
-              label: "FAO",
-              type: "text",
-              placeholder: "Buscar por FAO",
-            }
+              name: 'fao',
+              label: 'FAO',
+              type: 'text',
+              placeholder: 'Buscar por FAO',
+            },
           ],
         },
         /* fishingGears */
         {
-          name: "fishingGears",
-          label: "Artes de pesca",
+          name: 'fishingGears',
+          label: 'Artes de pesca',
           filters: [
             {
-              name: "fishingGears",
-              label: "Artes de pesca",
-              type: "autocomplete",
-              placeholder: "Buscar por arte de pesca",
-              endpoint: "fishing-gears/options",
-            }
+              name: 'fishingGears',
+              label: 'Artes de pesca',
+              type: 'autocomplete',
+              placeholder: 'Buscar por arte de pesca',
+              endpoint: 'fishing-gears/options',
+            },
           ],
-        }
+        },
       ],
     },
     table: {
       headers: [
-        { name: "id", label: "ID", type: "id", path: "id" },
-        { name: "name", label: "Nombre", type: "text", path: "name" },
-        { name: "scientificName", label: "Nombre científico", type: "text", path: "scientificName" },
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
+        { name: 'name', label: 'Nombre', type: 'text', path: 'name' },
+        {
+          name: 'scientificName',
+          label: 'Nombre científico',
+          type: 'text',
+          path: 'scientificName',
+        },
         /* fao */
-        { name: "fao", label: "FAO", type: "text", path: "fao" },
+        { name: 'fao', label: 'FAO', type: 'text', path: 'fao' },
         /* fishingGear */
-        { name: "fishingGear", label: "Arte de pesca", type: "text", path: "fishingGear.name" }
+        { name: 'fishingGear', label: 'Arte de pesca', type: 'text', path: 'fishingGear.name' },
       ],
     },
     createForm: {
-      title: "Nueva Especie",
-      endpoint: "species",
-      method: "POST",
-      successMessage: "Especie creada con éxito",
-      errorMessage: "Error al crear la especie",
-
+      title: 'Nueva Especie',
+      endpoint: 'species',
+      method: 'POST',
+      successMessage: 'Especie creada con éxito',
+      errorMessage: 'Error al crear la especie',
     },
     editForm: {
-      title: "Editar Especie",
-      endpoint: "species", // sin /:id, lo añadiremos dinámicamente
-      method: "PUT",
-      successMessage: "Especie actualizada con éxito",
-      errorMessage: "Error al actualizar especie",
+      title: 'Editar Especie',
+      endpoint: 'species', // sin /:id, lo añadiremos dinámicamente
+      method: 'PUT',
+      successMessage: 'Especie actualizada con éxito',
+      errorMessage: 'Error al actualizar especie',
     },
     fields: [
       {
-        name: "name",
-        label: "Nombre común",
-        type: "text",
-        placeholder: "Ej. Pulpo",
+        name: 'name',
+        label: 'Nombre común',
+        type: 'text',
+        placeholder: 'Ej. Pulpo',
         validation: {
-          required: "El nombre es obligatorio",
+          required: 'El nombre es obligatorio',
           minLength: {
             value: 2,
-            message: "Debe tener al menos 2 caracteres",
+            message: 'Debe tener al menos 2 caracteres',
           },
         },
         cols: { sm: 6, md: 6, lg: 6, xl: 6 },
       },
       {
-        name: "scientificName",
-        label: "Nombre científico",
-        type: "text",
-        placeholder: "Ej. Octopus vulgaris",
+        name: 'scientificName',
+        label: 'Nombre científico',
+        type: 'text',
+        placeholder: 'Ej. Octopus vulgaris',
         validation: {
-          required: "El nombre científico es obligatorio",
+          required: 'El nombre científico es obligatorio',
           minLength: {
             value: 2,
-            message: "Debe tener al menos 2 caracteres",
+            message: 'Debe tener al menos 2 caracteres',
           },
         },
         cols: { sm: 6, md: 4, lg: 4, xl: 4 },
       },
       {
-        name: "fao",
-        label: "Código FAO",
-        type: "text",
-        placeholder: "Ej. OCT",
+        name: 'fao',
+        label: 'Código FAO',
+        type: 'text',
+        placeholder: 'Ej. OCT',
         validation: {
-          required: "El código FAO es obligatorio",
+          required: 'El código FAO es obligatorio',
           pattern: {
-            value: "/^[A-Z]{3,5}$/",
-            message: "Debe contener entre 3 y 5 letras mayúsculas",
+            value: '/^[A-Z]{3,5}$/',
+            message: 'Debe contener entre 3 y 5 letras mayúsculas',
           },
         },
         cols: { sm: 6, md: 2, lg: 2, xl: 2 },
       },
       {
-        name: "fishingGearId",
-        path: "fishingGear.id",
-        label: "Arte de pesca",
-        type: "Autocomplete",
-        placeholder: "Selecciona un arte de pesca",
-        endpoint: "fishing-gears/options",
+        name: 'fishingGearId',
+        path: 'fishingGear.id',
+        label: 'Arte de pesca',
+        type: 'Autocomplete',
+        placeholder: 'Selecciona un arte de pesca',
+        endpoint: 'fishing-gears/options',
         validation: {
-          required: "El arte de pesca es obligatorio",
+          required: 'El arte de pesca es obligatorio',
         },
         cols: { sm: 6, md: 6, lg: 6, xl: 6 },
-      }
+      },
     ],
-
   },
 
   /* incoterms */
   incoterms: {
-    title: "Incoterms",
-    description: "Gestiona, edita y consulta incoterms.",
+    title: 'Incoterms',
+    description: 'Gestiona, edita y consulta incoterms.',
     emptyState: {
-      title: "No existen incoterms según los filtros",
-      description: "Ajusta los filtros o crea un nuevo incoterm.",
+      title: 'No existen incoterms según los filtros',
+      description: 'Ajusta los filtros o crea un nuevo incoterm.',
     },
-    endpoint: "incoterms",
-    viewRoute: "/admin/incoterms/:id",
-    deleteEndpoint: "incoterms/:id",
+    endpoint: 'incoterms',
+    viewRoute: '/admin/incoterms/:id',
+    deleteEndpoint: 'incoterms/:id',
     filtersGroup: {
       search: {
-        label: "Buscar",
+        label: 'Buscar',
         filters: [
           {
-            name: "id",
-            label: "Id",
-            type: "search",
-            placeholder: "Buscar por id",
-          }
+            name: 'id',
+            label: 'Id',
+            type: 'search',
+            placeholder: 'Buscar por id',
+          },
         ],
       },
       groups: [
         {
-          name: "generals",
-          label: "Generales",
+          name: 'generals',
+          label: 'Generales',
           filters: [
             {
-              name: "ids",
-              label: "IDs",
-              type: "textAccumulator",
-              placeholder: "Buscar por ID",
+              name: 'ids',
+              label: 'IDs',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por ID',
             },
             /* code */
             {
-              name: "code",
-              label: "Código",
-              type: "text",
-              placeholder: "Buscar por código",
+              name: 'code',
+              label: 'Código',
+              type: 'text',
+              placeholder: 'Buscar por código',
             },
             /* description */
             {
-              name: "description",
-              label: "Descripción",
-              type: "text",
-              placeholder: "Buscar por descripción",
-            }
+              name: 'description',
+              label: 'Descripción',
+              type: 'text',
+              placeholder: 'Buscar por descripción',
+            },
           ],
-        }
+        },
       ],
     },
     table: {
       headers: [
-        { name: "id", label: "ID", type: "id", path: "id" },
-        { name: "code", label: "Código", type: "text", path: "code" },
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
+        { name: 'code', label: 'Código', type: 'text', path: 'code' },
         /* description */
-        { name: "description", label: "Descripción", type: "text", path: "description" }
+        { name: 'description', label: 'Descripción', type: 'text', path: 'description' },
       ],
     },
     /* createForm */
     createForm: {
-      title: "Crear incoterm",
-      endpoint: "incoterms",
-      method: "POST",
-      successMessage: "Incoterm creado con éxito",
-      errorMessage: "Error al crear el incoterm",
-
+      title: 'Crear incoterm',
+      endpoint: 'incoterms',
+      method: 'POST',
+      successMessage: 'Incoterm creado con éxito',
+      errorMessage: 'Error al crear el incoterm',
     },
     fields: [
       {
-        name: "code",
-        label: "Código",
-        type: "text",
+        name: 'code',
+        label: 'Código',
+        type: 'text',
         validation: {
-          required: "El código es obligatorio",
+          required: 'El código es obligatorio',
         },
         cols: {
           sm: 2,
@@ -2703,11 +2871,11 @@ export const configs = {
         },
       },
       {
-        name: "description",
-        label: "Descripción",
-        type: "text",
+        name: 'description',
+        label: 'Descripción',
+        type: 'text',
         validation: {
-          required: "La descripción es obligatoria",
+          required: 'La descripción es obligatoria',
         },
         cols: {
           sm: 4,
@@ -2715,269 +2883,261 @@ export const configs = {
           lg: 4,
           xl: 4,
         },
-      }
+      },
     ],
     /* editForm */
     editForm: {
-      title: "Editar incoterm",
-      endpoint: "incoterms", // sin /:id, lo añadiremos dinámicamente
-      method: "PUT",
-      successMessage: "Incoterm actualizado con éxito",
-      errorMessage: "Error al actualizar el incoterm",
+      title: 'Editar incoterm',
+      endpoint: 'incoterms', // sin /:id, lo añadiremos dinámicamente
+      method: 'PUT',
+      successMessage: 'Incoterm actualizado con éxito',
+      errorMessage: 'Error al actualizar el incoterm',
     },
-
   },
   /* salespeople */
   salespeople: {
-    title: "Comerciales",
-    description: "Gestiona, edita y consulta comerciales.",
+    title: 'Comerciales',
+    description: 'Gestiona, edita y consulta comerciales.',
     emptyState: {
-      title: "No existen comerciales según los filtros",
-      description: "Ajusta los filtros o crea un nuevo comercial.",
+      title: 'No existen comerciales según los filtros',
+      description: 'Ajusta los filtros o crea un nuevo comercial.',
     },
-    endpoint: "salespeople",
-    viewRoute: "/admin/salespeople/:id",
-    deleteEndpoint: "salespeople/:id",
+    endpoint: 'salespeople',
+    viewRoute: '/admin/salespeople/:id',
+    deleteEndpoint: 'salespeople/:id',
     filtersGroup: {
       search: {
-        label: "Buscar",
+        label: 'Buscar',
         filters: [
           {
-            name: "id",
-            label: "Id",
-            type: "search",
-            placeholder: "Buscar por id",
-          }
+            name: 'id',
+            label: 'Id',
+            type: 'search',
+            placeholder: 'Buscar por id',
+          },
         ],
       },
       groups: [
         {
-          name: "generals",
-          label: "Generales",
+          name: 'generals',
+          label: 'Generales',
           filters: [
             {
-              name: "ids",
-              label: "IDs",
-              type: "textAccumulator",
-              placeholder: "Buscar por ID",
+              name: 'ids',
+              label: 'IDs',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por ID',
             },
             /* name */
             {
-              name: "name",
-              label: "Nombre",
-              type: "text",
-              placeholder: "Buscar por nombre",
-            }
+              name: 'name',
+              label: 'Nombre',
+              type: 'text',
+              placeholder: 'Buscar por nombre',
+            },
           ],
-        }
+        },
       ],
     },
     table: {
       headers: [
-        { name: "id", label: "ID", type: "id", path: "id" },
-        { name: "name", label: "Nombre", type: "text", path: "name" },
-        { name: "emails", label: "Emails", type: "list", path: "emails" },
-        { name: "ccEmails", label: "Emails en copia (CC)", type: "list", path: "ccEmails" }
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
+        { name: 'name', label: 'Nombre', type: 'text', path: 'name' },
+        { name: 'emails', label: 'Emails', type: 'list', path: 'emails' },
+        { name: 'ccEmails', label: 'Emails en copia (CC)', type: 'list', path: 'ccEmails' },
       ],
     },
     createForm: {
-      title: "Crear comercial",
-      endpoint: "salespeople",
-      method: "POST",
-      successMessage: "Comercial creado con éxito",
-      errorMessage: "Error al crear el comercial",
-
+      title: 'Crear comercial',
+      endpoint: 'salespeople',
+      method: 'POST',
+      successMessage: 'Comercial creado con éxito',
+      errorMessage: 'Error al crear el comercial',
     },
     fields: [
       {
-        name: "name",
-        label: "Nombre",
-        type: "text",
-        placeholder: "Ej. Juan Pérez",
+        name: 'name',
+        label: 'Nombre',
+        type: 'text',
+        placeholder: 'Ej. Juan Pérez',
         validation: {
-          required: "El nombre es obligatorio",
+          required: 'El nombre es obligatorio',
         },
         cols: { sm: 6, md: 6, lg: 6, xl: 6 },
       },
       {
-        name: "emails",
-        label: "Emails",
-        type: "emailList",
-        placeholder: "Introduce un correo y pulsa Enter",
+        name: 'emails',
+        label: 'Emails',
+        type: 'emailList',
+        placeholder: 'Introduce un correo y pulsa Enter',
         cols: { sm: 6, md: 6, lg: 3, xl: 3 },
       },
       {
-        name: "ccEmails",
-        label: "Emails en copia (CC)",
-        type: "emailList",
-        placeholder: "Introduce un correo y pulsa Enter",
+        name: 'ccEmails',
+        label: 'Emails en copia (CC)',
+        type: 'emailList',
+        placeholder: 'Introduce un correo y pulsa Enter',
         cols: { sm: 6, md: 6, lg: 3, xl: 3 },
-      }
+      },
     ],
     editForm: {
-      title: "Editar comercial",
-      endpoint: "salespeople", // sin /:id, lo añadiremos dinámicamente
-      method: "PUT",
-      successMessage: "Comercial actualizado con éxito",
-      errorMessage: "Error al actualizar el comercial",
+      title: 'Editar comercial',
+      endpoint: 'salespeople', // sin /:id, lo añadiremos dinámicamente
+      method: 'PUT',
+      successMessage: 'Comercial actualizado con éxito',
+      errorMessage: 'Error al actualizar el comercial',
     },
-
-
   },
   /* fishing-gears */
   'fishing-gears': {
-    title: "Artes de pesca",
-    description: "Gestiona, edita y consulta artes de pesca.",
+    title: 'Artes de pesca',
+    description: 'Gestiona, edita y consulta artes de pesca.',
     emptyState: {
-      title: "No existen artes de pesca según los filtros",
-      description: "Ajusta los filtros o crea un nuevo arte de pesca.",
+      title: 'No existen artes de pesca según los filtros',
+      description: 'Ajusta los filtros o crea un nuevo arte de pesca.',
     },
-    endpoint: "fishing-gears",
-    viewRoute: "/admin/fishing-gears/:id",
-    deleteEndpoint: "fishing-gears/:id",
+    endpoint: 'fishing-gears',
+    viewRoute: '/admin/fishing-gears/:id',
+    deleteEndpoint: 'fishing-gears/:id',
     filtersGroup: {
       search: {
-        label: "Buscar",
+        label: 'Buscar',
         filters: [
           {
-            name: "id",
-            label: "Id",
-            type: "search",
-            placeholder: "Buscar por id",
-          }
+            name: 'id',
+            label: 'Id',
+            type: 'search',
+            placeholder: 'Buscar por id',
+          },
         ],
       },
       groups: [
         {
-          name: "generals",
-          label: "Generales",
+          name: 'generals',
+          label: 'Generales',
           filters: [
             {
-              name: "ids",
-              label: "IDs",
-              type: "textAccumulator",
-              placeholder: "Buscar por ID",
+              name: 'ids',
+              label: 'IDs',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por ID',
             },
             /* name */
             {
-              name: "name",
-              label: "Nombre",
-              type: "text",
-              placeholder: "Buscar por nombre",
-            }
+              name: 'name',
+              label: 'Nombre',
+              type: 'text',
+              placeholder: 'Buscar por nombre',
+            },
           ],
-        }
+        },
       ],
     },
     table: {
       headers: [
-        { name: "id", label: "ID", type: "id", path: "id" },
-        { name: "name", label: "Nombre", type: "text", path: "name" }
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
+        { name: 'name', label: 'Nombre', type: 'text', path: 'name' },
       ],
     },
     createForm: {
-      title: "Nuevo Arte de Pesca",
-      endpoint: "fishing-gears",
-      method: "POST",
-      successMessage: "Arte de pesca creado con éxito",
-      errorMessage: "Error al crear el arte de pesca",
-
+      title: 'Nuevo Arte de Pesca',
+      endpoint: 'fishing-gears',
+      method: 'POST',
+      successMessage: 'Arte de pesca creado con éxito',
+      errorMessage: 'Error al crear el arte de pesca',
     },
     fields: [
       {
-        name: "name",
-        label: "Nombre",
-        type: "text",
-        placeholder: "Ej. Nasas, Trasmallo, Arrastre...",
+        name: 'name',
+        label: 'Nombre',
+        type: 'text',
+        placeholder: 'Ej. Nasas, Trasmallo, Arrastre...',
         validation: {
-          required: "El nombre es obligatorio",
+          required: 'El nombre es obligatorio',
           minLength: {
             value: 2,
-            message: "Debe tener al menos 2 caracteres",
+            message: 'Debe tener al menos 2 caracteres',
           },
         },
         cols: { sm: 6, md: 6, lg: 6, xl: 6 },
-      }
+      },
     ],
     editForm: {
-      title: "Editar Arte de Pesca",
-      endpoint: "fishing-gears", // sin /:id, lo añadiremos dinámicamente
-      method: "PUT",
-      successMessage: "Arte de pesca actualizado con éxito",
-      errorMessage: "Error al actualizar el arte de pesca",
+      title: 'Editar Arte de Pesca',
+      endpoint: 'fishing-gears', // sin /:id, lo añadiremos dinámicamente
+      method: 'PUT',
+      successMessage: 'Arte de pesca actualizado con éxito',
+      errorMessage: 'Error al actualizar el arte de pesca',
     },
-
   },
 
   /* countries */
   countries: {
-    title: "Países",
-    description: "Gestiona, edita y consulta países.",
+    title: 'Países',
+    description: 'Gestiona, edita y consulta países.',
     emptyState: {
-      title: "No existen países según los filtros",
-      description: "Ajusta los filtros o crea un nuevo país.",
+      title: 'No existen países según los filtros',
+      description: 'Ajusta los filtros o crea un nuevo país.',
     },
-    endpoint: "countries",
-    viewRoute: "/admin/countries/:id",
-    deleteEndpoint: "countries/:id",
+    endpoint: 'countries',
+    viewRoute: '/admin/countries/:id',
+    deleteEndpoint: 'countries/:id',
     filtersGroup: {
       search: {
-        label: "Buscar",
+        label: 'Buscar',
         filters: [
           {
-            name: "id",
-            label: "Id",
-            type: "search",
-            placeholder: "Buscar por id",
-          }
+            name: 'id',
+            label: 'Id',
+            type: 'search',
+            placeholder: 'Buscar por id',
+          },
         ],
       },
       groups: [
         {
-          name: "generals",
-          label: "Generales",
+          name: 'generals',
+          label: 'Generales',
           filters: [
             {
-              name: "ids",
-              label: "IDs",
-              type: "textAccumulator",
-              placeholder: "Buscar por ID",
+              name: 'ids',
+              label: 'IDs',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por ID',
             },
             /* name */
             {
-              name: "name",
-              label: "Nombre",
-              type: "text",
-              placeholder: "Buscar por nombre",
-            }
+              name: 'name',
+              label: 'Nombre',
+              type: 'text',
+              placeholder: 'Buscar por nombre',
+            },
           ],
-        }
+        },
       ],
     },
     table: {
       headers: [
-        { name: "id", label: "ID", type: "id", path: "id" },
-        { name: "name", label: "Nombre", type: "text", path: "name" },
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
+        { name: 'name', label: 'Nombre', type: 'text', path: 'name' },
         /* action */
-
       ],
     },
     createForm: {
-      title: "Crear país",
-      endpoint: "countries",
-      method: "POST",
-      successMessage: "País creado con éxito",
-      errorMessage: "Error al crear el país",
-
+      title: 'Crear país',
+      endpoint: 'countries',
+      method: 'POST',
+      successMessage: 'País creado con éxito',
+      errorMessage: 'Error al crear el país',
     },
     fields: [
       {
-        name: "name",
-        label: "Nombre",
-        type: "text",
-        placeholder: "Introduce el nombre del país",
+        name: 'name',
+        label: 'Nombre',
+        type: 'text',
+        placeholder: 'Introduce el nombre del país',
         validation: {
-          required: "El nombre es obligatorio",
+          required: 'El nombre es obligatorio',
         },
         cols: {
           sm: 6,
@@ -2985,86 +3145,85 @@ export const configs = {
           lg: 6,
           xl: 6,
         },
-      }
+      },
     ],
     editForm: {
-      title: "Editar país",
-      endpoint: "countries", // sin /:id, lo añadiremos dinámicamente
-      method: "PUT",
-      successMessage: "País actualizado con éxito",
-      errorMessage: "Error al actualizar el país",
+      title: 'Editar país',
+      endpoint: 'countries', // sin /:id, lo añadiremos dinámicamente
+      method: 'PUT',
+      successMessage: 'País actualizado con éxito',
+      errorMessage: 'Error al actualizar el país',
     },
   },
 
   /* paymentTerms */
   'payment-terms': {
-    title: "Métodos de pago",
-    description: "Gestiona, edita y consulta métodos de pago.",
+    title: 'Métodos de pago',
+    description: 'Gestiona, edita y consulta métodos de pago.',
     emptyState: {
-      title: "No existen plazos de pago según los filtros",
-      description: "Ajusta los filtros o crea un nuevo plazo de pago.",
+      title: 'No existen plazos de pago según los filtros',
+      description: 'Ajusta los filtros o crea un nuevo plazo de pago.',
     },
-    endpoint: "payment-terms",
-    viewRoute: "/admin/payment-terms/:id",
-    deleteEndpoint: "payment-terms/:id",
+    endpoint: 'payment-terms',
+    viewRoute: '/admin/payment-terms/:id',
+    deleteEndpoint: 'payment-terms/:id',
     filtersGroup: {
       search: {
-        label: "Buscar",
+        label: 'Buscar',
         filters: [
           {
-            name: "id",
-            label: "Id",
-            type: "search",
-            placeholder: "Buscar por id",
-          }
+            name: 'id',
+            label: 'Id',
+            type: 'search',
+            placeholder: 'Buscar por id',
+          },
         ],
       },
       groups: [
         {
-          name: "generals",
-          label: "Generales",
+          name: 'generals',
+          label: 'Generales',
           filters: [
             /* ids */
             {
-              name: "ids",
-              label: "IDs",
-              type: "textAccumulator",
-              placeholder: "Buscar por ID",
+              name: 'ids',
+              label: 'IDs',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por ID',
             },
             /* name */
             {
-              name: "name",
-              label: "Nombre",
-              type: "text",
-              placeholder: "Buscar por nombre",
-            }
+              name: 'name',
+              label: 'Nombre',
+              type: 'text',
+              placeholder: 'Buscar por nombre',
+            },
           ],
-        }
+        },
       ],
     },
     table: {
       headers: [
-        { name: "id", label: "ID", type: "id", path: "id" },
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
         /* name */
-        { name: "name", label: "Nombre", type: "text", path: "name" }
+        { name: 'name', label: 'Nombre', type: 'text', path: 'name' },
       ],
     },
     createForm: {
-      title: "Crear método de pago",
-      endpoint: "payment-terms",
-      method: "POST",
-      successMessage: "Método de pago creado con éxito",
-      errorMessage: "Error al crear el método de pago",
-
+      title: 'Crear método de pago',
+      endpoint: 'payment-terms',
+      method: 'POST',
+      successMessage: 'Método de pago creado con éxito',
+      errorMessage: 'Error al crear el método de pago',
     },
     fields: [
       {
-        name: "name",
-        label: "Nombre",
-        type: "text",
-        placeholder: "Introduce el nombre",
+        name: 'name',
+        label: 'Nombre',
+        type: 'text',
+        placeholder: 'Introduce el nombre',
         validation: {
-          required: "El nombre es obligatorio",
+          required: 'El nombre es obligatorio',
         },
         cols: {
           sm: 6,
@@ -3072,136 +3231,159 @@ export const configs = {
           lg: 6,
           xl: 6,
         },
-      }
+      },
     ],
     editForm: {
-      title: "Editar método de pago",
-      endpoint: "payment-terms", // sin /:id, lo añadiremos dinámicamente
-      method: "PUT",
-      successMessage: "Método de pago actualizado con éxito",
-      errorMessage: "Error al actualizar el método de pago",
+      title: 'Editar método de pago',
+      endpoint: 'payment-terms', // sin /:id, lo añadiremos dinámicamente
+      method: 'PUT',
+      successMessage: 'Método de pago actualizado con éxito',
+      errorMessage: 'Error al actualizar el método de pago',
     },
-
   },
 
   'prospect-categories': {
-    title: "Categorías de Prospectos",
-    description: "Gestiona las categorías usadas para clasificar prospectos comerciales.",
+    title: 'Categorías de Prospectos',
+    description: 'Gestiona las categorías usadas para clasificar prospectos comerciales.',
     emptyState: {
-      title: "No existen categorías de prospectos según los filtros",
-      description: "Ajusta los filtros o crea una nueva categoría de prospecto.",
+      title: 'No existen categorías de prospectos según los filtros',
+      description: 'Ajusta los filtros o crea una nueva categoría de prospecto.',
     },
-    endpoint: "prospect-categories",
-    viewRoute: "/admin/prospect-categories/:id",
-    deleteEndpoint: "prospect-categories/:id",
+    endpoint: 'prospect-categories',
+    viewRoute: '/admin/prospect-categories/:id',
+    deleteEndpoint: 'prospect-categories/:id',
     hideBulkDelete: true,
     filtersGroup: {
       search: {
-        label: "Buscar",
+        label: 'Buscar',
         filters: [
           {
-            name: "name",
-            label: "Nombre",
-            type: "search",
-            placeholder: "Buscar por nombre",
-          }
+            name: 'name',
+            label: 'Nombre',
+            type: 'search',
+            placeholder: 'Buscar por nombre',
+          },
         ],
       },
       groups: [
         {
-          name: "generals",
-          label: "Generales",
+          name: 'generals',
+          label: 'Generales',
           filters: [
             {
-              name: "name",
-              label: "Nombre",
-              type: "text",
-              placeholder: "Buscar por nombre",
+              name: 'name',
+              label: 'Nombre',
+              type: 'text',
+              placeholder: 'Buscar por nombre',
             },
             {
-              name: "active",
-              label: "Estado",
-              type: "pairSelectBoxes",
+              name: 'active',
+              label: 'Estado',
+              type: 'pairSelectBoxes',
               options: [
-                { name: "1", label: "Activas" },
-                { name: "0", label: "Inactivas" },
+                { name: '1', label: 'Activas' },
+                { name: '0', label: 'Inactivas' },
               ],
             },
             {
-              name: "ids",
-              label: "IDs",
-              type: "textAccumulator",
-              placeholder: "Buscar por ID",
-            }
+              name: 'ids',
+              label: 'IDs',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por ID',
+            },
           ],
-        }
+        },
       ],
     },
     table: {
       headers: [
-        { name: "id", label: "ID", type: "id", path: "id" },
-        { name: "name", label: "Nombre", type: "text", path: "name" },
-        { name: "description", label: "Descripción", type: "text", path: "description", hideOnMobile: true },
-        { name: "active", label: "Activa", type: "badge", path: "active", options: {
-          true: { label: "Activa", color: "success", outline: true },
-          false: { label: "Inactiva", color: "secondary", outline: true },
-        } },
-        { name: "created_at", label: "Fecha de creación", type: "date", path: "createdAt", hideOnMobile: true },
-        { name: "updated_at", label: "Fecha de actualización", type: "date", path: "updatedAt", hideOnMobile: true }
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
+        { name: 'name', label: 'Nombre', type: 'text', path: 'name' },
+        {
+          name: 'description',
+          label: 'Descripción',
+          type: 'text',
+          path: 'description',
+          hideOnMobile: true,
+        },
+        {
+          name: 'active',
+          label: 'Activa',
+          type: 'badge',
+          path: 'active',
+          options: {
+            true: { label: 'Activa', color: 'success', outline: true },
+            false: { label: 'Inactiva', color: 'secondary', outline: true },
+          },
+        },
+        {
+          name: 'created_at',
+          label: 'Fecha de creación',
+          type: 'date',
+          path: 'createdAt',
+          hideOnMobile: true,
+        },
+        {
+          name: 'updated_at',
+          label: 'Fecha de actualización',
+          type: 'date',
+          path: 'updatedAt',
+          hideOnMobile: true,
+        },
       ],
     },
     createForm: {
-      title: "Nueva Categoría de Prospecto",
-      endpoint: "prospect-categories",
-      method: "POST",
-      successMessage: "Categoría de prospecto creada con éxito",
-      errorMessage: "Error al crear la categoría de prospecto",
+      title: 'Nueva Categoría de Prospecto',
+      endpoint: 'prospect-categories',
+      method: 'POST',
+      successMessage: 'Categoría de prospecto creada con éxito',
+      errorMessage: 'Error al crear la categoría de prospecto',
     },
     beforeSubmit: {
-      booleanFields: ["active"],
+      booleanFields: ['active'],
     },
     fields: [
       {
-        name: "name",
-        label: "Nombre",
-        type: "text",
-        placeholder: "Restaurante, Mayorista, Distribuidor...",
+        name: 'name',
+        label: 'Nombre',
+        type: 'text',
+        placeholder: 'Restaurante, Mayorista, Distribuidor...',
         validation: {
-          required: "El nombre es obligatorio",
-          minLength: { value: 3, message: "Debe tener al menos 3 caracteres" },
-          maxLength: { value: 255, message: "Máximo 255 caracteres" },
+          required: 'El nombre es obligatorio',
+          minLength: { value: 3, message: 'Debe tener al menos 3 caracteres' },
+          maxLength: { value: 255, message: 'Máximo 255 caracteres' },
         },
         cols: { sm: 6, md: 6, lg: 6, xl: 6 },
       },
       {
-        name: "active",
-        label: "Activa",
-        type: "select",
-        placeholder: "Estado",
-        defaultValue: "1",
+        name: 'active',
+        label: 'Activa',
+        type: 'select',
+        placeholder: 'Estado',
+        defaultValue: '1',
         options: [
-          { value: "1", label: "Activa" },
-          { value: "0", label: "Inactiva" },
+          { value: '1', label: 'Activa' },
+          { value: '0', label: 'Inactiva' },
         ],
         cols: { sm: 3, md: 3, lg: 3, xl: 3 },
       },
       {
-        name: "description",
-        label: "Descripción",
-        type: "textarea",
-        placeholder: "Descripción opcional de la categoría",
+        name: 'description',
+        label: 'Descripción',
+        type: 'textarea',
+        placeholder: 'Descripción opcional de la categoría',
         validation: {
-          maxLength: { value: 1000, message: "Máximo 1.000 caracteres" },
+          maxLength: { value: 1000, message: 'Máximo 1.000 caracteres' },
         },
         cols: { sm: 6, md: 6, lg: 6, xl: 6 },
-      }
+      },
     ],
     editForm: {
-      title: "Editar Categoría de Prospecto",
-      endpoint: "prospect-categories",
-      method: "PUT",
-      successMessage: "Categoría de prospecto actualizada con éxito",
-      errorMessage: "Error al actualizar la categoría de prospecto",
+      title: 'Editar Categoría de Prospecto',
+      endpoint: 'prospect-categories',
+      method: 'PUT',
+      successMessage: 'Categoría de prospecto actualizada con éxito',
+      errorMessage: 'Error al actualizar la categoría de prospecto',
     },
   },
 
@@ -3210,139 +3392,139 @@ export const configs = {
     hideEditButton: false,
     hideCreateButton: false,
     hideViewButton: true,
-    createRedirect: "/admin/cebo-dispatches/create",
-    editRedirect: "/admin/cebo-dispatches/:id/edit",
-    title: "Salidas de cebo",
-    description: "Gestiona, edita y consulta salidas de cebo.",
+    createRedirect: '/admin/cebo-dispatches/create',
+    editRedirect: '/admin/cebo-dispatches/:id/edit',
+    title: 'Salidas de cebo',
+    description: 'Gestiona, edita y consulta salidas de cebo.',
     emptyState: {
-      title: "No existen salidas de cebo según los filtros",
-      description: "Ajusta los filtros o crea una nueva salida de cebo.",
+      title: 'No existen salidas de cebo según los filtros',
+      description: 'Ajusta los filtros o crea una nueva salida de cebo.',
     },
     perPage: 17,
-    endpoint: "cebo-dispatches",
-    viewRoute: "/admin/cebo-dispatches/:id",
-    deleteEndpoint: "cebo-dispatches/:id",
+    endpoint: 'cebo-dispatches',
+    viewRoute: '/admin/cebo-dispatches/:id',
+    deleteEndpoint: 'cebo-dispatches/:id',
     filtersGroup: {
       search: {
-        label: "Buscar",
+        label: 'Buscar',
         filters: [
           {
-            name: "id",
-            label: "Id",
-            type: "search",
-            placeholder: "Buscar por id",
-          }
+            name: 'id',
+            label: 'Id',
+            type: 'search',
+            placeholder: 'Buscar por id',
+          },
         ],
       },
       groups: [
         {
-          name: "generals",
-          label: "Generales",
+          name: 'generals',
+          label: 'Generales',
           filters: [
             /* ids */
             {
-              name: "ids",
-              label: "IDs",
-              type: "textAccumulator",
-              placeholder: "Buscar por ID",
+              name: 'ids',
+              label: 'IDs',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por ID',
             },
             /* notes */
             {
-              name: "notes",
-              label: "Notas",
-              type: "textarea",
-              placeholder: "Buscar por notas",
+              name: 'notes',
+              label: 'Notas',
+              type: 'textarea',
+              placeholder: 'Buscar por notas',
             },
             /* dates */
             {
-              name: "dates",
-              label: "Fecha",
-              type: "dateRange",
+              name: 'dates',
+              label: 'Fecha',
+              type: 'dateRange',
               visibleMonths: 1,
-            }
+            },
           ],
         },
         /* suppliers */
         {
-          name: "suppliers",
-          label: "Proveedores",
+          name: 'suppliers',
+          label: 'Proveedores',
           filters: [
             {
-              name: "suppliers",
-              label: "Proveedores",
-              type: "autocomplete",
-              placeholder: "Buscar por proveedor",
-              endpoint: "suppliers/options",
-            }
+              name: 'suppliers',
+              label: 'Proveedores',
+              type: 'autocomplete',
+              placeholder: 'Buscar por proveedor',
+              endpoint: 'suppliers/options',
+            },
           ],
         },
         /* products */
         {
-          name: "products",
-          label: "Productos",
+          name: 'products',
+          label: 'Productos',
           filters: [
             {
-              name: "products",
-              label: "Productos",
-              type: "autocomplete",
-              placeholder: "Buscar por producto",
-              endpoint: "products/options",
-            }
+              name: 'products',
+              label: 'Productos',
+              type: 'autocomplete',
+              placeholder: 'Buscar por producto',
+              endpoint: 'products/options',
+            },
           ],
         },
         /* species */
         {
-          name: "species",
-          label: "Especies",
+          name: 'species',
+          label: 'Especies',
           filters: [
             {
-              name: "species",
-              label: "Especies",
-              type: "autocomplete",
-              placeholder: "Buscar por especie",
-              endpoint: "species/options",
-            }
+              name: 'species',
+              label: 'Especies',
+              type: 'autocomplete',
+              placeholder: 'Buscar por especie',
+              endpoint: 'species/options',
+            },
           ],
-        }
+        },
       ],
     },
     table: {
       headers: [
-        { name: "id", label: "ID", type: "id", path: "id" },
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
         /* date */
-        { name: "date", label: "Fecha", type: "date", path: "date" },
+        { name: 'date', label: 'Fecha', type: 'date', path: 'date' },
         /* supplier */
-        { name: "supplier", label: "Proveedor", type: "text", path: "supplier.name" },
+        { name: 'supplier', label: 'Proveedor', type: 'text', path: 'supplier.name' },
         /* notes */
-        { name: "notes", label: "Notas", type: "text", path: "notes" },
+        { name: 'notes', label: 'Notas', type: 'text', path: 'notes' },
         /* netWeight */
-        { name: "netWeight", label: "Peso neto", type: "weight", path: "netWeight" }
+        { name: 'netWeight', label: 'Peso neto', type: 'weight', path: 'netWeight' },
       ],
     },
     exports: [
       /* cebo-dispatches/facilcom-xlsx */
       {
-        title: "Exportar a Facilcom",
-        endpoint: "cebo-dispatches/facilcom-xlsx",
-        type: "xlsx",
-        waitingMessage: "Generando exportación a Facilcom",
-        fileName: "Salidas_cebo_Facilcom",
+        title: 'Exportar a Facilcom',
+        endpoint: 'cebo-dispatches/facilcom-xlsx',
+        type: 'xlsx',
+        waitingMessage: 'Generando exportación a Facilcom',
+        fileName: 'Salidas_cebo_Facilcom',
       },
       /* cebo-dispatches/a3erp-xlsx */
       {
-        title: "Exportar a A3ERP",
-        endpoint: "cebo-dispatches/a3erp-xlsx",
-        type: "excel",
-        waitingMessage: "Generando exportación a A3ERP",
-        fileName: "Salidas_cebo_A3ERP",
+        title: 'Exportar a A3ERP',
+        endpoint: 'cebo-dispatches/a3erp-xlsx',
+        type: 'excel',
+        waitingMessage: 'Generando exportación a A3ERP',
+        fileName: 'Salidas_cebo_A3ERP',
       },
       /* cebo-dispatches/a3erp2-xlsx */
       {
-        title: "Exportar a A3ERP2",
-        endpoint: "cebo-dispatches/a3erp2-xlsx",
-        type: "excel",
-        waitingMessage: "Generando exportación a A3ERP2",
-        fileName: "Salidas_cebo_A3ERP2",
+        title: 'Exportar a A3ERP2',
+        endpoint: 'cebo-dispatches/a3erp2-xlsx',
+        type: 'excel',
+        waitingMessage: 'Generando exportación a A3ERP2',
+        fileName: 'Salidas_cebo_A3ERP2',
       },
     ],
   },
@@ -3352,62 +3534,62 @@ export const configs = {
     hideCreateButton: true,
     hideEditButton: true,
     hideViewButton: true,
-    title: "Sesiones",
-    description: "Gestiona, edita y consulta sesiones.",
+    title: 'Sesiones',
+    description: 'Gestiona, edita y consulta sesiones.',
     emptyState: {
-      title: "No existen sesiones según los filtros",
-      description: "Ajusta los filtros o crea una nueva sesión.",
+      title: 'No existen sesiones según los filtros',
+      description: 'Ajusta los filtros o crea una nueva sesión.',
     },
-    endpoint: "sessions",
+    endpoint: 'sessions',
     perPage: 15,
-    viewRoute: "/admin/sessions/:id",
-    deleteEndpoint: "sessions/:id",
+    viewRoute: '/admin/sessions/:id',
+    deleteEndpoint: 'sessions/:id',
     filtersGroup: {
       search: {
-        label: "Buscar",
+        label: 'Buscar',
         filters: [
           {
-            name: "id",
-            label: "Id",
-            type: "search",
-            placeholder: "Buscar por id",
-          }
+            name: 'id',
+            label: 'Id',
+            type: 'search',
+            placeholder: 'Buscar por id',
+          },
         ],
       },
       groups: [
         {
-          name: "generals",
-          label: "Generales",
+          name: 'generals',
+          label: 'Generales',
           filters: [
             /* ids */
             {
-              name: "ids",
-              label: "IDs",
-              type: "textAccumulator",
-              placeholder: "Buscar por ID",
+              name: 'ids',
+              label: 'IDs',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por ID',
             },
             /* name */
             {
-              name: "name",
-              label: "Nombre",
-              type: "text",
-              placeholder: "Buscar por nombre",
-            }
+              name: 'name',
+              label: 'Nombre',
+              type: 'text',
+              placeholder: 'Buscar por nombre',
+            },
           ],
-        }
+        },
       ],
     },
     table: {
       headers: [
-        { name: "id", label: "ID", type: "id", path: "id" },
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
         /* user_name */
-        { name: "user_name", label: "Usuario", type: "text", path: "user_name" },
+        { name: 'user_name', label: 'Usuario', type: 'text', path: 'user_name' },
         /* created_at */
-        { name: "created_at", label: "Fecha de creación", type: "date", path: "created_at" },
+        { name: 'created_at', label: 'Fecha de creación', type: 'date', path: 'created_at' },
         /* last_used_at */
-        { name: "last_used_at", label: "Último uso", type: "date", path: "last_used_at" },
+        { name: 'last_used_at', label: 'Último uso', type: 'date', path: 'last_used_at' },
         /* expires_at */
-        { name: "expires_at", label: "Expira", type: "date", path: "expires_at" }
+        { name: 'expires_at', label: 'Expira', type: 'date', path: 'expires_at' },
       ],
     },
   },
@@ -3418,76 +3600,75 @@ export const configs = {
     hideEditButton: true,
     hideViewButton: true,
     perPage: 18,
-    title: "Registros de actividad",
-    description: "Gestiona, edita y consulta registros de actividad.",
+    title: 'Registros de actividad',
+    description: 'Gestiona, edita y consulta registros de actividad.',
     emptyState: {
-      title: "No existen registros de actividad según los filtros",
-      description: "Ajusta los filtros o crea un nuevo registro de actividad.",
+      title: 'No existen registros de actividad según los filtros',
+      description: 'Ajusta los filtros o crea un nuevo registro de actividad.',
     },
-    endpoint: "activity-logs",
-    viewRoute: "/admin/activity-logs/:id",
-    deleteEndpoint: "activity-logs/:id",
+    endpoint: 'activity-logs',
+    viewRoute: '/admin/activity-logs/:id',
+    deleteEndpoint: 'activity-logs/:id',
     filtersGroup: {
       search: {
-        label: "Buscar",
+        label: 'Buscar',
         filters: [
           {
-            name: "id",
-            label: "Id",
-            type: "search",
-            placeholder: "Buscar por id",
-          }
+            name: 'id',
+            label: 'Id',
+            type: 'search',
+            placeholder: 'Buscar por id',
+          },
         ],
       },
       groups: [
         {
-          name: "generals",
-          label: "Generales",
+          name: 'generals',
+          label: 'Generales',
           filters: [
             /* ids */
             {
-              name: "ids",
-              label: "IDs",
-              type: "textAccumulator",
-              placeholder: "Buscar por ID",
+              name: 'ids',
+              label: 'IDs',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por ID',
             },
             /* path */
             {
-              name: "path",
-              label: "Ruta",
-              type: "text",
-              placeholder: "Buscar por ruta",
+              name: 'path',
+              label: 'Ruta',
+              type: 'text',
+              placeholder: 'Buscar por ruta',
             },
-
 
             /* created_at */
             {
-              name: "dates",
-              label: "Fecha",
-              type: "dateRange",
+              name: 'dates',
+              label: 'Fecha',
+              type: 'dateRange',
               visibleMonths: 1,
-            }
+            },
           ],
         },
         /* users */
         {
-          name: "users",
-          label: "Usuarios",
+          name: 'users',
+          label: 'Usuarios',
           filters: [
             {
-              name: "users",
-              label: "Usuarios",
-              type: "autocomplete",
-              placeholder: "Buscar por usuario",
-              endpoint: "users/options",
-            }
+              name: 'users',
+              label: 'Usuarios',
+              type: 'autocomplete',
+              placeholder: 'Buscar por usuario',
+              endpoint: 'users/options',
+            },
           ],
-        }
+        },
       ],
     },
     table: {
       headers: [
-        { name: "id", label: "ID", type: "id", path: "id" },
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
         /* id Primaria	
   2	user_id 
   3	ip_address	
@@ -3504,429 +3685,451 @@ export const configs = {
   14	method */
 
         /* user */
-        { name: "user", label: "Usuario", type: "text", path: "user.name" },
+        { name: 'user', label: 'Usuario', type: 'text', path: 'user.name' },
         /* tokenId */
-        { name: "tokenId", label: "Token", type: "text", path: "tokenId" },
+        { name: 'tokenId', label: 'Token', type: 'text', path: 'tokenId' },
         /* created_at */
-        { name: "created_at", label: "Fecha de creación", type: "dateHour", path: "createdAt" },
+        { name: 'created_at', label: 'Fecha de creación', type: 'dateHour', path: 'createdAt' },
         /* ip_address */
-        { name: "ip_address", label: "Dirección IP", type: "text", path: "ipAddress" },
+        { name: 'ip_address', label: 'Dirección IP', type: 'text', path: 'ipAddress' },
         /* browser */
-        { name: "browser", label: "Navegador", type: "text", path: "browser" },
+        { name: 'browser', label: 'Navegador', type: 'text', path: 'browser' },
         /* location */
-        { name: "location", label: "Ubicación", type: "text", path: "location" },
+        { name: 'location', label: 'Ubicación', type: 'text', path: 'location' },
         /* region */
-        { name: "region", label: "Región", type: "text", path: "region" },
+        { name: 'region', label: 'Región', type: 'text', path: 'region' },
         /* platform */
-        { name: "platform", label: "Plataforma", type: "text", path: "platform" },
+        { name: 'platform', label: 'Plataforma', type: 'text', path: 'platform' },
         /* path */
-        { name: "path", label: "Ruta", type: "text", path: "path" },
+        { name: 'path', label: 'Ruta', type: 'text', path: 'path' },
         /* method */
-        { name: "method", label: "Método", type: "text", path: "method" }
+        { name: 'method', label: 'Método', type: 'text', path: 'method' },
       ],
     },
   },
 
   /* Product Categories */
   'product-categories': {
-    title: "Categorías de Productos",
-    description: "Gestiona, edita y consulta categorías de productos.",
+    title: 'Categorías de Productos',
+    description: 'Gestiona, edita y consulta categorías de productos.',
     emptyState: {
-      title: "No existen categorías de productos según los filtros",
-      description: "Ajusta los filtros o crea una nueva categoría de producto.",
+      title: 'No existen categorías de productos según los filtros',
+      description: 'Ajusta los filtros o crea una nueva categoría de producto.',
     },
-    endpoint: "product-categories",
-    viewRoute: "/admin/product-categories/:id",
-    deleteEndpoint: "product-categories/:id",
+    endpoint: 'product-categories',
+    viewRoute: '/admin/product-categories/:id',
+    deleteEndpoint: 'product-categories/:id',
     filtersGroup: {
       search: {
-        label: "Buscar",
+        label: 'Buscar',
         filters: [
           {
-            name: "id",
-            label: "Id",
-            type: "search",
-            placeholder: "Buscar por id",
-          }
+            name: 'id',
+            label: 'Id',
+            type: 'search',
+            placeholder: 'Buscar por id',
+          },
         ],
       },
       groups: [
         {
-          name: "generals",
-          label: "Generales",
+          name: 'generals',
+          label: 'Generales',
           filters: [
             {
-              name: "name",
-              label: "Nombre",
-              type: "text",
-              placeholder: "Buscar por nombre",
+              name: 'name',
+              label: 'Nombre',
+              type: 'text',
+              placeholder: 'Buscar por nombre',
             },
             {
-              name: "ids",
-              label: "IDs",
-              type: "textAccumulator",
-              placeholder: "Buscar por ID",
-            }
+              name: 'ids',
+              label: 'IDs',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por ID',
+            },
           ],
-        }
+        },
       ],
     },
     table: {
       headers: [
-        { name: "id", label: "ID", type: "id", path: "id" },
-        { name: "name", label: "Nombre", type: "text", path: "name" },
-        { name: "description", label: "Descripción", type: "text", path: "description", hideOnMobile: true },
-        { name: "created_at", label: "Fecha de creación", type: "date", path: "createdAt" },
-        { name: "updated_at", label: "Fecha de actualización", type: "date", path: "updatedAt" }
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
+        { name: 'name', label: 'Nombre', type: 'text', path: 'name' },
+        {
+          name: 'description',
+          label: 'Descripción',
+          type: 'text',
+          path: 'description',
+          hideOnMobile: true,
+        },
+        { name: 'created_at', label: 'Fecha de creación', type: 'date', path: 'createdAt' },
+        { name: 'updated_at', label: 'Fecha de actualización', type: 'date', path: 'updatedAt' },
       ],
     },
     createForm: {
-      title: "Nueva Categoría de Producto",
-      endpoint: "product-categories",
-      method: "POST",
-      successMessage: "Categoría de producto creada con éxito",
-      errorMessage: "Error al crear la categoría de producto",
+      title: 'Nueva Categoría de Producto',
+      endpoint: 'product-categories',
+      method: 'POST',
+      successMessage: 'Categoría de producto creada con éxito',
+      errorMessage: 'Error al crear la categoría de producto',
     },
     fields: [
       {
-        name: "name",
-        label: "Nombre de la categoría",
-        type: "text",
+        name: 'name',
+        label: 'Nombre de la categoría',
+        type: 'text',
         validation: {
-          required: "El nombre es obligatorio",
-          minLength: { value: 3, message: "Debe tener al menos 3 caracteres" },
+          required: 'El nombre es obligatorio',
+          minLength: { value: 3, message: 'Debe tener al menos 3 caracteres' },
         },
         cols: { sm: 6, md: 6, lg: 6, xl: 6 },
       },
       {
-        name: "description",
-        label: "Descripción",
-        type: "textarea",
-        placeholder: "Descripción opcional de la categoría",
+        name: 'description',
+        label: 'Descripción',
+        type: 'textarea',
+        placeholder: 'Descripción opcional de la categoría',
         validation: {},
         cols: { sm: 6, md: 6, lg: 6, xl: 6 },
-      }
+      },
     ],
     editForm: {
-      title: "Editar Categoría de Producto",
-      endpoint: "product-categories",
-      method: "PUT",
-      successMessage: "Categoría de producto actualizada con éxito",
-      errorMessage: "Error al actualizar la categoría de producto",
+      title: 'Editar Categoría de Producto',
+      endpoint: 'product-categories',
+      method: 'PUT',
+      successMessage: 'Categoría de producto actualizada con éxito',
+      errorMessage: 'Error al actualizar la categoría de producto',
     },
   },
 
   /* Product Families */
   'product-families': {
-    title: "Familias de Productos",
-    description: "Gestiona, edita y consulta familias de productos.",
+    title: 'Familias de Productos',
+    description: 'Gestiona, edita y consulta familias de productos.',
     emptyState: {
-      title: "No existen familias de productos según los filtros",
-      description: "Ajusta los filtros o crea una nueva familia de producto.",
+      title: 'No existen familias de productos según los filtros',
+      description: 'Ajusta los filtros o crea una nueva familia de producto.',
     },
-    endpoint: "product-families",
-    viewRoute: "/admin/product-families/:id",
-    deleteEndpoint: "product-families/:id",
+    endpoint: 'product-families',
+    viewRoute: '/admin/product-families/:id',
+    deleteEndpoint: 'product-families/:id',
     filtersGroup: {
       search: {
-        label: "Buscar",
+        label: 'Buscar',
         filters: [
           {
-            name: "id",
-            label: "Id",
-            type: "search",
-            placeholder: "Buscar por id",
-          }
+            name: 'id',
+            label: 'Id',
+            type: 'search',
+            placeholder: 'Buscar por id',
+          },
         ],
       },
       groups: [
         {
-          name: "generals",
-          label: "Generales",
+          name: 'generals',
+          label: 'Generales',
           filters: [
             {
-              name: "name",
-              label: "Nombre",
-              type: "text",
-              placeholder: "Buscar por nombre",
+              name: 'name',
+              label: 'Nombre',
+              type: 'text',
+              placeholder: 'Buscar por nombre',
             },
             {
-              name: "ids",
-              label: "IDs",
-              type: "textAccumulator",
-              placeholder: "Buscar por ID",
-            }
+              name: 'ids',
+              label: 'IDs',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por ID',
+            },
           ],
         },
         {
-          name: "category",
-          label: "Categoría",
+          name: 'category',
+          label: 'Categoría',
           filters: [
             {
-              name: "categoryId",
-              label: "Categoría",
-              type: "autocomplete",
-              placeholder: "Buscar por categoría",
-              endpoint: "product-categories/options",
-            }
+              name: 'categoryId',
+              label: 'Categoría',
+              type: 'autocomplete',
+              placeholder: 'Buscar por categoría',
+              endpoint: 'product-categories/options',
+            },
           ],
-        }
+        },
       ],
     },
     table: {
       headers: [
-        { name: "id", label: "ID", type: "id", path: "id" },
-        { name: "name", label: "Nombre", type: "text", path: "name" },
-        { name: "description", label: "Descripción", type: "text", path: "description", hideOnMobile: true },
-        { name: "category", label: "Categoría", type: "text", path: "category.name" },
-        { name: "created_at", label: "Fecha de creación", type: "date", path: "createdAt" },
-        { name: "updated_at", label: "Fecha de actualización", type: "date", path: "updatedAt" }
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
+        { name: 'name', label: 'Nombre', type: 'text', path: 'name' },
+        {
+          name: 'description',
+          label: 'Descripción',
+          type: 'text',
+          path: 'description',
+          hideOnMobile: true,
+        },
+        { name: 'category', label: 'Categoría', type: 'text', path: 'category.name' },
+        { name: 'created_at', label: 'Fecha de creación', type: 'date', path: 'createdAt' },
+        { name: 'updated_at', label: 'Fecha de actualización', type: 'date', path: 'updatedAt' },
       ],
     },
     createForm: {
-      title: "Nueva Familia de Producto",
-      endpoint: "product-families",
-      method: "POST",
-      successMessage: "Familia de producto creada con éxito",
-      errorMessage: "Error al crear la familia de producto",
+      title: 'Nueva Familia de Producto',
+      endpoint: 'product-families',
+      method: 'POST',
+      successMessage: 'Familia de producto creada con éxito',
+      errorMessage: 'Error al crear la familia de producto',
     },
     fields: [
       {
-        name: "name",
-        label: "Nombre de la familia",
-        type: "text",
+        name: 'name',
+        label: 'Nombre de la familia',
+        type: 'text',
         validation: {
-          required: "El nombre es obligatorio",
-          minLength: { value: 3, message: "Debe tener al menos 3 caracteres" },
+          required: 'El nombre es obligatorio',
+          minLength: { value: 3, message: 'Debe tener al menos 3 caracteres' },
         },
         cols: { sm: 6, md: 4, lg: 4, xl: 4 },
       },
       {
-        name: "categoryId",
-        path: "category.id",
-        label: "Categoría",
-        type: "Autocomplete",
-        placeholder: "Selecciona la categoría",
-        endpoint: "product-categories/options",
+        name: 'categoryId',
+        path: 'category.id',
+        label: 'Categoría',
+        type: 'Autocomplete',
+        placeholder: 'Selecciona la categoría',
+        endpoint: 'product-categories/options',
         validation: {
-          required: "La categoría es obligatoria",
+          required: 'La categoría es obligatoria',
         },
         cols: { sm: 6, md: 2, lg: 2, xl: 2 },
       },
       {
-        name: "description",
-        label: "Descripción",
-        type: "textarea",
-        placeholder: "Descripción opcional de la familia",
+        name: 'description',
+        label: 'Descripción',
+        type: 'textarea',
+        placeholder: 'Descripción opcional de la familia',
         validation: {},
         cols: { sm: 6, md: 6, lg: 6, xl: 6 },
       },
-
-
     ],
     editForm: {
-      title: "Editar Familia de Producto",
-      endpoint: "product-families",
-      method: "PUT",
-      successMessage: "Familia de producto actualizada con éxito",
-      errorMessage: "Error al actualizar la familia de producto",
+      title: 'Editar Familia de Producto',
+      endpoint: 'product-families',
+      method: 'PUT',
+      successMessage: 'Familia de producto actualizada con éxito',
+      errorMessage: 'Error al actualizar la familia de producto',
     },
   },
 
   /* Productions */
   productions: {
-    title: "Producciones",
+    title: 'Producciones',
     hideEditButton: true,
     sameTabNavigation: true,
-    description: "Gestiona, edita y consulta lotes de producción.",
+    description: 'Gestiona, edita y consulta lotes de producción.',
     emptyState: {
-      title: "No existen producciones según los filtros",
-      description: "Ajusta los filtros o crea una nueva producción.",
+      title: 'No existen producciones según los filtros',
+      description: 'Ajusta los filtros o crea una nueva producción.',
     },
     perPage: 15,
-    endpoint: "productions",
-    viewRoute: "/admin/productions/:id",
-    deleteEndpoint: "productions/:id",
+    endpoint: 'productions',
+    viewRoute: '/admin/productions/:id',
+    deleteEndpoint: 'productions/:id',
     filtersGroup: {
       search: {
-        label: "Buscar",
+        label: 'Buscar',
         filters: [
           {
-            name: "id",
-            label: "Id",
-            type: "search",
-            placeholder: "Buscar por id o lote",
-          }
+            name: 'id',
+            label: 'Id',
+            type: 'search',
+            placeholder: 'Buscar por id o lote',
+          },
         ],
       },
       groups: [
         {
-          name: "generals",
-          label: "Generales",
+          name: 'generals',
+          label: 'Generales',
           filters: [
             {
-              name: "ids",
-              label: "IDs",
-              type: "textAccumulator",
-              placeholder: "Buscar por ID",
+              name: 'ids',
+              label: 'IDs',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por ID',
             },
             {
-              name: "lot",
-              label: "Lote",
-              type: "text",
-              placeholder: "Buscar por lote",
+              name: 'lot',
+              label: 'Lote',
+              type: 'text',
+              placeholder: 'Buscar por lote',
             },
             {
-              name: "notes",
-              label: "Notas",
-              type: "textarea",
-              placeholder: "Buscar por notas",
+              name: 'notes',
+              label: 'Notas',
+              type: 'textarea',
+              placeholder: 'Buscar por notas',
             },
             {
-              name: "dates",
-              label: "Fecha",
-              type: "dateRange",
+              name: 'dates',
+              label: 'Fecha',
+              type: 'dateRange',
               visibleMonths: 1,
             },
             {
-              name: "status",
-              label: "Estado",
-              type: "pairSelectBoxes",
+              name: 'status',
+              label: 'Estado',
+              type: 'pairSelectBoxes',
               options: [
-                { name: "open", label: "Abierto", value: false },
-                { name: "closed", label: "Cerrado", value: false },
+                { name: 'open', label: 'Abierto', value: false },
+                { name: 'closed', label: 'Cerrado', value: false },
               ],
-            }
+            },
           ],
         },
         {
-          name: "species",
-          label: "Especies",
+          name: 'species',
+          label: 'Especies',
           filters: [
             {
-              name: "species",
-              label: "Especies",
-              type: "autocomplete",
-              placeholder: "Buscar por especie",
-              endpoint: "species/options",
-            }
+              name: 'species',
+              label: 'Especies',
+              type: 'autocomplete',
+              placeholder: 'Buscar por especie',
+              endpoint: 'species/options',
+            },
           ],
         },
         {
-          name: "captureZones",
-          label: "Zonas de captura",
+          name: 'captureZones',
+          label: 'Zonas de captura',
           filters: [
             {
-              name: "captureZones",
-              label: "Zonas de captura",
-              type: "autocomplete",
-              placeholder: "Buscar por zona de captura",
-              endpoint: "capture-zones/options",
-            }
+              name: 'captureZones',
+              label: 'Zonas de captura',
+              type: 'autocomplete',
+              placeholder: 'Buscar por zona de captura',
+              endpoint: 'capture-zones/options',
+            },
           ],
-        }
+        },
       ],
     },
     table: {
       headers: [
-        { name: "id", label: "ID", type: "id", path: "id" },
-        { name: "lot", label: "Lote", type: "text", path: "lot" },
-        { name: "species", label: "Especie", type: "text", path: "species.name", hideOnMobile: true },
-        { name: "openedAt", label: "Fecha apertura", type: "date", path: "openedAt" },
-        { name: "closedAt", label: "Fecha cierre", type: "date", path: "closedAt", hideOnMobile: true },
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
+        { name: 'lot', label: 'Lote', type: 'text', path: 'lot' },
         {
-          name: "status",
-          label: "Estado",
-          type: "badge",
-          path: "status",
-          options: {
-            open: { label: "Abierto", color: "success", outline: true },
-            closed: { label: "Cerrado", color: "secondary", outline: true },
-            default: { label: "Desconocido", color: "secondary", outline: true },
-          }
+          name: 'species',
+          label: 'Especie',
+          type: 'text',
+          path: 'species.name',
+          hideOnMobile: true,
         },
-        { name: "notes", label: "Notas", type: "text", path: "notes", hideOnMobile: true }
+        { name: 'openedAt', label: 'Fecha apertura', type: 'date', path: 'openedAt' },
+        {
+          name: 'closedAt',
+          label: 'Fecha cierre',
+          type: 'date',
+          path: 'closedAt',
+          hideOnMobile: true,
+        },
+        {
+          name: 'status',
+          label: 'Estado',
+          type: 'badge',
+          path: 'status',
+          options: {
+            open: { label: 'Abierto', color: 'success', outline: true },
+            closed: { label: 'Cerrado', color: 'secondary', outline: true },
+            default: { label: 'Desconocido', color: 'secondary', outline: true },
+          },
+        },
+        { name: 'notes', label: 'Notas', type: 'text', path: 'notes', hideOnMobile: true },
       ],
     },
     createForm: {
-      title: "Nueva Producción",
-      endpoint: "productions",
-      method: "POST",
-      successMessage: "Producción creada con éxito",
-      errorMessage: "Error al crear la producción",
+      title: 'Nueva Producción',
+      endpoint: 'productions',
+      method: 'POST',
+      successMessage: 'Producción creada con éxito',
+      errorMessage: 'Error al crear la producción',
       fields: [
         {
-          name: "lot",
-          label: "Número de lote",
-          type: "text",
-          placeholder: "Ej. LOT-2025-001",
+          name: 'lot',
+          label: 'Número de lote',
+          type: 'text',
+          placeholder: 'Ej. LOT-2025-001',
           validation: {
-            required: "El número de lote es obligatorio",
+            required: 'El número de lote es obligatorio',
             minLength: {
               value: 3,
-              message: "El lote debe tener al menos 3 caracteres"
-            }
+              message: 'El lote debe tener al menos 3 caracteres',
+            },
           },
           cols: {
             sm: 6,
             md: 4,
             lg: 3,
             xl: 3,
-          }
+          },
         },
         {
-          name: "speciesId",
-          path: "species.id",
-          label: "Especie",
-          type: "Autocomplete",
-          placeholder: "Selecciona la especie (opcional)",
-          endpoint: "species/options",
+          name: 'speciesId',
+          path: 'species.id',
+          label: 'Especie',
+          type: 'Autocomplete',
+          placeholder: 'Selecciona la especie (opcional)',
+          endpoint: 'species/options',
           validation: {},
           cols: {
             sm: 6,
             md: 4,
             lg: 3,
             xl: 3,
-          }
+          },
         },
         {
-          name: "captureZoneId",
-          path: "captureZone.id",
-          label: "Zona de captura",
-          type: "Autocomplete",
-          placeholder: "Selecciona la zona de captura",
-          endpoint: "capture-zones/options",
+          name: 'captureZoneId',
+          path: 'captureZone.id',
+          label: 'Zona de captura',
+          type: 'Autocomplete',
+          placeholder: 'Selecciona la zona de captura',
+          endpoint: 'capture-zones/options',
           validation: {
-            required: "La zona de captura es obligatoria",
+            required: 'La zona de captura es obligatoria',
           },
           cols: {
             sm: 6,
             md: 4,
             lg: 3,
             xl: 3,
-          }
+          },
         },
         {
-          name: "notes",
-          label: "Notas",
-          type: "textarea",
-          placeholder: "Notas adicionales sobre la producción",
+          name: 'notes',
+          label: 'Notas',
+          type: 'textarea',
+          placeholder: 'Notas adicionales sobre la producción',
           validation: {},
           cols: {
             sm: 6,
             md: 6,
             lg: 6,
             xl: 6,
-          }
-        }
-      ]
+          },
+        },
+      ],
     },
     editForm: {
-      title: "Editar Producción",
-      endpoint: "productions",
-      method: "PUT",
-      successMessage: "Producción actualizada con éxito",
-      errorMessage: "Error al actualizar la producción",
+      title: 'Editar Producción',
+      endpoint: 'productions',
+      method: 'PUT',
+      successMessage: 'Producción actualizada con éxito',
+      errorMessage: 'Error al actualizar la producción',
     },
   },
 
@@ -3934,44 +4137,44 @@ export const configs = {
     hideCreateButton: false,
     hideEditButton: false,
     hideViewButton: true,
-    title: "Empleados",
-    description: "Gestiona los empleados del sistema.",
+    title: 'Empleados',
+    description: 'Gestiona los empleados del sistema.',
     emptyState: {
-      title: "No existen empleados según los filtros",
-      description: "Ajusta los filtros o crea un nuevo empleado.",
+      title: 'No existen empleados según los filtros',
+      description: 'Ajusta los filtros o crea un nuevo empleado.',
     },
     perPage: 15,
-    endpoint: "employees",
-    deleteEndpoint: "employees/:id",
+    endpoint: 'employees',
+    deleteEndpoint: 'employees/:id',
     filtersGroup: {
       search: {
-        name: "search",
-        label: "Buscar",
+        name: 'search',
+        label: 'Buscar',
         filters: [
           {
-            name: "name",
-            label: "Buscar",
-            type: "search",
-            placeholder: "Buscar por nombre",
-          }
+            name: 'name',
+            label: 'Buscar',
+            type: 'search',
+            placeholder: 'Buscar por nombre',
+          },
         ],
       },
       groups: [
         {
-          name: "generals",
-          label: "Generales",
+          name: 'generals',
+          label: 'Generales',
           filters: [
             {
-              name: "ids",
-              label: "Números de ID",
-              type: "textAccumulator",
-              placeholder: "Buscar por IDs",
+              name: 'ids',
+              label: 'Números de ID',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por IDs',
             },
             {
-              name: "nfc_uid",
-              label: "UID NFC",
-              type: "text",
-              placeholder: "Buscar por UID NFC",
+              name: 'nfc_uid',
+              label: 'UID NFC',
+              type: 'text',
+              placeholder: 'Buscar por UID NFC',
             },
           ],
         },
@@ -3979,60 +4182,72 @@ export const configs = {
     },
     table: {
       headers: [
-        { name: "id", label: "ID", type: "id", path: "id" },
-        { name: "name", label: "Nombre", type: "text", path: "name" },
-        { name: "nfcUid", label: "UID NFC", type: "text", path: "nfcUid", hideOnMobile: true },
-        { name: "createdAt", label: "Fecha de creación", type: "dateTime", path: "createdAt", hideOnMobile: true },
-        { name: "updatedAt", label: "Última actualización", type: "dateTime", path: "updatedAt", hideOnMobile: true },
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
+        { name: 'name', label: 'Nombre', type: 'text', path: 'name' },
+        { name: 'nfcUid', label: 'UID NFC', type: 'text', path: 'nfcUid', hideOnMobile: true },
+        {
+          name: 'createdAt',
+          label: 'Fecha de creación',
+          type: 'dateTime',
+          path: 'createdAt',
+          hideOnMobile: true,
+        },
+        {
+          name: 'updatedAt',
+          label: 'Última actualización',
+          type: 'dateTime',
+          path: 'updatedAt',
+          hideOnMobile: true,
+        },
       ],
     },
     fields: [
       {
-        name: "name",
-        label: "Nombre",
-        type: "text",
-        placeholder: "Nombre completo del empleado",
+        name: 'name',
+        label: 'Nombre',
+        type: 'text',
+        placeholder: 'Nombre completo del empleado',
         validation: {
-          required: "El nombre es obligatorio",
+          required: 'El nombre es obligatorio',
           minLength: {
             value: 3,
-            message: "El nombre debe tener al menos 3 caracteres"
-          }
+            message: 'El nombre debe tener al menos 3 caracteres',
+          },
         },
         cols: {
           sm: 6,
           md: 6,
           lg: 6,
           xl: 6,
-        }
+        },
       },
       {
-        name: "nfc_uid",
-        label: "UID NFC",
-        type: "text",
-        placeholder: "UID de la tarjeta NFC (opcional)",
+        name: 'nfc_uid',
+        label: 'UID NFC',
+        type: 'text',
+        placeholder: 'UID de la tarjeta NFC (opcional)',
         validation: {},
         cols: {
           sm: 6,
           md: 6,
           lg: 6,
           xl: 6,
-        }
-      }
+        },
+      },
     ],
     createForm: {
-      title: "Nuevo Empleado",
-      endpoint: "employees",
-      method: "POST",
-      successMessage: "Empleado creado con éxito",
-      errorMessage: "Error al crear el empleado",
+      title: 'Nuevo Empleado',
+      endpoint: 'employees',
+      method: 'POST',
+      successMessage: 'Empleado creado con éxito',
+      errorMessage: 'Error al crear el empleado',
     },
     editForm: {
-      title: "Editar Empleado",
-      endpoint: "employees",
-      method: "PUT",
-      successMessage: "Empleado actualizado con éxito",
-      errorMessage: "Error al actualizar el empleado",
+      title: 'Editar Empleado',
+      endpoint: 'employees',
+      method: 'PUT',
+      successMessage: 'Empleado actualizado con éxito',
+      errorMessage: 'Error al actualizar el empleado',
     },
   },
 
@@ -4040,165 +4255,174 @@ export const configs = {
     hideCreateButton: true, // Los fichajes se crean desde el gestor de registro horario
     hideEditButton: false, // Habilitar edición en modal
     hideViewButton: true,
-    title: "Eventos de Fichaje",
-    description: "Consulta y gestiona los eventos de fichaje registrados.",
+    title: 'Eventos de Fichaje',
+    description: 'Consulta y gestiona los eventos de fichaje registrados.',
     emptyState: {
-      title: "No existen eventos de fichaje según los filtros",
-      description: "Ajusta los filtros para ver más eventos.",
+      title: 'No existen eventos de fichaje según los filtros',
+      description: 'Ajusta los filtros para ver más eventos.',
     },
     perPage: 15,
-    endpoint: "punches",
-    deleteEndpoint: "punches/:id",
+    endpoint: 'punches',
+    deleteEndpoint: 'punches/:id',
     fields: [
       {
-        name: "employeeId",
-        path: "employee.id",
-        label: "Empleado",
-        type: "Autocomplete",
-        placeholder: "Selecciona el empleado",
-        endpoint: "employees/options",
+        name: 'employeeId',
+        path: 'employee.id',
+        label: 'Empleado',
+        type: 'Autocomplete',
+        placeholder: 'Selecciona el empleado',
+        endpoint: 'employees/options',
         validation: {
-          required: "El empleado es obligatorio",
+          required: 'El empleado es obligatorio',
         },
         cols: {
           sm: 6,
           md: 6,
           lg: 6,
           xl: 6,
-        }
+        },
       },
       {
-        name: "eventType",
-        path: "eventType",
-        label: "Tipo de evento",
-        type: "select",
-        placeholder: "Selecciona el tipo",
+        name: 'eventType',
+        path: 'eventType',
+        label: 'Tipo de evento',
+        type: 'select',
+        placeholder: 'Selecciona el tipo',
         options: [
-          { value: "IN", label: "Entrada" },
-          { value: "OUT", label: "Salida" },
+          { value: 'IN', label: 'Entrada' },
+          { value: 'OUT', label: 'Salida' },
         ],
         validation: {
-          required: "El tipo de evento es obligatorio",
+          required: 'El tipo de evento es obligatorio',
         },
         cols: {
           sm: 6,
           md: 3,
           lg: 3,
           xl: 3,
-        }
+        },
       },
       {
-        name: "deviceId",
-        path: "deviceId",
-        label: "Dispositivo",
-        type: "text",
-        placeholder: "Identificador del dispositivo",
+        name: 'deviceId',
+        path: 'deviceId',
+        label: 'Dispositivo',
+        type: 'text',
+        placeholder: 'Identificador del dispositivo',
         validation: {},
         cols: {
           sm: 6,
           md: 3,
           lg: 3,
           xl: 3,
-        }
+        },
       },
       {
-        name: "timestamp",
-        path: "timestamp",
-        label: "Fecha y Hora",
-        type: "datetime-local",
-        placeholder: "Fecha y hora del evento",
+        name: 'timestamp',
+        path: 'timestamp',
+        label: 'Fecha y Hora',
+        type: 'datetime-local',
+        placeholder: 'Fecha y hora del evento',
         validation: {},
         cols: {
           sm: 6,
           md: 6,
           lg: 6,
           xl: 6,
-        }
-      }
+        },
+      },
     ],
     editForm: {
-      title: "Editar Evento de Fichaje",
-      endpoint: "punches",
-      method: "PUT",
-      successMessage: "Evento de fichaje actualizado con éxito",
-      errorMessage: "Error al actualizar el evento de fichaje",
+      title: 'Editar Evento de Fichaje',
+      endpoint: 'punches',
+      method: 'PUT',
+      successMessage: 'Evento de fichaje actualizado con éxito',
+      errorMessage: 'Error al actualizar el evento de fichaje',
     },
     filtersGroup: {
       search: {
-        name: "search",
-        label: "Buscar",
+        name: 'search',
+        label: 'Buscar',
         filters: [
           {
-            name: "id",
-            label: "Buscar",
-            type: "search",
-            placeholder: "Buscar por ID",
-          }
+            name: 'id',
+            label: 'Buscar',
+            type: 'search',
+            placeholder: 'Buscar por ID',
+          },
         ],
       },
       groups: [
         {
-          name: "generals",
-          label: "Generales",
+          name: 'generals',
+          label: 'Generales',
           filters: [
             {
-              name: "ids",
-              label: "Números de ID",
-              type: "textAccumulator",
-              placeholder: "Buscar por IDs",
+              name: 'ids',
+              label: 'Números de ID',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por IDs',
             },
             {
-              name: "dates",
-              label: "Fecha",
-              type: "dateRange",
+              name: 'dates',
+              label: 'Fecha',
+              type: 'dateRange',
             },
             {
-              name: "event_type",
-              label: "Tipo de evento",
-              type: "select",
+              name: 'event_type',
+              label: 'Tipo de evento',
+              type: 'select',
               options: [
-                { value: "IN", label: "Entrada" },
-                { value: "OUT", label: "Salida" },
+                { value: 'IN', label: 'Entrada' },
+                { value: 'OUT', label: 'Salida' },
               ],
             },
             {
-              name: "device_id",
-              label: "Dispositivo",
-              type: "text",
-              placeholder: "Buscar por dispositivo",
+              name: 'device_id',
+              label: 'Dispositivo',
+              type: 'text',
+              placeholder: 'Buscar por dispositivo',
             },
           ],
         },
         {
-          name: "employees",
-          label: "Empleado",
+          name: 'employees',
+          label: 'Empleado',
           filters: [
             {
-              name: "employee_id",
-              label: "Empleado",
-              type: "autocomplete",
-              placeholder: "Buscar por empleado",
-              endpoint: "employees/options",
-            }
+              name: 'employee_id',
+              label: 'Empleado',
+              type: 'autocomplete',
+              placeholder: 'Buscar por empleado',
+              endpoint: 'employees/options',
+            },
           ],
         },
       ],
     },
     table: {
       headers: [
-        { name: "id", label: "ID", type: "id", path: "id" },
-        { name: "employee", label: "Empleado", type: "text", path: "employee.name" },
-        { name: "eventType", label: "Tipo", type: "badge", path: "eventType", 
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
+        { name: 'employee', label: 'Empleado', type: 'text', path: 'employee.name' },
+        {
+          name: 'eventType',
+          label: 'Tipo',
+          type: 'badge',
+          path: 'eventType',
           options: {
-            IN: { label: "Entrada", color: "success", outline: true },
-            OUT: { label: "Salida", color: "secondary", outline: true },
-          }
+            IN: { label: 'Entrada', color: 'success', outline: true },
+            OUT: { label: 'Salida', color: 'secondary', outline: true },
+          },
         },
-        { name: "timestamp", label: "Fecha y Hora", type: "dateHour", path: "timestamp" },
-        { name: "deviceId", label: "Dispositivo", type: "text", path: "deviceId", hideOnMobile: true },
-        { name: "createdAt", label: "Registrado", type: "dateHour", path: "createdAt" },
+        { name: 'timestamp', label: 'Fecha y Hora', type: 'dateHour', path: 'timestamp' },
+        {
+          name: 'deviceId',
+          label: 'Dispositivo',
+          type: 'text',
+          path: 'deviceId',
+          hideOnMobile: true,
+        },
+        { name: 'createdAt', label: 'Registrado', type: 'dateHour', path: 'createdAt' },
       ],
     },
   },
-
 };

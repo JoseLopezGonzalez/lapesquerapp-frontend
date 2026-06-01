@@ -1,4 +1,5 @@
 # Auditoría: shadcn/Tailwind UI Agent
+
 # Bloque: Pedidos — OrdersManager, Comercial, Field/Autoventa
 
 **Fecha:** 2026-04-26
@@ -12,22 +13,22 @@
 
 ## 1. Componentes auditados
 
-| Componente / Archivo | Área |
-|---|---|
-| `src/components/Admin/OrdersManager/index.js` | Gestor principal |
-| `src/components/Admin/OrdersManager/OrderCard/index.js` | Tarjeta de pedido |
-| `src/components/Admin/OrdersManager/OrderHeaderMobile.jsx` | Cabecera móvil |
-| `src/components/Admin/OrdersManager/OrderSectionList.jsx` | Lista de secciones |
-| `src/components/Admin/OrdersManager/Order/OrderPallets/OrderPalletsToolbar.jsx` | Barra móvil de palets |
-| `src/components/Admin/OrdersManager/Order/OrderDetails/index.js` | Detalle del pedido |
-| `src/components/Admin/OrdersManager/Order/OrderProductDetails/index.js` | Detalle de productos |
-| `src/components/Admin/OrdersManager/Order/OrderIncident/index.js` | Incidencias |
-| `src/components/Admin/OrdersManager/Order/OrderProduction/index.js` | Producción |
-| `src/components/Admin/OrdersManager/Order/OrderPlannedProductDetails/index.js` | Líneas previstas |
-| `src/components/Admin/OrdersManager/Order/OrderEditSheet/index.js` | Sheet de edición |
-| `src/components/Admin/OrdersManager/CreateOrderForm/CreateOrderFormMobile.jsx` | Formulario creación móvil |
-| `src/components/Admin/OrdersManager/StatusBadge.jsx` | Badge de estado |
-| `src/components/Comercial/CRM/` | Componentes CRM comercial |
+| Componente / Archivo                                                            | Área                      |
+| ------------------------------------------------------------------------------- | ------------------------- |
+| `src/components/Admin/OrdersManager/index.js`                                   | Gestor principal          |
+| `src/components/Admin/OrdersManager/OrderCard/index.js`                         | Tarjeta de pedido         |
+| `src/components/Admin/OrdersManager/OrderHeaderMobile.jsx`                      | Cabecera móvil            |
+| `src/components/Admin/OrdersManager/OrderSectionList.jsx`                       | Lista de secciones        |
+| `src/components/Admin/OrdersManager/Order/OrderPallets/OrderPalletsToolbar.jsx` | Barra móvil de palets     |
+| `src/components/Admin/OrdersManager/Order/OrderDetails/index.js`                | Detalle del pedido        |
+| `src/components/Admin/OrdersManager/Order/OrderProductDetails/index.js`         | Detalle de productos      |
+| `src/components/Admin/OrdersManager/Order/OrderIncident/index.js`               | Incidencias               |
+| `src/components/Admin/OrdersManager/Order/OrderProduction/index.js`             | Producción                |
+| `src/components/Admin/OrdersManager/Order/OrderPlannedProductDetails/index.js`  | Líneas previstas          |
+| `src/components/Admin/OrdersManager/Order/OrderEditSheet/index.js`              | Sheet de edición          |
+| `src/components/Admin/OrdersManager/CreateOrderForm/CreateOrderFormMobile.jsx`  | Formulario creación móvil |
+| `src/components/Admin/OrdersManager/StatusBadge.jsx`                            | Badge de estado           |
+| `src/components/Comercial/CRM/`                                                 | Componentes CRM comercial |
 
 ---
 
@@ -58,27 +59,32 @@ style={{ paddingBottom: `calc(0.75rem + env(safe-area-inset-bottom))` }}
 3. **`z-50` hardcodeado** — duplicado en múltiples archivos. Si un componente con z-index mayor aparece, las toolbars quedan debajo sin forma de ajustarlo sistemáticamente.
 
 **Propuesta de corrección:**
+
 ```css
 /* globals.css — añadir token */
 @theme inline {
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 ```
+
 ```jsx
 // Componente compartido: src/components/UI/MobileActionBar.jsx
 export function MobileActionBar({ children, className }) {
   return (
-    <div className={cn(
-      "fixed bottom-0 left-0 right-0 z-50",
-      "bg-background border-t",
-      "px-3 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]",
-      className
-    )}>
+    <div
+      className={cn(
+        'fixed right-0 bottom-0 left-0 z-50',
+        'bg-background border-t',
+        'px-3 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]',
+        className
+      )}
+    >
       {children}
     </div>
   );
 }
 ```
+
 **Prioridad: Alta** — duplicación x5, inline styles en 5 archivos simultáneos.
 
 ---
@@ -87,26 +93,28 @@ export function MobileActionBar({ children, className }) {
 
 ```jsx
 // OrderCard/index.js:72-96
-'bg-orange-500/15 text-orange-700 dark:text-orange-300',   // estado pendiente
-'bg-green-500/15 text-green-700 dark:text-green-300',      // estado activo
-'bg-red-500/15 text-red-700 dark:text-red-300',            // estado cancelado
-'bg-neutral-500/15 text-neutral-700 dark:text-neutral-300 border border-neutral-400/50'  // otros
+('bg-orange-500/15 text-orange-700 dark:text-orange-300', // estado pendiente
+  'bg-green-500/15 text-green-700 dark:text-green-300', // estado activo
+  'bg-red-500/15 text-red-700 dark:text-red-300', // estado cancelado
+  'bg-neutral-500/15 text-neutral-700 dark:text-neutral-300 border border-neutral-400/50'); // otros
 ```
 
 El proyecto tiene tokens semánticos específicos para estos casos:
 
-| Clase usada | Token correcto | Motivo |
-|---|---|---|
-| `bg-orange-500/15 text-orange-700` | `bg-warning/15 text-warning` | Token `--warning` es oklch(0.83 0.17 92) — amarillo/naranja |
-| `bg-green-500/15 text-green-700` | `bg-success/15 text-success` | Token `--success` es oklch(0.74 0.17 155) — verde |
-| `bg-red-500/15 text-red-700` | `bg-destructive/15 text-destructive` | Token `--destructive` es oklch(0.58 0.22 27) — rojo |
+| Clase usada                        | Token correcto                       | Motivo                                                      |
+| ---------------------------------- | ------------------------------------ | ----------------------------------------------------------- |
+| `bg-orange-500/15 text-orange-700` | `bg-warning/15 text-warning`         | Token `--warning` es oklch(0.83 0.17 92) — amarillo/naranja |
+| `bg-green-500/15 text-green-700`   | `bg-success/15 text-success`         | Token `--success` es oklch(0.74 0.17 155) — verde           |
+| `bg-red-500/15 text-red-700`       | `bg-destructive/15 text-destructive` | Token `--destructive` es oklch(0.58 0.22 27) — rojo         |
 
 Usar los tokens garantiza que si el design system cambia los colores semánticos, las cards se actualizan automáticamente. Los colores directos de Tailwind (`orange-700`, `green-700`) no responden al theme.
 
 Además, en `OrderHeaderMobile.jsx:60`:
+
 ```jsx
-'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-400 dark:border-slate-500'
+'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-400 dark:border-slate-500';
 ```
+
 `slate-*` no son tokens del sistema — deberían ser `bg-muted`, `text-muted-foreground`, `border-border`.
 
 **Prioridad: Alta** — afecta a la pieza visual más repetida del gestor (cada tarjeta de pedido).
@@ -125,6 +133,7 @@ Sin `cn()` / `tailwind-merge`, si se pasan clases adicionales desde el exterior 
 **En 3+ archivos de `src/components/Comercial/CRM/`** se detecta el mismo patrón con template literals.
 
 **Corrección:**
+
 ```jsx
 // ✓
 className={cn("px-4 pt-8 flex justify-center", hasSafeAreaPadding ? "pb-8" : "pb-2")}
@@ -144,6 +153,7 @@ className={cn("px-4 pt-8 flex justify-center", hasSafeAreaPadding ? "pb-8" : "pb
 ```
 
 `ScrollArea` de Radix proporciona:
+
 - Scrollbar visual consistente con el design system
 - Soporte de scroll virtualizado
 - Accesibilidad (rol ARIA de región scrollable)
@@ -169,19 +179,25 @@ style={{ fontFamily: 'OCR A Std, monospace', fontWeight: 600 }}
 Una tipografía especial (`OCR A Std`) para mostrar códigos (probablemente códigos de barras o números de trazabilidad) está incrustada como inline style. Si el agente de design system define una fuente monospaced diferente en el futuro, este código no se actualizará.
 
 **Corrección:**
+
 ```css
 /* globals.css */
 @theme inline {
   --font-mono-barcode: 'OCR A Std', monospace;
 }
 ```
+
 ```jsx
 <span className="font-barcode font-semibold">...</span>
 ```
 
 O como alternativa más simple, añadir una clase utility en `globals.css`:
+
 ```css
-.font-barcode { font-family: 'OCR A Std', monospace; font-weight: 600; }
+.font-barcode {
+  font-family: 'OCR A Std', monospace;
+  font-weight: 600;
+}
 ```
 
 **Prioridad: Media** — el componente de detalle es crítico y la tipografía afecta a la legibilidad de datos de trazabilidad.
@@ -222,28 +238,33 @@ className={cn(isComboboxOpen ? "pointer-events-auto" : "pointer-events-none")}
 
 ```jsx
 // OrdersManager/index.js
-title="Seleccione un pedido"
+title = 'Seleccione un pedido';
 
 // OrderCostAnalysis/index.jsx — múltiples instancias
 // OrderLabels/index.js
 ```
 
 El atributo `title` del HTML:
+
 - No funciona en pantallas táctiles
 - No tiene estilo consistente con el design system
 - No es accesible (no anunciado por lectores de pantalla correctamente)
 
 `Tooltip` de shadcn/Radix:
+
 - Funciona en todos los dispositivos
 - Respeta el design system
 - Tiene roles ARIA correctos
 
 **Corrección:**
+
 ```jsx
 // ✓
 <TooltipProvider>
   <Tooltip>
-    <TooltipTrigger asChild><Button>...</Button></TooltipTrigger>
+    <TooltipTrigger asChild>
+      <Button>...</Button>
+    </TooltipTrigger>
     <TooltipContent>Seleccione un pedido</TooltipContent>
   </Tooltip>
 </TooltipProvider>
@@ -255,42 +276,42 @@ El atributo `title` del HTML:
 
 ## 3. Puntos fuertes
 
-| Aspecto | Evaluación |
-|---|---|
-| `StatusBadge.jsx` — encapsulación de estado | Excelente: mapea estados a clases de color en un solo lugar. La referencia correcta para el resto del bloque. |
-| `Badge` de shadcn — uso general | Correcto en OrderCard, OrderCostAnalysis, OrderIncident, OrderDocuments y otros (17 archivos). |
-| `AlertDialog` en líneas previstas | Correcto: se usa para la acción destructiva de borrar una línea ya persistida. |
-| `ConfirmActionDialog` — patrón de confirmación | Bien implementado con Dialog y variante destructive en el botón. |
-| `Sheet` para edición | `OrderEditSheet` usa Sheet correctamente para el panel lateral de edición. |
-| `ScrollArea` en OrderDetails | Hay uso correcto de ScrollArea donde corresponde. |
-| `cn()` — uso general | Presente y correcto en la mayoría de componentes. Los fallos son puntuales. |
-| Lucide icons | Uso consistente de la biblioteca oficial en toda la UI. |
+| Aspecto                                        | Evaluación                                                                                                    |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `StatusBadge.jsx` — encapsulación de estado    | Excelente: mapea estados a clases de color en un solo lugar. La referencia correcta para el resto del bloque. |
+| `Badge` de shadcn — uso general                | Correcto en OrderCard, OrderCostAnalysis, OrderIncident, OrderDocuments y otros (17 archivos).                |
+| `AlertDialog` en líneas previstas              | Correcto: se usa para la acción destructiva de borrar una línea ya persistida.                                |
+| `ConfirmActionDialog` — patrón de confirmación | Bien implementado con Dialog y variante destructive en el botón.                                              |
+| `Sheet` para edición                           | `OrderEditSheet` usa Sheet correctamente para el panel lateral de edición.                                    |
+| `ScrollArea` en OrderDetails                   | Hay uso correcto de ScrollArea donde corresponde.                                                             |
+| `cn()` — uso general                           | Presente y correcto en la mayoría de componentes. Los fallos son puntuales.                                   |
+| Lucide icons                                   | Uso consistente de la biblioteca oficial en toda la UI.                                                       |
 
 ---
 
 ## 4. Propuesta de corrección priorizada
 
-| Prioridad | Problema | Archivos afectados | Acción |
-|---|---|---|---|
-| **Alta** | Barras móviles fixed con inline style repetido x5 | `OrderPalletsToolbar`, `OrderProductDetails`, `OrderIncident`, `OrderProduction`, `OrderPlannedProductDetails` | Extraer `MobileActionBar` compartido con token CSS para safe-area |
-| **Alta** | Colores de estado en `OrderCard` sin tokens semánticos | `OrderCard/index.js`, `OrderHeaderMobile.jsx` | Reemplazar `orange-*`, `green-*`, `red-*`, `slate-*` por `warning`, `success`, `destructive`, `muted` |
-| **Alta** | Template literals sin `cn()` | `OrderSectionList.jsx` + Comercial/CRM | Migrar a `cn()` |
-| **Media** | `overflow-y-auto` sin `ScrollArea` en contenedores con altura fija | 16 archivos | Reemplazar en listas de palets, documentos, filtros, producción |
-| **Media** | `fontFamily` / `fontWeight` como inline style | `OrderDetails/index.js` | Token CSS `--font-barcode` en globals.css |
-| **Baja** | `border: 0` en iframe como inline style | `OrderDetails/index.js` | `className="border-0"` |
-| **Baja** | `pointerEvents` como inline style | `CreateOrderFormMobile.jsx` | `cn("pointer-events-none", ...)` |
-| **Baja** | `title=""` nativo sin Tooltip | 10+ archivos | Migrar a Tooltip shadcn |
+| Prioridad | Problema                                                           | Archivos afectados                                                                                             | Acción                                                                                                |
+| --------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| **Alta**  | Barras móviles fixed con inline style repetido x5                  | `OrderPalletsToolbar`, `OrderProductDetails`, `OrderIncident`, `OrderProduction`, `OrderPlannedProductDetails` | Extraer `MobileActionBar` compartido con token CSS para safe-area                                     |
+| **Alta**  | Colores de estado en `OrderCard` sin tokens semánticos             | `OrderCard/index.js`, `OrderHeaderMobile.jsx`                                                                  | Reemplazar `orange-*`, `green-*`, `red-*`, `slate-*` por `warning`, `success`, `destructive`, `muted` |
+| **Alta**  | Template literals sin `cn()`                                       | `OrderSectionList.jsx` + Comercial/CRM                                                                         | Migrar a `cn()`                                                                                       |
+| **Media** | `overflow-y-auto` sin `ScrollArea` en contenedores con altura fija | 16 archivos                                                                                                    | Reemplazar en listas de palets, documentos, filtros, producción                                       |
+| **Media** | `fontFamily` / `fontWeight` como inline style                      | `OrderDetails/index.js`                                                                                        | Token CSS `--font-barcode` en globals.css                                                             |
+| **Baja**  | `border: 0` en iframe como inline style                            | `OrderDetails/index.js`                                                                                        | `className="border-0"`                                                                                |
+| **Baja**  | `pointerEvents` como inline style                                  | `CreateOrderFormMobile.jsx`                                                                                    | `cn("pointer-events-none", ...)`                                                                      |
+| **Baja**  | `title=""` nativo sin Tooltip                                      | 10+ archivos                                                                                                   | Migrar a Tooltip shadcn                                                                               |
 
 ---
 
 ## 5. ¿Requiere decisión arquitectónica?
 
-| Decisión | ¿Requiere ADR? |
-|---|---|
-| Token CSS para `env(safe-area-inset-bottom)` | No — cambio local a `globals.css` |
-| Componente `MobileActionBar` compartido | No — extracción de componente existente |
-| Migración `orange-*/green-*/red-*` → tokens semánticos | No — refactor de clases |
-| Reemplazar `overflow-y-auto` por `ScrollArea` | No — cambio de componente equivalente |
+| Decisión                                               | ¿Requiere ADR?                          |
+| ------------------------------------------------------ | --------------------------------------- |
+| Token CSS para `env(safe-area-inset-bottom)`           | No — cambio local a `globals.css`       |
+| Componente `MobileActionBar` compartido                | No — extracción de componente existente |
+| Migración `orange-*/green-*/red-*` → tokens semánticos | No — refactor de clases                 |
+| Reemplazar `overflow-y-auto` por `ScrollArea`          | No — cambio de componente equivalente   |
 
 Ningún cambio requiere ADR. Todos son correcciones dentro de las convenciones ya establecidas del proyecto.
 

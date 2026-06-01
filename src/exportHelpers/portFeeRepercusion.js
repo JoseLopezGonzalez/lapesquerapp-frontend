@@ -7,17 +7,17 @@
  */
 
 import {
-    serviciosLonjaDeIsla,
-    servicioExtraLonjaDeIsla,
+  serviciosLonjaDeIsla,
+  servicioExtraLonjaDeIsla,
 } from '@/components/Admin/MarketDataExtractor/ListadoComprasLonjaDeIsla/exportData';
 import {
-    serviciosAsocArmadoresPuntaDelMoral,
-    servicioExtraAsocArmadoresPuntaDelMoral,
+  serviciosAsocArmadoresPuntaDelMoral,
+  servicioExtraAsocArmadoresPuntaDelMoral,
 } from '@/components/Admin/MarketDataExtractor/ListadoComprasAsocPuntaDelMoral/exportData';
 
 const LONJA_ISLA_SERVICIOS_SIN_REPERCUSION_T4 = new Set([
-    'USO LONJA 1% COMPRADORES',
-    'SERVICIO MANIPULACION COMPRAS',
+  'USO LONJA 1% COMPRADORES',
+  'SERVICIO MANIPULACION COMPRAS',
 ]);
 
 const ASOC_SERVICIOS_SIN_REPERCUSION_T4 = new Set(['Gastos Lonja', 'Gastos Gestion Cobros']);
@@ -28,7 +28,7 @@ const ASOC_SERVICIOS_SIN_REPERCUSION_T4 = new Set(['Gastos Lonja', 'Gastos Gesti
  * @returns {boolean}
  */
 export function shouldApplyFullTasaPescaRepercusion(options = {}) {
-    return options.applyFullTasaPescaRepercusion !== false;
+  return options.applyFullTasaPescaRepercusion !== false;
 }
 
 /**
@@ -37,7 +37,7 @@ export function shouldApplyFullTasaPescaRepercusion(options = {}) {
  * @returns {number}
  */
 export function getPorcentajeGastosLonjaOpVendiduria(applyFull) {
-    return applyFull ? 3.5 : 1.5;
+  return applyFull ? 3.5 : 1.5;
 }
 
 /**
@@ -47,36 +47,36 @@ export function getPorcentajeGastosLonjaOpVendiduria(applyFull) {
  * @returns {Array<Object>}
  */
 export function buildLonjaDeIslaServiciosCalculados(applyFull, importeTotalVentasDirectas) {
-    const base = importeTotalVentasDirectas;
-    if (applyFull) {
-        const servicios = serviciosLonjaDeIsla.map((servicio) => ({
-            ...servicio,
-            unidades: 1,
-            base,
-            precio: (base * servicio.porcentaje) / 100,
-            importe: (base * servicio.porcentaje) / 100,
-        }));
-        const g4Importe =
-            servicios.find((s) => s.descripcion === 'REPERCUSION TARIFA G-4 COMP.')?.importe ?? 0;
-        const servicioExtra = {
-            ...servicioExtraLonjaDeIsla,
-            unidades: 1,
-            base: g4Importe,
-            precio: (g4Importe * servicioExtraLonjaDeIsla.porcentaje) / 100,
-            importe: (g4Importe * servicioExtraLonjaDeIsla.porcentaje) / 100,
-        };
-        servicios.splice(1, 0, servicioExtra);
-        return servicios;
-    }
-    return serviciosLonjaDeIsla
-        .filter((s) => LONJA_ISLA_SERVICIOS_SIN_REPERCUSION_T4.has(s.descripcion))
-        .map((servicio) => ({
-            ...servicio,
-            unidades: 1,
-            base,
-            precio: (base * servicio.porcentaje) / 100,
-            importe: (base * servicio.porcentaje) / 100,
-        }));
+  const base = importeTotalVentasDirectas;
+  if (applyFull) {
+    const servicios = serviciosLonjaDeIsla.map((servicio) => ({
+      ...servicio,
+      unidades: 1,
+      base,
+      precio: (base * servicio.porcentaje) / 100,
+      importe: (base * servicio.porcentaje) / 100,
+    }));
+    const g4Importe =
+      servicios.find((s) => s.descripcion === 'REPERCUSION TARIFA G-4 COMP.')?.importe ?? 0;
+    const servicioExtra = {
+      ...servicioExtraLonjaDeIsla,
+      unidades: 1,
+      base: g4Importe,
+      precio: (g4Importe * servicioExtraLonjaDeIsla.porcentaje) / 100,
+      importe: (g4Importe * servicioExtraLonjaDeIsla.porcentaje) / 100,
+    };
+    servicios.splice(1, 0, servicioExtra);
+    return servicios;
+  }
+  return serviciosLonjaDeIsla
+    .filter((s) => LONJA_ISLA_SERVICIOS_SIN_REPERCUSION_T4.has(s.descripcion))
+    .map((servicio) => ({
+      ...servicio,
+      unidades: 1,
+      base,
+      precio: (base * servicio.porcentaje) / 100,
+      importe: (base * servicio.porcentaje) / 100,
+    }));
 }
 
 /**
@@ -86,33 +86,33 @@ export function buildLonjaDeIslaServiciosCalculados(applyFull, importeTotalVenta
  * @returns {Array<Object>}
  */
 export function buildAsocServiciosCalculados(applyFull, importeTotalCalculado) {
-    const base = importeTotalCalculado;
-    if (applyFull) {
-        const servicios = serviciosAsocArmadoresPuntaDelMoral.map((servicio) => ({
-            ...servicio,
-            unidades: 1,
-            base,
-            precio: (base * servicio.porcentaje) / 100,
-            importe: (base * servicio.porcentaje) / 100,
-        }));
-        const tarifaG4 = servicios.find((s) => s.descripcion === 'Tarifa G-4')?.importe ?? 0;
-        const servicioExtra = {
-            ...servicioExtraAsocArmadoresPuntaDelMoral,
-            unidades: 1,
-            base: tarifaG4,
-            precio: (tarifaG4 * servicioExtraAsocArmadoresPuntaDelMoral.porcentaje) / 100,
-            importe: (tarifaG4 * servicioExtraAsocArmadoresPuntaDelMoral.porcentaje) / 100,
-        };
-        servicios.splice(1, 0, servicioExtra);
-        return servicios;
-    }
-    return serviciosAsocArmadoresPuntaDelMoral
-        .filter((s) => ASOC_SERVICIOS_SIN_REPERCUSION_T4.has(s.descripcion))
-        .map((servicio) => ({
-            ...servicio,
-            unidades: 1,
-            base,
-            precio: (base * servicio.porcentaje) / 100,
-            importe: (base * servicio.porcentaje) / 100,
-        }));
+  const base = importeTotalCalculado;
+  if (applyFull) {
+    const servicios = serviciosAsocArmadoresPuntaDelMoral.map((servicio) => ({
+      ...servicio,
+      unidades: 1,
+      base,
+      precio: (base * servicio.porcentaje) / 100,
+      importe: (base * servicio.porcentaje) / 100,
+    }));
+    const tarifaG4 = servicios.find((s) => s.descripcion === 'Tarifa G-4')?.importe ?? 0;
+    const servicioExtra = {
+      ...servicioExtraAsocArmadoresPuntaDelMoral,
+      unidades: 1,
+      base: tarifaG4,
+      precio: (tarifaG4 * servicioExtraAsocArmadoresPuntaDelMoral.porcentaje) / 100,
+      importe: (tarifaG4 * servicioExtraAsocArmadoresPuntaDelMoral.porcentaje) / 100,
+    };
+    servicios.splice(1, 0, servicioExtra);
+    return servicios;
+  }
+  return serviciosAsocArmadoresPuntaDelMoral
+    .filter((s) => ASOC_SERVICIOS_SIN_REPERCUSION_T4.has(s.descripcion))
+    .map((servicio) => ({
+      ...servicio,
+      unidades: 1,
+      base,
+      precio: (base * servicio.porcentaje) / 100,
+      importe: (base * servicio.porcentaje) / 100,
+    }));
 }

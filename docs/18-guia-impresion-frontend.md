@@ -28,6 +28,7 @@ Esta guía documenta cómo implementar correctamente funcionalidades de impresi�
 ## Hook usePrintElement
 
 ### Ubicación
+
 `/src/hooks/usePrintElement.js`
 
 ### Uso Básico
@@ -35,10 +36,10 @@ Esta guía documenta cómo implementar correctamente funcionalidades de impresi�
 ```javascript
 import { usePrintElement } from '@/hooks/usePrintElement';
 
-const { onPrint } = usePrintElement({ 
-  id: 'print-area-id',      // ID del elemento a imprimir (requerido)
-  width: 110,               // Ancho en mm (opcional, default: 100)
-  height: 90                // Alto en mm (opcional, default: 150)
+const { onPrint } = usePrintElement({
+  id: 'print-area-id', // ID del elemento a imprimir (requerido)
+  width: 110, // Ancho en mm (opcional, default: 100)
+  height: 90, // Alto en mm (opcional, default: 150)
 });
 
 // Llamar para imprimir
@@ -47,17 +48,17 @@ onPrint();
 
 ### Parámetros
 
-| Parámetro | Tipo | Requerido | Default | Descripción |
-|-----------|------|-----------|---------|-------------|
-| `id` | string | ✅ Sí | - | ID del elemento HTML que contiene el contenido a imprimir |
-| `width` | number | ❌ No | 100 | Ancho de la página en milímetros |
-| `height` | number | ❌ No | 150 | Alto de la página en milímetros |
+| Parámetro | Tipo   | Requerido | Default | Descripción                                               |
+| --------- | ------ | --------- | ------- | --------------------------------------------------------- |
+| `id`      | string | ✅ Sí     | -       | ID del elemento HTML que contiene el contenido a imprimir |
+| `width`   | number | ❌ No     | 100     | Ancho de la página en milímetros                          |
+| `height`  | number | ❌ No     | 150     | Alto de la página en milímetros                           |
 
 ### Retorno
 
 ```javascript
 {
-  onPrint: Function  // Función que ejecuta la impresión
+  onPrint: Function; // Función que ejecuta la impresión
 }
 ```
 
@@ -84,10 +85,10 @@ import { usePrintElement } from '@/hooks/usePrintElement';
 import { PALLET_LABEL_SIZE } from '@/configs/config';
 
 export default function MyPrintDialog({ isOpen, onClose, data }) {
-  const { onPrint } = usePrintElement({ 
-    id: 'print-area-id', 
-    width: PALLET_LABEL_SIZE.width, 
-    height: PALLET_LABEL_SIZE.height 
+  const { onPrint } = usePrintElement({
+    id: 'print-area-id',
+    width: PALLET_LABEL_SIZE.width,
+    height: PALLET_LABEL_SIZE.height,
   });
 
   return (
@@ -95,17 +96,18 @@ export default function MyPrintDialog({ isOpen, onClose, data }) {
       <DialogContent>
         {/* Vista previa visible */}
         <div className="bg-orange-200 px-4">
-          <div 
-            id="print-area-id"  // ← Mismo ID que se usa en usePrintElement
+          <div
+            id="print-area-id" // ← Mismo ID que se usa en usePrintElement
             className="text-black"
-            style={{ 
-              width: PALLET_LABEL_SIZE.width, 
-              height: PALLET_LABEL_SIZE.height 
-            }}>
+            style={{
+              width: PALLET_LABEL_SIZE.width,
+              height: PALLET_LABEL_SIZE.height,
+            }}
+          >
             <MyContent data={data} />
           </div>
         </div>
-        
+
         <Button onClick={onPrint}>
           <Printer className="h-4 w-4" />
           Imprimir
@@ -117,6 +119,7 @@ export default function MyPrintDialog({ isOpen, onClose, data }) {
 ```
 
 **Características clave:**
+
 - El área de impresión (`id="print-area-id"`) está **visible** en la vista previa
 - El mismo elemento se usa para vista previa e impresión
 - El ID debe coincidir exactamente con el usado en `usePrintElement`
@@ -131,10 +134,10 @@ export default function MyPrintDialog({ isOpen, onClose, data }) {
 import { usePrintElement } from '@/hooks/usePrintElement';
 
 export default function MultiplePrintDialog({ open, onClose, items = [] }) {
-  const { onPrint } = usePrintElement({ 
-    id: 'print-area-id', 
-    width: 110, 
-    height: 90 
+  const { onPrint } = usePrintElement({
+    id: 'print-area-id',
+    width: 110,
+    height: 90,
   });
 
   return (
@@ -167,6 +170,7 @@ export default function MultiplePrintDialog({ open, onClose, items = [] }) {
 ```
 
 **Características clave:**
+
 - El área de impresión usa `className="hidden print:block"` para estar oculta pero disponible
 - Cada elemento tiene la clase `page` para separación de páginas
 - La vista previa muestra solo el primer elemento
@@ -182,17 +186,17 @@ export default function MultiplePrintDialog({ open, onClose, items = [] }) {
 import { usePrintElement } from '@/hooks/usePrintElement';
 
 export default function DocumentPrintDialog({ isOpen, onClose, data }) {
-  const { onPrint } = usePrintElement({ 
-    id: 'document-print-content', 
-    width: 210,  // A4 width
-    height: 297  // A4 height
+  const { onPrint } = usePrintElement({
+    id: 'document-print-content',
+    width: 210, // A4 width
+    height: 297, // A4 height
   });
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         {/* Vista previa */}
-        <div className="p-6 bg-white border rounded-lg">
+        <div className="rounded-lg border bg-white p-6">
           <h1>Mi Documento</h1>
           {/* Contenido de vista previa */}
         </div>
@@ -216,6 +220,7 @@ export default function DocumentPrintDialog({ isOpen, onClose, data }) {
 ```
 
 **Características clave:**
+
 - Para documentos A4, usar `width: 210, height: 297`
 - El área de impresión está oculta con `hidden print:block`
 - Puede tener contenido diferente o adicional en el área de impresión
@@ -238,14 +243,16 @@ const handlePrint = () => {
     body * {
       visibility: hidden;
     }
-    #my-content, #my-content * {
+    #my-content,
+    #my-content * {
       visibility: visible;
     }
   }
-`}</style>
+`}</style>;
 ```
 
 **Problemas:**
+
 - Interfiere con otras impresiones simultáneas
 - Puede causar que otras impresiones se muestren en blanco
 - No permite control preciso del tamaño de página
@@ -258,11 +265,11 @@ const handlePrint = () => {
 // ❌ INCORRECTO
 return (
   <>
-    <Dialog open={isOpen}>
-      {/* contenido */}
-    </Dialog>
+    <Dialog open={isOpen}>{/* contenido */}</Dialog>
     {isOpen && (
-      <div id="print-area-id">  {/* ← Puede no estar en el DOM cuando se necesita */}
+      <div id="print-area-id">
+        {' '}
+        {/* ← Puede no estar en el DOM cuando se necesita */}
         {/* contenido */}
       </div>
     )}
@@ -278,10 +285,7 @@ return (
 
 ```javascript
 // ❌ INCORRECTO - Puede no renderizarse correctamente
-<div 
-  id="print-area-id" 
-  style={{ position: 'absolute', left: '-9999px' }}
->
+<div id="print-area-id" style={{ position: 'absolute', left: '-9999px' }}>
   {/* contenido */}
 </div>
 ```
@@ -307,10 +311,10 @@ import { Printer } from 'lucide-react';
 const LABEL_SIZE = { width: 110, height: 90 };
 
 export default function SimpleLabelDialog({ isOpen, onClose, labelData }) {
-  const { onPrint } = usePrintElement({ 
-    id: 'label-print-area', 
-    width: LABEL_SIZE.width, 
-    height: LABEL_SIZE.height 
+  const { onPrint } = usePrintElement({
+    id: 'label-print-area',
+    width: LABEL_SIZE.width,
+    height: LABEL_SIZE.height,
   });
 
   return (
@@ -319,16 +323,17 @@ export default function SimpleLabelDialog({ isOpen, onClose, labelData }) {
         <DialogHeader>
           <DialogTitle>Imprimir Etiqueta</DialogTitle>
         </DialogHeader>
-        
+
         {/* Vista previa e impresión - mismo elemento */}
         <div className="bg-orange-200 px-4">
-          <div 
+          <div
             id="label-print-area"
             className="text-black"
-            style={{ 
-              width: `${LABEL_SIZE.width}mm`, 
-              height: `${LABEL_SIZE.height}mm` 
-            }}>
+            style={{
+              width: `${LABEL_SIZE.width}mm`,
+              height: `${LABEL_SIZE.height}mm`,
+            }}
+          >
             <div className="p-4">
               <h2 className="text-2xl font-bold">{labelData.title}</h2>
               <p>{labelData.description}</p>
@@ -337,7 +342,7 @@ export default function SimpleLabelDialog({ isOpen, onClose, labelData }) {
         </div>
 
         <Button onClick={onPrint}>
-          <Printer className="h-4 w-4 mr-2" />
+          <Printer className="mr-2 h-4 w-4" />
           Imprimir
         </Button>
       </DialogContent>
@@ -361,10 +366,10 @@ import { Printer } from 'lucide-react';
 const LABEL_SIZE = { width: 110, height: 90 };
 
 export default function MultipleLabelsDialog({ isOpen, onClose, labels = [] }) {
-  const { onPrint } = usePrintElement({ 
-    id: 'labels-print-area', 
-    width: LABEL_SIZE.width, 
-    height: LABEL_SIZE.height 
+  const { onPrint } = usePrintElement({
+    id: 'labels-print-area',
+    width: LABEL_SIZE.width,
+    height: LABEL_SIZE.height,
   });
 
   if (labels.length === 0) return null;
@@ -375,15 +380,16 @@ export default function MultipleLabelsDialog({ isOpen, onClose, labels = [] }) {
         <DialogHeader>
           <DialogTitle>Imprimir {labels.length} Etiquetas</DialogTitle>
         </DialogHeader>
-        
+
         {/* Vista previa - solo primera */}
         <div className="bg-orange-200 px-4">
-          <div 
+          <div
             className="text-black"
-            style={{ 
-              width: `${LABEL_SIZE.width}mm`, 
-              height: `${LABEL_SIZE.height}mm` 
-            }}>
+            style={{
+              width: `${LABEL_SIZE.width}mm`,
+              height: `${LABEL_SIZE.height}mm`,
+            }}
+          >
             <LabelContent data={labels[0]} />
           </div>
         </div>
@@ -398,7 +404,7 @@ export default function MultipleLabelsDialog({ isOpen, onClose, labels = [] }) {
         </div>
 
         <Button onClick={onPrint}>
-          <Printer className="h-4 w-4 mr-2" />
+          <Printer className="mr-2 h-4 w-4" />
           Imprimir ({labels.length})
         </Button>
       </DialogContent>
@@ -420,10 +426,10 @@ import { Button } from '@/components/ui/button';
 import { Printer } from 'lucide-react';
 
 export default function DocumentDialog({ isOpen, onClose, documentData }) {
-  const { onPrint } = usePrintElement({ 
-    id: 'document-print-area', 
-    width: 210,  // A4
-    height: 297  // A4
+  const { onPrint } = usePrintElement({
+    id: 'document-print-area',
+    width: 210, // A4
+    height: 297, // A4
   });
 
   return (
@@ -432,10 +438,10 @@ export default function DocumentDialog({ isOpen, onClose, documentData }) {
         <DialogHeader>
           <DialogTitle>Imprimir Documento</DialogTitle>
         </DialogHeader>
-        
+
         {/* Vista previa */}
-        <div className="p-6 bg-white border rounded-lg max-h-[60vh] overflow-auto">
-          <h1 className="text-2xl font-bold mb-4">Mi Documento</h1>
+        <div className="max-h-[60vh] overflow-auto rounded-lg border bg-white p-6">
+          <h1 className="mb-4 text-2xl font-bold">Mi Documento</h1>
           <div className="space-y-4">
             {/* Contenido de vista previa */}
             <p>{documentData.content}</p>
@@ -445,7 +451,7 @@ export default function DocumentDialog({ isOpen, onClose, documentData }) {
         {/* Área de impresión */}
         <div id="document-print-area" className="hidden print:block">
           <div className="p-8" style={{ width: '210mm', minHeight: '297mm' }}>
-            <h1 className="text-3xl font-bold mb-6">Mi Documento</h1>
+            <h1 className="mb-6 text-3xl font-bold">Mi Documento</h1>
             <div className="space-y-4">
               {/* Contenido completo para imprimir */}
               <p>{documentData.content}</p>
@@ -454,7 +460,7 @@ export default function DocumentDialog({ isOpen, onClose, documentData }) {
         </div>
 
         <Button onClick={onPrint}>
-          <Printer className="h-4 w-4 mr-2" />
+          <Printer className="mr-2 h-4 w-4" />
           Imprimir
         </Button>
       </DialogContent>
@@ -492,6 +498,7 @@ Para áreas de impresión que no son la vista previa:
 ```
 
 **No uses:**
+
 - `style={{ display: 'none' }}` - No se imprime
 - `style={{ visibility: 'hidden' }}` - Puede causar problemas
 - `style={{ position: 'absolute', left: '-9999px' }}` - Puede no renderizarse
@@ -511,6 +518,7 @@ Para impresiones con múltiples páginas, usa la clase `page`:
 ```
 
 La clase `page` tiene estilos predefinidos en `usePrintElement`:
+
 - `page-break-after: always` - Salto de página después
 - `page-break-inside: avoid` - Evita cortar contenido
 - Tamaño fijo según width/height especificados
@@ -522,15 +530,15 @@ Usa constantes para tamaños comunes:
 ```javascript
 // En config.js
 export const PALLET_LABEL_SIZE = {
-  width: "110mm",
-  height: "90mm"
+  width: '110mm',
+  height: '90mm',
 };
 
 // En el componente
-const { onPrint } = usePrintElement({ 
+const { onPrint } = usePrintElement({
   id: 'print-area-id',
-  width: 110,  // Convertir mm string a number
-  height: 90
+  width: 110, // Convertir mm string a number
+  height: 90,
 });
 ```
 
@@ -564,30 +572,37 @@ const handlePrint = () => {
 **Causas posibles:**
 
 1. **El elemento no está en el DOM**
+
    ```javascript
    // ❌ Incorrecto
-   {isOpen && <div id="print-area-id">...</div>}
-   
+   {
+     isOpen && <div id="print-area-id">...</div>;
+   }
+
    // ✅ Correcto
-   <div id="print-area-id" className="hidden print:block">...</div>
+   <div id="print-area-id" className="hidden print:block">
+     ...
+   </div>;
    ```
 
 2. **El ID no coincide**
+
    ```javascript
    // ❌ Incorrecto
    usePrintElement({ id: 'print-area' })
    <div id="print-area-id">...</div>
-   
+
    // ✅ Correcto
    usePrintElement({ id: 'print-area-id' })
    <div id="print-area-id">...</div>
    ```
 
 3. **El elemento está oculto incorrectamente**
+
    ```javascript
    // ❌ Incorrecto
    <div id="print-area-id" style={{ display: 'none' }}>...</div>
-   
+
    // ✅ Correcto
    <div id="print-area-id" className="hidden print:block">...</div>
    ```
@@ -611,15 +626,18 @@ const handlePrint = () => {
 **Causa:** No usar la clase `page` o tener contenido que se corta.
 
 **Solución:**
+
 ```javascript
 <div id="print-area-id" className="hidden print:block">
   {items.map((item, index) => (
     <div key={index} className="page">
       {/* Cada página debe tener el tamaño exacto */}
-      <div style={{ 
-        width: `${width}mm`, 
-        height: `${height}mm` 
-      }}>
+      <div
+        style={{
+          width: `${width}mm`,
+          height: `${height}mm`,
+        }}
+      >
         {/* contenido */}
       </div>
     </div>
@@ -633,7 +651,8 @@ const handlePrint = () => {
 
 **Causa:** Estilos que dependen de clases de Tailwind que no se copian.
 
-**Solución:** 
+**Solución:**
+
 - Asegúrate de que los estilos estén en el elemento directamente o
 - Usa estilos inline para elementos críticos
 
@@ -642,6 +661,7 @@ const handlePrint = () => {
 ### Problema: El hook no encuentra el elemento
 
 **Debug:**
+
 ```javascript
 const handlePrint = () => {
   const element = document.getElementById('print-area-id');
@@ -656,6 +676,7 @@ const handlePrint = () => {
 ```
 
 **Verificaciones:**
+
 1. El Dialog está abierto (`isOpen={true}`)
 2. El elemento está renderizado (no condicional con `&&`)
 3. El ID es exactamente el mismo (case-sensitive)
@@ -707,4 +728,3 @@ Al implementar una nueva funcionalidad de impresión, verifica:
 - **Documenta** cualquier caso especial o requisito no estándar
 
 Si encuentras problemas o necesitas implementar un caso especial, consulta los componentes de ejemplo mencionados arriba.
-

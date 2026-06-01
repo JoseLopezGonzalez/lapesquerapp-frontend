@@ -11,17 +11,22 @@
 ## 1. Qué hace el bloque (global y por entidad)
 
 ### 1.1 Admin Dashboard
+
 Panel de inicio para admin/tecnico con:
+
 - Saludo dinámico + nombre de usuario
 - 4 cards principales: Stock Total, Cantidad Ventas, Importe Ventas, Nueva Funcionalidad Etiquetas
 - Masonry de gráficos/cards: OrderRanking, SalesBySalesperson, Stock por especie/productos, SalesChart, ReceptionChart, DispatchChart, TransportRadarChart, WorkingEmployeesCard, WorkerStatisticsCard
 
 ### 1.2 OperarioDashboard
+
 Panel para operario con:
+
 - Hora, fecha, día (actualizados cada segundo)
 - 4 cards de info + ReceptionsListCard y DispatchesListCard (tablas paginadas del día)
 
 ### 1.3 HomePage
+
 Página que decide según rol si renderiza Admin Dashboard o OperarioDashboard.
 
 ---
@@ -29,20 +34,24 @@ Página que decide según rol si renderiza Admin Dashboard o OperarioDashboard.
 ## 2. Estado estructural por entidad/artefacto
 
 ### 2.1 HomePage (`page.js`)
+
 - **Estado**: JS, ~30 líneas
 - **Calidad**: Aceptable
 - **Mejoras**: Migrar a TS, extraer lógica de selección de rol a hook si crece
 
 ### 2.2 Dashboard/index.js
+
 - **Estado**: JS, ~178 líneas
 - **Calidad**: Aceptable, componente contenedor
 - **Mejoras**: Comentarios de estrategia (true &&) innecesarios; migrar a TS
 
 ### 2.3 Cards con React Query (CurrentStockCard, StockBySpeciesCard, StockByProductsCard)
+
 - **Estado**: Patrón correcto vía useStockStats
 - **Deuda**: useStockStats usa getCurrentTenant() — migrar a useTenant() cuando exista TenantContext
 
 ### 2.4 Cards con useEffect + useState
+
 - **TotalQuantitySoldCard, TotalAmountSoldCard**: ~100 líneas c/u, patrón manual
 - **OrderRankingChart**: ~314 líneas, múltiples useEffect, carga species y ranking
 - **SalesBySalespersonPieChart**: ~186 líneas
@@ -52,18 +61,22 @@ Página que decide según rol si renderiza Admin Dashboard o OperarioDashboard.
 - **WorkerStatisticsCard**: ~582 líneas — **P1** (>150)
 
 ### 2.5 NewLabelingFeatureCard
+
 - **Estado**: Estático, sin datos, ~35 líneas
 - **Calidad**: OK
 
 ### 2.6 OperarioDashboard
+
 - **Estado**: JS, ~105 líneas
 - **Calidad**: Aceptable, usa ReceptionsListCard y DispatchesListCard con useEffect
 
 ### 2.7 ReceptionsListCard, DispatchesListCard
+
 - **Estado**: useEffect + useState, servicios de dominio
 - **Mejoras**: Migrar a React Query para consistencia y caché
 
 ### 2.8 useStockStats
+
 - **Estado**: React Query, getCurrentTenant()
 - **Mejoras**: Migrar a useTenant()
 
@@ -71,13 +84,13 @@ Página que decide según rol si renderiza Admin Dashboard o OperarioDashboard.
 
 ## 3. Patrones Next.js/React
 
-| Patrón | Presencia | Comentario |
-|--------|-----------|------------|
-| Server/Client Components | Client | Todo el Dashboard es Client; correcto para interactividad |
-| Custom Hooks | Parcial | useStockStats presente; faltan useSalesChart, useReceptionChart, usePunchesDashboard, etc. |
-| Data Fetching | Inconsistente | 3 componentes React Query, 11+ con useEffect + useState |
-| API Layer | Centralizado | Servicios usados correctamente |
-| State | Local por componente | Mucho estado duplicado (options, range, unit, groupBy en cada chart) |
+| Patrón                   | Presencia            | Comentario                                                                                 |
+| ------------------------ | -------------------- | ------------------------------------------------------------------------------------------ |
+| Server/Client Components | Client               | Todo el Dashboard es Client; correcto para interactividad                                  |
+| Custom Hooks             | Parcial              | useStockStats presente; faltan useSalesChart, useReceptionChart, usePunchesDashboard, etc. |
+| Data Fetching            | Inconsistente        | 3 componentes React Query, 11+ con useEffect + useState                                    |
+| API Layer                | Centralizado         | Servicios usados correctamente                                                             |
+| State                    | Local por componente | Mucho estado duplicado (options, range, unit, groupBy en cada chart)                       |
 
 ---
 
@@ -100,13 +113,13 @@ Página que decide según rol si renderiza Admin Dashboard o OperarioDashboard.
 
 ## 6. Tech Stack del proyecto
 
-| Requisito | Cumplimiento |
-|-----------|--------------|
-| React Query para server state | Parcial — 3 de 14+ componentes |
-| Zod en formularios | N/A (Dashboard sin formularios de entrada) |
-| TypeScript | No — todo JS |
-| useTenant() | No — getCurrentTenant() en useStockStats |
-| Tests | No — ninguno para Dashboard |
+| Requisito                     | Cumplimiento                               |
+| ----------------------------- | ------------------------------------------ |
+| React Query para server state | Parcial — 3 de 14+ componentes             |
+| Zod en formularios            | N/A (Dashboard sin formularios de entrada) |
+| TypeScript                    | No — todo JS                               |
+| useTenant()                   | No — getCurrentTenant() en useStockStats   |
+| Tests                         | No — ninguno para Dashboard                |
 
 ---
 
@@ -131,9 +144,11 @@ Página que decide según rol si renderiza Admin Dashboard o OperarioDashboard.
 ## 9. Oportunidades de mejora (priorizadas)
 
 ### P0 — Críticos
+
 - Ninguno específico del Dashboard (no hay componentes > 200 líneas que no puedan abordarse en P1)
 
 ### P1 — Altos (bloquean 9/10)
+
 - **WorkingEmployeesCard** (>395 líneas): Extraer subcomponentes, migrar a React Query
 - **WorkerStatisticsCard** (>582 líneas): Extraer subcomponentes, migrar a React Query
 - **Migrar 11 componentes** de useEffect + useState a React Query: TotalQuantitySoldCard, TotalAmountSoldCard, OrderRankingChart, SalesBySalespersonPieChart, SalesChart, ReceptionChart, DispatchChart, TransportRadarChart, ReceptionsListCard, DispatchesListCard
@@ -142,6 +157,7 @@ Página que decide según rol si renderiza Admin Dashboard o OperarioDashboard.
 - **Extraer carga de options** (species, category, family) a hooks compartidos con React Query para evitar duplicación
 
 ### P2 — Medios
+
 - Migrar a TypeScript (.tsx) al refactorizar
 - Eliminar comentarios `{true && ...}` en Dashboard/index.js
 - Tests unitarios para hooks nuevos
@@ -149,6 +165,7 @@ Página que decide según rol si renderiza Admin Dashboard o OperarioDashboard.
 - Error handling consistente (toast vs silencioso)
 
 ### P3 — Bajos
+
 - Documentación de componentes
 - Evaluar lazy loading de charts pesados
 
@@ -171,15 +188,15 @@ Página que decide según rol si renderiza Admin Dashboard o OperarioDashboard.
 
 ## 12. Alcance de mejora (sub-bloques propuestos)
 
-| Sub-bloque | Entidades | Trabajo principal |
-|------------|-----------|-------------------|
-| **1** | TotalQuantitySoldCard, TotalAmountSoldCard | Crear useOrdersStats (React Query), migrar ambas cards |
-| **2** | OrderRankingChart, SalesBySalespersonPieChart | Crear useOrderRanking, useSalesBySalesperson, migrar |
-| **3** | SalesChart, ReceptionChart, DispatchChart | Extraer useChartOptions (species, category, family), useSalesChartData, useReceptionChartData, useDispatchChartData |
-| **4** | TransportRadarChart | Crear useTransportChartData, migrar |
-| **5** | WorkingEmployeesCard, WorkerStatisticsCard | Dividir en subcomponentes, crear usePunchesDashboard, usePunchesStatistics |
-| **6** | ReceptionsListCard, DispatchesListCard | Crear hooks con React Query, migrar |
-| **7** | useStockStats, Dashboard/index.js | Migrar getCurrentTenant → useTenant; limpieza Dashboard |
+| Sub-bloque | Entidades                                     | Trabajo principal                                                                                                   |
+| ---------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| **1**      | TotalQuantitySoldCard, TotalAmountSoldCard    | Crear useOrdersStats (React Query), migrar ambas cards                                                              |
+| **2**      | OrderRankingChart, SalesBySalespersonPieChart | Crear useOrderRanking, useSalesBySalesperson, migrar                                                                |
+| **3**      | SalesChart, ReceptionChart, DispatchChart     | Extraer useChartOptions (species, category, family), useSalesChartData, useReceptionChartData, useDispatchChartData |
+| **4**      | TransportRadarChart                           | Crear useTransportChartData, migrar                                                                                 |
+| **5**      | WorkingEmployeesCard, WorkerStatisticsCard    | Dividir en subcomponentes, crear usePunchesDashboard, usePunchesStatistics                                          |
+| **6**      | ReceptionsListCard, DispatchesListCard        | Crear hooks con React Query, migrar                                                                                 |
+| **7**      | useStockStats, Dashboard/index.js             | Migrar getCurrentTenant → useTenant; limpieza Dashboard                                                             |
 
 ---
 

@@ -1,4 +1,5 @@
 # Auditoría: Frontend Next.js Agent
+
 # Bloque: MarketDataExtractor — Extracción de datos de documentos de lonjas
 
 **Fecha:** 2026-04-26
@@ -9,22 +10,22 @@
 
 ## 1. Archivos inspeccionados
 
-| Archivo | Propósito |
-|---|---|
-| `src/components/Admin/MarketDataExtractor/index.js` | Entry point del bloque — Tabs Individual/Masivo |
-| `src/components/Admin/MarketDataExtractor/IndividualMode/` | Modo de procesamiento individual |
-| `src/components/Admin/MarketDataExtractor/MassiveMode/` | Modo de procesamiento masivo |
-| `src/components/Admin/MarketDataExtractor/shared/DocumentProcessor.js` | Orquestador de procesamiento |
-| `src/components/Admin/MarketDataExtractor/shared/documentTypeLabels.js` | Etiquetas de tipos de documento |
-| `src/components/Admin/MarketDataExtractor/shared/exportData.js` | Catálogo estático compartido |
-| `src/components/Admin/MarketDataExtractor/AlbaranCofraWeb/index.js` | Vista de documento Cofra |
-| `src/components/Admin/MarketDataExtractor/AlbaranCofraWeb/ExportModal/index.js` | Modal de exportación Cofra |
-| `src/components/Admin/MarketDataExtractor/ListadoComprasLonjaDeIsla/index.js` | Vista documento LonjaDeIsla |
-| `src/components/Admin/MarketDataExtractor/ListadoComprasAsocPuntaDelMoral/index.js` | Vista documento ASOC |
-| `src/services/azure/index.js` | Servicio de extracción Azure |
-| `src/parsers/lonjas/` | Parsers de datos |
-| `src/validators/lonjas/` | Validadores de estructura |
-| `src/exportHelpers/` | Helpers de generación de filas Excel |
+| Archivo                                                                             | Propósito                                       |
+| ----------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `src/components/Admin/MarketDataExtractor/index.js`                                 | Entry point del bloque — Tabs Individual/Masivo |
+| `src/components/Admin/MarketDataExtractor/IndividualMode/`                          | Modo de procesamiento individual                |
+| `src/components/Admin/MarketDataExtractor/MassiveMode/`                             | Modo de procesamiento masivo                    |
+| `src/components/Admin/MarketDataExtractor/shared/DocumentProcessor.js`              | Orquestador de procesamiento                    |
+| `src/components/Admin/MarketDataExtractor/shared/documentTypeLabels.js`             | Etiquetas de tipos de documento                 |
+| `src/components/Admin/MarketDataExtractor/shared/exportData.js`                     | Catálogo estático compartido                    |
+| `src/components/Admin/MarketDataExtractor/AlbaranCofraWeb/index.js`                 | Vista de documento Cofra                        |
+| `src/components/Admin/MarketDataExtractor/AlbaranCofraWeb/ExportModal/index.js`     | Modal de exportación Cofra                      |
+| `src/components/Admin/MarketDataExtractor/ListadoComprasLonjaDeIsla/index.js`       | Vista documento LonjaDeIsla                     |
+| `src/components/Admin/MarketDataExtractor/ListadoComprasAsocPuntaDelMoral/index.js` | Vista documento ASOC                            |
+| `src/services/azure/index.js`                                                       | Servicio de extracción Azure                    |
+| `src/parsers/lonjas/`                                                               | Parsers de datos                                |
+| `src/validators/lonjas/`                                                            | Validadores de estructura                       |
+| `src/exportHelpers/`                                                                | Helpers de generación de filas Excel            |
 
 ---
 
@@ -119,14 +120,14 @@ Ninguno — esta es una auditoría de solo lectura.
 
 ## 5. Resumen de hallazgos
 
-| Severidad | Hallazgo | Archivo |
-|---|---|---|
-| **Media** | `generateExcelForA3erp()` en ExportModal, fuera del exportHelper | `AlbaranCofraWeb/ExportModal/index.js:50-143` |
-| **Media** | `exportData.js` (catálogos de negocio) dentro de subdirectorios de componentes | `*/exportData.js` × 3 |
-| **Baja** | `DocumentProcessor.js` sin directiva ni comentario sobre su contexto de ejecución | `shared/DocumentProcessor.js` |
-| **Info** | El bloque no usa EntityClient — justificado por la complejidad del flujo | — |
-| **Info** | Separación de capas correcta en validators/parsers/exportHelpers | — |
-| **Info** | Uso correcto de `'use client'` en componentes | — |
+| Severidad | Hallazgo                                                                          | Archivo                                       |
+| --------- | --------------------------------------------------------------------------------- | --------------------------------------------- |
+| **Media** | `generateExcelForA3erp()` en ExportModal, fuera del exportHelper                  | `AlbaranCofraWeb/ExportModal/index.js:50-143` |
+| **Media** | `exportData.js` (catálogos de negocio) dentro de subdirectorios de componentes    | `*/exportData.js` × 3                         |
+| **Baja**  | `DocumentProcessor.js` sin directiva ni comentario sobre su contexto de ejecución | `shared/DocumentProcessor.js`                 |
+| **Info**  | El bloque no usa EntityClient — justificado por la complejidad del flujo          | —                                             |
+| **Info**  | Separación de capas correcta en validators/parsers/exportHelpers                  | —                                             |
+| **Info**  | Uso correcto de `'use client'` en componentes                                     | —                                             |
 
 ---
 

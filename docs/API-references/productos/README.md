@@ -5,6 +5,7 @@ Documentación de endpoints para gestión de productos, categorías y familias.
 ## Índice
 
 ### Productos
+
 - [Listar Productos](#listar-productos)
 - [Crear Producto](#crear-producto)
 - [Mostrar Producto](#mostrar-producto)
@@ -14,6 +15,7 @@ Documentación de endpoints para gestión de productos, categorías y familias.
 - [Opciones de Productos](#opciones-de-productos)
 
 ### Categorías de Productos
+
 - [Listar Categorías](#listar-categorías)
 - [Crear Categoría](#crear-categoría)
 - [Actualizar Categoría](#actualizar-categoría)
@@ -22,6 +24,7 @@ Documentación de endpoints para gestión de productos, categorías y familias.
 - [Opciones de Categorías](#opciones-de-categorías)
 
 ### Familias de Productos
+
 - [Listar Familias](#listar-familias)
 - [Crear Familia](#crear-familia)
 - [Actualizar Familia](#actualizar-familia)
@@ -42,6 +45,7 @@ GET /api/v2/products
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -49,16 +53,16 @@ Authorization: Bearer {access_token}
 
 #### Query Parameters (Opcionales)
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| name | string | Búsqueda parcial por nombre |
-| speciesId | integer | ID de especie |
-| captureZoneId | integer | ID de zona de captura |
-| familyId | integer | ID de familia |
-| articleGtin | string | Código GTIN del artículo |
-| boxGtin | string | Código GTIN de la caja |
-| palletGtin | string | Código GTIN del palet |
-| perPage | integer | Elementos por página (default: 14) |
+| Parámetro     | Tipo    | Descripción                        |
+| ------------- | ------- | ---------------------------------- |
+| name          | string  | Búsqueda parcial por nombre        |
+| speciesId     | integer | ID de especie                      |
+| captureZoneId | integer | ID de zona de captura              |
+| familyId      | integer | ID de familia                      |
+| articleGtin   | string  | Código GTIN del artículo           |
+| boxGtin       | string  | Código GTIN de la caja             |
+| palletGtin    | string  | Código GTIN del palet              |
+| perPage       | integer | Elementos por página (default: 14) |
 
 ### Response Exitosa (200)
 
@@ -113,6 +117,7 @@ POST /api/v2/products
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -137,22 +142,22 @@ Content-Type: application/json
 
 #### Campos Requeridos
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| name | string | Nombre del producto (mínimo 3 caracteres, máximo 255) |
-| speciesId | integer | ID de la especie (debe existir) |
-| captureZoneId | integer | ID de la zona de captura (debe existir) |
+| Campo         | Tipo    | Descripción                                           |
+| ------------- | ------- | ----------------------------------------------------- |
+| name          | string  | Nombre del producto (mínimo 3 caracteres, máximo 255) |
+| speciesId     | integer | ID de la especie (debe existir)                       |
+| captureZoneId | integer | ID de la zona de captura (debe existir)               |
 
 #### Campos Opcionales
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| familyId | integer | ID de la familia |
-| articleGtin | string | Código GTIN del artículo (8-14 dígitos) |
-| boxGtin | string | Código GTIN de la caja (8-14 dígitos) |
-| palletGtin | string | Código GTIN del palet (8-14 dígitos) |
-| a3erp_code | string | Código A3ERP (máximo 255 caracteres) |
-| facil_com_code | string | Código Facilcom (máximo 255 caracteres) |
+| Campo          | Tipo    | Descripción                             |
+| -------------- | ------- | --------------------------------------- |
+| familyId       | integer | ID de la familia                        |
+| articleGtin    | string  | Código GTIN del artículo (8-14 dígitos) |
+| boxGtin        | string  | Código GTIN de la caja (8-14 dígitos)   |
+| palletGtin     | string  | Código GTIN del palet (8-14 dígitos)    |
+| a3erp_code     | string  | Código A3ERP (máximo 255 caracteres)    |
+| facil_com_code | string  | Código Facilcom (máximo 255 caracteres) |
 
 ### Response Exitosa (201)
 
@@ -210,6 +215,7 @@ GET /api/v2/products/{id}
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -261,6 +267,7 @@ PUT /api/v2/products/{id}
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -297,6 +304,7 @@ DELETE /api/v2/products/{id}
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -323,6 +331,7 @@ DELETE /api/v2/products
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -359,6 +368,7 @@ GET /api/v2/products/options
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -390,6 +400,7 @@ GET /api/v2/product-categories
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -421,6 +432,7 @@ POST /api/v2/product-categories
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -437,9 +449,9 @@ Content-Type: application/json
 
 #### Campos Requeridos
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| name | string | Nombre de la categoría |
+| Campo | Tipo   | Descripción            |
+| ----- | ------ | ---------------------- |
+| name  | string | Nombre de la categoría |
 
 ### Response Exitosa (201)
 
@@ -465,6 +477,7 @@ PUT /api/v2/product-categories/{id}
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -502,6 +515,7 @@ DELETE /api/v2/product-categories/{id}
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -526,6 +540,7 @@ DELETE /api/v2/product-categories
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -551,6 +566,7 @@ GET /api/v2/product-categories/options
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -578,6 +594,7 @@ GET /api/v2/product-families
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -613,6 +630,7 @@ POST /api/v2/product-families
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -630,10 +648,10 @@ Content-Type: application/json
 
 #### Campos Requeridos
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| name | string | Nombre de la familia |
-| category_id | integer | ID de la categoría |
+| Campo       | Tipo    | Descripción          |
+| ----------- | ------- | -------------------- |
+| name        | string  | Nombre de la familia |
+| category_id | integer | ID de la categoría   |
 
 ### Response Exitosa (201)
 
@@ -660,6 +678,7 @@ PUT /api/v2/product-families/{id}
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -699,6 +718,7 @@ DELETE /api/v2/product-families/{id}
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -723,6 +743,7 @@ DELETE /api/v2/product-families
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -748,6 +769,7 @@ GET /api/v2/product-families/options
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -763,4 +785,3 @@ Authorization: Bearer {access_token}
   }
 ]
 ```
-

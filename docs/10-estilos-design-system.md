@@ -12,6 +12,7 @@
 La aplicación utiliza **Tailwind CSS 3.x** como framework de estilos principal, **ShadCN UI** como biblioteca de componentes, y **NextUI** para algunos componentes adicionales. El sistema de diseño está basado en variables CSS (design tokens) para facilitar la personalización y el soporte de dark mode.
 
 **Archivos principales**:
+
 - `/tailwind.config.js` - Configuración de Tailwind
 - `/src/app/globals.css` - Estilos globales y variables CSS
 - `/src/lib/utils.js` - Función `cn()` para merge de clases
@@ -26,6 +27,7 @@ La aplicación utiliza **Tailwind CSS 3.x** como framework de estilos principal,
 **Archivo**: `/tailwind.config.js`
 
 **Características**:
+
 - **Content paths**: Incluye `src/pages`, `src/components`, `src/app`, y `@nextui-org/theme`
 - **Safelist**: Clases de grid dinámicas (`sm:col-span-1` a `sm:col-span-6`, etc.)
 - **Dark mode**: `["class"]` - Se activa con clase `.dark`
@@ -47,6 +49,7 @@ screens: {
 ```
 
 **Breakpoints estándar de Tailwind**:
+
 - `sm`: 640px
 - `md`: 768px
 - `lg`: 1024px
@@ -54,10 +57,9 @@ screens: {
 - `2xl`: 1536px
 
 **Uso**:
+
 ```jsx
-<div className="grid-cols-1 md-lg:grid-cols-2 xl-2xl:grid-cols-3">
-  {/* Contenido */}
-</div>
+<div className="md-lg:grid-cols-2 xl-2xl:grid-cols-3 grid-cols-1">{/* Contenido */}</div>
 ```
 
 ### Safelist
@@ -66,11 +68,31 @@ Clases de grid dinámicas que se generan en runtime están en safelist para evit
 
 ```javascript
 safelist: [
-  "sm:col-span-1", "sm:col-span-2", "sm:col-span-3", "sm:col-span-4", "sm:col-span-5", "sm:col-span-6",
-  "md:col-span-1", "md:col-span-2", "md:col-span-3", "md:col-span-4", "md:col-span-5", "md:col-span-6",
-  "lg:col-span-1", "lg:col-span-2", "lg:col-span-3", "lg:col-span-4", "lg:col-span-5", "lg:col-span-6",
-  "xl:col-span-1", "xl:col-span-2", "xl:col-span-3", "xl:col-span-4", "xl:col-span-5", "xl:col-span-6"
-]
+  'sm:col-span-1',
+  'sm:col-span-2',
+  'sm:col-span-3',
+  'sm:col-span-4',
+  'sm:col-span-5',
+  'sm:col-span-6',
+  'md:col-span-1',
+  'md:col-span-2',
+  'md:col-span-3',
+  'md:col-span-4',
+  'md:col-span-5',
+  'md:col-span-6',
+  'lg:col-span-1',
+  'lg:col-span-2',
+  'lg:col-span-3',
+  'lg:col-span-4',
+  'lg:col-span-5',
+  'lg:col-span-6',
+  'xl:col-span-1',
+  'xl:col-span-2',
+  'xl:col-span-3',
+  'xl:col-span-4',
+  'xl:col-span-5',
+  'xl:col-span-6',
+];
 ```
 
 **Razón**: Se usan en formularios genéricos donde el número de columnas se determina dinámicamente desde configuración.
@@ -171,9 +193,7 @@ Los colores se usan con la función `hsl()`:
 
 ```jsx
 <div className="bg-background text-foreground">
-  <button className="bg-primary text-primary-foreground">
-    Botón
-  </button>
+  <button className="bg-primary text-primary-foreground">Botón</button>
 </div>
 ```
 
@@ -209,6 +229,7 @@ Los colores se usan con la función `hsl()`:
 ```
 
 **Características**:
+
 - **Estilo**: `new-york` (estilo de ShadCN)
 - **Base color**: `neutral` (escala de grises)
 - **CSS variables**: Habilitadas
@@ -283,16 +304,19 @@ Los colores se usan con la función `hsl()`:
 **Archivo**: `/src/components/ui/CustomSkeleton.jsx`
 
 ```jsx
-const CustomSkeleton = ({ className = "" }) => {
+const CustomSkeleton = ({ className = '' }) => {
   return (
     <div className={`relative overflow-hidden rounded-md bg-neutral-800 ${className}`}>
-      <div className={`absolute inset-0 h-full w-full animate-shimmer bg-gradient-to-r from-transparent via-neutral-700/40 to-transparent`} />
+      <div
+        className={`animate-shimmer absolute inset-0 h-full w-full bg-gradient-to-r from-transparent via-neutral-700/40 to-transparent`}
+      />
     </div>
   );
 };
 ```
 
 **Características**:
+
 - Fondo `bg-neutral-800`
 - Animación `shimmer` personalizada
 - Gradiente animado
@@ -310,8 +334,8 @@ Componente personalizado para listas de emails con validación y prevención de 
 **Archivo**: `/src/lib/utils.js`
 
 ```javascript
-import { clsx } from "clsx";
-import { twMerge } from "tailwind-merge"
+import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs) {
   return twMerge(clsx(inputs));
@@ -319,10 +343,12 @@ export function cn(...inputs) {
 ```
 
 **Funcionalidad**:
+
 - `clsx`: Combina clases condicionalmente
 - `twMerge`: Resuelve conflictos de clases de Tailwind (ej: `p-4 p-2` → `p-2`)
 
 **Uso**:
+
 ```jsx
 import { cn } from "@/lib/utils";
 
@@ -342,6 +368,7 @@ import { cn } from "@/lib/utils";
 **Plugin**: `tailwindcss-animate`
 
 Animaciones disponibles:
+
 - `animate-spin` - Rotación continua
 - `animate-pulse` - Pulso (usado en Skeleton)
 - `animate-bounce` - Rebote
@@ -356,13 +383,21 @@ Animaciones disponibles:
 
 ```css
 @keyframes accordion-down {
-  from { height: 0; }
-  to { height: var(--radix-accordion-content-height); }
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
 }
 
 @keyframes accordion-up {
-  from { height: var(--radix-accordion-content-height); }
-  to { height: 0; }
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
 }
 
 .animate-accordion-down {
@@ -378,8 +413,12 @@ Animaciones disponibles:
 
 ```css
 @keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 .animate-shimmer {
@@ -391,9 +430,15 @@ Animaciones disponibles:
 
 ```css
 @keyframes flash {
-  0% { opacity: 1; }
-  50% { opacity: 0; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 .flash {
@@ -410,8 +455,9 @@ Animaciones disponibles:
 **Modo**: `class` (se activa con clase `.dark` en el elemento raíz)
 
 **Configuración en Tailwind**:
+
 ```javascript
-darkMode: ["class"]
+darkMode: ['class'];
 ```
 
 ### Implementación
@@ -435,9 +481,7 @@ Todas las variables CSS tienen versiones para dark mode:
 ### Uso
 
 ```jsx
-<div className="bg-background text-foreground">
-  {/* Se adapta automáticamente según .dark */}
-</div>
+<div className="bg-background text-foreground">{/* Se adapta automáticamente según .dark */}</div>
 ```
 
 ---
@@ -461,6 +505,7 @@ borderRadius: {
 ```
 
 **Uso**:
+
 ```jsx
 <div className="rounded-lg">  {/* 0.5rem */}
 <div className="rounded-md">  {/* ~0.375rem */}
@@ -515,7 +560,7 @@ borderRadius: {
 }
 
 .login-background::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   background-image: url('/images/background-light-v2.png');
@@ -553,7 +598,7 @@ borderRadius: {
 
 ```css
 .postit::after {
-  content: "";
+  content: '';
   position: absolute;
   bottom: 0;
   right: 0;
@@ -599,6 +644,7 @@ borderRadius: {
 ### Merge de Clases
 
 **Siempre usar `cn()`**:
+
 ```jsx
 // ✅ Correcto
 <div className={cn("base-class", condition && "conditional", className)}>
@@ -610,22 +656,21 @@ borderRadius: {
 ### Variantes de Componentes
 
 **Usar `cva` (class-variance-authority)**:
+
 ```jsx
 // Ejemplo: Button
-const buttonVariants = cva(
-  "base-classes",
-  {
-    variants: {
-      variant: { default: "...", outline: "..." },
-      size: { sm: "...", lg: "..." }
-    }
-  }
-);
+const buttonVariants = cva('base-classes', {
+  variants: {
+    variant: { default: '...', outline: '...' },
+    size: { sm: '...', lg: '...' },
+  },
+});
 ```
 
 ### Responsive Design
 
 **Mobile-first**:
+
 ```jsx
 // ✅ Correcto
 <div className="grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -637,6 +682,7 @@ const buttonVariants = cva(
 ### Dark Mode
 
 **Usar variables CSS**:
+
 ```jsx
 // ✅ Correcto
 <div className="bg-background text-foreground">
@@ -648,6 +694,7 @@ const buttonVariants = cva(
 ### Spacing
 
 **Usar escala de Tailwind**:
+
 - `p-1` = 0.25rem (4px)
 - `p-2` = 0.5rem (8px)
 - `p-4` = 1rem (16px)
@@ -657,6 +704,7 @@ const buttonVariants = cva(
 ### Colors
 
 **Usar design tokens**:
+
 ```jsx
 // ✅ Correcto
 <button className="bg-primary text-primary-foreground">
@@ -680,6 +728,7 @@ const buttonVariants = cva(
 ## ⚠️ Observaciones Críticas y Mejoras Recomendadas
 
 ### 1. Código CSS Comentado
+
 - **Archivo**: `/src/app/globals.css`
 - **Línea**: 141-212, 397-413
 - **Problema**: Hay bloques grandes de CSS comentado (variables de color alternativas)
@@ -687,6 +736,7 @@ const buttonVariants = cva(
 - **Recomendación**: Eliminar código comentado o documentar por qué está
 
 ### 2. Safelist Muy Grande
+
 - **Archivo**: `/tailwind.config.js`
 - **Línea**: 12-16
 - **Problema**: Safelist con muchas clases de grid puede aumentar el bundle size
@@ -694,6 +744,7 @@ const buttonVariants = cva(
 - **Recomendación**: Considerar generar clases dinámicamente o usar un enfoque diferente
 
 ### 3. CustomSkeleton con Clases Hardcodeadas
+
 - **Archivo**: `/src/components/ui/CustomSkeleton.jsx`
 - **Línea**: 5-6
 - **Problema**: Usa `bg-neutral-800` y `via-neutral-700/40` hardcodeados en lugar de variables CSS
@@ -701,6 +752,7 @@ const buttonVariants = cva(
 - **Recomendación**: Usar variables CSS como `bg-muted`
 
 ### 4. Falta de Documentación de Breakpoints Personalizados
+
 - **Archivo**: `/tailwind.config.js`
 - **Línea**: 99-106
 - **Problema**: Breakpoints personalizados no están documentados
@@ -708,6 +760,7 @@ const buttonVariants = cva(
 - **Recomendación**: Documentar en comentarios o README
 
 ### 5. Variables CSS Duplicadas
+
 - **Archivo**: `/src/app/globals.css`
 - **Línea**: 216-278, 292-300, 320-359
 - **Problema**: Hay múltiples bloques `@layer base` con algunas variables duplicadas
@@ -715,12 +768,14 @@ const buttonVariants = cva(
 - **Recomendación**: Consolidar en un solo bloque
 
 ### 6. Falta de Sistema de Espaciado Consistente
+
 - **Archivo**: Múltiples componentes
 - **Problema**: Algunos componentes usan espaciado inconsistente (p-4 vs p-6)
 - **Impacto**: UI inconsistente
 - **Recomendación**: Definir sistema de espaciado y documentarlo
 
 ### 7. Chart Colors Solo Sky
+
 - **Archivo**: `/src/app/globals.css`
 - **Línea**: 377-395
 - **Problema**: Todos los gráficos usan colores sky, puede ser monótono
@@ -728,12 +783,14 @@ const buttonVariants = cva(
 - **Recomendación**: Considerar paleta más diversa o configurable
 
 ### 8. Falta de Utilidades de Tipografía
+
 - **Archivo**: `/src/app/globals.css`
 - **Problema**: No hay variables CSS para tipografía (font-family, font-sizes)
 - **Impacto**: Tipografía inconsistente
 - **Recomendación**: Añadir variables de tipografía al sistema de design tokens
 
 ### 9. Post-it Effect No Documentado
+
 - **Archivo**: `/src/app/globals.css`
 - **Línea**: 99-115
 - **Problema**: Clase `.postit` no está documentada ni se encuentra uso en el código
@@ -741,6 +798,7 @@ const buttonVariants = cva(
 - **Recomendación**: Documentar uso o eliminar si no se usa
 
 ### 10. Lottie Styles Comentados
+
 - **Archivo**: `/src/app/globals.css`
 - **Línea**: 362-374
 - **Problema**: Estilos de `.lottie` tienen código comentado
@@ -748,15 +806,16 @@ const buttonVariants = cva(
 - **Recomendación**: Limpiar código comentado
 
 ### 11. Falta de Variables para Shadows
+
 - **Archivo**: `/src/app/globals.css`
 - **Problema**: No hay variables CSS para sombras
 - **Impacto**: Sombras inconsistentes
 - **Recomendación**: Añadir variables de sombra al sistema
 
 ### 12. NextUI Integration No Documentada
+
 - **Archivo**: `/tailwind.config.js`
 - **Línea**: 3, 10, 111
 - **Problema**: NextUI está integrado pero no está claro dónde se usa
 - **Impacto**: Confusión sobre qué componentes usar
 - **Recomendación**: Documentar componentes NextUI usados o considerar remover si no se usa
-

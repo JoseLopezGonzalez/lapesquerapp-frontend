@@ -13,15 +13,15 @@ Resumen de los campos que pueden ser `null` en las respuestas de la API para **o
 
 Los siguientes campos de un pedido pueden ser `null` en la base de datos y, por tanto, en la respuesta API:
 
-| Campo (API)      | Campo BD           | Cuándo es null |
-|------------------|--------------------|----------------|
-| `paymentTerm`    | `payment_term_id`  | Pedidos tipo autoventa (y otros que no tengan condición de pago) |
-| `transport`      | `transport_id`     | Pedidos tipo autoventa (y otros que no tengan transporte) |
-| `incoterm`       | `incoterm_id`      | Pedidos sin incoterm (p. ej. autoventa) |
-| `billingAddress` | `billing_address`  | Autoventas y pedidos creados sin dirección de facturación |
-| `shippingAddress`| `shipping_address` | Autoventas y pedidos creados sin dirección de envío |
-| `emails`         | `emails`           | Autoventas y pedidos sin emails |
-| `buyerReference` | `buyer_reference`  | Pedidos sin referencia del comprador (siempre ha sido opcional) |
+| Campo (API)       | Campo BD           | Cuándo es null                                                   |
+| ----------------- | ------------------ | ---------------------------------------------------------------- |
+| `paymentTerm`     | `payment_term_id`  | Pedidos tipo autoventa (y otros que no tengan condición de pago) |
+| `transport`       | `transport_id`     | Pedidos tipo autoventa (y otros que no tengan transporte)        |
+| `incoterm`        | `incoterm_id`      | Pedidos sin incoterm (p. ej. autoventa)                          |
+| `billingAddress`  | `billing_address`  | Autoventas y pedidos creados sin dirección de facturación        |
+| `shippingAddress` | `shipping_address` | Autoventas y pedidos creados sin dirección de envío              |
+| `emails`          | `emails`           | Autoventas y pedidos sin emails                                  |
+| `buyerReference`  | `buyer_reference`  | Pedidos sin referencia del comprador (siempre ha sido opcional)  |
 
 En **listado** (GET `/api/v2/orders`) y **detalle** (GET `/api/v2/orders/{id}`):
 
@@ -43,16 +43,16 @@ En **listado** (GET `/api/v2/orders`) y **detalle** (GET `/api/v2/orders/{id}`):
 
 Los siguientes campos de un cliente pueden ser `null`:
 
-| Campo (API)       | Campo BD            | Cuándo es null |
-|-------------------|---------------------|----------------|
-| `vatNumber`       | `vat_number`        | Cliente creado sin NIF/CIF (p. ej. creación rápida en autoventa) |
-| `paymentTerm`     | `payment_term_id`   | Cliente sin condición de pago asignada |
-| `billingAddress`  | `billing_address`   | Cliente sin dirección de facturación |
-| `shippingAddress` | `shipping_address`  | Cliente sin dirección de envío |
-| `emails`          | `emails`            | Cliente sin emails |
-| `contactInfo`     | `contact_info`      | Cliente sin datos de contacto |
-| `country`         | `country_id`        | Cliente sin país asignado |
-| `transport`       | `transport_id`      | Cliente sin transporte por defecto |
+| Campo (API)       | Campo BD           | Cuándo es null                                                   |
+| ----------------- | ------------------ | ---------------------------------------------------------------- |
+| `vatNumber`       | `vat_number`       | Cliente creado sin NIF/CIF (p. ej. creación rápida en autoventa) |
+| `paymentTerm`     | `payment_term_id`  | Cliente sin condición de pago asignada                           |
+| `billingAddress`  | `billing_address`  | Cliente sin dirección de facturación                             |
+| `shippingAddress` | `shipping_address` | Cliente sin dirección de envío                                   |
+| `emails`          | `emails`           | Cliente sin emails                                               |
+| `contactInfo`     | `contact_info`     | Cliente sin datos de contacto                                    |
+| `country`         | `country_id`       | Cliente sin país asignado                                        |
+| `transport`       | `transport_id`     | Cliente sin transporte por defecto                               |
 
 En el flujo de **creación rápida de cliente** (paso 1 de autoventa, POST `/api/v2/customers` con solo `name`), el backend solo exige el nombre; el resto de campos pueden no enviarse y quedarán `null` en la base de datos.
 
@@ -66,10 +66,10 @@ En el flujo de **creación rápida de cliente** (paso 1 de autoventa, POST `/api
 
 ## 3. Resumen rápido
 
-| Entidad   | Campos que pueden ser null en la API |
-|-----------|--------------------------------------|
-| **Order** | `paymentTerm`, `transport`, `incoterm`, `billingAddress`, `shippingAddress`, `emails`, `buyerReference`; en listado/detalle también puede ser null la relación `transport` o `incoterm` (objeto completo). |
-| **Customer** | `vatNumber`, `paymentTerm`, `billingAddress`, `shippingAddress`, `emails`, `contactInfo`, `country`, `transport` (y sus objetos anidados si se exponen). |
+| Entidad      | Campos que pueden ser null en la API                                                                                                                                                                       |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Order**    | `paymentTerm`, `transport`, `incoterm`, `billingAddress`, `shippingAddress`, `emails`, `buyerReference`; en listado/detalle también puede ser null la relación `transport` o `incoterm` (objeto completo). |
+| **Customer** | `vatNumber`, `paymentTerm`, `billingAddress`, `shippingAddress`, `emails`, `contactInfo`, `country`, `transport` (y sus objetos anidados si se exponen).                                                   |
 
 **Regla práctica:** Para cualquier campo que sea FK o texto opcional en el backend, el frontend debe comprobar `null` antes de acceder a propiedades anidadas o usarlo en concatenaciones.
 

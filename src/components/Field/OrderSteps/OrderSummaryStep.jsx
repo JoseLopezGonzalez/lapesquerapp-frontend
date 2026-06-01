@@ -22,8 +22,12 @@ export function OrderSummaryStep({ order, items, totalAmount }) {
       <Card>
         <CardContent className="space-y-4 p-4">
           <div className="grid gap-2 text-sm">
-            <p><strong>Cliente:</strong> {order.customer?.name || 'Sin cliente'}</p>
-            <p><strong>Fecha de carga:</strong> {formatDate(order.loadDate)}</p>
+            <p>
+              <strong>Cliente:</strong> {order.customer?.name || 'Sin cliente'}
+            </p>
+            <p>
+              <strong>Fecha de carga:</strong> {formatDate(order.loadDate)}
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -31,10 +35,14 @@ export function OrderSummaryStep({ order, items, totalAmount }) {
       <Card>
         <CardContent className="space-y-3 p-4">
           {items.map((item, idx) => (
-            <div key={`${item.productId}-${idx}`} className="grid gap-1 border-b pb-3 last:border-b-0 last:pb-0">
+            <div
+              key={`${item.productId}-${idx}`}
+              className="grid gap-1 border-b pb-3 last:border-b-0 last:pb-0"
+            >
               <p className="font-medium">{item.productName ?? item.productId}</p>
-              <p className="text-sm text-muted-foreground">
-                {item.boxesCount ?? 0} cajas · {Number(item.totalWeight ?? 0).toFixed(2)} kg · {Number(item.unitPrice ?? 0).toFixed(2)} €/kg
+              <p className="text-muted-foreground text-sm">
+                {item.boxesCount ?? 0} cajas · {Number(item.totalWeight ?? 0).toFixed(2)} kg ·{' '}
+                {Number(item.unitPrice ?? 0).toFixed(2)} €/kg
               </p>
               <p className="text-sm font-medium">{Number(item.subtotal ?? 0).toFixed(2)} €</p>
             </div>

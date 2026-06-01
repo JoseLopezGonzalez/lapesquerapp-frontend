@@ -1,6 +1,7 @@
 # Skill: shadcn Component Discovery
 
 ## Categoría
+
 Desarrollo
 
 ## Cuándo se activa
@@ -24,6 +25,7 @@ Busca componentes existentes en el ecosistema shadcn/ui — incluyendo el regist
 ### 1. Clarificar la necesidad
 
 Confirmar antes de buscar:
+
 - ¿Qué funcionalidad exacta se necesita?
 - ¿Preferencias de estilo o animación?
 - ¿Restricciones (tamaño de bundle, dependencias, accesibilidad)?
@@ -40,15 +42,15 @@ npx shadcn@latest add --help
 
 **Estrategia de búsqueda:** Usar términos cortos y concretos.
 
-| Necesidad | Términos de búsqueda | Registry especializado |
-|---|---|---|
-| Tablas / grids avanzados | `data-grid`, `table`, `tanstack` | `@reui` |
-| Animaciones | `animated`, `motion`, `transition` | `@animate-ui`, Magic UI |
-| Formularios complejos | `form`, `multi-step`, `wizard` | Official + `shadcn-extension` |
-| Calendario / fechas | `calendar`, `date-picker`, `range` | Official |
-| Gráficos | `chart`, `recharts`, `area` | Official (Recharts) |
-| Comandos / búsqueda | `command`, `cmdk`, `search` | Official |
-| Upload de archivos | `upload`, `dropzone`, `file` | `shadcn-extension` |
+| Necesidad                | Términos de búsqueda               | Registry especializado        |
+| ------------------------ | ---------------------------------- | ----------------------------- |
+| Tablas / grids avanzados | `data-grid`, `table`, `tanstack`   | `@reui`                       |
+| Animaciones              | `animated`, `motion`, `transition` | `@animate-ui`, Magic UI       |
+| Formularios complejos    | `form`, `multi-step`, `wizard`     | Official + `shadcn-extension` |
+| Calendario / fechas      | `calendar`, `date-picker`, `range` | Official                      |
+| Gráficos                 | `chart`, `recharts`, `area`        | Official (Recharts)           |
+| Comandos / búsqueda      | `command`, `cmdk`, `search`        | Official                      |
+| Upload de archivos       | `upload`, `dropzone`, `file`       | `shadcn-extension`            |
 
 ### 3. Presentar hallazgos
 
@@ -62,7 +64,7 @@ Formato de respuesta:
 1. **[Componente A]** — [descripción en una línea]
    - Instalar: `npx shadcn@latest add [nombre]`
    - Pros: [ventajas]
-   
+
 2. **[Componente B]** — [descripción en una línea]
    - Instalar: `npx shadcn@latest add [nombre]`
    - Pros: [ventajas]
@@ -86,7 +88,7 @@ Formato de respuesta:
 
 ```
 @animate-ui      — componentes con animaciones Framer Motion
-Magic UI         — animaciones y efectos visuales avanzados  
+Magic UI         — animaciones y efectos visuales avanzados
 @reui            — data grids y tablas avanzadas
 shadcn-extension — extensiones del ecosistema oficial
 originui         — componentes de formulario avanzados

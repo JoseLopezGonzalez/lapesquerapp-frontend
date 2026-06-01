@@ -10,15 +10,15 @@ Documento generado tras el análisis exhaustivo del frontend. Describe **todos l
 
 ## 1. Resumen ejecutivo
 
-| Área | Estado actual (frontend) | Cambio requerido |
-|------|---------------------------|------------------|
-| **Login** | `LoginPage` usa email + contraseña y `signIn("credentials", { email, password })`. NextAuth llama a `POST /v2/login`. | Eliminar contraseña. Solo "Enviar enlace" y "Enviar código" (email). No llamar a `POST /v2/login`. |
-| **Verificación de enlace** | No existe. | Nueva ruta `/auth/verify?token=xxx` que canjea token con `POST /v2/auth/magic-link/verify` y establece sesión. |
-| **NextAuth** | `CredentialsProvider` con email/password → `POST /v2/login`. | Mantener NextAuth; `authorize` solo aceptará credenciales "token" (accessToken + user) tras canjear magic link u OTP en el cliente. |
-| **Crear usuario** | `entitiesConfig.users.createForm` incluye campo `password`. `hideCreateButton: true`. | Quitar campo `password`. Opcional: mostrar botón crear y/o "Reenviar invitación". |
-| **Reenviar invitación** | No existe. | Nuevo endpoint en `userService`: `POST /v2/users/{id}/resend-invitation`. Botón en lista/ficha de usuarios. |
-| **Rol** | Uso de `role` (string) ya en varios sitios; API devuelve `role`. | Asegurar que en toda la app se use `role` (string), no `roles` (array). |
-| **Eliminar usuario** | `DELETE /v2/users/{id}` ya usado. | Sin cambios de llamada; backend hace soft delete. |
+| Área                       | Estado actual (frontend)                                                                                              | Cambio requerido                                                                                                                    |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **Login**                  | `LoginPage` usa email + contraseña y `signIn("credentials", { email, password })`. NextAuth llama a `POST /v2/login`. | Eliminar contraseña. Solo "Enviar enlace" y "Enviar código" (email). No llamar a `POST /v2/login`.                                  |
+| **Verificación de enlace** | No existe.                                                                                                            | Nueva ruta `/auth/verify?token=xxx` que canjea token con `POST /v2/auth/magic-link/verify` y establece sesión.                      |
+| **NextAuth**               | `CredentialsProvider` con email/password → `POST /v2/login`.                                                          | Mantener NextAuth; `authorize` solo aceptará credenciales "token" (accessToken + user) tras canjear magic link u OTP en el cliente. |
+| **Crear usuario**          | `entitiesConfig.users.createForm` incluye campo `password`. `hideCreateButton: true`.                                 | Quitar campo `password`. Opcional: mostrar botón crear y/o "Reenviar invitación".                                                   |
+| **Reenviar invitación**    | No existe.                                                                                                            | Nuevo endpoint en `userService`: `POST /v2/users/{id}/resend-invitation`. Botón en lista/ficha de usuarios.                         |
+| **Rol**                    | Uso de `role` (string) ya en varios sitios; API devuelve `role`.                                                      | Asegurar que en toda la app se use `role` (string), no `roles` (array).                                                             |
+| **Eliminar usuario**       | `DELETE /v2/users/{id}` ya usado.                                                                                     | Sin cambios de llamada; backend hace soft delete.                                                                                   |
 
 ---
 
@@ -54,6 +54,7 @@ Documento generado tras el análisis exhaustivo del frontend. Describe **todos l
 - **Mantener** callbacks `jwt` y `session` tal cual (ya guardan `accessToken`, `role`, `assignedStoreId`, `companyName`, `companyLogoUrl`). Asegurar que `role` se normalice a string si la API devuelve array.
 
 **Importante:** El login "clásico" desde la pantalla de login ya no llamará a NextAuth con email/password. Solo se llamará a `signIn("credentials", { ... })` desde:
+
 - La página `/auth/verify` tras canjear el magic link (con `accessToken` + `user`).
 - La pantalla de login tras canjear el código OTP (con `accessToken` + `user`).
 
@@ -87,8 +88,8 @@ Documento generado tras el análisis exhaustivo del frontend. Describe **todos l
   2. Si no hay `token`, mostrar mensaje "Enlace no válido" y un enlace/botón para volver a `/` (login).
   3. Si hay `token`: llamar a `authService.verifyMagicLinkToken(token)`.
   4. Si la respuesta es correcta (200 con `access_token` y `user`):
-    - Llamar a `signIn("credentials", { redirect: false, accessToken: data.access_token, user: JSON.stringify(data.user) })`.
-    - Tras éxito, redirigir a la URL guardada en `from` o por defecto a `/admin/home` (y para operario a `/warehouse/{assignedStoreId}` si aplica).
+  - Llamar a `signIn("credentials", { redirect: false, accessToken: data.access_token, user: JSON.stringify(data.user) })`.
+  - Tras éxito, redirigir a la URL guardada en `from` o por defecto a `/admin/home` (y para operario a `/warehouse/{assignedStoreId}` si aplica).
   5. Si la API devuelve **400** (enlace no válido o expirado): mostrar mensaje "Enlace no válido o expirado" y opción "Solicitar nuevo enlace" (enlace a `/`).
   6. Si **403** (usuario desactivado): mostrar mensaje acorde.
   7. Mostrar estado de carga mientras se verifica el token.
@@ -149,7 +150,7 @@ Opciones (elegir una):
 
 - **`src/configs/entitiesConfig.js`** — En `users`, añadir algo como:
   - `table.rowActions: [{ label: 'Reenviar invitación', action: 'resendInvitation' }]`  
-  o la estructura que se decida para acciones por fila.
+    o la estructura que se decida para acciones por fila.
 - **`src/components/Admin/Entity/EntityClient/EntityTable/EntityBody/generateColumns.js`** (o donde se construyan las columnas): si la config tiene `rowActions` y la entidad es `users`, añadir botón "Reenviar invitación" que llame a `userService.resendInvitation(id)` con confirmación opcional y toast.
 - **`src/components/Admin/Entity/EntityClient/index.js`** — Si la acción se resuelve por config, pasar `config` (o `rowActions`) al generador de columnas para que pueda mostrar el botón.
 
@@ -215,21 +216,21 @@ El código actual es JavaScript; este apartado es solo de referencia.
 
 ## 5. Resumen de archivos afectados
 
-| Archivo | Acción |
-|---------|--------|
-| `src/services/authService.js` | Añadir 4 funciones (magic link + OTP request/verify); sin Authorization. |
-| `src/app/api/auth/[...nextauth]/route.js` | Cambiar `credentials` a accessToken/user; `authorize`: solo token+user; quitar llamada a `/v2/login`. |
-| `src/components/LoginPage/index.js` | Quitar contraseña; añadir flujo "Enviar enlace" y "Enviar código" + verificación OTP. |
-| `src/app/auth/verify/page.js` | **Crear:** canjear token, signIn, redirigir (operario/from); validar `from`; manejar 400/403. |
-| `src/middleware.js` | Solo verificar que `/auth/verify` no esté protegida. |
-| `src/components/ProtectedRoute/index.js` | Redirigir a `/` o `buildLoginUrl()` en lugar de `/login`. |
-| `src/configs/authConfig.js` | Opcional: mensaje o manejo 429. |
-| `src/configs/entitiesConfig.js` | users: quitar campo password; opcional rowActions / active; opcional hideCreateButton. |
-| `src/services/domain/users/userService.js` | Añadir `resendInvitation(id)`. |
-| `src/components/Admin/Entity/...` (EntityClient / generateColumns / EntityBody) | Añadir botón "Reenviar invitación" para usuarios (por config o por endpoint). |
-| `src/components/Utilities/AuthErrorInterceptor.js` | Opcional: no redirigir cuando pathname es `/auth/verify`. |
-| `src/components/LoginPage/index copy.js` | Eliminar o dejar de usar (evitar imports). |
-| `docs/11-AUTENTICACION-AUTORIZACION.md` | Actualizar documentación de auth. |
+| Archivo                                                                         | Acción                                                                                                |
+| ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `src/services/authService.js`                                                   | Añadir 4 funciones (magic link + OTP request/verify); sin Authorization.                              |
+| `src/app/api/auth/[...nextauth]/route.js`                                       | Cambiar `credentials` a accessToken/user; `authorize`: solo token+user; quitar llamada a `/v2/login`. |
+| `src/components/LoginPage/index.js`                                             | Quitar contraseña; añadir flujo "Enviar enlace" y "Enviar código" + verificación OTP.                 |
+| `src/app/auth/verify/page.js`                                                   | **Crear:** canjear token, signIn, redirigir (operario/from); validar `from`; manejar 400/403.         |
+| `src/middleware.js`                                                             | Solo verificar que `/auth/verify` no esté protegida.                                                  |
+| `src/components/ProtectedRoute/index.js`                                        | Redirigir a `/` o `buildLoginUrl()` en lugar de `/login`.                                             |
+| `src/configs/authConfig.js`                                                     | Opcional: mensaje o manejo 429.                                                                       |
+| `src/configs/entitiesConfig.js`                                                 | users: quitar campo password; opcional rowActions / active; opcional hideCreateButton.                |
+| `src/services/domain/users/userService.js`                                      | Añadir `resendInvitation(id)`.                                                                        |
+| `src/components/Admin/Entity/...` (EntityClient / generateColumns / EntityBody) | Añadir botón "Reenviar invitación" para usuarios (por config o por endpoint).                         |
+| `src/components/Utilities/AuthErrorInterceptor.js`                              | Opcional: no redirigir cuando pathname es `/auth/verify`.                                             |
+| `src/components/LoginPage/index copy.js`                                        | Eliminar o dejar de usar (evitar imports).                                                            |
+| `docs/11-AUTENTICACION-AUTORIZACION.md`                                         | Actualizar documentación de auth.                                                                     |
 
 ---
 

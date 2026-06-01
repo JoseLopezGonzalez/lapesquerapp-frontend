@@ -1,154 +1,154 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { useSession } from "next-auth/react";import { Warehouse, Check, Search, X } from "lucide-react";
-import Loader from "@/components/Utilities/Loader";
-import { movePalletToStore } from "@/services/palletService";
-import { useStoreContext } from "@/context/StoreContext";
-import { notify } from "@/lib/notifications";
-import { useStoresOptions } from "@/hooks/useStoresOptions";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { useSession } from 'next-auth/react';
+import { Warehouse, Check, Search, X } from 'lucide-react';
+import Loader from '@/components/Utilities/Loader';
+import { movePalletToStore } from '@/services/palletService';
+import { useStoreContext } from '@/context/StoreContext';
+import { notify } from '@/lib/notifications';
+import { useStoresOptions } from '@/hooks/useStoresOptions';
 
 export default function MovePalletToStoreDialog() {
-    const {
-        closeMovePalletToStoreDialog,
-        movePalletToStoreDialogData: palletId,
-        isOpenMovePalletToStoreDialog: isOpen,
-        updateStoreWhenOnMovePalletToStore
-    } = useStoreContext();
+  const {
+    closeMovePalletToStoreDialog,
+    movePalletToStoreDialogData: palletId,
+    isOpenMovePalletToStoreDialog: isOpen,
+    updateStoreWhenOnMovePalletToStore,
+  } = useStoreContext();
 
-    const { data: session } = useSession();
-    const token = session?.user?.accessToken;
+  const { data: session } = useSession();
+  const token = session?.user?.accessToken;
 
-    const [searchQuery, setSearchQuery] = useState("");
-    const [selectedStoreValue, setSelectedStoreValue] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedStoreValue, setSelectedStoreValue] = useState(null);
 
-    const { storeOptions, loading } = useStoresOptions();
+  const { storeOptions, loading } = useStoresOptions();
 
-    const filteredStores = storeOptions.filter((store) =>
-        store.label?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+  const filteredStores = storeOptions.filter((store) =>
+    store.label?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-    const resetAndClose = () => {
-        setSelectedStoreValue(null);
-        setSearchQuery("");
-        closeMovePalletToStoreDialog();
-    };
+  const resetAndClose = () => {
+    setSelectedStoreValue(null);
+    setSearchQuery('');
+    closeMovePalletToStoreDialog();
+  };
 
-    const handleSubmit = () => {
-        if (!selectedStoreValue) {
-            notify.error({
-              title: 'Almacén de destino requerido',
-              description: 'Seleccione un almacén para mover el palet.',
-            });
-            return;
-        }
-
-        movePalletToStore(palletId, selectedStoreValue, token)
-            .then(() => {
-                notify.success({
-                  title: 'Palet movido',
-                  description: 'El palet se ha movido correctamente al almacén seleccionado.',
-                });
-                updateStoreWhenOnMovePalletToStore({palletId , storeId: selectedStoreValue});
-                resetAndClose();
-            })
-            .catch(() => {
-                notify.error({
-                  title: 'Error al mover palet',
-                  description: 'No se pudo mover el palet. Intente de nuevo.',
-                });
-            });
-    };
-
-    const handleStoreClick = (value) => {
-        setSelectedStoreValue((prev) => (prev === value ? null : value));
-    };
-
-    if (!isOpen) return null;
-
-    if (!palletId) {
-        console.error("No se proporcionó un ID de pallet válido");
-        return null;
+  const handleSubmit = () => {
+    if (!selectedStoreValue) {
+      notify.error({
+        title: 'Almacén de destino requerido',
+        description: 'Seleccione un almacén para mover el palet.',
+      });
+      return;
     }
 
+    movePalletToStore(palletId, selectedStoreValue, token)
+      .then(() => {
+        notify.success({
+          title: 'Palet movido',
+          description: 'El palet se ha movido correctamente al almacén seleccionado.',
+        });
+        updateStoreWhenOnMovePalletToStore({ palletId, storeId: selectedStoreValue });
+        resetAndClose();
+      })
+      .catch(() => {
+        notify.error({
+          title: 'Error al mover palet',
+          description: 'No se pudo mover el palet. Intente de nuevo.',
+        });
+      });
+  };
 
-    return (
-        <Dialog open={isOpen} onOpenChange={resetAndClose}>
-            <DialogContent size="lg" className="max-h-[85vh] flex flex-col">
-                <DialogHeader>
-                    <DialogTitle>Traspaso de almacén - Palet #{palletId}</DialogTitle>
-                </DialogHeader>
+  const handleStoreClick = (value) => {
+    setSelectedStoreValue((prev) => (prev === value ? null : value));
+  };
 
-                {/* Buscador */}
-                <div className="relative my-2">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Buscar almacén..."
-                        className="pl-9"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                    {searchQuery && (
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="absolute right-1 top-1 h-7 w-7"
-                            onClick={() => setSearchQuery("")}
-                        >
-                            <X className="h-4 w-4" />
-                            <span className="sr-only">Limpiar búsqueda</span>
-                        </Button>
-                    )}
-                </div>
+  if (!isOpen) return null;
 
-                {/* Lista de almacenes */}
-                {loading ? (
-                    <div className="flex flex-col items-center justify-center w-full h-[50vh]">
-                        <Loader />
+  if (!palletId) {
+    console.error('No se proporcionó un ID de pallet válido');
+    return null;
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={resetAndClose}>
+      <DialogContent size="lg" className="flex max-h-[85vh] flex-col">
+        <DialogHeader>
+          <DialogTitle>Traspaso de almacén - Palet #{palletId}</DialogTitle>
+        </DialogHeader>
+
+        {/* Buscador */}
+        <div className="relative my-2">
+          <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
+          <Input
+            placeholder="Buscar almacén..."
+            className="pl-9"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          {searchQuery && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-1 right-1 h-7 w-7"
+              onClick={() => setSearchQuery('')}
+            >
+              <X className="h-4 w-4" />
+              <span className="sr-only">Limpiar búsqueda</span>
+            </Button>
+          )}
+        </div>
+
+        {/* Lista de almacenes */}
+        {loading ? (
+          <div className="flex h-[50vh] w-full flex-col items-center justify-center">
+            <Loader />
+          </div>
+        ) : filteredStores.length === 0 ? (
+          <div className="text-muted-foreground py-6 text-center text-sm">
+            No se encontraron almacenes
+          </div>
+        ) : (
+          <ScrollArea className="h-[45vh] w-full pr-3">
+            <div className="flex h-full flex-col gap-2 py-1">
+              {filteredStores.map((store) => {
+                const isSelected = selectedStoreValue === store.value;
+                return (
+                  <div
+                    key={store.value}
+                    className={`hover:bg-accent flex cursor-pointer items-center justify-between rounded-md border p-3 transition-colors ${isSelected ? 'border-primary bg-accent' : ''}`}
+                    onClick={() => handleStoreClick(store.value)}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <Warehouse className="text-muted-foreground h-5 w-5" />
+                      <span className="text-sm font-medium">{store.label}</span>
                     </div>
-                ) : filteredStores.length === 0 ? (
-                    <div className="text-center text-sm text-muted-foreground py-6">
-                        No se encontraron almacenes
-                    </div>
-                ) : (
-                    <ScrollArea className="h-[45vh] pr-3 w-full">
-                        <div className="flex flex-col gap-2 py-1 h-full">
-                            {filteredStores.map((store) => {
-                                const isSelected = selectedStoreValue === store.value;
-                                return (
-                                    <div
-                                        key={store.value}
-                                        className={`flex items-center justify-between p-3 border rounded-md cursor-pointer hover:bg-accent transition-colors ${isSelected ? "border-primary bg-accent" : ""}`}
-                                        onClick={() => handleStoreClick(store.value)}
-                                    >
-                                        <div className="flex items-center space-x-2">
-                                            <Warehouse className="h-5 w-5 text-muted-foreground" />
-                                            <span className="text-sm font-medium">{store.label}</span>
-                                        </div>
-                                        {isSelected && <Check className="h-4 w-4 text-primary" />}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </ScrollArea>
-                )}
+                    {isSelected && <Check className="text-primary h-4 w-4" />}
+                  </div>
+                );
+              })}
+            </div>
+          </ScrollArea>
+        )}
 
-                <DialogFooter className="mt-4">
-                    <Button onClick={handleSubmit} disabled={!selectedStoreValue}>
-                        Confirmar traslado
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    );
+        <DialogFooter className="mt-4">
+          <Button onClick={handleSubmit} disabled={!selectedStoreValue}>
+            Confirmar traslado
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 }

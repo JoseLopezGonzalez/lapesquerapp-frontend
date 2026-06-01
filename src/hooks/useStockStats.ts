@@ -45,7 +45,7 @@ export function useStockBySpeciesStats() {
     enabled: !!token && !!tenantId,
   });
 
-  const stockData = Array.isArray(data) ? data : (data as { data?: unknown[] })?.data ?? [];
+  const stockData = Array.isArray(data) ? data : ((data as { data?: unknown[] })?.data ?? []);
   return {
     data: stockData,
     isLoading,
@@ -69,7 +69,7 @@ export function useStockByProductsStats() {
 
   const stockData = Array.isArray(data)
     ? data
-    : (data as { data?: StockByProductItem[] })?.data ?? [];
+    : ((data as { data?: StockByProductItem[] })?.data ?? []);
   return {
     data: stockData,
     isLoading,

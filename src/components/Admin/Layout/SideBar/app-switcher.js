@@ -1,7 +1,7 @@
-"use client"
+'use client';
 
-import { useState, useEffect } from "react"
-import { ChevronsUpDown, CircleHelp, Plus } from "lucide-react"
+import { useState, useEffect } from 'react';
+import { ChevronsUpDown, CircleHelp, Plus } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 import {
@@ -12,17 +12,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from '@/components/ui/dropdown-menu';
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar"
+} from '@/components/ui/sidebar';
 
 export function AppSwitcher({ apps, loading }) {
-  const { isMobile } = useSidebar()
-  const [activeTeam, setActiveTeam] = useState(apps.find((app) => app.current))
+  const { isMobile } = useSidebar();
+  const [activeTeam, setActiveTeam] = useState(apps.find((app) => app.current));
 
   // Sincroniza activeTeam cuando apps cambie
   useEffect(() => {
@@ -30,7 +30,7 @@ export function AppSwitcher({ apps, loading }) {
   }, [apps]);
 
   if (!activeTeam) {
-    return null
+    return null;
   }
 
   return (
@@ -57,10 +57,10 @@ export function AppSwitcher({ apps, loading }) {
           <DropdownMenuContent
             className="w-[--radix-dropdown-menu-trigger-width] min-w-64 rounded-lg" /* min-w-56 */
             align="start"
-            side={isMobile ? "bottom" : "right"}
+            side={isMobile ? 'bottom' : 'right'}
             sideOffset={4}
           >
-            <DropdownMenuLabel className="text-xs text-muted-foreground">
+            <DropdownMenuLabel className="text-muted-foreground text-xs">
               Aplicaciones
             </DropdownMenuLabel>
             {apps.map((app, index) => (
@@ -72,7 +72,7 @@ export function AppSwitcher({ apps, loading }) {
                 <div className="flex size-6 items-center justify-center rounded-sm border">
                   <app.logo className="size-4 shrink-0" />
                 </div>
-                
+
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">
                     {loading ? <Skeleton className="h-4 w-32" /> : app.name}
@@ -84,14 +84,14 @@ export function AppSwitcher({ apps, loading }) {
             ))}
             <DropdownMenuSeparator />
             <DropdownMenuItem className="gap-2 p-2">
-              <div className="flex size-6 items-center justify-center rounded-md border bg-background">
+              <div className="bg-background flex size-6 items-center justify-center rounded-md border">
                 <CircleHelp className="size-4" />
               </div>
-              <div className="font-medium text-muted-foreground">Solicitar más módulos</div>
+              <div className="text-muted-foreground font-medium">Solicitar más módulos</div>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  )
+  );
 }

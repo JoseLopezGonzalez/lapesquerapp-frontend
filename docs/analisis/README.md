@@ -43,6 +43,7 @@ Cada análisis sigue una estructura estándar:
 ## 🎯 Propósito
 
 Estos documentos sirven para:
+
 - **Documentar decisiones técnicas** y el razonamiento detrás de ellas
 - **Priorizar mejoras** basándose en impacto y esfuerzo
 - **Rastrear implementaciones** y su estado
@@ -52,9 +53,9 @@ Estos documentos sirven para:
 ## 📊 Estado General
 
 Los análisis incluyen:
+
 - ✅ Tareas completadas
 - ⏸️ Tareas pendientes
 - ❌ Tareas no implementadas (con razones)
 
 Cada documento se actualiza cuando se implementan mejoras o se toman decisiones sobre las propuestas.
-

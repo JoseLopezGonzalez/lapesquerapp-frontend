@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { LogoutDialog } from "@/components/Utilities/LogoutDialog";
+import * as React from 'react';
+import { LogoutDialog } from '@/components/Utilities/LogoutDialog';
 
 interface LogoutContextValue {
   isLoggingOut: boolean;
@@ -22,7 +22,7 @@ export function LogoutProvider({ children }: LogoutProviderProps) {
 
   React.useEffect(() => {
     if (isLoggingOut) {
-      console.log("🔐 LogoutContext: Diálogo de logout abierto");
+      console.log('🔐 LogoutContext: Diálogo de logout abierto');
     }
   }, [isLoggingOut]);
 
@@ -40,7 +40,7 @@ export function useLogout(): LogoutContextValue {
     return {
       isLoggingOut: false,
       setIsLoggingOut: () => {
-        console.warn("useLogout: LogoutProvider no encontrado");
+        console.warn('useLogout: LogoutProvider no encontrado');
       },
     };
   }

@@ -21,8 +21,7 @@ export function useFieldTaxesOptions(options: FieldTaxesOptionsQueryOptions = {}
     queryKey: ['field', 'taxes', 'options', tenantId ?? 'unknown'],
     queryFn: () => getFieldTaxesOptions(token as string),
     enabled: Boolean(token) && Boolean(tenantId) && Boolean(fieldOperatorId) && enabled,
-    select: (data) => (Array.isArray(data) ? data : (data as { data?: unknown[] })?.data ?? []),
+    select: (data) => (Array.isArray(data) ? data : ((data as { data?: unknown[] })?.data ?? [])),
     staleTime: 5 * 60 * 1000,
   });
 }
-

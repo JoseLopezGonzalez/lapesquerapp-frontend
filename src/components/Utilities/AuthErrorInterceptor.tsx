@@ -1,10 +1,16 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { signOut } from "next-auth/react";
-import { notify } from "@/lib/notifications";
-import { clearAuthTokenCache } from "@/lib/auth/getAuthToken";
-import { isAuthError, isUnauthorizedStatusCode, buildLoginUrl, AUTH_ERROR_CONFIG, type AuthErrorLike } from "@/configs/authConfig";
+import { useEffect } from 'react';
+import { signOut } from 'next-auth/react';
+import { notify } from '@/lib/notifications';
+import { clearAuthTokenCache } from '@/lib/auth/getAuthToken';
+import {
+  isAuthError,
+  isUnauthorizedStatusCode,
+  buildLoginUrl,
+  AUTH_ERROR_CONFIG,
+  type AuthErrorLike,
+} from '@/configs/authConfig';
 
 const { AUTH_SESSION_EXPIRED_EVENT } = AUTH_ERROR_CONFIG;
 
@@ -17,7 +23,7 @@ export default function AuthErrorInterceptor() {
     const handleAuthError = (customMessage?: string) => {
       if (isRedirecting) return;
       const pathname = window.location.pathname;
-      const alreadyOnLogin = pathname === "/" || pathname === "/auth/verify";
+      const alreadyOnLogin = pathname === '/' || pathname === '/auth/verify';
       isRedirecting = true;
       const clearSession = async () => {
         // Limpiar caché del token antes de signOut para evitar que peticiones
@@ -27,7 +33,7 @@ export default function AuthErrorInterceptor() {
         try {
           await signOut({ redirect: false });
         } catch (err) {
-          console.error("Error en signOut desde interceptor:", err);
+          console.error('Error en signOut desde interceptor:', err);
         }
       };
       if (alreadyOnLogin) {
@@ -35,7 +41,7 @@ export default function AuthErrorInterceptor() {
         return;
       }
       notify.error({
-        title: customMessage ? "Acceso bloqueado" : 'Sesión expirada',
+        title: customMessage ? 'Acceso bloqueado' : 'Sesión expirada',
         description: customMessage || 'Tu sesión ha expirado. Redirigiendo al login...',
       });
       setTimeout(async () => {
@@ -46,23 +52,23 @@ export default function AuthErrorInterceptor() {
 
     window.fetch = async (...args: Parameters<typeof fetch>) => {
       try {
-        let url = "";
+        let url = '';
         const first = args[0];
-        if (typeof first === "string") url = first;
-        else if (first && typeof first === "object" && "url" in first) url = (first as Request).url;
+        if (typeof first === 'string') url = first;
+        else if (first && typeof first === 'object' && 'url' in first) url = (first as Request).url;
         else if (first instanceof URL) url = first.href;
-        if (url.includes("/logout")) return await originalFetch(...args);
+        if (url.includes('/logout')) return await originalFetch(...args);
         const response = await originalFetch(...args);
         if (response.status === 403) {
           const responseClone = response.clone();
-          const contentType = response.headers.get("content-type");
-          const isJson = contentType?.includes("application/json");
+          const contentType = response.headers.get('content-type');
+          const isJson = contentType?.includes('application/json');
           if (isJson) {
             const errorData = (await responseClone.json().catch(() => ({}))) as {
               message?: string;
               userMessage?: string;
             };
-            const userMessage = errorData.userMessage || errorData.message || "";
+            const userMessage = errorData.userMessage || errorData.message || '';
             if (disabledExternalUserPattern.test(userMessage)) {
               handleAuthError(userMessage);
             }
@@ -73,14 +79,23 @@ export default function AuthErrorInterceptor() {
         if (isUnauthorizedStatusCode(response.status)) {
           const responseClone = response.clone();
           try {
-            const contentType = response.headers.get("content-type");
-            const isJson = contentType?.includes("application/json");
+            const contentType = response.headers.get('content-type');
+            const isJson = contentType?.includes('application/json');
             if (isJson) {
-              const errorData = (await responseClone.json().catch(() => ({}))) as { message?: string; userMessage?: string };
-              const errorMessage = (errorData.message || errorData.userMessage || "").toLowerCase();
-              const isValidationError = /validation|validación|invalid|inválido|required|requerido|error al crear|error al registrar|requieren autenticación|require authentication|fichajes manuales/.test(errorMessage);
+              const errorData = (await responseClone.json().catch(() => ({}))) as {
+                message?: string;
+                userMessage?: string;
+              };
+              const errorMessage = (errorData.message || errorData.userMessage || '').toLowerCase();
+              const isValidationError =
+                /validation|validación|invalid|inválido|required|requerido|error al crear|error al registrar|requieren autenticación|require authentication|fichajes manuales/.test(
+                  errorMessage
+                );
               if (!isValidationError) {
-                const isSessionExpired = /token|sesión expirada|session expired|unauthorized|no autenticado|invalid token|token expired/.test(errorMessage) || errorMessage === "";
+                const isSessionExpired =
+                  /token|sesión expirada|session expired|unauthorized|no autenticado|invalid token|token expired/.test(
+                    errorMessage
+                  ) || errorMessage === '';
                 if (isSessionExpired) handleAuthError();
               }
             } else handleAuthError();
@@ -112,13 +127,13 @@ export default function AuthErrorInterceptor() {
     // registrada y el listener nunca se elimina, acumulándose en cada montaje.
     const handleSessionExpiredEvent = () => handleAuthError();
 
-    window.addEventListener("error", handleGlobalError);
-    window.addEventListener("unhandledrejection", handleUnhandledRejection);
+    window.addEventListener('error', handleGlobalError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
     window.addEventListener(AUTH_SESSION_EXPIRED_EVENT, handleSessionExpiredEvent);
     return () => {
       window.fetch = originalFetch;
-      window.removeEventListener("error", handleGlobalError);
-      window.removeEventListener("unhandledrejection", handleUnhandledRejection);
+      window.removeEventListener('error', handleGlobalError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
       window.removeEventListener(AUTH_SESSION_EXPIRED_EVENT, handleSessionExpiredEvent);
     };
   }, []);

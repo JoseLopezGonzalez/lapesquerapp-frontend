@@ -14,7 +14,13 @@ export function useSupplierLiquidationDetails(params: {
   const hasParams = !!supplierId && !!startDate && !!endDate;
 
   return useQuery({
-    queryKey: ['supplier-liquidation-details', tenantId ?? 'unknown', supplierId, startDate, endDate],
+    queryKey: [
+      'supplier-liquidation-details',
+      tenantId ?? 'unknown',
+      supplierId,
+      startDate,
+      endDate,
+    ],
     queryFn: () => getSupplierLiquidationDetails(supplierId!, startDate!, endDate!),
     enabled: !!tenantId && enabled && !!hasParams,
   });

@@ -58,11 +58,11 @@ export default function NetWeightCalculatorDialog({ open, onOpenChange }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent size="xl" className="max-h-[90vh] overflow-y-auto gap-8 p-8">
+      <DialogContent size="xl" className="max-h-[90vh] gap-8 overflow-y-auto p-8">
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-              <Calculator className="h-7 w-7 text-primary" />
+            <div className="bg-primary/10 flex h-14 w-14 shrink-0 items-center justify-center rounded-xl">
+              <Calculator className="text-primary h-7 w-7" />
             </div>
             <div>
               <DialogTitle className="text-2xl">Calculadora</DialogTitle>
@@ -85,11 +85,11 @@ export default function NetWeightCalculatorDialog({ open, onOpenChange }) {
               placeholder="0,00"
               value={grossWeight}
               onChange={(e) => setGrossWeight(e.target.value)}
-              className="min-h-16 text-xl px-4 py-3 touch-manipulation"
+              className="min-h-16 touch-manipulation px-4 py-3 text-xl"
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div className="grid gap-3">
               <Label className="text-lg">Cajas</Label>
               <div className="flex items-center gap-3">
@@ -97,7 +97,7 @@ export default function NetWeightCalculatorDialog({ open, onOpenChange }) {
                   type="button"
                   variant="outline"
                   size="icon"
-                  className="min-h-16 min-w-16 shrink-0 text-3xl touch-manipulation active:scale-95"
+                  className="min-h-16 min-w-16 shrink-0 touch-manipulation text-3xl active:scale-95"
                   onClick={() => setBoxes((b) => Math.max(0, b - 1))}
                   aria-label="Menos cajas"
                 >
@@ -106,7 +106,7 @@ export default function NetWeightCalculatorDialog({ open, onOpenChange }) {
                 <Input
                   type="number"
                   min="0"
-                  className="min-h-16 text-xl text-center font-medium px-4 touch-manipulation"
+                  className="min-h-16 touch-manipulation px-4 text-center text-xl font-medium"
                   value={boxes}
                   onChange={(e) => {
                     const v = parseInt(e.target.value, 10);
@@ -117,7 +117,7 @@ export default function NetWeightCalculatorDialog({ open, onOpenChange }) {
                   type="button"
                   variant="outline"
                   size="icon"
-                  className="min-h-16 min-w-16 shrink-0 text-3xl touch-manipulation active:scale-95"
+                  className="min-h-16 min-w-16 shrink-0 touch-manipulation text-3xl active:scale-95"
                   onClick={() => setBoxes((b) => b + 1)}
                   aria-label="Más cajas"
                 >
@@ -132,13 +132,13 @@ export default function NetWeightCalculatorDialog({ open, onOpenChange }) {
               <Select value={tarePerBox} onValueChange={setTarePerBox}>
                 <SelectTrigger
                   id="calc-tare-box"
-                  className="min-h-16 text-xl px-4 py-3 touch-manipulation [&>span]:text-xl"
+                  className="min-h-16 touch-manipulation px-4 py-3 text-xl [&>span]:text-xl"
                 >
                   <SelectValue placeholder="Tara por caja" />
                 </SelectTrigger>
                 <SelectContent>
                   {TARE_PER_BOX_OPTIONS.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value} className="text-lg py-3">
+                    <SelectItem key={opt.value} value={opt.value} className="py-3 text-lg">
                       {opt.label}
                     </SelectItem>
                   ))}
@@ -160,24 +160,24 @@ export default function NetWeightCalculatorDialog({ open, onOpenChange }) {
               placeholder="0,00"
               value={tarePerPallet}
               onChange={(e) => setTarePerPallet(e.target.value)}
-              className="min-h-16 text-xl px-4 py-3 touch-manipulation"
+              className="min-h-16 touch-manipulation px-4 py-3 text-xl"
             />
           </div>
 
-          <div className="rounded-xl border-2 bg-muted/50 p-6 text-center">
-            <p className="text-lg font-medium text-muted-foreground">Peso neto</p>
-            <p className="text-4xl sm:text-5xl font-semibold tabular-nums tracking-tight mt-2">
+          <div className="bg-muted/50 rounded-xl border-2 p-6 text-center">
+            <p className="text-muted-foreground text-lg font-medium">Peso neto</p>
+            <p className="mt-2 text-4xl font-semibold tracking-tight tabular-nums sm:text-5xl">
               {netWeight.toFixed(2)} kg
             </p>
           </div>
         </div>
 
-        <DialogFooter className="sm:justify-start pt-2">
+        <DialogFooter className="pt-2 sm:justify-start">
           <Button
             type="button"
             variant="outline"
             onClick={handleReset}
-            className="gap-2 min-h-14 px-6 text-lg touch-manipulation active:scale-[0.98]"
+            className="min-h-14 touch-manipulation gap-2 px-6 text-lg active:scale-[0.98]"
           >
             <RotateCcw className="h-5 w-5" />
             Resetear

@@ -39,6 +39,7 @@ El sistema de logout en la aplicación ha sido **simplificado** para eliminar co
 **Función de logout**: `handleLogout` (líneas 47-80)
 
 **Características** (Versión Simplificada):
+
 - Llama a `logoutBackend()` primero
 - Luego llama a `signOut({ redirect: false })`
 - Muestra `toast.success('Sesión cerrada correctamente')`
@@ -54,6 +55,7 @@ El sistema de logout en la aplicación ha sido **simplificado** para eliminar co
 **Función de logout**: `handleLogout` (líneas 25-58)
 
 **Características** (Versión Simplificada):
+
 - Similar al Sidebar
 - Mismo flujo simplificado: backend → NextAuth → toast → redirect
 
@@ -66,6 +68,7 @@ El sistema de logout en la aplicación ha sido **simplificado** para eliminar co
 **Función de logout**: `handleLogout` (líneas 27-86)
 
 **Características** (Versión Simplificada):
+
 - Mismo flujo simplificado que Sidebar
 - NO incluye limpieza de flags (ya no existen)
 - Pasa función `logout` a `FloatingUserMenu` y `TopBar`
@@ -79,6 +82,7 @@ El sistema de logout en la aplicación ha sido **simplificado** para eliminar co
 **Función de logout**: `user?.logout` (línea 249)
 
 **Características**:
+
 - Recibe la función desde `AdminLayout`
 - No tiene lógica propia, delega al layout
 
@@ -91,6 +95,7 @@ El sistema de logout en la aplicación ha sido **simplificado** para eliminar co
 **Función de logout**: `user?.logout` (línea 253)
 
 **Características**:
+
 - Similar a FloatingUserMenu, delega al layout
 
 ### 6. WarehouseOperatorLayout
@@ -102,6 +107,7 @@ El sistema de logout en la aplicación ha sido **simplificado** para eliminar co
 **Función de logout**: `handleLogout` (líneas 29-59)
 
 **Características** (Versión Simplificada):
+
 - Mismo flujo que Admin (simplificado)
 - Usa `window.location.replace('/')` para consistencia
 - Muestra toast de éxito antes de redirigir
@@ -116,6 +122,7 @@ El sistema de logout en la aplicación ha sido **simplificado** para eliminar co
 **Función de logout**: Intercepta errores 401/403 y ejecuta logout automático
 
 **Características** (Versión Simplificada):
+
 - Flag local `isRedirecting` previene múltiples ejecuciones
 - Verifica que no estemos ya en página de login
 - Muestra UN solo toast de error
@@ -194,7 +201,6 @@ El sistema de logout en la aplicación ha sido **simplificado** para eliminar co
 8. Redirige a login (con parámetro ?from=...)
 ```
 
-
 ---
 
 ## 🧩 Componentes y Mecanismos Involucrados
@@ -204,6 +210,7 @@ El sistema de logout en la aplicación ha sido **simplificado** para eliminar co
 **Propósito**: Revocar token en backend
 
 **Flujo**:
+
 1. Obtiene sesión con `getSession()`
 2. Si no hay token → retorna `{ ok: true }`
 3. Hace POST a `${API_URL_V2}logout` con Bearer token
@@ -215,6 +222,7 @@ El sistema de logout en la aplicación ha sido **simplificado** para eliminar co
 **Propósito**: Página principal que maneja redirecciones y muestra login
 
 **Lógica simplificada**:
+
 - NO verifica flags de logout
 - NO muestra LogoutDialog
 - Si `isSubdomain === null` → muestra loader
@@ -227,6 +235,7 @@ El sistema de logout en la aplicación ha sido **simplificado** para eliminar co
 **Propósito**: Pantalla de login
 
 **Lógica simplificada**:
+
 - NO verifica flags de logout
 - NO muestra LogoutDialog
 - Si `!tenantChecked` → muestra loader mientras verifica tenant
@@ -238,6 +247,7 @@ El sistema de logout en la aplicación ha sido **simplificado** para eliminar co
 **Propósito**: Intercepta errores de autenticación y redirige automáticamente
 
 **Lógica simplificada**:
+
 - Intercepta fetch con errores 401/403
 - Flag `isRedirecting` previene múltiples ejecuciones
 - Verifica que no estemos ya en página de login
@@ -251,11 +261,13 @@ El sistema de logout en la aplicación ha sido **simplificado** para eliminar co
 ### 1. Prevención de Múltiples Ejecuciones (AuthErrorInterceptor)
 
 **Flag local**: `isRedirecting`
+
 - Se marca cuando se detecta error de autenticación
 - Previene múltiples toasts y redirecciones
 - Se resetea cuando el componente se desmonta
 
 **Verificaciones**:
+
 - Si `isRedirecting === true` → ignora errores adicionales
 - Si `window.location.pathname === '/'` → no hace nada (ya en login)
 
@@ -268,6 +280,7 @@ El sistema de logout en la aplicación ha sido **simplificado** para eliminar co
 **Iniciado desde**: Sidebar, Navbar, FloatingUserMenu, TopBar, AdminLayout
 
 **Flujo**:
+
 1. `handleLogout()` ejecuta
 2. `logoutBackend()` revoca token
 3. `signOut({ redirect: false })` cierra sesión NextAuth
@@ -275,6 +288,7 @@ El sistema de logout en la aplicación ha sido **simplificado** para eliminar co
 5. `setTimeout(() => window.location.replace('/'), 500)` redirige
 
 **Características**:
+
 - Simple y directo
 - Toast de confirmación
 - Redirección después de 500ms
@@ -286,6 +300,7 @@ El sistema de logout en la aplicación ha sido **simplificado** para eliminar co
 **Flujo**: Idéntico al Escenario 1
 
 **Características**:
+
 - Mismo flujo que Admin
 - Usa `window.location.replace('/')` para consistencia
 
@@ -294,6 +309,7 @@ El sistema de logout en la aplicación ha sido **simplificado** para eliminar co
 **Iniciado desde**: `AuthErrorInterceptor`
 
 **Flujo**:
+
 1. Intercepta fetch con error 401/403
 2. Verifica `isRedirecting` (previene múltiples ejecuciones)
 3. Verifica que no estemos en `/`
@@ -301,6 +317,7 @@ El sistema de logout en la aplicación ha sido **simplificado** para eliminar co
 5. `signOut()` + `window.location.href = loginUrl` redirige
 
 **Características**:
+
 - Flag `isRedirecting` previene múltiples toasts
 - Solo se ejecuta una vez
 - Redirige con parámetro `?from=...`
@@ -328,10 +345,12 @@ El sistema de logout en la aplicación ha sido **simplificado** para eliminar co
 ### Timing
 
 **Logout Manual**:
+
 - Espera 500ms después de `signOut()` para mostrar toast
 - Luego redirige con `window.location.replace('/')`
 
 **Logout Automático**:
+
 - Espera `AUTH_ERROR_CONFIG.REDIRECT_DELAY` (configurable)
 - Luego redirige con `window.location.href`
 
@@ -344,6 +363,7 @@ El sistema de logout en la aplicación ha sido **simplificado** para eliminar co
 **Problema**: Si hay múltiples requests fallando, cada uno muestra un toast
 
 **Solución implementada**:
+
 - Flag `isRedirecting` en `AuthErrorInterceptor`
 - Solo se ejecuta una vez, incluso con múltiples errores
 - Verifica que no estemos ya en página de login
@@ -355,6 +375,7 @@ El sistema de logout en la aplicación ha sido **simplificado** para eliminar co
 **Problema**: HomePage bloqueaba el login cuando `status === "loading"`
 
 **Solución implementada**:
+
 - Solo bloquea cuando `status === "authenticated"` (mientras redirige)
 - Permite renderizar LoginPage cuando `status !== "authenticated"` (incluye loading)
 
@@ -365,6 +386,7 @@ El sistema de logout en la aplicación ha sido **simplificado** para eliminar co
 **Problema**: Fetch del tenant puede no completar, dejando `tenantChecked = false`
 
 **Solución implementada**:
+
 - `.finally(() => setTenantChecked(true))` asegura actualización siempre
 - Fetch simple sin timeouts complejos
 
@@ -375,6 +397,7 @@ El sistema de logout en la aplicación ha sido **simplificado** para eliminar co
 **Problema**: `sessionStorage` no existe en servidor
 
 **Mitigación**:
+
 - Verificación `typeof window !== 'undefined'` en todos los lugares
 - Estado inicial con verificación condicional
 
@@ -383,6 +406,7 @@ El sistema de logout en la aplicación ha sido **simplificado** para eliminar co
 **Problema**: En desarrollo, React Strict Mode desmonta y remonta componentes
 
 **Mitigación**:
+
 - Fetch simple que siempre completa en `.finally()`
 - No depende de flags persistentes
 
@@ -553,6 +577,7 @@ Estado muerto:
 ```
 
 **Orden correcto de NextAuth**:
+
 ```
 signOut()
   ↓
@@ -564,6 +589,7 @@ Login renderizable
 ```
 
 **Solución implementada**:
+
 - ✅ **REGLA DE ORO**: NUNCA limpiar `__is_logging_out__` mientras `status === "loading"`
 - ✅ Limpiar flag SOLO cuando `status === "unauthenticated"` Y `isSubdomain === true`
 - ✅ Usar `requestAnimationFrame` para dar tiempo al DOM
@@ -572,9 +598,15 @@ Login renderizable
 - ✅ Centralizada limpieza SOLO en `HomePage` cuando login está realmente listo
 
 **Código corregido**:
+
 ```javascript
 // ✅ CORRECTO: Solo limpiar cuando status === "unauthenticated"
-if (logoutFlag === 'true' && !logoutFlagCleared && status === 'unauthenticated' && isSubdomain === true) {
+if (
+  logoutFlag === 'true' &&
+  !logoutFlagCleared &&
+  status === 'unauthenticated' &&
+  isSubdomain === true
+) {
   requestAnimationFrame(() => {
     sessionStorage.removeItem('__is_logging_out__');
     setLogoutFlagCleared(true);
@@ -589,6 +621,7 @@ if (logoutFlag === 'true' && !logoutFlagCleared && status === 'unauthenticated' 
 **Causa**: Era consecuencia del Problema 1 - flag limpiado demasiado pronto
 
 **Solución**:
+
 - Verificar logout ANTES de cualquier render condicional
 - Usar `useIsLoggingOut()` al inicio del componente
 - Mantener flag hasta que `status === "unauthenticated"` (ya implementado)
@@ -598,11 +631,13 @@ if (logoutFlag === 'true' && !logoutFlagCleared && status === 'unauthenticated' 
 **Síntoma**: El diálogo permanece visible después de llegar al login
 
 **Causas posibles**:
+
 1. Flag no se limpia correctamente
 2. Verificación periódica no detecta cambio
 3. `logoutFlagCleared` no se actualiza
 
 **Solución**:
+
 - Verificar que flag se limpia en HomePage
 - Aumentar frecuencia de verificación en LogoutDialog
 - Forzar actualización con `setLogoutFlagCleared(true)`
@@ -612,11 +647,13 @@ if (logoutFlag === 'true' && !logoutFlagCleared && status === 'unauthenticated' 
 **Síntoma**: Se ejecutan múltiples procesos de logout
 
 **Causas posibles**:
+
 1. Usuario hace click múltiples veces
 2. Flag no se marca a tiempo
 3. Verificación de flag falla
 
 **Solución**:
+
 - Verificar flag al inicio de `handleLogout`
 - Usar `flushSync` para marcar flag inmediatamente
 - Agregar debounce si es necesario
@@ -626,11 +663,13 @@ if (logoutFlag === 'true' && !logoutFlagCleared && status === 'unauthenticated' 
 **Síntoma**: No se puede hacer logout porque flag está activo de logout anterior
 
 **Causas posibles**:
+
 1. Logout anterior falló y no limpió flag
 2. Navegador se cerró durante logout
 3. Flag no tiene timestamp para limpieza
 
 **Solución**:
+
 - Limpiar flags >5 segundos (como en AdminLayout)
 - Agregar limpieza en inicio de aplicación
 - Usar timestamp para detectar flags antiguos
@@ -640,11 +679,13 @@ if (logoutFlag === 'true' && !logoutFlagCleared && status === 'unauthenticated' 
 **Síntoma**: La transición al login es lenta o hay parpadeos visuales
 
 **Causas posibles**:
+
 1. Usa `router.push` en lugar de `window.location.replace`
 2. Flag se limpia muy temprano
 3. Múltiples renders durante transición
 
 **Solución**:
+
 - Usar `window.location.replace('/')` siempre
 - Mantener flag hasta que login esté listo
 - Optimizar verificaciones periódicas
@@ -657,7 +698,8 @@ if (logoutFlag === 'true' && !logoutFlagCleared && status === 'unauthenticated' 
 
 **Problema**: WarehouseOperatorLayout tiene flujo diferente
 
-**Recomendación**: 
+**Recomendación**:
+
 - Usar mismo flujo que AdminLayout
 - Mantener flag durante redirección
 - Usar `window.location.replace('/')`
@@ -667,6 +709,7 @@ if (logoutFlag === 'true' && !logoutFlagCleared && status === 'unauthenticated' 
 **Problema**: Flag se limpiaba en múltiples lugares, causando inconsistencias
 
 **Solución implementada**:
+
 - ✅ Limpieza centralizada SOLO en `HomePage` cuando `status === "unauthenticated"`
 - ✅ Eliminada limpieza en `WarehouseOperatorLayout` (línea 50)
 - ✅ Eliminada limpieza en `AuthErrorInterceptor` (3 lugares)
@@ -674,14 +717,17 @@ if (logoutFlag === 'true' && !logoutFlagCleared && status === 'unauthenticated' 
 - ✅ Verifica que `isSubdomain === true` antes de limpiar
 
 **Regla de oro aplicada**:
+
 ```javascript
 // ❌ NUNCA hacer esto:
-if (status !== 'loading') { // ❌ Demasiado pronto
+if (status !== 'loading') {
+  // ❌ Demasiado pronto
   sessionStorage.removeItem('__is_logging_out__');
 }
 
 // ✅ SIEMPRE hacer esto:
-if (status === 'unauthenticated' && isSubdomain === true) { // ✅ Correcto
+if (status === 'unauthenticated' && isSubdomain === true) {
+  // ✅ Correcto
   requestAnimationFrame(() => {
     sessionStorage.removeItem('__is_logging_out__');
   });
@@ -693,6 +739,7 @@ if (status === 'unauthenticated' && isSubdomain === true) { // ✅ Correcto
 **Problema**: Delay fijo (400ms) no era confiable y podía limpiar flag demasiado pronto
 
 **Solución implementada**:
+
 - ✅ Eliminado delay fijo
 - ✅ Verifica `status === "unauthenticated"` (NextAuth ya terminó)
 - ✅ Verifica `isSubdomain === true` (login page está activa)
@@ -700,10 +747,15 @@ if (status === 'unauthenticated' && isSubdomain === true) { // ✅ Correcto
 - ✅ No depende de timing, depende del estado real de NextAuth
 
 **Código implementado**:
+
 ```javascript
 // ✅ Verifica estado real, no timing
-if (logoutFlag === 'true' && !logoutFlagCleared && 
-    status === 'unauthenticated' && isSubdomain === true) {
+if (
+  logoutFlag === 'true' &&
+  !logoutFlagCleared &&
+  status === 'unauthenticated' &&
+  isSubdomain === true
+) {
   requestAnimationFrame(() => {
     sessionStorage.removeItem('__is_logging_out__');
     setLogoutFlagCleared(true);
@@ -716,6 +768,7 @@ if (logoutFlag === 'true' && !logoutFlagCleared &&
 **Problema**: Flags antiguos pueden bloquear logout
 
 **Recomendación**:
+
 - Limpiar flags >10 segundos al inicio de aplicación
 - Agregar limpieza en ClientLayout
 - Usar timestamp en todos los lugares
@@ -725,6 +778,7 @@ if (logoutFlag === 'true' && !logoutFlagCleared &&
 **Problema**: Múltiples intervalos verificando flag
 
 **Recomendación**:
+
 - Consolidar en un solo hook
 - Usar eventos en lugar de polling
 - Reducir frecuencia si es posible
@@ -734,6 +788,7 @@ if (logoutFlag === 'true' && !logoutFlagCleared &&
 **Problema**: Errores durante logout pueden dejar flag activo
 
 **Recomendación**:
+
 - Try-catch completo en handleLogout
 - Limpiar flag en finally
 - Logging mejorado para debugging
@@ -773,13 +828,14 @@ if (logoutFlag === 'true' && !logoutFlagCleared &&
 
 ## 🎯 Conclusión
 
-El sistema de logout es complejo pero robusto, con múltiples mecanismos de sincronización y manejo de errores. 
+El sistema de logout es complejo pero robusto, con múltiples mecanismos de sincronización y manejo de errores.
 
 ### 🔴 Problema Crítico Identificado y Resuelto
 
 **El problema principal era**: La complejidad de flags, LogoutDialog y verificaciones múltiples causaba estados muertos y bugs difíciles de debuggear.
 
 **Solución implementada (v2.0 - Simplificación)**:
+
 1. ✅ **Eliminación completa de flags**: No se usan `sessionStorage` flags ni `LogoutDialog`
 2. ✅ **Flujo simple y directo**: `logoutBackend()` → `signOut()` → `toast` → `redirect`
 3. ✅ **Login gate corregido**: NO bloquea login por `status === "loading"`, solo por `status === "authenticated"`
@@ -837,6 +893,7 @@ Este documento debe servir como referencia completa para entender y debuggear pr
    - No hay sincronización de flags
 
 5. **handleLogout simplificado**:
+
    ```javascript
    // Flujo simple:
    logoutBackend() → signOut() → toast → redirect
@@ -873,4 +930,3 @@ Este documento debe servir como referencia completa para entender y debuggear pr
 **Problema identificado**: El flag se limpiaba cuando `status === "loading"`, dejando la app en estado muerto.
 
 **Solución final**: Eliminación completa de flags y LogoutDialog en v2.0.
-

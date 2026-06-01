@@ -1,9 +1,19 @@
-import type { Country, Customer, PaginationMeta, ProspectCategory, Salesperson } from '@/types/catalog';
+import type {
+  Country,
+  Customer,
+  PaginationMeta,
+  ProspectCategory,
+  Salesperson,
+} from '@/types/catalog';
 
 export type ProspectStatus = 'new' | 'following' | 'offer_sent' | 'customer' | 'discarded';
 export type ProspectOrigin = 'conxemar' | 'direct' | 'referral' | 'web' | 'other';
 export type CommercialInteractionType = 'call' | 'email' | 'whatsapp' | 'visit' | 'other';
-export type CommercialInteractionResult = 'interested' | 'no_response' | 'not_interested' | 'pending';
+export type CommercialInteractionResult =
+  | 'interested'
+  | 'no_response'
+  | 'not_interested'
+  | 'pending';
 export type OfferStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired';
 export type OfferSendChannel = 'email' | 'pdf' | 'whatsapp_text';
 export type AgendaStatus = 'pending' | 'reprogrammed' | 'done' | 'cancelled';

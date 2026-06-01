@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useSession } from "next-auth/react";
-import { useRouter, usePathname } from "next/navigation";
-import { useEffect, type ReactNode } from "react";
-import { buildLoginUrl } from "@/configs/authConfig";
+import { useSession } from 'next-auth/react';
+import { useRouter, usePathname } from 'next/navigation';
+import { useEffect, type ReactNode } from 'react';
+import { buildLoginUrl } from '@/configs/authConfig';
 
 /**
  * Protección genérica por rol: redirige a login si no autenticado o a /unauthorized
@@ -24,21 +24,21 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
   const pathname = usePathname();
 
   useEffect(() => {
-    if (status === "authenticated") {
+    if (status === 'authenticated') {
       const rawRole = session?.user?.role;
       const userRole = Array.isArray(rawRole) ? rawRole[0] : rawRole;
       const hasAccess = userRole && allowedRoles?.includes(userRole);
       if (!hasAccess) {
-        router.push("/unauthorized");
+        router.push('/unauthorized');
       }
     }
 
-    if (status === "unauthenticated") {
-      router.push(buildLoginUrl(pathname || ""));
+    if (status === 'unauthenticated') {
+      router.push(buildLoginUrl(pathname || ''));
     }
   }, [session, status, allowedRoles, router, pathname]);
 
-  if (status === "loading") {
+  if (status === 'loading') {
     return <div>Cargando...</div>;
   }
 

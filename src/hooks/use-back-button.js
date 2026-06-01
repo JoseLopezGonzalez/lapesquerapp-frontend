@@ -2,22 +2,22 @@ import { useEffect, useRef } from 'react';
 
 /**
  * Hook useBackButton - Intercepta el botón back del navegador/dispositivo
- * 
+ *
  * Este hook captura la acción del botón back físico del smartphone o del navegador
  * y ejecuta una función callback personalizada en lugar de navegar a la URL anterior.
- * 
+ *
  * Útil para pantallas móviles donde queremos que el botón back del dispositivo
  * ejecute la misma acción que el botón back de la interfaz.
- * 
+ *
  * @param {Function} onBack - Función a ejecutar cuando se presiona el botón back
  * @param {boolean} enabled - Si está habilitado (por defecto true)
- * 
+ *
  * @example
  * ```jsx
  * const handleBack = () => {
  *   setActiveSection(null);
  * };
- * 
+ *
  * useBackButton(handleBack);
  * ```
  */
@@ -48,7 +48,7 @@ export function useBackButton(onBack, enabled = true) {
       // Prevenir la navegación inmediatamente volviendo a agregar la entrada
       // Esto debe hacerse de forma síncrona para evitar cualquier navegación visible
       window.history.pushState({ preventBack: true }, '', window.location.href);
-      
+
       // Ejecutar el callback personalizado después de prevenir la navegación
       if (isEnabledRef.current && onBackRef.current) {
         // Usar setTimeout para asegurar que se ejecute después de que el navegador procese el pushState

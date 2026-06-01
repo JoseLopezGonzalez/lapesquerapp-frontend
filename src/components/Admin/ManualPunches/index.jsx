@@ -10,33 +10,38 @@ export default function ManualPunchesManager() {
   const [activeTab, setActiveTab] = useState('individual');
 
   return (
-    <div className="h-full w-full flex flex-col overflow-hidden">
-      <div className="container mx-auto p-4 md:p-6 space-y-6 flex flex-col h-full overflow-hidden">
-        <div className="space-y-2 flex-shrink-0">
+    <div className="flex h-full w-full flex-col overflow-hidden">
+      <div className="container mx-auto flex h-full flex-col space-y-6 overflow-hidden p-4 md:p-6">
+        <div className="flex-shrink-0 space-y-2">
           <h2 className="text-2xl font-bold tracking-tight">Gestión Manual de Fichajes</h2>
-          <p className="text-sm text-muted-foreground">
-            Registra entradas y salidas de trabajadores de forma manual con fecha y hora personalizada
+          <p className="text-muted-foreground text-sm">
+            Registra entradas y salidas de trabajadores de forma manual con fecha y hora
+            personalizada
           </p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex flex-col flex-1 min-h-0 overflow-hidden">
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="flex min-h-0 w-full flex-1 flex-col overflow-hidden"
+        >
           <div className="flex-shrink-0">
-            <TabsList className="w-fit inline-flex">
+            <TabsList className="inline-flex w-fit">
               <TabsTrigger value="individual">Individual</TabsTrigger>
               <TabsTrigger value="bulk-form">Masivo (Formulario)</TabsTrigger>
               <TabsTrigger value="bulk-excel">Masivo (Excel)</TabsTrigger>
             </TabsList>
           </div>
 
-          <TabsContent value="individual" className="mt-6 flex-1 min-h-0 overflow-y-auto">
+          <TabsContent value="individual" className="mt-6 min-h-0 flex-1 overflow-y-auto">
             <IndividualPunchForm />
           </TabsContent>
 
-          <TabsContent value="bulk-form" className="mt-6 flex-1 min-h-0 overflow-y-auto">
+          <TabsContent value="bulk-form" className="mt-6 min-h-0 flex-1 overflow-y-auto">
             <BulkPunchForm />
           </TabsContent>
 
-          <TabsContent value="bulk-excel" className="mt-6 flex-1 min-h-0 overflow-y-auto">
+          <TabsContent value="bulk-excel" className="mt-6 min-h-0 flex-1 overflow-y-auto">
             <BulkPunchExcelUpload />
           </TabsContent>
         </Tabs>
@@ -44,4 +49,3 @@ export default function ManualPunchesManager() {
     </div>
   );
 }
-

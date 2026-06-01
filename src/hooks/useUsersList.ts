@@ -29,12 +29,7 @@ export interface UseUsersListResult {
  * Cache key incluye tenant para aislamiento multi-tenant.
  */
 export function useUsersList(params: UseUsersListParams = {}): UseUsersListResult {
-  const {
-    filters = {},
-    page = 1,
-    perPage = DEFAULT_PER_PAGE,
-    enabled = true,
-  } = params;
+  const { filters = {}, page = 1, perPage = DEFAULT_PER_PAGE, enabled = true } = params;
 
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 

@@ -38,17 +38,20 @@ No se trata de cambiar la UI library, sino de **crear adaptaciones mobile consci
 ### 1️⃣ Contexto del Proyecto
 
 **Situación actual**
+
 - ✅ Web app estable y funcional en desktop
 - ✅ ShadCN UI como design system consolidado
 - 🔄 Experiencia mobile aún por construir
 
 **Enfoque práctico**
+
 - Crear variantes mobile de componentes existentes
 - Mantener la misma lógica de negocio
 - Adaptar layouts y patrones de interacción
 - Armonizar solo cuando mejore la UX global
 
 **Principios clave para Mobile**
+
 - Pantallas simples y enfocadas
 - Jerarquía clara de información
 - Touch targets ≥ 44x44px
@@ -60,17 +63,20 @@ No se trata de cambiar la UI library, sino de **crear adaptaciones mobile consci
 **Armonizar significa mejorar la experiencia, no igualar por defecto.**
 
 **Cuándo SÍ armonizar**
+
 - Inconsistencias visuales claras
 - Confusión de UX entre plataformas
 - Mejoras que benefician a ambas versiones
 - Ajustes necesarios en componentes base
 
 **Cuándo NO armonizar**
+
 - Patrones distintos pero coherentes (sidebar vs bottom nav)
 - Layouts diferentes pero eficaces
 - Touch targets más grandes en mobile (correcto)
 
 **Principio rector**
+
 > Armonizar cuando aporte claridad y calidad de experiencia.
 
 ---
@@ -80,11 +86,13 @@ No se trata de cambiar la UI library, sino de **crear adaptaciones mobile consci
 ### 🔹 Bottom Sheets (Patrón clave en mobile)
 
 **Opciones disponibles**
+
 - `Sheet` de ShadCN (`side="bottom"`)
 - `Dialog` con animaciones personalizadas
 - `react-spring-bottom-sheet` (solo si se necesita funcionalidad avanzada)
 
 **Usos recomendados**
+
 - Formularios secundarios
 - Filtros y opciones
 - Acciones con input
@@ -92,6 +100,7 @@ No se trata de cambiar la UI library, sino de **crear adaptaciones mobile consci
 - Confirmaciones
 
 **Impacto**
+
 > Sustituye el modal centrado por un patrón mobile-natural.
 
 ---
@@ -99,15 +108,18 @@ No se trata de cambiar la UI library, sino de **crear adaptaciones mobile consci
 ### 🔹 Navegación Inferior (Bottom Navigation)
 
 **En mobile**
+
 - Barra fija inferior
 - Máximo 4–5 acciones principales
 - Iconos claros (con o sin labels cortos)
 - Touch targets generosos
 
 **En desktop**
+
 - Sidebar o topbar existente
 
 **Estrategia**
+
 - Mismo routing
 - Layout condicional según breakpoint
   - Mobile `<768px`: bottom nav
@@ -118,6 +130,7 @@ No se trata de cambiar la UI library, sino de **crear adaptaciones mobile consci
 ### 🔹 Inputs Mobile-Friendly
 
 **Requisitos mínimos**
+
 - Altura: 48–56px (`h-12` / `h-14`)
 - Texto: `text-base` (16px mínimo, evita zoom iOS)
 - Labels siempre visibles
@@ -125,6 +138,7 @@ No se trata de cambiar la UI library, sino de **crear adaptaciones mobile consci
 - Teclado adecuado por tipo de input
 
 **Implementación**
+
 - Variantes mobile de Input ShadCN
 - Clases Tailwind responsivas
 - Un solo componente, estilos adaptados
@@ -157,7 +171,7 @@ Mobile se construye adaptando ese contenido.
 #### CSS-first (Recomendado)
 
 ```jsx
-<div className="flex-col md:flex-row gap-4 md:gap-6 p-4 md:p-6">
+<div className="flex-col gap-4 p-4 md:flex-row md:gap-6 md:p-6">
   <div className="w-full md:w-1/2" />
 </div>
 ```
@@ -179,12 +193,14 @@ return isMobile ? <MobileLayout /> : <DesktopLayout />;
 ### Tablas ≠ Mobile
 
 **Mobile**
+
 - ❌ Tablas con scroll horizontal
 - ✅ Cards
 - ✅ Filas expandibles
 - ✅ Drill-down lista → detalle
 
 **Estrategia**
+
 - Misma data
 - Render condicional:
   - Desktop: `Table`
@@ -195,26 +211,31 @@ return isMobile ? <MobileLayout /> : <DesktopLayout />;
 ## 🔄 Cambios por Área
 
 ### Navegación
+
 - Bottom nav
 - Safe areas iOS
 - Padding para no tapar contenido
 
 ### Gestores (Managers)
+
 - Patrón master → detail
 - Lista ↔ detalle a pantalla completa en mobile
 - Split view en desktop
 
 ### Formularios
+
 - Inputs grandes
 - Bottom sheets
 - Acciones sticky
 
 ### Dashboards
+
 - Menos métricas
 - Cards verticales
 - Prioridad a lo crítico
 
 ### Modales
+
 - Bottom sheets para contenido largo
 - Diálogos centrados solo para confirmaciones
 
@@ -223,9 +244,11 @@ return isMobile ? <MobileLayout /> : <DesktopLayout />;
 ## 📱 PWA – Base Técnica
 
 **Objetivo**
+
 > Sentirse como app, no ser offline-first.
 
 **Incluye**
+
 - Manifest completo
 - Iconos correctos
 - Service Worker (cache básico)
@@ -233,6 +256,7 @@ return isMobile ? <MobileLayout /> : <DesktopLayout />;
 - Meta tags iOS/Android
 
 **No incluye (por ahora)**
+
 - Offline completo
 - Sync en background
 - Push notifications
@@ -242,12 +266,14 @@ return isMobile ? <MobileLayout /> : <DesktopLayout />;
 ## 🎬 Framer Motion – Animación con Propósito
 
 **Uso correcto**
+
 - Transiciones de pantalla
 - Drill-down
 - Bottom sheets
 - Feedback de acciones
 
 **Reglas**
+
 - <250ms
 - Solo `transform` y `opacity`
 - Respetar `prefers-reduced-motion`
@@ -269,17 +295,20 @@ return isMobile ? <MobileLayout /> : <DesktopLayout />;
 ## ✅ Stack Final
 
 **Mantener**
+
 - ShadCN UI
 - Tailwind CSS
 - Radix UI
 - Next.js
 
 **Crear**
+
 - Adaptaciones mobile
 - Layouts condicionales
 - Patrones nativos
 
 **Resultado esperado**
+
 - Un solo design system
 - Una sola lógica de negocio
 - Experiencia mobile nativa
@@ -293,6 +322,7 @@ return isMobile ? <MobileLayout /> : <DesktopLayout />;
 Este documento es el **master**.
 
 Se recomienda dividir en:
+
 1. Guía de Patrones Mobile
 2. Plan por Módulos
 3. PWA Técnico

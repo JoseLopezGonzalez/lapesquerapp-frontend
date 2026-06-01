@@ -1,7 +1,7 @@
 /**
  * Utilidades de formateo para módulo de producción
  */
-import { formatDecimalWeight, formatDecimal } from '@/helpers/formats/numbers/formatNumbers'
+import { formatDecimalWeight, formatDecimal } from '@/helpers/formats/numbers/formatNumbers';
 
 /**
  * Formatea un peso en kg con 2 decimales
@@ -10,12 +10,12 @@ import { formatDecimalWeight, formatDecimal } from '@/helpers/formats/numbers/fo
  * @deprecated Usar formatDecimalWeight de @/helpers/formats/numbers/formatNumbers en su lugar
  */
 export const formatWeight = (weight) => {
-    if (weight === null || weight === undefined || weight === '') return '0 kg'
-    const num = parseFloat(weight)
-    if (isNaN(num)) return '0 kg'
-    // Usar formatDecimalWeight para consistencia
-    return formatDecimalWeight(num)
-}
+  if (weight === null || weight === undefined || weight === '') return '0 kg';
+  const num = parseFloat(weight);
+  if (isNaN(num)) return '0 kg';
+  // Usar formatDecimalWeight para consistencia
+  return formatDecimalWeight(num);
+};
 
 /**
  * Formatea un número con decimales opcionales
@@ -24,11 +24,11 @@ export const formatWeight = (weight) => {
  * @returns {string} - Número formateado
  */
 export const formatNumber = (value, decimals = 2) => {
-    if (value === null || value === undefined || value === '') return '0'
-    const num = parseFloat(value)
-    if (isNaN(num)) return '0'
-    return num.toFixed(decimals)
-}
+  if (value === null || value === undefined || value === '') return '0';
+  const num = parseFloat(value);
+  if (isNaN(num)) return '0';
+  return num.toFixed(decimals);
+};
 
 /**
  * Formatea una fecha en formato español
@@ -37,29 +37,29 @@ export const formatNumber = (value, decimals = 2) => {
  * @returns {string} - Fecha formateada o 'N/A'
  */
 export const formatDate = (dateString, options = {}) => {
-    if (!dateString) return 'N/A'
-    
-    const defaultOptions = {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        ...options
+  if (!dateString) return 'N/A';
+
+  const defaultOptions = {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    ...options,
+  };
+
+  try {
+    const date = new Date(dateString);
+    // Verificar que la fecha es válida
+    if (isNaN(date.getTime())) {
+      return 'N/A';
     }
-    
-    try {
-        const date = new Date(dateString)
-        // Verificar que la fecha es válida
-        if (isNaN(date.getTime())) {
-            return 'N/A'
-        }
-        // Usar toLocaleString para incluir hora y fecha
-        return date.toLocaleString('es-ES', defaultOptions)
-    } catch (error) {
-        return 'N/A'
-    }
-}
+    // Usar toLocaleString para incluir hora y fecha
+    return date.toLocaleString('es-ES', defaultOptions);
+  } catch (error) {
+    return 'N/A';
+  }
+};
 
 /**
  * Formatea una fecha larga (con mes completo)
@@ -67,14 +67,14 @@ export const formatDate = (dateString, options = {}) => {
  * @returns {string} - Fecha formateada o 'N/A'
  */
 export const formatDateLong = (dateString) => {
-    return formatDate(dateString, {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    })
-}
+  return formatDate(dateString, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
 
 /**
  * Obtiene el nombre del producto de un objeto (maneja camelCase y snake_case)
@@ -82,9 +82,9 @@ export const formatDateLong = (dateString) => {
  * @returns {string} - Nombre del producto o 'Sin nombre'
  */
 export const getProductName = (item) => {
-    if (!item) return 'Sin nombre'
-    return item.product?.name || item.productName || 'Sin nombre'
-}
+  if (!item) return 'Sin nombre';
+  return item.product?.name || item.productName || 'Sin nombre';
+};
 
 /**
  * Obtiene el peso de un objeto (maneja camelCase y snake_case)
@@ -92,10 +92,10 @@ export const getProductName = (item) => {
  * @returns {number} - Peso numérico o 0
  */
 export const getWeight = (item) => {
-    if (!item) return 0
-    const weight = item.weightKg || item.weight_kg || item.netWeight || item.net_weight || 0
-    return parseFloat(weight) || 0
-}
+  if (!item) return 0;
+  const weight = item.weightKg || item.weight_kg || item.netWeight || item.net_weight || 0;
+  return parseFloat(weight) || 0;
+};
 
 /**
  * Obtiene el ID de un output (maneja camelCase y snake_case)
@@ -103,11 +103,13 @@ export const getWeight = (item) => {
  * @returns {string|null} - ID del output o null
  */
 export const getOutputId = (consumption) => {
-    if (!consumption) return null
-    return consumption.productionOutputId?.toString() || 
-           consumption.production_output_id?.toString() || 
-           null
-}
+  if (!consumption) return null;
+  return (
+    consumption.productionOutputId?.toString() ||
+    consumption.production_output_id?.toString() ||
+    null
+  );
+};
 
 /**
  * Obtiene el peso consumido (maneja camelCase y snake_case)
@@ -115,10 +117,10 @@ export const getOutputId = (consumption) => {
  * @returns {number} - Peso consumido o 0
  */
 export const getConsumedWeight = (consumption) => {
-    if (!consumption) return 0
-    const weight = consumption.consumedWeightKg || consumption.consumed_weight_kg || 0
-    return parseFloat(weight) || 0
-}
+  if (!consumption) return 0;
+  const weight = consumption.consumedWeightKg || consumption.consumed_weight_kg || 0;
+  return parseFloat(weight) || 0;
+};
 
 /**
  * Obtiene las cajas consumidas (maneja camelCase y snake_case)
@@ -126,9 +128,9 @@ export const getConsumedWeight = (consumption) => {
  * @returns {number} - Cajas consumidas o 0
  */
 export const getConsumedBoxes = (consumption) => {
-    if (!consumption) return 0
-    return parseInt(consumption.consumedBoxes || consumption.consumed_boxes || 0) || 0
-}
+  if (!consumption) return 0;
+  return parseInt(consumption.consumedBoxes || consumption.consumed_boxes || 0) || 0;
+};
 
 /**
  * Calcula el peso promedio por caja
@@ -137,10 +139,10 @@ export const getConsumedBoxes = (consumption) => {
  * @returns {number} - Peso promedio o 0
  */
 export const calculateAverageWeight = (totalWeight, boxes) => {
-    if (!boxes || boxes === 0) return 0
-    const weight = parseFloat(totalWeight) || 0
-    return weight / boxes
-}
+  if (!boxes || boxes === 0) return 0;
+  const weight = parseFloat(totalWeight) || 0;
+  return weight / boxes;
+};
 
 /**
  * Formatea el peso promedio por caja
@@ -149,7 +151,6 @@ export const calculateAverageWeight = (totalWeight, boxes) => {
  * @returns {string} - Peso promedio formateado
  */
 export const formatAverageWeight = (totalWeight, boxes) => {
-    const avg = calculateAverageWeight(totalWeight, boxes)
-    return formatDecimalWeight(avg)
-}
-
+  const avg = calculateAverageWeight(totalWeight, boxes);
+  return formatDecimalWeight(avg);
+};

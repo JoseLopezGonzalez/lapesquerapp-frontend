@@ -110,46 +110,41 @@ Se han creado servicios genéricos encapsulados en `/services/generic/`:
 ```javascript
 import { API_URL_V2 } from '@/configs/config';
 import { getAuthToken } from '@/lib/auth/getAuthToken';
-import { 
-    fetchEntitiesGeneric, 
-    deleteEntityGeneric 
-} from '@/services/generic/entityService';
-import { 
-    createEntityGeneric 
-} from '@/services/generic/createEntityService';
-import { 
-    fetchEntityDataGeneric, 
-    submitEntityFormGeneric,
-    fetchAutocompleteOptionsGeneric
+import { fetchEntitiesGeneric, deleteEntityGeneric } from '@/services/generic/entityService';
+import { createEntityGeneric } from '@/services/generic/createEntityService';
+import {
+  fetchEntityDataGeneric,
+  submitEntityFormGeneric,
+  fetchAutocompleteOptionsGeneric,
 } from '@/services/generic/editEntityService';
 
 const ENDPOINT = 'entity-name';
 
 export const entityService = {
-    async list(filters = {}, pagination = {}) {
-        const token = await getAuthToken();
-        // ... lógica usando fetchEntitiesGeneric
-    },
-    
-    async getById(id) {
-        // ... lógica usando fetchEntityDataGeneric
-    },
-    
-    async create(data) {
-        // ... lógica usando createEntityGeneric
-    },
-    
-    async update(id, data) {
-        // ... lógica usando submitEntityFormGeneric
-    },
-    
-    async delete(id) {
-        // ... lógica usando deleteEntityGeneric
-    },
-    
-    async getOptions() {
-        // ... lógica usando fetchAutocompleteOptionsGeneric
-    },
+  async list(filters = {}, pagination = {}) {
+    const token = await getAuthToken();
+    // ... lógica usando fetchEntitiesGeneric
+  },
+
+  async getById(id) {
+    // ... lógica usando fetchEntityDataGeneric
+  },
+
+  async create(data) {
+    // ... lógica usando createEntityGeneric
+  },
+
+  async update(id, data) {
+    // ... lógica usando submitEntityFormGeneric
+  },
+
+  async delete(id) {
+    // ... lógica usando deleteEntityGeneric
+  },
+
+  async getOptions() {
+    // ... lógica usando fetchAutocompleteOptionsGeneric
+  },
 };
 ```
 

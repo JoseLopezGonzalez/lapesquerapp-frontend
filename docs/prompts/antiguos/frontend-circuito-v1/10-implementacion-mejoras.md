@@ -21,8 +21,8 @@ FASE 0 – CREAR DOCUMENTO .MD RESUMEN GLOBAL
 
    # ROADMAP DE MEJORAS FRONTEND
 
-   | Nº | Mejora | Afecta a | Impacto | Estado |
-   |----|--------|----------|----------|--------|
+   | Nº  | Mejora | Afecta a | Impacto | Estado |
+   | --- | ------ | -------- | ------- | ------ |
 
    Y debajo, una sección detallada:
 
@@ -97,11 +97,17 @@ Estructura del plan:
 # Plan implementación – Mejora Nº X
 
 ## Objetivo
+
 ## Archivos a modificar
+
 ## Estrategia
+
 ## Qué NO tocar
+
 ## Protección Desktop/Mobile
+
 ## Estrategia anti-regresiones
+
 ## Checklist de validación
 
 Finalizar en chat con:
@@ -115,10 +121,12 @@ Solo cuando yo diga:
 "Aprueba implementación Mejora Nº X"
 
 Antes de ejecutar:
+
 - Preguntar si existe alguna restricción adicional.
 - Confirmar alcance final.
 
 Después:
+
 - Implementar cambios mínimos necesarios.
 - No refactorizar fuera del alcance.
 - No eliminar código sin verificar uso.

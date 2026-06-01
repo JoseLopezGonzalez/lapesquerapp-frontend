@@ -13,15 +13,13 @@ const TEMPERATURE_OPTIONS = [0, 4, -18, -23];
 /**
  * Dropdown para cambiar la temperatura del pedido (0, 4, -18, -23 ºC)
  */
-export default function OrderTemperatureDropdown({
-  temperature,
-  onTemperatureChange,
-  className,
-}) {
+export default function OrderTemperatureDropdown({ temperature, onTemperatureChange, className }) {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className={className ? `focus:outline-none ${className}` : 'focus:outline-none'}>
-        <span className="text-sm font-medium flex gap-1.5 items-center hover:text-muted-foreground">
+      <DropdownMenuTrigger
+        className={className ? `focus:outline-none ${className}` : 'focus:outline-none'}
+      >
+        <span className="hover:text-muted-foreground flex items-center gap-1.5 text-sm font-medium">
           <ThermometerSnowflake className="size-4" />
           {temperature ?? '0'} ºC
         </span>

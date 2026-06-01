@@ -1,4 +1,4 @@
-import TenantForm from "@/components/Superadmin/TenantForm";
+import TenantForm from '@/components/Superadmin/TenantForm';
 
 export default function CreateTenantPage() {
   return <TenantForm />;

@@ -36,14 +36,14 @@
 
 ## Mapeo a módulos CORE (PesquerApp)
 
-| Módulo CORE   | Relación con riesgos/mejoras |
-|---------------|------------------------------|
-| **Auth**      | Seguridad (NEXT_PUBLIC_*, secrets), TypeScript en flujos de login/tenant. |
-| **Productos** | Data fetching (listados), componentes grandes si los hay, tipos de API. |
-| **Clientes**  | Data fetching, formularios (Zod ya usado), tipos. |
+| Módulo CORE          | Relación con riesgos/mejoras                                                                       |
+| -------------------- | -------------------------------------------------------------------------------------------------- |
+| **Auth**             | Seguridad (NEXT*PUBLIC*\*, secrets), TypeScript en flujos de login/tenant.                         |
+| **Productos**        | Data fetching (listados), componentes grandes si los hay, tipos de API.                            |
+| **Clientes**         | Data fetching, formularios (Zod ya usado), tipos.                                                  |
 | **Ventas (Pedidos)** | Componente Order muy grande, data fetching, React Query, tipos; clave Google Maps en OrderDetails. |
-| **Stock**     | EntityClient, PalletView muy grandes; data fetching, hooks (useStore, usePallet). |
-| **Reportes**  | Data fetching, posibles componentes pesados, tipos. |
-| **Config**    | Settings/Options contexts, posible consolidación; tipos y tests. |
+| **Stock**            | EntityClient, PalletView muy grandes; data fetching, hooks (useStore, usePallet).                  |
+| **Reportes**         | Data fetching, posibles componentes pesados, tipos.                                                |
+| **Config**           | Settings/Options contexts, posible consolidación; tipos y tests.                                   |
 
 **Nota**: El prompt de evolución pide **no** empezar de forma arbitraria; el usuario debe indicar qué módulo abordar primero.

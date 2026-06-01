@@ -6,12 +6,12 @@ Your mission is to analyze this frontend deeply and generate a high‑level arch
 
 ## Project Context
 
-* **Project name**: PesquerApp
-* **Industry**: Fishing/seafood processing ERP
-* **Architecture**: Multi-tenant Next.js 16 + Laravel 10 backend
-* **Tenant isolation**: Subdomain-based (tenant header in API calls)
-* **Infrastructure**: Docker/Coolify on IONOS VPS
-* **Key domains**: Document processing workflows, inventory management, sales/purchases for fishing cooperatives
+- **Project name**: PesquerApp
+- **Industry**: Fishing/seafood processing ERP
+- **Architecture**: Multi-tenant Next.js 16 + Laravel 10 backend
+- **Tenant isolation**: Subdomain-based (tenant header in API calls)
+- **Infrastructure**: Docker/Coolify on IONOS VPS
+- **Key domains**: Document processing workflows, inventory management, sales/purchases for fishing cooperatives
 
 IMPORTANT: Do NOT follow a rigid predefined checklist. Instead:
 
@@ -22,16 +22,16 @@ IMPORTANT: Do NOT follow a rigid predefined checklist. Instead:
 
 You are allowed to:
 
-* Use your internal knowledge.
-* Cross‑check Next.js/React documentation and reputable sources if necessary.
-* Adapt your evaluation model dynamically.
+- Use your internal knowledge.
+- Cross‑check Next.js/React documentation and reputable sources if necessary.
+- Adapt your evaluation model dynamically.
 
 You are NOT allowed to:
 
-* Perform refactors.
-* Modify code.
-* Point to specific line-level issues.
-* Turn this into a per-file review.
+- Perform refactors.
+- Modify code.
+- Point to specific line-level issues.
+- Turn this into a per-file review.
 
 This is an architectural and systemic audit.
 
@@ -41,11 +41,11 @@ This is an architectural and systemic audit.
 
 Priority areas given the multi-tenant nature:
 
-* Tenant context management (client-side)
-* Tenant data isolation in UI state and cache
-* Shared vs tenant-specific components/resources
-* Tenant switching flows
-* API calls with correct tenant headers
+- Tenant context management (client-side)
+- Tenant data isolation in UI state and cache
+- Shared vs tenant-specific components/resources
+- Tenant switching flows
+- API calls with correct tenant headers
 
 ---
 
@@ -55,17 +55,17 @@ You must explicitly evaluate whether the project uses Next.js/React structural b
 
 **Patterns to evaluate:**
 
-* **Server vs Client Components**: Proper use of RSC; Client Components only when necessary (interactivity, hooks, browser APIs); data passing from Server to Client.
-* **Custom Hooks**: Reusable stateful logic; proper dependency arrays; separation from components; naming conventions (use\*).
-* **Data Fetching Strategy**: Server Components, React Query, SWR, or manual; consistency; cache strategy; error/loading states.
-* **Form Handling**: Library usage (React Hook Form, Formik, native); validation strategy (Zod, Yup, backend-only); error handling.
-* **State Management**: Context API, Zustand, Redux, React Query; appropriate use for server vs client state; prop drilling avoidance.
-* **API Layer / Services**: Centralized API client; error handling; request/response typing; tenant context injection.
-* **Component Architecture**: Composition vs inheritance; prop drilling; component size; separation of concerns.
-* **TypeScript Usage**: Type safety; interface definitions; `any` usage; API response typing.
-* **UI Component Library**: Consistency (shadcn/ui, custom, etc.); design system adherence.
-* **Testing Strategy**: Component tests, integration tests, E2E tests; coverage; testing library usage.
-* **Other** (as discovered): Layouts, Middleware, API Routes, Error Boundaries, Suspense Boundaries — note usage and structural gaps.
+- **Server vs Client Components**: Proper use of RSC; Client Components only when necessary (interactivity, hooks, browser APIs); data passing from Server to Client.
+- **Custom Hooks**: Reusable stateful logic; proper dependency arrays; separation from components; naming conventions (use\*).
+- **Data Fetching Strategy**: Server Components, React Query, SWR, or manual; consistency; cache strategy; error/loading states.
+- **Form Handling**: Library usage (React Hook Form, Formik, native); validation strategy (Zod, Yup, backend-only); error handling.
+- **State Management**: Context API, Zustand, Redux, React Query; appropriate use for server vs client state; prop drilling avoidance.
+- **API Layer / Services**: Centralized API client; error handling; request/response typing; tenant context injection.
+- **Component Architecture**: Composition vs inheritance; prop drilling; component size; separation of concerns.
+- **TypeScript Usage**: Type safety; interface definitions; `any` usage; API response typing.
+- **UI Component Library**: Consistency (shadcn/ui, custom, etc.); design system adherence.
+- **Testing Strategy**: Component tests, integration tests, E2E tests; coverage; testing library usage.
+- **Other** (as discovered): Layouts, Middleware, API Routes, Error Boundaries, Suspense Boundaries — note usage and structural gaps.
 
 Focus on systemic patterns (e.g. "data fetching is inconsistent across modules" or "state management well organized with React Query"), not line-level nitpicking. If a pattern is intentionally unused, state it and briefly justify.
 
@@ -89,12 +89,12 @@ Before starting the full audit:
 
 **Supporting documents**: `docs/audits/findings/`
 
-* `multi-tenancy-analysis.md`
-* `component-architecture-review.md`
-* `data-fetching-patterns.md`
-* `state-management-analysis.md`
-* `ui-design-system-review.md`
-* `structural-patterns-usage.md` (optional; use if findings warrant a dedicated document)
+- `multi-tenancy-analysis.md`
+- `component-architecture-review.md`
+- `data-fetching-patterns.md`
+- `state-management-analysis.md`
+- `ui-design-system-review.md`
+- `structural-patterns-usage.md` (optional; use if findings warrant a dedicated document)
 
 ### Main Audit Document Must Include:
 
@@ -123,16 +123,16 @@ You must think independently. Do not rigidly apply predefined patterns if the pr
 
 Evaluate across these dimensions (each 1-10):
 
-* **Multi-tenancy implementation maturity** (tenant context, isolation, switching)
-* **Component architecture quality** (composition, reusability, separation of concerns)
-* **Data fetching & state management consistency**
-* **TypeScript adoption & type safety**
-* **UI/UX design system consistency**
-* **Performance & optimization practices**
-* **Testing coverage and strategy**
-* **Accessibility compliance**
-* **Documentation quality**
-* **Technical debt level**
+- **Multi-tenancy implementation maturity** (tenant context, isolation, switching)
+- **Component architecture quality** (composition, reusability, separation of concerns)
+- **Data fetching & state management consistency**
+- **TypeScript adoption & type safety**
+- **UI/UX design system consistency**
+- **Performance & optimization practices**
+- **Testing coverage and strategy**
+- **Accessibility compliance**
+- **Documentation quality**
+- **Technical debt level**
 
 Provide overall score + per-dimension breakdown with reasoning.
 
@@ -142,9 +142,9 @@ Provide overall score + per-dimension breakdown with reasoning.
 
 At the end, provide:
 
-* **Top 5 systemic risks**
-* **Top 5 highest‑impact improvements**
-* **Overall architectural maturity score** (per-dimension breakdown as specified above)
+- **Top 5 systemic risks**
+- **Top 5 highest‑impact improvements**
+- **Overall architectural maturity score** (per-dimension breakdown as specified above)
 
 If critical missing context prevents proper evaluation, ask up to 5 concise questions at the end.
 

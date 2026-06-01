@@ -1,6 +1,7 @@
 # GAP-003 — Migrar entityServiceMapper.js a TypeScript
 
 ## Metadata
+
 - **Tipo:** Refactor
 - **Módulo:** Global
 - **Prioridad:** Media
@@ -17,6 +18,7 @@
 Es el punto de entrada de todos los servicios de dominio para el sistema genérico de CRUD. Al estar en `.js`, no tiene tipos y ningún consumidor sabe qué services están registrados ni qué métodos tienen.
 
 Este archivo fue identificado durante el análisis como "candidato prioritario de migración a TypeScript" porque:
+
 1. Es relativamente pequeño (un mapa de strings a objetos)
 2. Todos los services a los que apunta ya están en `.ts`
 3. Con tipado, los errores de configuración en `entitiesConfig.js` se detectarían en tiempo de compilación
@@ -28,6 +30,7 @@ Renombrar el archivo a `entityServiceMapper.ts`, tiparlo completamente, y verifi
 ## Referencias e inspiración
 
 Patrón de tipado de mapas en el proyecto:
+
 ```typescript
 // Tipo base que todos los services de dominio implementan
 interface DomainService {
@@ -43,6 +46,7 @@ const entityServiceMapper: Record<string, DomainService> = { ... };
 ```
 
 ## Criterios de aceptación
+
 - [ ] El archivo se llama `entityServiceMapper.ts` (no `.js`)
 - [ ] TypeScript no genera errores en el archivo ni en sus consumidores
 - [ ] `npm run build` pasa sin errores
@@ -51,10 +55,12 @@ const entityServiceMapper: Record<string, DomainService> = { ... };
 - [ ] El tipo del mapa garantiza que cada valor tiene al menos los métodos `list`, `create`, `update`, `delete`
 
 ## Archivos a crear o modificar
+
 - `src/services/domain/entityServiceMapper.js` → renombrar y reescribir como `entityServiceMapper.ts`
 - Cualquier archivo que importe `entityServiceMapper.js` con extensión explícita → actualizar el import
 
 ## Restricciones
+
 - No cambiar los keys del mapa (son los mismos strings que usa `entitiesConfig.js`)
 - No cambiar los services registrados — solo añadir tipos a los existentes
 - Si algún service en el mapa está todavía en `.js`, añadir un comentario `// TODO: migrate to .ts` en la importación pero no migrar ese service en este GAP
@@ -63,16 +69,21 @@ const entityServiceMapper: Record<string, DomainService> = { ... };
 ---
 
 ## Implementación
+
 > Rellena el Agente Implementador
 
 ### Archivos creados
+
 ### Archivos modificados
+
 ### Decisiones tomadas durante la implementación
+
 ### Desviaciones del plan (si las hay)
 
 ---
 
 ## Auditoría
+
 > Rellena el Agente Auditor
 
 ### Resultado: ✅ APROBADO | ⚠️ APROBADO CON OBSERVACIONES | ❌ RECHAZADO
@@ -80,6 +91,7 @@ const entityServiceMapper: Record<string, DomainService> = { ... };
 ### Puntuación: [X/10]
 
 ### Checklist
+
 - [ ] Criterios de aceptación cumplidos
 - [ ] Sin fetch() directo
 - [ ] Sin hardcode de tenant
@@ -91,4 +103,5 @@ const entityServiceMapper: Record<string, DomainService> = { ... };
 - [ ] Nomenclatura correcta
 
 ### Observaciones para Jose
+
 ### Estado final de la implementación

@@ -5,7 +5,13 @@ import flags from 'country-flag-icons/react/3x2';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import {
+  Command,
+  CommandEmpty,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
@@ -29,11 +35,7 @@ function normalizeToE164(value, defaultCountry) {
 }
 
 const PhoneInputField = React.forwardRef(({ className, ...props }, ref) => (
-  <Input
-    ref={ref}
-    className={cn('rounded-s-none rounded-e-lg', className)}
-    {...props}
-  />
+  <Input ref={ref} className={cn('rounded-s-none rounded-e-lg', className)} {...props} />
 ));
 
 PhoneInputField.displayName = 'PhoneInputField';
@@ -41,7 +43,7 @@ PhoneInputField.displayName = 'PhoneInputField';
 function Flag({ country, countryName }) {
   const FlagComponent = country ? flags[country] : null;
   return (
-    <span className="flex h-4 w-6 overflow-hidden rounded-sm bg-muted">
+    <span className="bg-muted flex h-4 w-6 overflow-hidden rounded-sm">
       {FlagComponent ? <FlagComponent title={countryName} /> : null}
     </span>
   );
@@ -57,7 +59,7 @@ function CountrySelect({ disabled, value, onChange, options }) {
         <Button
           type="button"
           variant="outline"
-          className="rounded-e-none rounded-s-lg border-r-0 px-2.5"
+          className="rounded-s-lg rounded-e-none border-r-0 px-2.5"
           disabled={disabled}
         >
           <Flag country={value} countryName={selectedOption?.label} />
@@ -83,8 +85,12 @@ function CountrySelect({ disabled, value, onChange, options }) {
                 >
                   <Flag country={option.value} countryName={option.label} />
                   <span className="flex-1 truncate text-left">{option.label}</span>
-                  <span className="text-muted-foreground">+{RPNInput.getCountryCallingCode(option.value)}</span>
-                  <Check className={cn('size-4', option.value === value ? 'opacity-100' : 'opacity-0')} />
+                  <span className="text-muted-foreground">
+                    +{RPNInput.getCountryCallingCode(option.value)}
+                  </span>
+                  <Check
+                    className={cn('size-4', option.value === value ? 'opacity-100' : 'opacity-0')}
+                  />
                 </CommandItem>
               ))}
           </CommandList>

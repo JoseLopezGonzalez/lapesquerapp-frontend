@@ -1,46 +1,46 @@
-'use client'
-import React, { useEffect, useRef } from 'react'
+'use client';
+import React, { useEffect, useRef } from 'react';
 
 const SparklesLoader = () => {
-    const containerRef = useRef(null)
-    const animationInstance = useRef(null)
+  const containerRef = useRef(null);
+  const animationInstance = useRef(null);
 
-    useEffect(() => {
-        let isMounted = true
+  useEffect(() => {
+    let isMounted = true;
 
-        const loadLottie = async () => {
-            const lottie = await import('lottie-web')
+    const loadLottie = async () => {
+      const lottie = await import('lottie-web');
 
-            if (!isMounted || !containerRef.current) return
+      if (!isMounted || !containerRef.current) return;
 
-            // Limpia cualquier animación previa
-            if (animationInstance.current) {
-                animationInstance.current.destroy()
-            }
+      // Limpia cualquier animación previa
+      if (animationInstance.current) {
+        animationInstance.current.destroy();
+      }
 
-            containerRef.current.innerHTML = ''
+      containerRef.current.innerHTML = '';
 
-            animationInstance.current = lottie.loadAnimation({
-                container: containerRef.current,
-                renderer: 'svg',
-                loop: true,
-                autoplay: true,
-                path: '/animations/sparkles.json',
-            })
-        }
+      animationInstance.current = lottie.loadAnimation({
+        container: containerRef.current,
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        path: '/animations/sparkles.json',
+      });
+    };
 
-        loadLottie()
+    loadLottie();
 
-        return () => {
-            isMounted = false
-            if (animationInstance.current) {
-                animationInstance.current.destroy()
-                animationInstance.current = null
-            }
-        }
-    }, [])
+    return () => {
+      isMounted = false;
+      if (animationInstance.current) {
+        animationInstance.current.destroy();
+        animationInstance.current = null;
+      }
+    };
+  }, []);
 
-    return <div ref={containerRef} className="lottie w-[150px] h-[150px]" />
-}
+  return <div ref={containerRef} className="lottie h-[150px] w-[150px]" />;
+};
 
-export default SparklesLoader
+export default SparklesLoader;

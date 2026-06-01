@@ -11,6 +11,7 @@ Los botones de formato (bold, italic, underline, alineación, etc.) en el panel 
 👉 **El problema es que el estado de los elementos no es canónico ni normalizado.**
 
 Se estaba intentando que la UI deduzca estado visual a partir de valores ambiguos:
+
 - Un mismo concepto tiene múltiples representaciones (`"bold"`, `700`, `"700"`, `undefined`, `"normal"`)
 - El toggle estaba actuando como intérprete del estado (fallback, compatibilidad legacy, parsing semántico)
 - El estado no es explícito (`fontStyle: undefined` - ¿es normal? ¿no definido? ¿heredado? ¿legacy? ¿error?)
@@ -20,6 +21,7 @@ Se estaba intentando que la UI deduzca estado visual a partir de valores ambiguo
 **Regla de oro: La UI no interpreta estado. La UI solo refleja estado.**
 
 Se implementó normalización del estado en un SOLO sitio antes de llegar a la UI:
+
 - Cuando se crea el elemento (`addElement`)
 - Cuando se carga de BD (`handleSelectLabel`)
 - Cuando se importa JSON (`handleImportJSON`)
@@ -27,6 +29,7 @@ Se implementó normalización del estado en un SOLO sitio antes de llegar a la U
 - Cuando se selecciona (`selectedElementData`)
 
 **El elemento SIEMPRE tiene valores explícitos y únicos:**
+
 - `fontWeight: "normal" | "bold"` (nunca números, nunca undefined)
 - `fontStyle: "normal" | "italic"` (nunca undefined)
 - `textDecoration: "none" | "underline" | "line-through"` (nunca undefined)
@@ -34,6 +37,7 @@ Se implementó normalización del estado en un SOLO sitio antes de llegar a la U
 - `verticalAlign: "start" | "end" | "center"` (nunca undefined)
 
 **Los Toggle ahora solo comparan igualdad simple:**
+
 - `pressed={selectedElementData.fontWeight === "bold"}` (sin ORs, sin includes, sin fallback)
 - Si no puede hacer comparación simple, el problema no es el toggle
 
@@ -44,32 +48,33 @@ Cuando un componente tiene propiedades como `fontWeight: "bold"`, `fontStyle: "i
 ## Componente Toggle (Radix UI)
 
 ### Ubicación
+
 `src/components/ui/toggle.jsx`
 
 ### Definición del Componente
 
 ```jsx
 const toggleVariants = cva(
-  "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground",
+  'inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground',
   {
     variants: {
       variant: {
-        default: "bg-transparent hover:bg-accent hover:text-accent-foreground",
-        outline: "border border-input bg-transparent hover:bg-accent hover:text-accent-foreground",
+        default: 'bg-transparent hover:bg-accent hover:text-accent-foreground',
+        outline: 'border border-input bg-transparent hover:bg-accent hover:text-accent-foreground',
       },
       size: {
-        default: "h-9 px-3",
-        sm: "h-8 px-2 text-xs",
-        lg: "h-10 px-4",
-        icon: "h-8 w-8 p-0",
+        default: 'h-9 px-3',
+        sm: 'h-8 px-2 text-xs',
+        lg: 'h-10 px-4',
+        icon: 'h-8 w-8 p-0',
       },
     },
     defaultVariants: {
-      variant: "default",
-      size: "default",
+      variant: 'default',
+      size: 'default',
     },
   }
-)
+);
 ```
 
 ### Comportamiento Esperado
@@ -81,6 +86,7 @@ const toggleVariants = cva(
 ## Implementación Actual
 
 ### Ubicación
+
 `src/components/Admin/LabelEditor/index.js`
 
 ### Estructura de Datos del Elemento
@@ -116,8 +122,8 @@ Cuando se crea un nuevo elemento:
 const addElement = (type) => {
   const newElement = {
     // ...
-    fontWeight: "normal",
-    textAlign: "left",
+    fontWeight: 'normal',
+    textAlign: 'left',
     // fontStyle, textDecoration, textTransform, horizontalAlign, verticalAlign NO se establecen por defecto
     // (son undefined)
   };
@@ -134,16 +140,21 @@ const addElement = (type) => {
   variant="outline"
   size="sm"
   className="w-8"
-  pressed={selectedElementData.fontWeight === "bold" || selectedElementData.fontWeight === 700 || selectedElementData.fontWeight === "700"}
+  pressed={
+    selectedElementData.fontWeight === 'bold' ||
+    selectedElementData.fontWeight === 700 ||
+    selectedElementData.fontWeight === '700'
+  }
   onPressedChange={(pressed) => {
-    updateElement(selectedElementData.id, { fontWeight: pressed ? "bold" : "normal" });
+    updateElement(selectedElementData.id, { fontWeight: pressed ? 'bold' : 'normal' });
   }}
 >
-  <BoldIcon className="w-4 h-4" />
+  <BoldIcon className="h-4 w-4" />
 </Toggle>
 ```
 
 **Lógica de comparación:**
+
 - Se marca como activo si `fontWeight === "bold"` O `fontWeight === 700` O `fontWeight === "700"`
 - Maneja tanto valores string como numéricos
 
@@ -154,16 +165,19 @@ const addElement = (type) => {
   variant="outline"
   size="sm"
   className="w-8"
-  pressed={selectedElementData.fontStyle === "italic" || selectedElementData.fontStyle === "oblique"}
+  pressed={
+    selectedElementData.fontStyle === 'italic' || selectedElementData.fontStyle === 'oblique'
+  }
   onPressedChange={(pressed) => {
-    updateElement(selectedElementData.id, { fontStyle: pressed ? "italic" : "normal" });
+    updateElement(selectedElementData.id, { fontStyle: pressed ? 'italic' : 'normal' });
   }}
 >
-  <Italic className="w-4 h-4" />
+  <Italic className="h-4 w-4" />
 </Toggle>
 ```
 
 **Lógica de comparación:**
+
 - Se marca como activo si `fontStyle === "italic"` O `fontStyle === "oblique"`
 
 #### 3. Underline (Subrayado)
@@ -173,16 +187,20 @@ const addElement = (type) => {
   variant="outline"
   size="sm"
   className="w-8"
-  pressed={selectedElementData.textDecoration === "underline" || (selectedElementData.textDecoration && selectedElementData.textDecoration.includes("underline"))}
+  pressed={
+    selectedElementData.textDecoration === 'underline' ||
+    (selectedElementData.textDecoration && selectedElementData.textDecoration.includes('underline'))
+  }
   onPressedChange={(pressed) => {
-    updateElement(selectedElementData.id, { textDecoration: pressed ? "underline" : "none" });
+    updateElement(selectedElementData.id, { textDecoration: pressed ? 'underline' : 'none' });
   }}
 >
-  <Underline className="w-4 h-4" />
+  <Underline className="h-4 w-4" />
 </Toggle>
 ```
 
 **Lógica de comparación:**
+
 - Se marca como activo si `textDecoration === "underline"` O si `textDecoration` incluye la cadena "underline" (para manejar valores compuestos como "underline line-through")
 
 #### 4. Strikethrough (Tachado)
@@ -192,162 +210,200 @@ const addElement = (type) => {
   variant="outline"
   size="sm"
   className="w-8"
-  pressed={selectedElementData.textDecoration === "line-through" || (selectedElementData.textDecoration && selectedElementData.textDecoration.includes("line-through"))}
+  pressed={
+    selectedElementData.textDecoration === 'line-through' ||
+    (selectedElementData.textDecoration &&
+      selectedElementData.textDecoration.includes('line-through'))
+  }
   onPressedChange={(pressed) => {
-    updateElement(selectedElementData.id, { textDecoration: pressed ? "line-through" : "none" });
+    updateElement(selectedElementData.id, { textDecoration: pressed ? 'line-through' : 'none' });
   }}
 >
-  <Strikethrough className="w-4 h-4" />
+  <Strikethrough className="h-4 w-4" />
 </Toggle>
 ```
 
 **Lógica de comparación:**
+
 - Similar a underline, maneja valores compuestos
 
 #### 5. Alineación Horizontal
 
 ```jsx
-{/* Left */}
+{
+  /* Left */
+}
 <Toggle
   variant="outline"
   size="sm"
   className="w-8"
-  pressed={selectedElementData.horizontalAlign === "left" || (!selectedElementData.horizontalAlign && selectedElementData.textAlign === "left")}
+  pressed={
+    selectedElementData.horizontalAlign === 'left' ||
+    (!selectedElementData.horizontalAlign && selectedElementData.textAlign === 'left')
+  }
   onPressedChange={(pressed) => {
-    updateElement(selectedElementData.id, { horizontalAlign: pressed ? "left" : undefined });
+    updateElement(selectedElementData.id, { horizontalAlign: pressed ? 'left' : undefined });
   }}
 >
-  <AlignLeft className="w-4 h-4" />
-</Toggle>
+  <AlignLeft className="h-4 w-4" />
+</Toggle>;
 
-{/* Center */}
+{
+  /* Center */
+}
 <Toggle
   variant="outline"
   size="sm"
   className="w-8"
-  pressed={selectedElementData.horizontalAlign === "center" || (!selectedElementData.horizontalAlign && selectedElementData.textAlign === "center")}
+  pressed={
+    selectedElementData.horizontalAlign === 'center' ||
+    (!selectedElementData.horizontalAlign && selectedElementData.textAlign === 'center')
+  }
   onPressedChange={(pressed) => {
-    updateElement(selectedElementData.id, { horizontalAlign: pressed ? "center" : undefined });
+    updateElement(selectedElementData.id, { horizontalAlign: pressed ? 'center' : undefined });
   }}
 >
-  <AlignCenter className="w-4 h-4" />
-</Toggle>
+  <AlignCenter className="h-4 w-4" />
+</Toggle>;
 
-{/* Right */}
+{
+  /* Right */
+}
 <Toggle
   variant="outline"
   size="sm"
   className="w-8"
-  pressed={selectedElementData.horizontalAlign === "right" || (!selectedElementData.horizontalAlign && selectedElementData.textAlign === "right")}
+  pressed={
+    selectedElementData.horizontalAlign === 'right' ||
+    (!selectedElementData.horizontalAlign && selectedElementData.textAlign === 'right')
+  }
   onPressedChange={(pressed) => {
-    updateElement(selectedElementData.id, { horizontalAlign: pressed ? "right" : undefined });
+    updateElement(selectedElementData.id, { horizontalAlign: pressed ? 'right' : undefined });
   }}
 >
-  <AlignRight className="w-4 h-4" />
-</Toggle>
+  <AlignRight className="h-4 w-4" />
+</Toggle>;
 
-{/* Justify */}
+{
+  /* Justify */
+}
 <Toggle
   variant="outline"
   size="sm"
   className="w-8"
-  pressed={selectedElementData.horizontalAlign === "justify" || (!selectedElementData.horizontalAlign && selectedElementData.textAlign === "justify")}
+  pressed={
+    selectedElementData.horizontalAlign === 'justify' ||
+    (!selectedElementData.horizontalAlign && selectedElementData.textAlign === 'justify')
+  }
   onPressedChange={(pressed) => {
-    updateElement(selectedElementData.id, { horizontalAlign: pressed ? "justify" : undefined });
+    updateElement(selectedElementData.id, { horizontalAlign: pressed ? 'justify' : undefined });
   }}
 >
-  <AlignJustify className="w-4 h-4" />
-</Toggle>
+  <AlignJustify className="h-4 w-4" />
+</Toggle>;
 ```
 
 **Lógica de comparación:**
+
 - Si `horizontalAlign` existe, se compara directamente
 - Si `horizontalAlign` es `undefined`, se usa `textAlign` como fallback (para compatibilidad con elementos antiguos)
 
 #### 6. Alineación Vertical
 
 ```jsx
-{/* Start */}
+{
+  /* Start */
+}
 <Toggle
   variant="outline"
   size="sm"
   className="w-8"
-  pressed={selectedElementData.verticalAlign === "start"}
+  pressed={selectedElementData.verticalAlign === 'start'}
   onPressedChange={(pressed) => {
-    updateElement(selectedElementData.id, { verticalAlign: pressed ? "start" : undefined });
+    updateElement(selectedElementData.id, { verticalAlign: pressed ? 'start' : undefined });
   }}
 >
-  <AlignVerticalJustifyStart className="w-4 h-4" />
-</Toggle>
+  <AlignVerticalJustifyStart className="h-4 w-4" />
+</Toggle>;
 
-{/* End */}
+{
+  /* End */
+}
 <Toggle
   variant="outline"
   size="sm"
   className="w-8"
-  pressed={selectedElementData.verticalAlign === "end"}
+  pressed={selectedElementData.verticalAlign === 'end'}
   onPressedChange={(pressed) => {
-    updateElement(selectedElementData.id, { verticalAlign: pressed ? "end" : undefined });
+    updateElement(selectedElementData.id, { verticalAlign: pressed ? 'end' : undefined });
   }}
 >
-  <AlignVerticalJustifyEnd className="w-4 h-4" />
-</Toggle>
+  <AlignVerticalJustifyEnd className="h-4 w-4" />
+</Toggle>;
 
-{/* Center */}
+{
+  /* Center */
+}
 <Toggle
   variant="outline"
   size="sm"
   className="w-8"
-  pressed={selectedElementData.verticalAlign === "center"}
+  pressed={selectedElementData.verticalAlign === 'center'}
   onPressedChange={(pressed) => {
-    updateElement(selectedElementData.id, { verticalAlign: pressed ? "center" : undefined });
+    updateElement(selectedElementData.id, { verticalAlign: pressed ? 'center' : undefined });
   }}
 >
-  <AlignVerticalJustifyCenter className="w-4 h-4" />
-</Toggle>
+  <AlignVerticalJustifyCenter className="h-4 w-4" />
+</Toggle>;
 ```
 
 #### 7. Text Transform
 
 ```jsx
-{/* Uppercase */}
+{
+  /* Uppercase */
+}
 <Toggle
   variant="outline"
   size="sm"
   className="w-8 p-0"
-  pressed={selectedElementData.textTransform === "uppercase"}
+  pressed={selectedElementData.textTransform === 'uppercase'}
   onPressedChange={(pressed) => {
-    updateElement(selectedElementData.id, { textTransform: pressed ? "uppercase" : "none" });
+    updateElement(selectedElementData.id, { textTransform: pressed ? 'uppercase' : 'none' });
   }}
 >
-  <CaseUpper className="w-5 h-5" />
-</Toggle>
+  <CaseUpper className="h-5 w-5" />
+</Toggle>;
 
-{/* Lowercase */}
+{
+  /* Lowercase */
+}
 <Toggle
   variant="outline"
   size="sm"
   className="w-8"
-  pressed={selectedElementData.textTransform === "lowercase"}
+  pressed={selectedElementData.textTransform === 'lowercase'}
   onPressedChange={(pressed) => {
-    updateElement(selectedElementData.id, { textTransform: pressed ? "lowercase" : "none" });
+    updateElement(selectedElementData.id, { textTransform: pressed ? 'lowercase' : 'none' });
   }}
 >
-  <CaseLower className="w-5 h-5" />
-</Toggle>
+  <CaseLower className="h-5 w-5" />
+</Toggle>;
 
-{/* Capitalize */}
+{
+  /* Capitalize */
+}
 <Toggle
   variant="outline"
   size="sm"
   className="w-8"
-  pressed={selectedElementData.textTransform === "capitalize"}
+  pressed={selectedElementData.textTransform === 'capitalize'}
   onPressedChange={(pressed) => {
-    updateElement(selectedElementData.id, { textTransform: pressed ? "capitalize" : "none" });
+    updateElement(selectedElementData.id, { textTransform: pressed ? 'capitalize' : 'none' });
   }}
 >
-  <CaseSensitive className="w-5 h-5" />
-</Toggle>
+  <CaseSensitive className="h-5 w-5" />
+</Toggle>;
 ```
 
 ## Flujo de Datos
@@ -376,6 +432,7 @@ const addElement = (type) => {
 **Problema:** Los valores almacenados en la base de datos o en el estado pueden no coincidir exactamente con los valores que estamos comparando.
 
 **Ejemplo:**
+
 - Base de datos guarda `fontWeight: 700` (número)
 - Comparación busca `"bold"` o `700` o `"700"`
 - Pero si viene como string `"700"` desde la BD, debería funcionar
@@ -398,6 +455,7 @@ console.log('Element data:', {
 **Problema:** La prop `pressed` puede no estar llegando correctamente al componente Toggle de Radix UI.
 
 **Verificación en DevTools:**
+
 1. Abrir DevTools del navegador
 2. Seleccionar un elemento con `fontWeight: "bold"`
 3. Inspeccionar el botón Bold
@@ -405,11 +463,13 @@ console.log('Element data:', {
 5. Verificar si tiene las clases `bg-primary` y `text-primary-foreground`
 
 **Si NO tiene `data-state="on"`:**
+
 - El problema está en cómo se pasa la prop `pressed`
 - Verificar que `selectedElementData` no sea `null` o `undefined`
 - Verificar que la comparación esté retornando un booleano
 
 **Si SÍ tiene `data-state="on"` pero NO tiene las clases:**
+
 - Problema de especificidad CSS
 - Las clases de `variant="outline"` pueden estar sobrescribiendo
 - Verificar en DevTools qué clases están aplicadas
@@ -419,11 +479,13 @@ console.log('Element data:', {
 **Problema:** Las clases de `variant="outline"` pueden tener mayor especificidad que `data-[state=on]:bg-primary`.
 
 **Clases aplicadas con `variant="outline"`:**
+
 ```
 border border-input bg-transparent hover:bg-accent hover:text-accent-foreground
 ```
 
 **Clases que deberían aplicarse cuando `pressed={true}`:**
+
 ```
 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground
 ```
@@ -435,6 +497,7 @@ data-[state=on]:bg-primary data-[state=on]:text-primary-foreground
 **Problema:** `updateElement` puede no estar actualizando correctamente el estado, o puede haber un problema de sincronización.
 
 **Verificación:**
+
 ```javascript
 // Agregar log en updateElement
 const updateElement = (id, updates) => {
@@ -458,11 +521,12 @@ const updateElement = (id, updates) => {
 **Problema:** Si una propiedad es `undefined`, las comparaciones pueden fallar de manera inesperada.
 
 **Ejemplo:**
+
 ```javascript
 // Si fontWeight es undefined
-selectedElementData.fontWeight === "bold" // false
-selectedElementData.fontWeight === 700 // false
-selectedElementData.fontWeight === "700" // false
+selectedElementData.fontWeight === 'bold'; // false
+selectedElementData.fontWeight === 700; // false
+selectedElementData.fontWeight === '700'; // false
 // Resultado: pressed={false} aunque debería ser true
 ```
 
@@ -475,29 +539,34 @@ selectedElementData.fontWeight === "700" // false
 Agregar logs temporales en el renderizado:
 
 ```jsx
-{(() => {
-  const isBold = selectedElementData.fontWeight === "bold" || selectedElementData.fontWeight === 700 || selectedElementData.fontWeight === "700";
-  console.log('Bold check:', {
-    fontWeight: selectedElementData.fontWeight,
-    type: typeof selectedElementData.fontWeight,
-    isBold,
-    pressed: isBold
-  });
-  return (
-    <Toggle
-      variant="outline"
-      size="sm"
-      className="w-8"
-      pressed={isBold}
-      onPressedChange={(pressed) => {
-        console.log('Bold toggle changed:', pressed);
-        updateElement(selectedElementData.id, { fontWeight: pressed ? "bold" : "normal" });
-      }}
-    >
-      <BoldIcon className="w-4 h-4" />
-    </Toggle>
-  );
-})()}
+{
+  (() => {
+    const isBold =
+      selectedElementData.fontWeight === 'bold' ||
+      selectedElementData.fontWeight === 700 ||
+      selectedElementData.fontWeight === '700';
+    console.log('Bold check:', {
+      fontWeight: selectedElementData.fontWeight,
+      type: typeof selectedElementData.fontWeight,
+      isBold,
+      pressed: isBold,
+    });
+    return (
+      <Toggle
+        variant="outline"
+        size="sm"
+        className="w-8"
+        pressed={isBold}
+        onPressedChange={(pressed) => {
+          console.log('Bold toggle changed:', pressed);
+          updateElement(selectedElementData.id, { fontWeight: pressed ? 'bold' : 'normal' });
+        }}
+      >
+        <BoldIcon className="h-4 w-4" />
+      </Toggle>
+    );
+  })();
+}
 ```
 
 ### Paso 2: Verificar en DevTools
@@ -514,6 +583,7 @@ Agregar logs temporales en el renderizado:
 ### Paso 3: Verificar Especificidad CSS
 
 En DevTools, inspeccionar el botón y ver:
+
 - ¿Qué reglas CSS están aplicadas?
 - ¿Hay alguna regla que esté sobrescribiendo `data-[state=on]:bg-primary`?
 - ¿Cuál es la especificidad de cada regla?
@@ -521,6 +591,7 @@ En DevTools, inspeccionar el botón y ver:
 ### Paso 4: Verificar el Estado de React
 
 En DevTools, ir a la pestaña "React" (si está disponible):
+
 1. Buscar el componente `LabelEditor`
 2. Inspeccionar las props `selectedElementData`
 3. Verificar los valores reales de las propiedades
@@ -535,12 +606,15 @@ Si los valores vienen de la base de datos en formatos inconsistentes, normalizar
 const normalizeElement = (element) => {
   return {
     ...element,
-    fontWeight: element.fontWeight === 700 || element.fontWeight === "700" ? "bold" : (element.fontWeight || "normal"),
-    fontStyle: element.fontStyle || "normal",
-    textDecoration: element.textDecoration || "none",
-    textTransform: element.textTransform || "none",
-    horizontalAlign: element.horizontalAlign || element.textAlign || "left",
-    verticalAlign: element.verticalAlign || "start",
+    fontWeight:
+      element.fontWeight === 700 || element.fontWeight === '700'
+        ? 'bold'
+        : element.fontWeight || 'normal',
+    fontStyle: element.fontStyle || 'normal',
+    textDecoration: element.textDecoration || 'none',
+    textTransform: element.textTransform || 'none',
+    horizontalAlign: element.horizontalAlign || element.textAlign || 'left',
+    verticalAlign: element.verticalAlign || 'start',
   };
 };
 ```
@@ -552,17 +626,17 @@ Crear funciones helper para las comparaciones:
 ```javascript
 const isBold = (fontWeight) => {
   if (!fontWeight) return false;
-  return fontWeight === "bold" || fontWeight === 700 || fontWeight === "700";
+  return fontWeight === 'bold' || fontWeight === 700 || fontWeight === '700';
 };
 
 const isItalic = (fontStyle) => {
   if (!fontStyle) return false;
-  return fontStyle === "italic" || fontStyle === "oblique";
+  return fontStyle === 'italic' || fontStyle === 'oblique';
 };
 
 const hasUnderline = (textDecoration) => {
   if (!textDecoration) return false;
-  return textDecoration === "underline" || textDecoration.includes("underline");
+  return textDecoration === 'underline' || textDecoration.includes('underline');
 };
 ```
 
@@ -622,53 +696,53 @@ La función `normalizeElement` asegura que todas las propiedades de formato teng
 
 ```javascript
 const normalizeElement = (element) => {
-    if (!element) return element;
-    
-    // Normalizar fontWeight: "bold" | "normal" (nunca números ni undefined)
-    let fontWeight = element.fontWeight;
-    if (fontWeight === 700 || fontWeight === "700") {
-        fontWeight = "bold";
-    } else if (!fontWeight || fontWeight === "normal") {
-        fontWeight = "normal";
-    }
-    
-    // Normalizar fontStyle: "italic" | "normal" (nunca undefined)
-    let fontStyle = element.fontStyle || "normal";
-    if (fontStyle === "oblique") {
-        fontStyle = "italic";
-    }
-    
-    // Normalizar textDecoration: "none" | "underline" | "line-through" (nunca undefined)
-    let textDecoration = element.textDecoration || "none";
-    
-    // Normalizar textTransform: "none" | "uppercase" | "lowercase" | "capitalize" (nunca undefined)
-    let textTransform = element.textTransform || "none";
-    
-    // Normalizar horizontalAlign: convertir textAlign legacy a horizontalAlign si es necesario
-    let horizontalAlign = element.horizontalAlign;
-    if (!horizontalAlign && element.textAlign) {
-        horizontalAlign = element.textAlign; // Migración legacy
-    }
-    if (!horizontalAlign || !["left", "center", "right", "justify"].includes(horizontalAlign)) {
-        horizontalAlign = "left";
-    }
-    
-    // Normalizar verticalAlign: "start" | "end" | "center" (nunca undefined)
-    let verticalAlign = element.verticalAlign || "start";
-    if (!["start", "end", "center"].includes(verticalAlign)) {
-        verticalAlign = "start";
-    }
-    
-    return {
-        ...element,
-        fontWeight,
-        fontStyle,
-        textDecoration,
-        textTransform,
-        horizontalAlign,
-        verticalAlign,
-        textAlign: horizontalAlign, // Sincronizar con horizontalAlign para compatibilidad
-    };
+  if (!element) return element;
+
+  // Normalizar fontWeight: "bold" | "normal" (nunca números ni undefined)
+  let fontWeight = element.fontWeight;
+  if (fontWeight === 700 || fontWeight === '700') {
+    fontWeight = 'bold';
+  } else if (!fontWeight || fontWeight === 'normal') {
+    fontWeight = 'normal';
+  }
+
+  // Normalizar fontStyle: "italic" | "normal" (nunca undefined)
+  let fontStyle = element.fontStyle || 'normal';
+  if (fontStyle === 'oblique') {
+    fontStyle = 'italic';
+  }
+
+  // Normalizar textDecoration: "none" | "underline" | "line-through" (nunca undefined)
+  let textDecoration = element.textDecoration || 'none';
+
+  // Normalizar textTransform: "none" | "uppercase" | "lowercase" | "capitalize" (nunca undefined)
+  let textTransform = element.textTransform || 'none';
+
+  // Normalizar horizontalAlign: convertir textAlign legacy a horizontalAlign si es necesario
+  let horizontalAlign = element.horizontalAlign;
+  if (!horizontalAlign && element.textAlign) {
+    horizontalAlign = element.textAlign; // Migración legacy
+  }
+  if (!horizontalAlign || !['left', 'center', 'right', 'justify'].includes(horizontalAlign)) {
+    horizontalAlign = 'left';
+  }
+
+  // Normalizar verticalAlign: "start" | "end" | "center" (nunca undefined)
+  let verticalAlign = element.verticalAlign || 'start';
+  if (!['start', 'end', 'center'].includes(verticalAlign)) {
+    verticalAlign = 'start';
+  }
+
+  return {
+    ...element,
+    fontWeight,
+    fontStyle,
+    textDecoration,
+    textTransform,
+    horizontalAlign,
+    verticalAlign,
+    textAlign: horizontalAlign, // Sincronizar con horizontalAlign para compatibilidad
+  };
 };
 ```
 
@@ -685,16 +759,19 @@ La función se ejecuta en:
 ### Comparaciones Simplificadas
 
 **Antes (Lógica Defensiva):**
+
 ```jsx
 pressed={selectedElementData.fontWeight === "bold" || selectedElementData.fontWeight === 700 || selectedElementData.fontWeight === "700"}
 ```
 
 **Después (Igualdad Simple):**
+
 ```jsx
 pressed={selectedElementData.fontWeight === "bold"}
 ```
 
 **Todos los botones ahora usan comparaciones simples:**
+
 - Bold: `fontWeight === "bold"`
 - Italic: `fontStyle === "italic"`
 - Underline: `textDecoration === "underline"`
@@ -714,17 +791,20 @@ Si con estado normalizado, comparaciones simples y Radix correcto **SIGUE sin ac
 ### Causa Exacta
 
 Radix Toggle:
+
 - Tiene estado interno
 - Usa `defaultPressed` en el primer render
 - NO siempre reacciona bien si `pressed` cambia después sin forzar control total
 
 Especialmente cuando:
+
 - Cambia `selectedElement`
 - Cambia la key del panel
 - El toggle se reutiliza para otro elemento
 
 **Lo que estaba pasando:**
 Cuando seleccionas otro elemento:
+
 - El Toggle mantiene estado interno antiguo
 - Aunque `pressed={true}`, Radix no recalcula visual
 - Resultado: estado lógico correcto, UI incorrecta
@@ -740,6 +820,7 @@ Cuando seleccionas otro elemento:
 👉 **Forzar que el Toggle se vuelva a montar cuando cambia `selectedElement`.**
 
 **Conceptualmente:**
+
 - El Toggle no debe sobrevivir a un cambio de selección
 - Cada elemento seleccionado = Toggles nuevos
 - Efecto: Radix recalcula `data-state` correctamente
@@ -749,67 +830,77 @@ Cuando seleccionas otro elemento:
 Se agregó una `key` única a cada Toggle que incluye el ID del elemento seleccionado:
 
 ```jsx
-{/* Bold */}
+{
+  /* Bold */
+}
 <Toggle
   key={`bold-${selectedElementData.id}`}
   variant="outline"
   size="sm"
   className="w-8"
-  pressed={selectedElementData.fontWeight === "bold"}
+  pressed={selectedElementData.fontWeight === 'bold'}
   onPressedChange={(pressed) => {
-    updateElement(selectedElementData.id, { fontWeight: pressed ? "bold" : "normal" });
+    updateElement(selectedElementData.id, { fontWeight: pressed ? 'bold' : 'normal' });
   }}
 >
-  <BoldIcon className="w-4 h-4" />
-</Toggle>
+  <BoldIcon className="h-4 w-4" />
+</Toggle>;
 
-{/* Italic */}
+{
+  /* Italic */
+}
 <Toggle
   key={`italic-${selectedElementData.id}`}
   variant="outline"
   size="sm"
   className="w-8"
-  pressed={selectedElementData.fontStyle === "italic"}
+  pressed={selectedElementData.fontStyle === 'italic'}
   onPressedChange={(pressed) => {
-    updateElement(selectedElementData.id, { fontStyle: pressed ? "italic" : "normal" });
+    updateElement(selectedElementData.id, { fontStyle: pressed ? 'italic' : 'normal' });
   }}
 >
-  <Italic className="w-4 h-4" />
-</Toggle>
+  <Italic className="h-4 w-4" />
+</Toggle>;
 
-{/* Horizontal Align - Left */}
+{
+  /* Horizontal Align - Left */
+}
 <Toggle
   key={`hleft-${selectedElementData.id}`}
   variant="outline"
   size="sm"
   className="w-8"
-  pressed={selectedElementData.horizontalAlign === "left"}
-  onPressedChange={() => updateElement(selectedElementData.id, { horizontalAlign: "left" })}
+  pressed={selectedElementData.horizontalAlign === 'left'}
+  onPressedChange={() => updateElement(selectedElementData.id, { horizontalAlign: 'left' })}
 >
-  <AlignLeft className="w-4 h-4" />
-</Toggle>
+  <AlignLeft className="h-4 w-4" />
+</Toggle>;
 ```
 
 ### Keys Implementadas
 
 **Botones de formato:**
+
 - `bold-${selectedElementData.id}`
 - `italic-${selectedElementData.id}`
 - `underline-${selectedElementData.id}`
 - `strikethrough-${selectedElementData.id}`
 
 **Alineación vertical:**
+
 - `vstart-${selectedElementData.id}`
 - `vend-${selectedElementData.id}`
 - `vcenter-${selectedElementData.id}`
 
 **Alineación horizontal:**
+
 - `hleft-${selectedElementData.id}`
 - `hcenter-${selectedElementData.id}`
 - `hright-${selectedElementData.id}`
 - `hjustify-${selectedElementData.id}`
 
 **Transformación de texto:**
+
 - `uppercase-${selectedElementData.id}`
 - `lowercase-${selectedElementData.id}`
 - `capitalize-${selectedElementData.id}`
@@ -817,6 +908,7 @@ Se agregó una `key` única a cada Toggle que incluye el ID del elemento selecci
 ### Cómo Funciona
 
 Cuando cambia `selectedElement`:
+
 1. React detecta que las `key` de los Toggle han cambiado
 2. Desmonta los Toggle antiguos (limpia el estado interno de Radix)
 3. Monta nuevos Toggle con el estado correcto
@@ -843,15 +935,18 @@ Cuando cambia `selectedElement`:
    - Radix recalcula correctamente el estado visual
 
 **Resultado esperado:**
+
 - Los botones Toggle deberían funcionar correctamente
 - Cuando un elemento tiene `fontWeight: "bold"`, el botón Bold se muestra activado
 - Cuando un elemento tiene `horizontalAlign: "center"`, el botón Center se muestra activado
 - Al cambiar de elemento, los Toggle se resetean y muestran el estado correcto del nuevo elemento
 
 **Frase clave:**
+
 > "El problema es que los Toggle de Radix conservan estado interno entre selecciones; hay que forzar su remount o controlarlos totalmente al cambiar selectedElement."
 
 **Solución aplicada:**
+
 > Forzar remount usando `key` única que incluye el ID del elemento seleccionado.
 
 ## Problema Final Identificado: Reactividad de `selectedElementData`
@@ -869,12 +964,13 @@ Si con estado normalizado, comparaciones simples, keys y Radix correcto **SIGUE 
 
 ```javascript
 // ❌ PROBLEMA: Esto NO garantiza re-render
-const selectedElementData = selectedElement 
-    ? normalizeElement(elements.find((el) => el.id === selectedElement))
-    : null;
+const selectedElementData = selectedElement
+  ? normalizeElement(elements.find((el) => el.id === selectedElement))
+  : null;
 ```
 
 **Por qué falla:**
+
 - `elements.find()` devuelve una referencia al objeto existente
 - Cuando `updateElement` actualiza un elemento, crea un nuevo array pero el objeto del elemento puede mantener la misma referencia
 - React no detecta el cambio porque el cálculo de `selectedElementData` no es reactivo
@@ -892,6 +988,7 @@ const selectedElementData = selectedElement
 ❌ **El componente padre no se vuelve a renderizar**
 
 **Resultado:**
+
 - El DOM del Toggle es correcto para React, pero incorrecto para el usuario
 
 ### Regla Inquebrantable
@@ -899,6 +996,7 @@ const selectedElementData = selectedElement
 **La selección debe ser estado completo, no un lookup.**
 
 Es decir:
+
 - No basta con guardar `selectedElementId`
 - El panel debe depender de:
   - Una referencia nueva
@@ -906,6 +1004,7 @@ Es decir:
   - O un estado derivado memoizado correctamente
 
 Si no:
+
 - React no "ve" el cambio
 - La UI no se entera
 - Los Toggles no se actualizan
@@ -918,17 +1017,17 @@ Si no:
 
 ```javascript
 // ❌ ANTES: No reactivo
-const selectedElementData = selectedElement 
-    ? normalizeElement(elements.find((el) => el.id === selectedElement))
-    : null;
+const selectedElementData = selectedElement
+  ? normalizeElement(elements.find((el) => el.id === selectedElement))
+  : null;
 
 // ✅ DESPUÉS: Reactivo con useMemo
 const selectedElementData = useMemo(() => {
-    if (!selectedElement) return null;
-    const element = elements.find((el) => el.id === selectedElement);
-    if (!element) return null;
-    // Crear un objeto completamente nuevo para forzar detección de cambios
-    return normalizeElement({ ...element });
+  if (!selectedElement) return null;
+  const element = elements.find((el) => el.id === selectedElement);
+  if (!element) return null;
+  // Crear un objeto completamente nuevo para forzar detección de cambios
+  return normalizeElement({ ...element });
 }, [selectedElement, elements]);
 ```
 
@@ -945,22 +1044,23 @@ También se aseguró que `updateElement` cree objetos completamente nuevos:
 
 ```javascript
 const updateElement = (id, updates) => {
-    setElements((prev) => {
-        const updated = prev.map((el) => {
-            if (el.id === id) {
-                const merged = { ...el, ...updates };
-                // Normalizar el elemento actualizado antes de guardarlo
-                // Crear un objeto completamente nuevo para forzar re-render
-                return { ...normalizeElement(merged) };
-            }
-            return el;
-        });
-        return updated;
+  setElements((prev) => {
+    const updated = prev.map((el) => {
+      if (el.id === id) {
+        const merged = { ...el, ...updates };
+        // Normalizar el elemento actualizado antes de guardarlo
+        // Crear un objeto completamente nuevo para forzar re-render
+        return { ...normalizeElement(merged) };
+      }
+      return el;
     });
+    return updated;
+  });
 };
 ```
 
 **Doble creación de objeto nuevo:**
+
 - `{ ...normalizeElement(merged) }` asegura una nueva referencia
 - Esto fuerza que `elements` cambie (nuevo array con nuevo objeto)
 - `useMemo` detecta el cambio y recalcula `selectedElementData`
@@ -990,12 +1090,14 @@ const updateElement = (id, updates) => {
    - Crea objetos nuevos para forzar detección de cambios
 
 **Resultado esperado:**
+
 - Los botones Toggle deberían funcionar correctamente
 - Cuando un elemento tiene `fontWeight: "bold"`, el botón Bold se muestra activado
 - Cuando cambias las propiedades de un elemento, el panel se re-renderiza y los Toggle se actualizan
 - Al cambiar de elemento, los Toggle se resetean y muestran el estado correcto del nuevo elemento
 
 **Frase clave final:**
+
 > "El problema es que `selectedElementData` se obtiene por lookup (`find`) y no es una fuente reactiva; el panel no re-renderiza cuando cambian las propiedades del elemento. Hay que convertir la selección en estado explícito o derivado estable para forzar render."
 
 ## Problema REAL y Definitivo: El Wrapper No Reenvía `pressed`
@@ -1005,6 +1107,7 @@ const updateElement = (id, updates) => {
 **Tu componente Toggle NO está pasando la prop `pressed` a Radix.**
 
 Todo lo demás que se ha hecho está bien:
+
 - ✅ Estado normalizado
 - ✅ Comparaciones simples
 - ✅ Keys para remount
@@ -1016,6 +1119,7 @@ Todo lo demás que se ha hecho está bien:
 ### Qué Está Pasando de Verdad
 
 **Uso del componente:**
+
 ```jsx
 <Toggle pressed={true} onPressedChange={...} />
 ```
@@ -1025,6 +1129,7 @@ Todo lo demás que se ha hecho está bien:
 **❌ Realidad:** El wrapper Toggle NO la está reenviando a `TogglePrimitive.Root`.
 
 **Resultado:**
+
 - React cree que `pressed` existe
 - Tu JSX lo ve
 - Pero Radix nunca lo recibe
@@ -1046,6 +1151,7 @@ Esto encaja PERFECTAMENTE con los síntomas:
 ❌ Pero el DOM NO tiene `data-state="on"`
 
 **Y tú mismo dijiste varias veces:**
+
 > "No veo data-state=on en DevTools"
 
 **💥 Exacto. Porque Radix nunca supo que estaba pressed.**
@@ -1053,19 +1159,21 @@ Esto encaja PERFECTAMENTE con los síntomas:
 ### El Fallo Típico en `toggle.jsx`
 
 **Código anterior (problemático):**
+
 ```jsx
 const Toggle = React.forwardRef(({ className, variant, size, ...props }, ref) => {
   return (
     <TogglePrimitive
       ref={ref}
       className={cn(toggleVariants({ variant, size, className }))}
-      {...props}  // ⚠️ pressed podría no pasar correctamente
+      {...props} // ⚠️ pressed podría no pasar correctamente
     />
-  )
-})
+  );
+});
 ```
 
 **Problemas potenciales:**
+
 1. `className` se pasa a `toggleVariants` incorrectamente
 2. `pressed` y `onPressedChange` no se pasan explícitamente
 3. Aunque `{...props}` debería pasarlos, puede haber conflictos o problemas de orden
@@ -1073,10 +1181,12 @@ const Toggle = React.forwardRef(({ className, variant, size, ...props }, ref) =>
 ### Lo que DEBE Pasar (Conceptualmente)
 
 **Radix Toggle SOLO cambia de estado si recibe:**
+
 - `pressed` (controlled)
 - O `defaultPressed` (uncontrolled)
 
 **Si no:**
+
 - Se queda en estado interno
 - Ignora tu lógica
 - No pone `data-state`
@@ -1086,21 +1196,25 @@ const Toggle = React.forwardRef(({ className, variant, size, ...props }, ref) =>
 **Ubicación:** `src/components/ui/toggle.jsx`
 
 **Código corregido:**
+
 ```jsx
-const Toggle = React.forwardRef(({ className, variant, size, pressed, onPressedChange, ...props }, ref) => {
-  return (
-    <TogglePrimitive
-      ref={ref}
-      className={cn(toggleVariants({ variant, size }), className)}
-      pressed={pressed}              // ✅ Explícito
-      onPressedChange={onPressedChange}  // ✅ Explícito
-      {...props}
-    />
-  )
-})
+const Toggle = React.forwardRef(
+  ({ className, variant, size, pressed, onPressedChange, ...props }, ref) => {
+    return (
+      <TogglePrimitive
+        ref={ref}
+        className={cn(toggleVariants({ variant, size }), className)}
+        pressed={pressed} // ✅ Explícito
+        onPressedChange={onPressedChange} // ✅ Explícito
+        {...props}
+      />
+    );
+  }
+);
 ```
 
 **Cambios realizados:**
+
 1. **Extracción explícita:** `pressed` y `onPressedChange` se extraen de las props
 2. **Paso explícito:** Se pasan directamente a `TogglePrimitive`
 3. **Corrección de `toggleVariants`:** Ya no recibe `className` como parámetro, solo `variant` y `size`
@@ -1109,6 +1223,7 @@ const Toggle = React.forwardRef(({ className, variant, size, pressed, onPressedC
 ### Por Qué Esto Ha Sido Tan Traicionero
 
 Porque:
+
 - ❌ No rompe
 - ❌ No lanza errores
 - ✅ Todo "parece" funcionar
@@ -1120,11 +1235,9 @@ Porque:
 ### Prueba de Fuego (Diagnóstico)
 
 **Para comprobar (antes de la corrección):**
+
 ```jsx
-<Toggle
-  pressed
-  onPressedChange={() => {}}
->
+<Toggle pressed onPressedChange={() => {}}>
   TEST
 </Toggle>
 ```
@@ -1132,6 +1245,7 @@ Porque:
 **Luego inspecciona el DOM.**
 
 **Si NO ves:**
+
 ```html
 <button data-state="on">TEST</button>
 ```
@@ -1147,6 +1261,7 @@ Porque:
 ### Conclusión Clara
 
 **❌ No era:**
+
 - Estado
 - Normalización
 - React
@@ -1156,6 +1271,7 @@ Porque:
 - Radix
 
 **✅ Era:**
+
 - Un wrapper que no reenviaba `pressed`
 
 **Esto es un clásico nivel senior.**
@@ -1172,7 +1288,7 @@ Esto pasa si tu `tailwind.config` no incluye el archivo `src/components/ui/toggl
 ### Ejemplo de Content Mal
 
 ```js
-content: ["./app/**/*.{js,ts,jsx,tsx}"] // ❌ faltan src/ components/
+content: ['./app/**/*.{js,ts,jsx,tsx}']; // ❌ faltan src/ components/
 ```
 
 ### Configuración Correcta
@@ -1180,6 +1296,7 @@ content: ["./app/**/*.{js,ts,jsx,tsx}"] // ❌ faltan src/ components/
 **Ubicación:** `tailwind.config.js`
 
 La configuración actual ya incluye:
+
 ```js
 content: [
   "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
@@ -1232,6 +1349,7 @@ safelist: [
 ```
 
 **Después de este cambio:**
+
 1. Reiniciar el servidor de desarrollo (`npm run dev`)
 2. Tailwind regenerará el CSS incluyendo estas clases
 3. Los botones Toggle deberían mostrar el estado visual correctamente
@@ -1249,6 +1367,7 @@ El `safelist` fuerza a Tailwind a incluir estas clases siempre, independientemen
 **Estás intentando que un panel "derive" su estado visual de un objeto que NO es la fuente de verdad del editor.**
 
 Aunque hayas hecho:
+
 - ✅ Normalización
 - ✅ useMemo
 - ✅ key
@@ -1256,8 +1375,9 @@ Aunque hayas hecho:
 - ✅ safelist
 
 **Sigues dependiendo de esto:**
+
 ```javascript
-elements.find(el => el.id === selectedElement)
+elements.find((el) => el.id === selectedElement);
 ```
 
 **Eso NO es estado, es una consulta.**
@@ -1278,12 +1398,14 @@ Mientras el panel no tenga su propio estado explícito, React no garantiza repai
 - Los valores son correctos
 
 **PERO el panel derecho:**
+
 - No tiene estado propio
 - No controla el ciclo de edición
 - No sabe cuándo "entró" un nuevo elemento
 - No tiene un commit claro de selección
 
 **Resultado:**
+
 - 👉 UI inconsistente
 - 👉 Toggles que "deberían" estar activos pero no lo están
 - 👉 Debug infinito
@@ -1318,6 +1440,7 @@ Mientras el panel no tenga su propio estado explícito, React no garantiza repai
 **Ubicación:** `src/components/Admin/LabelEditor/index.js`
 
 **1. Estado local del panel:**
+
 ```javascript
 // Estado local del panel de propiedades (snapshot editable)
 // Este es la única fuente de verdad para los controles del panel
@@ -1325,53 +1448,63 @@ const [activeElementState, setActiveElementState] = useState(null);
 ```
 
 **2. Sincronizar snapshot cuando cambia el elemento seleccionado:**
+
 ```javascript
 // Sincronizar snapshot cuando cambia el elemento seleccionado
 // Solo cuando cambia el ID, no cuando cambian las propiedades
 useEffect(() => {
-    if (selectedElement && selectedElementData) {
-        // Crear un snapshot completo del elemento (objeto nuevo)
-        setActiveElementState({ ...selectedElementData });
-    } else {
-        setActiveElementState(null);
-    }
+  if (selectedElement && selectedElementData) {
+    // Crear un snapshot completo del elemento (objeto nuevo)
+    setActiveElementState({ ...selectedElementData });
+  } else {
+    setActiveElementState(null);
+  }
 }, [selectedElement]); // Solo cuando cambia el ID del elemento seleccionado
 ```
 
 **3. Función para actualizar el estado local y sincronizar con el canvas:**
+
 ```javascript
 // Función para actualizar el estado local y sincronizar con el canvas
-const updateActiveElement = useCallback((updates) => {
+const updateActiveElement = useCallback(
+  (updates) => {
     if (!activeElementState) return;
-    
+
     // Actualizar estado local primero (para UI inmediata)
     setActiveElementState((prev) => {
-        if (!prev) return null;
-        const updated = { ...prev, ...updates };
-        // Sincronizar inmediatamente con el canvas
-        updateElement(prev.id, updates);
-        return updated;
+      if (!prev) return null;
+      const updated = { ...prev, ...updates };
+      // Sincronizar inmediatamente con el canvas
+      updateElement(prev.id, updates);
+      return updated;
     });
-}, [activeElementState, updateElement]);
+  },
+  [activeElementState, updateElement]
+);
 ```
 
 **4. El panel solo usa `activeElementState`:**
+
 ```javascript
-{/* Panel Derecho - Propiedades */}
-{activeElementState && (
-    <div className="w-80 p-4 overflow-y-auto">
-        {/* Todos los controles usan activeElementState */}
-        <Toggle
-            pressed={activeElementState.fontWeight === "bold"}
-            onPressedChange={(pressed) => {
-                updateActiveElement({ fontWeight: pressed ? "bold" : "normal" });
-            }}
-        >
-            <BoldIcon className="w-4 h-4" />
-        </Toggle>
-        {/* ... */}
+{
+  /* Panel Derecho - Propiedades */
+}
+{
+  activeElementState && (
+    <div className="w-80 overflow-y-auto p-4">
+      {/* Todos los controles usan activeElementState */}
+      <Toggle
+        pressed={activeElementState.fontWeight === 'bold'}
+        onPressedChange={(pressed) => {
+          updateActiveElement({ fontWeight: pressed ? 'bold' : 'normal' });
+        }}
+      >
+        <BoldIcon className="h-4 w-4" />
+      </Toggle>
+      {/* ... */}
     </div>
-)}
+  );
+}
 ```
 
 ### Por Qué Esto Arregla TODO
@@ -1406,16 +1539,19 @@ const updateActiveElement = useCallback((updates) => {
 Toggle de Radix/ShadCN no está diseñado para reflejar estado externo arbitrario como lo estás usando tú.
 
 **Está pensado para:**
+
 - ON/OFF local
 - Interacción directa
 - Estado interno simple
 
 **NO para:**
+
 - Reflejar estado derivado
 - Sincronizarse con un editor externo
 - Actuar como "indicador visual" de estado del modelo
 
 **Por eso:**
+
 - Aunque `pressed` sea correcto
 - Aunque `data-state="on"` exista
 - Aunque el CSS esté
@@ -1440,6 +1576,7 @@ Toggle de Radix/ShadCN no está diseñado para reflejar estado externo arbitrari
 **✅ Usa un Button controlado visualmente**
 
 Es decir:
+
 - Un `<Button />` normal
 - El estado visual lo decides tú
 - Sin `pressed`
@@ -1453,11 +1590,13 @@ Es decir:
 **Figma / Canva / Notion NO usan toggles para esto.**
 
 Usan:
+
 - Botones normales
 - Con clases condicionales
 - 100% control visual
 
 **Ejemplo conceptual:**
+
 ```
 Si fontWeight === "bold"
   botón → fondo primary (variant="default")
@@ -1484,42 +1623,48 @@ Si no
 **Ubicación:** `src/components/Admin/LabelEditor/index.js`
 
 **Antes (Toggle):**
+
 ```jsx
 <Toggle
   key={`bold-${activeElementState.id}`}
   variant="outline"
   size="sm"
   className="w-8"
-  pressed={activeElementState.fontWeight === "bold"}
+  pressed={activeElementState.fontWeight === 'bold'}
   onPressedChange={(pressed) => {
-    updateActiveElement({ fontWeight: pressed ? "bold" : "normal" });
+    updateActiveElement({ fontWeight: pressed ? 'bold' : 'normal' });
   }}
 >
-  <BoldIcon className="w-4 h-4" />
+  <BoldIcon className="h-4 w-4" />
 </Toggle>
 ```
 
 **Después (Button):**
+
 ```jsx
 <Button
-  variant={activeElementState.fontWeight === "bold" ? "default" : "outline"}
+  variant={activeElementState.fontWeight === 'bold' ? 'default' : 'outline'}
   size="sm"
   className="w-8"
   onClick={() => {
-    updateActiveElement({ fontWeight: activeElementState.fontWeight === "bold" ? "normal" : "bold" });
+    updateActiveElement({
+      fontWeight: activeElementState.fontWeight === 'bold' ? 'normal' : 'bold',
+    });
   }}
 >
-  <BoldIcon className="w-4 h-4" />
+  <BoldIcon className="h-4 w-4" />
 </Button>
 ```
 
 **Patrón aplicado a todos los botones:**
+
 - **Bold, Italic, Underline, Strikethrough**: Usan `fontWeight`, `fontStyle`, `textDecoration`
 - **Uppercase, Lowercase, Capitalize**: Usan `textTransform`
 - **Alineación vertical**: Usan `verticalAlign`
 - **Alineación horizontal**: Usan `horizontalAlign`
 
 **Todos siguen el mismo patrón:**
+
 ```jsx
 variant={condición ? "default" : "outline"}
 onClick={() => updateActiveElement({ propiedad: nuevoValor })}
@@ -1550,6 +1695,7 @@ onClick={() => updateActiveElement({ propiedad: nuevoValor })}
 3. **Button controlado visualmente** ← **La solución definitiva real**
 
 **Resultado esperado:**
+
 - Los botones reflejan correctamente el estado del elemento seleccionado
 - El panel tiene su propia fuente de verdad
 - No hay estado interno de Radix interfiriendo
@@ -1557,8 +1703,8 @@ onClick={() => updateActiveElement({ propiedad: nuevoValor })}
 - Código más simple y mantenible
 
 **Por qué todos los editores serios (Figma, Canva, Notion) funcionan así:**
+
 - Usan botones normales con clases condicionales
 - Control visual explícito, sin estado interno
 - Desacoplamiento entre vista (panel) y modelo (canvas)
 - Estado local garantiza UI consistente
-

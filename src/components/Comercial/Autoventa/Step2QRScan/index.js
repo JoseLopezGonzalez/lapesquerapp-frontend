@@ -34,7 +34,7 @@ export default function Step2QRScan({
     setLoadingProducts(true);
     loadProductOptions(token)
       .then((data) => {
-        const raw = Array.isArray(data) ? data : data?.data ?? [];
+        const raw = Array.isArray(data) ? data : (data?.data ?? []);
         setProductsOptions(
           raw.map((p) => ({
             value: p.id ?? p.value,
@@ -65,10 +65,7 @@ export default function Step2QRScan({
   };
 
   const handleScannerError = (message) => {
-    notify.error(
-      { title: message || 'No se pudo acceder a la cámara.' },
-      { duration: 800 }
-    );
+    notify.error({ title: message || 'No se pudo acceder a la cámara.' }, { duration: 800 });
     setScannerOpen(false);
   };
 
@@ -120,7 +117,7 @@ export default function Step2QRScan({
   const boxes = state.boxes ?? [];
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 w-full gap-4 max-w-[420px]">
+    <div className="flex min-h-0 w-full max-w-[420px] flex-1 flex-col gap-4">
       <div className="w-full shrink-0">
         <Button
           type="button"
@@ -129,7 +126,7 @@ export default function Step2QRScan({
           onClick={() => setScannerOpen(true)}
           disabled={loadingProducts}
         >
-          <Scan className="h-4 w-4 mr-2" />
+          <Scan className="mr-2 h-4 w-4" />
           Escanear con cámara
         </Button>
       </div>
@@ -161,7 +158,7 @@ export default function Step2QRScan({
         />
       )}
 
-      <div className="flex items-center justify-between shrink-0">
+      <div className="flex shrink-0 items-center justify-between">
         <span className="text-sm font-medium">Cajas añadidas ({boxes.length})</span>
         {boxes.length > 0 && (
           <Button type="button" variant="outline" size="sm" onClick={removeAllBoxes}>
@@ -170,38 +167,38 @@ export default function Step2QRScan({
         )}
       </div>
 
-      <div className="flex flex-col flex-1 min-h-0 rounded-lg border border-dashed border-muted-foreground/25 bg-muted/20 overflow-hidden">
+      <div className="border-muted-foreground/25 bg-muted/20 flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-dashed">
         {boxes.length === 0 ? (
-          <div className="flex flex-1 flex-col items-center justify-center gap-6 w-full min-h-0 py-10 px-6">
-            <div className="rounded-full bg-muted border border-border p-4">
-              <Package className="h-14 w-14 text-muted-foreground" strokeWidth={1.5} />
+          <div className="flex min-h-0 w-full flex-1 flex-col items-center justify-center gap-6 px-6 py-10">
+            <div className="bg-muted border-border rounded-full border p-4">
+              <Package className="text-muted-foreground h-14 w-14" strokeWidth={1.5} />
             </div>
-            <div className="text-center space-y-2">
+            <div className="space-y-2 text-center">
               <h3 className="text-lg font-semibold">Ninguna caja añadida</h3>
-              <p className="text-sm text-muted-foreground max-w-[280px]">
+              <p className="text-muted-foreground max-w-[280px] text-sm">
                 Escanea códigos QR con el lector para añadir cajas.
               </p>
             </div>
           </div>
         ) : (
-          <ul className="flex-1 min-h-0 overflow-auto divide-y divide-border">
-          {boxes.map((box, idx) => (
-            <li key={idx} className="px-3 py-2 text-sm flex justify-between items-center gap-2">
-              <span className="min-w-0 flex-1">
-                {box.productName ?? box.productId} — {Number(box.netWeight).toFixed(2)} kg
-              </span>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="shrink-0 h-8 w-8 text-muted-foreground hover:text-destructive"
-                onClick={() => removeBox?.(idx)}
-                aria-label="Eliminar esta caja"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </li>
-          ))}
+          <ul className="divide-border min-h-0 flex-1 divide-y overflow-auto">
+            {boxes.map((box, idx) => (
+              <li key={idx} className="flex items-center justify-between gap-2 px-3 py-2 text-sm">
+                <span className="min-w-0 flex-1">
+                  {box.productName ?? box.productId} — {Number(box.netWeight).toFixed(2)} kg
+                </span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="text-muted-foreground hover:text-destructive h-8 w-8 shrink-0"
+                  onClick={() => removeBox?.(idx)}
+                  aria-label="Eliminar esta caja"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </li>
+            ))}
           </ul>
         )}
       </div>

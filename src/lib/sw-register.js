@@ -1,6 +1,6 @@
 /**
  * Service Worker Registration
- * 
+ *
  * Utilidades para registrar y manejar el Service Worker.
  * Registra el SW en el navegador y maneja actualizaciones.
  */
@@ -27,7 +27,7 @@ export function registerServiceWorker() {
           // Manejar actualizaciones
           registration.addEventListener('updatefound', () => {
             const installingWorker = registration.installing;
-            
+
             if (installingWorker) {
               installingWorker.addEventListener('statechange', () => {
                 if (installingWorker.state === 'installed') {
@@ -46,9 +46,12 @@ export function registerServiceWorker() {
           });
 
           // Verificar actualizaciones cada hora
-          setInterval(() => {
-            registration.update();
-          }, 60 * 60 * 1000); // 1 hora
+          setInterval(
+            () => {
+              registration.update();
+            },
+            60 * 60 * 1000
+          ); // 1 hora
         })
         .catch((error) => {
           console.error('[SW] Registration failed:', error);
@@ -60,7 +63,7 @@ export function registerServiceWorker() {
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (refreshing) return;
       refreshing = true;
-      
+
       // Recargar la página cuando el nuevo Service Worker toma control
       window.location.reload();
     });
@@ -76,9 +79,9 @@ export function registerServiceWorker() {
 function handleServiceWorkerUpdate() {
   if (typeof window !== 'undefined') {
     notify.info(
-  { title: 'Nueva versión disponible', description: 'Recarga la página para actualizar.' },
-  { duration: 5000 }
-);
+      { title: 'Nueva versión disponible', description: 'Recarga la página para actualizar.' },
+      { duration: 5000 }
+    );
   }
 }
 
@@ -117,4 +120,3 @@ export function useServiceWorker() {
     unregister: unregisterServiceWorker,
   };
 }
-

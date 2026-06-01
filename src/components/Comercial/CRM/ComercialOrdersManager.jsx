@@ -59,10 +59,7 @@ export default function ComercialOrdersManager() {
     }
   }, [ordersError]);
 
-  const enrichedOrders = useMemo(
-    () => enrichOrdersWithOffers(orders, offers),
-    [orders, offers]
-  );
+  const enrichedOrders = useMemo(() => enrichOrdersWithOffers(orders, offers), [orders, offers]);
 
   const activeCategory = useMemo(
     () => categories.find((c) => c.current) || categories[0],
@@ -120,9 +117,7 @@ export default function ComercialOrdersManager() {
   const handleOnClickCategory = useCallback((categoryName) => {
     setSelectedOrder(null);
     setOnCreatingNewOrder(false);
-    setCategories((prev) =>
-      prev.map((cat) => ({ ...cat, current: cat.name === categoryName }))
-    );
+    setCategories((prev) => prev.map((cat) => ({ ...cat, current: cat.name === categoryName })));
   }, []);
 
   const handleOnChangeSearch = useCallback((value) => {
@@ -144,11 +139,14 @@ export default function ComercialOrdersManager() {
     setOnCreatingNewOrder(false);
   }, []);
 
-  const handleOnClickOrderCard = useCallback((orderId) => {
-    setOnCreatingNewOrder(false);
-    if (viewMode === 'production') setViewMode('normal');
-    setSelectedOrder((prev) => (prev === orderId ? null : orderId));
-  }, [viewMode]);
+  const handleOnClickOrderCard = useCallback(
+    (orderId) => {
+      setOnCreatingNewOrder(false);
+      if (viewMode === 'production') setViewMode('normal');
+      setSelectedOrder((prev) => (prev === orderId ? null : orderId));
+    },
+    [viewMode]
+  );
 
   const handleOnCreatedOrder = useCallback(
     (id) => {
@@ -227,13 +225,13 @@ export default function ComercialOrdersManager() {
     }
     if (onCreatingNewOrder) {
       return (
-        <div className="h-full flex flex-col overflow-hidden">
+        <div className="flex h-full flex-col overflow-hidden">
           <CreateOrderForm onCreate={handleOnCreatedOrder} onClose={handleCloseDetail} />
         </div>
       );
     }
     return (
-      <Card className="h-full flex flex-col p-4 sm:p-7">
+      <Card className="flex h-full flex-col p-4 sm:p-7">
         <EmptyState
           title="Seleccione un pedido"
           description="Selecciona un pedido para ver los detalles y realizar cambios."

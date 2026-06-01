@@ -13,35 +13,38 @@ const BASE_URL = `${API_URL_V2}supplier-liquidations`;
 /**
  * Obtiene la lista de proveedores con actividad en un rango de fechas.
  */
-export async function getSuppliersWithActivity(startDate: string, endDate: string): Promise<SupplierWithActivity[]> {
+export async function getSuppliersWithActivity(
+  startDate: string,
+  endDate: string
+): Promise<SupplierWithActivity[]> {
   const token = await getAuthToken();
   const queryParams = new URLSearchParams({
     'dates[start]': startDate,
     'dates[end]': endDate,
   });
 
-  const response = await fetchWithTenant(
-    `${BASE_URL}/suppliers?${queryParams.toString()}`,
-    {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        Authorization: `Bearer ${token}`,
-        'User-Agent': getUserAgent(),
-      },
-    }
-  );
+  const response = await fetchWithTenant(`${BASE_URL}/suppliers?${queryParams.toString()}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      Authorization: `Bearer ${token}`,
+      'User-Agent': getUserAgent(),
+    },
+  });
 
   if (!response.ok) {
-    let errorData: { message?: string } = { message: `Error ${response.status}: ${response.statusText}` };
+    let errorData: { message?: string } = {
+      message: `Error ${response.status}: ${response.statusText}`,
+    };
     try {
       errorData = (await response.json()) ?? errorData;
     } catch {
       // use default
     }
     throw new Error(
-      getErrorMessage(errorData) || `Error ${response.status}: Error al obtener la lista de proveedores.`
+      getErrorMessage(errorData) ||
+        `Error ${response.status}: Error al obtener la lista de proveedores.`
     );
   }
 
@@ -69,7 +72,7 @@ export async function getSupplierLiquidationDetails(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
+        Accept: 'application/json',
         Authorization: `Bearer ${token}`,
         'User-Agent': getUserAgent(),
       },
@@ -77,14 +80,17 @@ export async function getSupplierLiquidationDetails(
   );
 
   if (!response.ok) {
-    let errorData: { message?: string } = { message: `Error ${response.status}: ${response.statusText}` };
+    let errorData: { message?: string } = {
+      message: `Error ${response.status}: ${response.statusText}`,
+    };
     try {
       errorData = (await response.json()) ?? errorData;
     } catch {
       // use default
     }
     throw new Error(
-      getErrorMessage(errorData) || `Error ${response.status}: Error al obtener el detalle de la liquidación.`
+      getErrorMessage(errorData) ||
+        `Error ${response.status}: Error al obtener el detalle de la liquidación.`
     );
   }
 
@@ -168,7 +174,11 @@ export async function downloadSupplierLiquidationPdf(params: DownloadPdfParams):
       response.status;
     (err as Error & { status?: number; data?: unknown; text?: string | null }).data = errorData;
     (err as Error & { status?: number; data?: unknown; text?: string | null }).text = errorText;
-    console.error('Error durante la descarga del PDF:', { status: response.status, data: errorData, text: errorText });
+    console.error('Error durante la descarga del PDF:', {
+      status: response.status,
+      data: errorData,
+      text: errorText,
+    });
     throw err;
   }
 

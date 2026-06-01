@@ -21,17 +21,26 @@ function getInitialFilterFromRanges(lastOrderDate, availableYears) {
     const now = new Date();
     const parsedLastOrderDate = parseISO(lastOrderDate);
     const previousMonth = subMonths(now, 1);
-    const previousQuarterStart = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3 - 3, 1);
+    const previousQuarterStart = new Date(
+      now.getFullYear(),
+      Math.floor(now.getMonth() / 3) * 3 - 3,
+      1
+    );
     const previousQuarterEnd = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 0);
 
     if (
-      parsedLastOrderDate.getFullYear() === previousMonth.getFullYear()
-      && parsedLastOrderDate.getMonth() === previousMonth.getMonth()
+      parsedLastOrderDate.getFullYear() === previousMonth.getFullYear() &&
+      parsedLastOrderDate.getMonth() === previousMonth.getMonth()
     ) {
       return { dateFilter: 'month', selectedYear: null };
     }
 
-    if (isWithinInterval(parsedLastOrderDate, { start: previousQuarterStart, end: previousQuarterEnd })) {
+    if (
+      isWithinInterval(parsedLastOrderDate, {
+        start: previousQuarterStart,
+        end: previousQuarterEnd,
+      })
+    ) {
       return { dateFilter: 'quarter', selectedYear: null };
     }
   }
@@ -52,7 +61,11 @@ function getInitialFilterFromRanges(lastOrderDate, availableYears) {
   return { dateFilter: 'month', selectedYear: null };
 }
 
-export function useCustomerOrderHistoryRanges({ customerId, enabled = true, notifyOnError = true }) {
+export function useCustomerOrderHistoryRanges({
+  customerId,
+  enabled = true,
+  notifyOnError = true,
+}) {
   const { data: session } = useSession();
   const token = session?.user?.accessToken;
 
@@ -214,7 +227,7 @@ export function useCustomerOrderHistoryRanges({ customerId, enabled = true, noti
     };
 
     loadCustomerHistory();
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- customerHistory used only to decide loading state, not as trigger
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- customerHistory used only to decide loading state, not as trigger
   }, [customerId, token, getDateRange, isRangeReady, hasHistoryRanges, enabled]);
 
   const currentYear = new Date().getFullYear();
@@ -230,9 +243,7 @@ export function useCustomerOrderHistoryRanges({ customerId, enabled = true, noti
     const totalOrders = new Set(allLines.map((l) => l.order_id)).size;
     const totalAmount = filteredHistory.reduce((sum, p) => sum + (p.total_amount || 0), 0);
 
-    const sortedDates = allLines
-      .map((l) => parseISO(l.load_date))
-      .sort((a, b) => a - b);
+    const sortedDates = allLines.map((l) => parseISO(l.load_date)).sort((a, b) => a - b);
 
     let totalDays = 0;
     for (let i = 1; i < sortedDates.length; i += 1) {
@@ -240,8 +251,11 @@ export function useCustomerOrderHistoryRanges({ customerId, enabled = true, noti
     }
 
     const avgDaysBetween = sortedDates.length > 1 ? totalDays / (sortedDates.length - 1) : 0;
-    const metricsLastOrderDate = sortedDates.length > 0 ? sortedDates[sortedDates.length - 1] : null;
-    const daysSinceLastOrder = metricsLastOrderDate ? differenceInDays(new Date(), metricsLastOrderDate) : null;
+    const metricsLastOrderDate =
+      sortedDates.length > 0 ? sortedDates[sortedDates.length - 1] : null;
+    const daysSinceLastOrder = metricsLastOrderDate
+      ? differenceInDays(new Date(), metricsLastOrderDate)
+      : null;
 
     return {
       totalOrders,
@@ -281,7 +295,8 @@ export function useCustomerOrderHistoryRanges({ customerId, enabled = true, noti
           const currentQuarterMonth = Math.floor(now.getMonth() / 3) * 3 - 3;
           const prevQuarterMonth = currentQuarterMonth - 3;
           const prevQuarterYear = prevQuarterMonth < 0 ? now.getFullYear() - 1 : now.getFullYear();
-          const adjustedPrevQuarterMonth = prevQuarterMonth < 0 ? prevQuarterMonth + 12 : prevQuarterMonth;
+          const adjustedPrevQuarterMonth =
+            prevQuarterMonth < 0 ? prevQuarterMonth + 12 : prevQuarterMonth;
           previousPeriod = {
             from: new Date(prevQuarterYear, adjustedPrevQuarterMonth, 1),
             to: new Date(prevQuarterYear, adjustedPrevQuarterMonth + 3, 0),
@@ -315,7 +330,8 @@ export function useCustomerOrderHistoryRanges({ customerId, enabled = true, noti
 
       if (!previousPeriod) return { direction: 'stable', percentage: 0 };
 
-      const allLines = customerHistory.find((p) => p.product.id === product.product.id)?.lines || [];
+      const allLines =
+        customerHistory.find((p) => p.product.id === product.product.id)?.lines || [];
       const currentPeriodLines = allLines.filter((l) => {
         const date = parseISO(l.load_date);
         return isWithinInterval(date, { start: currentPeriod.from, end: currentPeriod.to });
@@ -327,8 +343,14 @@ export function useCustomerOrderHistoryRanges({ customerId, enabled = true, noti
 
       if (previousPeriodLines.length === 0) return { direction: 'stable', percentage: 0 };
 
-      const currentPeriodTotal = currentPeriodLines.reduce((sum, l) => sum + (Number(l.net_weight) || 0), 0);
-      const previousPeriodTotal = previousPeriodLines.reduce((sum, l) => sum + (Number(l.net_weight) || 0), 0);
+      const currentPeriodTotal = currentPeriodLines.reduce(
+        (sum, l) => sum + (Number(l.net_weight) || 0),
+        0
+      );
+      const previousPeriodTotal = previousPeriodLines.reduce(
+        (sum, l) => sum + (Number(l.net_weight) || 0),
+        0
+      );
 
       if (previousPeriodTotal === 0) return { direction: 'stable', percentage: 0 };
 

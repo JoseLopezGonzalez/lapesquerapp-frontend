@@ -1,5 +1,5 @@
 ---
-applyTo: "docs/**/*.md,AGENTS.md,CLAUDE.md,.cursor/rules/*.mdc,.github/**/*.md"
+applyTo: 'docs/**/*.md,AGENTS.md,CLAUDE.md,.cursor/rules/*.mdc,.github/**/*.md'
 ---
 
 # Documentation instructions

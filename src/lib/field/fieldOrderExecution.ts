@@ -66,9 +66,14 @@ export function buildInitialItems(order: FieldOrderDetail | null | undefined): S
   }));
 }
 
-export function aggregateItemsFromBoxes(boxes: BoxItem[] = [], order: FieldOrderDetail | null | undefined) {
+export function aggregateItemsFromBoxes(
+  boxes: BoxItem[] = [],
+  order: FieldOrderDetail | null | undefined
+) {
   const byProduct = new Map<number, ServedItem>();
-  const existingByProductId = new Map((order?.plannedProductDetails ?? []).map((detail) => [getDetailProductId(detail), detail]));
+  const existingByProductId = new Map(
+    (order?.plannedProductDetails ?? []).map((detail) => [getDetailProductId(detail), detail])
+  );
 
   for (const box of boxes) {
     const id = Number(box.productId);
@@ -134,13 +139,19 @@ export function buildBoxesSyncPayload(boxes: BoxItem[] = []) {
   }));
 }
 
-export function detectExtraProductIds(boxes: BoxItem[] = [], order: FieldOrderDetail | null | undefined) {
+export function detectExtraProductIds(
+  boxes: BoxItem[] = [],
+  order: FieldOrderDetail | null | undefined
+) {
   const planned = new Set((order?.plannedProductDetails ?? []).map((d) => getDetailProductId(d)));
   const present = new Set(boxes.map((b) => Number(b.productId)));
   return Array.from(present).filter((productId) => !planned.has(productId));
 }
 
-export function buildPlannedExtrasPayload(servedItems: ServedItem[] = [], extraProductIds: number[] = []) {
+export function buildPlannedExtrasPayload(
+  servedItems: ServedItem[] = [],
+  extraProductIds: number[] = []
+) {
   const extraSet = new Set(extraProductIds.map(Number));
   return servedItems
     .filter((item) => extraSet.has(Number(item.productId)))
@@ -151,7 +162,10 @@ export function buildPlannedExtrasPayload(servedItems: ServedItem[] = [], extraP
     }));
 }
 
-export function buildPlannedAdjustmentsPayload(servedItems: ServedItem[] = [], order: FieldOrderDetail | null | undefined) {
+export function buildPlannedAdjustmentsPayload(
+  servedItems: ServedItem[] = [],
+  order: FieldOrderDetail | null | undefined
+) {
   const plannedById = new Map<number, FieldOrderDetailItem>();
   (order?.plannedProductDetails ?? []).forEach((d) => {
     if (d?.id == null) return;

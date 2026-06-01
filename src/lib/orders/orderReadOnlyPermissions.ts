@@ -1,4 +1,9 @@
-export const COMMERCIAL_IN_PROGRESS_BLOCKED_ORDER_SECTIONS = ['labels', 'documents', 'incident', 'export'];
+export const COMMERCIAL_IN_PROGRESS_BLOCKED_ORDER_SECTIONS = [
+  'labels',
+  'documents',
+  'incident',
+  'export',
+];
 
 type OrderPermissionState = {
   readOnly?: boolean;
@@ -10,9 +15,7 @@ export function isReadOnlyOrderInProgress({ readOnly = false, status }: OrderPer
 }
 
 export function getBlockedOrderSectionsForReadOnly(state: OrderPermissionState) {
-  return isReadOnlyOrderInProgress(state)
-    ? COMMERCIAL_IN_PROGRESS_BLOCKED_ORDER_SECTIONS
-    : [];
+  return isReadOnlyOrderInProgress(state) ? COMMERCIAL_IN_PROGRESS_BLOCKED_ORDER_SECTIONS : [];
 }
 
 export function isOrderPalletsReadOnly(state: OrderPermissionState) {

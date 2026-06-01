@@ -37,14 +37,14 @@ Content-Type: application/json
     {
       "supplier_id": 1,
       "date": "2024-01-15",
-      "declared_total_net_weight": 1000.50,
-      "declared_total_amount": 5000.00
+      "declared_total_net_weight": 1000.5,
+      "declared_total_amount": 5000.0
     },
     {
       "supplier_id": 2,
       "date": "2024-01-16",
       "declared_total_net_weight": 750.25,
-      "declared_total_amount": 3750.00
+      "declared_total_amount": 3750.0
     }
   ]
 }
@@ -52,13 +52,13 @@ Content-Type: application/json
 
 #### Campos del Request
 
-| Campo | Tipo | Requerido | Descripción |
-|-------|------|-----------|-------------|
-| `receptions` | array | Sí | Array de objetos de recepción a validar |
-| `receptions[].supplier_id` | integer | Sí | ID del proveedor |
-| `receptions[].date` | string (YYYY-MM-DD) | Sí | Fecha de la recepción en formato ISO (YYYY-MM-DD) |
-| `receptions[].declared_total_net_weight` | number | Sí | Peso neto total declarado |
-| `receptions[].declared_total_amount` | number | Sí | Monto total declarado |
+| Campo                                    | Tipo                | Requerido | Descripción                                       |
+| ---------------------------------------- | ------------------- | --------- | ------------------------------------------------- |
+| `receptions`                             | array               | Sí        | Array de objetos de recepción a validar           |
+| `receptions[].supplier_id`               | integer             | Sí        | ID del proveedor                                  |
+| `receptions[].date`                      | string (YYYY-MM-DD) | Sí        | Fecha de la recepción en formato ISO (YYYY-MM-DD) |
+| `receptions[].declared_total_net_weight` | number              | Sí        | Peso neto total declarado                         |
+| `receptions[].declared_total_amount`     | number              | Sí        | Monto total declarado                             |
 
 ### Response - Éxito Total (200)
 
@@ -149,25 +149,25 @@ Cuando una recepción no existe pero hay una recepción cercana:
 
 #### Campos del Response
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| `valid` | integer | Número de recepciones válidas |
-| `invalid` | integer | Número de recepciones inválidas |
-| `ready_to_update` | integer | Número de recepciones listas para actualizar |
-| `results` | array | Array de resultados de validación exitosos |
-| `results[].supplier_id` | integer | ID del proveedor |
-| `results[].date` | string | Fecha de la recepción |
-| `results[].valid` | boolean | Indica si la recepción es válida |
-| `results[].can_update` | boolean | Indica si se puede actualizar |
-| `results[].has_changes` | boolean | Indica si hay cambios respecto a los datos actuales |
-| `results[].message` | string | Mensaje descriptivo del resultado |
-| `results[].supplier_name` | string | Nombre del proveedor |
-| `errors_details` | array | Array de detalles de errores |
-| `errors_details[].supplier_id` | integer | ID del proveedor con error |
-| `errors_details[].date` | string | Fecha de la recepción con error |
-| `errors_details[].error` | string | Tipo de error |
-| `errors_details[].message` | string | Mensaje de error |
-| `errors_details[].hint` | string | Pista adicional sobre el error (ej: recepción más cercana) |
+| Campo                          | Tipo    | Descripción                                                |
+| ------------------------------ | ------- | ---------------------------------------------------------- |
+| `valid`                        | integer | Número de recepciones válidas                              |
+| `invalid`                      | integer | Número de recepciones inválidas                            |
+| `ready_to_update`              | integer | Número de recepciones listas para actualizar               |
+| `results`                      | array   | Array de resultados de validación exitosos                 |
+| `results[].supplier_id`        | integer | ID del proveedor                                           |
+| `results[].date`               | string  | Fecha de la recepción                                      |
+| `results[].valid`              | boolean | Indica si la recepción es válida                           |
+| `results[].can_update`         | boolean | Indica si se puede actualizar                              |
+| `results[].has_changes`        | boolean | Indica si hay cambios respecto a los datos actuales        |
+| `results[].message`            | string  | Mensaje descriptivo del resultado                          |
+| `results[].supplier_name`      | string  | Nombre del proveedor                                       |
+| `errors_details`               | array   | Array de detalles de errores                               |
+| `errors_details[].supplier_id` | integer | ID del proveedor con error                                 |
+| `errors_details[].date`        | string  | Fecha de la recepción con error                            |
+| `errors_details[].error`       | string  | Tipo de error                                              |
+| `errors_details[].message`     | string  | Mensaje de error                                           |
+| `errors_details[].hint`        | string  | Pista adicional sobre el error (ej: recepción más cercana) |
 
 ### Códigos de Estado HTTP
 
@@ -208,14 +208,14 @@ Content-Type: application/json
     {
       "supplier_id": 1,
       "date": "2024-01-15",
-      "declared_total_net_weight": 1000.50,
-      "declared_total_amount": 5000.00
+      "declared_total_net_weight": 1000.5,
+      "declared_total_amount": 5000.0
     },
     {
       "supplier_id": 2,
       "date": "2024-01-16",
       "declared_total_net_weight": 750.25,
-      "declared_total_amount": 3750.00
+      "declared_total_amount": 3750.0
     }
   ]
 }
@@ -223,13 +223,13 @@ Content-Type: application/json
 
 #### Campos del Request
 
-| Campo | Tipo | Requerido | Descripción |
-|-------|------|-----------|-------------|
-| `receptions` | array | Sí | Array de objetos de recepción a actualizar |
-| `receptions[].supplier_id` | integer | Sí | ID del proveedor |
-| `receptions[].date` | string (YYYY-MM-DD) | Sí | Fecha de la recepción en formato ISO (YYYY-MM-DD) |
-| `receptions[].declared_total_net_weight` | number | Sí | Peso neto total declarado |
-| `receptions[].declared_total_amount` | number | Sí | Monto total declarado |
+| Campo                                    | Tipo                | Requerido | Descripción                                       |
+| ---------------------------------------- | ------------------- | --------- | ------------------------------------------------- |
+| `receptions`                             | array               | Sí        | Array de objetos de recepción a actualizar        |
+| `receptions[].supplier_id`               | integer             | Sí        | ID del proveedor                                  |
+| `receptions[].date`                      | string (YYYY-MM-DD) | Sí        | Fecha de la recepción en formato ISO (YYYY-MM-DD) |
+| `receptions[].declared_total_net_weight` | number              | Sí        | Peso neto total declarado                         |
+| `receptions[].declared_total_amount`     | number              | Sí        | Monto total declarado                             |
 
 ### Response - Éxito Total (200)
 
@@ -285,16 +285,16 @@ Cuando una recepción no existe pero hay una recepción cercana:
 
 #### Campos del Response
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| `updated` | integer | Número de recepciones actualizadas exitosamente |
-| `errors` | integer | Número de recepciones que fallaron al actualizar |
-| `errors_details` | array | Array de detalles de errores |
-| `errors_details[].supplier_id` | integer | ID del proveedor con error |
-| `errors_details[].date` | string | Fecha de la recepción con error |
-| `errors_details[].error` | string | Tipo de error |
-| `errors_details[].message` | string | Mensaje de error |
-| `errors_details[].hint` | string | Pista adicional sobre el error (ej: recepción más cercana) |
+| Campo                          | Tipo    | Descripción                                                |
+| ------------------------------ | ------- | ---------------------------------------------------------- |
+| `updated`                      | integer | Número de recepciones actualizadas exitosamente            |
+| `errors`                       | integer | Número de recepciones que fallaron al actualizar           |
+| `errors_details`               | array   | Array de detalles de errores                               |
+| `errors_details[].supplier_id` | integer | ID del proveedor con error                                 |
+| `errors_details[].date`        | string  | Fecha de la recepción con error                            |
+| `errors_details[].error`       | string  | Tipo de error                                              |
+| `errors_details[].message`     | string  | Mensaje de error                                           |
+| `errors_details[].hint`        | string  | Pista adicional sobre el error (ej: recepción más cercana) |
 
 ### Códigos de Estado HTTP
 
@@ -341,7 +341,7 @@ const validationResult = await validatePurchases(linkedSummaryArray);
 if (validationResult.readyToUpdate > 0) {
   // 3. Actualizar recepciones
   const updateResult = await linkAllPurchases(linkedSummaryArray);
-  
+
   // 4. Procesar resultados
   console.log(`Actualizadas: ${updateResult.correctas}`);
   console.log(`Errores: ${updateResult.errores}`);
@@ -354,4 +354,3 @@ if (validationResult.readyToUpdate > 0) {
 
 - Archivo de implementación: `src/services/export/linkService.js`
 - Configuración de API: `src/configs/config.js`
-

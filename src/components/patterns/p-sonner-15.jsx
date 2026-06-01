@@ -1,21 +1,17 @@
-import { toast } from "sonner"
+import { toast } from 'sonner';
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 
 export function Pattern() {
   const showToast = () => {
     toast.custom(() => (
-      <div
-        className="bg-invert text-invert-foreground rounded-md flex w-[356px] items-start gap-3 border border-transparent p-4 shadow-lg">
+      <div className="bg-invert text-invert-foreground flex w-[356px] items-start gap-3 rounded-md border border-transparent p-4 shadow-lg">
         <Avatar className="border-border/10 size-9 shrink-0 border">
           <AvatarImage
             src="https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=96&h=96&dpr=2&q=80"
-            alt="Sarah Chen" />
+            alt="Sarah Chen"
+          />
           <AvatarFallback>SC</AvatarFallback>
         </Avatar>
         <div className="flex flex-1 flex-col gap-1">
@@ -31,20 +27,22 @@ export function Pattern() {
               size="xs"
               variant="outline"
               className="bg-background/10 border-border/10 text-invert-foreground"
-              onClick={() => toast.dismiss()}>
+              onClick={() => toast.dismiss()}
+            >
               Decline
             </Button>
             <Button
               size="xs"
               className="border-blue-800 bg-blue-500 text-white hover:border-blue-900 hover:bg-blue-600"
-              onClick={() => toast.dismiss()}>
+              onClick={() => toast.dismiss()}
+            >
               Accept
             </Button>
           </div>
         </div>
       </div>
-    ))
-  }
+    ));
+  };
 
   return (
     <div className="flex items-center justify-center">

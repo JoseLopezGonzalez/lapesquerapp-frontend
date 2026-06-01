@@ -1,16 +1,16 @@
 // services/CreateEntityService.js
-import { fetchWithTenant } from "@lib/fetchWithTenant";
-import { getAuthToken } from "@/lib/auth/getAuthToken";
+import { fetchWithTenant } from '@lib/fetchWithTenant';
+import { getAuthToken } from '@/lib/auth/getAuthToken';
 import { getUserAgent } from '@/lib/utils/getUserAgent';
 
 const getAuthHeaders = async () => {
-    const token = await getAuthToken();
-    return {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        "User-Agent": getUserAgent(),
-    };
+  const token = await getAuthToken();
+  return {
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+    'User-Agent': getUserAgent(),
+  };
 };
 
 /**
@@ -19,35 +19,35 @@ const getAuthHeaders = async () => {
  * @returns {Promise<Array<{value: any, label: string}>>} Formatted options for Combobox.
  */
 export const fetchAutocompleteOptions = async (autocompleteEndpoint) => {
-    try {
-        const headers = await getAuthHeaders();
-        const response = await fetchWithTenant(autocompleteEndpoint, {
-            method: 'GET',
-            headers: {
-                ...headers,
-                // Content-Type is typically not needed for GET, but Accept is useful
-                'Content-Type': 'application/json',
-            },
-        });
+  try {
+    const headers = await getAuthHeaders();
+    const response = await fetchWithTenant(autocompleteEndpoint, {
+      method: 'GET',
+      headers: {
+        ...headers,
+        // Content-Type is typically not needed for GET, but Accept is useful
+        'Content-Type': 'application/json',
+      },
+    });
 
-        if (!response.ok) {
-            throw response; // Throw the full response for detailed error handling in component
-        }
-        const data = await response.json();
-        
-        // Eliminar duplicados basándose en el ID
-        const uniqueData = data.filter((item, index, self) => 
-            index === self.findIndex(t => t.id === item.id)
-        );
-        
-        return uniqueData.map((item) => ({
-            value: item.id,
-            label: item.name,
-        }));
-    } catch (error) {
-        console.error(`Error fetching autocomplete options from ${autocompleteEndpoint}:`, error);
-        throw error;
+    if (!response.ok) {
+      throw response; // Throw the full response for detailed error handling in component
     }
+    const data = await response.json();
+
+    // Eliminar duplicados basándose en el ID
+    const uniqueData = data.filter(
+      (item, index, self) => index === self.findIndex((t) => t.id === item.id)
+    );
+
+    return uniqueData.map((item) => ({
+      value: item.id,
+      label: item.name,
+    }));
+  } catch (error) {
+    console.error(`Error fetching autocomplete options from ${autocompleteEndpoint}:`, error);
+    throw error;
+  }
 };
 
 /**
@@ -57,20 +57,20 @@ export const fetchAutocompleteOptions = async (autocompleteEndpoint) => {
  * @returns {Promise<Response>} The raw fetch response.
  */
 export const createEntity = async (url, data) => {
-    try {
-        const headers = await getAuthHeaders();
-        const response = await fetchWithTenant(url, {
-            method: "POST",
-            headers,
-            body: JSON.stringify(data),
-        });
+  try {
+    const headers = await getAuthHeaders();
+    const response = await fetchWithTenant(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(data),
+    });
 
-        if (!response.ok) {
-            throw response; // Throw the full response for detailed error handling in component
-        }
-        return response;
-    } catch (error) {
-        console.error("Error creating entity:", error);
-        throw error;
+    if (!response.ok) {
+      throw response; // Throw the full response for detailed error handling in component
     }
+    return response;
+  } catch (error) {
+    console.error('Error creating entity:', error);
+    throw error;
+  }
 };

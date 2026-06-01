@@ -17,25 +17,27 @@ export default function OrderPalletTableRow({
   unlinkingPalletId,
   readOnly = false,
 }) {
-  const productNames = pallet.productsNames && Array.isArray(pallet.productsNames) && pallet.productsNames.length > 0
-    ? pallet.productsNames.join('\n')
-    : '';
-  const lots = pallet.lots && Array.isArray(pallet.lots) && pallet.lots.length > 0
-    ? pallet.lots.join(', ')
-    : '';
+  const productNames =
+    pallet.productsNames && Array.isArray(pallet.productsNames) && pallet.productsNames.length > 0
+      ? pallet.productsNames.join('\n')
+      : '';
+  const lots =
+    pallet.lots && Array.isArray(pallet.lots) && pallet.lots.length > 0
+      ? pallet.lots.join(', ')
+      : '';
   const observations = pallet.observations || '';
   const belongsToReception = pallet?.receptionId != null;
 
   const isUnlinking = unlinkingPalletId === pallet.id;
 
   return (
-    <TableRow className="border-b border-muted last:border-0 hover:bg-muted/20">
+    <TableRow className="border-muted hover:bg-muted/20 border-b last:border-0">
       <TableCell className="px-4 py-3">{pallet.id}</TableCell>
       <TableCell className="px-4 py-3 whitespace-pre-wrap">{productNames || '-'}</TableCell>
-      <TableCell className="px-4 py-3 max-w-[150px] truncate" title={lots}>
+      <TableCell className="max-w-[150px] truncate px-4 py-3" title={lots}>
         {lots || '-'}
       </TableCell>
-      <TableCell className="px-4 py-3 max-w-[200px] truncate" title={observations}>
+      <TableCell className="max-w-[200px] truncate px-4 py-3" title={observations}>
         {observations || '-'}
       </TableCell>
       <TableCell className="px-4 py-3 text-right">{pallet.numberOfBoxes || 0}</TableCell>
@@ -51,7 +53,7 @@ export default function OrderPalletTableRow({
       <TableCell className="px-4 py-3">
         <div className="flex justify-end gap-1">
           {readOnly ? (
-            <span className="text-xs text-muted-foreground">-</span>
+            <span className="text-muted-foreground text-xs">-</span>
           ) : (
             <>
               <Tooltip>
@@ -60,13 +62,17 @@ export default function OrderPalletTableRow({
                     variant="outline"
                     size="icon"
                     onClick={() => onEdit(pallet.id)}
-                    title={belongsToReception ? "Ver palet (solo lectura - pertenece a una recepción)" : "Editar palet"}
+                    title={
+                      belongsToReception
+                        ? 'Ver palet (solo lectura - pertenece a una recepción)'
+                        : 'Editar palet'
+                    }
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>{belongsToReception ? "Ver palet" : "Editar palet"}</p>
+                  <p>{belongsToReception ? 'Ver palet' : 'Editar palet'}</p>
                 </TooltipContent>
               </Tooltip>
               <Tooltip>

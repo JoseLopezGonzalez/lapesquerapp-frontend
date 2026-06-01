@@ -6,7 +6,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { CalendarCheck2, Loader2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/datePicker';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { notify } from '@/lib/notifications';
@@ -17,7 +24,10 @@ import { getAgendaDomainErrorMessage } from './agendaErrorMessages';
 import { format } from 'date-fns';
 import { formatDateValue, interactionResultOptions, interactionTypeOptions } from './utils';
 import { CRM_INTERACTION_SUMMARY_MAX_LENGTH } from './schemas/crmTextLimits';
-import { getQuickInteractionDefaultValues, getQuickInteractionFormSchema } from './schemas/quickInteractionFormSchema';
+import {
+  getQuickInteractionDefaultValues,
+  getQuickInteractionFormSchema,
+} from './schemas/quickInteractionFormSchema';
 
 function ToggleGroup({ value, onChange, options }) {
   return (
@@ -117,7 +127,11 @@ function QuickInteractionModalInner({
       return 'La acción ya no está pendiente. Actualiza la agenda antes de volver a intentarlo.';
     }
 
-    if (baseMessage.includes('pending') || baseMessage.includes('agenda') || baseMessage.includes('next action')) {
+    if (
+      baseMessage.includes('pending') ||
+      baseMessage.includes('agenda') ||
+      baseMessage.includes('next action')
+    ) {
       return 'Ya existe una acción pendiente activa para este target. Reprograma o cancela la pendiente actual antes de crear otra.';
     }
 
@@ -149,8 +163,12 @@ function QuickInteractionModalInner({
 
     try {
       const response = await notify.promise(createInteraction.mutateAsync(payload), {
-        loading: isCompleteMode ? 'Cerrando tarea y registrando interacción...' : 'Registrando interacción...',
-        success: isCompleteMode ? 'Tarea cerrada e interacción registrada' : 'Interacción registrada',
+        loading: isCompleteMode
+          ? 'Cerrando tarea y registrando interacción...'
+          : 'Registrando interacción...',
+        success: isCompleteMode
+          ? 'Tarea cerrada e interacción registrada'
+          : 'Interacción registrada',
         error: (error) => getErrorText(error),
       });
       if (typeof onInteractionCreated === 'function') {
@@ -168,7 +186,8 @@ function QuickInteractionModalInner({
     const n = Object.keys(formErrors).length;
     notify.error({
       title: 'Revisa el formulario',
-      description: n > 1 ? `Hay ${n} campos con errores.` : 'Corrige el error indicado antes de guardar.',
+      description:
+        n > 1 ? `Hay ${n} campos con errores.` : 'Corrige el error indicado antes de guardar.',
     });
   };
 
@@ -231,18 +250,20 @@ function QuickInteractionModalInner({
 
         <div className="grid gap-4">
           {isCompleteMode && (
-            <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+            <div className="border-primary/20 bg-primary/5 rounded-xl border p-4">
               <div className="flex items-start gap-3">
-                <div className="rounded-full bg-primary/15 p-2 text-primary">
+                <div className="bg-primary/15 text-primary rounded-full p-2">
                   <CalendarCheck2 className="size-4" />
                 </div>
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-primary">Se cerrará la acción pendiente actual</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-primary text-sm font-medium">
+                    Se cerrará la acción pendiente actual
+                  </p>
+                  <p className="text-muted-foreground text-xs">
                     {defaultNextActionDate ? formatDateValue(defaultNextActionDate) : 'Sin fecha'}
                   </p>
                   {defaultNextActionNote && (
-                    <p className="text-sm text-foreground">{defaultNextActionNote}</p>
+                    <p className="text-foreground text-sm">{defaultNextActionNote}</p>
                   )}
                 </div>
               </div>
@@ -265,7 +286,11 @@ function QuickInteractionModalInner({
               name="occurredAt"
               control={control}
               render={({ field }) => (
-                <DatePicker date={field.value ?? null} onChange={field.onChange} formatStyle="short" />
+                <DatePicker
+                  date={field.value ?? null}
+                  onChange={field.onChange}
+                  formatStyle="short"
+                />
               )}
             />
             <FieldError message={errors.occurredAt?.message} />
@@ -312,7 +337,6 @@ function QuickInteractionModalInner({
             />
             <FieldError message={errors.result?.message} />
           </div>
-
         </div>
 
         <DialogFooter>

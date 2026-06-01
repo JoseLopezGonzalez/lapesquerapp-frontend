@@ -6,6 +6,7 @@
 ## Tarea
 
 Evolución frontend Next.js (incremental y segura), guiada por:
+
 - `docs/audits/nextjs-frontend-global-audit.md`
 - Prompt: `docs/prompts/02_Nextjs frontend evolution prompt.md`
 

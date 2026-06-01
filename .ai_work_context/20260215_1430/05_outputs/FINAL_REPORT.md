@@ -23,14 +23,15 @@ Se completó la evolución del bloque **Dashboard** hasta **Rating 9/10**. Todas
 
 ## Deliverables
 
-| Carpeta | Archivos |
-|---------|----------|
+| Carpeta         | Archivos                                                                               |
+| --------------- | -------------------------------------------------------------------------------------- |
 | **01_analysis** | step0a-dashboard-scope.md, step0-dashboard-ui-behavior.md, step1-dashboard-analisis.md |
-| **02_planning** | step2-proposed-changes-subblock1.md |
-| **04_logs** | execution_timeline.md |
-| **05_outputs** | FINAL_REPORT.md |
+| **02_planning** | step2-proposed-changes-subblock1.md                                                    |
+| **04_logs**     | execution_timeline.md                                                                  |
+| **05_outputs**  | FINAL_REPORT.md                                                                        |
 
 **Archivos de código creados/modificados**:
+
 - `src/hooks/useOrdersStats.js` (nuevo)
 - `src/hooks/useSpeciesOptions.js` (nuevo)
 - `src/hooks/useProductOptions.js` (modificado: useProductCategoryOptions, useProductFamilyOptions; restaurado useProductOptions)
@@ -44,9 +45,9 @@ Se completó la evolución del bloque **Dashboard** hasta **Rating 9/10**. Todas
 
 ## Rating
 
-| Fase | Antes | Después |
-|------|-------|---------|
-| Dashboard | 5/10 | **9/10** |
+| Fase      | Antes | Después  |
+| --------- | ----- | -------- |
+| Dashboard | 5/10  | **9/10** |
 
 ---
 

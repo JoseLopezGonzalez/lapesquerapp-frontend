@@ -1,28 +1,28 @@
-"use client";
+'use client';
 
-import React, { useEffect, useRef, useState, useCallback } from "react";
-import { fetchSuperadmin } from "@/lib/superadminApi";
-import { notify } from "@/lib/notifications";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, RotateCw, AlertTriangle } from "lucide-react";
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { fetchSuperadmin } from '@/lib/superadminApi';
+import { notify } from '@/lib/notifications';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Loader2, RotateCw, AlertTriangle } from 'lucide-react';
 
 const STEP_LABELS = [
-  "Registro creado",
-  "Base de datos creada",
-  "Migraciones ejecutadas",
-  "Catalogos iniciales",
-  "Usuario administrador",
-  "Configuracion empresa",
-  "Activacion",
-  "Email de bienvenida",
+  'Registro creado',
+  'Base de datos creada',
+  'Migraciones ejecutadas',
+  'Catalogos iniciales',
+  'Usuario administrador',
+  'Configuracion empresa',
+  'Activacion',
+  'Email de bienvenida',
 ];
 
 const POLL_INTERVAL = 4000;
 const STALLED_THRESHOLD = 30000;
 
 function getOnboardingStepLabel(data) {
-  return data.step_label || STEP_LABELS[Math.max(0, (data.step || 1) - 1)] || "Procesando";
+  return data.step_label || STEP_LABELS[Math.max(0, (data.step || 1) - 1)] || 'Procesando';
 }
 
 function getOnboarding(tenant) {
@@ -31,7 +31,7 @@ function getOnboarding(tenant) {
     step: tenant.onboarding_step ?? 0,
     total_steps: 8,
     step_label: null,
-    status: tenant.onboarding_step >= 8 ? "completed" : "in_progress",
+    status: tenant.onboarding_step >= 8 ? 'completed' : 'in_progress',
     error: null,
     failed_at: null,
   };
@@ -50,12 +50,9 @@ export default function OnboardingProgress({ tenant, onRefresh }) {
   const prevStep = useRef(ob.step);
   const pollRef = useRef(null);
 
-  const visible =
-    tenant.status === "pending" &&
-    ob.status !== "completed" &&
-    ob.step < totalSteps;
+  const visible = tenant.status === 'pending' && ob.status !== 'completed' && ob.step < totalSteps;
 
-  const completed = (ob.status === "completed" || ob.step >= totalSteps) && totalSteps > 0;
+  const completed = (ob.status === 'completed' || ob.step >= totalSteps) && totalSteps > 0;
 
   useEffect(() => {
     if (!visible) return;
@@ -72,7 +69,7 @@ export default function OnboardingProgress({ tenant, onRefresh }) {
           setStalled(false);
           notify.loading(
             {
-              title: "Onboarding en progreso",
+              title: 'Onboarding en progreso',
               description: `${getOnboardingStepLabel(data)} · Paso ${Math.min(data.step, totalSteps)} de ${totalSteps}`,
             },
             {
@@ -84,13 +81,13 @@ export default function OnboardingProgress({ tenant, onRefresh }) {
 
         setCurrent(data);
 
-        if (data.status === "completed" || data.step >= totalSteps) {
+        if (data.status === 'completed' || data.step >= totalSteps) {
           clearInterval(pollRef.current);
           pollRef.current = null;
           notify.success(
             {
-              title: "Onboarding completado",
-              description: "El tenant ya está listo para usarse.",
+              title: 'Onboarding completado',
+              description: 'El tenant ya está listo para usarse.',
             },
             {
               id: toastId,
@@ -101,13 +98,13 @@ export default function OnboardingProgress({ tenant, onRefresh }) {
           return;
         }
 
-        if (data.status === "failed") {
+        if (data.status === 'failed') {
           clearInterval(pollRef.current);
           pollRef.current = null;
           notify.error(
             {
-              title: "Onboarding con errores",
-              description: data.error || "El proceso falló antes de completarse.",
+              title: 'Onboarding con errores',
+              description: data.error || 'El proceso falló antes de completarse.',
             },
             {
               id: toastId,
@@ -121,8 +118,8 @@ export default function OnboardingProgress({ tenant, onRefresh }) {
           setStalled(true);
           notify.warning(
             {
-              title: "Onboarding sin avances recientes",
-              description: "El proceso sigue abierto, pero no ha cambiado de paso recientemente.",
+              title: 'Onboarding sin avances recientes',
+              description: 'El proceso sigue abierto, pero no ha cambiado de paso recientemente.',
             },
             {
               id: toastId,
@@ -130,7 +127,9 @@ export default function OnboardingProgress({ tenant, onRefresh }) {
             }
           );
         }
-      } catch { /* ignore polling errors */ }
+      } catch {
+        /* ignore polling errors */
+      }
     };
 
     pollRef.current = setInterval(poll, POLL_INTERVAL);
@@ -140,13 +139,15 @@ export default function OnboardingProgress({ tenant, onRefresh }) {
   const handleRetry = useCallback(async () => {
     setRetrying(true);
     try {
-      const res = await fetchSuperadmin(`/tenants/${tenant.id}/retry-onboarding`, { method: "POST" });
+      const res = await fetchSuperadmin(`/tenants/${tenant.id}/retry-onboarding`, {
+        method: 'POST',
+      });
       const json = await res.json();
       const data = json.data || json.onboarding || json;
 
       notify.loading(
         {
-          title: "Reintentando onboarding",
+          title: 'Reintentando onboarding',
           description: `Paso ${Math.min(data.step ?? current.step, totalSteps)} de ${totalSteps}`,
         },
         {
@@ -158,7 +159,7 @@ export default function OnboardingProgress({ tenant, onRefresh }) {
       setStalled(false);
 
       if (data.step !== undefined) {
-        setCurrent((prev) => ({ ...prev, ...data, status: "in_progress", error: null }));
+        setCurrent((prev) => ({ ...prev, ...data, status: 'in_progress', error: null }));
         prevStep.current = data.step;
       }
 
@@ -174,13 +175,13 @@ export default function OnboardingProgress({ tenant, onRefresh }) {
               setStalled(false);
             }
             setCurrent(d);
-            if (d.status === "completed" || d.step >= totalSteps) {
+            if (d.status === 'completed' || d.step >= totalSteps) {
               clearInterval(pollRef.current);
               pollRef.current = null;
               notify.success(
                 {
-                  title: "Onboarding completado",
-                  description: "El tenant ya está listo para usarse.",
+                  title: 'Onboarding completado',
+                  description: 'El tenant ya está listo para usarse.',
                 },
                 {
                   id: toastId,
@@ -189,13 +190,13 @@ export default function OnboardingProgress({ tenant, onRefresh }) {
               );
               onRefresh();
             }
-            if (d.status === "failed") {
+            if (d.status === 'failed') {
               clearInterval(pollRef.current);
               pollRef.current = null;
               notify.error(
                 {
-                  title: "Onboarding con errores",
-                  description: d.error || "El proceso volvió a fallar durante el reintento.",
+                  title: 'Onboarding con errores',
+                  description: d.error || 'El proceso volvió a fallar durante el reintento.',
                 },
                 {
                   id: toastId,
@@ -203,14 +204,16 @@ export default function OnboardingProgress({ tenant, onRefresh }) {
                 }
               );
             }
-          } catch { /* ignore */ }
+          } catch {
+            /* ignore */
+          }
         }, POLL_INTERVAL);
       }
     } catch (err) {
       notify.error(
         {
-          title: err.message || "Error al reintentar",
-          description: "No se pudo volver a lanzar el onboarding.",
+          title: err.message || 'Error al reintentar',
+          description: 'No se pudo volver a lanzar el onboarding.',
         },
         {
           id: toastId,
@@ -228,21 +231,25 @@ export default function OnboardingProgress({ tenant, onRefresh }) {
     return (
       <Card className="border-green-500/30">
         <CardContent className="flex items-center gap-2 py-4">
-          <span className="text-sm font-medium text-green-600 dark:text-green-400">Onboarding completado</span>
-          <span className="text-xs text-muted-foreground">Paso {totalSteps}/{totalSteps}</span>
+          <span className="text-sm font-medium text-green-600 dark:text-green-400">
+            Onboarding completado
+          </span>
+          <span className="text-muted-foreground text-xs">
+            Paso {totalSteps}/{totalSteps}
+          </span>
         </CardContent>
       </Card>
     );
   }
 
-  const isFailed = current.status === "failed";
+  const isFailed = current.status === 'failed';
   const labels = STEP_LABELS.slice(0, totalSteps);
 
   return (
-    <Card className={isFailed ? "border-destructive/50" : ""}>
+    <Card className={isFailed ? 'border-destructive/50' : ''}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle className="text-sm">Progreso de onboarding</CardTitle>
-        <span className="text-xs text-muted-foreground">
+        <span className="text-muted-foreground text-xs">
           Paso {current.step} / {totalSteps}
           {current.step_label && ` — ${current.step_label}`}
         </span>
@@ -260,12 +267,12 @@ export default function OnboardingProgress({ tenant, onRefresh }) {
                 <div
                   className={`h-2 rounded-full transition-colors ${
                     failedHere
-                      ? "bg-destructive"
+                      ? 'bg-destructive'
                       : completed
-                        ? "bg-green-500"
+                        ? 'bg-green-500'
                         : isCurrentStep
-                          ? "bg-blue-500 animate-pulse"
-                          : "bg-muted"
+                          ? 'animate-pulse bg-blue-500'
+                          : 'bg-muted'
                   }`}
                   title={label}
                 />
@@ -284,10 +291,10 @@ export default function OnboardingProgress({ tenant, onRefresh }) {
                 <span
                   className={`block text-[10px] leading-tight ${
                     failedHere
-                      ? "text-destructive font-medium"
+                      ? 'text-destructive font-medium'
                       : completed
-                        ? "text-green-600 dark:text-green-400 font-medium"
-                        : "text-muted-foreground"
+                        ? 'font-medium text-green-600 dark:text-green-400'
+                        : 'text-muted-foreground'
                   }`}
                 >
                   {label}
@@ -298,16 +305,20 @@ export default function OnboardingProgress({ tenant, onRefresh }) {
         </div>
 
         {isFailed && current.error && (
-          <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/10 p-3">
-            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+          <div className="border-destructive/30 bg-destructive/10 flex items-start gap-2 rounded-md border p-3">
+            <AlertTriangle className="text-destructive mt-0.5 h-4 w-4 shrink-0" />
             <div className="space-y-1">
-              <p className="text-sm font-medium text-destructive">Error en onboarding</p>
-              <p className="text-xs text-destructive/80">{current.error}</p>
+              <p className="text-destructive text-sm font-medium">Error en onboarding</p>
+              <p className="text-destructive/80 text-xs">{current.error}</p>
               {current.failed_at && (
-                <p className="text-[10px] text-muted-foreground">
-                  {new Intl.DateTimeFormat("es-ES", {
-                    day: "2-digit", month: "2-digit", year: "numeric",
-                    hour: "2-digit", minute: "2-digit", second: "2-digit",
+                <p className="text-muted-foreground text-[10px]">
+                  {new Intl.DateTimeFormat('es-ES', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
                   }).format(new Date(current.failed_at))}
                 </p>
               )}
@@ -318,12 +329,21 @@ export default function OnboardingProgress({ tenant, onRefresh }) {
         {(isFailed || stalled) && (
           <div className="flex items-center gap-2">
             {stalled && !isFailed && (
-              <span className="text-xs text-muted-foreground">
+              <span className="text-muted-foreground text-xs">
                 El onboarding parece estar detenido.
               </span>
             )}
-            <Button variant={isFailed ? "default" : "outline"} size="sm" onClick={handleRetry} disabled={retrying}>
-              {retrying ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCw className="h-3.5 w-3.5" />}
+            <Button
+              variant={isFailed ? 'default' : 'outline'}
+              size="sm"
+              onClick={handleRetry}
+              disabled={retrying}
+            >
+              {retrying ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <RotateCw className="h-3.5 w-3.5" />
+              )}
               Reintentar onboarding
             </Button>
           </div>

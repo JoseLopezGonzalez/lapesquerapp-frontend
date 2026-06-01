@@ -13,11 +13,11 @@ Separar la URL por **rol** de forma clara: cada rol tiene su propio segmento en 
 
 ## Segmentos por rol
 
-| Rol           | Segmento base | Uso actual |
-|---------------|---------------|------------|
-| **operario**  | `/operator`   | Dashboard, Nueva recepción, Nueva salida de cebo |
-| **comercial** | `/comercial`  | Dashboard (5 cards: cantidad/importe ventas, ranking pedidos, ranking ventas, ventas y empresas de transporte) |
-| **administrador, dirección, técnico** | `/admin` | Resto de la aplicación (listados, CRUD, gestores, etc.) |
+| Rol                                   | Segmento base | Uso actual                                                                                                     |
+| ------------------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------- |
+| **operario**                          | `/operator`   | Dashboard, Nueva recepción, Nueva salida de cebo                                                               |
+| **comercial**                         | `/comercial`  | Dashboard (5 cards: cantidad/importe ventas, ranking pedidos, ranking ventas, ventas y empresas de transporte) |
+| **administrador, dirección, técnico** | `/admin`      | Resto de la aplicación (listados, CRUD, gestores, etc.)                                                        |
 
 En el futuro se pueden añadir, por ejemplo:
 
@@ -47,13 +47,13 @@ En el futuro se pueden añadir, por ejemplo:
 
 ## Rutas del operario (`/operator`)
 
-| Ruta | Descripción |
-|------|-------------|
-| `GET /operator` | Dashboard (resumen, accesos a Nueva recepción y Nueva salida de cebo) |
-| `GET /operator/receptions/create` | Formulario de nueva recepción de materia prima (flujo operario) |
-| `GET /operator/dispatches/create` | Formulario de nueva salida de cebo (flujo operario) |
-| `GET /operator/orquestador` | Preparación de pedidos (mismo componente que `/admin/orquestador`) |
-| `GET /operator/stores-manager` | Almacenes interactivos (mismo componente que `/admin/stores-manager`) |
+| Ruta                              | Descripción                                                              |
+| --------------------------------- | ------------------------------------------------------------------------ |
+| `GET /operator`                   | Dashboard (resumen, accesos a Nueva recepción y Nueva salida de cebo)    |
+| `GET /operator/receptions/create` | Formulario de nueva recepción de materia prima (flujo operario)          |
+| `GET /operator/dispatches/create` | Formulario de nueva salida de cebo (flujo operario)                      |
+| `GET /operator/orquestador`       | Preparación de pedidos (mismo componente que `/admin/orquestador`)       |
+| `GET /operator/stores-manager`    | Almacenes interactivos (mismo componente que `/admin/stores-manager`)    |
 | `GET /operator/nfc-punch-manager` | Fichaje automático NFC (mismo componente que `/admin/nfc-punch-manager`) |
 
 El **mismo layout** que el área de administración (sidebar + TopBar + BottomNav en móvil) se reutiliza en `/operator`. La navegación se filtra por rol: el operario ve Inicio, Nueva recepción, Nueva salida de cebo y, en la sección **Gestores**, Preparación de pedidos, Almacenes interactivos y Fichaje automático NFC. Esas tres últimas tienen **rutas propias bajo `/operator`** que reutilizan exactamente el mismo componente que admin; así el operario nunca entra en `/admin` y se evita conflicto con `AdminRouteProtection`.
@@ -62,8 +62,8 @@ El **mismo layout** que el área de administración (sidebar + TopBar + BottomNa
 
 ## Rutas del comercial (`/comercial`)
 
-| Ruta | Descripción |
-|------|-------------|
+| Ruta             | Descripción                                                                                                                                              |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `GET /comercial` | Dashboard comercial (5 cards: cantidad total de ventas, importe total de ventas, ranking de pedidos, ranking de ventas, ventas y empresas de transporte) |
 
 El layout reutiliza el mismo shell que operario/admin (ResponsiveLayout). La navegación muestra solo "Inicio" para el rol comercial. Si un usuario con rol comercial intenta acceder a `/admin`, el middleware lo redirige a `/comercial`. Tras el login, el comercial va a `/comercial` (ver `getRedirectUrl` en `src/utils/loginUtils.ts`).
@@ -72,24 +72,24 @@ El layout reutiliza el mismo shell que operario/admin (ResponsiveLayout). La nav
 
 ## Archivos implicados
 
-| Archivo | Responsabilidad |
-|---------|------------------|
-| `src/configs/roleRoutesConfig.js` | Constantes de rutas por rol (`OPERATOR_BASE`, `operatorRoutes`, `COMERCIAL_BASE`, `comercialRoutes`, `adminRoutes`) |
-| `src/configs/navgationConfig.js` | Ítems por rol: operario (Inicio /operator, Nueva recepción, Nueva salida de cebo), comercial (Inicio /comercial), admin/dirección/técnico |
-| `src/configs/roleConfig.ts` | Mapa ruta → roles permitidos (middleware) |
-| `src/middleware.ts` | Redirige operario desde `/admin` a `/operator`; redirige comercial desde `/admin` a `/comercial`; protege `/operator` y `/comercial` por rol |
-| `src/app/operator/layout.js` + `OperatorLayoutClient.jsx` | Mismo ResponsiveLayout que admin; nav filtrada por rol (solo 3 ítems para operario) |
-| `src/app/operator/page.js` | Página dashboard operario |
-| `src/app/operator/receptions/create/page.js` | Crear recepción (operario) |
-| `src/app/operator/dispatches/create/page.js` | Crear salida de cebo (operario) |
-| `src/app/operator/orquestador/page.js` | Preparación de pedidos (reutiliza `OrquestadorView`) |
-| `src/app/operator/stores-manager/page.js` | Almacenes interactivos (reutiliza `StoresManager`) |
-| `src/app/operator/nfc-punch-manager/page.js` | Fichaje NFC (reutiliza `NFCPunchManager`) |
-| `src/utils/loginUtils.ts` | Redirección post-login (operario → `/operator`, comercial → `/comercial`) |
-| `src/app/comercial/layout.js` + `ComercialLayoutClient.jsx` | Layout comercial; ComercialRouteProtection y ResponsiveLayout con nav filtrada por rol comercial |
-| `src/app/comercial/page.js` | Página dashboard comercial |
-| `src/components/Admin/Dashboard/ComercialDashboard/index.js` | Dashboard con 5 cards (TotalQuantitySoldCard, TotalAmountSoldCard, OrderRankingChart, SalesBySalespersonPieChart, TransportRadarChart) |
-| `src/components/AdminRouteProtection/index.tsx` | Redirige operario que llegue a admin hacia `/operator` |
+| Archivo                                                      | Responsabilidad                                                                                                                              |
+| ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/configs/roleRoutesConfig.js`                            | Constantes de rutas por rol (`OPERATOR_BASE`, `operatorRoutes`, `COMERCIAL_BASE`, `comercialRoutes`, `adminRoutes`)                          |
+| `src/configs/navgationConfig.js`                             | Ítems por rol: operario (Inicio /operator, Nueva recepción, Nueva salida de cebo), comercial (Inicio /comercial), admin/dirección/técnico    |
+| `src/configs/roleConfig.ts`                                  | Mapa ruta → roles permitidos (middleware)                                                                                                    |
+| `src/middleware.ts`                                          | Redirige operario desde `/admin` a `/operator`; redirige comercial desde `/admin` a `/comercial`; protege `/operator` y `/comercial` por rol |
+| `src/app/operator/layout.js` + `OperatorLayoutClient.jsx`    | Mismo ResponsiveLayout que admin; nav filtrada por rol (solo 3 ítems para operario)                                                          |
+| `src/app/operator/page.js`                                   | Página dashboard operario                                                                                                                    |
+| `src/app/operator/receptions/create/page.js`                 | Crear recepción (operario)                                                                                                                   |
+| `src/app/operator/dispatches/create/page.js`                 | Crear salida de cebo (operario)                                                                                                              |
+| `src/app/operator/orquestador/page.js`                       | Preparación de pedidos (reutiliza `OrquestadorView`)                                                                                         |
+| `src/app/operator/stores-manager/page.js`                    | Almacenes interactivos (reutiliza `StoresManager`)                                                                                           |
+| `src/app/operator/nfc-punch-manager/page.js`                 | Fichaje NFC (reutiliza `NFCPunchManager`)                                                                                                    |
+| `src/utils/loginUtils.ts`                                    | Redirección post-login (operario → `/operator`, comercial → `/comercial`)                                                                    |
+| `src/app/comercial/layout.js` + `ComercialLayoutClient.jsx`  | Layout comercial; ComercialRouteProtection y ResponsiveLayout con nav filtrada por rol comercial                                             |
+| `src/app/comercial/page.js`                                  | Página dashboard comercial                                                                                                                   |
+| `src/components/Admin/Dashboard/ComercialDashboard/index.js` | Dashboard con 5 cards (TotalQuantitySoldCard, TotalAmountSoldCard, OrderRankingChart, SalesBySalespersonPieChart, TransportRadarChart)       |
+| `src/components/AdminRouteProtection/index.tsx`              | Redirige operario que llegue a admin hacia `/operator`                                                                                       |
 
 Componentes que enlazan a flujos operario (usan `operatorRoutes`):
 

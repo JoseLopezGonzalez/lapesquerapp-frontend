@@ -16,25 +16,29 @@ export function StopsListDrawer({ open, onOpenChange, stops, nextStop, onSelectS
         <Drawer.Overlay className="fixed inset-0 z-40 bg-black/20" />
         <Drawer.Content
           className={cn(
-            'fixed bottom-0 left-0 right-0 z-50 mt-24 flex max-h-[82vh] flex-col rounded-t-[28px] border border-border bg-background shadow-2xl',
+            'border-border bg-background fixed right-0 bottom-0 left-0 z-50 mt-24 flex max-h-[82vh] flex-col rounded-t-[28px] border shadow-2xl',
             MOBILE_SAFE_AREAS.BOTTOM
           )}
         >
           <Drawer.Title className="sr-only">Listado de paradas de la ruta</Drawer.Title>
-          <Drawer.Description className="sr-only">Selecciona una parada para ver su detalle operativo.</Drawer.Description>
+          <Drawer.Description className="sr-only">
+            Selecciona una parada para ver su detalle operativo.
+          </Drawer.Description>
 
-          <div className="mx-auto mt-3 h-1.5 w-12 rounded-full bg-muted-foreground/30" />
+          <div className="bg-muted-foreground/30 mx-auto mt-3 h-1.5 w-12 rounded-full" />
 
-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-4 pb-4 pt-4">
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-4 pt-4 pb-4">
             <div className="mb-3 flex items-center justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold">Paradas de la ruta</h2>
-                <p className="text-sm text-muted-foreground">Selecciona una parada para abrir su detalle.</p>
+                <p className="text-muted-foreground text-sm">
+                  Selecciona una parada para abrir su detalle.
+                </p>
               </div>
               <Badge variant="outline">{stops.length}</Badge>
             </div>
 
-            <div className="min-h-0 flex-1 space-y-2 overflow-auto pb-3 pr-1">
+            <div className="min-h-0 flex-1 space-y-2 overflow-auto pr-1 pb-3">
               {stops.map((stop) => (
                 <button
                   key={stop.id}
@@ -54,13 +58,19 @@ export function StopsListDrawer({ open, onOpenChange, stops, nextStop, onSelectS
                           <p className="truncate font-medium">
                             #{stop.position} · {stop.label || stop.address || 'Parada sin título'}
                           </p>
-                          <p className="truncate text-sm text-muted-foreground">
+                          <p className="text-muted-foreground truncate text-sm">
                             {stop.address || stop.notes || 'Sin detalles adicionales'}
                           </p>
                         </div>
                         <Badge
                           className="shrink-0"
-                          variant={stop.status === 'completed' ? 'default' : stop.status === 'skipped' ? 'secondary' : 'outline'}
+                          variant={
+                            stop.status === 'completed'
+                              ? 'default'
+                              : stop.status === 'skipped'
+                                ? 'secondary'
+                                : 'outline'
+                          }
                         >
                           {getFieldStatusLabel(stop.status)}
                         </Badge>
@@ -77,7 +87,12 @@ export function StopsListDrawer({ open, onOpenChange, stops, nextStop, onSelectS
             </div>
 
             <div className="border-t pt-3">
-              <Button variant="outline" className="w-full" disabled title="Próximamente: pendiente de endpoint backend para crear paradas">
+              <Button
+                variant="outline"
+                className="w-full"
+                disabled
+                title="Próximamente: pendiente de endpoint backend para crear paradas"
+              >
                 <Plus className="mr-2 h-4 w-4" />
                 Añadir parada
               </Button>

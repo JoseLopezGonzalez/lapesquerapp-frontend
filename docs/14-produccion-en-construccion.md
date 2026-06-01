@@ -60,6 +60,7 @@ El módulo de **Producciones** está actualmente **en construcción** y desarrol
 **Archivo**: `/src/components/Admin/Productions/ProductionView.jsx`
 
 **Funcionalidades**:
+
 - ✅ Visualización de información general (especie, fechas, lote)
 - ✅ Carga de datos en paralelo (producción, árbol de procesos, totales, conciliación)
 - ✅ Visualización de totales (cajas entrada/salida, pesos, merma)
@@ -68,16 +69,18 @@ El módulo de **Producciones** está actualmente **en construcción** y desarrol
 - ✅ Estados de producción (abierto, cerrado)
 
 **Datos cargados**:
+
 ```javascript
 const [productionData, treeData, totalsData, reconciliationData] = await Promise.all([
   getProduction(productionId, token),
   getProductionProcessTree(productionId, token).catch(() => null),
   getProductionTotals(productionId, token).catch(() => null),
-  getProductionReconciliation(productionId, token).catch(() => null)
+  getProductionReconciliation(productionId, token).catch(() => null),
 ]);
 ```
 
 **Estados visualizados**:
+
 - **Abierto**: `openedAt` existe y `closedAt` no existe
 - **Cerrado**: `closedAt` existe
 - **Sin estado**: Ninguno de los anteriores
@@ -89,6 +92,7 @@ const [productionData, treeData, totalsData, reconciliationData] = await Promise
 **Archivo**: `/src/components/Admin/Productions/ProductionRecordsManager.jsx`
 
 **Funcionalidades**:
+
 - ✅ Lista de registros de producción
 - ✅ Visualización jerárquica (padre-hijo)
 - ✅ Expandir/colapsar registros
@@ -98,6 +102,7 @@ const [productionData, treeData, totalsData, reconciliationData] = await Promise
 - ✅ Integración con `ProductionInputsManager` y `ProductionOutputsManager`
 
 **Estructura jerárquica**:
+
 - Registros raíz: `!parent_record_id`
 - Registros hijos: `parent_record_id === parentId`
 
@@ -108,6 +113,7 @@ const [productionData, treeData, totalsData, reconciliationData] = await Promise
 **Archivo**: `/src/components/Admin/Productions/ProductionInputsManager.jsx`
 
 **Funcionalidades**:
+
 - ✅ Lista de inputs (cajas de entrada)
 - ✅ Agregar inputs desde pallets
 - ✅ Múltiples modos de selección:
@@ -121,12 +127,14 @@ const [productionData, treeData, totalsData, reconciliationData] = await Promise
 - ✅ Carga masiva desde pallets
 
 **Modos de selección**:
+
 ```javascript
-const [selectionMode, setSelectionMode] = useState('manual'); 
+const [selectionMode, setSelectionMode] = useState('manual');
 // 'manual', 'weight', 'scanner', 'weight-search'
 ```
 
 **Características avanzadas**:
+
 - Conversión de códigos GS1-128 escaneados
 - Búsqueda por peso con tolerancia configurable
 - Selección por lote
@@ -139,6 +147,7 @@ const [selectionMode, setSelectionMode] = useState('manual');
 **Archivo**: `/src/components/Admin/Productions/ProductionOutputsManager.jsx`
 
 **Funcionalidades**:
+
 - ✅ Lista de outputs (productos generados)
 - ✅ Crear outputs
 - ✅ Editar outputs
@@ -155,6 +164,7 @@ const [selectionMode, setSelectionMode] = useState('manual');
 **Archivo**: `/src/components/Admin/Productions/ProductionOutputConsumptionsManager.jsx`
 
 **Funcionalidades**:
+
 - ✅ Lista de consumos de outputs del proceso padre
 - ✅ Crear consumos individuales
 - ✅ Editar consumos
@@ -164,6 +174,7 @@ const [selectionMode, setSelectionMode] = useState('manual');
 - ✅ Validación de pesos y cajas consumidas
 
 **Relación padre-hijo**:
+
 - Un proceso hijo puede consumir outputs del proceso padre
 - Solo muestra outputs disponibles (no consumidos completamente)
 
@@ -174,6 +185,7 @@ const [selectionMode, setSelectionMode] = useState('manual');
 **Archivo**: `/src/components/Admin/Productions/ProductionRecordImagesManager.jsx`
 
 **Funcionalidades**:
+
 - ✅ Visualización de imágenes (hasta 6 visibles)
 - ✅ Subir imágenes (drag & drop o click)
 - ✅ Validación de tipo y tamaño (max 10MB)
@@ -192,6 +204,7 @@ const [selectionMode, setSelectionMode] = useState('manual');
 **Archivo**: `/src/components/Admin/Productions/ProductionRecordEditor.jsx`
 
 **Funcionalidades**:
+
 - ✅ Crear/editar registros de producción
 - ✅ Formulario con validación
 - ✅ Gestión de inputs, outputs y consumos
@@ -366,6 +379,7 @@ const [selectionMode, setSelectionMode] = useState('manual');
 **Ubicación**: `/src/components/Admin/Productions/ProductionView.jsx` (línea 313-325)
 
 **Descripción**: El tab "Diagrama" muestra un mensaje placeholder:
+
 ```javascript
 <p className="text-muted-foreground">
   El diagrama se generará dinámicamente desde los procesos registrados.
@@ -382,12 +396,14 @@ const [selectionMode, setSelectionMode] = useState('manual');
 
 **Archivo**: `/src/components/Admin/Productions/ProductionRecordImagesManager.jsx`
 
-**Problema**: 
+**Problema**:
+
 - Usa datos mock locales (líneas 25-32 comentadas)
 - No se conecta con backend para subir/obtener imágenes reales
 - Solo crea previews locales
 
-**Recomendación**: 
+**Recomendación**:
+
 - Integrar con `uploadProductionRecordImage` y `getProductionRecordImages`
 - Implementar carga real de imágenes al backend
 
@@ -408,6 +424,7 @@ const [selectionMode, setSelectionMode] = useState('manual');
 **Estado**: Parcialmente implementado
 
 **Problemas**:
+
 - Falta validación de pesos totales (inputs vs outputs)
 - Falta validación de consumos (no consumir más de lo disponible)
 - Falta validación de jerarquía (no crear ciclos)
@@ -441,6 +458,7 @@ const [selectionMode, setSelectionMode] = useState('manual');
 **Estado**: No implementado
 
 **Problema**: No hay alertas para:
+
 - Diferencias en conciliación
 - Procesos sin finalizar
 - Consumos excedidos
@@ -602,6 +620,7 @@ const [selectionMode, setSelectionMode] = useState('manual');
 ## ⚠️ Observaciones Críticas y Mejoras Recomendadas
 
 ### 1. ProductionRecordImagesManager Usa Datos Mock
+
 - **Archivo**: `/src/components/Admin/Productions/ProductionRecordImagesManager.jsx`
 - **Línea**: 25-32
 - **Problema**: Usa datos mock locales, no se conecta con backend
@@ -609,6 +628,7 @@ const [selectionMode, setSelectionMode] = useState('manual');
 - **Recomendación**: Integrar con servicios de imágenes del backend
 
 ### 2. Diagrama No Implementado
+
 - **Archivo**: `/src/components/Admin/Productions/ProductionView.jsx`
 - **Línea**: 313-325
 - **Problema**: Tab "Diagrama" solo muestra placeholder
@@ -616,24 +636,28 @@ const [selectionMode, setSelectionMode] = useState('manual');
 - **Recomendación**: Implementar visualización de árbol de procesos
 
 ### 3. Falta Formulario de Creación de Producción
+
 - **Archivo**: No existe
 - **Problema**: No hay forma de crear producciones desde frontend
 - **Impacto**: Debe crearse desde backend o EntityClient genérico
 - **Recomendación**: Crear `CreateProductionForm` específico
 
 ### 4. Manejo de Errores Incompleto
+
 - **Archivo**: Múltiples componentes
 - **Problema**: Algunos errores se muestran con `alert()` o `console.error`
 - **Impacto**: UX inconsistente
 - **Recomendación**: Usar toast notifications consistentemente
 
 ### 5. Falta Validación de Consumos en Frontend
+
 - **Archivo**: `/src/components/Admin/Productions/ProductionOutputConsumptionsManager.jsx`
 - **Problema**: No valida si se consume más de lo disponible antes de enviar
 - **Impacto**: Errores solo se detectan en backend
 - **Recomendación**: Añadir validación antes de `createProductionOutputConsumption`
 
 ### 6. Carga de Datos Sin Dependencias
+
 - **Archivo**: `/src/components/Admin/Productions/ProductionView.jsx`
 - **Línea**: 40-45
 - **Problema**: Carga datos en paralelo sin considerar dependencias
@@ -641,36 +665,42 @@ const [selectionMode, setSelectionMode] = useState('manual');
 - **Recomendación**: Implementar carga condicional o manejo de dependencias
 
 ### 7. ProductionInputsManager Sin Paginación
+
 - **Archivo**: `/src/components/Admin/Productions/ProductionInputsManager.jsx`
 - **Problema**: Carga todos los pallets/cajas sin paginación
 - **Impacto**: Puede ser lento con muchos datos
 - **Recomendación**: Implementar paginación o lazy loading
 
 ### 8. Falta Actualización en Tiempo Real
+
 - **Archivo**: Múltiples componentes
 - **Problema**: No hay actualización automática cuando otros usuarios modifican
 - **Impacto**: Datos pueden quedar obsoletos
 - **Recomendación**: Implementar polling o WebSockets
 
 ### 9. Navegación Entre Registros Limitada
+
 - **Archivo**: `/src/components/Admin/Productions/ProductionRecordsManager.jsx`
 - **Problema**: No hay navegación fácil entre registros relacionados
 - **Impacto**: Difícil seguir flujo de procesos
 - **Recomendación**: Añadir breadcrumbs o navegación contextual
 
 ### 10. Falta Exportación de Datos
+
 - **Archivo**: No existe
 - **Problema**: No hay exportación a Excel/PDF de producciones
 - **Impacto**: Difícil compartir o analizar datos
 - **Recomendación**: Añadir opciones de exportación similares a pedidos
 
 ### 11. Validaciones de Peso Incompletas
+
 - **Archivo**: Múltiples componentes
 - **Problema**: No valida pesos totales (inputs vs outputs) en frontend
 - **Impacto**: Errores solo se detectan en backend
 - **Recomendación**: Añadir validaciones en frontend
 
 ### 12. Falta Confirmación en Eliminaciones
+
 - **Archivo**: `/src/components/Admin/Productions/ProductionRecordsManager.jsx`
 - **Línea**: 50-64
 - **Problema**: Usa `confirm()` nativo, no diálogo personalizado
@@ -678,20 +708,22 @@ const [selectionMode, setSelectionMode] = useState('manual');
 - **Recomendación**: Usar Dialog de ShadCN para confirmaciones
 
 ### 13. ProductionOutputConsumptionsManager Sin Validación de Disponibilidad
+
 - **Archivo**: `/src/components/Admin/Productions/ProductionOutputConsumptionsManager.jsx`
 - **Problema**: No valida si output está disponible antes de consumir
 - **Impacto**: Puede intentar consumir más de lo disponible
 - **Recomendación**: Validar disponibilidad antes de crear consumo
 
 ### 14. Falta Manejo de Estados de Carga Individuales
+
 - **Archivo**: Múltiples componentes
 - **Problema**: Algunos componentes no muestran estados de carga individuales
 - **Impacto**: Usuario no sabe qué está cargando
 - **Recomendación**: Añadir skeletons o loaders específicos
 
 ### 15. Falta Documentación de Flujos de Producción
+
 - **Archivo**: No existe
 - **Problema**: No hay documentación clara de cómo funciona el flujo completo
 - **Impacto**: Difícil entender cómo usar el módulo
 - **Recomendación**: Crear documentación de flujos de usuario
-

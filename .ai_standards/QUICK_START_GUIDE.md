@@ -13,7 +13,9 @@
 ## 🎯 USO EN CURSOR
 
 ### Opción A — Referencia directa (recomendada)
+
 En el chat escribe por ejemplo:
+
 ```
 [Tu tarea aquí]
 
@@ -21,21 +23,23 @@ En el chat escribe por ejemplo:
 ```
 
 ### Opción B — Coletilla en el prompt
+
 Copia al final de tu prompt el bloque "PROTOCOLO DE MEMORIA DE TRABAJO ESTÁNDAR" de `COLETILLA_PROTOCOLO_MEMORIA.md`.
 
 ### Opción C — Regla del proyecto
+
 El proyecto tiene una regla en `.cursor/rules/` que recuerda al agente usar este sistema en tareas complejas; aun así puedes decir: "Sigue el AGENT_MEMORY_SYSTEM".
 
 ---
 
 ## 📁 DÓNDE ESTÁ TODO
 
-| Qué | Dónde |
-|-----|--------|
-| Documento maestro | `.ai_standards/AGENT_MEMORY_SYSTEM.md` |
-| Coletilla para prompts | `.ai_standards/COLETILLA_PROTOCOLO_MEMORIA.md` |
-| Esta guía | `.ai_standards/QUICK_START_GUIDE.md` |
-| Sesiones del agente | `.ai_work_context/[TIMESTAMP]/` |
+| Qué                          | Dónde                                                     |
+| ---------------------------- | --------------------------------------------------------- |
+| Documento maestro            | `.ai_standards/AGENT_MEMORY_SYSTEM.md`                    |
+| Coletilla para prompts       | `.ai_standards/COLETILLA_PROTOCOLO_MEMORIA.md`            |
+| Esta guía                    | `.ai_standards/QUICK_START_GUIDE.md`                      |
+| Sesiones del agente          | `.ai_work_context/[TIMESTAMP]/`                           |
 | Reporte final de cada sesión | `.ai_work_context/[TIMESTAMP]/05_outputs/FINAL_REPORT.md` |
 
 ---

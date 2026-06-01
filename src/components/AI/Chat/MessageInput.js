@@ -11,26 +11,29 @@ import { cn } from '@/lib/utils';
 export function MessageInput({ input, handleInputChange, handleSubmit, isLoading }) {
   // Asegurar que input siempre sea un string
   const inputValue = typeof input === 'string' ? input : '';
-  
+
   // Asegurar que onChange siempre esté definido como función válida
   // Si handleInputChange no está disponible, crear un handler que al menos permita escribir
-  const onChangeHandler = typeof handleInputChange === 'function' 
-    ? handleInputChange 
-    : (e) => {
-        // Fallback: si handleInputChange no está disponible, al menos no bloqueamos el input
-        // Esto no actualizará el estado, pero permitirá que el usuario escriba temporalmente
-        console.warn('MessageInput: handleInputChange is not a function, using fallback', { handleInputChange });
-      };
-  
+  const onChangeHandler =
+    typeof handleInputChange === 'function'
+      ? handleInputChange
+      : (e) => {
+          // Fallback: si handleInputChange no está disponible, al menos no bloqueamos el input
+          // Esto no actualizará el estado, pero permitirá que el usuario escriba temporalmente
+          console.warn('MessageInput: handleInputChange is not a function, using fallback', {
+            handleInputChange,
+          });
+        };
+
   // Si handleInputChange no está definido, no podemos usar un input controlado
   // En ese caso, usar defaultValue en lugar de value
   const isControlled = typeof handleInputChange === 'function';
-  
+
   const isDisabled = isLoading || !inputValue || !inputValue.trim();
-  
+
   return (
     <form onSubmit={handleSubmit} className="w-full">
-      <div className="relative flex items-center w-full">
+      <div className="relative flex w-full items-center">
         <Input
           type="text"
           {...(isControlled ? { value: inputValue } : { defaultValue: inputValue })}
@@ -38,8 +41,8 @@ export function MessageInput({ input, handleInputChange, handleSubmit, isLoading
           placeholder="Escribe tu mensaje..."
           disabled={isLoading}
           className={cn(
-            "w-full pr-12 border-0 shadow-none focus-visible:ring-0 focus-visible:outline-none",
-            "bg-transparent"
+            'w-full border-0 pr-12 shadow-none focus-visible:ring-0 focus-visible:outline-none',
+            'bg-transparent'
           )}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -54,16 +57,16 @@ export function MessageInput({ input, handleInputChange, handleSubmit, isLoading
             }
           }}
         />
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
           disabled={isDisabled}
           size="icon"
           className={cn(
-            "absolute right-1 h-7 w-7 rounded-md",
-            "bg-primary text-primary-foreground",
-            "hover:bg-primary/90",
-            "disabled:opacity-50 disabled:cursor-not-allowed",
-            "transition-colors"
+            'absolute right-1 h-7 w-7 rounded-md',
+            'bg-primary text-primary-foreground',
+            'hover:bg-primary/90',
+            'disabled:cursor-not-allowed disabled:opacity-50',
+            'transition-colors'
           )}
         >
           {isLoading ? (
@@ -76,4 +79,3 @@ export function MessageInput({ input, handleInputChange, handleSubmit, isLoading
     </form>
   );
 }
-

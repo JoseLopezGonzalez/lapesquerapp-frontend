@@ -93,9 +93,9 @@ export default function ProspectLocationMap({ address, companyName }) {
 
   if (!hasToken) {
     return (
-      <div className="flex min-h-[320px] items-center justify-center bg-muted/10">
+      <div className="bg-muted/10 flex min-h-[320px] items-center justify-center">
         <EmptyState
-          icon={<MapPin className="h-10 w-10 text-primary" />}
+          icon={<MapPin className="text-primary h-10 w-10" />}
           title="Mapa no disponible"
           description="Falta configurar NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN para mostrar la ubicación."
           className="h-full border-0 bg-transparent"
@@ -106,7 +106,7 @@ export default function ProspectLocationMap({ address, companyName }) {
 
   if (!trimmedAddress) {
     return (
-      <div className="flex min-h-[320px] items-center justify-center px-6 text-center text-sm text-muted-foreground">
+      <div className="text-muted-foreground flex min-h-[320px] items-center justify-center px-6 text-center text-sm">
         Añade una dirección para mostrar la ubicación del prospecto.
       </div>
     );
@@ -114,7 +114,7 @@ export default function ProspectLocationMap({ address, companyName }) {
 
   if (status === 'error') {
     return (
-      <div className="flex min-h-[320px] items-center justify-center px-6 text-center text-sm text-muted-foreground">
+      <div className="text-muted-foreground flex min-h-[320px] items-center justify-center px-6 text-center text-sm">
         {error || 'No se pudo localizar la dirección del prospecto.'}
       </div>
     );
@@ -122,7 +122,7 @@ export default function ProspectLocationMap({ address, companyName }) {
 
   if (status === 'loading' || (status === 'idle' && !coords)) {
     return (
-      <div className="flex min-h-[320px] items-center justify-center px-6 text-center text-sm text-muted-foreground">
+      <div className="text-muted-foreground flex min-h-[320px] items-center justify-center px-6 text-center text-sm">
         Localizando dirección...
       </div>
     );
@@ -130,7 +130,7 @@ export default function ProspectLocationMap({ address, companyName }) {
 
   if (!coords) {
     return (
-      <div className="flex min-h-[320px] items-center justify-center px-6 text-center text-sm text-muted-foreground">
+      <div className="text-muted-foreground flex min-h-[320px] items-center justify-center px-6 text-center text-sm">
         No se ha podido ubicar esta dirección en el mapa.
       </div>
     );
@@ -143,7 +143,7 @@ export default function ProspectLocationMap({ address, companyName }) {
           href={googleMapsHref}
           target="_blank"
           rel="noopener noreferrer"
-          className="absolute right-3 top-3 z-10 inline-flex items-center gap-1.5 rounded-lg border bg-background/95 px-2.5 py-1.5 text-xs font-medium text-foreground shadow-sm backdrop-blur transition-colors hover:bg-accent"
+          className="bg-background/95 text-foreground hover:bg-accent absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium shadow-sm backdrop-blur transition-colors"
         >
           <ExternalLink className="h-3.5 w-3.5" />
           Google Maps
@@ -162,16 +162,14 @@ export default function ProspectLocationMap({ address, companyName }) {
         onLoad={() => setMapReady((ready) => (ready ? ready : true))}
         onError={(event) => {
           const message =
-            event?.error?.message ||
-            event?.error?.error?.message ||
-            'No se pudo cargar el mapa.';
+            event?.error?.message || event?.error?.error?.message || 'No se pudo cargar el mapa.';
           setStatus((current) => (current === 'error' ? current : 'error'));
           setError((current) => (current === message ? current : message));
         }}
       >
         {mapReady ? (
           <Marker longitude={coords.lng} latitude={coords.lat} anchor="bottom">
-            <div className="rounded-full border-2 border-background bg-primary p-1 text-primary-foreground shadow-lg">
+            <div className="border-background bg-primary text-primary-foreground rounded-full border-2 p-1 shadow-lg">
               <MapPin className="h-4 w-4" />
             </div>
           </Marker>

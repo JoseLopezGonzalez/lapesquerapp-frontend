@@ -18,12 +18,14 @@ Este documento consolida los hallazgos y cambios aplicados durante la auditoria 
 - Adicionalmente, coexistían caminos con cache distinto (`crmService`) y sin cache (`getAuthToken` en catálogos como `countries`), provocando doble consulta de sesion en un mismo flujo (abrir editar -> cargar países -> guardar).
 
 Patron corregido:
+
 - Cache de token compartido en `getAuthToken` para todo el frontend.
 - Expiración por `exp` real del JWT (no solo TTL fijo).
 - Deduplicación de promesa en vuelo para evitar carreras de auth.
 - Reset de cache en 401.
 
 Archivo clave:
+
 - `src/services/crmService.ts`
 - `src/lib/auth/getAuthToken.ts`
 - `src/services/domain/countries/countryService.ts`
@@ -35,9 +37,11 @@ Archivo clave:
   - detalle con `contacts`, `interactions`, `offers` cargados a la vez.
 
 Patron corregido:
+
 - Lazy-load por tab con `enabled` condicional por `activeTab`.
 
 Archivos clave:
+
 - `src/components/Comercial/CRM/ProspectDetail.jsx`
 - `src/components/Comercial/CRM/CustomersPageClient.jsx`
 - `src/hooks/useProspects.ts` (enabled en `useProspectContacts`)
@@ -50,10 +54,12 @@ Archivos clave:
 - Efecto: fetch no esperado (porque entraba directo en tab secundaria).
 
 Patron corregido:
+
 - Reset de `activeTab` a `data` al cambiar `prospectId`/`customerId`.
 - Limpieza de estado UI derivado (modales/draft relevantes).
 
 Archivos clave:
+
 - `src/components/Comercial/CRM/ProspectDetail.jsx`
 - `src/components/Comercial/CRM/CustomersPageClient.jsx`
 
@@ -63,10 +69,12 @@ Archivos clave:
 - Efecto: refetch en cascada.
 
 Patron corregido:
+
 - Invalidaciones parametrizadas por impacto real.
 - Recorte de queries no relacionadas.
 
 Archivos clave:
+
 - `src/hooks/useProspects.ts`
 - `src/hooks/useOffers.ts`
 - `src/hooks/useAgenda.ts`
@@ -78,10 +86,12 @@ Archivos clave:
 - Aunque había patch local, seguía habiendo reconsulta de seguridad posterior.
 
 Patron corregido:
+
 - `onMutate` optimista + `onSuccess` reconciliación + `onError` rollback.
 - Sin refetch automático para los endpoints ya cubiertos por cache local.
 
 Archivo clave:
+
 - `src/hooks/useProspects.ts` (`createContact`, `updateContact`, `deleteContact`)
 
 ### 2.6 Busqueda sin debounce
@@ -89,9 +99,11 @@ Archivo clave:
 - Filtro de ofertas pegaba requests por pulsación.
 
 Patron corregido:
+
 - Debounce del texto antes de consultar.
 
 Archivo clave:
+
 - `src/components/Comercial/CRM/OffersPageClient.jsx`
 
 ### 2.7 Formularios que cargaban catalogos estando cerrados
@@ -99,9 +111,11 @@ Archivo clave:
 - `OfferFormSheet` montado pero cerrado seguía cargando opciones.
 
 Patron corregido:
+
 - Gating por `open` y `enabled`.
 
 Archivos clave:
+
 - `src/components/Comercial/CRM/OfferFormSheet.jsx`
 - `src/hooks/useOrderFormOptions.js`
 - `src/hooks/useProductOptions.js`
@@ -113,11 +127,13 @@ Archivos clave:
 - Efecto: UI redundante, mayor riesgo de inconsistencias y payloads innecesarios en update.
 
 Patron corregido:
+
 - En edición de prospecto, ocultar bloque de contacto principal.
 - En update, no enviar `primaryContact` en payload.
 - Mantener contacto principal solo en alta de prospecto.
 
 Archivo clave:
+
 - `src/components/Comercial/CRM/ProspectFormSheet.jsx`
 
 ### 2.9 Espacios en blanco por layout fijo en dialogs condicionales
@@ -125,9 +141,11 @@ Archivo clave:
 - Al ocultar secciones condicionales (como contacto en edición), un `height` fijo mantenía huecos grandes en el modal.
 
 Patron corregido:
+
 - En modo edición usar altura adaptable (`max-height`) y reservar altura fija solo para escenarios con formulario largo (alta).
 
 Archivo clave:
+
 - `src/components/Comercial/CRM/ProspectFormSheet.jsx`
 
 ### 2.10 Creación de interacciones con refetch evitable
@@ -136,6 +154,7 @@ Archivo clave:
 - Efecto: ráfagas de red y latencia visual evitable tras guardar.
 
 Patron corregido:
+
 - Invalidación condicional por target:
   - si hay `prospectId`, invalidar solo árboles de prospecto afectados.
   - si hay `customerId`, invalidar solo árboles de cliente afectados.
@@ -143,6 +162,7 @@ Patron corregido:
 - Reservar refetch global para `dashboard/agenda` solo cuando su semántica realmente dependa del alta.
 
 Archivo clave:
+
 - `src/hooks/useCommercialInteractions.ts`
 
 ### 2.11 Agenda con invalidaciones y filtros que generan ráfagas
@@ -151,11 +171,13 @@ Archivo clave:
 - Filtros de agenda aplicados en cada toggle disparan requests encadenadas dentro del diálogo.
 
 Patron corregido:
+
 - En agenda, invalidación mínima por defecto: `agenda` y `agenda/summary`.
 - En creación de interacción, evitar `onSettled` global cuando ya existe optimismo; invalidar condicionalmente en `onSuccess` según impacto real (p. ej. `agendaActionId`, `nextActionAt`).
 - En filtros de agenda, usar estado borrador y aplicar cambios con acción explícita.
 
 Archivos clave:
+
 - `src/hooks/useAgenda.ts`
 - `src/hooks/useCommercialInteractions.ts`
 - `src/components/Comercial/CRM/AgendaPageClient.jsx`
@@ -167,12 +189,14 @@ Archivos clave:
 - En ejecución de rutas de repartidor, mutaciones de parada pueden combinar patch local + invalidación global, generando trabajo y refetch duplicado.
 
 Patron corregido:
+
 - Cargar por visibilidad real (`enabled` por tab, diálogo o panel abierto).
 - Evitar cálculo de geometría cuando la vista de detalle no está activa.
 - Usar patch local (`setQueryData`) y invalidación mínima por listas específicas, evitando `all` por defecto.
 - En ejecución de ruta, cargar pedidos on-demand (cuando realmente se necesitan en la UI de parada).
 
 Archivos clave:
+
 - `src/components/Comercial/Routes/RoutesPlannerPage.jsx`
 - `src/hooks/useRouteGeometry.ts`
 - `src/hooks/useRoutes.ts`
@@ -186,10 +210,12 @@ Archivos clave:
 - Enriquecer paradas sin coordenadas con `Promise.all` abierto puede producir bursts de requests y penalizar TTI en rutas grandes.
 
 Patron corregido:
+
 - Limitar concurrencia de geocoding y deduplicar peticiones en vuelo por dirección.
 - Reusar resultados enriquecidos cuando el set de paradas no cambia.
 
 Archivos clave:
+
 - `src/lib/routes/routeStops.ts`
 - `src/hooks/useFieldRouteExecutionState.ts`
 
@@ -292,4 +318,3 @@ Aplicar este checklist al revisar cualquier pantalla:
 - `src/hooks/useTaxOptions.js`
 - `src/components/Comercial/CRM/ProspectFormSheet.jsx`
 - `src/services/domain/countries/countryService.ts`
-

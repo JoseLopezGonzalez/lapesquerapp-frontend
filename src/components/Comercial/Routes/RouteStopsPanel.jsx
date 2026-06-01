@@ -20,7 +20,7 @@ export function RouteStopsPanel({
 }) {
   if (!stopsPanelExpanded) {
     return (
-      <div className="absolute left-4 top-4 z-20">
+      <div className="absolute top-4 left-4 z-20">
         <Button type="button" variant="secondary" onClick={() => setStopsPanelExpanded(true)}>
           <PanelLeftOpen className="mr-2 h-4 w-4" />
           Ver paradas
@@ -30,11 +30,11 @@ export function RouteStopsPanel({
   }
 
   return (
-    <div className="absolute left-4 top-4 z-20 w-[360px] max-w-[calc(100%-2rem)] rounded-[24px] border bg-background/96 shadow-lg">
+    <div className="bg-background/96 absolute top-4 left-4 z-20 w-[360px] max-w-[calc(100%-2rem)] rounded-[24px] border shadow-lg">
       <div className="border-b p-4">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-sm font-medium text-foreground">Paradas</p>
+            <p className="text-foreground text-sm font-medium">Paradas</p>
           </div>
           <div className="flex items-center gap-2">
             <Button type="button" variant="outline" size="sm" onClick={onSearch}>
@@ -61,7 +61,7 @@ export function RouteStopsPanel({
         {currentDraft.stops.length === 0 ? (
           <div className="flex h-[260px] items-center justify-center md:h-[calc(72vh-18rem)]">
             <EmptyState
-              icon={<MapPinned className="h-10 w-10 text-primary" />}
+              icon={<MapPinned className="text-primary h-10 w-10" />}
               title="Sin paradas todavía"
               description="Añade una parada buscando una ubicación o pulsando directamente sobre el mapa."
               className="h-full bg-transparent"
@@ -69,8 +69,15 @@ export function RouteStopsPanel({
           </div>
         ) : (
           <ScrollArea className="h-[260px] pr-3 md:h-[calc(72vh-18rem)]">
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-              <SortableContext items={currentDraft.stops.map((stop) => stop.id)} strategy={verticalListSortingStrategy}>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={currentDraft.stops.map((stop) => stop.id)}
+                strategy={verticalListSortingStrategy}
+              >
                 <div className="space-y-3">
                   {currentDraft.stops.map((stop) => (
                     <SortableStopItem key={stop.id} stop={stop} onEdit={onEditStop} />

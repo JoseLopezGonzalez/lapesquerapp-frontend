@@ -1,43 +1,43 @@
-"use client";
+'use client';
 
 /**
  * ResponsiveLayout - Wrapper que renderiza layout según dispositivo
- * 
+ *
  * Responsabilidad clara:
  * - Solo decide qué layout renderizar (desktop vs mobile)
  * - Solo decide qué navegación mostrar (Sidebar vs TopBar + BottomNav)
  * - Solo maneja safe areas estructurales
- * 
+ *
  * NO hace:
  * - Estilos visuales (eso lo hacen los componentes hijos)
  * - Lógica de negocio
  * - Gestión de estado compleja
- * 
+ *
  * Referencia: docs/mobile-adaptation/implementaciones/01-LAYOUT-NAVEGACION.md
  */
 
-import * as React from "react";
-import { usePathname } from "next/navigation";
-import { useIsMobileSafe } from "@/hooks/use-mobile";
-import { AppSidebar } from "@/components/Admin/Layout/SideBar";
-import { BottomNav } from "@/components/Admin/Layout/BottomNav";
-import { UserMenuDialog } from "@/components/Admin/Layout/FloatingUserMenu";
-import { NavigationSheet } from "@/components/Admin/Layout/NavigationSheet";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { BottomNavProvider, useBottomNav } from "@/context/BottomNavContext";
-import { cn } from "@/lib/utils";
+import * as React from 'react';
+import { usePathname } from 'next/navigation';
+import { useIsMobileSafe } from '@/hooks/use-mobile';
+import { AppSidebar } from '@/components/Admin/Layout/SideBar';
+import { BottomNav } from '@/components/Admin/Layout/BottomNav';
+import { UserMenuDialog } from '@/components/Admin/Layout/FloatingUserMenu';
+import { NavigationSheet } from '@/components/Admin/Layout/NavigationSheet';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { BottomNavProvider, useBottomNav } from '@/context/BottomNavContext';
+import { cn } from '@/lib/utils';
 
 /**
  * ResponsiveLayout - Componente wrapper responsive
- * 
+ *
  * @param {object} props
  * @param {React.ReactNode} props.children - Contenido a renderizar
  * @param {Array} props.bottomNavItems - Items para BottomNav (solo mobile)
  * @param {object} props.user - Objeto usuario para TopBar y Sidebar
  * @param {Function} props.onMenuClick - Callback cuando se clickea menú en TopBar
  */
-function ResponsiveLayoutContent({ 
-  children, 
+function ResponsiveLayoutContent({
+  children,
   bottomNavItems = [],
   user,
   onMenuClick,
@@ -65,22 +65,20 @@ function ResponsiveLayoutContent({
   // Renderizar layout desktop por defecto hasta que esté montado
   if (!mounted) {
     const styleSidebar = {
-      "--sidebar-width": "18rem",
-      "--sidebar-width-mobile": "16rem",
+      '--sidebar-width': '18rem',
+      '--sidebar-width-mobile': '16rem',
     };
 
     return (
-      <div className='h-screen overflow-hidden'>
-        <SidebarProvider className='h-full' style={styleSidebar}>
+      <div className="h-screen overflow-hidden">
+        <SidebarProvider className="h-full" style={styleSidebar}>
           <AppSidebar />
-          <main className='flex flex-col h-full overflow-hidden w-full p-1'>
-            <div className='p-1'>
+          <main className="flex h-full w-full flex-col overflow-hidden p-1">
+            <div className="p-1">
               <SidebarTrigger />
             </div>
             {/* Sin key: primer paint; al pasar a mounted+desktop el branch !isMobile usa key y remonta {children} */}
-            <div className='flex-1 w-full min-h-0 overflow-hidden p-1'>
-              {children}
-            </div>
+            <div className="min-h-0 w-full flex-1 overflow-hidden p-1">{children}</div>
           </main>
         </SidebarProvider>
       </div>
@@ -90,19 +88,19 @@ function ResponsiveLayoutContent({
   // Desktop layout (≥768px) — key fuerza remount del contenido cuando layout ya está estabilizado (Mapbox/WebGL)
   if (!isMobile) {
     const styleSidebar = {
-      "--sidebar-width": "18rem",
-      "--sidebar-width-mobile": "16rem",
+      '--sidebar-width': '18rem',
+      '--sidebar-width-mobile': '16rem',
     };
 
     return (
-      <div className='h-screen overflow-hidden'>
-        <SidebarProvider className='h-full' style={styleSidebar}>
+      <div className="h-screen overflow-hidden">
+        <SidebarProvider className="h-full" style={styleSidebar}>
           <AppSidebar />
-          <main className='flex flex-col h-full overflow-hidden w-full p-1'>
-            <div className='p-1'>
+          <main className="flex h-full w-full flex-col overflow-hidden p-1">
+            <div className="p-1">
               <SidebarTrigger />
             </div>
-            <div key="content-active" className='flex-1 w-full min-h-0 overflow-hidden p-1'>
+            <div key="content-active" className="min-h-0 w-full flex-1 overflow-hidden p-1">
               {children}
             </div>
           </main>
@@ -111,50 +109,42 @@ function ResponsiveLayoutContent({
     );
   }
 
-      // Mobile layout (<768px)
-      return (
-        <div 
-          className={cn(
-            "flex flex-col h-screen overflow-hidden relative",
-            // Fondo sólido para que el efecto de escala de vaul sea visible
-            "bg-background"
-          )}
-          vaul-drawer-wrapper=""
-        >
-          {/* Main Content - NO scrollable en mobile, cada componente gestiona su scroll */}
-          {/* Altura ajustada restando el bottom nav si existe */}
-          <main
-            ref={mainRef}
-            className={cn(
-              "overflow-hidden", // overflow-hidden para que cada componente gestione su scroll
-              "w-full relative", // relative para posicionar el avatar
-              // Altura ajustada restando el bottom nav si existe y no está oculto
-              // Bottom nav: pt-3 (12px) + contenido min-h-[44px] + pb-4 (16px) + safe area ≈ 72px + safe area
-              // Usamos 5rem (80px) para dar margen extra y evitar que se corte el contenido
-              bottomNavItems && bottomNavItems.length > 0 && !hideBottomNav
-                ? "h-[calc(100vh-5rem-env(safe-area-inset-bottom))]" 
-                : "flex-1 min-h-0"
-            )}
-          >
-            {/* Contenido principal - usuario en BottomNav, sin botón flotante */}
-            <div className="h-full w-full">
-              {children}
-            </div>
-          </main>
+  // Mobile layout (<768px)
+  return (
+    <div
+      className={cn(
+        'relative flex h-screen flex-col overflow-hidden',
+        // Fondo sólido para que el efecto de escala de vaul sea visible
+        'bg-background'
+      )}
+      vaul-drawer-wrapper=""
+    >
+      {/* Main Content - NO scrollable en mobile, cada componente gestiona su scroll */}
+      {/* Altura ajustada restando el bottom nav si existe */}
+      <main
+        ref={mainRef}
+        className={cn(
+          'overflow-hidden', // overflow-hidden para que cada componente gestione su scroll
+          'relative w-full', // relative para posicionar el avatar
+          // Altura ajustada restando el bottom nav si existe y no está oculto
+          // Bottom nav: pt-3 (12px) + contenido min-h-[44px] + pb-4 (16px) + safe area ≈ 72px + safe area
+          // Usamos 5rem (80px) para dar margen extra y evitar que se corte el contenido
+          bottomNavItems && bottomNavItems.length > 0 && !hideBottomNav
+            ? 'h-[calc(100vh-5rem-env(safe-area-inset-bottom))]'
+            : 'min-h-0 flex-1'
+        )}
+      >
+        {/* Contenido principal - usuario en BottomNav, sin botón flotante */}
+        <div className="h-full w-full">{children}</div>
+      </main>
 
       {/* BottomNav - Solo mostrar si no está oculto por el context */}
       {bottomNavItems && bottomNavItems.length > 0 && !hideBottomNav && (
-        <BottomNav 
-          items={bottomNavItems}
-          sheetOpen={sheetOpen}
-          onSheetOpenChange={setSheetOpen}
-        />
+        <BottomNav items={bottomNavItems} sheetOpen={sheetOpen} onSheetOpenChange={setSheetOpen} />
       )}
 
       {/* Menú de usuario (cuenta, configuración, cerrar sesión) - abierto desde el sheet del menú */}
-      {user && (
-        <UserMenuDialog open={userMenuOpen} onOpenChange={setUserMenuOpen} user={user} />
-      )}
+      {user && <UserMenuDialog open={userMenuOpen} onOpenChange={setUserMenuOpen} user={user} />}
 
       {/* NavigationSheet - Sheet con navegación completa (incl. Cuenta / menú usuario) */}
       <NavigationSheet
@@ -165,7 +155,14 @@ function ResponsiveLayoutContent({
         apps={apps}
         loading={loading}
         user={user}
-        onUserMenuOpen={user ? () => { setSheetOpen(false); setUserMenuOpen(true); } : undefined}
+        onUserMenuOpen={
+          user
+            ? () => {
+                setSheetOpen(false);
+                setUserMenuOpen(true);
+              }
+            : undefined
+        }
       />
     </div>
   );
@@ -173,7 +170,7 @@ function ResponsiveLayoutContent({
 
 /**
  * ResponsiveLayout - Componente wrapper responsive con BottomNavProvider
- * 
+ *
  * @param {object} props
  * @param {React.ReactNode} props.children - Contenido a renderizar
  * @param {Array} props.bottomNavItems - Items para BottomNav (solo mobile)

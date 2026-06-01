@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 /**
  * FloatingUserMenu - Avatar de usuario flotante sobre el contenido (solo desktop u otros usos)
@@ -7,15 +7,11 @@
  * se mantiene por si se usa en otros contextos.
  */
 
-import * as React from "react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
-import { UserMenuDialog } from "./UserMenuDialog";
+import * as React from 'react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserMenuDialog } from './UserMenuDialog';
 
 /**
  * FloatingUserMenu - Avatar flotante de usuario
@@ -55,7 +51,7 @@ export function FloatingUserMenu({ user, scrollContainerRef }) {
   return (
     <>
       <div
-        className={cn("relative z-50 pointer-events-auto transition-opacity duration-200 ease-out")}
+        className={cn('pointer-events-auto relative z-50 transition-opacity duration-200 ease-out')}
         style={{ opacity }}
       >
         <Button
@@ -63,19 +59,19 @@ export function FloatingUserMenu({ user, scrollContainerRef }) {
           size="icon"
           onClick={() => setDialogOpen(true)}
           className={cn(
-            "h-12 w-12 shrink-0 rounded-full",
-            "bg-background/95 backdrop-blur-md",
-            "border border-border",
-            "shadow-lg shadow-black/10",
-            "hover:bg-background hover:shadow-xl",
-            "transition-all duration-200",
-            "active:scale-95"
+            'h-12 w-12 shrink-0 rounded-full',
+            'bg-background/95 backdrop-blur-md',
+            'border-border border',
+            'shadow-lg shadow-black/10',
+            'hover:bg-background hover:shadow-xl',
+            'transition-all duration-200',
+            'active:scale-95'
           )}
           aria-label="Menú de usuario"
         >
-          <Avatar className="h-11 w-11 ring-2 ring-background/50">
+          <Avatar className="ring-background/50 h-11 w-11 ring-2">
             <AvatarImage src={user?.avatar} alt={user?.name} />
-            <AvatarFallback className="text-sm font-semibold bg-primary text-primary-foreground">
+            <AvatarFallback className="bg-primary text-primary-foreground text-sm font-semibold">
               {initials}
             </AvatarFallback>
           </Avatar>
@@ -86,5 +82,4 @@ export function FloatingUserMenu({ user, scrollContainerRef }) {
   );
 }
 
-export { UserMenuDialog } from "./UserMenuDialog";
-
+export { UserMenuDialog } from './UserMenuDialog';

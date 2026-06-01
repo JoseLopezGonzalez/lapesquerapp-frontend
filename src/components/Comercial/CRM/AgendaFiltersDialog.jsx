@@ -4,11 +4,24 @@ import * as React from 'react';
 import { AlertTriangle, Check, ChevronsUpDown, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
 import { cn } from '@/lib/utils';
 import { agendaStatusLabels, getStatusTone } from './utils';
 
@@ -30,7 +43,9 @@ function FilterSection({ label, children }) {
   return (
     <div className="space-y-2.5">
       <div className="flex items-center gap-2">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{label}</p>
+        <p className="text-muted-foreground text-[11px] font-semibold tracking-[0.14em] uppercase">
+          {label}
+        </p>
       </div>
       {children}
     </div>
@@ -80,7 +95,11 @@ export function AgendaFiltersDialog({
                     className="flex-1 justify-between font-normal"
                   >
                     <span className="truncate text-sm">
-                      {selectedOption ? selectedOption.label : <span className="text-muted-foreground">Todos</span>}
+                      {selectedOption ? (
+                        selectedOption.label
+                      ) : (
+                        <span className="text-muted-foreground">Todos</span>
+                      )}
                     </span>
                     <ChevronsUpDown className="size-4 shrink-0 opacity-40" />
                   </Button>
@@ -93,20 +112,36 @@ export function AgendaFiltersDialog({
                       <CommandGroup>
                         <CommandItem
                           value="__all__"
-                          onSelect={() => { onTargetFilterChange(null); setComboOpen(false); }}
+                          onSelect={() => {
+                            onTargetFilterChange(null);
+                            setComboOpen(false);
+                          }}
                         >
-                          <Check className={cn('size-4', targetFilter === null ? 'opacity-100' : 'opacity-0')} />
+                          <Check
+                            className={cn(
+                              'size-4',
+                              targetFilter === null ? 'opacity-100' : 'opacity-0'
+                            )}
+                          />
                           <span className="text-muted-foreground">Todos</span>
                         </CommandItem>
                         {targetOptions.map((option) => (
                           <CommandItem
                             key={option.value}
                             value={option.label}
-                            onSelect={() => { onTargetFilterChange(option.value); setComboOpen(false); }}
+                            onSelect={() => {
+                              onTargetFilterChange(option.value);
+                              setComboOpen(false);
+                            }}
                           >
-                            <Check className={cn('size-4', targetFilter === option.value ? 'opacity-100' : 'opacity-0')} />
+                            <Check
+                              className={cn(
+                                'size-4',
+                                targetFilter === option.value ? 'opacity-100' : 'opacity-0'
+                              )}
+                            />
                             <span>{option.label}</span>
-                            <span className="ml-auto text-xs text-muted-foreground">
+                            <span className="text-muted-foreground ml-auto text-xs">
                               {option.type === 'prospect' ? 'Prospecto' : 'Cliente'}
                             </span>
                           </CommandItem>
@@ -117,7 +152,12 @@ export function AgendaFiltersDialog({
                 </PopoverContent>
               </Popover>
               {targetFilter && (
-                <Button variant="ghost" size="icon" onClick={() => onTargetFilterChange(null)} aria-label="Limpiar">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onTargetFilterChange(null)}
+                  aria-label="Limpiar"
+                >
                   <X className="size-4" />
                 </Button>
               )}
@@ -148,11 +188,11 @@ export function AgendaFiltersDialog({
 
           {/* Estado */}
           <FilterSection label="Estado">
-            <div className="grid grid-cols-2 gap-y-2.5 gap-x-4">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
               {STATUS_OPTIONS.map((status) => (
                 <label
                   key={status}
-                  className="flex cursor-pointer items-center gap-2.5 rounded-lg px-1 py-1 hover:bg-muted/50 transition-colors"
+                  className="hover:bg-muted/50 flex cursor-pointer items-center gap-2.5 rounded-lg px-1 py-1 transition-colors"
                 >
                   <Checkbox
                     checked={statuses.includes(status)}
@@ -175,37 +215,53 @@ export function AgendaFiltersDialog({
               'flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition-all',
               overdueOnly
                 ? 'border-red-300 bg-red-50/60 dark:border-red-800 dark:bg-red-950/20'
-                : 'border-dashed border-muted-foreground/30 hover:border-muted-foreground/50 hover:bg-muted/30'
+                : 'border-muted-foreground/30 hover:border-muted-foreground/50 hover:bg-muted/30 border-dashed'
             )}
           >
-            <div className={cn(
-              'flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors',
-              overdueOnly
-                ? 'bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400'
-                : 'bg-muted text-muted-foreground'
-            )}>
+            <div
+              className={cn(
+                'flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors',
+                overdueOnly
+                  ? 'bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400'
+                  : 'bg-muted text-muted-foreground'
+              )}
+            >
               <AlertTriangle className="size-4" />
             </div>
-            <div className="flex-1 min-w-0">
-              <p className={cn('text-sm font-medium', overdueOnly ? 'text-red-700 dark:text-red-400' : 'text-foreground')}>
+            <div className="min-w-0 flex-1">
+              <p
+                className={cn(
+                  'text-sm font-medium',
+                  overdueOnly ? 'text-red-700 dark:text-red-400' : 'text-foreground'
+                )}
+              >
                 Solo vencidas
               </p>
-              <p className="text-xs text-muted-foreground">Pendientes con fecha ya pasada</p>
+              <p className="text-muted-foreground text-xs">Pendientes con fecha ya pasada</p>
             </div>
-            <div className={cn(
-              'size-4 rounded-full border-2 transition-colors',
-              overdueOnly ? 'border-red-500 bg-red-500' : 'border-muted-foreground/40'
-            )} />
+            <div
+              className={cn(
+                'size-4 rounded-full border-2 transition-colors',
+                overdueOnly ? 'border-red-500 bg-red-500' : 'border-muted-foreground/40'
+              )}
+            />
           </button>
         </div>
 
         <DialogFooter className="gap-2">
           {hasActiveFilters && (
-            <Button variant="ghost" size="sm" className="mr-auto text-muted-foreground" onClick={onClearAll}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground mr-auto"
+              onClick={onClearAll}
+            >
               Limpiar filtros
             </Button>
           )}
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cerrar</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cerrar
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

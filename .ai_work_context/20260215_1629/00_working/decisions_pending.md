@@ -1,6 +1,6 @@
 # Decisiones pendientes
 
-*(Ninguna en este momento.)*
+_(Ninguna en este momento.)_
 
 ---
 

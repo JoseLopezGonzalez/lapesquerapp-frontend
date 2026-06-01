@@ -42,8 +42,12 @@ export function buildOrderReferenceDates() {
 
 export function buildVisibleOrderCategories(orders: OrderListItem[] = []) {
   const { today, tomorrow } = buildOrderReferenceDates();
-  const hasOrdersToday = orders.some((order) => getDateOnly(order.loadDate)?.getTime() === today.getTime());
-  const hasOrdersTomorrow = orders.some((order) => getDateOnly(order.loadDate)?.getTime() === tomorrow.getTime());
+  const hasOrdersToday = orders.some(
+    (order) => getDateOnly(order.loadDate)?.getTime() === today.getTime()
+  );
+  const hasOrdersTomorrow = orders.some(
+    (order) => getDateOnly(order.loadDate)?.getTime() === tomorrow.getTime()
+  );
 
   const result: OrderCategory[] = [{ label: 'Todos', name: 'all' }];
   if (hasOrdersToday) result.push({ label: 'Hoy', name: 'today' });
@@ -88,7 +92,8 @@ export function filterAndSortOrders(
         matchesCategory = activeCategoryName === order.status;
       }
 
-      const isOldFinishedOrder = order.status === 'finished' && loadDateOnly && loadDateOnly < today;
+      const isOldFinishedOrder =
+        order.status === 'finished' && loadDateOnly && loadDateOnly < today;
       return matchesSearch && matchesCategory && !isOldFinishedOrder;
     })
     .sort((left, right) => {

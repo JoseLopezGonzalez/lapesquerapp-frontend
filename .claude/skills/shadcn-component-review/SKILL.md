@@ -1,6 +1,7 @@
 # Skill: shadcn Component Review
 
 ## Categoría
+
 Análisis
 
 ## Cuándo se activa
@@ -137,7 +138,7 @@ export default function Card({ title, content, footer }) { ... }
 
 ## Formato de reporte
 
-```
+````
 ## Auditoría de componente: [NombreComponente]
 
 ### ✅ Correcto
@@ -148,23 +149,27 @@ export default function Card({ title, content, footer }) { ... }
   ```tsx
   // ❌ Actual
   [código actual]
-  
+
   // ✅ Sugerido
   [código corregido]
-  ```
+````
 
 ### 🚨 Issues críticos (deben corregirse)
+
 - **[Categoría]**: [descripción del problema]
+
   ```tsx
   // ❌ Actual
   [código actual]
-  
+
   // ✅ Correcto
   [código corregido]
   ```
 
 ### Puntuación: X/10
+
 [Veredicto en una frase]
+
 ```
 
 ---
@@ -182,6 +187,7 @@ export default function Card({ title, content, footer }) { ... }
 ## Checklist rápido
 
 ```
+
 [ ] ¿Usa data-slot en componentes compound?
 [ ] ¿CVA para variantes en lugar de ternarios de clases?
 [ ] ¿cn() para composición de clases?
@@ -191,6 +197,7 @@ export default function Card({ title, content, footer }) { ... }
 [ ] ¿DialogTitle presente en todos los Dialog?
 [ ] ¿Roles ARIA en elementos interactivos no semánticos?
 [ ] ¿Focus visible funciona con teclado?
+
 ```
 
 ---
@@ -198,3 +205,4 @@ export default function Card({ title, content, footer }) { ... }
 ## Fuente
 
 Basado en [mattbx/shadcn-skills](https://github.com/mattbx/shadcn-skills) · MIT License.
+```

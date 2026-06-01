@@ -1,9 +1,9 @@
-import type { HTMLAttributes } from "react";
+import type { HTMLAttributes } from 'react';
 
-type CheckedState = boolean | "indeterminate";
+type CheckedState = boolean | 'indeterminate';
 
 declare const Checkbox: React.ForwardRefExoticComponent<
-  Omit<HTMLAttributes<HTMLButtonElement>, "onChange"> & {
+  Omit<HTMLAttributes<HTMLButtonElement>, 'onChange'> & {
     checked?: CheckedState;
     defaultChecked?: CheckedState;
     onCheckedChange?: (checked: CheckedState) => void;

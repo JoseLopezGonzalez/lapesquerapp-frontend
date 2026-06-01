@@ -8,30 +8,33 @@
 ## UI States
 
 ### IndividualMode
-| Estado | Descripción | Transición |
-|--------|-------------|------------|
-| Inicial | Sin archivo, sin tipo, panel vacío | Usuario sube PDF → tiene archivo |
-| Con archivo | PdfUpload muestra archivo, Select disponible | Usuario elige tipo documento |
-| Procesando | SparklesLoader visible, botón deshabilitado | processDocument en curso |
-| Éxito | Vista previa del documento procesado (AlbaranCofraWeb / ListadoComprasAsoc / ListadoComprasLonjaDeIsla) | processDocument OK |
-| Error | Toast con mensaje (validación, parsing, Azure) | processDocument falla |
-| Vacío | EmptyState "Procese un documento" | Sin processedDocuments |
+
+| Estado      | Descripción                                                                                             | Transición                       |
+| ----------- | ------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| Inicial     | Sin archivo, sin tipo, panel vacío                                                                      | Usuario sube PDF → tiene archivo |
+| Con archivo | PdfUpload muestra archivo, Select disponible                                                            | Usuario elige tipo documento     |
+| Procesando  | SparklesLoader visible, botón deshabilitado                                                             | processDocument en curso         |
+| Éxito       | Vista previa del documento procesado (AlbaranCofraWeb / ListadoComprasAsoc / ListadoComprasLonjaDeIsla) | processDocument OK               |
+| Error       | Toast con mensaje (validación, parsing, Azure)                                                          | processDocument falla            |
+| Vacío       | EmptyState "Procese un documento"                                                                       | Sin processedDocuments           |
 
 ### MassiveMode
-| Estado | Descripción |
-|--------|-------------|
-| Sin documentos | EmptyState "No hay documentos pendientes" |
-| Pendientes | Lista de PDFs con Select tipo + botón "Procesar Todos" |
-| Procesando | Por documento: status 'processing', spinner |
-| Éxito/Error | Por documento: status 'success' o 'error', mensaje de error si aplica |
-| Con procesados | DocumentList muestra documentos OK; botones "Exportar Excel" y "Enlazar Compras" |
-| ExportDialog abierto | MassiveExportDialog: vista previa por doc, software A3ERP, export |
-| LinkDialog abierto | MassiveLinkPurchasesDialog: enlazar compras a recepciones |
+
+| Estado               | Descripción                                                                      |
+| -------------------- | -------------------------------------------------------------------------------- |
+| Sin documentos       | EmptyState "No hay documentos pendientes"                                        |
+| Pendientes           | Lista de PDFs con Select tipo + botón "Procesar Todos"                           |
+| Procesando           | Por documento: status 'processing', spinner                                      |
+| Éxito/Error          | Por documento: status 'success' o 'error', mensaje de error si aplica            |
+| Con procesados       | DocumentList muestra documentos OK; botones "Exportar Excel" y "Enlazar Compras" |
+| ExportDialog abierto | MassiveExportDialog: vista previa por doc, software A3ERP, export                |
+| LinkDialog abierto   | MassiveLinkPurchasesDialog: enlazar compras a recepciones                        |
 
 ### ListadoComprasLonjaDeIsla (vista documento)
-| Elemento | Estados |
-|----------|---------|
-| Tablas | ventas, peces, vendidurias, cajas, tipoVentas, importeTotal |
+
+| Elemento    | Estados                                                           |
+| ----------- | ----------------------------------------------------------------- |
+| Tablas      | ventas, peces, vendidurias, cajas, tipoVentas, importeTotal       |
 | ExportModal | software, errores, selectedLinks, isValidating, validationResults |
 
 ---

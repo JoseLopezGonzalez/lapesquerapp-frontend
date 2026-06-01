@@ -4,12 +4,12 @@
  */
 
 export function formatDate(dateStr) {
-  if (!dateStr) return "-";
+  if (!dateStr) return '-';
   try {
-    return new Intl.DateTimeFormat("es-ES", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "2-digit",
+    return new Intl.DateTimeFormat('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: '2-digit',
     }).format(new Date(dateStr));
   } catch {
     return String(dateStr);
@@ -17,14 +17,14 @@ export function formatDate(dateStr) {
 }
 
 export function formatDateTime(dateStr) {
-  if (!dateStr) return "-";
+  if (!dateStr) return '-';
   try {
-    return new Intl.DateTimeFormat("es-ES", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
+    return new Intl.DateTimeFormat('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
     }).format(new Date(dateStr));
   } catch {
     return String(dateStr);
@@ -32,15 +32,15 @@ export function formatDateTime(dateStr) {
 }
 
 export function formatDateTimeFull(dateStr) {
-  if (!dateStr) return "-";
+  if (!dateStr) return '-';
   try {
-    return new Intl.DateTimeFormat("es-ES", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
+    return new Intl.DateTimeFormat('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
     }).format(new Date(dateStr));
   } catch {
     return String(dateStr);
@@ -48,12 +48,12 @@ export function formatDateTimeFull(dateStr) {
 }
 
 export function formatRelative(dateStr) {
-  if (!dateStr) return "";
+  if (!dateStr) return '';
   try {
     const date = new Date(dateStr);
     const diff = Date.now() - date;
     const mins = Math.floor(diff / 60000);
-    if (mins < 1) return "ahora";
+    if (mins < 1) return 'ahora';
     if (mins < 60) return `hace ${mins}m`;
     const hours = Math.floor(mins / 60);
     if (hours < 24) return `hace ${hours}h`;
@@ -61,7 +61,7 @@ export function formatRelative(dateStr) {
     if (days < 30) return `hace ${days}d`;
     return formatDate(dateStr);
   } catch {
-    return "";
+    return '';
   }
 }
 
@@ -69,7 +69,7 @@ export function formatRelative(dateStr) {
  * Formato legible de duración en segundos: "Xs", "Xm Ys", "Xh Ym Zs"
  */
 export function formatDurationSeconds(seconds) {
-  if (seconds == null || seconds < 0) return "-";
+  if (seconds == null || seconds < 0) return '-';
   if (seconds < 60) return `${Math.round(seconds)}s`;
   const m = Math.floor(seconds / 60);
   const s = Math.round(seconds % 60);

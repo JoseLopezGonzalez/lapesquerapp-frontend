@@ -19,7 +19,10 @@ vi.mock('@/services/generic/editEntityService', () => ({
 }));
 
 import { fetchEntitiesGeneric, deleteEntityGeneric } from '@/services/generic/entityService';
-import { fetchEntityDataGeneric, fetchAutocompleteOptionsGeneric } from '@/services/generic/editEntityService';
+import {
+  fetchEntityDataGeneric,
+  fetchAutocompleteOptionsGeneric,
+} from '@/services/generic/editEntityService';
 
 describe('supplierService', () => {
   const mockListResponse = {
@@ -67,7 +70,10 @@ describe('supplierService', () => {
   });
 
   it('delete calls deleteEntityGeneric', async () => {
-    vi.mocked(deleteEntityGeneric).mockResolvedValueOnce({ response: {} as Response, data: {} } as never);
+    vi.mocked(deleteEntityGeneric).mockResolvedValueOnce({
+      response: {} as Response,
+      data: {},
+    } as never);
     await supplierService.delete(1);
     expect(deleteEntityGeneric).toHaveBeenCalledWith(
       expect.stringContaining('/suppliers/1'),

@@ -1,8 +1,8 @@
-'use client'
+'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import EditReceptionForm from "@/components/Admin/RawMaterialReceptions/EditReceptionForm";
-import { Card, CardContent } from "@/components/ui/card";
+import EditReceptionForm from '@/components/Admin/RawMaterialReceptions/EditReceptionForm';
+import { Card, CardContent } from '@/components/ui/card';
 
 export default function EditReceptionPage() {
   const params = useParams();
@@ -14,11 +14,10 @@ export default function EditReceptionPage() {
   };
 
   return (
-    <Card className='w-full h-full p-6'>
-      <CardContent className='overflow-y-auto h-full'>
+    <Card className="h-full w-full p-6">
+      <CardContent className="h-full overflow-y-auto">
         <EditReceptionForm receptionId={receptionId} onSuccess={handleOnUpdate} />
       </CardContent>
     </Card>
   );
 }
-

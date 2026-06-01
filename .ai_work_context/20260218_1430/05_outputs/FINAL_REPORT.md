@@ -22,23 +22,23 @@ Se ha aplicado el protocolo de memoria de trabajo (PROTOCOLO_PARA_CHAT.md) y se 
 
 ## Deliverables
 
-| Ubicación | Descripción |
-|-----------|-------------|
-| `src/components/CmrManual/cmr.types.js` | JSDoc CmrData y defaultCmrData (campos 1–24). |
-| `src/components/CmrManual/cmr.copy-config.js` | Configuración de las 4 copias (copyType, header, color). |
-| `src/components/CmrManual/cmr-print.css` | Estilos A4, .cmr-page, rejilla, @page, @media print, page-break-after. |
-| `src/components/CmrManual/CmrCopy.jsx` | Una página A4 reutilizable; encabezado y rejilla 1–24; --cmr-color. |
-| `src/components/CmrManual/CmrForm.jsx` | Formulario controlado por secciones (1–4, 5–9, 11–14, 16–21, 22–24). |
-| `src/components/CmrManual/CmrPreview.jsx` | Contenedor con id="cmr-print-area"; renderiza 4× CmrCopy. |
-| `src/components/CmrManual/CmrManualEditor.jsx` | Layout editor: formulario + preview + botón Imprimir; estado y usePrintElement. |
-| `src/app/admin/cmr-manual/page.js` | Página Next.js que renderiza CmrManualEditor. |
-| `src/configs/navgationConfig.js` | Entrada "CMR Manual" en navigationManagerConfig. |
-| `.ai_work_context/20260218_1430/01_analysis/` | Análisis (referencia). |
-| `.ai_work_context/20260218_1430/02_planning/` | Plan (referencia). |
-| `.ai_work_context/20260218_1430/03_execution/execution_log.md` | Log de implementación por fases. |
-| `.ai_work_context/20260218_1430/04_logs/execution_timeline.md` | Timeline de la sesión. |
-| `.ai_work_context/20260218_1430/04_logs/errors_and_solutions.md` | Errores y soluciones (vacío). |
-| `.ai_work_context/20260218_1430/05_outputs/FINAL_REPORT.md` | Este informe. |
+| Ubicación                                                        | Descripción                                                                     |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `src/components/CmrManual/cmr.types.js`                          | JSDoc CmrData y defaultCmrData (campos 1–24).                                   |
+| `src/components/CmrManual/cmr.copy-config.js`                    | Configuración de las 4 copias (copyType, header, color).                        |
+| `src/components/CmrManual/cmr-print.css`                         | Estilos A4, .cmr-page, rejilla, @page, @media print, page-break-after.          |
+| `src/components/CmrManual/CmrCopy.jsx`                           | Una página A4 reutilizable; encabezado y rejilla 1–24; --cmr-color.             |
+| `src/components/CmrManual/CmrForm.jsx`                           | Formulario controlado por secciones (1–4, 5–9, 11–14, 16–21, 22–24).            |
+| `src/components/CmrManual/CmrPreview.jsx`                        | Contenedor con id="cmr-print-area"; renderiza 4× CmrCopy.                       |
+| `src/components/CmrManual/CmrManualEditor.jsx`                   | Layout editor: formulario + preview + botón Imprimir; estado y usePrintElement. |
+| `src/app/admin/cmr-manual/page.js`                               | Página Next.js que renderiza CmrManualEditor.                                   |
+| `src/configs/navgationConfig.js`                                 | Entrada "CMR Manual" en navigationManagerConfig.                                |
+| `.ai_work_context/20260218_1430/01_analysis/`                    | Análisis (referencia).                                                          |
+| `.ai_work_context/20260218_1430/02_planning/`                    | Plan (referencia).                                                              |
+| `.ai_work_context/20260218_1430/03_execution/execution_log.md`   | Log de implementación por fases.                                                |
+| `.ai_work_context/20260218_1430/04_logs/execution_timeline.md`   | Timeline de la sesión.                                                          |
+| `.ai_work_context/20260218_1430/04_logs/errors_and_solutions.md` | Errores y soluciones (vacío).                                                   |
+| `.ai_work_context/20260218_1430/05_outputs/FINAL_REPORT.md`      | Este informe.                                                                   |
 
 ---
 

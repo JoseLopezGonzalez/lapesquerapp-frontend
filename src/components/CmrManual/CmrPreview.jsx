@@ -34,7 +34,10 @@ export default function CmrPreview({ data }) {
   }, []);
 
   return (
-    <div ref={containerRef} className="w-full h-full min-h-0 overflow-auto flex justify-center items-start">
+    <div
+      ref={containerRef}
+      className="flex h-full min-h-0 w-full items-start justify-center overflow-auto"
+    >
       <div
         className="cmr-preview-scaled"
         style={{

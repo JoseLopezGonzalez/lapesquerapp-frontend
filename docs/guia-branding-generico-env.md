@@ -14,11 +14,11 @@
 
 ### Componentes principales
 
-| Elemento | Detalle |
-|----------|---------|
-| **Módulo de config** | `src/configs/branding.js` — lee `NEXT_PUBLIC_APP_BRANDING` y exporta todas las constantes de branding. |
-| **Variables de entorno** | `NEXT_PUBLIC_APP_BRANDING` = `generic` \| `pesquerapp`. |
-| **Dónde se consumen** | Layout (`src/app/layout.js`), config API (`src/configs/config.js`), componentes de login (LoginFormMobile, LoginFormDesktop, LoginFormContent, LoginWelcomeStep), landing (`src/components/LandingPage/index.js`), PWA (InstallPromptBanner, InstallGuideIOS), hooks (useLoginTenant), página raíz (`src/app/page.js`), Navbar, manifest (API route). |
+| Elemento                 | Detalle                                                                                                                                                                                                                                                                                                                                               |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Módulo de config**     | `src/configs/branding.js` — lee `NEXT_PUBLIC_APP_BRANDING` y exporta todas las constantes de branding.                                                                                                                                                                                                                                                |
+| **Variables de entorno** | `NEXT_PUBLIC_APP_BRANDING` = `generic` \| `pesquerapp`.                                                                                                                                                                                                                                                                                               |
+| **Dónde se consumen**    | Layout (`src/app/layout.js`), config API (`src/configs/config.js`), componentes de login (LoginFormMobile, LoginFormDesktop, LoginFormContent, LoginWelcomeStep), landing (`src/components/LandingPage/index.js`), PWA (InstallPromptBanner, InstallGuideIOS), hooks (useLoginTenant), página raíz (`src/app/page.js`), Navbar, manifest (API route). |
 
 ### Comportamiento por modo
 
@@ -71,13 +71,13 @@
 - **Modo La PesquerApp**: favicon, apple touch, og-image, iconos PWA y **splash screens iOS** están en **`public/pesquerapp/`** (`public/pesquerapp/icons/` para 192 y 512, `public/pesquerapp/splash/` para los PNG de splash). Las rutas usadas son `/pesquerapp/...`; el layout solo enlaza los splash cuando hay `splashBasePath` (modo pesquerapp). En modo genérico no se enlazan splash específicos; el fallback usa `appleTouchIconPath`.
 - **Modo genérico**: el layout y el manifest usan rutas en la raíz de `public/` con sufijo `-generic`. Hay que **crear y colocar** estos archivos en `public/` (y en `public/icons/` cuando aplique):
 
-| Archivo | Uso | Recomendación |
-|---------|-----|----------------|
-| `favicon-generic.ico` | Pestaña del navegador | 16×16 o 32×32, neutro |
-| `apple-touch-icon-generic.png` | iOS / PWA apple touch | 180×180 px |
-| `og-image-generic.png` | Open Graph / redes | 1200×630 px |
-| `icons/icon-192x192-generic.png` | PWA Android/Chrome | 192×192 px |
-| `icons/icon-512x512-generic.png` | PWA Android/Chrome | 512×512 px |
+| Archivo                          | Uso                   | Recomendación         |
+| -------------------------------- | --------------------- | --------------------- |
+| `favicon-generic.ico`            | Pestaña del navegador | 16×16 o 32×32, neutro |
+| `apple-touch-icon-generic.png`   | iOS / PWA apple touch | 180×180 px            |
+| `og-image-generic.png`           | Open Graph / redes    | 1200×630 px           |
+| `icons/icon-192x192-generic.png` | PWA Android/Chrome    | 192×192 px            |
+| `icons/icon-512x512-generic.png` | PWA Android/Chrome    | 512×512 px            |
 
 El proyecto incluye **placeholders** en `public/` con las dimensiones correctas (32×32 favicon, 180×180 apple-touch, 192×192 y 512×512 para PWA) para evitar 404 y el error del manifest "Resource size is not correct". Para regenerarlos: `npm run generate-generic-icons` (usa `scripts/generate-generic-icons.js` y devDependency `pngjs`). Puedes sustituir los PNG por iconos definitivos. En genérico el favicon usa `.png` (no `.ico`). Los splash screens de iOS en el layout siguen en `/splash/` (compartidos); el fallback de splash usa `appleTouchIconPath`.
 
@@ -91,13 +91,13 @@ El proyecto incluye **placeholders** en `public/` con las dimensiones correctas 
 **Deploy generic: qué hacer exactamente (ej. Vercel en brisamar.congeladosbrisamar.es)**  
 En el proyecto de Vercel que sirve la URL generic, en **Settings → Environment Variables** definir:
 
-| Variable | Valor | Notas |
-|----------|--------|--------|
-| `NEXT_PUBLIC_APP_BRANDING` | `generic` | Obligatorio para modo generic. |
-| `NEXT_PUBLIC_APP_GENERIC_BASE_DOMAIN` | `congeladosbrisamar.es` | Para que ese host se trate como tenant "brisamar" y se muestre login (sin esto se ve página en blanco). |
-| `NEXTAUTH_URL` | `https://brisamar.congeladosbrisamar.es` | URL pública del front, sin barra final. Evita 500 en `/api/auth/session`. |
-| `NEXTAUTH_SECRET` | *(valor secreto)* | Ej. `openssl rand -base64 32`. Obligatorio en producción. |
-| `NEXT_PUBLIC_API_URL` (o `NEXT_PUBLIC_API_BASE_URL`) | URL del backend para ese tenant | Sin esto la app no puede llamar al API. |
+| Variable                                             | Valor                                    | Notas                                                                                                   |
+| ---------------------------------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_APP_BRANDING`                           | `generic`                                | Obligatorio para modo generic.                                                                          |
+| `NEXT_PUBLIC_APP_GENERIC_BASE_DOMAIN`                | `congeladosbrisamar.es`                  | Para que ese host se trate como tenant "brisamar" y se muestre login (sin esto se ve página en blanco). |
+| `NEXTAUTH_URL`                                       | `https://brisamar.congeladosbrisamar.es` | URL pública del front, sin barra final. Evita 500 en `/api/auth/session`.                               |
+| `NEXTAUTH_SECRET`                                    | _(valor secreto)_                        | Ej. `openssl rand -base64 32`. Obligatorio en producción.                                               |
+| `NEXT_PUBLIC_API_URL` (o `NEXT_PUBLIC_API_BASE_URL`) | URL del backend para ese tenant          | Sin esto la app no puede llamar al API.                                                                 |
 
 Después de guardar las variables, hacer **Redeploy** del último deployment para que el build use los nuevos valores. Tras el deploy, al entrar en `https://brisamar.congeladosbrisamar.es` debe mostrarse la pantalla de login y el tenant enviado al API será `brisamar`.
 

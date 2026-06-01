@@ -1,6 +1,7 @@
 # GAP-007 — Partir entitiesConfig.js en módulos por dominio de negocio
 
 ## Metadata
+
 - **Tipo:** Refactor
 - **Módulo:** Global
 - **Prioridad:** Baja
@@ -15,6 +16,7 @@
 `src/configs/entitiesConfig.js` tiene 121 KB y contiene la configuración CRUD declarativa de todas las entidades del admin en un único archivo monolítico. Incluye configuración de filtros, columnas, rutas, botones, endpoints y opciones de paginación para más de 30 entidades.
 
 El problema:
+
 1. Es imposible de revisar en una PR — cualquier cambio en una entidad implica abrir un archivo de 121 KB
 2. Los conflictos de merge son frecuentes cuando dos devs tocan entidades distintas del mismo archivo
 3. TypeScript no puede inferir bien los tipos en un JS de este tamaño
@@ -27,6 +29,7 @@ Este es un GAP de **baja prioridad** porque el archivo funciona bien y la refact
 Partir `entitiesConfig.js` en archivos por módulo de dominio, que se ensamblan en un `index.js` (o `index.ts` si se migra todo) que expone el mismo objeto `configs` que existe hoy.
 
 Estructura propuesta:
+
 ```
 src/configs/entities/
 ├── index.ts                    ← exporta { configs } ensamblando todos los módulos
@@ -48,6 +51,7 @@ src/configs/entities/
 El mismo patrón se usa en `roleConfig.ts` (pequeño, bien tipado) como ejemplo de cómo debería verse una configuración de dominio. El objetivo es que cada archivo de módulo tenga la calidad y legibilidad de `roleConfig.ts`.
 
 ## Criterios de aceptación
+
 - [ ] El objeto `configs` exportado desde `entitiesConfig.js` es idéntico al original (mismas keys, mismos valores)
 - [ ] Todos los CRUDs del admin funcionan igual que antes (ninguna entidad se rompe)
 - [ ] `npm run build` pasa sin errores
@@ -57,11 +61,13 @@ El mismo patrón se usa en `roleConfig.ts` (pequeño, bien tipado) como ejemplo 
 - [ ] `entitiesConfig.js` original reexporta desde el nuevo `index.ts` para compatibilidad
 
 ## Archivos a crear o modificar
+
 - `src/configs/entities/` — directorio nuevo con archivos por dominio
 - `src/configs/entities/index.ts` — ensamblador de todos los módulos
 - `src/configs/entitiesConfig.js` — reemplazar contenido por reexportación del nuevo index
 
 ## Restricciones
+
 - ⚠️ **ZONA PROTEGIDA — confirmar con Jose antes de empezar la implementación**, aunque el GAP esté en `open/`
 - La API pública no cambia: `import { configs } from '@/configs/entitiesConfig'` sigue funcionando igual
 - No cambiar ningún valor de configuración durante la refactorización — solo reorganizar
@@ -72,16 +78,21 @@ El mismo patrón se usa en `roleConfig.ts` (pequeño, bien tipado) como ejemplo 
 ---
 
 ## Implementación
+
 > Rellena el Agente Implementador
 
 ### Archivos creados
+
 ### Archivos modificados
+
 ### Decisiones tomadas durante la implementación
+
 ### Desviaciones del plan (si las hay)
 
 ---
 
 ## Auditoría
+
 > Rellena el Agente Auditor
 
 ### Resultado: ✅ APROBADO | ⚠️ APROBADO CON OBSERVACIONES | ❌ RECHAZADO
@@ -89,6 +100,7 @@ El mismo patrón se usa en `roleConfig.ts` (pequeño, bien tipado) como ejemplo 
 ### Puntuación: [X/10]
 
 ### Checklist
+
 - [ ] Criterios de aceptación cumplidos
 - [ ] Sin fetch() directo
 - [ ] Sin hardcode de tenant
@@ -100,4 +112,5 @@ El mismo patrón se usa en `roleConfig.ts` (pequeño, bien tipado) como ejemplo 
 - [ ] Nomenclatura correcta
 
 ### Observaciones para Jose
+
 ### Estado final de la implementación

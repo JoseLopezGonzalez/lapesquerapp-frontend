@@ -179,7 +179,12 @@ export function useMyEntityList(
   const { filters = {}, page = 1, perPage = 15, enabled = true } = params;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
-  const { data: response, isLoading, error, refetch } = useQuery({
+  const {
+    data: response,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: myEntityListKeys.list(tenantId, filters as Record<string, unknown>, page, perPage),
     queryFn: () => myEntityService.list(filters, { page, perPage }),
     enabled: !!tenantId && enabled,
@@ -224,7 +229,7 @@ export function useMyEntityList(
 // src/configs/roleConfig.ts — añadir la nueva ruta
 export const roleConfig: Record<string, RoleKey[]> = {
   // ... rutas existentes ...
-  "/admin/my-entities": ["administrador", "direccion", "tecnico"],
+  '/admin/my-entities': ['administrador', 'direccion', 'tecnico'],
 };
 ```
 

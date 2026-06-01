@@ -6,25 +6,25 @@ SaaS multi-tenant ERP para el sector pesquero y de congelados. Cubre módulos de
 
 ## Stack
 
-| Tecnología | Versión | Rol |
-|---|---|---|
-| Next.js | 16.0.7 | Framework (App Router) |
-| React | 19.0.0-rc canary | UI — **BLOQUEADO: no actualizar** |
-| TypeScript | 5.9.3 · strict: true | Tipado |
-| Tailwind CSS | 4.2.1 | Estilos |
-| shadcn/ui + Radix UI | — | Componentes UI (52 primitivos en `src/components/ui/`) |
-| TanStack Query | 5.90.21 | Data fetching y caché de servidor |
-| TanStack Table | 8.21.3 | Tablas de datos |
-| React Hook Form | 7.54.2 | Estado de formularios |
-| Zod | 3.25.76 | Validación y schemas |
-| NextAuth | 4.24.13 | Autenticación JWT |
-| Sonner | 2.0.7 | Notificaciones toast (via `notify`) |
-| Vitest | 4.0.18 + Testing Library 16 | Tests |
-| Prettier | 3.x + prettier-plugin-tailwindcss | Formateo |
-| Mapbox GL | 3.20.0 | Mapas |
-| Recharts | 2.15.4 | Gráficos |
-| Framer Motion | 11.18.2 | Animaciones (solo puntuales, no en pantallas operativas) |
-| @ai-sdk/openai | 3.0.12 | Integración IA (extracción de documentos de lonja) |
+| Tecnología           | Versión                           | Rol                                                      |
+| -------------------- | --------------------------------- | -------------------------------------------------------- |
+| Next.js              | 16.0.7                            | Framework (App Router)                                   |
+| React                | 19.0.0-rc canary                  | UI — **BLOQUEADO: no actualizar**                        |
+| TypeScript           | 5.9.3 · strict: true              | Tipado                                                   |
+| Tailwind CSS         | 4.2.1                             | Estilos                                                  |
+| shadcn/ui + Radix UI | —                                 | Componentes UI (52 primitivos en `src/components/ui/`)   |
+| TanStack Query       | 5.90.21                           | Data fetching y caché de servidor                        |
+| TanStack Table       | 8.21.3                            | Tablas de datos                                          |
+| React Hook Form      | 7.54.2                            | Estado de formularios                                    |
+| Zod                  | 3.25.76                           | Validación y schemas                                     |
+| NextAuth             | 4.24.13                           | Autenticación JWT                                        |
+| Sonner               | 2.0.7                             | Notificaciones toast (via `notify`)                      |
+| Vitest               | 4.0.18 + Testing Library 16       | Tests                                                    |
+| Prettier             | 3.x + prettier-plugin-tailwindcss | Formateo                                                 |
+| Mapbox GL            | 3.20.0                            | Mapas                                                    |
+| Recharts             | 2.15.4                            | Gráficos                                                 |
+| Framer Motion        | 11.18.2                           | Animaciones (solo puntuales, no en pantallas operativas) |
+| @ai-sdk/openai       | 3.0.12                            | Integración IA (extracción de documentos de lonja)       |
 
 > **⚠️ React 19-rc canary:** Versión bloqueada — no actualizar ni hacer downgrade sin decisión explícita del dev.
 > Tratar como React 18 a efectos de patrones de código: no usar features experimentales exclusivas de React 19.
@@ -135,18 +135,18 @@ Todo código nuevo es `.ts` o `.tsx`. Si tocas un `.js` legacy por cualquier mot
 
 ## Módulos del dominio
 
-| Módulo | Entidades principales | Estado |
-|---|---|---|
-| Ventas / Pedidos | `orders`, `customers`, `salespeople`, `payment-terms`, `incoterms` | Activo — gestor operacional complejo |
-| Stock / Almacén | `pallets`, `boxes`, `lots`, `stores` | Activo — operativa warehouse |
-| Etiquetas | `labelEditor` | Activo — editor visual propio |
-| Catálogos de sector | `species`, `fishing-gears`, `capture-zones`, `countries` | Activo — EntityClient |
-| CRM | `customers`, `prospects`, `interactions`, agenda | **En progreso** — agenda pendiente |
-| Proveedores | `suppliers`, `supplier-liquidations` | Activo |
-| Maquiladores / Producción | `productions`, `raw-material-receptions` | Activo |
-| Repartidores | `field-operators`, `cebo-dispatches` | Activo — mobile-first |
-| Administración | `users`, `roles`, `employees`, `taxes`, `transports` | Activo — EntityClient |
-| IA / Extracción | MarketDataExtractor (documentos lonja) | Activo — Azure + OpenAI |
+| Módulo                    | Entidades principales                                              | Estado                               |
+| ------------------------- | ------------------------------------------------------------------ | ------------------------------------ |
+| Ventas / Pedidos          | `orders`, `customers`, `salespeople`, `payment-terms`, `incoterms` | Activo — gestor operacional complejo |
+| Stock / Almacén           | `pallets`, `boxes`, `lots`, `stores`                               | Activo — operativa warehouse         |
+| Etiquetas                 | `labelEditor`                                                      | Activo — editor visual propio        |
+| Catálogos de sector       | `species`, `fishing-gears`, `capture-zones`, `countries`           | Activo — EntityClient                |
+| CRM                       | `customers`, `prospects`, `interactions`, agenda                   | **En progreso** — agenda pendiente   |
+| Proveedores               | `suppliers`, `supplier-liquidations`                               | Activo                               |
+| Maquiladores / Producción | `productions`, `raw-material-receptions`                           | Activo                               |
+| Repartidores              | `field-operators`, `cebo-dispatches`                               | Activo — mobile-first                |
+| Administración            | `users`, `roles`, `employees`, `taxes`, `transports`               | Activo — EntityClient                |
+| IA / Extracción           | MarketDataExtractor (documentos lonja)                             | Activo — Azure + OpenAI              |
 
 ---
 
@@ -165,14 +165,14 @@ npm run test:run     # Vitest una ejecución (para CI)
 
 ## Archivos protegidos — detener y preguntar antes de tocar
 
-| Archivo | Razón | Acción requerida |
-|---|---|---|
-| `src/configs/entitiesConfig.js` | 121 KB · monolito · afecta a **todas** las entidades del admin | **Detener y preguntar al dev antes de cualquier cambio** |
-| `src/hooks/useOrder.js` (~40 KB) | Hook gigante — no añadir lógica aquí | Crear sub-hook en `src/hooks/orders/useOrderXxx.ts` |
-| `src/hooks/usePallet.js` (~48 KB) | Hook gigante — no añadir lógica aquí | Crear sub-hook en `src/hooks/pallets/usePalletXxx.ts` |
-| `src/hooks/useLabelEditor.ts` (~52 KB) | Hook gigante — no añadir lógica aquí | Crear sub-hook en `src/hooks/labels/useLabelXxx.ts` |
-| `src/middleware.ts` | Auth + tenant + RBAC crítico | Revisar impacto en todos los roles antes de modificar |
-| `src/lib/fetchWithTenant.js` | Único punto HTTP — un cambio aquí afecta a toda la aplicación | Solo con revisión explícita del dev |
+| Archivo                                | Razón                                                          | Acción requerida                                         |
+| -------------------------------------- | -------------------------------------------------------------- | -------------------------------------------------------- |
+| `src/configs/entitiesConfig.js`        | 121 KB · monolito · afecta a **todas** las entidades del admin | **Detener y preguntar al dev antes de cualquier cambio** |
+| `src/hooks/useOrder.js` (~40 KB)       | Hook gigante — no añadir lógica aquí                           | Crear sub-hook en `src/hooks/orders/useOrderXxx.ts`      |
+| `src/hooks/usePallet.js` (~48 KB)      | Hook gigante — no añadir lógica aquí                           | Crear sub-hook en `src/hooks/pallets/usePalletXxx.ts`    |
+| `src/hooks/useLabelEditor.ts` (~52 KB) | Hook gigante — no añadir lógica aquí                           | Crear sub-hook en `src/hooks/labels/useLabelXxx.ts`      |
+| `src/middleware.ts`                    | Auth + tenant + RBAC crítico                                   | Revisar impacto en todos los roles antes de modificar    |
+| `src/lib/fetchWithTenant.js`           | Único punto HTTP — un cambio aquí afecta a toda la aplicación  | Solo con revisión explícita del dev                      |
 
 ---
 
@@ -192,6 +192,7 @@ npm run test:run     # Vitest una ejecución (para CI)
 ## Claude Code workflow
 
 Antes de modificar archivos:
+
 1. Inspeccionar los archivos relevantes.
 2. Explicar qué se entendió.
 3. Listar los archivos que pueden cambiar.
@@ -199,6 +200,7 @@ Antes de modificar archivos:
 5. Pedir aprobación si el cambio es amplio, arriesgado o arquitectónico.
 
 Después de modificar:
+
 1. Resumir los archivos cambiados.
 2. Explicar por qué se hizo cada cambio.
 3. Sugerir tests o comandos a ejecutar.

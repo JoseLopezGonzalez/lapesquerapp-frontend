@@ -10,14 +10,14 @@
 
 ## Prioridades por entidad
 
-| Entidad | P0 | P1 | P2 |
-|---------|----|----|-----|
-| useDashboardCharts | — | Migrar a TS | — |
-| useOrdersStats | — | Migrar a TS | — |
-| useStockStats | — | Migrar a TS | — |
-| getReceptionChartData | — | Migrar a TS | Tests |
-| getDispatchChartData | — | Migrar a TS | Tests |
-| Hooks useDashboardCharts/useOrdersStats | — | — | Tests unitarios |
+| Entidad                                 | P0  | P1          | P2              |
+| --------------------------------------- | --- | ----------- | --------------- |
+| useDashboardCharts                      | —   | Migrar a TS | —               |
+| useOrdersStats                          | —   | Migrar a TS | —               |
+| useStockStats                           | —   | Migrar a TS | —               |
+| getReceptionChartData                   | —   | Migrar a TS | Tests           |
+| getDispatchChartData                    | —   | Migrar a TS | Tests           |
+| Hooks useDashboardCharts/useOrdersStats | —   | —           | Tests unitarios |
 
 ## Technical Debt
 

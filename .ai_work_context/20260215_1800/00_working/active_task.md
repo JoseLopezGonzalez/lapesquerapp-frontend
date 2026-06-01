@@ -4,9 +4,11 @@
 **Estado**: Preparación
 
 ## Tarea
+
 Abordar bloque **Configuración por tenant** del CORE.
 
 ## Fase actual
+
 - [x] Estructura de sesión creada
 - [x] Estado de bloques CORE documentado
 - [x] Usuario eligió: Configuración por tenant
@@ -16,4 +18,5 @@ Abordar bloque **Configuración por tenant** del CORE.
 - [ ] STEP 1: Análisis con rating
 
 ## Próximo paso
+
 STEP 1: Análisis completo con **Rating antes** y oportunidades de mejora

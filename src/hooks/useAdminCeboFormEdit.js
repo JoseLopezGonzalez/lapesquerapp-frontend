@@ -105,11 +105,7 @@ export function useAdminCeboFormEdit({ dispatchId, onSuccess }) {
   }, [currentDetails, recalcKey]);
 
   useEffect(() => {
-    if (
-      calculatedNetWeights.length > 0 &&
-      currentDetails &&
-      Array.isArray(currentDetails)
-    ) {
+    if (calculatedNetWeights.length > 0 && currentDetails && Array.isArray(currentDetails)) {
       calculatedNetWeights.forEach((netWeight, index) => {
         if (index < currentDetails.length) {
           const calculatedWeight = parseFloat(netWeight.toFixed(2));
@@ -239,7 +235,9 @@ export function useAdminCeboFormEdit({ dispatchId, onSuccess }) {
         const detailsForCebo = transformedDetails.map(({ product, netWeight, price }) => ({
           product,
           netWeight,
-          ...(price != null && price !== '' && !Number.isNaN(parseFloat(price)) && { price: parseFloat(price) }),
+          ...(price != null &&
+            price !== '' &&
+            !Number.isNaN(parseFloat(price)) && { price: parseFloat(price) }),
         }));
 
         const payload = {
@@ -266,7 +264,10 @@ export function useAdminCeboFormEdit({ dispatchId, onSuccess }) {
           onSuccess(updated);
         }
       } catch (error) {
-        const message = error?.message || error?.response?.data?.message || 'No se pudo actualizar la salida de cebo';
+        const message =
+          error?.message ||
+          error?.response?.data?.message ||
+          'No se pudo actualizar la salida de cebo';
         notify.error({ title: 'Error al actualizar la salida de cebo', description: message });
       }
     },

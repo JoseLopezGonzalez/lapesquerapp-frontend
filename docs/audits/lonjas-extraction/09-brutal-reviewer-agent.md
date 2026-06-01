@@ -1,4 +1,5 @@
 # Auditoría: Brutal Reviewer Agent
+
 # Bloque: MarketDataExtractor — Extracción de datos de documentos de lonjas
 
 **Fecha:** 2026-04-26
@@ -16,6 +17,7 @@ const apiKey = process.env.NEXT_PUBLIC_AZURE_DOCUMENT_AI_KEY;
 ```
 
 Esto no es un riesgo teórico. Cualquier usuario que abra las herramientas de desarrollador del navegador puede ver la API key de Azure Document AI de la empresa en el código fuente. Con esa key puede:
+
 - Llamar a Azure Document AI en nombre de la empresa
 - Consumir créditos de Azure sin límite
 - Extraer documentos arbitrarios contra el modelo entrenado de la empresa
@@ -68,10 +70,8 @@ El resultado práctico: para trabajar en cualquiera de los tres parsers, hay que
 ```javascript
 // lonjaDeIslaExportHelper.js:37-40
 export function isLonjaDeIslaSubastaDocument(document) {
-    const tipoVentas = document?.tables?.tipoVentas || [];
-    return tipoVentas.some((row) =>
-        normalizeText(row?.descripcion || '').includes('cinta')
-    );
+  const tipoVentas = document?.tables?.tipoVentas || [];
+  return tipoVentas.some((row) => normalizeText(row?.descripcion || '').includes('cinta'));
 }
 ```
 
@@ -85,6 +85,7 @@ const generateExcelForA3erp = async () => { ... }
 ```
 
 Hay un `cofraExportHelper.js`. La lógica de exportación a A3ERP debería estar ahí. En cambio, 150 líneas de lógica de generación Excel viven en el componente UI. Esto hace que:
+
 - Sea imposible testear la lógica de exportación sin renderizar el componente
 - La misma lógica tenga dos ubicaciones posibles dependiendo del contexto
 - Un cambio en la estructura de filas A3ERP requiere buscar en dos sitios
@@ -105,6 +106,7 @@ La key de lookup en el mapa de validación depende de transformar el formato de 
 ### 3.1 Los catálogos estáticos `exportData.js` no deberían existir en el frontend
 
 Los archivos `exportData.js` contienen CIFs, códigos A3ERP, matrículas de barcos, nombres de armadores — datos maestros del negocio. Estos datos:
+
 - Cambian cuando se añade un nuevo barco o armador a la flota
 - Son dependientes del tenant (Brisamar tiene sus barcos, otro cliente tendría los suyos)
 - Deben ser consistentes con los datos del backend
@@ -120,13 +122,14 @@ El archivo `ListadoComprasLonjaDeIsla/exportData.js` con 200+ barcos es la manif
 ```javascript
 // azure/index.js:74-114
 do {
-    attempts += 1;
-    await sleep(defaultPollingDelay);
-    // ...
+  attempts += 1;
+  await sleep(defaultPollingDelay);
+  // ...
 } while (status === 'running' || status === 'notStarted');
 ```
 
 Este loop tiene:
+
 - Delay fijo de 5 segundos (no exponential backoff)
 - Rate limit handling basado en regex sobre mensajes de error
 - Sin AbortController
@@ -140,7 +143,7 @@ Azure Document AI SDK tiene un cliente oficial en JavaScript (`@azure/ai-form-re
 ```javascript
 // common.js:70-96
 if (declaredImporte === 0 && computedImporte > 0) {
-    return computedImporte;
+  return computedImporte;
 }
 return declaredImporte;
 ```
@@ -153,14 +156,14 @@ Este es un workaround para un fallo de OCR. El problema correcto a resolver es m
 
 ## 4. Qué debería eliminarse o reducirse
 
-| Elemento | Por qué | Alternativa |
-|---|---|---|
-| `NEXT_PUBLIC_AZURE_DOCUMENT_AI_KEY` | API key pública es inaceptable | API Route server-side |
-| `exportData.js` × 3 | Datos de backend en el frontend | Endpoint `/api/v2/barcos/export-data` |
-| `common.js:parseDecimalValue` | Duplicado de `BaseParser` con semántica diferente | Un solo helper con parámetro `silent: boolean` |
-| `generateExcelForA3erp` en ExportModal | Lógica de negocio en componente UI | Mover a `cofraExportHelper.js` |
-| Polling manual de Azure | Más frágil que el SDK oficial | Usar `@azure/ai-form-recognizer` SDK |
-| Opciones "Facilcom" y "Otros" en Select | No implementadas, confunden al usuario | Eliminar hasta implementar |
+| Elemento                                | Por qué                                           | Alternativa                                    |
+| --------------------------------------- | ------------------------------------------------- | ---------------------------------------------- |
+| `NEXT_PUBLIC_AZURE_DOCUMENT_AI_KEY`     | API key pública es inaceptable                    | API Route server-side                          |
+| `exportData.js` × 3                     | Datos de backend en el frontend                   | Endpoint `/api/v2/barcos/export-data`          |
+| `common.js:parseDecimalValue`           | Duplicado de `BaseParser` con semántica diferente | Un solo helper con parámetro `silent: boolean` |
+| `generateExcelForA3erp` en ExportModal  | Lógica de negocio en componente UI                | Mover a `cofraExportHelper.js`                 |
+| Polling manual de Azure                 | Más frágil que el SDK oficial                     | Usar `@azure/ai-form-recognizer` SDK           |
+| Opciones "Facilcom" y "Otros" en Select | No implementadas, confunden al usuario            | Eliminar hasta implementar                     |
 
 ---
 

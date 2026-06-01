@@ -72,16 +72,16 @@ No se permite que componentes de negocio importen `toast` de Sonner ni component
 
 ## Tabla de mapeo
 
-| Antes | Capa estable | Ahora |
-|------|------|------|
-| `sileo.success(...)` | `notify.success(...)` | `toast.success(...)` |
-| `sileo.error(...)` | `notify.error(...)` | `toast.error(...)` |
-| `sileo.warning(...)` | `notify.warning(...)` | `toast.warning(...)` |
-| `sileo.info(...)` | `notify.info(...)` | `toast.info(...)` |
-| `sileo.show(...)` para loading | `notify.loading(...)` | `toast.loading(...)` |
-| `sileo.promise(...)` | `notify.promise(...)` | `toast.loading(...)` + update por `id` |
-| `sileo.dismiss(id)` | `notify.dismiss(id)` | `toast.dismiss(id)` |
-| `sileo.clear()` | `notify.clear()` | `toast.dismiss()` |
+| Antes                          | Capa estable          | Ahora                                  |
+| ------------------------------ | --------------------- | -------------------------------------- |
+| `sileo.success(...)`           | `notify.success(...)` | `toast.success(...)`                   |
+| `sileo.error(...)`             | `notify.error(...)`   | `toast.error(...)`                     |
+| `sileo.warning(...)`           | `notify.warning(...)` | `toast.warning(...)`                   |
+| `sileo.info(...)`              | `notify.info(...)`    | `toast.info(...)`                      |
+| `sileo.show(...)` para loading | `notify.loading(...)` | `toast.loading(...)`                   |
+| `sileo.promise(...)`           | `notify.promise(...)` | `toast.loading(...)` + update por `id` |
+| `sileo.dismiss(id)`            | `notify.dismiss(id)`  | `toast.dismiss(id)`                    |
+| `sileo.clear()`                | `notify.clear()`      | `toast.dismiss()`                      |
 
 ---
 

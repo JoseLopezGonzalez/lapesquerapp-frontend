@@ -14,11 +14,11 @@ export function SortableStopItem({ stop, onEdit }) {
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="rounded-xl border bg-background p-3 shadow-sm">
+    <div ref={setNodeRef} style={style} className="bg-background rounded-xl border p-3 shadow-sm">
       <div className="flex items-start gap-3">
         <button
           type="button"
-          className="mt-1 rounded-md border p-1 text-muted-foreground"
+          className="text-muted-foreground mt-1 rounded-md border p-1"
           {...attributes}
           {...listeners}
         >
@@ -31,7 +31,9 @@ export function SortableStopItem({ stop, onEdit }) {
             <Badge variant="secondary">{getTargetTypeLabel(stop.targetType)}</Badge>
           </div>
           <p className="mt-2 font-medium">{stop.label || 'Parada sin título'}</p>
-          <p className="truncate text-sm text-muted-foreground">{stop.address || 'Sin dirección'}</p>
+          <p className="text-muted-foreground truncate text-sm">
+            {stop.address || 'Sin dirección'}
+          </p>
         </button>
       </div>
     </div>

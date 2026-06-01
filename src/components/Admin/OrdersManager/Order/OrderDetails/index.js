@@ -1,9 +1,14 @@
-import React, { useMemo } from 'react'
+import React, { useMemo } from 'react';
 import { FileText, Package, Truck, Wallet } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useOrderContext } from '@/context/OrderContext';
-import { formatInteger, formatDecimal, formatDecimalWeight, formatDecimalCurrency } from '@/helpers/formats/numbers/formatNumbers';
+import {
+  formatInteger,
+  formatDecimal,
+  formatDecimalWeight,
+  formatDecimalCurrency,
+} from '@/helpers/formats/numbers/formatNumbers';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -14,284 +19,317 @@ const getNullablePercentage = (value) => (value == null ? '—' : `${formatDecim
 const getNullableCurrencyPerKg = (value) => (value == null ? '—' : `${formatDecimal(value)} €/kg`);
 
 // Mover API key a constante fuera del componente
-const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyBh1lKDP8noxYHU6dXDs3Yjqyg_PpC5Ks4';
+const GOOGLE_API_KEY =
+  process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyBh1lKDP8noxYHU6dXDs3Yjqyg_PpC5Ks4';
 
 const OrderDetails = () => {
-    const { order } = useOrderContext();
-    const isMobile = useIsMobile();
+  const { order } = useOrderContext();
+  const isMobile = useIsMobile();
 
-    // Memoizar encodedAddress para evitar recálculos innecesarios
-    const encodedAddress = useMemo(() => {
-        return order?.shippingAddress ? encodeURIComponent(order.shippingAddress) : '';
-    }, [order?.shippingAddress]);
+  // Memoizar encodedAddress para evitar recálculos innecesarios
+  const encodedAddress = useMemo(() => {
+    return order?.shippingAddress ? encodeURIComponent(order.shippingAddress) : '';
+  }, [order?.shippingAddress]);
 
-    // Memoizar URL del mapa
-    const mapUrl = useMemo(() => {
-        if (!encodedAddress) return '';
-        return `https://www.google.com/maps/embed/v1/place?key=${GOOGLE_API_KEY}&q=${encodedAddress}`;
-    }, [encodedAddress]);
+  // Memoizar URL del mapa
+  const mapUrl = useMemo(() => {
+    if (!encodedAddress) return '';
+    return `https://www.google.com/maps/embed/v1/place?key=${GOOGLE_API_KEY}&q=${encodedAddress}`;
+  }, [encodedAddress]);
 
-    if (isMobile) {
-        return (
-            <div className="flex-1 flex flex-col min-h-0">
-                <ScrollArea className="flex-1 min-h-0">
-                    <div className="space-y-6 pb-4">
-                {/* Comercial */}
-                <div className="space-y-3">
-                    <div className="flex flex-col items-center justify-center gap-2">
-                        <FileText className="h-5 w-5 text-primary" />
-                        <h3 className="text-lg font-semibold">Comercial</h3>
-                    </div>
-                    <div className="space-y-3">
-                        <div className="text-center">
-                            <div className="text-sm font-medium text-muted-foreground">Vendedor</div>
-                            <div className="font-medium">{order.salesperson?.name ?? '—'}</div>
-                        </div>
-                        <div className="text-center">
-                            <div className="text-sm font-medium text-muted-foreground">Repartidor</div>
-                            <div className="font-medium">{order.fieldOperator?.name ?? 'Sin repartidor'}</div>
-                        </div>
-                        <div className="text-center">
-                            <div className="text-sm font-medium text-muted-foreground">Forma de pago</div>
-                            <div className="font-medium">{order.paymentTerm?.name ?? '—'}</div>
-                        </div>
-                        <div className="text-center">
-                            <div className="text-sm font-medium text-muted-foreground">Incoterm</div>
-                            <div className="font-medium">{order.incoterm ? `${order.incoterm.code} - ${order.incoterm.description}` : '—'}</div>
-                        </div>
-                    </div>
-                </div>
-
-                <Separator />
-
-                {/* Rentabilidad */}
-                <div className="space-y-3">
-                    <div className="flex flex-col items-center justify-center gap-2">
-                        <Wallet className="h-5 w-5 text-primary" />
-                        <h3 className="text-lg font-semibold">Rentabilidad</h3>
-                    </div>
-                    <div className="space-y-3">
-                        <div className="text-center">
-                            <div className="text-sm font-medium text-muted-foreground">Coste total</div>
-                            <div className="font-medium">{getNullableCurrency(order.totalCost)}</div>
-                            <div className="text-xs text-muted-foreground mt-1">{getNullableCurrencyPerKg(order.costPerKg)}</div>
-                            {order.totalCost == null ? (
-                                <div className="text-xs text-muted-foreground mt-1">Sin coste calculable</div>
-                            ) : null}
-                        </div>
-                        <div className="text-center">
-                            <div className="text-sm font-medium text-muted-foreground">Margen bruto</div>
-                            <div className="font-medium">{getNullableCurrency(order.grossMargin)}</div>
-                            <div className="text-xs text-muted-foreground mt-1">{getNullableCurrencyPerKg(order.marginPerKg)}</div>
-                        </div>
-                        <div className="text-center">
-                            <div className="text-sm font-medium text-muted-foreground">Margen %</div>
-                            <div className="font-medium">{getNullablePercentage(order.marginPercentage)}</div>
-                        </div>
-                    </div>
-                </div>
-
-                <Separator />
-
-                {/* Resumen */}
-                <div className="space-y-3">
-                    <div className="flex flex-col items-center justify-center gap-2">
-                        <Package className="h-5 w-5 text-primary" />
-                        <h3 className="text-lg font-semibold">Resumen</h3>
-                    </div>
-                    <div className="space-y-3">
-                        <div className="text-center">
-                            <div className="text-sm font-medium text-muted-foreground">Total productos</div>
-                            <div className="font-medium">
-                                {order.totalNetWeight ? formatDecimalWeight(order.totalNetWeight) : '-'}
-                            </div>
-                        </div>
-                        <div className="text-center">
-                            <div className="text-sm font-medium text-muted-foreground">Unidades de envasado</div>
-                            <div className="font-medium">
-                                {order.totalBoxes ? `${formatInteger(order.totalBoxes)} cajas (${order.numberOfPallets} palets)` : '-'}
-                            </div>
-                        </div>
-                        <div className="text-center">
-                            <div className="text-sm font-medium text-muted-foreground">Importe</div>
-                            <div className="font-medium">{getNullableCurrency(order.totalAmount)}</div>
-                            <div className="text-xs text-muted-foreground mt-1">{getNullableCurrencyPerKg(order.revenuePerKg)}</div>
-                        </div>
-                        <div className="text-center">
-                            <div className="text-sm font-medium text-muted-foreground">Coste total</div>
-                            <div className="font-medium">{getNullableCurrency(order.totalCost)}</div>
-                            {order.totalCost == null ? (
-                                <div className="text-xs text-muted-foreground mt-1">Sin coste calculable</div>
-                            ) : null}
-                        </div>
-                        <div className="text-center">
-                            <div className="text-sm font-medium text-muted-foreground">Margen bruto</div>
-                            <div className="font-medium">{getNullableCurrency(order.grossMargin)}</div>
-                        </div>
-                        <div className="text-center">
-                            <div className="text-sm font-medium text-muted-foreground">Margen %</div>
-                            <div className="font-medium">{getNullablePercentage(order.marginPercentage)}</div>
-                        </div>
-                    </div>
-                </div>
-
-                <Separator />
-
-                {/* Envío */}
-                <div className="space-y-3">
-                    <div className="flex flex-col items-center justify-center gap-2">
-                        <Truck className="h-5 w-5 text-primary" />
-                        <h3 className="text-lg font-semibold">Envío</h3>
-                    </div>
-                    <div className="space-y-4">
-                        <div className="text-center">
-                            <div className="text-base font-semibold mb-1.5">Dirección de entrega</div>
-                            <p className="text-sm font-light whitespace-pre-line">{order.shippingAddress ?? '—'}</p>
-                        </div>
-                        <div className="text-center">
-                            <div className="text-base font-semibold mb-1.5">Transporte</div>
-                            <div className="text-sm font-medium mb-2">{order.transport?.name ?? '—'}</div>
-                            <div className="text-sm text-muted-foreground whitespace-pre-line mt-2">
-                                <ul className="list-none flex flex-col items-center gap-1">
-                                    {(order.transport?.emails ?? []).map((email) => (
-                                        <li key={email} className="text-xs font-medium">
-                                            <a href={`mailto:${email}`} className="hover:underline">
-                                                {email}
-                                            </a>
-                                        </li>
-                                    ))}
-                                    {(order.transport?.ccEmails ?? []).map((copyEmail) => (
-                                        <li key={copyEmail} className="text-xs font-medium">
-                                            <div className="flex gap-1 items-center justify-center">
-                                                <Badge variant="outline" className="px-1">CC</Badge>
-                                                <a href={`mailto:${copyEmail}`} className="hover:underline">
-                                                    {copyEmail}
-                                                </a>
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        </div>
-                        <div className="text-center">
-                            <div className="text-base font-semibold mb-1.5">Observaciones</div>
-                            <div className="text-sm text-muted-foreground">
-                                {order.transportationNotes ?? '—'}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <Separator />
-
-                {/* Mapa */}
-                <div className="space-y-3">
-                    <div className="map-container rounded-lg overflow-hidden">
-                        {mapUrl ? (
-                            <iframe
-                                width="100%"
-                                height="270"
-                                style={{ border: 0 }}
-                                loading="lazy"
-                                allowFullScreen
-                                src={mapUrl}
-                            />
-                        ) : (
-                            <div className="flex items-center justify-center h-[270px] text-sm text-muted-foreground bg-muted/30 rounded-lg">
-                                No hay dirección de envío
-                            </div>
-                        )}
-                    </div>
-                </div>
-                    </div>
-                </ScrollArea>
-            </div>
-        );
-    }
-
+  if (isMobile) {
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <FileText className="size-4" />
-                        Comercial
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="grid gap-3">
-                    <div>
-                        <div className="text-sm text-muted-foreground">Vendedor</div>
-                        <div className="text-sm font-medium">{order.salesperson?.name ?? '—'}</div>
-                    </div>
-                    <div>
-                        <div className="text-sm text-muted-foreground">Repartidor</div>
-                        <div className="text-sm font-medium">{order.fieldOperator?.name ?? 'Sin repartidor'}</div>
-                    </div>
-                    <div>
-                        <div className="text-sm text-muted-foreground">Forma de pago</div>
-                        <div className="text-sm font-medium">{order.paymentTerm?.name ?? '—'}</div>
-                    </div>
-                    <div>
-                        <div className="text-sm text-muted-foreground">Incoterm</div>
-                        <div className="text-sm font-medium">{order.incoterm ? `${order.incoterm.code} - ${order.incoterm.description}` : '—'}</div>
-                    </div>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Wallet className="size-4" />
-                        Rentabilidad
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="grid gap-3">
-                    <div>
-                        <div className="text-sm text-muted-foreground">Coste total</div>
-                        <div className="text-sm font-medium">{getNullableCurrency(order.totalCost)}</div>
-                        <div className="text-xs text-muted-foreground mt-1">{getNullableCurrencyPerKg(order.costPerKg)}</div>
-                        {order.totalCost == null ? (
-                            <div className="text-xs text-muted-foreground mt-1">Sin coste calculable</div>
-                        ) : null}
-                    </div>
-                    <div>
-                        <div className="text-sm text-muted-foreground">Margen bruto</div>
-                        <div className="text-sm font-medium">{getNullableCurrency(order.grossMargin)}</div>
-                        <div className="text-xs text-muted-foreground mt-1">{getNullableCurrencyPerKg(order.marginPerKg)}</div>
-                    </div>
-                    <div>
-                        <div className="text-sm text-muted-foreground">Margen %</div>
-                        <div className="text-sm font-medium">{getNullablePercentage(order.marginPercentage)}</div>
-                    </div>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Package className="size-4" />
-                        Resumen
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="grid gap-3">
-                    <div>
-                        <div className="text-sm text-muted-foreground">Total productos</div>
-                        <div className="text-sm font-medium">
-                            {order.totalNetWeight ? formatDecimalWeight(order.totalNetWeight) : '-'}
-                        </div>
-                    </div>
-                    <div>
-                        <div className="text-sm text-muted-foreground">Unidades de envasado</div>
-                        <div className="text-sm font-medium">
-                            {order.totalBoxes ? `${formatInteger(order.totalBoxes)} cajas (${order.numberOfPallets} palets)` : '-'}
-                        </div>
-                    </div>
-                    <div>
-                        <div className="text-sm text-muted-foreground">Importe</div>
-                        <div className="text-sm font-medium">{getNullableCurrency(order.totalAmount)}</div>
-                        <div className="text-xs text-muted-foreground mt-1">{getNullableCurrencyPerKg(order.revenuePerKg)}</div>
-                    </div>
-                </CardContent>
-            </Card>
-            {/* <Card className="md:col-span-2 bg-transparent">
+      <div className="flex min-h-0 flex-1 flex-col">
+        <ScrollArea className="min-h-0 flex-1">
+          <div className="space-y-6 pb-4">
+            {/* Comercial */}
+            <div className="space-y-3">
+              <div className="flex flex-col items-center justify-center gap-2">
+                <FileText className="text-primary h-5 w-5" />
+                <h3 className="text-lg font-semibold">Comercial</h3>
+              </div>
+              <div className="space-y-3">
+                <div className="text-center">
+                  <div className="text-muted-foreground text-sm font-medium">Vendedor</div>
+                  <div className="font-medium">{order.salesperson?.name ?? '—'}</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-muted-foreground text-sm font-medium">Repartidor</div>
+                  <div className="font-medium">{order.fieldOperator?.name ?? 'Sin repartidor'}</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-muted-foreground text-sm font-medium">Forma de pago</div>
+                  <div className="font-medium">{order.paymentTerm?.name ?? '—'}</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-muted-foreground text-sm font-medium">Incoterm</div>
+                  <div className="font-medium">
+                    {order.incoterm
+                      ? `${order.incoterm.code} - ${order.incoterm.description}`
+                      : '—'}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Rentabilidad */}
+            <div className="space-y-3">
+              <div className="flex flex-col items-center justify-center gap-2">
+                <Wallet className="text-primary h-5 w-5" />
+                <h3 className="text-lg font-semibold">Rentabilidad</h3>
+              </div>
+              <div className="space-y-3">
+                <div className="text-center">
+                  <div className="text-muted-foreground text-sm font-medium">Coste total</div>
+                  <div className="font-medium">{getNullableCurrency(order.totalCost)}</div>
+                  <div className="text-muted-foreground mt-1 text-xs">
+                    {getNullableCurrencyPerKg(order.costPerKg)}
+                  </div>
+                  {order.totalCost == null ? (
+                    <div className="text-muted-foreground mt-1 text-xs">Sin coste calculable</div>
+                  ) : null}
+                </div>
+                <div className="text-center">
+                  <div className="text-muted-foreground text-sm font-medium">Margen bruto</div>
+                  <div className="font-medium">{getNullableCurrency(order.grossMargin)}</div>
+                  <div className="text-muted-foreground mt-1 text-xs">
+                    {getNullableCurrencyPerKg(order.marginPerKg)}
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-muted-foreground text-sm font-medium">Margen %</div>
+                  <div className="font-medium">{getNullablePercentage(order.marginPercentage)}</div>
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Resumen */}
+            <div className="space-y-3">
+              <div className="flex flex-col items-center justify-center gap-2">
+                <Package className="text-primary h-5 w-5" />
+                <h3 className="text-lg font-semibold">Resumen</h3>
+              </div>
+              <div className="space-y-3">
+                <div className="text-center">
+                  <div className="text-muted-foreground text-sm font-medium">Total productos</div>
+                  <div className="font-medium">
+                    {order.totalNetWeight ? formatDecimalWeight(order.totalNetWeight) : '-'}
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-muted-foreground text-sm font-medium">
+                    Unidades de envasado
+                  </div>
+                  <div className="font-medium">
+                    {order.totalBoxes
+                      ? `${formatInteger(order.totalBoxes)} cajas (${order.numberOfPallets} palets)`
+                      : '-'}
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-muted-foreground text-sm font-medium">Importe</div>
+                  <div className="font-medium">{getNullableCurrency(order.totalAmount)}</div>
+                  <div className="text-muted-foreground mt-1 text-xs">
+                    {getNullableCurrencyPerKg(order.revenuePerKg)}
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-muted-foreground text-sm font-medium">Coste total</div>
+                  <div className="font-medium">{getNullableCurrency(order.totalCost)}</div>
+                  {order.totalCost == null ? (
+                    <div className="text-muted-foreground mt-1 text-xs">Sin coste calculable</div>
+                  ) : null}
+                </div>
+                <div className="text-center">
+                  <div className="text-muted-foreground text-sm font-medium">Margen bruto</div>
+                  <div className="font-medium">{getNullableCurrency(order.grossMargin)}</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-muted-foreground text-sm font-medium">Margen %</div>
+                  <div className="font-medium">{getNullablePercentage(order.marginPercentage)}</div>
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Envío */}
+            <div className="space-y-3">
+              <div className="flex flex-col items-center justify-center gap-2">
+                <Truck className="text-primary h-5 w-5" />
+                <h3 className="text-lg font-semibold">Envío</h3>
+              </div>
+              <div className="space-y-4">
+                <div className="text-center">
+                  <div className="mb-1.5 text-base font-semibold">Dirección de entrega</div>
+                  <p className="text-sm font-light whitespace-pre-line">
+                    {order.shippingAddress ?? '—'}
+                  </p>
+                </div>
+                <div className="text-center">
+                  <div className="mb-1.5 text-base font-semibold">Transporte</div>
+                  <div className="mb-2 text-sm font-medium">{order.transport?.name ?? '—'}</div>
+                  <div className="text-muted-foreground mt-2 text-sm whitespace-pre-line">
+                    <ul className="flex list-none flex-col items-center gap-1">
+                      {(order.transport?.emails ?? []).map((email) => (
+                        <li key={email} className="text-xs font-medium">
+                          <a href={`mailto:${email}`} className="hover:underline">
+                            {email}
+                          </a>
+                        </li>
+                      ))}
+                      {(order.transport?.ccEmails ?? []).map((copyEmail) => (
+                        <li key={copyEmail} className="text-xs font-medium">
+                          <div className="flex items-center justify-center gap-1">
+                            <Badge variant="outline" className="px-1">
+                              CC
+                            </Badge>
+                            <a href={`mailto:${copyEmail}`} className="hover:underline">
+                              {copyEmail}
+                            </a>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="mb-1.5 text-base font-semibold">Observaciones</div>
+                  <div className="text-muted-foreground text-sm">
+                    {order.transportationNotes ?? '—'}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Mapa */}
+            <div className="space-y-3">
+              <div className="map-container overflow-hidden rounded-lg">
+                {mapUrl ? (
+                  <iframe
+                    width="100%"
+                    height="270"
+                    style={{ border: 0 }}
+                    loading="lazy"
+                    allowFullScreen
+                    src={mapUrl}
+                  />
+                ) : (
+                  <div className="text-muted-foreground bg-muted/30 flex h-[270px] items-center justify-center rounded-lg text-sm">
+                    No hay dirección de envío
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </ScrollArea>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="size-4" />
+            Comercial
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-3">
+          <div>
+            <div className="text-muted-foreground text-sm">Vendedor</div>
+            <div className="text-sm font-medium">{order.salesperson?.name ?? '—'}</div>
+          </div>
+          <div>
+            <div className="text-muted-foreground text-sm">Repartidor</div>
+            <div className="text-sm font-medium">
+              {order.fieldOperator?.name ?? 'Sin repartidor'}
+            </div>
+          </div>
+          <div>
+            <div className="text-muted-foreground text-sm">Forma de pago</div>
+            <div className="text-sm font-medium">{order.paymentTerm?.name ?? '—'}</div>
+          </div>
+          <div>
+            <div className="text-muted-foreground text-sm">Incoterm</div>
+            <div className="text-sm font-medium">
+              {order.incoterm ? `${order.incoterm.code} - ${order.incoterm.description}` : '—'}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Wallet className="size-4" />
+            Rentabilidad
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-3">
+          <div>
+            <div className="text-muted-foreground text-sm">Coste total</div>
+            <div className="text-sm font-medium">{getNullableCurrency(order.totalCost)}</div>
+            <div className="text-muted-foreground mt-1 text-xs">
+              {getNullableCurrencyPerKg(order.costPerKg)}
+            </div>
+            {order.totalCost == null ? (
+              <div className="text-muted-foreground mt-1 text-xs">Sin coste calculable</div>
+            ) : null}
+          </div>
+          <div>
+            <div className="text-muted-foreground text-sm">Margen bruto</div>
+            <div className="text-sm font-medium">{getNullableCurrency(order.grossMargin)}</div>
+            <div className="text-muted-foreground mt-1 text-xs">
+              {getNullableCurrencyPerKg(order.marginPerKg)}
+            </div>
+          </div>
+          <div>
+            <div className="text-muted-foreground text-sm">Margen %</div>
+            <div className="text-sm font-medium">
+              {getNullablePercentage(order.marginPercentage)}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Package className="size-4" />
+            Resumen
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-3">
+          <div>
+            <div className="text-muted-foreground text-sm">Total productos</div>
+            <div className="text-sm font-medium">
+              {order.totalNetWeight ? formatDecimalWeight(order.totalNetWeight) : '-'}
+            </div>
+          </div>
+          <div>
+            <div className="text-muted-foreground text-sm">Unidades de envasado</div>
+            <div className="text-sm font-medium">
+              {order.totalBoxes
+                ? `${formatInteger(order.totalBoxes)} cajas (${order.numberOfPallets} palets)`
+                : '-'}
+            </div>
+          </div>
+          <div>
+            <div className="text-muted-foreground text-sm">Importe</div>
+            <div className="text-sm font-medium">{getNullableCurrency(order.totalAmount)}</div>
+            <div className="text-muted-foreground mt-1 text-xs">
+              {getNullableCurrencyPerKg(order.revenuePerKg)}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      {/* <Card className="md:col-span-2 bg-transparent">
                 <CardHeader className="pb-2">
                     <CardTitle className="text-base font-medium flex items-center gap-2">
                         <Truck className="h-4 w-4" />
@@ -338,119 +376,132 @@ const OrderDetails = () => {
                     </div>
                 </CardContent>
             </Card> */}
-            <Card className="md:col-span-2">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Truck className="size-4" />
-                        Envío
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="grid gap-4">
-                    <div className="grid md:grid-cols-2 gap-4">
-                        <div>
-                            <div className="text-sm text-muted-foreground">Dirección de entrega</div>
-                            <p className="text-sm font-medium whitespace-pre-line">{order.shippingAddress ?? '—'}</p>
-                        </div>
-                        <div>
-                            <div className="text-sm text-muted-foreground">Transporte</div>
-                            <div className="text-sm font-medium">{order.transport?.name ?? '—'}</div>
-                            <div className="text-sm text-muted-foreground whitespace-pre-line">
-                                <ul className="list-disc px-5 pl-8">
-                                    {(order.transport?.emails ?? []).map((email) => (
-                                        <li key={email}>
-                                            <a href={`mailto:${email}`} className="hover:underline">
-                                                {email}
-                                            </a>
-                                        </li>
-                                    ))}
-                                    {(order.transport?.ccEmails ?? []).map((copyEmail) => (
-                                        <li key={copyEmail}>
-                                            <div className="flex gap-1 items-center">
-                                                <Badge variant="outline" className="px-1">CC</Badge>
-                                                <a href={`mailto:${copyEmail}`} className="hover:underline">
-                                                    {copyEmail}
-                                                </a>
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        </div>
-                        <div>
-                            <div className="text-sm text-muted-foreground">Observaciones</div>
-                            <div className="text-sm font-medium">
-                                {order.transportationNotes ?? '—'}
-                            </div>
-                        </div>
+      <Card className="md:col-span-2">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Truck className="size-4" />
+            Envío
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <div className="text-muted-foreground text-sm">Dirección de entrega</div>
+              <p className="text-sm font-medium whitespace-pre-line">
+                {order.shippingAddress ?? '—'}
+              </p>
+            </div>
+            <div>
+              <div className="text-muted-foreground text-sm">Transporte</div>
+              <div className="text-sm font-medium">{order.transport?.name ?? '—'}</div>
+              <div className="text-muted-foreground text-sm whitespace-pre-line">
+                <ul className="list-disc px-5 pl-8">
+                  {(order.transport?.emails ?? []).map((email) => (
+                    <li key={email}>
+                      <a href={`mailto:${email}`} className="hover:underline">
+                        {email}
+                      </a>
+                    </li>
+                  ))}
+                  {(order.transport?.ccEmails ?? []).map((copyEmail) => (
+                    <li key={copyEmail}>
+                      <div className="flex items-center gap-1">
+                        <Badge variant="outline" className="px-1">
+                          CC
+                        </Badge>
+                        <a href={`mailto:${copyEmail}`} className="hover:underline">
+                          {copyEmail}
+                        </a>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            <div>
+              <div className="text-muted-foreground text-sm">Observaciones</div>
+              <div className="text-sm font-medium">{order.transportationNotes ?? '—'}</div>
+            </div>
 
-                        {/* Matrículas de camión y remolque */}
-                        <div>
-                            <div className="text-sm text-muted-foreground">Matrículas</div>
-                            <div className=" grid grid-cols-1 sm:grid-cols-2 gap-2 items-center">
-                                {/* Matrícula del Camión */}
+            {/* Matrículas de camión y remolque */}
+            <div>
+              <div className="text-muted-foreground text-sm">Matrículas</div>
+              <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-2">
+                {/* Matrícula del Camión */}
 
-                                <div>
-                                    {/* <div className="text-xs font-medium text-muted-foreground mb-1">Camión</div> */}
-                                    <div className=" w-full flex items-center rounded overflow-hidden shadow-md border border-black dark:border-white h-[32px] bg-blue-700">
-                                        <div className=" text-white flex items-center justify-center px-1 h-full ">
-                                            <div className="flex flex-col items-center text-xs leading-none gap-0.5">
-                                                <span className=" ">
-                                                    <Image src="/images/transports/eu-stars.svg" width={13} height={13} alt="Spain Flag" />
-                                                </span>
-                                                <span className="text-[9px] font-semibold">EU</span>
-                                            </div>
-                                        </div>
-                                        <div style={{fontFamily: 'OCR A Std, monospace', fontWeight:600}} className="flex items-center justify-center bg-white text-black h-full py-0.5 text-[22px]   lining-nums flex-1 text-center">
-                                            {order.truckPlate ? order.truckPlate
-                                                : (
-                                                    <span className="animate-pulse">0000 AAA</span>
-                                                )}
-
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Matrícula del Remolque */}
-                                <div>
-                                    {/* <div className="text-xs font-medium text-muted-foreground mb-1">Remolque</div> */}
-                                    <div className="w-full flex items-center rounded overflow-hidden shadow-md h-[34px] border-2 border-red-800 bg-red-600">
-                                        <div style={{fontFamily: 'OCR A Std, monospace', fontWeight:600}} className=" flex items-center justify-center  text-white h-full py-0.5 text-[22px] lining-nums flex-1 text-center">
-                                            {order.trailerPlate ? order.trailerPlate
-                                                : (
-                                                    <span className="animate-pulse">R-0000 AAA</span>
-                                                )}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                <div>
+                  {/* <div className="text-xs font-medium text-muted-foreground mb-1">Camión</div> */}
+                  <div className="flex h-[32px] w-full items-center overflow-hidden rounded border border-black bg-blue-700 shadow-md dark:border-white">
+                    <div className="flex h-full items-center justify-center px-1 text-white">
+                      <div className="flex flex-col items-center gap-0.5 text-xs leading-none">
+                        <span className=" ">
+                          <Image
+                            src="/images/transports/eu-stars.svg"
+                            width={13}
+                            height={13}
+                            alt="Spain Flag"
+                          />
+                        </span>
+                        <span className="text-[9px] font-semibold">EU</span>
+                      </div>
                     </div>
-
-                </CardContent>
-            </Card>
-
-            <Card className="overflow-hidden">
-                <CardContent className="grid p-0">
-                    <div className="map-container">
-                        {mapUrl ? (
-                            <iframe
-                                width="100%"
-                                height="270"
-                                style={{ border: 0 }}
-                                loading="lazy"
-                                allowFullScreen
-                                src={mapUrl}
-                            />
-                        ) : (
-                            <div className="flex items-center justify-center h-[270px] text-sm text-muted-foreground bg-muted/30">
-                                No hay dirección de envío
-                            </div>
-                        )}
+                    <div
+                      style={{ fontFamily: 'OCR A Std, monospace', fontWeight: 600 }}
+                      className="flex h-full flex-1 items-center justify-center bg-white py-0.5 text-center text-[22px] text-black lining-nums"
+                    >
+                      {order.truckPlate ? (
+                        order.truckPlate
+                      ) : (
+                        <span className="animate-pulse">0000 AAA</span>
+                      )}
                     </div>
-                </CardContent>
-            </Card>
-        </div>
-    )
-}
+                  </div>
+                </div>
 
-export default OrderDetails
+                {/* Matrícula del Remolque */}
+                <div>
+                  {/* <div className="text-xs font-medium text-muted-foreground mb-1">Remolque</div> */}
+                  <div className="flex h-[34px] w-full items-center overflow-hidden rounded border-2 border-red-800 bg-red-600 shadow-md">
+                    <div
+                      style={{ fontFamily: 'OCR A Std, monospace', fontWeight: 600 }}
+                      className="flex h-full flex-1 items-center justify-center py-0.5 text-center text-[22px] text-white lining-nums"
+                    >
+                      {order.trailerPlate ? (
+                        order.trailerPlate
+                      ) : (
+                        <span className="animate-pulse">R-0000 AAA</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="overflow-hidden">
+        <CardContent className="grid p-0">
+          <div className="map-container">
+            {mapUrl ? (
+              <iframe
+                width="100%"
+                height="270"
+                style={{ border: 0 }}
+                loading="lazy"
+                allowFullScreen
+                src={mapUrl}
+              />
+            ) : (
+              <div className="text-muted-foreground bg-muted/30 flex h-[270px] items-center justify-center text-sm">
+                No hay dirección de envío
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default OrderDetails;

@@ -26,14 +26,14 @@ Se ha analizado el controlador y los endpoints de **despachos de cebo** frente a
 
 ## Deliverables
 
-| Ubicación | Descripción |
-|-----------|-------------|
+| Ubicación                                    | Descripción                                                                                          |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | `01_analysis/cebo-vs-receptions-analysis.md` | Análisis comparativo recepciones vs cebo (rutas, body, validación, respuestas, listado, relaciones). |
-| `02_planning/changes-checklist.md` | Plan de cambios y checklist (todas las tareas marcadas completadas). |
-| `03_execution/implementation-log.md` | Log de archivos modificados y resumen de cambios. |
-| `04_logs/execution_timeline.md` | Timeline de la sesión. |
-| `05_outputs/cebo-dispatches-api-contract.md` | Especificación del contrato API (POST/PUT body, respuestas, list/show, delete). |
-| `05_outputs/FINAL_REPORT.md` | Este informe. |
+| `02_planning/changes-checklist.md`           | Plan de cambios y checklist (todas las tareas marcadas completadas).                                 |
+| `03_execution/implementation-log.md`         | Log de archivos modificados y resumen de cambios.                                                    |
+| `04_logs/execution_timeline.md`              | Timeline de la sesión.                                                                               |
+| `05_outputs/cebo-dispatches-api-contract.md` | Especificación del contrato API (POST/PUT body, respuestas, list/show, delete).                      |
+| `05_outputs/FINAL_REPORT.md`                 | Este informe.                                                                                        |
 
 **Código modificado** (en el repo):
 

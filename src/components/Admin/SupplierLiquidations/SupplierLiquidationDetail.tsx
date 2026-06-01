@@ -1,11 +1,11 @@
 // @ts-nocheck
-"use client";
-import React, { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { format } from "date-fns";
-import { Loader2, ArrowLeft, Download } from "lucide-react";
-import { notify } from "@/lib/notifications";
-import { Button } from "@/components/ui/button";
+'use client';
+import React, { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { format } from 'date-fns';
+import { Loader2, ArrowLeft, Download } from 'lucide-react';
+import { notify } from '@/lib/notifications';
+import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -13,43 +13,43 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useSupplierLiquidationDetails } from "@/hooks/useSupplierLiquidationDetails";
-import { downloadSupplierLiquidationPdf } from "@/services/domain/supplier-liquidations/supplierLiquidationService";
-import type { LiquidationReception, LiquidationDispatch } from "@/types/supplierLiquidation";
+} from '@/components/ui/table';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Checkbox } from '@/components/ui/checkbox';
+import { useSupplierLiquidationDetails } from '@/hooks/useSupplierLiquidationDetails';
+import { downloadSupplierLiquidationPdf } from '@/services/domain/supplier-liquidations/supplierLiquidationService';
+import type { LiquidationReception, LiquidationDispatch } from '@/types/supplierLiquidation';
 function formatCurrency(value: number | undefined | null): string {
-  return new Intl.NumberFormat("es-ES", {
-    style: "currency",
-    currency: "EUR",
+  return new Intl.NumberFormat('es-ES', {
+    style: 'currency',
+    currency: 'EUR',
   }).format(value ?? 0);
 }
 
 function formatWeight(value: number | undefined | null): string {
   return (
-    new Intl.NumberFormat("es-ES", {
+    new Intl.NumberFormat('es-ES', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    }).format(value ?? 0) + " kg"
+    }).format(value ?? 0) + ' kg'
   );
 }
 
 function formatPricePerKg(value: number | undefined | null): string {
   return (
-    new Intl.NumberFormat("es-ES", {
-      style: "currency",
-      currency: "EUR",
-    }).format(value ?? 0) + "/kg"
+    new Intl.NumberFormat('es-ES', {
+      style: 'currency',
+      currency: 'EUR',
+    }).format(value ?? 0) + '/kg'
   );
 }
 
 function formatDate(dateString: string | undefined | null): string {
-  if (!dateString) return "-";
+  if (!dateString) return '-';
   try {
-    return format(new Date(dateString), "dd/MM/yyyy");
+    return format(new Date(dateString), 'dd/MM/yyyy');
   } catch {
     return String(dateString);
   }
@@ -58,8 +58,8 @@ function formatDate(dateString: string | undefined | null): string {
 export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const startDate = searchParams.get("start") ?? undefined;
-  const endDate = searchParams.get("end") ?? undefined;
+  const startDate = searchParams.get('start') ?? undefined;
+  const endDate = searchParams.get('end') ?? undefined;
 
   const { data, isLoading, error, refetch } = useSupplierLiquidationDetails({
     supplierId,
@@ -71,7 +71,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [selectedReceptions, setSelectedReceptions] = useState<number[]>([]);
   const [selectedDispatches, setSelectedDispatches] = useState<number[]>([]);
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "transfer">("cash");
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'transfer'>('cash');
   const [hasManagementFee, setHasManagementFee] = useState(false);
   const [showTransferPayment, setShowTransferPayment] = useState(true);
 
@@ -94,7 +94,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
           ?.userMessage ??
         (error as { data?: { userMessage?: string } })?.data?.userMessage ??
         (error as Error).message ??
-        "Error al obtener el detalle de la liquidación";
+        'Error al obtener el detalle de la liquidación';
       notify.error({ title: msg });
     }
   }, [error]);
@@ -103,14 +103,13 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
     if (!startDate || !endDate || !data) return;
 
     if (!paymentMethod) {
-      notify.error({ title: "Debe seleccionar un método de pago (Efectivo o Transferencia)" });
+      notify.error({ title: 'Debe seleccionar un método de pago (Efectivo o Transferencia)' });
       return;
     }
 
     setDownloadingPdf(true);
     const allDispatches = [...(data.dispatches ?? [])];
-    const relatedDispatches =
-      data.receptions?.flatMap((r) => r.related_dispatches ?? []) ?? [];
+    const relatedDispatches = data.receptions?.flatMap((r) => r.related_dispatches ?? []) ?? [];
     const totalDispatches = [
       ...new Set([...allDispatches.map((d) => d.id), ...relatedDispatches.map((d) => d.id)]),
     ];
@@ -127,9 +126,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
     } else if (allReceptionsSelected && !allDispatchesSelected) {
       dispatchesToSend = selectedDispatches;
     } else {
-      const selectedRelated = selectedDispatches.filter((id) =>
-        relatedDispatchIds.includes(id)
-      );
+      const selectedRelated = selectedDispatches.filter((id) => relatedDispatchIds.includes(id));
       dispatchesToSend = [...new Set([...independentDispatchIds, ...selectedRelated])];
     }
 
@@ -139,7 +136,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
           supplierId,
           startDate,
           endDate,
-          supplierName: data.supplier?.name ?? "Proveedor",
+          supplierName: data.supplier?.name ?? 'Proveedor',
           selectedReceptions: receptionsToSend,
           selectedDispatches: dispatchesToSend,
           paymentMethod,
@@ -147,13 +144,14 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
           showTransferPayment,
         }),
         {
-          loading: "Generando PDF...",
-          success: "PDF descargado correctamente",
+          loading: 'Generando PDF...',
+          success: 'PDF descargado correctamente',
           error: (err: unknown) => {
             const e = err as { status?: number; message?: string };
-            if (e?.status === 422) return "Algunos IDs seleccionados no existen. Por favor, recargue la página.";
-            if (e?.status === 404) return "Proveedor no encontrado";
-            return e?.message ?? "Error al descargar el PDF";
+            if (e?.status === 422)
+              return 'Algunos IDs seleccionados no existen. Por favor, recargue la página.';
+            if (e?.status === 404) return 'Proveedor no encontrado';
+            return e?.message ?? 'Error al descargar el PDF';
           },
         }
       );
@@ -164,17 +162,13 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
 
   const toggleReception = (receptionId: number) => {
     setSelectedReceptions((prev) =>
-      prev.includes(receptionId)
-        ? prev.filter((id) => id !== receptionId)
-        : [...prev, receptionId]
+      prev.includes(receptionId) ? prev.filter((id) => id !== receptionId) : [...prev, receptionId]
     );
   };
 
   const toggleDispatch = (dispatchId: number) => {
     setSelectedDispatches((prev) =>
-      prev.includes(dispatchId)
-        ? prev.filter((id) => id !== dispatchId)
-        : [...prev, dispatchId]
+      prev.includes(dispatchId) ? prev.filter((id) => id !== dispatchId) : [...prev, dispatchId]
     );
   };
 
@@ -187,13 +181,9 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
 
   const selectAllDispatches = () => {
     const allDispatches = [...(data?.dispatches ?? [])];
-    const relatedDispatches =
-      data?.receptions?.flatMap((r) => r.related_dispatches ?? []) ?? [];
+    const relatedDispatches = data?.receptions?.flatMap((r) => r.related_dispatches ?? []) ?? [];
     const allIds = [
-      ...new Set([
-        ...allDispatches.map((d) => d.id),
-        ...relatedDispatches.map((d) => d.id),
-      ]),
+      ...new Set([...allDispatches.map((d) => d.id), ...relatedDispatches.map((d) => d.id)]),
     ];
     setSelectedDispatches(allIds);
   };
@@ -202,10 +192,10 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
 
   if (isLoading) {
     return (
-      <div className="h-full w-full flex flex-col overflow-hidden min-h-0">
-        <ScrollArea className="flex-1 min-h-0 w-full h-full">
-          <div className="p-6 flex justify-center items-center min-h-[400px]">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="flex h-full min-h-0 w-full flex-col overflow-hidden">
+        <ScrollArea className="h-full min-h-0 w-full flex-1">
+          <div className="flex min-h-[400px] items-center justify-center p-6">
+            <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
           </div>
         </ScrollArea>
       </div>
@@ -214,20 +204,20 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
 
   if (error || !data) {
     return (
-      <div className="h-full w-full flex flex-col overflow-hidden min-h-0">
-        <ScrollArea className="flex-1 min-h-0 w-full h-full">
+      <div className="flex h-full min-h-0 w-full flex-col overflow-hidden">
+        <ScrollArea className="h-full min-h-0 w-full flex-1">
           <div className="p-6">
             <Card>
               <CardContent className="pt-6">
-                <div className="text-center py-12">
-                  <p className="text-lg font-medium text-destructive mb-2">
+                <div className="py-12 text-center">
+                  <p className="text-destructive mb-2 text-lg font-medium">
                     {!startDate || !endDate
-                      ? "Fechas no especificadas"
-                      : (error as Error)?.message ?? "Error al cargar los datos"}
+                      ? 'Fechas no especificadas'
+                      : ((error as Error)?.message ?? 'Error al cargar los datos')}
                   </p>
                   <Button
                     variant="outline"
-                    onClick={() => router.push("/admin/supplier-liquidations")}
+                    onClick={() => router.push('/admin/supplier-liquidations')}
                   >
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Volver al listado
@@ -247,12 +237,9 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
   const allDispatches = [...allRelatedDispatches, ...(dispatches ?? [])];
 
   return (
-    <div className="h-full w-full flex flex-col overflow-hidden min-h-0">
-      <div className="flex items-center justify-between p-6 pb-2 flex-shrink-0">
-        <Button
-          variant="outline"
-          onClick={() => router.push("/admin/supplier-liquidations")}
-        >
+    <div className="flex h-full min-h-0 w-full flex-col overflow-hidden">
+      <div className="flex flex-shrink-0 items-center justify-between p-6 pb-2">
+        <Button variant="outline" onClick={() => router.push('/admin/supplier-liquidations')}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Volver
         </Button>
@@ -272,19 +259,17 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
       </div>
 
       {data && (
-        <div className="p-4 mx-6 mb-2 bg-muted/50 rounded-lg flex-shrink-0">
+        <div className="bg-muted/50 mx-6 mb-2 flex-shrink-0 rounded-lg p-4">
           <div className="flex flex-wrap items-center gap-4 text-sm">
-            <div className="font-semibold text-base">{supplier?.name ?? "-"}</div>
+            <div className="text-base font-semibold">{supplier?.name ?? '-'}</div>
             {supplier?.contact_person && (
               <span className="text-muted-foreground">• {supplier.contact_person}</span>
             )}
-            {supplier?.phone && (
-              <span className="text-muted-foreground">• {supplier.phone}</span>
-            )}
+            {supplier?.phone && <span className="text-muted-foreground">• {supplier.phone}</span>}
             {supplier?.address && (
               <span className="text-muted-foreground">• {supplier.address}</span>
             )}
-            <span className="ml-auto text-muted-foreground">
+            <span className="text-muted-foreground ml-auto">
               {formatDate(date_range?.start)} - {formatDate(date_range?.end)}
             </span>
           </div>
@@ -292,34 +277,30 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
       )}
 
       {data?.summary && (
-        <div className="p-4 mx-6 mb-2 bg-muted/50 rounded-lg flex-shrink-0">
+        <div className="bg-muted/50 mx-6 mb-2 flex-shrink-0 rounded-lg p-4">
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-4">
-              <label className="text-sm font-medium whitespace-nowrap">
-                Método de pago cebo:
-              </label>
+              <label className="text-sm font-medium whitespace-nowrap">Método de pago cebo:</label>
               <div
-                className="relative inline-flex h-9 w-[180px] items-center rounded-lg bg-muted p-1 cursor-pointer"
-                onClick={() =>
-                  setPaymentMethod((m) => (m === "cash" ? "transfer" : "cash"))
-                }
+                className="bg-muted relative inline-flex h-9 w-[180px] cursor-pointer items-center rounded-lg p-1"
+                onClick={() => setPaymentMethod((m) => (m === 'cash' ? 'transfer' : 'cash'))}
               >
                 <div
-                  className={`absolute h-7 w-[86px] rounded-md bg-background shadow-sm transition-transform duration-200 ease-in-out ${
-                    paymentMethod === "cash" ? "translate-x-0" : "translate-x-[88px]"
+                  className={`bg-background absolute h-7 w-[86px] rounded-md shadow-sm transition-transform duration-200 ease-in-out ${
+                    paymentMethod === 'cash' ? 'translate-x-0' : 'translate-x-[88px]'
                   }`}
                 />
                 <div className="relative flex h-full w-full items-center justify-center">
                   <span
                     className={`z-10 flex-1 text-center text-sm font-medium transition-colors duration-200 ${
-                      paymentMethod === "cash" ? "text-foreground" : "text-muted-foreground"
+                      paymentMethod === 'cash' ? 'text-foreground' : 'text-muted-foreground'
                     }`}
                   >
                     Efectivo
                   </span>
                   <span
                     className={`z-10 flex-1 text-center text-sm font-medium transition-colors duration-200 ${
-                      paymentMethod === "transfer" ? "text-foreground" : "text-muted-foreground"
+                      paymentMethod === 'transfer' ? 'text-foreground' : 'text-muted-foreground'
                     }`}
                   >
                     Transferencia
@@ -327,7 +308,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
                 </div>
               </div>
             </div>
-            <div className="border-t border-border/50" />
+            <div className="border-border/50 border-t" />
             <div className="flex flex-wrap items-center gap-6">
               <div className="flex items-center gap-2">
                 <Checkbox
@@ -335,10 +316,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
                   checked={hasManagementFee}
                   onCheckedChange={(checked) => setHasManagementFee(!!checked)}
                 />
-                <label
-                  htmlFor="hasManagementFee"
-                  className="text-sm cursor-pointer"
-                >
+                <label htmlFor="hasManagementFee" className="cursor-pointer text-sm">
                   Lleva gasto de gestión (2.5% sobre declarado sin IVA)
                 </label>
               </div>
@@ -348,10 +326,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
                   checked={showTransferPayment}
                   onCheckedChange={(checked) => setShowTransferPayment(!!checked)}
                 />
-                <label
-                  htmlFor="showTransferPayment"
-                  className="text-sm cursor-pointer"
-                >
+                <label htmlFor="showTransferPayment" className="cursor-pointer text-sm">
                   Mostrar pago por transferencia
                 </label>
               </div>
@@ -360,8 +335,8 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
         </div>
       )}
 
-      <ScrollArea className="flex-1 min-h-0 w-full h-full">
-        <div className="p-6 pt-2 space-y-6">
+      <ScrollArea className="h-full min-h-0 w-full flex-1">
+        <div className="space-y-6 p-6 pt-2">
           <Card>
             <CardHeader>
               <CardTitle>Recepciones</CardTitle>
@@ -370,7 +345,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="rounded-md border overflow-x-auto">
+              <div className="overflow-x-auto rounded-md border">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -395,7 +370,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
                     {receptions && receptions.length > 0 ? (
                       receptions.map((reception: LiquidationReception) => (
                         <React.Fragment key={`reception-${reception.id}`}>
-                          <TableRow className="bg-blue-200/50 dark:bg-blue-800/30 font-bold">
+                          <TableRow className="bg-blue-200/50 font-bold dark:bg-blue-800/30">
                             <TableCell>
                               <Checkbox
                                 checked={selectedReceptions.includes(reception.id)}
@@ -414,7 +389,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
                               <TableCell />
                               <TableCell className="pl-8">
                                 <span className="text-muted-foreground mr-2">└─</span>
-                                {product.product?.name ?? "-"}
+                                {product.product?.name ?? '-'}
                               </TableCell>
                               <TableCell className="text-right">
                                 {formatWeight(product.net_weight)}
@@ -429,7 +404,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
                           ))}
                           {reception.products && reception.products.length > 0 && (
                             <>
-                              <TableRow className="bg-blue-100/50 dark:bg-blue-900/30 font-semibold">
+                              <TableRow className="bg-blue-100/50 font-semibold dark:bg-blue-900/30">
                                 <TableCell />
                                 <TableCell>Total</TableCell>
                                 <TableCell className="text-right">
@@ -438,7 +413,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
                                 <TableCell className="text-right">
                                   {reception.average_price
                                     ? formatPricePerKg(reception.average_price)
-                                    : "-"}
+                                    : '-'}
                                 </TableCell>
                                 <TableCell className="text-right">
                                   {formatCurrency(reception.calculated_total_amount)}
@@ -446,7 +421,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
                               </TableRow>
                               {reception.declared_total_net_weight != null &&
                                 reception.declared_total_net_weight !== undefined && (
-                                  <TableRow className="bg-blue-50/50 dark:bg-blue-950/20 text-sm">
+                                  <TableRow className="bg-blue-50/50 text-sm dark:bg-blue-950/20">
                                     <TableCell />
                                     <TableCell>Total Declarado</TableCell>
                                     <TableCell className="text-right">
@@ -464,10 +439,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell
-                          colSpan={5}
-                          className="text-center py-8 text-muted-foreground"
-                        >
+                        <TableCell colSpan={5} className="text-muted-foreground py-8 text-center">
                           No hay recepciones en este período
                         </TableCell>
                       </TableRow>
@@ -485,7 +457,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
                 <CardDescription>Todas las salidas de cebo del período</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="rounded-md border overflow-x-auto">
+                <div className="overflow-x-auto rounded-md border">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -510,7 +482,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
                     <TableBody>
                       {allDispatches.map((dispatch: LiquidationDispatch) => (
                         <React.Fragment key={`dispatch-${dispatch.id}`}>
-                          <TableRow className="bg-orange-200/50 dark:bg-orange-800/30 font-bold">
+                          <TableRow className="bg-orange-200/50 font-bold dark:bg-orange-800/30">
                             <TableCell>
                               <Checkbox
                                 checked={selectedDispatches.includes(dispatch.id)}
@@ -525,11 +497,11 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
                                 {dispatch.export_type && (
                                   <Badge
                                     variant={
-                                      dispatch.export_type === "a3erp" ? "default" : "secondary"
+                                      dispatch.export_type === 'a3erp' ? 'default' : 'secondary'
                                     }
                                     className="text-xs"
                                   >
-                                    {dispatch.export_type === "a3erp" ? "A3ERP" : "FACILCOM"}
+                                    {dispatch.export_type === 'a3erp' ? 'A3ERP' : 'FACILCOM'}
                                   </Badge>
                                 )}
                               </div>
@@ -537,10 +509,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
                           </TableRow>
                           {dispatch.products?.map((product, productIndex) => {
                             let productAmountWithIva = product.amount;
-                            if (
-                              (dispatch.iva_amount ?? 0) > 0 &&
-                              (dispatch.base_amount ?? 0) > 0
-                            ) {
+                            if ((dispatch.iva_amount ?? 0) > 0 && (dispatch.base_amount ?? 0) > 0) {
                               const ivaProportional =
                                 (product.amount / (dispatch.base_amount ?? 1)) *
                                 (dispatch.iva_amount ?? 0);
@@ -554,7 +523,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
                                 <TableCell />
                                 <TableCell className="pl-8">
                                   <span className="text-muted-foreground mr-2">└─</span>
-                                  {product.product?.name ?? "-"}
+                                  {product.product?.name ?? '-'}
                                 </TableCell>
                                 <TableCell className="text-right">
                                   {formatWeight(product.net_weight)}
@@ -572,7 +541,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
                             );
                           })}
                           {dispatch.products && dispatch.products.length > 0 && (
-                            <TableRow className="bg-orange-100/50 dark:bg-orange-900/30 font-semibold">
+                            <TableRow className="bg-orange-100/50 font-semibold dark:bg-orange-900/30">
                               <TableCell />
                               <TableCell>Total</TableCell>
                               <TableCell className="text-right">

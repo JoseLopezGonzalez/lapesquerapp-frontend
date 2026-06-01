@@ -163,19 +163,21 @@ Ninguno (componente autónomo)
 #### 1. Detección de Subdominio y Modo Demo
 
 **Lógica**:
+
 ```javascript
 const hostname = window.location.hostname;
-const subdomain = hostname.split(".")[0];
+const subdomain = hostname.split('.')[0];
 
 // Modo demo si subdominio es "test"
-if (subdomain === "test") {
-  setEmail("admin@lapesquerapp.es");
-  setPassword("admin");
+if (subdomain === 'test') {
+  setEmail('admin@lapesquerapp.es');
+  setPassword('admin');
   setIsDemo(true);
 }
 ```
 
 **Comportamiento**:
+
 - Extrae subdominio del hostname
 - Si subdominio es "test": auto-rellena credenciales y marca como demo
 - Muestra badge "MODO DEMO" en la esquina superior derecha del card
@@ -185,12 +187,14 @@ if (subdomain === "test") {
 **Endpoint**: `${API_URL_V2}public/tenant/${subdomain}`
 
 **Flujo**:
+
 1. Hace fetch al endpoint público de tenant
 2. Verifica si `data.active === false` o si hay error
 3. Si tenant inactivo: muestra Alert y deshabilita formulario
 4. Si tenant activo: permite login
 
 **Respuesta Esperada**:
+
 ```javascript
 {
   active: boolean,
@@ -199,6 +203,7 @@ if (subdomain === "test") {
 ```
 
 **Estados**:
+
 - `tenantChecked: false` → Muestra Loader
 - `tenantActive: false` → Muestra Alert de error
 - `tenantActive: true` → Muestra formulario habilitado
@@ -206,12 +211,14 @@ if (subdomain === "test") {
 #### 3. Branding Dinámico
 
 **Lógica**:
+
 ```javascript
 const brandingImagePath = `/images/tenants/${subdomain}/image.png`;
 setBrandingImageUrl(brandingImagePath);
 ```
 
 **Comportamiento**:
+
 - Intenta cargar imagen desde `/images/tenants/{subdomain}/image.png`
 - Si falla, usa fallback: `/images/landing.png`
 - Imagen se muestra en panel izquierdo del card
@@ -221,6 +228,7 @@ setBrandingImageUrl(brandingImagePath);
 **Función**: `handleLogin(e)`
 
 **Flujo**:
+
 1. Previene submit por defecto
 2. Valida tenant activo (si no, muestra error)
 3. Activa loading
@@ -231,6 +239,7 @@ setBrandingImageUrl(brandingImagePath);
 8. Desactiva loading
 
 **Parámetros de signIn**:
+
 ```javascript
 {
   redirect: false,    // No redirigir automáticamente
@@ -240,13 +249,15 @@ setBrandingImageUrl(brandingImagePath);
 ```
 
 **Manejo de Errores**:
+
 - `CredentialsSignin` → "Datos de acceso incorrectos"
 - Otros errores → Mensaje del error o "Error al iniciar sesión"
 
 **Redirección**:
+
 ```javascript
 const params = new URLSearchParams(window.location.search);
-const redirectTo = params.get("from") || "/admin/home";
+const redirectTo = params.get('from') || '/admin/home';
 window.location.href = redirectTo;
 ```
 
@@ -255,6 +266,7 @@ window.location.href = redirectTo;
 **Estado**: `showPassword`
 
 **Comportamiento**:
+
 - Botón con icono EyeIcon/EyeOffIcon
 - Cambia tipo de input entre "password" y "text"
 - Posicionado absolutamente a la derecha del input
@@ -288,21 +300,25 @@ window.location.href = redirectTo;
 ### Estilos Clave
 
 **Container principal**:
+
 - `login-background`: Background con imagen fija (ver globals.css)
 - `flex min-h-screen items-center justify-center`
 - `bg-white dark:bg-black`
 
 **Card**:
+
 - `flex sm:flex-row flex-col`
 - `w-full h-full p-2`
 - Responsive: column en mobile, row en desktop
 
 **Panel de imagen**:
+
 - `w-full max-w-[500px]`
 - `min-h-[240px]`
 - `rounded-lg overflow-hidden`
 
 **Panel de formulario**:
+
 - `flex flex-col items-center justify-center`
 - `p-8 lg:p-12`
 
@@ -315,6 +331,7 @@ window.location.href = redirectTo;
 ### Provider: CredentialsProvider
 
 **Configuración**:
+
 ```javascript
 CredentialsProvider({
   name: 'Credentials',
@@ -324,43 +341,46 @@ CredentialsProvider({
   },
   async authorize(credentials, req) {
     // ... lógica de autenticación
-  }
-})
+  },
+});
 ```
 
 ### Función authorize
 
 **Responsabilidades**:
+
 1. Rate limiting por IP
 2. Llamar API backend para autenticar
 3. Retornar datos del usuario con accessToken
 
 **Flujo**:
+
 ```javascript
 async authorize(credentials, req) {
   // 1. Rate limiting
   const ip = getClientIp(req);
   // Verificar intentos y bloquear si excede
-  
+
   // 2. Llamar API
   const res = await fetchWithTenant(`${API_URL_V2}login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(credentials),
   });
-  
+
   // 3. Procesar respuesta
   const data = await res.json();
-  
+
   if (res.ok && data.access_token) {
     return { ...data.user, accessToken: data.access_token };
   }
-  
+
   throw new Error(data.message || 'Error al iniciar sesión');
 }
 ```
 
 **Respuesta Esperada del Backend**:
+
 ```javascript
 {
   access_token: string,           // Token JWT del backend
@@ -378,6 +398,7 @@ async authorize(credentials, req) {
 ```
 
 **Valor Retornado**:
+
 ```javascript
 {
   ...data.user,                   // Todos los campos del usuario
@@ -388,13 +409,15 @@ async authorize(credentials, req) {
 ### Rate Limiting
 
 **Configuración**:
+
 ```javascript
-const MAX_ATTEMPTS = 5;                    // Máximo de intentos
-const WINDOW_MS = 10 * 60 * 1000;         // Ventana de tiempo (10 minutos)
-const loginAttempts = {};                 // Almacenamiento en memoria
+const MAX_ATTEMPTS = 5; // Máximo de intentos
+const WINDOW_MS = 10 * 60 * 1000; // Ventana de tiempo (10 minutos)
+const loginAttempts = {}; // Almacenamiento en memoria
 ```
 
 **Lógica**:
+
 1. Obtener IP del cliente
 2. Filtrar intentos antiguos (mayores a WINDOW_MS)
 3. Verificar si excede MAX_ATTEMPTS
@@ -404,13 +427,10 @@ const loginAttempts = {};                 // Almacenamiento en memoria
 **Limitación**: Rate limiting es en memoria, se resetea al reiniciar el servidor.
 
 **Función getClientIp**:
+
 ```javascript
 function getClientIp(req) {
-  return (
-    req.headers["x-forwarded-for"]?.split(",")[0] ||
-    req.socket?.remoteAddress ||
-    "unknown"
-  );
+  return req.headers['x-forwarded-for']?.split(',')[0] || req.socket?.remoteAddress || 'unknown';
 }
 ```
 
@@ -425,6 +445,7 @@ session: {
 ```
 
 **Explicación**:
+
 - `strategy: 'jwt'`: Las sesiones se almacenan en el token JWT (no en base de datos)
 - `maxAge`: Duración máxima de la sesión
 - `updateAge`: Frecuencia con la que se actualiza el token
@@ -436,32 +457,35 @@ session: {
 **Función**: `async jwt({ token, user })`
 
 **Responsabilidades**:
+
 - Agregar datos del usuario al token cuando inicia sesión
 - Validar expiración del token (actualmente deshabilitado)
 
 **Lógica**:
+
 ```javascript
 async jwt({ token, user }) {
   // Si el usuario está presente (inicio de sesión)
   if (user) {
     token.accessToken = user.accessToken;
     token.role = user.role;
-    
+
     // Campos opcionales
     if (user.assignedStoreId) token.assignedStoreId = user.assignedStoreId;
     if (user.companyName) token.companyName = user.companyName;
     if (user.companyLogoUrl) token.companyLogoUrl = user.companyLogoUrl;
   }
-  
+
   // Validar expiración (actualmente no implementado)
   const tokenIsExpired = false;
   if (tokenIsExpired) return null;
-  
+
   return token;
 }
 ```
 
 **Estructura del Token JWT**:
+
 ```javascript
 {
   accessToken: string,              // Token del backend
@@ -480,10 +504,12 @@ async jwt({ token, user }) {
 **Función**: `async session({ session, token })`
 
 **Responsabilidades**:
+
 - Copiar datos del token a la sesión
 - Validar que el token exista
 
 **Lógica**:
+
 ```javascript
 async session({ session, token }) {
   if (!token) return null;          // Si no hay token, cerrar sesión
@@ -493,6 +519,7 @@ async session({ session, token }) {
 ```
 
 **Estructura de Session**:
+
 ```javascript
 {
   user: {
@@ -531,7 +558,7 @@ pages: {
 ### Secret
 
 ```javascript
-secret: process.env.NEXTAUTH_SECRET
+secret: process.env.NEXTAUTH_SECRET;
 ```
 
 **Variable de entorno requerida**: `NEXTAUTH_SECRET`
@@ -566,6 +593,7 @@ const { data: session, status } = useSession();
 ```
 
 **Hook useSession**:
+
 - Proporciona sesión reactiva
 - Actualiza automáticamente cuando cambia la sesión
 - Estado `loading` mientras verifica
@@ -586,12 +614,14 @@ const token = session?.user?.accessToken;
 ### Datos Almacenados en Sesión
 
 **Campos siempre presentes**:
+
 - `accessToken`: Token JWT del backend para llamadas API
 - `role`: Rol(es) del usuario (string o array)
 - `exp`: Timestamp de expiración
 - `iat`: Timestamp de emisión
 
 **Campos opcionales**:
+
 - `assignedStoreId`: ID de almacén asignado (para `store_operator`)
 - `companyName`: Nombre de la empresa
 - `companyLogoUrl`: URL del logo de la empresa
@@ -599,6 +629,7 @@ const token = session?.user?.accessToken;
 ### Validación de Sesión
 
 El middleware y los callbacks validan:
+
 1. **Existencia del token**: Si no existe, redirige a login
 2. **Expiración**: Si `exp` < fecha actual, redirige a login
 3. **Validez con backend**: Llama a `/api/v2/me` para verificar que el token siga siendo válido
@@ -621,13 +652,10 @@ El middleware y los callbacks validan:
 ### Rutas Protegidas
 
 **Configuración**:
+
 ```javascript
 export const config = {
-  matcher: [
-    '/admin/:path*',
-    '/production/:path*',
-    '/warehouse/:path*',
-  ],
+  matcher: ['/admin/:path*', '/production/:path*', '/warehouse/:path*'],
 };
 ```
 
@@ -661,16 +689,18 @@ Request a ruta protegida
 ### Validación de Token
 
 **Función getToken**:
-```javascript
-import { getToken } from "next-auth/jwt";
 
-token = await getToken({ 
+```javascript
+import { getToken } from 'next-auth/jwt';
+
+token = await getToken({
   req: requestForToken,
-  secret: process.env.NEXTAUTH_SECRET 
+  secret: process.env.NEXTAUTH_SECRET,
 });
 ```
 
 **Wrapper de cookies** (para Next.js 16):
+
 ```javascript
 const requestForToken = {
   url: req.url,
@@ -681,7 +711,7 @@ const requestForToken = {
       return cookie ? { name: cookie.name, value: cookie.value } : undefined;
     },
     getAll: () => {
-      return req.cookies.getAll().map(c => ({ name: c.name, value: c.value }));
+      return req.cookies.getAll().map((c) => ({ name: c.name, value: c.value }));
     },
   },
 };
@@ -701,13 +731,15 @@ if (Date.now() > tokenExpiration) {
 **Endpoint**: `GET /api/v2/me`
 
 **Headers**:
+
 ```javascript
 {
-  Authorization: `Bearer ${token.accessToken}`
+  Authorization: `Bearer ${token.accessToken}`;
 }
 ```
 
 **Comportamiento**:
+
 - Si respuesta no es OK (status !== 200): Token inválido o sesión cancelada
 - Redirige a login con parámetro `from`
 
@@ -716,16 +748,16 @@ if (Date.now() > tokenExpiration) {
 **Configuración**: `src/configs/roleConfig.js`
 
 **Lógica**:
+
 1. Encuentra la ruta más específica que coincida con `pathname`
 2. Obtiene roles permitidos para esa ruta
 3. Normaliza roles del usuario a array
 4. Verifica si algún rol del usuario está en roles permitidos
 
 **Código**:
+
 ```javascript
-const matchingRoutes = Object.keys(roleConfig).filter((route) =>
-  pathname.startsWith(route)
-);
+const matchingRoutes = Object.keys(roleConfig).filter((route) => pathname.startsWith(route));
 const matchingRoute = matchingRoutes.sort((a, b) => b.length - a.length)[0];
 const rolesAllowed = matchingRoute ? roleConfig[matchingRoute] : [];
 
@@ -735,15 +767,17 @@ const hasAccess = userRoles.some((role) => rolesAllowed.includes(role));
 
 **Caso Especial - store_operator**:
 Si un `store_operator` intenta acceder a `/admin` sin permisos:
+
 - Redirige a `/warehouse/{assignedStoreId}` si tiene `assignedStoreId`
 - Redirige a `/unauthorized` si no tiene `assignedStoreId`
 
 ### Redirección a Login
 
 **URL construida**:
+
 ```javascript
-const loginUrl = new URL("/", req.url);
-loginUrl.searchParams.set("from", pathname);
+const loginUrl = new URL('/', req.url);
+loginUrl.searchParams.set('from', pathname);
 return NextResponse.redirect(loginUrl);
 ```
 
@@ -768,18 +802,19 @@ return NextResponse.redirect(loginUrl);
 #### Interceptación de Fetch
 
 **Lógica**:
+
 ```javascript
 const originalFetch = window.fetch;
 
 window.fetch = async (...args) => {
   try {
     const response = await originalFetch(...args);
-    
+
     // Verificar status code
     if (isAuthStatusCode(response.status)) {
       // Manejar error de autenticación
     }
-    
+
     return response;
   } catch (error) {
     // Verificar si es error de autenticación
@@ -796,12 +831,14 @@ window.fetch = async (...args) => {
 #### Interceptación de Errores Globales
 
 **Event Listeners**:
+
 ```javascript
 window.addEventListener('error', handleGlobalError);
 window.addEventListener('unhandledrejection', handleGlobalError);
 ```
 
 **Función handleGlobalError**:
+
 ```javascript
 const handleGlobalError = (event) => {
   const error = event.error || event.reason;
@@ -814,6 +851,7 @@ const handleGlobalError = (event) => {
 ### Manejo de Error de Autenticación
 
 **Flujo**:
+
 1. Detectar error 401/403 o error de autenticación
 2. Mostrar toast: "Sesión expirada. Redirigiendo al login..."
 3. Esperar delay (1500ms)
@@ -822,18 +860,20 @@ const handleGlobalError = (event) => {
 6. Redirigir: `window.location.href = loginUrl`
 
 **Configuración**:
+
 ```javascript
 // src/configs/authConfig.js
 export const AUTH_ERROR_CONFIG = {
-  REDIRECT_DELAY: 1500,           // Delay antes de redirigir (ms)
-  DEFAULT_LOGIN_URL: '/',         // URL de login
-  FROM_PARAM: 'from'              // Parámetro para guardar ruta actual
+  REDIRECT_DELAY: 1500, // Delay antes de redirigir (ms)
+  DEFAULT_LOGIN_URL: '/', // URL de login
+  FROM_PARAM: 'from', // Parámetro para guardar ruta actual
 };
 ```
 
 ### Funciones de Utilidad
 
 **isAuthStatusCode**:
+
 ```javascript
 export function isAuthStatusCode(status) {
   return status === 401 || status === 403;
@@ -841,18 +881,20 @@ export function isAuthStatusCode(status) {
 ```
 
 **isAuthError**:
+
 ```javascript
 export function isAuthError(error) {
   if (!error || !error.message) return false;
-  
+
   const message = error.message.toLowerCase();
-  return AUTH_ERROR_CONFIG.AUTH_ERROR_MESSAGES.some(
-    authMessage => message.includes(authMessage.toLowerCase())
+  return AUTH_ERROR_CONFIG.AUTH_ERROR_MESSAGES.some((authMessage) =>
+    message.includes(authMessage.toLowerCase())
   );
 }
 ```
 
 **buildLoginUrl**:
+
 ```javascript
 export function buildLoginUrl(currentPath = '') {
   const url = new URL(AUTH_ERROR_CONFIG.DEFAULT_LOGIN_URL, window.location.origin);
@@ -995,7 +1037,7 @@ export function buildLoginUrl(currentPath = '') {
 }
 
 .login-background::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   background-image: url('/images/background-light-v2.png');
@@ -1014,6 +1056,7 @@ export function buildLoginUrl(currentPath = '') {
 ```
 
 **Comportamiento**:
+
 - Background con imagen fija
 - Imagen diferente para tema claro/oscuro
 - Opacidad reducida (0.2 claro, 0.15 oscuro)
@@ -1026,13 +1069,13 @@ export function buildLoginUrl(currentPath = '') {
 **Componente**: `src/components/ui/card.jsx`
 
 **Uso**:
+
 ```javascript
-<Card className="relative flex sm:flex-row flex-col w-full h-full p-2 mt-4">
-  {/* Contenido */}
-</Card>
+<Card className="relative mt-4 flex h-full w-full flex-col p-2 sm:flex-row">{/* Contenido */}</Card>
 ```
 
 **Estilos**:
+
 - `rounded-xl border bg-card text-card-foreground shadow`
 - Responsive: `flex-col` en mobile, `flex-row` en desktop
 
@@ -1041,6 +1084,7 @@ export function buildLoginUrl(currentPath = '') {
 **Componente**: `src/components/ui/input.jsx`
 
 **Estilos**:
+
 - `h-9 rounded-md border border-input`
 - `px-3 py-1 text-base md:text-sm`
 - `focus-visible:ring-1 focus-visible:ring-ring`
@@ -1050,6 +1094,7 @@ export function buildLoginUrl(currentPath = '') {
 **Componente**: `src/components/ui/label.jsx`
 
 **Estilos**:
+
 - `text-sm font-medium leading-none`
 
 #### Button
@@ -1057,6 +1102,7 @@ export function buildLoginUrl(currentPath = '') {
 **Componente**: `src/components/ui/button.jsx`
 
 **Estados**:
+
 - Normal: Estilos por defecto
 - Disabled: `opacity-50 cursor-not-allowed`
 - Loading: Muestra "Entrando..." en lugar de "Login"
@@ -1068,13 +1114,12 @@ export function buildLoginUrl(currentPath = '') {
 **Variante**: `destructive`
 
 **Uso**:
+
 ```javascript
 <Alert variant="destructive">
   <AlertCircleIcon />
   <AlertTitle>Cuentas deshabilitadas para esta empresa</AlertTitle>
-  <AlertDescription>
-    {/* Descripción */}
-  </AlertDescription>
+  <AlertDescription>{/* Descripción */}</AlertDescription>
 </Alert>
 ```
 
@@ -1083,22 +1128,24 @@ export function buildLoginUrl(currentPath = '') {
 **Archivo**: `src/components/Utilities/RotatingText/index.js`
 
 **Props utilizadas**:
+
 ```javascript
 <RotatingText
-  texts={["al día.", "segura.", "eficiente.", "organizada."]}
+  texts={['al día.', 'segura.', 'eficiente.', 'organizada.']}
   mainClassName="text-xl text-primary font-medium"
   staggerFrom="last"
-  initial={{ y: "100%" }}
+  initial={{ y: '100%' }}
   animate={{ y: 0 }}
-  exit={{ y: "-120%" }}
+  exit={{ y: '-120%' }}
   staggerDuration={0.025}
   splitLevelClassName="overflow-hidden"
-  transition={{ type: "spring", damping: 30, stiffness: 400 }}
+  transition={{ type: 'spring', damping: 30, stiffness: 400 }}
   rotationInterval={6000}
 />
 ```
 
 **Comportamiento**:
+
 - Rotación automática de textos cada 6 segundos
 - Animación con Framer Motion
 - Efecto de entrada/salida tipo spring
@@ -1111,6 +1158,7 @@ export function buildLoginUrl(currentPath = '') {
 **Fallback**: `/images/landing.png`
 
 **Componente Next.js Image**:
+
 - `fill`: Imagen ocupa todo el contenedor
 - `object-cover`: Mantiene proporción, recorta si es necesario
 - `priority`: Carga prioritaria
@@ -1123,18 +1171,21 @@ export function buildLoginUrl(currentPath = '') {
 ### 1. Gestión de Sesiones
 
 **Web (NextAuth.js)**:
+
 - Sesiones almacenadas en cookies del navegador
 - Manejo automático de cookies por NextAuth
 - Refresh automático de tokens
 - Persistencia entre recargas de página
 
 **Native (Expo)**:
+
 - No hay cookies nativas
 - Almacenamiento en AsyncStorage o SecureStore
 - Gestión manual de tokens
 - Refresh manual de tokens
 
 **Consideraciones**:
+
 - Se debe implementar almacenamiento seguro de tokens (SecureStore recomendado)
 - Se debe implementar refresh manual de tokens
 - Se debe implementar validación de expiración
@@ -1145,18 +1196,21 @@ export function buildLoginUrl(currentPath = '') {
 ### 2. Autenticación
 
 **Web (NextAuth.js)**:
+
 - API route `/api/auth/[...nextauth]` maneja todo
 - CredentialsProvider con authorize
 - Callbacks JWT y Session automáticos
 - Rate limiting en memoria del servidor
 
 **Native (Expo)**:
+
 - No hay API routes
 - Autenticación directa con backend
 - Gestión manual de tokens
 - Rate limiting debe ser en el backend
 
 **Consideraciones**:
+
 - Se debe llamar directamente al endpoint `/api/v2/login`
 - Se debe gestionar manualmente el almacenamiento del access_token
 - El rate limiting debe manejarse en el backend (no en cliente)
@@ -1167,16 +1221,19 @@ export function buildLoginUrl(currentPath = '') {
 ### 3. Protección de Rutas
 
 **Web (Middleware de Next.js)**:
+
 - Middleware intercepta requests en servidor
 - Validación automática en cada request
 - Redirección automática
 
 **Native (React Navigation)**:
+
 - No hay middleware
 - Validación en componentes o hooks
 - Navegación condicional
 
 **Consideraciones**:
+
 - Se debe implementar hook o HOC para protección de pantallas
 - Validación debe hacerse en cada navegación
 - Redirección mediante `navigation.navigate()` o `navigation.replace()`
@@ -1187,16 +1244,19 @@ export function buildLoginUrl(currentPath = '') {
 ### 4. Interceptación de Errores
 
 **Web (AuthErrorInterceptor)**:
+
 - Intercepta `window.fetch`
 - Event listeners globales
 - Redirección con `window.location.href`
 
 **Native (Expo)**:
+
 - No hay `window.fetch` global
 - Interceptores de axios/fetch personalizados
 - Navegación mediante React Navigation
 
 **Consideraciones**:
+
 - Se debe implementar interceptor en la librería HTTP utilizada (axios, fetch wrapper)
 - Manejo de errores 401/403 en cada llamada API
 - Navegación a pantalla de login mediante `navigation.navigate()`
@@ -1207,16 +1267,19 @@ export function buildLoginUrl(currentPath = '') {
 ### 5. Validación de Tenant
 
 **Web (LoginPage)**:
+
 - Fetch en useEffect al montar
 - `window.location.hostname` para subdominio
 - Mostrar Alert si inactivo
 
 **Native (Expo)**:
+
 - No hay hostname/subdominio
 - Validación mediante configuración o API
 - Mostrar Alert/Snackbar nativo
 
 **Consideraciones**:
+
 - En Expo no hay concepto de subdominio en URL
 - La validación de tenant debe hacerse mediante API o configuración
 - Se puede usar el nombre de la app o configuración para identificar tenant
@@ -1227,16 +1290,19 @@ export function buildLoginUrl(currentPath = '') {
 ### 6. Modo Demo
 
 **Web (LoginPage)**:
+
 - Detecta subdominio "test"
 - Auto-rellena credenciales
 - Badge visual "MODO DEMO"
 
 **Native (Expo)**:
+
 - No hay subdominios
 - Modo demo mediante configuración o build variant
 - Badge visual similar
 
 **Consideraciones**:
+
 - El modo demo debe activarse mediante configuración, build variant o variable de entorno
 - Se puede usar `__DEV__` de React Native para desarrollo
 - Las credenciales demo deben estar en configuración
@@ -1246,16 +1312,19 @@ export function buildLoginUrl(currentPath = '') {
 ### 7. Navegación y Redirección
 
 **Web (Next.js)**:
+
 - `window.location.href` para redirección
 - `useRouter().push()` para navegación
 - Parámetros en URL query string
 
 **Native (React Navigation)**:
+
 - `navigation.navigate()` o `navigation.replace()`
 - Parámetros pasados como objeto
 - Stack navigation para flujo login → app
 
 **Consideraciones**:
+
 - Parámetro `from` debe pasarse como parámetro de navegación, no query string
 - Redirección después de login debe usar `navigation.replace()` para evitar volver atrás
 - Stack de navegación debe separar pantallas públicas y privadas
@@ -1265,18 +1334,21 @@ export function buildLoginUrl(currentPath = '') {
 ### 8. Estilos y UI
 
 **Web (Tailwind CSS)**:
+
 - Clases utility
 - Variables CSS para tema
 - Background images
 - Responsive con breakpoints
 
 **Native (StyleSheet)**:
+
 - Objetos de estilo
 - Colores como valores JS
 - Images como assets o URL
 - Dimensions para responsive
 
 **Consideraciones**:
+
 - Background images deben ser componentes Image o View con estilo
 - Los estilos deben convertirse a StyleSheet
 - Colores del tema deben estar en objeto JS
@@ -1356,6 +1428,7 @@ export function buildLoginUrl(currentPath = '') {
 ### Estructura de Datos
 
 **Respuesta de Login**:
+
 ```javascript
 {
   access_token: string,
@@ -1372,6 +1445,7 @@ export function buildLoginUrl(currentPath = '') {
 ```
 
 **Sesión Almacenada**:
+
 ```javascript
 {
   accessToken: string,
@@ -1391,6 +1465,7 @@ export function buildLoginUrl(currentPath = '') {
 ### Estilos y Dimensiones
 
 **Login Screen**:
+
 - Formulario centrado vertical y horizontalmente
 - Card con imagen de branding a la izquierda (desktop)
 - Imagen responsive: column en mobile, row en desktop
@@ -1399,6 +1474,7 @@ export function buildLoginUrl(currentPath = '') {
 **Colores del Tema**: Ver sistema de colores del tema (igual que sidebar)
 
 **Tipografía**:
+
 - Título: "La PesquerApp" - text-2xl sm:text-3xl font-bold
 - Subtítulo: text-md sm:text-xl
 - Labels: text-sm font-medium
@@ -1431,5 +1507,4 @@ La lógica de autenticación (validación de credenciales, gestión de tokens, v
 
 **Fin del Documento**
 
-*Última actualización: 2024*
-
+_Última actualización: 2024_

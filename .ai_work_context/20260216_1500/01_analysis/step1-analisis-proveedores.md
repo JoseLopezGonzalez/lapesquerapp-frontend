@@ -16,35 +16,35 @@
 
 ### Proveedores (suppliers)
 
-| Aspecto | Estado | Observaciones |
-|---------|--------|---------------|
-| Servicio | supplierService.js | JavaScript, sin tipos. Métodos: list, getById, create, update, delete, deleteMultiple, getOptions. |
-| Data fetching | Manual | EntityClient usa fetchData (useEffect). No useSuppliersList. |
-| EntityClient | No React Query | suppliers NO está en isQueryDriven. Usa fetch manual como transports/incoterms antes de migración. |
-| Hooks | useSupplierOptions | Usa RawMaterialReceptionsOptionsContext + getSupplierOptions (rawMaterialReceptionService). No usa supplierService.getOptions. |
-| Tests | Ninguno | Sin tests para supplierService ni para flujos de proveedores. |
+| Aspecto       | Estado             | Observaciones                                                                                                                  |
+| ------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| Servicio      | supplierService.js | JavaScript, sin tipos. Métodos: list, getById, create, update, delete, deleteMultiple, getOptions.                             |
+| Data fetching | Manual             | EntityClient usa fetchData (useEffect). No useSuppliersList.                                                                   |
+| EntityClient  | No React Query     | suppliers NO está en isQueryDriven. Usa fetch manual como transports/incoterms antes de migración.                             |
+| Hooks         | useSupplierOptions | Usa RawMaterialReceptionsOptionsContext + getSupplierOptions (rawMaterialReceptionService). No usa supplierService.getOptions. |
+| Tests         | Ninguno            | Sin tests para supplierService ni para flujos de proveedores.                                                                  |
 
 ### Liquidaciones
 
-| Aspecto | Estado | Observaciones |
-|---------|--------|---------------|
-| Servicio | supplierLiquidationService.js | JavaScript, sin tipos. Usa getSession() en lugar de getAuthToken(). fetchWithTenant directo. |
-| Data fetching | Manual | useEffect + useState en SupplierLiquidationList y SupplierLiquidationDetail. |
-| Componentes | .jsx | SupplierLiquidationList ~266 L, SupplierLiquidationDetail ~497 L. Tamaño aceptable (<200 sería ideal para Detail). |
-| Tests | Ninguno | Sin tests. |
+| Aspecto       | Estado                        | Observaciones                                                                                                      |
+| ------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Servicio      | supplierLiquidationService.js | JavaScript, sin tipos. Usa getSession() en lugar de getAuthToken(). fetchWithTenant directo.                       |
+| Data fetching | Manual                        | useEffect + useState en SupplierLiquidationList y SupplierLiquidationDetail.                                       |
+| Componentes   | .jsx                          | SupplierLiquidationList ~266 L, SupplierLiquidationDetail ~497 L. Tamaño aceptable (<200 sería ideal para Detail). |
+| Tests         | Ninguno                       | Sin tests.                                                                                                         |
 
 ---
 
 ## Uso de patrones Next.js/React
 
-| Patrón | Proveedores | Liquidaciones |
-|--------|-------------|---------------|
-| React Query | ❌ No | ❌ No |
-| TypeScript | ❌ No | ❌ No |
-| Custom Hooks | useSupplierOptions (contexto recepciones) | ❌ Lógica en componentes |
-| Server/Client | Client | Client |
-| Formularios Zod | ✅ Entity forms (genéricos) | N/A (fechas por URL, opciones locales) |
-| shadcn/ui | ✅ | ✅ |
+| Patrón          | Proveedores                               | Liquidaciones                          |
+| --------------- | ----------------------------------------- | -------------------------------------- |
+| React Query     | ❌ No                                     | ❌ No                                  |
+| TypeScript      | ❌ No                                     | ❌ No                                  |
+| Custom Hooks    | useSupplierOptions (contexto recepciones) | ❌ Lógica en componentes               |
+| Server/Client   | Client                                    | Client                                 |
+| Formularios Zod | ✅ Entity forms (genéricos)               | N/A (fechas por URL, opciones locales) |
+| shadcn/ui       | ✅                                        | ✅                                     |
 
 ---
 

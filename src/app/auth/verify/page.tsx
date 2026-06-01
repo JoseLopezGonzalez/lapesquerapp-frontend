@@ -1,33 +1,37 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { useEffect, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
-import { signIn } from "next-auth/react";
-import Link from "next/link";
-import { Button as ButtonBase } from "@/components/ui/button";
+import * as React from 'react';
+import { useEffect, useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { signIn } from 'next-auth/react';
+import Link from 'next/link';
+import { Button as ButtonBase } from '@/components/ui/button';
 
 const Button = ButtonBase as React.ComponentType<
-  React.PropsWithChildren<{ asChild?: boolean; variant?: "default" | "outline" | "destructive" | "secondary" | "ghost" | "link"; className?: string }>
+  React.PropsWithChildren<{
+    asChild?: boolean;
+    variant?: 'default' | 'outline' | 'destructive' | 'secondary' | 'ghost' | 'link';
+    className?: string;
+  }>
 >;
-import { verifyMagicLinkToken } from "@/services/authService";
-import { getRedirectUrl } from "@/utils/loginUtils";
-import { magicLinkTokenSchema } from "@/schemas/loginSchema";
-import Loader from "@/components/Utilities/Loader";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircleIcon } from "lucide-react";
+import { verifyMagicLinkToken } from '@/services/authService';
+import { getRedirectUrl } from '@/utils/loginUtils';
+import { magicLinkTokenSchema } from '@/schemas/loginSchema';
+import Loader from '@/components/Utilities/Loader';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircleIcon } from 'lucide-react';
 
 function VerifyContent() {
   const searchParams = useSearchParams();
-  const token = searchParams.get("token");
-  const [status, setStatus] = useState<"loading" | "error" | "success">("loading");
-  const [errorMessage, setErrorMessage] = useState("");
+  const token = searchParams.get('token');
+  const [status, setStatus] = useState<'loading' | 'error' | 'success'>('loading');
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    const parsed = magicLinkTokenSchema.safeParse(token ?? "");
+    const parsed = magicLinkTokenSchema.safeParse(token ?? '');
     if (!parsed.success) {
-      setStatus("error");
-      setErrorMessage(parsed.error.errors[0]?.message ?? "Enlace no válido.");
+      setStatus('error');
+      setErrorMessage(parsed.error.errors[0]?.message ?? 'Enlace no válido.');
       return;
     }
 
@@ -39,33 +43,37 @@ function VerifyContent() {
         const data = await verifyMagicLinkToken(validToken);
         if (cancelled) return;
         if (!data?.access_token || !data?.user) {
-          setStatus("error");
-          setErrorMessage("Respuesta inválida del servidor.");
+          setStatus('error');
+          setErrorMessage('Respuesta inválida del servidor.');
           return;
         }
-        const result = await signIn("credentials", {
+        const result = await signIn('credentials', {
           redirect: false,
           accessToken: data.access_token,
           user: JSON.stringify(data.user),
         });
         if (cancelled) return;
         if (!result || result.error) {
-          setStatus("error");
-          setErrorMessage(result?.error ?? "Error al iniciar sesión.");
+          setStatus('error');
+          setErrorMessage(result?.error ?? 'Error al iniciar sesión.');
           return;
         }
-        const search = searchParams.toString() ? `?${searchParams.toString()}` : "";
+        const search = searchParams.toString() ? `?${searchParams.toString()}` : '';
         const redirectUrl = getRedirectUrl(data.user, search);
         window.location.href = redirectUrl;
-        setStatus("success");
+        setStatus('success');
       } catch (err: unknown) {
         if (cancelled) return;
-        setStatus("error");
-        const e = err as { status?: number; message?: string; data?: { message?: string; userMessage?: string } };
+        setStatus('error');
+        const e = err as {
+          status?: number;
+          message?: string;
+          data?: { message?: string; userMessage?: string };
+        };
         const msg =
           e.status === 403
-            ? e.data?.userMessage || e.message || "Usuario desactivado."
-            : e.message || e.data?.message || e.data?.userMessage || "Enlace no válido o expirado.";
+            ? e.data?.userMessage || e.message || 'Usuario desactivado.'
+            : e.message || e.data?.message || e.data?.userMessage || 'Enlace no válido o expirado.';
         setErrorMessage(msg);
       }
     })();
@@ -75,24 +83,24 @@ function VerifyContent() {
     };
   }, [token, searchParams]);
 
-  if (status === "loading") {
+  if (status === 'loading') {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6">
+      <div className="flex min-h-screen flex-col items-center justify-center p-6">
         <Loader />
-        <p className="mt-4 text-muted-foreground">Verificando enlace...</p>
+        <p className="text-muted-foreground mt-4">Verificando enlace...</p>
       </div>
     );
   }
 
-  if (status === "error") {
+  if (status === 'error') {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 max-w-md">
+      <div className="flex min-h-screen max-w-md flex-col items-center justify-center p-6">
         <Alert variant="destructive">
           <AlertCircleIcon />
           <AlertTitle>Error</AlertTitle>
           <AlertDescription>{errorMessage}</AlertDescription>
         </Alert>
-        <div className="mt-6 flex flex-col gap-2 w-full">
+        <div className="mt-6 flex w-full flex-col gap-2">
           <Button asChild>
             <Link href="/">Volver al inicio de sesión</Link>
           </Button>
@@ -105,9 +113,9 @@ function VerifyContent() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6">
+    <div className="flex min-h-screen flex-col items-center justify-center p-6">
       <Loader />
-      <p className="mt-4 text-muted-foreground">Redirigiendo...</p>
+      <p className="text-muted-foreground mt-4">Redirigiendo...</p>
     </div>
   );
 }
@@ -116,7 +124,7 @@ export default function AuthVerifyPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex flex-col items-center justify-center p-6">
+        <div className="flex min-h-screen flex-col items-center justify-center p-6">
           <Loader />
         </div>
       }

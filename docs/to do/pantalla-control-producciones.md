@@ -211,7 +211,6 @@ La opcion mas clara para usuarios operativos probablemente sea **Control de prod
 
 Mostrar tarjetas compactas con:
 
-
 | Indicador                       | Utilidad                                                              |
 | ------------------------------- | --------------------------------------------------------------------- |
 | Producciones abiertas           | Detectar lotes vivos o sin cerrar.                                    |
@@ -222,28 +221,25 @@ Mostrar tarjetas compactas con:
 | Cajas sin coste                 | Enlazar con regularizacion de costes.                                 |
 | Producciones listas para cerrar | Accion rapida hacia cierre definitivo.                                |
 
-
 ### 3.2 Lista principal de producciones
 
 Tabla densa y filtrable. Columnas sugeridas:
 
-
-| Columna      | Detalle                                                              |
-| ------------ | -------------------------------------------------------------------- |
-| Lote         | `production.lot`, enlaza al detalle/arbol.                           |
-| Fecha        | `date` o primer `started_at` raiz si existe.                         |
+| Columna      | Detalle                                                                    |
+| ------------ | -------------------------------------------------------------------------- |
+| Lote         | `production.lot`, enlaza al detalle/arbol.                                 |
+| Fecha        | `date` o primer `started_at` raiz si existe.                               |
 | Estado       | Abierta, cerrada, lista para cerrar, no cerrable por stock, no conciliada. |
-| Especie      | `species`.                                                           |
-| Entrada      | Kg y cajas de inputs de stock.                                       |
-| Producido    | Kg y cajas de outputs finales.                                       |
-| Vendido      | Kg y cajas en palets enviados/pedidos.                               |
-| Stock        | Kg y cajas aun en palets `registered/stored`.                        |
-| Reprocesado  | Kg y cajas consumidas como input en otra produccion.                 |
-| Balance      | `producido - vendido - stock - reprocesado`.                         |
-| Conciliacion | `ok`, `warning`, `error`.                                            |
-| Coste        | Completo, parcial, sin coste.                                        |
-| Acciones     | Ver arbol, ver conciliacion, verificar cierre, abrir regularizacion. |
-
+| Especie      | `species`.                                                                 |
+| Entrada      | Kg y cajas de inputs de stock.                                             |
+| Producido    | Kg y cajas de outputs finales.                                             |
+| Vendido      | Kg y cajas en palets enviados/pedidos.                                     |
+| Stock        | Kg y cajas aun en palets `registered/stored`.                              |
+| Reprocesado  | Kg y cajas consumidas como input en otra produccion.                       |
+| Balance      | `producido - vendido - stock - reprocesado`.                               |
+| Conciliacion | `ok`, `warning`, `error`.                                                  |
+| Coste        | Completo, parcial, sin coste.                                              |
+| Acciones     | Ver arbol, ver conciliacion, verificar cierre, abrir regularizacion.       |
 
 ### 3.3 Panel lateral de alertas y limitaciones
 
@@ -256,7 +252,6 @@ Al seleccionar una produccion, mostrar problemas agrupados por naturaleza, no so
 
 Cada alerta debe tener:
 
-
 | Campo     | Ejemplo                                                              |
 | --------- | -------------------------------------------------------------------- |
 | Tipo      | `reconciliation_not_ok`, `stock_without_production`, `missing_cost`. |
@@ -264,7 +259,6 @@ Cada alerta debe tener:
 | Mensaje   | "Hay 42.5 kg mas contabilizados que producidos".                     |
 | Entidad   | Lote, producto, caja, palet, pedido o proceso.                       |
 | Accion    | "Ver conciliacion", "Abrir palet", "Regularizar coste".              |
-
 
 ---
 
@@ -282,7 +276,6 @@ balance = producido - (vendido + stock + reprocesado)
 
 Estados actuales:
 
-
 | Estado    | Criterio actual aproximado                                     |
 | --------- | -------------------------------------------------------------- |
 | `ok`      | Balance practicamente 0.                                       |
@@ -290,7 +283,6 @@ Estados actuales:
 | `error`   | Diferencia mayor al 5% o producto contabilizado sin producido. |
 
 **Caso especial**: un balance negativo (mas kg en stock/venta/reproceso que producidos) es siempre `error` independientemente del porcentaje, porque indica producto que fisicamente no existe segun las declaraciones de produccion.
-
 
 Uso en pantalla:
 
@@ -468,7 +460,6 @@ Uso:
 ## 5. Filtros recomendados
 
 Filtros principales:
-
 
 | Filtro                        | Tipo                                                        |
 | ----------------------------- | ----------------------------------------------------------- |
@@ -789,14 +780,14 @@ Requiere:
 
 Los siguientes artefactos han sido creados e integrados en el proyecto:
 
-| Artefacto | Ruta |
-| --------- | ---- |
-| Servicio principal | `app/Services/Production/ProductionControlPanelService.php` |
-| Controlador principal | `app/Http/Controllers/v2/ProductionControlPanelController.php` |
-| Form Request principal | `app/Http/Requests/v2/IndexProductionControlPanelRequest.php` |
-| Servicio lotes huerfanos | `app/Services/Production/OrphanStockService.php` |
-| Controlador lotes huerfanos | `app/Http/Controllers/v2/OrphanStockController.php` |
-| Form Request lotes huerfanos | `app/Http/Requests/v2/IndexOrphanStockRequest.php` |
+| Artefacto                    | Ruta                                                           |
+| ---------------------------- | -------------------------------------------------------------- |
+| Servicio principal           | `app/Services/Production/ProductionControlPanelService.php`    |
+| Controlador principal        | `app/Http/Controllers/v2/ProductionControlPanelController.php` |
+| Form Request principal       | `app/Http/Requests/v2/IndexProductionControlPanelRequest.php`  |
+| Servicio lotes huerfanos     | `app/Services/Production/OrphanStockService.php`               |
+| Controlador lotes huerfanos  | `app/Http/Controllers/v2/OrphanStockController.php`            |
+| Form Request lotes huerfanos | `app/Http/Requests/v2/IndexOrphanStockRequest.php`             |
 
 Ambas rutas estan registradas en `routes/api.php` **antes** del `Route::apiResource('productions', ...)` para evitar colision con el parametro `{id}`:
 
@@ -819,18 +810,18 @@ Esta seccion documenta el contrato exacto del endpoint implementado. Todo lo que
 
 El panel de control se sirve desde **dos endpoints independientes**:
 
-| Endpoint | Proposito |
-| -------- | --------- |
+| Endpoint                                | Proposito                                                                                                                    |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | `GET /api/v2/productions/control-panel` | Lista paginada de producciones con metricas, reconciliacion, cierre y costes. Tambien devuelve un resumen global del tenant. |
-| `GET /api/v2/productions/orphan-stock` | Lista paginada de lotes en stock sin produccion ni recepcion, con desglose por palet y producto. |
+| `GET /api/v2/productions/orphan-stock`  | Lista paginada de lotes en stock sin produccion ni recepcion, con desglose por palet y producto.                             |
 
 **Headers obligatorios (ambos endpoints):**
 
-| Header          | Valor                      |
-| --------------- | -------------------------- |
-| `X-Tenant`      | subdominio del tenant      |
-| `Authorization` | `Bearer {sanctum_token}`   |
-| `Accept`        | `application/json`         |
+| Header          | Valor                    |
+| --------------- | ------------------------ |
+| `X-Tenant`      | subdominio del tenant    |
+| `Authorization` | `Bearer {sanctum_token}` |
+| `Accept`        | `application/json`       |
 
 **Autorizacion**: el usuario debe tener el permiso `viewAny` sobre el modelo `Production`. Si no lo tiene, la respuesta es `403 Forbidden`.
 
@@ -840,18 +831,18 @@ El panel de control se sirve desde **dos endpoints independientes**:
 
 Todos los parametros van en la query string. Ninguno es obligatorio.
 
-| Parametro               | Tipo    | Default  | Valores validos                     | Descripcion                                      |
-| ----------------------- | ------- | -------- | ----------------------------------- | ------------------------------------------------ |
-| `lot`                   | string  | —        | max 255 chars                       | Busqueda parcial por texto (`LIKE %valor%`).     |
-| `species_id`            | integer | —        | ID existente en `species`           | Filtra por especie.                              |
-| `status`                | string  | —        | `open` \| `closed`                  | `open` = abierta; `closed` = cerrada.            |
-| `date_from`             | date    | —        | formato `YYYY-MM-DD`                | Inicio del rango de fecha de produccion.         |
-| `date_to`               | date    | —        | formato `YYYY-MM-DD`, >= `date_from`| Fin del rango de fecha de produccion.            |
-| `reconciliation_status` | string  | —        | `ok` \| `warning` \| `error`        | Validado pero **no aplicado en SQL en V1**. Ver nota. |
-| `per_page`              | integer | `25`     | 1–50                                | Filas por pagina.                                |
-| `sort_by`               | string  | `id`     | `id` \| `date` \| `lot`             | Campo de ordenacion.                             |
-| `sort_dir`              | string  | `desc`   | `asc` \| `desc`                     | Direccion de ordenacion.                         |
-| `page`                  | integer | `1`      | >= 1                                | Pagina solicitada (paginacion estandar Laravel). |
+| Parametro               | Tipo    | Default | Valores validos                      | Descripcion                                           |
+| ----------------------- | ------- | ------- | ------------------------------------ | ----------------------------------------------------- |
+| `lot`                   | string  | —       | max 255 chars                        | Busqueda parcial por texto (`LIKE %valor%`).          |
+| `species_id`            | integer | —       | ID existente en `species`            | Filtra por especie.                                   |
+| `status`                | string  | —       | `open` \| `closed`                   | `open` = abierta; `closed` = cerrada.                 |
+| `date_from`             | date    | —       | formato `YYYY-MM-DD`                 | Inicio del rango de fecha de produccion.              |
+| `date_to`               | date    | —       | formato `YYYY-MM-DD`, >= `date_from` | Fin del rango de fecha de produccion.                 |
+| `reconciliation_status` | string  | —       | `ok` \| `warning` \| `error`         | Validado pero **no aplicado en SQL en V1**. Ver nota. |
+| `per_page`              | integer | `25`    | 1–50                                 | Filas por pagina.                                     |
+| `sort_by`               | string  | `id`    | `id` \| `date` \| `lot`              | Campo de ordenacion.                                  |
+| `sort_dir`              | string  | `desc`  | `asc` \| `desc`                      | Direccion de ordenacion.                              |
+| `page`                  | integer | `1`     | >= 1                                 | Pagina solicitada (paginacion estandar Laravel).      |
 
 > **Nota V1**: el filtro `reconciliation_status` es validado por el backend pero NO aplicado como clausula SQL. El backend devuelve la pagina completa segun los otros filtros y el frontend debe filtrar `productions[]` por `reconciliation.status` en cliente si usa este filtro. Esto cambiara en V2.
 
@@ -869,86 +860,85 @@ GET /api/v2/productions/control-panel?status=open&sort_by=date&sort_dir=desc&per
 {
   "message": "Panel de control de producciones obtenido correctamente.",
   "data": {
-
     // ── RESUMEN GLOBAL ────────────────────────────────────────────────────
     // Refleja el estado de TODO el tenant, independientemente de los filtros activos.
     "summary": {
-      "openProductions": 12,    // int: producciones con opened_at != null y closed_at = null
-      "closedProductions": 80,  // int: producciones con closed_at != null
-      "boxesWithoutCost": 38    // int: cajas en stock sin manual_cost_per_kg ni recepcion ni ProductionInput (aprox. V1)
+      "openProductions": 12, // int: producciones con opened_at != null y closed_at = null
+      "closedProductions": 80, // int: producciones con closed_at != null
+      "boxesWithoutCost": 38, // int: cajas en stock sin manual_cost_per_kg ni recepcion ni ProductionInput (aprox. V1)
     },
 
     // ── LISTA PAGINADA DE PRODUCCIONES ───────────────────────────────────
     "productions": [
       {
-        "id": 45,                              // int
-        "lot": "LOT-2026-0045",                // string: identificador unico del lote
-        "date": "2026-04-29",                  // string|null: fecha en formato YYYY-MM-DD
-        "status": "not_reconciled",            // string enum: ver 12.4
-        "species": {                           // objeto|null: null si la produccion no tiene especie
+        "id": 45, // int
+        "lot": "LOT-2026-0045", // string: identificador unico del lote
+        "date": "2026-04-29", // string|null: fecha en formato YYYY-MM-DD
+        "status": "not_reconciled", // string enum: ver 12.4
+        "species": {
+          // objeto|null: null si la produccion no tiene especie
           "id": 1,
-          "name": "Merluza"
+          "name": "Merluza",
         },
 
         // Metricas de peso (todos los valores en kg, 3 decimales, float)
         "metrics": {
-          "inputWeightKg": 1000.0,             // kg de inputs de stock (materia prima de stock)
-          "producedWeightKg": 820.0,           // kg declarados como outputs de nodos finales
-          "salesWeightKg": 500.0,              // kg en palets enviados (pedidos finalizados)
-          "stockWeightKg": 200.0,              // kg en palets en stock (registered/stored sin pedido)
-          "reprocessedWeightKg": 100.0,        // kg de cajas del lote usadas como input en otro proceso
-          "balanceWeightKg": 20.0              // = producido - vendido - stock - reprocesado
+          "inputWeightKg": 1000.0, // kg de inputs de stock (materia prima de stock)
+          "producedWeightKg": 820.0, // kg declarados como outputs de nodos finales
+          "salesWeightKg": 500.0, // kg en palets enviados (pedidos finalizados)
+          "stockWeightKg": 200.0, // kg en palets en stock (registered/stored sin pedido)
+          "reprocessedWeightKg": 100.0, // kg de cajas del lote usadas como input en otro proceso
+          "balanceWeightKg": 20.0, // = producido - vendido - stock - reprocesado
         },
 
         // Conciliacion por producto
         "reconciliation": {
-          "status": "warning",                 // string enum: ok | warning | error
-          "productsOk": 3,                     // int: productos con balance ok
-          "productsWarning": 1,                // int: productos con diferencia <= 5%
-          "productsError": 0                   // int: productos con diferencia > 5% o no producidos
+          "status": "warning", // string enum: ok | warning | error
+          "productsOk": 3, // int: productos con balance ok
+          "productsWarning": 1, // int: productos con diferencia <= 5%
+          "productsError": 0, // int: productos con diferencia > 5% o no producidos
         },
 
         // Estado de cierre
         "closure": {
-          "canClose": false,                           // bool: true si se puede cerrar ahora mismo
-          "blockingReasons": ["stock_remaining"]        // string[]: codigos que impiden el cierre; ver 12.4
+          "canClose": false, // bool: true si se puede cerrar ahora mismo
+          "blockingReasons": ["stock_remaining"], // string[]: codigos que impiden el cierre; ver 12.4
         },
 
         // Estado de coste (aproximacion V1)
         "costs": {
-          "hasMissingCosts": true,             // bool
-          "missingCostBoxesCount": 4,          // int: cajas sin coste conocido
-          "missingCostWeightKg": 55.2          // float: kg sin coste conocido
+          "hasMissingCosts": true, // bool
+          "missingCostBoxesCount": 4, // int: cajas sin coste conocido
+          "missingCostWeightKg": 55.2, // float: kg sin coste conocido
         },
 
         // Alertas de esta produccion (ver 12.4 para todos los codigos posibles)
         // Puede ser array vacio [].
         "alerts": [
           {
-            "severity": "warning",             // string enum: critical | warning | info
-            "code": "reconciliation_not_ok",   // string enum: ver 12.4
+            "severity": "warning", // string enum: critical | warning | info
+            "code": "reconciliation_not_ok", // string enum: ver 12.4
             "message": "Faltan 20.0 kg por contabilizar.",
-            "action": null                     // string|null: descripcion de la accion recomendada (texto, no ruta)
+            "action": null, // string|null: descripcion de la accion recomendada (texto, no ruta)
           },
           {
             "severity": "info",
             "code": "missing_cost",
             "message": "Hay 4 cajas (55.2 kg) sin coste trazable conocido.",
-            "action": null
-          }
-        ]
-      }
+            "action": null,
+          },
+        ],
+      },
     ],
 
     // ── PAGINACION ───────────────────────────────────────────────────────
     "pagination": {
-      "currentPage": 1,    // int
-      "perPage": 25,       // int
-      "total": 90,         // int: total de producciones que cumplen los filtros
-      "lastPage": 4        // int: ultima pagina disponible
-    }
-
-  }
+      "currentPage": 1, // int
+      "perPage": 25, // int
+      "total": 90, // int: total de producciones que cumplen los filtros
+      "lastPage": 4, // int: ultima pagina disponible
+    },
+  },
 }
 ```
 
@@ -960,46 +950,46 @@ GET /api/v2/productions/control-panel?status=open&sort_by=date&sort_dir=desc&per
 
 Jerarquia de prioridad aplicada por el backend (solo se asigna el primer valor que aplica):
 
-| Valor            | Condicion                                                          | Descripcion operativa                                  |
-| ---------------- | ------------------------------------------------------------------ | ------------------------------------------------------ |
-| `closed`         | `closed_at != null`                                                | Produccion cerrada definitivamente.                    |
-| `not_reconciled` | `reconciliation.status` es `warning` o `error`                     | Hay diferencia de balance. Requiere correccion.        |
-| `ready_to_close` | `closure.canClose = true`                                          | Todo en orden. Se puede cerrar ahora.                  |
-| `not_closeable`  | `closure.blockingReasons` no vacio y conciliacion `ok`             | Conciliada pero hay limitacion operativa (stock, pedido...). |
-| `open`           | Abierta sin problemas de conciliacion ni bloqueos de cierre        | En progreso normal.                                    |
+| Valor            | Condicion                                                   | Descripcion operativa                                        |
+| ---------------- | ----------------------------------------------------------- | ------------------------------------------------------------ |
+| `closed`         | `closed_at != null`                                         | Produccion cerrada definitivamente.                          |
+| `not_reconciled` | `reconciliation.status` es `warning` o `error`              | Hay diferencia de balance. Requiere correccion.              |
+| `ready_to_close` | `closure.canClose = true`                                   | Todo en orden. Se puede cerrar ahora.                        |
+| `not_closeable`  | `closure.blockingReasons` no vacio y conciliacion `ok`      | Conciliada pero hay limitacion operativa (stock, pedido...). |
+| `open`           | Abierta sin problemas de conciliacion ni bloqueos de cierre | En progreso normal.                                          |
 
 #### `reconciliation.status`
 
-| Valor     | Criterio                                                            |
-| --------- | ------------------------------------------------------------------- |
-| `ok`      | Balance de todos los productos practicamente a cero.                |
-| `warning` | Algun producto con diferencia <= 5% del producido.                  |
+| Valor     | Criterio                                                                                           |
+| --------- | -------------------------------------------------------------------------------------------------- |
+| `ok`      | Balance de todos los productos practicamente a cero.                                               |
+| `warning` | Algun producto con diferencia <= 5% del producido.                                                 |
 | `error`   | Algun producto con diferencia > 5%, o producto contabilizado pero no producido (balance negativo). |
 
 #### `severity` de una alerta
 
-| Valor      | Significado                                                        |
-| ---------- | ------------------------------------------------------------------ |
-| `critical` | Datos incoherentes o error grave. Requiere correccion.             |
-| `warning`  | Limitacion operativa o diferencia de balance. Impide el cierre.    |
-| `info`     | Aviso no bloqueante. Conveniente revisar pero no urgente.          |
+| Valor      | Significado                                                     |
+| ---------- | --------------------------------------------------------------- |
+| `critical` | Datos incoherentes o error grave. Requiere correccion.          |
+| `warning`  | Limitacion operativa o diferencia de balance. Impide el cierre. |
+| `info`     | Aviso no bloqueante. Conveniente revisar pero no urgente.       |
 
 #### `code` de alertas por produccion
 
 Todos los codigos posibles que pueden aparecer en `productions[].alerts[].code`:
 
-| Codigo                  | Severity  | Origen              | Descripcion                                                   |
-| ----------------------- | --------- | ------------------- | ------------------------------------------------------------- |
-| `reconciliation_not_ok` | `critical` o `warning` | Conciliacion | Balance con diferencia. `critical` si `reconciliation.status = error`, `warning` si `warning`. |
-| `no_processes`          | `warning`  | Closure check       | La produccion no tiene ningun proceso registrado.             |
-| `process_not_started`   | `warning`  | Closure check       | Un proceso del arbol no tiene fecha de inicio.                |
-| `process_not_finished`  | `warning`  | Closure check       | Un proceso del arbol no tiene fecha de fin.                   |
-| `final_node_no_outputs` | `warning`  | Closure check       | Un nodo final del arbol no tiene outputs declarados.          |
-| `pending_order`         | `warning`  | Closure check       | Hay un pedido pendiente o con incidencia abierta con palets del lote. |
-| `pallet_not_shipped`    | `warning`  | Closure check       | Un palet esta asignado a un pedido pero no esta enviado.      |
-| `stock_remaining`       | `warning`  | Closure check       | Quedan palets en stock sin pedido de este lote.               |
-| `orphan_box`            | `warning`  | Closure check       | Una caja del lote no esta en ningun palet ni fue reprocesada. |
-| `missing_cost`          | `info`     | Cost status         | Hay cajas sin coste manual ni de recepcion (aproximacion V1). |
+| Codigo                  | Severity               | Origen        | Descripcion                                                                                    |
+| ----------------------- | ---------------------- | ------------- | ---------------------------------------------------------------------------------------------- |
+| `reconciliation_not_ok` | `critical` o `warning` | Conciliacion  | Balance con diferencia. `critical` si `reconciliation.status = error`, `warning` si `warning`. |
+| `no_processes`          | `warning`              | Closure check | La produccion no tiene ningun proceso registrado.                                              |
+| `process_not_started`   | `warning`              | Closure check | Un proceso del arbol no tiene fecha de inicio.                                                 |
+| `process_not_finished`  | `warning`              | Closure check | Un proceso del arbol no tiene fecha de fin.                                                    |
+| `final_node_no_outputs` | `warning`              | Closure check | Un nodo final del arbol no tiene outputs declarados.                                           |
+| `pending_order`         | `warning`              | Closure check | Hay un pedido pendiente o con incidencia abierta con palets del lote.                          |
+| `pallet_not_shipped`    | `warning`              | Closure check | Un palet esta asignado a un pedido pero no esta enviado.                                       |
+| `stock_remaining`       | `warning`              | Closure check | Quedan palets en stock sin pedido de este lote.                                                |
+| `orphan_box`            | `warning`              | Closure check | Una caja del lote no esta en ningun palet ni fue reprocesada.                                  |
+| `missing_cost`          | `info`                 | Cost status   | Hay cajas sin coste manual ni de recepcion (aproximacion V1).                                  |
 
 > Los codigos `already_closed` y `not_open` no aparecen en `alerts[]` porque son estados, no incidencias de una produccion activa. Si `closure.blockingReasons` los contiene, la produccion ya estara en `status: closed` o sera un dato inconsistente.
 
@@ -1009,21 +999,21 @@ Todos los codigos posibles que pueden aparecer en `productions[].alerts[].code`:
 
 #### Badges de `status`
 
-| Valor            | Color sugerido | Etiqueta            |
-| ---------------- | -------------- | ------------------- |
-| `closed`         | Gris           | Cerrada             |
-| `not_reconciled` | Rojo           | No conciliada       |
-| `ready_to_close` | Verde          | Lista para cerrar   |
-| `not_closeable`  | Naranja        | No cerrable         |
-| `open`           | Azul           | Abierta             |
+| Valor            | Color sugerido | Etiqueta          |
+| ---------------- | -------------- | ----------------- |
+| `closed`         | Gris           | Cerrada           |
+| `not_reconciled` | Rojo           | No conciliada     |
+| `ready_to_close` | Verde          | Lista para cerrar |
+| `not_closeable`  | Naranja        | No cerrable       |
+| `open`           | Azul           | Abierta           |
 
 #### Semaforo de `reconciliation.status`
 
-| Valor     | Color   | Icono sugerido |
-| --------- | ------- | -------------- |
-| `ok`      | Verde   | check          |
-| `warning` | Amarillo| triangle-alert |
-| `error`   | Rojo    | circle-x       |
+| Valor     | Color    | Icono sugerido |
+| --------- | -------- | -------------- |
+| `ok`      | Verde    | check          |
+| `warning` | Amarillo | triangle-alert |
+| `error`   | Rojo     | circle-x       |
 
 #### Severidad de alertas
 
@@ -1042,11 +1032,11 @@ Todos los codigos posibles que pueden aparecer en `productions[].alerts[].code`:
 
 #### Columna `Coste`
 
-| Condicion                  | Etiqueta       | Color  |
-| -------------------------- | -------------- | ------ |
-| `costs.hasMissingCosts = false` | Coste ok  | Verde  |
-| `costs.hasMissingCosts = true`  | Coste parcial | Naranja |
-| `costs.missingCostBoxesCount = total de cajas` | Sin coste | Rojo |
+| Condicion                                      | Etiqueta      | Color   |
+| ---------------------------------------------- | ------------- | ------- |
+| `costs.hasMissingCosts = false`                | Coste ok      | Verde   |
+| `costs.hasMissingCosts = true`                 | Coste parcial | Naranja |
+| `costs.missingCostBoxesCount = total de cajas` | Sin coste     | Rojo    |
 
 > En V1 no hay campo `totalBoxes` en la respuesta para calcular el ultimo caso. Mostrar siempre "Coste parcial" cuando `hasMissingCosts = true`.
 
@@ -1072,13 +1062,13 @@ Cuando el usuario selecciona una fila, mostrar un panel lateral con las alertas 
 
 **Accion principal por produccion segun `status`:**
 
-| `status`          | Accion principal visible en el panel |
-| ----------------- | ------------------------------------ |
-| `not_reconciled`  | "Ver conciliacion"                   |
-| `ready_to_close`  | "Cerrar produccion"                  |
-| `not_closeable`   | Primera alerta de tipo `warning`     |
-| `open`            | "Ver arbol de procesos"              |
-| `closed`          | "Ver detalle"                        |
+| `status`         | Accion principal visible en el panel |
+| ---------------- | ------------------------------------ |
+| `not_reconciled` | "Ver conciliacion"                   |
+| `ready_to_close` | "Cerrar produccion"                  |
+| `not_closeable`  | Primera alerta de tipo `warning`     |
+| `open`           | "Ver arbol de procesos"              |
+| `closed`         | "Ver detalle"                        |
 
 ---
 
@@ -1088,18 +1078,18 @@ Cada alerta del panel lateral debe llevar al usuario al modulo correcto. El camp
 
 #### Alertas por produccion
 
-| Codigo                  | Modulo destino          | Datos disponibles en la alerta          | Ruta sugerida                          |
-| ----------------------- | ----------------------- | --------------------------------------- | -------------------------------------- |
-| `reconciliation_not_ok` | Conciliacion            | `production.id`                         | `/producciones/{id}` (tab conciliacion)|
-| `no_processes`          | Arbol de procesos       | `production.id`                         | `/producciones/{id}` (tab arbol)       |
-| `process_not_started`   | Proceso concreto        | `alert.recordId` (en campo `action`)    | `/production-records/{recordId}`       |
-| `process_not_finished`  | Proceso concreto        | `alert.recordId` (en campo `action`)    | `/production-records/{recordId}`       |
-| `final_node_no_outputs` | Proceso concreto        | `alert.recordId` (en campo `action`)    | `/production-records/{recordId}`       |
-| `pending_order`         | Pedido                  | `alert.orderId` (en campo `action`)     | `/pedidos/{orderId}`                   |
-| `pallet_not_shipped`    | Palet                   | `alert.palletId` (en campo `action`)    | `/palets/{palletId}`                   |
-| `stock_remaining`       | Stock del lote          | `production.lot`                        | `/inventario?lot={lot}`                |
-| `orphan_box`            | Caja                    | `alert.boxId` (en campo `action`)       | `/cajas/{boxId}`                       |
-| `missing_cost`          | Regularizacion de costes| `production.lot`                        | `/costes/regularizacion?lot={lot}`     |
+| Codigo                  | Modulo destino           | Datos disponibles en la alerta       | Ruta sugerida                           |
+| ----------------------- | ------------------------ | ------------------------------------ | --------------------------------------- |
+| `reconciliation_not_ok` | Conciliacion             | `production.id`                      | `/producciones/{id}` (tab conciliacion) |
+| `no_processes`          | Arbol de procesos        | `production.id`                      | `/producciones/{id}` (tab arbol)        |
+| `process_not_started`   | Proceso concreto         | `alert.recordId` (en campo `action`) | `/production-records/{recordId}`        |
+| `process_not_finished`  | Proceso concreto         | `alert.recordId` (en campo `action`) | `/production-records/{recordId}`        |
+| `final_node_no_outputs` | Proceso concreto         | `alert.recordId` (en campo `action`) | `/production-records/{recordId}`        |
+| `pending_order`         | Pedido                   | `alert.orderId` (en campo `action`)  | `/pedidos/{orderId}`                    |
+| `pallet_not_shipped`    | Palet                    | `alert.palletId` (en campo `action`) | `/palets/{palletId}`                    |
+| `stock_remaining`       | Stock del lote           | `production.lot`                     | `/inventario?lot={lot}`                 |
+| `orphan_box`            | Caja                     | `alert.boxId` (en campo `action`)    | `/cajas/{boxId}`                        |
+| `missing_cost`          | Regularizacion de costes | `production.lot`                     | `/costes/regularizacion?lot={lot}`      |
 
 > **Nota sobre IDs en alertas**: los campos `recordId`, `orderId`, `palletId`, `boxId` estan incluidos en el texto del campo `action` de la respuesta pero NO como campos estructurados. En V1 el frontend los extrae del campo `message` o navega a la produccion general. En V2 se añadiran como campos dedicados en la respuesta de alerta.
 
@@ -1120,17 +1110,17 @@ GET /api/v2/productions/control-panel?page=2&per_page=25
 
 #### Comportamiento de cada filtro
 
-| Filtro          | Comportamiento en backend                                          |
-| --------------- | ------------------------------------------------------------------ |
-| `lot`           | SQL `LIKE %valor%` sobre `productions.lot`.                        |
-| `species_id`    | SQL `WHERE species_id = ?`.                                        |
-| `status=open`   | SQL `WHERE opened_at IS NOT NULL AND closed_at IS NULL`.           |
-| `status=closed` | SQL `WHERE closed_at IS NOT NULL`.                                 |
-| `date_from`     | SQL `WHERE DATE(date) >= ?`.                                       |
-| `date_to`       | SQL `WHERE DATE(date) <= ?`.                                       |
+| Filtro                  | Comportamiento en backend                                                        |
+| ----------------------- | -------------------------------------------------------------------------------- |
+| `lot`                   | SQL `LIKE %valor%` sobre `productions.lot`.                                      |
+| `species_id`            | SQL `WHERE species_id = ?`.                                                      |
+| `status=open`           | SQL `WHERE opened_at IS NOT NULL AND closed_at IS NULL`.                         |
+| `status=closed`         | SQL `WHERE closed_at IS NOT NULL`.                                               |
+| `date_from`             | SQL `WHERE DATE(date) >= ?`.                                                     |
+| `date_to`               | SQL `WHERE DATE(date) <= ?`.                                                     |
 | `reconciliation_status` | Validado, **NO filtrado en SQL**. El frontend filtra `productions[]` en cliente. |
-| `sort_by`       | Ordena por la columna indicada. Default: `id`.                     |
-| `sort_dir`      | `asc` o `desc`. Default: `desc`.                                   |
+| `sort_by`               | Ordena por la columna indicada. Default: `id`.                                   |
+| `sort_dir`              | `asc` o `desc`. Default: `desc`.                                                 |
 
 #### Contadores del `summary`
 
@@ -1140,16 +1130,16 @@ El `summary` siempre refleja el estado global del tenant, **independientemente d
 
 ### 12.9 Casos limite
 
-| Situacion                              | Comportamiento de la respuesta                                   |
-| -------------------------------------- | ---------------------------------------------------------------- |
-| Sin producciones con los filtros       | `productions: []`, `pagination.total: 0`, `summary` se mantiene.|
-| Produccion sin especie                 | `species: null`.                                                 |
-| Produccion sin fecha declarada         | `date: null`.                                                    |
-| Produccion recien creada sin procesos  | `metrics` todos a `0.0`, `reconciliation.status: ok`, `closure.blockingReasons: ["no_processes"]`, `status: not_closeable`. |
-| Produccion cerrada con alertas         | `status: closed` aunque haya alertas historicas en `alerts[]`. El badge de cierre tiene prioridad. |
-| `balanceWeightKg` positivo             | Sobra producto (producido > contabilizado). Naranja si `warning`, rojo si `error`. |
-| `balanceWeightKg` negativo             | Falta producto (mas contabilizado que producido). Siempre `error`. Mostrar en rojo. |
-| `costs.hasMissingCosts = false`        | No hay alerta `missing_cost` en `alerts[]`. La columna Coste muestra "Coste ok". |
+| Situacion                             | Comportamiento de la respuesta                                                                                              |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Sin producciones con los filtros      | `productions: []`, `pagination.total: 0`, `summary` se mantiene.                                                            |
+| Produccion sin especie                | `species: null`.                                                                                                            |
+| Produccion sin fecha declarada        | `date: null`.                                                                                                               |
+| Produccion recien creada sin procesos | `metrics` todos a `0.0`, `reconciliation.status: ok`, `closure.blockingReasons: ["no_processes"]`, `status: not_closeable`. |
+| Produccion cerrada con alertas        | `status: closed` aunque haya alertas historicas en `alerts[]`. El badge de cierre tiene prioridad.                          |
+| `balanceWeightKg` positivo            | Sobra producto (producido > contabilizado). Naranja si `warning`, rojo si `error`.                                          |
+| `balanceWeightKg` negativo            | Falta producto (mas contabilizado que producido). Siempre `error`. Mostrar en rojo.                                         |
+| `costs.hasMissingCosts = false`       | No hay alerta `missing_cost` en `alerts[]`. La columna Coste muestra "Coste ok".                                            |
 
 ---
 
@@ -1193,12 +1183,12 @@ GET /api/v2/productions/orphan-stock
 
 **Parametros de query string** (todos opcionales):
 
-| Parametro  | Tipo    | Default | Valores validos       | Descripcion                                    |
-| ---------- | ------- | ------- | --------------------- | ---------------------------------------------- |
-| `lot`      | string  | —       | max 255 chars         | Busqueda parcial por texto (`LIKE %valor%`).   |
-| `per_page` | integer | `25`    | 1–100                 | Lotes por pagina.                              |
-| `sort_dir` | string  | `asc`   | `asc` \| `desc`       | Orden alfabetico del lote.                     |
-| `page`     | integer | `1`     | >= 1                  | Pagina solicitada.                             |
+| Parametro  | Tipo    | Default | Valores validos | Descripcion                                  |
+| ---------- | ------- | ------- | --------------- | -------------------------------------------- |
+| `lot`      | string  | —       | max 255 chars   | Busqueda parcial por texto (`LIKE %valor%`). |
+| `per_page` | integer | `25`    | 1–100           | Lotes por pagina.                            |
+| `sort_dir` | string  | `asc`   | `asc` \| `desc` | Orden alfabetico del lote.                   |
+| `page`     | integer | `1`     | >= 1            | Pagina solicitada.                           |
 
 **Definicion de "lote huerfano"**: lote cuyas cajas estan en palets con estado `registered` (1) o `stored` (2), sin `reception_id` en el palet, y cuyo valor de `lot` no aparece en ninguna fila de `productions.lot`.
 
@@ -1210,57 +1200,55 @@ GET /api/v2/productions/orphan-stock
 {
   "message": "Lotes huerfanos en stock obtenidos correctamente.",
   "data": {
-
     // ── LISTA PAGINADA DE LOTES ───────────────────────────────────────────
     // La pagina contiene exactamente per_page lotes distintos (o menos en la ultima pagina).
     "lots": [
       {
-        "lot": "L-2026-001",          // string: el lote (raiz de agrupacion)
-        "totalWeightKg": 245.6,       // float (3 dec): kg totales del lote en stock
-        "totalBoxes": 18,             // int: total de cajas del lote en stock
-        "totalPallets": 3,            // int: numero de palets distintos que contienen el lote
+        "lot": "L-2026-001", // string: el lote (raiz de agrupacion)
+        "totalWeightKg": 245.6, // float (3 dec): kg totales del lote en stock
+        "totalBoxes": 18, // int: total de cajas del lote en stock
+        "totalPallets": 3, // int: numero de palets distintos que contienen el lote
 
         // Palets que contienen cajas de este lote
         "pallets": [
           {
-            "id": 101,                // int: pallet.id
-            "status": 2,              // int: 1 = registered, 2 = stored
-            "statusLabel": "Almacenado",  // string: etiqueta legible del estado
-            "location": "Camara 1 / A-03",  // string|null: "Almacen / Posicion" o solo "Almacen"; null si no tiene ubicacion
-            "createdAt": "2026-03-15T10:22:00.000000Z",  // string: timestamp ISO 8601 de creacion del palet
-            "weightKg": 120.0,        // float (3 dec): kg de cajas de ESTE lote en este palet
-            "boxesCount": 9,          // int: cajas de ESTE lote en este palet
+            "id": 101, // int: pallet.id
+            "status": 2, // int: 1 = registered, 2 = stored
+            "statusLabel": "Almacenado", // string: etiqueta legible del estado
+            "location": "Camara 1 / A-03", // string|null: "Almacen / Posicion" o solo "Almacen"; null si no tiene ubicacion
+            "createdAt": "2026-03-15T10:22:00.000000Z", // string: timestamp ISO 8601 de creacion del palet
+            "weightKg": 120.0, // float (3 dec): kg de cajas de ESTE lote en este palet
+            "boxesCount": 9, // int: cajas de ESTE lote en este palet
 
             // Desglose por producto dentro del palet
             "products": [
               {
-                "id": 12,             // int: product.id (article_id de la caja)
-                "name": "Merluza congelada 400-600",  // string: product.name
-                "weightKg": 80.0,     // float (3 dec): kg de este producto en este palet
-                "boxes": 6            // int: cajas de este producto en este palet
+                "id": 12, // int: product.id (article_id de la caja)
+                "name": "Merluza congelada 400-600", // string: product.name
+                "weightKg": 80.0, // float (3 dec): kg de este producto en este palet
+                "boxes": 6, // int: cajas de este producto en este palet
               },
               {
                 "id": 15,
                 "name": "Merluza congelada 600-800",
                 "weightKg": 40.0,
-                "boxes": 3
-              }
-            ]
-          }
-        ]
-      }
+                "boxes": 3,
+              },
+            ],
+          },
+        ],
+      },
     ],
 
     // ── PAGINACION ───────────────────────────────────────────────────────
     // La paginacion es por LOTE, no por fila. Un lote con varios palets cuenta como 1.
     "pagination": {
-      "currentPage": 1,    // int
-      "perPage": 25,       // int
-      "total": 4,          // int: total de lotes huerfanos distintos (usar para el card de cabecera)
-      "lastPage": 1        // int: ultima pagina disponible
-    }
-
-  }
+      "currentPage": 1, // int
+      "perPage": 25, // int
+      "total": 4, // int: total de lotes huerfanos distintos (usar para el card de cabecera)
+      "lastPage": 1, // int: ultima pagina disponible
+    },
+  },
 }
 ```
 

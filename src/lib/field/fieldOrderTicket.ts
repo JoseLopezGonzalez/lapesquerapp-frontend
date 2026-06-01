@@ -18,7 +18,9 @@ type OrderWithPlannedProductDetails = {
   plannedProductDetails?: PlannedProductDetail[] | null;
 };
 
-export function mapPlannedProductDetailsToTicketItems(order: OrderWithPlannedProductDetails | null | undefined): TicketItem[] {
+export function mapPlannedProductDetailsToTicketItems(
+  order: OrderWithPlannedProductDetails | null | undefined
+): TicketItem[] {
   const details = order?.plannedProductDetails ?? [];
   if (!Array.isArray(details)) return [];
 
@@ -39,4 +41,3 @@ export function mapPlannedProductDetailsToTicketItems(order: OrderWithPlannedPro
     })
     .filter((item): item is TicketItem => item !== null);
 }
-

@@ -9,6 +9,7 @@ Eres el agente de desarrollo frontend de La PesquerApp. Conoces en profundidad l
 ## Contexto obligatorio antes de cualquier tarea
 
 Antes de implementar, leer siempre:
+
 - `CLAUDE.md` — reglas de oro y archivos protegidos
 - `.claude/rules/typescript.md` — convenciones TypeScript
 - `.claude/rules/components.md` — patrones de componentes
@@ -22,24 +23,31 @@ Antes de implementar, leer siempre:
 Ante cualquier tarea de implementación, responder SIEMPRE en este orden:
 
 ### 1. Qué entendí
+
 Una o dos frases describiendo la feature desde la perspectiva del negocio.
 
 ### 2. Módulo de dominio
+
 ¿A qué módulo pertenece? (ventas / stock / etiquetas / catálogos / CRM / proveedores / maquiladores / repartidores / administración)
 
 ### 3. Archivos que voy a inspeccionar
+
 Lista de archivos a leer antes de modificar nada.
 
 ### 4. Archivos que voy a crear o modificar
+
 Lista explícita con paths completos.
 
 ### 5. Plan de implementación
+
 Pasos concretos en orden de ejecución.
 
 ### 6. Riesgos o suposiciones
+
 Lo que no está claro o puede romper algo.
 
 **Esperar confirmación del dev antes de proceder si:**
+
 - El cambio toca `src/configs/entitiesConfig.js`
 - El cambio toca `src/middleware.ts`
 - El cambio toca `src/lib/fetchWithTenant.js`
@@ -80,7 +88,10 @@ import type { MyEntity } from '@/types/myEntity';
 const ENDPOINT = 'my-entities';
 
 export const myEntityService = {
-  async list(filters: CatalogListFilters = {}, pagination: { page?: number; perPage?: number } = {}): Promise<CatalogListResponse<MyEntity>> {
+  async list(
+    filters: CatalogListFilters = {},
+    pagination: { page?: number; perPage?: number } = {}
+  ): Promise<CatalogListResponse<MyEntity>> {
     const token = await getAuthToken();
     const { page = 1, perPage = 15 } = pagination;
     const queryParams = new URLSearchParams();
@@ -132,7 +143,12 @@ export function useMyEntityList(
   const { filters = {}, page = 1, perPage = 15, enabled = true } = params;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
-  const { data: response, isLoading, error, refetch } = useQuery({
+  const {
+    data: response,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: myEntityListKeys.list(tenantId, filters as Record<string, unknown>, page, perPage),
     queryFn: () => myEntityService.list(filters, { page, perPage }),
     enabled: !!tenantId && enabled,
@@ -140,7 +156,12 @@ export function useMyEntityList(
 
   return {
     data: (response?.data ?? []) as MyEntity[],
-    meta: (response?.meta ?? { current_page: 1, last_page: 1, per_page: perPage, total: 0 }) as PaginationMeta,
+    meta: (response?.meta ?? {
+      current_page: 1,
+      last_page: 1,
+      per_page: perPage,
+      total: 0,
+    }) as PaginationMeta,
     isLoading,
     error: error?.message ?? null,
     refetch,

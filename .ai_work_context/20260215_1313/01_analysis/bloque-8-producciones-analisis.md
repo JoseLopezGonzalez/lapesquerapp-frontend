@@ -20,56 +20,56 @@ Entidades y flujos involucrados: Production, ProductionRecord, Process (tipos de
 
 ### Rutas App
 
-| Ruta | Componente principal |
-|------|----------------------|
-| `/admin/productions` | EntityClient (listado) |
-| `/admin/productions/[id]` | ProductionView |
-| `/admin/productions/[id]/records/create` | CreateProductionRecordPage → ProductionRecordEditor (modo crear) |
-| `/admin/productions/[id]/records/[recordId]` | ProductionRecordEditor (modo editar) |
+| Ruta                                         | Componente principal                                             |
+| -------------------------------------------- | ---------------------------------------------------------------- |
+| `/admin/productions`                         | EntityClient (listado)                                           |
+| `/admin/productions/[id]`                    | ProductionView                                                   |
+| `/admin/productions/[id]/records/create`     | CreateProductionRecordPage → ProductionRecordEditor (modo crear) |
+| `/admin/productions/[id]/records/[recordId]` | ProductionRecordEditor (modo editar)                             |
 
 ### Servicios
 
-| Archivo | Líneas | Uso |
-|---------|--------|-----|
-| `src/services/productionService.js` | 690 | Todas las llamadas API de producciones: getProduction, getProductionProcessTree, getProductionTotals, getProductionRecord, createProductionRecord, updateProductionRecord, getProductionRecordsOptions, getProductionInputs, createProductionInput, createMultipleProductionInputs, deleteProductionInput, getProductionOutputs, createProductionOutput, deleteProductionOutput, getProductionRecordSourcesData, consumptions, costs, reconciliation, etc. |
-| `src/services/domain/productions/productionService.js` | ~88 | EntityClient list (list, getById, create, update, delete, getOptions). |
-| `src/services/costService.js` | (existente) | Costes. |
+| Archivo                                                | Líneas      | Uso                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ------------------------------------------------------ | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/services/productionService.js`                    | 690         | Todas las llamadas API de producciones: getProduction, getProductionProcessTree, getProductionTotals, getProductionRecord, createProductionRecord, updateProductionRecord, getProductionRecordsOptions, getProductionInputs, createProductionInput, createMultipleProductionInputs, deleteProductionInput, getProductionOutputs, createProductionOutput, deleteProductionOutput, getProductionRecordSourcesData, consumptions, costs, reconciliation, etc. |
+| `src/services/domain/productions/productionService.js` | ~88         | EntityClient list (list, getById, create, update, delete, getOptions).                                                                                                                                                                                                                                                                                                                                                                                     |
+| `src/services/costService.js`                          | (existente) | Costes.                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 
 ### Hooks
 
-| Archivo | Líneas | Patrón |
-|---------|--------|--------|
-| `src/hooks/useProductionRecord.js` | 231 | **useEffect + useState**. Carga production, record, processes (fetch processes/options), existingRecords; saveRecord con create/update; refresh. |
-| `src/hooks/production/useProductionData.js` | 164 | **useEffect + useState**. Hook genérico para inputs/outputs/consumptions: loadData, initialData del contexto, updateContext. |
+| Archivo                                     | Líneas | Patrón                                                                                                                                           |
+| ------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/hooks/useProductionRecord.js`          | 231    | **useEffect + useState**. Carga production, record, processes (fetch processes/options), existingRecords; saveRecord con create/update; refresh. |
+| `src/hooks/production/useProductionData.js` | 164    | **useEffect + useState**. Hook genérico para inputs/outputs/consumptions: loadData, initialData del contexto, updateContext.                     |
 
 ### Contexto
 
-| Archivo | Líneas | Rol |
-|---------|--------|-----|
-| `src/context/ProductionRecordContext.js` | 254 | ProductionRecordProvider usa useProductionRecord; expone updateInputs, updateOutputs, updateConsumptions (optimistic + rollback), updateRecord, recordInputs, recordOutputs, recordConsumptions. |
+| Archivo                                  | Líneas | Rol                                                                                                                                                                                              |
+| ---------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/context/ProductionRecordContext.js` | 254    | ProductionRecordProvider usa useProductionRecord; expone updateInputs, updateOutputs, updateConsumptions (optimistic + rollback), updateRecord, recordInputs, recordOutputs, recordConsumptions. |
 
 ### Componentes (ordenados por líneas)
 
-| Componente | Líneas | Prioridad |
-|------------|--------|-----------|
-| ProductionInputsManager.jsx | **2339** | P0 crítico |
-| ProductionOutputsManager.jsx | **1859** | P0 crítico |
-| ProductionOutputConsumptionsManager.jsx | **1501** | P0 crítico |
-| ProductionView.jsx | 744 | P0 |
-| productionService.js | 690 | Refactor/TS |
-| diagramTransformers.js | 609 | Util |
-| ProductionRecordImagesManager.jsx | 525 | P0 |
-| ProductionRecordsManager.jsx | 447 | P0 |
-| ProductionCostsManager.jsx | 419 | P0 |
-| ProductionDiagram/index.jsx | 340 | P0 |
-| CostCatalogManager.jsx | 348 | P0 |
-| CostSourceSelector.jsx | 263 | P1 |
-| CostBreakdownView.jsx | 239 | P1 |
-| ProductionRecordEditor.jsx | 151 | OK |
-| useProductionData.js | 164 | Migrar a RQ |
-| useProductionRecord.js | 231 | Migrar a RQ |
-| ProductionRecordContext.js | 254 | Depende de useProductionRecord |
-| CostDisplay.jsx | 62 | OK |
+| Componente                              | Líneas   | Prioridad                      |
+| --------------------------------------- | -------- | ------------------------------ |
+| ProductionInputsManager.jsx             | **2339** | P0 crítico                     |
+| ProductionOutputsManager.jsx            | **1859** | P0 crítico                     |
+| ProductionOutputConsumptionsManager.jsx | **1501** | P0 crítico                     |
+| ProductionView.jsx                      | 744      | P0                             |
+| productionService.js                    | 690      | Refactor/TS                    |
+| diagramTransformers.js                  | 609      | Util                           |
+| ProductionRecordImagesManager.jsx       | 525      | P0                             |
+| ProductionRecordsManager.jsx            | 447      | P0                             |
+| ProductionCostsManager.jsx              | 419      | P0                             |
+| ProductionDiagram/index.jsx             | 340      | P0                             |
+| CostCatalogManager.jsx                  | 348      | P0                             |
+| CostSourceSelector.jsx                  | 263      | P1                             |
+| CostBreakdownView.jsx                   | 239      | P1                             |
+| ProductionRecordEditor.jsx              | 151      | OK                             |
+| useProductionData.js                    | 164      | Migrar a RQ                    |
+| useProductionRecord.js                  | 231      | Migrar a RQ                    |
+| ProductionRecordContext.js              | 254      | Depende de useProductionRecord |
+| CostDisplay.jsx                         | 62       | OK                             |
 
 ### Helpers
 

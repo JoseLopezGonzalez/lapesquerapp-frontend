@@ -28,10 +28,8 @@ export function useStoreDialogs({
     useState(false);
   const [selectedPosition, setSelectedPosition] = useState(null);
 
-  const [isOpenAddElementToPositionDialog, setIsOpenAddElementToPositionDialog] =
-    useState(false);
-  const [addElementToPositionDialogData, setAddElementToPositionDialogData] =
-    useState(null);
+  const [isOpenAddElementToPositionDialog, setIsOpenAddElementToPositionDialog] = useState(false);
+  const [addElementToPositionDialogData, setAddElementToPositionDialogData] = useState(null);
 
   const [isOpenPalletDialog, setIsOpenPalletDialog] = useState(false);
   const [palletDialogData, setPalletDialogData] = useState(null);
@@ -41,10 +39,8 @@ export function useStoreDialogs({
   const [isOpenPalletLabelDialog, setIsOpenPalletLabelDialog] = useState(false);
   const [palletLabelDialogData, setPalletLabelDialogData] = useState(null);
 
-  const [isOpenMovePalletToStoreDialog, setIsOpenMovePalletToStoreDialog] =
-    useState(false);
-  const [movePalletToStoreDialogData, setMovePalletToStoreDialogData] =
-    useState(null);
+  const [isOpenMovePalletToStoreDialog, setIsOpenMovePalletToStoreDialog] = useState(false);
+  const [movePalletToStoreDialogData, setMovePalletToStoreDialogData] = useState(null);
 
   const [isOpenMoveMultiplePalletsToStoreDialog, setIsOpenMoveMultiplePalletsToStoreDialog] =
     useState(false);
@@ -61,11 +57,9 @@ export function useStoreDialogs({
     setIsOpenPositionSlideover(false);
   };
 
-  const openUnallocatedPositionSlideover = () =>
-    setIsOpenUnallocatedPositionSlideover(true);
+  const openUnallocatedPositionSlideover = () => setIsOpenUnallocatedPositionSlideover(true);
 
-  const closeUnallocatedPositionSlideover = () =>
-    setIsOpenUnallocatedPositionSlideover(false);
+  const closeUnallocatedPositionSlideover = () => setIsOpenUnallocatedPositionSlideover(false);
 
   const openAddElementToPosition = (id) => {
     setIsOpenAddElementToPositionDialog(true);
@@ -179,9 +173,7 @@ export function useStoreDialogs({
       const palletIndex = existingPallets.findIndex((p) => p.id === updatedPallet.id);
       const updatedPallets =
         palletIndex !== -1
-          ? existingPallets.map((p) =>
-              p.id === updatedPallet.id ? { ...p, ...updatedPallet } : p
-            )
+          ? existingPallets.map((p) => (p.id === updatedPallet.id ? { ...p, ...updatedPallet } : p))
           : [...existingPallets, updatedPallet];
 
       const totalNetWeight = updatedPallets.reduce(
@@ -236,12 +228,8 @@ export function useStoreDialogs({
     });
   };
 
-  const updateStoreWhenOnMoveMultiplePalletsToStore = ({
-    palletIds,
-    storeId: targetStoreId,
-  }) => {
-    const movedPallets =
-      store?.content?.pallets?.filter((p) => palletIds.includes(p.id)) ?? [];
+  const updateStoreWhenOnMoveMultiplePalletsToStore = ({ palletIds, storeId: targetStoreId }) => {
+    const movedPallets = store?.content?.pallets?.filter((p) => palletIds.includes(p.id)) ?? [];
     const totalMovedWeight = movedPallets.reduce((sum, pallet) => {
       const palletWeight =
         pallet.boxes?.reduce((boxSum, box) => boxSum + (box.netWeight || 0), 0) ?? 0;

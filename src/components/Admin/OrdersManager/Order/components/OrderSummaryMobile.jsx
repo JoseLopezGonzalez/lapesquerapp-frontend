@@ -31,11 +31,11 @@ export default function OrderSummaryMobile({
   readOnly = false,
 }) {
   return (
-    <div className="space-y-5 px-4 pt-6 text-center flex-shrink-0">
+    <div className="flex-shrink-0 space-y-5 px-4 pt-6 text-center">
       <div className="flex flex-col items-center gap-2">
         {(order?.orderType ?? order?.order_type) === 'autoventa' && (
           <span
-            className="inline-flex items-center gap-1.5 bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-medium px-2.5 py-1 rounded-full border border-slate-400 dark:border-slate-500"
+            className="inline-flex items-center gap-1.5 rounded-full border border-slate-400 bg-slate-200 px-2.5 py-1 text-xs font-medium text-slate-800 dark:border-slate-500 dark:bg-slate-700 dark:text-slate-200"
             aria-label="Tipo de pedido: Autoventa"
           >
             <ShoppingBag className="h-3.5 w-3.5" aria-hidden />
@@ -44,11 +44,11 @@ export default function OrderSummaryMobile({
         )}
         <div>
           <p className="text-xl font-semibold">{order.customer?.name ?? '—'}</p>
-          <p className="text-base text-muted-foreground mt-1">
+          <p className="text-muted-foreground mt-1 text-base">
             Cliente Nº {order.customer?.id ?? '—'}
           </p>
           {order?.buyerReference ? (
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-muted-foreground mt-1 text-sm">
               Ref. cliente: {order.buyerReference}
             </p>
           ) : null}
@@ -66,10 +66,7 @@ export default function OrderSummaryMobile({
 
       <div className="flex justify-center">
         {readOnly ? (
-          <StatusBadge
-            color={STATUS_COLORS[order.status]}
-            label={STATUS_LABELS[order.status]}
-          />
+          <StatusBadge color={STATUS_COLORS[order.status]} label={STATUS_LABELS[order.status]} />
         ) : (
           <DropdownMenu>
             <DropdownMenuTrigger className="focus:outline-none">
@@ -102,22 +99,22 @@ export default function OrderSummaryMobile({
         )}
       </div>
 
-      <div className="flex items-center justify-center gap-6 flex-wrap">
+      <div className="flex flex-wrap items-center justify-center gap-6">
         <div>
-          <p className="text-sm text-muted-foreground mb-1">Fecha de Carga</p>
+          <p className="text-muted-foreground mb-1 text-sm">Fecha de Carga</p>
           <p className="text-lg font-semibold">{formatDate(order.loadDate)}</p>
         </div>
         <div>
-          <p className="text-sm text-muted-foreground mb-1">Temperatura</p>
+          <p className="text-muted-foreground mb-1 text-sm">Temperatura</p>
           {readOnly ? (
-            <span className="text-lg font-semibold flex gap-1.5 items-center justify-center">
+            <span className="flex items-center justify-center gap-1.5 text-lg font-semibold">
               <ThermometerSnowflake className="h-5 w-5" />
               {order.temperature ?? '0'} ºC
             </span>
           ) : (
             <DropdownMenu>
               <DropdownMenuTrigger className="focus:outline-none">
-                <span className="text-lg font-semibold flex gap-1.5 items-center justify-center hover:text-muted-foreground transition-colors">
+                <span className="hover:text-muted-foreground flex items-center justify-center gap-1.5 text-lg font-semibold transition-colors">
                   <ThermometerSnowflake className="h-5 w-5" />
                   {order.temperature ?? '0'} ºC
                 </span>
@@ -138,15 +135,15 @@ export default function OrderSummaryMobile({
         </div>
       </div>
 
-      <div className="flex items-center justify-center gap-6 flex-wrap">
+      <div className="flex flex-wrap items-center justify-center gap-6">
         <div>
-          <p className="text-sm text-muted-foreground mb-1">Palets</p>
+          <p className="text-muted-foreground mb-1 text-sm">Palets</p>
           <p className="text-lg font-semibold">
             {order.numberOfPallets ? formatInteger(order.numberOfPallets) : '-'}
           </p>
         </div>
         <div>
-          <p className="text-sm text-muted-foreground mb-1">Importe</p>
+          <p className="text-muted-foreground mb-1 text-sm">Importe</p>
           <p className="text-lg font-semibold">
             {order.totalAmount ? formatDecimalCurrency(order.totalAmount) : '-'}
           </p>

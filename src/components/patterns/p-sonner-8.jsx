@@ -1,27 +1,27 @@
-import { toast } from "sonner"
+import { toast } from 'sonner';
 
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button';
 
 export function Pattern() {
   return (
     <div className="flex items-center justify-center">
       <Button
         onClick={() =>
-          toast("Confirm deletion", {
-            description:
-              "This item will be permanently deleted. This action cannot be undone.",
+          toast('Confirm deletion', {
+            description: 'This item will be permanently deleted. This action cannot be undone.',
             action: {
-              label: "Delete",
-              onClick: () => toast.success("Item deleted"),
+              label: 'Delete',
+              onClick: () => toast.success('Item deleted'),
             },
             cancel: {
-              label: "Cancel",
+              label: 'Cancel',
               onClick: () => {},
             },
           })
         }
         variant="outline"
-        className="w-fit">
+        className="w-fit"
+      >
         Confirm Action
       </Button>
     </div>

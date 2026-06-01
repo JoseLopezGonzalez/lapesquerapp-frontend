@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState, useCallback } from "react";
-import { fetchSuperadmin, SuperadminApiError } from "@/lib/superadminApi";
-import { notify } from "@/lib/notifications";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useEffect, useState, useCallback } from 'react';
+import { fetchSuperadmin, SuperadminApiError } from '@/lib/superadminApi';
+import { notify } from '@/lib/notifications';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   Table,
   TableBody,
@@ -22,10 +22,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Loader2, Trash2, Key } from "lucide-react";
-import { formatDateTime } from "@/utils/superadminDateUtils";
-import EmptyState from "../EmptyState";
+} from '@/components/ui/table';
+import { Loader2, Trash2, Key } from 'lucide-react';
+import { formatDateTime } from '@/utils/superadminDateUtils';
+import EmptyState from '../EmptyState';
 
 export default function TokensTab({ tenantId }) {
   const [tokens, setTokens] = useState([]);
@@ -41,22 +41,26 @@ export default function TokensTab({ tenantId }) {
       const res = await fetchSuperadmin(`/tenants/${tenantId}/tokens`);
       const json = await res.json();
       setTokens(json.data || []);
-      setTotal(json.total ?? (json.data?.length ?? 0));
-    } catch { setTokens([]); } finally {
+      setTotal(json.total ?? json.data?.length ?? 0);
+    } catch {
+      setTokens([]);
+    } finally {
       setLoading(false);
     }
   }, [tenantId]);
 
-  useEffect(() => { fetchTokens(); }, [fetchTokens]);
+  useEffect(() => {
+    fetchTokens();
+  }, [fetchTokens]);
 
   const handleRevoke = async (tokenId) => {
     setRevokingId(tokenId);
     try {
-      await fetchSuperadmin(`/tenants/${tenantId}/tokens/${tokenId}`, { method: "DELETE" });
-      notify.success({ title: "Token revocado" });
+      await fetchSuperadmin(`/tenants/${tenantId}/tokens/${tokenId}`, { method: 'DELETE' });
+      notify.success({ title: 'Token revocado' });
       fetchTokens();
     } catch (err) {
-      notify.error({ title: err.message || "Error al revocar el token" });
+      notify.error({ title: err.message || 'Error al revocar el token' });
     } finally {
       setRevokingId(null);
     }
@@ -65,16 +69,16 @@ export default function TokensTab({ tenantId }) {
   const handleRevokeAll = async () => {
     setRevokingAll(true);
     try {
-      const res = await fetchSuperadmin(`/tenants/${tenantId}/tokens`, { method: "DELETE" });
+      const res = await fetchSuperadmin(`/tenants/${tenantId}/tokens`, { method: 'DELETE' });
       const json = await res.json();
       notify.success({
-        title: "Tokens revocados",
+        title: 'Tokens revocados',
         description: json.message || `${json.tokens_revoked} token(s) revocados.`,
       });
       setRevokeAllOpen(false);
       fetchTokens();
     } catch (err) {
-      notify.error({ title: err.message || "Error al revocar tokens" });
+      notify.error({ title: err.message || 'Error al revocar tokens' });
     } finally {
       setRevokingAll(false);
     }
@@ -85,11 +89,7 @@ export default function TokensTab({ tenantId }) {
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle className="text-sm">Tokens activos ({total})</CardTitle>
         {tokens.length > 0 && (
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => setRevokeAllOpen(true)}
-          >
+          <Button variant="destructive" size="sm" onClick={() => setRevokeAllOpen(true)}>
             <Trash2 className="h-3.5 w-3.5" />
             Revocar todos
           </Button>
@@ -112,7 +112,9 @@ export default function TokensTab({ tenantId }) {
               Array.from({ length: 3 }).map((_, i) => (
                 <TableRow key={i}>
                   {Array.from({ length: 6 }).map((__, j) => (
-                    <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
+                    <TableCell key={j}>
+                      <Skeleton className="h-4 w-full" />
+                    </TableCell>
                   ))}
                 </TableRow>
               ))
@@ -130,21 +132,24 @@ export default function TokensTab({ tenantId }) {
             ) : (
               tokens.map((t) => (
                 <TableRow key={t.id}>
-                  <TableCell className="text-sm font-mono">{t.id}</TableCell>
+                  <TableCell className="font-mono text-sm">{t.id}</TableCell>
                   <TableCell className="text-sm">{t.tokenable_id}</TableCell>
                   <TableCell>
-                    {t.name === "impersonation" ? (
-                      <Badge variant="outline" className="border-orange-500/30 bg-orange-500/10 text-orange-700 dark:text-orange-400">
+                    {t.name === 'impersonation' ? (
+                      <Badge
+                        variant="outline"
+                        className="border-orange-500/30 bg-orange-500/10 text-orange-700 dark:text-orange-400"
+                      >
                         {t.name}
                       </Badge>
                     ) : (
                       <span className="text-sm">{t.name}</span>
                     )}
                   </TableCell>
-                  <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
+                  <TableCell className="text-muted-foreground hidden text-sm md:table-cell">
                     {formatDateTime(t.last_used_at)}
                   </TableCell>
-                  <TableCell className="hidden lg:table-cell text-sm text-muted-foreground">
+                  <TableCell className="text-muted-foreground hidden text-sm lg:table-cell">
                     {formatDateTime(t.created_at)}
                   </TableCell>
                   <TableCell className="text-right">
@@ -155,9 +160,11 @@ export default function TokensTab({ tenantId }) {
                       disabled={revokingId === t.id}
                       className="text-destructive hover:text-destructive"
                     >
-                      {revokingId === t.id
-                        ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        : <Trash2 className="h-3.5 w-3.5" />}
+                      {revokingId === t.id ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-3.5 w-3.5" />
+                      )}
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -172,16 +179,20 @@ export default function TokensTab({ tenantId }) {
           <DialogHeader>
             <DialogTitle>Revocar todos los tokens</DialogTitle>
             <DialogDescription>
-              Todos los usuarios del tenant perderan su sesion activa y tendran que volver a iniciar sesion.
-              Esta accion no se puede deshacer.
+              Todos los usuarios del tenant perderan su sesion activa y tendran que volver a iniciar
+              sesion. Esta accion no se puede deshacer.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRevokeAllOpen(false)} disabled={revokingAll}>
+            <Button
+              variant="outline"
+              onClick={() => setRevokeAllOpen(false)}
+              disabled={revokingAll}
+            >
               Cancelar
             </Button>
             <Button variant="destructive" onClick={handleRevokeAll} disabled={revokingAll}>
-              {revokingAll ? <Loader2 className="h-4 w-4 animate-spin" /> : "Revocar todos"}
+              {revokingAll ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Revocar todos'}
             </Button>
           </DialogFooter>
         </DialogContent>

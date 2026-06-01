@@ -9,7 +9,7 @@
 ## Top 5 riesgos sistémicos (audit)
 
 1. **Data fetching sin caché**: Inconsistencia de datos entre pantallas, recargas innecesarias, dificultad para evolucionar a server-first.
-2. **Exposición de clave de Google Maps** (y revisión de NEXT_PUBLIC_*): Riesgo de abuso y coste si el repo es accesible.
+2. **Exposición de clave de Google Maps** (y revisión de NEXT*PUBLIC*\*): Riesgo de abuso y coste si el repo es accesible.
 3. **Ausencia de TypeScript**: Refactors y cambios en API más costosos y propensos a regresiones.
 4. **Componentes monolíticos**: EntityClient, PalletView, Order muy grandes; dificultan pruebas y mantenimiento.
 5. **Cobertura de tests mínima**: Cambios sin red de seguridad; riesgo en despliegues.
@@ -28,15 +28,15 @@
 
 ## Módulos CORE (plan consolidación)
 
-| Módulo   | Notas (audit) |
-|----------|----------------|
-| **Auth** | NextAuth, middleware, tenant; bien integrado. |
-| **Productos** | Entidades/EntityClient; componente muy grande. |
-| **Clientes** | Parte de entidades/CRM. |
+| Módulo             | Notas (audit)                                               |
+| ------------------ | ----------------------------------------------------------- |
+| **Auth**           | NextAuth, middleware, tenant; bien integrado.               |
+| **Productos**      | Entidades/EntityClient; componente muy grande.              |
+| **Clientes**       | Parte de entidades/CRM.                                     |
 | **Ventas (Sales)** | Order, OrderDetails; componentes grandes, flujos complejos. |
-| **Stock** | Almacenes, palés (PalletView muy grande), recepciones. |
-| **Reportes** | Charts, datos; dangerouslySetInnerHTML en chart. |
-| **Config** | Settings, Options, múltiples contextos. |
+| **Stock**          | Almacenes, palés (PalletView muy grande), recepciones.      |
+| **Reportes**       | Charts, datos; dangerouslySetInnerHTML en chart.            |
+| **Config**         | Settings, Options, múltiples contextos.                     |
 
 ---
 

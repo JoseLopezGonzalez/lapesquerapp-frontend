@@ -114,26 +114,39 @@ export const crmService = {
   getAgendaSummary(params: Record<string, unknown> = {}) {
     return getJson<{ data: AgendaSummaryData }>('crm/agenda/summary', params);
   },
-  getPendingAgendaAction(params: { targetType: 'prospect' | 'customer'; targetId: number | string }) {
-    return getJson<{ data: PendingAgendaResponse | AgendaAction | null }>('crm/agenda/pending', params);
+  getPendingAgendaAction(params: {
+    targetType: 'prospect' | 'customer';
+    targetId: number | string;
+  }) {
+    return getJson<{ data: PendingAgendaResponse | AgendaAction | null }>(
+      'crm/agenda/pending',
+      params
+    );
   },
   resolveNextAction(payload: ResolveNextActionPayload) {
     return sendJson<ResolveNextActionResponse>('crm/agenda/resolve-next-action', 'POST', payload);
   },
   listCommercialOrders(params: Record<string, unknown> = {}) {
-    return getJson<{ data: Record<string, unknown>[]; meta?: Record<string, unknown>; links?: Record<string, unknown> }>(
-      'orders',
-      params
-    );
+    return getJson<{
+      data: Record<string, unknown>[];
+      meta?: Record<string, unknown>;
+      links?: Record<string, unknown>;
+    }>('orders', params);
   },
   rescheduleAgendaAction(
     id: number | string,
-    payload: { nextActionAt: string; nextActionNote?: string | null; sourceInteractionId?: number | string | null }
+    payload: {
+      nextActionAt: string;
+      nextActionNote?: string | null;
+      sourceInteractionId?: number | string | null;
+    }
   ) {
     return sendJson<{ data: AgendaAction }>(`crm/agenda/${id}/reschedule`, 'POST', payload);
   },
   cancelAgendaAction(id: number | string, reason: string) {
-    return sendJson<{ data: AgendaAction; message?: string }>(`crm/agenda/${id}/cancel`, 'POST', { reason });
+    return sendJson<{ data: AgendaAction; message?: string }>(`crm/agenda/${id}/cancel`, 'POST', {
+      reason,
+    });
   },
   listProspects(params: Record<string, unknown> = {}) {
     return getJson<CrmPaginatedResponse<Prospect>>('prospects', params);
@@ -156,7 +169,11 @@ export const crmService = {
   createProspectContact(id: number | string, payload: ProspectContactPayload) {
     return sendJson<CrmWriteResponse<ProspectContact>>(`prospects/${id}/contacts`, 'POST', payload);
   },
-  updateProspectContact(prospectId: number | string, contactId: number | string, payload: ProspectContactPayload) {
+  updateProspectContact(
+    prospectId: number | string,
+    contactId: number | string,
+    payload: ProspectContactPayload
+  ) {
     return sendJson<CrmWriteResponse<ProspectContact>>(
       `prospects/${prospectId}/contacts/${contactId}`,
       'PUT',
@@ -164,7 +181,10 @@ export const crmService = {
     );
   },
   deleteProspectContact(prospectId: number | string, contactId: number | string) {
-    return sendJson<{ message?: string }>(`prospects/${prospectId}/contacts/${contactId}`, 'DELETE');
+    return sendJson<{ message?: string }>(
+      `prospects/${prospectId}/contacts/${contactId}`,
+      'DELETE'
+    );
   },
   convertProspectToCustomer(id: number | string, payload?: ConvertToCustomerPayload) {
     return sendJson<{ message: string; data: Record<string, unknown> }>(
@@ -173,7 +193,11 @@ export const crmService = {
       payload ?? {}
     );
   },
-  scheduleProspectAction(id: number | string, nextActionAt: string, nextActionNote?: string | null) {
+  scheduleProspectAction(
+    id: number | string,
+    nextActionAt: string,
+    nextActionNote?: string | null
+  ) {
     const body: { nextActionAt: string; nextActionNote?: string | null } = { nextActionAt };
     if (nextActionNote !== undefined) body.nextActionNote = nextActionNote || null;
     return sendJson<CrmWriteResponse<Prospect>>(`prospects/${id}/schedule-action`, 'POST', body);
@@ -185,7 +209,11 @@ export const crmService = {
     return getJson<CrmPaginatedResponse<CommercialInteraction>>('commercial-interactions', params);
   },
   createCommercialInteraction(payload: CommercialInteractionPayload) {
-    return sendJson<CommercialInteractionCreateResponse>('commercial-interactions', 'POST', payload);
+    return sendJson<CommercialInteractionCreateResponse>(
+      'commercial-interactions',
+      'POST',
+      payload
+    );
   },
   getCommercialInteraction(id: number | string) {
     return getJson<{ data: CommercialInteraction }>(`commercial-interactions/${id}`);
@@ -224,7 +252,11 @@ export const crmService = {
     return sendJson<CrmWriteResponse<Offer>>(`offers/${id}/email`, 'POST', payload);
   },
   createOrderFromOffer(id: number | string, payload: Record<string, unknown>) {
-    return sendJson<CrmWriteResponse<{ id: number | string }>>(`offers/${id}/create-order`, 'POST', payload);
+    return sendJson<CrmWriteResponse<{ id: number | string }>>(
+      `offers/${id}/create-order`,
+      'POST',
+      payload
+    );
   },
   async downloadOfferPdf(id: number | string) {
     const headers = await getAuthHeaders();

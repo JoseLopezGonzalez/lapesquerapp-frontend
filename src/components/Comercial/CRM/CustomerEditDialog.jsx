@@ -3,13 +3,25 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import EmailListInput from '@/components/ui/emailListInput';
 import { notify } from '@/lib/notifications';
 import { ApiError } from '@/lib/api/apiHelpers';
@@ -52,7 +64,13 @@ function useOptionsQuery({ key, enabled, queryFn }) {
   });
 }
 
-export default function CustomerEditDialog({ open, onOpenChange, customerId, initialCustomer, onSaved }) {
+export default function CustomerEditDialog({
+  open,
+  onOpenChange,
+  customerId,
+  initialCustomer,
+  onSaved,
+}) {
   const [warnings] = useState([]);
   const schema = useMemo(() => getCustomerFormSchema(), []);
   const { data: countries } = useCountriesList({ page: 1, perPage: 250, enabled: open });
@@ -93,7 +111,9 @@ export default function CustomerEditDialog({ open, onOpenChange, customerId, ini
 
   const onValidSubmit = async (values) => {
     const fieldOperatorIdValue =
-      values.fieldOperatorId && values.fieldOperatorId !== FIELD_OPERATOR_NONE ? values.fieldOperatorId : '';
+      values.fieldOperatorId && values.fieldOperatorId !== FIELD_OPERATOR_NONE
+        ? values.fieldOperatorId
+        : '';
     const payload = {
       name: values.name.trim(),
       alias: values.alias.trim() || null,
@@ -132,17 +152,22 @@ export default function CustomerEditDialog({ open, onOpenChange, customerId, ini
     const n = Object.keys(formErrors).length;
     notify.error({
       title: 'Revisa el formulario',
-      description: n > 1 ? `Hay ${n} campos con errores.` : 'Corrige el error indicado antes de guardar.',
+      description:
+        n > 1 ? `Hay ${n} campos con errores.` : 'Corrige el error indicado antes de guardar.',
     });
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent size="5xl" className="flex flex-col gap-0 overflow-hidden p-0 h-[calc(100vh-2rem)]">
+      <DialogContent
+        size="5xl"
+        className="flex h-[calc(100vh-2rem)] flex-col gap-0 overflow-hidden p-0"
+      >
         <DialogHeader className="border-b p-4">
           <DialogTitle>Editar cliente</DialogTitle>
           <DialogDescription>
-            Edición de datos generales y operativos del cliente. El comercial asignado no es editable desde este rol.
+            Edición de datos generales y operativos del cliente. El comercial asignado no es
+            editable desde este rol.
           </DialogDescription>
         </DialogHeader>
 
@@ -162,31 +187,53 @@ export default function CustomerEditDialog({ open, onOpenChange, customerId, ini
                     Nombre
                     <RequiredMark />
                   </Label>
-                  <Input id="customer-name" aria-invalid={errors.name ? 'true' : undefined} {...register('name')} />
+                  <Input
+                    id="customer-name"
+                    aria-invalid={errors.name ? 'true' : undefined}
+                    {...register('name')}
+                  />
                   <FieldError message={errors.name?.message} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="customer-vat">NIF</Label>
-                  <Input id="customer-vat" aria-invalid={errors.vatNumber ? 'true' : undefined} {...register('vatNumber')} />
+                  <Input
+                    id="customer-vat"
+                    aria-invalid={errors.vatNumber ? 'true' : undefined}
+                    {...register('vatNumber')}
+                  />
                   <FieldError message={errors.vatNumber?.message} />
                 </div>
               </div>
 
               <div className="grid gap-2">
                 <Label htmlFor="customer-alias">Alias</Label>
-                <Input id="customer-alias" aria-invalid={errors.alias ? 'true' : undefined} {...register('alias')} />
+                <Input
+                  id="customer-alias"
+                  aria-invalid={errors.alias ? 'true' : undefined}
+                  {...register('alias')}
+                />
                 <FieldError message={errors.alias?.message} />
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="grid gap-2">
                   <Label htmlFor="customer-billing">Dirección de facturación</Label>
-                  <Textarea id="customer-billing" rows={4} aria-invalid={errors.billingAddress ? 'true' : undefined} {...register('billingAddress')} />
+                  <Textarea
+                    id="customer-billing"
+                    rows={4}
+                    aria-invalid={errors.billingAddress ? 'true' : undefined}
+                    {...register('billingAddress')}
+                  />
                   <FieldError message={errors.billingAddress?.message} />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="customer-shipping">Dirección de envío</Label>
-                  <Textarea id="customer-shipping" rows={4} aria-invalid={errors.shippingAddress ? 'true' : undefined} {...register('shippingAddress')} />
+                  <Textarea
+                    id="customer-shipping"
+                    rows={4}
+                    aria-invalid={errors.shippingAddress ? 'true' : undefined}
+                    {...register('shippingAddress')}
+                  />
                   <FieldError message={errors.shippingAddress?.message} />
                 </div>
               </div>
@@ -231,7 +278,11 @@ export default function CustomerEditDialog({ open, onOpenChange, customerId, ini
                     name="emails"
                     control={control}
                     render={({ field }) => (
-                      <EmailListInput value={field.value || []} onChange={field.onChange} placeholder="Introduce correos electrónicos y pulsa Enter" />
+                      <EmailListInput
+                        value={field.value || []}
+                        onChange={field.onChange}
+                        placeholder="Introduce correos electrónicos y pulsa Enter"
+                      />
                     )}
                   />
                   <FieldError message={errors.emails?.message} />
@@ -242,7 +293,11 @@ export default function CustomerEditDialog({ open, onOpenChange, customerId, ini
                     name="ccEmails"
                     control={control}
                     render={({ field }) => (
-                      <EmailListInput value={field.value || []} onChange={field.onChange} placeholder="Introduce correos en copia y pulsa Enter" />
+                      <EmailListInput
+                        value={field.value || []}
+                        onChange={field.onChange}
+                        placeholder="Introduce correos en copia y pulsa Enter"
+                      />
                     )}
                   />
                   <FieldError message={errors.ccEmails?.message} />
@@ -251,7 +306,12 @@ export default function CustomerEditDialog({ open, onOpenChange, customerId, ini
 
               <div className="grid gap-2">
                 <Label htmlFor="customer-contact">Información de contacto</Label>
-                <Textarea id="customer-contact" rows={3} aria-invalid={errors.contactInfo ? 'true' : undefined} {...register('contactInfo')} />
+                <Textarea
+                  id="customer-contact"
+                  rows={3}
+                  aria-invalid={errors.contactInfo ? 'true' : undefined}
+                  {...register('contactInfo')}
+                />
                 <FieldError message={errors.contactInfo?.message} />
               </div>
 
@@ -265,8 +325,14 @@ export default function CustomerEditDialog({ open, onOpenChange, customerId, ini
                     name="countryId"
                     control={control}
                     render={({ field }) => (
-                      <Select value={field.value || undefined} onValueChange={(v) => field.onChange(v ?? '')}>
-                        <SelectTrigger className="w-full" aria-invalid={errors.countryId ? 'true' : undefined}>
+                      <Select
+                        value={field.value || undefined}
+                        onValueChange={(v) => field.onChange(v ?? '')}
+                      >
+                        <SelectTrigger
+                          className="w-full"
+                          aria-invalid={errors.countryId ? 'true' : undefined}
+                        >
                           <SelectValue placeholder="Selecciona un país" />
                         </SelectTrigger>
                         <SelectContent>
@@ -291,8 +357,14 @@ export default function CustomerEditDialog({ open, onOpenChange, customerId, ini
                     name="operationalStatus"
                     control={control}
                     render={({ field }) => (
-                      <Select value={field.value || undefined} onValueChange={(v) => field.onChange(v ?? '')}>
-                        <SelectTrigger className="w-full" aria-invalid={errors.operationalStatus ? 'true' : undefined}>
+                      <Select
+                        value={field.value || undefined}
+                        onValueChange={(v) => field.onChange(v ?? '')}
+                      >
+                        <SelectTrigger
+                          className="w-full"
+                          aria-invalid={errors.operationalStatus ? 'true' : undefined}
+                        >
                           <SelectValue placeholder="Selecciona el estado operativo" />
                         </SelectTrigger>
                         <SelectContent>
@@ -316,9 +388,19 @@ export default function CustomerEditDialog({ open, onOpenChange, customerId, ini
                     name="paymentTermId"
                     control={control}
                     render={({ field }) => (
-                      <Select value={field.value || undefined} onValueChange={(v) => field.onChange(v ?? '')}>
-                        <SelectTrigger className="w-full" aria-invalid={errors.paymentTermId ? 'true' : undefined}>
-                          <SelectValue placeholder={paymentTermsLoading ? 'Cargando…' : 'Selecciona forma de pago'} />
+                      <Select
+                        value={field.value || undefined}
+                        onValueChange={(v) => field.onChange(v ?? '')}
+                      >
+                        <SelectTrigger
+                          className="w-full"
+                          aria-invalid={errors.paymentTermId ? 'true' : undefined}
+                        >
+                          <SelectValue
+                            placeholder={
+                              paymentTermsLoading ? 'Cargando…' : 'Selecciona forma de pago'
+                            }
+                          />
                         </SelectTrigger>
                         <SelectContent>
                           {(paymentTermOptions || []).map((opt) => (
@@ -342,9 +424,17 @@ export default function CustomerEditDialog({ open, onOpenChange, customerId, ini
                     name="transportId"
                     control={control}
                     render={({ field }) => (
-                      <Select value={field.value || undefined} onValueChange={(v) => field.onChange(v ?? '')}>
-                        <SelectTrigger className="w-full" aria-invalid={errors.transportId ? 'true' : undefined}>
-                          <SelectValue placeholder={transportsLoading ? 'Cargando…' : 'Selecciona transporte'} />
+                      <Select
+                        value={field.value || undefined}
+                        onValueChange={(v) => field.onChange(v ?? '')}
+                      >
+                        <SelectTrigger
+                          className="w-full"
+                          aria-invalid={errors.transportId ? 'true' : undefined}
+                        >
+                          <SelectValue
+                            placeholder={transportsLoading ? 'Cargando…' : 'Selecciona transporte'}
+                          />
                         </SelectTrigger>
                         <SelectContent>
                           {(transportOptions || []).map((opt) => (
@@ -369,8 +459,15 @@ export default function CustomerEditDialog({ open, onOpenChange, customerId, ini
                         value={field.value ? String(field.value) : FIELD_OPERATOR_NONE}
                         onValueChange={(v) => field.onChange(v === FIELD_OPERATOR_NONE ? '' : v)}
                       >
-                        <SelectTrigger className="w-full" aria-invalid={errors.fieldOperatorId ? 'true' : undefined}>
-                          <SelectValue placeholder={fieldOperatorsLoading ? 'Cargando…' : 'Selecciona el repartidor'} />
+                        <SelectTrigger
+                          className="w-full"
+                          aria-invalid={errors.fieldOperatorId ? 'true' : undefined}
+                        >
+                          <SelectValue
+                            placeholder={
+                              fieldOperatorsLoading ? 'Cargando…' : 'Selecciona el repartidor'
+                            }
+                          />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value={FIELD_OPERATOR_NONE}>Sin repartidor</SelectItem>
@@ -389,7 +486,7 @@ export default function CustomerEditDialog({ open, onOpenChange, customerId, ini
             </div>
           </ScrollArea>
 
-          <div className="flex flex-col-reverse gap-2 border-t bg-background p-4 sm:flex-row sm:justify-end">
+          <div className="bg-background flex flex-col-reverse gap-2 border-t p-4 sm:flex-row sm:justify-end">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
@@ -402,4 +499,3 @@ export default function CustomerEditDialog({ open, onOpenChange, customerId, ini
     </Dialog>
   );
 }
-

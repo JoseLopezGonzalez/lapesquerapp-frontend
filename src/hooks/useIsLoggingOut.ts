@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 
 /**
  * Hook que verifica si hay un logout en curso
@@ -8,16 +8,16 @@ import { useState, useEffect } from "react";
  */
 export function useIsLoggingOut(): boolean {
   const [isLoggingOut, setIsLoggingOut] = useState(() => {
-    if (typeof window === "undefined" || typeof sessionStorage === "undefined") {
+    if (typeof window === 'undefined' || typeof sessionStorage === 'undefined') {
       return false;
     }
-    return sessionStorage.getItem("__is_logging_out__") === "true";
+    return sessionStorage.getItem('__is_logging_out__') === 'true';
   });
 
   useEffect(() => {
     const checkLogout = () => {
-      if (typeof sessionStorage !== "undefined") {
-        const flag = sessionStorage.getItem("__is_logging_out__") === "true";
+      if (typeof sessionStorage !== 'undefined') {
+        const flag = sessionStorage.getItem('__is_logging_out__') === 'true';
         setIsLoggingOut((prev) => (prev !== flag ? flag : prev));
       }
     };

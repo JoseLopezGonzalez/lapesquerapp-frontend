@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { SessionProvider } from "next-auth/react";
-import { useEffect } from "react";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { getQueryClient } from "@/lib/queryClient";
-import AuthErrorInterceptor from "@/components/Utilities/AuthErrorInterceptor";
-import { SettingsProvider } from "@/context/SettingsContext";
-import { LogoutProvider } from "@/context/LogoutContext";
-import { ThemeProvider } from "@/components/Providers/ThemeProvider";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { AppToaster } from "@/components/ui/app-toaster";
-import { registerServiceWorker } from "@/lib/sw-register";
-import { InstallPromptBanner } from "@/components/PWA/InstallPromptBanner";
+import { SessionProvider } from 'next-auth/react';
+import { useEffect } from 'react';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { getQueryClient } from '@/lib/queryClient';
+import AuthErrorInterceptor from '@/components/Utilities/AuthErrorInterceptor';
+import { SettingsProvider } from '@/context/SettingsContext';
+import { LogoutProvider } from '@/context/LogoutContext';
+import { ThemeProvider } from '@/components/Providers/ThemeProvider';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { AppToaster } from '@/components/ui/app-toaster';
+import { registerServiceWorker } from '@/lib/sw-register';
+import { InstallPromptBanner } from '@/components/PWA/InstallPromptBanner';
 
 export default function ClientLayout({ children }) {
   // Registrar Service Worker solo en producción
@@ -27,14 +27,14 @@ export default function ClientLayout({ children }) {
         <QueryClientProvider client={getQueryClient()}>
           <SessionProvider refetchOnWindowFocus={false}>
             <SettingsProvider>
-            <LogoutProvider>
-              <AuthErrorInterceptor />
-              <AppToaster />
-              {children}
-              {/* Install Prompt Banner - Mobile */}
-              <InstallPromptBanner />
-            </LogoutProvider>
-          </SettingsProvider>
+              <LogoutProvider>
+                <AuthErrorInterceptor />
+                <AppToaster />
+                {children}
+                {/* Install Prompt Banner - Mobile */}
+                <InstallPromptBanner />
+              </LogoutProvider>
+            </SettingsProvider>
           </SessionProvider>
         </QueryClientProvider>
       </TooltipProvider>

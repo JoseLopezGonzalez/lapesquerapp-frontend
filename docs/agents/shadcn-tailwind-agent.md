@@ -10,20 +10,20 @@ Your mission is to audit, implement and maintain the UI using native shadcn/ui c
 
 ## Stack de UI en este proyecto
 
-| Tecnología | Versión | Notas |
-|---|---|---|
-| Tailwind CSS | **v4.2.1** | CSS-first config, `@theme inline`, `@import "tailwindcss"` |
-| shadcn/ui | — | Estilo: **`radix-nova`** (no es `default` ni `new-york`) |
-| Radix UI | v1.4.3 (unified) + primitivos individuales | Base de todos los componentes |
-| class-variance-authority | ^0.7.1 | `cva()` para variantes de componentes |
-| tailwind-merge | **v3.0.1** | `cn()` / `twMerge()` para combinar clases |
-| clsx | ^2.1.1 | `cn()` helper |
-| lucide-react | ^0.575.0 | Iconos (biblioteca oficial del proyecto) |
-| tw-animate-css | ^1.4.0 | Animaciones CSS via Tailwind v4 |
-| tailwindcss-animate | ^1.0.7 | Animaciones adicionales (acordeón, etc.) |
-| vaul | ^1.1.2 | Drawer/sheet components |
-| cmdk | ^1.0.0 | Command menu primitive |
-| @reui | registry en `reui.io` | Componentes extra (`phone-input`, etc.) |
+| Tecnología               | Versión                                    | Notas                                                      |
+| ------------------------ | ------------------------------------------ | ---------------------------------------------------------- |
+| Tailwind CSS             | **v4.2.1**                                 | CSS-first config, `@theme inline`, `@import "tailwindcss"` |
+| shadcn/ui                | —                                          | Estilo: **`radix-nova`** (no es `default` ni `new-york`)   |
+| Radix UI                 | v1.4.3 (unified) + primitivos individuales | Base de todos los componentes                              |
+| class-variance-authority | ^0.7.1                                     | `cva()` para variantes de componentes                      |
+| tailwind-merge           | **v3.0.1**                                 | `cn()` / `twMerge()` para combinar clases                  |
+| clsx                     | ^2.1.1                                     | `cn()` helper                                              |
+| lucide-react             | ^0.575.0                                   | Iconos (biblioteca oficial del proyecto)                   |
+| tw-animate-css           | ^1.4.0                                     | Animaciones CSS via Tailwind v4                            |
+| tailwindcss-animate      | ^1.0.7                                     | Animaciones adicionales (acordeón, etc.)                   |
+| vaul                     | ^1.1.2                                     | Drawer/sheet components                                    |
+| cmdk                     | ^1.0.0                                     | Command menu primitive                                     |
+| @reui                    | registry en `reui.io`                      | Componentes extra (`phone-input`, etc.)                    |
 
 ---
 
@@ -41,14 +41,14 @@ Este proyecto usa **Tailwind v4**, que funciona diferente a v3:
 
 ```css
 /* globals.css — Tailwind v4 */
-@import "tailwindcss";          /* en lugar de @tailwind base/components/utilities */
-@import "tw-animate-css";
+@import 'tailwindcss'; /* en lugar de @tailwind base/components/utilities */
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 @custom-variant data-active (&[data-state="active"]);
 
 @theme inline {
-  --color-primary: var(--primary);    /* mapeo token CSS → clase Tailwind */
+  --color-primary: var(--primary); /* mapeo token CSS → clase Tailwind */
   --radius-lg: var(--radius);
   /* ... */
 }
@@ -62,32 +62,16 @@ El proyecto usa el espacio de color **oklch** (moderno, perceptualmente uniforme
 
 ```css
 /* Tokens semánticos principales */
---background: oklch(1 0 0)
---foreground: oklch(0.145 0 0)
---primary: oklch(0.205 0 0)
---primary-foreground: oklch(0.985 0 0)
---secondary: oklch(0.97 0 0)
---muted: oklch(0.97 0 0)
---muted-foreground: oklch(0.556 0 0)
---accent: oklch(0.97 0 0)
---border: oklch(0.922 0 0)
---ring: oklch(0.62 0.19 250)   /* azul, usado en focus */
-
-/* Tokens semánticos EXTRA (no estándar shadcn) */
---destructive: oklch(0.58 0.22 27)   /* rojo */
---info: oklch(0.72 0.16 300)         /* morado/azul */
---success: oklch(0.74 0.17 155)      /* verde */
---warning: oklch(0.83 0.17 92)       /* amarillo */
---invert: oklch(0.17 0 0)            /* negro invertido */
-
-/* Escala foreground custom (no estándar shadcn) */
---foreground-50: oklch(0.98 0 0)     /* casi blanco */
---foreground-100: oklch(0.95 0 0)
---foreground-300: oklch(0.75 0 0)
---foreground-400: oklch(0.55 0 0)    /* gris medio */
-
-/* Radio base */
---radius: 0.625rem
+--background: oklch(1 0 0) --foreground: oklch(0.145 0 0) --primary: oklch(0.205 0 0)
+  --primary-foreground: oklch(0.985 0 0) --secondary: oklch(0.97 0 0) --muted: oklch(0.97 0 0)
+  --muted-foreground: oklch(0.556 0 0) --accent: oklch(0.97 0 0) --border: oklch(0.922 0 0)
+  --ring: oklch(0.62 0.19 250) /* azul, usado en focus */
+  /* Tokens semánticos EXTRA (no estándar shadcn) */ --destructive: oklch(0.58 0.22 27) /* rojo */
+  --info: oklch(0.72 0.16 300) /* morado/azul */ --success: oklch(0.74 0.17 155) /* verde */
+  --warning: oklch(0.83 0.17 92) /* amarillo */ --invert: oklch(0.17 0 0) /* negro invertido */
+  /* Escala foreground custom (no estándar shadcn) */ --foreground-50: oklch(0.98 0 0)
+  /* casi blanco */ --foreground-100: oklch(0.95 0 0) --foreground-300: oklch(0.75 0 0)
+  --foreground-400: oklch(0.55 0 0) /* gris medio */ /* Radio base */ --radius: 0.625rem;
 ```
 
 **En Tailwind**: se usan como `bg-primary`, `text-muted-foreground`, `border-border`, `bg-destructive`, `bg-success`, `bg-warning`, `bg-info`, `text-foreground-400`, etc.
@@ -117,47 +101,47 @@ Las clases de grid `sm:col-span-1` hasta `xl:col-span-6` están en safelist porq
 
 52 componentes. Los más usados:
 
-| Componente | Archivo | Variantes clave |
-|---|---|---|
-| `Button` | `button.jsx` | default, secondary, outline, ghost, destructive, link |
-| `Input` | `input.jsx` | — |
-| `Label` | `label.jsx` | — |
-| `Badge` | `badge.jsx` | default, secondary, outline, destructive + custom (success, warning, info) |
-| `Card` | `card.jsx` | Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter |
-| `Select` | `select.jsx` | SelectTrigger, SelectValue, SelectContent, SelectItem, SelectGroup |
-| `Dialog` | `dialog.jsx` | Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter |
-| `ScrollArea` | `scroll-area.jsx` | — |
-| `Textarea` | `textarea.jsx` | — |
-| `Table` | `table.jsx` | Table, TableHeader, TableBody, TableRow, TableCell, TableHead |
-| `Accordion` | `accordion.jsx` | AccordionItem, AccordionTrigger, AccordionContent |
-| `Pagination` | `pagination.jsx` | — |
-| `Tabs` | `tabs.jsx` | TabsList, TabsTrigger, TabsContent |
-| `Separator` | `separator.jsx` | — |
-| `Skeleton` | `skeleton.jsx` | — |
-| `Tooltip` | `tooltip.jsx` | TooltipProvider, TooltipTrigger, TooltipContent |
-| `Popover` | `popover.jsx` | PopoverTrigger, PopoverContent |
-| `DropdownMenu` | `dropdown-menu.jsx` | DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem |
-| `Sheet` | `sheet.jsx` | SheetTrigger, SheetContent, SheetHeader |
-| `Avatar` | `avatar.jsx` | AvatarImage, AvatarFallback |
-| `Checkbox` | `checkbox.jsx` | — |
-| `Slider` | `slider.jsx` | — |
-| `Calendar` | `calendar.jsx` | — |
-| `Command` | `command.jsx` | CommandInput, CommandList, CommandItem (base de Combobox) |
-| `Chart` | `chart.jsx` | Wrapper de Recharts |
-| `Sonner` | `sonner.jsx` | Toast provider |
-| `Sidebar` | `sidebar.jsx` | Sistema de sidebar complejo |
-| `InputOTP` | `input-otp.jsx` | InputOTPGroup, InputOTPSlot |
-| `Progress` | `progress.jsx` | — |
-| `DatePicker` | `datePicker.jsx` | Custom (no es shadcn estándar) |
-| `DateRangePicker` | `dateRangePicker.jsx` | Custom |
+| Componente        | Archivo               | Variantes clave                                                                   |
+| ----------------- | --------------------- | --------------------------------------------------------------------------------- |
+| `Button`          | `button.jsx`          | default, secondary, outline, ghost, destructive, link                             |
+| `Input`           | `input.jsx`           | —                                                                                 |
+| `Label`           | `label.jsx`           | —                                                                                 |
+| `Badge`           | `badge.jsx`           | default, secondary, outline, destructive + custom (success, warning, info)        |
+| `Card`            | `card.jsx`            | Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter             |
+| `Select`          | `select.jsx`          | SelectTrigger, SelectValue, SelectContent, SelectItem, SelectGroup                |
+| `Dialog`          | `dialog.jsx`          | Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter |
+| `ScrollArea`      | `scroll-area.jsx`     | —                                                                                 |
+| `Textarea`        | `textarea.jsx`        | —                                                                                 |
+| `Table`           | `table.jsx`           | Table, TableHeader, TableBody, TableRow, TableCell, TableHead                     |
+| `Accordion`       | `accordion.jsx`       | AccordionItem, AccordionTrigger, AccordionContent                                 |
+| `Pagination`      | `pagination.jsx`      | —                                                                                 |
+| `Tabs`            | `tabs.jsx`            | TabsList, TabsTrigger, TabsContent                                                |
+| `Separator`       | `separator.jsx`       | —                                                                                 |
+| `Skeleton`        | `skeleton.jsx`        | —                                                                                 |
+| `Tooltip`         | `tooltip.jsx`         | TooltipProvider, TooltipTrigger, TooltipContent                                   |
+| `Popover`         | `popover.jsx`         | PopoverTrigger, PopoverContent                                                    |
+| `DropdownMenu`    | `dropdown-menu.jsx`   | DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem                        |
+| `Sheet`           | `sheet.jsx`           | SheetTrigger, SheetContent, SheetHeader                                           |
+| `Avatar`          | `avatar.jsx`          | AvatarImage, AvatarFallback                                                       |
+| `Checkbox`        | `checkbox.jsx`        | —                                                                                 |
+| `Slider`          | `slider.jsx`          | —                                                                                 |
+| `Calendar`        | `calendar.jsx`        | —                                                                                 |
+| `Command`         | `command.jsx`         | CommandInput, CommandList, CommandItem (base de Combobox)                         |
+| `Chart`           | `chart.jsx`           | Wrapper de Recharts                                                               |
+| `Sonner`          | `sonner.jsx`          | Toast provider                                                                    |
+| `Sidebar`         | `sidebar.jsx`         | Sistema de sidebar complejo                                                       |
+| `InputOTP`        | `input-otp.jsx`       | InputOTPGroup, InputOTPSlot                                                       |
+| `Progress`        | `progress.jsx`        | —                                                                                 |
+| `DatePicker`      | `datePicker.jsx`      | Custom (no es shadcn estándar)                                                    |
+| `DateRangePicker` | `dateRangePicker.jsx` | Custom                                                                            |
 
 ### Componentes custom del proyecto
 
-| Componente | Ubicación | Propósito |
-|---|---|---|
-| `Combobox` | `src/components/Shadcn/Combobox/` | Select con búsqueda, carga desde API |
-| `SelectionDialog` | `src/components/Shadcn/SelectionDialog/` | Dialog de selección múltiple |
-| `PhoneInput` | `src/components/reui/phone-input.jsx` | Input de teléfono internacional (vía @reui) |
+| Componente        | Ubicación                                | Propósito                                   |
+| ----------------- | ---------------------------------------- | ------------------------------------------- |
+| `Combobox`        | `src/components/Shadcn/Combobox/`        | Select con búsqueda, carga desde API        |
+| `SelectionDialog` | `src/components/Shadcn/SelectionDialog/` | Dialog de selección múltiple                |
+| `PhoneInput`      | `src/components/reui/phone-input.jsx`    | Input de teléfono internacional (vía @reui) |
 
 ---
 
@@ -197,6 +181,7 @@ Los componentes shadcn aceptan `className` y lo fusionan internamente con `cn()`
 ```
 
 **Señales de alerta a buscar en el código:**
+
 - `className` con valores de color (`bg-*`, `text-*`) en componentes con variantes → ¿debería ser una variante?
 - `style={{}}` en componentes shadcn → siempre es una señal de problema
 - Clases `!` (important) en componentes de `src/components/ui/` → documentar o eliminar
@@ -213,27 +198,27 @@ Cada componente shadcn tiene un propósito concreto. Detectar cuando se usa el i
 
 #### Guía de componente correcto por escenario
 
-| Escenario | Componente correcto | Error frecuente |
-|---|---|---|
-| Confirmación de acción peligrosa (eliminar, resetear) | `AlertDialog` | `Dialog` genérico sin semántica de alerta |
-| Panel lateral deslizante | `Sheet` | `div` con `fixed right-0`, animación manual |
-| Contenido flotante anclado a un elemento | `Popover` | `div` con `absolute`, gestión manual de posición |
-| Menú de opciones sobre un elemento | `DropdownMenu` | `div` con lista de botones y `absolute` |
-| Zona con scroll interno | `ScrollArea` | `div` con `overflow-y-auto` (pierde el scroll custom de Radix) |
-| Texto de ayuda al hacer hover | `Tooltip` | Atributo `title=""` nativo del browser |
-| Notificación/feedback al usuario | `Sonner` vía `notify.success/error` | `alert`, `div` flotante custom, `console.log` |
-| Estado de carga de contenido | `Skeleton` | Spinner genérico, texto "Cargando..." |
-| Estado vacío sin datos | `empty.jsx` (componente del proyecto) | Texto suelto, `null`, `undefined` renderizado |
-| Selección de una opción de lista corta y estática | `Select` | Botones o radios custom |
-| Selección con búsqueda o lista larga desde API | `Combobox` (custom del proyecto) | `Select` con muchas opciones, input + lista manual |
-| Selección múltiple | `SelectionDialog` (custom del proyecto) | Checkboxes sin estructura, `Select` multiple |
-| Indicador de estado/etiqueta | `Badge` con variante | Span con clases de color manuales |
-| Contenedor de sección | `Card` + subcomponentes | `div` con clases que imitan una card |
-| Secciones colapsables | `Accordion` | `div` con `useState` para mostrar/ocultar |
-| Navegación por pestañas | `Tabs` | Botones custom con estado activo manual |
-| Comandos / búsqueda global | `Command` | Input + lista filtrada con `useState` |
-| Progreso de operación | `Progress` | Barra de div custom con width dinámico |
-| Avatar de usuario | `Avatar` + `AvatarFallback` | `img` directa sin fallback |
+| Escenario                                             | Componente correcto                     | Error frecuente                                                |
+| ----------------------------------------------------- | --------------------------------------- | -------------------------------------------------------------- |
+| Confirmación de acción peligrosa (eliminar, resetear) | `AlertDialog`                           | `Dialog` genérico sin semántica de alerta                      |
+| Panel lateral deslizante                              | `Sheet`                                 | `div` con `fixed right-0`, animación manual                    |
+| Contenido flotante anclado a un elemento              | `Popover`                               | `div` con `absolute`, gestión manual de posición               |
+| Menú de opciones sobre un elemento                    | `DropdownMenu`                          | `div` con lista de botones y `absolute`                        |
+| Zona con scroll interno                               | `ScrollArea`                            | `div` con `overflow-y-auto` (pierde el scroll custom de Radix) |
+| Texto de ayuda al hacer hover                         | `Tooltip`                               | Atributo `title=""` nativo del browser                         |
+| Notificación/feedback al usuario                      | `Sonner` vía `notify.success/error`     | `alert`, `div` flotante custom, `console.log`                  |
+| Estado de carga de contenido                          | `Skeleton`                              | Spinner genérico, texto "Cargando..."                          |
+| Estado vacío sin datos                                | `empty.jsx` (componente del proyecto)   | Texto suelto, `null`, `undefined` renderizado                  |
+| Selección de una opción de lista corta y estática     | `Select`                                | Botones o radios custom                                        |
+| Selección con búsqueda o lista larga desde API        | `Combobox` (custom del proyecto)        | `Select` con muchas opciones, input + lista manual             |
+| Selección múltiple                                    | `SelectionDialog` (custom del proyecto) | Checkboxes sin estructura, `Select` multiple                   |
+| Indicador de estado/etiqueta                          | `Badge` con variante                    | Span con clases de color manuales                              |
+| Contenedor de sección                                 | `Card` + subcomponentes                 | `div` con clases que imitan una card                           |
+| Secciones colapsables                                 | `Accordion`                             | `div` con `useState` para mostrar/ocultar                      |
+| Navegación por pestañas                               | `Tabs`                                  | Botones custom con estado activo manual                        |
+| Comandos / búsqueda global                            | `Command`                               | Input + lista filtrada con `useState`                          |
+| Progreso de operación                                 | `Progress`                              | Barra de div custom con width dinámico                         |
+| Avatar de usuario                                     | `Avatar` + `AvatarFallback`             | `img` directa sin fallback                                     |
 
 #### Patrones de uso incorrecto frecuentes
 
@@ -343,20 +328,21 @@ Los componentes Radix gestionan automáticamente foco, roles ARIA, navegación p
 
 **Clases arbitrarias a detectar y corregir:**
 
-| Uso incorrecto | Corrección |
-|---|---|
-| `bg-[#f5f5f5]` | `bg-foreground-50` |
-| `bg-[#efefef]` | `bg-foreground-100` |
-| `text-[#888]` | `text-foreground-400` |
-| `bg-[#22c55e]` | `bg-success` |
-| `bg-[#f59e0b]` | `bg-warning` |
-| `bg-[#ef4444]` | `bg-destructive` |
-| `rounded-[10px]` | `rounded-lg` (≈ 10px con el radius del proyecto) |
-| `rounded-[6px]` | `rounded-sm` |
-| `border-[#e5e7eb]` | `border-border` |
-| `text-[#6b7280]` | `text-muted-foreground` |
+| Uso incorrecto     | Corrección                                       |
+| ------------------ | ------------------------------------------------ |
+| `bg-[#f5f5f5]`     | `bg-foreground-50`                               |
+| `bg-[#efefef]`     | `bg-foreground-100`                              |
+| `text-[#888]`      | `text-foreground-400`                            |
+| `bg-[#22c55e]`     | `bg-success`                                     |
+| `bg-[#f59e0b]`     | `bg-warning`                                     |
+| `bg-[#ef4444]`     | `bg-destructive`                                 |
+| `rounded-[10px]`   | `rounded-lg` (≈ 10px con el radius del proyecto) |
+| `rounded-[6px]`    | `rounded-sm`                                     |
+| `border-[#e5e7eb]` | `border-border`                                  |
+| `text-[#6b7280]`   | `text-muted-foreground`                          |
 
 **Clases de Tailwind v3 que no aplican en v4:**
+
 - `@layer utilities { }` → en v4 no se necesita `@layer` para utilities custom
 - `theme('colors.primary')` en CSS → en v4 usar `var(--primary)` directamente
 - `@apply` sigue funcionando pero se desaconseja para utilidades simples
@@ -374,6 +360,7 @@ Este agente debe mantenerse actualizado y proponer mejoras cuando:
 - **Un componente del proyecto** queda desactualizado respecto a la versión actual del mismo en shadcn.
 
 **Proceso de evaluación de novedad:**
+
 1. Leer el changelog de shadcn/ui y Tailwind v4.
 2. Identificar si el proyecto tiene código que la novedad reemplaza o mejora.
 3. Proponer la actualización con un plan de migración seguro.
@@ -398,9 +385,9 @@ Si un archivo de `src/components/ui/` ha sido modificado directamente (alejándo
 
 ```javascript
 // Siempre desde el alias @/components/ui/
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 // Nunca desde node_modules directamente:
 // import { Button } from "shadcn/ui"; // ❌
@@ -409,28 +396,28 @@ import { Badge } from "@/components/ui/badge";
 ### Uso de cn() para combinar clases
 
 ```javascript
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
 // Combinación correcta con tailwind-merge
-<div className={cn("base-class", isActive && "active-class", className)} />
+<div className={cn('base-class', isActive && 'active-class', className)} />;
 ```
 
 ### Variantes con cva()
 
 ```javascript
-import { cva } from "class-variance-authority";
+import { cva } from 'class-variance-authority';
 
-const badgeVariants = cva("base-classes", {
+const badgeVariants = cva('base-classes', {
   variants: {
     variant: {
-      default: "bg-primary text-primary-foreground",
-      success: "bg-success text-success-foreground",
-      warning: "bg-warning text-warning-foreground",
-      info: "bg-info text-info-foreground",
-      destructive: "bg-destructive text-destructive-foreground",
-    }
+      default: 'bg-primary text-primary-foreground',
+      success: 'bg-success text-success-foreground',
+      warning: 'bg-warning text-warning-foreground',
+      info: 'bg-info text-info-foreground',
+      destructive: 'bg-destructive text-destructive-foreground',
+    },
   },
-  defaultVariants: { variant: "default" }
+  defaultVariants: { variant: 'default' },
 });
 ```
 

@@ -5,7 +5,7 @@
 
 ## Orden de trabajo
 
-1. Crear módulo `src/configs/branding.js` y exportar API (isGenericBranding, appName, appShortName, metadataBase, supportEmail, demoEmail, exampleEmail, baseDomain, logoAlt, demoUrl, infoEmail, manifest*, apiBaseUrl).
+1. Crear módulo `src/configs/branding.js` y exportar API (isGenericBranding, appName, appShortName, metadataBase, supportEmail, demoEmail, exampleEmail, baseDomain, logoAlt, demoUrl, infoEmail, manifest\*, apiBaseUrl).
 2. Añadir en `.env.example` variable `NEXT_PUBLIC_APP_BRANDING` (comentario y nombre).
 3. Sustituir referencias en `layout.js` (metadata y meta PWA).
 4. Sustituir en componentes Login y Landing.

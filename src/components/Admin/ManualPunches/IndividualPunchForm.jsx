@@ -10,16 +10,19 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Combobox } from '@/components/Shadcn/Combobox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { notify } from '@/lib/notifications';
 import { createManualPunch, createBulkPunches } from '@/services/punchService';
 import { useEmployeeOptions } from '@/hooks/useEmployeesForPunches';
-import {
-  getIndividualPunchSchema,
-  getDefaultTimestampValues,
-} from './individualPunchSchema';
+import { getIndividualPunchSchema, getDefaultTimestampValues } from './individualPunchSchema';
 
 /** Mapa de errores de Zod a español para mensajes por defecto (ej. tipo incorrecto) */
 const zodErrorMapES = (issue, ctx) => {
@@ -30,7 +33,9 @@ const zodErrorMapES = (issue, ctx) => {
     if (issue.received === 'string' && issue.expected === 'number') {
       return { message: 'Se esperaba un número, se recibió texto' };
     }
-    return { message: `Tipo no válido: se esperaba ${issue.expected}, se recibió ${issue.received}` };
+    return {
+      message: `Tipo no válido: se esperaba ${issue.expected}, se recibió ${issue.received}`,
+    };
   }
   return { message: ctx.defaultError };
 };
@@ -38,7 +43,11 @@ const zodErrorMapES = (issue, ctx) => {
 export default function IndividualPunchForm() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
-  const { options: employeeOptions, isLoading: loadingEmployees, error: employeesError } = useEmployeeOptions();
+  const {
+    options: employeeOptions,
+    isLoading: loadingEmployees,
+    error: employeesError,
+  } = useEmployeeOptions();
 
   const [isFullSession, setIsFullSession] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -135,14 +144,14 @@ export default function IndividualPunchForm() {
   };
 
   return (
-    <Card className="h-full flex flex-col overflow-hidden">
+    <Card className="flex h-full flex-col overflow-hidden">
       <CardHeader className="flex-shrink-0">
         <CardTitle>Registro Individual de Fichaje</CardTitle>
         <CardDescription>
           Registra un fichaje individual con fecha y hora personalizada
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex-1 min-h-0 overflow-y-auto">
+      <CardContent className="min-h-0 flex-1 overflow-y-auto">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="employee_id">
@@ -164,14 +173,14 @@ export default function IndividualPunchForm() {
               )}
             />
             {errors.employee_id && (
-              <p className="text-sm text-destructive flex items-center gap-1">
+              <p className="text-destructive flex items-center gap-1 text-sm">
                 <AlertCircle className="h-3 w-3" />
                 {errors.employee_id.message}
               </p>
             )}
           </div>
 
-          <div className="flex items-center space-x-2 p-4 bg-muted rounded-md">
+          <div className="bg-muted flex items-center space-x-2 rounded-md p-4">
             <Checkbox
               id="fullSession"
               checked={isFullSession}
@@ -179,7 +188,7 @@ export default function IndividualPunchForm() {
             />
             <Label
               htmlFor="fullSession"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+              className="cursor-pointer text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
             >
               Crear sesión completa (Entrada + Salida)
             </Label>
@@ -207,7 +216,7 @@ export default function IndividualPunchForm() {
                   )}
                 />
                 {errors.event_type && (
-                  <p className="text-sm text-destructive flex items-center gap-1">
+                  <p className="text-destructive flex items-center gap-1 text-sm">
                     <AlertCircle className="h-3 w-3" />
                     {errors.event_type.message}
                   </p>
@@ -231,7 +240,7 @@ export default function IndividualPunchForm() {
                   )}
                 />
                 {errors.timestamp && (
-                  <p className="text-sm text-destructive flex items-center gap-1">
+                  <p className="text-destructive flex items-center gap-1 text-sm">
                     <AlertCircle className="h-3 w-3" />
                     {errors.timestamp.message}
                   </p>
@@ -257,7 +266,7 @@ export default function IndividualPunchForm() {
                   )}
                 />
                 {errors.timestamp && (
-                  <p className="text-sm text-destructive flex items-center gap-1">
+                  <p className="text-destructive flex items-center gap-1 text-sm">
                     <AlertCircle className="h-3 w-3" />
                     {errors.timestamp.message}
                   </p>
@@ -281,7 +290,7 @@ export default function IndividualPunchForm() {
                   )}
                 />
                 {errors.exitTimestamp && (
-                  <p className="text-sm text-destructive flex items-center gap-1">
+                  <p className="text-destructive flex items-center gap-1 text-sm">
                     <AlertCircle className="h-3 w-3" />
                     {errors.exitTimestamp.message}
                   </p>
@@ -291,7 +300,7 @@ export default function IndividualPunchForm() {
           )}
 
           {success && (
-            <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-md">
+            <div className="flex items-center gap-2 rounded-md border border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-950/20">
               <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
               <p className="text-sm text-green-800 dark:text-green-200">
                 Fichaje registrado correctamente

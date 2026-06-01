@@ -10,6 +10,7 @@ Este documento describe la implementación de un módulo para la gestión manual
 ## 2. Ubicación en la Aplicación
 
 ### 2.1 Navegación
+
 El nuevo módulo se añadirá dentro de la sección **"Gestión Horaria"** en el menú de administración:
 
 ```
@@ -44,6 +45,7 @@ src/
 ### 3.1 Registro Individual
 
 **Características:**
+
 - Formulario con campos:
   - **Empleado** (Autocomplete/Select)
   - **Tipo de Evento** (Entrada/Salida)
@@ -63,6 +65,7 @@ src/
 **Opciones de carga:**
 
 #### Opción A: Formulario Masivo
+
 - Tabla editable donde se pueden añadir múltiples filas
 - Cada fila contiene: Empleado, Tipo, Fecha/Hora
 - Validación en tiempo real
@@ -70,6 +73,7 @@ src/
 - Botón para añadir/eliminar filas
 
 #### Opción B: Carga desde CSV
+
 - Botón para seleccionar archivo CSV
 - Validación del formato:
   ```
@@ -82,6 +86,7 @@ src/
 - Confirmación de éxito con resumen
 
 **Características comunes:**
+
 - Validación de datos antes de enviar
 - Procesamiento en lote (bulk)
 - Manejo de errores parciales (algunos registros fallan)
@@ -96,16 +101,18 @@ src/
 **Cambio necesario:** El endpoint actual `createPunch` genera el timestamp automáticamente. Se necesita modificar para aceptar timestamp manual cuando se proporciona.
 
 **Request Body:**
+
 ```json
 {
   "employee_id": 1,
-  "event_type": "IN",  // "IN" o "OUT"
-  "timestamp": "2024-01-15T08:30:00",  // ISO 8601 format
-  "device_id": "manual-admin"  // Opcional
+  "event_type": "IN", // "IN" o "OUT"
+  "timestamp": "2024-01-15T08:30:00", // ISO 8601 format
+  "device_id": "manual-admin" // Opcional
 }
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -125,6 +132,7 @@ src/
 ```
 
 **Validaciones Backend:**
+
 - `employee_id` debe existir
 - `event_type` debe ser "IN" o "OUT"
 - `timestamp` debe ser una fecha válida
@@ -138,6 +146,7 @@ src/
 **Endpoint:** `POST /api/v2/punches/bulk`
 
 **Request Body:**
+
 ```json
 {
   "punches": [
@@ -158,6 +167,7 @@ src/
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -191,6 +201,7 @@ src/
 ```
 
 **En caso de errores parciales:**
+
 ```json
 {
   "data": {
@@ -224,6 +235,7 @@ src/
 ```
 
 **Validaciones Backend:**
+
 - Validar cada registro individualmente
 - Continuar procesando aunque algunos fallen
 - Retornar detalles de errores para cada registro fallido
@@ -238,6 +250,7 @@ src/
 **Propósito:** Validar datos antes de crear los fichajes. Útil para mostrar errores en la vista previa.
 
 **Request Body:** (Igual que bulk)
+
 ```json
 {
   "punches": [ ... ]
@@ -245,6 +258,7 @@ src/
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
@@ -267,6 +281,7 @@ src/
 ```
 
 **Con errores:**
+
 ```json
 {
   "data": {
@@ -281,10 +296,7 @@ src/
       {
         "index": 1,
         "valid": false,
-        "errors": [
-          "El empleado con ID 999 no existe",
-          "El timestamp no puede ser una fecha futura"
-        ]
+        "errors": ["El empleado con ID 999 no existe", "El timestamp no puede ser una fecha futura"]
       }
     ]
   }
@@ -298,6 +310,7 @@ src/
 **Endpoint:** `GET /api/v2/punches/bulk/template`
 
 **Response:** Archivo CSV de ejemplo
+
 ```
 employee_id,event_type,timestamp
 1,IN,2024-01-15 08:30:00
@@ -305,6 +318,7 @@ employee_id,event_type,timestamp
 ```
 
 O respuesta JSON con la estructura:
+
 ```json
 {
   "data": {
@@ -332,8 +346,8 @@ interface Punch {
     id: number;
     name: string;
   };
-  event_type: "IN" | "OUT";
-  timestamp: string;  // ISO 8601
+  event_type: 'IN' | 'OUT';
+  timestamp: string; // ISO 8601
   device_id?: string;
   created_at: string;
   updated_at: string;
@@ -345,8 +359,8 @@ interface Punch {
 ```typescript
 interface IndividualPunchFormData {
   employee_id: number;
-  event_type: "IN" | "OUT";
-  timestamp: string;  // ISO 8601 o formato datetime-local
+  event_type: 'IN' | 'OUT';
+  timestamp: string; // ISO 8601 o formato datetime-local
   device_id?: string;
 }
 ```
@@ -357,7 +371,7 @@ interface IndividualPunchFormData {
 interface BulkPunchFormData {
   punches: Array<{
     employee_id: number;
-    event_type: "IN" | "OUT";
+    event_type: 'IN' | 'OUT';
     timestamp: string;
     device_id?: string;
   }>;
@@ -374,6 +388,7 @@ employee_id,event_type,timestamp
 ```
 
 **Variantes aceptadas:**
+
 - Separador: coma (`,`) o punto y coma (`;`)
 - Timestamp: `YYYY-MM-DD HH:mm:ss` o `YYYY-MM-DDTHH:mm:ss`
 - Headers opcionales (si no hay, usar orden: employee_id, event_type, timestamp)
@@ -396,10 +411,10 @@ export default function ManualPunchesManager() {
   const [activeTab, setActiveTab] = useState('individual');
 
   return (
-    <div className="container mx-auto p-4 md:p-6 space-y-6">
+    <div className="container mx-auto space-y-6 p-4 md:p-6">
       <div className="space-y-2">
         <h2 className="text-xl font-medium">Gestión Manual de Fichajes</h2>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           Registra entradas y salidas de trabajadores de forma manual
         </p>
       </div>
@@ -444,7 +459,7 @@ export async function createManualPunch(punchData, token) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      Accept: 'application/json',
       Authorization: `Bearer ${token}`,
       'User-Agent': getUserAgent(),
     },
@@ -471,7 +486,7 @@ export async function createBulkPunches(punches, token) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      Accept: 'application/json',
       Authorization: `Bearer ${token}`,
       'User-Agent': getUserAgent(),
     },
@@ -498,7 +513,7 @@ export async function validateBulkPunches(punches, token) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      Accept: 'application/json',
       Authorization: `Bearer ${token}`,
       'User-Agent': getUserAgent(),
     },
@@ -675,12 +690,12 @@ export async function getPunchCSVTemplate(token) {
 
 ## 11. Resumen de Endpoints Requeridos
 
-| Método | Endpoint | Descripción | Estado |
-|--------|----------|-------------|--------|
-| POST | `/api/v2/punches` | Crear fichaje individual (aceptar timestamp manual) | **MODIFICAR** |
-| POST | `/api/v2/punches/bulk` | Crear fichajes masivos | **NUEVO** |
-| POST | `/api/v2/punches/bulk/validate` | Validar fichajes masivos | **NUEVO** |
-| GET | `/api/v2/punches/bulk/template` | Obtener plantilla CSV | **NUEVO** |
+| Método | Endpoint                        | Descripción                                         | Estado        |
+| ------ | ------------------------------- | --------------------------------------------------- | ------------- |
+| POST   | `/api/v2/punches`               | Crear fichaje individual (aceptar timestamp manual) | **MODIFICAR** |
+| POST   | `/api/v2/punches/bulk`          | Crear fichajes masivos                              | **NUEVO**     |
+| POST   | `/api/v2/punches/bulk/validate` | Validar fichajes masivos                            | **NUEVO**     |
+| GET    | `/api/v2/punches/bulk/template` | Obtener plantilla CSV                               | **NUEVO**     |
 
 ## 12. Próximos Pasos
 
@@ -709,4 +724,3 @@ export async function getPunchCSVTemplate(token) {
 **Fecha de creación:** 2024-01-XX  
 **Versión:** 1.0  
 **Autor:** Sistema de Documentación
-

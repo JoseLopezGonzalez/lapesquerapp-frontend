@@ -40,16 +40,16 @@ El flujo de Autoventa consta de **8 pasos** que deben completarse secuencialment
 
 ### 2.1 Tabla de pasos
 
-| Paso | Nombre | Descripción | Validación / Requisitos | Notas |
-|------|--------|-------------|-------------------------|-------|
-| **1** | **Selección de cliente** | Selector de cliente existente (dropdown/combobox) + botón "Nuevo cliente" para creación in situ rápida. Selector de fecha para la autoventa (formato: DD/MM/YYYY, tipo "pill"). | Cliente **obligatorio**. Fecha por defecto: fecha actual. Si se selecciona "Nuevo cliente", se abre modal/sheet con formulario con un único campo obligatorio: **nombre** del cliente; al guardar exitosamente, el cliente se selecciona automáticamente y se continúa al siguiente paso. | El selector de fecha debe permitir cambiar la fecha de la autoventa. No se piden más datos (NIF, dirección, etc.) para no hacer el flujo más laborioso. |
-| **2** | **Lectura de cajas por QR** | Escaneo de códigos QR de cajas mediante cámara del dispositivo o entrada manual. Lista de cajas escaneadas con opción "Eliminar todo". Indicador visual de progreso (puntos de paginación). | Al menos **una caja escaneada** para avanzar (o permitir 0 y definir comportamiento en paso resumen). Formato QR: a documentar (ver sección 7.1). Cada caja escaneada debe mostrar: producto, peso (si aplica), código escaneado. | El botón "Iniciar Escaneo" activa la cámara. Si no hay cajas escaneadas, mostrar estado vacío con mensaje "No hay cajas escaneadas". |
-| **3** | **Aplicar precio por producto** | Asignar precio a cada producto único (agrupación por producto tras escaneo). Tabla o lista con: producto, cantidad de cajas, peso total, precio unitario, subtotal. | Precio **obligatorio** por línea/producto. El precio puede ser por unidad (caja) o por peso (kg), según configuración o lógica de negocio. Total calculado automáticamente. | Si hay múltiples cajas del mismo producto, se agrupan en una sola línea con cantidad y peso total. |
-| **4** | **Factura sí/no** | Toggle switch o selector: "Con factura" o "Solo recibo". Actualmente se refleja como texto en observaciones de contabilidad ("Con factura" / "Sin factura"). | Selección **obligatoria**. El valor se persiste en observaciones de contabilidad del pedido/autoventa o en campo dedicado si se define entidad autoventa (ver sección 5). | El toggle debe tener estados claros visualmente (ON/OFF o Sí/No). |
-| **5** | **Observaciones** | Campo de texto libre (textarea) con placeholder "Introduce alguna observación...". Información adicional sobre la autoventa. | Campo **opcional**. Sin límite de caracteres o con límite razonable (ej. 500-1000 caracteres). | Las observaciones se añaden al pedido/autoventa junto con la indicación de factura sí/no. |
-| **6** | **Resumen** | Pantalla de revisión antes de confirmar: fecha, nombre del cliente, factura sí/no, tabla detallada (producto, cajas, peso, precio), total calculado. Botones "Atrás" y "Terminar". | Solo **lectura**; no se puede editar desde aquí. El total debe coincidir con la suma de subtotales. Formato de ticket visual (similar a ticket impreso). | El resumen muestra todos los datos que se van a persistir. En resumen y ticket, del cliente solo se muestra el nombre. Si hay errores, el usuario debe volver atrás. |
-| **7** | **Confirmación** | Mensaje de éxito: "Has completado todos los datos para generar una autoventa." Total destacado (ej. "0,00 €" o el total calculado). Acciones: botón "Cancelar" (rojo) y botón "Terminar" (blanco/primario). | Al pulsar "Terminar", se persiste la autoventa (pedido con `buyerReference: "Autoventa"` o entidad autoventa según modelo elegido). Tras persistir exitosamente, se muestra opción de imprimir ticket. | Si hay error al persistir, mostrar mensaje de error y permitir reintentar o cancelar. |
-| **8** | **Imprimir ticket** | Tras terminar exitosamente, ofrecer impresión de ticket. El ticket muestra: fecha, **nombre del cliente** (única información del cliente; no NIF ni dirección), factura sí/no, tabla de productos con cajas/peso/precio, total. | Reutilizar patrón de impresión existente ([usePrintElement](src/hooks/usePrintElement.ts)). El ticket debe ser imprimible por navegador (window.print) o enviarse a impresora térmica según requisitos (ver sección 7.3). | El contenido del ticket debe coincidir con el resumen del paso 6. |
+| Paso  | Nombre                          | Descripción                                                                                                                                                                                                                     | Validación / Requisitos                                                                                                                                                                                                                                                                   | Notas                                                                                                                                                                |
+| ----- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1** | **Selección de cliente**        | Selector de cliente existente (dropdown/combobox) + botón "Nuevo cliente" para creación in situ rápida. Selector de fecha para la autoventa (formato: DD/MM/YYYY, tipo "pill").                                                 | Cliente **obligatorio**. Fecha por defecto: fecha actual. Si se selecciona "Nuevo cliente", se abre modal/sheet con formulario con un único campo obligatorio: **nombre** del cliente; al guardar exitosamente, el cliente se selecciona automáticamente y se continúa al siguiente paso. | El selector de fecha debe permitir cambiar la fecha de la autoventa. No se piden más datos (NIF, dirección, etc.) para no hacer el flujo más laborioso.              |
+| **2** | **Lectura de cajas por QR**     | Escaneo de códigos QR de cajas mediante cámara del dispositivo o entrada manual. Lista de cajas escaneadas con opción "Eliminar todo". Indicador visual de progreso (puntos de paginación).                                     | Al menos **una caja escaneada** para avanzar (o permitir 0 y definir comportamiento en paso resumen). Formato QR: a documentar (ver sección 7.1). Cada caja escaneada debe mostrar: producto, peso (si aplica), código escaneado.                                                         | El botón "Iniciar Escaneo" activa la cámara. Si no hay cajas escaneadas, mostrar estado vacío con mensaje "No hay cajas escaneadas".                                 |
+| **3** | **Aplicar precio por producto** | Asignar precio a cada producto único (agrupación por producto tras escaneo). Tabla o lista con: producto, cantidad de cajas, peso total, precio unitario, subtotal.                                                             | Precio **obligatorio** por línea/producto. El precio puede ser por unidad (caja) o por peso (kg), según configuración o lógica de negocio. Total calculado automáticamente.                                                                                                               | Si hay múltiples cajas del mismo producto, se agrupan en una sola línea con cantidad y peso total.                                                                   |
+| **4** | **Factura sí/no**               | Toggle switch o selector: "Con factura" o "Solo recibo". Actualmente se refleja como texto en observaciones de contabilidad ("Con factura" / "Sin factura").                                                                    | Selección **obligatoria**. El valor se persiste en observaciones de contabilidad del pedido/autoventa o en campo dedicado si se define entidad autoventa (ver sección 5).                                                                                                                 | El toggle debe tener estados claros visualmente (ON/OFF o Sí/No).                                                                                                    |
+| **5** | **Observaciones**               | Campo de texto libre (textarea) con placeholder "Introduce alguna observación...". Información adicional sobre la autoventa.                                                                                                    | Campo **opcional**. Sin límite de caracteres o con límite razonable (ej. 500-1000 caracteres).                                                                                                                                                                                            | Las observaciones se añaden al pedido/autoventa junto con la indicación de factura sí/no.                                                                            |
+| **6** | **Resumen**                     | Pantalla de revisión antes de confirmar: fecha, nombre del cliente, factura sí/no, tabla detallada (producto, cajas, peso, precio), total calculado. Botones "Atrás" y "Terminar".                                              | Solo **lectura**; no se puede editar desde aquí. El total debe coincidir con la suma de subtotales. Formato de ticket visual (similar a ticket impreso).                                                                                                                                  | El resumen muestra todos los datos que se van a persistir. En resumen y ticket, del cliente solo se muestra el nombre. Si hay errores, el usuario debe volver atrás. |
+| **7** | **Confirmación**                | Mensaje de éxito: "Has completado todos los datos para generar una autoventa." Total destacado (ej. "0,00 €" o el total calculado). Acciones: botón "Cancelar" (rojo) y botón "Terminar" (blanco/primario).                     | Al pulsar "Terminar", se persiste la autoventa (pedido con `buyerReference: "Autoventa"` o entidad autoventa según modelo elegido). Tras persistir exitosamente, se muestra opción de imprimir ticket.                                                                                    | Si hay error al persistir, mostrar mensaje de error y permitir reintentar o cancelar.                                                                                |
+| **8** | **Imprimir ticket**             | Tras terminar exitosamente, ofrecer impresión de ticket. El ticket muestra: fecha, **nombre del cliente** (única información del cliente; no NIF ni dirección), factura sí/no, tabla de productos con cajas/peso/precio, total. | Reutilizar patrón de impresión existente ([usePrintElement](src/hooks/usePrintElement.ts)). El ticket debe ser imprimible por navegador (window.print) o enviarse a impresora térmica según requisitos (ver sección 7.3).                                                                 | El contenido del ticket debe coincidir con el resumen del paso 6.                                                                                                    |
 
 ### 2.2 Flujo de navegación
 
@@ -65,7 +65,7 @@ flowchart TD
     Paso7 -->|Terminar| Persistir[Persistir Autoventa]
     Persistir -->|Éxito| Paso8[Paso 8: Imprimir Ticket]
     Paso8 --> End([Fin])
-    
+
     Paso1 -.->|Atrás| Start
     Paso2 -.->|Atrás| Paso1
     Paso3 -.->|Atrás| Paso2
@@ -79,6 +79,7 @@ flowchart TD
 ### 2.3 Indicadores de progreso
 
 Cada paso debe mostrar un indicador visual de progreso (puntos de paginación) que indique:
+
 - Paso actual (punto destacado/activo)
 - Pasos completados (puntos con check o diferente estilo)
 - Pasos pendientes (puntos grises/inactivos)
@@ -174,13 +175,13 @@ El **backend ya está implementado**. La referencia de contrato (campos, ejemplo
 
 ### 5.1 Endpoints usados en el flujo Autoventa
 
-| Método | Ruta | Uso |
-|--------|------|-----|
-| GET | `/api/v2/customers/options` | Selector de cliente (filtrado por comercial en backend) |
-| POST | `/api/v2/customers` | Creación rápida de cliente; body mínimo `{ name }`; comercial asignado por backend desde el token |
-| POST | `/api/v2/orders` | Crear autoventa; body con `orderType: "autoventa"`, `customer`, `entryDate`, `loadDate`, `invoiceRequired`, `observations`, `items`, `boxes` (estructura exacta en doc 71) |
-| GET | `/api/v2/orders?orderType=autoventa` | Listar autoventas del comercial (opcional; para futura pantalla de listado) |
-| GET | `/api/v2/orders/{id}` | Ver detalle de una autoventa (resumen, reimpresión de ticket) |
+| Método | Ruta                                 | Uso                                                                                                                                                                        |
+| ------ | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/api/v2/customers/options`          | Selector de cliente (filtrado por comercial en backend)                                                                                                                    |
+| POST   | `/api/v2/customers`                  | Creación rápida de cliente; body mínimo `{ name }`; comercial asignado por backend desde el token                                                                          |
+| POST   | `/api/v2/orders`                     | Crear autoventa; body con `orderType: "autoventa"`, `customer`, `entryDate`, `loadDate`, `invoiceRequired`, `observations`, `items`, `boxes` (estructura exacta en doc 71) |
+| GET    | `/api/v2/orders?orderType=autoventa` | Listar autoventas del comercial (opcional; para futura pantalla de listado)                                                                                                |
+| GET    | `/api/v2/orders/{id}`                | Ver detalle de una autoventa (resumen, reimpresión de ticket)                                                                                                              |
 
 ### 5.2 Sin endpoint de escaneo
 
@@ -190,15 +191,15 @@ El **backend ya está implementado**. La referencia de contrato (campos, ejemplo
 
 Al confirmar (Terminar), el estado del flujo se transforma en el body de `POST /api/v2/orders` según la siguiente correspondencia. El **comercial no se envía** en el body; el backend lo toma del token.
 
-| Origen en el wizard | Campo API (doc 71) | Notas |
-|---------------------|--------------------|-------|
-| Paso 1: cliente seleccionado | `customer` | ID numérico del cliente |
-| Paso 1: fecha autoventa | `entryDate`, `loadDate` | Formato `Y-m-d`; puede ser la misma fecha |
-| Paso 4: toggle factura | `invoiceRequired` | boolean |
-| Paso 5: texto observaciones | `observations` | string; máx. 1000 caracteres; backend concatena "Con factura"/"Sin factura" en accountingNotes |
-| Paso 3: líneas (producto, cajas, peso, precio) | `items[]` | Cada línea: productId, boxesCount, totalWeight, unitPrice, subtotal (opcional), tax (opcional) |
-| Paso 2: lista de cajas escaneadas | `boxes[]` | Cada caja: productId, lot (opcional), netWeight, gs1128 (opcional), grossWeight (opcional) |
-| Fijo | `orderType` | Siempre `"autoventa"` |
+| Origen en el wizard                            | Campo API (doc 71)      | Notas                                                                                          |
+| ---------------------------------------------- | ----------------------- | ---------------------------------------------------------------------------------------------- |
+| Paso 1: cliente seleccionado                   | `customer`              | ID numérico del cliente                                                                        |
+| Paso 1: fecha autoventa                        | `entryDate`, `loadDate` | Formato `Y-m-d`; puede ser la misma fecha                                                      |
+| Paso 4: toggle factura                         | `invoiceRequired`       | boolean                                                                                        |
+| Paso 5: texto observaciones                    | `observations`          | string; máx. 1000 caracteres; backend concatena "Con factura"/"Sin factura" en accountingNotes |
+| Paso 3: líneas (producto, cajas, peso, precio) | `items[]`               | Cada línea: productId, boxesCount, totalWeight, unitPrice, subtotal (opcional), tax (opcional) |
+| Paso 2: lista de cajas escaneadas              | `boxes[]`               | Cada caja: productId, lot (opcional), netWeight, gs1128 (opcional), grossWeight (opcional)     |
+| Fijo                                           | `orderType`             | Siempre `"autoventa"`                                                                          |
 
 Quien implemente el wizard puede llamar a [createOrder](src/services/orderService.ts) con este payload, o encapsular la construcción del body en una función/módulo (p. ej. `autoventaService`) que invoque `createOrder`.
 
@@ -260,12 +261,12 @@ flowchart TD
     Start([Usuario comercial<br/>accede a Autoventa]) --> CheckAuth{¿Rol comercial?}
     CheckAuth -->|No| Unauthorized[/unauthorized]
     CheckAuth -->|Sí| Paso1[Paso 1: Selección Cliente<br/>+ Fecha]
-    
+
     Paso1 --> SelectCliente{¿Cliente existe?}
     SelectCliente -->|Sí| Paso2[Paso 2: Lectura QR]
     SelectCliente -->|No| CreateCliente[Crear Cliente<br/>Formulario rápido]
     CreateCliente -->|Guardar| SelectCliente
-    
+
     Paso2 --> ScanQR[Escanear Cajas<br/>o Entrada Manual]
     ScanQR --> ValidateQR{¿QR válido?}
     ValidateQR -->|No| ErrorQR[Error: QR inválido]
@@ -274,32 +275,32 @@ flowchart TD
     AddBox --> MoreBoxes{¿Más cajas?}
     MoreBoxes -->|Sí| ScanQR
     MoreBoxes -->|No| Paso3[Paso 3: Aplicar Precios<br/>por Producto]
-    
+
     Paso3 --> SetPrices[Asignar Precio<br/>a cada Producto]
     SetPrices --> ValidatePrices{¿Todos con precio?}
     ValidatePrices -->|No| SetPrices
     ValidatePrices -->|Sí| Paso4[Paso 4: Factura S/N<br/>Toggle]
-    
+
     Paso4 --> SelectInvoice{¿Con factura?}
     SelectInvoice --> Paso5[Paso 5: Observaciones<br/>Texto libre]
-    
+
     Paso5 --> Paso6[Paso 6: Resumen<br/>Revisión Completa]
-    
+
     Paso6 --> Review{¿Datos correctos?}
     Review -->|No| Back[Volver atrás<br/>a paso correspondiente]
     Back --> Paso1
     Review -->|Sí| Paso7[Paso 7: Confirmación<br/>Total y Acciones]
-    
+
     Paso7 --> Action{¿Acción?}
     Action -->|Cancelar| Cancel[Cancelar Autoventa<br/>Volver a Inicio]
     Cancel --> Start
     Action -->|Terminar| Persist[Persistir Autoventa<br/>POST /api/v2/...]
-    
+
     Persist --> PersistResult{¿Éxito?}
     PersistResult -->|Error| ErrorPersist[Error al guardar<br/>Reintentar o Cancelar]
     ErrorPersist --> Action
     PersistResult -->|Éxito| Paso8[Paso 8: Imprimir Ticket<br/>Botón Imprimir]
-    
+
     Paso8 --> PrintAction{¿Imprimir?}
     PrintAction -->|Sí| PrintTicket[window.print<br/>o Impresora Térmica]
     PrintAction -->|No| End([Fin: Autoventa completada])
@@ -342,19 +343,23 @@ Backend ya implementado (ver [docs/71-autoventa-api-frontend.md](docs/71-autoven
 ## 10. Checklist de implementación
 
 ### Fase 1: Preparación y decisiones
+
 - [x] Modelo de datos: pedido con `orderType: "autoventa"` (doc 71)
 - [x] Formato QR: GS1-128; sin endpoint de escaneo (frontend parsea)
 - [x] Creación rápida de cliente: solo nombre (ver sección 7.2)
 - [ ] Decidir requisitos de impresión (navegador vs térmica)
 
 ### Fase 2: Backend
+
 - [x] Backend implementado; ver [docs/71-autoventa-api-frontend.md](docs/71-autoventa-api-frontend.md). Validar en frontend filtrado por comercial y códigos 422.
 
 ### Fase 3: Frontend — Configuración
+
 - [ ] Actualizar `roleRoutesConfig.js` y `navgationConfig.js`
 - [ ] Crear estructura de carpetas para componentes Autoventa
 
 ### Fase 4: Frontend — Componentes
+
 - [ ] Implementar `AutoventaWizard` (gestión de pasos y estado)
 - [ ] Implementar cada paso (1-8)
 - [ ] Implementar `CreateCustomerQuickForm`
@@ -363,6 +368,7 @@ Backend ya implementado (ver [docs/71-autoventa-api-frontend.md](docs/71-autoven
 - [ ] Crear función o módulo que construya payload según doc 71 y llame a `createOrder`
 
 ### Fase 5: Integración y pruebas
+
 - [ ] Integrar con API de backend
 - [ ] Probar flujo completo en mobile
 - [ ] Probar flujo completo en desktop

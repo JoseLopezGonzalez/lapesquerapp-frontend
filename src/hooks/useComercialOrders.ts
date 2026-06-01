@@ -12,10 +12,7 @@ type CommercialOrder = Record<string, unknown> & {
 
 export function useComercialOrders(params: Record<string, unknown> = {}) {
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
-  const {
-    enabled = true,
-    ...queryParams
-  } = params;
+  const { enabled = true, ...queryParams } = params;
 
   const query = useQuery({
     queryKey: comercialOrderKeys.list(tenantId, queryParams),

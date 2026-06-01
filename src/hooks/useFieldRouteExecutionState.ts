@@ -68,7 +68,11 @@ export function useFieldRouteExecutionState(route: DeliveryRoute | null | undefi
   }, [stops, focusedStopId, nextStop]);
 
   const focusedStop = useMemo(
-    () => stops.find((stop) => String(stop.id) === String(focusedStopId)) ?? nextStop ?? stops[0] ?? null,
+    () =>
+      stops.find((stop) => String(stop.id) === String(focusedStopId)) ??
+      nextStop ??
+      stops[0] ??
+      null,
     [stops, focusedStopId, nextStop]
   );
 
@@ -96,9 +100,10 @@ export function useFieldRouteExecutionState(route: DeliveryRoute | null | undefi
     setStops(enrichedStops);
 
     const nextFocusedId =
-      preferredStopId != null && enrichedStops.some((stop) => String(stop.id) === String(preferredStopId))
+      preferredStopId != null &&
+      enrichedStops.some((stop) => String(stop.id) === String(preferredStopId))
         ? preferredStopId
-        : (getNextPendingStop(enrichedStops) ?? enrichedStops[0] ?? null)?.id ?? null;
+        : ((getNextPendingStop(enrichedStops) ?? enrichedStops[0] ?? null)?.id ?? null);
 
     setFocusedStopId(nextFocusedId);
   };

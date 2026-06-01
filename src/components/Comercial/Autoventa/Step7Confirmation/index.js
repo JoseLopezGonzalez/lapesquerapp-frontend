@@ -13,7 +13,7 @@ export default function Step7Confirmation({
   const checked = Boolean(state?.invoiceRequired);
 
   return (
-    <div className="space-y-6 w-full rounded-lg border p-4">
+    <div className="w-full space-y-6 rounded-lg border p-4">
       <div className="flex items-center space-x-2">
         <Checkbox
           id="invoice-required"
@@ -24,15 +24,11 @@ export default function Step7Confirmation({
           Con factura
         </Label>
       </div>
-      <p className="text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-sm">
         {checked ? 'Se emitirá factura para esta autoventa.' : 'Solo recibo (sin factura).'}
       </p>
-      <p>
-        Has completado todos los datos para generar una autoventa.
-      </p>
-      <p className="text-lg font-semibold">
-        Total: {Number(totalAmount ?? 0).toFixed(2)} €
-      </p>
+      <p>Has completado todos los datos para generar una autoventa.</p>
+      <p className="text-lg font-semibold">Total: {Number(totalAmount ?? 0).toFixed(2)} €</p>
     </div>
   );
 }

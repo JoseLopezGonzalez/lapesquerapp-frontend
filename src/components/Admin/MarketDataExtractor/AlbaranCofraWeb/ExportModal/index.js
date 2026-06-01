@@ -1,626 +1,695 @@
-import React, { useState, useEffect } from 'react'
-import { Check, X, AlertTriangle, FileSpreadsheet, Link } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Checkbox } from "@/components/ui/checkbox"
-import { armadores, barcos, lonjas } from '../exportData'
-import { Input } from '@/components/ui/input'
-import { parseDecimalValue, calculateImporte, calculateImporteFromLinea } from '@/exportHelpers/common'
-import { formatDecimalCurrency, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
-import { notify } from '@/lib/notifications'
-import { linkAllPurchases, validatePurchases, groupLinkedSummaryBySupplier } from "@/services/export/linkService"
-import { Loader2 } from "lucide-react"
+import React, { useState, useEffect } from 'react';
+import { Check, X, AlertTriangle, FileSpreadsheet, Link } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { armadores, barcos, lonjas } from '../exportData';
+import { Input } from '@/components/ui/input';
+import {
+  parseDecimalValue,
+  calculateImporte,
+  calculateImporteFromLinea,
+} from '@/exportHelpers/common';
+import {
+  formatDecimalCurrency,
+  formatDecimalWeight,
+} from '@/helpers/formats/numbers/formatNumbers';
+import { notify } from '@/lib/notifications';
+import {
+  linkAllPurchases,
+  validatePurchases,
+  groupLinkedSummaryBySupplier,
+} from '@/services/export/linkService';
+import { Loader2 } from 'lucide-react';
 
 const ExportModal = ({ document }) => {
-    const { detalles: { numero, fecha, cifLonja, lonja } } = document
-    const [software, setSoftware] = useState("A3ERP")
-    const [selectedLinks, setSelectedLinks] = useState([])
-    const [isValidating, setIsValidating] = useState(false)
-    const [validationResults, setValidationResults] = useState({})
+  const {
+    detalles: { numero, fecha, cifLonja, lonja },
+  } = document;
+  const [software, setSoftware] = useState('A3ERP');
+  const [selectedLinks, setSelectedLinks] = useState([]);
+  const [isValidating, setIsValidating] = useState(false);
+  const [validationResults, setValidationResults] = useState({});
 
-    const isConvertibleLonja = lonjas.some((lonja) => lonja.cif === cifLonja)
+  const isConvertibleLonja = lonjas.some((lonja) => lonja.cif === cifLonja);
 
-    const subastasGroupedByBarco = document.tablas.subastas.reduce((acc, item) => {
-        if (!acc[item.barco]) {
-            acc[item.barco] = {
-                nombre: item.barco,
-                cod: item.cod,
-                armador: item.armador,
-                cifArmador: item.cifArmador,
-                lineas: []
-            };
-        }
-        acc[item.barco].lineas.push(item);
-        return acc;
+  const subastasGroupedByBarco = document.tablas.subastas.reduce((acc, item) => {
+    if (!acc[item.barco]) {
+      acc[item.barco] = {
+        nombre: item.barco,
+        cod: item.cod,
+        armador: item.armador,
+        cifArmador: item.cifArmador,
+        lineas: [],
+      };
+    }
+    acc[item.barco].lineas.push(item);
+    return acc;
+  }, {});
+  const subastas = Object.values(subastasGroupedByBarco);
+
+  const isConvertibleArmador = (cifArmador) => {
+    return armadores.some((armador) => armador.cif === cifArmador);
+  };
+
+  const isSomeArmadorNotConvertible = subastas.some(
+    (barco) => !isConvertibleArmador(barco.cifArmador)
+  );
+
+  const servicios = document.tablas.servicios;
+
+  const generateExcelForA3erp = async () => {
+    const [XLSX, { saveAs }] = await Promise.all([import('xlsx'), import('file-saver')]);
+    const processedRows = [];
+    // Extraer año de la fecha (últimos 2 dígitos)
+    // Intentar extraer año directamente de la cadena (formato YYYY-MM-DD o YYYY/MM/DD)
+    let año = null;
+    const añoMatch = String(fecha).match(/(\d{4})/);
+    if (añoMatch) {
+      año = añoMatch[1].slice(-2);
+    } else {
+      // Fallback: usar Date object
+      const fechaObj = new Date(fecha);
+      año = fechaObj.getFullYear().toString().slice(-2);
+    }
+    const CABSERIE = `CF${año}`;
+    // Limpiar número de documento: eliminar todos los caracteres no numéricos
+    const numeroLimpio = String(numero).replace(/[^0-9]/g, '');
+    let albaranSequence = 1; // Contador secuencial para distinguir diferentes albaranes del mismo documento
+
+    // Agrupamos líneas de subasta por armador
+    const groupedByArmador = subastas.reduce((acc, line) => {
+      const key = line.cifArmador;
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(line);
+      return acc;
     }, {});
-    const subastas = Object.values(subastasGroupedByBarco);
 
-    const isConvertibleArmador = (cifArmador) => {
-        return armadores.some((armador) => armador.cif === cifArmador);
-    };
+    for (const [cifArmador, lines] of Object.entries(groupedByArmador)) {
+      const armadorData = armadores.find((a) => a.cif === cifArmador);
+      if (!armadorData) {
+        console.error(`Falta código de conversión para armador ${cifArmador}`);
+        continue; // o lanza un toast o marca el error visualmente
+      }
 
-    const isSomeArmadorNotConvertible = subastas.some((barco) => !isConvertibleArmador(barco.cifArmador));
+      const cabNumDoc = `${numeroLimpio}${albaranSequence}`;
 
-    const servicios = document.tablas.servicios;
-
-    const generateExcelForA3erp = async () => {
-        const [XLSX, { saveAs }] = await Promise.all([import('xlsx'), import('file-saver')]);
-        const processedRows = [];
-        // Extraer año de la fecha (últimos 2 dígitos)
-        // Intentar extraer año directamente de la cadena (formato YYYY-MM-DD o YYYY/MM/DD)
-        let año = null;
-        const añoMatch = String(fecha).match(/(\d{4})/);
-        if (añoMatch) {
-            año = añoMatch[1].slice(-2);
-        } else {
-            // Fallback: usar Date object
-            const fechaObj = new Date(fecha);
-            año = fechaObj.getFullYear().toString().slice(-2);
-        }
-        const CABSERIE = `CF${año}`;
-        // Limpiar número de documento: eliminar todos los caracteres no numéricos
-        const numeroLimpio = String(numero).replace(/[^0-9]/g, '');
-        let albaranSequence = 1; // Contador secuencial para distinguir diferentes albaranes del mismo documento
-
-        // Agrupamos líneas de subasta por armador
-        const groupedByArmador = subastas.reduce((acc, line) => {
-            const key = line.cifArmador;
-            if (!acc[key]) acc[key] = [];
-            acc[key].push(line);
-            return acc;
-        }, {});
-
-        for (const [cifArmador, lines] of Object.entries(groupedByArmador)) {
-            const armadorData = armadores.find(a => a.cif === cifArmador);
-            if (!armadorData) {
-                console.error(`Falta código de conversión para armador ${cifArmador}`);
-                continue; // o lanza un toast o marca el error visualmente
-            }
-
-            const cabNumDoc = `${numeroLimpio}${albaranSequence}`;
-
-            lines.forEach(barco => {
-                barco.lineas.forEach(linea => {
-                    processedRows.push({
-                        CABSERIE: CABSERIE,
-                        CABNUMDOC: cabNumDoc,
-                        CABFECHA: fecha,
-                        CABCODPRO: armadorData.codA3erp,
-                        CABREFERENCIA: `COFRA - ${fecha} - ${numero} -  ${barco.nombre}`,
-                        LINCODART: 95,
-                        LINDESCLIN: 'PULPO FRESCO LONJA',
-                        LINUNIDADES: parseDecimalValue(linea.kilos),
-                        LINPRCMONEDA: parseDecimalValue(linea.precio),
-                        LINTIPIVA: 'RED10',
-                    });
-                });
-            });
-
-            albaranSequence++;
-        }
-
-        // Albarán para la lonja con los servicios
-        const lonjaData = lonjas.find(l => l.cif === cifLonja);
-        if (!lonjaData) {
-            console.error(`Falta código de conversión para la lonja ${cifLonja}`);
-        } else {
-            const cabNumDoc = `${numeroLimpio}${albaranSequence}`;
-
-            servicios.forEach(line => {
-                const unidades = parseDecimalValue(line.unidades);
-                const importe = parseDecimalValue(line.importe);
-                const calculatedPrecio = unidades === 0 ? 0 : Number((importe / unidades).toFixed(4));
-                processedRows.push({
-                    CABSERIE: CABSERIE,
-                    CABNUMDOC: cabNumDoc,
-                    CABFECHA: fecha,
-                    CABCODPRO: lonjaData.codA3erp,
-                    CABREFERENCIA: `COFRA - ${fecha} - ${numero} - SERVICIOS`,
-                    LINCODART: 9998,
-                    LINDESCLIN: line.descripcion,
-                    LINUNIDADES: line.unidades,
-                    LINPRCMONEDA: calculatedPrecio,
-                    LINTIPIVA: 'ORD21',
-                });
-            });
-
-            albaranSequence++;
-        }
-
-        // Crear el libro y hoja
-        const worksheet = XLSX.utils.json_to_sheet(processedRows);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'ALBARANESCOMPRA');
-
-        // Guardar archivo
-        const excelBuffer = XLSX.write(workbook, { bookType: 'xls', type: 'array' });
-        const blob = new Blob([excelBuffer], { type: 'application/vnd.ms-excel' });
-        saveAs(blob, `ALBARANES_A3ERP_COFRA_SANTO_CRISTO_${fecha}.xls`);
-    };
-
-    const handleOnClickExport = () => {
-        if (software === "A3ERP") {
-            generateExcelForA3erp();
-        } else if (software === "Facilcom") {
-            // generateExcelForFacilcom();
-        } else {
-            // generateExcelForOtros();
-        }
-    };
-
-    const linkedSummary = subastas.map((barco) => {
-        const declaredTotalNetWeight = barco.lineas.reduce((acc, linea) => acc + parseDecimalValue(linea.kilos), 0);
-        const declaredTotalAmount = barco.lineas.reduce((acc, linea) => acc + calculateImporteFromLinea(linea), 0);
-
-        const barcoEncontrado = barcos.find(b =>
-            b.barco === barco.nombre);
-
-        const codBrisappArmador = barcoEncontrado?.codBrisapp ?? null;
-
-        return {
-            supplierId: codBrisappArmador,
-            date: fecha,
-            declaredTotalNetWeight: parseFloat(declaredTotalNetWeight.toFixed(2)),
-            declaredTotalAmount: parseFloat(declaredTotalAmount.toFixed(2)),
-            barcoNombre: barco.nombre,
-            error: codBrisappArmador === null ? true : false,
-        };
-    });
-
-    // Group linkedSummary by supplier and initialize selections
-    const groupedLinkedSummary = groupLinkedSummaryBySupplier(linkedSummary);
-
-    // Inicializar las selecciones cuando cambia linkedSummary y validar
-    useEffect(() => {
-        // Seleccionar por defecto solo las que no tienen error
-        const initialSelection = groupedLinkedSummary
-            .map((linea, index) => (!linea.error ? index : null))
-            .filter(index => index !== null);
-        setSelectedLinks(initialSelection);
-
-        // Validar recepciones cuando cambia linkedSummary
-        const validItems = groupedLinkedSummary.filter(item => !item.error);
-        if (validItems.length > 0) {
-            setIsValidating(true);
-            validatePurchases(groupedLinkedSummary)
-                .then((validation) => {
-                    const validationMap = {};
-                    validation.validationResults.forEach((result) => {
-                        const key = `${result.supplierId}_${result.date}`;
-                        validationMap[key] = result;
-                    });
-                    setValidationResults(validationMap);
-                })
-                .catch((error) => {
-                    console.error('Error al validar:', error);
-                })
-                .finally(() => {
-                    setIsValidating(false);
-                });
-        }
-    }, [groupedLinkedSummary.length]);
-
-    // Get validation status for a linea
-    const getValidationStatus = (linea) => {
-        const key = `${linea.supplierId}_${linea.date.split('/').reverse().join('-')}`;
-        return validationResults[key] || null;
-    };
-
-    // Función para manejar selección/deselección de una línea
-    const handleToggleLink = (index) => {
-        setSelectedLinks(prev => {
-            if (prev.includes(index)) {
-                return prev.filter(i => i !== index);
-            } else {
-                return [...prev, index];
-            }
+      lines.forEach((barco) => {
+        barco.lineas.forEach((linea) => {
+          processedRows.push({
+            CABSERIE: CABSERIE,
+            CABNUMDOC: cabNumDoc,
+            CABFECHA: fecha,
+            CABCODPRO: armadorData.codA3erp,
+            CABREFERENCIA: `COFRA - ${fecha} - ${numero} -  ${barco.nombre}`,
+            LINCODART: 95,
+            LINDESCLIN: 'PULPO FRESCO LONJA',
+            LINUNIDADES: parseDecimalValue(linea.kilos),
+            LINPRCMONEDA: parseDecimalValue(linea.precio),
+            LINTIPIVA: 'RED10',
+          });
         });
+      });
+
+      albaranSequence++;
+    }
+
+    // Albarán para la lonja con los servicios
+    const lonjaData = lonjas.find((l) => l.cif === cifLonja);
+    if (!lonjaData) {
+      console.error(`Falta código de conversión para la lonja ${cifLonja}`);
+    } else {
+      const cabNumDoc = `${numeroLimpio}${albaranSequence}`;
+
+      servicios.forEach((line) => {
+        const unidades = parseDecimalValue(line.unidades);
+        const importe = parseDecimalValue(line.importe);
+        const calculatedPrecio = unidades === 0 ? 0 : Number((importe / unidades).toFixed(4));
+        processedRows.push({
+          CABSERIE: CABSERIE,
+          CABNUMDOC: cabNumDoc,
+          CABFECHA: fecha,
+          CABCODPRO: lonjaData.codA3erp,
+          CABREFERENCIA: `COFRA - ${fecha} - ${numero} - SERVICIOS`,
+          LINCODART: 9998,
+          LINDESCLIN: line.descripcion,
+          LINUNIDADES: line.unidades,
+          LINPRCMONEDA: calculatedPrecio,
+          LINTIPIVA: 'ORD21',
+        });
+      });
+
+      albaranSequence++;
+    }
+
+    // Crear el libro y hoja
+    const worksheet = XLSX.utils.json_to_sheet(processedRows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'ALBARANESCOMPRA');
+
+    // Guardar archivo
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xls', type: 'array' });
+    const blob = new Blob([excelBuffer], { type: 'application/vnd.ms-excel' });
+    saveAs(blob, `ALBARANES_A3ERP_COFRA_SANTO_CRISTO_${fecha}.xls`);
+  };
+
+  const handleOnClickExport = () => {
+    if (software === 'A3ERP') {
+      generateExcelForA3erp();
+    } else if (software === 'Facilcom') {
+      // generateExcelForFacilcom();
+    } else {
+      // generateExcelForOtros();
+    }
+  };
+
+  const linkedSummary = subastas.map((barco) => {
+    const declaredTotalNetWeight = barco.lineas.reduce(
+      (acc, linea) => acc + parseDecimalValue(linea.kilos),
+      0
+    );
+    const declaredTotalAmount = barco.lineas.reduce(
+      (acc, linea) => acc + calculateImporteFromLinea(linea),
+      0
+    );
+
+    const barcoEncontrado = barcos.find((b) => b.barco === barco.nombre);
+
+    const codBrisappArmador = barcoEncontrado?.codBrisapp ?? null;
+
+    return {
+      supplierId: codBrisappArmador,
+      date: fecha,
+      declaredTotalNetWeight: parseFloat(declaredTotalNetWeight.toFixed(2)),
+      declaredTotalAmount: parseFloat(declaredTotalAmount.toFixed(2)),
+      barcoNombre: barco.nombre,
+      error: codBrisappArmador === null ? true : false,
     };
+  });
 
-    // Función para seleccionar/deseleccionar todas las líneas válidas y que pueden actualizarse
-    const handleToggleAll = () => {
-        const validIndices = linkedSummary
-            .map((linea, index) => {
-                if (linea.error) return null;
-                const validation = getValidationStatus(linea);
-                return (validation?.valid && validation?.canUpdate) ? index : null;
-            })
-            .filter(index => index !== null);
-        
-        if (selectedLinks.length === validIndices.length) {
-            // Si todas están seleccionadas, deseleccionar todas
-            setSelectedLinks([]);
-        } else {
-            // Si no todas están seleccionadas, seleccionar todas las válidas
-            setSelectedLinks(validIndices);
+  // Group linkedSummary by supplier and initialize selections
+  const groupedLinkedSummary = groupLinkedSummaryBySupplier(linkedSummary);
+
+  // Inicializar las selecciones cuando cambia linkedSummary y validar
+  useEffect(() => {
+    // Seleccionar por defecto solo las que no tienen error
+    const initialSelection = groupedLinkedSummary
+      .map((linea, index) => (!linea.error ? index : null))
+      .filter((index) => index !== null);
+    setSelectedLinks(initialSelection);
+
+    // Validar recepciones cuando cambia linkedSummary
+    const validItems = groupedLinkedSummary.filter((item) => !item.error);
+    if (validItems.length > 0) {
+      setIsValidating(true);
+      validatePurchases(groupedLinkedSummary)
+        .then((validation) => {
+          const validationMap = {};
+          validation.validationResults.forEach((result) => {
+            const key = `${result.supplierId}_${result.date}`;
+            validationMap[key] = result;
+          });
+          setValidationResults(validationMap);
+        })
+        .catch((error) => {
+          console.error('Error al validar:', error);
+        })
+        .finally(() => {
+          setIsValidating(false);
+        });
+    }
+  }, [groupedLinkedSummary.length]);
+
+  // Get validation status for a linea
+  const getValidationStatus = (linea) => {
+    const key = `${linea.supplierId}_${linea.date.split('/').reverse().join('-')}`;
+    return validationResults[key] || null;
+  };
+
+  // Función para manejar selección/deselección de una línea
+  const handleToggleLink = (index) => {
+    setSelectedLinks((prev) => {
+      if (prev.includes(index)) {
+        return prev.filter((i) => i !== index);
+      } else {
+        return [...prev, index];
+      }
+    });
+  };
+
+  // Función para seleccionar/deseleccionar todas las líneas válidas y que pueden actualizarse
+  const handleToggleAll = () => {
+    const validIndices = linkedSummary
+      .map((linea, index) => {
+        if (linea.error) return null;
+        const validation = getValidationStatus(linea);
+        return validation?.valid && validation?.canUpdate ? index : null;
+      })
+      .filter((index) => index !== null);
+
+    if (selectedLinks.length === validIndices.length) {
+      // Si todas están seleccionadas, deseleccionar todas
+      setSelectedLinks([]);
+    } else {
+      // Si no todas están seleccionadas, seleccionar todas las válidas
+      setSelectedLinks(validIndices);
+    }
+  };
+
+  const handleOnClickLinkPurchases = async () => {
+    // Filtrar solo las compras seleccionadas (usar groupedLinkedSummary)
+    const comprasSeleccionadas = groupedLinkedSummary.filter(
+      (linea, index) => selectedLinks.includes(index) && !linea.error
+    );
+
+    if (comprasSeleccionadas.length === 0) {
+      notify.error({
+        title: 'Sin compras seleccionadas',
+        description: 'Seleccione al menos una compra para vincular.',
+      });
+      return;
+    }
+
+    try {
+      // Use bulk endpoint for better performance
+      const result = await linkAllPurchases(comprasSeleccionadas);
+
+      if (result.correctas > 0) {
+        notify.success({
+          title: 'Compras enlazadas',
+          description: `Se enlazaron ${result.correctas} compras correctamente.`,
+        });
+      }
+
+      if (result.errores > 0) {
+        // Show detailed errors for first few failures
+        const erroresAMostrar = result.erroresDetalles.slice(0, 3);
+        erroresAMostrar.forEach((errorDetail) => {
+          const barcoInfo = errorDetail.barcoNombre ? `${errorDetail.barcoNombre}: ` : '';
+          notify.error(
+            {
+              title: 'Error al enlazar compra',
+              description: `${barcoInfo}${errorDetail.error}`,
+            },
+            { duration: 6000 }
+          );
+        });
+
+        if (result.errores > 3) {
+          notify.error({
+            title: 'Varios errores al enlazar',
+            description: `${result.errores - 3} error(es) adicional(es). Revisa la consola para más detalles.`,
+          });
         }
-    };
+      }
+    } catch (error) {
+      console.error('Error al enlazar compras:', error);
+      notify.error({
+        title: 'Error al enlazar compras',
+        description: error.message,
+      });
+    }
+  };
 
-    const handleOnClickLinkPurchases = async () => {
-        // Filtrar solo las compras seleccionadas (usar groupedLinkedSummary)
-        const comprasSeleccionadas = groupedLinkedSummary.filter((linea, index) => 
-            selectedLinks.includes(index) && !linea.error
-        );
+  return (
+    <DialogContent size="4xl" className="max-h-[90vh] overflow-y-auto">
+      <DialogHeader>
+        <DialogTitle>Exportar Datos de Factura</DialogTitle>
+        <DialogDescription>
+          Seleccione el software de destino y verifique los datos antes de exportar.
+        </DialogDescription>
+      </DialogHeader>
 
-        if (comprasSeleccionadas.length === 0) {
-            notify.error({
-              title: 'Sin compras seleccionadas',
-              description: 'Seleccione al menos una compra para vincular.',
-            });
-            return;
-        }
-
-        try {
-            // Use bulk endpoint for better performance
-            const result = await linkAllPurchases(comprasSeleccionadas);
-
-            if (result.correctas > 0) {
-                notify.success({
-                  title: 'Compras enlazadas',
-                  description: `Se enlazaron ${result.correctas} compras correctamente.`,
-                });
-            }
-
-            if (result.errores > 0) {
-                // Show detailed errors for first few failures
-                const erroresAMostrar = result.erroresDetalles.slice(0, 3);
-                erroresAMostrar.forEach((errorDetail) => {
-                    const barcoInfo = errorDetail.barcoNombre ? `${errorDetail.barcoNombre}: ` : '';
-                    notify.error({
-                      title: 'Error al enlazar compra',
-                      description: `${barcoInfo}${errorDetail.error}`,
-                    }, { duration: 6000 });
-                });
-                
-                if (result.errores > 3) {
-                    notify.error({
-                      title: 'Varios errores al enlazar',
-                      description: `${result.errores - 3} error(es) adicional(es). Revisa la consola para más detalles.`,
-                    });
-                }
-            }
-        } catch (error) {
-            console.error('Error al enlazar compras:', error);
-            notify.error({
-              title: 'Error al enlazar compras',
-              description: error.message,
-            });
-        }
-    };
-
-    return (
-        <DialogContent size="4xl" className="max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-                <DialogTitle>Exportar Datos de Factura</DialogTitle>
-                <DialogDescription>
-                    Seleccione el software de destino y verifique los datos antes de exportar.
-                </DialogDescription>
-            </DialogHeader>
-
-            <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-1 items-center gap-4">
-                    <div className='flex flex-col gap-1'>
-                        <label htmlFor="software" className=" font-medium">
-                            Software
-                        </label>
-                        <Select value={software} onValueChange={setSoftware}>
-                            <SelectTrigger id="software">
-                                <SelectValue placeholder="Seleccione software de destino" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="A3ERP">A3ERP</SelectItem>
-                                <SelectItem value="Facilcom">Facilcom</SelectItem>
-                                <SelectItem value="Otros">Otros</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
-                <div className='flex flex-col gap-1'>
-                    {!isConvertibleLonja ? (
-                        <div className="flex items-center gap-1 p-1  text-amber-500  rounded-md ">
-                            <AlertTriangle className="h-4 w-4 " />
-                            <span className="text-xs">
-                                Los servicios de la lonja <strong>{lonja} - {cifLonja}</strong> no son exportables.
-                            </span>
-                        </div>
-                    ) : (
-                        <div className="flex items-center gap-1 p-1  text-green-500   rounded-md">
-                            <Check className="h-4 w-4" />
-                            <span className="text-xs">
-                                Los servicios de la lonja <strong>{lonja} - {cifLonja}</strong> son exportables.
-                            </span>
-                        </div>
-                    )}
-
-                    {isSomeArmadorNotConvertible ? (
-                        <div className="flex items-center gap-1 p-1  text-amber-500  rounded-md ">
-                            <AlertTriangle className="h-4 w-4 " />
-                            <span className="text-xs">
-                                Todos los armadores no son exportables.
-                            </span>
-                        </div>
-                    ) : (
-                        <div className="flex items-center gap-1 p-1  text-green-500  rounded-md">
-                            <Check className="h-4 w-4" />
-                            <span className="text-xs">
-                                Todos los armadores son exportables.
-                            </span>
-                        </div>
-                    )}
-                </div>
-
-                <div className="space-y-4 mt-2">
-
-                    {groupedLinkedSummary.length > 0 && (
-                        <Card>
-                            <CardHeader className="pb-2">
-                                <div className="flex justify-between items-start">
-                                    <CardTitle>
-                                        <div className='flex flex-col gap-1'>
-                                            <span className="text-lg">Enlaces de compra/recepción</span>
-                                            <span className="text-sm text-muted-foreground">
-                                                {groupedLinkedSummary.length} Compras {groupedLinkedSummary.length !== linkedSummary.length ? `(${linkedSummary.length} originales agrupadas)` : ''}
-                                            </span>
-                                        </div>
-                                    </CardTitle>
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                {isValidating && (
-                                    <div className="flex items-center justify-center py-4">
-                                        <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                                        <span className="text-sm text-muted-foreground">Validando recepciones...</span>
-                                    </div>
-                                )}
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead className="w-12">
-                                                <Checkbox 
-                                                    checked={
-                                                        groupedLinkedSummary.filter((l, idx) => {
-                                                            if (l.error) return false;
-                                                            const validation = getValidationStatus(l);
-                                                            return validation?.valid && validation?.canUpdate;
-                                                        }).length > 0 &&
-                                                        selectedLinks.length === groupedLinkedSummary.filter((l, idx) => {
-                                                            if (l.error) return false;
-                                                            const validation = getValidationStatus(l);
-                                                            return validation?.valid && validation?.canUpdate;
-                                                        }).length
-                                                    }
-                                                    onCheckedChange={handleToggleAll}
-                                                    disabled={isValidating}
-                                                />
-                                            </TableHead>
-                                            <TableHead>Barco</TableHead>
-                                            <TableHead>Fecha</TableHead>
-                                            <TableHead className="text-right">Peso Neto</TableHead>
-                                            <TableHead className="text-right">Importe</TableHead>
-                                            <TableHead>Estado</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {groupedLinkedSummary.map((linea, index) => {
-                                            const validation = getValidationStatus(linea);
-                                            const isDisabled = linea.error || (validation && !validation.valid);
-                                            const isGrouped = linea.isGrouped || false;
-                                            
-                                            return (
-                                                <TableRow 
-                                                    key={index} 
-                                                    className={`hover:bg-muted/50 ${isGrouped ? 'bg-blue-50/50 border-l-4 border-l-blue-500' : ''}`}
-                                                >
-                                                    <TableCell>
-                                                        <Checkbox 
-                                                            checked={selectedLinks.includes(index)}
-                                                            disabled={isDisabled || isValidating}
-                                                            onCheckedChange={() => handleToggleLink(index)}
-                                                        />
-                                                    </TableCell>
-                                                    <TableCell className="font-medium">
-                                                        {isGrouped ? (
-                                                            <span className="flex items-center gap-1">
-                                                                <span className="font-semibold text-blue-700">{linea.barcoNombre}</span>
-                                                                <span className="text-xs text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded">Agrupado</span>
-                                                            </span>
-                                                        ) : (
-                                                            linea.barcoNombre
-                                                        )}
-                                                    </TableCell>
-                                                    <TableCell className="font-medium">{linea.date}</TableCell>
-                                                    <TableCell className="text-right">{formatDecimalWeight(linea.declaredTotalNetWeight)}</TableCell>
-                                                    <TableCell className="text-right font-medium">
-                                                        {formatDecimalCurrency(linea.declaredTotalAmount)}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {linea.error ? (
-                                                            <div className="flex items-center gap-2 text-red-500">
-                                                                <X className="h-4 w-4" />
-                                                                <span className="text-xs">No enlazable</span>
-                                                            </div>
-                                                        ) : isValidating ? (
-                                                            <div className="flex items-center gap-2 text-muted-foreground">
-                                                                <Loader2 className="h-4 w-4 animate-spin" />
-                                                                <span className="text-xs">Validando...</span>
-                                                            </div>
-                                                        ) : validation ? (
-                                                            validation.valid && validation.canUpdate ? (
-                                                                <div className="flex items-center gap-2 text-green-500">
-                                                                    <Check className="h-4 w-4" />
-                                                                    <span className="text-xs">
-                                                                        {validation.hasChanges ? 'Listo para actualizar' : 'Sin cambios'}
-                                                                    </span>
-                                                                </div>
-                                                            ) : (
-                                                                <div className="flex items-start gap-2 text-red-500">
-                                                                    <X className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                                                                    <div className="flex flex-col gap-0.5">
-                                                                        <span className="text-xs font-medium">No se puede enlazar</span>
-                                                                        {validation.message && (
-                                                                            <span 
-                                                                                className="text-xs text-red-400 cursor-help" 
-                                                                                title={validation.tooltip || validation.message}
-                                                                            >
-                                                                                {validation.message}
-                                                                            </span>
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-                                                            )
-                                                        ) : (
-                                                            <div className="flex items-center gap-2 text-muted-foreground">
-                                                                <span className="text-xs">Pendiente</span>
-                                                            </div>
-                                                        )}
-                                                    </TableCell>
-                                                </TableRow>
-                                            );
-                                        })}
-                                    </TableBody>
-                                </Table>
-                            </CardContent>
-                            <div className="flex justify-between items-center p-2 mb-2">
-                                <span className="text-sm text-muted-foreground">
-                                    {selectedLinks.length} de {groupedLinkedSummary.filter((l, idx) => {
-                                        if (l.error) return false;
-                                        const validation = getValidationStatus(l);
-                                        return validation?.valid && validation?.canUpdate;
-                                    }).length} seleccionadas
-                                </span>
-                                <Button 
-                                    variant="" 
-                                    className="" 
-                                    onClick={() => handleOnClickLinkPurchases()}
-                                    disabled={selectedLinks.length === 0 || isValidating}
-                                >
-                                    <Link className="h-4 w-4" />
-                                    Enlazar Compras ({selectedLinks.length})
-                                </Button>
-                            </div>
-
-                        </Card>
-                    )}
-
-                    {subastas.map((barco) => (
-                        <Card key={barco.cod}>
-                            <CardHeader className="pb-2">
-                                <div className="flex justify-between items-center">
-                                    <CardTitle className="text-lg">{barco.nombre}</CardTitle>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-sm font-medium">{barco.armador}</span>
-                                        {isConvertibleArmador(barco.cifArmador) ? (
-                                            <Badge variant="outline" className="bg-green-900 text-green-200 border-green-500 flex items-center gap-1">
-                                                <Check className="h-3.5 w-3.5" />
-                                                Exportable
-                                            </Badge>
-                                        ) : (
-                                            <Badge variant="outline" className="bg-red-900 text-red-200 border-red-500 flex items-center gap-1">
-                                                <X className="h-3.5 w-3.5" />
-                                                No exportable
-                                            </Badge>
-                                        )}
-                                    </div>
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Cajas</TableHead>
-                                            <TableHead>Producto</TableHead>
-                                            <TableHead className="text-right">Cantidad</TableHead>
-                                            <TableHead className="text-right">Precio</TableHead>
-                                            <TableHead className="text-right">Total</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {barco.lineas.map((linea, index) => (
-                                            <TableRow key={index} className="hover:bg-muted/50">
-                                                <TableCell className="font-medium">{linea.cajas}</TableCell>
-                                                <TableCell>{linea.pescado}</TableCell>
-                                                <TableCell className="text-right">{linea.kilos}</TableCell>
-                                                <TableCell className="text-right">{linea.precio} €</TableCell>
-                                                <TableCell className="text-right font-medium">
-                                                    {linea.importe} €
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </CardContent>
-                        </Card>
-                    ))}
-
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <div className="flex justify-between items-center">
-                                <CardTitle className="text-lg">Servicios</CardTitle>
-                                <div className="flex items-center gap-2">
-                                    {isConvertibleLonja ? (
-                                        <Badge variant="outline" className="bg-green-900 text-green-200 border-green-500 flex items-center gap-1">
-                                            <Check className="h-3.5 w-3.5" />
-                                            Exportable
-                                        </Badge>
-                                    ) : (
-                                        <Badge variant="outline" className="bg-red-900 text-red-200 border-red-500 flex items-center gap-1">
-                                            <X className="h-3.5 w-3.5" />
-                                            No exportable
-                                        </Badge>
-                                    )}
-                                </div>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Cod</TableHead>
-                                        <TableHead>Descripción</TableHead>
-                                        <TableHead className="text-right">Fecha</TableHead>
-                                        <TableHead className="text-right">Cantidad</TableHead>
-                                        <TableHead className="text-right">Precio</TableHead>
-                                        {/* iva */}
-                                        <TableHead className="text-right">Iva</TableHead>
-                                        <TableHead className="text-right">Importe</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {servicios.map((servicio, index) => (
-                                        <TableRow key={index} className="hover:bg-muted/50">
-                                            <TableCell className="font-medium">{servicio.codigo}</TableCell>
-                                            <TableCell>{servicio.descripcion}</TableCell>
-                                            <TableCell className="text-right">{servicio.fecha}</TableCell>
-                                            <TableCell className="text-right">{servicio.unidades}</TableCell>
-                                            <TableCell className="text-right">{servicio.precio} €</TableCell>
-                                            <TableCell className="text-right">{servicio.iva} €</TableCell>
-                                            <TableCell className="text-right font-medium">{servicio.importe} €</TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </CardContent>
-                    </Card>
-                </div>
+      <div className="grid gap-4 py-4">
+        <div className="grid grid-cols-1 items-center gap-4">
+          <div className="flex flex-col gap-1">
+            <label htmlFor="software" className="font-medium">
+              Software
+            </label>
+            <Select value={software} onValueChange={setSoftware}>
+              <SelectTrigger id="software">
+                <SelectValue placeholder="Seleccione software de destino" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="A3ERP">A3ERP</SelectItem>
+                <SelectItem value="Facilcom">Facilcom</SelectItem>
+                <SelectItem value="Otros">Otros</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <div className="flex flex-col gap-1">
+          {!isConvertibleLonja ? (
+            <div className="flex items-center gap-1 rounded-md p-1 text-amber-500">
+              <AlertTriangle className="h-4 w-4" />
+              <span className="text-xs">
+                Los servicios de la lonja{' '}
+                <strong>
+                  {lonja} - {cifLonja}
+                </strong>{' '}
+                no son exportables.
+              </span>
             </div>
+          ) : (
+            <div className="flex items-center gap-1 rounded-md p-1 text-green-500">
+              <Check className="h-4 w-4" />
+              <span className="text-xs">
+                Los servicios de la lonja{' '}
+                <strong>
+                  {lonja} - {cifLonja}
+                </strong>{' '}
+                son exportables.
+              </span>
+            </div>
+          )}
 
-            <DialogFooter>
-                <DialogTrigger asChild>
-                    <Button variant="outline">
-                        Cancelar
-                    </Button>
-                </DialogTrigger>
-                <Button className="gap-2" onClick={handleOnClickExport}>
-                    <FileSpreadsheet className="h-4 w-4" />
-                    Exportar a A3ERP
+          {isSomeArmadorNotConvertible ? (
+            <div className="flex items-center gap-1 rounded-md p-1 text-amber-500">
+              <AlertTriangle className="h-4 w-4" />
+              <span className="text-xs">Todos los armadores no son exportables.</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1 rounded-md p-1 text-green-500">
+              <Check className="h-4 w-4" />
+              <span className="text-xs">Todos los armadores son exportables.</span>
+            </div>
+          )}
+        </div>
+
+        <div className="mt-2 space-y-4">
+          {groupedLinkedSummary.length > 0 && (
+            <Card>
+              <CardHeader className="pb-2">
+                <div className="flex items-start justify-between">
+                  <CardTitle>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-lg">Enlaces de compra/recepción</span>
+                      <span className="text-muted-foreground text-sm">
+                        {groupedLinkedSummary.length} Compras{' '}
+                        {groupedLinkedSummary.length !== linkedSummary.length
+                          ? `(${linkedSummary.length} originales agrupadas)`
+                          : ''}
+                      </span>
+                    </div>
+                  </CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {isValidating && (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    <span className="text-muted-foreground text-sm">Validando recepciones...</span>
+                  </div>
+                )}
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12">
+                        <Checkbox
+                          checked={
+                            groupedLinkedSummary.filter((l, idx) => {
+                              if (l.error) return false;
+                              const validation = getValidationStatus(l);
+                              return validation?.valid && validation?.canUpdate;
+                            }).length > 0 &&
+                            selectedLinks.length ===
+                              groupedLinkedSummary.filter((l, idx) => {
+                                if (l.error) return false;
+                                const validation = getValidationStatus(l);
+                                return validation?.valid && validation?.canUpdate;
+                              }).length
+                          }
+                          onCheckedChange={handleToggleAll}
+                          disabled={isValidating}
+                        />
+                      </TableHead>
+                      <TableHead>Barco</TableHead>
+                      <TableHead>Fecha</TableHead>
+                      <TableHead className="text-right">Peso Neto</TableHead>
+                      <TableHead className="text-right">Importe</TableHead>
+                      <TableHead>Estado</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {groupedLinkedSummary.map((linea, index) => {
+                      const validation = getValidationStatus(linea);
+                      const isDisabled = linea.error || (validation && !validation.valid);
+                      const isGrouped = linea.isGrouped || false;
+
+                      return (
+                        <TableRow
+                          key={index}
+                          className={`hover:bg-muted/50 ${isGrouped ? 'border-l-4 border-l-blue-500 bg-blue-50/50' : ''}`}
+                        >
+                          <TableCell>
+                            <Checkbox
+                              checked={selectedLinks.includes(index)}
+                              disabled={isDisabled || isValidating}
+                              onCheckedChange={() => handleToggleLink(index)}
+                            />
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            {isGrouped ? (
+                              <span className="flex items-center gap-1">
+                                <span className="font-semibold text-blue-700">
+                                  {linea.barcoNombre}
+                                </span>
+                                <span className="rounded bg-blue-100 px-1.5 py-0.5 text-xs text-blue-600">
+                                  Agrupado
+                                </span>
+                              </span>
+                            ) : (
+                              linea.barcoNombre
+                            )}
+                          </TableCell>
+                          <TableCell className="font-medium">{linea.date}</TableCell>
+                          <TableCell className="text-right">
+                            {formatDecimalWeight(linea.declaredTotalNetWeight)}
+                          </TableCell>
+                          <TableCell className="text-right font-medium">
+                            {formatDecimalCurrency(linea.declaredTotalAmount)}
+                          </TableCell>
+                          <TableCell>
+                            {linea.error ? (
+                              <div className="flex items-center gap-2 text-red-500">
+                                <X className="h-4 w-4" />
+                                <span className="text-xs">No enlazable</span>
+                              </div>
+                            ) : isValidating ? (
+                              <div className="text-muted-foreground flex items-center gap-2">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <span className="text-xs">Validando...</span>
+                              </div>
+                            ) : validation ? (
+                              validation.valid && validation.canUpdate ? (
+                                <div className="flex items-center gap-2 text-green-500">
+                                  <Check className="h-4 w-4" />
+                                  <span className="text-xs">
+                                    {validation.hasChanges
+                                      ? 'Listo para actualizar'
+                                      : 'Sin cambios'}
+                                  </span>
+                                </div>
+                              ) : (
+                                <div className="flex items-start gap-2 text-red-500">
+                                  <X className="mt-0.5 h-4 w-4 flex-shrink-0" />
+                                  <div className="flex flex-col gap-0.5">
+                                    <span className="text-xs font-medium">No se puede enlazar</span>
+                                    {validation.message && (
+                                      <span
+                                        className="cursor-help text-xs text-red-400"
+                                        title={validation.tooltip || validation.message}
+                                      >
+                                        {validation.message}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              )
+                            ) : (
+                              <div className="text-muted-foreground flex items-center gap-2">
+                                <span className="text-xs">Pendiente</span>
+                              </div>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </CardContent>
+              <div className="mb-2 flex items-center justify-between p-2">
+                <span className="text-muted-foreground text-sm">
+                  {selectedLinks.length} de{' '}
+                  {
+                    groupedLinkedSummary.filter((l, idx) => {
+                      if (l.error) return false;
+                      const validation = getValidationStatus(l);
+                      return validation?.valid && validation?.canUpdate;
+                    }).length
+                  }{' '}
+                  seleccionadas
+                </span>
+                <Button
+                  variant=""
+                  className=""
+                  onClick={() => handleOnClickLinkPurchases()}
+                  disabled={selectedLinks.length === 0 || isValidating}
+                >
+                  <Link className="h-4 w-4" />
+                  Enlazar Compras ({selectedLinks.length})
                 </Button>
-            </DialogFooter>
-        </DialogContent>
-    )
-}
+              </div>
+            </Card>
+          )}
 
-export default ExportModal
+          {subastas.map((barco) => (
+            <Card key={barco.cod}>
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg">{barco.nombre}</CardTitle>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">{barco.armador}</span>
+                    {isConvertibleArmador(barco.cifArmador) ? (
+                      <Badge
+                        variant="outline"
+                        className="flex items-center gap-1 border-green-500 bg-green-900 text-green-200"
+                      >
+                        <Check className="h-3.5 w-3.5" />
+                        Exportable
+                      </Badge>
+                    ) : (
+                      <Badge
+                        variant="outline"
+                        className="flex items-center gap-1 border-red-500 bg-red-900 text-red-200"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                        No exportable
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Cajas</TableHead>
+                      <TableHead>Producto</TableHead>
+                      <TableHead className="text-right">Cantidad</TableHead>
+                      <TableHead className="text-right">Precio</TableHead>
+                      <TableHead className="text-right">Total</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {barco.lineas.map((linea, index) => (
+                      <TableRow key={index} className="hover:bg-muted/50">
+                        <TableCell className="font-medium">{linea.cajas}</TableCell>
+                        <TableCell>{linea.pescado}</TableCell>
+                        <TableCell className="text-right">{linea.kilos}</TableCell>
+                        <TableCell className="text-right">{linea.precio} €</TableCell>
+                        <TableCell className="text-right font-medium">{linea.importe} €</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          ))}
+
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">Servicios</CardTitle>
+                <div className="flex items-center gap-2">
+                  {isConvertibleLonja ? (
+                    <Badge
+                      variant="outline"
+                      className="flex items-center gap-1 border-green-500 bg-green-900 text-green-200"
+                    >
+                      <Check className="h-3.5 w-3.5" />
+                      Exportable
+                    </Badge>
+                  ) : (
+                    <Badge
+                      variant="outline"
+                      className="flex items-center gap-1 border-red-500 bg-red-900 text-red-200"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                      No exportable
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Cod</TableHead>
+                    <TableHead>Descripción</TableHead>
+                    <TableHead className="text-right">Fecha</TableHead>
+                    <TableHead className="text-right">Cantidad</TableHead>
+                    <TableHead className="text-right">Precio</TableHead>
+                    {/* iva */}
+                    <TableHead className="text-right">Iva</TableHead>
+                    <TableHead className="text-right">Importe</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {servicios.map((servicio, index) => (
+                    <TableRow key={index} className="hover:bg-muted/50">
+                      <TableCell className="font-medium">{servicio.codigo}</TableCell>
+                      <TableCell>{servicio.descripcion}</TableCell>
+                      <TableCell className="text-right">{servicio.fecha}</TableCell>
+                      <TableCell className="text-right">{servicio.unidades}</TableCell>
+                      <TableCell className="text-right">{servicio.precio} €</TableCell>
+                      <TableCell className="text-right">{servicio.iva} €</TableCell>
+                      <TableCell className="text-right font-medium">{servicio.importe} €</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <DialogFooter>
+        <DialogTrigger asChild>
+          <Button variant="outline">Cancelar</Button>
+        </DialogTrigger>
+        <Button className="gap-2" onClick={handleOnClickExport}>
+          <FileSpreadsheet className="h-4 w-4" />
+          Exportar a A3ERP
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  );
+};
+
+export default ExportModal;

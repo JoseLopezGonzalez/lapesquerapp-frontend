@@ -74,6 +74,7 @@ function CustomerTableSkeleton() {
 ### Server Component por defecto (sin directiva)
 
 Usar cuando el componente:
+
 - Solo recibe props sin estado interactivo
 - Hace fetch de datos en el servidor (Next.js App Router)
 - No usa hooks de React (useState, useEffect, useQuery, etc.)
@@ -89,6 +90,7 @@ export default async function CustomersPage() {
 ### Client Component — `'use client'`
 
 Requerido cuando el componente:
+
 - Usa `useSession`, `useQuery`, `useState`, `useEffect`, `useForm`
 - Registra event handlers (`onClick`, `onChange`, etc.)
 - Usa contextos de React
@@ -108,6 +110,7 @@ Requerido cuando el componente:
 ### Extender primero — crear solo si es necesario
 
 Antes de crear un componente nuevo:
+
 1. Buscar en `src/components/ui/` — shadcn ya tiene Button, Input, Dialog, Badge, Card, Table, Skeleton, Select, Combobox, DatePicker…
 2. Buscar en `src/components/Shared/` — puede haber componentes reutilizables
 3. Buscar en el módulo de admin correspondiente (`src/components/Admin/[Módulo]/`)
@@ -139,13 +142,13 @@ interface MyComponentProps {
 
   // Optional: tienen valor por defecto o pueden no existir
   description?: string;
-  isLoading?: boolean;       // default: false
-  className?: string;        // para extensión de estilos
-  onCancel?: () => void;     // callback opcional
+  isLoading?: boolean; // default: false
+  className?: string; // para extensión de estilos
+  onCancel?: () => void; // callback opcional
 }
 
 // ✅ Desestructurar con defaults en la firma
-function MyComponent({ id, title, isLoading = false, className }: MyComponentProps) { }
+function MyComponent({ id, title, isLoading = false, className }: MyComponentProps) {}
 ```
 
 ---
@@ -206,8 +209,8 @@ try {
 
 ```typescript
 // ✅ Siempre usar componentes shadcn de src/components/ui/
-import { Button } from '@/components/ui/button';          // 265+ usos
-import { Badge } from '@/components/ui/badge';            // 100+ usos
+import { Button } from '@/components/ui/button'; // 265+ usos
+import { Badge } from '@/components/ui/badge'; // 100+ usos
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
@@ -238,12 +241,14 @@ function OrderForm() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch('/api/v2/orders')   // ← PROHIBIDO: fetch directo
-      .then(r => r.json())
+    fetch('/api/v2/orders') // ← PROHIBIDO: fetch directo
+      .then((r) => r.json())
       .then(setOrders);
   }, []);
 
-  const calculateTotal = (items) => { /* lógica de negocio */ };
+  const calculateTotal = (items) => {
+    /* lógica de negocio */
+  };
   // ...
 }
 

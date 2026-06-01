@@ -19,7 +19,9 @@ export function setSuperadminToken(token) {
     } else {
       sessionStorage.removeItem(TOKEN_KEY);
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 }
 
 export class SuperadminApiError extends Error {
@@ -57,39 +59,25 @@ export async function fetchSuperadmin(path, options = {}) {
   let body = {};
   try {
     body = await res.clone().json();
-  } catch { /* empty body */ }
+  } catch {
+    /* empty body */
+  }
 
   if (res.status === 401) {
     setSuperadminToken(null);
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('superadmin:unauthorized'));
     }
-    throw new SuperadminApiError(
-      body.message || body.error || 'No autenticado',
-      401,
-      body,
-    );
+    throw new SuperadminApiError(body.message || body.error || 'No autenticado', 401, body);
   }
 
   if (res.status === 429) {
-    throw new SuperadminApiError(
-      'Demasiadas peticiones, espera un momento.',
-      429,
-      body,
-    );
+    throw new SuperadminApiError('Demasiadas peticiones, espera un momento.', 429, body);
   }
 
   if (res.status === 422) {
-    throw new SuperadminApiError(
-      body.message || 'Error de validación',
-      422,
-      body,
-    );
+    throw new SuperadminApiError(body.message || 'Error de validación', 422, body);
   }
 
-  throw new SuperadminApiError(
-    body.message || `Error HTTP ${res.status}`,
-    res.status,
-    body,
-  );
+  throw new SuperadminApiError(body.message || `Error HTTP ${res.status}`, res.status, body);
 }

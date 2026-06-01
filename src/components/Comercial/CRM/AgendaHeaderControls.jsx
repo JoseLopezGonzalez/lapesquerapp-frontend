@@ -4,7 +4,13 @@ import { Button } from '@/components/ui/button';
 import { ButtonGroup } from '@/components/ui/button-group';
 import { ChevronLeft, ChevronRight, Filter, Plus } from 'lucide-react';
 
-export function AgendaHeaderControls({ onToday, onOpenFilters, onPrevMonth, onNextMonth, onNewInteraction }) {
+export function AgendaHeaderControls({
+  onToday,
+  onOpenFilters,
+  onPrevMonth,
+  onNextMonth,
+  onNewInteraction,
+}) {
   return (
     <div className="flex items-center gap-2">
       {onNewInteraction && (
@@ -16,7 +22,13 @@ export function AgendaHeaderControls({ onToday, onOpenFilters, onPrevMonth, onNe
       <Button type="button" variant="outline" size="sm" onClick={onToday}>
         Hoy
       </Button>
-      <Button type="button" variant="outline" size="icon-sm" onClick={onOpenFilters} aria-label="Filtros">
+      <Button
+        type="button"
+        variant="outline"
+        size="icon-sm"
+        onClick={onOpenFilters}
+        aria-label="Filtros"
+      >
         <Filter />
       </Button>
       <ButtonGroup orientation="horizontal" aria-label="Navegación de mes">

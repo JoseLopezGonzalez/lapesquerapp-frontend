@@ -13,34 +13,42 @@ export default function FieldOperatorDetailPageClient({ id }) {
   const role = Array.isArray(session?.user?.role) ? session.user.role[0] : session?.user?.role;
 
   if (status === 'loading') {
-    return <div className="flex min-h-[50vh] items-center justify-center"><Loader /></div>;
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <Loader />
+      </div>
+    );
   }
 
   if (role !== 'administrador' && role !== 'direccion') {
     return (
       <div className="p-6">
         <EmptyState
-          icon={<MapPinned className="h-10 w-10 text-primary" />}
+          icon={<MapPinned className="text-primary h-10 w-10" />}
           title="Acceso restringido"
           description="Solo administración y dirección pueden gestionar operadores de campo."
-          className="border bg-muted/20"
+          className="bg-muted/20 border"
         />
       </div>
     );
   }
 
   if (isLoading) {
-    return <div className="flex min-h-[50vh] items-center justify-center"><Loader /></div>;
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <Loader />
+      </div>
+    );
   }
 
   if (error || !data) {
     return (
       <div className="p-6">
         <EmptyState
-          icon={<MapPinned className="h-10 w-10 text-primary" />}
+          icon={<MapPinned className="text-primary h-10 w-10" />}
           title="No se pudo cargar el operador"
           description={error?.message ?? 'El operador no está disponible.'}
-          className="border bg-muted/20"
+          className="bg-muted/20 border"
         />
       </div>
     );

@@ -14,10 +14,10 @@ Datos **ficticios** y **simulados** para la maqueta funcional de la vista orques
 
 ### Productos (`products`)
 
-| Campo | Tipo   | Descripción        |
-|-------|--------|--------------------|
-| `id`  | number | ID único            |
-| `name`| string | Nombre del producto|
+| Campo  | Tipo   | Descripción         |
+| ------ | ------ | ------------------- |
+| `id`   | number | ID único            |
+| `name` | string | Nombre del producto |
 
 Coherente con entidad Producto real.
 
@@ -25,43 +25,43 @@ Coherente con entidad Producto real.
 
 ### Pedidos (`orders`)
 
-| Campo            | Tipo   | Descripción |
-|------------------|--------|-------------|
-| `id`             | number | ID pedido   |
-| `customer`       | object | `{ id, name }` |
-| `status`         | string | `pending` \| `finished` \| `incident` |
-| `loadDate`       | string | ISO (YYYY-MM-DDTHH:mm:ss.sssZ) |
-| `temperature`    | number | °C (ej. 4, -18) |
-| `transport`      | object | `{ name }` (opcional) |
-| `productProgress`| array  | Ver abajo   |
-| `palletIds`      | number[]| IDs de palets vinculados |
+| Campo             | Tipo     | Descripción                           |
+| ----------------- | -------- | ------------------------------------- |
+| `id`              | number   | ID pedido                             |
+| `customer`        | object   | `{ id, name }`                        |
+| `status`          | string   | `pending` \| `finished` \| `incident` |
+| `loadDate`        | string   | ISO (YYYY-MM-DDTHH:mm:ss.sssZ)        |
+| `temperature`     | number   | °C (ej. 4, -18)                       |
+| `transport`       | object   | `{ name }` (opcional)                 |
+| `productProgress` | array    | Ver abajo                             |
+| `palletIds`       | number[] | IDs de palets vinculados              |
 
 **productProgress[]** (progreso por producto):
 
-| Campo             | Tipo   | Descripción |
-|-------------------|--------|-------------|
-| `product`         | object | `{ id, name }` |
-| `plannedQuantity` | number | kg planificados |
-| `plannedBoxes`    | number | cajas planificadas |
-| `completedQuantity` | number | kg completados (de palets) |
-| `completedBoxes`  | number | cajas completadas |
+| Campo               | Tipo   | Descripción                               |
+| ------------------- | ------ | ----------------------------------------- |
+| `product`           | object | `{ id, name }`                            |
+| `plannedQuantity`   | number | kg planificados                           |
+| `plannedBoxes`      | number | cajas planificadas                        |
+| `completedQuantity` | number | kg completados (de palets)                |
+| `completedBoxes`    | number | cajas completadas                         |
 | `remainingQuantity` | number | restante (puede ser negativo si excedido) |
-| `remainingBoxes`  | number | idem |
-| `status`         | string | `pending` \| `completed` \| `exceeded` |
+| `remainingBoxes`    | number | idem                                      |
+| `status`            | string | `pending` \| `completed` \| `exceeded`    |
 
 ---
 
 ### Palets (`pallets`)
 
-| Campo           | Tipo     | Descripción |
-|-----------------|----------|-------------|
-| `id`            | number   | ID único    |
+| Campo           | Tipo           | Descripción                                   |
+| --------------- | -------------- | --------------------------------------------- |
+| `id`            | number         | ID único                                      |
 | `orderId`       | number \| null | Pedido al que pertenece; `null` = palet libre |
-| `receptionId`   | number \| null | Si viene de recepción (en mock siempre null) |
-| `productsNames` | string[]| Nombres de productos en el palet |
-| `lots`         | string[] | Lotes (trazabilidad) |
-| `numberOfBoxes` | number  | Número de cajas |
-| `netWeight`     | number  | Peso neto total (kg) |
+| `receptionId`   | number \| null | Si viene de recepción (en mock siempre null)  |
+| `productsNames` | string[]       | Nombres de productos en el palet              |
+| `lots`          | string[]       | Lotes (trazabilidad)                          |
+| `numberOfBoxes` | number         | Número de cajas                               |
+| `netWeight`     | number         | Peso neto total (kg)                          |
 
 Coherente con modelo real: palet puede existir sin pedido (`orderId` null).
 
@@ -71,14 +71,14 @@ Coherente con modelo real: palet puede existir sin pedido (`orderId` null).
 
 Cajas que ya tienen etiqueta (emitidas en Pantalla 1) y están pendientes de escaneo. Al escanear en Pantalla 2 se agregan a un palet y dejan de estar "disponibles".
 
-| Campo        | Tipo   | Descripción                          |
-|-------------|--------|--------------------------------------|
-| `id`        | number | ID único (código escaneable simulado)|
-| `productId` | number | ID producto                          |
-| `productName` | string | Nombre producto                    |
-| `lot`       | string | Lote (trazabilidad)                  |
-| `netWeight` | number | Peso neto (kg)                       |
-| `status`    | string | `'available'`                       |
+| Campo         | Tipo   | Descripción                           |
+| ------------- | ------ | ------------------------------------- |
+| `id`          | number | ID único (código escaneable simulado) |
+| `productId`   | number | ID producto                           |
+| `productName` | string | Nombre producto                       |
+| `lot`         | string | Lote (trazabilidad)                   |
+| `netWeight`   | number | Peso neto (kg)                        |
+| `status`      | string | `'available'`                         |
 
 Estado inicial: semilla de 6 cajas (ids 10001–10006) para poder probar Pantalla 2 sin generar antes en Pantalla 1.
 

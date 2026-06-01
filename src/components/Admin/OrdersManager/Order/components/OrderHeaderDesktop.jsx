@@ -37,9 +37,9 @@ export default function OrderHeaderDesktop({
   readOnly = false,
 }) {
   return (
-    <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
-      <div className="space-y-1 flex-1">
-        <div className="flex items-center gap-2 flex-wrap">
+    <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
+      <div className="flex-1 space-y-1">
+        <div className="flex flex-wrap items-center gap-2">
           {readOnly ? (
             <StatusBadge
               color={STATUS_COLORS[order.status] ?? 'green'}
@@ -60,22 +60,28 @@ export default function OrderHeaderDesktop({
           <p>
             <span className="text-base font-medium">{order.customer?.name ?? '—'}</span>
             <br />
-            <span className="text-sm text-muted-foreground">Cliente Nº {order.customer?.id ?? '—'}</span>
+            <span className="text-muted-foreground text-sm">
+              Cliente Nº {order.customer?.id ?? '—'}
+            </span>
             {order?.buyerReference ? (
               <>
                 <br />
-                <span className="text-sm text-muted-foreground">Ref. cliente: {order.buyerReference}</span>
+                <span className="text-muted-foreground text-sm">
+                  Ref. cliente: {order.buyerReference}
+                </span>
               </>
             ) : null}
           </p>
         </div>
         <div>
-          <p className="text-sm text-muted-foreground">Fecha de Carga</p>
+          <p className="text-muted-foreground text-sm">Fecha de Carga</p>
           <p className="text-sm font-medium">{formatDate(order.loadDate)}</p>
         </div>
         <div>
-          <p className="text-sm text-muted-foreground">Temperatura</p>
-          {readOnly ? <p className="text-sm font-medium">{order.temperature ?? '-'}</p> : (
+          <p className="text-muted-foreground text-sm">Temperatura</p>
+          {readOnly ? (
+            <p className="text-sm font-medium">{order.temperature ?? '-'}</p>
+          ) : (
             <OrderTemperatureDropdown
               temperature={order.temperature}
               onTemperatureChange={onTemperatureChange}
@@ -84,15 +90,18 @@ export default function OrderHeaderDesktop({
         </div>
         {order?.offerId && (
           <div>
-            <p className="text-sm text-muted-foreground">Oferta vinculada</p>
-            <Link href={`/comercial/ofertas/${order.offerId}`} className="text-sm font-medium text-primary hover:underline">
+            <p className="text-muted-foreground text-sm">Oferta vinculada</p>
+            <Link
+              href={`/comercial/ofertas/${order.offerId}`}
+              className="text-primary text-sm font-medium hover:underline"
+            >
               Ver oferta #{order.offerId}
             </Link>
           </div>
         )}
       </div>
-      <div className="hidden lg:flex flex-row gap-2 h-fit pt-2">
-        <div className="flex flex-col max-w-sm justify-end items-end gap-3">
+      <div className="hidden h-fit flex-row gap-2 pt-2 lg:flex">
+        <div className="flex max-w-sm flex-col items-end justify-end gap-3">
           <div className="flex gap-2">
             {!readOnly && <OrderEditSheet />}
             <Button variant="outline" onClick={onPrint}>

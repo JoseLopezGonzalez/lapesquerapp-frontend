@@ -10,20 +10,20 @@ const SECTION_CONTAINER_CLASS = 'flex-1 w-full min-h-0 overflow-hidden px-4 py-4
 function getFallback(activeSection) {
   if (activeSection === 'customer-history') {
     return (
-      <div className="h-32 flex items-center justify-center">
+      <div className="flex h-32 items-center justify-center">
         <Loader />
       </div>
     );
   }
   if (['export', 'pallets'].includes(activeSection)) {
     return (
-      <div className="flex-1 flex items-center justify-center min-h-0">
+      <div className="flex min-h-0 flex-1 items-center justify-center">
         <Loader />
       </div>
     );
   }
   return (
-    <div className="h-full flex items-center justify-center">
+    <div className="flex h-full items-center justify-center">
       <Loader />
     </div>
   );
@@ -42,7 +42,7 @@ export default function OrderSectionContentMobile({ activeSection, palletsReadOn
   if (activeSection === 'details') {
     return (
       <div className={SECTION_CONTAINER_CLASS}>
-        <ScrollArea className="flex-1 min-h-0">
+        <ScrollArea className="min-h-0 flex-1">
           <Component />
         </ScrollArea>
       </div>
@@ -55,8 +55,10 @@ export default function OrderSectionContentMobile({ activeSection, palletsReadOn
         <Suspense fallback={getFallback(activeSection)}>
           {activeSection === 'pallets' ? <Component readOnly={palletsReadOnly} /> : <Component />}
         </Suspense>
+      ) : activeSection === 'pallets' ? (
+        <Component readOnly={palletsReadOnly} />
       ) : (
-        activeSection === 'pallets' ? <Component readOnly={palletsReadOnly} /> : <Component />
+        <Component />
       )}
     </div>
   );

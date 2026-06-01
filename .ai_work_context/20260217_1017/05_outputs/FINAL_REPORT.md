@@ -26,15 +26,15 @@ Se ejecutó la **Fase 1 y continuación** de la limpieza de `/docs` del frontend
 
 ## Deliverables
 
-| Carpeta/archivo | Contenido |
-|-----------------|-----------|
-| 01_analysis/ | (vacío; análisis implícito en ejecución) |
-| 02_planning/ | (pendiente phase2-plan.md por timeouts) |
-| 03_execution/ | (log en CHANGES.md) |
-| 04_logs/ | execution_timeline.md |
-| 05_outputs/ | FINAL_REPORT.md |
-| docs/_worklog/CHANGES.md | Log de renombrados |
-| docs/_worklog/VERIFY.md | Verificaciones pendientes |
+| Carpeta/archivo           | Contenido                                |
+| ------------------------- | ---------------------------------------- |
+| 01_analysis/              | (vacío; análisis implícito en ejecución) |
+| 02_planning/              | (pendiente phase2-plan.md por timeouts)  |
+| 03_execution/             | (log en CHANGES.md)                      |
+| 04_logs/                  | execution_timeline.md                    |
+| 05_outputs/               | FINAL_REPORT.md                          |
+| docs/\_worklog/CHANGES.md | Log de renombrados                       |
+| docs/\_worklog/VERIFY.md  | Verificaciones pendientes                |
 
 ---
 

@@ -1,180 +1,184 @@
-'use client'
-import React, { useEffect, useRef, useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { Edit3, Bold, Italic, Underline, Palette, Info } from 'lucide-react'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+'use client';
+import React, { useEffect, useRef, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Edit3, Bold, Italic, Underline, Palette, Info } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function RichParagraphConfigPanel({ html, onChange, fieldOptions = [] }) {
-  const largeEditorRef = useRef(null)
-  const isLargeEditorEditingRef = useRef(false)
-  const fieldMapRef = useRef({})
-  const labelToFieldMapRef = useRef({}) // Mapeo inverso: label -> campo
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const largeEditorRef = useRef(null);
+  const isLargeEditorEditingRef = useRef(false);
+  const fieldMapRef = useRef({});
+  const labelToFieldMapRef = useRef({}); // Mapeo inverso: label -> campo
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
-    fieldMapRef.current = Object.fromEntries(fieldOptions.map(o => [o.value, o.label]))
+    fieldMapRef.current = Object.fromEntries(fieldOptions.map((o) => [o.value, o.label]));
     // Crear mapeo inverso: label -> campo
-    labelToFieldMapRef.current = Object.fromEntries(fieldOptions.map(o => [o.label, o.value]))
-  }, [fieldOptions])
+    labelToFieldMapRef.current = Object.fromEntries(fieldOptions.map((o) => [o.label, o.value]));
+  }, [fieldOptions]);
 
   // Separar campos dinámicos de manuales
   // Los campos manuales tienen value === label (porque vienen de el.key)
   // Los campos dinámicos tienen labels diferentes a sus values (vienen de labelFields)
-  const dynamicFields = fieldOptions.filter(opt => opt.value !== opt.label)
-  const manualFields = fieldOptions.filter(opt => opt.value === opt.label)
+  const dynamicFields = fieldOptions.filter((opt) => opt.value !== opt.label);
+  const manualFields = fieldOptions.filter((opt) => opt.value === opt.label);
 
   // Convertir tokens {{campo}} a {{label}} en el texto
   const tokensToLabels = (htmlString) => {
-    if (!htmlString) return ''
-    let result = htmlString
-    
+    if (!htmlString) return '';
+    let result = htmlString;
+
     // Reemplazar cada token {{campo}} por {{label}}
     Object.entries(fieldMapRef.current).forEach(([field, label]) => {
-      const token = `{{${field}}}`
-      const labelToken = `{{${label}}}`
-      result = result.replace(new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), labelToken)
-    })
-    
-    return result
-  }
+      const token = `{{${field}}}`;
+      const labelToken = `{{${label}}}`;
+      result = result.replace(
+        new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+        labelToken
+      );
+    });
+
+    return result;
+  };
 
   // Convertir {{label}} de vuelta a {{campo}} en el texto
   const labelsToTokens = (htmlString) => {
-    if (!htmlString) return ''
-    let result = htmlString
-    
+    if (!htmlString) return '';
+    let result = htmlString;
+
     // Reemplazar cada {{label}} por {{campo}} usando el mapeo inverso
     Object.entries(labelToFieldMapRef.current).forEach(([label, field]) => {
-      const labelToken = `{{${label}}}`
-      const token = `{{${field}}}`
-      result = result.replace(new RegExp(labelToken.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), token)
-    })
-    
-    return result
-  }
+      const labelToken = `{{${label}}}`;
+      const token = `{{${field}}}`;
+      result = result.replace(
+        new RegExp(labelToken.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+        token
+      );
+    });
+
+    return result;
+  };
 
   // Sincronizar editor grande cuando html cambia o se abre el diálogo
   useEffect(() => {
-    if (!isDialogOpen) return
-    if (isLargeEditorEditingRef.current) return
-    
+    if (!isDialogOpen) return;
+    if (isLargeEditorEditingRef.current) return;
+
     const syncLargeEditor = () => {
       if (!largeEditorRef.current) {
-        setTimeout(syncLargeEditor, 50)
-        return
+        setTimeout(syncLargeEditor, 50);
+        return;
       }
-      
+
       // Convertir tokens a labels para mostrar
-      const htmlWithLabels = tokensToLabels(html || '')
-      const currentHtml = largeEditorRef.current.innerHTML || ''
-      
+      const htmlWithLabels = tokensToLabels(html || '');
+      const currentHtml = largeEditorRef.current.innerHTML || '';
+
       if (currentHtml !== htmlWithLabels) {
-        largeEditorRef.current.innerHTML = htmlWithLabels
+        largeEditorRef.current.innerHTML = htmlWithLabels;
       }
-    }
-    
+    };
+
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        syncLargeEditor()
-      })
-    })
-  }, [html, isDialogOpen, fieldOptions])
+        syncLargeEditor();
+      });
+    });
+  }, [html, isDialogOpen, fieldOptions]);
 
   // Manejar input del editor grande
   const handleLargeEditorInput = () => {
-    if (!largeEditorRef.current) return
-    isLargeEditorEditingRef.current = true
-    
+    if (!largeEditorRef.current) return;
+    isLargeEditorEditingRef.current = true;
+
     // Convertir labels de vuelta a tokens antes de guardar
-    const htmlValue = labelsToTokens(largeEditorRef.current.innerHTML)
-    onChange(htmlValue)
-    
+    const htmlValue = labelsToTokens(largeEditorRef.current.innerHTML);
+    onChange(htmlValue);
+
     setTimeout(() => {
-      isLargeEditorEditingRef.current = false
-    }, 100)
-  }
+      isLargeEditorEditingRef.current = false;
+    }, 100);
+  };
 
   // Insertar campo en el editor grande
   const insertFieldLarge = (field) => {
-    if (!largeEditorRef.current) return
-    
-    const label = fieldMapRef.current[field] || fieldOptions.find(opt => opt.value === field)?.label || field
-    const labelToken = `{{${label}}}`
-    
-    const sel = window.getSelection()
+    if (!largeEditorRef.current) return;
+
+    const label =
+      fieldMapRef.current[field] || fieldOptions.find((opt) => opt.value === field)?.label || field;
+    const labelToken = `{{${label}}}`;
+
+    const sel = window.getSelection();
     if (!sel || !sel.rangeCount) {
       // Sin selección, insertar al final
-      const textNode = document.createTextNode(labelToken)
-      largeEditorRef.current.appendChild(textNode)
+      const textNode = document.createTextNode(labelToken);
+      largeEditorRef.current.appendChild(textNode);
     } else {
       // Insertar en la posición del cursor
-      const range = sel.getRangeAt(0)
+      const range = sel.getRangeAt(0);
       if (!largeEditorRef.current.contains(range.commonAncestorContainer)) {
-        const textNode = document.createTextNode(labelToken)
-        largeEditorRef.current.appendChild(textNode)
+        const textNode = document.createTextNode(labelToken);
+        largeEditorRef.current.appendChild(textNode);
       } else {
-        const textNode = document.createTextNode(labelToken)
-        range.deleteContents()
-        range.insertNode(textNode)
-        range.setStartAfter(textNode)
-        range.collapse(true)
-        sel.removeAllRanges()
-        sel.addRange(range)
+        const textNode = document.createTextNode(labelToken);
+        range.deleteContents();
+        range.insertNode(textNode);
+        range.setStartAfter(textNode);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
       }
     }
-    
-    handleLargeEditorInput()
-  }
+
+    handleLargeEditorInput();
+  };
 
   // Aplicar formato (negrita, cursiva, subrayado)
   const execLargeEditor = (cmd) => {
-    if (!largeEditorRef.current) return
-    document.execCommand(cmd, false, null)
-    handleLargeEditorInput()
-  }
+    if (!largeEditorRef.current) return;
+    document.execCommand(cmd, false, null);
+    handleLargeEditorInput();
+  };
 
   // Aplicar color
   const setColorLargeEditor = (color) => {
-    if (!largeEditorRef.current) return
-    document.execCommand('foreColor', false, color)
-    handleLargeEditorInput()
-  }
-
+    if (!largeEditorRef.current) return;
+    document.execCommand('foreColor', false, color);
+    handleLargeEditorInput();
+  };
 
   // Abrir diálogo
   const handleOpenDialog = () => {
-    setIsDialogOpen(true)
-  }
+    setIsDialogOpen(true);
+  };
 
   // Callback ref para el editor grande
   const setLargeEditorRef = (element) => {
-    largeEditorRef.current = element
+    largeEditorRef.current = element;
     if (element && isDialogOpen) {
-      const htmlWithLabels = tokensToLabels(html || '')
-      const currentHtml = element.innerHTML || ''
+      const htmlWithLabels = tokensToLabels(html || '');
+      const currentHtml = element.innerHTML || '';
       if (currentHtml !== htmlWithLabels) {
-        element.innerHTML = htmlWithLabels
+        element.innerHTML = htmlWithLabels;
       }
     }
-  }
+  };
 
   // Obtener texto plano para vista previa
   const getPreviewText = () => {
-    if (!html) return ''
-    
+    if (!html) return '';
+
     // Convertir tokens a labels y limpiar HTML básico
     let text = html
       .replace(/{{([^}]+)}}/g, (match, field) => {
-        const label = fieldMapRef.current[field] || fieldOptions.find(opt => opt.value === field)?.label || field
-        return `{{${label}}}`
+        const label =
+          fieldMapRef.current[field] ||
+          fieldOptions.find((opt) => opt.value === field)?.label ||
+          field;
+        return `{{${label}}}`;
       })
       .replace(/<br\s*\/?>/gi, '\n') // Convertir <br> a saltos de línea
       .replace(/<[^>]+>/g, '') // Eliminar todas las etiquetas HTML
@@ -183,104 +187,99 @@ export default function RichParagraphConfigPanel({ html, onChange, fieldOptions 
       .replace(/&lt;/g, '<')
       .replace(/&gt;/g, '>')
       .replace(/&quot;/g, '"')
-      .trim()
-    
-    return text.length > 120 ? text.substring(0, 120) + '...' : text
-  }
+      .trim();
 
-  const previewText = getPreviewText()
+    return text.length > 120 ? text.substring(0, 120) + '...' : text;
+  };
+
+  const previewText = getPreviewText();
 
   return (
-    <div className='space-y-2'>
-      <Button 
-        variant='outline' 
-        size='sm' 
-        onClick={handleOpenDialog}
-        className='w-full'
-      >
-        <Edit3 className='h-4 w-4 mr-2' />
+    <div className="space-y-2">
+      <Button variant="outline" size="sm" onClick={handleOpenDialog} className="w-full">
+        <Edit3 className="mr-2 h-4 w-4" />
         Editar
       </Button>
-      <div className='min-h-[60px] border border-input bg-background rounded-md p-3'>
+      <div className="border-input bg-background min-h-[60px] rounded-md border p-3">
         {previewText ? (
-          <p className='text-sm text-foreground whitespace-pre-wrap line-clamp-3'>
-            {previewText}
-          </p>
+          <p className="text-foreground line-clamp-3 text-sm whitespace-pre-wrap">{previewText}</p>
         ) : (
-          <p className='text-sm text-muted-foreground italic'>Sin contenido</p>
+          <p className="text-muted-foreground text-sm italic">Sin contenido</p>
         )}
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent size="5xl" className='max-h-[90vh] flex flex-col'>
+        <DialogContent size="5xl" className="flex max-h-[90vh] flex-col">
           <DialogHeader>
             <DialogTitle>Editor de Texto</DialogTitle>
           </DialogHeader>
-          <div className='flex-1 overflow-auto'>
-            <div className='space-y-4'>
+          <div className="flex-1 overflow-auto">
+            <div className="space-y-4">
               {/* Barra de herramientas de formato */}
-              <div className='flex items-center gap-2'>
-                <Button 
-                  variant='outline' 
-                  size='sm' 
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => execLargeEditor('bold')}
-                  title='Negrita'
+                  title="Negrita"
                 >
-                  <Bold className='h-4 w-4' />
+                  <Bold className="h-4 w-4" />
                 </Button>
-                <Button 
-                  variant='outline' 
-                  size='sm' 
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => execLargeEditor('italic')}
-                  title='Cursiva'
+                  title="Cursiva"
                 >
-                  <Italic className='h-4 w-4' />
+                  <Italic className="h-4 w-4" />
                 </Button>
-                <Button 
-                  variant='outline' 
-                  size='sm' 
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => execLargeEditor('underline')}
-                  title='Subrayado'
+                  title="Subrayado"
                 >
-                  <Underline className='h-4 w-4' />
+                  <Underline className="h-4 w-4" />
                 </Button>
-                <Input 
-                  type='color' 
-                  className='w-10 h-9 p-1 cursor-pointer' 
+                <Input
+                  type="color"
+                  className="h-9 w-10 cursor-pointer p-1"
                   onChange={(e) => setColorLargeEditor(e.target.value)}
-                  title='Color del texto'
+                  title="Color del texto"
                 />
               </div>
-              
+
               {/* Editor */}
               <div
                 ref={setLargeEditorRef}
-                className='min-h-[300px] border border-input bg-background rounded-md p-4 focus-within:outline-none'
+                className="border-input bg-background min-h-[300px] rounded-md border p-4 focus-within:outline-none"
                 style={{ fontSize: '16px', lineHeight: '1.8' }}
                 contentEditable
                 onInput={handleLargeEditorInput}
               />
-              
+
               {/* Información */}
-              <div className='bg-muted/50 border border-muted rounded-lg px-4 py-3 flex items-center gap-3'>
-                <Info className='h-4 w-4 flex-shrink-0 text-foreground' />
-                <p className='text-sm text-foreground m-0'>
+              <div className="bg-muted/50 border-muted flex items-center gap-3 rounded-lg border px-4 py-3">
+                <Info className="text-foreground h-4 w-4 flex-shrink-0" />
+                <p className="text-foreground m-0 text-sm">
                   Haz clic en un campo para insertarlo en el editor.
                 </p>
               </div>
 
               {/* Campos dinámicos */}
               {dynamicFields.length > 0 && (
-                <div className='space-y-2'>
-                  <div className='flex items-center gap-2'>
-                    <span className='text-sm font-medium text-foreground'>Campos dinámicos</span>
-                    <span className='text-xs text-muted-foreground'>(se rellenan automáticamente con la info de la caja)</span>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-foreground text-sm font-medium">Campos dinámicos</span>
+                    <span className="text-muted-foreground text-xs">
+                      (se rellenan automáticamente con la info de la caja)
+                    </span>
                   </div>
-                  <div className='flex flex-wrap gap-2'>
-                    {dynamicFields.map(opt => (
+                  <div className="flex flex-wrap gap-2">
+                    {dynamicFields.map((opt) => (
                       <Badge
                         key={opt.value}
-                        className='cursor-pointer select-none px-2 py-1 text-xs bg-primary text-primary-foreground hover:bg-primary/90 transition-colors'
+                        className="bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer px-2 py-1 text-xs transition-colors select-none"
                         onClick={() => insertFieldLarge(opt.value)}
                       >
                         {opt.label}
@@ -292,16 +291,18 @@ export default function RichParagraphConfigPanel({ html, onChange, fieldOptions 
 
               {/* Campos manuales */}
               {manualFields.length > 0 && (
-                <div className='space-y-2'>
-                  <div className='flex items-center gap-2'>
-                    <span className='text-sm font-medium text-foreground'>Campos manuales</span>
-                    <span className='text-xs text-muted-foreground'>(se solicitarán a la hora de imprimir la etiqueta)</span>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-foreground text-sm font-medium">Campos manuales</span>
+                    <span className="text-muted-foreground text-xs">
+                      (se solicitarán a la hora de imprimir la etiqueta)
+                    </span>
                   </div>
-                  <div className='flex flex-wrap gap-2'>
-                    {manualFields.map(opt => (
+                  <div className="flex flex-wrap gap-2">
+                    {manualFields.map((opt) => (
                       <Badge
                         key={opt.value}
-                        className='cursor-pointer select-none px-2 py-1 text-xs bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors'
+                        className="bg-secondary text-secondary-foreground hover:bg-secondary/80 cursor-pointer px-2 py-1 text-xs transition-colors select-none"
                         onClick={() => insertFieldLarge(opt.value)}
                       >
                         {opt.label}
@@ -315,5 +316,5 @@ export default function RichParagraphConfigPanel({ html, onChange, fieldOptions 
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

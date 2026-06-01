@@ -29,7 +29,9 @@ export function getConvertProspectFormSchema() {
   });
 }
 
-export function getDefaultConvertProspectFormValues(prospectAddress?: string | null): ConvertProspectFormValues {
+export function getDefaultConvertProspectFormValues(
+  prospectAddress?: string | null
+): ConvertProspectFormValues {
   const address = prospectAddress?.trim() ?? '';
   return {
     billingAddress: address,
@@ -45,7 +47,9 @@ export function getDefaultConvertProspectFormValues(prospectAddress?: string | n
   };
 }
 
-export function convertProspectPayloadFromFormValues(values: ConvertProspectFormValues): ConvertToCustomerPayload {
+export function convertProspectPayloadFromFormValues(
+  values: ConvertProspectFormValues
+): ConvertToCustomerPayload {
   const nullIfEmpty = (v: string) => (v.trim() ? v.trim() : null);
   const idOrNull = (v: string) => (v.trim() ? Number(v) : null);
 

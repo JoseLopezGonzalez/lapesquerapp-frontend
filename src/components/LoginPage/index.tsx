@@ -1,50 +1,44 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { motion, AnimatePresence } from "framer-motion";
-import Loader from "../Utilities/Loader";
-import { useIsMobileSafe } from "@/hooks/use-mobile";
-import { pageTransition } from "@/lib/motion-presets";
-import { useLoginTenant } from "@/hooks/useLoginTenant";
-import { useLoginActions } from "@/hooks/useLoginActions";
-import { loginEmailSchema, loginOtpSchema } from "@/schemas/loginSchema";
-import LoginWelcomeStep from "./LoginWelcomeStep";
-import LoginFormDesktop from "./LoginFormDesktop";
-import LoginFormMobile from "./LoginFormMobile";
+import { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { motion, AnimatePresence } from 'framer-motion';
+import Loader from '../Utilities/Loader';
+import { useIsMobileSafe } from '@/hooks/use-mobile';
+import { pageTransition } from '@/lib/motion-presets';
+import { useLoginTenant } from '@/hooks/useLoginTenant';
+import { useLoginActions } from '@/hooks/useLoginActions';
+import { loginEmailSchema, loginOtpSchema } from '@/schemas/loginSchema';
+import LoginWelcomeStep from './LoginWelcomeStep';
+import LoginFormDesktop from './LoginFormDesktop';
+import LoginFormMobile from './LoginFormMobile';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [accessRequested, setAccessRequested] = useState(false);
   const [showForm, setShowForm] = useState(false);
 
   const emailForm = useForm({
     resolver: zodResolver(loginEmailSchema),
-    defaultValues: { email: "" },
+    defaultValues: { email: '' },
   });
 
   const otpForm = useForm({
     resolver: zodResolver(loginOtpSchema),
-    defaultValues: { code: "" },
+    defaultValues: { code: '' },
   });
 
-  const {
-    tenantChecked,
-    tenantActive,
-    brandingImageUrl,
-    isDemo,
-    demoEmail,
-  } = useLoginTenant();
+  const { tenantChecked, tenantActive, brandingImageUrl, isDemo, demoEmail } = useLoginTenant();
 
   const { isMobile } = useIsMobileSafe();
 
   useEffect(() => {
-    if (demoEmail) emailForm.setValue("email", demoEmail);
+    if (demoEmail) emailForm.setValue('email', demoEmail);
   }, [demoEmail, emailForm]);
 
-  const setCodeValue = (value: string) => otpForm.setValue("code", value);
+  const setCodeValue = (value: string) => otpForm.setValue('code', value);
 
   const actions = useLoginActions({
     email,
@@ -57,12 +51,12 @@ export default function LoginPage() {
 
   const handleBackToEmail = () => {
     actions.backToEmail();
-    otpForm.reset({ code: "" });
+    otpForm.reset({ code: '' });
   };
 
   if (!tenantChecked) {
     return (
-      <div className="h-screen w-full flex items-center justify-center">
+      <div className="flex h-screen w-full items-center justify-center">
         <Loader />
       </div>
     );

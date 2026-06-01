@@ -60,7 +60,15 @@ export const defaultCmrData = {
   grossWeight: 0,
   volume: '',
   productLines: [
-    { marksAndNumbers: '', numberOfPackages: 0, methodOfPacking: '', natureOfGoods: '', statisticalNumber: '', grossWeight: 0, volume: '' },
+    {
+      marksAndNumbers: '',
+      numberOfPackages: 0,
+      methodOfPacking: '',
+      natureOfGoods: '',
+      statisticalNumber: '',
+      grossWeight: 0,
+      volume: '',
+    },
   ],
   senderInstructions: '',
   methodOfPayment: '',

@@ -5,10 +5,7 @@
 
 import { API_URL_V2 } from '@/configs/config';
 import { getAuthToken } from '@/lib/auth/getAuthToken';
-import {
-  fetchEntitiesGeneric,
-  deleteEntityGeneric,
-} from '@/services/generic/entityService';
+import { fetchEntitiesGeneric, deleteEntityGeneric } from '@/services/generic/entityService';
 import { createEntityGeneric } from '@/services/generic/createEntityService';
 import {
   fetchEntityDataGeneric,
@@ -17,11 +14,7 @@ import {
 } from '@/services/generic/editEntityService';
 import { addFiltersToParams } from '@/lib/entity/filtersHelper';
 import { addWithParams } from '@/lib/entity/entityRelationsHelper';
-import type {
-  Session,
-  SessionsListResponse,
-  SessionListFilters,
-} from '@/types/session';
+import type { Session, SessionsListResponse, SessionListFilters } from '@/types/session';
 
 const ENDPOINT = 'sessions';
 
@@ -61,10 +54,7 @@ export const sessionService = {
     return (result.data ?? result) as Session;
   },
 
-  async update(
-    id: number | string,
-    data: Record<string, unknown>
-  ): Promise<Session> {
+  async update(id: number | string, data: Record<string, unknown>): Promise<Session> {
     const token = await getAuthToken();
     const url = `${API_URL_V2}${ENDPOINT}/${id}`;
     const response = await submitEntityFormGeneric(url, 'PUT', data, token);
@@ -75,13 +65,19 @@ export const sessionService = {
   async delete(id: number | string): Promise<{ response: Response; data: unknown }> {
     const token = await getAuthToken();
     const url = `${API_URL_V2}${ENDPOINT}/${id}`;
-    return deleteEntityGeneric(url, undefined, token) as Promise<{ response: Response; data: unknown }>;
+    return deleteEntityGeneric(url, undefined, token) as Promise<{
+      response: Response;
+      data: unknown;
+    }>;
   },
 
   async deleteMultiple(ids: (number | string)[]): Promise<{ response: Response; data: unknown }> {
     const token = await getAuthToken();
     const url = `${API_URL_V2}${ENDPOINT}`;
-    return deleteEntityGeneric(url, { ids }, token) as Promise<{ response: Response; data: unknown }>;
+    return deleteEntityGeneric(url, { ids }, token) as Promise<{
+      response: Response;
+      data: unknown;
+    }>;
   },
 
   async getOptions(): Promise<Array<{ value: number | string; label: string }>> {

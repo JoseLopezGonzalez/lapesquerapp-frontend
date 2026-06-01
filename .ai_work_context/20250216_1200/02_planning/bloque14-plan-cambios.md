@@ -11,10 +11,12 @@
 **Impacto**: Menos duplicación, base para otros refactors
 
 ### Cambios
+
 1. Unificar `processAlbaran...`, `processListadoAsoc...`, `processListadoLonja...` en un solo `handleProcess(documentType)`
 2. Crear `src/helpers/formats/lonjaExportUtils.js` con `parseDecimalValue` y `calculateImporteFromLinea` (extraídos de ExportModals/MassiveExportDialog)
 
 ### Verificación
+
 - IndividualMode: procesar un doc de cada tipo sigue funcionando
 - Toasts de error correctos por tipo
 
@@ -26,11 +28,13 @@
 **Impacto**: Reducir 893 líneas a <200 en el componente principal
 
 ### Cambios
+
 1. Mover `parseDecimalValueHelper`, `calculateImporte`, `calculateImporteFromLinea` a lonjaExportUtils (o usar los ya extraídos)
 2. Extraer `CofraExportPreview`, `LonjaDeIslaExportPreview`, `AsocExportPreview` como componentes que reciben document y renderizan accordion item
 3. MassiveExportDialog: orquestar solo estado (software, isExporting, errors, documentsInfo) y llamar a previews
 
 ### Verificación
+
 - Export masivo Excel con cada tipo de documento
 - Errores se muestran correctamente
 - Descarga Excel válida
@@ -43,11 +47,13 @@
 **Impacto**: Reducir 868 líneas
 
 ### Cambios
+
 1. Usar lonjaExportUtils para parseDecimalValue y calculateImporteFromLinea
 2. Extraer `useLonjaDeIslaExportLogic` con: ventasVendidurias, ventasDirectas, errors, cálculos
 3. Componente ExportModal: solo UI + hook
 
 ### Verificación
+
 - Export Individual LonjaDeIsla Excel
 - Link purchases si aplica
 - Errores de barco/vendiduria visibles
@@ -60,11 +66,13 @@
 **Impacto**: Cobertura crítica
 
 ### Cambios
+
 1. `DocumentProcessor.test.js` — mock Azure, validación estructura
 2. `lonjaDeIslaValidator.test.js` — casos válidos/inválidos
 3. `lonjaDeIslaParser.test.js` — estructura esperada
 
 ### Verificación
+
 - Tests pasan
 - Cobertura suficiente para regresión
 

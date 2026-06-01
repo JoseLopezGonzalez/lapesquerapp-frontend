@@ -1,6 +1,7 @@
 # GAP-005 — Refactor usePallet.js — extraer sub-hooks en hooks/pallets/
 
 ## Metadata
+
 - **Tipo:** Refactor
 - **Módulo:** Stock
 - **Prioridad:** Alta
@@ -32,6 +33,7 @@ El problema es el mismo que en `useOrder.js` pero más grave por tamaño: las re
 El módulo de producción ya sigue este patrón: `src/hooks/production/` tiene sub-hooks extraídos del hook principal de producción.
 
 ## Criterios de aceptación
+
 - [ ] Existe el directorio `src/hooks/pallets/` con al menos 3 sub-hooks extraídos
 - [ ] Cada sub-hook extraído está en `.ts` con tipos explícitos
 - [ ] `usePallet.ts` (migrado desde `.js`) reexporta todo lo que exportaba antes
@@ -42,12 +44,14 @@ El módulo de producción ya sigue este patrón: `src/hooks/production/` tiene s
 - [ ] El archivo `usePallet.js` original se elimina (reemplazado por `usePallet.ts`)
 
 ## Archivos a crear o modificar
+
 - **Leer primero:** `src/hooks/usePallet.js` — mapear responsabilidades antes de cualquier cambio
 - `src/hooks/pallets/` — directorio nuevo con sub-hooks
 - `src/hooks/usePallet.js` → `src/hooks/usePallet.ts` — orquestador que importa sub-hooks
 - Archivos que importen `usePallet.js` con extensión explícita → actualizar
 
 ## Restricciones
+
 - **No cambiar la API pública** de `usePallet` — los componentes de warehouse no deben tocarse
 - No tocar `entitiesConfig.js`, `palletService`, ni ningún componente de warehouse en este GAP
 - Si se detecta lógica que debería estar en el service y no en el hook, documentarlo como observación pero no moverlo aquí
@@ -56,16 +60,21 @@ El módulo de producción ya sigue este patrón: `src/hooks/production/` tiene s
 ---
 
 ## Implementación
+
 > Rellena el Agente Implementador
 
 ### Archivos creados
+
 ### Archivos modificados
+
 ### Decisiones tomadas durante la implementación
+
 ### Desviaciones del plan (si las hay)
 
 ---
 
 ## Auditoría
+
 > Rellena el Agente Auditor
 
 ### Resultado: ✅ APROBADO | ⚠️ APROBADO CON OBSERVACIONES | ❌ RECHAZADO
@@ -73,6 +82,7 @@ El módulo de producción ya sigue este patrón: `src/hooks/production/` tiene s
 ### Puntuación: [X/10]
 
 ### Checklist
+
 - [ ] Criterios de aceptación cumplidos
 - [ ] Sin fetch() directo
 - [ ] Sin hardcode de tenant
@@ -84,4 +94,5 @@ El módulo de producción ya sigue este patrón: `src/hooks/production/` tiene s
 - [ ] Nomenclatura correcta
 
 ### Observaciones para Jose
+
 ### Estado final de la implementación

@@ -126,9 +126,9 @@ La lógica principal del frontend debe ser:
 
 ```ts
 if (session.actorType === 'external_user') {
-  renderExternalStoresExperience()
+  renderExternalStoresExperience();
 } else {
-  renderInternalApp()
+  renderInternalApp();
 }
 ```
 
@@ -678,7 +678,9 @@ Respuesta:
     "netWeightPallets": 100,
     "totalNetWeight": 100,
     "content": {
-      "pallets": [/* pallets completos */],
+      "pallets": [
+        /* pallets completos */
+      ],
       "boxes": [],
       "bigBoxes": []
     },
@@ -721,7 +723,9 @@ Shape relevante:
       "name": "stored"
     },
     "productsNames": ["Producto A"],
-    "boxes": [/* cajas */],
+    "boxes": [
+      /* cajas */
+    ],
     "lots": ["LOT-123"],
     "netWeight": 120.5,
     "position": 1,
@@ -953,9 +957,9 @@ Persistir, como mínimo:
 Ejemplo:
 
 ```ts
-const isExternalActor = session?.actorType === 'external_user'
-const canAccessAdmin = session?.actorType === 'internal_user'
-const canDeletePallet = session?.actorType === 'internal_user'
+const isExternalActor = session?.actorType === 'external_user';
+const canAccessAdmin = session?.actorType === 'internal_user';
+const canDeletePallet = session?.actorType === 'internal_user';
 ```
 
 No condicionar permisos complejos de negocio a `role` cuando el actor es externo.

@@ -6,10 +6,10 @@
 
 ## Entidades principales
 
-| Entidad | Descripción |
-|---------|-------------|
-| **Suppliers (Proveedores)** | CRUD de proveedores (EntityClient, config suppliers) |
-| **Supplier Liquidations** | Listado por fechas, detalle por proveedor, generación PDF |
+| Entidad                     | Descripción                                               |
+| --------------------------- | --------------------------------------------------------- |
+| **Suppliers (Proveedores)** | CRUD de proveedores (EntityClient, config suppliers)      |
+| **Supplier Liquidations**   | Listado por fechas, detalle por proveedor, generación PDF |
 
 ---
 
@@ -17,15 +17,15 @@
 
 ### Proveedores (suppliers)
 
-| Tipo | Artefacto | Ubicación |
-|------|-----------|-----------|
-| Página | Admin suppliers list | `app/admin/suppliers/` (EntityClient) |
-| Página | Admin supplier detail | `app/admin/suppliers/[id]/` |
-| Componente | EntityClient | `components/Admin/Entity/EntityClient/index.js` |
-| Servicio | supplierService | `services/domain/suppliers/supplierService.js` |
-| Hook | useSupplierOptions | `hooks/useSupplierOptions.js` |
-| Config | entitiesConfig.suppliers | `configs/entitiesConfig.js` |
-| Mapper | entityServiceMapper | `services/domain/entityServiceMapper.js` |
+| Tipo       | Artefacto                | Ubicación                                       |
+| ---------- | ------------------------ | ----------------------------------------------- |
+| Página     | Admin suppliers list     | `app/admin/suppliers/` (EntityClient)           |
+| Página     | Admin supplier detail    | `app/admin/suppliers/[id]/`                     |
+| Componente | EntityClient             | `components/Admin/Entity/EntityClient/index.js` |
+| Servicio   | supplierService          | `services/domain/suppliers/supplierService.js`  |
+| Hook       | useSupplierOptions       | `hooks/useSupplierOptions.js`                   |
+| Config     | entitiesConfig.suppliers | `configs/entitiesConfig.js`                     |
+| Mapper     | entityServiceMapper      | `services/domain/entityServiceMapper.js`        |
 
 **Tests existentes**: Ninguno para suppliers.
 
@@ -35,13 +35,13 @@
 
 ### Liquidaciones (supplier-liquidations)
 
-| Tipo | Artefacto | Ubicación |
-|------|-----------|-----------|
-| Página | Listado liquidaciones | `app/admin/supplier-liquidations/page.js` |
-| Página | Detalle liquidación | `app/admin/supplier-liquidations/[supplierId]/page.js` |
-| Componente | SupplierLiquidationList | `components/Admin/SupplierLiquidations/SupplierLiquidationList.jsx` |
-| Componente | SupplierLiquidationDetail | `components/Admin/SupplierLiquidations/SupplierLiquidationDetail.jsx` |
-| Servicio | supplierLiquidationService | `services/supplierLiquidationService.js` |
+| Tipo       | Artefacto                  | Ubicación                                                             |
+| ---------- | -------------------------- | --------------------------------------------------------------------- |
+| Página     | Listado liquidaciones      | `app/admin/supplier-liquidations/page.js`                             |
+| Página     | Detalle liquidación        | `app/admin/supplier-liquidations/[supplierId]/page.js`                |
+| Componente | SupplierLiquidationList    | `components/Admin/SupplierLiquidations/SupplierLiquidationList.jsx`   |
+| Componente | SupplierLiquidationDetail  | `components/Admin/SupplierLiquidations/SupplierLiquidationDetail.jsx` |
+| Servicio   | supplierLiquidationService | `services/supplierLiquidationService.js`                              |
 
 **Tests existentes**: Ninguno.
 

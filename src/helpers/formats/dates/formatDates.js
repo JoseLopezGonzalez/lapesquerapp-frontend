@@ -1,41 +1,41 @@
 export const formatDate = (date) => {
-    const dateObj = new Date(date);
-    const day = String(dateObj.getDate()).padStart(2, '0');
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0'); // Los meses son base 0
-    const year = dateObj.getFullYear();
-    return `${day}/${month}/${year}`;
-}
+  const dateObj = new Date(date);
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0'); // Los meses son base 0
+  const year = dateObj.getFullYear();
+  return `${day}/${month}/${year}`;
+};
 
 /* formatDateHour DD/MM/YYYY - HH:MM */
 export const formatDateHour = (date) => {
-    const dateObj = new Date(date);
-    const day = String(dateObj.getDate()).padStart(2, '0');
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0'); // Los meses son base 0
-    const year = dateObj.getFullYear();
-    const hour = String(dateObj.getHours()).padStart(2, '0');
-    const minute = String(dateObj.getMinutes()).padStart(2, '0');
-    return `${day}/${month}/${year} - ${hour}:${minute}`;
-}
+  const dateObj = new Date(date);
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0'); // Los meses son base 0
+  const year = dateObj.getFullYear();
+  const hour = String(dateObj.getHours()).padStart(2, '0');
+  const minute = String(dateObj.getMinutes()).padStart(2, '0');
+  return `${day}/${month}/${year} - ${hour}:${minute}`;
+};
 
 export const formatDateShort = (dateString) => {
-    return new Date(dateString).toLocaleDateString("es-ES", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-    }); // Resultado: 26 feb 2025
+  return new Date(dateString).toLocaleDateString('es-ES', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }); // Resultado: 26 feb 2025
 };
 
 /** Formato corto para timeline: "Lun 23 feb - 18:25" (día semana + día + mes + hora) */
 export const formatDateHourShort = (date) => {
-    const d = new Date(date);
-    const datePart = d.toLocaleDateString("es-ES", {
-        weekday: "short",
-        day: "numeric",
-        month: "short",
-    });
-    const timePart = d.toLocaleTimeString("es-ES", {
-        hour: "2-digit",
-        minute: "2-digit",
-    });
-    return `${datePart} - ${timePart}`;
+  const d = new Date(date);
+  const datePart = d.toLocaleDateString('es-ES', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  });
+  const timePart = d.toLocaleTimeString('es-ES', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+  return `${datePart} - ${timePart}`;
 };

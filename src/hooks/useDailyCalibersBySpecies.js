@@ -12,19 +12,18 @@ import { rawMaterialReceptionService } from '@/services/domain/raw-material-rece
  */
 export function useDailyCalibersBySpecies(date, speciesId) {
   const isAll = speciesId === 'all' || speciesId === '' || speciesId == null;
-  const numericSpeciesId =
-    !isAll && speciesId !== ''
-      ? Number(speciesId)
-      : null;
+  const numericSpeciesId = !isAll && speciesId !== '' ? Number(speciesId) : null;
   const enabled = !!date;
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['raw-material-receptions', 'daily-calibers-by-species', date, isAll ? 'all' : numericSpeciesId],
+    queryKey: [
+      'raw-material-receptions',
+      'daily-calibers-by-species',
+      date,
+      isAll ? 'all' : numericSpeciesId,
+    ],
     queryFn: () =>
-      rawMaterialReceptionService.getDailyCalibersBySpecies(
-        date,
-        isAll ? null : numericSpeciesId
-      ),
+      rawMaterialReceptionService.getDailyCalibersBySpecies(date, isAll ? null : numericSpeciesId),
     enabled,
   });
 

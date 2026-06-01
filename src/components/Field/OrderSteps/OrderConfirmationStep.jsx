@@ -12,12 +12,13 @@ export function OrderConfirmationStep({ totalAmount }) {
         <CardContent className="space-y-4 p-4">
           {canSave ? (
             <>
-              <div className="rounded-xl border bg-muted/20 p-4">
-                <p className="text-sm text-muted-foreground">Total estimado a guardar</p>
+              <div className="bg-muted/20 rounded-xl border p-4">
+                <p className="text-muted-foreground text-sm">Total estimado a guardar</p>
                 <p className="text-2xl font-semibold">{Number(totalAmount ?? 0).toFixed(2)} €</p>
               </div>
-              <p className="text-sm text-muted-foreground">
-                Se guardará el conjunto completo de líneas servidas del pedido, sin modificar su estado.
+              <p className="text-muted-foreground text-sm">
+                Se guardará el conjunto completo de líneas servidas del pedido, sin modificar su
+                estado.
               </p>
             </>
           ) : (

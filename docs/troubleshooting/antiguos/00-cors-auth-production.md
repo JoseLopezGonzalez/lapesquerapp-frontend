@@ -96,10 +96,10 @@ Es un mensaje aparte: el navegador avisa de que se llamó a `beforeinstallprompt
 
 ## Resumen de opciones
 
-| Dónde | Qué hacer |
-|-------|-----------|
-| **Backend (Laravel)** | Revisar `config/cors.php`, `CORS_ALLOWED_ORIGINS` en .env de producción, que las rutas `/api/v2/*` pasen por el middleware CORS y que OPTIONS responda 200 con headers CORS. |
-| **Proxy (nginx, etc.)** | Asegurar que OPTIONS llegue a Laravel o que el proxy responda a OPTIONS con los headers CORS correctos. |
-| **Frontend (Next.js)** | No es necesario cambiar la lógica ni el .env para "arreglar" este CORS; el frontend ya llama a la URL correcta y envía los headers esperados. |
+| Dónde                   | Qué hacer                                                                                                                                                                    |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Backend (Laravel)**   | Revisar `config/cors.php`, `CORS_ALLOWED_ORIGINS` en .env de producción, que las rutas `/api/v2/*` pasen por el middleware CORS y que OPTIONS responda 200 con headers CORS. |
+| **Proxy (nginx, etc.)** | Asegurar que OPTIONS llegue a Laravel o que el proxy responda a OPTIONS con los headers CORS correctos.                                                                      |
+| **Frontend (Next.js)**  | No es necesario cambiar la lógica ni el .env para "arreglar" este CORS; el frontend ya llama a la URL correcta y envía los headers esperados.                                |
 
 Si en un commit anterior “funcionaba”, lo más probable es que en el servidor de la API (o en el proxy) se haya cambiado la configuración CORS, se haya dejado de cargar `CORS_ALLOWED_ORIGINS`, o se esté cacheando una respuesta OPTIONS sin headers. Revisar el backend y el proxy con el checklist anterior suele ser suficiente para resolverlo.

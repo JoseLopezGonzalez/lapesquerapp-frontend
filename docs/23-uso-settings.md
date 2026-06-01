@@ -76,11 +76,7 @@ Asegúrate de envolver tu app con el `SettingsProvider` en el layout principal:
 import { SettingsProvider } from '@/context/SettingsContext';
 
 export default function RootLayout({ children }) {
-  return (
-    <SettingsProvider>
-      {children}
-    </SettingsProvider>
-  );
+  return <SettingsProvider>{children}</SettingsProvider>;
 }
 ```
 

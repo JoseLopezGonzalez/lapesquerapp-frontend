@@ -2,7 +2,7 @@
 
 /**
  * Botón para abrir el chat AI
- * 
+ *
  * Se puede integrar en cualquier parte de la aplicación para abrir el chat
  * como un modal o panel lateral.
  */
@@ -25,7 +25,7 @@ export const ChatButton = forwardRef(({ asMenuItem = false, children, ...props }
     return (
       <>
         {children && (
-          <div 
+          <div
             onClick={(e) => {
               e.stopPropagation();
               handleOpen();
@@ -35,17 +35,17 @@ export const ChatButton = forwardRef(({ asMenuItem = false, children, ...props }
           </div>
         )}
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-          <DialogContent 
-            className="w-[95vw] max-w-[95vw] h-[90vh] flex flex-col p-0"
+          <DialogContent
+            className="flex h-[90vh] w-[95vw] max-w-[95vw] flex-col p-0"
             onInteractOutside={(e) => e.preventDefault()}
           >
             <DialogHeader className="px-6 pt-6 pb-4">
               <DialogTitle className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-primary" />
+                <Sparkles className="text-primary h-5 w-5" />
                 Asistente AI
               </DialogTitle>
             </DialogHeader>
-            <div className="flex-1 px-6 pb-6 overflow-hidden h-full">
+            <div className="h-full flex-1 overflow-hidden px-6 pb-6">
               <Chat />
             </div>
           </DialogContent>
@@ -69,17 +69,17 @@ export const ChatButton = forwardRef(({ asMenuItem = false, children, ...props }
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent 
-          className="w-[95vw] max-w-[95vw] h-[90vh] flex flex-col p-0"
+        <DialogContent
+          className="flex h-[90vh] w-[95vw] max-w-[95vw] flex-col p-0"
           onInteractOutside={(e) => e.preventDefault()}
         >
           <DialogHeader className="px-6 pt-6 pb-4">
             <DialogTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
+              <Sparkles className="text-primary h-5 w-5" />
               Asistente AI
             </DialogTitle>
           </DialogHeader>
-          <div className="flex-1 px-6 pb-6 overflow-hidden h-full">
+          <div className="h-full flex-1 overflow-hidden px-6 pb-6">
             <Chat />
           </div>
         </DialogContent>
@@ -89,4 +89,3 @@ export const ChatButton = forwardRef(({ asMenuItem = false, children, ...props }
 });
 
 ChatButton.displayName = 'ChatButton';
-

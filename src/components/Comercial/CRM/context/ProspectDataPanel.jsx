@@ -5,11 +5,7 @@ import Loader from '@/components/Utilities/Loader';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import StatusPill from '../StatusPill';
 import ProspectLocationMap from '../ProspectLocationMap';
-import {
-  prospectOriginOptions,
-  prospectStatusLabels,
-  prospectWebsiteToHref,
-} from '../utils';
+import { prospectOriginOptions, prospectStatusLabels, prospectWebsiteToHref } from '../utils';
 
 export default function ProspectDataPanel({ prospect, isLoading }) {
   if (isLoading) {
@@ -25,7 +21,7 @@ export default function ProspectDataPanel({ prospect, isLoading }) {
       <EmptyState
         title="Sin ficha de prospecto"
         description="No se pudo cargar la información del prospecto."
-        className="h-full w-full border bg-muted/20 !min-h-[220px]"
+        className="bg-muted/20 h-full !min-h-[220px] w-full border"
       />
     );
   }
@@ -40,15 +36,20 @@ export default function ProspectDataPanel({ prospect, isLoading }) {
   return (
     <div className="flex flex-col gap-4">
       {/* Bloque principal: datos + mapa */}
-      <div className="overflow-hidden rounded-2xl border bg-card">
+      <div className="bg-card overflow-hidden rounded-2xl border">
         <div className="grid gap-0 lg:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)]">
           <div className="space-y-5 p-5">
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
-                <StatusPill label={prospectStatusLabels[prospect.status] ?? prospect.status} status={prospect.status} />
-                <span className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Ficha comercial</span>
+                <StatusPill
+                  label={prospectStatusLabels[prospect.status] ?? prospect.status}
+                  status={prospect.status}
+                />
+                <span className="text-muted-foreground text-xs font-medium tracking-[0.18em] uppercase">
+                  Ficha comercial
+                </span>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 Lectura rápida del prospecto para decidir el siguiente movimiento comercial.
               </p>
             </div>
@@ -56,55 +57,63 @@ export default function ProspectDataPanel({ prospect, isLoading }) {
             <div className="overflow-hidden rounded-xl border">
               <div className="grid divide-y sm:grid-cols-4 sm:divide-x sm:divide-y-0">
                 <div className="flex items-start gap-3 px-4 py-3">
-                  <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                  <div className="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-lg">
                     <UserRound className="size-4" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground">Origen</p>
-                    <p className="mt-1 text-sm font-medium text-foreground">{originLabel}</p>
+                    <p className="text-muted-foreground text-xs">Origen</p>
+                    <p className="text-foreground mt-1 text-sm font-medium">{originLabel}</p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3 px-4 py-3">
-                  <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                  <div className="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-lg">
                     <MapPin className="size-4" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground">País</p>
-                    <p className="mt-1 text-sm font-medium text-foreground">{prospect.country?.name ?? 'Sin país'}</p>
+                    <p className="text-muted-foreground text-xs">País</p>
+                    <p className="text-foreground mt-1 text-sm font-medium">
+                      {prospect.country?.name ?? 'Sin país'}
+                    </p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3 px-4 py-3">
-                  <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                  <div className="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-lg">
                     <Tag className="size-4" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground">Categoría</p>
-                    <p className="mt-1 text-sm font-medium text-foreground">{prospect.category?.name ?? '-'}</p>
+                    <p className="text-muted-foreground text-xs">Categoría</p>
+                    <p className="text-foreground mt-1 text-sm font-medium">
+                      {prospect.category?.name ?? '-'}
+                    </p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3 px-4 py-3">
-                  <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                  <div className="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-lg">
                     <UserPlus className="size-4" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground">
-                      {prospect.primaryContact?.role?.trim() ? prospect.primaryContact.role : 'Contacto principal'}
+                    <p className="text-muted-foreground text-xs">
+                      {prospect.primaryContact?.role?.trim()
+                        ? prospect.primaryContact.role
+                        : 'Contacto principal'}
                     </p>
-                    <p className="mt-1 text-sm font-medium text-foreground">{prospect.primaryContact?.name ?? '-'}</p>
+                    <p className="text-foreground mt-1 text-sm font-medium">
+                      {prospect.primaryContact?.name ?? '-'}
+                    </p>
                   </div>
                 </div>
               </div>
 
               <div className="divide-y border-t">
                 <div className="flex items-start gap-3 px-4 py-3">
-                  <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                  <div className="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-lg">
                     <Globe className="size-4" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground">Sitio web</p>
+                    <p className="text-muted-foreground text-xs">Sitio web</p>
                     <div className="mt-1 text-sm">
                       {websiteTrim ? (
                         websiteHref ? (
@@ -112,12 +121,14 @@ export default function ProspectDataPanel({ prospect, isLoading }) {
                             href={websiteHref}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="font-medium text-primary underline-offset-4 hover:underline break-all"
+                            className="text-primary font-medium break-all underline-offset-4 hover:underline"
                           >
                             {websiteTrim}
                           </a>
                         ) : (
-                          <span className="break-all whitespace-pre-wrap text-foreground">{websiteTrim}</span>
+                          <span className="text-foreground break-all whitespace-pre-wrap">
+                            {websiteTrim}
+                          </span>
                         )
                       ) : (
                         <span className="text-muted-foreground">Sin sitio web</span>
@@ -127,13 +138,17 @@ export default function ProspectDataPanel({ prospect, isLoading }) {
                 </div>
 
                 <div className="flex items-start gap-3 px-4 py-3">
-                  <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                  <div className="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-lg">
                     <MapPin className="size-4" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground">Dirección</p>
-                    <p className="mt-1 text-sm leading-6 whitespace-pre-wrap text-foreground">
-                      {prospect.address?.trim() ? prospect.address : <span className="text-muted-foreground">Sin dirección</span>}
+                    <p className="text-muted-foreground text-xs">Dirección</p>
+                    <p className="text-foreground mt-1 text-sm leading-6 whitespace-pre-wrap">
+                      {prospect.address?.trim() ? (
+                        prospect.address
+                      ) : (
+                        <span className="text-muted-foreground">Sin dirección</span>
+                      )}
                     </p>
                   </div>
                 </div>
@@ -141,25 +156,28 @@ export default function ProspectDataPanel({ prospect, isLoading }) {
             </div>
           </div>
 
-          <section className="overflow-hidden border-t bg-muted/15 lg:border-t-0 lg:border-l">
-            <ProspectLocationMap
-              address={prospect.address}
-              companyName={prospect.companyName}
-            />
+          <section className="bg-muted/15 overflow-hidden border-t lg:border-t-0 lg:border-l">
+            <ProspectLocationMap address={prospect.address} companyName={prospect.companyName} />
           </section>
         </div>
       </div>
 
       {/* Resumen comercial — ancho completo */}
-      <section className="rounded-2xl border bg-card p-5">
+      <section className="bg-card rounded-2xl border p-5">
         <div className="space-y-3">
           <div className="space-y-1">
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">Resumen comercial</p>
-            <h3 className="text-lg font-semibold tracking-tight text-foreground">Interés y encaje del prospecto</h3>
+            <p className="text-muted-foreground text-[11px] font-medium tracking-[0.18em] uppercase">
+              Resumen comercial
+            </p>
+            <h3 className="text-foreground text-lg font-semibold tracking-tight">
+              Interés y encaje del prospecto
+            </h3>
           </div>
-          <p className="text-sm leading-7 whitespace-pre-wrap text-foreground">
+          <p className="text-foreground text-sm leading-7 whitespace-pre-wrap">
             {prospect.commercialInterestNotes || (
-              <span className="text-muted-foreground">Todavía no hay contexto comercial registrado para este prospecto.</span>
+              <span className="text-muted-foreground">
+                Todavía no hay contexto comercial registrado para este prospecto.
+              </span>
             )}
           </p>
         </div>
@@ -167,30 +185,34 @@ export default function ProspectDataPanel({ prospect, isLoading }) {
 
       {/* Especies + Notas — dos columnas */}
       <div className="grid gap-4 sm:grid-cols-2">
-        <section className="rounded-2xl border bg-card p-4">
+        <section className="bg-card rounded-2xl border p-4">
           <div className="space-y-3">
-            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Especies de interés</p>
+            <p className="text-muted-foreground text-[11px] font-medium tracking-[0.16em] uppercase">
+              Especies de interés
+            </p>
             {prospect.speciesInterest?.length ? (
               <div className="flex flex-wrap gap-2">
                 {prospect.speciesInterest.map((species) => (
                   <span
                     key={species}
-                    className="inline-flex items-center rounded-full border border-primary/15 bg-primary/8 px-2.5 py-1 text-xs font-medium text-primary"
+                    className="border-primary/15 bg-primary/8 text-primary inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium"
                   >
                     {species}
                   </span>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">Sin especies definidas</p>
+              <p className="text-muted-foreground text-sm">Sin especies definidas</p>
             )}
           </div>
         </section>
 
-        <section className="rounded-2xl border bg-muted/25 p-4">
+        <section className="bg-muted/25 rounded-2xl border p-4">
           <div className="space-y-2">
-            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Notas internas</p>
-            <p className="text-sm leading-6 whitespace-pre-wrap text-muted-foreground">
+            <p className="text-muted-foreground text-[11px] font-medium tracking-[0.16em] uppercase">
+              Notas internas
+            </p>
+            <p className="text-muted-foreground text-sm leading-6 whitespace-pre-wrap">
               {prospect.notes || 'Sin notas internas'}
             </p>
           </div>

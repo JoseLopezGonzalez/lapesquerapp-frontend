@@ -30,6 +30,7 @@ GET /api/v2/orders
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -37,23 +38,23 @@ Authorization: Bearer {access_token}
 
 #### Query Parameters (Opcionales)
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| active | boolean | Filtrar por pedidos activos (`true`) o finalizados (`false`) |
-| customers | array | Array de IDs de clientes |
-| ids | array | Array de IDs de pedidos |
-| id | string | Búsqueda parcial por ID |
-| buyerReference | string | Búsqueda parcial por referencia del comprador |
-| status | string | Estado del pedido (`pending`, `finished`) |
-| loadDate | object | Filtro por fecha de carga: `{start: "2024-01-01", end: "2024-12-31"}` |
-| entryDate | object | Filtro por fecha de entrada: `{start: "2024-01-01", end: "2024-12-31"}` |
-| transports | array | Array de IDs de transportes |
-| salespeople | array | Array de IDs de vendedores |
-| palletsState | string | Estado de palets (`stored`, `shipping`) |
-| products | array | Array de IDs de productos |
-| species | array | Array de IDs de especies |
-| incoterm | integer | ID de incoterm |
-| perPage | integer | Elementos por página (default: 10) |
+| Parámetro      | Tipo    | Descripción                                                             |
+| -------------- | ------- | ----------------------------------------------------------------------- |
+| active         | boolean | Filtrar por pedidos activos (`true`) o finalizados (`false`)            |
+| customers      | array   | Array de IDs de clientes                                                |
+| ids            | array   | Array de IDs de pedidos                                                 |
+| id             | string  | Búsqueda parcial por ID                                                 |
+| buyerReference | string  | Búsqueda parcial por referencia del comprador                           |
+| status         | string  | Estado del pedido (`pending`, `finished`)                               |
+| loadDate       | object  | Filtro por fecha de carga: `{start: "2024-01-01", end: "2024-12-31"}`   |
+| entryDate      | object  | Filtro por fecha de entrada: `{start: "2024-01-01", end: "2024-12-31"}` |
+| transports     | array   | Array de IDs de transportes                                             |
+| salespeople    | array   | Array de IDs de vendedores                                              |
+| palletsState   | string  | Estado de palets (`stored`, `shipping`)                                 |
+| products       | array   | Array de IDs de productos                                               |
+| species        | array   | Array de IDs de especies                                                |
+| incoterm       | integer | ID de incoterm                                                          |
+| perPage        | integer | Elementos por página (default: 10)                                      |
 
 #### Ejemplo de Request
 
@@ -76,8 +77,8 @@ GET /api/v2/orders?status=pending&customers[]=1&customers[]=2&perPage=20
       "load_date": "2024-01-20",
       "status": "pending",
       "buyer_reference": "REF-001",
-      "total_net_weight": 1500.50,
-      "total_amount": 45000.00,
+      "total_net_weight": 1500.5,
+      "total_amount": 45000.0,
       "created_at": "2024-01-15T10:00:00.000000Z",
       "updated_at": "2024-01-15T10:00:00.000000Z"
     }
@@ -110,6 +111,7 @@ POST /api/v2/orders
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -143,7 +145,7 @@ Content-Type: application/json
       "product": 1,
       "quantity": 100.5,
       "boxes": 10,
-      "unitPrice": 15.50,
+      "unitPrice": 15.5,
       "tax": 1
     }
   ]
@@ -152,42 +154,42 @@ Content-Type: application/json
 
 #### Campos Requeridos
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| customer | integer | ID del cliente (debe existir) |
-| entryDate | date | Fecha de entrada (formato: YYYY-MM-DD) |
-| loadDate | date | Fecha de carga (formato: YYYY-MM-DD) |
+| Campo     | Tipo    | Descripción                            |
+| --------- | ------- | -------------------------------------- |
+| customer  | integer | ID del cliente (debe existir)          |
+| entryDate | date    | Fecha de entrada (formato: YYYY-MM-DD) |
+| loadDate  | date    | Fecha de carga (formato: YYYY-MM-DD)   |
 
 #### Campos Opcionales
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| salesperson | integer | ID del vendedor |
-| payment | integer | ID del término de pago |
-| incoterm | integer | ID del incoterm |
-| buyerReference | string | Referencia del comprador |
-| transport | integer | ID del transporte |
-| truckPlate | string | Matrícula del camión |
-| trailerPlate | string | Matrícula del remolque |
-| temperature | string | Temperatura requerida |
-| billingAddress | string | Dirección de facturación |
-| shippingAddress | string | Dirección de envío |
-| transportationNotes | string | Notas de transporte |
-| productionNotes | string | Notas de producción |
-| accountingNotes | string | Notas contables |
-| emails | array | Array de emails |
-| ccEmails | array | Array de emails en copia |
-| plannedProducts | array | Array de productos planificados |
+| Campo               | Tipo    | Descripción                     |
+| ------------------- | ------- | ------------------------------- |
+| salesperson         | integer | ID del vendedor                 |
+| payment             | integer | ID del término de pago          |
+| incoterm            | integer | ID del incoterm                 |
+| buyerReference      | string  | Referencia del comprador        |
+| transport           | integer | ID del transporte               |
+| truckPlate          | string  | Matrícula del camión            |
+| trailerPlate        | string  | Matrícula del remolque          |
+| temperature         | string  | Temperatura requerida           |
+| billingAddress      | string  | Dirección de facturación        |
+| shippingAddress     | string  | Dirección de envío              |
+| transportationNotes | string  | Notas de transporte             |
+| productionNotes     | string  | Notas de producción             |
+| accountingNotes     | string  | Notas contables                 |
+| emails              | array   | Array de emails                 |
+| ccEmails            | array   | Array de emails en copia        |
+| plannedProducts     | array   | Array de productos planificados |
 
 #### Campos de plannedProducts
 
-| Campo | Tipo | Requerido | Descripción |
-|-------|------|-----------|-------------|
-| product | integer | Sí | ID del producto |
-| quantity | numeric | Sí | Cantidad |
-| boxes | integer | Sí | Número de cajas |
-| unitPrice | numeric | Sí | Precio unitario |
-| tax | integer | Sí | ID del impuesto |
+| Campo     | Tipo    | Requerido | Descripción     |
+| --------- | ------- | --------- | --------------- |
+| product   | integer | Sí        | ID del producto |
+| quantity  | numeric | Sí        | Cantidad        |
+| boxes     | integer | Sí        | Número de cajas |
+| unitPrice | numeric | Sí        | Precio unitario |
+| tax       | integer | Sí        | ID del impuesto |
 
 ### Response Exitosa (201)
 
@@ -242,6 +244,7 @@ GET /api/v2/orders/{id}
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -249,9 +252,9 @@ Authorization: Bearer {access_token}
 
 #### Path Parameters
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| id | integer | ID del pedido |
+| Parámetro | Tipo    | Descripción   |
+| --------- | ------- | ------------- |
+| id        | integer | ID del pedido |
 
 ### Response Exitosa (200)
 
@@ -279,8 +282,8 @@ Authorization: Bearer {access_token}
     "truck_plate": "ABC-1234",
     "trailer_plate": "XYZ-5678",
     "temperature": "-18°C",
-    "total_net_weight": 1500.50,
-    "total_amount": 45000.00,
+    "total_net_weight": 1500.5,
+    "total_amount": 45000.0,
     "planned_products": [
       {
         "id": 1,
@@ -290,7 +293,7 @@ Authorization: Bearer {access_token}
         },
         "quantity": 100.5,
         "boxes": 10,
-        "unit_price": 15.50
+        "unit_price": 15.5
       }
     ],
     "created_at": "2024-01-15T10:00:00.000000Z",
@@ -321,6 +324,7 @@ PUT /api/v2/orders/{id}
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -329,9 +333,9 @@ Content-Type: application/json
 
 #### Path Parameters
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| id | integer | ID del pedido |
+| Parámetro | Tipo    | Descripción   |
+| --------- | ------- | ------------- |
+| id        | integer | ID del pedido |
 
 #### Request Body
 
@@ -387,6 +391,7 @@ DELETE /api/v2/orders/{id}
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -394,9 +399,9 @@ Authorization: Bearer {access_token}
 
 #### Path Parameters
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| id | integer | ID del pedido |
+| Parámetro | Tipo    | Descripción   |
+| --------- | ------- | ------------- |
+| id        | integer | ID del pedido |
 
 ### Response Exitosa (200)
 
@@ -428,6 +433,7 @@ DELETE /api/v2/orders
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -444,9 +450,9 @@ Content-Type: application/json
 
 #### Campos Requeridos
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| ids | array | Array de IDs de pedidos a eliminar |
+| Campo | Tipo  | Descripción                        |
+| ----- | ----- | ---------------------------------- |
+| ids   | array | Array de IDs de pedidos a eliminar |
 
 ### Response Exitosa (200)
 
@@ -491,6 +497,7 @@ PUT /api/v2/orders/{order}/status
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -499,9 +506,9 @@ Content-Type: application/json
 
 #### Path Parameters
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| order | integer | ID del pedido |
+| Parámetro | Tipo    | Descripción   |
+| --------- | ------- | ------------- |
+| order     | integer | ID del pedido |
 
 #### Request Body
 
@@ -513,8 +520,8 @@ Content-Type: application/json
 
 #### Campos Requeridos
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
+| Campo  | Tipo   | Descripción                               |
+| ------ | ------ | ----------------------------------------- |
 | status | string | Estado del pedido (`pending`, `finished`) |
 
 ### Response Exitosa (200)
@@ -564,6 +571,7 @@ GET /api/v2/orders/active
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -583,8 +591,8 @@ Authorization: Bearer {access_token}
       "entry_date": "2024-01-15",
       "load_date": "2024-01-20",
       "status": "pending",
-      "total_net_weight": 1500.50,
-      "total_amount": 45000.00
+      "total_net_weight": 1500.5,
+      "total_amount": 45000.0
     }
   ]
 }
@@ -603,6 +611,7 @@ GET /api/v2/orders/options
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -636,6 +645,7 @@ GET /api/v2/active-orders/options
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -671,6 +681,7 @@ GET /api/v2/order-planned-product-details
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -678,11 +689,11 @@ Authorization: Bearer {access_token}
 
 #### Query Parameters (Opcionales)
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| orderId | integer | Filtrar por ID de pedido |
-| productId | integer | Filtrar por ID de producto |
-| perPage | integer | Elementos por página (default: 15) |
+| Parámetro | Tipo    | Descripción                        |
+| --------- | ------- | ---------------------------------- |
+| orderId   | integer | Filtrar por ID de pedido           |
+| productId | integer | Filtrar por ID de producto         |
+| perPage   | integer | Elementos por página (default: 15) |
 
 #### Response Exitosa (200)
 
@@ -696,9 +707,9 @@ Authorization: Bearer {access_token}
         "id": 1,
         "name": "Producto A"
       },
-      "quantity": 100.50,
+      "quantity": 100.5,
       "boxes": 10,
-      "unit_price": 15.50,
+      "unit_price": 15.5,
       "tax": {
         "id": 1,
         "name": "IVA 21%"
@@ -724,6 +735,7 @@ POST /api/v2/order-planned-product-details
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -738,9 +750,9 @@ Content-Type: application/json
   "product": {
     "id": 1
   },
-  "quantity": 100.50,
+  "quantity": 100.5,
   "boxes": 10,
-  "unitPrice": 15.50,
+  "unitPrice": 15.5,
   "tax": {
     "id": 1
   }
@@ -749,14 +761,14 @@ Content-Type: application/json
 
 #### Campos Requeridos
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| orderId | integer | ID del pedido (debe existir) |
+| Campo      | Tipo    | Descripción                    |
+| ---------- | ------- | ------------------------------ |
+| orderId    | integer | ID del pedido (debe existir)   |
 | product.id | integer | ID del producto (debe existir) |
-| quantity | numeric | Cantidad del producto |
-| boxes | integer | Número de cajas |
-| unitPrice | numeric | Precio unitario |
-| tax.id | integer | ID del impuesto (debe existir) |
+| quantity   | numeric | Cantidad del producto          |
+| boxes      | integer | Número de cajas                |
+| unitPrice  | numeric | Precio unitario                |
+| tax.id     | integer | ID del impuesto (debe existir) |
 
 #### Response Exitosa (201)
 
@@ -770,9 +782,9 @@ Content-Type: application/json
       "id": 1,
       "name": "Producto A"
     },
-    "quantity": 100.50,
+    "quantity": 100.5,
     "boxes": 10,
-    "unit_price": 15.50,
+    "unit_price": 15.5,
     "tax": {
       "id": 1,
       "name": "IVA 21%"
@@ -803,9 +815,9 @@ GET /api/v2/order-planned-product-details/{id}
       "id": 1,
       "name": "Producto A"
     },
-    "quantity": 100.50,
+    "quantity": 100.5,
     "boxes": 10,
-    "unit_price": 15.50,
+    "unit_price": 15.5,
     "tax": {
       "id": 1,
       "name": "IVA 21%"
@@ -827,6 +839,7 @@ PUT /api/v2/order-planned-product-details/{id}
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -840,9 +853,9 @@ Content-Type: application/json
   "product": {
     "id": 1
   },
-  "quantity": 120.00,
+  "quantity": 120.0,
   "boxes": 12,
-  "unitPrice": 16.00,
+  "unitPrice": 16.0,
   "tax": {
     "id": 1
   }
@@ -863,11 +876,11 @@ Content-Type: application/json
       "id": 1,
       "name": "Producto A"
     },
-    "quantity": 120.00,
+    "quantity": 120.0,
     "boxes": 12,
-    "unit_price": 16.00,
-    "line_base": 1920.00,
-    "line_total": 1920.00,
+    "unit_price": 16.0,
+    "line_base": 1920.0,
+    "line_total": 1920.0,
     "updated_at": "2024-01-15T11:00:00.000000Z"
   }
 }
@@ -882,6 +895,7 @@ DELETE /api/v2/order-planned-product-details/{id}
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -906,6 +920,7 @@ GET /api/v2/orders/{orderId}/incident
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -913,9 +928,9 @@ Authorization: Bearer {access_token}
 
 #### Path Parameters
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| orderId | integer | ID del pedido |
+| Parámetro | Tipo    | Descripción   |
+| --------- | ------- | ------------- |
+| orderId   | integer | ID del pedido |
 
 #### Response Exitosa (200)
 
@@ -953,6 +968,7 @@ POST /api/v2/orders/{orderId}/incident
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -961,9 +977,9 @@ Content-Type: application/json
 
 #### Path Parameters
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| orderId | integer | ID del pedido |
+| Parámetro | Tipo    | Descripción   |
+| --------- | ------- | ------------- |
+| orderId   | integer | ID del pedido |
 
 #### Request Body
 
@@ -975,8 +991,8 @@ Content-Type: application/json
 
 #### Campos Requeridos
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
+| Campo       | Tipo   | Descripción                  |
+| ----------- | ------ | ---------------------------- |
 | description | string | Descripción de la incidencia |
 
 #### Response Exitosa (201)
@@ -1009,6 +1025,7 @@ PUT /api/v2/orders/{orderId}/incident
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -1017,9 +1034,9 @@ Content-Type: application/json
 
 #### Path Parameters
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| orderId | integer | ID del pedido |
+| Parámetro | Tipo    | Descripción   |
+| --------- | ------- | ------------- |
+| orderId   | integer | ID del pedido |
 
 #### Request Body
 
@@ -1032,14 +1049,14 @@ Content-Type: application/json
 
 #### Campos Requeridos
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
+| Campo           | Tipo   | Descripción                                                         |
+| --------------- | ------ | ------------------------------------------------------------------- |
 | resolution_type | string | Tipo de resolución: `returned`, `partially_returned`, `compensated` |
 
 #### Campos Opcionales
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
+| Campo            | Tipo   | Descripción               |
+| ---------------- | ------ | ------------------------- |
 | resolution_notes | string | Notas sobre la resolución |
 
 #### Response Exitosa (200)
@@ -1078,6 +1095,7 @@ DELETE /api/v2/orders/{orderId}/incident
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -1085,9 +1103,9 @@ Authorization: Bearer {access_token}
 
 #### Path Parameters
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| orderId | integer | ID del pedido |
+| Parámetro | Tipo    | Descripción   |
+| --------- | ------- | ------------- |
+| orderId   | integer | ID del pedido |
 
 #### Response Exitosa (200)
 
@@ -1107,4 +1125,3 @@ Authorization: Bearer {access_token}
   "userMessage": "No se encontró incidencia para este pedido."
 }
 ```
-

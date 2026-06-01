@@ -1,6 +1,7 @@
 # Skill: Humanizer
 
 ## Categoría
+
 Escritura
 
 ## Cuándo se activa
@@ -45,14 +46,14 @@ Toma cualquier texto y lo reescribe para que suene escrito por una persona real.
 
 ### 1. Identificar el tipo de texto
 
-| Tipo | Tono objetivo |
-|---|---|
-| Mensaje de UI (toast, error, label) | Directo, sin jerga, en segunda persona |
-| Commit message | Imperativo, concreto, sin adornos |
-| PR description | Técnico pero conversacional |
-| Documentación interna | Claro, directo, como explicarías a un compañero |
-| Email / comunicación | Natural, sin formalidad innecesaria |
-| Comentario de código | Mínimo, solo si el WHY no es obvio |
+| Tipo                                | Tono objetivo                                   |
+| ----------------------------------- | ----------------------------------------------- |
+| Mensaje de UI (toast, error, label) | Directo, sin jerga, en segunda persona          |
+| Commit message                      | Imperativo, concreto, sin adornos               |
+| PR description                      | Técnico pero conversacional                     |
+| Documentación interna               | Claro, directo, como explicarías a un compañero |
+| Email / comunicación                | Natural, sin formalidad innecesaria             |
+| Comentario de código                | Mínimo, solo si el WHY no es obvio              |
 
 ### 2. Reescribir
 
@@ -70,6 +71,7 @@ Siempre presentar los dos para que el usuario decida.
 ## Ejemplos reales del proyecto
 
 ### Toast de éxito
+
 ```
 ❌ "The operation has been completed successfully and the changes have been saved."
 ✅ "Cambios guardados."
@@ -79,6 +81,7 @@ Siempre presentar los dos para que el usuario decida.
 ```
 
 ### Mensaje de error
+
 ```
 ❌ "An unexpected error has occurred while processing your request. Please try again later."
 ✅ "Algo salió mal. Inténtalo de nuevo."
@@ -88,12 +91,14 @@ Siempre presentar los dos para que el usuario decida.
 ```
 
 ### Commit message
+
 ```
 ❌ "Implemented the functionality to allow users to filter orders by customer name in the orders management section"
 ✅ "Add customer name filter to orders list"
 ```
 
 ### Documentación
+
 ```
 ❌ "It is important to note that this component leverages TanStack Query to efficiently manage server state and avoid unnecessary re-renders."
 ✅ "Este componente usa TanStack Query para el estado del servidor — no uses useState para datos que vienen de la API."
@@ -104,6 +109,7 @@ Siempre presentar los dos para que el usuario decida.
 ## Output
 
 Siempre:
+
 1. Versión humanizada lista para copiar
 2. Si hay más de una opción válida, mostrar máximo 2 alternativas
 3. Una línea explicando qué se cambió y por qué (solo si no es obvio)

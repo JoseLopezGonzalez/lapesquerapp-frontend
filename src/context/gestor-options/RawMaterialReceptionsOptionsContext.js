@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import React, { createContext, useContext, useEffect, useState, useMemo } from "react";
-import { getProductOptions } from "@/services/productService";
-import { getSupplierOptions } from "@/services/rawMaterialReceptionService";
-import { useSession } from "next-auth/react";
+import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
+import { getProductOptions } from '@/services/productService';
+import { getSupplierOptions } from '@/services/rawMaterialReceptionService';
+import { useSession } from 'next-auth/react';
 
 /**
  * Contexto de opciones solo para Recepciones de materia prima.
@@ -42,7 +42,7 @@ export function RawMaterialReceptionsOptionsProvider({ children }) {
         setSupplierOptions(suppliers);
       })
       .catch((err) => {
-        console.error("Error al cargar opciones de recepciones:", err);
+        console.error('Error al cargar opciones de recepciones:', err);
       })
       .finally(() => {
         setProductsLoading(false);

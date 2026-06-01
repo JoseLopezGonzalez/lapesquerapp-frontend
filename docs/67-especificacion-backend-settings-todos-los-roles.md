@@ -35,10 +35,10 @@ El frontend necesita **leer** settings (por ejemplo `company.name`, logo, etc.) 
 
 ## Resumen
 
-| Método | Ruta               | Quién debe poder acceder        |
-|--------|--------------------|----------------------------------|
-| GET    | /api/v2/settings   | Todos los roles autenticados    |
-| PUT    | /api/v2/settings   | Según política actual (ej. admin) |
+| Método | Ruta             | Quién debe poder acceder          |
+| ------ | ---------------- | --------------------------------- |
+| GET    | /api/v2/settings | Todos los roles autenticados      |
+| PUT    | /api/v2/settings | Según política actual (ej. admin) |
 
 ## Referencia en este repo
 

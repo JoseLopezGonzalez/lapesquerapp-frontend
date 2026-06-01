@@ -5,21 +5,21 @@
 
 ## UI States
 
-| Componente | Estados |
-|------------|---------|
-| CurrentStockCard | loading (Skeleton), populated (totalNetWeight, totalPallets, totalBoxes, totalStores) |
-| TotalQuantitySoldCard | loading, populated (año en curso) |
-| TotalAmountSoldCard | loading, populated (año en curso) |
-| OrderRankingChart | loading, populated, empty (SearchX icon) |
-| SalesBySalespersonPieChart | loading, populated, empty |
-| StockBySpeciesCard | loading, populated, search filter |
-| StockByProductsCard | loading, populated, search filter |
-| SalesChart, ReceptionChart, DispatchChart | loading, populated, empty (range picker, filtros especie/categoría/familia) |
-| TransportRadarChart | loading, populated, empty |
-| WorkingEmployeesCard | loading, populated |
-| WorkerStatisticsCard | loading, populated (date range picker) |
-| ReceptionsListCard | loading, paginated list, print dialog |
-| DispatchesListCard | loading, paginated list |
+| Componente                                | Estados                                                                               |
+| ----------------------------------------- | ------------------------------------------------------------------------------------- |
+| CurrentStockCard                          | loading (Skeleton), populated (totalNetWeight, totalPallets, totalBoxes, totalStores) |
+| TotalQuantitySoldCard                     | loading, populated (año en curso)                                                     |
+| TotalAmountSoldCard                       | loading, populated (año en curso)                                                     |
+| OrderRankingChart                         | loading, populated, empty (SearchX icon)                                              |
+| SalesBySalespersonPieChart                | loading, populated, empty                                                             |
+| StockBySpeciesCard                        | loading, populated, search filter                                                     |
+| StockByProductsCard                       | loading, populated, search filter                                                     |
+| SalesChart, ReceptionChart, DispatchChart | loading, populated, empty (range picker, filtros especie/categoría/familia)           |
+| TransportRadarChart                       | loading, populated, empty                                                             |
+| WorkingEmployeesCard                      | loading, populated                                                                    |
+| WorkerStatisticsCard                      | loading, populated (date range picker)                                                |
+| ReceptionsListCard                        | loading, paginated list, print dialog                                                 |
+| DispatchesListCard                        | loading, paginated list                                                               |
 
 ## User Interactions
 

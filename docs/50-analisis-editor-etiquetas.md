@@ -30,16 +30,16 @@ Este documento analiza en profundidad el editor de etiquetas ubicado en `/admin/
 
 ```javascript
 const handleSelectLabel = (label) => {
-    const labelId = label.id
-    const labelName = label.name || "";
-    const format = label.format  // ❌ Asume que label tiene .format
-    setSelectedLabel(format);  // ❌ Guarda solo el format, no el label completo
-    setCanvasWidth(format.canvas.width);
-    setCanvasHeight(format.canvas.height);
-    setCanvasRotation(format.canvas.rotation || 0);
-    setElements(format.elements || []);
-    setLabelName(labelName || "");
-    setLabelId(labelId);
+  const labelId = label.id;
+  const labelName = label.name || '';
+  const format = label.format; // ❌ Asume que label tiene .format
+  setSelectedLabel(format); // ❌ Guarda solo el format, no el label completo
+  setCanvasWidth(format.canvas.width);
+  setCanvasHeight(format.canvas.height);
+  setCanvasRotation(format.canvas.rotation || 0);
+  setElements(format.elements || []);
+  setLabelName(labelName || '');
+  setLabelId(labelId);
 };
 ```
 
@@ -117,8 +117,8 @@ toast.success(`Etiqueta ${labelId ? 'actualizada' : 'guardada'} correctamente.`)
 ```javascript
 /* Podemos inicializar valores al principio y no con un useEffect */
 useEffect(() => {
-    handleCreateNewLabel();
-}, []);  // ❌ Falta el array de dependencias explícito, aunque funciona
+  handleCreateNewLabel();
+}, []); // ❌ Falta el array de dependencias explícito, aunque funciona
 ```
 
 **Impacto**:
@@ -132,7 +132,7 @@ useEffect(() => {
 ```javascript
 // Inicializar directamente en el estado o usar useMemo
 const [selectedLabel, setSelectedLabel] = useState(() => {
-    return { id: null, name: "", canvas: { width: 110, height: 90, rotation: 0 } };
+  return { id: null, name: '', canvas: { width: 110, height: 90, rotation: 0 } };
 });
 ```
 
@@ -160,29 +160,29 @@ const [selectedLabel, setSelectedLabel] = useState(() => {
 ```javascript
 // Este patrón se repite en los 3 componentes:
 const insertField = (field) => {
-    if (!editorRef.current) return
-    const label = fieldMapRef.current[field] || field
-    const span = document.createElement('span')
-    span.setAttribute('data-field', field)
-    span.setAttribute('contenteditable', 'false')
-    span.className = badgeClass
-    // ... código idéntico ...
-}
+  if (!editorRef.current) return;
+  const label = fieldMapRef.current[field] || field;
+  const span = document.createElement('span');
+  span.setAttribute('data-field', field);
+  span.setAttribute('contenteditable', 'false');
+  span.className = badgeClass;
+  // ... código idéntico ...
+};
 
 useEffect(() => {
-    const editor = editorRef.current
-    if (!editor) return
-    const handleClick = (e) => {
-        const target = e.target
-        if (target.closest && target.closest('[data-remove="true"]')) {
-            const badge = target.closest('[data-field]')
-            badge?.remove()
-            onChange(extractValue())
-        }
+  const editor = editorRef.current;
+  if (!editor) return;
+  const handleClick = (e) => {
+    const target = e.target;
+    if (target.closest && target.closest('[data-remove="true"]')) {
+      const badge = target.closest('[data-field]');
+      badge?.remove();
+      onChange(extractValue());
     }
-    editor.addEventListener('click', handleClick)
-    return () => editor.removeEventListener('click', handleClick)
-}, [onChange])
+  };
+  editor.addEventListener('click', handleClick);
+  return () => editor.removeEventListener('click', handleClick);
+}, [onChange]);
 ```
 
 **Impacto**:
@@ -213,7 +213,7 @@ Crear un hook personalizado `useFieldEditor` que encapsule esta lógica común.
 .then(response => {
     if (!response.ok) {
         return response.json().then(error => {
-            const errorMessage = error.userMessage || error.data?.userMessage || 
+            const errorMessage = error.userMessage || error.data?.userMessage ||
                 error.response?.data?.userMessage || error.message || 'Error...';
             throw new Error(errorMessage);
         });
@@ -246,12 +246,12 @@ Crear una función helper `handleLabelServiceError` o usar un interceptor.
 
 ```javascript
 const isValidBarcode = () => {
-    if (!barcodeValue) return false
+  if (!barcodeValue) return false;
 
-    if (type === 'ean13') return isValidEAN(barcodeValue, 12)
-    if (type === 'ean14') return isValidEAN(barcodeValue, 13)
-    return true // ❌ otros tipos como gs1-128 pueden variar - siempre true!
-}
+  if (type === 'ean13') return isValidEAN(barcodeValue, 12);
+  if (type === 'ean14') return isValidEAN(barcodeValue, 13);
+  return true; // ❌ otros tipos como gs1-128 pueden variar - siempre true!
+};
 ```
 
 **Impacto**:
@@ -263,18 +263,18 @@ const isValidBarcode = () => {
 
 ```javascript
 const isValidGS1128 = (val) => {
-    // Validar formato GS1-128: (AI)value(AI)value...
-    const pattern = /^\(\d{2,4}\)[^()]+(?:\(\d{2,4}\)[^()]+)*$/
-    return pattern.test(val)
-}
+  // Validar formato GS1-128: (AI)value(AI)value...
+  const pattern = /^\(\d{2,4}\)[^()]+(?:\(\d{2,4}\)[^()]+)*$/;
+  return pattern.test(val);
+};
 
 const isValidBarcode = () => {
-    if (!barcodeValue) return false
-    if (type === 'ean13') return isValidEAN(barcodeValue, 12)
-    if (type === 'ean14') return isValidEAN(barcodeValue, 13)
-    if (type === 'gs1-128') return isValidGS1128(barcodeValue)
-    return true
-}
+  if (!barcodeValue) return false;
+  if (type === 'ean13') return isValidEAN(barcodeValue, 12);
+  if (type === 'ean14') return isValidEAN(barcodeValue, 13);
+  if (type === 'gs1-128') return isValidGS1128(barcodeValue);
+  return true;
+};
 ```
 
 ---
@@ -293,11 +293,11 @@ const isValidBarcode = () => {
 
 ```javascript
 useEffect(() => {
-    if (!editorRef.current) return
-    const current = extractValue()
-    if (current === (html || '')) return  // ❌ Comparación puede fallar
-    renderContent()
-}, [html])
+  if (!editorRef.current) return;
+  const current = extractValue();
+  if (current === (html || '')) return; // ❌ Comparación puede fallar
+  renderContent();
+}, [html]);
 ```
 
 **Impacto**:
@@ -322,19 +322,19 @@ useEffect(() => {
 
 ```javascript
 const handleImportJSON = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-        try {
-            const data = JSON.parse(ev.target.result);
-            const name = importJSON(data);  // ❌ No valida estructura
-            setLabelName(name);
-        } catch (err) {
-            console.error(err);  // ❌ Solo consola, no feedback al usuario
-        }
-    };
-    reader.readAsText(file);
+  const file = e.target.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      const name = importJSON(data); // ❌ No valida estructura
+      setLabelName(name);
+    } catch (err) {
+      console.error(err); // ❌ Solo consola, no feedback al usuario
+    }
+  };
+  reader.readAsText(file);
 };
 ```
 
@@ -348,28 +348,28 @@ const handleImportJSON = (e) => {
 
 ```javascript
 const validateLabelJSON = (data) => {
-    if (!data || typeof data !== 'object') {
-        throw new Error('El archivo JSON no es válido');
-    }
-    if (!Array.isArray(data.elements)) {
-        throw new Error('El formato de elementos no es válido');
-    }
-    if (!data.canvas || typeof data.canvas.width !== 'number') {
-        throw new Error('El formato del canvas no es válido');
-    }
-    return true;
-}
+  if (!data || typeof data !== 'object') {
+    throw new Error('El archivo JSON no es válido');
+  }
+  if (!Array.isArray(data.elements)) {
+    throw new Error('El formato de elementos no es válido');
+  }
+  if (!data.canvas || typeof data.canvas.width !== 'number') {
+    throw new Error('El formato del canvas no es válido');
+  }
+  return true;
+};
 
 // En handleImportJSON:
 try {
-    const data = JSON.parse(ev.target.result);
-    validateLabelJSON(data);
-    const name = importJSON(data);
-    setLabelName(name);
-    toast.success('Etiqueta importada correctamente');
+  const data = JSON.parse(ev.target.result);
+  validateLabelJSON(data);
+  const name = importJSON(data);
+  setLabelName(name);
+  toast.success('Etiqueta importada correctamente');
 } catch (err) {
-    toast.error(err.message || 'Error al importar la etiqueta');
-    console.error(err);
+  toast.error(err.message || 'Error al importar la etiqueta');
+  console.error(err);
 }
 ```
 
@@ -389,12 +389,12 @@ try {
 
 ```javascript
 useEffect(() => {
-    if (status !== "authenticated") return;
-    if (!session?.user?.accessToken) return;
+  if (status !== 'authenticated') return;
+  if (!session?.user?.accessToken) return;
 
-    setLoading(true);
-    // ... carga de modelos ...
-}, [status, session, open]);  // ❌ Se ejecuta cada vez que open cambia
+  setLoading(true);
+  // ... carga de modelos ...
+}, [status, session, open]); // ❌ Se ejecuta cada vez que open cambia
 ```
 
 **Impacto**:
@@ -462,13 +462,13 @@ useEffect(() => {
 **Código Problemático**:
 
 ```javascript
-const pxToMm = (px) => px / 3.78;  // ❌ Magic number sin explicación
+const pxToMm = (px) => px / 3.78; // ❌ Magic number sin explicación
 
 // En handleResizeMouseDown:
-width = Math.max(10 / 3.78, width);  // ❌ ¿Por qué 10 píxeles?
+width = Math.max(10 / 3.78, width); // ❌ ¿Por qué 10 píxeles?
 
 // En handleCreateNewLabel:
-const model = { id: null, name: "", canvas: { width: 110, height: 90, rotation: 0 } };
+const model = { id: null, name: '', canvas: { width: 110, height: 90, rotation: 0 } };
 // ❌ ¿Por qué 110x90?
 ```
 
@@ -508,12 +508,12 @@ width = Math.max(MIN_ELEMENT_SIZE_MM, width);
 
 ```javascript
 const handleSave = async () => {
-    if (!labelName) {
-        toast.error("Por favor, introduce un nombre para la etiqueta.");
-        return;
-    }
-    // ❌ No valida longitud, caracteres especiales, etc.
-}
+  if (!labelName) {
+    toast.error('Por favor, introduce un nombre para la etiqueta.');
+    return;
+  }
+  // ❌ No valida longitud, caracteres especiales, etc.
+};
 ```
 
 **Impacto**:
@@ -537,8 +537,8 @@ const handleSave = async () => {
 
 ```javascript
 pressed={selectedElementData.textDecoration === "lowercase"}  // ❌ Debería ser textTransform
-onPressedChange={() => updateElement(selectedElementData.id, { 
-    textDecoration: selectedElementData.textDecoration === "lowercase" ? "none" : "lowercase" 
+onPressedChange={() => updateElement(selectedElementData.id, {
+    textDecoration: selectedElementData.textDecoration === "lowercase" ? "none" : "lowercase"
 })}  // ❌ Debería actualizar textTransform
 ```
 
@@ -563,31 +563,29 @@ Cambiar `textDecoration` por `textTransform` en las líneas 1004 y 1020.
 ```javascript
 // hooks/useFieldEditor.js
 export function useFieldEditor({ value, onChange, fieldOptions }) {
-    const editorRef = useRef(null);
-    const fieldMapRef = useRef({});
-  
-    useEffect(() => {
-        fieldMapRef.current = Object.fromEntries(
-            fieldOptions.map(o => [o.value, o.label])
-        );
-    }, [fieldOptions]);
-  
-    const insertField = (field) => {
-        // Lógica compartida...
-    };
-  
-    const extractValue = () => {
-        // Lógica compartida...
-    };
-  
-    // ... resto de lógica compartida
-  
-    return {
-        editorRef,
-        insertField,
-        extractValue,
-        // ...
-    };
+  const editorRef = useRef(null);
+  const fieldMapRef = useRef({});
+
+  useEffect(() => {
+    fieldMapRef.current = Object.fromEntries(fieldOptions.map((o) => [o.value, o.label]));
+  }, [fieldOptions]);
+
+  const insertField = (field) => {
+    // Lógica compartida...
+  };
+
+  const extractValue = () => {
+    // Lógica compartida...
+  };
+
+  // ... resto de lógica compartida
+
+  return {
+    editorRef,
+    insertField,
+    extractValue,
+    // ...
+  };
 }
 ```
 
@@ -625,25 +623,25 @@ export function useFieldEditor({ value, onChange, fieldOptions }) {
 
 ```javascript
 const validateLabelName = (name) => {
-    if (!name || name.trim().length === 0) {
-        return "El nombre no puede estar vacío";
-    }
-    if (name.length > 100) {
-        return "El nombre no puede exceder 100 caracteres";
-    }
-    if (!/^[a-zA-Z0-9\s\-_áéíóúÁÉÍÓÚñÑ]+$/.test(name)) {
-        return "El nombre contiene caracteres no permitidos";
-    }
-    return null;
+  if (!name || name.trim().length === 0) {
+    return 'El nombre no puede estar vacío';
+  }
+  if (name.length > 100) {
+    return 'El nombre no puede exceder 100 caracteres';
+  }
+  if (!/^[a-zA-Z0-9\s\-_áéíóúÁÉÍÓÚñÑ]+$/.test(name)) {
+    return 'El nombre contiene caracteres no permitidos';
+  }
+  return null;
 };
 
 const handleSave = async () => {
-    const validationError = validateLabelName(labelName);
-    if (validationError) {
-        toast.error(validationError);
-        return;
-    }
-    // ... resto del código
+  const validationError = validateLabelName(labelName);
+  if (validationError) {
+    toast.error(validationError);
+    return;
+  }
+  // ... resto del código
 };
 ```
 

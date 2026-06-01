@@ -125,12 +125,12 @@ function MyNewComponentRow({ item, isSelected, onClick }: MyNewComponentRowProps
 ```typescript
 // ✅ Interface siempre — nunca type para props
 interface ComponentProps {
-  required: string;           // requerido
-  optional?: string;          // opcional
-  withDefault?: boolean;      // opcional con default en la firma
-  callback?: () => void;      // callback opcional
+  required: string; // requerido
+  optional?: string; // opcional
+  withDefault?: boolean; // opcional con default en la firma
+  callback?: () => void; // callback opcional
   children?: React.ReactNode; // children si aplica
-  className?: string;         // siempre añadir si el componente puede necesitar override de estilos
+  className?: string; // siempre añadir si el componente puede necesitar override de estilos
 }
 
 // ✅ Desestructurar con defaults en la firma

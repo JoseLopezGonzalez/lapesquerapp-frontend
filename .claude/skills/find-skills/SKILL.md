@@ -1,6 +1,7 @@
 # Skill: FindSkills
 
 ## Categoría
+
 Descubrimiento
 
 ## Cuándo se activa

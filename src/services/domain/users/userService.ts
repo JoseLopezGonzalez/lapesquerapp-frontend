@@ -6,10 +6,7 @@
 import { API_URL_V2 } from '@/configs/config';
 import { getAuthToken } from '@/lib/auth/getAuthToken';
 import { fetchWithTenant } from '@/lib/fetchWithTenant';
-import {
-  fetchEntitiesGeneric,
-  deleteEntityGeneric,
-} from '@/services/generic/entityService';
+import { fetchEntitiesGeneric, deleteEntityGeneric } from '@/services/generic/entityService';
 import { createEntityGeneric } from '@/services/generic/createEntityService';
 import {
   fetchEntityDataGeneric,
@@ -65,10 +62,7 @@ export const userService = {
     return (result.data ?? result) as User;
   },
 
-  async update(
-    id: number | string,
-    data: UserUpdatePayload
-  ): Promise<User> {
+  async update(id: number | string, data: UserUpdatePayload): Promise<User> {
     const token = await getAuthToken();
     const url = `${API_URL_V2}${ENDPOINT}/${id}`;
     const response = await submitEntityFormGeneric(url, 'PUT', data, token);
@@ -79,13 +73,19 @@ export const userService = {
   async delete(id: number | string): Promise<{ response: Response; data: unknown }> {
     const token = await getAuthToken();
     const url = `${API_URL_V2}${ENDPOINT}/${id}`;
-    return deleteEntityGeneric(url, undefined, token) as Promise<{ response: Response; data: unknown }>;
+    return deleteEntityGeneric(url, undefined, token) as Promise<{
+      response: Response;
+      data: unknown;
+    }>;
   },
 
   async deleteMultiple(ids: (number | string)[]): Promise<{ response: Response; data: unknown }> {
     const token = await getAuthToken();
     const url = `${API_URL_V2}${ENDPOINT}`;
-    return deleteEntityGeneric(url, { ids }, token) as Promise<{ response: Response; data: unknown }>;
+    return deleteEntityGeneric(url, { ids }, token) as Promise<{
+      response: Response;
+      data: unknown;
+    }>;
   },
 
   async getOptions(): Promise<UserOption[]> {
@@ -108,12 +108,19 @@ export const userService = {
       },
     });
     if (!response.ok) {
-      const data = await response.json().catch(() => ({})) as { message?: string; userMessage?: string };
-      const err = new Error(data.message ?? data.userMessage ?? 'Error al reenviar la invitación.') as Error & { status?: number; data?: unknown };
+      const data = (await response.json().catch(() => ({}))) as {
+        message?: string;
+        userMessage?: string;
+      };
+      const err = new Error(
+        data.message ?? data.userMessage ?? 'Error al reenviar la invitación.'
+      ) as Error & { status?: number; data?: unknown };
       err.status = response.status;
       err.data = data;
       throw err;
     }
-    return response.json().catch(() => ({ message: 'Se ha enviado un enlace de acceso al correo del usuario.' }));
+    return response
+      .json()
+      .catch(() => ({ message: 'Se ha enviado un enlace de acceso al correo del usuario.' }));
   },
 };

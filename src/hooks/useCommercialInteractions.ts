@@ -3,17 +3,29 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 import { crmService } from '@/services/crmService';
-import type { CommercialInteraction, CommercialInteractionPayload, CrmPaginatedResponse } from '@/types/crm';
+import type {
+  CommercialInteraction,
+  CommercialInteractionPayload,
+  CrmPaginatedResponse,
+} from '@/types/crm';
 
 const EMPTY_INTERACTIONS: CommercialInteraction[] = [];
 
 function normalizeQueryParams(params: Record<string, unknown> = {}): Record<string, unknown> {
   return Object.entries(params)
-    .filter(([, value]) => value != null && value !== '' && (!Array.isArray(value) || value.filter((v) => v != null && v !== '').length > 0))
+    .filter(
+      ([, value]) =>
+        value != null &&
+        value !== '' &&
+        (!Array.isArray(value) || value.filter((v) => v != null && v !== '').length > 0)
+    )
     .sort(([left], [right]) => left.localeCompare(right))
     .reduce<Record<string, unknown>>((acc, [key, value]) => {
       acc[key] = Array.isArray(value)
-        ? value.filter((v) => v != null && v !== '').map(String).sort()
+        ? value
+            .filter((v) => v != null && v !== '')
+            .map(String)
+            .sort()
         : value;
       return acc;
     }, {});
@@ -43,7 +55,7 @@ export function useCommercialInteractions(params = {}) {
 
 export function useCommercialInteractionMutations() {
   const queryClient = useQueryClient();
-  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() ?? 'unknown' : 'unknown';
+  const tenantId = typeof window !== 'undefined' ? (getCurrentTenant() ?? 'unknown') : 'unknown';
 
   type InteractionsCache = CrmPaginatedResponse<CommercialInteraction> | undefined;
   type QueryKey = readonly unknown[];
@@ -76,12 +88,14 @@ export function useCommercialInteractionMutations() {
 
     if (payload.prospectId != null) {
       if (queryParams.customerId != null) return false;
-      if (queryParams.prospectId != null) return String(queryParams.prospectId) === String(payload.prospectId);
+      if (queryParams.prospectId != null)
+        return String(queryParams.prospectId) === String(payload.prospectId);
       return true;
     }
     if (payload.customerId != null) {
       if (queryParams.prospectId != null) return false;
-      if (queryParams.customerId != null) return String(queryParams.customerId) === String(payload.customerId);
+      if (queryParams.customerId != null)
+        return String(queryParams.customerId) === String(payload.customerId);
       return true;
     }
     return true;
@@ -148,22 +162,30 @@ export function useCommercialInteractionMutations() {
         ? queryClient.invalidateQueries({ queryKey: ['crm', 'prospects', 'list', tenantId] })
         : Promise.resolve(),
       payload.prospectId
-        ? queryClient.invalidateQueries({ queryKey: ['crm', 'prospect', 'detail', tenantId, payload.prospectId] })
+        ? queryClient.invalidateQueries({
+            queryKey: ['crm', 'prospect', 'detail', tenantId, payload.prospectId],
+          })
         : Promise.resolve(),
       payload.customerId
-        ? queryClient.invalidateQueries({ queryKey: ['crm', 'customers', 'detail', tenantId, payload.customerId] })
+        ? queryClient.invalidateQueries({
+            queryKey: ['crm', 'customers', 'detail', tenantId, payload.customerId],
+          })
         : Promise.resolve(),
     ]);
   };
 
   return {
     createInteraction: useMutation({
-      mutationFn: (payload: CommercialInteractionPayload) => crmService.createCommercialInteraction(payload),
+      mutationFn: (payload: CommercialInteractionPayload) =>
+        crmService.createCommercialInteraction(payload),
       onMutate: async (payload) => {
         const tempInteraction = buildTempInteraction(payload);
         await queryClient.cancelQueries({ queryKey: ['crm', 'interactions', 'list', tenantId] });
 
-        const previousLists = patchInteractionLists(payload, (current) => [tempInteraction, ...current]);
+        const previousLists = patchInteractionLists(payload, (current) => [
+          tempInteraction,
+          ...current,
+        ]);
         return { previousLists, tempInteractionId: tempInteraction.id, payload };
       },
       onError: (_error, _payload, context) => {
@@ -177,8 +199,12 @@ export function useCommercialInteractionMutations() {
         if (!createdInteraction) return;
 
         patchInteractionLists(payload, (current) => {
-          const withoutTemp = current.filter((item) => String(item.id) !== String(context?.tempInteractionId));
-          const exists = withoutTemp.some((item) => String(item.id) === String(createdInteraction.id));
+          const withoutTemp = current.filter(
+            (item) => String(item.id) !== String(context?.tempInteractionId)
+          );
+          const exists = withoutTemp.some(
+            (item) => String(item.id) === String(createdInteraction.id)
+          );
           return exists ? withoutTemp : [createdInteraction, ...withoutTemp];
         });
         invalidate(payload);

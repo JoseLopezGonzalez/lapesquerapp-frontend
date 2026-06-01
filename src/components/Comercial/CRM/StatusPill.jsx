@@ -7,7 +7,5 @@ import { getStatusTone, toneClasses } from './utils';
 export default function StatusPill({ label, status, className = '' }) {
   const tone = getStatusTone(status);
 
-  return (
-    <Badge className={cn(toneClasses(tone), className)}>{label}</Badge>
-  );
+  return <Badge className={cn(toneClasses(tone), className)}>{label}</Badge>;
 }

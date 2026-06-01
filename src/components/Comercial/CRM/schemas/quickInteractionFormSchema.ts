@@ -19,7 +19,10 @@ export function getQuickInteractionFormSchema(isCompleteMode: boolean) {
         .string()
         .trim()
         .min(1, 'El resumen es obligatorio')
-        .max(CRM_INTERACTION_SUMMARY_MAX_LENGTH, `Máximo ${CRM_INTERACTION_SUMMARY_MAX_LENGTH} caracteres`),
+        .max(
+          CRM_INTERACTION_SUMMARY_MAX_LENGTH,
+          `Máximo ${CRM_INTERACTION_SUMMARY_MAX_LENGTH} caracteres`
+        ),
     })
     .superRefine(() => {
       // Sin reglas de próxima acción: ahora siempre se gestiona fuera del formulario.
@@ -45,4 +48,3 @@ export function getQuickInteractionDefaultValues({
     summary: '',
   };
 }
-

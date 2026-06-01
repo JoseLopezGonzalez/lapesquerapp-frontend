@@ -11,10 +11,10 @@
 
 ## Historial de cambios
 
-| Fecha | Fase | Cambios |
-|---|---|---|
-| 2026-03-23 | Fase 1 completa | P01, P02, P03, P05, P09, P10, P11, P13, P14 implementados |
-| 2026-03-23 | Fase 2 completa | P-MW (Opción C cookie TTL 60s), P04, P07, P08, P12 implementados |
+| Fecha      | Fase            | Cambios                                                                                     |
+| ---------- | --------------- | ------------------------------------------------------------------------------------------- |
+| 2026-03-23 | Fase 1 completa | P01, P02, P03, P05, P09, P10, P11, P13, P14 implementados                                   |
+| 2026-03-23 | Fase 2 completa | P-MW (Opción C cookie TTL 60s), P04, P07, P08, P12 implementados                            |
 | 2026-03-23 | Fase 3 completa | P06 (RoutesPlannerPage partido en 9 archivos), P07 steps extraídos, regla ESLint query keys |
 
 ---
@@ -52,28 +52,28 @@ Los restantes hallazgos son principalmente de **consistencia**: varios hooks CRM
 
 **✅ Fase 1 — Completada (2026-03-23)**
 
-| Tarea | Hallazgo | Archivos |
-|---|---|---|
-| ✅ Normalizar query key en `useComercialOrders` | P01 | `useComercialOrders.ts`, `queryKeys.ts` |
-| ✅ Normalizar query keys en `useAgenda` y `useOffersList` | P02 | `useAgenda.ts`, `useOffers.ts` |
-| ✅ Normalizar query key en `useCustomersList` | P03 | `useCustomersList.ts`, `queryKeys.ts` |
-| ✅ Sustituir key hardcodeada en `autoventaMutation.onSuccess` | P05 | `useFieldOrders.ts`, `queryKeys.ts` |
-| ✅ Ordenar keys en `normalizeQueryParams` de `useCommercialInteractions` | P09 | `useCommercialInteractions.ts` |
-| ✅ Eliminar key hardcodeada en `useCustomerAssignment.onSuccess` | P10 | `useCustomerAssignment.ts`, `queryKeys.ts` |
-| ✅ Condicionizar `console.error` en `fetchWithTenant.js` | P11 | `fetchWithTenant.js` |
-| ✅ Añadir `MAX_GEOCODE_CACHE_SIZE = 500` + LRU eviction | P13 | `routeStops.ts` |
-| ✅ `normalizeRouteEntity(x)` en lugar de `normalizeRouteCollection([x])[0]` | P14 | `useRouteTemplates.ts` |
+| Tarea                                                                       | Hallazgo | Archivos                                   |
+| --------------------------------------------------------------------------- | -------- | ------------------------------------------ |
+| ✅ Normalizar query key en `useComercialOrders`                             | P01      | `useComercialOrders.ts`, `queryKeys.ts`    |
+| ✅ Normalizar query keys en `useAgenda` y `useOffersList`                   | P02      | `useAgenda.ts`, `useOffers.ts`             |
+| ✅ Normalizar query key en `useCustomersList`                               | P03      | `useCustomersList.ts`, `queryKeys.ts`      |
+| ✅ Sustituir key hardcodeada en `autoventaMutation.onSuccess`               | P05      | `useFieldOrders.ts`, `queryKeys.ts`        |
+| ✅ Ordenar keys en `normalizeQueryParams` de `useCommercialInteractions`    | P09      | `useCommercialInteractions.ts`             |
+| ✅ Eliminar key hardcodeada en `useCustomerAssignment.onSuccess`            | P10      | `useCustomerAssignment.ts`, `queryKeys.ts` |
+| ✅ Condicionizar `console.error` en `fetchWithTenant.js`                    | P11      | `fetchWithTenant.js`                       |
+| ✅ Añadir `MAX_GEOCODE_CACHE_SIZE = 500` + LRU eviction                     | P13      | `routeStops.ts`                            |
+| ✅ `normalizeRouteEntity(x)` en lugar de `normalizeRouteCollection([x])[0]` | P14      | `useRouteTemplates.ts`                     |
 
 **✅ Fase 2 — Completada (2026-03-23)**
 
-| Tarea | Hallazgo | Archivos |
-|---|---|---|
-| ✅ Cookie `__session_verified` TTL 60s en middleware (Opción C) | P-MW | `src/middleware.ts` |
-| ✅ `fieldOperatorId` en query keys de field | P04 | `queryKeys.ts`, `useFieldOrders.ts`, `useFieldRoutes.ts` |
-| ✅ Hook `useFieldProductsOptions` + refactor `FieldOrderExecutionPage` | P07 | `useFieldProductsOptions.ts`, `FieldOrderExecutionPage.jsx` |
-| ✅ Extraer `RouteMapSection`, `StopDetailDrawer`, `StopsListDrawer`, `ResultDialog` | P08 | `FieldRouteExecutionPage.jsx` + 4 nuevos componentes |
-| ✅ Extraer `AgendaFiltersDialog` y `AgendaHeaderControls` | P08 | `AgendaPageClient.jsx` + 2 nuevos componentes |
-| ✅ Extraer `downloadActivePlannedProductsXls` a `orderService.ts` | P12 | `orderService.ts`, `OrdersList/index.js` |
+| Tarea                                                                               | Hallazgo | Archivos                                                    |
+| ----------------------------------------------------------------------------------- | -------- | ----------------------------------------------------------- |
+| ✅ Cookie `__session_verified` TTL 60s en middleware (Opción C)                     | P-MW     | `src/middleware.ts`                                         |
+| ✅ `fieldOperatorId` en query keys de field                                         | P04      | `queryKeys.ts`, `useFieldOrders.ts`, `useFieldRoutes.ts`    |
+| ✅ Hook `useFieldProductsOptions` + refactor `FieldOrderExecutionPage`              | P07      | `useFieldProductsOptions.ts`, `FieldOrderExecutionPage.jsx` |
+| ✅ Extraer `RouteMapSection`, `StopDetailDrawer`, `StopsListDrawer`, `ResultDialog` | P08      | `FieldRouteExecutionPage.jsx` + 4 nuevos componentes        |
+| ✅ Extraer `AgendaFiltersDialog` y `AgendaHeaderControls`                           | P08      | `AgendaPageClient.jsx` + 2 nuevos componentes               |
+| ✅ Extraer `downloadActivePlannedProductsXls` a `orderService.ts`                   | P12      | `orderService.ts`, `OrdersList/index.js`                    |
 
 ### Riesgos principales
 
@@ -84,47 +84,47 @@ Los restantes hallazgos son principalmente de **consistencia**: varios hooks CRM
 
 ## 2. Mapa de Síntomas y Superficie Impactada
 
-| Módulo | Flujo | Síntoma | Capa | Severidad |
-|---|---|---|---|---|
-| **Global** | Todas las navegaciones | Round-trip HTTP extra por navegación | Auth / Middleware | Crítico |
-| CRM — Pedidos | Listado de órdenes | Cache fragmentada por params sin normalizar | React Query | Alto |
-| CRM — Agenda | Vista de agenda | Cache fragmentada por queryParams sin normalizar | React Query | Alto |
-| CRM — Ofertas | Listado de ofertas | Cache fragmentada por queryParams sin normalizar | React Query | Alto |
-| CRM — Clientes | Listado de clientes | Cache fragmentada por filters sin normalizar | React Query | Alto |
-| Field — Rutas y Pedidos | Cualquier vista con operador | Cache potencialmente compartida entre operadores | React Query | Alto |
-| Field — Autoventa | Crear autoventa | Clientes disponibles no se invalidan via factory | React Query | Alto |
-| Comercial — Planificador | RoutesPlannerPage | Re-renders caros, componente 1404 líneas | Render | Alto |
-| Field — Ejecución pedido | FieldOrderExecutionPage | Llamada a servicio sin RQ, 591 líneas | Render / Red | Alto |
-| CRM — Agenda | AgendaPageClient | Componente 700 líneas, re-renders por estado no relacionado | Render | Medio |
-| Field — Ejecución ruta | FieldRouteExecutionPage | Componente 450 líneas | Render | Medio |
-| CRM — Interacciones | Crear interacción | normalizeQueryParams no ordena keys | React Query | Medio |
-| CRM — Clientes | Asignar cliente | Invalida queries admin con key hardcodeada | React Query | Medio |
-| Transport | Todas las requests fallidas | `console.error` en producción | Auth | Medio |
-| Admin — Pedidos | Exportar XLS | Fetch directo sin React Query | Red | Medio |
-| Geocoding | Rutas (sesión larga) | Cache de módulo sin límite de tamaño | Singleton | Bajo |
-| Route Templates | Actualizar plantilla | Normalización innecesariamente envuelta | React Query | Bajo |
+| Módulo                   | Flujo                        | Síntoma                                                     | Capa              | Severidad |
+| ------------------------ | ---------------------------- | ----------------------------------------------------------- | ----------------- | --------- |
+| **Global**               | Todas las navegaciones       | Round-trip HTTP extra por navegación                        | Auth / Middleware | Crítico   |
+| CRM — Pedidos            | Listado de órdenes           | Cache fragmentada por params sin normalizar                 | React Query       | Alto      |
+| CRM — Agenda             | Vista de agenda              | Cache fragmentada por queryParams sin normalizar            | React Query       | Alto      |
+| CRM — Ofertas            | Listado de ofertas           | Cache fragmentada por queryParams sin normalizar            | React Query       | Alto      |
+| CRM — Clientes           | Listado de clientes          | Cache fragmentada por filters sin normalizar                | React Query       | Alto      |
+| Field — Rutas y Pedidos  | Cualquier vista con operador | Cache potencialmente compartida entre operadores            | React Query       | Alto      |
+| Field — Autoventa        | Crear autoventa              | Clientes disponibles no se invalidan via factory            | React Query       | Alto      |
+| Comercial — Planificador | RoutesPlannerPage            | Re-renders caros, componente 1404 líneas                    | Render            | Alto      |
+| Field — Ejecución pedido | FieldOrderExecutionPage      | Llamada a servicio sin RQ, 591 líneas                       | Render / Red      | Alto      |
+| CRM — Agenda             | AgendaPageClient             | Componente 700 líneas, re-renders por estado no relacionado | Render            | Medio     |
+| Field — Ejecución ruta   | FieldRouteExecutionPage      | Componente 450 líneas                                       | Render            | Medio     |
+| CRM — Interacciones      | Crear interacción            | normalizeQueryParams no ordena keys                         | React Query       | Medio     |
+| CRM — Clientes           | Asignar cliente              | Invalida queries admin con key hardcodeada                  | React Query       | Medio     |
+| Transport                | Todas las requests fallidas  | `console.error` en producción                               | Auth              | Medio     |
+| Admin — Pedidos          | Exportar XLS                 | Fetch directo sin React Query                               | Red               | Medio     |
+| Geocoding                | Rutas (sesión larga)         | Cache de módulo sin límite de tamaño                        | Singleton         | Bajo      |
+| Route Templates          | Actualizar plantilla         | Normalización innecesariamente envuelta                     | React Query       | Bajo      |
 
 ---
 
 ## 3. Tabla de Hallazgos Priorizados
 
-| ID | Severidad | Impacto | Esfuerzo | Riesgo | Área | Hallazgo | Evidencia | Estado |
-|---|---|---|---|---|---|---|---|---|
-| P-MW | Crítico | Alto | Alto | Alto | Auth / Middleware | Middleware llama `/api/v2/me` en cada request protegida | `src/middleware.ts:98-114` | ✅ Resuelto (Fase 2) |
-| P01 | Alto | Alto | Bajo | Bajo | React Query | `useComercialOrders`: `params` raw en query key | `src/hooks/useComercialOrders.ts:16` | ✅ Resuelto (Fase 1) |
-| P02 | Alto | Alto | Bajo | Bajo | React Query | `useAgenda` / `useOffersList`: `queryParams` raw en query key | `useAgenda.ts:49`, `useOffers.ts:16` | ✅ Resuelto (Fase 1) |
-| P03 | Alto | Alto | Bajo | Bajo | React Query | `useCustomersList`: `filters` raw en query key | `src/hooks/useCustomersList.ts:10` | ✅ Resuelto (Fase 1) |
-| P04 | Alto | Alto | Bajo | Medio | React Query | `fieldOperatorId` en `enabled` pero ausente de query keys | `useFieldOrders.ts:25-33`, `useFieldRoutes.ts:24-28` | ✅ Resuelto (Fase 2) |
-| P05 | Alto | Medio | Bajo | Bajo | React Query | `autoventaMutation.onSuccess`: key hardcodeada | `src/hooks/useFieldOrders.ts:76` | ✅ Resuelto (Fase 1) |
-| P06 | Alto | Medio | Alto | Alto | Render | `RoutesPlannerPage`: 1404 líneas | `RoutesPlannerPage.jsx` | ✅ Resuelto (Fase 3) |
-| P07 | Alto | Medio | Alto | Alto | Render / Red | `FieldOrderExecutionPage`: 591 líneas + fetch directo sin RQ | `FieldOrderExecutionPage.jsx` | ✅ Resuelto (Fase 2) |
-| P08 | Medio | Medio | Medio | Medio | Render | `AgendaPageClient` (700) y `FieldRouteExecutionPage` (450) | archivos respectivos | ✅ Resuelto (Fase 2) |
-| P09 | Medio | Bajo | Bajo | Bajo | React Query | `useCommercialInteractions.normalizeQueryParams`: no ordena keys | `useCommercialInteractions.ts:6-18` | ✅ Resuelto (Fase 1) |
-| P10 | Medio | Bajo | Bajo | Bajo | React Query | `useCustomerAssignment`: key hardcodeada en invalidación | `useCustomerAssignment.ts:26-29` | ✅ Resuelto (Fase 1) |
-| P11 | Medio | Bajo | Bajo | Bajo | Auth | `console.error` hardcodeado en ruta de producción | `fetchWithTenant.js:139` | ✅ Resuelto (Fase 1) |
-| P12 | Medio | Medio | Medio | Bajo | Red | `OrdersList`: `fetchWithTenant` directo para XLS | `OrdersList/index.js` | ✅ Resuelto (Fase 2) |
-| P13 | Bajo | Bajo | Bajo | Bajo | Singleton | `geocodeCache` sin límite de tamaño ni TTL | `routeStops.ts:16-17` | ✅ Resuelto (Fase 1) |
-| P14 | Bajo | Bajo | Bajo | Bajo | React Query | `normalizeRouteCollection([x])[0]` vs `normalizeRouteEntity(x)` | `useRouteTemplates.ts:50-52` | ✅ Resuelto (Fase 1) |
+| ID   | Severidad | Impacto | Esfuerzo | Riesgo | Área              | Hallazgo                                                         | Evidencia                                            | Estado               |
+| ---- | --------- | ------- | -------- | ------ | ----------------- | ---------------------------------------------------------------- | ---------------------------------------------------- | -------------------- |
+| P-MW | Crítico   | Alto    | Alto     | Alto   | Auth / Middleware | Middleware llama `/api/v2/me` en cada request protegida          | `src/middleware.ts:98-114`                           | ✅ Resuelto (Fase 2) |
+| P01  | Alto      | Alto    | Bajo     | Bajo   | React Query       | `useComercialOrders`: `params` raw en query key                  | `src/hooks/useComercialOrders.ts:16`                 | ✅ Resuelto (Fase 1) |
+| P02  | Alto      | Alto    | Bajo     | Bajo   | React Query       | `useAgenda` / `useOffersList`: `queryParams` raw en query key    | `useAgenda.ts:49`, `useOffers.ts:16`                 | ✅ Resuelto (Fase 1) |
+| P03  | Alto      | Alto    | Bajo     | Bajo   | React Query       | `useCustomersList`: `filters` raw en query key                   | `src/hooks/useCustomersList.ts:10`                   | ✅ Resuelto (Fase 1) |
+| P04  | Alto      | Alto    | Bajo     | Medio  | React Query       | `fieldOperatorId` en `enabled` pero ausente de query keys        | `useFieldOrders.ts:25-33`, `useFieldRoutes.ts:24-28` | ✅ Resuelto (Fase 2) |
+| P05  | Alto      | Medio   | Bajo     | Bajo   | React Query       | `autoventaMutation.onSuccess`: key hardcodeada                   | `src/hooks/useFieldOrders.ts:76`                     | ✅ Resuelto (Fase 1) |
+| P06  | Alto      | Medio   | Alto     | Alto   | Render            | `RoutesPlannerPage`: 1404 líneas                                 | `RoutesPlannerPage.jsx`                              | ✅ Resuelto (Fase 3) |
+| P07  | Alto      | Medio   | Alto     | Alto   | Render / Red      | `FieldOrderExecutionPage`: 591 líneas + fetch directo sin RQ     | `FieldOrderExecutionPage.jsx`                        | ✅ Resuelto (Fase 2) |
+| P08  | Medio     | Medio   | Medio    | Medio  | Render            | `AgendaPageClient` (700) y `FieldRouteExecutionPage` (450)       | archivos respectivos                                 | ✅ Resuelto (Fase 2) |
+| P09  | Medio     | Bajo    | Bajo     | Bajo   | React Query       | `useCommercialInteractions.normalizeQueryParams`: no ordena keys | `useCommercialInteractions.ts:6-18`                  | ✅ Resuelto (Fase 1) |
+| P10  | Medio     | Bajo    | Bajo     | Bajo   | React Query       | `useCustomerAssignment`: key hardcodeada en invalidación         | `useCustomerAssignment.ts:26-29`                     | ✅ Resuelto (Fase 1) |
+| P11  | Medio     | Bajo    | Bajo     | Bajo   | Auth              | `console.error` hardcodeado en ruta de producción                | `fetchWithTenant.js:139`                             | ✅ Resuelto (Fase 1) |
+| P12  | Medio     | Medio   | Medio    | Bajo   | Red               | `OrdersList`: `fetchWithTenant` directo para XLS                 | `OrdersList/index.js`                                | ✅ Resuelto (Fase 2) |
+| P13  | Bajo      | Bajo    | Bajo     | Bajo   | Singleton         | `geocodeCache` sin límite de tamaño ni TTL                       | `routeStops.ts:16-17`                                | ✅ Resuelto (Fase 1) |
+| P14  | Bajo      | Bajo    | Bajo     | Bajo   | React Query       | `normalizeRouteCollection([x])[0]` vs `normalizeRouteEntity(x)`  | `useRouteTemplates.ts:50-52`                         | ✅ Resuelto (Fase 1) |
 
 ---
 
@@ -149,23 +149,25 @@ Cada vez que el usuario navega a una página protegida (incluyendo navegación i
 **Evidencia**
 
 `src/middleware.ts:98-114`
+
 ```typescript
 const verifyResponse = await fetchWithTenant(
   `${API_BASE_URL}/api/v2/me`,
   {
-    method: "GET",
+    method: 'GET',
     headers: { Authorization: `Bearer ${token.accessToken}` },
   },
   req.headers
 );
 // ...
-const actorType = (currentUser?.actorType) ?? token.actorType ?? "internal_user";
-const rawRole   = (currentUser?.role)       ?? token.role;
+const actorType = currentUser?.actorType ?? token.actorType ?? 'internal_user';
+const rawRole = currentUser?.role ?? token.role;
 ```
 
 Los valores `actorType` y `role` obtenidos de `currentUser` tienen fallback en `token.actorType` y `token.role` — lo que confirma que el JWT ya contiene estos datos. La llamada a `/me` se hace para verificar que la sesión sigue activa en el servidor.
 
 El JWT local ya se valida antes:
+
 - `getToken()` (línea ~67): verifica firma y decodifica el payload — operación local, sin red.
 - Comprobación de expiración (línea ~82): `Date.now() > tokenExpiration` — local.
 
@@ -185,6 +187,7 @@ Diseño defensivo correcto en intención (verificar que el token sigue siendo v�
 **Cambio propuesto**
 
 **Opción A (recomendada — eliminar el fetch)**: Confiar en el JWT para verificación de identidad y rol. Para manejar la revocación, implementar un mecanismo de invalidación activa:
+
 - El backend incluye un `tokenVersion` o `sessionId` en el JWT en el momento de emisión.
 - Cuando se revoca un usuario, el backend incrementa su versión.
 - El frontend hace polling ligero cada N minutos contra un endpoint ligero de "check-version" (no `/me` completo).
@@ -202,7 +205,11 @@ const needsVerification = !sessionVerifiedCookie || isJwtRecentlyRefreshed(token
 if (needsVerification) {
   // Llamar a /me y establecer cookie __session_verified con TTL 60s
   const response = NextResponse.next();
-  response.cookies.set('__session_verified', '1', { maxAge: 60, httpOnly: true, sameSite: 'strict' });
+  response.cookies.set('__session_verified', '1', {
+    maxAge: 60,
+    httpOnly: true,
+    sameSite: 'strict',
+  });
   return response;
 }
 // Si ya verificado recientemente, continuar con datos del JWT
@@ -273,12 +280,14 @@ Si el componente consumidor pasa `params` como un objeto literal (`{}`) o lo rec
 **Evidencia**
 
 `src/hooks/useComercialOrders.ts:16`
+
 ```ts
 queryKey: ['crm', 'orders', 'list', tenantId ?? 'unknown', params],
 //                                                          ^^^^^^ objeto raw, sin normalizar
 ```
 
 Contraste con el patrón correcto del proyecto (`src/lib/routes/queryKeys.ts:16-17`):
+
 ```ts
 list: (tenantId, params = {}) =>
   ['routes', tenantId ?? 'unknown', normalizeQueryParams(params)] as const,
@@ -290,6 +299,7 @@ list: (tenantId, params = {}) =>
 **Cambio propuesto**
 
 Añadir factory a `src/lib/routes/queryKeys.ts` (o nuevo `src/lib/crm/queryKeys.ts`):
+
 ```ts
 export const comercialOrderKeys = {
   all: (tenantId) => ['crm', 'orders', tenantId ?? 'unknown'] as const,
@@ -297,6 +307,7 @@ export const comercialOrderKeys = {
     ['crm', 'orders', tenantId ?? 'unknown', normalizeQueryParams(params)] as const,
 };
 ```
+
 Actualizar `useComercialOrders.ts:16` para usar la factory.
 
 **Validación**: En React Query DevTools, dos renders con `params = {}` deben producir la misma entrada de caché.
@@ -322,12 +333,14 @@ Mismo patrón que P01. Si los params se recrean entre renders (por ejemplo, al d
 **Evidencia**
 
 `src/hooks/useAgenda.ts:49`
+
 ```ts
 const queryKey = ['crm', 'agenda', tenantId ?? 'unknown', queryParams];
 //                                                         ^^^^^^^^^^^ objeto raw
 ```
 
 `src/hooks/useOffers.ts:16`
+
 ```ts
 const queryKey = ['crm', 'offers', 'list', tenantId ?? 'unknown', queryParams];
 //                                                                 ^^^^^^^^^^^ objeto raw
@@ -358,6 +371,7 @@ Ambos filtran `enabled` del objeto antes de incluirlo (`const { enabled = true, 
 **Evidencia**
 
 `src/hooks/useCustomersList.ts:10`
+
 ```ts
 queryKey: ['customers', 'list', tenantId ?? 'unknown', filters, page, perPage],
 //                                                     ^^^^^^^ objeto raw
@@ -386,6 +400,7 @@ Los hooks `useFieldOrders` y `useFieldRoutes` comprueban `Boolean(fieldOperatorI
 **Evidencia**
 
 `src/hooks/useFieldOrders.ts:25-33`
+
 ```ts
 queryKey: fieldOrderKeys.list(tenantId, params),  // fieldOperatorId ausente
 queryFn: () => getFieldOrders(token as string, params),
@@ -397,6 +412,7 @@ enabled: Boolean(token) && Boolean(tenantId) && Boolean(fieldOperatorId) && enab
 **Contexto importante**: `FieldOperatorContext.tsx` obtiene `fieldOperatorId` de `useMe()` — derivado del usuario autenticado. En la práctica, el `fieldOperatorId` es fijo por sesión (1 usuario = 1 operador). El riesgo es principalmente en escenarios de soporte/superadmin o futuros cambios de arquitectura.
 
 **Opciones**:
+
 - **Opción A**: Añadir `fieldOperatorId` a las factories y a todos los usos (corrección completa).
 - **Opción B**: Documentar explícitamente en el código que `fieldOperatorId` no puede cambiar en sesión y añadir un test que valide ese invariante.
 
@@ -421,6 +437,7 @@ La tercera invalidación de `autoventaMutation.onSuccess` usa una key hardcodead
 **Evidencia**
 
 `src/hooks/useFieldOrders.ts:73-77`
+
 ```ts
 onSuccess: () => {
   queryClient.invalidateQueries({ queryKey: fieldOrderKeys.list(tenantId) });    // factory ✓
@@ -458,6 +475,7 @@ El componente más grande de la aplicación mezcla ~9 responsabilidades distinta
 `src/components/Comercial/Routes/RoutesPlannerPage.jsx` — 1404 líneas.
 
 Responsabilidades identificadas:
+
 1. Estado de metadatos de ruta (nombre, fecha, operador, plantilla).
 2. Lista de paradas con drag-drop (`@dnd-kit`).
 3. Geocoding async con `enrichStopsWithCoordinates`.
@@ -471,6 +489,7 @@ Responsabilidades identificadas:
 **Impacto**: Re-renders del mapa al editar un campo de texto de metadata. Re-renders de la lista de paradas al abrir el dialog de metadata. Coste de parse/compile JS elevado en carga inicial.
 
 **Cambio propuesto (progresivo, un PR por componente)**:
+
 1. `RoutePlannerMetadataForm` — metadatos.
 2. `RoutePlannerStopList` — lista drag-drop.
 3. `RoutePlannerStopEditor` — dialog de parada.
@@ -503,16 +522,20 @@ Componente con múltiples responsabilidades (wizard multi-step, QR scan, pricing
 El componente implementa un wizard de 6 pasos: Pedido → Previsión → Cajas (QR scan) → Precios → Resumen → Confirmar. Cada paso es una responsabilidad diferente que actualmente está inline.
 
 Además, basado en el análisis del agente explorador, el componente importa y llama directamente a `getFieldProductsOptions` del servicio:
+
 ```jsx
 import { getFieldProductsOptions } from '@/services/fieldOperatorService';
 // Llamada directa sin React Query
 ```
+
 Esto significa:
+
 - Sin caché: cada apertura del componente hace una request nueva.
 - Sin deduplicación: si el componente se monta varias veces, múltiples requests simultáneas.
 - Sin error boundary de React Query: los errores se manejan ad-hoc.
 
 **Cambio propuesto**:
+
 1. Crear `useFieldProductsOptions` hook con `useQuery` y `enabled` condicional.
 2. Partir el wizard en componentes de paso: `FieldOrderStep1`, `FieldOrderStep2`, etc.
 3. El estado del wizard puede residir en un hook `useFieldOrderWizardState`.
@@ -542,6 +565,7 @@ Dos componentes con densidad de responsabilidades que concentran re-renders y di
 `src/components/Field/FieldRouteExecutionPage.jsx` — 450 líneas: mapa, drawer de paradas, detalle de parada, dialog de resultado, navegación GPS, creación de autoventa.
 
 **Cambio propuesto**:
+
 - `AgendaPageClient`: extraer `AgendaFilterDialog`, `AgendaDayDialog`, `AgendaCalendarGrid`.
 - `FieldRouteExecutionPage`: extraer `RouteStopDrawer`, `RouteStopDetail`, `RouteStopResultDialog`.
 
@@ -566,6 +590,7 @@ Dos componentes con densidad de responsabilidades que concentran re-renders y di
 **Evidencia**
 
 `src/hooks/useCommercialInteractions.ts:6-18`
+
 ```ts
 function normalizeQueryParams(params: Record<string, unknown> = {}) {
   return Object.entries(params).reduce<Record<string, unknown>>((acc, [key, value]) => {
@@ -579,14 +604,17 @@ function normalizeQueryParams(params: Record<string, unknown> = {}) {
 ```
 
 Contraste con `normalizeQueryParams` de `queryKeys.ts` que sí ordena:
+
 ```ts
 .sort(([left], [right]) => left.localeCompare(right))
 ```
 
 **Cambio propuesto**: Reemplazar la función local por la importada de `queryKeys.ts`:
+
 ```ts
 import { normalizeQueryParams } from '@/lib/routes/queryKeys'; // si se exporta
 ```
+
 O bien, añadir sort de keys a la función local.
 
 **Archivos afectados**: `src/hooks/useCommercialInteractions.ts:6-18`
@@ -610,6 +638,7 @@ O bien, añadir sort de keys a la función local.
 **Evidencia**
 
 `src/hooks/useCustomerAssignment.ts:26-29`
+
 ```ts
 onSuccess: async (_, variables) => {
   await Promise.all([
@@ -639,6 +668,7 @@ onSuccess: async (_, variables) => {
 **Evidencia**
 
 `src/lib/fetchWithTenant.js:139`
+
 ```js
 console.error('❌ Error JSON recibido:', errorJson);
 ```
@@ -646,6 +676,7 @@ console.error('❌ Error JSON recibido:', errorJson);
 Se ejecuta en cada request no-ok (400, 403, 404, 422, 500, etc.). En producción expone en la consola del navegador el body completo del error del backend.
 
 **Cambio propuesto**:
+
 ```js
 if (process.env.NODE_ENV === 'development') {
   console.error('❌ Error JSON recibido:', errorJson);
@@ -673,6 +704,7 @@ El componente importa y llama directamente a `fetchWithTenant` para descargar un
 **Evidencia**
 
 `src/components/Admin/OrdersManager/OrdersList/index.js` (línea ~84):
+
 ```js
 const response = await fetchWithTenant(`${API_URL_V2}orders/xlsx/active-planned-products`, { ... });
 ```
@@ -698,12 +730,15 @@ const response = await fetchWithTenant(`${API_URL_V2}orders/xlsx/active-planned-
 **Evidencia**
 
 `src/lib/routes/routeStops.ts:16-17`
+
 ```ts
 const geocodeCache = new Map<string, { lat: number; lng: number } | null>();
 ```
+
 Sin TTL, sin límite de entradas. En sesiones largas con muchas rutas únicas puede crecer indefinidamente.
 
 **Cambio propuesto**:
+
 ```ts
 const MAX_GEOCODE_CACHE_SIZE = 500;
 // En geocodeStop, antes de insertar en cache:
@@ -730,6 +765,7 @@ geocodeCache.set(query, coordinates);
 **Evidencia**
 
 `src/hooks/useRouteTemplates.ts:50-52`
+
 ```ts
 const updatedTemplate = normalizeRouteCollection([
   ((response as ...) ?.data ?? response) as Partial<DeliveryRoute>,
@@ -769,15 +805,17 @@ Patrones correctos verificados en código que **no deben modificarse**:
 ### ✓ Lazy loading por tabs en `CustomersPageClient`
 
 `src/components/Comercial/CRM/CustomersPageClient.jsx:~25-45`
+
 ```js
-const shouldLoadOrders       = activeTab === 'orders';
+const shouldLoadOrders = activeTab === 'orders';
 const shouldLoadInteractions = activeTab === 'interactions';
-const shouldLoadOffers       = activeTab === 'offers';
+const shouldLoadOffers = activeTab === 'offers';
 // ...
 useCustomerOrderHistory(customerId, { enabled: shouldLoadOrders });
 useCommercialInteractions({ customerId, enabled: shouldLoadInteractions });
 useOffersList({ customerId, enabled: shouldLoadOffers });
 ```
+
 Implementa correctamente el principio de carga diferida por visibilidad: las queries de tab no activa no se ejecutan. Además, resetea el tab activo al cambiar de cliente.
 
 ### ✓ Optimistic updates + rollback en `useProspects` y `useCommercialInteractions`
@@ -812,42 +850,42 @@ Implementa correctamente el principio de carga diferida por visibilidad: las que
 
 ### Fase 1 — Quick wins ✅ COMPLETADA (2026-03-23)
 
-| Tarea | Hallazgo | Estimado | Estado |
-|---|---|---|---|
-| Normalizar query key en `useComercialOrders` (crear factory) | P01 | 45 min | ✅ |
-| Normalizar query keys en `useAgenda` y `useOffersList` | P02 | 30 min | ✅ |
-| Normalizar query key en `useCustomersList` | P03 | 20 min | ✅ |
-| Sustituir key hardcodeada en `autoventaMutation.onSuccess` | P05 | 30 min | ✅ |
-| Ordenar keys en `normalizeQueryParams` de `useCommercialInteractions` | P09 | 20 min | ✅ |
-| Eliminar key hardcodeada en `useCustomerAssignment.onSuccess` | P10 | 20 min | ✅ |
-| Condicionizar `console.error` en `fetchWithTenant.js` | P11 | 10 min | ✅ |
-| Añadir `MAX_GEOCODE_CACHE_SIZE` en `routeStops.ts` | P13 | 20 min | ✅ |
-| Sustituir `normalizeRouteCollection([x])[0]` → `normalizeRouteEntity(x)` | P14 | 10 min | ✅ |
+| Tarea                                                                    | Hallazgo | Estimado | Estado |
+| ------------------------------------------------------------------------ | -------- | -------- | ------ |
+| Normalizar query key en `useComercialOrders` (crear factory)             | P01      | 45 min   | ✅     |
+| Normalizar query keys en `useAgenda` y `useOffersList`                   | P02      | 30 min   | ✅     |
+| Normalizar query key en `useCustomersList`                               | P03      | 20 min   | ✅     |
+| Sustituir key hardcodeada en `autoventaMutation.onSuccess`               | P05      | 30 min   | ✅     |
+| Ordenar keys en `normalizeQueryParams` de `useCommercialInteractions`    | P09      | 20 min   | ✅     |
+| Eliminar key hardcodeada en `useCustomerAssignment.onSuccess`            | P10      | 20 min   | ✅     |
+| Condicionizar `console.error` en `fetchWithTenant.js`                    | P11      | 10 min   | ✅     |
+| Añadir `MAX_GEOCODE_CACHE_SIZE` en `routeStops.ts`                       | P13      | 20 min   | ✅     |
+| Sustituir `normalizeRouteCollection([x])[0]` → `normalizeRouteEntity(x)` | P14      | 10 min   | ✅     |
 
 **Total Fase 1: ~3.5 horas de desarrollo. 9/9 tareas completadas.**
 Todos los cambios fueron de código cliente puro, sin impacto en API ni en flujos de negocio.
 
 ### Fase 2 — Estabilización estructural ✅ COMPLETADA (2026-03-23)
 
-| Tarea | Hallazgo | Estimado | Estado |
-|---|---|---|---|
-| Implementar cookie `__session_verified` TTL 60s en middleware (Opción C) | P-MW | 2h impl. | ✅ |
-| Añadir `fieldOperatorId` a query keys de field | P04 | 2h | ✅ |
-| Crear hook `useFieldProductsOptions` + refactorizar `FieldOrderExecutionPage` | P07 | 1.5h | ✅ |
-| Extraer `RouteMapSection`, `StopDetailDrawer`, `StopsListDrawer`, `ResultDialog` | P08 | 2h | ✅ |
-| Extraer `AgendaFiltersDialog` y `AgendaHeaderControls` de `AgendaPageClient` | P08 | 1h | ✅ |
-| Extraer `downloadActivePlannedProductsXls` a `orderService.ts` + limpiar estado muerto | P12 | 1h | ✅ |
+| Tarea                                                                                  | Hallazgo | Estimado | Estado |
+| -------------------------------------------------------------------------------------- | -------- | -------- | ------ |
+| Implementar cookie `__session_verified` TTL 60s en middleware (Opción C)               | P-MW     | 2h impl. | ✅     |
+| Añadir `fieldOperatorId` a query keys de field                                         | P04      | 2h       | ✅     |
+| Crear hook `useFieldProductsOptions` + refactorizar `FieldOrderExecutionPage`          | P07      | 1.5h     | ✅     |
+| Extraer `RouteMapSection`, `StopDetailDrawer`, `StopsListDrawer`, `ResultDialog`       | P08      | 2h       | ✅     |
+| Extraer `AgendaFiltersDialog` y `AgendaHeaderControls` de `AgendaPageClient`           | P08      | 1h       | ✅     |
+| Extraer `downloadActivePlannedProductsXls` a `orderService.ts` + limpiar estado muerto | P12      | 1h       | ✅     |
 
 **Total Fase 2: ~9.5 horas de desarrollo. 6/6 tareas completadas.**
 
 ### Fase 3 — Hardening estructural ✅ COMPLETADA (2026-03-23)
 
-| Tarea | Hallazgo | Estado |
-|---|---|---|
-| Partir `RoutesPlannerPage` (1404 líneas) — extraídos 9 archivos | P06 | ✅ |
-| Partir `FieldOrderExecutionPage` en steps especializados | P07 | ✅ |
-| Añadir regla ESLint `no-restricted-syntax` para query keys hardcodeadas | P01-P05 | ✅ |
-| Añadir validación de performance para flujos críticos en PR | — | ⏭ No aplica (infraestructura CI externa) |
+| Tarea                                                                   | Hallazgo | Estado                                    |
+| ----------------------------------------------------------------------- | -------- | ----------------------------------------- |
+| Partir `RoutesPlannerPage` (1404 líneas) — extraídos 9 archivos         | P06      | ✅                                        |
+| Partir `FieldOrderExecutionPage` en steps especializados                | P07      | ✅                                        |
+| Añadir regla ESLint `no-restricted-syntax` para query keys hardcodeadas | P01-P05  | ✅                                        |
+| Añadir validación de performance para flujos críticos en PR             | —        | ⏭ No aplica (infraestructura CI externa) |
 
 ---
 
@@ -912,22 +950,23 @@ Todos los cambios fueron de código cliente puro, sin impacto en API ni en flujo
 
 El playbook `docs/audits/cmr-comercial-performance-playbook.md` identificó 13 patrones problemáticos en la ronda anterior. Estado actual:
 
-| Patrón del playbook | Estado tras refactor actual |
-|---|---|
-| Consulta de sesión por request | **RESUELTO** — `getAuthToken` con caché y dedup de promesa ✓ |
-| Carga eager de datos de tabs no visibles | **RESUELTO** — `CustomersPageClient` con lazy loading por tab ✓ |
-| Estado de tab heredado al cambiar entidad | **RESUELTO** — `useEffect([customerId])` resetea tab ✓ |
-| Invalidaciones globales | **RESUELTO** — P05 y P10 usan factories; P-MW resuelto con Opción C (cookie TTL 60s) en Fase 2 ✓ |
-| Mutaciones con refetch evitable | **RESUELTO** — `setQueryData` en updates de rutas/field ✓ |
-| Búsqueda sin debounce | **NO VERIFICADO** — no había evidencia en el código leído; verificar en filtros de listados |
-| Formularios cargando catálogos cerrados | **RESUELTO en CRM** — `enabled` guards correctos ✓ |
-| Geocoding masivo sin límite | **RESUELTO** — `GEOCODE_CONCURRENCY = 3`, dedup pendiente ✓ |
-| Agenda con ráfagas de requests | **PARCIALMENTE** — query key de `useAgenda` sin normalizar (P02) |
-| Rutas con carga eager | **RESUELTO** — `enabled` guards en todos los hooks de rutas ✓ |
-| Query keys inestables | **RESUELTO** — P01-P03, P09 normalizados con factories y `normalizeQueryParams` en Fase 1 ✓ |
+| Patrón del playbook                       | Estado tras refactor actual                                                                      |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Consulta de sesión por request            | **RESUELTO** — `getAuthToken` con caché y dedup de promesa ✓                                     |
+| Carga eager de datos de tabs no visibles  | **RESUELTO** — `CustomersPageClient` con lazy loading por tab ✓                                  |
+| Estado de tab heredado al cambiar entidad | **RESUELTO** — `useEffect([customerId])` resetea tab ✓                                           |
+| Invalidaciones globales                   | **RESUELTO** — P05 y P10 usan factories; P-MW resuelto con Opción C (cookie TTL 60s) en Fase 2 ✓ |
+| Mutaciones con refetch evitable           | **RESUELTO** — `setQueryData` en updates de rutas/field ✓                                        |
+| Búsqueda sin debounce                     | **NO VERIFICADO** — no había evidencia en el código leído; verificar en filtros de listados      |
+| Formularios cargando catálogos cerrados   | **RESUELTO en CRM** — `enabled` guards correctos ✓                                               |
+| Geocoding masivo sin límite               | **RESUELTO** — `GEOCODE_CONCURRENCY = 3`, dedup pendiente ✓                                      |
+| Agenda con ráfagas de requests            | **PARCIALMENTE** — query key de `useAgenda` sin normalizar (P02)                                 |
+| Rutas con carga eager                     | **RESUELTO** — `enabled` guards en todos los hooks de rutas ✓                                    |
+| Query keys inestables                     | **RESUELTO** — P01-P03, P09 normalizados con factories y `normalizeQueryParams` en Fase 1 ✓      |
 
 **Regresiones respecto al playbook**: ninguna detectada. Los patrones ya resueltos siguen correctos.
 
 **Nuevos hallazgos no cubiertos por el playbook**:
+
 - P-MW (middleware /me por request) — no existía en el playbook.
 - P06, P07, P08 (componentes monolíticos) — el playbook los mencionaba como riesgo pero no los cuantificaba.

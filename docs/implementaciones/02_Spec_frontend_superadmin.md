@@ -11,15 +11,15 @@
 
 Panel de administración de la plataforma SaaS PesquerApp. Permite gestionar tenants (empresas), monitorizar onboarding, impersonar usuarios y ver métricas globales.
 
-| Aspecto | Valor |
-|---|---|
-| URL producción | `https://admin.lapesquerapp.es` |
-| URL desarrollo | `http://localhost:3001` (o el puerto que se configure) |
-| API base | `https://api.lapesquerapp.es/api/v2/superadmin` |
-| API base (dev) | `http://localhost/api/v2/superadmin` |
-| Tech | Next.js (proyecto independiente del frontend de tenants) |
-| Auth | Magic link + OTP (sin contraseña) |
-| Token | Bearer token (Sanctum) en header `Authorization` |
+| Aspecto            | Valor                                                           |
+| ------------------ | --------------------------------------------------------------- |
+| URL producción     | `https://admin.lapesquerapp.es`                                 |
+| URL desarrollo     | `http://localhost:3001` (o el puerto que se configure)          |
+| API base           | `https://api.lapesquerapp.es/api/v2/superadmin`                 |
+| API base (dev)     | `http://localhost/api/v2/superadmin`                            |
+| Tech               | Next.js (proyecto independiente del frontend de tenants)        |
+| Auth               | Magic link + OTP (sin contraseña)                               |
+| Token              | Bearer token (Sanctum) en header `Authorization`                |
 | No requiere header | `X-Tenant` (las rutas superadmin no pasan por TenantMiddleware) |
 
 ---
@@ -158,6 +158,7 @@ Revoca el token actual.
 ### 3.1 Login (`/login`)
 
 **Componentes:**
+
 - Campo de email con validación
 - Botón "Solicitar acceso"
 - Al enviar: transición a paso de verificación
@@ -167,6 +168,7 @@ Revoca el token actual.
   - Link "Reenviar código" (con cooldown de 60s)
 
 **UX:**
+
 - Si el usuario llega con query param `?token=xxx` (desde magic link en email), auto-verificar.
 - Loading state durante las peticiones.
 - Mensajes de error inline.
@@ -206,18 +208,18 @@ Revoca el token actual.
 ```json
 // Response 200
 {
-    "total": 12,
-    "active": 9,
-    "suspended": 2,
-    "pending": 1,
-    "cancelled": 0,
-    "last_onboarding": {
-        "id": 5,
-        "name": "Costa Sur S.L.",
-        "subdomain": "costasur",
-        "onboarding_step": 6,
-        "created_at": "2026-02-22T10:00:00.000000Z"
-    }
+  "total": 12,
+  "active": 9,
+  "suspended": 2,
+  "pending": 1,
+  "cancelled": 0,
+  "last_onboarding": {
+    "id": 5,
+    "name": "Costa Sur S.L.",
+    "subdomain": "costasur",
+    "onboarding_step": 6,
+    "created_at": "2026-02-22T10:00:00.000000Z"
+  }
 }
 ```
 
@@ -251,47 +253,47 @@ Revoca el token actual.
 
 **Query params:**
 
-| Param | Tipo | Descripción |
-|---|---|---|
-| `status` | string | Filtrar por status: `active`, `suspended`, `pending`, `cancelled` |
-| `search` | string | Buscar por nombre o subdominio (parcial) |
-| `per_page` | int | Items por página (default 15) |
-| `page` | int | Página actual |
+| Param      | Tipo   | Descripción                                                       |
+| ---------- | ------ | ----------------------------------------------------------------- |
+| `status`   | string | Filtrar por status: `active`, `suspended`, `pending`, `cancelled` |
+| `search`   | string | Buscar por nombre o subdominio (parcial)                          |
+| `per_page` | int    | Items por página (default 15)                                     |
+| `page`     | int    | Página actual                                                     |
 
 ```json
 // Response 200
 {
-    "data": [
-        {
-            "id": 1,
-            "name": "Congelados Brisamar S.L.",
-            "subdomain": "brisamar",
-            "database": "tenant_brisamar",
-            "status": "active",
-            "plan": "pro",
-            "renewal_at": "2027-02-23",
-            "timezone": "Europe/Madrid",
-            "branding_image_url": "https://...",
-            "last_activity_at": "2026-02-23T12:30:00.000000Z",
-            "onboarding_step": 8,
-            "admin_email": "admin@brisamar.es",
-            "created_at": "2025-06-15T10:00:00.000000Z",
-            "updated_at": "2026-02-23T12:30:00.000000Z"
-        }
-    ],
-    "links": { "first": "...", "last": "...", "prev": null, "next": "..." },
-    "meta": { "current_page": 1, "last_page": 3, "per_page": 15, "total": 42 }
+  "data": [
+    {
+      "id": 1,
+      "name": "Congelados Brisamar S.L.",
+      "subdomain": "brisamar",
+      "database": "tenant_brisamar",
+      "status": "active",
+      "plan": "pro",
+      "renewal_at": "2027-02-23",
+      "timezone": "Europe/Madrid",
+      "branding_image_url": "https://...",
+      "last_activity_at": "2026-02-23T12:30:00.000000Z",
+      "onboarding_step": 8,
+      "admin_email": "admin@brisamar.es",
+      "created_at": "2025-06-15T10:00:00.000000Z",
+      "updated_at": "2026-02-23T12:30:00.000000Z"
+    }
+  ],
+  "links": { "first": "...", "last": "...", "prev": null, "next": "..." },
+  "meta": { "current_page": 1, "last_page": 3, "per_page": 15, "total": 42 }
 }
 ```
 
 **Badges de status:**
 
-| Status | Color | Label |
-|---|---|---|
-| `active` | verde | Activo |
+| Status      | Color   | Label      |
+| ----------- | ------- | ---------- |
+| `active`    | verde   | Activo     |
 | `suspended` | naranja | Suspendido |
-| `pending` | azul | Pendiente |
-| `cancelled` | rojo | Cancelado |
+| `pending`   | azul    | Pendiente  |
+| `cancelled` | rojo    | Cancelado  |
 
 ---
 
@@ -308,22 +310,22 @@ Tabla de datos del tenant con botón "Editar". Los campos `subdomain` y `databas
 ```json
 // Response 200 — mismo schema que en la lista
 {
-    "data": {
-        "id": 1,
-        "name": "Congelados Brisamar S.L.",
-        "subdomain": "brisamar",
-        "database": "tenant_brisamar",
-        "status": "active",
-        "plan": "pro",
-        "renewal_at": "2027-02-23",
-        "timezone": "Europe/Madrid",
-        "branding_image_url": "https://...",
-        "last_activity_at": "2026-02-23T12:30:00.000000Z",
-        "onboarding_step": 8,
-        "admin_email": "admin@brisamar.es",
-        "created_at": "2025-06-15T10:00:00.000000Z",
-        "updated_at": "2026-02-23T12:30:00.000000Z"
-    }
+  "data": {
+    "id": 1,
+    "name": "Congelados Brisamar S.L.",
+    "subdomain": "brisamar",
+    "database": "tenant_brisamar",
+    "status": "active",
+    "plan": "pro",
+    "renewal_at": "2027-02-23",
+    "timezone": "Europe/Madrid",
+    "branding_image_url": "https://...",
+    "last_activity_at": "2026-02-23T12:30:00.000000Z",
+    "onboarding_step": 8,
+    "admin_email": "admin@brisamar.es",
+    "created_at": "2025-06-15T10:00:00.000000Z",
+    "updated_at": "2026-02-23T12:30:00.000000Z"
+  }
 }
 ```
 
@@ -348,12 +350,12 @@ Tabla de datos del tenant con botón "Editar". Los campos `subdomain` y `databas
 
 Botones contextuales según el status actual:
 
-| Status actual | Acciones disponibles |
-|---|---|
-| `active` | Suspender, Cancelar |
-| `suspended` | Activar, Cancelar |
-| `pending` | Activar, Cancelar, Reintentar onboarding |
-| `cancelled` | Activar |
+| Status actual | Acciones disponibles                     |
+| ------------- | ---------------------------------------- |
+| `active`      | Suspender, Cancelar                      |
+| `suspended`   | Activar, Cancelar                        |
+| `pending`     | Activar, Cancelar, Reintentar onboarding |
+| `cancelled`   | Activar                                  |
 
 Cada acción requiere diálogo de confirmación.
 
@@ -372,18 +374,19 @@ Visible solo si `status === 'pending'` y `onboarding_step < 8`.
 
 **Pasos del onboarding:**
 
-| Paso | Etiqueta |
-|---|---|
-| 1 | Registro creado |
-| 2 | Base de datos creada |
-| 3 | Migraciones ejecutadas |
-| 4 | Catálogos iniciales |
-| 5 | Usuario administrador |
-| 6 | Configuración empresa |
-| 7 | Activación |
-| 8 | Email de bienvenida |
+| Paso | Etiqueta               |
+| ---- | ---------------------- |
+| 1    | Registro creado        |
+| 2    | Base de datos creada   |
+| 3    | Migraciones ejecutadas |
+| 4    | Catálogos iniciales    |
+| 5    | Usuario administrador  |
+| 6    | Configuración empresa  |
+| 7    | Activación             |
+| 8    | Email de bienvenida    |
 
 **Implementación:**
+
 - Barra de progreso con 8 segmentos.
 - El segmento actual (= `onboarding_step + 1`) parpadeante/animado.
 - Segmentos <= `onboarding_step` en verde (completados).
@@ -400,24 +403,24 @@ Tabla con los usuarios de la base de datos del tenant.
 ```json
 // Response 200
 {
-    "data": [
-        {
-            "id": 1,
-            "name": "Admin Brisamar",
-            "email": "admin@brisamar.es",
-            "role": "administrador",
-            "active": true,
-            "last_login_at": "2026-02-22T10:15:00.000000Z"
-        },
-        {
-            "id": 2,
-            "name": "Operario 1",
-            "email": "op1@brisamar.es",
-            "role": "operario",
-            "active": true,
-            "last_login_at": null
-        }
-    ]
+  "data": [
+    {
+      "id": 1,
+      "name": "Admin Brisamar",
+      "email": "admin@brisamar.es",
+      "role": "administrador",
+      "active": true,
+      "last_login_at": "2026-02-22T10:15:00.000000Z"
+    },
+    {
+      "id": 2,
+      "name": "Operario 1",
+      "email": "op1@brisamar.es",
+      "role": "operario",
+      "active": true,
+      "last_login_at": null
+    }
+  ]
 }
 ```
 
@@ -438,16 +441,17 @@ Ver sección 5 para el flujo completo.
 
 **Formulario:**
 
-| Campo | Tipo | Requerido | Validación |
-|---|---|---|---|
-| Nombre empresa | text | Sí | max 255 |
-| Subdominio | text | Sí | solo `a-z`, `0-9`, `-`; no empezar/terminar con `-`; max 63; único |
-| Email administrador | email | Sí | email válido |
-| Plan | select | No | Opciones: basic, pro, enterprise (o libre) |
-| Zona horaria | select | No | Default: Europe/Madrid |
-| URL logo | url | No | URL válida |
+| Campo               | Tipo   | Requerido | Validación                                                         |
+| ------------------- | ------ | --------- | ------------------------------------------------------------------ |
+| Nombre empresa      | text   | Sí        | max 255                                                            |
+| Subdominio          | text   | Sí        | solo `a-z`, `0-9`, `-`; no empezar/terminar con `-`; max 63; único |
+| Email administrador | email  | Sí        | email válido                                                       |
+| Plan                | select | No        | Opciones: basic, pro, enterprise (o libre)                         |
+| Zona horaria        | select | No        | Default: Europe/Madrid                                             |
+| URL logo            | url    | No        | URL válida                                                         |
 
 **Validación de subdominio en tiempo real:**
+
 - Mientras el usuario escribe, validar formato (regex: `/^[a-z0-9]([a-z0-9\-]*[a-z0-9])?$/`).
 - Al perder foco o tras debounce (300ms), verificar disponibilidad contra la lista de tenants cargados (o un endpoint dedicado si se prefiere).
 - Mostrar preview: `{subdominio}.lapesquerapp.es`.
@@ -502,26 +506,26 @@ Ver sección 5 para el flujo completo.
 
 ### Códigos comunes
 
-| Código | Significado | Acción frontend |
-|---|---|---|
-| 200 | OK | Procesar respuesta |
-| 201 | Creado | Procesar + redirigir |
-| 400 | Bad request (token/OTP inválido) | Mostrar `message` al usuario |
-| 401 | No autenticado | Redirigir a `/login` |
-| 404 | No encontrado | Mostrar página 404 |
-| 422 | Validación | Mostrar `errors` en los campos |
-| 429 | Rate limit | Mostrar "Demasiadas peticiones, espera un momento" |
-| 500 | Error servidor | Mostrar error genérico |
+| Código | Significado                      | Acción frontend                                    |
+| ------ | -------------------------------- | -------------------------------------------------- |
+| 200    | OK                               | Procesar respuesta                                 |
+| 201    | Creado                           | Procesar + redirigir                               |
+| 400    | Bad request (token/OTP inválido) | Mostrar `message` al usuario                       |
+| 401    | No autenticado                   | Redirigir a `/login`                               |
+| 404    | No encontrado                    | Mostrar página 404                                 |
+| 422    | Validación                       | Mostrar `errors` en los campos                     |
+| 429    | Rate limit                       | Mostrar "Demasiadas peticiones, espera un momento" |
+| 500    | Error servidor                   | Mostrar error genérico                             |
 
 ### Formato de errores de validación
 
 ```json
 {
-    "message": "The given data was invalid.",
-    "errors": {
-        "campo": ["Mensaje de error 1", "Mensaje de error 2"],
-        "otro_campo": ["Mensaje"]
-    }
+  "message": "The given data was invalid.",
+  "errors": {
+    "campo": ["Mensaje de error 1", "Mensaje de error 2"],
+    "otro_campo": ["Mensaje"]
+  }
 }
 ```
 
@@ -603,10 +607,12 @@ Response: { message: "Sesión de impersonación finalizada." }
 ```
 
 **Navegación principal:**
+
 - Dashboard (`/`)
 - Tenants (`/tenants`)
 
 **Header:**
+
 - Nombre del superadmin (de `/me`)
 - Botón logout
 

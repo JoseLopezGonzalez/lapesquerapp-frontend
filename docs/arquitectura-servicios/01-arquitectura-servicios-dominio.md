@@ -8,21 +8,25 @@
 ## 📋 Principios Arquitectónicos
 
 ### 1. **Capa de Servicios Semántica**
+
 - Cada dominio funcional (orders, customers, stores, products, etc.) debe exponer su propio service
 - Los services deben usar métodos con semántica de negocio, no técnica
 - Los services ocultan detalles técnicos (URLs, endpoints, configuración dinámica)
 
 ### 2. **Encapsulación de Lógica Genérica**
+
 - La lógica genérica (`entityService`, `createEntityService`, `editEntityService`) NO se elimina
 - Se encapsula DENTRO de los services de dominio
 - Los components y hooks NUNCA acceden directamente a servicios genéricos
 
 ### 3. **Contratos Estables**
+
 - Los services deben tener contratos predecibles y estables
 - Basados en la documentación "API References" pero sin exponerla
 - Cambios internos en la lógica genérica no deben afectar los contratos públicos
 
 ### 4. **Consumo Dual**
+
 - Los services deben funcionar tanto para componentes UI tradicionales
 - Como para un asistente AI que funcionará mediante tools/functions
 - El AI Chat nunca debe conocer URLs, endpoints ni lógica genérica
@@ -64,11 +68,11 @@
 // /src/services/domain/[domain]/[domain]Service.js
 
 import { getAuthToken } from '@/lib/auth';
-import { 
-  fetchEntitiesGeneric,      // Privado
-  createEntityGeneric,       // Privado
-  editEntityGeneric,         // Privado
-  deleteEntityGeneric        // Privado
+import {
+  fetchEntitiesGeneric, // Privado
+  createEntityGeneric, // Privado
+  editEntityGeneric, // Privado
+  deleteEntityGeneric, // Privado
 } from '@/services/generic';
 
 /**
@@ -187,50 +191,55 @@ const result = await supplierService.list(filters, pagination);
 
 ### Entidades que necesitan services de dominio
 
-| Entidad (entitiesConfig) | Service Existente | Acción Requerida |
-|-------------------------|-------------------|------------------|
-| `customers` | ✅ `customerService.js` | Revisar y asegurar que encapsula lógica genérica |
-| `suppliers` | ❌ No existe | **Crear** `supplierService.js` |
-| `products` | ✅ `productService.js` | Revisar y refactorizar si usa genéricos directamente |
-| `species` | ✅ `speciesService.js` | Revisar y refactorizar |
-| `transports` | ✅ `transportService.js` | Revisar y refactorizar |
-| `taxes` | ✅ `taxService.js` | Revisar y refactorizar |
-| `product-categories` | ✅ `productCategoryService.js` | Revisar y refactorizar |
-| `product-families` | ✅ `productFamilyService.js` | Revisar y refactorizar |
-| `employees` | ✅ `employeeService.js` | Revisar y refactorizar |
-| `salespeople` | ✅ `salespersonService.js` | Revisar y refactorizar |
-| `payment-terms` | ✅ `paymentTernService.js` | Revisar y refactorizar |
-| `incoterms` | ✅ `incotermService.js` | Revisar y refactorizar |
-| `raw-material-receptions` | ✅ `rawMaterialReceptionService.js` | Revisar estructura |
+| Entidad (entitiesConfig)  | Service Existente                   | Acción Requerida                                     |
+| ------------------------- | ----------------------------------- | ---------------------------------------------------- |
+| `customers`               | ✅ `customerService.js`             | Revisar y asegurar que encapsula lógica genérica     |
+| `suppliers`               | ❌ No existe                        | **Crear** `supplierService.js`                       |
+| `products`                | ✅ `productService.js`              | Revisar y refactorizar si usa genéricos directamente |
+| `species`                 | ✅ `speciesService.js`              | Revisar y refactorizar                               |
+| `transports`              | ✅ `transportService.js`            | Revisar y refactorizar                               |
+| `taxes`                   | ✅ `taxService.js`                  | Revisar y refactorizar                               |
+| `product-categories`      | ✅ `productCategoryService.js`      | Revisar y refactorizar                               |
+| `product-families`        | ✅ `productFamilyService.js`        | Revisar y refactorizar                               |
+| `employees`               | ✅ `employeeService.js`             | Revisar y refactorizar                               |
+| `salespeople`             | ✅ `salespersonService.js`          | Revisar y refactorizar                               |
+| `payment-terms`           | ✅ `paymentTernService.js`          | Revisar y refactorizar                               |
+| `incoterms`               | ✅ `incotermService.js`             | Revisar y refactorizar                               |
+| `raw-material-receptions` | ✅ `rawMaterialReceptionService.js` | Revisar estructura                                   |
 
 ---
 
 ## 🎯 Plan de Implementación
 
 ### Fase 1: Auditoría y Análisis
+
 - [x] Identificar todos los servicios existentes
 - [x] Mapear entidades de `entitiesConfig` a services
 - [ ] Identificar todos los componentes que usan servicios genéricos directamente
 - [ ] Documentar contratos de API References
 
 ### Fase 2: Refactorización de Servicios Genéricos
+
 - [ ] Mover `entityService.js` → `generic/entityService.js`
 - [ ] Mover `createEntityService.js` → `generic/createEntityService.js`
 - [ ] Mover `editEntityService.js` → `generic/editEntityService.js`
 - [ ] Asegurar que son privados (no exportar desde `/services/index.js`)
 
 ### Fase 3: Creación/Refactorización de Services de Dominio
+
 - [ ] Crear services faltantes (ej: `supplierService.js`)
 - [ ] Refactorizar services existentes para encapsular lógica genérica
 - [ ] Asegurar que todos exponen métodos semánticos de negocio
 
 ### Fase 4: Migración de Componentes
+
 - [ ] Migrar `EntityClient` para usar services de dominio
 - [ ] Migrar `CreateEntityForm` para usar services de dominio
 - [ ] Migrar `EditEntityForm` para usar services de dominio
 - [ ] Eliminar uso directo de `API_URL_V2` en componentes
 
 ### Fase 5: Validación y Testing
+
 - [ ] Verificar que no quedan accesos directos a servicios genéricos
 - [ ] Verificar que no quedan usos directos de `API_URL_V2` en componentes
 - [ ] Validar que todos los services cumplen con API References
@@ -243,12 +252,14 @@ const result = await supplierService.list(filters, pagination);
 ### ❌ NO Permitido
 
 1. **Acceso directo a servicios genéricos desde componentes**
+
    ```javascript
    // ❌ NO HACER
    import { fetchEntities } from '@/services/entityService';
    ```
 
 2. **Construcción de URLs en componentes**
+
    ```javascript
    // ❌ NO HACER
    const url = `${API_URL_V2}${config.endpoint}`;
@@ -264,6 +275,7 @@ const result = await supplierService.list(filters, pagination);
 ### ✅ Permitido
 
 1. **Uso de services de dominio desde componentes**
+
    ```javascript
    // ✅ CORRECTO
    import { supplierService } from '@/services/domain/suppliers/supplierService';

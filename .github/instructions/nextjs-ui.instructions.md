@@ -1,5 +1,5 @@
 ---
-applyTo: "app/**/*.{js,jsx,ts,tsx},components/**/*.{js,jsx,ts,tsx},features/**/*.{js,jsx,ts,tsx}"
+applyTo: 'app/**/*.{js,jsx,ts,tsx},components/**/*.{js,jsx,ts,tsx},features/**/*.{js,jsx,ts,tsx}'
 ---
 
 # Next.js UI instructions

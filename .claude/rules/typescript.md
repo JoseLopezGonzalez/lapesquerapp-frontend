@@ -13,10 +13,10 @@
 
 ```typescript
 // ❌ Nunca crear archivos nuevos en JS
-src/services/domain/products/helper.js
+src / services / domain / products / helper.js;
 
 // ✅ Siempre en TypeScript
-src/services/domain/products/helper.ts
+src / services / domain / products / helper.ts;
 
 // Si tocas un .js legacy por cualquier razón, migrarlo a .ts en ese mismo commit
 ```
@@ -33,7 +33,7 @@ interface Customer {
   id: number | string;
   name: string;
   email?: string;
-  [key: string]: unknown;  // permite campos extra del backend sin romper el tipo
+  [key: string]: unknown; // permite campos extra del backend sin romper el tipo
 }
 
 // ✅ Respuestas paginadas de la API
@@ -121,7 +121,7 @@ interface Product {
   id: number | string;
   name: string;
   sku?: string;
-  [key: string]: unknown;  // campos como 'pivot', relaciones anidadas, etc.
+  [key: string]: unknown; // campos como 'pivot', relaciones anidadas, etc.
 }
 ```
 
@@ -173,9 +173,9 @@ function process(input: any) {}
 const result = something as any;
 
 // ✅ Alternativas correctas
-const data: unknown = response;  // luego narrowing
+const data: unknown = response; // luego narrowing
 // @ts-ignore — [RAZÓN ESPECÍFICA: librería X no exporta tipo correcto en versión Y]
-const result = something as SpecificType;  // cast con tipo concreto
+const result = something as SpecificType; // cast con tipo concreto
 ```
 
 ---
@@ -184,41 +184,41 @@ const result = something as SpecificType;  // cast con tipo concreto
 
 ```typescript
 // Componentes: PascalCase
-AdminCustomerDetailPageClient
-OrdersManager
-EntityClient
-CreateOrderForm
+AdminCustomerDetailPageClient;
+OrdersManager;
+EntityClient;
+CreateOrderForm;
 
 // Hooks: camelCase con prefijo use
-useCustomersList       // listados paginados
-useCustomer            // detalle + formulario
-useOrderCreateForm     // formulario específico
-useDebounce            // utilidad
+useCustomersList; // listados paginados
+useCustomer; // detalle + formulario
+useOrderCreateForm; // formulario específico
+useDebounce; // utilidad
 
 // Services: camelCase con sufijo Service
-customerService
-productService
-palletService
+customerService;
+productService;
+palletService;
 
 // Types/Interfaces: PascalCase
-Customer
-PaginationMeta
-CatalogListResponse<T>
-CatalogOption
+Customer;
+PaginationMeta;
+CatalogListResponse<T>;
+CatalogOption;
 
 // Archivos de tipos: camelCase.ts
-catalog.ts
-crm.ts
-labelEditor.ts
+catalog.ts;
+crm.ts;
+labelEditor.ts;
 
 // Constantes: SCREAMING_SNAKE_CASE
-API_URL_V2
-AUTH_SESSION_EXPIRED_EVENT
+API_URL_V2;
+AUTH_SESSION_EXPIRED_EVENT;
 
 // Query keys: camelCase con sufijo Keys
-customerListKeys
-productOptionKeys
-productionQueryKeys
+customerListKeys;
+productOptionKeys;
+productionQueryKeys;
 ```
 
 ---
@@ -259,6 +259,7 @@ export default function CustomerListClient() { ... }
 ## ⚠️ Deuda técnica de TypeScript
 
 El proyecto mezcla `.js` y `.ts`. Al tocar un archivo `.js` legacy:
+
 1. Renombrarlo a `.ts` (o `.tsx` si contiene JSX)
 2. Añadir tipos a parámetros y returns
 3. Corregir los errores de TypeScript que aparezcan

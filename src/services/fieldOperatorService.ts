@@ -74,7 +74,11 @@ export async function getFieldOrder(token: string, orderId: number | string) {
   return handleResponse(response, 'Error al obtener el pedido operativo');
 }
 
-export async function updateFieldOrder(token: string, orderId: number | string, payload: RequestPayload) {
+export async function updateFieldOrder(
+  token: string,
+  orderId: number | string,
+  payload: RequestPayload
+) {
   const response = await fetchWithTenant(`${API_URL_V2}field/orders/${orderId}`, {
     method: 'PUT',
     headers: getHeaders(token),
@@ -109,7 +113,12 @@ export async function getFieldRoute(token: string, routeId: number | string) {
   return handleResponse(response, 'Error al obtener la ruta operativa');
 }
 
-export async function updateFieldRouteStop(token: string, routeId: number | string, stopId: number | string, payload: RequestPayload) {
+export async function updateFieldRouteStop(
+  token: string,
+  routeId: number | string,
+  stopId: number | string,
+  payload: RequestPayload
+) {
   const response = await fetchWithTenant(`${API_URL_V2}field/routes/${routeId}/stops/${stopId}`, {
     method: 'PUT',
     headers: getHeaders(token),
@@ -144,7 +153,11 @@ export async function createRouteTemplate(token: string, payload: RequestPayload
   return handleResponse(response, 'Error al crear la plantilla');
 }
 
-export async function updateRouteTemplate(token: string, templateId: number | string, payload: RequestPayload) {
+export async function updateRouteTemplate(
+  token: string,
+  templateId: number | string,
+  payload: RequestPayload
+) {
   const response = await fetchWithTenant(`${API_URL_V2}route-templates/${templateId}`, {
     method: 'PUT',
     headers: getHeaders(token),
@@ -179,7 +192,11 @@ export async function createRoute(token: string, payload: RequestPayload) {
   return handleResponse(response, 'Error al crear la ruta');
 }
 
-export async function updateRoute(token: string, routeId: number | string, payload: RequestPayload) {
+export async function updateRoute(
+  token: string,
+  routeId: number | string,
+  payload: RequestPayload
+) {
   const response = await fetchWithTenant(`${API_URL_V2}routes/${routeId}`, {
     method: 'PUT',
     headers: getHeaders(token),

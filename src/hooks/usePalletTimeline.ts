@@ -2,10 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  getPalletTimeline,
-  type PalletTimelineEntry,
-} from '@/services/palletService';
+import { getPalletTimeline, type PalletTimelineEntry } from '@/services/palletService';
 
 function isValidPalletId(palletId: string | number | null | undefined): boolean {
   if (palletId == null) return false;
@@ -23,9 +20,7 @@ function isValidPalletId(palletId: string | number | null | undefined): boolean 
  * @param palletId - Pallet ID (number or string); skipped if 'new' or temp-*
  * @returns { timeline, loading, error, refetch }
  */
-export function usePalletTimeline(
-  palletId: string | number | null | undefined
-): {
+export function usePalletTimeline(palletId: string | number | null | undefined): {
   timeline: PalletTimelineEntry[];
   loading: boolean;
   error: Error | null;

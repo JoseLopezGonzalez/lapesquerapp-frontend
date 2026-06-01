@@ -25,13 +25,16 @@ function useFieldQuery<T = unknown>(
   return useQuery({
     queryKey: [...queryKey, tenantId ?? 'unknown'],
     queryFn: () => queryFn(token as string),
-    enabled: Boolean(token) && Boolean(tenantId) && (!requireFieldOperator || Boolean(fieldOperatorId)),
+    enabled:
+      Boolean(token) && Boolean(tenantId) && (!requireFieldOperator || Boolean(fieldOperatorId)),
   });
 }
 
 export function useFieldCustomerOptions() {
   const query = useFieldQuery(['field', 'customers', 'options'], getFieldCustomersOptions, true);
-  const raw: OptionRecord[] = Array.isArray(query.data) ? query.data : (query.data as { data?: OptionRecord[] } | undefined)?.data ?? [];
+  const raw: OptionRecord[] = Array.isArray(query.data)
+    ? query.data
+    : ((query.data as { data?: OptionRecord[] } | undefined)?.data ?? []);
   return {
     ...query,
     data: raw,
@@ -45,7 +48,9 @@ export function useFieldCustomerOptions() {
 
 export function useFieldProductOptions() {
   const query = useFieldQuery(['field', 'products', 'options'], getFieldProductsOptions, true);
-  const raw: OptionRecord[] = Array.isArray(query.data) ? query.data : (query.data as { data?: OptionRecord[] } | undefined)?.data ?? [];
+  const raw: OptionRecord[] = Array.isArray(query.data)
+    ? query.data
+    : ((query.data as { data?: OptionRecord[] } | undefined)?.data ?? []);
   return {
     ...query,
     data: raw,
@@ -60,10 +65,15 @@ export function useFieldProductOptions() {
 
 export function useFieldOperatorOptions() {
   const query = useFieldQuery(['field-operators', 'options'], getFieldOperatorsOptions, false);
-  const raw: OptionRecord[] = Array.isArray(query.data) ? query.data : (query.data as { data?: OptionRecord[] } | undefined)?.data ?? [];
+  const raw: OptionRecord[] = Array.isArray(query.data)
+    ? query.data
+    : ((query.data as { data?: OptionRecord[] } | undefined)?.data ?? []);
   return {
     ...query,
     data: raw,
-    options: raw.map((operator: OptionRecord) => ({ value: String(operator.id), label: String(operator.name ?? '') })),
+    options: raw.map((operator: OptionRecord) => ({
+      value: String(operator.id),
+      label: String(operator.name ?? ''),
+    })),
   };
 }

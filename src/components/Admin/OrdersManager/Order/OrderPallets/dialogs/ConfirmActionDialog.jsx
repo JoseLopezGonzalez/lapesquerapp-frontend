@@ -1,6 +1,12 @@
 'use client';
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Trash2, Unlink, Loader2 } from 'lucide-react';
 
@@ -46,7 +52,7 @@ export default function ConfirmActionDialog({
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">{description}</p>
+          <p className="text-muted-foreground text-sm">{description}</p>
         </div>
         <DialogFooter className="flex gap-2">
           <Button variant="outline" onClick={onCancel} disabled={isUnlinking}>
@@ -59,7 +65,7 @@ export default function ConfirmActionDialog({
           >
             {isUnlinking ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Desvinculando...
               </>
             ) : (

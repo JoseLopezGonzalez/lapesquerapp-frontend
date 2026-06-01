@@ -2,13 +2,39 @@
 
 import Link from 'next/link';
 import * as React from 'react';
-import { CalendarClock, CircleAlert, Clock3, UserRoundX, PhoneCall, UserCircle2, MoreVertical } from 'lucide-react';
+import {
+  CalendarClock,
+  CircleAlert,
+  Clock3,
+  UserRoundX,
+  PhoneCall,
+  UserCircle2,
+  MoreVertical,
+} from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useCrmDashboard } from '@/hooks/useCrmDashboard';
 import { useProspectMutations } from '@/hooks/useProspects';
 import { CRM_AGENDA_DESCRIPTION_MAX_LENGTH } from '@/components/Comercial/CRM/schemas/crmTextLimits';
@@ -18,7 +44,7 @@ import QuickInteractionModal from './QuickInteractionModal';
 
 function EmptyWidget({ icon: Icon, title, description }) {
   return (
-    <Empty className="border bg-muted/20 min-h-[180px]">
+    <Empty className="bg-muted/20 min-h-[180px] border">
       <EmptyHeader>
         <EmptyMedia variant="icon">
           <Icon className="size-4" />
@@ -63,7 +89,7 @@ function ReminderRow({ item, onReschedule, onClear, onFollowUp }) {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 space-y-1">
           <div className="flex items-center gap-2">
-            <span className="rounded-md bg-muted px-2 py-0.5 text-xs font-medium">
+            <span className="bg-muted rounded-md px-2 py-0.5 text-xs font-medium">
               {formatDateValue(item.nextActionAt)}
             </span>
             {overdue ? (
@@ -76,15 +102,23 @@ function ReminderRow({ item, onReschedule, onClear, onFollowUp }) {
             {item.label}
           </Link>
           {item.nextActionNote ? (
-            <p className="whitespace-pre-wrap wrap-break-word text-sm text-muted-foreground">{item.nextActionNote}</p>
+            <p className="text-muted-foreground text-sm wrap-break-word whitespace-pre-wrap">
+              {item.nextActionNote}
+            </p>
           ) : (
-            <p className="text-sm text-muted-foreground">Sin nota</p>
+            <p className="text-muted-foreground text-sm">Sin nota</p>
           )}
         </div>
       </div>
-      <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-1 ${item.type === 'interaction' ? 'bg-blue-500/10 text-blue-700 dark:text-blue-300' : 'bg-slate-500/10 text-slate-700 dark:text-slate-300'}`}>
-          {item.type === 'interaction' ? <PhoneCall className="size-3" /> : <UserCircle2 className="size-3" />}
+      <div className="text-muted-foreground mt-3 flex items-center gap-2 text-xs">
+        <span
+          className={`inline-flex items-center gap-1 rounded-full px-2 py-1 ${item.type === 'interaction' ? 'bg-blue-500/10 text-blue-700 dark:text-blue-300' : 'bg-slate-500/10 text-slate-700 dark:text-slate-300'}`}
+        >
+          {item.type === 'interaction' ? (
+            <PhoneCall className="size-3" />
+          ) : (
+            <UserCircle2 className="size-3" />
+          )}
           {item.type === 'interaction' ? 'Interacción' : 'Prospecto'}
         </span>
       </div>
@@ -229,7 +263,9 @@ export default function CrmDashboardWidgets() {
                           {item.label}
                         </Link>
                         <div className="mt-1 flex flex-wrap items-center gap-1">
-                          <p className="text-xs text-muted-foreground">{formatDateValue(item.nextActionAt)}</p>
+                          <p className="text-muted-foreground text-xs">
+                            {formatDateValue(item.nextActionAt)}
+                          </p>
                           <span
                             className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] ${
                               item.type === 'interaction'
@@ -237,11 +273,15 @@ export default function CrmDashboardWidgets() {
                                 : 'bg-slate-500/10 text-slate-700 dark:text-slate-300'
                             }`}
                           >
-                            {item.type === 'interaction' ? <PhoneCall className="size-3" /> : <UserCircle2 className="size-3" />}
+                            {item.type === 'interaction' ? (
+                              <PhoneCall className="size-3" />
+                            ) : (
+                              <UserCircle2 className="size-3" />
+                            )}
                             {overdue ? 'Vencida' : 'Pendiente'}
                           </span>
                         </div>
-                        <span className="mt-1 block text-xs text-muted-foreground wrap-break-word">
+                        <span className="text-muted-foreground mt-1 block text-xs wrap-break-word">
                           {item.nextActionNote || 'Sin nota'}
                         </span>
                       </TableCell>
@@ -253,11 +293,17 @@ export default function CrmDashboardWidgets() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onSelect={() => handleReschedule(item)}>Aplazar</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => handleReschedule(item)}>
+                              Aplazar
+                            </DropdownMenuItem>
                             {item.prospectId ? (
-                              <DropdownMenuItem onSelect={() => handleClear(item.prospectId)}>Descartar</DropdownMenuItem>
+                              <DropdownMenuItem onSelect={() => handleClear(item.prospectId)}>
+                                Descartar
+                              </DropdownMenuItem>
                             ) : null}
-                            <DropdownMenuItem onSelect={() => handleFollowUp(item)}>Seguimiento</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => handleFollowUp(item)}>
+                              Seguimiento
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -298,13 +344,17 @@ export default function CrmDashboardWidgets() {
                 {data.inactive_customers.map((customer) => (
                   <TableRow
                     key={customer.id}
-                    className={customer.lastOrderAt == null ? 'bg-amber-50/40 dark:bg-amber-950/20' : ''}
+                    className={
+                      customer.lastOrderAt == null ? 'bg-amber-50/40 dark:bg-amber-950/20' : ''
+                    }
                   >
                     <TableCell className="font-medium">
                       <Link href={`/comercial/clientes/${customer.id}`} className="hover:underline">
                         {customer.name}
                       </Link>
-                      <p className="text-xs font-normal text-muted-foreground">{customer.country?.name ?? 'Sin país'}</p>
+                      <p className="text-muted-foreground text-xs font-normal">
+                        {customer.country?.name ?? 'Sin país'}
+                      </p>
                     </TableCell>
                     <TableCell>
                       <span
@@ -318,7 +368,9 @@ export default function CrmDashboardWidgets() {
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
-                      {customer.lastOrderAt == null ? '—' : `${customer.daysSinceLastOrder ?? '—'} días`}
+                      {customer.lastOrderAt == null
+                        ? '—'
+                        : `${customer.daysSinceLastOrder ?? '—'} días`}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -356,13 +408,20 @@ export default function CrmDashboardWidgets() {
                 {data.prospects_without_activity.map((prospect) => (
                   <TableRow
                     key={prospect.id}
-                    className={prospect.lastContactAt == null ? 'bg-blue-50/40 dark:bg-blue-950/20' : ''}
+                    className={
+                      prospect.lastContactAt == null ? 'bg-blue-50/40 dark:bg-blue-950/20' : ''
+                    }
                   >
                     <TableCell className="font-medium">
-                      <Link href={`/comercial/prospectos/${prospect.id}`} className="hover:underline">
+                      <Link
+                        href={`/comercial/prospectos/${prospect.id}`}
+                        className="hover:underline"
+                      >
                         {prospect.companyName}
                       </Link>
-                      <p className="text-xs font-normal text-muted-foreground">{prospect.country?.name ?? 'Sin país'}</p>
+                      <p className="text-muted-foreground text-xs font-normal">
+                        {prospect.country?.name ?? 'Sin país'}
+                      </p>
                     </TableCell>
                     <TableCell>
                       <span
@@ -376,7 +435,9 @@ export default function CrmDashboardWidgets() {
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
-                      {prospect.lastContactAt == null ? '—' : `${prospect.daysWithoutActivity ?? '—'} días`}
+                      {prospect.lastContactAt == null
+                        ? '—'
+                        : `${prospect.daysWithoutActivity ?? '—'} días`}
                     </TableCell>
                   </TableRow>
                 ))}

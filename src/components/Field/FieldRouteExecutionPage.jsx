@@ -42,15 +42,13 @@ export default function FieldRouteExecutionPage({ routeId }) {
     { enabled: stopSheetOpen || Boolean(selectedStop) }
   );
   const { updateStop, isUpdatingStop } = useFieldRouteStopMutation(routeId);
+  const { stops, setFocusedStopId, nextStop, focusedStop, mapStops, refreshStopsFromRoute } =
+    useFieldRouteExecutionState(route);
   const {
-    stops,
-    setFocusedStopId,
-    nextStop,
-    focusedStop,
-    mapStops,
-    refreshStopsFromRoute,
-  } = useFieldRouteExecutionState(route);
-  const { routeGeometry, isCalculatingRoute, directionsError: routeGeometryError } = useRouteGeometry(stops);
+    routeGeometry,
+    isCalculatingRoute,
+    directionsError: routeGeometryError,
+  } = useRouteGeometry(stops);
 
   const ordersByStopId = useMemo(
     () =>
@@ -74,14 +72,18 @@ export default function FieldRouteExecutionPage({ routeId }) {
   );
 
   if (isLoading) {
-    return <div className="flex flex-1 items-center justify-center"><Loader /></div>;
+    return (
+      <div className="flex flex-1 items-center justify-center">
+        <Loader />
+      </div>
+    );
   }
 
   if (errorMessage || !route) {
     return (
       <div className="flex flex-1 items-center justify-center p-4">
         <EmptyState
-          icon={<MapPinned className="h-10 w-10 text-primary" />}
+          icon={<MapPinned className="text-primary h-10 w-10" />}
           title="No se pudo abrir la ruta"
           description={errorMessage ?? 'La ruta no está disponible.'}
         />
@@ -108,8 +110,14 @@ export default function FieldRouteExecutionPage({ routeId }) {
           },
         }),
         {
-          loading: { title: 'Registrando resultado', description: 'Guardando el cierre de la parada.' },
-          success: { title: 'Parada actualizada', description: 'El resultado se ha registrado correctamente.' },
+          loading: {
+            title: 'Registrando resultado',
+            description: 'Guardando el cierre de la parada.',
+          },
+          success: {
+            title: 'Parada actualizada',
+            description: 'El resultado se ha registrado correctamente.',
+          },
           error: (err) => ({
             title: 'No se pudo cerrar la parada',
             description: err?.message ?? 'Inténtalo de nuevo.',
@@ -133,7 +141,10 @@ export default function FieldRouteExecutionPage({ routeId }) {
         }),
         {
           loading: { title: 'Omitiendo parada', description: 'Guardando el estado operativo.' },
-          success: { title: 'Parada omitida', description: 'La parada ha quedado marcada como omitida.' },
+          success: {
+            title: 'Parada omitida',
+            description: 'La parada ha quedado marcada como omitida.',
+          },
           error: (err) => ({
             title: 'No se pudo omitir la parada',
             description: err?.message ?? 'Inténtalo de nuevo.',
@@ -148,19 +159,24 @@ export default function FieldRouteExecutionPage({ routeId }) {
   };
 
   return (
-    <div className="relative flex h-full min-h-0 w-full min-w-0 flex-col bg-background">
+    <div className="bg-background relative flex h-full min-h-0 w-full min-w-0 flex-col">
       <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col p-4 pb-4 md:pb-8">
         <div className="mb-4 flex items-start justify-between gap-3 px-1">
           <div className="min-w-0">
             <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" className="-ml-2 shrink-0" onClick={() => router.push('/field/rutas')}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="-ml-2 shrink-0"
+                onClick={() => router.push('/field/rutas')}
+              >
                 <ArrowLeft className="h-4 w-4" />
                 <span className="sr-only">Volver a todas las rutas</span>
               </Button>
               <h1 className="truncate text-xl font-semibold">{route.name}</h1>
             </div>
-            <p className="text-sm text-muted-foreground">{routeDateLabel}</p>
-            <p className="text-sm text-muted-foreground">{route.description || 'Ruta operativa'}</p>
+            <p className="text-muted-foreground text-sm">{routeDateLabel}</p>
+            <p className="text-muted-foreground text-sm">{route.description || 'Ruta operativa'}</p>
           </div>
           <Badge variant="secondary">{getFieldStatusLabel(route.status || 'pending')}</Badge>
         </div>

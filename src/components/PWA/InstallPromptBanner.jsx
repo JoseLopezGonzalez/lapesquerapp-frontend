@@ -1,42 +1,42 @@
-"use client";
+'use client';
 
 /**
  * InstallPromptBanner - Prompt intrusivo para instalación PWA
- * 
+ *
  * Mobile: Mini dialog modal en la parte inferior que bloquea la interacción
  * Desktop: Notificación en la esquina inferior derecha
- * 
+ *
  * Se muestra solo cuando las condiciones de estrategia se cumplen.
- * 
+ *
  * Referencia: docs/mobile-adaptation/00-PLAN-GENERAL.md
  */
 
-import * as React from "react";
-import { usePWAInstallStrategy } from "@/hooks/use-pwa-install-strategy";
-import { usePWAInstall } from "@/hooks/use-pwa-install";
-import { InstallPrompt } from "./InstallPrompt";
-import { InstallGuideIOS } from "./InstallGuideIOS";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { X, Download } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { MOBILE_SAFE_AREAS } from "@/lib/design-tokens-mobile";
+import * as React from 'react';
+import { usePWAInstallStrategy } from '@/hooks/use-pwa-install-strategy';
+import { usePWAInstall } from '@/hooks/use-pwa-install';
+import { InstallPrompt } from './InstallPrompt';
+import { InstallGuideIOS } from './InstallGuideIOS';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { X, Download } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { MOBILE_SAFE_AREAS } from '@/lib/design-tokens-mobile';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/components/ui/dialog";
-import { appShortName } from "@/configs/branding";
+} from '@/components/ui/dialog';
+import { appShortName } from '@/configs/branding';
 
 export function InstallPromptBanner() {
-  const { 
-    shouldShow, 
-    canShow, 
-    markAsShown, 
+  const {
+    shouldShow,
+    canShow,
+    markAsShown,
     markAsDismissed,
-    isIOS: isIOSFromStrategy
+    isIOS: isIOSFromStrategy,
   } = usePWAInstallStrategy();
   const { canInstall, isIOS, install } = usePWAInstall();
   const isMobile = useIsMobile();
@@ -50,24 +50,24 @@ export function InstallPromptBanner() {
   // Mobile: Notificación en el top (igual estilo que desktop pero arriba)
   if (isMobile) {
     return (
-      <div 
+      <div
         className={cn(
-          "fixed top-4 left-4 right-4 z-50 bg-primary text-primary-foreground rounded-xl shadow-2xl border border-primary-foreground/10",
+          'bg-primary text-primary-foreground border-primary-foreground/10 fixed top-4 right-4 left-4 z-50 rounded-xl border shadow-2xl',
           MOBILE_SAFE_AREAS.TOP,
-          "animate-in slide-in-from-top duration-300"
+          'animate-in slide-in-from-top duration-300'
         )}
       >
         <div className="p-5">
-          <div className="flex items-start justify-between gap-3 mb-4">
-            <div className="flex items-start gap-3 flex-1 min-w-0">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-foreground/15 shrink-0 mt-0.5">
-                <Download className="w-5 h-5 text-primary-foreground" />
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <div className="flex min-w-0 flex-1 items-start gap-3">
+              <div className="bg-primary-foreground/15 mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
+                <Download className="text-primary-foreground h-5 w-5" />
               </div>
-              <div className="flex-1 min-w-0 pt-0.5">
-                <h3 className="font-semibold text-base text-primary-foreground leading-tight mb-1">
+              <div className="min-w-0 flex-1 pt-0.5">
+                <h3 className="text-primary-foreground mb-1 text-base leading-tight font-semibold">
                   Instala {appShortName}
                 </h3>
-                <p className="text-sm text-primary-foreground/75 leading-relaxed">
+                <p className="text-primary-foreground/75 text-sm leading-relaxed">
                   Añade la app a tu pantalla de inicio para acceso rápido y una mejor experiencia
                 </p>
               </div>
@@ -76,9 +76,9 @@ export function InstallPromptBanner() {
               onClick={markAsDismissed}
               variant="ghost"
               size="icon"
-              className="h-8 w-8 shrink-0 text-primary-foreground/60 hover:text-primary-foreground hover:bg-primary-foreground/15 rounded-full -mt-1 -mr-1"
+              className="text-primary-foreground/60 hover:text-primary-foreground hover:bg-primary-foreground/15 -mt-1 -mr-1 h-8 w-8 shrink-0 rounded-full"
             >
-              <X className="w-4 h-4" />
+              <X className="h-4 w-4" />
               <span className="sr-only">Cerrar</span>
             </Button>
           </div>
@@ -89,14 +89,11 @@ export function InstallPromptBanner() {
                 <Button
                   onClick={() => setOpen(true)}
                   size="default"
-                  className="w-full h-10 text-sm font-medium bg-primary-foreground text-primary hover:bg-primary-foreground/90 shadow-sm"
+                  className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 h-10 w-full text-sm font-medium shadow-sm"
                 >
                   Cómo instalar
                 </Button>
-                <InstallGuideIOS
-                  open={open}
-                  onOpenChange={setOpen}
-                />
+                <InstallGuideIOS open={open} onOpenChange={setOpen} />
               </>
             ) : canInstall ? (
               <InstallPrompt
@@ -110,9 +107,9 @@ export function InstallPromptBanner() {
               <Button
                 onClick={() => setOpen(true)}
                 size="default"
-                className="w-full h-10 text-sm font-medium bg-primary-foreground text-primary hover:bg-primary-foreground/90 shadow-sm"
+                className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 h-10 w-full text-sm font-medium shadow-sm"
               >
-                <Download className="w-4 h-4 mr-2" />
+                <Download className="mr-2 h-4 w-4" />
                 Cómo instalar
               </Button>
             )}
@@ -124,23 +121,23 @@ export function InstallPromptBanner() {
 
   // Desktop: Notificación en la esquina inferior derecha
   return (
-    <div 
+    <div
       className={cn(
-        "fixed bottom-4 right-4 z-50 w-96 bg-primary text-primary-foreground rounded-xl shadow-2xl border border-primary-foreground/10",
-        "animate-in slide-in-from-bottom duration-300"
+        'bg-primary text-primary-foreground border-primary-foreground/10 fixed right-4 bottom-4 z-50 w-96 rounded-xl border shadow-2xl',
+        'animate-in slide-in-from-bottom duration-300'
       )}
     >
       <div className="p-5">
-        <div className="flex items-start justify-between gap-3 mb-4">
-          <div className="flex items-start gap-3 flex-1 min-w-0">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-foreground/15 shrink-0 mt-0.5">
-              <Download className="w-5 h-5 text-primary-foreground" />
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <div className="flex min-w-0 flex-1 items-start gap-3">
+            <div className="bg-primary-foreground/15 mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
+              <Download className="text-primary-foreground h-5 w-5" />
             </div>
-            <div className="flex-1 min-w-0 pt-0.5">
-              <h3 className="font-semibold text-base leading-tight mb-1 text-primary-foreground">
+            <div className="min-w-0 flex-1 pt-0.5">
+              <h3 className="text-primary-foreground mb-1 text-base leading-tight font-semibold">
                 Instala {appShortName}
               </h3>
-              <p className="text-sm text-primary-foreground/75 leading-relaxed">
+              <p className="text-primary-foreground/75 text-sm leading-relaxed">
                 Añade la app a tu escritorio para acceso rápido y una mejor experiencia
               </p>
             </div>
@@ -149,9 +146,9 @@ export function InstallPromptBanner() {
             onClick={markAsDismissed}
             variant="ghost"
             size="icon"
-            className="h-8 w-8 shrink-0 text-primary-foreground/60 hover:text-primary-foreground hover:bg-primary-foreground/15 rounded-full -mt-1 -mr-1"
+            className="text-primary-foreground/60 hover:text-primary-foreground hover:bg-primary-foreground/15 -mt-1 -mr-1 h-8 w-8 shrink-0 rounded-full"
           >
-            <X className="w-4 h-4" />
+            <X className="h-4 w-4" />
             <span className="sr-only">Cerrar</span>
           </Button>
         </div>
@@ -162,15 +159,12 @@ export function InstallPromptBanner() {
               <Button
                 onClick={() => setOpen(true)}
                 size="default"
-                className="w-full h-10 text-sm font-medium bg-primary-foreground text-primary hover:bg-primary-foreground/90 shadow-sm"
+                className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 h-10 w-full text-sm font-medium shadow-sm"
               >
-                <Download className="w-4 h-4 mr-2" />
+                <Download className="mr-2 h-4 w-4" />
                 Instalar
               </Button>
-              <InstallGuideIOS
-                open={open}
-                onOpenChange={setOpen}
-              />
+              <InstallGuideIOS open={open} onOpenChange={setOpen} />
             </>
           ) : canInstall ? (
             <Button
@@ -181,9 +175,9 @@ export function InstallPromptBanner() {
                 }
               }}
               size="default"
-              className="w-full h-10 text-sm font-medium bg-primary-foreground text-primary hover:bg-primary-foreground/90 shadow-sm"
+              className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 h-10 w-full text-sm font-medium shadow-sm"
             >
-              <Download className="w-4 h-4 mr-2" />
+              <Download className="mr-2 h-4 w-4" />
               Instalar
             </Button>
           ) : (
@@ -192,16 +186,12 @@ export function InstallPromptBanner() {
               <Button
                 onClick={() => setOpen(true)}
                 size="default"
-                className="w-full h-10 text-sm font-medium bg-primary-foreground text-primary hover:bg-primary-foreground/90 shadow-sm"
+                className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 h-10 w-full text-sm font-medium shadow-sm"
               >
-                <Download className="w-4 h-4 mr-2" />
+                <Download className="mr-2 h-4 w-4" />
                 Cómo instalar
               </Button>
-              <InstallGuideIOS
-                open={open}
-                onOpenChange={setOpen}
-                hideIfNotIOS={false}
-              />
+              <InstallGuideIOS open={open} onOpenChange={setOpen} hideIfNotIOS={false} />
             </>
           )}
         </div>
@@ -209,4 +199,3 @@ export function InstallPromptBanner() {
     </div>
   );
 }
-

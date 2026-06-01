@@ -29,7 +29,7 @@ La revisión es **in situ**: usando la app en el navegador, no solo leyendo cód
    - **Qué** se ve mal o se usa mal (descripción breve).
    - **Acción** a tomar si está claro (ajustar clase, cambiar variante, corregir uso del componente).
 
-No es obligatorio documentar cada hallazgo en este mismo doc; puede usarse como guía de proceso y, si se quiere, una sección “Hallazgos” o una lista externa (por ejemplo en _worklog o en issues).
+No es obligatorio documentar cada hallazgo en este mismo doc; puede usarse como guía de proceso y, si se quiere, una sección “Hallazgos” o una lista externa (por ejemplo en \_worklog o en issues).
 
 ---
 
@@ -37,16 +37,16 @@ No es obligatorio documentar cada hallazgo en este mismo doc; puede usarse como 
 
 Para no dejarse nada, se puede seguir un orden como este (adaptar a la estructura real de la app):
 
-| Área | Rutas / pantallas típicas | Componentes a vigilar |
-|------|---------------------------|------------------------|
-| **Login / auth** | Login, verificación, recuperación | Button, Input, Card |
-| **Dashboard** | `/admin/home`, gráficos, filtros, selects | Card, Select, Tabs, Button, DateRangePicker |
-| **Listados / tablas** | `/admin/[entity]`, tablas de datos, filtros | Table, Button, Input, Select, Pagination, Dropdown |
-| **Formularios de creación/edición** | Create/Edit por entidad, recepciones, pedidos, etc. | Input, Select, Textarea, Button, Card, Dialog/Sheet |
-| **Detalle / vistas** | Detalle de pedido, pallet, producción, etc. | Card, Badge, Tabs, Button, Dialog, Accordion |
-| **Sidebar y navegación** | Sidebar, menús, theme toggle | Sidebar, Dropdown, Button, ThemeToggle |
-| **Modales y overlays** | Confirmaciones, alertas, wizards | Dialog, AlertDialog, Sheet, Popover |
-| **Comercial / Operador / Warehouse** | Layouts y pantallas por rol | Los mismos componentes en contexto distinto |
+| Área                                 | Rutas / pantallas típicas                           | Componentes a vigilar                               |
+| ------------------------------------ | --------------------------------------------------- | --------------------------------------------------- |
+| **Login / auth**                     | Login, verificación, recuperación                   | Button, Input, Card                                 |
+| **Dashboard**                        | `/admin/home`, gráficos, filtros, selects           | Card, Select, Tabs, Button, DateRangePicker         |
+| **Listados / tablas**                | `/admin/[entity]`, tablas de datos, filtros         | Table, Button, Input, Select, Pagination, Dropdown  |
+| **Formularios de creación/edición**  | Create/Edit por entidad, recepciones, pedidos, etc. | Input, Select, Textarea, Button, Card, Dialog/Sheet |
+| **Detalle / vistas**                 | Detalle de pedido, pallet, producción, etc.         | Card, Badge, Tabs, Button, Dialog, Accordion        |
+| **Sidebar y navegación**             | Sidebar, menús, theme toggle                        | Sidebar, Dropdown, Button, ThemeToggle              |
+| **Modales y overlays**               | Confirmaciones, alertas, wizards                    | Dialog, AlertDialog, Sheet, Popover                 |
+| **Comercial / Operador / Warehouse** | Layouts y pantallas por rol                         | Los mismos componentes en contexto distinto         |
 
 ---
 
@@ -66,4 +66,4 @@ Para no dejarse nada, se puede seguir un orden como este (adaptar a la estructur
 
 ---
 
-*Documento creado para marcar y guiar la revisión visual in situ tras la migración a componentes radix-nova.*
+_Documento creado para marcar y guiar la revisión visual in situ tras la migración a componentes radix-nova._

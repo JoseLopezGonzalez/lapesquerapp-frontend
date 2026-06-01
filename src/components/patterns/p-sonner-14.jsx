@@ -1,17 +1,15 @@
-import { toast } from "sonner"
+import { toast } from 'sonner';
 
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import { XIcon } from "lucide-react"
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import { XIcon } from 'lucide-react';
 
 export function Pattern() {
   const showToast = () => {
     toast.custom(() => (
-      <div
-        className="bg-invert text-invert-foreground rounded-md flex w-[356px] flex-col gap-3 border border-transparent p-4 shadow-lg">
+      <div className="bg-invert text-invert-foreground flex w-[356px] flex-col gap-3 rounded-md border border-transparent p-4 shadow-lg">
         <div className="flex items-start gap-3">
-          <div
-            className="flex size-6 shrink-0 items-center justify-center rounded-full bg-red-500 text-white">
+          <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-red-500 text-white">
             <XIcon className="size-3.5" />
           </div>
           <div className="flex flex-1 flex-col gap-1">
@@ -31,19 +29,21 @@ export function Pattern() {
             size="xs"
             variant="outline"
             className="bg-background/10 border-border/10 text-invert-foreground flex-1"
-            onClick={() => toast.dismiss()}>
+            onClick={() => toast.dismiss()}
+          >
             View Logs
           </Button>
           <Button
             size="xs"
             className="flex-1 border-red-800 bg-red-500 text-white hover:border-red-900 hover:bg-red-600"
-            onClick={() => toast.dismiss()}>
+            onClick={() => toast.dismiss()}
+          >
             Retry Build
           </Button>
         </div>
       </div>
-    ))
-  }
+    ));
+  };
 
   return (
     <div className="flex items-center justify-center">

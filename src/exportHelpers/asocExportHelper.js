@@ -1,60 +1,60 @@
 /**
  * Asoc Export Helper
- * 
+ *
  * Contains logic for generating Excel rows and linkedSummary for Asoc documents
  */
 
 import { parseDecimalValue, calculateImporte, formatDateForA3 } from './common';
 import { normalizeText } from '@/helpers/formats/texts';
 import {
-    asocArmadoresPuntaDelMoral,
-    asocArmadoresPuntaDelMoralSubasta,
-    barcos,
-    productos,
+  asocArmadoresPuntaDelMoral,
+  asocArmadoresPuntaDelMoralSubasta,
+  barcos,
+  productos,
 } from '@/components/Admin/MarketDataExtractor/ListadoComprasAsocPuntaDelMoral/exportData';
 import {
-    buildAsocServiciosCalculados,
-    shouldApplyFullTasaPescaRepercusion,
+  buildAsocServiciosCalculados,
+  shouldApplyFullTasaPescaRepercusion,
 } from './portFeeRepercusion';
 
 const ASOC_CABNUMDOC_TYPES = {
-    VENTA_DIRECTA: '1',
-    SUBASTA: '2',
-    SERVICIOS: '3',
-    CAJAS_SUBASTA: '4',
+  VENTA_DIRECTA: '1',
+  SUBASTA: '2',
+  SERVICIOS: '3',
+  CAJAS_SUBASTA: '4',
 };
 
 function buildCabNumDoc(fechaSoloNumeros, typeDigit, sequence) {
-    return `${fechaSoloNumeros}${typeDigit}${sequence}`;
+  return `${fechaSoloNumeros}${typeDigit}${sequence}`;
 }
 
 function getAsocUnknownSpecies(document) {
-    const unknownSpecies = new Set();
-    const subastas = document?.tables?.subastas || [];
+  const unknownSpecies = new Set();
+  const subastas = document?.tables?.subastas || [];
 
-    subastas.forEach((linea) => {
-        const producto = productos.find(
-            (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
-        );
-        if (!producto) unknownSpecies.add(linea.especie);
-    });
+  subastas.forEach((linea) => {
+    const producto = productos.find(
+      (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
+    );
+    if (!producto) unknownSpecies.add(linea.especie);
+  });
 
-    return Array.from(unknownSpecies);
+  return Array.from(unknownSpecies);
 }
 
 function assertAsocSpeciesMapped(document) {
-    const unknownSpecies = getAsocUnknownSpecies(document);
-    if (unknownSpecies.length > 0) {
-        throw new Error(
-            `Especies no contempladas para exportación ASOC: ${unknownSpecies.join(', ')}. ` +
-            'Actualiza el catálogo de productos antes de exportar.'
-        );
-    }
+  const unknownSpecies = getAsocUnknownSpecies(document);
+  if (unknownSpecies.length > 0) {
+    throw new Error(
+      `Especies no contempladas para exportación ASOC: ${unknownSpecies.join(', ')}. ` +
+        'Actualiza el catálogo de productos antes de exportar.'
+    );
+  }
 }
 
 /**
  * Generates Excel rows for an Asoc document
- * 
+ *
  * @param {Object} document - Processed Asoc document (with details, tables)
  * @param {Object} options - Options for generation
  * @param {string} options.CABSERIE - Serie code (default: "AS")
@@ -62,225 +62,243 @@ function assertAsocSpeciesMapped(document) {
  * @returns {Object} Object with rows array and nextSequence number
  */
 export function generateAsocExcelRows(document, options = {}) {
-    assertAsocSpeciesMapped(document);
+  assertAsocSpeciesMapped(document);
 
-    const applyFullTasaPescaRepercusion = shouldApplyFullTasaPescaRepercusion(options);
-    const { CABSERIE: baseCABSERIE = "AS", startSequence = 1 } = options;
-    const { details: { fecha: fechaRaw, tipoSubasta }, tables } = document;
-    const fecha = formatDateForA3(fechaRaw);
-    // Extraer año de la fecha (últimos 2 dígitos)
-    // Intentar extraer año directamente de la cadena (formato YYYY-MM-DD o YYYY/MM/DD)
-    let año = null;
-    const añoMatch = String(fechaRaw).match(/(\d{4})/);
-    if (añoMatch) {
-        año = añoMatch[1].slice(-2);
-    } else {
-        // Fallback: usar Date object
-        const fechaObj = new Date(fechaRaw);
-        año = fechaObj.getFullYear().toString().slice(-2);
+  const applyFullTasaPescaRepercusion = shouldApplyFullTasaPescaRepercusion(options);
+  const { CABSERIE: baseCABSERIE = 'AS', startSequence = 1 } = options;
+  const {
+    details: { fecha: fechaRaw, tipoSubasta },
+    tables,
+  } = document;
+  const fecha = formatDateForA3(fechaRaw);
+  // Extraer año de la fecha (últimos 2 dígitos)
+  // Intentar extraer año directamente de la cadena (formato YYYY-MM-DD o YYYY/MM/DD)
+  let año = null;
+  const añoMatch = String(fechaRaw).match(/(\d{4})/);
+  if (añoMatch) {
+    año = añoMatch[1].slice(-2);
+  } else {
+    // Fallback: usar Date object
+    const fechaObj = new Date(fechaRaw);
+    año = fechaObj.getFullYear().toString().slice(-2);
+  }
+  const CABSERIE = `${baseCABSERIE}${año}`;
+  const fechaSoloNumeros = String(fechaRaw).replace(/[^0-9]/g, '');
+  let albaranSequence = startSequence;
+  const processedRows = [];
+
+  const isVentaDirecta = tipoSubasta == 'M1 M1';
+  const isSubasta = tipoSubasta == 'T2 Arrastre';
+
+  const cajasTotales = tables.subastas.reduce((acc, item) => {
+    return acc + Number(item.cajas);
+  }, 0);
+
+  // Group subastas by barco
+  const subastasGroupedByBarco = document.tables.subastas.reduce((acc, item) => {
+    if (!acc[item.barco]) {
+      acc[item.barco] = {
+        nombre: item.barco,
+        matricula: item.matricula,
+        lineas: [],
+      };
     }
-    const CABSERIE = `${baseCABSERIE}${año}`;
-    const fechaSoloNumeros = String(fechaRaw).replace(/[^0-9]/g, '');
-    let albaranSequence = startSequence;
-    const processedRows = [];
+    acc[item.barco].lineas.push(item);
+    return acc;
+  }, {});
 
-    const isVentaDirecta = tipoSubasta == 'M1 M1';
-    const isSubasta = tipoSubasta == 'T2 Arrastre';
+  const subastas = Object.values(subastasGroupedByBarco);
 
-    const cajasTotales = tables.subastas.reduce((acc, item) => {
-        return acc + Number(item.cajas);
-    }, 0);
+  // Calculate importeTotalCalculado for services
+  const importeTotalCalculado = tables.subastas.reduce((acc, linea) => {
+    return acc + calculateImporte(linea.pesoNeto, linea.precio);
+  }, 0);
 
-    // Group subastas by barco
-    const subastasGroupedByBarco = document.tables.subastas.reduce((acc, item) => {
-        if (!acc[item.barco]) {
-            acc[item.barco] = {
-                nombre: item.barco,
-                matricula: item.matricula,
-                lineas: [],
-            };
-        }
-        acc[item.barco].lineas.push(item);
-        return acc;
-    }, {});
+  const servicios = buildAsocServiciosCalculados(
+    applyFullTasaPescaRepercusion,
+    importeTotalCalculado
+  );
 
-    const subastas = Object.values(subastasGroupedByBarco);
+  // Group by barco (matricula)
+  const groupedByBarco = subastas.reduce((acc, line) => {
+    const key = line.matricula;
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(line);
+    return acc;
+  }, {});
 
-    // Calculate importeTotalCalculado for services
-    const importeTotalCalculado = tables.subastas.reduce((acc, linea) => {
-        return acc + calculateImporte(linea.pesoNeto, linea.precio);
-    }, 0);
+  // Generate rows for venta directa
+  if (isVentaDirecta) {
+    for (const [matricula, lines] of Object.entries(groupedByBarco)) {
+      const barcoData = barcos.find((a) => normalizeText(a.matricula) === normalizeText(matricula));
+      if (!barcoData) {
+        console.error(`Falta código de conversión para barco ${matricula}`);
+        continue;
+      }
 
-    const servicios = buildAsocServiciosCalculados(
-        applyFullTasaPescaRepercusion,
-        importeTotalCalculado,
-    );
-
-    // Group by barco (matricula)
-    const groupedByBarco = subastas.reduce((acc, line) => {
-        const key = line.matricula;
-        if (!acc[key]) acc[key] = [];
-        acc[key].push(line);
-        return acc;
-    }, {});
-
-    // Generate rows for venta directa
-    if (isVentaDirecta) {
-        for (const [matricula, lines] of Object.entries(groupedByBarco)) {
-            const barcoData = barcos.find(a => normalizeText(a.matricula) === normalizeText(matricula));
-            if (!barcoData) {
-                console.error(`Falta código de conversión para barco ${matricula}`);
-                continue;
-            }
-
-            const cabNumDoc = buildCabNumDoc(
-                fechaSoloNumeros,
-                ASOC_CABNUMDOC_TYPES.VENTA_DIRECTA,
-                albaranSequence
-            );
-
-            lines.forEach(l => {
-                l.lineas.forEach(linea => {
-                    const producto = productos.find(
-                        (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
-                    );
-                    processedRows.push({
-                        CABSERIE: CABSERIE,
-                        CABNUMDOC: cabNumDoc,
-                        CABFECHA: fecha,
-                        CABCODPRO: asocArmadoresPuntaDelMoral.codA3erp,
-                        CABREFERENCIA: `ASOC - ${fecha} - ${barcoData.nombre}`,
-                        LINCODART: producto?.codA3erp,
-                        LINDESCLIN: linea.especie,
-                        LINUNIDADES: parseDecimalValue(linea.pesoNeto),
-                        LINPRCMONEDA: parseDecimalValue(linea.precio),
-                        LINTIPIVA: 'RED10',
-                    });
-                });
-            });
-
-            albaranSequence++;
-        }
-    } else if (isSubasta) {
-        const cabNumDoc = buildCabNumDoc(
-            fechaSoloNumeros,
-            ASOC_CABNUMDOC_TYPES.SUBASTA,
-            albaranSequence
-        );
-
-        document.tables.subastas.forEach(linea => {
-            const producto = productos.find(
-                (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
-            );
-            processedRows.push({
-                CABSERIE: CABSERIE,
-                CABNUMDOC: cabNumDoc,
-                CABFECHA: fecha,
-                CABCODPRO: asocArmadoresPuntaDelMoralSubasta.codA3erp,
-                CABREFERENCIA: `ASOC - ${fecha} - SUBASTA`,
-                LINCODART: producto?.codA3erp,
-                LINDESCLIN: linea.especie,
-                LINUNIDADES: parseDecimalValue(linea.pesoNeto),
-                LINPRCMONEDA: parseDecimalValue(linea.precio),
-                LINTIPIVA: 'RED10',
-            });
-        });
-
-        albaranSequence++;
-    }
-
-    // Generate rows for servicios
-    const cabNumDocServicios = buildCabNumDoc(
+      const cabNumDoc = buildCabNumDoc(
         fechaSoloNumeros,
-        ASOC_CABNUMDOC_TYPES.SERVICIOS,
+        ASOC_CABNUMDOC_TYPES.VENTA_DIRECTA,
         albaranSequence
-    );
-    servicios.forEach(line => {
-        processedRows.push({
+      );
+
+      lines.forEach((l) => {
+        l.lineas.forEach((linea) => {
+          const producto = productos.find(
+            (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
+          );
+          processedRows.push({
             CABSERIE: CABSERIE,
-            CABNUMDOC: cabNumDocServicios,
+            CABNUMDOC: cabNumDoc,
             CABFECHA: fecha,
-            CABCODPRO: isVentaDirecta ? asocArmadoresPuntaDelMoral.codA3erp : asocArmadoresPuntaDelMoralSubasta.codA3erp,
-            CABREFERENCIA: isVentaDirecta ? `ASOC - ${fecha} - SERVICIOS` : `ASOC - ${fecha} - SERVICIOS SUBASTA`,
-            LINCODART: 9999,
-            LINDESCLIN: line.descripcion,
-            LINUNIDADES: parseDecimalValue(line.unidades),
-            LINPRCMONEDA: line.precio,
+            CABCODPRO: asocArmadoresPuntaDelMoral.codA3erp,
+            CABREFERENCIA: `ASOC - ${fecha} - ${barcoData.nombre}`,
+            LINCODART: producto?.codA3erp,
+            LINDESCLIN: linea.especie,
+            LINUNIDADES: parseDecimalValue(linea.pesoNeto),
+            LINPRCMONEDA: parseDecimalValue(linea.precio),
             LINTIPIVA: 'RED10',
+          });
         });
+      });
+
+      albaranSequence++;
+    }
+  } else if (isSubasta) {
+    const cabNumDoc = buildCabNumDoc(
+      fechaSoloNumeros,
+      ASOC_CABNUMDOC_TYPES.SUBASTA,
+      albaranSequence
+    );
+
+    document.tables.subastas.forEach((linea) => {
+      const producto = productos.find(
+        (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
+      );
+      processedRows.push({
+        CABSERIE: CABSERIE,
+        CABNUMDOC: cabNumDoc,
+        CABFECHA: fecha,
+        CABCODPRO: asocArmadoresPuntaDelMoralSubasta.codA3erp,
+        CABREFERENCIA: `ASOC - ${fecha} - SUBASTA`,
+        LINCODART: producto?.codA3erp,
+        LINDESCLIN: linea.especie,
+        LINUNIDADES: parseDecimalValue(linea.pesoNeto),
+        LINPRCMONEDA: parseDecimalValue(linea.precio),
+        LINTIPIVA: 'RED10',
+      });
+    });
+
+    albaranSequence++;
+  }
+
+  // Generate rows for servicios
+  const cabNumDocServicios = buildCabNumDoc(
+    fechaSoloNumeros,
+    ASOC_CABNUMDOC_TYPES.SERVICIOS,
+    albaranSequence
+  );
+  servicios.forEach((line) => {
+    processedRows.push({
+      CABSERIE: CABSERIE,
+      CABNUMDOC: cabNumDocServicios,
+      CABFECHA: fecha,
+      CABCODPRO: isVentaDirecta
+        ? asocArmadoresPuntaDelMoral.codA3erp
+        : asocArmadoresPuntaDelMoralSubasta.codA3erp,
+      CABREFERENCIA: isVentaDirecta
+        ? `ASOC - ${fecha} - SERVICIOS`
+        : `ASOC - ${fecha} - SERVICIOS SUBASTA`,
+      LINCODART: 9999,
+      LINDESCLIN: line.descripcion,
+      LINUNIDADES: parseDecimalValue(line.unidades),
+      LINPRCMONEDA: line.precio,
+      LINTIPIVA: 'RED10',
+    });
+  });
+  albaranSequence++;
+
+  // Generate row for cajas if subasta
+  if (isSubasta) {
+    const cabNumDocCajas = buildCabNumDoc(
+      fechaSoloNumeros,
+      ASOC_CABNUMDOC_TYPES.CAJAS_SUBASTA,
+      albaranSequence
+    );
+    processedRows.push({
+      CABSERIE: CABSERIE,
+      CABNUMDOC: cabNumDocCajas,
+      CABFECHA: fecha,
+      CABCODPRO: asocArmadoresPuntaDelMoralSubasta.codA3erp,
+      CABREFERENCIA: `ASOC - ${fecha} - SERVICIOS CAJAS SUBASTA`,
+      LINCODART: 10168,
+      LINDESCLIN: 'Préstamo cajas',
+      LINUNIDADES: cajasTotales,
+      LINPRCMONEDA: 5.5,
+      LINTIPIVA: 'RED10',
     });
     albaranSequence++;
+  }
 
-    // Generate row for cajas if subasta
-    if (isSubasta) {
-        const cabNumDocCajas = buildCabNumDoc(
-            fechaSoloNumeros,
-            ASOC_CABNUMDOC_TYPES.CAJAS_SUBASTA,
-            albaranSequence
-        );
-        processedRows.push({
-            CABSERIE: CABSERIE,
-            CABNUMDOC: cabNumDocCajas,
-            CABFECHA: fecha,
-            CABCODPRO: asocArmadoresPuntaDelMoralSubasta.codA3erp,
-            CABREFERENCIA: `ASOC - ${fecha} - SERVICIOS CAJAS SUBASTA`,
-            LINCODART: 10168,
-            LINDESCLIN: 'Préstamo cajas',
-            LINUNIDADES: cajasTotales,
-            LINPRCMONEDA: 5.50,
-            LINTIPIVA: 'RED10',
-        });
-        albaranSequence++;
-    }
-
-    return {
-        rows: processedRows,
-        nextSequence: albaranSequence
-    };
+  return {
+    rows: processedRows,
+    nextSequence: albaranSequence,
+  };
 }
 
 /**
  * Generates linkedSummary for an Asoc document
- * 
+ *
  * @param {Object} document - Processed Asoc document
  * @returns {Array} Array of linked summary objects
  */
 export function generateAsocLinkedSummary(document) {
-    const { details: { fecha }, tables } = document;
+  const {
+    details: { fecha },
+    tables,
+  } = document;
 
-    // Group subastas by barco
-    const subastasGroupedByBarco = document.tables.subastas.reduce((acc, item) => {
-        if (!acc[item.barco]) {
-            acc[item.barco] = {
-                nombre: item.barco,
-                matricula: item.matricula,
-                lineas: [],
-            };
-        }
-        acc[item.barco].lineas.push(item);
-        return acc;
-    }, {});
+  // Group subastas by barco
+  const subastasGroupedByBarco = document.tables.subastas.reduce((acc, item) => {
+    if (!acc[item.barco]) {
+      acc[item.barco] = {
+        nombre: item.barco,
+        matricula: item.matricula,
+        lineas: [],
+      };
+    }
+    acc[item.barco].lineas.push(item);
+    return acc;
+  }, {});
 
-    const subastas = Object.values(subastasGroupedByBarco);
+  const subastas = Object.values(subastasGroupedByBarco);
 
-    return subastas.map((barco) => {
-        const declaredTotalNetWeight = barco.lineas.reduce((acc, linea) => acc + parseDecimalValue(linea.pesoNeto), 0);
-        const declaredTotalAmount = barco.lineas.reduce((acc, linea) => acc + calculateImporte(linea.pesoNeto, linea.precio), 0);
+  return subastas.map((barco) => {
+    const declaredTotalNetWeight = barco.lineas.reduce(
+      (acc, linea) => acc + parseDecimalValue(linea.pesoNeto),
+      0
+    );
+    const declaredTotalAmount = barco.lineas.reduce(
+      (acc, linea) => acc + calculateImporte(linea.pesoNeto, linea.precio),
+      0
+    );
 
-        const codBrisappBarco = barcos.find((barcoData) => normalizeText(barcoData.matricula) === normalizeText(barco.matricula))?.codBrisapp ?? null;
+    const codBrisappBarco =
+      barcos.find(
+        (barcoData) => normalizeText(barcoData.matricula) === normalizeText(barco.matricula)
+      )?.codBrisapp ?? null;
 
-        return {
-            supplierId: codBrisappBarco,
-            date: fecha,
-            declaredTotalNetWeight: parseFloat(declaredTotalNetWeight.toFixed(2)),
-            declaredTotalAmount: parseFloat(declaredTotalAmount.toFixed(2)),
-            barcoNombre: barco.nombre,
-            error: codBrisappBarco === null ? true : false,
-        };
-    });
+    return {
+      supplierId: codBrisappBarco,
+      date: fecha,
+      declaredTotalNetWeight: parseFloat(declaredTotalNetWeight.toFixed(2)),
+      declaredTotalAmount: parseFloat(declaredTotalAmount.toFixed(2)),
+      barcoNombre: barco.nombre,
+      error: codBrisappBarco === null ? true : false,
+    };
+  });
 }
 
 export function validateAsocSpeciesForExport(document) {
-    assertAsocSpeciesMapped(document);
+  assertAsocSpeciesMapped(document);
 }
-

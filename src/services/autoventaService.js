@@ -16,9 +16,7 @@ export function buildAutoventaPayload(state) {
   const entryDate = today;
   const loadDate = today;
   const observations =
-    typeof state.observations === 'string'
-      ? state.observations.slice(0, 1000)
-      : '';
+    typeof state.observations === 'string' ? state.observations.slice(0, 1000) : '';
 
   const items = (state.items || []).map((item) => ({
     productId: Number(item.productId),

@@ -83,6 +83,7 @@ Determinar por qué el módulo de producciones puede sentirse pesado, lento o po
 Baja a nivel de hook, componente, query key, endpoint, payload y dependencia.
 
 Distingue claramente entre:
+
 - **causa raíz**: el defecto estructural
 - **síntoma**: lo que el usuario o el sistema percibe
 - **amplificador**: lo que agrava el impacto sin ser la causa principal
@@ -300,14 +301,14 @@ La salida debe servir para decidir trabajo real y, si procede, actualizar la fue
 
 Para cada flujo crítico revisado:
 
-| Campo | Contenido |
-|---|---|
-| `flujo` | nombre del flujo |
-| `qué ve el usuario` | descripción de la experiencia actual |
-| `qué está esperando el sistema` | causa técnica real |
-| `por qué puede parecer bloqueado` | amplificador de percepción |
-| `qué feedback falta` | qué comunicación visual o textual falta |
-| `mejora UX mínima recomendada` | cambio de menor esfuerzo con mayor impacto perceptivo |
+| Campo                             | Contenido                                             |
+| --------------------------------- | ----------------------------------------------------- |
+| `flujo`                           | nombre del flujo                                      |
+| `qué ve el usuario`               | descripción de la experiencia actual                  |
+| `qué está esperando el sistema`   | causa técnica real                                    |
+| `por qué puede parecer bloqueado` | amplificador de percepción                            |
+| `qué feedback falta`              | qué comunicación visual o textual falta               |
+| `mejora UX mínima recomendada`    | cambio de menor esfuerzo con mayor impacto perceptivo |
 
 ---
 
@@ -399,6 +400,7 @@ Cambios de bajo riesgo y alto impacto perceptivo. Indica archivo y mecanismo exa
 - consolidación de hooks o servicios
 
 Para cada cambio estructural indica:
+
 - dependencias con otros cambios
 - riesgo de regresión
 - cómo validar sin runtime
@@ -418,6 +420,7 @@ Propón exactamente qué escribir de vuelta en:
 - `docs/prompts/15-fuente-de-verdad-bloques-y-puntuaciones-frontend.md`
 
 Incluye:
+
 - `puntuacion_propuesta` para el bloque `Producción, trazabilidad y etiquetas`
 - `estado_propuesto`
 - `gap_principal` actualizado

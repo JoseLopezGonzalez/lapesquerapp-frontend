@@ -8,12 +8,12 @@ Se ha revisado el flujo completo desde el login hasta la visualización del Pane
 
 ## 1. Rutas y middleware
 
-| Ruta | ¿En matcher? | Comportamiento |
-|------|----------------|----------------|
-| `/` | No | No pasa por middleware. Operario autenticado es redirigido en cliente a `/warehouse/{assignedStoreId}`. |
-| `/auth/verify` | No | No pasa por middleware. Tras canjear magic link, `signIn` + redirect a `/warehouse/{assignedStoreId}`. |
-| `/warehouse/:path*` | Sí | Token requerido. `roleConfig["/warehouse"]` = operario, administrador, tecnico → acceso permitido. |
-| `/admin/*` | Sí | Si operario intenta entrar → middleware redirige a `/warehouse/{assignedStoreId}` (o `/unauthorized` si no tiene assignedStoreId). |
+| Ruta                | ¿En matcher? | Comportamiento                                                                                                                     |
+| ------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                 | No           | No pasa por middleware. Operario autenticado es redirigido en cliente a `/warehouse/{assignedStoreId}`.                            |
+| `/auth/verify`      | No           | No pasa por middleware. Tras canjear magic link, `signIn` + redirect a `/warehouse/{assignedStoreId}`.                             |
+| `/warehouse/:path*` | Sí           | Token requerido. `roleConfig["/warehouse"]` = operario, administrador, tecnico → acceso permitido.                                 |
+| `/admin/*`          | Sí           | Si operario intenta entrar → middleware redirige a `/warehouse/{assignedStoreId}` (o `/unauthorized` si no tiene assignedStoreId). |
 
 Conclusión: no hace falta cambiar permisos en middleware para que el operario vea el dashboard.
 

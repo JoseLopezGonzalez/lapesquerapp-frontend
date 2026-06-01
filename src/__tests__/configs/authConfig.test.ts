@@ -2,20 +2,20 @@
  * Unit tests for authConfig
  * isAuthError, isAuthStatusCode, buildLoginUrl
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   AUTH_ERROR_CONFIG,
   isAuthError,
   isAuthStatusCode,
   isUnauthorizedStatusCode,
   buildLoginUrl,
-} from "@/configs/authConfig";
+} from '@/configs/authConfig';
 
-describe("authConfig", () => {
-  const fakeWindow = { location: { origin: "https://app.example.com" } };
+describe('authConfig', () => {
+  const fakeWindow = { location: { origin: 'https://app.example.com' } };
 
   beforeEach(() => {
-    vi.stubGlobal("window", fakeWindow);
+    vi.stubGlobal('window', fakeWindow);
   });
 
   afterEach(() => {
@@ -77,27 +77,23 @@ describe("authConfig", () => {
     });
   });
 
-  describe("buildLoginUrl", () => {
-    it("returns default login URL when no path", () => {
+  describe('buildLoginUrl', () => {
+    it('returns default login URL when no path', () => {
       const url = buildLoginUrl('');
       expect(url).toContain(AUTH_ERROR_CONFIG.DEFAULT_LOGIN_URL);
       expect(url).toContain('https://app.example.com');
       expect(new URL(url).searchParams.get(AUTH_ERROR_CONFIG.FROM_PARAM)).toBeNull();
     });
 
-    it("adds from param when currentPath provided", () => {
+    it('adds from param when currentPath provided', () => {
       const url = buildLoginUrl('/admin/orders');
       expect(url).toContain(AUTH_ERROR_CONFIG.DEFAULT_LOGIN_URL);
-      expect(new URL(url).searchParams.get(AUTH_ERROR_CONFIG.FROM_PARAM)).toBe(
-        '/admin/orders'
-      );
+      expect(new URL(url).searchParams.get(AUTH_ERROR_CONFIG.FROM_PARAM)).toBe('/admin/orders');
     });
 
-    it("handles path with query string", () => {
+    it('handles path with query string', () => {
       const url = buildLoginUrl('/admin?page=1');
-      expect(new URL(url).searchParams.get(AUTH_ERROR_CONFIG.FROM_PARAM)).toBe(
-        '/admin?page=1'
-      );
+      expect(new URL(url).searchParams.get(AUTH_ERROR_CONFIG.FROM_PARAM)).toBe('/admin?page=1');
     });
   });
 });

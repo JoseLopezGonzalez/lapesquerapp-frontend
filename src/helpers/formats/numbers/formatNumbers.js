@@ -1,42 +1,38 @@
-
 export const formatInteger = (number) => {
-    return Intl.NumberFormat('es-ES', {
-      style: 'decimal',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-      useGrouping: true
-    }).format(number);
-  }
-  
-  export const formatIntegerCurrency = (number) => {
-    return `${formatInteger(number)} €`;
-  }
-  
-  export const formatIntegerWeight = (number) => {
-    return `${formatInteger(number)} Kg`;
-  }
+  return Intl.NumberFormat('es-ES', {
+    style: 'decimal',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+    useGrouping: true,
+  }).format(number);
+};
 
-  export const formatDecimal = (number) => {
-    return Intl.NumberFormat('es-ES', {
-      style: 'decimal',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-      useGrouping: true
-    }).format(Number(number));
-  }
-  
-  export const formatDecimalCurrency = (number) => {
-    return `${formatDecimal(number)} €`;
-  }
-  
-  export const formatDecimalWeight = (number) => {
-    return `${formatDecimal(number)} kg`;
-  }
+export const formatIntegerCurrency = (number) => {
+  return `${formatInteger(number)} €`;
+};
 
-  export const parseEuropeanNumber = (str) => {
-    if (typeof str !== 'string') return 0;
-    return parseFloat(str.replace(/\./g, '').replace(',', '.').trim()) || 0;
-  };
-  
-  
-  
+export const formatIntegerWeight = (number) => {
+  return `${formatInteger(number)} Kg`;
+};
+
+export const formatDecimal = (number) => {
+  return Intl.NumberFormat('es-ES', {
+    style: 'decimal',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    useGrouping: true,
+  }).format(Number(number));
+};
+
+export const formatDecimalCurrency = (number) => {
+  return `${formatDecimal(number)} €`;
+};
+
+export const formatDecimalWeight = (number) => {
+  return `${formatDecimal(number)} kg`;
+};
+
+export const parseEuropeanNumber = (str) => {
+  if (typeof str !== 'string') return 0;
+  return parseFloat(str.replace(/\./g, '').replace(',', '.').trim()) || 0;
+};

@@ -13,9 +13,8 @@ export default function OperatorDispatchesCreatePage() {
   const { data: session, status } = useSession();
   const [createdDispatch, setCreatedDispatch] = useState(null);
 
-  const storeId = session?.user?.assignedStoreId != null
-    ? String(session.user.assignedStoreId)
-    : null;
+  const storeId =
+    session?.user?.assignedStoreId != null ? String(session.user.assignedStoreId) : null;
 
   const handleOnCreate = (dispatch) => {
     setCreatedDispatch(dispatch);
@@ -28,14 +27,14 @@ export default function OperatorDispatchesCreatePage() {
 
   if (status === 'loading') {
     return (
-      <div className="flex justify-center items-center min-h-[50vh]">
+      <div className="flex min-h-[50vh] items-center justify-center">
         <Loader />
       </div>
     );
   }
 
   return (
-    <div className="w-full h-full flex flex-col flex-1 min-h-0">
+    <div className="flex h-full min-h-0 w-full flex-1 flex-col">
       {createdDispatch ? (
         <CeboSuccessActions
           dispatch={createdDispatch}

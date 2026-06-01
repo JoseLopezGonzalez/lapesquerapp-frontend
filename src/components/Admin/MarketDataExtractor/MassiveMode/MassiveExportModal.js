@@ -1,189 +1,195 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Download, Link as LinkIcon, Loader2 } from "lucide-react";
-import { downloadMassiveExcel } from "@/services/export/excelGenerator";
-import { linkAllPurchases } from "@/services/export/linkService";
-import { generateCofraLinkedSummary } from "@/exportHelpers/cofraExportHelper";
-import { generateLonjaDeIslaLinkedSummary } from "@/exportHelpers/lonjaDeIslaExportHelper";
-import { notify } from "@/lib/notifications";
-import { generateAsocLinkedSummary } from "@/exportHelpers/asocExportHelper";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Download, Link as LinkIcon, Loader2 } from 'lucide-react';
+import { downloadMassiveExcel } from '@/services/export/excelGenerator';
+import { linkAllPurchases } from '@/services/export/linkService';
+import { generateCofraLinkedSummary } from '@/exportHelpers/cofraExportHelper';
+import { generateLonjaDeIslaLinkedSummary } from '@/exportHelpers/lonjaDeIslaExportHelper';
+import { notify } from '@/lib/notifications';
+import { generateAsocLinkedSummary } from '@/exportHelpers/asocExportHelper';
 
 export default function MassiveExportModal({ documents }) {
-    const [isExporting, setIsExporting] = useState(false);
-    const [isLinking, setIsLinking] = useState(false);
-    const [open, setOpen] = useState(false);
-    const [applyFullTasaPescaRepercusion, setApplyFullTasaPescaRepercusion] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isLinking, setIsLinking] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [applyFullTasaPescaRepercusion, setApplyFullTasaPescaRepercusion] = useState(true);
 
-    const LINKED_SUMMARY_GENERATORS = {
-        'albaranCofradiaPescadoresSantoCristoDelMar': generateCofraLinkedSummary,
-        'listadoComprasLonjaDeIsla': generateLonjaDeIslaLinkedSummary,
-        'listadoComprasAsocArmadoresPuntaDelMoral': generateAsocLinkedSummary,
-    };
+  const LINKED_SUMMARY_GENERATORS = {
+    albaranCofradiaPescadoresSantoCristoDelMar: generateCofraLinkedSummary,
+    listadoComprasLonjaDeIsla: generateLonjaDeIslaLinkedSummary,
+    listadoComprasAsocArmadoresPuntaDelMoral: generateAsocLinkedSummary,
+  };
 
-    const handleExport = async () => {
-        setIsExporting(true);
-        try {
-            const documentsToExport = documents.map((doc) => ({
-                document: doc.processedData[0],
-                documentType: doc.documentType,
-            }));
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const documentsToExport = documents.map((doc) => ({
+        document: doc.processedData[0],
+        documentType: doc.documentType,
+      }));
 
-            await downloadMassiveExcel(documentsToExport, { applyFullTasaPescaRepercusion });
-            notify.success({
-              title: 'Excel generado',
-              description: 'El archivo se ha generado correctamente.',
-            });
-        } catch (error) {
-            console.error('Error al exportar:', error);
-            notify.error({
-              title: 'Error al exportar Excel',
-              description: error.message,
-            });
-        } finally {
-            setIsExporting(false);
+      await downloadMassiveExcel(documentsToExport, { applyFullTasaPescaRepercusion });
+      notify.success({
+        title: 'Excel generado',
+        description: 'El archivo se ha generado correctamente.',
+      });
+    } catch (error) {
+      console.error('Error al exportar:', error);
+      notify.error({
+        title: 'Error al exportar Excel',
+        description: error.message,
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleLinkAll = async () => {
+    setIsLinking(true);
+    try {
+      // Generate linkedSummary for all documents
+      const allLinkedSummary = [];
+
+      documents.forEach((doc) => {
+        const generator = LINKED_SUMMARY_GENERATORS[doc.documentType];
+        if (generator && doc.processedData && doc.processedData.length > 0) {
+          const linkedSummary = generator(doc.processedData[0]);
+          allLinkedSummary.push(...linkedSummary);
         }
-    };
+      });
 
-    const handleLinkAll = async () => {
-        setIsLinking(true);
-        try {
-            // Generate linkedSummary for all documents
-            const allLinkedSummary = [];
+      if (allLinkedSummary.length === 0) {
+        notify.error({
+          title: 'Sin compras para enlazar',
+          description: 'No hay compras en los documentos para vincular.',
+        });
+        return;
+      }
 
-            documents.forEach((doc) => {
-                const generator = LINKED_SUMMARY_GENERATORS[doc.documentType];
-                if (generator && doc.processedData && doc.processedData.length > 0) {
-                    const linkedSummary = generator(doc.processedData[0]);
-                    allLinkedSummary.push(...linkedSummary);
-                }
-            });
+      // Link all purchases
+      const result = await linkAllPurchases(allLinkedSummary);
 
-            if (allLinkedSummary.length === 0) {
-                notify.error({
-                  title: 'Sin compras para enlazar',
-                  description: 'No hay compras en los documentos para vincular.',
-                });
-                return;
-            }
+      if (result.correctas > 0) {
+        notify.success({
+          title: 'Compras enlazadas',
+          description: `Se enlazaron ${result.correctas} compras correctamente.`,
+        });
+      }
 
-            // Link all purchases
-            const result = await linkAllPurchases(allLinkedSummary);
+      if (result.errores > 0) {
+        notify.error({
+          title: 'Compras no enlazadas',
+          description: `${result.errores} compras fallaron al enlazar.`,
+        });
+      }
 
-            if (result.correctas > 0) {
-                notify.success({
-                  title: 'Compras enlazadas',
-                  description: `Se enlazaron ${result.correctas} compras correctamente.`,
-                });
-            }
+      if (result.correctas === 0 && result.errores === 0) {
+        notify.info({
+          title: 'Sin compras válidas',
+          description: 'No hay compras válidas para enlazar en la selección.',
+        });
+      }
+    } catch (error) {
+      console.error('Error al enlazar:', error);
+      notify.error({
+        title: 'Error al enlazar',
+        description: error.message,
+      });
+    } finally {
+      setIsLinking(false);
+    }
+  };
 
-            if (result.errores > 0) {
-                notify.error({
-                  title: 'Compras no enlazadas',
-                  description: `${result.errores} compras fallaron al enlazar.`,
-                });
-            }
-
-            if (result.correctas === 0 && result.errores === 0) {
-                notify.info({
-                  title: 'Sin compras válidas',
-                  description: 'No hay compras válidas para enlazar en la selección.',
-                });
-            }
-        } catch (error) {
-            console.error('Error al enlazar:', error);
-            notify.error({
-              title: 'Error al enlazar',
-              description: error.message,
-            });
-        } finally {
-            setIsLinking(false);
-        }
-    };
-
-    return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button className="w-full">
-                    <Download className="h-4 w-4 mr-2" />
-                    Exportar y Enlazar
-                </Button>
-            </DialogTrigger>
-            <DialogContent size="xl">
-                <DialogHeader>
-                    <DialogTitle>Exportar y Enlazar Documentos</DialogTitle>
-                    <DialogDescription>
-                        Exporta todos los documentos a un único Excel y enlaza todas las compras.
-                    </DialogDescription>
-                </DialogHeader>
-                <div className="py-4">
-                    <div className="flex items-start gap-3 rounded-md border border-border bg-muted/30 p-3 mb-4">
-                        <Checkbox
-                            id="tasa-pesca-repercusion-export-link"
-                            checked={applyFullTasaPescaRepercusion}
-                            onCheckedChange={(v) => setApplyFullTasaPescaRepercusion(v === true)}
-                        />
-                        <div className="grid gap-1.5 leading-none">
-                            <Label htmlFor="tasa-pesca-repercusion-export-link" className="text-sm font-medium cursor-pointer">
-                                Repercutir tasa pesca fresca (T4) en gastos exportados
-                            </Label>
-                            <p className="text-xs text-muted-foreground">
-                                Desmarcar si aplica exención temporal en Lonja de Isla / ASOC.
-                            </p>
-                        </div>
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-4">
-                        {documents.length} documento(s) procesado(s) correctamente
-                    </p>
-                    <div className="space-y-2">
-                        <Button
-                            className="w-full"
-                            onClick={handleExport}
-                            disabled={isExporting || isLinking}
-                        >
-                            {isExporting ? (
-                                <>
-                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                    Exportando...
-                                </>
-                            ) : (
-                                <>
-                                    <Download className="h-4 w-4 mr-2" />
-                                    Exportar Excel
-                                </>
-                            )}
-                        </Button>
-                        <Button
-                            className="w-full"
-                            variant="outline"
-                            onClick={handleLinkAll}
-                            disabled={isExporting || isLinking}
-                        >
-                            {isLinking ? (
-                                <>
-                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                    Enlazando...
-                                </>
-                            ) : (
-                                <>
-                                    <LinkIcon className="h-4 w-4 mr-2" />
-                                    Enlazar Todas las Compras
-                                </>
-                            )}
-                        </Button>
-                    </div>
-                </div>
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => setOpen(false)}>
-                        Cerrar
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    );
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button className="w-full">
+          <Download className="mr-2 h-4 w-4" />
+          Exportar y Enlazar
+        </Button>
+      </DialogTrigger>
+      <DialogContent size="xl">
+        <DialogHeader>
+          <DialogTitle>Exportar y Enlazar Documentos</DialogTitle>
+          <DialogDescription>
+            Exporta todos los documentos a un único Excel y enlaza todas las compras.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="py-4">
+          <div className="border-border bg-muted/30 mb-4 flex items-start gap-3 rounded-md border p-3">
+            <Checkbox
+              id="tasa-pesca-repercusion-export-link"
+              checked={applyFullTasaPescaRepercusion}
+              onCheckedChange={(v) => setApplyFullTasaPescaRepercusion(v === true)}
+            />
+            <div className="grid gap-1.5 leading-none">
+              <Label
+                htmlFor="tasa-pesca-repercusion-export-link"
+                className="cursor-pointer text-sm font-medium"
+              >
+                Repercutir tasa pesca fresca (T4) en gastos exportados
+              </Label>
+              <p className="text-muted-foreground text-xs">
+                Desmarcar si aplica exención temporal en Lonja de Isla / ASOC.
+              </p>
+            </div>
+          </div>
+          <p className="text-muted-foreground mb-4 text-sm">
+            {documents.length} documento(s) procesado(s) correctamente
+          </p>
+          <div className="space-y-2">
+            <Button className="w-full" onClick={handleExport} disabled={isExporting || isLinking}>
+              {isExporting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Exportando...
+                </>
+              ) : (
+                <>
+                  <Download className="mr-2 h-4 w-4" />
+                  Exportar Excel
+                </>
+              )}
+            </Button>
+            <Button
+              className="w-full"
+              variant="outline"
+              onClick={handleLinkAll}
+              disabled={isExporting || isLinking}
+            >
+              {isLinking ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Enlazando...
+                </>
+              ) : (
+                <>
+                  <LinkIcon className="mr-2 h-4 w-4" />
+                  Enlazar Todas las Compras
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Cerrar
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 }
-

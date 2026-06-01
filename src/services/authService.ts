@@ -1,33 +1,34 @@
-import { fetchWithTenant } from "@lib/fetchWithTenant";
-import { getAuthToken, clearAuthTokenCache } from "@/lib/auth/getAuthToken";
-import { API_URL_V2 } from "@/configs/config";
+import { fetchWithTenant } from '@lib/fetchWithTenant';
+import { getAuthToken, clearAuthTokenCache } from '@/lib/auth/getAuthToken';
+import { API_URL_V2 } from '@/configs/config';
 import type {
   RequestAccessResponse,
   VerifyAuthResponse,
   AuthUser,
   GetCurrentUserResponse,
   AuthApiError,
-} from "@/types/auth";
+} from '@/types/auth';
 
-const THROTTLE_MESSAGE =
-  "Demasiados intentos; espera un momento antes de volver a intentar.";
+const THROTTLE_MESSAGE = 'Demasiados intentos; espera un momento antes de volver a intentar.';
 
 /**
  * Solicita acceso: un solo correo con enlace + código (reemplaza magic-link/request y otp/request).
  */
 export async function requestAccess(email: string): Promise<RequestAccessResponse> {
   const response = await fetchWithTenant(`${API_URL_V2}auth/request-access`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email }),
   });
   if (response.status === 429) {
     throw new Error(THROTTLE_MESSAGE);
   }
-  const data = (await response.json().catch(() => ({}))) as RequestAccessResponse & { userMessage?: string };
+  const data = (await response.json().catch(() => ({}))) as RequestAccessResponse & {
+    userMessage?: string;
+  };
   if (!response.ok) {
     throw new Error(
-      data.message || (data as { userMessage?: string }).userMessage || "Error al solicitar acceso."
+      data.message || (data as { userMessage?: string }).userMessage || 'Error al solicitar acceso.'
     );
   }
   return data;
@@ -38,8 +39,8 @@ export async function requestAccess(email: string): Promise<RequestAccessRespons
  */
 export async function verifyMagicLinkToken(token: string): Promise<VerifyAuthResponse> {
   const response = await fetchWithTenant(`${API_URL_V2}auth/magic-link/verify`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ token }),
   });
   if (response.status === 429) {
@@ -51,8 +52,9 @@ export async function verifyMagicLinkToken(token: string): Promise<VerifyAuthRes
   };
   if (!response.ok) {
     const msg =
-      (response.status === 403 ? data.userMessage || data.message : data.message || data.userMessage) ||
-      "Enlace no válido o expirado.";
+      (response.status === 403
+        ? data.userMessage || data.message
+        : data.message || data.userMessage) || 'Enlace no válido o expirado.';
     const err = new Error(msg) as AuthApiError;
     err.status = response.status;
     err.data = data as unknown as Record<string, unknown>;
@@ -66,17 +68,21 @@ export async function verifyMagicLinkToken(token: string): Promise<VerifyAuthRes
  */
 export async function requestOtp(email: string): Promise<RequestAccessResponse> {
   const response = await fetchWithTenant(`${API_URL_V2}auth/otp/request`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email }),
   });
   if (response.status === 429) {
     throw new Error(THROTTLE_MESSAGE);
   }
-  const data = (await response.json().catch(() => ({}))) as RequestAccessResponse & { userMessage?: string };
+  const data = (await response.json().catch(() => ({}))) as RequestAccessResponse & {
+    userMessage?: string;
+  };
   if (!response.ok) {
     throw new Error(
-      data.message || (data as { userMessage?: string }).userMessage || "Error al solicitar el código."
+      data.message ||
+        (data as { userMessage?: string }).userMessage ||
+        'Error al solicitar el código.'
     );
   }
   return data;
@@ -85,13 +91,10 @@ export async function requestOtp(email: string): Promise<RequestAccessResponse> 
 /**
  * Canjea el código OTP y devuelve access_token y user (sin autenticación).
  */
-export async function verifyOtp(
-  email: string,
-  code: string
-): Promise<VerifyAuthResponse> {
+export async function verifyOtp(email: string, code: string): Promise<VerifyAuthResponse> {
   const response = await fetchWithTenant(`${API_URL_V2}auth/otp/verify`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, code }),
   });
   if (response.status === 429) {
@@ -103,8 +106,9 @@ export async function verifyOtp(
   };
   if (!response.ok) {
     const msg =
-      (response.status === 403 ? data.userMessage || data.message : data.message || data.userMessage) ||
-      "Código no válido o expirado.";
+      (response.status === 403
+        ? data.userMessage || data.message
+        : data.message || data.userMessage) || 'Código no válido o expirado.';
     const err = new Error(msg) as AuthApiError;
     err.status = response.status;
     err.data = data as unknown as Record<string, unknown>;
@@ -128,20 +132,20 @@ export async function logout(): Promise<Response | { ok: boolean }> {
     clearAuthTokenCache();
 
     const response = await fetchWithTenant(`${API_URL_V2}logout`, {
-      method: "POST",
+      method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
     });
 
     if (!response.ok) {
-      console.warn("Error al revocar token en backend:", response.status);
+      console.warn('Error al revocar token en backend:', response.status);
     }
 
     return response;
   } catch (error) {
-    console.error("Error en logout del backend:", error);
+    console.error('Error en logout del backend:', error);
     return { ok: false };
   }
 }
@@ -153,10 +157,10 @@ export async function getCurrentUser(): Promise<AuthUser> {
   const token = await getAuthToken();
 
   const response = await fetchWithTenant(`${API_URL_V2}me`, {
-    method: "GET",
+    method: 'GET',
     headers: {
       Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
   });
 
@@ -165,7 +169,12 @@ export async function getCurrentUser(): Promise<AuthUser> {
   }
 
   const data = (await response.json()) as GetCurrentUserResponse;
-  if (typeof data === "object" && data !== null && "data" in data && (data as { data?: AuthUser }).data) {
+  if (
+    typeof data === 'object' &&
+    data !== null &&
+    'data' in data &&
+    (data as { data?: AuthUser }).data
+  ) {
     return (data as { data: AuthUser }).data;
   }
   return data as AuthUser;

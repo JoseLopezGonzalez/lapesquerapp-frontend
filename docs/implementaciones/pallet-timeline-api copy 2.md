@@ -8,9 +8,9 @@ Documento de contrato entre backend y frontend: qué devuelve el API, cuándo y 
 
 ## 1. Endpoints
 
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| `GET` | `/api/v2/pallets/{id}/timeline` | Obtiene el historial de modificaciones del palet `id` |
+| Método   | Ruta                            | Descripción                                                      |
+| -------- | ------------------------------- | ---------------------------------------------------------------- |
+| `GET`    | `/api/v2/pallets/{id}/timeline` | Obtiene el historial de modificaciones del palet `id`            |
 | `DELETE` | `/api/v2/pallets/{id}/timeline` | Borra todo el historial del palet (solo administrador y técnico) |
 
 ### GET timeline — Cuándo llamarlo
@@ -64,14 +64,14 @@ Cuerpo JSON: `{ "message": "Historial del palet borrado correctamente" }`. El pa
 
 Todas las entradas comparten estos campos a nivel raíz:
 
-| Campo | Tipo | Siempre presente | Descripción |
-|-------|------|------------------|-------------|
-| `timestamp` | string | Sí | Fecha/hora en ISO 8601 (ej. `2026-02-25T10:30:00.000000Z`) |
-| `userId` | number \| null | Sí | ID del usuario que realizó la acción; `null` si la acción es automática (sistema) |
-| `userName` | string | Sí | Nombre del usuario; si no hay usuario, será `"Sistema"` |
-| `type` | string | Sí | Identificador del tipo de evento (ver sección 3) |
-| `action` | string | Sí | **Título breve** del evento (ej. "Palet actualizado", "Movido a almacén"). El detalle completo está en `details`. |
-| `details` | object | Sí | Objeto con datos específicos del tipo; estructura depende de `type` (puede ser `{}`) |
+| Campo       | Tipo           | Siempre presente | Descripción                                                                                                       |
+| ----------- | -------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `timestamp` | string         | Sí               | Fecha/hora en ISO 8601 (ej. `2026-02-25T10:30:00.000000Z`)                                                        |
+| `userId`    | number \| null | Sí               | ID del usuario que realizó la acción; `null` si la acción es automática (sistema)                                 |
+| `userName`  | string         | Sí               | Nombre del usuario; si no hay usuario, será `"Sistema"`                                                           |
+| `type`      | string         | Sí               | Identificador del tipo de evento (ver sección 3)                                                                  |
+| `action`    | string         | Sí               | **Título breve** del evento (ej. "Palet actualizado", "Movido a almacén"). El detalle completo está en `details`. |
+| `details`   | object         | Sí               | Objeto con datos específicos del tipo; estructura depende de `type` (puede ser `{}`)                              |
 
 ---
 
@@ -89,15 +89,15 @@ A continuación se listan **todos** los valores posibles de `type` y, para cada 
 
 **`details`**:
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| `boxesCount` | number | Número de cajas con las que se creó el palet |
-| `totalNetWeight` | number | Peso neto total (kg) de esas cajas |
-| `initialState` | string | Estado inicial: `"registered"`, `"stored"` o `"shipped"` (autoventa) |
-| `storeId` | number \| null | ID del almacén si se asignó al crear; si no, `null` |
-| `storeName` | string \| null | Nombre del almacén; `null` si no hay almacén |
-| `orderId` | number \| null | ID del pedido si se vinculó al crear (o pedido autoventa); si no, `null` |
-| `fromAutoventa` | boolean | *(Opcional)* `true` si el palet se creó en un flujo de autoventa |
+| Campo            | Tipo           | Descripción                                                              |
+| ---------------- | -------------- | ------------------------------------------------------------------------ |
+| `boxesCount`     | number         | Número de cajas con las que se creó el palet                             |
+| `totalNetWeight` | number         | Peso neto total (kg) de esas cajas                                       |
+| `initialState`   | string         | Estado inicial: `"registered"`, `"stored"` o `"shipped"` (autoventa)     |
+| `storeId`        | number \| null | ID del almacén si se asignó al crear; si no, `null`                      |
+| `storeName`      | string \| null | Nombre del almacén; `null` si no hay almacén                             |
+| `orderId`        | number \| null | ID del pedido si se vinculó al crear (o pedido autoventa); si no, `null` |
+| `fromAutoventa`  | boolean        | _(Opcional)_ `true` si el palet se creó en un flujo de autoventa         |
 
 **`action`**: `"Palet creado"` | `"Palet creado (autoventa)"` (título breve; cajas y peso en `details`).
 
@@ -109,11 +109,11 @@ A continuación se listan **todos** los valores posibles de `type` y, para cada 
 
 **`details`**:
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| `receptionId` | number | ID de la recepción de materia prima |
-| `boxesCount` | number | Número de cajas del palet |
-| `totalNetWeight` | number | Peso neto total (kg) |
+| Campo            | Tipo   | Descripción                         |
+| ---------------- | ------ | ----------------------------------- |
+| `receptionId`    | number | ID de la recepción de materia prima |
+| `boxesCount`     | number | Número de cajas del palet           |
+| `totalNetWeight` | number | Peso neto total (kg)                |
 
 **`action`**: `"Palet creado desde recepción"` (título breve; receptionId, cajas y peso en `details`).
 
@@ -125,24 +125,26 @@ A continuación se listan **todos** los valores posibles de `type` y, para cada 
 
 **`details`**: Objeto en el que **solo aparecen las claves que realmente cambiaron**. Posibles claves:
 
-| Clave | Tipo | Descripción |
-|-------|------|-------------|
-| `observations` | `{ "from": string \| null, "to": string \| null }` | Solo si cambiaron las observaciones. |
-| `state` | `{ "fromId", "from", "toId", "to" }` | Solo si cambió el estado (nombres: `registered`, `stored`, `shipped`, `processed`). |
-| `store` | Ver abajo | Solo si cambió la asignación de almacén. |
-| `order` | Ver abajo | Solo si cambió la vinculación al pedido. |
-| `boxesAdded` | array | Lista de cajas añadidas en esta guardada (objetos con boxId, productId, productName, lot, gs1128, netWeight, grossWeight; opcionalmente newBoxesCount, newTotalNetWeight). |
-| `boxesRemoved` | array | Lista de cajas eliminadas (misma estructura). |
-| `boxesUpdated` | array | Lista de cajas modificadas; cada elemento tiene boxId, productId, productName, lot, `changes` (objeto con solo los campos que cambiaron: netWeight, grossWeight, lot, productId, con `from`/`to`). |
-| `fromReception` | boolean | `true` si el cambio se hizo desde la edición de una recepción. |
-| `receptionId` | number | ID de la recepción; solo si `fromReception === true`. |
+| Clave           | Tipo                                               | Descripción                                                                                                                                                                                        |
+| --------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `observations`  | `{ "from": string \| null, "to": string \| null }` | Solo si cambiaron las observaciones.                                                                                                                                                               |
+| `state`         | `{ "fromId", "from", "toId", "to" }`               | Solo si cambió el estado (nombres: `registered`, `stored`, `shipped`, `processed`).                                                                                                                |
+| `store`         | Ver abajo                                          | Solo si cambió la asignación de almacén.                                                                                                                                                           |
+| `order`         | Ver abajo                                          | Solo si cambió la vinculación al pedido.                                                                                                                                                           |
+| `boxesAdded`    | array                                              | Lista de cajas añadidas en esta guardada (objetos con boxId, productId, productName, lot, gs1128, netWeight, grossWeight; opcionalmente newBoxesCount, newTotalNetWeight).                         |
+| `boxesRemoved`  | array                                              | Lista de cajas eliminadas (misma estructura).                                                                                                                                                      |
+| `boxesUpdated`  | array                                              | Lista de cajas modificadas; cada elemento tiene boxId, productId, productName, lot, `changes` (objeto con solo los campos que cambiaron: netWeight, grossWeight, lot, productId, con `from`/`to`). |
+| `fromReception` | boolean                                            | `true` si el cambio se hizo desde la edición de una recepción.                                                                                                                                     |
+| `receptionId`   | number                                             | ID de la recepción; solo si `fromReception === true`.                                                                                                                                              |
 
-**Forma de `store`** (una u otra):  
-- Asignado: `"store": { "assigned": { "storeId", "storeName", "previousStoreId", "previousStoreName" } }`  
+**Forma de `store`** (una u otra):
+
+- Asignado: `"store": { "assigned": { "storeId", "storeName", "previousStoreId", "previousStoreName" } }`
 - Retirado: `"store": { "removed": { "previousStoreId", "previousStoreName" } }`
 
-**Forma de `order`** (una u otra):  
-- Vinculado: `"order": { "linked": { "orderId", "orderReference" } }`  
+**Forma de `order`** (una u otra):
+
+- Vinculado: `"order": { "linked": { "orderId", "orderReference" } }`
 - Desvinculado: `"order": { "unlinked": { "orderId", "orderReference" } }`
 
 **`action`**: `"Palet actualizado"` | `"Palet actualizado (desde recepción)"` (título breve; el detalle de cambios está en `details`).
@@ -155,12 +157,12 @@ A continuación se listan **todos** los valores posibles de `type` y, para cada 
 
 **`details`**:
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| `fromId` | number | ID del estado anterior (1=registered, 2=stored, 3=shipped, 4=processed) |
-| `from` | string | Nombre del estado anterior: `"registered"`, `"stored"`, `"shipped"`, `"processed"` |
-| `toId` | number | ID del estado nuevo |
-| `to` | string | Nombre del estado nuevo |
+| Campo    | Tipo   | Descripción                                                                        |
+| -------- | ------ | ---------------------------------------------------------------------------------- |
+| `fromId` | number | ID del estado anterior (1=registered, 2=stored, 3=shipped, 4=processed)            |
+| `from`   | string | Nombre del estado anterior: `"registered"`, `"stored"`, `"shipped"`, `"processed"` |
+| `toId`   | number | ID del estado nuevo                                                                |
+| `to`     | string | Nombre del estado nuevo                                                            |
 
 **`action`**: `"Estado cambiado"` (from/to en `details`).
 
@@ -172,15 +174,15 @@ A continuación se listan **todos** los valores posibles de `type` y, para cada 
 
 **`details`**:
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| `fromId` | number | ID del estado anterior |
-| `from` | string | Nombre del estado anterior |
-| `toId` | number | ID del estado nuevo |
-| `to` | string | Nombre del estado nuevo |
-| `reason` | string | Causa: `"all_boxes_in_production"` \| `"boxes_released_from_production"` \| `"partial_boxes_released"` |
-| `usedBoxesCount` | number | Número de cajas usadas en producción en ese momento |
-| `totalBoxesCount` | number | Número total de cajas del palet en ese momento |
+| Campo             | Tipo   | Descripción                                                                                            |
+| ----------------- | ------ | ------------------------------------------------------------------------------------------------------ |
+| `fromId`          | number | ID del estado anterior                                                                                 |
+| `from`            | string | Nombre del estado anterior                                                                             |
+| `toId`            | number | ID del estado nuevo                                                                                    |
+| `to`              | string | Nombre del estado nuevo                                                                                |
+| `reason`          | string | Causa: `"all_boxes_in_production"` \| `"boxes_released_from_production"` \| `"partial_boxes_released"` |
+| `usedBoxesCount`  | number | Número de cajas usadas en producción en ese momento                                                    |
+| `totalBoxesCount` | number | Número total de cajas del palet en ese momento                                                         |
 
 **`action`**: `"Estado actualizado (automático)"` (reason y conteos en `details`).
 
@@ -192,12 +194,12 @@ A continuación se listan **todos** los valores posibles de `type` y, para cada 
 
 **`details`**:
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| `storeId` | number | ID del almacén asignado |
-| `storeName` | string \| null | Nombre del almacén (puede ser null si no se resolvió) |
-| `previousStoreId` | number \| null | ID del almacén anterior; `null` si no estaba en ninguno |
-| `previousStoreName` | string \| null | Nombre del almacén anterior; `null` si no había |
+| Campo               | Tipo           | Descripción                                             |
+| ------------------- | -------------- | ------------------------------------------------------- |
+| `storeId`           | number         | ID del almacén asignado                                 |
+| `storeName`         | string \| null | Nombre del almacén (puede ser null si no se resolvió)   |
+| `previousStoreId`   | number \| null | ID del almacén anterior; `null` si no estaba en ninguno |
+| `previousStoreName` | string \| null | Nombre del almacén anterior; `null` si no había         |
 
 **`action`**: `"Movido a almacén"` (storeId/storeName en `details`).
 
@@ -209,10 +211,10 @@ A continuación se listan **todos** los valores posibles de `type` y, para cada 
 
 **`details`**:
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| `previousStoreId` | number | ID del almacén del que se retiró |
-| `previousStoreName` | string \| null | Nombre de ese almacén |
+| Campo               | Tipo           | Descripción                      |
+| ------------------- | -------------- | -------------------------------- |
+| `previousStoreId`   | number         | ID del almacén del que se retiró |
+| `previousStoreName` | string \| null | Nombre de ese almacén            |
 
 **`action`**: `"Retirado del almacén"` (previousStoreId/Name en `details`).
 
@@ -224,12 +226,12 @@ A continuación se listan **todos** los valores posibles de `type` y, para cada 
 
 **`details`**:
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| `positionId` | number | ID/valor de la posición asignada |
-| `positionName` | string | Representación en string de la posición (p. ej. el mismo número) |
-| `storeId` | number \| null | ID del almacén donde está el palet |
-| `storeName` | string \| null | Nombre del almacén |
+| Campo          | Tipo           | Descripción                                                      |
+| -------------- | -------------- | ---------------------------------------------------------------- |
+| `positionId`   | number         | ID/valor de la posición asignada                                 |
+| `positionName` | string         | Representación en string de la posición (p. ej. el mismo número) |
+| `storeId`      | number \| null | ID del almacén donde está el palet                               |
+| `storeName`    | string \| null | Nombre del almacén                                               |
 
 **`action`**: `"Posición asignada"` (positionId, storeId/storeName en `details`).
 
@@ -241,10 +243,10 @@ A continuación se listan **todos** los valores posibles de `type` y, para cada 
 
 **`details`**:
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| `previousPositionId` | number | Valor de la posición que tenía |
-| `previousPositionName` | string | Mismo valor en string |
+| Campo                  | Tipo   | Descripción                    |
+| ---------------------- | ------ | ------------------------------ |
+| `previousPositionId`   | number | Valor de la posición que tenía |
+| `previousPositionName` | string | Mismo valor en string          |
 
 **`action`**: `"Posición eliminada"` (previousPositionId/Name en `details`).
 
@@ -256,9 +258,9 @@ A continuación se listan **todos** los valores posibles de `type` y, para cada 
 
 **`details`**:
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| `orderId` | number | ID del pedido vinculado |
+| Campo            | Tipo   | Descripción                                                                          |
+| ---------------- | ------ | ------------------------------------------------------------------------------------ |
+| `orderId`        | number | ID del pedido vinculado                                                              |
 | `orderReference` | string | Referencia para mostrar (p. ej. `"#142"` o el campo referencia del pedido si existe) |
 
 **`action`**: `"Vinculado a pedido"` (orderId/orderReference en `details`).
@@ -271,9 +273,9 @@ A continuación se listan **todos** los valores posibles de `type` y, para cada 
 
 **`details`**:
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| `orderId` | number | ID del pedido del que se desvinculó |
+| Campo            | Tipo   | Descripción                                                    |
+| ---------------- | ------ | -------------------------------------------------------------- |
+| `orderId`        | number | ID del pedido del que se desvinculó                            |
 | `orderReference` | string | Referencia para mostrar (mismo criterio que en `order_linked`) |
 
 **`action`**: `"Desvinculado de pedido"` (orderId/orderReference en `details`).
@@ -286,17 +288,17 @@ A continuación se listan **todos** los valores posibles de `type` y, para cada 
 
 **`details`** (por cada caja nueva se genera una entrada; los datos son los de la caja añadida y los totales del palet tras el cambio):
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| `boxId` | number | ID de la caja añadida |
-| `productId` | number | ID del producto (artículo) |
-| `productName` | string \| null | Nombre del producto (`null` si no se resolvió) |
-| `lot` | string | Lote de la caja |
-| `gs1128` | string \| null | Código GS1-128 |
-| `netWeight` | number | Peso neto (kg) |
-| `grossWeight` | number \| null | Peso bruto (kg) |
-| `newBoxesCount` | number | Número total de cajas del palet después de añadir |
-| `newTotalNetWeight` | number | Peso neto total del palet después (kg) |
+| Campo               | Tipo           | Descripción                                       |
+| ------------------- | -------------- | ------------------------------------------------- |
+| `boxId`             | number         | ID de la caja añadida                             |
+| `productId`         | number         | ID del producto (artículo)                        |
+| `productName`       | string \| null | Nombre del producto (`null` si no se resolvió)    |
+| `lot`               | string         | Lote de la caja                                   |
+| `gs1128`            | string \| null | Código GS1-128                                    |
+| `netWeight`         | number         | Peso neto (kg)                                    |
+| `grossWeight`       | number \| null | Peso bruto (kg)                                   |
+| `newBoxesCount`     | number         | Número total de cajas del palet después de añadir |
+| `newTotalNetWeight` | number         | Peso neto total del palet después (kg)            |
 
 **Ejemplo de `action`**: `"Caja añadida — Merluza, Lote L-2024-05, 4,20 kg. Total: 4 cajas / 16,70 kg"` (el formato decimal puede usar coma según locale del backend).
 
@@ -308,17 +310,17 @@ A continuación se listan **todos** los valores posibles de `type` y, para cada 
 
 **`details`**: Misma estructura que `box_added` (datos de la caja eliminada más totales actuales del palet).
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| `boxId` | number | ID de la caja eliminada |
-| `productId` | number | ID del producto |
-| `productName` | string \| null | Nombre del producto |
-| `lot` | string | Lote |
-| `gs1128` | string \| null | GS1-128 |
-| `netWeight` | number | Peso neto de esa caja |
-| `grossWeight` | number \| null | Peso bruto |
-| `newBoxesCount` | number | Número de cajas del palet después de eliminar |
-| `newTotalNetWeight` | number | Peso neto total del palet después (kg) |
+| Campo               | Tipo           | Descripción                                   |
+| ------------------- | -------------- | --------------------------------------------- |
+| `boxId`             | number         | ID de la caja eliminada                       |
+| `productId`         | number         | ID del producto                               |
+| `productName`       | string \| null | Nombre del producto                           |
+| `lot`               | string         | Lote                                          |
+| `gs1128`            | string \| null | GS1-128                                       |
+| `netWeight`         | number         | Peso neto de esa caja                         |
+| `grossWeight`       | number \| null | Peso bruto                                    |
+| `newBoxesCount`     | number         | Número de cajas del palet después de eliminar |
+| `newTotalNetWeight` | number         | Peso neto total del palet después (kg)        |
 
 **Ejemplo de `action`**: `"Caja eliminada — Merluza, Lote L-2024-05, 4,20 kg. Total: 3 cajas / 12,50 kg"`
 
@@ -330,13 +332,13 @@ A continuación se listan **todos** los valores posibles de `type` y, para cada 
 
 **`details`**:
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| `boxId` | number | ID de la caja modificada |
-| `productId` | number | ID del producto después del cambio |
-| `productName` | string \| null | Nombre del producto (estado final) |
-| `lot` | string | Lote después del cambio |
-| `changes` | object | Solo los campos que cambiaron; cada clave es el nombre del campo y el valor es `{ "from": valorAnterior, "to": valorNuevo }` |
+| Campo         | Tipo           | Descripción                                                                                                                  |
+| ------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `boxId`       | number         | ID de la caja modificada                                                                                                     |
+| `productId`   | number         | ID del producto después del cambio                                                                                           |
+| `productName` | string \| null | Nombre del producto (estado final)                                                                                           |
+| `lot`         | string         | Lote después del cambio                                                                                                      |
+| `changes`     | object         | Solo los campos que cambiaron; cada clave es el nombre del campo y el valor es `{ "from": valorAnterior, "to": valorNuevo }` |
 
 Claves posibles dentro de `changes`:
 
@@ -348,6 +350,7 @@ Claves posibles dentro de `changes`:
 **Ejemplo de `action`**: `"Caja #88 modificada — Merluza, Lote L-2024-05"`
 
 **Ejemplo de `details.changes`**:
+
 ```json
 {
   "netWeight": { "from": 4, "to": 4.2 },
@@ -363,10 +366,10 @@ Claves posibles dentro de `changes`:
 
 **`details`**:
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
+| Campo  | Tipo           | Descripción                                         |
+| ------ | -------------- | --------------------------------------------------- |
 | `from` | string \| null | Observaciones anteriores (puede ser `null` o vacío) |
-| `to` | string \| null | Observaciones nuevas |
+| `to`   | string \| null | Observaciones nuevas                                |
 
 **Ejemplos de `action`**: `"Observaciones actualizadas"` | `"Observaciones actualizadas (desde recepción)"`
 
@@ -376,23 +379,23 @@ Claves posibles dentro de `changes`:
 
 ## 4. Resumen de tipos
 
-| `type` | Descripción breve | Emitido actualmente |
-|--------|-------------------|----------------------|
-| `pallet_created` | Palet creado manualmente | Sí |
-| `pallet_created_from_reception` | Palet creado desde recepción | Sí |
-| `pallet_updated` | Guardado con cambios agrupados (formulario o recepción) | Sí |
-| `state_changed` | Cambio de estado por usuario (acciones puntuales) | Sí |
-| `state_changed_auto` | Cambio de estado automático (producción) | Sí |
-| `store_assigned` | Asignado a un almacén (acción "mover a almacén") | Sí |
-| `store_removed` | Retirado del almacén (solo dentro de `pallet_updated` o legacy) | En details de pallet_updated |
-| `position_assigned` | Posición asignada | Sí |
-| `position_unassigned` | Posición quitada | Sí |
-| `order_linked` | Vinculado a pedido (acción link-order) | Sí |
-| `order_unlinked` | Desvinculado de pedido (acción unlink-order) | Sí |
-| `box_added` | Caja añadida (legacy: una entrada por caja) | No, solo en datos antiguos |
-| `box_removed` | Caja eliminada (legacy) | No, solo en datos antiguos |
-| `box_updated` | Caja modificada (legacy) | No, solo en datos antiguos |
-| `observations_updated` | Observaciones modificadas (legacy) | No, solo en datos antiguos |
+| `type`                          | Descripción breve                                               | Emitido actualmente          |
+| ------------------------------- | --------------------------------------------------------------- | ---------------------------- |
+| `pallet_created`                | Palet creado manualmente                                        | Sí                           |
+| `pallet_created_from_reception` | Palet creado desde recepción                                    | Sí                           |
+| `pallet_updated`                | Guardado con cambios agrupados (formulario o recepción)         | Sí                           |
+| `state_changed`                 | Cambio de estado por usuario (acciones puntuales)               | Sí                           |
+| `state_changed_auto`            | Cambio de estado automático (producción)                        | Sí                           |
+| `store_assigned`                | Asignado a un almacén (acción "mover a almacén")                | Sí                           |
+| `store_removed`                 | Retirado del almacén (solo dentro de `pallet_updated` o legacy) | En details de pallet_updated |
+| `position_assigned`             | Posición asignada                                               | Sí                           |
+| `position_unassigned`           | Posición quitada                                                | Sí                           |
+| `order_linked`                  | Vinculado a pedido (acción link-order)                          | Sí                           |
+| `order_unlinked`                | Desvinculado de pedido (acción unlink-order)                    | Sí                           |
+| `box_added`                     | Caja añadida (legacy: una entrada por caja)                     | No, solo en datos antiguos   |
+| `box_removed`                   | Caja eliminada (legacy)                                         | No, solo en datos antiguos   |
+| `box_updated`                   | Caja modificada (legacy)                                        | No, solo en datos antiguos   |
+| `observations_updated`          | Observaciones modificadas (legacy)                              | No, solo en datos antiguos   |
 
 ---
 
@@ -400,12 +403,12 @@ Claves posibles dentro de `changes`:
 
 Para interpretar `from` / `to` en eventos de estado:
 
-| ID | Nombre (`from`/`to`) | Significado |
-|----|----------------------|-------------|
-| 1 | `registered` | Registrado (sin almacén) |
-| 2 | `stored` | Almacenado |
-| 3 | `shipped` | Enviado (pedido finalizado) |
-| 4 | `processed` | Procesado (todas las cajas consumidas en producción) |
+| ID  | Nombre (`from`/`to`) | Significado                                          |
+| --- | -------------------- | ---------------------------------------------------- |
+| 1   | `registered`         | Registrado (sin almacén)                             |
+| 2   | `stored`             | Almacenado                                           |
+| 3   | `shipped`            | Enviado (pedido finalizado)                          |
+| 4   | `processed`          | Procesado (todas las cajas consumidas en producción) |
 
 ---
 

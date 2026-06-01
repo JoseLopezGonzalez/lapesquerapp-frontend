@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { fetchSuperadmin, SuperadminApiError } from "@/lib/superadminApi";
-import { notify } from "@/lib/notifications";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { fetchSuperadmin, SuperadminApiError } from '@/lib/superadminApi';
+import { notify } from '@/lib/notifications';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -13,10 +13,10 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
-import StatusBadge from "../StatusBadge";
-import { Loader2, Play, Pause, XCircle, RotateCw, Trash2, AlertTriangle } from "lucide-react";
+} from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
+import StatusBadge from '../StatusBadge';
+import { Loader2, Play, Pause, XCircle, RotateCw, Trash2, AlertTriangle } from 'lucide-react';
 
 function getOnboarding(tenant) {
   if (tenant.onboarding) return tenant.onboarding;
@@ -27,48 +27,48 @@ function getActions(tenant) {
   const ob = getOnboarding(tenant);
 
   switch (tenant.status) {
-    case "active":
+    case 'active':
       return [
-        { action: "suspend", label: "Suspender", icon: Pause, variant: "outline" },
-        { action: "cancel", label: "Cancelar", icon: XCircle, variant: "destructive" },
+        { action: 'suspend', label: 'Suspender', icon: Pause, variant: 'outline' },
+        { action: 'cancel', label: 'Cancelar', icon: XCircle, variant: 'destructive' },
       ];
 
-    case "suspended":
+    case 'suspended':
       return [
-        { action: "activate", label: "Activar", icon: Play, variant: "default" },
-        { action: "cancel", label: "Cancelar", icon: XCircle, variant: "destructive" },
+        { action: 'activate', label: 'Activar', icon: Play, variant: 'default' },
+        { action: 'cancel', label: 'Cancelar', icon: XCircle, variant: 'destructive' },
       ];
 
-    case "pending": {
+    case 'pending': {
       const actions = [];
-      if (ob.status === "failed") {
+      if (ob.status === 'failed') {
         actions.push({
-          action: "retry-onboarding",
-          label: "Reintentar onboarding",
+          action: 'retry-onboarding',
+          label: 'Reintentar onboarding',
           icon: RotateCw,
-          variant: "outline",
+          variant: 'outline',
         });
       }
       actions.push(
-        { action: "cancel", label: "Cancelar onboarding", icon: XCircle, variant: "destructive" },
-        { action: "delete", label: "Eliminar tenant", icon: Trash2, variant: "destructive" },
+        { action: 'cancel', label: 'Cancelar onboarding', icon: XCircle, variant: 'destructive' },
+        { action: 'delete', label: 'Eliminar tenant', icon: Trash2, variant: 'destructive' }
       );
       return actions;
     }
 
-    case "cancelled": {
-      const onboardingComplete = ob.step >= ob.total_steps && ob.status !== "failed";
+    case 'cancelled': {
+      const onboardingComplete = ob.step >= ob.total_steps && ob.status !== 'failed';
       return [
         {
-          action: "activate",
-          label: "Activar",
+          action: 'activate',
+          label: 'Activar',
           icon: Play,
-          variant: "default",
+          variant: 'default',
           hint: !onboardingComplete
             ? `Onboarding incompleto (${ob.step}/${ob.total_steps}). El backend rechazará esta acción.`
             : null,
         },
-        { action: "delete", label: "Eliminar tenant", icon: Trash2, variant: "destructive" },
+        { action: 'delete', label: 'Eliminar tenant', icon: Trash2, variant: 'destructive' },
       ];
     }
 
@@ -78,10 +78,10 @@ function getActions(tenant) {
 }
 
 const CONFIRM_MESSAGES = {
-  activate: "¿Activar este tenant? Se habilitará el acceso de los usuarios.",
-  suspend: "¿Suspender este tenant? Los usuarios no podrán acceder mientras esté suspendido.",
-  cancel: "¿Cancelar este tenant? Se desactivará el acceso.",
-  "retry-onboarding": "¿Reintentar el proceso de onboarding desde el paso actual?",
+  activate: '¿Activar este tenant? Se habilitará el acceso de los usuarios.',
+  suspend: '¿Suspender este tenant? Los usuarios no podrán acceder mientras esté suspendido.',
+  cancel: '¿Cancelar este tenant? Se desactivará el acceso.',
+  'retry-onboarding': '¿Reintentar el proceso de onboarding desde el paso actual?',
 };
 
 export default function StatusActions({ tenant, onRefresh }) {
@@ -101,16 +101,16 @@ export default function StatusActions({ tenant, onRefresh }) {
     setActionError(null);
     try {
       await fetchSuperadmin(`/tenants/${tenant.id}/${confirmAction}`, {
-        method: "POST",
+        method: 'POST',
       });
-      notify.success({ title: "Accion ejecutada correctamente" });
+      notify.success({ title: 'Accion ejecutada correctamente' });
       setConfirmAction(null);
       onRefresh();
     } catch (err) {
       if (err instanceof SuperadminApiError && err.status === 422) {
         setActionError(err.data?.message || err.message);
       } else {
-        notify.error({ title: err.message || "Error al ejecutar la accion" });
+        notify.error({ title: err.message || 'Error al ejecutar la accion' });
         setConfirmAction(null);
       }
     } finally {
@@ -122,26 +122,26 @@ export default function StatusActions({ tenant, onRefresh }) {
     setLoading(true);
     setActionError(null);
     try {
-      const qp = new URLSearchParams({ confirm_delete: "true" });
-      if (dropDatabase) qp.set("drop_database", "true");
+      const qp = new URLSearchParams({ confirm_delete: 'true' });
+      if (dropDatabase) qp.set('drop_database', 'true');
 
       const res = await fetchSuperadmin(`/tenants/${tenant.id}?${qp.toString()}`, {
-        method: "DELETE",
+        method: 'DELETE',
       });
       const json = await res.json();
       notify.success({
-        title: "Tenant eliminado",
+        title: 'Tenant eliminado',
         description: json.details?.database_dropped
-          ? "El registro y la base de datos han sido eliminados."
-          : "El registro ha sido eliminado. La base de datos se conserva.",
+          ? 'El registro y la base de datos han sido eliminados.'
+          : 'El registro ha sido eliminado. La base de datos se conserva.',
       });
       setDeleteOpen(false);
-      router.push("/superadmin/tenants");
+      router.push('/superadmin/tenants');
     } catch (err) {
       if (err instanceof SuperadminApiError && err.status === 422) {
         setActionError(err.data?.message || err.message);
       } else {
-        notify.error({ title: err.message || "Error al eliminar" });
+        notify.error({ title: err.message || 'Error al eliminar' });
       }
     } finally {
       setLoading(false);
@@ -150,7 +150,7 @@ export default function StatusActions({ tenant, onRefresh }) {
 
   const openAction = (action) => {
     setActionError(null);
-    if (action === "delete") {
+    if (action === 'delete') {
       setDropDatabase(false);
       setDeleteOpen(true);
     } else {
@@ -162,8 +162,8 @@ export default function StatusActions({ tenant, onRefresh }) {
 
   const currentActionDef = actions.find((a) => a.action === confirmAction);
 
-  const safeActions = actions.filter((a) => a.variant !== "destructive");
-  const destructiveActions = actions.filter((a) => a.variant === "destructive");
+  const safeActions = actions.filter((a) => a.variant !== 'destructive');
+  const destructiveActions = actions.filter((a) => a.variant === 'destructive');
 
   return (
     <Card>
@@ -185,7 +185,7 @@ export default function StatusActions({ tenant, onRefresh }) {
                     {a.label}
                   </Button>
                   {a.hint && (
-                    <span className="max-w-[200px] text-xs leading-tight text-muted-foreground">
+                    <span className="text-muted-foreground max-w-[200px] text-xs leading-tight">
                       {a.hint}
                     </span>
                   )}
@@ -195,13 +195,18 @@ export default function StatusActions({ tenant, onRefresh }) {
           </div>
         )}
         {destructiveActions.length > 0 && (
-          <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 space-y-2">
-            <p className="text-xs font-medium text-destructive">Zona de peligro</p>
+          <div className="border-destructive/30 bg-destructive/5 space-y-2 rounded-md border p-3">
+            <p className="text-destructive text-xs font-medium">Zona de peligro</p>
             <div className="flex flex-wrap items-start gap-2">
               {destructiveActions.map((a) => {
                 const Icon = a.icon;
                 return (
-                  <Button key={a.action} variant="destructive" size="sm" onClick={() => openAction(a.action)}>
+                  <Button
+                    key={a.action}
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => openAction(a.action)}
+                  >
                     <Icon className="h-4 w-4" />
                     {a.label}
                   </Button>
@@ -212,7 +217,15 @@ export default function StatusActions({ tenant, onRefresh }) {
         )}
       </CardContent>
 
-      <Dialog open={!!confirmAction} onOpenChange={(open) => { if (!open) { setConfirmAction(null); setActionError(null); } }}>
+      <Dialog
+        open={!!confirmAction}
+        onOpenChange={(open) => {
+          if (!open) {
+            setConfirmAction(null);
+            setActionError(null);
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Confirmar acción</DialogTitle>
@@ -222,41 +235,56 @@ export default function StatusActions({ tenant, onRefresh }) {
           </DialogHeader>
 
           {actionError && (
-            <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/10 p-3">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
-              <p className="text-sm text-destructive">{actionError}</p>
+            <div className="border-destructive/30 bg-destructive/10 flex items-start gap-2 rounded-md border p-3">
+              <AlertTriangle className="text-destructive mt-0.5 h-4 w-4 shrink-0" />
+              <p className="text-destructive text-sm">{actionError}</p>
             </div>
           )}
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setConfirmAction(null); setActionError(null); }} disabled={loading}>
-              {actionError ? "Cerrar" : "Cancelar"}
+            <Button
+              variant="outline"
+              onClick={() => {
+                setConfirmAction(null);
+                setActionError(null);
+              }}
+              disabled={loading}
+            >
+              {actionError ? 'Cerrar' : 'Cancelar'}
             </Button>
             {!actionError && (
               <Button
                 onClick={handleConfirm}
                 disabled={loading}
-                variant={currentActionDef?.variant === "destructive" ? "destructive" : "default"}
+                variant={currentActionDef?.variant === 'destructive' ? 'destructive' : 'default'}
               >
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Confirmar"}
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirmar'}
               </Button>
             )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      <Dialog open={deleteOpen} onOpenChange={(open) => { if (!open) { setDeleteOpen(false); setActionError(null); } }}>
+      <Dialog
+        open={deleteOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteOpen(false);
+            setActionError(null);
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Eliminar tenant</DialogTitle>
             <DialogDescription>
-              Esta acción eliminará permanentemente el tenant <strong>{tenant.name}</strong> ({tenant.subdomain}).
-              Esta operación no se puede deshacer.
+              Esta acción eliminará permanentemente el tenant <strong>{tenant.name}</strong> (
+              {tenant.subdomain}). Esta operación no se puede deshacer.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-3">
-            <label className="flex items-start gap-3 rounded-md border p-3 cursor-pointer hover:bg-muted/50 transition-colors">
+            <label className="hover:bg-muted/50 flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors">
               <Checkbox
                 id="drop-db"
                 checked={dropDatabase}
@@ -265,27 +293,35 @@ export default function StatusActions({ tenant, onRefresh }) {
               />
               <div>
                 <span className="text-sm font-medium">Eliminar también la base de datos</span>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Se borrará la base de datos MySQL <code className="text-xs">{tenant.database || `tenant_${tenant.subdomain}`}</code>.
-                  Si no marcas esta opción, solo se elimina el registro del tenant.
+                <p className="text-muted-foreground mt-0.5 text-xs">
+                  Se borrará la base de datos MySQL{' '}
+                  <code className="text-xs">{tenant.database || `tenant_${tenant.subdomain}`}</code>
+                  . Si no marcas esta opción, solo se elimina el registro del tenant.
                 </p>
               </div>
             </label>
           </div>
 
           {actionError && (
-            <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/10 p-3">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
-              <p className="text-sm text-destructive">{actionError}</p>
+            <div className="border-destructive/30 bg-destructive/10 flex items-start gap-2 rounded-md border p-3">
+              <AlertTriangle className="text-destructive mt-0.5 h-4 w-4 shrink-0" />
+              <p className="text-destructive text-sm">{actionError}</p>
             </div>
           )}
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setDeleteOpen(false); setActionError(null); }} disabled={loading}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDeleteOpen(false);
+                setActionError(null);
+              }}
+              disabled={loading}
+            >
               Cancelar
             </Button>
             <Button variant="destructive" onClick={handleDelete} disabled={loading}>
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Eliminar definitivamente"}
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Eliminar definitivamente'}
             </Button>
           </DialogFooter>
         </DialogContent>

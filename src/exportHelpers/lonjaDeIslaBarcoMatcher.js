@@ -10,10 +10,10 @@
 import { normalizeText } from '@/helpers/formats/texts';
 
 const DOC_PREFIX_TO_COD_VENDIDURIA = {
-    CF: 'CF',
-    PI: 'PI',
-    EX: 'EX',
-    JA: 'JA',
+  CF: 'CF',
+  PI: 'PI',
+  EX: 'EX',
+  JA: 'JA',
 };
 
 const KNOWN_PREFIXES = Object.keys(DOC_PREFIX_TO_COD_VENDIDURIA);
@@ -26,23 +26,23 @@ const PREFIX_REGEX = new RegExp(`^(${KNOWN_PREFIXES.join('|')})\\s*[-–—]\\s*
  * @returns {{ prefix: string|null, codVendiduria: string|null, name: string }}
  */
 export function parseBoatName(rawName) {
-    if (!rawName || typeof rawName !== 'string') {
-        return { prefix: null, codVendiduria: null, name: rawName || '' };
-    }
+  if (!rawName || typeof rawName !== 'string') {
+    return { prefix: null, codVendiduria: null, name: rawName || '' };
+  }
 
-    const trimmed = rawName.trim();
-    const match = trimmed.match(PREFIX_REGEX);
+  const trimmed = rawName.trim();
+  const match = trimmed.match(PREFIX_REGEX);
 
-    if (match) {
-        const prefix = match[1].toUpperCase();
-        return {
-            prefix,
-            codVendiduria: DOC_PREFIX_TO_COD_VENDIDURIA[prefix] || null,
-            name: trimmed.slice(match[0].length).trim(),
-        };
-    }
+  if (match) {
+    const prefix = match[1].toUpperCase();
+    return {
+      prefix,
+      codVendiduria: DOC_PREFIX_TO_COD_VENDIDURIA[prefix] || null,
+      name: trimmed.slice(match[0].length).trim(),
+    };
+  }
 
-    return { prefix: null, codVendiduria: null, name: trimmed };
+  return { prefix: null, codVendiduria: null, name: trimmed };
 }
 
 /**
@@ -50,28 +50,23 @@ export function parseBoatName(rawName) {
  * then by partial startsWith.
  */
 function findInCatalog(barcosCatalog, venta, cleanName) {
-    if (venta.codBarco) {
-        const byCod = barcosCatalog.find((b) => b.cod === venta.codBarco);
-        if (byCod) return byCod;
-    }
+  if (venta.codBarco) {
+    const byCod = barcosCatalog.find((b) => b.cod === venta.codBarco);
+    if (byCod) return byCod;
+  }
 
-    const normalizedName = normalizeText(cleanName);
-    if (!normalizedName) return null;
+  const normalizedName = normalizeText(cleanName);
+  if (!normalizedName) return null;
 
-    const byExact = barcosCatalog.find(
-        (b) => normalizeText(b.barco) === normalizedName,
-    );
-    if (byExact) return byExact;
+  const byExact = barcosCatalog.find((b) => normalizeText(b.barco) === normalizedName);
+  if (byExact) return byExact;
 
-    const byPartial = barcosCatalog.find((b) => {
-        const catalogName = normalizeText(b.barco);
-        if (!catalogName) return false;
-        return (
-            catalogName.startsWith(normalizedName) ||
-            normalizedName.startsWith(catalogName)
-        );
-    });
-    return byPartial || null;
+  const byPartial = barcosCatalog.find((b) => {
+    const catalogName = normalizeText(b.barco);
+    if (!catalogName) return false;
+    return catalogName.startsWith(normalizedName) || normalizedName.startsWith(catalogName);
+  });
+  return byPartial || null;
 }
 
 /**
@@ -92,39 +87,42 @@ function findInCatalog(barcosCatalog, venta, cleanName) {
  *   `{ barco, cod, codVendiduria }`, or null when unresolvable.
  */
 export function findBarcoMatch(barcosCatalog, venta) {
-    if (!venta) return null;
+  if (!venta) return null;
 
-    const { prefix, codVendiduria: prefixCodVendiduria, name: cleanName } =
-        parseBoatName(venta.barco);
+  const {
+    prefix,
+    codVendiduria: prefixCodVendiduria,
+    name: cleanName,
+  } = parseBoatName(venta.barco);
 
-    const catalogMatch = findInCatalog(barcosCatalog, venta, cleanName);
+  const catalogMatch = findInCatalog(barcosCatalog, venta, cleanName);
 
-    if (catalogMatch) {
-        const cod = catalogMatch.cod || venta.codBarco || cleanName;
-        const needsOverride = prefixCodVendiduria && prefixCodVendiduria !== catalogMatch.codVendiduria;
+  if (catalogMatch) {
+    const cod = catalogMatch.cod || venta.codBarco || cleanName;
+    const needsOverride = prefixCodVendiduria && prefixCodVendiduria !== catalogMatch.codVendiduria;
 
-        if (needsOverride || !catalogMatch.cod) {
-            return {
-                ...catalogMatch,
-                cod,
-                ...(needsOverride && {
-                    codVendiduria: prefixCodVendiduria,
-                    _originalCodVendiduria: catalogMatch.codVendiduria,
-                    _prefixOverride: true,
-                }),
-            };
-        }
-        return catalogMatch;
+    if (needsOverride || !catalogMatch.cod) {
+      return {
+        ...catalogMatch,
+        cod,
+        ...(needsOverride && {
+          codVendiduria: prefixCodVendiduria,
+          _originalCodVendiduria: catalogMatch.codVendiduria,
+          _prefixOverride: true,
+        }),
+      };
     }
+    return catalogMatch;
+  }
 
-    if (prefixCodVendiduria) {
-        return {
-            barco: cleanName || venta.barco,
-            cod: venta.codBarco || cleanName,
-            codVendiduria: prefixCodVendiduria,
-            _virtual: true,
-        };
-    }
+  if (prefixCodVendiduria) {
+    return {
+      barco: cleanName || venta.barco,
+      cod: venta.codBarco || cleanName,
+      codVendiduria: prefixCodVendiduria,
+      _virtual: true,
+    };
+  }
 
-    return null;
+  return null;
 }

@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { fetchSuperadmin } from "@/lib/superadminApi";
-import { notify } from "@/lib/notifications";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import React, { useState } from 'react';
+import { fetchSuperadmin } from '@/lib/superadminApi';
+import { notify } from '@/lib/notifications';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
   DialogContent,
@@ -13,27 +13,27 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Loader2, UserCheck, Zap } from "lucide-react";
+} from '@/components/ui/dialog';
+import { Loader2, UserCheck, Zap } from 'lucide-react';
 
 export default function ImpersonationButtons({ tenantId, user }) {
   const [silentOpen, setSilentOpen] = useState(false);
-  const [reason, setReason] = useState("");
+  const [reason, setReason] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleRequest = async () => {
     setLoading(true);
     try {
       await fetchSuperadmin(`/tenants/${tenantId}/impersonate/request`, {
-        method: "POST",
+        method: 'POST',
         body: JSON.stringify({ target_user_id: user.id }),
       });
       notify.success({
-        title: "Solicitud enviada",
-        description: "Esperando aprobacion del administrador.",
+        title: 'Solicitud enviada',
+        description: 'Esperando aprobacion del administrador.',
       });
     } catch (err) {
-      notify.error({ title: err.message || "Error al solicitar acceso" });
+      notify.error({ title: err.message || 'Error al solicitar acceso' });
     } finally {
       setLoading(false);
     }
@@ -44,25 +44,25 @@ export default function ImpersonationButtons({ tenantId, user }) {
     setLoading(true);
     try {
       const res = await fetchSuperadmin(`/tenants/${tenantId}/impersonate/silent`, {
-        method: "POST",
+        method: 'POST',
         body: JSON.stringify({ target_user_id: user.id, reason: reason.trim() }),
       });
       const data = await res.json();
       setSilentOpen(false);
-      setReason("");
+      setReason('');
       if (data.redirect_url) {
-        window.open(data.redirect_url, "_blank");
+        window.open(data.redirect_url, '_blank');
       }
-      notify.success({ title: "Sesion de impersonacion iniciada" });
+      notify.success({ title: 'Sesion de impersonacion iniciada' });
     } catch (err) {
-      notify.error({ title: err.message || "Error al acceder" });
+      notify.error({ title: err.message || 'Error al acceder' });
     } finally {
       setLoading(false);
     }
   };
 
   const handleOpenSilent = () => {
-    setReason("");
+    setReason('');
     setSilentOpen(true);
   };
 
@@ -89,13 +89,21 @@ export default function ImpersonationButtons({ tenantId, user }) {
         <span className="hidden xl:inline">Directo</span>
       </Button>
 
-      <Dialog open={silentOpen} onOpenChange={(open) => { if (!open) { setSilentOpen(false); setReason(""); } }}>
+      <Dialog
+        open={silentOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSilentOpen(false);
+            setReason('');
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Acceso directo</DialogTitle>
             <DialogDescription>
-              Accederas a la cuenta de <strong>{user.name}</strong> sin notificarlo.
-              Esta accion queda registrada en el log de auditoria.
+              Accederas a la cuenta de <strong>{user.name}</strong> sin notificarlo. Esta accion
+              queda registrada en el log de auditoria.
             </DialogDescription>
           </DialogHeader>
           <div className="grid w-full gap-1.5">
@@ -110,23 +118,23 @@ export default function ImpersonationButtons({ tenantId, user }) {
               rows={3}
               className="resize-none"
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               Campo obligatorio. Quedara registrado en el log de impersonaciones.
             </p>
           </div>
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => { setSilentOpen(false); setReason(""); }}
+              onClick={() => {
+                setSilentOpen(false);
+                setReason('');
+              }}
               disabled={loading}
             >
               Cancelar
             </Button>
-            <Button
-              onClick={handleSilent}
-              disabled={loading || !reason.trim()}
-            >
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Confirmar"}
+            <Button onClick={handleSilent} disabled={loading || !reason.trim()}>
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirmar'}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,10 +1,10 @@
-"use client"
+'use client';
 
-import * as React from "react"
-import { Check, ChevronsUpDown, Loader2 } from "lucide-react"
+import * as React from 'react';
+import { Check, ChevronsUpDown, Loader2 } from 'lucide-react';
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -12,20 +12,16 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
+} from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
-export function Combobox({ 
-  options, 
-  placeholder, 
-  searchPlaceholder, 
-  notFoundMessage, 
-  className, 
-  value, 
+export function Combobox({
+  options,
+  placeholder,
+  searchPlaceholder,
+  notFoundMessage,
+  className,
+  value,
   onChange,
   loading = false,
   disabled = false,
@@ -33,37 +29,40 @@ export function Combobox({
   defaultOpen = false,
   onOpenChange: externalOnOpenChange,
 }) {
-  const [open, setOpen] = React.useState(defaultOpen)
-  const listRef = React.useRef(null)
-  const [searchValue, setSearchValue] = React.useState("")
-  const isDisabled = disabled || loading
+  const [open, setOpen] = React.useState(defaultOpen);
+  const listRef = React.useRef(null);
+  const [searchValue, setSearchValue] = React.useState('');
+  const isDisabled = disabled || loading;
 
   // Al cambiar el texto de búsqueda, scroll de la lista a arriba (evita que el resultado quede oculto)
   React.useEffect(() => {
-    if (listRef.current) listRef.current.scrollTop = 0
-  }, [searchValue])
+    if (listRef.current) listRef.current.scrollTop = 0;
+  }, [searchValue]);
 
   // Intentar encontrar el label del valor actual, incluso durante el loading
   const selectedOption = React.useMemo(() => {
-    if (!value) return null
-    return (options || []).find((option) => option.value === value)
-  }, [options, value])
+    if (!value) return null;
+    return (options || []).find((option) => option.value === value);
+  }, [options, value]);
 
   // Manejar el cierre del popover para llamar onBlur si está definido
-  const handleOpenChange = React.useCallback((newOpen) => {
-    setOpen(newOpen)
-    if (!newOpen) setSearchValue("")
-    // Notificar al componente padre si hay un callback
-    if (externalOnOpenChange) {
-      externalOnOpenChange(newOpen)
-    }
-    // Si se está cerrando y hay onBlur, llamarlo
-    if (!newOpen && onBlur) {
-      setTimeout(() => {
-        onBlur()
-      }, 0)
-    }
-  }, [onBlur, externalOnOpenChange])
+  const handleOpenChange = React.useCallback(
+    (newOpen) => {
+      setOpen(newOpen);
+      if (!newOpen) setSearchValue('');
+      // Notificar al componente padre si hay un callback
+      if (externalOnOpenChange) {
+        externalOnOpenChange(newOpen);
+      }
+      // Si se está cerrando y hay onBlur, llamarlo
+      if (!newOpen && onBlur) {
+        setTimeout(() => {
+          onBlur();
+        }, 0);
+      }
+    },
+    [onBlur, externalOnOpenChange]
+  );
 
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
@@ -73,7 +72,7 @@ export function Combobox({
           role="combobox"
           aria-expanded={open}
           disabled={isDisabled}
-          className={cn("justify-between w-full overflow-hidden", className)}
+          className={cn('w-full justify-between overflow-hidden', className)}
         >
           <div className="w-full truncate text-start text-base md:text-sm">
             {loading && !value ? (
@@ -98,7 +97,7 @@ export function Combobox({
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] max-w-[90vw] p-0 z-[9999]">
+      <PopoverContent className="z-[9999] w-[var(--radix-popover-trigger-width)] max-w-[90vw] p-0">
         <Command>
           <CommandInput
             placeholder={searchPlaceholder}
@@ -112,8 +111,8 @@ export function Combobox({
               e.currentTarget.scrollBy({
                 top: e.deltaY * 2,
                 left: 0,
-                behavior: "smooth",
-              })
+                behavior: 'smooth',
+              });
             }}
           >
             {loading ? (
@@ -127,14 +126,14 @@ export function Combobox({
                       key={option.value}
                       value={option.label}
                       onSelect={() => {
-                        onChange(option.value === value ? "" : option.value)
-                        setOpen(false)
+                        onChange(option.value === value ? '' : option.value);
+                        setOpen(false);
                       }}
                     >
                       <Check
                         className={cn(
-                          "mr-2 h-4 w-4 shrink-0",
-                          value === option.value ? "opacity-100" : "opacity-0"
+                          'mr-2 h-4 w-4 shrink-0',
+                          value === option.value ? 'opacity-100' : 'opacity-0'
                         )}
                       />
                       {option.label}
@@ -147,5 +146,5 @@ export function Combobox({
         </Command>
       </PopoverContent>
     </Popover>
-  )
+  );
 }

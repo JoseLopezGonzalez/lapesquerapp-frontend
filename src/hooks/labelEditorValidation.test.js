@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { validateLabelName, hasDuplicateFieldKeys, hasElementValidationError, hasAnyElementValidationErrors } from './labelEditorValidation';
+import {
+  validateLabelName,
+  hasDuplicateFieldKeys,
+  hasElementValidationError,
+  hasAnyElementValidationErrors,
+} from './labelEditorValidation';
 
 describe('labelEditorValidation', () => {
   it('validateLabelName returns error for empty', () => {
@@ -12,7 +17,12 @@ describe('labelEditorValidation', () => {
     expect(hasDuplicateFieldKeys([])).toBe(false);
   });
   it('hasDuplicateFieldKeys true for duplicates', () => {
-    expect(hasDuplicateFieldKeys([{ type: 'manualField', key: 'A' }, { type: 'manualField', key: 'A' }])).toBe(true);
+    expect(
+      hasDuplicateFieldKeys([
+        { type: 'manualField', key: 'A' },
+        { type: 'manualField', key: 'A' },
+      ])
+    ).toBe(true);
   });
   it('hasElementValidationError true for empty key', () => {
     expect(hasElementValidationError({ type: 'manualField', key: '' })).toBe(true);

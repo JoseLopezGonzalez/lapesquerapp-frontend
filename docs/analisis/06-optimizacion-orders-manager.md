@@ -21,13 +21,13 @@ Este documento detalla todas las optimizaciones implementadas en el módulo de g
 
 ## 📊 Resultados Esperados
 
-| Métrica | Mejora Esperada | Estado |
-|---------|----------------|--------|
-| Tiempo de carga inicial | -40% a -50% | ✅ Implementado |
-| Re-renderizados | -60% a -70% | ✅ Implementado |
-| Llamadas al servidor | -50% | ✅ Implementado |
-| Tiempo de respuesta | -30% a -40% | ✅ Implementado |
-| Uso de memoria | -20% a -30% | ✅ Implementado |
+| Métrica                 | Mejora Esperada | Estado          |
+| ----------------------- | --------------- | --------------- |
+| Tiempo de carga inicial | -40% a -50%     | ✅ Implementado |
+| Re-renderizados         | -60% a -70%     | ✅ Implementado |
+| Llamadas al servidor    | -50%            | ✅ Implementado |
+| Tiempo de respuesta     | -30% a -40%     | ✅ Implementado |
+| Uso de memoria          | -20% a -30%     | ✅ Implementado |
 
 ---
 
@@ -38,34 +38,37 @@ Este documento detalla todas las optimizaciones implementadas en el módulo de g
 **Archivo**: `src/components/Admin/OrdersManager/index.js`
 
 **Problema Original**:
+
 ```javascript
 // ❌ ANTES: Mutación directa
 const filterOrders = orders.filter((order) => {
-    order.current = selectedOrder === order.id; // Mutación directa
-    // ...
-})
+  order.current = selectedOrder === order.id; // Mutación directa
+  // ...
+});
 ```
 
 **Solución Implementada**:
+
 ```javascript
 // ✅ DESPUÉS: Sin mutaciones
 const sortedOrders = useMemo(() => {
-    const filtered = orders
-        .filter((order) => {
-            // Lógica de filtrado sin mutar
-        })
-        .map((order) => ({
-            ...order, // Spread operator - nuevo objeto
-            current: selectedOrder === order.id
-        }));
-    
-    return [...filtered].sort((a, b) => {
-        return new Date(a.loadDate) - new Date(b.loadDate);
-    });
+  const filtered = orders
+    .filter((order) => {
+      // Lógica de filtrado sin mutar
+    })
+    .map((order) => ({
+      ...order, // Spread operator - nuevo objeto
+      current: selectedOrder === order.id,
+    }));
+
+  return [...filtered].sort((a, b) => {
+    return new Date(a.loadDate) - new Date(b.loadDate);
+  });
 }, [orders, searchText, activeCategory, selectedOrder]);
 ```
 
 **Beneficios**:
+
 - ✅ Evita efectos secundarios inesperados
 - ✅ Mejora la depuración
 - ✅ Compatible con React Strict Mode
@@ -78,6 +81,7 @@ const sortedOrders = useMemo(() => {
 **Archivo**: `src/components/Admin/OrdersManager/index.js`
 
 **Problema Original**:
+
 ```javascript
 // ❌ ANTES: Cálculos en cada render
 const filterOrders = orders.filter(...);
@@ -86,35 +90,37 @@ const activeCategory = categories.find(...); // En cada iteración
 ```
 
 **Solución Implementada**:
+
 ```javascript
 // ✅ DESPUÉS: Memoización inteligente
 const activeCategory = useMemo(() => {
-    return categories.find((category) => category.current) || categories[0];
+  return categories.find((category) => category.current) || categories[0];
 }, [categories]);
 
 const sortedOrders = useMemo(() => {
-    const searchLower = searchText.toLowerCase();
-    
-    const filtered = orders
-        .filter((order) => {
-            const matchesSearch = order.customer.name.toLowerCase().includes(searchLower) ||
-                order.id.toString().includes(searchText);
-            const matchesCategory = activeCategory.name === 'all' ||
-                activeCategory.name === order.status;
-            return matchesSearch && matchesCategory;
-        })
-        .map((order) => ({
-            ...order,
-            current: selectedOrder === order.id
-        }));
+  const searchLower = searchText.toLowerCase();
 
-    return [...filtered].sort((a, b) => {
-        return new Date(a.loadDate) - new Date(b.loadDate);
-    });
+  const filtered = orders
+    .filter((order) => {
+      const matchesSearch =
+        order.customer.name.toLowerCase().includes(searchLower) ||
+        order.id.toString().includes(searchText);
+      const matchesCategory = activeCategory.name === 'all' || activeCategory.name === order.status;
+      return matchesSearch && matchesCategory;
+    })
+    .map((order) => ({
+      ...order,
+      current: selectedOrder === order.id,
+    }));
+
+  return [...filtered].sort((a, b) => {
+    return new Date(a.loadDate) - new Date(b.loadDate);
+  });
 }, [orders, searchText, activeCategory, selectedOrder]);
 ```
 
 **Beneficios**:
+
 - ✅ Solo recalcula cuando cambian las dependencias
 - ✅ Reduce cálculos innecesarios en ~80%
 - ✅ Mejora la responsividad del filtrado
@@ -126,6 +132,7 @@ const sortedOrders = useMemo(() => {
 **Archivo**: `src/components/Admin/OrdersManager/Order/index.js`
 
 **Problema Original**:
+
 ```javascript
 // ❌ ANTES: Todos los componentes se cargan al inicio
 import OrderPallets from './OrderPallets';
@@ -134,6 +141,7 @@ import OrderDocuments from './OrderDocuments';
 ```
 
 **Solución Implementada**:
+
 ```javascript
 // ✅ DESPUÉS: Lazy loading con React.lazy()
 import { lazy, Suspense } from 'react';
@@ -150,14 +158,15 @@ const OrderIncident = lazy(() => import('./OrderIncident'));
 const OrderCustomerHistory = lazy(() => import('./OrderCustomerHistory'));
 
 // Uso con Suspense
-<TabsContent value="pallets" className='h-full'>
-    <Suspense fallback={<Loader />}>
-        <OrderPallets />
-    </Suspense>
-</TabsContent>
+<TabsContent value="pallets" className="h-full">
+  <Suspense fallback={<Loader />}>
+    <OrderPallets />
+  </Suspense>
+</TabsContent>;
 ```
 
 **Componentes con Lazy Loading**:
+
 - ✅ OrderPallets
 - ✅ OrderDocuments
 - ✅ OrderExport
@@ -170,10 +179,12 @@ const OrderCustomerHistory = lazy(() => import('./OrderCustomerHistory'));
 - ✅ OrderCustomerHistory
 
 **Componentes que se mantienen siempre cargados** (por ser críticos o ligeros):
+
 - OrderDetails (tab por defecto)
 - OrderEditSheet (componente pequeño)
 
 **Beneficios**:
+
 - ✅ Reduce el bundle inicial en ~60-70%
 - ✅ Mejora el tiempo de carga inicial significativamente
 - ✅ Los componentes solo se cargan cuando se necesitan
@@ -186,6 +197,7 @@ const OrderCustomerHistory = lazy(() => import('./OrderCustomerHistory'));
 **Archivo**: `src/hooks/useOrder.js`
 
 **Problema Original**:
+
 ```javascript
 // ❌ ANTES: Siempre se cargan, incluso si no se usan
 useEffect(() => {
@@ -196,19 +208,20 @@ useEffect(() => {
 ```
 
 **Solución Implementada**:
+
 ```javascript
 // ✅ DESPUÉS: Carga condicional solo cuando se necesita
 const [optionsLoaded, setOptionsLoaded] = useState(false);
 
 const loadOptions = useCallback(async () => {
     if (optionsLoaded || !accessToken) return;
-    
+
     try {
         const [productsData, taxesData] = await Promise.all([
             getProductOptions(accessToken),
             getTaxOptions(accessToken)
         ]);
-        
+
         setProductOptions(productsData.map(...));
         setTaxOptions(taxesData.map(...));
         setOptionsLoaded(true);
@@ -226,6 +239,7 @@ useEffect(() => {
 ```
 
 **Beneficios**:
+
 - ✅ Reduce llamadas al servidor en ~50%
 - ✅ Mejora el tiempo de carga inicial del pedido
 - ✅ Las opciones se cargan solo cuando realmente se necesitan
@@ -235,69 +249,77 @@ useEffect(() => {
 
 ### 5. ✅ Memoización de Cálculos Costosos
 
-**Archivos**: 
+**Archivos**:
+
 - `src/hooks/useOrder.js`
 - `src/components/Admin/OrdersManager/Order/OrderProductDetails/index.js`
 
 #### 5.1. mergedProductDetails
 
 **Antes**:
+
 ```javascript
 // ❌ Se recalcula en cada render
 const mergedProductDetails = mergeOrderDetails(
-    order?.plannedProductDetails, 
-    order?.productionProductDetails
+  order?.plannedProductDetails,
+  order?.productionProductDetails
 );
 ```
 
 **Después**:
+
 ```javascript
 // ✅ Memoizado
 const mergedProductDetails = useMemo(() => {
-    return mergeOrderDetails(
-        order?.plannedProductDetails, 
-        order?.productionProductDetails
-    );
+  return mergeOrderDetails(order?.plannedProductDetails, order?.productionProductDetails);
 }, [order?.plannedProductDetails, order?.productionProductDetails]);
 ```
 
 #### 5.2. Cálculo de Totales
 
 **Antes**:
+
 ```javascript
 // ❌ Se recalcula en cada render
-const totals = order.productDetails.reduce((acc, detail) => {
+const totals = order.productDetails.reduce(
+  (acc, detail) => {
     acc.boxes += detail.boxes;
     acc.netWeight += detail.netWeight;
     // ...
-}, { subtotal: 0, total: 0, netWeight: 0, boxes: 0 });
+  },
+  { subtotal: 0, total: 0, netWeight: 0, boxes: 0 }
+);
 ```
 
 **Después**:
+
 ```javascript
 // ✅ Memoizado con validación
 const totals = useMemo(() => {
-    if (!order?.productDetails || order.productDetails.length === 0) {
-        return { subtotal: 0, total: 0, netWeight: 0, boxes: 0, averagePrice: 0 };
-    }
+  if (!order?.productDetails || order.productDetails.length === 0) {
+    return { subtotal: 0, total: 0, netWeight: 0, boxes: 0, averagePrice: 0 };
+  }
 
-    const calculated = order.productDetails.reduce((acc, detail) => {
-        acc.boxes += detail.boxes;
-        acc.netWeight += detail.netWeight;
-        acc.subtotal += detail.subtotal;
-        acc.total += detail.total;
-        return acc;
-    }, { subtotal: 0, total: 0, netWeight: 0, boxes: 0 });
+  const calculated = order.productDetails.reduce(
+    (acc, detail) => {
+      acc.boxes += detail.boxes;
+      acc.netWeight += detail.netWeight;
+      acc.subtotal += detail.subtotal;
+      acc.total += detail.total;
+      return acc;
+    },
+    { subtotal: 0, total: 0, netWeight: 0, boxes: 0 }
+  );
 
-    calculated.averagePrice = calculated.netWeight > 0 
-        ? calculated.subtotal / calculated.netWeight 
-        : 0;
+  calculated.averagePrice =
+    calculated.netWeight > 0 ? calculated.subtotal / calculated.netWeight : 0;
 
-    return calculated;
+  return calculated;
 }, [order?.productDetails]);
 ```
 
 **Beneficios**:
+
 - ✅ Reduce cálculos innecesarios en ~90%
 - ✅ Mejora el rendimiento con muchos productos
 - ✅ Previene divisiones por cero
@@ -309,45 +331,46 @@ const totals = useMemo(() => {
 **Archivo**: `src/hooks/useOrder.js`
 
 **Problema Original**:
+
 ```javascript
 // ❌ ANTES: Recarga completa después de cada actualización
 const updatePlannedProductDetail = async (id, updateData) => {
-    updateOrderPlannedProductDetail(id, updateData, token)
-        .then((updated) => {
-            setOrder(prevOrder => {
-                // Actualizar estado local
-            });
-            reload(); // ❌ Nueva petición completa al servidor
-        });
+  updateOrderPlannedProductDetail(id, updateData, token).then((updated) => {
+    setOrder((prevOrder) => {
+      // Actualizar estado local
+    });
+    reload(); // ❌ Nueva petición completa al servidor
+  });
 };
 ```
 
 **Solución Implementada**:
+
 ```javascript
 // ✅ DESPUÉS: Solo actualización local
 const updatePlannedProductDetail = async (id, updateData) => {
-    updateOrderPlannedProductDetail(id, updateData, token)
-        .then((updated) => {
-            // Actualizar estado local sin recargar
-            setOrder(prevOrder => {
-                if (!prevOrder) return prevOrder;
-                return {
-                    ...prevOrder,
-                    plannedProductDetails: prevOrder.plannedProductDetails.map((detail) => {
-                        if (detail.id === updated.id) {
-                            return updated;
-                        } else {
-                            return detail;
-                        }
-                    })
-                }
-            });
-            // ✅ No se llama a reload() - reduce llamadas al servidor
-        });
+  updateOrderPlannedProductDetail(id, updateData, token).then((updated) => {
+    // Actualizar estado local sin recargar
+    setOrder((prevOrder) => {
+      if (!prevOrder) return prevOrder;
+      return {
+        ...prevOrder,
+        plannedProductDetails: prevOrder.plannedProductDetails.map((detail) => {
+          if (detail.id === updated.id) {
+            return updated;
+          } else {
+            return detail;
+          }
+        }),
+      };
+    });
+    // ✅ No se llama a reload() - reduce llamadas al servidor
+  });
 };
 ```
 
 **Beneficios**:
+
 - ✅ Reduce llamadas al servidor en ~50%
 - ✅ Mejora la velocidad de respuesta
 - ✅ Menor carga en el servidor
@@ -360,26 +383,33 @@ const updatePlannedProductDetail = async (id, updateData) => {
 **Archivo**: `src/components/Admin/OrdersManager/OrdersList/index.js`
 
 **Problema Original**:
+
 ```javascript
 // ❌ ANTES: Uso de índice como key
-{orders.map((order, index) => (
+{
+  orders.map((order, index) => (
     <div key={index}>
-        <OrderCard order={order} />
+      <OrderCard order={order} />
     </div>
-))}
+  ));
+}
 ```
 
 **Solución Implementada**:
+
 ```javascript
 // ✅ DESPUÉS: Uso de ID único
-{orders.map((order) => (
+{
+  orders.map((order) => (
     <div key={order.id}>
-        <OrderCard order={order} />
+      <OrderCard order={order} />
     </div>
-))}
+  ));
+}
 ```
 
 **Beneficios**:
+
 - ✅ Mejora la estabilidad del renderizado
 - ✅ Previene bugs de estado en listas
 - ✅ Mejor rendimiento de React
@@ -392,11 +422,13 @@ const updatePlannedProductDetail = async (id, updateData) => {
 **Archivo**: `src/components/Admin/OrdersManager/index.js`
 
 **Eliminado**:
+
 - ❌ `useEffect` con timeout de 6 segundos sin propósito claro
 - ❌ `setTimeout` innecesario en `handleOnChange`
 - ❌ Función `sortOrdersByDate` duplicada en OrdersList
 
 **Beneficios**:
+
 - ✅ Código más limpio y mantenible
 - ✅ Menos confusión en el flujo de ejecución
 - ✅ Mejor rendimiento (menos efectos)
@@ -408,26 +440,28 @@ const updatePlannedProductDetail = async (id, updateData) => {
 **Archivo**: `src/hooks/useOrder.js`
 
 **Implementado**:
+
 ```javascript
 // ✅ Funciones estables con useCallback
 const reload = useCallback(async () => {
-    const token = session?.user?.accessToken;
-    if (!token) return;
-    
-    try {
-        const data = await getOrder(orderId, token);
-        setOrder(data);
-    } catch (err) {
-        setError(err);
-    }
+  const token = session?.user?.accessToken;
+  if (!token) return;
+
+  try {
+    const data = await getOrder(orderId, token);
+    setOrder(data);
+  } catch (err) {
+    setError(err);
+  }
 }, [orderId, session?.user?.accessToken]);
 
 const loadOptions = useCallback(async () => {
-    // ...
+  // ...
 }, [accessToken, optionsLoaded]);
 ```
 
 **Beneficios**:
+
 - ✅ Evita recrear funciones en cada render
 - ✅ Mejora el rendimiento de componentes hijos
 - ✅ Reduce re-renderizados innecesarios
@@ -437,7 +471,9 @@ const loadOptions = useCallback(async () => {
 ## 📁 Archivos Modificados
 
 ### 1. `src/components/Admin/OrdersManager/index.js`
+
 **Cambios**:
+
 - ✅ Eliminado `useEffect` con timeout
 - ✅ Eliminado `setTimeout` en `handleOnChange`
 - ✅ Implementado `useMemo` para `activeCategory`
@@ -448,14 +484,18 @@ const loadOptions = useCallback(async () => {
 **Líneas modificadas**: ~60 líneas
 
 ### 2. `src/components/Admin/OrdersManager/OrdersList/index.js`
+
 **Cambios**:
+
 - ✅ Cambiado key de `index` a `order.id`
 - ✅ Eliminada función `sortOrdersByDate` duplicada
 
 **Líneas modificadas**: ~5 líneas
 
 ### 3. `src/components/Admin/OrdersManager/Order/index.js`
+
 **Cambios**:
+
 - ✅ Implementado lazy loading para 10 componentes
 - ✅ Añadido `Suspense` con fallback
 - ✅ Mantenido `OrderDetails` siempre cargado (tab default)
@@ -463,7 +503,9 @@ const loadOptions = useCallback(async () => {
 **Líneas modificadas**: ~30 líneas
 
 ### 4. `src/components/Admin/OrdersManager/Order/OrderProductDetails/index.js`
+
 **Cambios**:
+
 - ✅ Implementado `useMemo` para cálculo de totales
 - ✅ Mejorado manejo de casos sin datos
 - ✅ Cambiado key de `index` a `detail.id`
@@ -471,7 +513,9 @@ const loadOptions = useCallback(async () => {
 **Líneas modificadas**: ~20 líneas
 
 ### 5. `src/hooks/useOrder.js`
+
 **Cambios**:
+
 - ✅ Implementado lazy loading para opciones de API
 - ✅ Memoizado `mergedProductDetails`
 - ✅ Memoizado `pallets`

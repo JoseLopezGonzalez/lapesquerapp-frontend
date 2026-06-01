@@ -11,7 +11,13 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { CalendarDays, FileText, UserRound } from 'lucide-react';
 
@@ -51,7 +57,10 @@ export function CreatePlannerItemDialog({
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label>Origen de la ruta</Label>
-                <Select value={draft.sourceMode || 'manual'} onValueChange={(value) => onChange('sourceMode', value)}>
+                <Select
+                  value={draft.sourceMode || 'manual'}
+                  onValueChange={(value) => onChange('sourceMode', value)}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -65,13 +74,18 @@ export function CreatePlannerItemDialog({
               {draft.sourceMode === 'template' && (
                 <div className="space-y-2">
                   <Label>Plantilla</Label>
-                  <Select value={draft.routeTemplateId || ''} onValueChange={(value) => onChange('routeTemplateId', value)}>
+                  <Select
+                    value={draft.routeTemplateId || ''}
+                    onValueChange={(value) => onChange('routeTemplateId', value)}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecciona una plantilla" />
                     </SelectTrigger>
                     <SelectContent>
                       {templateOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -86,13 +100,18 @@ export function CreatePlannerItemDialog({
                 <UserRound className="h-4 w-4" />
                 Repartidor
               </Label>
-              <Select value={draft.fieldOperatorId || ''} onValueChange={(value) => onChange('fieldOperatorId', value)}>
+              <Select
+                value={draft.fieldOperatorId || ''}
+                onValueChange={(value) => onChange('fieldOperatorId', value)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecciona un repartidor" />
                 </SelectTrigger>
                 <SelectContent>
                   {fieldOperatorOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -104,7 +123,11 @@ export function CreatePlannerItemDialog({
                   <CalendarDays className="h-4 w-4" />
                   Fecha
                 </Label>
-                <Input type="date" value={draft.routeDate || ''} onChange={(event) => onChange('routeDate', event.target.value)} />
+                <Input
+                  type="date"
+                  value={draft.routeDate || ''}
+                  onChange={(event) => onChange('routeDate', event.target.value)}
+                />
               </div>
             )}
           </div>
@@ -124,10 +147,15 @@ export function CreatePlannerItemDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancelar
+          </Button>
           <Button
             onClick={onConfirm}
-            disabled={!draft.name.trim() || (tab === 'routes' && draft.sourceMode === 'template' && !draft.routeTemplateId)}
+            disabled={
+              !draft.name.trim() ||
+              (tab === 'routes' && draft.sourceMode === 'template' && !draft.routeTemplateId)
+            }
           >
             Crear y abrir
           </Button>

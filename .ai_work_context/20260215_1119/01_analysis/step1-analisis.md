@@ -13,54 +13,54 @@
 
 ## 1. Resumen por entidad
 
-| Entidad | Estado | Calidad estructural | Oportunidades |
-|---------|--------|---------------------|---------------|
-| **Almacenes (Stores)** | Funcional | useStore 766 líneas (P0), Store 244 líneas (P1), StoreContext acopla todo | Dividir useStore, extraer lógica a hooks, React Query |
-| **Cajas** | Funcional | EntityClient genérico, bajo impacto | Migrar a React Query cuando se refactorice Entity |
-| **Palets** | Funcional | PalletDialog, usePallet; OrderPallets compartido con Pedidos | Tipar, tests, React Query |
-| **Recepciones** | Funcional | CreateReceptionForm 1093 líneas (P0), OperarioCreateReceptionForm 928 (P0) | Dividir en subcomponentes, extraer hooks |
-| **Warehouse** | Funcional | Página con lógica de permisos inline | Extraer lógica a hook/custom component |
-| **Dashboard Stock** | Funcional | 3 cards con useEffect + useState idéntico | Extraer useStockStats, React Query |
+| Entidad                | Estado    | Calidad estructural                                                        | Oportunidades                                         |
+| ---------------------- | --------- | -------------------------------------------------------------------------- | ----------------------------------------------------- |
+| **Almacenes (Stores)** | Funcional | useStore 766 líneas (P0), Store 244 líneas (P1), StoreContext acopla todo  | Dividir useStore, extraer lógica a hooks, React Query |
+| **Cajas**              | Funcional | EntityClient genérico, bajo impacto                                        | Migrar a React Query cuando se refactorice Entity     |
+| **Palets**             | Funcional | PalletDialog, usePallet; OrderPallets compartido con Pedidos               | Tipar, tests, React Query                             |
+| **Recepciones**        | Funcional | CreateReceptionForm 1093 líneas (P0), OperarioCreateReceptionForm 928 (P0) | Dividir en subcomponentes, extraer hooks              |
+| **Warehouse**          | Funcional | Página con lógica de permisos inline                                       | Extraer lógica a hook/custom component                |
+| **Dashboard Stock**    | Funcional | 3 cards con useEffect + useState idéntico                                  | Extraer useStockStats, React Query                    |
 
 ---
 
 ## 2. Uso de patrones Next.js/React
 
-| Patrón | Presencia | Estado |
-|--------|-----------|--------|
-| Server/Client Components | Parcial | Páginas "use client" o delegan en cliente; no hay fetch en servidor |
-| Custom Hooks | Sí | useStore, useStores, usePallet, useReceptionForm; pero useStore es un monstruo |
-| Data Fetching | Manual | useEffect + useState + servicios en todos los flujos; sin React Query |
-| Formularios | Sí | react-hook-form + zod en entidades; recepciones usan validadores propios |
-| State Management | Context API | StoreContext, RawMaterialReceptionsOptionsContext |
-| API Layer | Sí | storeService, palletService, rawMaterialReceptionService; fetchWithTenant |
-| TypeScript | Parcial | storeService.ts tipado; resto .js |
-| Testing | Mínimo | Solo receptionCalculations, receptionTransformations |
+| Patrón                   | Presencia   | Estado                                                                         |
+| ------------------------ | ----------- | ------------------------------------------------------------------------------ |
+| Server/Client Components | Parcial     | Páginas "use client" o delegan en cliente; no hay fetch en servidor            |
+| Custom Hooks             | Sí          | useStore, useStores, usePallet, useReceptionForm; pero useStore es un monstruo |
+| Data Fetching            | Manual      | useEffect + useState + servicios en todos los flujos; sin React Query          |
+| Formularios              | Sí          | react-hook-form + zod en entidades; recepciones usan validadores propios       |
+| State Management         | Context API | StoreContext, RawMaterialReceptionsOptionsContext                              |
+| API Layer                | Sí          | storeService, palletService, rawMaterialReceptionService; fetchWithTenant      |
+| TypeScript               | Parcial     | storeService.ts tipado; resto .js                                              |
+| Testing                  | Mínimo      | Solo receptionCalculations, receptionTransformations                           |
 
 ---
 
 ## 3. Cumplimiento Tech Stack del proyecto
 
-| Requisito | Cumplimiento |
-|-----------|--------------|
-| **React Query** para server state | ❌ No usado; todo manual useEffect |
-| **Zod** en formularios | ⚠️ Parcial: entidades sí; CreateReceptionForm/OperarioCreateReceptionForm usan validadores custom (receptionValidators) |
-| **TypeScript** | ⚠️ storeService.ts sí; hooks, componentes, resto de servicios en .js |
-| **TenantContext / useTenant** | ❌ Usa getCurrentTenant() donde se necesita; sin TenantContext |
-| **Tests** servicios/hooks | ❌ No hay tests para storeService, useStore, useStores, usePallet |
-| **shadcn/ui** | ✅ Sí; algunos ScrollShadow de NextUI en StoresManager |
-| **Componentes <150 líneas** | ❌ CreateReceptionForm 1093, OperarioCreateReceptionForm 928, useStore 766 |
+| Requisito                         | Cumplimiento                                                                                                            |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| **React Query** para server state | ❌ No usado; todo manual useEffect                                                                                      |
+| **Zod** en formularios            | ⚠️ Parcial: entidades sí; CreateReceptionForm/OperarioCreateReceptionForm usan validadores custom (receptionValidators) |
+| **TypeScript**                    | ⚠️ storeService.ts sí; hooks, componentes, resto de servicios en .js                                                    |
+| **TenantContext / useTenant**     | ❌ Usa getCurrentTenant() donde se necesita; sin TenantContext                                                          |
+| **Tests** servicios/hooks         | ❌ No hay tests para storeService, useStore, useStores, usePallet                                                       |
+| **shadcn/ui**                     | ✅ Sí; algunos ScrollShadow de NextUI en StoresManager                                                                  |
+| **Componentes <150 líneas**       | ❌ CreateReceptionForm 1093, OperarioCreateReceptionForm 928, useStore 766                                              |
 
 ---
 
 ## 4. UI/UX Design System
 
-| Criterio | Estado |
-|----------|--------|
-| shadcn/ui consistente | ✅ Sí |
-| Custom UI primitives | ❌ ScrollShadow de NextUI en StoresManager |
-| NextUI / alternativas | ⚠️ ScrollShadow @nextui-org en StoresManager |
-| Design system (colors, spacing) | ✅ Consistente |
+| Criterio                        | Estado                                       |
+| ------------------------------- | -------------------------------------------- |
+| shadcn/ui consistente           | ✅ Sí                                        |
+| Custom UI primitives            | ❌ ScrollShadow de NextUI en StoresManager   |
+| NextUI / alternativas           | ⚠️ ScrollShadow @nextui-org en StoresManager |
+| Design system (colors, spacing) | ✅ Consistente                               |
 
 ---
 
@@ -96,46 +96,46 @@
 
 ## 6. Accesibilidad
 
-| Aspecto | Estado |
-|---------|--------|
-| Semantic HTML | Aceptable |
-| ARIA / roles | Parcial (Radix en shadcn aporta) |
+| Aspecto             | Estado                             |
+| ------------------- | ---------------------------------- |
+| Semantic HTML       | Aceptable                          |
+| ARIA / roles        | Parcial (Radix en shadcn aporta)   |
 | CreateReceptionForm | useAccessibilityAnnouncer presente |
-| Keyboard navigation | No auditado en detalle |
+| Keyboard navigation | No auditado en detalle             |
 
 ---
 
 ## 7. Performance
 
-| Aspecto | Estado |
-|---------|--------|
-| Bundle size | No analizado |
-| Re-renders | Múltiples contextos; useStore con mucho estado |
+| Aspecto      | Estado                                             |
+| ------------ | -------------------------------------------------- |
+| Bundle size  | No analizado                                       |
+| Re-renders   | Múltiples contextos; useStore con mucho estado     |
 | Lazy loading | PalletDialog dynamic import en CreateReceptionForm |
-| Pagination | useStores paginado; ReceptionsListCard paginado |
+| Pagination   | useStores paginado; ReceptionsListCard paginado    |
 
 ---
 
 ## 8. Seguridad y multi-tenant
 
-| Aspecto | Estado |
-|---------|--------|
-| Tenant en headers | ✅ fetchWithTenant |
-| Aislamiento operario | ✅ assignedStoreId verificado en warehouse |
-| Cache keys tenant-aware | N/A (no hay React Query) |
-| Secrets en NEXT_PUBLIC | No detectado en este bloque |
+| Aspecto                 | Estado                                     |
+| ----------------------- | ------------------------------------------ |
+| Tenant en headers       | ✅ fetchWithTenant                         |
+| Aislamiento operario    | ✅ assignedStoreId verificado en warehouse |
+| Cache keys tenant-aware | N/A (no hay React Query)                   |
+| Secrets en NEXT_PUBLIC  | No detectado en este bloque                |
 
 ---
 
 ## 9. Alineación con auditoría
 
-| Hallazgo auditoría | Aplicable al bloque |
-|--------------------|---------------------|
+| Hallazgo auditoría      | Aplicable al bloque                                                                    |
+| ----------------------- | -------------------------------------------------------------------------------------- |
 | Data fetching sin caché | ✅ useStores, useStore, ReceptionsListCard, DispatchesListCard, CurrentStockCard, etc. |
-| Componentes monolíticos | ✅ CreateReceptionForm, OperarioCreateReceptionForm, useStore |
-| Sin TypeScript | ✅ Mayoría de archivos .js |
-| Tests insuficientes | ✅ Solo helpers de recepción |
-| NextUI coexistencia | ✅ ScrollShadow en StoresManager |
+| Componentes monolíticos | ✅ CreateReceptionForm, OperarioCreateReceptionForm, useStore                          |
+| Sin TypeScript          | ✅ Mayoría de archivos .js                                                             |
+| Tests insuficientes     | ✅ Solo helpers de recepción                                                           |
+| NextUI coexistencia     | ✅ ScrollShadow en StoresManager                                                       |
 
 ---
 

@@ -21,49 +21,53 @@ const {
   reset,
   setError,
   setValue,
-  formState: { errors, isSubmitting, isValid }
+  formState: { errors, isSubmitting, isValid },
 } = useForm({
-  resolver: zodResolver(mySchema),     // si hay schema Zod
-  defaultValues: { field1: "", field2: null },
-  mode: "onChange",
+  resolver: zodResolver(mySchema), // si hay schema Zod
+  defaultValues: { field1: '', field2: null },
+  mode: 'onChange',
 });
 
 // Campo de texto simple
-<Input {...register("field_name", { required: "Campo requerido" })} />
-{errors.field_name && <p className="text-red-400 text-xs pt-1">* {errors.field_name.message}</p>}
+<Input {...register('field_name', { required: 'Campo requerido' })} />;
+{
+  errors.field_name && <p className="pt-1 text-xs text-red-400">* {errors.field_name.message}</p>;
+}
 
 // Campo custom (DatePicker, Combobox, Select)
 <Controller
   name="date"
   control={control}
-  rules={{ required: "Fecha requerida" }}
+  rules={{ required: 'Fecha requerida' }}
   render={({ field: { onChange, value, onBlur } }) => (
     <DatePicker date={value} onChange={onChange} onBlur={onBlur} />
   )}
-/>
-{errors.date && <p className="text-red-400 text-xs pt-1">* {errors.date.message}</p>}
+/>;
+{
+  errors.date && <p className="pt-1 text-xs text-red-400">* {errors.date.message}</p>;
+}
 
 // Submit
 <Button type="submit" disabled={isSubmitting}>
-  {isSubmitting ? "Guardando..." : "Guardar"}
-</Button>
+  {isSubmitting ? 'Guardando...' : 'Guardar'}
+</Button>;
 ```
 
 ---
 
 ## Tipos de campo disponibles en EntityClient (createForm)
 
-| Tipo | Componente rendered | Cuándo usar |
-|---|---|---|
-| `text` | `<Input type="text">` | Texto libre |
-| `email` | `<Input type="email">` | Emails |
-| `number` | `<Input type="number">` | Números |
-| `date` | `<DatePicker>` | Fechas sin hora |
-| `datetime-local` | `<Input type="datetime-local">` | Fecha + hora |
-| `select` | `<Select>` | Lista estática de opciones |
-| `Autocomplete` | `<Combobox>` con fetch | Opciones de API |
-| `textarea` | `<Textarea>` | Texto largo |
-| `emailList` | `<emailListInput>` | Múltiples emails |
+| Tipo             | Componente rendered             | Cuándo usar                |
+| ---------------- | ------------------------------- | -------------------------- |
+| `text`           | `<Input type="text">`           | Texto libre                |
+| `email`          | `<Input type="email">`          | Emails                     |
+| `number`         | `<Input type="number">`         | Números                    |
+| `date`           | `<DatePicker>`                  | Fechas sin hora            |
+| `datetime-local` | `<Input type="datetime-local">` | Fecha + hora               |
+| `select`         | `<Select>`                      | Lista estática de opciones |
+| `Autocomplete`   | `<Combobox>` con fetch          | Opciones de API            |
+| `textarea`       | `<Textarea>`                    | Texto largo                |
+| `emailList`      | `<emailListInput>`              | Múltiples emails           |
 
 ---
 
@@ -73,16 +77,20 @@ Cuando se usa `zodResolver`, el schema define tipos y validación:
 
 ```typescript
 // src/schemas/ — schemas reutilizables
-import { z } from "zod";
+import { z } from 'zod';
 
 const orderCreateSchema = z.object({
-  customer_id: z.number({ required_error: "Cliente requerido" }),
-  planned_date: z.string().min(1, "Fecha requerida"),
-  planned_products: z.array(z.object({
-    product_id: z.number(),
-    quantity: z.number().positive(),
-    price: z.number().min(0),
-  })).min(1, "Añadir al menos un producto"),
+  customer_id: z.number({ required_error: 'Cliente requerido' }),
+  planned_date: z.string().min(1, 'Fecha requerida'),
+  planned_products: z
+    .array(
+      z.object({
+        product_id: z.number(),
+        quantity: z.number().positive(),
+        price: z.number().min(0),
+      })
+    )
+    .min(1, 'Añadir al menos un producto'),
 });
 
 type OrderCreateForm = z.infer<typeof orderCreateSchema>;
@@ -123,17 +131,17 @@ Los formularios aplican transformaciones antes de enviar al backend:
 
 ```javascript
 // Fechas → formato backend
-date: format(formData.date, 'yyyy-MM-dd')
-datetime: datetimeLocalToIsoWithZone(formData.datetime)
+date: format(formData.date, 'yyyy-MM-dd');
+datetime: datetimeLocalToIsoWithZone(formData.datetime);
 
 // camelCase → snake_case para IDs de relación
 // speciesId → species_id  (conversión explícita, no automática)
 
 // Payload de tiendas
-transformStoresPayload(formData)
+transformStoresPayload(formData);
 
 // Split de cliente (datos entidad vs. asignación)
-splitCustomerPayload(formData)
+splitCustomerPayload(formData);
 ```
 
 ---
@@ -158,11 +166,11 @@ Esto mapea los errores de campo del backend directamente a los campos del formul
 
 ```javascript
 // Importar notify (wrapper de sonner)
-import { notify } from "@/lib/notify"; // o ruta equivalente
+import { notify } from '@/lib/notify'; // o ruta equivalente
 
 // En éxito
-notify.success("Cliente creado correctamente");
-onSuccess?.();   // callback para cerrar modal, refetch, etc.
+notify.success('Cliente creado correctamente');
+onSuccess?.(); // callback para cerrar modal, refetch, etc.
 
 // En error general
 notify.error(getErrorMessage(errorData));

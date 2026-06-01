@@ -1,17 +1,17 @@
-'use client'
+'use client';
 
-import { Card } from "@/components/ui/card";
-import { EmptyState } from "@/components/Utilities/EmptyState";
-import { useStores } from "@/hooks/useStores";
-import { useEffect, useRef, useState } from "react";
-import StoreCard from "./StoresManager/StoreCard";
-import LoadMoreStoreCard from "./StoresManager/StoreCard/LoadMoreStoreCard";
-import { Store } from "./StoresManager/Store";
-import Loader from "@/components/Utilities/Loader";
-import { Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { isExternalActor } from "@/lib/auth/actor";
+import { Card } from '@/components/ui/card';
+import { EmptyState } from '@/components/Utilities/EmptyState';
+import { useStores } from '@/hooks/useStores';
+import { useEffect, useRef, useState } from 'react';
+import StoreCard from './StoresManager/StoreCard';
+import LoadMoreStoreCard from './StoresManager/StoreCard/LoadMoreStoreCard';
+import { Store } from './StoresManager/Store';
+import Loader from '@/components/Utilities/Loader';
+import { Plus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { isExternalActor } from '@/lib/auth/actor';
 
 export default function StoresManager() {
   const {
@@ -30,10 +30,10 @@ export default function StoresManager() {
   const router = useRouter();
   const externalActor = isExternalActor(session?.user);
 
-  const sessionReady = sessionStatus !== "loading";
+  const sessionReady = sessionStatus !== 'loading';
   const showLoader = !sessionReady || isInitialLoading;
 
-  const realStores = stores?.filter((store) => store.id !== "registered") || [];
+  const realStores = stores?.filter((store) => store.id !== 'registered') || [];
   const loadingStore = false;
 
   const handleOnSelectStore = (id) => {
@@ -53,13 +53,13 @@ export default function StoresManager() {
       e.preventDefault();
       el.scrollLeft += e.deltaY;
     };
-    el.addEventListener("wheel", onWheel, { passive: false });
-    return () => el.removeEventListener("wheel", onWheel);
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
   }, [isInitialLoading]);
 
   if (showLoader) {
     return (
-      <div className="flex min-h-0 flex-1 w-full items-center justify-center p-6">
+      <div className="flex min-h-0 w-full flex-1 items-center justify-center p-6">
         <Loader />
       </div>
     );
@@ -69,7 +69,7 @@ export default function StoresManager() {
     <div className="flex h-full min-h-0 w-full flex-col gap-4 p-2">
       <div
         ref={horizontalScrollRef}
-        className="flex shrink-0 gap-3 overflow-x-auto overflow-y-hidden py-2 rounded-xl"
+        className="flex shrink-0 gap-3 overflow-x-auto overflow-y-hidden rounded-xl py-2"
       >
         {stores?.length > 0 &&
           stores.map((store) => (
@@ -84,30 +84,26 @@ export default function StoresManager() {
           ))}
         {realStores.length === 0 && !externalActor && (
           <Card
-            onClick={() => router.push("/admin/stores/create")}
-            className="min-w-56 cursor-pointer border-2 border-dashed border-muted-foreground/25 bg-background transition-colors hover:border-primary hover:bg-primary/5"
+            onClick={() => router.push('/admin/stores/create')}
+            className="border-muted-foreground/25 bg-background hover:border-primary hover:bg-primary/5 min-w-56 cursor-pointer border-2 border-dashed transition-colors"
           >
             <div className="flex h-full w-full flex-col items-center justify-center gap-3 p-6">
               <div className="relative">
-                <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-primary/20 to-secondary/20 opacity-70 blur-xl" />
-                <div className="relative flex h-12 w-12 items-center justify-center rounded-full border border-primary/20 bg-primary/10">
-                  <Plus className="h-6 w-6 text-primary" strokeWidth={1.5} />
+                <div className="from-primary/20 to-secondary/20 absolute -inset-1 rounded-full bg-gradient-to-r opacity-70 blur-xl" />
+                <div className="border-primary/20 bg-primary/10 relative flex h-12 w-12 items-center justify-center rounded-full border">
+                  <Plus className="text-primary h-6 w-6" strokeWidth={1.5} />
                 </div>
               </div>
               <div className="flex flex-col items-center gap-1 text-center">
-                <span className="text-sm font-medium text-foreground">
-                  Crear almacén
-                </span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-foreground text-sm font-medium">Crear almacén</span>
+                <span className="text-muted-foreground text-xs">
                   Haz clic para añadir tu primer almacén
                 </span>
               </div>
             </div>
           </Card>
         )}
-        {hasMoreStores && (
-          <LoadMoreStoreCard onClick={loadMoreStores} loading={loadingMore} />
-        )}
+        {hasMoreStores && <LoadMoreStoreCard onClick={loadMoreStores} loading={loadingMore} />}
       </div>
 
       <div className="min-h-0 flex-1 overflow-hidden">
@@ -120,13 +116,13 @@ export default function StoresManager() {
           </Card>
         ) : (
           <div className="h-full min-h-0 overflow-hidden">
-          <Store
-            storeId={selectedStoreId}
-            storeName={stores?.find((s) => s.id === selectedStoreId)?.name}
-            onUpdateCurrentStoreTotalNetWeight={onUpdateCurrentStoreTotalNetWeight}
-            onAddNetWeightToStore={onAddNetWeightToStore}
-            setIsStoreLoading={setIsStoreLoading}
-          />
+            <Store
+              storeId={selectedStoreId}
+              storeName={stores?.find((s) => s.id === selectedStoreId)?.name}
+              onUpdateCurrentStoreTotalNetWeight={onUpdateCurrentStoreTotalNetWeight}
+              onAddNetWeightToStore={onAddNetWeightToStore}
+              setIsStoreLoading={setIsStoreLoading}
+            />
           </div>
         )}
       </div>

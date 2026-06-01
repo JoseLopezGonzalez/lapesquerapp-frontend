@@ -19,6 +19,7 @@ GET /api/v2/raw-material-receptions
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -26,16 +27,16 @@ Authorization: Bearer {access_token}
 
 #### Query Parameters (Opcionales)
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| id | integer | ID de recepción |
-| ids | array | Array de IDs de recepciones |
-| suppliers | array | Array de IDs de proveedores |
-| dates | object | Filtro por fecha: `{start: "2024-01-01", end: "2024-12-31"}` |
-| species | array | Array de IDs de especies |
-| products | array | Array de IDs de productos |
-| notes | string | Búsqueda parcial en notas |
-| perPage | integer | Elementos por página (default: 12) |
+| Parámetro | Tipo    | Descripción                                                  |
+| --------- | ------- | ------------------------------------------------------------ |
+| id        | integer | ID de recepción                                              |
+| ids       | array   | Array de IDs de recepciones                                  |
+| suppliers | array   | Array de IDs de proveedores                                  |
+| dates     | object  | Filtro por fecha: `{start: "2024-01-01", end: "2024-12-31"}` |
+| species   | array   | Array de IDs de especies                                     |
+| products  | array   | Array de IDs de productos                                    |
+| notes     | string  | Búsqueda parcial en notas                                    |
+| perPage   | integer | Elementos por página (default: 12)                           |
 
 #### Response Exitosa (200)
 
@@ -50,8 +51,8 @@ Authorization: Bearer {access_token}
       },
       "date": "2024-01-15",
       "notes": "Recepción de materia prima",
-      "declared_total_amount": 5000.00,
-      "declared_total_net_weight": 1000.00,
+      "declared_total_amount": 5000.0,
+      "declared_total_net_weight": 1000.0,
       "created_at": "2024-01-15T10:00:00.000000Z"
     }
   ],
@@ -71,6 +72,7 @@ POST /api/v2/raw-material-receptions
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -86,15 +88,15 @@ Content-Type: application/json
   },
   "date": "2024-01-15",
   "notes": "Recepción de materia prima",
-  "declaredTotalAmount": 5000.00,
-  "declaredTotalNetWeight": 1000.00,
+  "declaredTotalAmount": 5000.0,
+  "declaredTotalNetWeight": 1000.0,
   "details": [
     {
       "product": {
         "id": 1
       },
-      "netWeight": 500.00,
-      "price": 5.00,
+      "netWeight": 500.0,
+      "price": 5.0,
       "lot": "LOT-001",
       "boxes": 10
     }
@@ -111,8 +113,8 @@ Content-Type: application/json
   },
   "date": "2024-01-15",
   "notes": "Recepción de materia prima",
-  "declaredTotalAmount": 5000.00,
-  "declaredTotalNetWeight": 1000.00,
+  "declaredTotalAmount": 5000.0,
+  "declaredTotalNetWeight": 1000.0,
   "pallets": [
     {
       "observations": "Palet en buen estado",
@@ -126,8 +128,8 @@ Content-Type: application/json
           },
           "lot": "LOT-001",
           "gs1128": "1234567890123",
-          "grossWeight": 25.50,
-          "netWeight": 20.00
+          "grossWeight": 25.5,
+          "netWeight": 20.0
         }
       ]
     }
@@ -138,7 +140,7 @@ Content-Type: application/json
         "id": 1
       },
       "lot": "LOT-001",
-      "price": 5.00
+      "price": 5.0
     }
   ]
 }
@@ -146,15 +148,17 @@ Content-Type: application/json
 
 #### Campos Requeridos
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| supplier.id | integer | ID del proveedor |
-| date | date | Fecha de recepción |
+| Campo       | Tipo    | Descripción        |
+| ----------- | ------- | ------------------ |
+| supplier.id | integer | ID del proveedor   |
+| date        | date    | Fecha de recepción |
 
 **Modo Líneas:**
+
 - `details` (array) - Array de detalles de productos
 
 **Modo Palets:**
+
 - `pallets` (array) - Array de palets con cajas
 - `prices` (array) - Array de precios por producto/lote
 
@@ -216,6 +220,7 @@ PUT /api/v2/raw-material-receptions/{id}
 ```
 
 **Nota:** El formato del request body depende del `creation_mode` de la recepción:
+
 - Si es `lines`: usar formato de líneas
 - Si es `pallets`: usar formato de palets
 
@@ -302,6 +307,7 @@ GET /api/v2/cebo-dispatches
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -309,17 +315,17 @@ Authorization: Bearer {access_token}
 
 #### Query Parameters (Opcionales)
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| id | integer | ID de despacho |
-| ids | array | Array de IDs de despachos |
-| suppliers | array | Array de IDs de proveedores |
-| dates | object | Filtro por fecha: `{start: "2024-01-01", end: "2024-12-31"}` |
-| species | array | Array de IDs de especies |
-| products | array | Array de IDs de productos |
-| notes | string | Búsqueda parcial en notas |
-| export_type | string | Tipo de exportación (`facilcom`, `a3erp`, `a3erp2`) |
-| perPage | integer | Elementos por página (default: 12) |
+| Parámetro   | Tipo    | Descripción                                                  |
+| ----------- | ------- | ------------------------------------------------------------ |
+| id          | integer | ID de despacho                                               |
+| ids         | array   | Array de IDs de despachos                                    |
+| suppliers   | array   | Array de IDs de proveedores                                  |
+| dates       | object  | Filtro por fecha: `{start: "2024-01-01", end: "2024-12-31"}` |
+| species     | array   | Array de IDs de especies                                     |
+| products    | array   | Array de IDs de productos                                    |
+| notes       | string  | Búsqueda parcial en notas                                    |
+| export_type | string  | Tipo de exportación (`facilcom`, `a3erp`, `a3erp2`)          |
+| perPage     | integer | Elementos por página (default: 12)                           |
 
 #### Response Exitosa (200)
 
@@ -342,7 +348,7 @@ Authorization: Bearer {access_token}
             "id": 1,
             "name": "Producto A"
           },
-          "net_weight": 500.00
+          "net_weight": 500.0
         }
       ],
       "created_at": "2024-01-15T10:00:00.000000Z"
@@ -364,6 +370,7 @@ POST /api/v2/cebo-dispatches
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -384,7 +391,7 @@ Content-Type: application/json
       "product": {
         "id": 1
       },
-      "netWeight": 500.00
+      "netWeight": 500.0
     }
   ]
 }
@@ -392,18 +399,18 @@ Content-Type: application/json
 
 #### Campos Requeridos
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| supplier.id | integer | ID del proveedor |
-| date | date | Fecha de despacho |
-| details | array | Array de detalles de productos |
+| Campo       | Tipo    | Descripción                    |
+| ----------- | ------- | ------------------------------ |
+| supplier.id | integer | ID del proveedor               |
+| date        | date    | Fecha de despacho              |
+| details     | array   | Array de detalles de productos |
 
 #### Campos de details
 
-| Campo | Tipo | Requerido | Descripción |
-|-------|------|-----------|-------------|
-| product.id | integer | Sí | ID del producto |
-| netWeight | numeric | Sí | Peso neto |
+| Campo      | Tipo    | Requerido | Descripción     |
+| ---------- | ------- | --------- | --------------- |
+| product.id | integer | Sí        | ID del producto |
+| netWeight  | numeric | Sí        | Peso neto       |
 
 #### Response Exitosa (201)
 
@@ -425,7 +432,7 @@ Content-Type: application/json
           "id": 1,
           "name": "Producto A"
         },
-        "net_weight": 500.00
+        "net_weight": 500.0
       }
     ],
     "created_at": "2024-01-15T10:00:00.000000Z"
@@ -460,7 +467,7 @@ GET /api/v2/cebo-dispatches/{id}
           "id": 1,
           "name": "Producto A"
         },
-        "net_weight": 500.00
+        "net_weight": 500.0
       }
     ],
     "created_at": "2024-01-15T10:00:00.000000Z"
@@ -490,7 +497,7 @@ PUT /api/v2/cebo-dispatches/{id}
       "product": {
         "id": 1
       },
-      "netWeight": 600.00
+      "netWeight": 600.0
     }
   ]
 }
@@ -518,7 +525,7 @@ PUT /api/v2/cebo-dispatches/{id}
           "id": 1,
           "name": "Producto A"
         },
-        "net_weight": 600.00
+        "net_weight": 600.0
       }
     ],
     "created_at": "2024-01-15T10:00:00.000000Z",
@@ -596,6 +603,7 @@ GET /api/v2/supplier-liquidations/suppliers
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -603,10 +611,10 @@ Authorization: Bearer {access_token}
 
 #### Query Parameters (Requeridos)
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
+| Parámetro   | Tipo | Descripción                  |
+| ----------- | ---- | ---------------------------- |
 | dates.start | date | Fecha de inicio (YYYY-MM-DD) |
-| dates.end | date | Fecha de fin (YYYY-MM-DD) |
+| dates.end   | date | Fecha de fin (YYYY-MM-DD)    |
 
 #### Response Exitosa (200)
 
@@ -618,10 +626,10 @@ Authorization: Bearer {access_token}
       "name": "Proveedor A",
       "receptions_count": 5,
       "dispatches_count": 3,
-      "total_receptions_weight": 5000.00,
-      "total_dispatches_weight": 2000.00,
-      "total_receptions_amount": 25000.00,
-      "total_dispatches_amount": 10000.00
+      "total_receptions_weight": 5000.0,
+      "total_dispatches_weight": 2000.0,
+      "total_receptions_amount": 25000.0,
+      "total_dispatches_amount": 10000.0
     }
   ]
 }
@@ -636,6 +644,7 @@ GET /api/v2/supplier-liquidations/{supplierId}/details
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -643,16 +652,16 @@ Authorization: Bearer {access_token}
 
 #### Path Parameters
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
+| Parámetro  | Tipo    | Descripción      |
+| ---------- | ------- | ---------------- |
 | supplierId | integer | ID del proveedor |
 
 #### Query Parameters (Requeridos)
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
+| Parámetro   | Tipo | Descripción                  |
+| ----------- | ---- | ---------------------------- |
 | dates.start | date | Fecha de inicio (YYYY-MM-DD) |
-| dates.end | date | Fecha de fin (YYYY-MM-DD) |
+| dates.end   | date | Fecha de fin (YYYY-MM-DD)    |
 
 #### Response Exitosa (200)
 
@@ -725,6 +734,7 @@ GET /api/v2/supplier-liquidations/{supplierId}/pdf
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -732,25 +742,25 @@ Authorization: Bearer {access_token}
 
 #### Path Parameters
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
+| Parámetro  | Tipo    | Descripción      |
+| ---------- | ------- | ---------------- |
 | supplierId | integer | ID del proveedor |
 
 #### Query Parameters (Requeridos)
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
+| Parámetro   | Tipo | Descripción                  |
+| ----------- | ---- | ---------------------------- |
 | dates.start | date | Fecha de inicio (YYYY-MM-DD) |
-| dates.end | date | Fecha de fin (YYYY-MM-DD) |
+| dates.end   | date | Fecha de fin (YYYY-MM-DD)    |
 
 #### Query Parameters (Opcionales)
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| receptions | array | Array de IDs de recepciones a incluir |
-| dispatches | array | Array de IDs de despachos a incluir |
-| payment_method | string | Método de pago: `cash` o `transfer` |
-| has_management_fee | boolean | Incluir gasto de gestión (2.5%) |
+| Parámetro             | Tipo    | Descripción                                          |
+| --------------------- | ------- | ---------------------------------------------------- |
+| receptions            | array   | Array de IDs de recepciones a incluir                |
+| dispatches            | array   | Array de IDs de despachos a incluir                  |
+| payment_method        | string  | Método de pago: `cash` o `transfer`                  |
+| has_management_fee    | boolean | Incluir gasto de gestión (2.5%)                      |
 | show_transfer_payment | boolean | Mostrar información de transferencia (default: true) |
 
 #### Response Exitosa (200)
@@ -794,4 +804,3 @@ Retorna un archivo PDF con la liquidación del proveedor.
   "userMessage": "La recepción especificada no existe."
 }
 ```
-

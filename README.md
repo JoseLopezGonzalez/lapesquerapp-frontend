@@ -40,6 +40,7 @@ src/
 La documentación completa del proyecto está disponible en [`docs/README.md`](./docs/README.md).
 
 **Incluye**:
+
 - ✅ Arquitectura y estructura del proyecto
 - ✅ Componentes UI y Admin
 - ✅ Hooks personalizados y Context API
@@ -72,19 +73,21 @@ Ver [docs/README.md](./docs/README.md) y [docs/00-docs-map.md](./docs/00-docs-ma
 
 ### Requisitos Previos
 
-- Node.js 18+ 
+- Node.js 18+
 - npm o yarn
 - Variables de entorno configuradas (ver `.env.example` si existe)
 
 ### Instalación
 
 1. Clona el repositorio y entra en la carpeta:
+
    ```bash
    git clone <repo-url>
    cd brisapp-nextjs
    ```
 
 2. Instala las dependencias:
+
    ```bash
    npm install
    ```
@@ -116,6 +119,7 @@ npm run lint     # Linter
 Se agradecen issues y PRs para mejorar el proyecto.
 
 **Antes de contribuir**:
+
 - Revisa la [documentación completa](./docs/README.md)
 - Consulta las [observaciones críticas](./docs/15-OBSERVACIONES-CRITICAS.md) para entender mejoras pendientes
 - Revisa la documentación en `docs/` antes de añadir nuevos componentes o configuraciones
@@ -127,4 +131,3 @@ Se agradecen issues y PRs para mejorar el proyecto.
 - **API v2 es la versión activa**: Toda la documentación se enfoca en API v2
 - **Producción en construcción**: El módulo de producción está en desarrollo activo
 - **Documentación basada en código real**: Solo se documenta lo que existe
-

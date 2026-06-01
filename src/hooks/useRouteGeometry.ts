@@ -38,7 +38,9 @@ export function useRouteGeometry(
       };
     }
 
-    const stopsWithCoordinates = geometryStops.filter((stop) => stop?.lat != null && stop?.lng != null);
+    const stopsWithCoordinates = geometryStops.filter(
+      (stop) => stop?.lat != null && stop?.lng != null
+    );
     if (stopsWithCoordinates.length < 2) {
       setRouteGeometry(null);
       setIsCalculatingRoute(false);
@@ -58,7 +60,9 @@ export function useRouteGeometry(
       } catch (error) {
         if (!cancelled) {
           setRouteGeometry(null);
-          setDirectionsError(error instanceof Error ? error.message : 'No se pudo calcular la ruta por carretera.');
+          setDirectionsError(
+            error instanceof Error ? error.message : 'No se pudo calcular la ruta por carretera.'
+          );
           setIsCalculatingRoute(false);
         }
       }

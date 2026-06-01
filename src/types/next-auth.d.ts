@@ -8,8 +8,8 @@ declare module 'next-auth' {
     user: {
       accessToken?: string;
       role?: string | null;
-      actorType?: "internal_user" | "external_user" | null;
-      externalUserType?: "maquilador" | null;
+      actorType?: 'internal_user' | 'external_user' | null;
+      externalUserType?: 'maquilador' | null;
       allowedStoreIds?: number[];
       assignedStoreId?: number | null;
       companyName?: string | null;
@@ -24,8 +24,8 @@ declare module 'next-auth' {
   interface User {
     accessToken?: string;
     role?: string | string[] | null;
-    actorType?: "internal_user" | "external_user" | null;
-    externalUserType?: "maquilador" | null;
+    actorType?: 'internal_user' | 'external_user' | null;
+    externalUserType?: 'maquilador' | null;
     allowedStoreIds?: number[];
     assignedStoreId?: number | null;
     companyName?: string | null;
@@ -38,8 +38,8 @@ declare module 'next-auth/jwt' {
   interface JWT {
     accessToken?: string;
     role?: string | null;
-    actorType?: "internal_user" | "external_user" | null;
-    externalUserType?: "maquilador" | null;
+    actorType?: 'internal_user' | 'external_user' | null;
+    externalUserType?: 'maquilador' | null;
     allowedStoreIds?: number[];
     assignedStoreId?: number | null;
     companyName?: string | null;

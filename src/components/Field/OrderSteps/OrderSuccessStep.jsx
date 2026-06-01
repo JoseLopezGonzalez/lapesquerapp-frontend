@@ -28,18 +28,18 @@ export function OrderSuccessStep({ order, onBackToOrders, onBackToRoute }) {
         <p className="text-xl font-semibold text-green-700 dark:text-green-400">
           Pedido operativo actualizado
         </p>
-        <p className="max-w-md text-sm text-muted-foreground">
+        <p className="text-muted-foreground max-w-md text-sm">
           El pedido #{order.id} se ha guardado con el contenido servido actualizado.
         </p>
       </div>
 
       <Card className="w-full max-w-md">
-        <CardContent className="pt-6 pb-6 px-6">
+        <CardContent className="px-6 pt-6 pb-6">
           <div className="flex flex-row flex-wrap justify-center gap-4">
             <Button
               variant="default"
               size="sm"
-              className="flex-1 min-w-[160px] max-w-[260px] gap-2 min-h-[40px] touch-manipulation active:scale-[0.98] transition-transform text-sm"
+              className="min-h-[40px] max-w-[260px] min-w-[160px] flex-1 touch-manipulation gap-2 text-sm transition-transform active:scale-[0.98]"
               onClick={onPrint}
             >
               <Printer className="h-4 w-4 shrink-0" />
@@ -49,7 +49,7 @@ export function OrderSuccessStep({ order, onBackToOrders, onBackToRoute }) {
             <Button
               variant="outline"
               size="sm"
-              className="flex-1 min-w-[160px] max-w-[260px] gap-2 min-h-[40px] touch-manipulation active:scale-[0.98] transition-transform text-sm"
+              className="min-h-[40px] max-w-[260px] min-w-[160px] flex-1 touch-manipulation gap-2 text-sm transition-transform active:scale-[0.98]"
               onClick={onBackToOrders}
             >
               <ArrowRight className="h-4 w-4 shrink-0" />
@@ -60,7 +60,7 @@ export function OrderSuccessStep({ order, onBackToOrders, onBackToRoute }) {
               <Button
                 variant="ghost"
                 size="sm"
-                className="flex-1 min-w-[160px] max-w-[260px] gap-2 min-h-[40px] touch-manipulation active:scale-[0.98] transition-transform text-sm"
+                className="min-h-[40px] max-w-[260px] min-w-[160px] flex-1 touch-manipulation gap-2 text-sm transition-transform active:scale-[0.98]"
                 onClick={onBackToRoute}
               >
                 <Route className="h-4 w-4 shrink-0" />

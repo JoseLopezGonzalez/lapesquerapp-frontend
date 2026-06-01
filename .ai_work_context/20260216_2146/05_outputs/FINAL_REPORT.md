@@ -23,13 +23,13 @@ Se ha estandarizado todo el sistema de notificaciones del proyecto en la librer�
 
 ## Deliverables
 
-| Ubicación | Contenido |
-|-----------|-----------|
-| `01_analysis/01_auditoria_notificaciones.md` | Auditoría detallada de usos de toast y getToastTheme |
-| `02_planning/02_comparativa_y_estrategia_migracion.md` | Comparativa técnica, estrategia y plan de migración |
-| `03_execution/03_migracion_notify_log.md` | Log de la implementación Fase 3 |
-| `04_logs/execution_timeline.md` | Timeline de fases |
-| `05_outputs/FINAL_REPORT.md` | Este informe |
+| Ubicación                                              | Contenido                                            |
+| ------------------------------------------------------ | ---------------------------------------------------- |
+| `01_analysis/01_auditoria_notificaciones.md`           | Auditoría detallada de usos de toast y getToastTheme |
+| `02_planning/02_comparativa_y_estrategia_migracion.md` | Comparativa técnica, estrategia y plan de migración  |
+| `03_execution/03_migracion_notify_log.md`              | Log de la implementación Fase 3                      |
+| `04_logs/execution_timeline.md`                        | Timeline de fases                                    |
+| `05_outputs/FINAL_REPORT.md`                           | Este informe                                         |
 
 **Código y configuración** (en el repo):
 

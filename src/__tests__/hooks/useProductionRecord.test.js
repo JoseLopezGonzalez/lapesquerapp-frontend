@@ -65,10 +65,9 @@ describe('useProductionRecord', () => {
   });
 
   it('returns record, production, processes, existingRecords, loading, saveRecord, setRecord', async () => {
-    const { result } = renderHook(
-      () => useProductionRecord(1, null, null),
-      { wrapper: createWrapper() }
-    );
+    const { result } = renderHook(() => useProductionRecord(1, null, null), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
@@ -89,10 +88,9 @@ describe('useProductionRecord', () => {
   it('when recordId is set, fetches record and sets it', async () => {
     getProductionRecord.mockResolvedValue(mockRecord);
 
-    const { result } = renderHook(
-      () => useProductionRecord(1, 10, null),
-      { wrapper: createWrapper() }
-    );
+    const { result } = renderHook(() => useProductionRecord(1, 10, null), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
@@ -110,10 +108,9 @@ describe('useProductionRecord', () => {
     createProductionRecord.mockResolvedValue({ data: { id: 99 } });
     getProductionRecord.mockResolvedValue({ ...mockRecord, id: 99 });
 
-    const { result } = renderHook(
-      () => useProductionRecord(1, null, null),
-      { wrapper: createWrapper() }
-    );
+    const { result } = renderHook(() => useProductionRecord(1, null, null), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
@@ -137,10 +134,9 @@ describe('useProductionRecord', () => {
     getProductionRecord.mockResolvedValue(mockRecord);
     updateProductionRecord.mockResolvedValue(mockRecord);
 
-    const { result } = renderHook(
-      () => useProductionRecord(1, 10, null),
-      { wrapper: createWrapper() }
-    );
+    const { result } = renderHook(() => useProductionRecord(1, 10, null), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => {
       expect(result.current.record).toEqual(mockRecord);

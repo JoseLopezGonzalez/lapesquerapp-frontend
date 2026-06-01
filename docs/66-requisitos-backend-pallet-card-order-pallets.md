@@ -71,20 +71,20 @@ El `PalletCard` necesita:
 
 ## Comparación: Qué Falta vs Qué Tiene
 
-| Campo | Actual | Necesario | Estado |
-|-------|--------|-----------|--------|
-| `id` | ✅ | ✅ | OK |
-| `status` | ❓ | ✅ | Opcional |
-| `receptionId` | ✅ | ✅ | OK |
-| `orderId` | ✅ | ✅ | OK |
-| `observations` | ❓ | ✅ | **VERIFICAR** |
-| `lots` | ✅ (array) | ✅ (array) | OK |
-| `productsNames` | ✅ (array) | ❌ (no necesario) | OK (se puede usar como fallback) |
-| `numberOfBoxes` | ✅ | ✅ | OK |
-| `netWeight` | ✅ | ✅ | OK |
-| `availableBoxesCount` | ❌ | ✅ | **NECESARIO** |
-| `totalAvailableWeight` | ❌ | ✅ | **NECESARIO** |
-| `productsSummary` | ❌ | ✅ | **NECESARIO** (resumen agregado) |
+| Campo                  | Actual     | Necesario         | Estado                           |
+| ---------------------- | ---------- | ----------------- | -------------------------------- |
+| `id`                   | ✅         | ✅                | OK                               |
+| `status`               | ❓         | ✅                | Opcional                         |
+| `receptionId`          | ✅         | ✅                | OK                               |
+| `orderId`              | ✅         | ✅                | OK                               |
+| `observations`         | ❓         | ✅                | **VERIFICAR**                    |
+| `lots`                 | ✅ (array) | ✅ (array)        | OK                               |
+| `productsNames`        | ✅ (array) | ❌ (no necesario) | OK (se puede usar como fallback) |
+| `numberOfBoxes`        | ✅         | ✅                | OK                               |
+| `netWeight`            | ✅         | ✅                | OK                               |
+| `availableBoxesCount`  | ❌         | ✅                | **NECESARIO**                    |
+| `totalAvailableWeight` | ❌         | ✅                | **NECESARIO**                    |
+| `productsSummary`      | ❌         | ✅                | **NECESARIO** (resumen agregado) |
 
 ### Campos para Resúmenes (Alternativa a `boxes` completo)
 
@@ -123,14 +123,15 @@ Si solo queremos mostrar el total, podemos usar campos agregados:
 
 ```json
 {
-  "availableBoxesCount": 13,  // Cajas disponibles
-  "totalAvailableWeight": 257.5,  // Peso disponible
-  "usedBoxesCount": 2,  // Cajas en producción (opcional)
-  "totalUsedWeight": 41.0  // Peso en producción (opcional)
+  "availableBoxesCount": 13, // Cajas disponibles
+  "totalAvailableWeight": 257.5, // Peso disponible
+  "usedBoxesCount": 2, // Cajas en producción (opcional)
+  "totalUsedWeight": 41.0 // Peso en producción (opcional)
 }
 ```
 
 **Por qué NO necesitamos todas las cajas:**
+
 - El `PalletCard` solo muestra resúmenes (productos con peso y cajas)
 - Los helpers ya priorizan valores del backend (`availableBoxesCount`, `totalAvailableWeight`)
 - Para el resumen de productos, podemos usar `productsSummary` pre-calculado
@@ -138,15 +139,16 @@ Si solo queremos mostrar el total, podemos usar campos agregados:
 
 ## Campos Opcionales pero Recomendados
 
-| Campo | Descripción | Uso en PalletCard |
-|-------|-------------|-------------------|
-| `status` | Estado del palet (1=registered, 2=stored, etc.) | Puede usarse para mostrar badge de estado |
-| `observations` | Observaciones del palet | Se muestra en el card si existe |
-| `storedPallet` | Información de almacenamiento | No necesario para el card básico, pero útil |
+| Campo          | Descripción                                     | Uso en PalletCard                           |
+| -------------- | ----------------------------------------------- | ------------------------------------------- |
+| `status`       | Estado del palet (1=registered, 2=stored, etc.) | Puede usarse para mostrar badge de estado   |
+| `observations` | Observaciones del palet                         | Se muestra en el card si existe             |
+| `storedPallet` | Información de almacenamiento                   | No necesario para el card básico, pero útil |
 
 ## Resumen de Cambios Necesarios en el Backend
 
 ### ✅ Ya Existe
+
 - `id`
 - `receptionId`
 - `orderId`
@@ -158,6 +160,7 @@ Si solo queremos mostrar el total, podemos usar campos agregados:
 ### ⚠️ Necesario Agregar (Opción Recomendada: Resúmenes)
 
 **Opción A: Resumen de Productos (MÁS EFICIENTE)**
+
 1. **`productsSummary`** (array) - **RECOMENDADO**
    - Resumen agregado por producto con:
      - `product` (objeto con `id` y `name`)
@@ -184,6 +187,7 @@ Si solo queremos mostrar el total, podemos usar campos agregados:
 
 **Opción B: Campos Agregados Simples (MÁS SIMPLE)**
 Si no se puede calcular `productsSummary`, al menos agregar:
+
 - `availableBoxesCount` (integer)
 - `totalAvailableWeight` (number)
 
@@ -253,7 +257,7 @@ Si no se puede calcular `productsSummary`, al menos:
       "netWeight": 250.5,
       "availableBoxesCount": 8,
       "totalAvailableWeight": 205.3,
-      "productsNames": ["Atún fresco", "Salmón"]  // Fallback para mostrar productos
+      "productsNames": ["Atún fresco", "Salmón"] // Fallback para mostrar productos
     }
   ]
 }
@@ -263,7 +267,7 @@ Si no se puede calcular `productsSummary`, al menos:
 
 ## Notas Importantes
 
-1. **`productsSummary` es la opción más eficiente**: 
+1. **`productsSummary` es la opción más eficiente**:
    - El backend calcula el resumen una vez
    - El frontend solo muestra los datos sin procesar
    - Reduce significativamente el tamaño de la respuesta
@@ -290,6 +294,7 @@ Si no se puede calcular `productsSummary`, al menos:
 ## Checklist de Implementación Backend
 
 ### Opción Recomendada (Resúmenes)
+
 - [ ] Agregar campo `productsSummary` (array) con resumen por producto
   - [ ] Cada item debe tener `product` (con `id` y `name`)
   - [ ] Cada item debe tener `availableBoxCount` y `availableNetWeight`
@@ -303,14 +308,17 @@ Si no se puede calcular `productsSummary`, al menos:
 - [ ] Mantener `numberOfBoxes` y `netWeight` para compatibilidad
 
 ### Opción Alternativa (Solo Campos Agregados)
+
 Si no se puede calcular `productsSummary`:
+
 - [ ] Agregar campo `availableBoxesCount` (integer)
 - [ ] Agregar campo `totalAvailableWeight` (number)
 - [ ] Mantener `productsNames` para mostrar productos (sin peso individual)
 
 ## Impacto en Performance
 
-✅ **Ventaja de usar resúmenes**: 
+✅ **Ventaja de usar resúmenes**:
+
 - Mucho menor tamaño de respuesta comparado con incluir todas las cajas
 - Ejemplo: Un palet con 50 cajas
   - Con `boxes`: ~50 objetos JSON

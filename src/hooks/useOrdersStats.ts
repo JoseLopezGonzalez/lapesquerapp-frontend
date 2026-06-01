@@ -108,8 +108,21 @@ export function useOrderRankingStats(params: OrderRankingParams) {
   const dateFrom = range?.from?.toLocaleDateString?.('sv-SE') ?? null;
   const dateTo = range?.to?.toLocaleDateString?.('sv-SE') ?? null;
 
-  const { data: rawData, isLoading, error } = useQuery({
-    queryKey: ['orders', 'ranking', tenantId ?? 'unknown', dateFrom, dateTo, groupBy, valueType, speciesId],
+  const {
+    data: rawData,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: [
+      'orders',
+      'ranking',
+      tenantId ?? 'unknown',
+      dateFrom,
+      dateTo,
+      groupBy,
+      valueType,
+      speciesId,
+    ],
     queryFn: () =>
       getOrderRankingStats(
         {
@@ -173,7 +186,10 @@ interface ProfitabilityTimelineParams extends ProfitabilityRangeParams {
 function parseSalesBySalespersonResponse(raw: unknown): SalesBySalespersonItem[] {
   const arr = Array.isArray(raw)
     ? raw
-    : raw && typeof raw === 'object' && 'data' in raw && Array.isArray((raw as { data: unknown[] }).data)
+    : raw &&
+        typeof raw === 'object' &&
+        'data' in raw &&
+        Array.isArray((raw as { data: unknown[] }).data)
       ? (raw as { data: unknown[] }).data
       : [];
   return arr.map((item: Record<string, unknown>, index: number) => ({
@@ -197,7 +213,11 @@ export function useSalesBySalesperson(params: SalesBySalespersonParams) {
   const dateTo = range?.to?.toLocaleDateString?.('sv-SE') ?? yearToDate.dateTo;
   const enabled = !!token && !!dateFrom && !!dateTo && status !== 'loading';
 
-  const { data: rawData, isLoading, error } = useQuery({
+  const {
+    data: rawData,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['orders', 'salesBySalesperson', tenantId ?? 'unknown', dateFrom, dateTo, status],
     queryFn: () => getSalesBySalesperson({ dateFrom, dateTo }, token as string),
     enabled,
@@ -227,7 +247,15 @@ export function useOrdersProfitabilitySummary(params: ProfitabilitySummaryParams
   const enabled = !!token && !!tenantId && !!dateFrom && !!dateTo && status !== 'loading';
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['orders', 'profitabilitySummary', tenantId ?? 'unknown', dateFrom, dateTo, productId, status],
+    queryKey: [
+      'orders',
+      'profitabilitySummary',
+      tenantId ?? 'unknown',
+      dateFrom,
+      dateTo,
+      productId,
+      status,
+    ],
     queryFn: () =>
       getOrdersProfitabilitySummary(
         {

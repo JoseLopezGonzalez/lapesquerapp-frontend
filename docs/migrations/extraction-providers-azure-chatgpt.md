@@ -33,25 +33,25 @@ Export helpers + linking con proveedores/barcos
 
 ### Tipos de documento soportados
 
-| Clave interna | Modelo Azure | Proveedor real |
-|---|---|---|
-| `listadoComprasLonjaDeIsla` | `ListadoComprasLonjaDeIsla` | Lonja de Isla Cristina |
-| `albaranCofradiaPescadoresSantoCristoDelMar` | `AlbaranCofradiaPescadoresSantoCristoDelMar` | Cofradía Punta del Moral |
-| `listadoComprasAsocArmadoresPuntaDelMoral` | `ListadoComprasAsocArmadoresPuntaDelMoral` | Asoc. Armadores Punta del Moral |
+| Clave interna                                | Modelo Azure                                 | Proveedor real                  |
+| -------------------------------------------- | -------------------------------------------- | ------------------------------- |
+| `listadoComprasLonjaDeIsla`                  | `ListadoComprasLonjaDeIsla`                  | Lonja de Isla Cristina          |
+| `albaranCofradiaPescadoresSantoCristoDelMar` | `AlbaranCofradiaPescadoresSantoCristoDelMar` | Cofradía Punta del Moral        |
+| `listadoComprasAsocArmadoresPuntaDelMoral`   | `ListadoComprasAsocArmadoresPuntaDelMoral`   | Asoc. Armadores Punta del Moral |
 
 ### Archivos clave del sistema actual
 
-| Capa | Archivo |
-|---|---|
-| Servicio Azure | `src/services/azure/index.js` |
-| Parser respuesta Azure | `src/helpers/azure/documentAI/index.js` |
-| Normalizadores multi-página | `src/helpers/azure/lonjaDeIslaMultiPageNormalizer.js`, `asocMultiPageNormalizer.js` |
-| Validadores de estructura | `src/validators/lonjas/lonjaDeIslaValidator.js`, `cofraValidator.js`, `asocValidator.js` |
-| Parsers de datos | `src/parsers/lonjas/lonjaDeIslaParser.js`, `cofraParser.js`, `asocParser.js` |
-| Orquestador | `src/components/Admin/MarketDataExtractor/shared/DocumentProcessor.js` |
-| Errores custom | `src/errors/lonjasErrors.js` |
-| UI principal | `src/components/Admin/MarketDataExtractor/index.js` |
-| Export helpers | `src/exportHelpers/lonjaDeIslaExportHelper.js`, `cofraExportHelper.js`, `asocExportHelper.js` |
+| Capa                        | Archivo                                                                                       |
+| --------------------------- | --------------------------------------------------------------------------------------------- |
+| Servicio Azure              | `src/services/azure/index.js`                                                                 |
+| Parser respuesta Azure      | `src/helpers/azure/documentAI/index.js`                                                       |
+| Normalizadores multi-página | `src/helpers/azure/lonjaDeIslaMultiPageNormalizer.js`, `asocMultiPageNormalizer.js`           |
+| Validadores de estructura   | `src/validators/lonjas/lonjaDeIslaValidator.js`, `cofraValidator.js`, `asocValidator.js`      |
+| Parsers de datos            | `src/parsers/lonjas/lonjaDeIslaParser.js`, `cofraParser.js`, `asocParser.js`                  |
+| Orquestador                 | `src/components/Admin/MarketDataExtractor/shared/DocumentProcessor.js`                        |
+| Errores custom              | `src/errors/lonjasErrors.js`                                                                  |
+| UI principal                | `src/components/Admin/MarketDataExtractor/index.js`                                           |
+| Export helpers              | `src/exportHelpers/lonjaDeIslaExportHelper.js`, `cofraExportHelper.js`, `asocExportHelper.js` |
 
 ---
 
@@ -116,10 +116,10 @@ type ExtractionResult = {
   success: boolean;
   provider: 'azure' | 'chatgpt';
   documentType: string;
-  data: ParsedDocument[];       // array por si hay múltiples hojas/secciones
+  data: ParsedDocument[]; // array por si hay múltiples hojas/secciones
   fileName: string;
-  needsReview: boolean;         // true si los totales no cuadran
-  reviewReasons?: string[];     // lista de discrepancias detectadas
+  needsReview: boolean; // true si los totales no cuadran
+  reviewReasons?: string[]; // lista de discrepancias detectadas
   error?: string;
   errorType?: 'validation' | 'parsing' | 'provider' | 'unknown';
 };
@@ -127,10 +127,10 @@ type ExtractionResult = {
 
 ### 3.3 Estado de cada proveedor
 
-| Proveedor | Estado | Notas |
-|---|---|---|
-| `azure` | **Legacy / Deprecated** | Se mantiene funcional pero no se expande. No añadir nuevos tipos de documento. |
-| `chatgpt` | **Recomendado** | Nuevo proveedor. Usar para todos los tipos de documento, incluidos los nuevos. |
+| Proveedor | Estado                  | Notas                                                                          |
+| --------- | ----------------------- | ------------------------------------------------------------------------------ |
+| `azure`   | **Legacy / Deprecated** | Se mantiene funcional pero no se expande. No añadir nuevos tipos de documento. |
+| `chatgpt` | **Recomendado**         | Nuevo proveedor. Usar para todos los tipos de documento, incluidos los nuevos. |
 
 ---
 
@@ -166,7 +166,7 @@ Un mapa de configuración permite rutas de migración incrementales:
 export const extractionProviderByDocumentType = {
   listadoComprasLonjaDeIsla: 'chatgpt',
   albaranCofradiaPescadoresSantoCristoDelMar: 'chatgpt',
-  listadoComprasAsocArmadoresPuntaDelMoral: 'azure',  // todavía en pruebas
+  listadoComprasAsocArmadoresPuntaDelMoral: 'azure', // todavía en pruebas
 };
 ```
 
@@ -176,17 +176,17 @@ export const extractionProviderByDocumentType = {
 
 ## 5. Qué partes del sistema actual se mantienen intactas
 
-| Componente | ¿Se mantiene? | Notas |
-|---|---|---|
-| `src/services/azure/index.js` | Sí, sin cambios | Se encapsula dentro del proveedor `azure` |
-| `src/helpers/azure/documentAI/index.js` | Sí, sin cambios | Solo lo usa el proveedor `azure` |
-| `src/helpers/azure/*MultiPageNormalizer.js` | Sí, sin cambios | Solo lo usa el proveedor `azure` |
-| `src/validators/lonjas/*.js` | Sí, sin cambios | Azure: validan estructura tras el parser. ChatGPT: validan el JSON recibido directamente. |
-| `src/parsers/lonjas/*.js` | Sí, sin cambios | **Solo los usa el proveedor `azure`**. ChatGPT devuelve el JSON ya en formato final; no pasa por parsers. |
-| `src/errors/lonjasErrors.js` | Sí, sin cambios | Compartido entre proveedores |
-| `src/exportHelpers/` | Sí, sin cambios | Agnósticos al proveedor |
-| `src/components/Admin/MarketDataExtractor/` | Modificación mínima | Añadir selector de proveedor y pasar `provider` a `processDocument` |
-| `DocumentProcessor.js` | Modificación mínima | Añadir bifurcación por proveedor antes de llamar al extracto |
+| Componente                                  | ¿Se mantiene?       | Notas                                                                                                     |
+| ------------------------------------------- | ------------------- | --------------------------------------------------------------------------------------------------------- |
+| `src/services/azure/index.js`               | Sí, sin cambios     | Se encapsula dentro del proveedor `azure`                                                                 |
+| `src/helpers/azure/documentAI/index.js`     | Sí, sin cambios     | Solo lo usa el proveedor `azure`                                                                          |
+| `src/helpers/azure/*MultiPageNormalizer.js` | Sí, sin cambios     | Solo lo usa el proveedor `azure`                                                                          |
+| `src/validators/lonjas/*.js`                | Sí, sin cambios     | Azure: validan estructura tras el parser. ChatGPT: validan el JSON recibido directamente.                 |
+| `src/parsers/lonjas/*.js`                   | Sí, sin cambios     | **Solo los usa el proveedor `azure`**. ChatGPT devuelve el JSON ya en formato final; no pasa por parsers. |
+| `src/errors/lonjasErrors.js`                | Sí, sin cambios     | Compartido entre proveedores                                                                              |
+| `src/exportHelpers/`                        | Sí, sin cambios     | Agnósticos al proveedor                                                                                   |
+| `src/components/Admin/MarketDataExtractor/` | Modificación mínima | Añadir selector de proveedor y pasar `provider` a `processDocument`                                       |
+| `DocumentProcessor.js`                      | Modificación mínima | Añadir bifurcación por proveedor antes de llamar al extracto                                              |
 
 ---
 
@@ -195,6 +195,7 @@ export const extractionProviderByDocumentType = {
 ### 6.1 API route de Next.js para ChatGPT
 
 Crear `src/app/api/extraction/chatgpt/route.js`:
+
 - Recibe el PDF (como base64 o buffer).
 - Llama a la API de OpenAI con el PDF adjunto como imagen o texto extraído.
 - Devuelve el JSON estructurado.
@@ -205,6 +206,7 @@ Crear `src/app/api/extraction/chatgpt/route.js`:
 ### 6.2 Servicio de extracción ChatGPT
 
 Crear `src/services/chatgpt/extractionService.js`:
+
 - Función `extractDataWithChatGPT(file, documentType)`.
 - Envía el PDF a la API route interna `/api/extraction/chatgpt`.
 - Devuelve la respuesta parseada.
@@ -252,7 +254,7 @@ El objetivo es que ChatGPT devuelva directamente el JSON que los parsers actuale
     "cifComprador": "B12345678",
     "comprador": "Congelados Brisamar S.L.",
     "numeroComprador": "123",
-    "importeTotal": 15432.50
+    "importeTotal": 15432.5
   },
   "tables": {
     "ventas": [
@@ -263,8 +265,8 @@ El objetivo es que ChatGPT devuelva directamente el JSON que los parsers actuale
         "cajas": 12,
         "especie": "GAMBA BLANCA",
         "kilos": 84.5,
-        "precio": 18.20,
-        "importe": 1537.90
+        "precio": 18.2,
+        "importe": 1537.9
       }
     ],
     "peces": [
@@ -273,7 +275,7 @@ El objetivo es que ChatGPT devuelva directamente el JSON que los parsers actuale
         "descripcion": "CIGALA",
         "cajas": 8,
         "kilos": 56.0,
-        "importe": 896.00
+        "importe": 896.0
       }
     ],
     "vendidurias": [
@@ -281,14 +283,14 @@ El objetivo es que ChatGPT devuelva directamente el JSON que los parsers actuale
         "vendiduria": "V-01",
         "cajas": 20,
         "kilos": 140.5,
-        "importe": 2433.90
+        "importe": 2433.9
       }
     ],
     "cajas": [
       {
         "descripcion": "CAJA PLASTICO",
         "cajas": 20,
-        "importe": 40.00
+        "importe": 40.0
       }
     ],
     "tipoVentas": []
@@ -309,7 +311,7 @@ El objetivo es que ChatGPT devuelva directamente el JSON que los parsers actuale
     "comprador": "Congelados Brisamar S.L.",
     "numeroComprador": "42",
     "cifComprador": "B12345678",
-    "importeTotal": 8750.30
+    "importeTotal": 8750.3
   },
   "tablas": {
     "subastas": [
@@ -322,7 +324,7 @@ El objetivo es que ChatGPT devuelva directamente el JSON que los parsers actuale
         "barco": "VIRGEN DEL ROCIO",
         "armador": "Juan García Pérez",
         "cifArmador": "12345678Z",
-        "precio": 22.50,
+        "precio": 22.5,
         "importe": 1586.25
       }
     ],
@@ -333,26 +335,26 @@ El objetivo es que ChatGPT devuelva directamente el JSON que los parsers actuale
         "fecha": "2024-03-15",
         "iva": 10,
         "unidades": 1,
-        "precio": 50.00,
-        "importe": 50.00
+        "precio": 50.0,
+        "importe": 50.0
       }
     ]
   },
   "subtotales": {
     "pesca": {
-      "subtotal": 8000.00,
+      "subtotal": 8000.0,
       "iva": 10,
-      "total": 8800.00
+      "total": 8800.0
     },
     "servicios": {
-      "subtotal": 50.00,
+      "subtotal": 50.0,
       "iva": 21,
-      "total": 60.50
+      "total": 60.5
     },
     "cajas": {
-      "subtotal": 0.00,
+      "subtotal": 0.0,
       "iva": 0,
-      "total": 0.00
+      "total": 0.0
     }
   }
 }
@@ -405,7 +407,9 @@ function validateTotals(data, documentType) {
     const sumSubastas = data.tablas.subastas.reduce((acc, r) => acc + r.importe, 0);
     const totalDeclarado = data.detalles.importeTotal;
     if (Math.abs(sumSubastas - totalDeclarado) > 0.02) {
-      reasons.push(`Suma de subastas (${sumSubastas.toFixed(2)}) ≠ importe total (${totalDeclarado})`);
+      reasons.push(
+        `Suma de subastas (${sumSubastas.toFixed(2)}) ≠ importe total (${totalDeclarado})`
+      );
     }
   }
 
@@ -433,6 +437,7 @@ Aunque ChatGPT devuelva el JSON casi listo, aplicar normalización defensiva:
 **Objetivo**: introducir el concepto de proveedor sin tocar el pipeline de Azure.
 
 Tareas:
+
 1. Crear `src/configs/extractionConfig.js` con la configuración de proveedores.
 2. Modificar `DocumentProcessor.processDocument()` para aceptar `options.provider`.
 3. Encapsular el pipeline actual de Azure en `processWithAzure()` (refactor interno, sin cambios de comportamiento).
@@ -449,6 +454,7 @@ Tareas:
 **Objetivo**: tener ChatGPT funcionando para `albaranCofradiaPescadoresSantoCristoDelMar` (es el que tiene la estructura más compleja, buen banco de pruebas).
 
 Tareas:
+
 1. Crear `src/app/api/extraction/chatgpt/route.js` (server-side, `OPENAI_API_KEY` sin prefijo `NEXT_PUBLIC_`).
 2. Crear `src/services/chatgpt/extractionService.js`.
 3. Diseñar y testear el prompt del sistema para el tipo piloto.
@@ -467,6 +473,7 @@ Tareas:
 **Objetivo**: cubrir los tres tipos de documento con ChatGPT y validar en producción.
 
 Tareas:
+
 1. Repetir el proceso de la Fase 2 para `listadoComprasLonjaDeIsla` y `listadoComprasAsocArmadoresPuntaDelMoral`.
 2. Implementar `validateTotals()` para los tres tipos.
 3. Actualizar `IndividualMode` y `MassiveMode` para que el selector de proveedor esté disponible en ambos.
@@ -480,6 +487,7 @@ Tareas:
 **Objetivo**: afinar la calidad de extracción de ChatGPT con datos reales.
 
 Tareas:
+
 1. Comparar resultados de ChatGPT vs Azure en un conjunto de documentos históricos.
 2. Ajustar prompts según los errores más frecuentes.
 3. Implementar un mecanismo de feedback: cuando el usuario corrige un dato extraído, registrar la corrección para refinar el prompt.
@@ -492,6 +500,7 @@ Tareas:
 **Objetivo**: reducir costes y mantenimiento eliminando la dependencia de Azure.
 
 Tareas:
+
 1. Verificar que ChatGPT cubre el 100% de los casos que Azure cubría.
 2. Mantener Azure como fallback de emergencia, no como opción principal.
 3. Decidir si mantener la integración Azure activa o desactivarla completamente.
@@ -527,14 +536,14 @@ NEXT_PUBLIC_EXTRACTION_PROVIDER=chatgpt  # 'azure' | 'chatgpt' — override glob
 
 ## 11. Riesgos y mitigaciones
 
-| Riesgo | Impacto | Mitigación |
-|---|---|---|
-| ChatGPT devuelve JSON malformado | Alto | Validación estricta + try/catch + fallback a `needs_review` |
-| ChatGPT alucina datos que no están en el PDF | Alto | Prompt con instrucción explícita de no inventar; validación de totales |
-| Latencia de ChatGPT mayor de lo esperado | Medio | Mostrar spinner con mensaje de espera; timeout configurable |
-| Coste de tokens por PDFs grandes | Medio | Enviar solo el texto extraído del PDF, no la imagen, si la calidad es suficiente |
-| Cambio en la API de OpenAI | Bajo | API route interna abstrae el proveedor; cambiar en un solo lugar |
-| Azure se elimina antes de que ChatGPT esté validado | Alto | No eliminar Azure hasta que Fase 4 esté superada |
+| Riesgo                                              | Impacto | Mitigación                                                                       |
+| --------------------------------------------------- | ------- | -------------------------------------------------------------------------------- |
+| ChatGPT devuelve JSON malformado                    | Alto    | Validación estricta + try/catch + fallback a `needs_review`                      |
+| ChatGPT alucina datos que no están en el PDF        | Alto    | Prompt con instrucción explícita de no inventar; validación de totales           |
+| Latencia de ChatGPT mayor de lo esperado            | Medio   | Mostrar spinner con mensaje de espera; timeout configurable                      |
+| Coste de tokens por PDFs grandes                    | Medio   | Enviar solo el texto extraído del PDF, no la imagen, si la calidad es suficiente |
+| Cambio en la API de OpenAI                          | Bajo    | API route interna abstrae el proveedor; cambiar en un solo lugar                 |
+| Azure se elimina antes de que ChatGPT esté validado | Alto    | No eliminar Azure hasta que Fase 4 esté superada                                 |
 
 ---
 

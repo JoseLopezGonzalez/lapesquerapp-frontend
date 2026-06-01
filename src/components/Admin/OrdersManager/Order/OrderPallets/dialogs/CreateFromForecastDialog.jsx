@@ -1,6 +1,12 @@
 'use client';
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -23,18 +29,27 @@ export default function CreateFromForecastDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onCancel()}>
-      <DialogContent className={isMobile ? "max-w-full w-full h-full max-h-full m-0 rounded-none flex flex-col" : "sm:max-w-md"}>
-        <DialogHeader className={isMobile ? "text-center" : ""}>
-          <DialogTitle className={`flex items-center gap-2 ${isMobile ? "justify-center" : ""}`}>
+      <DialogContent
+        className={
+          isMobile
+            ? 'm-0 flex h-full max-h-full w-full max-w-full flex-col rounded-none'
+            : 'sm:max-w-md'
+        }
+      >
+        <DialogHeader className={isMobile ? 'text-center' : ''}>
+          <DialogTitle className={`flex items-center gap-2 ${isMobile ? 'justify-center' : ''}`}>
             <PackagePlus className="h-5 w-5" />
             Crear palet desde previsión
           </DialogTitle>
         </DialogHeader>
-        <div className={`space-y-4 ${isMobile ? "flex flex-col items-center justify-center flex-1" : ""}`}>
-          <p className="text-sm text-muted-foreground">
-            Se creará un palet con todas las cajas de la previsión del pedido. Introduce el lote y el almacén donde se almacenará.
+        <div
+          className={`space-y-4 ${isMobile ? 'flex flex-1 flex-col items-center justify-center' : ''}`}
+        >
+          <p className="text-muted-foreground text-sm">
+            Se creará un palet con todas las cajas de la previsión del pedido. Introduce el lote y
+            el almacén donde se almacenará.
           </p>
-          <div className={`space-y-4 ${isMobile ? "w-full max-w-md" : ""}`}>
+          <div className={`space-y-4 ${isMobile ? 'w-full max-w-md' : ''}`}>
             <div className="space-y-2">
               <Label htmlFor="create-from-forecast-lot">Lote</Label>
               <Input
@@ -62,17 +77,10 @@ export default function CreateFromForecastDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={onCancel}
-            disabled={isCreating}
-          >
+          <Button variant="outline" onClick={onCancel} disabled={isCreating}>
             Cancelar
           </Button>
-          <Button
-            onClick={onCreate}
-            disabled={isCreating}
-          >
+          <Button onClick={onCreate} disabled={isCreating}>
             {isCreating ? (
               <>
                 <Loader2 className="animate-spin" />

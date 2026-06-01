@@ -1,582 +1,654 @@
-'use client'
+'use client';
 
-import React, { useState, useEffect, useRef } from 'react'
-import { useSession } from 'next-auth/react'
-import { getProductionRecords, deleteProductionRecord, updateProductionRecord } from '@/services/productionService'
-import { formatDateLong, formatWeight } from '@/helpers/production/formatters'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Plus, Trash2, CheckCircle, Clock, Package, ArrowRight, Loader2 } from 'lucide-react'
-import Loader from '@/components/Utilities/Loader'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { useRouter } from 'next/navigation'
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
-import { formatInteger, formatDecimal, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
-import { notify } from '@/lib/notifications'
+import React, { useState, useEffect, useRef } from 'react';
+import { useSession } from 'next-auth/react';
+import {
+  getProductionRecords,
+  deleteProductionRecord,
+  updateProductionRecord,
+} from '@/services/productionService';
+import { formatDateLong, formatWeight } from '@/helpers/production/formatters';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Plus, Trash2, CheckCircle, Clock, Package, ArrowRight, Loader2 } from 'lucide-react';
+import Loader from '@/components/Utilities/Loader';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useRouter } from 'next/navigation';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
+import {
+  formatInteger,
+  formatDecimal,
+  formatDecimalWeight,
+} from '@/helpers/formats/numbers/formatNumbers';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { notify } from '@/lib/notifications';
 
-const ProductionRecordsManager = ({ productionId, processTree, onRefresh, onOpenCreateDialog, isClosed = false }) => {
-    const { data: session } = useSession()
-    const router = useRouter()
-    const [records, setRecords] = useState([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
-    const [currentPage, setCurrentPage] = useState(1)
-    const [paginationMeta, setPaginationMeta] = useState(null)
-    const [deleteConfirmRecord, setDeleteConfirmRecord] = useState(null)
-    const [bulkClosing, setBulkClosing] = useState(false)
-    const prevProductionIdRef = useRef(null)
+const ProductionRecordsManager = ({
+  productionId,
+  processTree,
+  onRefresh,
+  onOpenCreateDialog,
+  isClosed = false,
+}) => {
+  const { data: session } = useSession();
+  const router = useRouter();
+  const [records, setRecords] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [paginationMeta, setPaginationMeta] = useState(null);
+  const [deleteConfirmRecord, setDeleteConfirmRecord] = useState(null);
+  const [bulkClosing, setBulkClosing] = useState(false);
+  const prevProductionIdRef = useRef(null);
 
-    // Resetear página cuando cambia la producción
-    useEffect(() => {
-        if (productionId !== prevProductionIdRef.current) {
-            setCurrentPage(1)
-            prevProductionIdRef.current = productionId
-        }
-    }, [productionId])
-
-    // Cargar records cuando cambian las dependencias
-    useEffect(() => {
-        if (session?.user?.accessToken && productionId && currentPage > 0) {
-            loadRecords(currentPage)
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [session?.user?.accessToken, productionId, currentPage])
-
-    const loadRecords = async (page = 1) => {
-        try {
-            setLoading(true)
-            setError(null)
-            const token = session.user.accessToken
-            const response = await getProductionRecords(token, { 
-                production_id: productionId,
-                page: page,
-                per_page: 15
-            })
-            setRecords(response.data || [])
-            
-            // Guardar información de paginación
-            if (response.meta) {
-                setPaginationMeta({
-                    currentPage: response.meta.current_page,
-                    totalPages: response.meta.last_page,
-                    totalItems: response.meta.total,
-                    perPage: response.meta.per_page,
-                    from: response.meta.from,
-                    to: response.meta.to
-                })
-            }
-        } catch (err) {
-            console.error('Error loading records:', err)
-            // Priorizar userMessage sobre message para mostrar errores en formato natural
-            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al cargar los procesos';
-            setError(errorMessage)
-        } finally {
-            setLoading(false)
-        }
+  // Resetear página cuando cambia la producción
+  useEffect(() => {
+    if (productionId !== prevProductionIdRef.current) {
+      setCurrentPage(1);
+      prevProductionIdRef.current = productionId;
     }
+  }, [productionId]);
 
-    const handlePageChange = (newPage) => {
-        if (newPage > 0 && paginationMeta && newPage <= paginationMeta.totalPages) {
-            setCurrentPage(newPage)
-        }
+  // Cargar records cuando cambian las dependencias
+  useEffect(() => {
+    if (session?.user?.accessToken && productionId && currentPage > 0) {
+      loadRecords(currentPage);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user?.accessToken, productionId, currentPage]);
 
-    const handleNavigateToCreate = () => {
-        if (isClosed) return
-        if (onOpenCreateDialog) {
-            onOpenCreateDialog()
-        } else {
-            router.push(`/admin/productions/${productionId}/records/create`)
-        }
+  const loadRecords = async (page = 1) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const token = session.user.accessToken;
+      const response = await getProductionRecords(token, {
+        production_id: productionId,
+        page: page,
+        per_page: 15,
+      });
+      setRecords(response.data || []);
+
+      // Guardar información de paginación
+      if (response.meta) {
+        setPaginationMeta({
+          currentPage: response.meta.current_page,
+          totalPages: response.meta.last_page,
+          totalItems: response.meta.total,
+          perPage: response.meta.per_page,
+          from: response.meta.from,
+          to: response.meta.to,
+        });
+      }
+    } catch (err) {
+      console.error('Error loading records:', err);
+      // Priorizar userMessage sobre message para mostrar errores en formato natural
+      const errorMessage =
+        err.userMessage ||
+        err.data?.userMessage ||
+        err.response?.data?.userMessage ||
+        err.message ||
+        'Error al cargar los procesos';
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    const handleDeleteRecord = async (recordId) => {
-        try {
-            const token = session.user.accessToken
-            await deleteProductionRecord(recordId, token)
-            loadRecords(currentPage)
-            if (onRefresh) onRefresh()
-        } catch (err) {
-            console.error('Error deleting record:', err)
-            // Priorizar userMessage sobre message para mostrar errores en formato natural
-            const errorMessage = err.userMessage || err.data?.userMessage || err.response?.data?.userMessage || err.message || 'Error al eliminar el proceso';
-            alert(errorMessage)
-        }
+  const handlePageChange = (newPage) => {
+    if (newPage > 0 && paginationMeta && newPage <= paginationMeta.totalPages) {
+      setCurrentPage(newPage);
     }
+  };
 
-    const handleOnClickDeleteRecord = (record) => {
-        setDeleteConfirmRecord(record)
+  const handleNavigateToCreate = () => {
+    if (isClosed) return;
+    if (onOpenCreateDialog) {
+      onOpenCreateDialog();
+    } else {
+      router.push(`/admin/productions/${productionId}/records/create`);
     }
+  };
 
-    const buildRecordUpdatePayload = (record) => {
-        const processId = record?.process?.id ?? record?.processId
-        return {
-            production_id: Number(productionId),
-            process_id: processId ? Number(processId) : null,
-            parent_record_id: record?.parentRecordId ?? null,
-            started_at: record?.startedAt ?? null,
-            finished_at: record?.startedAt ?? null,
-            notes: record?.notes ?? null,
-        }
+  const handleDeleteRecord = async (recordId) => {
+    try {
+      const token = session.user.accessToken;
+      await deleteProductionRecord(recordId, token);
+      loadRecords(currentPage);
+      if (onRefresh) onRefresh();
+    } catch (err) {
+      console.error('Error deleting record:', err);
+      // Priorizar userMessage sobre message para mostrar errores en formato natural
+      const errorMessage =
+        err.userMessage ||
+        err.data?.userMessage ||
+        err.response?.data?.userMessage ||
+        err.message ||
+        'Error al eliminar el proceso';
+      alert(errorMessage);
     }
+  };
 
-    const loadAllRecords = async () => {
-        const token = session?.user?.accessToken
-        if (!token || !productionId) return []
+  const handleOnClickDeleteRecord = (record) => {
+    setDeleteConfirmRecord(record);
+  };
 
-        let page = 1
-        let lastPage = 1
-        const collected = []
+  const buildRecordUpdatePayload = (record) => {
+    const processId = record?.process?.id ?? record?.processId;
+    return {
+      production_id: Number(productionId),
+      process_id: processId ? Number(processId) : null,
+      parent_record_id: record?.parentRecordId ?? null,
+      started_at: record?.startedAt ?? null,
+      finished_at: record?.startedAt ?? null,
+      notes: record?.notes ?? null,
+    };
+  };
 
-        do {
-            const response = await getProductionRecords(token, {
-                production_id: productionId,
-                page,
-                per_page: 100,
-            })
-            const rows = response?.data || []
-            collected.push(...rows)
-            lastPage = response?.meta?.last_page || 1
-            page += 1
-        } while (page <= lastPage)
+  const loadAllRecords = async () => {
+    const token = session?.user?.accessToken;
+    if (!token || !productionId) return [];
 
-        return collected
-    }
+    let page = 1;
+    let lastPage = 1;
+    const collected = [];
 
-    const handleCloseAllOpenProcesses = async () => {
-        if (isClosed || bulkClosing) return
-        try {
-            setBulkClosing(true)
-            const token = session?.user?.accessToken
-            if (!token) {
-                notify.error({ title: 'No hay sesión activa' })
-                return
-            }
+    do {
+      const response = await getProductionRecords(token, {
+        production_id: productionId,
+        page,
+        per_page: 100,
+      });
+      const rows = response?.data || [];
+      collected.push(...rows);
+      lastPage = response?.meta?.last_page || 1;
+      page += 1;
+    } while (page <= lastPage);
 
-            const allRecords = await loadAllRecords()
-            const recordsToClose = allRecords.filter((record) => {
-                const hasStart = Boolean(record?.startedAt)
-                const isAlreadyClosed = Boolean(record?.finishedAt)
-                const hasProcess = Boolean(record?.process?.id ?? record?.processId)
-                return hasStart && !isAlreadyClosed && hasProcess
-            })
+    return collected;
+  };
 
-            if (recordsToClose.length === 0) {
-                notify.info({ title: 'No hay procesos pendientes por cerrar' })
-                return
-            }
+  const handleCloseAllOpenProcesses = async () => {
+    if (isClosed || bulkClosing) return;
+    try {
+      setBulkClosing(true);
+      const token = session?.user?.accessToken;
+      if (!token) {
+        notify.error({ title: 'No hay sesión activa' });
+        return;
+      }
 
-            const results = await Promise.allSettled(
-                recordsToClose.map((record) => updateProductionRecord(record.id, buildRecordUpdatePayload(record), token))
-            )
-            const successCount = results.filter((r) => r.status === 'fulfilled').length
-            const failedCount = results.length - successCount
+      const allRecords = await loadAllRecords();
+      const recordsToClose = allRecords.filter((record) => {
+        const hasStart = Boolean(record?.startedAt);
+        const isAlreadyClosed = Boolean(record?.finishedAt);
+        const hasProcess = Boolean(record?.process?.id ?? record?.processId);
+        return hasStart && !isAlreadyClosed && hasProcess;
+      });
 
-            await loadRecords(currentPage)
-            if (onRefresh) onRefresh()
+      if (recordsToClose.length === 0) {
+        notify.info({ title: 'No hay procesos pendientes por cerrar' });
+        return;
+      }
 
-            if (failedCount === 0) {
-                notify.success({
-                    title: 'Procesos cerrados',
-                    description: `${successCount} proceso${successCount !== 1 ? 's' : ''} actualizado${successCount !== 1 ? 's' : ''}.`,
-                })
-            } else {
-                notify.warning({
-                    title: 'Cierre parcial',
-                    description: `${successCount} cerrados y ${failedCount} con error.`,
-                })
-            }
-        } catch (err) {
-            notify.error({
-                title: 'No se pudieron cerrar los procesos',
-                description: err?.userMessage || err?.message || 'Inténtalo de nuevo.',
-            })
-        } finally {
-            setBulkClosing(false)
-        }
-    }
-
-    const handleConfirmDeleteRecord = async () => {
-        if (!deleteConfirmRecord?.id) return
-        await handleDeleteRecord(deleteConfirmRecord.id)
-        setDeleteConfirmRecord(null)
-    }
-
-    const getRootRecords = () => {
-        return records.filter(r => !r.parentRecordId)
-    }
-
-    const getChildRecords = (parentId) => {
-        return records.filter(r => r.parentRecordId === parentId)
-    }
-
-    const renderRecordRow = (record, level = 0) => {
-        const children = getChildRecords(record.id)
-        const isCompleted = record.isCompleted || record.finishedAt !== null
-        const isRoot = record.isRoot || !record.parentRecordId
-
-        return (
-            <React.Fragment key={record.id}>
-                <TableRow className={level > 0 ? 'bg-muted/30' : ''}>
-                    <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
-                            {level > 0 && <span className="text-muted-foreground">└─</span>}
-                            <span>#{record.id}</span>
-                            {isRoot && (
-                                <Badge variant="outline" className="text-xs">Raíz</Badge>
-                            )}
-                        </div>
-                    </TableCell>
-                    <TableCell>
-                        {record.process?.name || 'Sin tipo'}
-                    </TableCell>
-                    <TableCell>
-                        {record.startedAt ? formatDateLong(record.startedAt) : (
-                            <span className="text-muted-foreground">N/A</span>
-                        )}
-                    </TableCell>
-                    <TableCell>
-                        {record.finishedAt ? formatDateLong(record.finishedAt) : (
-                            <span className="text-muted-foreground">Pendiente</span>
-                        )}
-                    </TableCell>
-                    <TableCell>
-                        {record.totalInputWeight !== undefined && record.totalInputWeight !== null ? (
-                            <span className="text-sm">{formatWeight(record.totalInputWeight)}</span>
-                        ) : (
-                            <span className="text-muted-foreground text-sm">-</span>
-                        )}
-                    </TableCell>
-                    <TableCell>
-                        {record.totalOutputWeight !== undefined && record.totalOutputWeight !== null ? (
-                            <span className="text-sm">{formatWeight(record.totalOutputWeight)}</span>
-                        ) : (
-                            <span className="text-muted-foreground text-sm">-</span>
-                        )}
-                    </TableCell>
-                    <TableCell>
-                        {record.waste !== undefined && record.waste !== null && record.waste > 0 ? (
-                            <div className="text-sm">
-                                <div className="font-medium text-destructive">
-                                    -{formatDecimal(record.wastePercentage || 0)}%
-                                </div>
-                                <div className="text-xs text-muted-foreground">
-                                    -{formatDecimalWeight(record.waste)}
-                                </div>
-                            </div>
-                        ) : record.yield !== undefined && record.yield !== null && record.yield > 0 ? (
-                            <div className="text-sm">
-                                <div className="font-medium text-green-600">
-                                    +{formatDecimal(record.yieldPercentage || 0)}%
-                                </div>
-                                <div className="text-xs text-muted-foreground">
-                                    +{formatDecimalWeight(record.yield)}
-                                </div>
-                            </div>
-                        ) : (
-                            <span className="text-muted-foreground text-sm">-</span>
-                        )}
-                    </TableCell>
-                    <TableCell>
-                                    {isCompleted ? (
-                                        <Badge variant="success">
-                                            <CheckCircle className="h-3 w-3 mr-1" />
-                                            Completado
-                                        </Badge>
-                                    ) : (
-                                        <Badge variant="warning">
-                                            <Clock className="h-3 w-3 mr-1" />
-                                            En progreso
-                                        </Badge>
-                                    )}
-                    </TableCell>
-                    <TableCell>
-                        <div className="flex items-center justify-center gap-2">
-                                <TooltipProvider>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                <Button
-                                    variant="outline"
-                                size="icon"
-                                    onClick={() => router.push(`/admin/productions/${productionId}/records/${record.id}`)}
-                                >
-                                                <ArrowRight className="h-4 w-4" />
-                                </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <p>Ver detalles del proceso</p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
-                                <TooltipProvider>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                <Button
-                                    size="icon"
-                                    variant="destructive"
-                                    onClick={() => handleOnClickDeleteRecord(record)}
-                                    disabled={isClosed}
-                                    aria-label="Eliminar proceso"
-                                >
-                                    <Trash2 />
-                                </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <p>Eliminar proceso</p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
-                            </div>
-                    </TableCell>
-                </TableRow>
-                {children.map(child => renderRecordRow(child, level + 1))}
-            </React.Fragment>
+      const results = await Promise.allSettled(
+        recordsToClose.map((record) =>
+          updateProductionRecord(record.id, buildRecordUpdatePayload(record), token)
         )
-    }
+      );
+      const successCount = results.filter((r) => r.status === 'fulfilled').length;
+      const failedCount = results.length - successCount;
 
-    if (error) {
-        return (
-            <Card className="border-destructive">
-                <CardHeader>
-                    <CardTitle className="text-destructive">Error</CardTitle>
-                    <CardDescription>{error}</CardDescription>
-                </CardHeader>
-            </Card>
-        )
-    }
+      await loadRecords(currentPage);
+      if (onRefresh) onRefresh();
 
-    const rootRecords = getRootRecords()
+      if (failedCount === 0) {
+        notify.success({
+          title: 'Procesos cerrados',
+          description: `${successCount} proceso${successCount !== 1 ? 's' : ''} actualizado${successCount !== 1 ? 's' : ''}.`,
+        });
+      } else {
+        notify.warning({
+          title: 'Cierre parcial',
+          description: `${successCount} cerrados y ${failedCount} con error.`,
+        });
+      }
+    } catch (err) {
+      notify.error({
+        title: 'No se pudieron cerrar los procesos',
+        description: err?.userMessage || err?.message || 'Inténtalo de nuevo.',
+      });
+    } finally {
+      setBulkClosing(false);
+    }
+  };
+
+  const handleConfirmDeleteRecord = async () => {
+    if (!deleteConfirmRecord?.id) return;
+    await handleDeleteRecord(deleteConfirmRecord.id);
+    setDeleteConfirmRecord(null);
+  };
+
+  const getRootRecords = () => {
+    return records.filter((r) => !r.parentRecordId);
+  };
+
+  const getChildRecords = (parentId) => {
+    return records.filter((r) => r.parentRecordId === parentId);
+  };
+
+  const renderRecordRow = (record, level = 0) => {
+    const children = getChildRecords(record.id);
+    const isCompleted = record.isCompleted || record.finishedAt !== null;
+    const isRoot = record.isRoot || !record.parentRecordId;
 
     return (
-        <div className="space-y-4">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h3 className="text-xl font-semibold">Procesos de Producción</h3>
-                    <p className="text-sm text-muted-foreground">
-                        Gestiona los procesos dentro del lote de producción
-                    </p>
-                </div>
-                <div className="flex items-center gap-2">
-                    <Button
-                        variant="outline"
-                        onClick={handleCloseAllOpenProcesses}
-                        disabled={isClosed || bulkClosing || loading}
-                    >
-                        {bulkClosing ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
-                        Cerrar procesos pendientes
-                    </Button>
-                    <Button onClick={handleNavigateToCreate} disabled={isClosed}>
-                        <Plus />
-                        Nuevo Proceso
-                    </Button>
-                </div>
+      <React.Fragment key={record.id}>
+        <TableRow className={level > 0 ? 'bg-muted/30' : ''}>
+          <TableCell className="font-medium">
+            <div className="flex items-center gap-2">
+              {level > 0 && <span className="text-muted-foreground">└─</span>}
+              <span>#{record.id}</span>
+              {isRoot && (
+                <Badge variant="outline" className="text-xs">
+                  Raíz
+                </Badge>
+              )}
             </div>
-
-            {rootRecords.length === 0 && !loading ? (
-                <Card>
-                    <CardContent className="py-8 text-center">
-                        <p className="text-muted-foreground">
-                            No hay procesos registrados. Crea el primer proceso para comenzar.
-                        </p>
-                    </CardContent>
-                </Card>
+          </TableCell>
+          <TableCell>{record.process?.name || 'Sin tipo'}</TableCell>
+          <TableCell>
+            {record.startedAt ? (
+              formatDateLong(record.startedAt)
             ) : (
-                <>
-                    <Card>
-                        <CardContent className="p-0">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>ID</TableHead>
-                                        <TableHead>Tipo de Proceso</TableHead>
-                                        <TableHead>Fecha Inicio</TableHead>
-                                        <TableHead>Fecha Fin</TableHead>
-                                        <TableHead>Entrada</TableHead>
-                                        <TableHead>Salida</TableHead>
-                                        <TableHead>Merma / Rendimiento</TableHead>
-                                        <TableHead>Estado</TableHead>
-                                        <TableHead className="text-center">Acciones</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {loading ? (
-                                        <TableRow>
-                                            <TableCell colSpan={9} className="h-32">
-                                                <div className="flex items-center justify-center w-full h-full">
-                                                    <Loader />
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    ) : (
-                                        rootRecords.map(record => renderRecordRow(record))
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </CardContent>
-                    </Card>
-
-                    {/* Paginación y Resumen */}
-                    {paginationMeta && paginationMeta.totalPages > 1 && (
-                        <div className="flex items-center justify-between pt-4">
-                            {/* Resumen de resultados */}
-                            <div className="text-sm text-muted-foreground">
-                                {loading ? (
-                                    <span>Cargando...</span>
-                                ) : (
-                                    <span>
-                                        Mostrando <span className="font-semibold text-foreground">
-                                            {paginationMeta.from || 0}
-                                        </span> - <span className="font-semibold text-foreground">
-                                            {paginationMeta.to || 0}
-                                        </span> de <span className="font-semibold text-foreground">
-                                            {formatInteger(paginationMeta.totalItems)}
-                                        </span> resultados
-                                    </span>
-                                )}
-                            </div>
-
-                            {/* Controles de paginación */}
-                            <Pagination className="w-auto">
-                                <PaginationContent>
-                                    <PaginationItem>
-                                        <PaginationPrevious
-                                            href="#"
-                                            onClick={(e) => {
-                                                e.preventDefault()
-                                                handlePageChange(currentPage - 1)
-                                            }}
-                                            className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
-                                        />
-                                    </PaginationItem>
-
-                                    {/* Primera página si está lejos de la actual */}
-                                    {currentPage > 3 && (
-                                        <>
-                                            <PaginationItem>
-                                                <PaginationLink
-                                                    href="#"
-                                                    onClick={(e) => {
-                                                        e.preventDefault()
-                                                        handlePageChange(1)
-                                                    }}
-                                                >
-                                                    1
-                                                </PaginationLink>
-                                            </PaginationItem>
-                                            <PaginationItem>
-                                                <PaginationEllipsis />
-                                            </PaginationItem>
-                                        </>
-                                    )}
-
-                                    {/* Páginas visibles */}
-                                    {(() => {
-                                        const maxPagesToShow = 5
-                                        let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2))
-                                        let endPage = Math.min(paginationMeta.totalPages, startPage + maxPagesToShow - 1)
-                                        
-                                        if (endPage - startPage < maxPagesToShow - 1) {
-                                            startPage = Math.max(1, endPage - maxPagesToShow + 1)
-                                        }
-
-                                        const pages = []
-                                        for (let i = startPage; i <= endPage; i++) {
-                                            pages.push(i)
-                                        }
-
-                                        return pages.map((page) => (
-                                            <PaginationItem key={page}>
-                                                <PaginationLink
-                                                    href="#"
-                                                    onClick={(e) => {
-                                                        e.preventDefault()
-                                                        handlePageChange(page)
-                                                    }}
-                                                    isActive={page === currentPage}
-                                                >
-                                                    {page}
-                                                </PaginationLink>
-                                            </PaginationItem>
-                                        ))
-                                    })()}
-
-                                    {/* Última página si está lejos de la actual */}
-                                    {currentPage < paginationMeta.totalPages - 2 && (
-                                        <>
-                                            <PaginationItem>
-                                                <PaginationEllipsis />
-                                            </PaginationItem>
-                                            <PaginationItem>
-                                                <PaginationLink
-                                                    href="#"
-                                                    onClick={(e) => {
-                                                        e.preventDefault()
-                                                        handlePageChange(paginationMeta.totalPages)
-                                                    }}
-                                                >
-                                                    {paginationMeta.totalPages}
-                                                </PaginationLink>
-                                            </PaginationItem>
-                                        </>
-                                    )}
-
-                                    <PaginationItem>
-                                        <PaginationNext
-                                            href="#"
-                                            onClick={(e) => {
-                                                e.preventDefault()
-                                                handlePageChange(currentPage + 1)
-                                            }}
-                                            className={currentPage === paginationMeta.totalPages ? 'pointer-events-none opacity-50' : ''}
-                                        />
-                                    </PaginationItem>
-                                </PaginationContent>
-                            </Pagination>
-                        </div>
-                    )}
-
-                    {/* Resumen cuando hay solo una página o pocos resultados */}
-                    {paginationMeta && paginationMeta.totalPages <= 1 && (
-                        <div className="text-sm text-muted-foreground pt-2">
-                            {loading ? (
-                                <span>Cargando...</span>
-                            ) : (
-                                <span>
-                                    <span className="font-semibold text-foreground">
-                                        {formatInteger(paginationMeta.totalItems)}
-                                    </span> resultado{paginationMeta.totalItems !== 1 ? 's' : ''}
-                                </span>
-                            )}
-                        </div>
-                    )}
-                </>
+              <span className="text-muted-foreground">N/A</span>
             )}
-            <AlertDialog
-                open={Boolean(deleteConfirmRecord)}
-                onOpenChange={(open) => {
-                    if (!open) setDeleteConfirmRecord(null)
-                }}
-            >
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Eliminar proceso</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Esta acción eliminará el proceso #{deleteConfirmRecord?.id} y no se puede deshacer.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction variant="destructive" onClick={handleConfirmDeleteRecord}>
-                            Eliminar
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-        </div>
-    )
-}
+          </TableCell>
+          <TableCell>
+            {record.finishedAt ? (
+              formatDateLong(record.finishedAt)
+            ) : (
+              <span className="text-muted-foreground">Pendiente</span>
+            )}
+          </TableCell>
+          <TableCell>
+            {record.totalInputWeight !== undefined && record.totalInputWeight !== null ? (
+              <span className="text-sm">{formatWeight(record.totalInputWeight)}</span>
+            ) : (
+              <span className="text-muted-foreground text-sm">-</span>
+            )}
+          </TableCell>
+          <TableCell>
+            {record.totalOutputWeight !== undefined && record.totalOutputWeight !== null ? (
+              <span className="text-sm">{formatWeight(record.totalOutputWeight)}</span>
+            ) : (
+              <span className="text-muted-foreground text-sm">-</span>
+            )}
+          </TableCell>
+          <TableCell>
+            {record.waste !== undefined && record.waste !== null && record.waste > 0 ? (
+              <div className="text-sm">
+                <div className="text-destructive font-medium">
+                  -{formatDecimal(record.wastePercentage || 0)}%
+                </div>
+                <div className="text-muted-foreground text-xs">
+                  -{formatDecimalWeight(record.waste)}
+                </div>
+              </div>
+            ) : record.yield !== undefined && record.yield !== null && record.yield > 0 ? (
+              <div className="text-sm">
+                <div className="font-medium text-green-600">
+                  +{formatDecimal(record.yieldPercentage || 0)}%
+                </div>
+                <div className="text-muted-foreground text-xs">
+                  +{formatDecimalWeight(record.yield)}
+                </div>
+              </div>
+            ) : (
+              <span className="text-muted-foreground text-sm">-</span>
+            )}
+          </TableCell>
+          <TableCell>
+            {isCompleted ? (
+              <Badge variant="success">
+                <CheckCircle className="mr-1 h-3 w-3" />
+                Completado
+              </Badge>
+            ) : (
+              <Badge variant="warning">
+                <Clock className="mr-1 h-3 w-3" />
+                En progreso
+              </Badge>
+            )}
+          </TableCell>
+          <TableCell>
+            <div className="flex items-center justify-center gap-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() =>
+                        router.push(`/admin/productions/${productionId}/records/${record.id}`)
+                      }
+                    >
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Ver detalles del proceso</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="destructive"
+                      onClick={() => handleOnClickDeleteRecord(record)}
+                      disabled={isClosed}
+                      aria-label="Eliminar proceso"
+                    >
+                      <Trash2 />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Eliminar proceso</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          </TableCell>
+        </TableRow>
+        {children.map((child) => renderRecordRow(child, level + 1))}
+      </React.Fragment>
+    );
+  };
 
-export default ProductionRecordsManager
+  if (error) {
+    return (
+      <Card className="border-destructive">
+        <CardHeader>
+          <CardTitle className="text-destructive">Error</CardTitle>
+          <CardDescription>{error}</CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  const rootRecords = getRootRecords();
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-xl font-semibold">Procesos de Producción</h3>
+          <p className="text-muted-foreground text-sm">
+            Gestiona los procesos dentro del lote de producción
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={handleCloseAllOpenProcesses}
+            disabled={isClosed || bulkClosing || loading}
+          >
+            {bulkClosing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <CheckCircle className="h-4 w-4" />
+            )}
+            Cerrar procesos pendientes
+          </Button>
+          <Button onClick={handleNavigateToCreate} disabled={isClosed}>
+            <Plus />
+            Nuevo Proceso
+          </Button>
+        </div>
+      </div>
+
+      {rootRecords.length === 0 && !loading ? (
+        <Card>
+          <CardContent className="py-8 text-center">
+            <p className="text-muted-foreground">
+              No hay procesos registrados. Crea el primer proceso para comenzar.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          <Card>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>ID</TableHead>
+                    <TableHead>Tipo de Proceso</TableHead>
+                    <TableHead>Fecha Inicio</TableHead>
+                    <TableHead>Fecha Fin</TableHead>
+                    <TableHead>Entrada</TableHead>
+                    <TableHead>Salida</TableHead>
+                    <TableHead>Merma / Rendimiento</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead className="text-center">Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {loading ? (
+                    <TableRow>
+                      <TableCell colSpan={9} className="h-32">
+                        <div className="flex h-full w-full items-center justify-center">
+                          <Loader />
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    rootRecords.map((record) => renderRecordRow(record))
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+
+          {/* Paginación y Resumen */}
+          {paginationMeta && paginationMeta.totalPages > 1 && (
+            <div className="flex items-center justify-between pt-4">
+              {/* Resumen de resultados */}
+              <div className="text-muted-foreground text-sm">
+                {loading ? (
+                  <span>Cargando...</span>
+                ) : (
+                  <span>
+                    Mostrando{' '}
+                    <span className="text-foreground font-semibold">
+                      {paginationMeta.from || 0}
+                    </span>{' '}
+                    -{' '}
+                    <span className="text-foreground font-semibold">{paginationMeta.to || 0}</span>{' '}
+                    de{' '}
+                    <span className="text-foreground font-semibold">
+                      {formatInteger(paginationMeta.totalItems)}
+                    </span>{' '}
+                    resultados
+                  </span>
+                )}
+              </div>
+
+              {/* Controles de paginación */}
+              <Pagination className="w-auto">
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handlePageChange(currentPage - 1);
+                      }}
+                      className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                    />
+                  </PaginationItem>
+
+                  {/* Primera página si está lejos de la actual */}
+                  {currentPage > 3 && (
+                    <>
+                      <PaginationItem>
+                        <PaginationLink
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handlePageChange(1);
+                          }}
+                        >
+                          1
+                        </PaginationLink>
+                      </PaginationItem>
+                      <PaginationItem>
+                        <PaginationEllipsis />
+                      </PaginationItem>
+                    </>
+                  )}
+
+                  {/* Páginas visibles */}
+                  {(() => {
+                    const maxPagesToShow = 5;
+                    let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+                    let endPage = Math.min(
+                      paginationMeta.totalPages,
+                      startPage + maxPagesToShow - 1
+                    );
+
+                    if (endPage - startPage < maxPagesToShow - 1) {
+                      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+                    }
+
+                    const pages = [];
+                    for (let i = startPage; i <= endPage; i++) {
+                      pages.push(i);
+                    }
+
+                    return pages.map((page) => (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handlePageChange(page);
+                          }}
+                          isActive={page === currentPage}
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ));
+                  })()}
+
+                  {/* Última página si está lejos de la actual */}
+                  {currentPage < paginationMeta.totalPages - 2 && (
+                    <>
+                      <PaginationItem>
+                        <PaginationEllipsis />
+                      </PaginationItem>
+                      <PaginationItem>
+                        <PaginationLink
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handlePageChange(paginationMeta.totalPages);
+                          }}
+                        >
+                          {paginationMeta.totalPages}
+                        </PaginationLink>
+                      </PaginationItem>
+                    </>
+                  )}
+
+                  <PaginationItem>
+                    <PaginationNext
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handlePageChange(currentPage + 1);
+                      }}
+                      className={
+                        currentPage === paginationMeta.totalPages
+                          ? 'pointer-events-none opacity-50'
+                          : ''
+                      }
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          )}
+
+          {/* Resumen cuando hay solo una página o pocos resultados */}
+          {paginationMeta && paginationMeta.totalPages <= 1 && (
+            <div className="text-muted-foreground pt-2 text-sm">
+              {loading ? (
+                <span>Cargando...</span>
+              ) : (
+                <span>
+                  <span className="text-foreground font-semibold">
+                    {formatInteger(paginationMeta.totalItems)}
+                  </span>{' '}
+                  resultado{paginationMeta.totalItems !== 1 ? 's' : ''}
+                </span>
+              )}
+            </div>
+          )}
+        </>
+      )}
+      <AlertDialog
+        open={Boolean(deleteConfirmRecord)}
+        onOpenChange={(open) => {
+          if (!open) setDeleteConfirmRecord(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminar proceso</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción eliminará el proceso #{deleteConfirmRecord?.id} y no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={handleConfirmDeleteRecord}>
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+};
+
+export default ProductionRecordsManager;

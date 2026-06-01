@@ -27,6 +27,7 @@ GET /api/v2/users
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -34,16 +35,16 @@ Authorization: Bearer {access_token}
 
 #### Query Parameters (Opcionales)
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| id | string | Búsqueda por ID (coincidencias parciales) |
-| name | string | Búsqueda por nombre (coincidencias parciales) |
-| email | string | Búsqueda por email (coincidencias parciales) |
-| role | string | Filtrar por rol (uno de: tecnico, administrador, direccion, administracion, comercial, operario) |
-| created_at | object | Filtro por fecha: `{start: "2024-01-01", end: "2024-12-31"}` |
-| sort | string | Campo por el que ordenar (default: created_at) |
-| direction | string | Dirección de ordenamiento: `asc` o `desc` (default: desc) |
-| perPage | integer | Elementos por página (default: 10) |
+| Parámetro  | Tipo    | Descripción                                                                                      |
+| ---------- | ------- | ------------------------------------------------------------------------------------------------ |
+| id         | string  | Búsqueda por ID (coincidencias parciales)                                                        |
+| name       | string  | Búsqueda por nombre (coincidencias parciales)                                                    |
+| email      | string  | Búsqueda por email (coincidencias parciales)                                                     |
+| role       | string  | Filtrar por rol (uno de: tecnico, administrador, direccion, administracion, comercial, operario) |
+| created_at | object  | Filtro por fecha: `{start: "2024-01-01", end: "2024-12-31"}`                                     |
+| sort       | string  | Campo por el que ordenar (default: created_at)                                                   |
+| direction  | string  | Dirección de ordenamiento: `asc` o `desc` (default: desc)                                        |
+| perPage    | integer | Elementos por página (default: 10)                                                               |
 
 #### Response Exitosa (200)
 
@@ -77,6 +78,7 @@ POST /api/v2/users
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -97,17 +99,17 @@ Content-Type: application/json
 
 #### Campos Requeridos
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| name | string | Nombre del usuario |
-| email | string | Email del usuario (único) |
-| password | string | Contraseña (mínimo 8 caracteres) |
-| role | string | Rol del usuario: tecnico, administrador, direccion, administracion, comercial, operario |
+| Campo    | Tipo   | Descripción                                                                             |
+| -------- | ------ | --------------------------------------------------------------------------------------- |
+| name     | string | Nombre del usuario                                                                      |
+| email    | string | Email del usuario (único)                                                               |
+| password | string | Contraseña (mínimo 8 caracteres)                                                        |
+| role     | string | Rol del usuario: tecnico, administrador, direccion, administracion, comercial, operario |
 
 #### Campos Opcionales
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
+| Campo  | Tipo    | Descripción                    |
+| ------ | ------- | ------------------------------ |
 | active | boolean | Usuario activo (default: true) |
 
 **Nota:** El campo `role` es obligatorio y debe ser uno de los 6 valores admitidos.
@@ -149,6 +151,7 @@ GET /api/v2/users/{id}
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -156,9 +159,9 @@ Authorization: Bearer {access_token}
 
 #### Path Parameters
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| id | integer | ID del usuario |
+| Parámetro | Tipo    | Descripción    |
+| --------- | ------- | -------------- |
+| id        | integer | ID del usuario |
 
 #### Response Exitosa (200)
 
@@ -187,6 +190,7 @@ PUT /api/v2/users/{id}
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -195,9 +199,9 @@ Content-Type: application/json
 
 #### Path Parameters
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| id | integer | ID del usuario |
+| Parámetro | Tipo    | Descripción    |
+| --------- | ------- | -------------- |
+| id        | integer | ID del usuario |
 
 #### Request Body
 
@@ -213,13 +217,13 @@ Content-Type: application/json
 
 #### Campos Opcionales
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| name | string | Nombre del usuario |
-| email | string | Email del usuario (único, excepto el mismo) |
-| password | string | Contraseña (mínimo 8 caracteres) |
-| active | boolean | Usuario activo |
-| role | string | Rol (tecnico, administrador, direccion, administracion, comercial, operario) |
+| Campo    | Tipo    | Descripción                                                                  |
+| -------- | ------- | ---------------------------------------------------------------------------- |
+| name     | string  | Nombre del usuario                                                           |
+| email    | string  | Email del usuario (único, excepto el mismo)                                  |
+| password | string  | Contraseña (mínimo 8 caracteres)                                             |
+| active   | boolean | Usuario activo                                                               |
+| role     | string  | Rol (tecnico, administrador, direccion, administracion, comercial, operario) |
 
 **Nota:** Todos los campos son opcionales. Si se envía `role`, reemplaza el rol actual del usuario.
 
@@ -285,6 +289,7 @@ GET /api/v2/users/options
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -320,6 +325,7 @@ GET /api/v2/roles/options
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -403,13 +409,13 @@ GET /api/v2/activity-logs
 
 #### Query Parameters (Opcionales)
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| user_id | integer | ID del usuario |
-| event | string | Tipo de evento |
-| startDate | date | Fecha de inicio |
-| endDate | date | Fecha de fin |
-| perPage | integer | Elementos por página |
+| Parámetro | Tipo    | Descripción          |
+| --------- | ------- | -------------------- |
+| user_id   | integer | ID del usuario       |
+| event     | string  | Tipo de evento       |
+| startDate | date    | Fecha de inicio      |
+| endDate   | date    | Fecha de fin         |
+| perPage   | integer | Elementos por página |
 
 #### Response Exitosa (200)
 
@@ -459,6 +465,7 @@ GET /api/v2/settings
 **Requiere:** usuario autenticado (cualquier rol).
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -555,9 +562,9 @@ POST /api/v2/employees
 
 #### Campos Requeridos
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| name | string | Nombre del empleado |
+| Campo   | Tipo   | Descripción                   |
+| ------- | ------ | ----------------------------- |
+| name    | string | Nombre del empleado           |
 | nfc_uid | string | UID de la tarjeta NFC (único) |
 
 ---
@@ -632,6 +639,7 @@ POST /api/v2/punches
 **Nota:** Esta ruta es pública (sin autenticación) para permitir que dispositivos NFC registren fichajes.
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Content-Type: application/json
@@ -649,11 +657,11 @@ Content-Type: application/json
 
 #### Campos Requeridos
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| uid | string | UID de la tarjeta NFC del empleado |
-| device_id | string | Identificador del dispositivo |
-| event_type | string | Tipo de evento (`IN` o `OUT`) |
+| Campo      | Tipo   | Descripción                        |
+| ---------- | ------ | ---------------------------------- |
+| uid        | string | UID de la tarjeta NFC del empleado |
+| device_id  | string | Identificador del dispositivo      |
+| event_type | string | Tipo de evento (`IN` o `OUT`)      |
 
 #### Response Exitosa (200)
 
@@ -679,12 +687,12 @@ GET /api/v2/punches
 
 #### Query Parameters (Opcionales)
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| employee_id | integer | ID del empleado |
-| startDate | date | Fecha de inicio |
-| endDate | date | Fecha de fin |
-| event_type | string | Tipo de evento (`IN` o `OUT`) |
+| Parámetro   | Tipo    | Descripción                   |
+| ----------- | ------- | ----------------------------- |
+| employee_id | integer | ID del empleado               |
+| startDate   | date    | Fecha de inicio               |
+| endDate     | date    | Fecha de fin                  |
+| event_type  | string  | Tipo de evento (`IN` o `OUT`) |
 
 ---
 
@@ -816,4 +824,3 @@ Content-Type: application/json  (para POST/PUT)
 ```
 
 **Excepción:** `POST /api/v2/punches` es pública y no requiere `Authorization`.
-

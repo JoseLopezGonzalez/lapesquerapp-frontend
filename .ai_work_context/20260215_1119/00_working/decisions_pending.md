@@ -1,3 +1,3 @@
 # Decisiones pendientes
 
-*(vacío — ninguna decisión crítica pendiente)*
+_(vacío — ninguna decisión crítica pendiente)_

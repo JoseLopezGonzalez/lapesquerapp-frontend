@@ -23,7 +23,7 @@ export function RoutesListingView({
   onSelectItem,
 }) {
   return (
-    <Card className="min-h-0 border-border/70">
+    <Card className="border-border/70 min-h-0">
       <CardHeader className="space-y-4">
         <Tabs value={tab} onValueChange={onTabChange}>
           <TabsList>
@@ -32,11 +32,15 @@ export function RoutesListingView({
           </TabsList>
           <TabsContent value="routes" className="mt-4 space-y-4">
             <CardTitle>Rutas programadas</CardTitle>
-            <CardDescription>Selecciona una ruta existente o crea una nueva para entrar en el editor visual.</CardDescription>
+            <CardDescription>
+              Selecciona una ruta existente o crea una nueva para entrar en el editor visual.
+            </CardDescription>
           </TabsContent>
           <TabsContent value="templates" className="mt-4 space-y-4">
             <CardTitle>Plantillas de ruta</CardTitle>
-            <CardDescription>Selecciona una plantilla o crea una nueva para editarla con el mapa como protagonista.</CardDescription>
+            <CardDescription>
+              Selecciona una plantilla o crea una nueva para editarla con el mapa como protagonista.
+            </CardDescription>
           </TabsContent>
         </Tabs>
 
@@ -55,11 +59,13 @@ export function RoutesListingView({
       </CardHeader>
       <CardContent className="min-h-0">
         {isLoading ? (
-          <div className="flex min-h-[220px] items-center justify-center"><Loader /></div>
+          <div className="flex min-h-[220px] items-center justify-center">
+            <Loader />
+          </div>
         ) : items.length === 0 ? (
           <div className="flex min-h-[220px] items-center justify-center">
             <EmptyState
-              icon={<Route className="h-10 w-10 text-primary" />}
+              icon={<Route className="text-primary h-10 w-10" />}
               title={`Sin ${tab === 'routes' ? 'rutas' : 'plantillas'}`}
               description="Empieza creando la primera."
               className="min-h-[220px] bg-transparent"
@@ -74,8 +80,10 @@ export function RoutesListingView({
                   type="button"
                   onClick={() => onSelectItem(item)}
                   className={cn(
-                    'w-full rounded-2xl border p-4 text-left transition hover:border-primary/40 hover:bg-muted/40',
-                    selectedId && String(selectedId) === String(item.id) && 'border-primary/40 bg-primary/5'
+                    'hover:border-primary/40 hover:bg-muted/40 w-full rounded-2xl border p-4 text-left transition',
+                    selectedId &&
+                      String(selectedId) === String(item.id) &&
+                      'border-primary/40 bg-primary/5'
                   )}
                 >
                   <div className="flex items-center justify-between gap-3">
@@ -84,8 +92,10 @@ export function RoutesListingView({
                       {tab === 'routes' ? getRouteStatusLabel(item.status) : 'Plantilla'}
                     </Badge>
                   </div>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {tab === 'routes' ? item.routeDate || 'Sin fecha' : item.description || 'Sin descripción'}
+                  <p className="text-muted-foreground mt-1 text-sm">
+                    {tab === 'routes'
+                      ? item.routeDate || 'Sin fecha'
+                      : item.description || 'Sin descripción'}
                   </p>
                 </button>
               ))}

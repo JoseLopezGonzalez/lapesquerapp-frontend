@@ -1,9 +1,9 @@
 /**
  * Hook usePWAInstall - Manejo de instalación PWA
- * 
+ *
  * Captura el evento beforeinstallprompt para Android/Chrome
  * y proporciona funcionalidad para instalar la PWA.
- * 
+ *
  * Referencia: docs/mobile-adaptation/00-PLAN-GENERAL.md
  */
 
@@ -11,10 +11,10 @@ import { useState, useEffect } from 'react';
 
 /**
  * Hook para manejar la instalación de PWA
- * 
+ *
  * Captura el evento beforeinstallprompt para Android/Chrome
  * y proporciona funcionalidad para instalar la PWA.
- * 
+ *
  * @returns {object} Objeto con estado y funciones de instalación
  * @returns {boolean} returns.canInstall - Si se puede instalar (Android/Chrome)
  * @returns {boolean} returns.isInstalled - Si ya está instalada
@@ -32,13 +32,15 @@ export function usePWAInstall() {
     if (typeof window === 'undefined') return;
 
     // Detectar iOS
-    const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const iOS =
+      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     setIsIOS(iOS);
 
     // Detectar si ya está instalada
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
-                         (window.navigator?.standalone === true);
+    const isStandalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      window.navigator?.standalone === true;
     setIsInstalled(isStandalone);
 
     // Capturar evento beforeinstallprompt (Android/Chrome)
@@ -104,9 +106,11 @@ export function usePWAInstall() {
  */
 export function isIOSDevice() {
   if (typeof window === 'undefined') return false;
-  
-  return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+  return (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  );
 }
 
 /**
@@ -115,8 +119,8 @@ export function isIOSDevice() {
  */
 export function isPWAInstalled() {
   if (typeof window === 'undefined') return false;
-  
-  return window.matchMedia('(display-mode: standalone)').matches ||
-         (window.navigator?.standalone === true);
-}
 
+  return (
+    window.matchMedia('(display-mode: standalone)').matches || window.navigator?.standalone === true
+  );
+}

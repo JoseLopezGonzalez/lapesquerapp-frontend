@@ -31,10 +31,10 @@ La plantilla debe generarse en **HTML/CSS** desde cero (no canvas, no pdf-lib, n
 
 ### 2.1 Rutas recomendadas
 
-| Elemento | Ruta |
-|----------|------|
-| Página Next.js | `src/app/admin/cmr-manual/page.js` (o `page.jsx`) |
-| Componentes y estilos | `src/components/CmrManual/` |
+| Elemento              | Ruta                                              |
+| --------------------- | ------------------------------------------------- |
+| Página Next.js        | `src/app/admin/cmr-manual/page.js` (o `page.jsx`) |
+| Componentes y estilos | `src/components/CmrManual/`                       |
 
 Alternativa: si se prefiere un módulo autocontenido, usar `src/modules/cmr/` y que la página en `src/app/admin/cmr-manual/` importe desde ahí.
 
@@ -51,14 +51,14 @@ Alternativa: si se prefiere un módulo autocontenido, usar `src/modules/cmr/` y 
 
 Crear la carpeta `src/components/CmrManual/` con:
 
-| Archivo | Responsabilidad |
-|---------|-----------------|
-| `cmr.types.ts` (o `cmr.types.js` con JSDoc) | Tipo `CmrData` y campos correspondientes a las casillas 1–24. |
-| `cmr.copy-config.ts` (o `cmr.copy-config.js`) | Configuración de las 4 copias: `copyType`, encabezado, color. |
-| `CmrForm.jsx` | Formulario manual: inputs organizados por secciones/casillas. |
-| `CmrPreview.jsx` | Contenedor que renderiza las 4 páginas A4 (4× `CmrCopy`). |
-| `CmrCopy.jsx` | **Una** página A4 reutilizable; recibe `copyType` y `data`. |
-| `cmr-print.css` (o `cmr.css`) | Estilos A4, variables `--cmr-color`, `@media print`, `@page`, `page-break-after`. |
+| Archivo                                       | Responsabilidad                                                                   |
+| --------------------------------------------- | --------------------------------------------------------------------------------- |
+| `cmr.types.ts` (o `cmr.types.js` con JSDoc)   | Tipo `CmrData` y campos correspondientes a las casillas 1–24.                     |
+| `cmr.copy-config.ts` (o `cmr.copy-config.js`) | Configuración de las 4 copias: `copyType`, encabezado, color.                     |
+| `CmrForm.jsx`                                 | Formulario manual: inputs organizados por secciones/casillas.                     |
+| `CmrPreview.jsx`                              | Contenedor que renderiza las 4 páginas A4 (4× `CmrCopy`).                         |
+| `CmrCopy.jsx`                                 | **Una** página A4 reutilizable; recibe `copyType` y `data`.                       |
+| `cmr-print.css` (o `cmr.css`)                 | Estilos A4, variables `--cmr-color`, `@media print`, `@page`, `page-break-after`. |
 
 La página `src/app/admin/cmr-manual/page.js` importa el layout editor (formulario + preview + botón Imprimir) y opcionalmente un `loading.js` si se usa Suspense.
 
@@ -68,32 +68,32 @@ La página `src/app/admin/cmr-manual/page.js` importa el layout editor (formular
 
 Definir un tipo (TypeScript o JSDoc) con los campos del CMR. Tipos simples: `string` y `number`. Sin firma digital; las casillas 22–24 son solo cajas/espacios para texto o “Firma” en papel.
 
-| Casilla | Campo sugerido | Tipo | Descripción |
-|---------|----------------|------|-------------|
-| 1 | `sender` | string | Remitente |
-| 2 | `consignee` | string | Destinatario / consignatario |
-| 3 | `placeOfDelivery` | string | Lugar de entrega |
-| 4 | `placeAndDateOfReceiptOrLoad` | string | Lugar y fecha de recepción/carga |
-| 5 | `attachedDocuments` | string | Documentos anexos |
-| 6 | `marksAndNumbers` | string | Marcas y números |
-| 7 | `numberOfPackages` | number | Nº de bultos |
-| 8 | `methodOfPacking` | string | Método de embalaje |
-| 9 | `natureOfGoods` | string | Naturaleza de la mercancía |
-| 10 | (reservado) | — | Según CMR estándar |
-| 11 | `grossWeight` | number | Peso bruto (kg) |
-| 12 | `volume` | string | Volumen |
-| 13 | `senderInstructions` | string | Instrucciones del remitente |
-| 14 | `methodOfPayment` | string | Forma de pago |
-| 15 | (reservado) | — | Según CMR estándar |
-| 16 | `carrier` | string | Porteador |
-| 17 | `successiveCarriers` | string | Porteadores sucesivos |
-| 18 | `reservationsOrObservations` | string | Reservas y observaciones |
-| 19 | `specialAgreements` | string | Estipulaciones particulares |
-| 20 | `payableBy` | string o tabla | “A pagar por” (puede ser tabla simple) |
-| 21 | `placeAndDate` | string | Lugar y fecha |
-| 22 | `senderSignature` | string | Espacio/caja remitente (texto opcional) |
-| 23 | `carrierSignature` | string | Espacio/caja transportista |
-| 24 | `consigneeSignature` | string | Espacio/caja consignatario |
+| Casilla | Campo sugerido                | Tipo           | Descripción                             |
+| ------- | ----------------------------- | -------------- | --------------------------------------- |
+| 1       | `sender`                      | string         | Remitente                               |
+| 2       | `consignee`                   | string         | Destinatario / consignatario            |
+| 3       | `placeOfDelivery`             | string         | Lugar de entrega                        |
+| 4       | `placeAndDateOfReceiptOrLoad` | string         | Lugar y fecha de recepción/carga        |
+| 5       | `attachedDocuments`           | string         | Documentos anexos                       |
+| 6       | `marksAndNumbers`             | string         | Marcas y números                        |
+| 7       | `numberOfPackages`            | number         | Nº de bultos                            |
+| 8       | `methodOfPacking`             | string         | Método de embalaje                      |
+| 9       | `natureOfGoods`               | string         | Naturaleza de la mercancía              |
+| 10      | (reservado)                   | —              | Según CMR estándar                      |
+| 11      | `grossWeight`                 | number         | Peso bruto (kg)                         |
+| 12      | `volume`                      | string         | Volumen                                 |
+| 13      | `senderInstructions`          | string         | Instrucciones del remitente             |
+| 14      | `methodOfPayment`             | string         | Forma de pago                           |
+| 15      | (reservado)                   | —              | Según CMR estándar                      |
+| 16      | `carrier`                     | string         | Porteador                               |
+| 17      | `successiveCarriers`          | string         | Porteadores sucesivos                   |
+| 18      | `reservationsOrObservations`  | string         | Reservas y observaciones                |
+| 19      | `specialAgreements`           | string         | Estipulaciones particulares             |
+| 20      | `payableBy`                   | string o tabla | “A pagar por” (puede ser tabla simple)  |
+| 21      | `placeAndDate`                | string         | Lugar y fecha                           |
+| 22      | `senderSignature`             | string         | Espacio/caja remitente (texto opcional) |
+| 23      | `carrierSignature`            | string         | Espacio/caja transportista              |
+| 24      | `consigneeSignature`          | string         | Espacio/caja consignatario              |
 
 Valores por defecto: strings vacíos `''`, números `0` o `undefined` según convenga al formulario y al preview.
 
@@ -103,12 +103,12 @@ Valores por defecto: strings vacíos `''`, números `0` o `undefined` según con
 
 Las 4 páginas usan el **mismo layout**; solo cambian el encabezado superior y el color de bordes/labels.
 
-| copyType | Encabezado | Color (ejemplo CSS) |
-|----------|------------|----------------------|
-| `sender` | "1 Ejemplar para el remitente / Copy for sender" | Rojo (p. ej. `#b91c1c`) |
-| `consignee` | "2 Ejemplar para el consignatario / Copy for consignee" | Azul (p. ej. `#1d4ed8`) |
-| `carrier` | "3 Ejemplar para el porteador / Copy for carrier" | Verde (p. ej. `#15803d`) |
-| `extra` | "4" (sin “Ejemplar para…”) | Negro (p. ej. `#171717`) |
+| copyType    | Encabezado                                              | Color (ejemplo CSS)      |
+| ----------- | ------------------------------------------------------- | ------------------------ |
+| `sender`    | "1 Ejemplar para el remitente / Copy for sender"        | Rojo (p. ej. `#b91c1c`)  |
+| `consignee` | "2 Ejemplar para el consignatario / Copy for consignee" | Azul (p. ej. `#1d4ed8`)  |
+| `carrier`   | "3 Ejemplar para el porteador / Copy for carrier"       | Verde (p. ej. `#15803d`) |
+| `extra`     | "4" (sin “Ejemplar para…”)                              | Negro (p. ej. `#171717`) |
 
 En cada `CmrCopy` se inyecta el color mediante variable CSS:
 

@@ -110,7 +110,7 @@ Archivo de datos estáticos con el catálogo de productos y barcos para exportac
 
 Evento custom disparado por `fetchWithTenant` cuando el backend devuelve un 401 de JWT inválido/expirado. El listener de este evento desencadena el logout automático.
 
-## __session_verified
+## \_\_session_verified
 
 Cookie con TTL de 60 segundos usada por el middleware para cachear la verificación de sesión y evitar llamar a `/api/v2/me` en cada request.
 

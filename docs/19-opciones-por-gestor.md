@@ -16,9 +16,9 @@ Así, por ejemplo, el **Gestor de almacenes** puede seguir usando `useProductOpt
 
 ### Gestores que tienen contexto de opciones
 
-| Gestor / apartado | Provider | Opciones que carga | Dónde se envuelve |
-|-------------------|----------|--------------------|-------------------|
-| **Gestor de pedidos** | `OrdersManagerOptionsProvider` | `productOptions`, `taxOptions` | `src/app/admin/orders-manager/page.js` |
+| Gestor / apartado                | Provider                               | Opciones que carga                  | Dónde se envuelve                                 |
+| -------------------------------- | -------------------------------------- | ----------------------------------- | ------------------------------------------------- |
+| **Gestor de pedidos**            | `OrdersManagerOptionsProvider`         | `productOptions`, `taxOptions`      | `src/app/admin/orders-manager/page.js`            |
 | **Recepciones de materia prima** | `RawMaterialReceptionsOptionsProvider` | `productOptions`, `supplierOptions` | `src/app/admin/raw-material-receptions/layout.js` |
 
 ### Hooks que consumen contexto o hacen fallback

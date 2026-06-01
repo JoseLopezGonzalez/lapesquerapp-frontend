@@ -1,9 +1,9 @@
 /**
  * Service de dominio para Raw Material Receptions (Recepciones de Materia Prima)
- * 
+ *
  * Expone métodos semánticos de negocio para interactuar con recepciones de materia prima.
  * Oculta detalles técnicos (URLs, endpoints, configuración dinámica).
- * 
+ *
  * Este service encapsula la lógica genérica internamente, pero expone
  * métodos claros y predecibles para componentes y AI Chat.
  */
@@ -12,18 +12,16 @@ import { API_URL_V2 } from '@/configs/config';
 import { getAuthToken } from '@/lib/auth/getAuthToken';
 import { fetchWithTenant } from '@/lib/fetchWithTenant';
 import { getUserAgent } from '@/lib/utils/getUserAgent';
-import { 
-    fetchEntitiesGeneric, 
-    deleteEntityGeneric, 
-    performActionGeneric
+import {
+  fetchEntitiesGeneric,
+  deleteEntityGeneric,
+  performActionGeneric,
 } from '@/services/generic/entityService';
-import { 
-    createEntityGeneric 
-} from '@/services/generic/createEntityService';
-import { 
-    fetchEntityDataGeneric, 
-    submitEntityFormGeneric,
-    fetchAutocompleteOptionsGeneric
+import { createEntityGeneric } from '@/services/generic/createEntityService';
+import {
+  fetchEntityDataGeneric,
+  submitEntityFormGeneric,
+  fetchAutocompleteOptionsGeneric,
 } from '@/services/generic/editEntityService';
 import { addWithParams } from '@/lib/entity/entityRelationsHelper';
 import { addFiltersToParams } from '@/lib/entity/filtersHelper';
@@ -34,152 +32,151 @@ const ENDPOINT = 'raw-material-receptions';
  * Service de dominio para Raw Material Receptions
  */
 export const rawMaterialReceptionService = {
-    /**
-     * Lista todas las recepciones de materia prima con filtros opcionales
-     * @param {Object} filters - Filtros de búsqueda (search, ids, dates, suppliers, species, products, etc.)
-     * @param {Object} pagination - Opciones de paginación { page, perPage }
-     * @returns {Promise<Object>} Datos paginados con recepciones
-     * 
-     * @example
-     * const result = await rawMaterialReceptionService.list({ search: 'Recepción A' }, { page: 1, perPage: 17 });
-     */
-    async list(filters = {}, pagination = {}) {
-        const token = await getAuthToken();
-        const { page = 1, perPage = 17 } = pagination; // Default 17 para raw-material-receptions
-        
-        const queryParams = new URLSearchParams();
-        
-        // Agregar todos los filtros genéricos usando el helper
-        addFiltersToParams(queryParams, filters);
-        
-        // Agregar parámetros with[] para cargar relaciones necesarias
-        if (filters._requiredRelations && Array.isArray(filters._requiredRelations)) {
-            addWithParams(queryParams, filters._requiredRelations);
-        }
-        
-        queryParams.append('page', page);
-        queryParams.append('perPage', perPage);
-        
-        const url = `${API_URL_V2}${ENDPOINT}?${queryParams.toString()}`;
-        return fetchEntitiesGeneric(url, token);
-    },
+  /**
+   * Lista todas las recepciones de materia prima con filtros opcionales
+   * @param {Object} filters - Filtros de búsqueda (search, ids, dates, suppliers, species, products, etc.)
+   * @param {Object} pagination - Opciones de paginación { page, perPage }
+   * @returns {Promise<Object>} Datos paginados con recepciones
+   *
+   * @example
+   * const result = await rawMaterialReceptionService.list({ search: 'Recepción A' }, { page: 1, perPage: 17 });
+   */
+  async list(filters = {}, pagination = {}) {
+    const token = await getAuthToken();
+    const { page = 1, perPage = 17 } = pagination; // Default 17 para raw-material-receptions
 
-    /**
-     * Obtiene una recepción de materia prima por ID
-     * @param {string|number} id - ID de la recepción
-     * @returns {Promise<Object>} Datos de la recepción
-     * 
-     * @example
-     * const reception = await rawMaterialReceptionService.getById(123);
-     */
-    async getById(id) {
-        const token = await getAuthToken();
-        const url = `${API_URL_V2}${ENDPOINT}/${id}`;
-        return fetchEntityDataGeneric(url, token);
-    },
+    const queryParams = new URLSearchParams();
 
-    /**
-     * Crea una nueva recepción de materia prima
-     * @param {Object} data - Datos de la recepción a crear
-     * @returns {Promise<Object>} Recepción creada
-     * 
-     * @example
-     * const reception = await rawMaterialReceptionService.create({ ... });
-     */
-    async create(data) {
-        const token = await getAuthToken();
-        const url = `${API_URL_V2}${ENDPOINT}`;
-        const response = await createEntityGeneric(url, data, token);
-        const result = await response.json();
-        return result.data || result;
-    },
+    // Agregar todos los filtros genéricos usando el helper
+    addFiltersToParams(queryParams, filters);
 
-    /**
-     * Actualiza una recepción de materia prima existente
-     * @param {string|number} id - ID de la recepción
-     * @param {Object} data - Datos a actualizar
-     * @returns {Promise<Object>} Recepción actualizada
-     * 
-     * @example
-     * const reception = await rawMaterialReceptionService.update(123, { ... });
-     */
-    async update(id, data) {
-        const token = await getAuthToken();
-        const url = `${API_URL_V2}${ENDPOINT}/${id}`;
-        const response = await submitEntityFormGeneric(url, 'PUT', data, token);
-        const result = await response.json();
-        return result.data || result;
-    },
+    // Agregar parámetros with[] para cargar relaciones necesarias
+    if (filters._requiredRelations && Array.isArray(filters._requiredRelations)) {
+      addWithParams(queryParams, filters._requiredRelations);
+    }
 
-    /**
-     * Elimina una recepción de materia prima
-     * @param {string|number} id - ID de la recepción
-     * @returns {Promise<void>}
-     * 
-     * @example
-     * await rawMaterialReceptionService.delete(123);
-     */
-    async delete(id) {
-        const token = await getAuthToken();
-        const url = `${API_URL_V2}${ENDPOINT}/${id}`;
-        return deleteEntityGeneric(url, null, token);
-    },
+    queryParams.append('page', page);
+    queryParams.append('perPage', perPage);
 
-    /**
-     * Elimina múltiples recepciones de materia prima
-     * @param {Array<string|number>} ids - Array de IDs de recepciones
-     * @returns {Promise<void>}
-     * 
-     * @example
-     * await rawMaterialReceptionService.deleteMultiple([123, 456, 789]);
-     */
-    async deleteMultiple(ids) {
-        const token = await getAuthToken();
-        const url = `${API_URL_V2}${ENDPOINT}`;
-        return deleteEntityGeneric(url, { ids }, token);
-    },
+    const url = `${API_URL_V2}${ENDPOINT}?${queryParams.toString()}`;
+    return fetchEntitiesGeneric(url, token);
+  },
 
-    /**
-     * Obtiene el desglose diario de pesos por calibre (producto) para una fecha y opcionalmente una especie.
-     * Requiere permiso viewAny sobre RawMaterialReception.
-     * @param {string} date - Fecha en formato Y-m-d (ej. 2026-02-18)
-     * @param {number|null|undefined} [speciesId] - ID de la especie (tenant); si es null/undefined, el backend devuelve todas las especies
-     * @returns {Promise<{ total_weight_kg: number, calibers: Array<{ product_id: number, name: string, weight_kg: number, percentage: number }> }>}
-     */
-    async getDailyCalibersBySpecies(date, speciesId) {
-        const token = await getAuthToken();
-        const params = new URLSearchParams({ date });
-        if (speciesId != null && speciesId !== '') {
-            params.append('speciesId', String(speciesId));
-        }
-        const url = `${API_URL_V2}${ENDPOINT}/daily-calibers-by-species?${params.toString()}`;
-        const headers = {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-            'User-Agent': getUserAgent(),
-        };
-        const response = await fetchWithTenant(url, {
-            method: 'GET',
-            headers,
-        });
-        return response.json();
-    },
+  /**
+   * Obtiene una recepción de materia prima por ID
+   * @param {string|number} id - ID de la recepción
+   * @returns {Promise<Object>} Datos de la recepción
+   *
+   * @example
+   * const reception = await rawMaterialReceptionService.getById(123);
+   */
+  async getById(id) {
+    const token = await getAuthToken();
+    const url = `${API_URL_V2}${ENDPOINT}/${id}`;
+    return fetchEntityDataGeneric(url, token);
+  },
+
+  /**
+   * Crea una nueva recepción de materia prima
+   * @param {Object} data - Datos de la recepción a crear
+   * @returns {Promise<Object>} Recepción creada
+   *
+   * @example
+   * const reception = await rawMaterialReceptionService.create({ ... });
+   */
+  async create(data) {
+    const token = await getAuthToken();
+    const url = `${API_URL_V2}${ENDPOINT}`;
+    const response = await createEntityGeneric(url, data, token);
+    const result = await response.json();
+    return result.data || result;
+  },
+
+  /**
+   * Actualiza una recepción de materia prima existente
+   * @param {string|number} id - ID de la recepción
+   * @param {Object} data - Datos a actualizar
+   * @returns {Promise<Object>} Recepción actualizada
+   *
+   * @example
+   * const reception = await rawMaterialReceptionService.update(123, { ... });
+   */
+  async update(id, data) {
+    const token = await getAuthToken();
+    const url = `${API_URL_V2}${ENDPOINT}/${id}`;
+    const response = await submitEntityFormGeneric(url, 'PUT', data, token);
+    const result = await response.json();
+    return result.data || result;
+  },
+
+  /**
+   * Elimina una recepción de materia prima
+   * @param {string|number} id - ID de la recepción
+   * @returns {Promise<void>}
+   *
+   * @example
+   * await rawMaterialReceptionService.delete(123);
+   */
+  async delete(id) {
+    const token = await getAuthToken();
+    const url = `${API_URL_V2}${ENDPOINT}/${id}`;
+    return deleteEntityGeneric(url, null, token);
+  },
+
+  /**
+   * Elimina múltiples recepciones de materia prima
+   * @param {Array<string|number>} ids - Array de IDs de recepciones
+   * @returns {Promise<void>}
+   *
+   * @example
+   * await rawMaterialReceptionService.deleteMultiple([123, 456, 789]);
+   */
+  async deleteMultiple(ids) {
+    const token = await getAuthToken();
+    const url = `${API_URL_V2}${ENDPOINT}`;
+    return deleteEntityGeneric(url, { ids }, token);
+  },
+
+  /**
+   * Obtiene el desglose diario de pesos por calibre (producto) para una fecha y opcionalmente una especie.
+   * Requiere permiso viewAny sobre RawMaterialReception.
+   * @param {string} date - Fecha en formato Y-m-d (ej. 2026-02-18)
+   * @param {number|null|undefined} [speciesId] - ID de la especie (tenant); si es null/undefined, el backend devuelve todas las especies
+   * @returns {Promise<{ total_weight_kg: number, calibers: Array<{ product_id: number, name: string, weight_kg: number, percentage: number }> }>}
+   */
+  async getDailyCalibersBySpecies(date, speciesId) {
+    const token = await getAuthToken();
+    const params = new URLSearchParams({ date });
+    if (speciesId != null && speciesId !== '') {
+      params.append('speciesId', String(speciesId));
+    }
+    const url = `${API_URL_V2}${ENDPOINT}/daily-calibers-by-species?${params.toString()}`;
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      'User-Agent': getUserAgent(),
+    };
+    const response = await fetchWithTenant(url, {
+      method: 'GET',
+      headers,
+    });
+    return response.json();
+  },
 };
 
 // Mantener compatibilidad con funciones exportadas anteriormente
 // TODO: Migrar componentes que usan estas funciones a usar el service directamente
 export const getRawMaterialReception = async (receptionId, token) => {
-    const service = rawMaterialReceptionService;
-    return service.getById(receptionId);
+  const service = rawMaterialReceptionService;
+  return service.getById(receptionId);
 };
 
 export const createRawMaterialReception = async (receptionPayload) => {
-    const service = rawMaterialReceptionService;
-    return service.create(receptionPayload);
+  const service = rawMaterialReceptionService;
+  return service.create(receptionPayload);
 };
 
 export const updateRawMaterialReception = async (receptionId, receptionPayload) => {
-    const service = rawMaterialReceptionService;
-    return service.update(receptionId, receptionPayload);
+  const service = rawMaterialReceptionService;
+  return service.update(receptionId, receptionPayload);
 };
-

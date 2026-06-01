@@ -8,29 +8,35 @@
 ### ✅ Tareas Completadas (8/12)
 
 **Fase 1 - Crítico (3/3):**
+
 - ✅ Paralelizar carga de opciones con Promise.all
 - ✅ Validación segura con optional chaining
 - ✅ Manejo de errores mejorado
 
 **Fase 2 - Importante (3/5):**
+
 - ✅ Extraer hook compartido para opciones
 - ✅ Confirmación al cancelar con cambios
 - ✅ Payload parcial (solo campos modificados)
 
 **Fase 3 - Nice-to-have (2/4):**
+
 - ✅ Memoización de renderField
 - ✅ Validación en tiempo real con feedback visual
 - ✅ Limpiar código comentado
 
 ### ⏸️ Pendientes (1/12)
+
 - ⏸️ Implementar caché de opciones (dejar para más adelante)
 
 ### ❌ No Implementadas (3/12)
+
 - ❌ Mejoras de accesibilidad (pospuesto)
 - ❌ Endpoint combinado para opciones (no tocar backend)
 - ❌ Pre-carga de opciones (requiere caché)
 
 ### 📊 Resultados Obtenidos
+
 - **Rendimiento**: ~60-75% reducción en tiempo de carga
 - **Re-renders**: Reducción de 4-5 a 1-2
 - **UX**: Mejor feedback y validación en tiempo real
@@ -43,6 +49,7 @@
 El apartado de edición de pedidos permite modificar información de pedidos existentes mediante un formulario modal (Sheet) que se abre desde la vista de detalle del pedido. El flujo involucra múltiples capas: UI (React/Next.js), hooks personalizados, contexto de React, servicios API y backend Laravel.
 
 **Problemas principales detectados:**
+
 - **Rendimiento crítico**: 4 llamadas API secuenciales para cargar opciones del formulario (sin paralelización)
 - **Re-renders innecesarios**: Múltiples actualizaciones de estado que disparan renders en cascada
 - **Falta de validación optimista**: No hay feedback inmediato al usuario
@@ -51,6 +58,7 @@ El apartado de edición de pedidos permite modificar información de pedidos exi
 - **Manejo de errores limitado**: Errores genéricos sin detalles específicos
 
 **Impacto estimado de mejoras:**
+
 - Reducción de tiempo de carga inicial: **~60-70%** (de ~800-1200ms a ~300-400ms)
 - Reducción de requests HTTP: **75%** (de 4 a 1 request paralelo)
 - Mejora en experiencia de usuario: **Alta** (feedback inmediato, validación en tiempo real)
@@ -62,6 +70,7 @@ El apartado de edición de pedidos permite modificar información de pedidos exi
 ### ¿Qué hace el apartado?
 
 Permite editar información de un pedido existente a través de un formulario modal (Sheet lateral) que incluye:
+
 - Fechas (entrada y carga)
 - Información comercial (comercial, forma de pago, incoterm, referencia comprador)
 - Transporte (empresa, matrículas, observaciones)
@@ -71,15 +80,15 @@ Permite editar información de un pedido existente a través de un formulario mo
 
 ### Capas involucradas
 
-| Capa | Componentes/Archivos | Responsabilidad |
-|------|----------------------|-----------------|
-| **UI** | `OrderEditSheet/index.js` | Componente Sheet con formulario react-hook-form |
-| **Hooks** | `useOrderFormConfig.js` | Configuración del formulario y carga de opciones |
-| **Contexto** | `OrderContext.js` | Estado global del pedido |
-| **Lógica de negocio** | `useOrder.js` | Gestión del pedido y actualización |
-| **Servicios API** | `orderService.js`, `incotermService.js`, `paymentTernService.js`, `salespersonService.js`, `transportService.js` | Comunicación con backend |
-| **Backend** | Laravel API (`PUT /api/v2/orders/{id}`) | Validación y persistencia |
-| **DB** | Base de datos (implícito) | Almacenamiento de datos |
+| Capa                  | Componentes/Archivos                                                                                             | Responsabilidad                                  |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| **UI**                | `OrderEditSheet/index.js`                                                                                        | Componente Sheet con formulario react-hook-form  |
+| **Hooks**             | `useOrderFormConfig.js`                                                                                          | Configuración del formulario y carga de opciones |
+| **Contexto**          | `OrderContext.js`                                                                                                | Estado global del pedido                         |
+| **Lógica de negocio** | `useOrder.js`                                                                                                    | Gestión del pedido y actualización               |
+| **Servicios API**     | `orderService.js`, `incotermService.js`, `paymentTernService.js`, `salespersonService.js`, `transportService.js` | Comunicación con backend                         |
+| **Backend**           | Laravel API (`PUT /api/v2/orders/{id}`)                                                                          | Validación y persistencia                        |
+| **DB**                | Base de datos (implícito)                                                                                        | Almacenamiento de datos                          |
 
 ### Archivos implicados
 
@@ -136,7 +145,8 @@ getPaymentTermsOptions(token).then(...).catch(...)
 getTransportsOptions(token).then(...).catch(...)
 ```
 
-**Impacto**: 
+**Impacto**:
+
 - Estados inconsistentes si el componente se desmonta
 - Posibles memory leaks si las promesas se resuelven después del desmontaje
 - Tiempo de carga innecesariamente largo
@@ -149,7 +159,8 @@ getTransportsOptions(token).then(...).catch(...)
 
 **Ubicación**: `OrderEditSheet/index.js:54-63`, `useOrderFormConfig.js:233-234`
 
-**Problema**: 
+**Problema**:
+
 - En `useOrderFormConfig` se convierte string a Date
 - En `OrderEditSheet` se verifica si es Date y se formatea
 - Si `orderData` viene con fechas null/undefined, puede generar errores
@@ -194,7 +205,7 @@ incoterm: `${orderData.incoterm.id}` || '',        // ❌ Error si incoterm es n
 
 ```javascript
 useEffect(() => {
-    // ... usa session?.user?.accessToken
+  // ... usa session?.user?.accessToken
 }, [orderData]); // ❌ Falta session
 ```
 
@@ -212,9 +223,9 @@ useEffect(() => {
 
 ```javascript
 useEffect(() => {
-    if (defaultValues && !loading) {
-        reset(defaultValues); // ❌ Puede sobrescribir cambios del usuario
-    }
+  if (defaultValues && !loading) {
+    reset(defaultValues); // ❌ Puede sobrescribir cambios del usuario
+  }
 }, [defaultValues, loading, reset]);
 ```
 
@@ -286,39 +297,40 @@ setFormGroups((prev) => prev.map(...)) // Render 4
 ```javascript
 // useOrderFormConfig.js - Refactor propuesto
 useEffect(() => {
-    if (!orderData || !token) {
-        setLoading(false);
-        return;
-    }
+  if (!orderData || !token) {
+    setLoading(false);
+    return;
+  }
 
-    // Cargar todas las opciones en paralelo
-    Promise.all([
-        getSalespeopleOptions(token),
-        getIncotermsOptions(token),
-        getPaymentTermsOptions(token),
-        getTransportsOptions(token),
-    ])
-        .then(([salespeople, incoterms, paymentTerms, transports]) => {
-            // Una sola actualización de estado
-            setFormGroups((prev) => {
-                return prev.map((group) => {
-                    // Actualizar todos los campos de una vez
-                    const updatedFields = group.fields.map((field) => {
-                        // Lógica de mapeo...
-                    });
-                    return { ...group, fields: updatedFields };
-                });
-            });
-            setLoading(false);
-        })
-        .catch((err) => {
-            console.error('Error loading options:', err);
-            setLoading(false);
+  // Cargar todas las opciones en paralelo
+  Promise.all([
+    getSalespeopleOptions(token),
+    getIncotermsOptions(token),
+    getPaymentTermsOptions(token),
+    getTransportsOptions(token),
+  ])
+    .then(([salespeople, incoterms, paymentTerms, transports]) => {
+      // Una sola actualización de estado
+      setFormGroups((prev) => {
+        return prev.map((group) => {
+          // Actualizar todos los campos de una vez
+          const updatedFields = group.fields.map((field) => {
+            // Lógica de mapeo...
+          });
+          return { ...group, fields: updatedFields };
         });
+      });
+      setLoading(false);
+    })
+    .catch((err) => {
+      console.error('Error loading options:', err);
+      setLoading(false);
+    });
 }, [orderData, token]);
 ```
 
 **Beneficios**:
+
 - 75% menos tiempo de carga (paralelización)
 - 1 render en lugar de 4
 - Manejo de errores centralizado
@@ -330,40 +342,41 @@ useEffect(() => {
 ```javascript
 // hooks/useOrderFormOptions.js
 export function useOrderFormOptions() {
-    const { data: session } = useSession();
-    const [options, setOptions] = useState({
-        salespeople: [],
-        incoterms: [],
-        paymentTerms: [],
-        transports: [],
-    });
-    const [loading, setLoading] = useState(true);
+  const { data: session } = useSession();
+  const [options, setOptions] = useState({
+    salespeople: [],
+    incoterms: [],
+    paymentTerms: [],
+    transports: [],
+  });
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const token = session?.user?.accessToken;
-        if (!token) return;
+  useEffect(() => {
+    const token = session?.user?.accessToken;
+    if (!token) return;
 
-        Promise.all([
-            getSalespeopleOptions(token),
-            getIncotermsOptions(token),
-            getPaymentTermsOptions(token),
-            getTransportsOptions(token),
-        ])
-            .then(([salespeople, incoterms, paymentTerms, transports]) => {
-                setOptions({ salespeople, incoterms, paymentTerms, transports });
-                setLoading(false);
-            })
-            .catch((err) => {
-                console.error(err);
-                setLoading(false);
-            });
-    }, [session]);
+    Promise.all([
+      getSalespeopleOptions(token),
+      getIncotermsOptions(token),
+      getPaymentTermsOptions(token),
+      getTransportsOptions(token),
+    ])
+      .then(([salespeople, incoterms, paymentTerms, transports]) => {
+        setOptions({ salespeople, incoterms, paymentTerms, transports });
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, [session]);
 
-    return { options, loading };
+  return { options, loading };
 }
 ```
 
 **Beneficios**:
+
 - Reutilización entre creación y edición
 - Caché potencial (si se implementa)
 - Separación de responsabilidades
@@ -374,13 +387,16 @@ export function useOrderFormOptions() {
 
 ```javascript
 // OrderEditSheet/index.js
-const renderField = useCallback((field) => {
+const renderField = useCallback(
+  (field) => {
     // ... lógica existente
-}, [register, control]);
+  },
+  [register, control]
+);
 
 // O mejor: extraer a componentes
 const FieldRenderer = memo(({ field, register, control, errors }) => {
-    // ... lógica de render
+  // ... lógica de render
 });
 ```
 
@@ -391,11 +407,11 @@ const FieldRenderer = memo(({ field, register, control, errors }) => {
 ```javascript
 // useOrderFormConfig.js
 setDefaultValues({
-    salesperson: `${orderData.salesperson?.id || ''}`,
-    payment: `${orderData.paymentTerm?.id || ''}`,
-    incoterm: `${orderData.incoterm?.id || ''}`,
-    transport: `${orderData.transport?.id || ''}`,
-    // ...
+  salesperson: `${orderData.salesperson?.id || ''}`,
+  payment: `${orderData.paymentTerm?.id || ''}`,
+  incoterm: `${orderData.incoterm?.id || ''}`,
+  transport: `${orderData.transport?.id || ''}`,
+  // ...
 });
 ```
 
@@ -412,6 +428,7 @@ setDefaultValues({
 **Impacto UX**: Usuario espera sin saber qué está pasando.
 
 **Solución implementada**:
+
 - ✅ Indicador de progreso: "Cargando opciones... (0/4)" con spinner animado
 - ✅ Sin skeleton loaders (según preferencia del usuario)
 - ⏸️ Pre-carga de opciones pendiente para futuro (requiere caché)
@@ -425,6 +442,7 @@ setDefaultValues({
 **Impacto UX**: Usuario no sabe si hay errores hasta intentar guardar.
 
 **Solución propuesta**:
+
 - Mostrar errores debajo de cada campo en tiempo real
 - Deshabilitar botón "Guardar" si hay errores
 - Resaltar campos con errores
@@ -438,6 +456,7 @@ setDefaultValues({
 **Impacto UX**: Pérdida accidental de trabajo.
 
 **Solución propuesta**:
+
 - Detectar cambios con `formState.isDirty`
 - Mostrar diálogo de confirmación al cerrar con cambios
 - Opción de "Descartar cambios" vs "Cancelar"
@@ -447,11 +466,13 @@ setDefaultValues({
 #### 🟡 **NICE-TO-HAVE**: Falta de accesibilidad
 
 **Problemas detectados**:
+
 - No hay `aria-label` en botones de acción
 - El Sheet no anuncia su apertura a lectores de pantalla
 - Falta manejo de teclado (ESC para cerrar, Tab navigation)
 
 **Solución propuesta**:
+
 - Agregar `aria-label` y `aria-describedby`
 - Implementar `onEscapeKeyDown` en Sheet
 - Asegurar orden lógico de Tab
@@ -460,11 +481,13 @@ setDefaultValues({
 
 #### 🟡 **NICE-TO-HAVE**: Estados de carga/error poco informativos
 
-**Problema**: 
+**Problema**:
+
 - Error genérico: "Error al actualizar el pedido" sin detalles
 - No se muestra qué campo específico falló
 
 **Solución propuesta**:
+
 - Mostrar mensaje de error específico del backend
 - Si hay errores de validación por campo, mostrarlos individualmente
 - Agregar retry automático para errores de red
@@ -474,10 +497,12 @@ setDefaultValues({
 ### Consistencia visual
 
 **Estado actual**: ✅ Buena
+
 - Usa componentes ShadCN consistentes
 - Layout responsive con grid
 
 **Mejoras sugeridas**:
+
 - Agrupar campos relacionados visualmente (ya está hecho con grupos)
 - Agregar iconos a grupos para mejor scaneo visual
 
@@ -492,6 +517,7 @@ setDefaultValues({
 **Ubicación**: `useOrderFormConfig.js:254-351`
 
 **Métrica actual**:
+
 - Request 1 (salespeople): ~200-300ms
 - Request 2 (incoterms): ~200-300ms
 - Request 3 (payment terms): ~200-300ms
@@ -499,6 +525,7 @@ setDefaultValues({
 - **Total: ~800-1200ms** (secuencial)
 
 **Métrica optimizada** (con `Promise.all`):
+
 - 4 requests en paralelo: ~200-300ms (limitado por el más lento)
 - **Total: ~200-300ms** (paralelo)
 
@@ -513,6 +540,7 @@ setDefaultValues({
 **Problema**: Cada `setFormGroups` dispara un re-render completo del formulario.
 
 **Impacto**:
+
 - 4 renders × ~50-100ms = **200-400ms de tiempo de render perdido**
 - Posible parpadeo visual
 
@@ -527,6 +555,7 @@ setDefaultValues({
 **Impacto**: Requests HTTP innecesarios en cada edición.
 
 **Solución propuesta**:
+
 - Implementar caché en memoria (React Query, SWR, o estado global)
 - TTL de 5-10 minutos
 - Invalidar solo cuando sea necesario
@@ -550,10 +579,12 @@ const payload = {
 ```
 
 **Impacto**:
+
 - Payload más grande de lo necesario
 - Posible procesamiento innecesario en backend
 
 **Solución propuesta**:
+
 - Comparar con valores originales
 - Enviar solo campos modificados (PATCH parcial)
 - O implementar `dirtyFields` de react-hook-form
@@ -627,15 +658,17 @@ const { data: options, isLoading } = useQuery(
 
 ```javascript
 // Usar dirtyFields de react-hook-form
-const { formState: { dirtyFields } } = useForm();
+const {
+  formState: { dirtyFields },
+} = useForm();
 
 const onSubmit = async (data) => {
-    const payload = Object.keys(dirtyFields).reduce((acc, key) => {
-        acc[key] = data[key];
-        return acc;
-    }, {});
-    
-    await updateOrderData(payload);
+  const payload = Object.keys(dirtyFields).reduce((acc, key) => {
+    acc[key] = data[key];
+    return acc;
+  }, {});
+
+  await updateOrderData(payload);
 };
 ```
 
@@ -646,9 +679,12 @@ const onSubmit = async (data) => {
 #### 4. **Memoización de componentes** (Prioridad: 🟡 NICE-TO-HAVE)
 
 ```javascript
-const FieldRenderer = memo(({ field, ...props }) => {
+const FieldRenderer = memo(
+  ({ field, ...props }) => {
     // Render del campo
-}, (prev, next) => prev.field.name === next.field.name);
+  },
+  (prev, next) => prev.field.name === next.field.name
+);
 ```
 
 **ROI**: Bajo impacto, bajo esfuerzo
@@ -657,13 +693,13 @@ const FieldRenderer = memo(({ field, ...props }) => {
 
 ### Métricas a medir
 
-| Métrica | Actual (estimado) | Objetivo | Dónde medir |
-|---------|-------------------|----------|-------------|
-| Tiempo de carga inicial | ~800-1200ms | ~200-300ms | `useOrderFormConfig` |
-| Número de requests HTTP | 4 secuenciales | 1 paralelo | Network tab |
-| Re-renders al cargar | 4-5 | 1-2 | React DevTools |
-| Tamaño de payload PUT | ~2-3KB | ~1-1.5KB | Network tab |
-| Tiempo de render total | ~400-600ms | ~100-200ms | React DevTools Profiler |
+| Métrica                 | Actual (estimado) | Objetivo   | Dónde medir             |
+| ----------------------- | ----------------- | ---------- | ----------------------- |
+| Tiempo de carga inicial | ~800-1200ms       | ~200-300ms | `useOrderFormConfig`    |
+| Número de requests HTTP | 4 secuenciales    | 1 paralelo | Network tab             |
+| Re-renders al cargar    | 4-5               | 1-2        | React DevTools          |
+| Tamaño de payload PUT   | ~2-3KB            | ~1-1.5KB   | Network tab             |
+| Tiempo de render total  | ~400-600ms        | ~100-200ms | React DevTools Profiler |
 
 ---
 
@@ -675,12 +711,14 @@ const FieldRenderer = memo(({ field, ...props }) => {
 
 **Endpoint**: `PUT /api/v2/orders/{id}`
 
-**Estado actual**: 
+**Estado actual**:
+
 - Acepta payload completo
 - Retorna pedido actualizado
 - Manejo de errores adecuado
 
-**Mejora sugerida**: 
+**Mejora sugerida**:
+
 - Considerar `PATCH` para actualizaciones parciales
 - Endpoint específico para opciones combinadas: `GET /api/v2/order-form-options` (devuelve todas las opciones en una sola request)
 
@@ -690,7 +728,8 @@ const FieldRenderer = memo(({ field, ...props }) => {
 
 **Problema actual**: 4 endpoints separados para opciones que rara vez cambian.
 
-**Propuesta**: 
+**Propuesta**:
+
 ```javascript
 // Nuevo endpoint
 GET /api/v2/order-form-options
@@ -704,11 +743,13 @@ GET /api/v2/order-form-options
 ```
 
 **Beneficios**:
+
 - 1 request en lugar de 4
 - Reducción de overhead HTTP (headers, conexiones)
 - Más fácil de cachear
 
 **Trade-offs**:
+
 - Menos granularidad (no se puede cachear por tipo)
 - Requiere cambios en backend
 
@@ -723,6 +764,7 @@ GET /api/v2/order-form-options
 **Problema**: Se envía todo el objeto aunque solo cambien algunos campos.
 
 **Ejemplo actual**:
+
 ```json
 {
     "entryDate": "2024-01-15",
@@ -749,13 +791,15 @@ GET /api/v2/order-form-options
 
 #### 🟠 **IMPORTANTE**: Validación duplicada (frontend + backend)
 
-**Estado actual**: 
+**Estado actual**:
+
 - Frontend valida con react-hook-form
 - Backend valida con Laravel
 
 **Problema**: Si las reglas no coinciden, el usuario ve un error después de enviar.
 
 **Solución propuesta**:
+
 - Sincronizar reglas de validación (compartir schema)
 - O mostrar errores de validación del backend por campo
 
@@ -768,6 +812,7 @@ GET /api/v2/order-form-options
 #### 🟡 **SUGERENCIA**: Índices en relaciones
 
 Asegurar índices en:
+
 - `orders.salesperson_id`
 - `orders.payment_term_id`
 - `orders.incoterm_id`
@@ -882,16 +927,17 @@ Si el endpoint `GET /api/v2/orders/{id}` hace N+1 queries para cargar relaciones
 
 ### Resumen de tareas por prioridad
 
-| Prioridad | Tareas | Estado | Esfuerzo Real | Impacto |
-|-----------|--------|--------|---------------|---------|
-| 🔴 Crítico | 3 tareas | ✅ **3/3 completadas** | ~2 horas | Muy Alto |
-| 🟠 Importante | 5 tareas | ✅ **3/5 completadas**, ⏸️ **1 pendiente**, ❌ **1 no implementada** | ~4 horas | Alto |
-| 🟡 Nice-to-have | 4 tareas | ✅ **2/4 completadas**, ❌ **2 no implementadas** | ~3 horas | Medio |
-| **TOTAL** | **12 tareas** | **✅ 8 completadas, ⏸️ 1 pendiente, ❌ 3 no implementadas** | **~9 horas** | - |
+| Prioridad       | Tareas        | Estado                                                               | Esfuerzo Real | Impacto  |
+| --------------- | ------------- | -------------------------------------------------------------------- | ------------- | -------- |
+| 🔴 Crítico      | 3 tareas      | ✅ **3/3 completadas**                                               | ~2 horas      | Muy Alto |
+| 🟠 Importante   | 5 tareas      | ✅ **3/5 completadas**, ⏸️ **1 pendiente**, ❌ **1 no implementada** | ~4 horas      | Alto     |
+| 🟡 Nice-to-have | 4 tareas      | ✅ **2/4 completadas**, ❌ **2 no implementadas**                    | ~3 horas      | Medio    |
+| **TOTAL**       | **12 tareas** | **✅ 8 completadas, ⏸️ 1 pendiente, ❌ 3 no implementadas**          | **~9 horas**  | -        |
 
 ### Estado de implementación
 
 **✅ Completadas (8 tareas):**
+
 1. Paralelizar carga de opciones con Promise.all
 2. Validación segura con optional chaining
 3. Manejo de errores mejorado
@@ -903,9 +949,11 @@ Si el endpoint `GET /api/v2/orders/{id}` hace N+1 queries para cargar relaciones
 9. Limpiar código comentado
 
 **⏸️ Pendientes (1 tarea):**
+
 - Implementar caché de opciones (dejar para más adelante)
 
 **❌ No implementadas (4 tareas):**
+
 - Payload parcial (según decisión del usuario)
 - Mejoras de accesibilidad (pospuesto)
 - Endpoint combinado para opciones (no tocar backend)
@@ -918,11 +966,13 @@ Si el endpoint `GET /api/v2/orders/{id}` hace N+1 queries para cargar relaciones
 #### Alternativa 1: Endpoint combinado vs Promise.all
 
 **Opción A**: Mantener 4 endpoints, usar `Promise.all` (recomendado para Fase 1)
+
 - ✅ Sin cambios en backend
 - ✅ Implementación rápida
 - ❌ Sigue siendo 4 requests HTTP
 
 **Opción B**: Crear endpoint combinado
+
 - ✅ 1 request HTTP
 - ✅ Más fácil de cachear
 - ❌ Requiere cambios en backend
@@ -935,11 +985,13 @@ Si el endpoint `GET /api/v2/orders/{id}` hace N+1 queries para cargar relaciones
 #### Alternativa 2: Caché con React Query vs Context API
 
 **Opción A**: React Query (recomendado)
+
 - ✅ Caché automático, revalidación, devtools
 - ✅ Menos código manual
 - ❌ Nueva dependencia (~50KB)
 
 **Opción B**: Context API + estado global
+
 - ✅ Sin dependencias
 - ✅ Control total
 - ❌ Más código manual
@@ -979,7 +1031,7 @@ Si el endpoint `GET /api/v2/orders/{id}` hace N+1 queries para cargar relaciones
    - Si cambian poco: TTL más largo (5-10 minutos) - X
 
 2. **¿Hay límites de rate limiting en los endpoints de opciones?**
-   - Si sí: Caché es crítico 
+   - Si sí: Caché es crítico
    - Si no: Caché sigue siendo beneficioso pero menos urgente
    - NO entiendo pero posponer para mas adelante - X
 
@@ -996,18 +1048,21 @@ El apartado de edición de pedidos ha sido analizado y las optimizaciones críti
 ### ✅ Implementación completada
 
 **Fase 1 (Crítico)**: ✅ **100% completada**
+
 - Todas las optimizaciones críticas implementadas
 - Reducción de tiempo de carga: ~60-75%
 - Prevención de crashes en runtime
 - Manejo de errores mejorado
 
 **Fase 2 (Importante)**: ✅ **60% completada**
+
 - Hook compartido implementado
 - Confirmación al cancelar implementada
 - Payload parcial implementado
 - Caché pendiente para futuro (según decisión del usuario)
 
 **Fase 3 (Nice-to-have)**: ✅ **50% completada**
+
 - Memoización y validación en tiempo real implementadas
 - Accesibilidad y endpoint combinado no implementados (según decisión del usuario)
 
@@ -1023,6 +1078,7 @@ El apartado de edición de pedidos ha sido analizado y las optimizaciones críti
 ### 🔄 Próximos pasos (opcionales)
 
 Las siguientes mejoras quedan pendientes para implementación futura según necesidades:
+
 - Caché de opciones (cuando se decida la solución)
 - Payload parcial (si el backend soporta PATCH)
 - Mejoras de accesibilidad (si se requiere)
@@ -1034,4 +1090,3 @@ Las siguientes mejoras quedan pendientes para implementación futura según nece
 **Analista**: AI Code Reviewer  
 **Versión**: 2.1  
 **Última actualización**: Implementación completada - 8/12 tareas implementadas (payload parcial agregado)
-

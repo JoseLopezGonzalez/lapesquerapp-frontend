@@ -5,11 +5,30 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
-import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableHead,
+  TableHeader,
+  TableRow,
+  TableCell,
+} from '@/components/ui/table';
 import { useOrderFormOptions } from '@/hooks/useOrderFormOptions';
 import { useOfferMutations } from '@/hooks/useOffers';
 import { useProspectsList, useProspect } from '@/hooks/useProspects';
@@ -44,15 +63,21 @@ export default function OfferFormSheet({
 }) {
   const catalogEnabled = open;
   const { options, loading: optionsLoading } = useOrderFormOptions({ enabled: catalogEnabled });
-  const { productOptions, loading: productsLoading } = useProductOptions({ enabled: catalogEnabled });
+  const { productOptions, loading: productsLoading } = useProductOptions({
+    enabled: catalogEnabled,
+  });
   const { taxOptions } = useTaxOptions({ enabled: catalogEnabled });
   const { data: prospects } = useProspectsList({ perPage: 100, enabled: open && !fixedCustomerId });
   const { data: customers } = useCustomersList({ perPage: 100, enabled: open && !fixedProspectId });
   const { data: linkedProspect } = useProspect(fixedProspectId);
   const { createOffer, updateOffer } = useOfferMutations();
   const [targetType, setTargetType] = useState(fixedCustomerId ? 'customer' : 'prospect');
-  const [targetId, setTargetId] = useState(fixedProspectId ? String(fixedProspectId) : fixedCustomerId ? String(fixedCustomerId) : '');
-  const [validUntil, setValidUntil] = useState(initialData?.validUntil ? new Date(initialData.validUntil) : null);
+  const [targetId, setTargetId] = useState(
+    fixedProspectId ? String(fixedProspectId) : fixedCustomerId ? String(fixedCustomerId) : ''
+  );
+  const [validUntil, setValidUntil] = useState(
+    initialData?.validUntil ? new Date(initialData.validUntil) : null
+  );
   const [incotermId, setIncotermId] = useState('');
   const [paymentTermId, setPaymentTermId] = useState('');
   const [currency, setCurrency] = useState('EUR');
@@ -74,16 +99,30 @@ export default function OfferFormSheet({
               : ''
     );
     setValidUntil(initialData?.validUntil ? new Date(initialData.validUntil) : null);
-    setIncotermId(initialData?.incoterm?.id ? String(initialData.incoterm.id) : initialData?.incotermId ? String(initialData.incotermId) : '');
+    setIncotermId(
+      initialData?.incoterm?.id
+        ? String(initialData.incoterm.id)
+        : initialData?.incotermId
+          ? String(initialData.incotermId)
+          : ''
+    );
     setPaymentTermId(
-      initialData?.paymentTerm?.id ? String(initialData.paymentTerm.id) : initialData?.paymentTermId ? String(initialData.paymentTermId) : ''
+      initialData?.paymentTerm?.id
+        ? String(initialData.paymentTerm.id)
+        : initialData?.paymentTermId
+          ? String(initialData.paymentTermId)
+          : ''
     );
     setCurrency(initialData?.currency ?? 'EUR');
     setNotes(initialData?.notes ?? '');
     setLines(
       initialData?.lines?.length
         ? initialData.lines.map((line) => ({
-            productId: line.product?.id ? String(line.product.id) : line.productId ? String(line.productId) : '',
+            productId: line.product?.id
+              ? String(line.product.id)
+              : line.productId
+                ? String(line.productId)
+                : '',
             description: line.description ?? '',
             quantity: line.quantity ?? '',
             unit: line.unit ?? 'kg',
@@ -103,11 +142,14 @@ export default function OfferFormSheet({
   const isFixedTarget = Boolean(fixedProspectId || fixedCustomerId);
 
   const updateLine = (index, key, value) => {
-    setLines((current) => current.map((line, lineIndex) => (lineIndex === index ? { ...line, [key]: value } : line)));
+    setLines((current) =>
+      current.map((line, lineIndex) => (lineIndex === index ? { ...line, [key]: value } : line))
+    );
   };
 
   const addLine = () => setLines((current) => [...current, emptyLine(currency)]);
-  const removeLine = (index) => setLines((current) => current.filter((_, lineIndex) => lineIndex !== index));
+  const removeLine = (index) =>
+    setLines((current) => current.filter((_, lineIndex) => lineIndex !== index));
 
   const handleSubmit = async () => {
     if (!targetId) {
@@ -115,12 +157,18 @@ export default function OfferFormSheet({
       return;
     }
 
-    const productLabelById = new Map(productOptions.map((option) => [String(option.value), option.label]));
+    const productLabelById = new Map(
+      productOptions.map((option) => [String(option.value), option.label])
+    );
 
     const cleanedLines = lines
       .map((line) => ({
         productId: line.productId ? Number(line.productId) : null,
-        description: (line.description.trim() || productLabelById.get(String(line.productId)) || '').trim(),
+        description: (
+          line.description.trim() ||
+          productLabelById.get(String(line.productId)) ||
+          ''
+        ).trim(),
         quantity: Number(line.quantity || 0),
         unit: line.unit || 'kg',
         unitPrice: Number(line.unitPrice || 0),
@@ -136,7 +184,9 @@ export default function OfferFormSheet({
     }
 
     const payload = {
-      ...(targetType === 'prospect' ? { prospectId: Number(targetId) } : { customerId: Number(targetId) }),
+      ...(targetType === 'prospect'
+        ? { prospectId: Number(targetId) }
+        : { customerId: Number(targetId) }),
       validUntil: validUntil ? format(validUntil, 'yyyy-MM-dd') : null,
       incotermId: incotermId ? Number(incotermId) : null,
       paymentTermId: paymentTermId ? Number(paymentTermId) : null,
@@ -163,19 +213,26 @@ export default function OfferFormSheet({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent size="6xl" className="flex h-[calc(100vh-2rem)] flex-col gap-0 overflow-hidden p-0">
+      <DialogContent
+        size="6xl"
+        className="flex h-[calc(100vh-2rem)] flex-col gap-0 overflow-hidden p-0"
+      >
         <DialogHeader className="border-b p-4">
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>Condiciones comerciales, líneas y destino de la oferta.</DialogDescription>
+          <DialogDescription>
+            Condiciones comerciales, líneas y destino de la oferta.
+          </DialogDescription>
         </DialogHeader>
 
         <ScrollArea className="min-h-0 flex-1">
           <div className="grid gap-4 p-4">
             {linkedProspect && (
-              <div className="rounded-xl border bg-muted/20 p-4">
+              <div className="bg-muted/20 rounded-xl border p-4">
                 <p className="font-medium">{linkedProspect.companyName}</p>
                 {linkedProspect.address?.trim() ? (
-                  <p className="mt-1 text-sm text-muted-foreground whitespace-pre-wrap">{linkedProspect.address.trim()}</p>
+                  <p className="text-muted-foreground mt-1 text-sm whitespace-pre-wrap">
+                    {linkedProspect.address.trim()}
+                  </p>
                 ) : null}
                 {linkedWebsiteTrim ? (
                   linkedWebsiteHref ? (
@@ -183,7 +240,7 @@ export default function OfferFormSheet({
                       href={linkedWebsiteHref}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-1 block text-sm text-primary underline-offset-4 hover:underline break-all"
+                      className="text-primary mt-1 block text-sm break-all underline-offset-4 hover:underline"
                     >
                       {linkedWebsiteTrim}
                     </a>
@@ -191,10 +248,12 @@ export default function OfferFormSheet({
                     <p className="mt-1 text-sm break-all">{linkedWebsiteTrim}</p>
                   )
                 ) : null}
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className="text-muted-foreground mt-1 text-sm">
                   {linkedProspect.speciesInterest?.join(', ') || 'Sin especies definidas'}
                 </p>
-                <p className="mt-2 whitespace-pre-wrap text-sm">{linkedProspect.commercialInterestNotes || 'Sin contexto comercial adicional.'}</p>
+                <p className="mt-2 text-sm whitespace-pre-wrap">
+                  {linkedProspect.commercialInterestNotes || 'Sin contexto comercial adicional.'}
+                </p>
               </div>
             )}
 
@@ -217,12 +276,20 @@ export default function OfferFormSheet({
               <Label>Destinatario</Label>
               <Select value={targetId} onValueChange={setTargetId} disabled={isFixedTarget}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder={targetType === 'prospect' ? 'Selecciona un prospecto' : 'Selecciona un cliente'} />
+                  <SelectValue
+                    placeholder={
+                      targetType === 'prospect'
+                        ? 'Selecciona un prospecto'
+                        : 'Selecciona un cliente'
+                    }
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   {targetOptions.map((option) => (
                     <SelectItem key={option.id} value={String(option.id)}>
-                      {targetType === 'prospect' ? formatProspectSelectLabel(option) : (option.name ?? option.companyName)}
+                      {targetType === 'prospect'
+                        ? formatProspectSelectLabel(option)
+                        : (option.name ?? option.companyName)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -238,7 +305,10 @@ export default function OfferFormSheet({
                   </SelectTrigger>
                   <SelectContent>
                     {(options.incoterms ?? []).map((option) => (
-                      <SelectItem key={option.id ?? option.value} value={String(option.id ?? option.value)}>
+                      <SelectItem
+                        key={option.id ?? option.value}
+                        value={String(option.id ?? option.value)}
+                      >
                         {option.name ?? option.label}
                       </SelectItem>
                     ))}
@@ -253,7 +323,10 @@ export default function OfferFormSheet({
                   </SelectTrigger>
                   <SelectContent>
                     {(options.paymentTerms ?? []).map((option) => (
-                      <SelectItem key={option.id ?? option.value} value={String(option.id ?? option.value)}>
+                      <SelectItem
+                        key={option.id ?? option.value}
+                        value={String(option.id ?? option.value)}
+                      >
                         {option.name ?? option.label}
                       </SelectItem>
                     ))}
@@ -265,7 +338,11 @@ export default function OfferFormSheet({
             <div className="grid gap-4 md:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="offer-currency">Moneda</Label>
-                <Input id="offer-currency" value={currency} onChange={(event) => setCurrency(event.target.value.toUpperCase())} />
+                <Input
+                  id="offer-currency"
+                  value={currency}
+                  onChange={(event) => setCurrency(event.target.value.toUpperCase())}
+                />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="offer-valid-until">Válida hasta</Label>
@@ -273,14 +350,21 @@ export default function OfferFormSheet({
                   id="offer-valid-until"
                   type="date"
                   value={validUntil ? format(validUntil, 'yyyy-MM-dd') : ''}
-                  onChange={(event) => setValidUntil(event.target.value ? new Date(event.target.value) : null)}
+                  onChange={(event) =>
+                    setValidUntil(event.target.value ? new Date(event.target.value) : null)
+                  }
                 />
               </div>
             </div>
 
             <div className="grid gap-2">
               <Label htmlFor="offer-notes">Notas</Label>
-              <Textarea id="offer-notes" rows={4} value={notes} onChange={(event) => setNotes(event.target.value)} />
+              <Textarea
+                id="offer-notes"
+                rows={4}
+                value={notes}
+                onChange={(event) => setNotes(event.target.value)}
+              />
             </div>
 
             <Separator />
@@ -288,7 +372,9 @@ export default function OfferFormSheet({
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-medium">Líneas de oferta</h3>
-                <p className="text-sm text-muted-foreground">Producto, descripción y condiciones unitarias.</p>
+                <p className="text-muted-foreground text-sm">
+                  Producto, descripción y condiciones unitarias.
+                </p>
               </div>
               <Button type="button" variant="outline" onClick={addLine}>
                 <Plus className="mr-2 size-4" />
@@ -314,7 +400,10 @@ export default function OfferFormSheet({
                   {lines.map((line, index) => (
                     <TableRow key={`line-${index}`}>
                       <TableCell className="align-top">
-                        <Select value={line.productId} onValueChange={(value) => updateLine(index, 'productId', value)}>
+                        <Select
+                          value={line.productId}
+                          onValueChange={(value) => updateLine(index, 'productId', value)}
+                        >
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder={productsLoading ? 'Cargando…' : 'Producto'} />
                           </SelectTrigger>
@@ -328,22 +417,43 @@ export default function OfferFormSheet({
                         </Select>
                       </TableCell>
                       <TableCell className="align-top">
-                        <Input value={line.description} onChange={(event) => updateLine(index, 'description', event.target.value)} />
+                        <Input
+                          value={line.description}
+                          onChange={(event) => updateLine(index, 'description', event.target.value)}
+                        />
                       </TableCell>
                       <TableCell className="align-top">
-                        <Input type="number" value={line.boxes} onChange={(event) => updateLine(index, 'boxes', event.target.value)} />
+                        <Input
+                          type="number"
+                          value={line.boxes}
+                          onChange={(event) => updateLine(index, 'boxes', event.target.value)}
+                        />
                       </TableCell>
                       <TableCell className="align-top">
-                        <Input type="number" value={line.quantity} onChange={(event) => updateLine(index, 'quantity', event.target.value)} />
+                        <Input
+                          type="number"
+                          value={line.quantity}
+                          onChange={(event) => updateLine(index, 'quantity', event.target.value)}
+                        />
                       </TableCell>
                       <TableCell className="align-top">
-                        <Input value={line.unit} onChange={(event) => updateLine(index, 'unit', event.target.value)} />
+                        <Input
+                          value={line.unit}
+                          onChange={(event) => updateLine(index, 'unit', event.target.value)}
+                        />
                       </TableCell>
                       <TableCell className="align-top">
-                        <Input type="number" value={line.unitPrice} onChange={(event) => updateLine(index, 'unitPrice', event.target.value)} />
+                        <Input
+                          type="number"
+                          value={line.unitPrice}
+                          onChange={(event) => updateLine(index, 'unitPrice', event.target.value)}
+                        />
                       </TableCell>
                       <TableCell className="align-top">
-                        <Select value={line.taxId} onValueChange={(value) => updateLine(index, 'taxId', value)}>
+                        <Select
+                          value={line.taxId}
+                          onValueChange={(value) => updateLine(index, 'taxId', value)}
+                        >
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Impuesto" />
                           </SelectTrigger>
@@ -356,9 +466,14 @@ export default function OfferFormSheet({
                           </SelectContent>
                         </Select>
                       </TableCell>
-                      <TableCell className="align-top text-right">
+                      <TableCell className="text-right align-top">
                         {lines.length > 1 && (
-                          <Button type="button" variant="ghost" size="icon" onClick={() => removeLine(index)}>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeLine(index)}
+                          >
                             <Trash2 className="size-4" />
                           </Button>
                         )}
@@ -371,11 +486,14 @@ export default function OfferFormSheet({
           </div>
         </ScrollArea>
 
-        <div className="flex flex-col-reverse gap-2 border-t bg-background p-4 sm:flex-row sm:justify-end">
+        <div className="bg-background flex flex-col-reverse gap-2 border-t p-4 sm:flex-row sm:justify-end">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancelar
           </Button>
-          <Button onClick={handleSubmit} disabled={createOffer.isPending || updateOffer.isPending || optionsLoading}>
+          <Button
+            onClick={handleSubmit}
+            disabled={createOffer.isPending || updateOffer.isPending || optionsLoading}
+          >
             Guardar
           </Button>
         </div>

@@ -20,22 +20,22 @@
 
 ## 2. Estado y calidad por entidad / artefacto
 
-| Entidad | Estado | Observaciones |
-|---------|--------|----------------|
-| **LoginPage** | Crítico | **610 líneas** → P0 (bloqueante >200). Sin Zod ni react-hook-form; validación manual y toast. Muchos useState/useEffect; mezcla UI + lógica (tenant check, redirect, OTP paste). |
-| **authService** | Alto | **165 líneas**, solo JS. Sin tipos; respuestas API sin interfaces. Patrón correcto (fetchWithTenant, getSession para token). |
-| **middleware** | Medio | 182 líneas; lógica clara pero verbosa (logs). roleConfig y getToken bien usados. |
-| **NextAuth route** | Medio | Credentials, JWT/session callbacks, validación con backend; rate limit en memoria. Sin tipos en authorize/callbacks. |
-| **AdminRouteProtection** | Aceptable | 63 líneas; hace una cosa. Duplicación de normalización de rol (array vs string) con middleware. |
-| **ProtectedRoute** | Aceptable | No usado; podría unificarse con AdminRouteProtection o eliminarse si no se va a usar. |
-| **AuthErrorInterceptor** | Aceptable | Intercepta fetch; lógica concentrada; evita doble redirect en login. |
-| **LogoutContext / LogoutDialog** | Aceptable | Contexto simple; LogoutDialog con sessionStorage y hidratación considerada. |
-| **authConfig** | Bueno | Constantes y helpers reutilizables; fácil de testear. |
-| **roleConfig** | Bueno | Datos puros; usado por middleware. |
-| **getCurrentTenant** | Bueno | Utilidad cliente; documentada. |
-| **getAuthToken / getServerAuthToken** | Medio | getAuthToken con console.log en producción; serverTokenContext para API routes. |
-| **next-auth.d.ts** | Bueno | Tipos Session/User/JWT; único artefacto TS del bloque. |
-| **fetchWithTenant** | Bueno | Pilar multi-tenant y manejo 401/403; compartido con todo el proyecto. |
+| Entidad                               | Estado    | Observaciones                                                                                                                                                                    |
+| ------------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **LoginPage**                         | Crítico   | **610 líneas** → P0 (bloqueante >200). Sin Zod ni react-hook-form; validación manual y toast. Muchos useState/useEffect; mezcla UI + lógica (tenant check, redirect, OTP paste). |
+| **authService**                       | Alto      | **165 líneas**, solo JS. Sin tipos; respuestas API sin interfaces. Patrón correcto (fetchWithTenant, getSession para token).                                                     |
+| **middleware**                        | Medio     | 182 líneas; lógica clara pero verbosa (logs). roleConfig y getToken bien usados.                                                                                                 |
+| **NextAuth route**                    | Medio     | Credentials, JWT/session callbacks, validación con backend; rate limit en memoria. Sin tipos en authorize/callbacks.                                                             |
+| **AdminRouteProtection**              | Aceptable | 63 líneas; hace una cosa. Duplicación de normalización de rol (array vs string) con middleware.                                                                                  |
+| **ProtectedRoute**                    | Aceptable | No usado; podría unificarse con AdminRouteProtection o eliminarse si no se va a usar.                                                                                            |
+| **AuthErrorInterceptor**              | Aceptable | Intercepta fetch; lógica concentrada; evita doble redirect en login.                                                                                                             |
+| **LogoutContext / LogoutDialog**      | Aceptable | Contexto simple; LogoutDialog con sessionStorage y hidratación considerada.                                                                                                      |
+| **authConfig**                        | Bueno     | Constantes y helpers reutilizables; fácil de testear.                                                                                                                            |
+| **roleConfig**                        | Bueno     | Datos puros; usado por middleware.                                                                                                                                               |
+| **getCurrentTenant**                  | Bueno     | Utilidad cliente; documentada.                                                                                                                                                   |
+| **getAuthToken / getServerAuthToken** | Medio     | getAuthToken con console.log en producción; serverTokenContext para API routes.                                                                                                  |
+| **next-auth.d.ts**                    | Bueno     | Tipos Session/User/JWT; único artefacto TS del bloque.                                                                                                                           |
+| **fetchWithTenant**                   | Bueno     | Pilar multi-tenant y manejo 401/403; compartido con todo el proyecto.                                                                                                            |
 
 ---
 
@@ -56,26 +56,26 @@
 
 ## 5. Riesgos identificados
 
-| Riesgo | Nivel | Detalle |
-|--------|--------|--------|
-| Regresiones en login | Alto | Sin tests; cambios en LoginPage o authService sin red de seguridad. |
-| Mantenibilidad LoginPage | Alto | 610 líneas; cualquier cambio toca un archivo enorme. |
-| Tipos | Medio | authService y callbacks NextAuth sin tipos; respuestas API sin interfaces. |
-| Validación cliente | Medio | Email/OTP sin Zod; solo validación mínima y mensajes backend; UX aceptable pero no alineada al estándar del proyecto. |
+| Riesgo                   | Nivel | Detalle                                                                                                               |
+| ------------------------ | ----- | --------------------------------------------------------------------------------------------------------------------- |
+| Regresiones en login     | Alto  | Sin tests; cambios en LoginPage o authService sin red de seguridad.                                                   |
+| Mantenibilidad LoginPage | Alto  | 610 líneas; cualquier cambio toca un archivo enorme.                                                                  |
+| Tipos                    | Medio | authService y callbacks NextAuth sin tipos; respuestas API sin interfaces.                                            |
+| Validación cliente       | Medio | Email/OTP sin Zod; solo validación mínima y mensajes backend; UX aceptable pero no alineada al estándar del proyecto. |
 
 ---
 
 ## 6. Uso de patrones estructurales (Next.js/React)
 
-| Patrón | En Auth | Comentario |
-|--------|--------|------------|
-| Server / Client | Client donde toca (login, verify, protección) | Correcto; no hay RSC para auth. |
-| Custom Hooks | useIsLoggingOut | Falta: useLoginSteps, useTenantCheck (o similar) para extraer lógica de LoginPage. |
-| Data Fetching | Manual en LoginPage (tenant), authService (fetchWithTenant) | Auth no necesita React Query para login/verify (flujos únicos); tenant check podría ser hook con estado. |
-| Formularios | useState en LoginPage | **No** react-hook-form + Zod; desalineado con el resto del proyecto. |
-| API Layer | authService + fetchWithTenant | Correcto y consistente. |
-| TypeScript | next-auth.d.ts solo | authService, middleware, componentes en JS. |
-| Testing | Ninguno | Crítico para auth. |
+| Patrón          | En Auth                                                     | Comentario                                                                                               |
+| --------------- | ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Server / Client | Client donde toca (login, verify, protección)               | Correcto; no hay RSC para auth.                                                                          |
+| Custom Hooks    | useIsLoggingOut                                             | Falta: useLoginSteps, useTenantCheck (o similar) para extraer lógica de LoginPage.                       |
+| Data Fetching   | Manual en LoginPage (tenant), authService (fetchWithTenant) | Auth no necesita React Query para login/verify (flujos únicos); tenant check podría ser hook con estado. |
+| Formularios     | useState en LoginPage                                       | **No** react-hook-form + Zod; desalineado con el resto del proyecto.                                     |
+| API Layer       | authService + fetchWithTenant                               | Correcto y consistente.                                                                                  |
+| TypeScript      | next-auth.d.ts solo                                         | authService, middleware, componentes en JS.                                                              |
+| Testing         | Ninguno                                                     | Crítico para auth.                                                                                       |
 
 ---
 
@@ -97,7 +97,7 @@
 ## 9. Variables de entorno
 
 - NEXTAUTH_SECRET en servidor (NextAuth, middleware); correcto.
-- API_URL_V2 / API_BASE_URL para backend; uso en authService y middleware. No hay secretos en NEXT_PUBLIC_ en el flujo de auth revisado.
+- API*URL_V2 / API_BASE_URL para backend; uso en authService y middleware. No hay secretos en NEXT_PUBLIC* en el flujo de auth revisado.
 
 ---
 
@@ -110,29 +110,29 @@
 
 ## 11. Cumplimiento tech stack del proyecto
 
-| Requisito | Auth | Prioridad |
-|-----------|------|-----------|
-| React Query para server state | N/A (login/verify son flujos únicos) | — |
-| Zod + react-hook-form en formularios | **No** en LoginPage ni verify | P1 |
-| TypeScript en servicios y nuevo código | authService y resto en JS | P0/P1 |
-| TenantContext / useTenant | getCurrentTenant usado; no TenantContext en Auth | P2 (si se introduce en proyecto) |
-| Tests en módulos críticos | **Ninguno** en Auth | P0 |
-| Componentes <150 líneas | LoginPage 610 → P0 | P0 |
+| Requisito                              | Auth                                             | Prioridad                        |
+| -------------------------------------- | ------------------------------------------------ | -------------------------------- |
+| React Query para server state          | N/A (login/verify son flujos únicos)             | —                                |
+| Zod + react-hook-form en formularios   | **No** en LoginPage ni verify                    | P1                               |
+| TypeScript en servicios y nuevo código | authService y resto en JS                        | P0/P1                            |
+| TenantContext / useTenant              | getCurrentTenant usado; no TenantContext en Auth | P2 (si se introduce en proyecto) |
+| Tests en módulos críticos              | **Ninguno** en Auth                              | P0                               |
+| Componentes <150 líneas                | LoginPage 610 → P0                               | P0                               |
 
 ---
 
 ## 12. Oportunidades de mejora (prioridad)
 
-| # | Mejora | Prioridad | Entidades |
-|---|--------|-----------|-----------|
-| 1 | Reducir LoginPage: extraer subcomponentes (WelcomeStep, EmailStep, OtpStep) y hooks (useTenantCheck, useLoginRedirect, useOtpSubmit) hasta <150 líneas por archivo | P0 | LoginPage |
-| 2 | Migrar authService a TypeScript; definir interfaces para respuestas API (requestAccess, verifyOtp, verifyMagicLinkToken, getCurrentUser, /me) | P0 | authService, tipos |
-| 3 | Añadir tests: authService (requestAccess, verifyOtp, logout, getCurrentUser), authConfig (isAuthError, buildLoginUrl), y al menos un test de integración de flujo login (OTP) | P0 | authService, authConfig |
-| 4 | Introducir Zod + react-hook-form en LoginPage (email + OTP) y validación cliente en verify si aplica; mantener mensajes backend como fallback | P1 | LoginPage, auth/verify |
-| 5 | Migrar a TypeScript: middleware (tipos para getToken, roleConfig), NextAuth route (tipos en callbacks), componentes Auth (LoginPage, AdminRouteProtection, AuthErrorInterceptor, etc.) | P1 | Varios |
-| 6 | Revisar getAuthToken: quitar o condicionar console.log en producción | P2 | getAuthToken |
-| 7 | Decidir uso de ProtectedRoute: usar en alguna ruta o documentar como “no usado” y no mantener como dead code | P2 | ProtectedRoute |
-| 8 | Reducir logs del middleware en producción (o nivel configurable) | P2 | middleware |
+| #   | Mejora                                                                                                                                                                                 | Prioridad | Entidades               |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ----------------------- |
+| 1   | Reducir LoginPage: extraer subcomponentes (WelcomeStep, EmailStep, OtpStep) y hooks (useTenantCheck, useLoginRedirect, useOtpSubmit) hasta <150 líneas por archivo                     | P0        | LoginPage               |
+| 2   | Migrar authService a TypeScript; definir interfaces para respuestas API (requestAccess, verifyOtp, verifyMagicLinkToken, getCurrentUser, /me)                                          | P0        | authService, tipos      |
+| 3   | Añadir tests: authService (requestAccess, verifyOtp, logout, getCurrentUser), authConfig (isAuthError, buildLoginUrl), y al menos un test de integración de flujo login (OTP)          | P0        | authService, authConfig |
+| 4   | Introducir Zod + react-hook-form en LoginPage (email + OTP) y validación cliente en verify si aplica; mantener mensajes backend como fallback                                          | P1        | LoginPage, auth/verify  |
+| 5   | Migrar a TypeScript: middleware (tipos para getToken, roleConfig), NextAuth route (tipos en callbacks), componentes Auth (LoginPage, AdminRouteProtection, AuthErrorInterceptor, etc.) | P1        | Varios                  |
+| 6   | Revisar getAuthToken: quitar o condicionar console.log en producción                                                                                                                   | P2        | getAuthToken            |
+| 7   | Decidir uso de ProtectedRoute: usar en alguna ruta o documentar como “no usado” y no mantener como dead code                                                                           | P2        | ProtectedRoute          |
+| 8   | Reducir logs del middleware en producción (o nivel configurable)                                                                                                                       | P2        | middleware              |
 
 ---
 

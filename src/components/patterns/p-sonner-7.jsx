@@ -1,16 +1,18 @@
-import { toast } from "sonner"
+import { toast } from 'sonner';
 
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button';
 
 export function Pattern() {
   const handleDeploy = () => {
-    toast.promise(new Promise((resolve) =>
-      setTimeout(() => resolve({ name: "production" }), 2000)), {
-      loading: "Deploying to production...",
-      success: (data) => `Deployed to ${data.name} successfully`,
-      error: "Deployment failed. Please try again.",
-    })
-  }
+    toast.promise(
+      new Promise((resolve) => setTimeout(() => resolve({ name: 'production' }), 2000)),
+      {
+        loading: 'Deploying to production...',
+        success: (data) => `Deployed to ${data.name} successfully`,
+        error: 'Deployment failed. Please try again.',
+      }
+    );
+  };
 
   return (
     <div className="flex items-center justify-center">

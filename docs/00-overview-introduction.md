@@ -24,8 +24,8 @@ Esta documentación tiene como objetivo:
 **Archivo de configuración**: `/src/configs/config.js`
 
 ```javascript
-export const API_URL_V2 = `${API_URL}v2/`;  // Versión activa
-export const API_URL_V1 = `${API_URL}v1/`;  // Obsoleta
+export const API_URL_V2 = `${API_URL}v2/`; // Versión activa
+export const API_URL_V1 = `${API_URL}v1/`; // Obsoleta
 ```
 
 ---
@@ -155,21 +155,25 @@ brisapp-nextjs/
 Basado en la configuración de navegación (`/src/configs/navgationConfig.js`) y la estructura de rutas, los módulos principales son:
 
 ### 1. **Dashboard/Inicio** (`/admin/home`)
+
 - Panel principal con estadísticas y resumen
 
 ### 2. **Almacenes** (`/admin/stores`)
+
 - Gestión de almacenes
 - Visualización de posiciones
 - Gestión de pallets y cajas
 - Stock por almacén
 
 ### 3. **Pedidos** (`/admin/orders`)
+
 - Creación y edición de pedidos
 - Gestión de productos planificados
 - Seguimiento de estado
 - Incidencias
 
 ### 4. **Producciones** (`/admin/productions`) ⚠️ **EN CONSTRUCCIÓN**
+
 - Gestión de producciones
 - Registros de producción
 - Inputs y outputs
@@ -177,38 +181,47 @@ Basado en la configuración de navegación (`/src/configs/navgationConfig.js`) y
 - **Estado**: Módulo en desarrollo activo, funcionalidades parciales
 
 ### 5. **Productos** (`/admin/products`)
+
 - Gestión de productos
 - Categorías y familias de productos
 
 ### 6. **Clientes** (`/admin/customers`)
+
 - CRUD de clientes
 - Información comercial
 
 ### 7. **Proveedores** (`/admin/suppliers`)
+
 - Gestión de proveedores
 
 ### 8. **Etiquetas** (`/admin/label-editor`)
+
 - Editor de etiquetas
 - Generación de códigos de barras/QR
 - Impresión de etiquetas
 
 ### 9. **Pallets** (`/admin/pallets`)
+
 - Gestión de pallets
 - Asignación a posiciones
 - Movimiento entre almacenes
 
 ### 10. **Recepciones de Materia Prima** (`/admin/raw-material-receptions`)
+
 - Registro de recepciones
 - Gráficos y estadísticas
 
 ### 11. **Salidas de Cebo** (`/admin/cebo-dispatches`)
+
 - Gestión de salidas
 - Gráficos y estadísticas
 
 ### 12. **Configuraciones** (`/admin/settings`)
+
 - Configuraciones globales del sistema
 
 ### 13. **Operador de Almacén** (`/warehouse/[storeId]`)
+
 - Interfaz específica para operadores de almacén
 - Visualización y gestión de un almacén específico
 
@@ -227,12 +240,14 @@ Basado en la configuración de navegación (`/src/configs/navgationConfig.js`) y
 ## 🎨 Sistema de Diseño
 
 ### Tailwind CSS
+
 - Configuración en `/tailwind.config.js`
 - Design tokens basados en variables CSS (HSL)
 - Breakpoints personalizados: `sm-md`, `md-lg`, `lg-xl`, `xl-2xl`, `2xl-3xl`, `3xl`
 - Plugins: `tailwindcss-animate`, `@tailwindcss/forms`
 
 ### ShadCN UI
+
 - Estilo: `new-york`
 - Base color: `neutral`
 - CSS variables habilitadas
@@ -240,6 +255,7 @@ Basado en la configuración de navegación (`/src/configs/navgationConfig.js`) y
 - Componentes en `/src/components/ui/`
 
 ### NextUI
+
 - Integrado en Tailwind config
 - Soporte para dark mode
 
@@ -290,17 +306,20 @@ Basado en la configuración de navegación (`/src/configs/navgationConfig.js`) y
 ## 📦 Gestión de Estado
 
 ### Context API
+
 - `OrderContext` - Estado de pedidos activos
 - `StoreContext` - Estado de almacenes
 - `SettingsContext` - Configuraciones globales
 
 ### Hooks Personalizados
+
 - Encapsulan lógica de negocio
 - Gestionan estado local con `useState`
 - Manejan efectos con `useEffect`
 - Ejemplos: `useOrder`, `useStore`, `usePallet`
 
 ### Estado Local
+
 - `useState` para estado de componente
 - `useReducer` (si se usa) para estado complejo
 
@@ -309,10 +328,12 @@ Basado en la configuración de navegación (`/src/configs/navgationConfig.js`) y
 ## 🌐 Configuración de API
 
 ### Endpoints
+
 - **Producción**: `https://api.lapesquerapp.es/api/`
 - **Desarrollo**: `http://127.0.0.1:8000/api/` (comentado en config)
 
 ### Multi-tenant
+
 - Función `fetchWithTenant` en `/src/lib/fetchWithTenant.js`
 - Maneja headers de tenant automáticamente
 
@@ -341,6 +362,7 @@ npm run lint     # Linter
 Para una lista completa de observaciones críticas, consulta **[15-observaciones-criticas.md](./15-observaciones-criticas.md)**.
 
 **Principales observaciones:**
+
 - React 19 Release Candidate en uso (monitorear actualizaciones)
 - Proyecto usa JavaScript puro (no TypeScript)
 - Módulo de producción en desarrollo activo

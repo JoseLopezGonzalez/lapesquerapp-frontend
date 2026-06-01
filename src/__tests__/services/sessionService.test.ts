@@ -19,7 +19,10 @@ vi.mock('@/services/generic/editEntityService', () => ({
 }));
 
 import { fetchEntitiesGeneric, deleteEntityGeneric } from '@/services/generic/entityService';
-import { fetchEntityDataGeneric, fetchAutocompleteOptionsGeneric } from '@/services/generic/editEntityService';
+import {
+  fetchEntityDataGeneric,
+  fetchAutocompleteOptionsGeneric,
+} from '@/services/generic/editEntityService';
 
 describe('sessionService', () => {
   const mockListResponse = {

@@ -1,7 +1,7 @@
 # Tarea activa
 
 **Fecha**: 2026-02-15  
-**Protocolo**: Memoria de trabajo + Next.js Frontend Evolution  
+**Protocolo**: Memoria de trabajo + Next.js Frontend Evolution
 
 **Tarea actual**: Bloque Stock/Inventario/Almacenes
 
@@ -11,4 +11,4 @@
 
 ---
 
-*Documento actualizado según protocolo PROTOCOLO_PARA_CHAT.md*
+_Documento actualizado según protocolo PROTOCOLO_PARA_CHAT.md_

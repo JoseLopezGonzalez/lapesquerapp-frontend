@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { API_URL_V2 } from "@/configs/config";
-import { demoEmail } from "@/configs/branding";
+import { useState, useEffect } from 'react';
+import { API_URL_V2 } from '@/configs/config';
+import { demoEmail } from '@/configs/branding';
 
 /** Respuesta 200: convención Laravel API Resource (payload en `data`) */
 interface TenantSuccessPayload {
@@ -20,25 +20,21 @@ interface TenantApiResponse {
 export function useLoginTenant() {
   const [tenantChecked, setTenantChecked] = useState(false);
   const [tenantActive, setTenantActive] = useState(true);
-  const [brandingImageUrl, setBrandingImageUrl] = useState("");
+  const [brandingImageUrl, setBrandingImageUrl] = useState('');
   const [isDemo, setIsDemo] = useState(false);
   const [demoEmail, setDemoEmail] = useState<string | null>(null);
 
   useEffect(() => {
-    const hostname =
-      typeof window !== "undefined" ? window.location.hostname : "";
-    const subdomain = hostname.split(".")[0];
+    const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+    const subdomain = hostname.split('.')[0];
 
-    if (subdomain === "test") {
+    if (subdomain === 'test') {
       setIsDemo(true);
       setDemoEmail(demoEmail);
     }
 
-    const isDevLocalhost =
-      hostname.includes("localhost") && subdomain === "dev";
-    const path = isDevLocalhost
-      ? "/images/landing.png"
-      : `/images/tenants/${subdomain}/image.png`;
+    const isDevLocalhost = hostname.includes('localhost') && subdomain === 'dev';
+    const path = isDevLocalhost ? '/images/landing.png' : `/images/tenants/${subdomain}/image.png`;
     setBrandingImageUrl(path);
 
     fetch(`${API_URL_V2}public/tenant/${subdomain}`)

@@ -8,7 +8,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Combobox } from '@/components/Shadcn/Combobox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -17,14 +23,27 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Loader2, Plus, Trash2, CheckCircle2, AlertCircle, AlertTriangle, Copy } from 'lucide-react';import { createBulkPunches, validateBulkPunches } from '@/services/punchService';
+import {
+  Loader2,
+  Plus,
+  Trash2,
+  CheckCircle2,
+  AlertCircle,
+  AlertTriangle,
+  Copy,
+} from 'lucide-react';
+import { createBulkPunches, validateBulkPunches } from '@/services/punchService';
 import { notify } from '@/lib/notifications';
 import { useEmployeeOptions } from '@/hooks/useEmployeesForPunches';
 
 export default function BulkPunchForm() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
-  const { options: employeeOptions, isLoading: loadingEmployees, error: employeesError } = useEmployeeOptions();
+  const {
+    options: employeeOptions,
+    isLoading: loadingEmployees,
+    error: employeesError,
+  } = useEmployeeOptions();
 
   const [rows, setRows] = useState([]);
   const [validationResults, setValidationResults] = useState(null);
@@ -113,7 +132,7 @@ export default function BulkPunchForm() {
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const datetimeLocal = `${year}-${month}-${day}T${hours}:${minutes}`;
 
-    setRows(prev => [
+    setRows((prev) => [
       ...prev,
       {
         id: Date.now() + Math.random(),
@@ -140,13 +159,13 @@ export default function BulkPunchForm() {
     // Calcular hora de salida (8 horas después, pero mantener en el mismo día si es posible)
     const exitDate = new Date(now);
     exitDate.setHours(exitDate.getHours() + 8);
-    
+
     // Si la salida calculada es del día siguiente pero la hora es muy temprana (antes de las 6 AM),
     // usar 17:00 del mismo día en su lugar
     const entryHour = now.getHours();
     const exitHour = exitDate.getHours();
     const isNextDay = exitDate.getDate() !== now.getDate();
-    
+
     if (isNextDay && exitHour < 6) {
       // Si pasó al día siguiente pero es muy temprano, usar 17:00 del mismo día
       exitDate.setDate(now.getDate());
@@ -154,7 +173,7 @@ export default function BulkPunchForm() {
       exitDate.setFullYear(now.getFullYear());
       exitDate.setHours(17, 0, 0, 0);
     }
-    
+
     const exitYear = exitDate.getFullYear();
     const exitMonth = String(exitDate.getMonth() + 1).padStart(2, '0');
     const exitDay = String(exitDate.getDate()).padStart(2, '0');
@@ -162,7 +181,7 @@ export default function BulkPunchForm() {
     const exitMinutes = String(exitDate.getMinutes()).padStart(2, '0');
     const exitDatetimeLocal = `${exitYear}-${exitMonth}-${exitDay}T${exitHours}:${exitMinutes}`;
 
-    setRows(prev => [
+    setRows((prev) => [
       ...prev,
       {
         id: Date.now() + Math.random(),
@@ -184,7 +203,7 @@ export default function BulkPunchForm() {
 
   // Eliminar una fila
   const removeRow = (id) => {
-    setRows(prev => prev.filter(row => row.id !== id));
+    setRows((prev) => prev.filter((row) => row.id !== id));
     setValidationResults(null);
     setSubmitResults(null);
     setIsValidated(false);
@@ -192,15 +211,15 @@ export default function BulkPunchForm() {
 
   // Duplicar una fila
   const duplicateRow = (id) => {
-    setRows(prev => {
-      const rowToDuplicate = prev.find(row => row.id === id);
+    setRows((prev) => {
+      const rowToDuplicate = prev.find((row) => row.id === id);
       if (!rowToDuplicate) return prev;
-      
+
       const duplicatedRow = {
         ...rowToDuplicate,
         id: Date.now() + Math.random(), // Nuevo ID único
       };
-      
+
       // Añadir la fila duplicada al final
       return [...prev, duplicatedRow];
     });
@@ -211,11 +230,7 @@ export default function BulkPunchForm() {
 
   // Actualizar una fila
   const updateRow = (id, field, value) => {
-    setRows(prev =>
-      prev.map(row =>
-        row.id === id ? { ...row, [field]: value } : row
-      )
-    );
+    setRows((prev) => prev.map((row) => (row.id === id ? { ...row, [field]: value } : row)));
     setValidationResults(null);
     setSubmitResults(null);
     setIsValidated(false);
@@ -257,7 +272,8 @@ export default function BulkPunchForm() {
     if (!isValidated) {
       notify.error({
         title: 'Validación requerida',
-        description: 'Debes validar los fichajes antes de registrar. Haz clic en "Validar" primero.',
+        description:
+          'Debes validar los fichajes antes de registrar. Haz clic en "Validar" primero.',
       });
       return;
     }
@@ -288,17 +304,17 @@ export default function BulkPunchForm() {
   };
 
   return (
-    <Card className="h-full flex flex-col overflow-hidden">
+    <Card className="flex h-full flex-col overflow-hidden">
       <CardHeader className="flex-shrink-0">
         <CardTitle>Registro Masivo de Fichajes</CardTitle>
         <CardDescription>
           Registra múltiples fichajes a la vez mediante un formulario
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6 flex-1 min-h-0 overflow-y-auto">
+      <CardContent className="min-h-0 flex-1 space-y-6 overflow-y-auto">
         {/* Botones de acción */}
-        <div className="flex gap-2 flex-wrap justify-between items-center">
-          <div className="flex gap-2 flex-wrap">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button type="button" onClick={addRow} variant="outline">
               <Plus className="mr-2 h-4 w-4" />
               Añadir Fila
@@ -308,7 +324,7 @@ export default function BulkPunchForm() {
               Añadir Sesión Completa
             </Button>
           </div>
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex flex-wrap gap-2">
             <Button
               type="button"
               onClick={handleValidate}
@@ -343,14 +359,15 @@ export default function BulkPunchForm() {
 
         {/* Mensaje de validación requerida */}
         {rows.length > 0 && !isValidated && !validateMutation.isPending && (
-          <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-md">
-            <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0" />
+          <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950/20">
+            <AlertCircle className="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
             <div className="flex-1">
               <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
                 Debes validar los fichajes antes de registrar
               </p>
-              <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
-                Haz clic en "Validar" para verificar la integridad de los datos con los registros existentes
+              <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
+                Haz clic en "Validar" para verificar la integridad de los datos con los registros
+                existentes
               </p>
             </div>
           </div>
@@ -359,10 +376,10 @@ export default function BulkPunchForm() {
         {/* Resumen de validación - Solo se muestra si no hay resultados de registro */}
         {validationResults && !submitResults && (
           <div
-            className={`p-4 rounded-md border ${
+            className={`rounded-md border p-4 ${
               validationResults.invalid === 0
-                ? 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800'
-                : 'bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-800'
+                ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/20'
+                : 'border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950/20'
             }`}
           >
             <div className="flex items-center gap-2">
@@ -387,13 +404,13 @@ export default function BulkPunchForm() {
         {/* Resumen de envío */}
         {submitResults && (
           <div
-            className={`p-4 rounded-md border ${
+            className={`rounded-md border p-4 ${
               submitResults.failed === 0
-                ? 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800'
-                : 'bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-800'
+                ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/20'
+                : 'border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950/20'
             }`}
           >
-            <div className="flex items-center gap-2 mb-2">
+            <div className="mb-2 flex items-center gap-2">
               {submitResults.failed === 0 ? (
                 <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
               ) : (
@@ -423,8 +440,8 @@ export default function BulkPunchForm() {
 
         {/* Tabla de fichajes */}
         {rows.length === 0 ? (
-          <div className="text-center py-12 border border-dashed rounded-md">
-            <p className="text-sm text-muted-foreground mb-4">
+          <div className="rounded-md border border-dashed py-12 text-center">
+            <p className="text-muted-foreground mb-4 text-sm">
               No hay fichajes añadidos. Haz clic en "Añadir Fila" para comenzar.
             </p>
             <Button type="button" onClick={addRow} variant="outline">
@@ -433,7 +450,7 @@ export default function BulkPunchForm() {
             </Button>
           </div>
         ) : (
-          <div className="border rounded-md overflow-x-auto max-h-[60vh] overflow-y-auto">
+          <div className="max-h-[60vh] overflow-x-auto overflow-y-auto rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -469,10 +486,10 @@ export default function BulkPunchForm() {
                             loading={loadingEmployees}
                             className="w-[200px]"
                           />
-                          {validation?.errors?.some(e => e.includes('empleado')) && (
-                            <p className="text-xs text-destructive flex items-center gap-1">
+                          {validation?.errors?.some((e) => e.includes('empleado')) && (
+                            <p className="text-destructive flex items-center gap-1 text-xs">
                               <AlertCircle className="h-3 w-3" />
-                              {validation.errors.find(e => e.includes('empleado'))}
+                              {validation.errors.find((e) => e.includes('empleado'))}
                             </p>
                           )}
                         </div>
@@ -491,10 +508,10 @@ export default function BulkPunchForm() {
                               <SelectItem value="OUT">Salida</SelectItem>
                             </SelectContent>
                           </Select>
-                          {validation?.errors?.some(e => e.includes('evento')) && (
-                            <p className="text-xs text-destructive flex items-center gap-1">
+                          {validation?.errors?.some((e) => e.includes('evento')) && (
+                            <p className="text-destructive flex items-center gap-1 text-xs">
                               <AlertCircle className="h-3 w-3" />
-                              {validation.errors.find(e => e.includes('evento'))}
+                              {validation.errors.find((e) => e.includes('evento'))}
                             </p>
                           )}
                         </div>
@@ -507,10 +524,10 @@ export default function BulkPunchForm() {
                             onChange={(e) => updateRow(row.id, 'timestamp', e.target.value)}
                             className="w-[200px]"
                           />
-                          {validation?.errors?.some(e => e.includes('timestamp')) && (
-                            <p className="text-xs text-destructive flex items-center gap-1">
+                          {validation?.errors?.some((e) => e.includes('timestamp')) && (
+                            <p className="text-destructive flex items-center gap-1 text-xs">
                               <AlertCircle className="h-3 w-3" />
-                              {validation.errors.find(e => e.includes('timestamp'))}
+                              {validation.errors.find((e) => e.includes('timestamp'))}
                             </p>
                           )}
                         </div>
@@ -548,15 +565,20 @@ export default function BulkPunchForm() {
         )}
 
         {/* Información adicional */}
-        <div className="text-xs text-muted-foreground space-y-1">
+        <div className="text-muted-foreground space-y-1 text-xs">
           <p>• Puedes añadir múltiples filas y completarlas todas antes de registrar</p>
           <p>• Usa "Añadir Sesión Completa" para crear entrada y salida de una vez</p>
-          <p>• <strong>Es obligatorio validar</strong> los fichajes antes de registrar para verificar la integridad con los datos existentes</p>
-          <p>• La validación comprueba que no haya conflictos con fichajes ya registrados en la base de datos</p>
+          <p>
+            • <strong>Es obligatorio validar</strong> los fichajes antes de registrar para verificar
+            la integridad con los datos existentes
+          </p>
+          <p>
+            • La validación comprueba que no haya conflictos con fichajes ya registrados en la base
+            de datos
+          </p>
           <p>• Los errores se mostrarán en rojo en cada fila</p>
         </div>
       </CardContent>
     </Card>
   );
 }
-

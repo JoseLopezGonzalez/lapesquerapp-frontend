@@ -14,7 +14,7 @@ Es decir:
 
 ## Referencias en el backend
 
-1. **Controlador de recepciones de materia prima**  
+1. **Controlador de recepciones de materia prima**
    - Identificar el controlador (y si existe, el recurso API) de `raw-material-receptions` o equivalente.
    - Revisar:
      - Listado (filtros, paginación, relaciones).
@@ -24,7 +24,7 @@ Es decir:
      - Delete (por ID y/o múltiple).
    - Anotar nombres de métodos, rutas, formato de request/response y validaciones.
 
-2. **Controlador actual de cebo**  
+2. **Controlador actual de cebo**
    - Localizar el controlador (y rutas) de `cebo-dispatches` o equivalente.
    - Documentar:
      - Rutas existentes (index, show, store, update, destroy, etc.).
@@ -33,7 +33,7 @@ Es decir:
      - Formato de respuesta (JSON: data, meta, etc.).
      - Uso de relaciones (supplier, details, products, etc.).
 
-3. **Modelos y DTOs**  
+3. **Modelos y DTOs**
    - Comparar modelo (o entidad) de recepción con el de cebo (campos, relaciones).
    - Comprobar si existen DTOs o Form Requests de recepciones y replicar estructura para cebo (solo líneas).
 
@@ -41,41 +41,41 @@ Es decir:
 
 ## Tareas de análisis (checklist)
 
-- [ ] **Rutas**  
-  - Listar rutas de recepciones (ej. `GET/POST /api/.../raw-material-receptions`, `GET/PUT/DELETE .../:id`).  
-  - Listar rutas actuales de cebo.  
+- [ ] **Rutas**
+  - Listar rutas de recepciones (ej. `GET/POST /api/.../raw-material-receptions`, `GET/PUT/DELETE .../:id`).
+  - Listar rutas actuales de cebo.
   - Indicar qué rutas de cebo faltan o difieren respecto a recepciones.
 
-- [ ] **Create (store)**  
-  - Body de recepciones en modo líneas: `supplier` (id), `date`, `notes`, `details` (array de `product.id`, `netWeight`, `boxes`, opcionalmente `tare`, `lot`, `price` según negocio).  
-  - Body actual de cebo en create: documentar campos.  
-  - Ajustar/definir el body de cebo para que sea **igual** al de recepciones en modo líneas (mismos nombres y estructura), salvo campos específicos de cebo si los hubiera (ej. tipo de salida).  
+- [ ] **Create (store)**
+  - Body de recepciones en modo líneas: `supplier` (id), `date`, `notes`, `details` (array de `product.id`, `netWeight`, `boxes`, opcionalmente `tare`, `lot`, `price` según negocio).
+  - Body actual de cebo en create: documentar campos.
+  - Ajustar/definir el body de cebo para que sea **igual** al de recepciones en modo líneas (mismos nombres y estructura), salvo campos específicos de cebo si los hubiera (ej. tipo de salida).
   - No incluir en el body de cebo: `pallets`, `creationMode` (o equivalente) ni lógica de palets.
 
-- [ ] **Validación**  
-  - Reglas de validación del request de create en recepciones (requeridos, numéricos, existencia de supplier/product, etc.).  
-  - Replicar en cebo las mismas reglas para `supplier`, `date`, `notes`, `details` y cada elemento de `details`.  
+- [ ] **Validación**
+  - Reglas de validación del request de create en recepciones (requeridos, numéricos, existencia de supplier/product, etc.).
+  - Replicar en cebo las mismas reglas para `supplier`, `date`, `notes`, `details` y cada elemento de `details`.
   - Asegurar que no se acepte `pallets` ni modo palets en cebo.
 
-- [ ] **Respuestas**  
-  - Formato de respuesta de create/update/get en recepciones (ej. `{ data: { id, supplier, date, notes, details, ... } }`).  
+- [ ] **Respuestas**
+  - Formato de respuesta de create/update/get en recepciones (ej. `{ data: { id, supplier, date, notes, details, ... } }`).
   - Alinear respuestas de cebo con ese formato (misma estructura anidada, mismos nombres de clave).
 
-- [ ] **Update y Delete**  
-  - Comportamiento de update en recepciones (por ID, body parcial o completo, solo líneas o también palets).  
-  - Definir update de cebo **solo por líneas** (mismo contrato que recepciones en modo líneas).  
+- [ ] **Update y Delete**
+  - Comportamiento de update en recepciones (por ID, body parcial o completo, solo líneas o también palets).
+  - Definir update de cebo **solo por líneas** (mismo contrato que recepciones en modo líneas).
   - Delete simple y delete múltiple: mismo comportamiento que recepciones si aplica.
 
-- [ ] **Listado y show**  
-  - Filtros y paginación en list de recepciones.  
-  - Incluir en cebo los mismos filtros útiles (fechas, proveedor, etc.) y misma paginación.  
+- [ ] **Listado y show**
+  - Filtros y paginación en list de recepciones.
+  - Incluir en cebo los mismos filtros útiles (fechas, proveedor, etc.) y misma paginación.
   - Show: mismo nivel de detalle (supplier, details con producto, pesos, etc.) sin palets.
 
-- [ ] **Relaciones y recursos anidados**  
-  - Qué relaciones carga el backend en recepciones (supplier, details.product, etc.).  
+- [ ] **Relaciones y recursos anidados**
+  - Qué relaciones carga el backend en recepciones (supplier, details.product, etc.).
   - Cargar en cebo las mismas relaciones necesarias para el listado y el detalle (solo líneas).
 
-- [ ] **Documentación**  
+- [ ] **Documentación**
   - Si existe documentación (OpenAPI, Postman, etc.) de recepciones, actualizar o crear la de cebo para que refleje el contrato "solo líneas" e idéntico a recepciones en ese modo.
 
 ---

@@ -1,25 +1,25 @@
-'use client'
+'use client';
 
-import { useQuery } from '@tanstack/react-query'
-import { useSession } from 'next-auth/react'
-import { getCurrentTenant } from '@/lib/utils/getCurrentTenant'
-import { productionQueryKeys } from '@/lib/routes/queryKeys'
-import { getProductionControlPanel } from '@/services/productionService'
+import { useQuery } from '@tanstack/react-query';
+import { useSession } from 'next-auth/react';
+import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
+import { productionQueryKeys } from '@/lib/routes/queryKeys';
+import { getProductionControlPanel } from '@/services/productionService';
 
 export function useProductionControlPanel(params = {}) {
-  const { data: session } = useSession()
-  const token = session?.user?.accessToken
-  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null
+  const { data: session } = useSession();
+  const token = session?.user?.accessToken;
+  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
   const query = useQuery({
     queryKey: productionQueryKeys.controlPanel(tenantId, params),
     queryFn: () => {
-      if (!token) throw new Error('No se pudo autenticar la consulta')
-      return getProductionControlPanel(token, params)
+      if (!token) throw new Error('No se pudo autenticar la consulta');
+      return getProductionControlPanel(token, params);
     },
     enabled: Boolean(token && tenantId),
     staleTime: 30 * 1000,
-  })
+  });
 
   return {
     summary: query.data?.summary ?? null,
@@ -34,5 +34,5 @@ export function useProductionControlPanel(params = {}) {
     isFetching: query.isFetching,
     error: query.error?.message ?? null,
     refetch: query.refetch,
-  }
+  };
 }

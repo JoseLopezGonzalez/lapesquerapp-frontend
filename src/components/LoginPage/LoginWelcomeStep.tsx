@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import Link from "next/link";
-import { appName, isGenericBranding } from "@/configs/branding";
-import { Button } from "@/components/ui/button";
-import RotatingText from "@/components/Utilities/RotatingText";
-import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import Image from 'next/image';
+import Link from 'next/link';
+import { appName, isGenericBranding } from '@/configs/branding';
+import { Button } from '@/components/ui/button';
+import RotatingText from '@/components/Utilities/RotatingText';
+import { motion } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
 
 interface LoginWelcomeStepProps {
   brandingImageUrl?: string | null;
@@ -28,67 +28,65 @@ export default function LoginWelcomeStep({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
-      className="relative min-h-screen w-full flex flex-col items-center px-4 pb-8"
+      className="relative flex min-h-screen w-full flex-col items-center px-4 pb-8"
     >
       <div className="absolute inset-0 z-0">
         {!isGenericBranding && (
           <Image
-            src={brandingImageUrl || "/images/landing.png"}
+            src={brandingImageUrl || '/images/landing.png'}
             alt="Imagen de branding"
             fill
             sizes="100vw"
             className="object-cover"
             priority
             onError={(e) => {
-              e.currentTarget.src = "/images/landing.png";
+              e.currentTarget.src = '/images/landing.png';
             }}
           />
         )}
-        {isGenericBranding && (
-          <div className="absolute inset-0 bg-muted/50" aria-hidden />
-        )}
+        {isGenericBranding && <div className="bg-muted/50 absolute inset-0" aria-hidden />}
         <div
           className="absolute inset-0 dark:hidden"
           style={{
             background:
-              "linear-gradient(to top, white 0%, rgba(255, 255, 255, 0.7) 30%, rgba(255, 255, 255, 0.3) 50%, transparent 60%)",
+              'linear-gradient(to top, white 0%, rgba(255, 255, 255, 0.7) 30%, rgba(255, 255, 255, 0.3) 50%, transparent 60%)',
           }}
         />
         <div
           className="absolute inset-0 hidden dark:block"
           style={{
             background:
-              "linear-gradient(to top, black 0%, rgba(0, 0, 0, 0.7) 30%, rgba(0, 0, 0, 0.3) 50%, transparent 60%)",
+              'linear-gradient(to top, black 0%, rgba(0, 0, 0, 0.7) 30%, rgba(0, 0, 0, 0.3) 50%, transparent 60%)',
           }}
         />
       </div>
 
       {isDemo && (
-        <div className="absolute top-4 right-4 z-20 bg-lime-100 text-lime-800 text-xs font-semibold px-3 py-1 rounded-lg shadow">
+        <div className="absolute top-4 right-4 z-20 rounded-lg bg-lime-100 px-3 py-1 text-xs font-semibold text-lime-800 shadow">
           MODO DEMO
         </div>
       )}
 
-      <div className="relative z-10 flex flex-col items-center justify-end flex-1 w-full max-w-sm pb-8">
-        <div className="flex flex-col items-center text-center space-y-8 w-full">
+      <div className="relative z-10 flex w-full max-w-sm flex-1 flex-col items-center justify-end pb-8">
+        <div className="flex w-full flex-col items-center space-y-8 text-center">
           <div className="space-y-4">
-            <h1 className="text-5xl font-bold text-primary bg-clip-text bg-gradient-to-tr from-primary to-primary/80">
+            <h1 className="text-primary from-primary to-primary/80 bg-gradient-to-tr bg-clip-text text-5xl font-bold">
               {appName}
             </h1>
           </div>
 
-          <div className="flex items-center justify-center gap-1 text-nowrap flex-wrap">
-            <span className="text-lg text-foreground">Mantén tu producción</span>
+          <div className="flex flex-wrap items-center justify-center gap-1 text-nowrap">
+            <span className="text-foreground text-lg">Mantén tu producción</span>
             <RotatingText
-              texts={["al día.", "segura.", "eficiente.", "organizada."]}
+              texts={['al día.', 'segura.', 'eficiente.', 'organizada.']}
               mainClassName="text-lg text-foreground font-medium"
               staggerFrom="last"
-              initial={{ y: "100%" }}
+              initial={{ y: '100%' }}
               animate={{ y: 0 }}
-              exit={{ y: "-120%" }}
+              exit={{ y: '-120%' }}
               staggerDuration={0.025}
               splitLevelClassName="overflow-hidden"
-              transition={{ type: "spring", damping: 30, stiffness: 400 }}
+              transition={{ type: 'spring', damping: 30, stiffness: 400 }}
               rotationInterval={6000}
             />
           </div>
@@ -96,7 +94,7 @@ export default function LoginWelcomeStep({
           <Button
             onClick={onContinue}
             size="lg"
-            className="w-full h-14 text-base font-semibold gap-2"
+            className="h-14 w-full gap-2 text-base font-semibold"
             disabled={!tenantActive}
           >
             Continuar
@@ -105,26 +103,20 @@ export default function LoginWelcomeStep({
               transition={{
                 duration: 1.5,
                 repeat: Infinity,
-                ease: "easeInOut",
+                ease: 'easeInOut',
               }}
             >
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="h-5 w-5" />
             </motion.div>
           </Button>
 
-          <p className="text-xs text-muted-foreground px-4">
-            Al presionar &quot;Continuar&quot; aceptas nuestros{" "}
-            <Link
-              href="/terms"
-              className="underline underline-offset-2 text-primary"
-            >
+          <p className="text-muted-foreground px-4 text-xs">
+            Al presionar &quot;Continuar&quot; aceptas nuestros{' '}
+            <Link href="/terms" className="text-primary underline underline-offset-2">
               Términos de Servicio
-            </Link>{" "}
-            y{" "}
-            <Link
-              href="/privacy"
-              className="underline underline-offset-2 text-primary"
-            >
+            </Link>{' '}
+            y{' '}
+            <Link href="/privacy" className="text-primary underline underline-offset-2">
               Política de Privacidad
             </Link>
           </p>

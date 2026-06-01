@@ -30,6 +30,7 @@ Los componentes base están ubicados en `/src/components/ui/` y están basados e
 **Base**: `@radix-ui/react-slot`
 
 **Variantes**:
+
 - `default` - Botón primario (bg-primary)
 - `destructive` - Botón de acción destructiva (rojo)
 - `outline` - Botón con borde
@@ -38,15 +39,18 @@ Los componentes base están ubicados en `/src/components/ui/` y están basados e
 - `link` - Estilo de enlace
 
 **Tamaños**:
+
 - `default` - h-9 px-4 py-2
 - `sm` - h-8 px-3 text-xs
 - `lg` - h-10 px-8
 - `icon` - h-9 w-9 (cuadrado)
 
 **Props especiales**:
+
 - `asChild` - Renderiza como Slot (útil para wrappers)
 
 **Uso**:
+
 ```jsx
 import { Button } from "@/components/ui/button";
 
@@ -63,6 +67,7 @@ import { Button } from "@/components/ui/button";
 **Archivo**: `/src/components/ui/input.jsx`
 
 **Características**:
+
 - Input HTML nativo con estilos Tailwind
 - Soporte para `type="file"` con estilos personalizados
 - Placeholder con color muted
@@ -70,6 +75,7 @@ import { Button } from "@/components/ui/button";
 - Estados disabled
 
 **Uso**:
+
 ```jsx
 import { Input } from "@/components/ui/input";
 
@@ -87,6 +93,7 @@ import { Input } from "@/components/ui/input";
 **Base**: `@radix-ui/react-dialog`
 
 **Componentes exportados**:
+
 - `Dialog` - Root (controla estado open/onOpenChange)
 - `DialogTrigger` - Botón que abre el diálogo
 - `DialogContent` - Contenido del diálogo (con overlay y botón cerrar)
@@ -99,6 +106,7 @@ import { Input } from "@/components/ui/input";
 - `DialogPortal` - Portal para renderizar fuera del DOM
 
 **Características**:
+
 - Animaciones de entrada/salida
 - Overlay oscuro (bg-black/80)
 - Botón cerrar (X) en esquina superior derecha
@@ -106,6 +114,7 @@ import { Input } from "@/components/ui/input";
 - Responsive (max-w-lg por defecto)
 
 **Uso**:
+
 ```jsx
 import {
   Dialog,
@@ -113,7 +122,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 
 <Dialog>
   <DialogTrigger>Abrir</DialogTrigger>
@@ -123,7 +132,7 @@ import {
     </DialogHeader>
     Contenido...
   </DialogContent>
-</Dialog>
+</Dialog>;
 ```
 
 ---
@@ -135,6 +144,7 @@ import {
 **Base**: `@radix-ui/react-select`
 
 **Componentes exportados**:
+
 - `Select` - Root
 - `SelectTrigger` - Botón que abre el select
 - `SelectValue` - Valor seleccionado mostrado
@@ -147,6 +157,7 @@ import {
 - `SelectScrollDownButton` - Botón scroll abajo
 
 **Características**:
+
 - Dropdown con scroll automático
 - Indicador de selección (checkmark)
 - Animaciones
@@ -154,6 +165,7 @@ import {
 - Soporte para grupos y separadores
 
 **Uso**:
+
 ```jsx
 import {
   Select,
@@ -161,7 +173,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 
 <Select value={value} onValueChange={setValue}>
   <SelectTrigger>
@@ -171,7 +183,7 @@ import {
     <SelectItem value="option1">Opción 1</SelectItem>
     <SelectItem value="option2">Opción 2</SelectItem>
   </SelectContent>
-</Select>
+</Select>;
 ```
 
 ---
@@ -183,6 +195,7 @@ import {
 **Tipo**: Client Component personalizado
 
 **Dependencias**:
+
 - `react-day-picker` (Calendar)
 - `date-fns` (format, locale es)
 - `Popover` (ShadCN)
@@ -190,11 +203,13 @@ import {
 - `Button` (ShadCN)
 
 **Props**:
+
 - `date` - Date object o null
 - `onChange` - Función (date) => void
 - `formatStyle` - "short" (DD/MM/YYYY) o "long" (formato largo)
 
 **Características**:
+
 - Input editable con validación
 - Calendario en popover
 - Formato corto por defecto (DD/MM/YYYY)
@@ -204,14 +219,11 @@ import {
 - Tecla ArrowDown para abrir calendario
 
 **Uso**:
-```jsx
-import { DatePicker } from "@/components/ui/datePicker";
 
-<DatePicker 
-  date={selectedDate} 
-  onChange={setSelectedDate}
-  formatStyle="short"
-/>
+```jsx
+import { DatePicker } from '@/components/ui/datePicker';
+
+<DatePicker date={selectedDate} onChange={setSelectedDate} formatStyle="short" />;
 ```
 
 ---
@@ -223,14 +235,17 @@ import { DatePicker } from "@/components/ui/datePicker";
 **Tipo**: Client Component personalizado
 
 **Dependencias**:
+
 - `react-day-picker` (Calendar mode="range")
 - `date-fns` (format, subYears, startOfYear, endOfYear, etc.)
 
 **Props**:
+
 - `dateRange` - `{ from: Date, to: Date }` o `undefined`
 - `onChange` - Función (range) => void
 
 **Características**:
+
 - Selección de rango de fechas
 - Calendario de 2 meses
 - Botones rápidos:
@@ -241,13 +256,11 @@ import { DatePicker } from "@/components/ui/datePicker";
 - Formato: "DD/MM/yyyy - DD/MM/yyyy"
 
 **Uso**:
-```jsx
-import { DateRangePicker } from "@/components/ui/dateRangePicker";
 
-<DateRangePicker 
-  dateRange={range} 
-  onChange={setRange}
-/>
+```jsx
+import { DateRangePicker } from '@/components/ui/dateRangePicker';
+
+<DateRangePicker dateRange={range} onChange={setRange} />;
 ```
 
 ---
@@ -257,6 +270,7 @@ import { DateRangePicker } from "@/components/ui/dateRangePicker";
 **Archivo**: `/src/components/ui/table.jsx`
 
 **Componentes exportados**:
+
 - `Table` - Contenedor con scroll
 - `TableHeader` - `<thead>`
 - `TableBody` - `<tbody>`
@@ -267,12 +281,14 @@ import { DateRangePicker } from "@/components/ui/dateRangePicker";
 - `TableCaption` - `<caption>`
 
 **Características**:
+
 - Estilos consistentes
 - Hover en filas
 - Soporte para checkboxes
 - Responsive con scroll horizontal
 
 **Uso**:
+
 ```jsx
 import {
   Table,
@@ -281,7 +297,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 
 <Table>
   <TableHeader>
@@ -294,7 +310,7 @@ import {
       <TableCell>Valor</TableCell>
     </TableRow>
   </TableBody>
-</Table>
+</Table>;
 ```
 
 ---
@@ -304,6 +320,7 @@ import {
 **Archivo**: `/src/components/ui/card.jsx`
 
 **Componentes exportados**:
+
 - `Card` - Contenedor principal
 - `CardHeader` - Header con padding
 - `CardTitle` - Título
@@ -312,11 +329,13 @@ import {
 - `CardFooter` - Footer
 
 **Características**:
+
 - Border redondeado (rounded-xl)
 - Sombra
 - Estilos de texto consistentes
 
 **Uso**:
+
 ```jsx
 import {
   Card,
@@ -325,7 +344,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from '@/components/ui/card';
 
 <Card>
   <CardHeader>
@@ -334,7 +353,7 @@ import {
   </CardHeader>
   <CardContent>Contenido</CardContent>
   <CardFooter>Footer</CardFooter>
-</Card>
+</Card>;
 ```
 
 ---
@@ -346,11 +365,13 @@ import {
 **Tipo**: Client Component personalizado
 
 **Props**:
+
 - `value` - Array de strings (emails)
 - `onChange` - Función (emails: string[]) => void
 - `placeholder` - String (opcional, default: "Introduce correos y pulsa Enter")
 
 **Características**:
+
 - Input para agregar múltiples emails
 - Validación de email con regex
 - Prevención de duplicados
@@ -359,14 +380,11 @@ import {
 - Mensajes de error (email inválido, duplicado)
 
 **Uso**:
-```jsx
-import { EmailListInput } from "@/components/ui/emailListInput";
 
-<EmailListInput 
-  value={emails} 
-  onChange={setEmails}
-  placeholder="Añadir emails..."
-/>
+```jsx
+import { EmailListInput } from '@/components/ui/emailListInput';
+
+<EmailListInput value={emails} onChange={setEmails} placeholder="Añadir emails..." />;
 ```
 
 ---
@@ -378,18 +396,21 @@ import { EmailListInput } from "@/components/ui/emailListInput";
 **Tipo**: Componente de loading personalizado
 
 **Props**:
+
 - `className` - Clases adicionales
 
 **Características**:
+
 - Skeleton con animación shimmer
 - Gradiente animado
 - Color neutral-800 de fondo
 
 **Uso**:
-```jsx
-import CustomSkeleton from "@/components/ui/CustomSkeleton";
 
-<CustomSkeleton className="h-20 w-full" />
+```jsx
+import CustomSkeleton from '@/components/ui/CustomSkeleton';
+
+<CustomSkeleton className="h-20 w-full" />;
 ```
 
 ---
@@ -435,11 +456,13 @@ Los siguientes componentes también están disponibles en `/src/components/ui/`:
 
 **Tipo**: Client Component
 
-**Base**: 
+**Base**:
+
 - `Command` (ShadCN) para búsqueda
 - `Popover` (ShadCN) para dropdown
 
 **Props**:
+
 - `options` - Array de `{ value: string, label: string }`
 - `value` - String (valor seleccionado)
 - `onChange` - Función (value: string) => void
@@ -451,6 +474,7 @@ Los siguientes componentes también están disponibles en `/src/components/ui/`:
 - `disabled` - Boolean (opcional, por defecto `false`) - Deshabilita el componente
 
 **Características**:
+
 - Búsqueda en tiempo real
 - Scroll con rueda de ratón mejorado
 - Indicador de selección (checkmark)
@@ -460,13 +484,14 @@ Los siguientes componentes también están disponibles en `/src/components/ui/`:
 - **Deshabilitado**: Se deshabilita automáticamente cuando `loading={true}` o `disabled={true}`
 
 **Uso**:
+
 ```jsx
-import { Combobox } from "@/components/Shadcn/Combobox";
+import { Combobox } from '@/components/Shadcn/Combobox';
 
 <Combobox
   options={[
-    { value: "1", label: "Opción 1" },
-    { value: "2", label: "Opción 2" },
+    { value: '1', label: 'Opción 1' },
+    { value: '2', label: 'Opción 2' },
   ]}
   value={selectedValue}
   onChange={setSelectedValue}
@@ -474,7 +499,7 @@ import { Combobox } from "@/components/Shadcn/Combobox";
   searchPlaceholder="Buscar..."
   notFoundMessage="No se encontraron resultados"
   loading={isLoading}
-/>
+/>;
 ```
 
 **Diferencia con Select**: Combobox permite búsqueda, Select es un dropdown simple.
@@ -490,6 +515,7 @@ import { Combobox } from "@/components/Shadcn/Combobox";
 **Tipo**: Client Component
 
 **Funcionalidad**:
+
 - Intercepta todas las peticiones `fetch` del navegador
 - Detecta errores de autenticación (401, 403)
 - Muestra toast de error
@@ -499,6 +525,7 @@ import { Combobox } from "@/components/Shadcn/Combobox";
 **Uso**: Se incluye en `ClientLayout`, no requiere uso manual.
 
 **Dependencias**:
+
 - `next-auth/react` (signOut)
 - `@/lib/notifications` (`notify`, wrapper estable sobre el runtime actual de toasts)
 - `@/configs/authConfig` (isAuthError, isAuthStatusCode, buildLoginUrl)
@@ -516,10 +543,13 @@ import { Combobox } from "@/components/Shadcn/Combobox";
 **Funcionalidad**: Componente de carga/spinner.
 
 **Uso común**:
-```jsx
-import Loader from "@/components/Utilities/Loader";
 
-{loading && <Loader />}
+```jsx
+import Loader from '@/components/Utilities/Loader';
+
+{
+  loading && <Loader />;
+}
 ```
 
 ---
@@ -574,7 +604,9 @@ Componentes con variantes usan `class-variance-authority`:
 
 ```jsx
 // Button tiene variantes
-<Button variant="destructive" size="lg">Eliminar</Button>
+<Button variant="destructive" size="lg">
+  Eliminar
+</Button>
 ```
 
 ### Merge de Clases
@@ -592,6 +624,7 @@ className={cn("base-classes", className)}
 ## 📊 Estadísticas de Uso
 
 Según búsqueda en el código:
+
 - **483 imports** de componentes UI en **124 archivos**
 - Componentes más usados:
   - `Button`
@@ -606,7 +639,9 @@ Según búsqueda en el código:
 ## 🔗 Dependencias Externas
 
 ### Radix UI
+
 Componentes primitivos accesibles:
+
 - `@radix-ui/react-dialog`
 - `@radix-ui/react-select`
 - `@radix-ui/react-dropdown-menu`
@@ -616,6 +651,7 @@ Componentes primitivos accesibles:
 - Y otros...
 
 ### Otras Librerías
+
 - `react-day-picker` - Para DatePicker y Calendar
 - `date-fns` - Para formateo de fechas
 - `lucide-react` - Iconos
@@ -627,6 +663,7 @@ Componentes primitivos accesibles:
 ## ⚠️ Observaciones Críticas y Mejoras Recomendadas
 
 ### 1. DatePicker con Ajuste Manual de Zona Horaria
+
 - **Archivo**: `/src/components/ui/datePicker.jsx`
 - **Línea**: 78-80, 95-97
 - **Problema**: Se hace `setHours(12, 0, 0, 0)` manualmente para evitar problemas UTC
@@ -634,6 +671,7 @@ Componentes primitivos accesibles:
 - **Recomendación**: Considerar usar librería de fechas más robusta o manejar timezone correctamente
 
 ### 2. EmailListInput sin Validación de Dominio
+
 - **Archivo**: `/src/components/ui/emailListInput.jsx`
 - **Línea**: 8-10
 - **Problema**: Regex de validación de email es básica (`/^[\w.-]+@([\w-]+\.)+[\w-]{2,4}$/`)
@@ -641,6 +679,7 @@ Componentes primitivos accesibles:
 - **Recomendación**: Usar librería de validación de email o regex más completa
 
 ### 3. CustomSkeleton con Color Hardcodeado
+
 - **Archivo**: `/src/components/ui/CustomSkeleton.jsx`
 - **Línea**: 5
 - **Problema**: Color `bg-neutral-800` hardcodeado, no usa design tokens
@@ -648,6 +687,7 @@ Componentes primitivos accesibles:
 - **Recomendación**: Usar variables CSS del design system (`bg-muted` o similar)
 
 ### 4. Combobox con Scroll Personalizado
+
 - **Archivo**: `/src/components/Shadcn/Combobox/index.js`
 - **Línea**: 49-56
 - **Problema**: Scroll con rueda de ratón forzado con multiplicador `* 2`
@@ -655,12 +695,14 @@ Componentes primitivos accesibles:
 - **Recomendación**: Revisar si es necesario o usar comportamiento nativo
 
 ### 5. Falta de Documentación JSDoc
+
 - **Archivo**: Todos los componentes UI
 - **Problema**: Componentes sin JSDoc explicando props y uso
 - **Impacto**: Dificulta entender el propósito y uso de cada componente
 - **Recomendación**: Añadir JSDoc a todos los componentes exportados
 
 ### 6. DateRangePicker con Lógica Compleja
+
 - **Archivo**: `/src/components/ui/dateRangePicker.jsx`
 - **Línea**: 31-53
 - **Problema**: Lógica de botones rápidos mezclada con el componente
@@ -668,24 +710,28 @@ Componentes primitivos accesibles:
 - **Recomendación**: Extraer lógica de botones rápidos a hooks o funciones separadas
 
 ### 7. Falta de Tests
+
 - **Archivo**: Todos los componentes UI
 - **Problema**: No se encontraron tests para componentes UI
 - **Impacto**: Riesgo de regresiones al modificar componentes
 - **Recomendación**: Implementar tests unitarios para componentes críticos
 
 ### 8. Inconsistencia en Nombres de Archivos
+
 - **Archivo**: `/src/components/ui/`
 - **Problema**: Algunos archivos son `.jsx` (button.jsx) y otros podrían ser `.js`
 - **Impacto**: Inconsistencia menor
 - **Recomendación**: Estandarizar extensión (preferiblemente `.jsx` para componentes React)
 
 ### 9. Componentes UI sin TypeScript
+
 - **Archivo**: Todos los componentes UI
 - **Problema**: Componentes en JavaScript puro, sin tipos
 - **Impacto**: Menor seguridad de tipos, más errores en tiempo de ejecución
 - **Recomendación**: Considerar migración gradual a TypeScript
 
 ### 10. Falta de Storybook o Documentación Visual
+
 - **Archivo**: Proyecto completo
 - **Problema**: No hay Storybook o documentación visual de componentes
 - **Impacto**: Difícil ver todos los componentes y sus variantes en un solo lugar

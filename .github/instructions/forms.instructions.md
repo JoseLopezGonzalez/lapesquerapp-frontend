@@ -1,5 +1,5 @@
 ---
-applyTo: "app/**/*Form*.{js,jsx,ts,tsx},components/**/*Form*.{js,jsx,ts,tsx},features/**/*Form*.{js,jsx,ts,tsx}"
+applyTo: 'app/**/*Form*.{js,jsx,ts,tsx},components/**/*Form*.{js,jsx,ts,tsx},features/**/*Form*.{js,jsx,ts,tsx}'
 ---
 
 # Form instructions

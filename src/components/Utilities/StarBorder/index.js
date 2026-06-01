@@ -1,10 +1,10 @@
-import "./styles.css";
+import './styles.css';
 
 const StarBorder = ({
-  as: Component = "button",
-  className = "",
-  color = "white",
-  speed = "6s",
+  as: Component = 'button',
+  className = '',
+  color = 'white',
+  speed = '6s',
   children,
   ...rest
 }) => {

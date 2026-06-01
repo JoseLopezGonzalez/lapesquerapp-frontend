@@ -1,830 +1,1040 @@
-'use client'
+'use client';
 
-import React, { useMemo, useState } from 'react'
-import dynamic from 'next/dynamic'
-import { useRouter } from 'next/navigation'
-import { useQuery } from '@tanstack/react-query'
-import { useProductionDetail } from '@/hooks/production/useProductionDetail'
-import { formatDateLong, formatWeight } from '@/helpers/production/formatters'
-import { formatDecimal, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers'
-import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Badge } from '@/components/ui/badge'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Combobox } from '@/components/Shadcn/Combobox'
-import Loader from '@/components/Utilities/Loader'
-import { Skeleton } from '@/components/ui/skeleton'
-import { ArrowLeft, Calendar, Package, Scale, AlertCircle, TrendingDown, TrendingUp, Fish, MapPin, FileText, CheckCircle2, XCircle, AlertTriangle, AlertOctagon } from 'lucide-react'
-import ProductionRecordsManager from './ProductionRecordsManager'
-import CreateProductionRecordDialog from './CreateProductionRecordDialog'
-import { ViewModeSelector } from './ProductionDiagram/ViewModeSelector'
-import EditProductionHeaderDialog from './EditProductionHeaderDialog'
-import ProductionClosurePanel from './ProductionClosurePanel'
-import { customerService } from '@/services/domain/customers/customerService'
-import { orderService } from '@/services/domain/orders/orderService'
+import React, { useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
+import { useProductionDetail } from '@/hooks/production/useProductionDetail';
+import { formatDateLong, formatWeight } from '@/helpers/production/formatters';
+import { formatDecimal, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Combobox } from '@/components/Shadcn/Combobox';
+import Loader from '@/components/Utilities/Loader';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  ArrowLeft,
+  Calendar,
+  Package,
+  Scale,
+  AlertCircle,
+  TrendingDown,
+  TrendingUp,
+  Fish,
+  MapPin,
+  FileText,
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
+  AlertOctagon,
+} from 'lucide-react';
+import ProductionRecordsManager from './ProductionRecordsManager';
+import CreateProductionRecordDialog from './CreateProductionRecordDialog';
+import { ViewModeSelector } from './ProductionDiagram/ViewModeSelector';
+import EditProductionHeaderDialog from './EditProductionHeaderDialog';
+import ProductionClosurePanel from './ProductionClosurePanel';
+import { customerService } from '@/services/domain/customers/customerService';
+import { orderService } from '@/services/domain/orders/orderService';
 
 const ProductionDiagram = dynamic(() => import('./ProductionDiagram'), {
-    ssr: false,
-    loading: () => (
-        <div className="h-[600px] flex items-center justify-center">
-            <Loader text="Cargando diagrama..." />
-        </div>
-    )
-})
+  ssr: false,
+  loading: () => (
+    <div className="flex h-[600px] items-center justify-center">
+      <Loader text="Cargando diagrama..." />
+    </div>
+  ),
+});
 
 const ProductionView = ({ productionId }) => {
-    const router = useRouter()
-    const [activeTab, setActiveTab] = useState('info')
-    const [treeFilterType, setTreeFilterType] = useState('all')
-    const [treeFilterValue, setTreeFilterValue] = useState('')
-    const processTreeFilter = useMemo(() => {
-        if (!treeFilterValue) return {}
-        if (treeFilterType === 'customer') return { customerId: treeFilterValue }
-        if (treeFilterType === 'order') return { orderId: treeFilterValue }
-        return {}
-    }, [treeFilterType, treeFilterValue])
-    const { production, processTree, totals, isLoading: loading, totalsLoading, processTreeLoading, error, refetch } = useProductionDetail(productionId, { enableProcessTree: activeTab === 'diagram', processTreeFilter })
-    const [viewMode, setViewMode] = useState('simple')
-    const [reconciliationDialogOpen, setReconciliationDialogOpen] = useState(false)
-    const [createRecordOpen, setCreateRecordOpen] = useState(false)
-    const [editHeaderOpen, setEditHeaderOpen] = useState(false)
-    const customerOptionsQuery = useQuery({
-        queryKey: ['customers', 'options', 'production-process-tree-filter'],
-        queryFn: () => customerService.getOptions(),
-        enabled: activeTab === 'diagram' && treeFilterType === 'customer',
-        staleTime: 5 * 60 * 1000,
-    })
-    const orderOptionsQuery = useQuery({
-        queryKey: ['orders', 'options', 'production-process-tree-filter'],
-        queryFn: () => orderService.getAllOptions(),
-        enabled: activeTab === 'diagram' && treeFilterType === 'order',
-        staleTime: 5 * 60 * 1000,
-    })
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState('info');
+  const [treeFilterType, setTreeFilterType] = useState('all');
+  const [treeFilterValue, setTreeFilterValue] = useState('');
+  const processTreeFilter = useMemo(() => {
+    if (!treeFilterValue) return {};
+    if (treeFilterType === 'customer') return { customerId: treeFilterValue };
+    if (treeFilterType === 'order') return { orderId: treeFilterValue };
+    return {};
+  }, [treeFilterType, treeFilterValue]);
+  const {
+    production,
+    processTree,
+    totals,
+    isLoading: loading,
+    totalsLoading,
+    processTreeLoading,
+    error,
+    refetch,
+  } = useProductionDetail(productionId, {
+    enableProcessTree: activeTab === 'diagram',
+    processTreeFilter,
+  });
+  const [viewMode, setViewMode] = useState('simple');
+  const [reconciliationDialogOpen, setReconciliationDialogOpen] = useState(false);
+  const [createRecordOpen, setCreateRecordOpen] = useState(false);
+  const [editHeaderOpen, setEditHeaderOpen] = useState(false);
+  const customerOptionsQuery = useQuery({
+    queryKey: ['customers', 'options', 'production-process-tree-filter'],
+    queryFn: () => customerService.getOptions(),
+    enabled: activeTab === 'diagram' && treeFilterType === 'customer',
+    staleTime: 5 * 60 * 1000,
+  });
+  const orderOptionsQuery = useQuery({
+    queryKey: ['orders', 'options', 'production-process-tree-filter'],
+    queryFn: () => orderService.getAllOptions(),
+    enabled: activeTab === 'diagram' && treeFilterType === 'order',
+    staleTime: 5 * 60 * 1000,
+  });
 
-    const handleTreeFilterTypeChange = (value) => {
-        setTreeFilterType(value)
-        setTreeFilterValue('')
-    }
+  const handleTreeFilterTypeChange = (value) => {
+    setTreeFilterType(value);
+    setTreeFilterValue('');
+  };
 
-
-    if (loading) {
-        return (
-            <div className="h-full w-full overflow-y-auto flex items-center justify-center">
-                <Loader text="Cargando producción..." />
-            </div>
-        )
-    }
-
-    if (error) {
-        return (
-            <div className="h-full w-full overflow-y-auto">
-                <div className="p-6">
-                    <Card className="border-destructive">
-                        <CardHeader>
-                            <CardTitle className="text-destructive flex items-center gap-2">
-                                <AlertCircle className="h-5 w-5" />
-                                Error
-                            </CardTitle>
-                            <CardDescription>{error}</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <Button onClick={() => router.back()}>Volver</Button>
-                        </CardContent>
-                    </Card>
-                </div>
-            </div>
-        )
-    }
-
-    if (!production) {
-        return (
-            <div className="h-full w-full overflow-y-auto">
-                <div className="p-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Producción no encontrada</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <Button onClick={() => router.back()}>Volver</Button>
-                        </CardContent>
-                    </Card>
-                </div>
-            </div>
-        )
-    }
-
-    const isOpen = typeof production.isOpen === 'boolean'
-        ? production.isOpen
-        : Boolean(production.openedAt && !production.closedAt)
-    const isClosed = typeof production.isClosed === 'boolean'
-        ? production.isClosed
-        : false
-    const openedAtLabel = production.openedAt ? formatDateLong(production.openedAt) : null
-    const closedAtLabel = isClosed && production.closedAt ? formatDateLong(production.closedAt) : null
-    const displayOpenedAt = openedAtLabel && openedAtLabel !== 'N/A' ? openedAtLabel : '-'
-    const displayClosedAt = closedAtLabel && closedAtLabel !== 'N/A' ? closedAtLabel : '-'
-
+  if (loading) {
     return (
-        <div className="h-full w-full overflow-y-auto">
-            <div className="p-4 space-y-4">
-                {/* Header */}
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex items-center gap-3">
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => router.back()}
-                        >
-                            <ArrowLeft className="h-4 w-4" />
-                        </Button>
-                        <div>
-                            <h1 className="text-2xl font-bold tracking-tight">
-                                {production.lot?.trim() ? production.lot : 'Sin lote'}
-                            </h1>
-                            <p className="text-sm text-muted-foreground">
-                                Producción #{production.id}
-                            </p>
+      <div className="flex h-full w-full items-center justify-center overflow-y-auto">
+        <Loader text="Cargando producción..." />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-full w-full overflow-y-auto">
+        <div className="p-6">
+          <Card className="border-destructive">
+            <CardHeader>
+              <CardTitle className="text-destructive flex items-center gap-2">
+                <AlertCircle className="h-5 w-5" />
+                Error
+              </CardTitle>
+              <CardDescription>{error}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={() => router.back()}>Volver</Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  if (!production) {
+    return (
+      <div className="h-full w-full overflow-y-auto">
+        <div className="p-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Producción no encontrada</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={() => router.back()}>Volver</Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  const isOpen =
+    typeof production.isOpen === 'boolean'
+      ? production.isOpen
+      : Boolean(production.openedAt && !production.closedAt);
+  const isClosed = typeof production.isClosed === 'boolean' ? production.isClosed : false;
+  const openedAtLabel = production.openedAt ? formatDateLong(production.openedAt) : null;
+  const closedAtLabel =
+    isClosed && production.closedAt ? formatDateLong(production.closedAt) : null;
+  const displayOpenedAt = openedAtLabel && openedAtLabel !== 'N/A' ? openedAtLabel : '-';
+  const displayClosedAt = closedAtLabel && closedAtLabel !== 'N/A' ? closedAtLabel : '-';
+
+  return (
+    <div className="h-full w-full overflow-y-auto">
+      <div className="space-y-4 p-4">
+        {/* Header */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <Button variant="outline" size="icon" onClick={() => router.back()}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">
+                {production.lot?.trim() ? production.lot : 'Sin lote'}
+              </h1>
+              <p className="text-muted-foreground text-sm">Producción #{production.id}</p>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+            <Badge variant={isOpen ? 'success' : 'secondary'}>
+              {isOpen ? 'Abierto' : isClosed ? 'Cerrado' : 'Sin estado'}
+            </Badge>
+            {isClosed && <Badge variant="destructive">Cierre definitivo</Badge>}
+            <ProductionClosurePanel
+              productionId={productionId}
+              isOpen={isOpen}
+              isClosed={isClosed}
+              onRefresh={refetch}
+            />
+          </div>
+        </div>
+
+        <EditProductionHeaderDialog
+          open={editHeaderOpen}
+          onOpenChange={setEditHeaderOpen}
+          production={production}
+          onSaved={refetch}
+        />
+
+        {/* Tabs para Información y Diagrama */}
+        <Tabs defaultValue="info" className="w-full" onValueChange={setActiveTab}>
+          <TabsList>
+            <TabsTrigger value="info">Información</TabsTrigger>
+            <TabsTrigger value="diagram">Diagrama</TabsTrigger>
+          </TabsList>
+          <TabsContent value="info" className="mt-4">
+            <div className="space-y-4">
+              {/* Cards en fila para pantallas grandes */}
+              <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2">
+                {/* Información General */}
+                <Card
+                  className={`flex flex-col ${production.reconciliation ? 'lg:row-span-2' : ''} h-full`}
+                >
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      Información General
+                    </CardTitle>
+                    <CardAction>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => setEditHeaderOpen(true)}
+                        disabled={isClosed}
+                        aria-label="Editar cabecera de producción"
+                      >
+                        Editar
+                      </Button>
+                    </CardAction>
+                  </CardHeader>
+                  <CardContent className="flex flex-1 flex-col pt-0">
+                    <div className="flex-1 space-y-4">
+                      {/* Especie */}
+                      <div className="flex items-start gap-3">
+                        <div className="bg-muted flex-shrink-0 rounded-lg p-2">
+                          <Fish className="text-muted-foreground h-4 w-4" />
                         </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-muted-foreground mb-1 text-xs">Especie</p>
+                          <p className="text-sm font-semibold">
+                            {production.species?.name || 'No especificada'}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Zona de Captura */}
+                      {production.captureZone && (
+                        <div className="flex items-start gap-3">
+                          <div className="bg-muted flex-shrink-0 rounded-lg p-2">
+                            <MapPin className="text-muted-foreground h-4 w-4" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-muted-foreground mb-1 text-xs">Zona de Captura</p>
+                            <p className="text-sm font-semibold">
+                              {production.captureZone?.name || 'No especificada'}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Fechas */}
+                      <div className="grid grid-cols-1 gap-4 border-t pt-2 sm:grid-cols-2">
+                        <div className="flex items-start gap-3">
+                          <div className="bg-muted flex-shrink-0 rounded-lg p-2">
+                            <Calendar className="text-muted-foreground h-4 w-4" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-muted-foreground mb-1 text-xs">Apertura</p>
+                            <p
+                              className={`text-sm font-semibold ${displayOpenedAt === '-' ? 'text-muted-foreground' : ''}`}
+                            >
+                              {displayOpenedAt}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                          <div className="bg-muted flex-shrink-0 rounded-lg p-2">
+                            <Calendar className="text-muted-foreground h-4 w-4" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-muted-foreground mb-1 text-xs">Cierre definitivo</p>
+                            <p
+                              className={`text-sm font-semibold ${displayClosedAt === '-' ? 'text-muted-foreground' : ''}`}
+                            >
+                              {displayClosedAt}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Notas */}
+                      {production.notes && (
+                        <div className="border-t pt-2">
+                          <div className="flex items-start gap-3">
+                            <div className="bg-muted flex-shrink-0 rounded-lg p-2">
+                              <FileText className="text-muted-foreground h-4 w-4" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-muted-foreground mb-1.5 text-xs">Notas</p>
+                              <p className="text-sm leading-relaxed">{production.notes}</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
-                        <Badge
-                            variant={isOpen ? 'success' : 'secondary'}
-                        >
-                            {isOpen ? 'Abierto' : isClosed ? 'Cerrado' : 'Sin estado'}
-                        </Badge>
-                        {isClosed && (
-                            <Badge variant="destructive">
-                                Cierre definitivo
-                            </Badge>
+                  </CardContent>
+                </Card>
+
+                {/* Totales */}
+                {totalsLoading ? (
+                  <Card className="h-auto">
+                    <CardHeader className="pb-3">
+                      <Skeleton className="h-4 w-24" />
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="grid grid-cols-3 gap-0">
+                        <div className="space-y-2 border-r pr-3">
+                          <Skeleton className="h-3 w-16" />
+                          <Skeleton className="h-6 w-20" />
+                        </div>
+                        <div className="space-y-2 border-r px-3">
+                          <Skeleton className="h-3 w-16" />
+                          <Skeleton className="h-6 w-20" />
+                        </div>
+                        <div className="space-y-2 pl-3">
+                          <Skeleton className="h-3 w-20" />
+                          <Skeleton className="h-6 w-16" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : totals ? (
+                  <Card className="h-auto">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="flex items-center gap-2 text-base">Totales</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="grid grid-cols-3 gap-0">
+                        {/* Entrada */}
+                        <div className="space-y-1.5 border-r pr-3">
+                          <div className="flex items-center gap-1.5">
+                            <ArrowLeft className="text-muted-foreground h-3.5 w-3.5 rotate-180" />
+                            <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+                              Entrada
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-lg leading-tight font-bold">
+                              {formatWeight(totals.totalInputWeight)}
+                            </p>
+                            <p className="text-muted-foreground mt-0.5 text-xs">
+                              {totals.totalInputBoxes || 0} cajas
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Salida */}
+                        <div className="space-y-1.5 border-r px-3">
+                          <div className="flex items-center gap-1.5">
+                            <ArrowLeft className="text-muted-foreground h-3.5 w-3.5" />
+                            <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+                              Salida
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-lg leading-tight font-bold">
+                              {formatWeight(totals.totalOutputWeight)}
+                            </p>
+                            <p className="text-muted-foreground mt-0.5 text-xs">
+                              {totals.totalOutputBoxes || 0} cajas
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Merma o Rendimiento */}
+                        {(production.waste !== undefined && production.waste > 0) ||
+                        (production.yield !== undefined && production.yield > 0) ? (
+                          <div className="space-y-1.5 pl-3">
+                            <div className="flex items-center gap-1.5">
+                              {production.waste > 0 ? (
+                                <TrendingDown className="text-destructive h-3.5 w-3.5" />
+                              ) : (
+                                <TrendingUp className="h-3.5 w-3.5 text-green-600" />
+                              )}
+                              <p
+                                className={`text-xs font-semibold tracking-wide uppercase ${production.waste > 0 ? 'text-destructive' : 'text-green-600'}`}
+                              >
+                                {production.waste > 0 ? 'Merma' : 'Rendimiento'}
+                              </p>
+                            </div>
+                            <div>
+                              <p
+                                className={`text-lg leading-tight font-bold ${production.waste > 0 ? 'text-destructive' : 'text-green-600'}`}
+                              >
+                                {production.waste > 0
+                                  ? `-${formatDecimal(production.wastePercentage || 0)}%`
+                                  : `+${formatDecimal(production.yieldPercentage || 0)}%`}
+                              </p>
+                              <p
+                                className={`mt-0.5 text-xs ${production.waste > 0 ? 'text-destructive/80' : 'text-green-600/80'}`}
+                              >
+                                {production.waste > 0
+                                  ? `-${formatDecimalWeight(production.waste)}`
+                                  : `+${formatDecimalWeight(production.yield)}`}
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-1.5 pl-3">
+                            <div className="flex items-center gap-1.5">
+                              <TrendingUp className="text-muted-foreground h-3.5 w-3.5" />
+                              <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+                                Rendimiento
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground text-lg leading-tight font-bold">
+                                -
+                              </p>
+                              <p className="text-muted-foreground mt-0.5 text-xs">-</p>
+                            </div>
+                          </div>
                         )}
-                        <ProductionClosurePanel
-                            productionId={productionId}
-                            isOpen={isOpen}
-                            isClosed={isClosed}
-                            onRefresh={refetch}
-                        />
-                    </div>
-                </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : null}
 
-                <EditProductionHeaderDialog
-                    open={editHeaderOpen}
-                    onOpenChange={setEditHeaderOpen}
-                    production={production}
-                    onSaved={refetch}
-                />
-
-            {/* Tabs para Información y Diagrama */}
-            <Tabs defaultValue="info" className="w-full" onValueChange={setActiveTab}>
-                <TabsList>
-                    <TabsTrigger value="info">Información</TabsTrigger>
-                    <TabsTrigger value="diagram">Diagrama</TabsTrigger>
-                </TabsList>
-                <TabsContent value="info" className="mt-4">
-                    <div className="space-y-4">
-                        {/* Cards en fila para pantallas grandes */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
-                        {/* Información General */}
-                        <Card className={`flex flex-col ${production.reconciliation ? "lg:row-span-2" : ""} h-full`}>
-                                <CardHeader className="pb-3">
-                                    <CardTitle className="text-base flex items-center gap-2">
-                                        Información General
-                                    </CardTitle>
-                                    <CardAction>
-                                        <Button
-                                            variant="default"
-                                            size="sm"
-                                            onClick={() => setEditHeaderOpen(true)}
-                                            disabled={isClosed}
-                                            aria-label="Editar cabecera de producción"
-                                        >
-                                            Editar
-                                        </Button>
-                                    </CardAction>
-                            </CardHeader>
-                                <CardContent className="pt-0 flex-1 flex flex-col">
-                                    <div className="space-y-4 flex-1">
-                                        {/* Especie */}
-                                        <div className="flex items-start gap-3">
-                                            <div className="rounded-lg bg-muted p-2 flex-shrink-0">
-                                                <Fish className="h-4 w-4 text-muted-foreground" />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-xs text-muted-foreground mb-1">Especie</p>
-                                                <p className="text-sm font-semibold">{production.species?.name || 'No especificada'}</p>
-                                            </div>
-                                        </div>
-
-                                        {/* Zona de Captura */}
-                                        {production.captureZone && (
-                                            <div className="flex items-start gap-3">
-                                                <div className="rounded-lg bg-muted p-2 flex-shrink-0">
-                                                    <MapPin className="h-4 w-4 text-muted-foreground" />
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="text-xs text-muted-foreground mb-1">Zona de Captura</p>
-                                                    <p className="text-sm font-semibold">{production.captureZone?.name || 'No especificada'}</p>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Fechas */}
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t">
-                                            <div className="flex items-start gap-3">
-                                                <div className="rounded-lg bg-muted p-2 flex-shrink-0">
-                                                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="text-xs text-muted-foreground mb-1">Apertura</p>
-                                                    <p className={`text-sm font-semibold ${displayOpenedAt === '-' ? 'text-muted-foreground' : ''}`}>
-                                                        {displayOpenedAt}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-start gap-3">
-                                                <div className="rounded-lg bg-muted p-2 flex-shrink-0">
-                                                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="text-xs text-muted-foreground mb-1">Cierre definitivo</p>
-                                                    <p className={`text-sm font-semibold ${displayClosedAt === '-' ? 'text-muted-foreground' : ''}`}>
-                                                        {displayClosedAt}
-                                                    </p>
-                                    </div>
-                                    </div>
-                                    </div>
-
-                                        {/* Notas */}
-                                    {production.notes && (
-                                            <div className="pt-2 border-t">
-                                                <div className="flex items-start gap-3">
-                                                    <div className="rounded-lg bg-muted p-2 flex-shrink-0">
-                                                        <FileText className="h-4 w-4 text-muted-foreground" />
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="text-xs text-muted-foreground mb-1.5">Notas</p>
-                                                        <p className="text-sm leading-relaxed">{production.notes}</p>
-                                                    </div>
-                                                </div>
-                                    </div>
-                                    )}
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* Totales */}
-                        {totalsLoading ? (
-                            <Card className="h-auto">
-                                <CardHeader className="pb-3">
-                                    <Skeleton className="h-4 w-24" />
-                                </CardHeader>
-                                <CardContent className="pt-0">
-                                    <div className="grid grid-cols-3 gap-0">
-                                        <div className="space-y-2 pr-3 border-r">
-                                            <Skeleton className="h-3 w-16" />
-                                            <Skeleton className="h-6 w-20" />
-                                        </div>
-                                        <div className="space-y-2 px-3 border-r">
-                                            <Skeleton className="h-3 w-16" />
-                                            <Skeleton className="h-6 w-20" />
-                                        </div>
-                                        <div className="space-y-2 pl-3">
-                                            <Skeleton className="h-3 w-20" />
-                                            <Skeleton className="h-6 w-16" />
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ) : totals ? (
-                            <Card className="h-auto">
-                                    <CardHeader className="pb-3">
-                                        <CardTitle className="text-base flex items-center gap-2">
-                                            Totales
-                                        </CardTitle>
-                                </CardHeader>
-                                    <CardContent className="pt-0">
-                                        <div className="grid grid-cols-3 gap-0">
-                                            {/* Entrada */}
-                                            <div className="space-y-1.5 pr-3 border-r">
-                                                <div className="flex items-center gap-1.5">
-                                                    <ArrowLeft className="h-3.5 w-3.5 text-muted-foreground rotate-180" />
-                                                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Entrada</p>
-                                    </div>
+                {/* Conciliación General */}
+                {production.reconciliation && (
+                  <Card
+                    className={`h-auto border-2 ${
+                      production.reconciliation.summary?.overallStatus === 'error'
+                        ? 'border-destructive bg-destructive/5'
+                        : production.reconciliation.summary?.overallStatus === 'warning'
+                          ? 'border-yellow-500 bg-yellow-500/5'
+                          : 'border-green-500 bg-green-500/5'
+                    }`}
+                  >
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="flex items-center gap-2 text-base">
+                          {production.reconciliation.summary?.overallStatus === 'error' ? (
+                            <XCircle className="text-destructive h-4 w-4" />
+                          ) : production.reconciliation.summary?.overallStatus === 'warning' ? (
+                            <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                          ) : (
+                            <CheckCircle2 className="h-4 w-4 text-green-600" />
+                          )}
+                          Conciliación
+                        </CardTitle>
+                        <div className="flex items-center gap-2">
+                          {production.reconciliation.products &&
+                            production.reconciliation.products.length > 0 && (
+                              <Dialog
+                                open={reconciliationDialogOpen}
+                                onOpenChange={setReconciliationDialogOpen}
+                              >
+                                <DialogTrigger asChild>
+                                  <Button variant="outline" size="sm" className="h-7 text-xs">
+                                    Detalle
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent size="6xl" className="max-h-[90vh]">
+                                  <DialogHeader>
+                                    <DialogTitle className="flex items-center gap-2">
+                                      {production.reconciliation.summary?.overallStatus ===
+                                      'error' ? (
+                                        <XCircle className="text-destructive h-5 w-5" />
+                                      ) : production.reconciliation.summary?.overallStatus ===
+                                        'warning' ? (
+                                        <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                                      ) : (
+                                        <CheckCircle2 className="h-5 w-5 text-green-600" />
+                                      )}
+                                      Detalle de Conciliación General
+                                    </DialogTitle>
+                                    <DialogDescription>
+                                      Detalle completo de la conciliación de productos
+                                    </DialogDescription>
+                                  </DialogHeader>
+                                  <ScrollArea className="max-h-[calc(90vh-120px)]">
+                                    <div className="space-y-4 pr-4">
+                                      {/* Resumen en el dialog */}
+                                      {production.reconciliation.summary && (
+                                        <div className="bg-muted/50 rounded-md border px-3 py-3">
+                                          <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm md:grid-cols-7">
                                             <div>
-                                                    <p className="text-lg font-bold leading-tight">{formatWeight(totals.totalInputWeight)}</p>
-                                                    <p className="text-xs text-muted-foreground mt-0.5">{totals.totalInputBoxes || 0} cajas</p>
-                                                </div>
-                                    </div>
-
-                                            {/* Salida */}
-                                            <div className="space-y-1.5 px-3 border-r">
-                                                <div className="flex items-center gap-1.5">
-                                                    <ArrowLeft className="h-3.5 w-3.5 text-muted-foreground" />
-                                                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Salida</p>
-                                    </div>
-                                            <div>
-                                                    <p className="text-lg font-bold leading-tight">{formatWeight(totals.totalOutputWeight)}</p>
-                                                    <p className="text-xs text-muted-foreground mt-0.5">{totals.totalOutputBoxes || 0} cajas</p>
-                                                </div>
+                                              <p className="text-muted-foreground mb-1 text-xs">
+                                                Productos
+                                              </p>
+                                              <p className="text-sm font-semibold">
+                                                {production.reconciliation.summary.totalProducts ||
+                                                  0}
+                                              </p>
                                             </div>
-
-                                            {/* Merma o Rendimiento */}
-                                            {(production.waste !== undefined && production.waste > 0) || (production.yield !== undefined && production.yield > 0) ? (
-                                                <div className="space-y-1.5 pl-3">
-                                                    <div className="flex items-center gap-1.5">
-                                                        {production.waste > 0 ? (
-                                                            <TrendingDown className="h-3.5 w-3.5 text-destructive" />
-                                                        ) : (
-                                                            <TrendingUp className="h-3.5 w-3.5 text-green-600" />
-                                                        )}
-                                                        <p className={`text-xs font-semibold uppercase tracking-wide ${production.waste > 0 ? 'text-destructive' : 'text-green-600'}`}>
-                                                            {production.waste > 0 ? 'Merma' : 'Rendimiento'}
-                                                        </p>
-                                                    </div>
-                                                    <div>
-                                                        <p className={`text-lg font-bold leading-tight ${production.waste > 0 ? 'text-destructive' : 'text-green-600'}`}>
-                                                            {production.waste > 0 
-                                                                ? `-${formatDecimal(production.wastePercentage || 0)}%`
-                                                                : `+${formatDecimal(production.yieldPercentage || 0)}%`
-                                                            }
-                                                        </p>
-                                                        <p className={`text-xs mt-0.5 ${production.waste > 0 ? 'text-destructive/80' : 'text-green-600/80'}`}>
-                                                            {production.waste > 0 
-                                                                ? `-${formatDecimalWeight(production.waste)}`
-                                                                : `+${formatDecimalWeight(production.yield)}`
-                                                            }
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                <div className="space-y-1.5 pl-3">
-                                                    <div className="flex items-center gap-1.5">
-                                                        <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
-                                                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Rendimiento</p>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-lg font-bold leading-tight text-muted-foreground">-</p>
-                                                        <p className="text-xs text-muted-foreground mt-0.5">-</p>
-                                                    </div>
-                                                </div>
-                                            )}
-                                </div>
-                            </CardContent>
-                        </Card>
-                        ) : null}
-
-                        {/* Conciliación General */}
-                        {production.reconciliation && (
-                                <Card className={`h-auto border-2 ${
-                                    production.reconciliation.summary?.overallStatus === 'error' 
-                                        ? 'border-destructive bg-destructive/5' 
-                                        : production.reconciliation.summary?.overallStatus === 'warning'
-                                        ? 'border-yellow-500 bg-yellow-500/5'
-                                        : 'border-green-500 bg-green-500/5'
-                                }`}>
-                                    <CardHeader className="pb-3">
-                                        <div className="flex items-center justify-between">
-                                            <CardTitle className="text-base flex items-center gap-2">
-                                                {production.reconciliation.summary?.overallStatus === 'error' ? (
-                                                    <XCircle className="h-4 w-4 text-destructive" />
-                                                ) : production.reconciliation.summary?.overallStatus === 'warning' ? (
-                                                    <AlertTriangle className="h-4 w-4 text-yellow-500" />
-                                                ) : (
-                                                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                                            <div>
+                                              <p className="text-muted-foreground mb-1 text-xs">
+                                                Producido
+                                              </p>
+                                              <p className="text-sm font-semibold">
+                                                {formatWeight(
+                                                  production.reconciliation.summary
+                                                    .totalProducedWeight || 0
                                                 )}
-                                                Conciliación
-                                            </CardTitle>
-                                            <div className="flex items-center gap-2">
-                                                {production.reconciliation.products && production.reconciliation.products.length > 0 && (
-                                                    <Dialog open={reconciliationDialogOpen} onOpenChange={setReconciliationDialogOpen}>
-                                                        <DialogTrigger asChild>
-                                                            <Button variant="outline" size="sm" className="h-7 text-xs">
-                                                                Detalle
-                                                            </Button>
-                                                        </DialogTrigger>
-                                                        <DialogContent size="6xl" className="max-h-[90vh]">
-                                                            <DialogHeader>
-                                                                <DialogTitle className="flex items-center gap-2">
-                                                                    {production.reconciliation.summary?.overallStatus === 'error' ? (
-                                                                        <XCircle className="h-5 w-5 text-destructive" />
-                                                                    ) : production.reconciliation.summary?.overallStatus === 'warning' ? (
-                                                                        <AlertTriangle className="h-5 w-5 text-yellow-500" />
-                                                                    ) : (
-                                                                        <CheckCircle2 className="h-5 w-5 text-green-600" />
-                                                                    )}
-                                                                    Detalle de Conciliación General
-                                                                </DialogTitle>
-                                                                <DialogDescription>
-                                                                    Detalle completo de la conciliación de productos
-                                                                </DialogDescription>
-                                                            </DialogHeader>
-                                                            <ScrollArea className="max-h-[calc(90vh-120px)]">
-                                                                <div className="space-y-4 pr-4">
-                                                                    {/* Resumen en el dialog */}
-                                                                    {production.reconciliation.summary && (
-                                                                        <div className="px-3 py-3 rounded-md bg-muted/50 border">
-                                                                            <div className="grid grid-cols-2 md:grid-cols-7 gap-x-4 gap-y-2 text-sm">
-                                                                                <div>
-                                                                                    <p className="text-muted-foreground text-xs mb-1">Productos</p>
-                                                                                    <p className="font-semibold text-sm">
-                                                                                        {production.reconciliation.summary.totalProducts || 0}
-                                                                                    </p>
-                                                                                </div>
-                                                                                <div>
-                                                                                    <p className="text-muted-foreground text-xs mb-1">Producido</p>
-                                                                                    <p className="font-semibold text-sm">
-                                                                                        {formatWeight(production.reconciliation.summary.totalProducedWeight || 0)}
-                                                                                    </p>
-                                                                                </div>
-                                                                                <div>
-                                                                                    <p className="text-muted-foreground text-xs mb-1">Registrado</p>
-                                                                                    <p className="font-semibold text-sm">
-                                                                                        {formatWeight(production.reconciliation.summary.totalContabilizedWeight || 0)}
-                                                                                    </p>
-                                                                                </div>
-                                                                                <div>
-                                                                                    <p className="text-muted-foreground text-xs mb-1">Balance</p>
-                                                                                    <p className={`font-semibold text-sm ${
-                                                                                        (production.reconciliation.summary.totalBalanceWeight || 0) !== 0
-                                                                                            ? 'text-destructive'
-                                                                                            : 'text-green-600'
-                                                                                    }`}>
-                                                                                        {formatWeight(Math.abs(production.reconciliation.summary.totalBalanceWeight || 0))}
-                                                                                    </p>
-                                                                                </div>
-                                                                                <div className="text-center">
-                                                                                    <p className="text-muted-foreground text-xs mb-1">✓ Correctos</p>
-                                                                                    <p className="font-semibold text-sm text-green-600">
-                                                                                        {production.reconciliation.summary.productsOk || 0}
-                                                                                    </p>
-                                                                                </div>
-                                                                                <div className="text-center">
-                                                                                    <p className="text-muted-foreground text-xs mb-1">⚠ Advertencias</p>
-                                                                                    <p className="font-semibold text-sm text-yellow-600">
-                                                                                        {production.reconciliation.summary.productsWarning || 0}
-                                                                                    </p>
-                                                                                </div>
-                                                                                <div className="text-center">
-                                                                                    <p className="text-muted-foreground text-xs mb-1">✗ Errores</p>
-                                                                                    <p className="font-semibold text-sm text-destructive">
-                                                                                        {production.reconciliation.summary.productsError || 0}
-                                                                                    </p>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    )}
+                                              </p>
+                                            </div>
+                                            <div>
+                                              <p className="text-muted-foreground mb-1 text-xs">
+                                                Registrado
+                                              </p>
+                                              <p className="text-sm font-semibold">
+                                                {formatWeight(
+                                                  production.reconciliation.summary
+                                                    .totalContabilizedWeight || 0
+                                                )}
+                                              </p>
+                                            </div>
+                                            <div>
+                                              <p className="text-muted-foreground mb-1 text-xs">
+                                                Balance
+                                              </p>
+                                              <p
+                                                className={`text-sm font-semibold ${
+                                                  (production.reconciliation.summary
+                                                    .totalBalanceWeight || 0) !== 0
+                                                    ? 'text-destructive'
+                                                    : 'text-green-600'
+                                                }`}
+                                              >
+                                                {formatWeight(
+                                                  Math.abs(
+                                                    production.reconciliation.summary
+                                                      .totalBalanceWeight || 0
+                                                  )
+                                                )}
+                                              </p>
+                                            </div>
+                                            <div className="text-center">
+                                              <p className="text-muted-foreground mb-1 text-xs">
+                                                ✓ Correctos
+                                              </p>
+                                              <p className="text-sm font-semibold text-green-600">
+                                                {production.reconciliation.summary.productsOk || 0}
+                                              </p>
+                                            </div>
+                                            <div className="text-center">
+                                              <p className="text-muted-foreground mb-1 text-xs">
+                                                ⚠ Advertencias
+                                              </p>
+                                              <p className="text-sm font-semibold text-yellow-600">
+                                                {production.reconciliation.summary
+                                                  .productsWarning || 0}
+                                              </p>
+                                            </div>
+                                            <div className="text-center">
+                                              <p className="text-muted-foreground mb-1 text-xs">
+                                                ✗ Errores
+                                              </p>
+                                              <p className="text-destructive text-sm font-semibold">
+                                                {production.reconciliation.summary.productsError ||
+                                                  0}
+                                              </p>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      )}
 
-                                                                    {/* Tabla de productos */}
-                                                                    {/* 
+                                      {/* Tabla de productos */}
+                                      {/* 
                                                                       Formato de productos:
                                                                       - Productos producidos: produced.weight > 0, status: 'ok'/'warning'/'error'
                                                                       - Productos NO producidos: produced.weight === 0 pero existe en venta/stock/reprocesado,
                                                                         balance.percentage === -100, status: 'error'
                                                                       Ver documentación: docs/FORMATO_RESPUESTA_PRODUCTOS_NO_PRODUCIDOS_CONCILIACION.md
                                                                     */}
-                                                                    {production.reconciliation.products && production.reconciliation.products.length > 0 && (
-                                                                        <div className="rounded-md border">
-                                                                            <Table>
-                                                                                <TableHeader>
-                                                                                    <TableRow>
-                                                                                        <TableHead className="h-10 w-[200px] text-sm">Producto</TableHead>
-                                                                                        <TableHead className="h-10 text-right text-sm">Producido</TableHead>
-                                                                                        <TableHead className="h-10 text-right text-sm">En Venta</TableHead>
-                                                                                        <TableHead className="h-10 text-right text-sm">En Stock</TableHead>
-                                                                                        <TableHead className="h-10 text-right text-sm">Reprocesado</TableHead>
-                                                                                        <TableHead className="h-10 text-right text-sm">Balance</TableHead>
-                                                                                        <TableHead className="h-10 w-[100px] text-center text-sm">Estado</TableHead>
-                                                                                    </TableRow>
-                                                                                </TableHeader>
-                                                                                <TableBody>
-                                                                                    {production.reconciliation.products.map((item, index) => {
-                                                                                        // Detectar si es un producto no producido pero que existe en la app
-                                                                                        // Opción 1: Por produced.weight === 0 y contabilizado > 0 (incluye reprocesado)
-                                                                                        const hasNoProduction = (item.produced?.weight || 0) === 0;
-                                                                                        const hasContabilized = ((item.inSales?.weight || 0) > 0 || 
-                                                                                                                 (item.inStock?.weight || 0) > 0 || 
-                                                                                                                 (item.reprocessed?.weight || 0) > 0);
-                                                                                        // Opción 2: Por status === 'error' y balance.percentage === -100
-                                                                                        const isErrorWithNegativeBalance = item.status === 'error' && 
-                                                                                                                           (item.balance?.percentage || 0) === -100;
-                                                                                        // Opción 3: Por el mensaje
-                                                                                        const hasNotProducedMessage = item.message?.includes('no registrado como producido');
-                                                                                        // Detectar productos no producidos: cualquier combinación que indique que existe en sistema pero no fue producido
-                                                                                        const isNotProduced = hasNotProducedMessage || 
-                                                                                                             isErrorWithNegativeBalance || 
-                                                                                                             (hasNoProduction && hasContabilized);
-                                                                                        
-                                                                                        return (
-                                                                                        <TableRow
-                                                                                            key={item.product?.id || index}
-                                                                                            className={`${
-                                                                                                isNotProduced
-                                                                                                    ? 'bg-amber-50 dark:bg-amber-950/20 border-l-4 border-l-amber-500'
-                                                                                                    : item.status === 'error'
-                                                                                                    ? 'bg-destructive/5'
-                                                                                                    : item.status === 'warning'
-                                                                                                    ? 'bg-yellow-500/5'
-                                                                                                    : ''
-                                                                                            }`}
-                                                                                        >
-                                                                                            <TableCell className="font-medium py-3">
-                                                                                                <div className="flex items-start gap-2">
-                                                                                                    {isNotProduced && (
-                                                                                                        <AlertOctagon className="h-4 w-4 text-amber-600 dark:text-amber-500 mt-0.5 flex-shrink-0" />
-                                                                                                    )}
-                                                                                                    <div className="flex-1 min-w-0">
-                                                                                                        <p className="text-sm font-semibold">{item.product?.name || 'Sin nombre'}</p>
-                                                                                                        {isNotProduced ? (
-                                                                                                            <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                                                                                                                <Badge variant="outline" className="text-xs px-2 py-0.5 whitespace-nowrap bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-700">
-                                                                                                                    No producido
-                                                                                                                </Badge>
-                                                                                                                <span className="text-xs text-muted-foreground whitespace-nowrap">
-                                                                                                                    Existe en sistema
-                                                                                                                </span>
-                                                                                                            </div>
-                                                                                                        ) : item.message && item.status !== 'ok' && (
-                                                                                                            <p className={`text-xs mt-1 leading-tight ${
-                                                                                                                item.status === 'error'
-                                                                                                                    ? 'text-destructive'
-                                                                                                                    : item.status === 'warning'
-                                                                                                                    ? 'text-yellow-700'
-                                                                                                                    : 'text-green-700'
-                                                                                                            }`}>
-                                                                                                                {item.message}
-                                                                                                            </p>
-                                                                                                        )}
-                                                                                                    </div>
-                                                                                                </div>
-                                                                                            </TableCell>
-                                                                                            <TableCell className="text-right py-3">
-                                                                                                <div className="flex flex-col justify-start min-h-[2.5rem]">
-                                                                                                    <p className="text-sm font-semibold">{formatWeight(item.produced?.weight || 0)}</p>
-                                                                                                    {(item.produced?.boxes || 0) > 0 ? (
-                                                                                                        <p className="text-xs text-muted-foreground">{item.produced.boxes} cajas</p>
-                                                                                                    ) : (
-                                                                                                        <p className="text-xs text-transparent">0</p>
-                                                                                                    )}
-                                                                                                </div>
-                                                                                            </TableCell>
-                                                                                            <TableCell className="text-right py-3">
-                                                                                                <div className="flex flex-col justify-start min-h-[2.5rem]">
-                                                                                                    <p className="text-sm font-semibold">{formatWeight(item.inSales?.weight || 0)}</p>
-                                                                                                    {(item.inSales?.boxes || 0) > 0 ? (
-                                                                                                        <p className="text-xs text-muted-foreground">{item.inSales.boxes} cajas</p>
-                                                                                                    ) : (
-                                                                                                        <p className="text-xs text-transparent">0</p>
-                                                                                                    )}
-                                                                                                </div>
-                                                                                            </TableCell>
-                                                                                            <TableCell className="text-right py-3">
-                                                                                                <div className="flex flex-col justify-start min-h-[2.5rem]">
-                                                                                                    <p className="text-sm font-semibold">{formatWeight(item.inStock?.weight || 0)}</p>
-                                                                                                    {(item.inStock?.boxes || 0) > 0 ? (
-                                                                                                        <p className="text-xs text-muted-foreground">{item.inStock.boxes} cajas</p>
-                                                                                                    ) : (
-                                                                                                        <p className="text-xs text-transparent">0</p>
-                                                                                                    )}
-                                                                                                </div>
-                                                                                            </TableCell>
-                                                                                            <TableCell className="text-right py-3">
-                                                                                                <div className="flex flex-col justify-start min-h-[2.5rem]">
-                                                                                                    <p className="text-sm font-semibold">{formatWeight(item.reprocessed?.weight || 0)}</p>
-                                                                                                    {(item.reprocessed?.boxes || 0) > 0 ? (
-                                                                                                        <p className="text-xs text-muted-foreground">{item.reprocessed.boxes} cajas</p>
-                                                                                                    ) : (
-                                                                                                        <p className="text-xs text-transparent">0</p>
-                                                                                                    )}
-                                                                                                </div>
-                                                                                            </TableCell>
-                                                                                            <TableCell className="text-right py-3">
-                                                                                                <div>
-                                                                                                    <p className={`text-sm font-semibold ${
-                                                                                                        (item.balance?.weight || 0) < 0
-                                                                                                            ? 'text-destructive'
-                                                                                                            : (item.balance?.weight || 0) > 0
-                                                                                                            ? 'text-yellow-600'
-                                                                                                            : 'text-green-600'
-                                                                                                    }`}>
-                                                                                                        {formatWeight(Math.abs(item.balance?.weight || 0))}
-                                                                                                    </p>
-                                                                                                    <p className={`text-xs ${
-                                                                                                        (item.balance?.weight || 0) < 0
-                                                                                                            ? 'text-destructive'
-                                                                                                            : (item.balance?.weight || 0) > 0
-                                                                                                            ? 'text-yellow-600'
-                                                                                                            : 'text-green-600'
-                                                                                                    }`}>
-                                                                                                        {formatDecimal(Math.abs(item.balance?.percentage || 0))}%
-                                                                                                    </p>
-                                                                                                </div>
-                                                                                            </TableCell>
-                                                                                            <TableCell className="text-center py-3">
-                                                                                                <Badge
-                                                                                                    variant={
-                                                                                                        item.status === 'error'
-                                                                                                            ? 'destructive'
-                                                                                                            : item.status === 'warning'
-                                                                                                            ? 'warning'
-                                                                                                            : 'success'
-                                                                                                    }
-                                                                                                    className="text-xs px-2 py-0.5"
-                                                                                                >
-                                                                                                    {item.status === 'error'
-                                                                                                        ? 'Error'
-                                                                                                        : item.status === 'warning'
-                                                                                                        ? 'Adv'
-                                                                                                        : 'OK'}
-                                                                                                </Badge>
-                                                                                            </TableCell>
-                                                                                        </TableRow>
-                                                                                    );
-                                                                                    })}
-                                                                                </TableBody>
-                                                                            </Table>
-                                                                        </div>
-                                                                    )}
+                                      {production.reconciliation.products &&
+                                        production.reconciliation.products.length > 0 && (
+                                          <div className="rounded-md border">
+                                            <Table>
+                                              <TableHeader>
+                                                <TableRow>
+                                                  <TableHead className="h-10 w-[200px] text-sm">
+                                                    Producto
+                                                  </TableHead>
+                                                  <TableHead className="h-10 text-right text-sm">
+                                                    Producido
+                                                  </TableHead>
+                                                  <TableHead className="h-10 text-right text-sm">
+                                                    En Venta
+                                                  </TableHead>
+                                                  <TableHead className="h-10 text-right text-sm">
+                                                    En Stock
+                                                  </TableHead>
+                                                  <TableHead className="h-10 text-right text-sm">
+                                                    Reprocesado
+                                                  </TableHead>
+                                                  <TableHead className="h-10 text-right text-sm">
+                                                    Balance
+                                                  </TableHead>
+                                                  <TableHead className="h-10 w-[100px] text-center text-sm">
+                                                    Estado
+                                                  </TableHead>
+                                                </TableRow>
+                                              </TableHeader>
+                                              <TableBody>
+                                                {production.reconciliation.products.map(
+                                                  (item, index) => {
+                                                    // Detectar si es un producto no producido pero que existe en la app
+                                                    // Opción 1: Por produced.weight === 0 y contabilizado > 0 (incluye reprocesado)
+                                                    const hasNoProduction =
+                                                      (item.produced?.weight || 0) === 0;
+                                                    const hasContabilized =
+                                                      (item.inSales?.weight || 0) > 0 ||
+                                                      (item.inStock?.weight || 0) > 0 ||
+                                                      (item.reprocessed?.weight || 0) > 0;
+                                                    // Opción 2: Por status === 'error' y balance.percentage === -100
+                                                    const isErrorWithNegativeBalance =
+                                                      item.status === 'error' &&
+                                                      (item.balance?.percentage || 0) === -100;
+                                                    // Opción 3: Por el mensaje
+                                                    const hasNotProducedMessage =
+                                                      item.message?.includes(
+                                                        'no registrado como producido'
+                                                      );
+                                                    // Detectar productos no producidos: cualquier combinación que indique que existe en sistema pero no fue producido
+                                                    const isNotProduced =
+                                                      hasNotProducedMessage ||
+                                                      isErrorWithNegativeBalance ||
+                                                      (hasNoProduction && hasContabilized);
+
+                                                    return (
+                                                      <TableRow
+                                                        key={item.product?.id || index}
+                                                        className={`${
+                                                          isNotProduced
+                                                            ? 'border-l-4 border-l-amber-500 bg-amber-50 dark:bg-amber-950/20'
+                                                            : item.status === 'error'
+                                                              ? 'bg-destructive/5'
+                                                              : item.status === 'warning'
+                                                                ? 'bg-yellow-500/5'
+                                                                : ''
+                                                        }`}
+                                                      >
+                                                        <TableCell className="py-3 font-medium">
+                                                          <div className="flex items-start gap-2">
+                                                            {isNotProduced && (
+                                                              <AlertOctagon className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600 dark:text-amber-500" />
+                                                            )}
+                                                            <div className="min-w-0 flex-1">
+                                                              <p className="text-sm font-semibold">
+                                                                {item.product?.name || 'Sin nombre'}
+                                                              </p>
+                                                              {isNotProduced ? (
+                                                                <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                                                                  <Badge
+                                                                    variant="outline"
+                                                                    className="border-amber-300 bg-amber-100 px-2 py-0.5 text-xs whitespace-nowrap text-amber-700 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                                                                  >
+                                                                    No producido
+                                                                  </Badge>
+                                                                  <span className="text-muted-foreground text-xs whitespace-nowrap">
+                                                                    Existe en sistema
+                                                                  </span>
                                                                 </div>
-                                                            </ScrollArea>
-                                                        </DialogContent>
-                                                    </Dialog>
+                                                              ) : (
+                                                                item.message &&
+                                                                item.status !== 'ok' && (
+                                                                  <p
+                                                                    className={`mt-1 text-xs leading-tight ${
+                                                                      item.status === 'error'
+                                                                        ? 'text-destructive'
+                                                                        : item.status === 'warning'
+                                                                          ? 'text-yellow-700'
+                                                                          : 'text-green-700'
+                                                                    }`}
+                                                                  >
+                                                                    {item.message}
+                                                                  </p>
+                                                                )
+                                                              )}
+                                                            </div>
+                                                          </div>
+                                                        </TableCell>
+                                                        <TableCell className="py-3 text-right">
+                                                          <div className="flex min-h-[2.5rem] flex-col justify-start">
+                                                            <p className="text-sm font-semibold">
+                                                              {formatWeight(
+                                                                item.produced?.weight || 0
+                                                              )}
+                                                            </p>
+                                                            {(item.produced?.boxes || 0) > 0 ? (
+                                                              <p className="text-muted-foreground text-xs">
+                                                                {item.produced.boxes} cajas
+                                                              </p>
+                                                            ) : (
+                                                              <p className="text-xs text-transparent">
+                                                                0
+                                                              </p>
+                                                            )}
+                                                          </div>
+                                                        </TableCell>
+                                                        <TableCell className="py-3 text-right">
+                                                          <div className="flex min-h-[2.5rem] flex-col justify-start">
+                                                            <p className="text-sm font-semibold">
+                                                              {formatWeight(
+                                                                item.inSales?.weight || 0
+                                                              )}
+                                                            </p>
+                                                            {(item.inSales?.boxes || 0) > 0 ? (
+                                                              <p className="text-muted-foreground text-xs">
+                                                                {item.inSales.boxes} cajas
+                                                              </p>
+                                                            ) : (
+                                                              <p className="text-xs text-transparent">
+                                                                0
+                                                              </p>
+                                                            )}
+                                                          </div>
+                                                        </TableCell>
+                                                        <TableCell className="py-3 text-right">
+                                                          <div className="flex min-h-[2.5rem] flex-col justify-start">
+                                                            <p className="text-sm font-semibold">
+                                                              {formatWeight(
+                                                                item.inStock?.weight || 0
+                                                              )}
+                                                            </p>
+                                                            {(item.inStock?.boxes || 0) > 0 ? (
+                                                              <p className="text-muted-foreground text-xs">
+                                                                {item.inStock.boxes} cajas
+                                                              </p>
+                                                            ) : (
+                                                              <p className="text-xs text-transparent">
+                                                                0
+                                                              </p>
+                                                            )}
+                                                          </div>
+                                                        </TableCell>
+                                                        <TableCell className="py-3 text-right">
+                                                          <div className="flex min-h-[2.5rem] flex-col justify-start">
+                                                            <p className="text-sm font-semibold">
+                                                              {formatWeight(
+                                                                item.reprocessed?.weight || 0
+                                                              )}
+                                                            </p>
+                                                            {(item.reprocessed?.boxes || 0) > 0 ? (
+                                                              <p className="text-muted-foreground text-xs">
+                                                                {item.reprocessed.boxes} cajas
+                                                              </p>
+                                                            ) : (
+                                                              <p className="text-xs text-transparent">
+                                                                0
+                                                              </p>
+                                                            )}
+                                                          </div>
+                                                        </TableCell>
+                                                        <TableCell className="py-3 text-right">
+                                                          <div>
+                                                            <p
+                                                              className={`text-sm font-semibold ${
+                                                                (item.balance?.weight || 0) < 0
+                                                                  ? 'text-destructive'
+                                                                  : (item.balance?.weight || 0) > 0
+                                                                    ? 'text-yellow-600'
+                                                                    : 'text-green-600'
+                                                              }`}
+                                                            >
+                                                              {formatWeight(
+                                                                Math.abs(item.balance?.weight || 0)
+                                                              )}
+                                                            </p>
+                                                            <p
+                                                              className={`text-xs ${
+                                                                (item.balance?.weight || 0) < 0
+                                                                  ? 'text-destructive'
+                                                                  : (item.balance?.weight || 0) > 0
+                                                                    ? 'text-yellow-600'
+                                                                    : 'text-green-600'
+                                                              }`}
+                                                            >
+                                                              {formatDecimal(
+                                                                Math.abs(
+                                                                  item.balance?.percentage || 0
+                                                                )
+                                                              )}
+                                                              %
+                                                            </p>
+                                                          </div>
+                                                        </TableCell>
+                                                        <TableCell className="py-3 text-center">
+                                                          <Badge
+                                                            variant={
+                                                              item.status === 'error'
+                                                                ? 'destructive'
+                                                                : item.status === 'warning'
+                                                                  ? 'warning'
+                                                                  : 'success'
+                                                            }
+                                                            className="px-2 py-0.5 text-xs"
+                                                          >
+                                                            {item.status === 'error'
+                                                              ? 'Error'
+                                                              : item.status === 'warning'
+                                                                ? 'Adv'
+                                                                : 'OK'}
+                                                          </Badge>
+                                                        </TableCell>
+                                                      </TableRow>
+                                                    );
+                                                  }
                                                 )}
-                                            </div>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent className="pt-0">
-                                        {/* Resumen compacto - datos globales */}
-                                        {production.reconciliation.summary && (
-                                            <div className="grid grid-cols-3 gap-0">
-                                                {/* Producido vs Registrado */}
-                                                <div className="space-y-1.5 pr-3 border-r">
-                                                    <div className="flex items-center gap-1.5">
-                                                        <Package className="h-3.5 w-3.5 text-muted-foreground" />
-                                                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Producido</p>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-lg font-bold leading-tight">{formatWeight(production.reconciliation.summary.totalProducedWeight || 0)}</p>
-                                                        <p className="text-xs text-muted-foreground mt-0.5">{production.reconciliation.summary.totalProducts || 0} productos</p>
-                                                    </div>
-                                                </div>
-
-                                                {/* Registrado */}
-                                                <div className="space-y-1.5 px-3 border-r">
-                                                    <div className="flex items-center gap-1.5">
-                                                        <Scale className="h-3.5 w-3.5 text-muted-foreground" />
-                                                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Registrado</p>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-lg font-bold leading-tight">{formatWeight(production.reconciliation.summary.totalContabilizedWeight || 0)}</p>
-                                                        <p className="text-xs text-muted-foreground mt-0.5">{production.reconciliation.summary.totalProducts || 0} productos</p>
-                                                    </div>
-                                                </div>
-
-                                                {/* Balance y Estado */}
-                                                <div className="space-y-1.5 pl-3">
-                                                    <div className="flex items-center gap-1.5">
-                                                        {(production.reconciliation.summary.totalBalanceWeight || 0) !== 0 ? (
-                                                            <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
-                                                        ) : (
-                                                            <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
-                                                        )}
-                                                        <p className={`text-xs font-semibold uppercase tracking-wide ${
-                                                            (production.reconciliation.summary.totalBalanceWeight || 0) !== 0
-                                                                ? 'text-destructive'
-                                                                : 'text-green-600'
-                                                        }`}>
-                                                            Balance
-                                                        </p>
-                                                    </div>
-                                                    <div>
-                                                        <p className={`text-lg font-bold leading-tight ${
-                                                            (production.reconciliation.summary.totalBalanceWeight || 0) !== 0
-                                                                ? 'text-destructive'
-                                                                : 'text-green-600'
-                                                        }`}>
-                                                            {formatWeight(Math.abs(production.reconciliation.summary.totalBalanceWeight || 0))}
-                                                        </p>
-                                                        <div className="flex items-center gap-2 mt-0.5 text-xs">
-                                                            <div className="flex items-center gap-1 text-green-600">
-                                                                <CheckCircle2 className="h-3 w-3" />
-                                                                <span>{production.reconciliation.summary.productsOk || 0}</span>
-                                                            </div>
-                                                            <div className="flex items-center gap-1 text-yellow-600">
-                                                                <AlertTriangle className="h-3 w-3" />
-                                                                <span>{production.reconciliation.summary.productsWarning || 0}</span>
-                                                            </div>
-                                                            <div className="flex items-center gap-1 text-destructive">
-                                                                <XCircle className="h-3 w-3" />
-                                                                <span>{production.reconciliation.summary.productsError || 0}</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                              </TableBody>
+                                            </Table>
+                                          </div>
                                         )}
-                                    </CardContent>
-                                </Card>
-                        )}
-
-                        </div>
-
-                        {/* Procesos */}
-                        <ProductionRecordsManager
-                            productionId={productionId}
-                            processTree={processTree}
-                            onRefresh={refetch}
-                            onOpenCreateDialog={() => setCreateRecordOpen(true)}
-                            isClosed={isClosed}
-                        />
-
-                        <CreateProductionRecordDialog
-                            open={createRecordOpen}
-                            onOpenChange={setCreateRecordOpen}
-                            productionId={productionId}
-                            onRefresh={refetch}
-                        />
-                    </div>
-                </TabsContent>
-                <TabsContent value="diagram" className="mt-4">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                                <div className="flex items-center gap-2">
-                                <Package className="h-5 w-5 text-primary" />
-                                Diagrama de Producción
-                                </div>
-                                <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
-                                    <div className="space-y-1">
-                                        <Label className="text-xs">Filtro</Label>
-                                        <Select value={treeFilterType} onValueChange={handleTreeFilterTypeChange}>
-                                            <SelectTrigger className="w-full sm:w-36">
-                                                <SelectValue placeholder="Árbol completo" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="all">Completo</SelectItem>
-                                                <SelectItem value="customer">Cliente</SelectItem>
-                                                <SelectItem value="order">Pedido</SelectItem>
-                                            </SelectContent>
-                                        </Select>
                                     </div>
-                                    {treeFilterType === 'customer' && (
-                                        <div className="w-full space-y-1 sm:w-72">
-                                            <Label className="text-xs">Cliente</Label>
-                                            <Combobox
-                                                options={customerOptionsQuery.data ?? []}
-                                                value={treeFilterValue}
-                                                onChange={setTreeFilterValue}
-                                                loading={customerOptionsQuery.isLoading}
-                                                placeholder="Selecciona cliente"
-                                                searchPlaceholder="Buscar cliente..."
-                                                notFoundMessage="No se encontraron clientes"
-                                            />
-                                        </div>
-                                    )}
-                                    {treeFilterType === 'order' && (
-                                        <div className="w-full space-y-1 sm:w-72">
-                                            <Label className="text-xs">Pedido</Label>
-                                            <Combobox
-                                                options={orderOptionsQuery.data ?? []}
-                                                value={treeFilterValue}
-                                                onChange={setTreeFilterValue}
-                                                loading={orderOptionsQuery.isLoading}
-                                                placeholder="Selecciona pedido"
-                                                searchPlaceholder="Buscar pedido..."
-                                                notFoundMessage="No se encontraron pedidos"
-                                            />
-                                        </div>
-                                    )}
-                                    <ViewModeSelector
-                                        viewMode={viewMode}
-                                        onViewModeChange={setViewMode}
-                                    />
-                                </div>
-                            </CardTitle>
-                            <CardDescription>Visualización del flujo de procesos</CardDescription>
-                        </CardHeader>
-                        <CardContent className="p-0">
-                            {activeTab === 'diagram' ? (
-                                <ProductionDiagram
-                                    processTree={processTree}
-                                    productionId={productionId}
-                                    loading={processTreeLoading}
-                                    viewMode={viewMode}
-                                    onViewModeChange={setViewMode}
-                                    isFiltered={Boolean(treeFilterValue)}
-                                />
-                            ) : null}
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-            </Tabs>
-            </div>
-        </div>
-    )
-}
+                                  </ScrollArea>
+                                </DialogContent>
+                              </Dialog>
+                            )}
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      {/* Resumen compacto - datos globales */}
+                      {production.reconciliation.summary && (
+                        <div className="grid grid-cols-3 gap-0">
+                          {/* Producido vs Registrado */}
+                          <div className="space-y-1.5 border-r pr-3">
+                            <div className="flex items-center gap-1.5">
+                              <Package className="text-muted-foreground h-3.5 w-3.5" />
+                              <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+                                Producido
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-lg leading-tight font-bold">
+                                {formatWeight(
+                                  production.reconciliation.summary.totalProducedWeight || 0
+                                )}
+                              </p>
+                              <p className="text-muted-foreground mt-0.5 text-xs">
+                                {production.reconciliation.summary.totalProducts || 0} productos
+                              </p>
+                            </div>
+                          </div>
 
-export default ProductionView
+                          {/* Registrado */}
+                          <div className="space-y-1.5 border-r px-3">
+                            <div className="flex items-center gap-1.5">
+                              <Scale className="text-muted-foreground h-3.5 w-3.5" />
+                              <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+                                Registrado
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-lg leading-tight font-bold">
+                                {formatWeight(
+                                  production.reconciliation.summary.totalContabilizedWeight || 0
+                                )}
+                              </p>
+                              <p className="text-muted-foreground mt-0.5 text-xs">
+                                {production.reconciliation.summary.totalProducts || 0} productos
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Balance y Estado */}
+                          <div className="space-y-1.5 pl-3">
+                            <div className="flex items-center gap-1.5">
+                              {(production.reconciliation.summary.totalBalanceWeight || 0) !== 0 ? (
+                                <AlertTriangle className="text-destructive h-3.5 w-3.5" />
+                              ) : (
+                                <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
+                              )}
+                              <p
+                                className={`text-xs font-semibold tracking-wide uppercase ${
+                                  (production.reconciliation.summary.totalBalanceWeight || 0) !== 0
+                                    ? 'text-destructive'
+                                    : 'text-green-600'
+                                }`}
+                              >
+                                Balance
+                              </p>
+                            </div>
+                            <div>
+                              <p
+                                className={`text-lg leading-tight font-bold ${
+                                  (production.reconciliation.summary.totalBalanceWeight || 0) !== 0
+                                    ? 'text-destructive'
+                                    : 'text-green-600'
+                                }`}
+                              >
+                                {formatWeight(
+                                  Math.abs(
+                                    production.reconciliation.summary.totalBalanceWeight || 0
+                                  )
+                                )}
+                              </p>
+                              <div className="mt-0.5 flex items-center gap-2 text-xs">
+                                <div className="flex items-center gap-1 text-green-600">
+                                  <CheckCircle2 className="h-3 w-3" />
+                                  <span>{production.reconciliation.summary.productsOk || 0}</span>
+                                </div>
+                                <div className="flex items-center gap-1 text-yellow-600">
+                                  <AlertTriangle className="h-3 w-3" />
+                                  <span>
+                                    {production.reconciliation.summary.productsWarning || 0}
+                                  </span>
+                                </div>
+                                <div className="text-destructive flex items-center gap-1">
+                                  <XCircle className="h-3 w-3" />
+                                  <span>
+                                    {production.reconciliation.summary.productsError || 0}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+
+              {/* Procesos */}
+              <ProductionRecordsManager
+                productionId={productionId}
+                processTree={processTree}
+                onRefresh={refetch}
+                onOpenCreateDialog={() => setCreateRecordOpen(true)}
+                isClosed={isClosed}
+              />
+
+              <CreateProductionRecordDialog
+                open={createRecordOpen}
+                onOpenChange={setCreateRecordOpen}
+                productionId={productionId}
+                onRefresh={refetch}
+              />
+            </div>
+          </TabsContent>
+          <TabsContent value="diagram" className="mt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="flex items-center gap-2">
+                    <Package className="text-primary h-5 w-5" />
+                    Diagrama de Producción
+                  </div>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Filtro</Label>
+                      <Select value={treeFilterType} onValueChange={handleTreeFilterTypeChange}>
+                        <SelectTrigger className="w-full sm:w-36">
+                          <SelectValue placeholder="Árbol completo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Completo</SelectItem>
+                          <SelectItem value="customer">Cliente</SelectItem>
+                          <SelectItem value="order">Pedido</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {treeFilterType === 'customer' && (
+                      <div className="w-full space-y-1 sm:w-72">
+                        <Label className="text-xs">Cliente</Label>
+                        <Combobox
+                          options={customerOptionsQuery.data ?? []}
+                          value={treeFilterValue}
+                          onChange={setTreeFilterValue}
+                          loading={customerOptionsQuery.isLoading}
+                          placeholder="Selecciona cliente"
+                          searchPlaceholder="Buscar cliente..."
+                          notFoundMessage="No se encontraron clientes"
+                        />
+                      </div>
+                    )}
+                    {treeFilterType === 'order' && (
+                      <div className="w-full space-y-1 sm:w-72">
+                        <Label className="text-xs">Pedido</Label>
+                        <Combobox
+                          options={orderOptionsQuery.data ?? []}
+                          value={treeFilterValue}
+                          onChange={setTreeFilterValue}
+                          loading={orderOptionsQuery.isLoading}
+                          placeholder="Selecciona pedido"
+                          searchPlaceholder="Buscar pedido..."
+                          notFoundMessage="No se encontraron pedidos"
+                        />
+                      </div>
+                    )}
+                    <ViewModeSelector viewMode={viewMode} onViewModeChange={setViewMode} />
+                  </div>
+                </CardTitle>
+                <CardDescription>Visualización del flujo de procesos</CardDescription>
+              </CardHeader>
+              <CardContent className="p-0">
+                {activeTab === 'diagram' ? (
+                  <ProductionDiagram
+                    processTree={processTree}
+                    productionId={productionId}
+                    loading={processTreeLoading}
+                    viewMode={viewMode}
+                    onViewModeChange={setViewMode}
+                    isFiltered={Boolean(treeFilterValue)}
+                  />
+                ) : null}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+};
+
+export default ProductionView;

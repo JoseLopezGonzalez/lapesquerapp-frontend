@@ -1,19 +1,17 @@
-import { fetchWithTenant } from "@lib/fetchWithTenant";
-import { API_URL_V1 } from "@/configs/config";
+import { fetchWithTenant } from '@lib/fetchWithTenant';
+import { API_URL_V1 } from '@/configs/config';
 
-export const getRawMaterialReceptionAnnualStats = async (year , species) => {
+export const getRawMaterialReceptionAnnualStats = async (year, species) => {
+  // Construir la URL con los parámetros de filtro
+  const url = `${API_URL_V1}raw-material-receptions-annual-stats?year=${year}&species=${species}`;
 
-    // Construir la URL con los parámetros de filtro
-    const url = `${API_URL_V1}raw-material-receptions-annual-stats?year=${year}&species=${species}`;
-
-    // Realizar la solicitud a la API
-    return await fetchWithTenant(url)
-        .then(response => response.json())
-        .then(data => data.data)
-        .catch(error => {
-            // console.log(error);
-            throw error;
-        })
-        .finally(() => {
-        });
-}
+  // Realizar la solicitud a la API
+  return await fetchWithTenant(url)
+    .then((response) => response.json())
+    .then((data) => data.data)
+    .catch((error) => {
+      // console.log(error);
+      throw error;
+    })
+    .finally(() => {});
+};

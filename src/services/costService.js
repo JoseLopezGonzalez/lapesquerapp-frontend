@@ -1,12 +1,12 @@
-import { apiGet, apiPost, apiPut, apiDelete } from "@/lib/api/apiHelpers";
-import { API_URL_V2 } from "@/configs/config";
+import { apiGet, apiPost, apiPut, apiDelete } from '@/lib/api/apiHelpers';
+import { API_URL_V2 } from '@/configs/config';
 import {
-    normalizeCostCatalog,
-    normalizeProductionCost,
-    normalizeCostBreakdown,
-} from "@/helpers/production/costNormalizers";
-import { mergeCostBreakdownMaterialSourcesWithOutput } from "@/helpers/production/mergeCostBreakdownMaterialSources";
-import { normalizeProductionOutput } from "@/helpers/production/normalizers";
+  normalizeCostCatalog,
+  normalizeProductionCost,
+  normalizeCostBreakdown,
+} from '@/helpers/production/costNormalizers';
+import { mergeCostBreakdownMaterialSourcesWithOutput } from '@/helpers/production/mergeCostBreakdownMaterialSources';
+import { normalizeProductionOutput } from '@/helpers/production/normalizers';
 
 // ==================== COST CATALOG ====================
 
@@ -17,25 +17,23 @@ import { normalizeProductionOutput } from "@/helpers/production/normalizers";
  * @returns {Promise<Object>} - Lista de costes del catálogo
  */
 export function getCostCatalog(token, params = {}) {
-    const normalizedParams = {
-        ...params,
-    };
+  const normalizedParams = {
+    ...params,
+  };
 
-    if (typeof normalizedParams.active_only === 'boolean') {
-        normalizedParams.active_only = normalizedParams.active_only ? 1 : 0;
-    }
+  if (typeof normalizedParams.active_only === 'boolean') {
+    normalizedParams.active_only = normalizedParams.active_only ? 1 : 0;
+  }
 
-    return apiGet(`${API_URL_V2}cost-catalog`, token, normalizedParams, {
-        transform: (data) => {
-            const catalog = data.data || data || [];
-            return {
-                ...data,
-                data: Array.isArray(catalog) 
-                    ? catalog.map(normalizeCostCatalog) 
-                    : []
-            };
-        }
-    });
+  return apiGet(`${API_URL_V2}cost-catalog`, token, normalizedParams, {
+    transform: (data) => {
+      const catalog = data.data || data || [];
+      return {
+        ...data,
+        data: Array.isArray(catalog) ? catalog.map(normalizeCostCatalog) : [],
+      };
+    },
+  });
 }
 
 /**
@@ -45,12 +43,17 @@ export function getCostCatalog(token, params = {}) {
  * @returns {Promise<Object>} - Coste del catálogo
  */
 export function getCostCatalogItem(catalogId, token) {
-    return apiGet(`${API_URL_V2}cost-catalog/${catalogId}`, token, {}, {
-        transform: (data) => {
-            const catalog = data.data || data;
-            return normalizeCostCatalog(catalog);
-        }
-    });
+  return apiGet(
+    `${API_URL_V2}cost-catalog/${catalogId}`,
+    token,
+    {},
+    {
+      transform: (data) => {
+        const catalog = data.data || data;
+        return normalizeCostCatalog(catalog);
+      },
+    }
+  );
 }
 
 /**
@@ -60,15 +63,15 @@ export function getCostCatalogItem(catalogId, token) {
  * @returns {Promise<Object>} - Coste creado
  */
 export function createCostCatalogItem(catalogData, token) {
-    return apiPost(`${API_URL_V2}cost-catalog`, token, catalogData, {
-        transform: (data) => {
-            const catalog = data.data || data;
-            return {
-                ...data,
-                data: normalizeCostCatalog(catalog)
-            };
-        }
-    });
+  return apiPost(`${API_URL_V2}cost-catalog`, token, catalogData, {
+    transform: (data) => {
+      const catalog = data.data || data;
+      return {
+        ...data,
+        data: normalizeCostCatalog(catalog),
+      };
+    },
+  });
 }
 
 /**
@@ -79,15 +82,15 @@ export function createCostCatalogItem(catalogData, token) {
  * @returns {Promise<Object>} - Coste actualizado
  */
 export function updateCostCatalogItem(catalogId, catalogData, token) {
-    return apiPut(`${API_URL_V2}cost-catalog/${catalogId}`, token, catalogData, {
-        transform: (data) => {
-            const catalog = data.data || data;
-            return {
-                ...data,
-                data: normalizeCostCatalog(catalog)
-            };
-        }
-    });
+  return apiPut(`${API_URL_V2}cost-catalog/${catalogId}`, token, catalogData, {
+    transform: (data) => {
+      const catalog = data.data || data;
+      return {
+        ...data,
+        data: normalizeCostCatalog(catalog),
+      };
+    },
+  });
 }
 
 /**
@@ -97,7 +100,7 @@ export function updateCostCatalogItem(catalogId, catalogData, token) {
  * @returns {Promise<Object>} - Respuesta del servidor
  */
 export function deleteCostCatalogItem(catalogId, token) {
-    return apiDelete(`${API_URL_V2}cost-catalog/${catalogId}`, token);
+  return apiDelete(`${API_URL_V2}cost-catalog/${catalogId}`, token);
 }
 
 // ==================== PRODUCTION COSTS ====================
@@ -109,17 +112,15 @@ export function deleteCostCatalogItem(catalogId, token) {
  * @returns {Promise<Object>} - Lista de costes
  */
 export function getProductionCosts(token, params = {}) {
-    return apiGet(`${API_URL_V2}production-costs`, token, params, {
-        transform: (data) => {
-            const costs = data.data || data || [];
-            return {
-                ...data,
-                data: Array.isArray(costs) 
-                    ? costs.map(normalizeProductionCost) 
-                    : []
-            };
-        }
-    });
+  return apiGet(`${API_URL_V2}production-costs`, token, params, {
+    transform: (data) => {
+      const costs = data.data || data || [];
+      return {
+        ...data,
+        data: Array.isArray(costs) ? costs.map(normalizeProductionCost) : [],
+      };
+    },
+  });
 }
 
 /**
@@ -129,12 +130,17 @@ export function getProductionCosts(token, params = {}) {
  * @returns {Promise<Object>} - Coste de producción
  */
 export function getProductionCost(costId, token) {
-    return apiGet(`${API_URL_V2}production-costs/${costId}`, token, {}, {
-        transform: (data) => {
-            const cost = data.data || data;
-            return normalizeProductionCost(cost);
-        }
-    });
+  return apiGet(
+    `${API_URL_V2}production-costs/${costId}`,
+    token,
+    {},
+    {
+      transform: (data) => {
+        const cost = data.data || data;
+        return normalizeProductionCost(cost);
+      },
+    }
+  );
 }
 
 /**
@@ -144,15 +150,15 @@ export function getProductionCost(costId, token) {
  * @returns {Promise<Object>} - Coste creado
  */
 export function createProductionCost(costData, token) {
-    return apiPost(`${API_URL_V2}production-costs`, token, costData, {
-        transform: (data) => {
-            const cost = data.data || data;
-            return {
-                ...data,
-                data: normalizeProductionCost(cost)
-            };
-        }
-    });
+  return apiPost(`${API_URL_V2}production-costs`, token, costData, {
+    transform: (data) => {
+      const cost = data.data || data;
+      return {
+        ...data,
+        data: normalizeProductionCost(cost),
+      };
+    },
+  });
 }
 
 /**
@@ -163,15 +169,15 @@ export function createProductionCost(costData, token) {
  * @returns {Promise<Object>} - Coste actualizado
  */
 export function updateProductionCost(costId, costData, token) {
-    return apiPut(`${API_URL_V2}production-costs/${costId}`, token, costData, {
-        transform: (data) => {
-            const cost = data.data || data;
-            return {
-                ...data,
-                data: normalizeProductionCost(cost)
-            };
-        }
-    });
+  return apiPut(`${API_URL_V2}production-costs/${costId}`, token, costData, {
+    transform: (data) => {
+      const cost = data.data || data;
+      return {
+        ...data,
+        data: normalizeProductionCost(cost),
+      };
+    },
+  });
 }
 
 /**
@@ -181,7 +187,7 @@ export function updateProductionCost(costId, costData, token) {
  * @returns {Promise<Object>} - Respuesta del servidor
  */
 export function deleteProductionCost(costId, token) {
-    return apiDelete(`${API_URL_V2}production-costs/${costId}`, token);
+  return apiDelete(`${API_URL_V2}production-costs/${costId}`, token);
 }
 
 // ==================== COST BREAKDOWN ====================
@@ -193,21 +199,23 @@ export function deleteProductionCost(costId, token) {
  * @returns {Promise<Object>} - Desglose de costes
  */
 export function getCostBreakdown(outputId, token) {
-    return apiGet(`${API_URL_V2}production-outputs/${outputId}/cost-breakdown`, token, {}, {
-        transform: (data) => {
-            const breakdown = data.data || data;
-            const costRaw = breakdown.cost_breakdown || breakdown.costBreakdown;
-            const mergedCost = mergeCostBreakdownMaterialSourcesWithOutput(
-                costRaw,
-                breakdown.output
-            );
-            return {
-                ...data,
-                data: {
-                    output: breakdown.output ? normalizeProductionOutput(breakdown.output) : null,
-                    costBreakdown: normalizeCostBreakdown(mergedCost),
-                }
-            };
-        }
-    });
+  return apiGet(
+    `${API_URL_V2}production-outputs/${outputId}/cost-breakdown`,
+    token,
+    {},
+    {
+      transform: (data) => {
+        const breakdown = data.data || data;
+        const costRaw = breakdown.cost_breakdown || breakdown.costBreakdown;
+        const mergedCost = mergeCostBreakdownMaterialSourcesWithOutput(costRaw, breakdown.output);
+        return {
+          ...data,
+          data: {
+            output: breakdown.output ? normalizeProductionOutput(breakdown.output) : null,
+            costBreakdown: normalizeCostBreakdown(mergedCost),
+          },
+        };
+      },
+    }
+  );
 }

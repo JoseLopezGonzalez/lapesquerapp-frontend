@@ -5,6 +5,7 @@ Este documento detalla cómo configurar instancias para gestionar entidades en l
 ---
 
 ## Estructura General de Configuración
+
 Cada configuración sigue esta estructura base:
 
 ```javascript
@@ -41,13 +42,16 @@ Cada configuración sigue esta estructura base:
 ### Tipos de Filtros (`type`)
 
 #### 1. **`search`**
+
 Filtro de texto general para búsquedas rápidas.
 
 **Opciones adicionales:**
+
 - `placeholder`: Texto de ayuda en el campo.
 - `name`: Nombre único del filtro.
 
 **Ejemplo:**
+
 ```javascript
 {
   name: "id",
@@ -60,13 +64,16 @@ Filtro de texto general para búsquedas rápidas.
 ---
 
 #### 2. **`text`**
+
 Campo de texto simple.
 
 **Opciones adicionales:**
+
 - `placeholder`: Texto de ayuda.
 - `name`: Nombre único.
 
 **Ejemplo:**
+
 ```javascript
 {
   name: "notes",
@@ -79,13 +86,16 @@ Campo de texto simple.
 ---
 
 #### 3. **`textarea`**
+
 Campo de texto para múltiples líneas.
 
 **Opciones adicionales:**
+
 - `placeholder`: Texto de ayuda.
 - `name`: Nombre único.
 
 **Ejemplo:**
+
 ```javascript
 {
   name: "comments",
@@ -98,13 +108,16 @@ Campo de texto para múltiples líneas.
 ---
 
 #### 4. **`textAccumulator`**
+
 Permite acumular varias entradas de texto.
 
 **Opciones adicionales:**
+
 - `placeholder`: Texto de ayuda.
 - `name`: Nombre único.
 
 **Ejemplo:**
+
 ```javascript
 {
   name: "ids",
@@ -117,13 +130,16 @@ Permite acumular varias entradas de texto.
 ---
 
 #### 5. **`number`**
+
 Campo para valores numéricos.
 
 **Opciones adicionales:**
+
 - `placeholder`: Texto de ayuda.
 - `name`: Nombre único.
 
 **Ejemplo:**
+
 ```javascript
 {
   name: "netWeight",
@@ -136,13 +152,16 @@ Campo para valores numéricos.
 ---
 
 #### 6. **`date`**
+
 Selector para una fecha específica.
 
 **Opciones adicionales:**
+
 - `placeholder`: Texto de ayuda.
 - `name`: Nombre único.
 
 **Ejemplo:**
+
 ```javascript
 {
   name: "deliveryDate",
@@ -155,12 +174,15 @@ Selector para una fecha específica.
 ---
 
 #### 7. **`dateRange`**
+
 Selector para un rango de fechas (inicio y fin).
 
 **Opciones adicionales:**
+
 - `name`: Nombre único.
 
 **Ejemplo:**
+
 ```javascript
 {
   name: "dateRange",
@@ -172,15 +194,18 @@ Selector para un rango de fechas (inicio y fin).
 ---
 
 #### 8. **`pairSelectBoxes`**
+
 Filtro con opciones seleccionables en dos listas.
 
 **Opciones adicionales:**
+
 - `options`: Array de objetos con:
   - `name`: Identificador único.
   - `label`: Texto visible.
   - `value`: Valor inicial (booleano).
 
 **Ejemplo:**
+
 ```javascript
 {
   name: "status",
@@ -196,14 +221,17 @@ Filtro con opciones seleccionables en dos listas.
 ---
 
 #### 9. **`autocomplete`**
+
 Selector con opciones dinámicas obtenidas de un endpoint.
 
 **Opciones adicionales:**
+
 - `endpoint`: URL para obtener opciones.
 - `placeholder`: Texto de ayuda.
 - `name`: Nombre único.
 
 **Ejemplo:**
+
 ```javascript
 {
   name: "supplier",
@@ -221,9 +249,11 @@ Selector con opciones dinámicas obtenidas de un endpoint.
 ### Tipos de Columnas (`type`)
 
 #### 1. **`text`**
+
 Columna de texto simple, basada en un valor o ruta.
 
 **Ejemplo:**
+
 ```javascript
 {
   name: "id",
@@ -236,15 +266,18 @@ Columna de texto simple, basada en un valor o ruta.
 ---
 
 #### 2. **`badge`**
+
 Columna que muestra indicadores visuales.
 
 **Opciones adicionales:**
+
 - `options`: Mapa de configuraciones para cada valor.
   - `label`: Texto del badge.
   - `color`: Color del badge.
   - `outline`: Si el badge solo tiene borde (booleano).
 
 **Ejemplo:**
+
 ```javascript
 {
   name: "status",
@@ -260,9 +293,11 @@ Columna que muestra indicadores visuales.
 ---
 
 #### 3. **`date`**
+
 Columna para mostrar fechas.
 
 **Ejemplo:**
+
 ```javascript
 {
   name: "createdAt",
@@ -275,9 +310,11 @@ Columna para mostrar fechas.
 ---
 
 #### 4. **`button`**
+
 Columna para acciones como botones.
 
 **Ejemplo:**
+
 ```javascript
 {
   name: "actions",
@@ -293,40 +330,40 @@ Columna para acciones como botones.
 ```javascript
 export const configs = {
   orders: {
-    title: "Pedidos",
-    description: "Gestiona y consulta pedidos.",
+    title: 'Pedidos',
+    description: 'Gestiona y consulta pedidos.',
     emptyState: {
-      title: "No hay pedidos",
-      description: "Modifica los filtros o crea un nuevo pedido.",
+      title: 'No hay pedidos',
+      description: 'Modifica los filtros o crea un nuevo pedido.',
     },
-    endpoint: "orders",
-    viewRoute: "/admin/orders/:id",
-    deleteEndpoint: "/orders/:id",
-    createPath: "/admin/orders/create",
+    endpoint: 'orders',
+    viewRoute: '/admin/orders/:id',
+    deleteEndpoint: '/orders/:id',
+    createPath: '/admin/orders/create',
     filtersGroup: {
       search: {
-        label: "Buscar",
+        label: 'Buscar',
         filters: [
           {
-            name: "id",
-            label: "Buscar por ID",
-            type: "search",
-            placeholder: "Escribe un ID",
+            name: 'id',
+            label: 'Buscar por ID',
+            type: 'search',
+            placeholder: 'Escribe un ID',
           },
         ],
       },
       groups: [
         {
-          name: "generals",
-          label: "Generales",
+          name: 'generals',
+          label: 'Generales',
           filters: [
             {
-              name: "status",
-              label: "Estado",
-              type: "pairSelectBoxes",
+              name: 'status',
+              label: 'Estado',
+              type: 'pairSelectBoxes',
               options: [
-                { name: "pending", label: "Pendiente", value: false },
-                { name: "completed", label: "Completado", value: false },
+                { name: 'pending', label: 'Pendiente', value: false },
+                { name: 'completed', label: 'Completado', value: false },
               ],
             },
           ],
@@ -335,12 +372,11 @@ export const configs = {
     },
     table: {
       headers: [
-        { name: "id", label: "ID", type: "text", path: "id" },
-        { name: "status", label: "Estado", type: "badge" },
-        { name: "actions", label: "Acciones", type: "button" },
+        { name: 'id', label: 'ID', type: 'text', path: 'id' },
+        { name: 'status', label: 'Estado', type: 'badge' },
+        { name: 'actions', label: 'Acciones', type: 'button' },
       ],
     },
   },
 };
 ```
-

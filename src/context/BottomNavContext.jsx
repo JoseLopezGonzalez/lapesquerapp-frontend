@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
 import React, { createContext, useContext, useState } from 'react';
 
 /**
  * BottomNavContext - Context para controlar la visibilidad del bottom navbar
- * 
+ *
  * Permite que cualquier componente hijo pueda ocultar/mostrar el bottom navbar
  * de forma genérica sin necesidad de modificar el layout principal.
  */
@@ -16,7 +16,7 @@ const BottomNavContext = createContext({
 
 /**
  * BottomNavProvider - Provider del context
- * 
+ *
  * @param {object} props
  * @param {React.ReactNode} props.children - Componentes hijos
  */
@@ -32,7 +32,7 @@ export function BottomNavProvider({ children }) {
 
 /**
  * useBottomNav - Hook para acceder al context del bottom navbar
- * 
+ *
  * @returns {object} { hideBottomNav, setHideBottomNav }
  */
 export function useBottomNav() {
@@ -45,9 +45,9 @@ export function useBottomNav() {
 
 /**
  * useHideBottomNav - Hook simplificado para ocultar/mostrar el bottom navbar
- * 
+ *
  * @param {boolean} hide - Si true, oculta el bottom navbar. Si false, lo muestra.
- * 
+ *
  * @example
  * // En un componente:
  * useHideBottomNav(true); // Oculta el bottom navbar
@@ -58,7 +58,7 @@ export function useHideBottomNav(hide = true) {
 
   React.useEffect(() => {
     setHideBottomNav(hide);
-    
+
     // Cleanup: restaurar el bottom navbar cuando el componente se desmonte
     return () => {
       setHideBottomNav(false);

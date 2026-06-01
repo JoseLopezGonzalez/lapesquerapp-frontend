@@ -1,6 +1,6 @@
 /**
  * Excel Generator Service - Servicio para generación de Excel masivo
- * 
+ *
  * Genera un único archivo Excel consolidando múltiples documentos
  */
 
@@ -10,7 +10,7 @@ import { generateAsocExcelRows } from '@/exportHelpers/asocExportHelper';
 
 /**
  * Generates a massive Excel file from multiple processed documents
- * 
+ *
  * @param {Array} documents - Array of objects with document data and type:
  *   - document: Processed document data
  *   - documentType: 'albaranCofradiaPescadoresSantoCristoDelMar' | 'listadoComprasLonjaDeIsla' | 'listadoComprasAsocArmadoresPuntaDelMoral'
@@ -20,112 +20,113 @@ import { generateAsocExcelRows } from '@/exportHelpers/asocExportHelper';
  * @returns {Blob} Excel file blob
  */
 export async function generateMassiveExcel(documents, options = {}) {
-    const XLSX = await import('xlsx-js-style');
-    const { software = 'A3ERP', applyFullTasaPescaRepercusion } = options;
+  const XLSX = await import('xlsx-js-style');
+  const { software = 'A3ERP', applyFullTasaPescaRepercusion } = options;
 
-    if (documents.length === 0) {
-        throw new Error('No hay documentos para exportar');
+  if (documents.length === 0) {
+    throw new Error('No hay documentos para exportar');
+  }
+
+  // Map document types to their export helpers
+  const EXPORT_HELPERS = {
+    albaranCofradiaPescadoresSantoCristoDelMar: generateCofraExcelRows,
+    listadoComprasLonjaDeIsla: generateLonjaDeIslaExcelRows,
+    listadoComprasAsocArmadoresPuntaDelMoral: generateAsocExcelRows,
+  };
+
+  const allCompraRows = [];
+  const allVentaRows = [];
+  let currentSequenceCompra = 1;
+  let currentSequenceVenta = 1;
+
+  // Process each document
+  documents.forEach(({ document, documentType }) => {
+    const helper = EXPORT_HELPERS[documentType];
+
+    if (!helper) {
+      console.warn(`No hay helper de exportación para el tipo: ${documentType}`);
+      return;
     }
 
-    // Map document types to their export helpers
-    const EXPORT_HELPERS = {
-        'albaranCofradiaPescadoresSantoCristoDelMar': generateCofraExcelRows,
-        'listadoComprasLonjaDeIsla': generateLonjaDeIslaExcelRows,
-        'listadoComprasAsocArmadoresPuntaDelMoral': generateAsocExcelRows,
-    };
-
-    const allCompraRows = [];
-    const allVentaRows = [];
-    let currentSequenceCompra = 1;
-    let currentSequenceVenta = 1;
-
-    // Process each document
-    documents.forEach(({ document, documentType }) => {
-        const helper = EXPORT_HELPERS[documentType];
-        
-        if (!helper) {
-            console.warn(`No hay helper de exportación para el tipo: ${documentType}`);
-            return;
-        }
-
-        // Generate rows for this document with continuing sequence
-        const result = helper(document, {
-            startSequence: currentSequenceCompra,
-            startSequenceVenta: currentSequenceVenta,
-            applyFullTasaPescaRepercusion,
-        });
-
-        if (result?.rows?.length > 0) {
-            allCompraRows.push(...result.rows);
-        }
-        if (typeof result?.nextSequence === 'number') {
-            currentSequenceCompra = result.nextSequence;
-        }
-
-        if (result?.ventaRows?.length > 0) {
-            allVentaRows.push(...result.ventaRows);
-        }
-        if (typeof result?.nextVentaSequence === 'number') {
-            currentSequenceVenta = result.nextVentaSequence;
-        }
+    // Generate rows for this document with continuing sequence
+    const result = helper(document, {
+      startSequence: currentSequenceCompra,
+      startSequenceVenta: currentSequenceVenta,
+      applyFullTasaPescaRepercusion,
     });
 
-    if (allCompraRows.length === 0 && allVentaRows.length === 0) {
-        throw new Error('No se generaron filas para exportar');
+    if (result?.rows?.length > 0) {
+      allCompraRows.push(...result.rows);
+    }
+    if (typeof result?.nextSequence === 'number') {
+      currentSequenceCompra = result.nextSequence;
     }
 
-    const yellowFill = { fill: { fgColor: { rgb: "FFFF00" } } };
+    if (result?.ventaRows?.length > 0) {
+      allVentaRows.push(...result.ventaRows);
+    }
+    if (typeof result?.nextVentaSequence === 'number') {
+      currentSequenceVenta = result.nextVentaSequence;
+    }
+  });
 
-    const worksheet = XLSX.utils.json_to_sheet(allCompraRows);
+  if (allCompraRows.length === 0 && allVentaRows.length === 0) {
+    throw new Error('No se generaron filas para exportar');
+  }
 
-    if (allCompraRows.length > 0) {
-        const headers = Object.keys(allCompraRows[0]);
-        const lincodartCol = headers.indexOf('LINCODART');
-        if (lincodartCol >= 0) {
-            for (let r = 0; r < allCompraRows.length; r++) {
-                if (!allCompraRows[r].LINCODART && allCompraRows[r].LINCODART !== 0) {
-                    const cellRef = XLSX.utils.encode_cell({ r: r + 1, c: lincodartCol });
-                    if (!worksheet[cellRef]) worksheet[cellRef] = { v: '', t: 's' };
-                    worksheet[cellRef].s = yellowFill;
-                }
-            }
+  const yellowFill = { fill: { fgColor: { rgb: 'FFFF00' } } };
+
+  const worksheet = XLSX.utils.json_to_sheet(allCompraRows);
+
+  if (allCompraRows.length > 0) {
+    const headers = Object.keys(allCompraRows[0]);
+    const lincodartCol = headers.indexOf('LINCODART');
+    if (lincodartCol >= 0) {
+      for (let r = 0; r < allCompraRows.length; r++) {
+        if (!allCompraRows[r].LINCODART && allCompraRows[r].LINCODART !== 0) {
+          const cellRef = XLSX.utils.encode_cell({ r: r + 1, c: lincodartCol });
+          if (!worksheet[cellRef]) worksheet[cellRef] = { v: '', t: 's' };
+          worksheet[cellRef].s = yellowFill;
         }
+      }
     }
+  }
 
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'ALBARANESCOMPRA');
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'ALBARANESCOMPRA');
 
-    if (allVentaRows.length > 0) {
-        const worksheetVenta = XLSX.utils.json_to_sheet(allVentaRows);
-        XLSX.utils.book_append_sheet(workbook, worksheetVenta, 'ALBARANESVENTA');
-    }
+  if (allVentaRows.length > 0) {
+    const worksheetVenta = XLSX.utils.json_to_sheet(allVentaRows);
+    XLSX.utils.book_append_sheet(workbook, worksheetVenta, 'ALBARANESVENTA');
+  }
 
-    const currentDate = new Date().toISOString().split('T')[0].replace(/-/g, '');
+  const currentDate = new Date().toISOString().split('T')[0].replace(/-/g, '');
 
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-    const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    
-    return blob;
+  const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+  const blob = new Blob([excelBuffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  });
+
+  return blob;
 }
 
 /**
  * Downloads a massive Excel file
- * 
+ *
  * @param {Array} documents - Array of documents to export
  * @param {Object} options - Options for generation
  */
 export async function downloadMassiveExcel(documents, options = {}) {
-    try {
-        const [blob, { saveAs }] = await Promise.all([
-            generateMassiveExcel(documents, options),
-            import('file-saver'),
-        ]);
-        const currentDate = new Date().toISOString().split('T')[0].replace(/-/g, '');
-        const filename = `ALBARANES_A3ERP_MASIVO_${currentDate}.xlsx`;
-        saveAs(blob, filename);
-    } catch (error) {
-        console.error('Error al generar Excel masivo:', error);
-        throw error;
-    }
+  try {
+    const [blob, { saveAs }] = await Promise.all([
+      generateMassiveExcel(documents, options),
+      import('file-saver'),
+    ]);
+    const currentDate = new Date().toISOString().split('T')[0].replace(/-/g, '');
+    const filename = `ALBARANES_A3ERP_MASIVO_${currentDate}.xlsx`;
+    saveAs(blob, filename);
+  } catch (error) {
+    console.error('Error al generar Excel masivo:', error);
+    throw error;
+  }
 }
-

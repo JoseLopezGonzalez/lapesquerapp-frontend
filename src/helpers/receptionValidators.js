@@ -9,10 +9,10 @@
  * @returns {string|null} Error message or null if valid
  */
 export const validateSupplier = (supplier) => {
-    if (!supplier) {
-        return 'Debe seleccionar un proveedor';
-    }
-    return null;
+  if (!supplier) {
+    return 'Debe seleccionar un proveedor';
+  }
+  return null;
 };
 
 /**
@@ -21,13 +21,13 @@ export const validateSupplier = (supplier) => {
  * @returns {string|null} Error message or null if valid
  */
 export const validateDate = (date) => {
-    if (!date) {
-        return 'Debe seleccionar una fecha';
-    }
-    if (!(date instanceof Date) || isNaN(date.getTime())) {
-        return 'La fecha no es válida';
-    }
-    return null;
+  if (!date) {
+    return 'Debe seleccionar una fecha';
+  }
+  if (!(date instanceof Date) || isNaN(date.getTime())) {
+    return 'La fecha no es válida';
+  }
+  return null;
 };
 
 /**
@@ -37,23 +37,23 @@ export const validateDate = (date) => {
  * @returns {string|null} Error message or null if valid
  */
 export const validateNetWeight = (netWeight, required = true) => {
-    if (required && (!netWeight || netWeight === '')) {
-        return 'El peso neto es obligatorio';
-    }
-    const weight = parseFloat(netWeight);
-    if (isNaN(weight)) {
-        return 'El peso debe ser un número válido';
-    }
-    if (weight < 0) {
-        return 'El peso no puede ser negativo';
-    }
-    if (weight > 100000) {
-        return 'El peso es demasiado grande (máximo 100,000 kg)';
-    }
-    if (required && weight <= 0) {
-        return 'El peso debe ser mayor que 0';
-    }
-    return null;
+  if (required && (!netWeight || netWeight === '')) {
+    return 'El peso neto es obligatorio';
+  }
+  const weight = parseFloat(netWeight);
+  if (isNaN(weight)) {
+    return 'El peso debe ser un número válido';
+  }
+  if (weight < 0) {
+    return 'El peso no puede ser negativo';
+  }
+  if (weight > 100000) {
+    return 'El peso es demasiado grande (máximo 100,000 kg)';
+  }
+  if (required && weight <= 0) {
+    return 'El peso debe ser mayor que 0';
+  }
+  return null;
 };
 
 /**
@@ -63,23 +63,23 @@ export const validateNetWeight = (netWeight, required = true) => {
  * @returns {string|null} Error message or null if valid
  */
 export const validatePrice = (price, required = false) => {
-    if (!required && (!price || price === '')) {
-        return null; // Price is optional
-    }
-    if (required && (!price || price === '')) {
-        return 'El precio es obligatorio';
-    }
-    const priceValue = parseFloat(price);
-    if (isNaN(priceValue)) {
-        return 'El precio debe ser un número válido';
-    }
-    if (priceValue < 0) {
-        return 'El precio no puede ser negativo';
-    }
-    if (priceValue > 10000) {
-        return 'El precio es demasiado alto (máximo 10,000 €/kg)';
-    }
-    return null;
+  if (!required && (!price || price === '')) {
+    return null; // Price is optional
+  }
+  if (required && (!price || price === '')) {
+    return 'El precio es obligatorio';
+  }
+  const priceValue = parseFloat(price);
+  if (isNaN(priceValue)) {
+    return 'El precio debe ser un número válido';
+  }
+  if (priceValue < 0) {
+    return 'El precio no puede ser negativo';
+  }
+  if (priceValue > 10000) {
+    return 'El precio es demasiado alto (máximo 10,000 €/kg)';
+  }
+  return null;
 };
 
 /**
@@ -89,20 +89,20 @@ export const validatePrice = (price, required = false) => {
  * @returns {string|null} Error message or null if valid
  */
 export const validateBoxes = (boxes, required = true) => {
-    if (required && (!boxes || boxes === '')) {
-        return 'Las cajas son obligatorias';
-    }
-    const boxCount = parseInt(boxes);
-    if (isNaN(boxCount)) {
-        return 'El número de cajas debe ser un número válido';
-    }
-    if (boxCount < 1) {
-        return 'Debe haber al menos 1 caja';
-    }
-    if (boxCount > 10000) {
-        return 'El número de cajas es demasiado grande (máximo 10,000)';
-    }
-    return null;
+  if (required && (!boxes || boxes === '')) {
+    return 'Las cajas son obligatorias';
+  }
+  const boxCount = parseInt(boxes);
+  if (isNaN(boxCount)) {
+    return 'El número de cajas debe ser un número válido';
+  }
+  if (boxCount < 1) {
+    return 'Debe haber al menos 1 caja';
+  }
+  if (boxCount > 10000) {
+    return 'El número de cajas es demasiado grande (máximo 10,000)';
+  }
+  return null;
 };
 
 /**
@@ -111,20 +111,20 @@ export const validateBoxes = (boxes, required = true) => {
  * @returns {string|null} Error message or null if valid
  */
 export const validateDeclaredTotalAmount = (amount) => {
-    if (!amount || amount === '') {
-        return null; // Optional field
-    }
-    const amountValue = parseFloat(amount);
-    if (isNaN(amountValue)) {
-        return 'El importe debe ser un número válido';
-    }
-    if (amountValue < 0) {
-        return 'El importe no puede ser negativo';
-    }
-    if (amountValue > 10000000) {
-        return 'El importe es demasiado grande (máximo 10,000,000 €)';
-    }
-    return null;
+  if (!amount || amount === '') {
+    return null; // Optional field
+  }
+  const amountValue = parseFloat(amount);
+  if (isNaN(amountValue)) {
+    return 'El importe debe ser un número válido';
+  }
+  if (amountValue < 0) {
+    return 'El importe no puede ser negativo';
+  }
+  if (amountValue > 10000000) {
+    return 'El importe es demasiado grande (máximo 10,000,000 €)';
+  }
+  return null;
 };
 
 /**
@@ -133,20 +133,20 @@ export const validateDeclaredTotalAmount = (amount) => {
  * @returns {string|null} Error message or null if valid
  */
 export const validateDeclaredTotalNetWeight = (weight) => {
-    if (!weight || weight === '') {
-        return null; // Optional field
-    }
-    const weightValue = parseFloat(weight);
-    if (isNaN(weightValue)) {
-        return 'El peso debe ser un número válido';
-    }
-    if (weightValue < 0) {
-        return 'El peso no puede ser negativo';
-    }
-    if (weightValue > 1000000) {
-        return 'El peso es demasiado grande (máximo 1,000,000 kg)';
-    }
-    return null;
+  if (!weight || weight === '') {
+    return null; // Optional field
+  }
+  const weightValue = parseFloat(weight);
+  if (isNaN(weightValue)) {
+    return 'El peso debe ser un número válido';
+  }
+  if (weightValue < 0) {
+    return 'El peso no puede ser negativo';
+  }
+  if (weightValue > 1000000) {
+    return 'El peso es demasiado grande (máximo 1,000,000 kg)';
+  }
+  return null;
 };
 
 /**
@@ -155,21 +155,19 @@ export const validateDeclaredTotalNetWeight = (weight) => {
  * @returns {string|null} Error message or null if valid
  */
 export const validateReceptionDetails = (details) => {
-    if (!details || details.length === 0) {
-        return 'Debe agregar al menos una línea de producto';
-    }
-    
-    const validDetails = details.filter(detail => 
-        detail.product && 
-        detail.netWeight && 
-        parseFloat(detail.netWeight) > 0
-    );
-    
-    if (validDetails.length === 0) {
-        return 'Debe completar al menos una línea válida con producto y peso neto';
-    }
-    
-    return null;
+  if (!details || details.length === 0) {
+    return 'Debe agregar al menos una línea de producto';
+  }
+
+  const validDetails = details.filter(
+    (detail) => detail.product && detail.netWeight && parseFloat(detail.netWeight) > 0
+  );
+
+  if (validDetails.length === 0) {
+    return 'Debe completar al menos una línea válida con producto y peso neto';
+  }
+
+  return null;
 };
 
 /**
@@ -178,21 +176,20 @@ export const validateReceptionDetails = (details) => {
  * @returns {string|null} Error message or null if valid
  */
 export const validateTemporalPallets = (temporalPallets) => {
-    if (!temporalPallets || temporalPallets.length === 0) {
-        return 'Debe agregar al menos un palet';
-    }
-    
-    const validPallets = temporalPallets.filter(item => {
-        const pallet = item?.pallet;
-        if (!pallet?.boxes || pallet.boxes.length === 0) return false;
-        
-        return pallet.boxes.some(box => box.product?.id && box.netWeight);
-    });
-    
-    if (validPallets.length === 0) {
-        return 'Debe completar al menos un palet válido con producto y cajas';
-    }
-    
-    return null;
-};
+  if (!temporalPallets || temporalPallets.length === 0) {
+    return 'Debe agregar al menos un palet';
+  }
 
+  const validPallets = temporalPallets.filter((item) => {
+    const pallet = item?.pallet;
+    if (!pallet?.boxes || pallet.boxes.length === 0) return false;
+
+    return pallet.boxes.some((box) => box.product?.id && box.netWeight);
+  });
+
+  if (validPallets.length === 0) {
+    return 'Debe completar al menos un palet válido con producto y cajas';
+  }
+
+  return null;
+};

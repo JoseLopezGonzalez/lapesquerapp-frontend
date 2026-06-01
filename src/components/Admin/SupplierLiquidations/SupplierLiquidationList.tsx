@@ -1,11 +1,11 @@
 // @ts-nocheck
-"use client";
-import React, { useState, useEffect } from "react";
-import { format } from "date-fns";
-import { Loader2, Search, ChevronRight } from "lucide-react";
-import { notify } from "@/lib/notifications";
-import { DateRangePicker } from "@/components/ui/dateRangePicker";
-import { Button } from "@/components/ui/button";
+'use client';
+import React, { useState, useEffect } from 'react';
+import { format } from 'date-fns';
+import { Loader2, Search, ChevronRight } from 'lucide-react';
+import { notify } from '@/lib/notifications';
+import { DateRangePicker } from '@/components/ui/dateRangePicker';
+import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -13,22 +13,22 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useSuppliersWithActivity } from "@/hooks/useSuppliersWithActivity";
+} from '@/components/ui/table';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useSuppliersWithActivity } from '@/hooks/useSuppliersWithActivity';
 function formatCurrency(value: number | undefined | null): string {
-  return new Intl.NumberFormat("es-ES", {
-    style: "currency",
-    currency: "EUR",
+  return new Intl.NumberFormat('es-ES', {
+    style: 'currency',
+    currency: 'EUR',
   }).format(value ?? 0);
 }
 
 function formatWeight(value: number | undefined | null): string {
   return (
-    new Intl.NumberFormat("es-ES", {
+    new Intl.NumberFormat('es-ES', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    }).format(value ?? 0) + " kg"
+    }).format(value ?? 0) + ' kg'
   );
 }
 
@@ -38,11 +38,16 @@ export function SupplierLiquidationList() {
     to: undefined,
   });
 
-  const startDate = dateRange.from ? format(dateRange.from, "yyyy-MM-dd") : undefined;
-  const endDate = dateRange.to ? format(dateRange.to, "yyyy-MM-dd") : undefined;
+  const startDate = dateRange.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined;
+  const endDate = dateRange.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined;
   const hasValidRange = !!startDate && !!endDate && startDate <= endDate;
 
-  const { data: suppliers = [], isLoading, error, refetch } = useSuppliersWithActivity({
+  const {
+    data: suppliers = [],
+    isLoading,
+    error,
+    refetch,
+  } = useSuppliersWithActivity({
     startDate,
     endDate,
     enabled: hasValidRange,
@@ -55,7 +60,7 @@ export function SupplierLiquidationList() {
           ?.userMessage ??
         (error as { data?: { userMessage?: string } })?.data?.userMessage ??
         (error as Error).message ??
-        "Error al obtener la lista de proveedores";
+        'Error al obtener la lista de proveedores';
       notify.error({ title: 'Error al cargar liquidaciones', description: msg });
     }
   }, [error]);
@@ -86,15 +91,15 @@ export function SupplierLiquidationList() {
       });
       return;
     }
-    const s = format(dateRange.from, "yyyy-MM-dd");
-    const end = format(dateRange.to, "yyyy-MM-dd");
-    window.open(`/admin/supplier-liquidations/${supplierId}?start=${s}&end=${end}`, "_blank");
+    const s = format(dateRange.from, 'yyyy-MM-dd');
+    const end = format(dateRange.to, 'yyyy-MM-dd');
+    window.open(`/admin/supplier-liquidations/${supplierId}?start=${s}&end=${end}`, '_blank');
     ev?.stopPropagation();
   };
 
   return (
-    <div className="h-full w-full flex flex-col overflow-hidden">
-      <div className="p-6 flex-shrink-0">
+    <div className="flex h-full w-full flex-col overflow-hidden">
+      <div className="flex-shrink-0 p-6">
         <Card>
           <CardHeader>
             <CardTitle>Liquidación de Proveedores</CardTitle>
@@ -103,9 +108,9 @@ export function SupplierLiquidationList() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
-              <div className="flex-1 max-w-md">
-                <label className="text-sm font-medium mb-2 block">Rango de fechas</label>
+            <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-end">
+              <div className="max-w-md flex-1">
+                <label className="mb-2 block text-sm font-medium">Rango de fechas</label>
                 <DateRangePicker dateRange={dateRange} onChange={setDateRange} />
               </div>
               <Button
@@ -128,7 +133,7 @@ export function SupplierLiquidationList() {
             </div>
 
             {error && (
-              <div className="p-4 bg-destructive/10 text-destructive rounded-md">
+              <div className="bg-destructive/10 text-destructive rounded-md p-4">
                 {(error as Error).message}
               </div>
             )}
@@ -138,17 +143,17 @@ export function SupplierLiquidationList() {
 
       <div className="flex-1 overflow-hidden px-6 pb-6">
         {isLoading && (
-          <div className="flex justify-center items-center h-full">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <div className="flex h-full items-center justify-center">
+            <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
           </div>
         )}
 
         {!isLoading && !error && dateRange.from && dateRange.to && (
           <>
             {suppliers.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground h-full flex items-center justify-center">
+              <div className="text-muted-foreground flex h-full items-center justify-center py-12 text-center">
                 <div>
-                  <p className="text-lg font-medium mb-2">
+                  <p className="mb-2 text-lg font-medium">
                     No se encontraron proveedores con actividad
                   </p>
                   <p className="text-sm">
@@ -157,19 +162,21 @@ export function SupplierLiquidationList() {
                 </div>
               </div>
             ) : (
-              <div className="rounded-md border h-full flex flex-col overflow-hidden">
-                <div className="overflow-y-auto overflow-x-auto flex-1">
+              <div className="flex h-full flex-col overflow-hidden rounded-md border">
+                <div className="flex-1 overflow-x-auto overflow-y-auto">
                   <Table>
-                    <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
+                    <TableHeader className="bg-background sticky top-0 z-10 shadow-sm">
                       <TableRow>
                         <TableHead className="bg-background">Proveedor</TableHead>
-                        <TableHead className="text-right bg-background">Recepciones</TableHead>
-                        <TableHead className="text-right bg-background">Salidas de Cebo</TableHead>
-                        <TableHead className="text-right bg-background">Peso Recepciones</TableHead>
-                        <TableHead className="text-right bg-background">Peso Salidas</TableHead>
-                        <TableHead className="text-right bg-background">Importe Recepciones</TableHead>
-                        <TableHead className="text-right bg-background">Importe Salidas</TableHead>
-                        <TableHead className="text-center bg-background">Acción</TableHead>
+                        <TableHead className="bg-background text-right">Recepciones</TableHead>
+                        <TableHead className="bg-background text-right">Salidas de Cebo</TableHead>
+                        <TableHead className="bg-background text-right">Peso Recepciones</TableHead>
+                        <TableHead className="bg-background text-right">Peso Salidas</TableHead>
+                        <TableHead className="bg-background text-right">
+                          Importe Recepciones
+                        </TableHead>
+                        <TableHead className="bg-background text-right">Importe Salidas</TableHead>
+                        <TableHead className="bg-background text-center">Acción</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -214,7 +221,7 @@ export function SupplierLiquidationList() {
         )}
 
         {!isLoading && !error && (!dateRange.from || !dateRange.to) && (
-          <div className="text-center py-12 text-muted-foreground h-full flex items-center justify-center">
+          <div className="text-muted-foreground flex h-full items-center justify-center py-12 text-center">
             <p className="text-sm">Seleccione un rango de fechas para comenzar</p>
           </div>
         )}

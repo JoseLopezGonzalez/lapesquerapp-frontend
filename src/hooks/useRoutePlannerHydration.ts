@@ -103,7 +103,15 @@ export function useRoutePlannerHydration({
     return () => {
       cancelled = true;
     };
-  }, [routeId, routes, loadingRoutes, loadedRouteIdRef, setDetailNotFound, setLoadingSelectedItem, setRouteDraft]);
+  }, [
+    routeId,
+    routes,
+    loadingRoutes,
+    loadedRouteIdRef,
+    setDetailNotFound,
+    setLoadingSelectedItem,
+    setRouteDraft,
+  ]);
 
   useEffect(() => {
     if (!templateId) return;
@@ -149,5 +157,13 @@ export function useRoutePlannerHydration({
     return () => {
       cancelled = true;
     };
-  }, [templateId, templates, loadingTemplates, loadedTemplateIdRef, setDetailNotFound, setLoadingSelectedItem, setTemplateDraft]);
+  }, [
+    templateId,
+    templates,
+    loadingTemplates,
+    loadedTemplateIdRef,
+    setDetailNotFound,
+    setLoadingSelectedItem,
+    setTemplateDraft,
+  ]);
 }

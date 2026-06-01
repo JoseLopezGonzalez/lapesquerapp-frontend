@@ -1,42 +1,37 @@
-import { API_URL_V2 } from "@/configs/config";
-import { getAuthToken } from "@/lib/auth/getAuthToken";
-import { fetchWithTenant } from "@/lib/fetchWithTenant";
-import {
-  fetchEntitiesGeneric,
-  deleteEntityGeneric,
-} from "@/services/generic/entityService";
-import { createEntityGeneric } from "@/services/generic/createEntityService";
+import { API_URL_V2 } from '@/configs/config';
+import { getAuthToken } from '@/lib/auth/getAuthToken';
+import { fetchWithTenant } from '@/lib/fetchWithTenant';
+import { fetchEntitiesGeneric, deleteEntityGeneric } from '@/services/generic/entityService';
+import { createEntityGeneric } from '@/services/generic/createEntityService';
 import {
   fetchEntityDataGeneric,
   submitEntityFormGeneric,
   fetchAutocompleteOptionsGeneric,
-} from "@/services/generic/editEntityService";
-import { addFiltersToParams } from "@/lib/entity/filtersHelper";
-import { addWithParams } from "@/lib/entity/entityRelationsHelper";
+} from '@/services/generic/editEntityService';
+import { addFiltersToParams } from '@/lib/entity/filtersHelper';
+import { addWithParams } from '@/lib/entity/entityRelationsHelper';
 
-const ENDPOINT = "external-users";
+const ENDPOINT = 'external-users';
 
 async function performEntityAction(id, action) {
   const token = await getAuthToken();
   const response = await fetchWithTenant(`${API_URL_V2}${ENDPOINT}/${id}/${action}`, {
-    method: "POST",
+    method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
   });
 
   if (!response.ok) {
     const data = await response.json().catch(() => ({}));
-    const err = new Error(
-      data.userMessage || data.message || "No se pudo ejecutar la acción."
-    );
+    const err = new Error(data.userMessage || data.message || 'No se pudo ejecutar la acción.');
     err.status = response.status;
     err.data = data;
     throw err;
   }
 
-  return response.json().catch(() => ({ message: "Acción ejecutada correctamente." }));
+  return response.json().catch(() => ({ message: 'Acción ejecutada correctamente.' }));
 }
 
 export const externalUserService = {
@@ -51,13 +46,10 @@ export const externalUserService = {
       addWithParams(queryParams, filters._requiredRelations);
     }
 
-    queryParams.append("page", String(page));
-    queryParams.append("perPage", String(perPage));
+    queryParams.append('page', String(page));
+    queryParams.append('perPage', String(perPage));
 
-    return fetchEntitiesGeneric(
-      `${API_URL_V2}${ENDPOINT}?${queryParams.toString()}`,
-      token
-    );
+    return fetchEntitiesGeneric(`${API_URL_V2}${ENDPOINT}?${queryParams.toString()}`, token);
   },
 
   async getById(id) {
@@ -76,7 +68,7 @@ export const externalUserService = {
     const token = await getAuthToken();
     const response = await submitEntityFormGeneric(
       `${API_URL_V2}${ENDPOINT}/${id}`,
-      "PUT",
+      'PUT',
       data,
       token
     );
@@ -92,10 +84,7 @@ export const externalUserService = {
   async getOptions() {
     const token = await getAuthToken();
     try {
-      return await fetchAutocompleteOptionsGeneric(
-        `${API_URL_V2}${ENDPOINT}/options`,
-        token
-      );
+      return await fetchAutocompleteOptionsGeneric(`${API_URL_V2}${ENDPOINT}/options`, token);
     } catch (error) {
       if ((error instanceof Response && error.status === 404) || error?.status === 404) {
         const result = await this.list({}, { page: 1, perPage: 100 });
@@ -109,14 +98,14 @@ export const externalUserService = {
   },
 
   resendAccess(id) {
-    return performEntityAction(id, "resend-access");
+    return performEntityAction(id, 'resend-access');
   },
 
   activate(id) {
-    return performEntityAction(id, "activate");
+    return performEntityAction(id, 'activate');
   },
 
   deactivate(id) {
-    return performEntityAction(id, "deactivate");
+    return performEntityAction(id, 'deactivate');
   },
 };

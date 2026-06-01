@@ -29,7 +29,9 @@ export default function CreateCustomerQuickForm({ onSuccess, onCancel }) {
       if (typeof err?.json === 'function') {
         try {
           const errData = await err.json();
-          const messages = errData?.errors ? Object.values(errData.errors).flat() : [errData?.message || 'Error al crear el cliente'];
+          const messages = errData?.errors
+            ? Object.values(errData.errors).flat()
+            : [errData?.message || 'Error al crear el cliente'];
           setError(messages.join(' '));
         } catch (_) {
           setError('Error al crear el cliente.');
@@ -55,8 +57,8 @@ export default function CreateCustomerQuickForm({ onSuccess, onCancel }) {
           autoFocus
         />
       </div>
-      {error && <p className="text-sm text-destructive">{error}</p>}
-      <div className="flex gap-2 justify-end">
+      {error && <p className="text-destructive text-sm">{error}</p>}
+      <div className="flex justify-end gap-2">
         {onCancel && (
           <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
             Cancelar

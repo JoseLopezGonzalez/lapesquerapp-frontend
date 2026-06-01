@@ -13,6 +13,7 @@
 La aplicación utiliza **React Hook Form 7.54.2** para la gestión de formularios. Aunque en los requisitos se menciona React Hook Form + Zod, **no se encontraron schemas de Zod** en el código. Las validaciones se realizan directamente con las reglas de React Hook Form.
 
 **Ubicación de formularios**:
+
 - Formularios genéricos: `/src/components/Admin/Entity/EntityClient/EntityForms/`
 - Formularios específicos: `/src/components/Admin/OrdersManager/`, `/src/components/Admin/Settings/`
 
@@ -46,25 +47,26 @@ La aplicación utiliza **React Hook Form 7.54.2** para la gestión de formulario
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 
 const {
-  register,           // Para inputs no controlados
-  handleSubmit,       // Manejar submit
-  control,            // Para Controller (componentes controlados)
-  reset,              // Resetear formulario
-  watch,              // Observar valores
-  setValue,           // Establecer valores programáticamente
-  formState: { 
-    errors,           // Errores de validación
-    isSubmitting      // Estado de envío
-  }
+  register, // Para inputs no controlados
+  handleSubmit, // Manejar submit
+  control, // Para Controller (componentes controlados)
+  reset, // Resetear formulario
+  watch, // Observar valores
+  setValue, // Establecer valores programáticamente
+  formState: {
+    errors, // Errores de validación
+    isSubmitting, // Estado de envío
+  },
 } = useForm({
-  defaultValues: {},  // Valores por defecto
-  mode: 'onChange'    // Modo de validación
+  defaultValues: {}, // Valores por defecto
+  mode: 'onChange', // Modo de validación
 });
 ```
 
 ### Modo de Validación
 
 Todos los formularios usan `mode: 'onChange'`, lo que significa:
+
 - Validación en tiempo real mientras el usuario escribe
 - Feedback inmediato de errores
 
@@ -75,11 +77,12 @@ Todos los formularios usan `mode: 'onChange'`, lo que significa:
 ### 1. Input (No Controlado)
 
 **Uso con `register`**:
+
 ```javascript
 <Input
   {...register('fieldName', {
     required: 'Campo obligatorio',
-    minLength: { value: 3, message: 'Mínimo 3 caracteres' }
+    minLength: { value: 3, message: 'Mínimo 3 caracteres' },
   })}
 />
 ```
@@ -87,29 +90,27 @@ Todos los formularios usan `mode: 'onChange'`, lo que significa:
 ### 2. DatePicker (Controlado)
 
 **Uso con `Controller`**:
+
 ```javascript
 <Controller
   name="entryDate"
   control={control}
   rules={{ required: 'La fecha es obligatoria' }}
   render={({ field: { onChange, value, onBlur } }) => (
-    <DatePicker
-      date={value}
-      onChange={onChange}
-      onBlur={onBlur}
-      formatStyle="short"
-    />
+    <DatePicker date={value} onChange={onChange} onBlur={onBlur} formatStyle="short" />
   )}
 />
 ```
 
 **Características**:
+
 - Recibe y retorna objetos `Date`
 - Se formatea a string `YYYY-MM-DD` antes de enviar
 
 ### 3. Select (Controlado)
 
 **Uso con `Controller`**:
+
 ```javascript
 <Controller
   name="salesperson"
@@ -121,7 +122,7 @@ Todos los formularios usan `mode: 'onChange'`, lo que significa:
         <SelectValue placeholder="Seleccionar..." />
       </SelectTrigger>
       <SelectContent>
-        {options.map(opt => (
+        {options.map((opt) => (
           <SelectItem key={opt.value} value={opt.value}>
             {opt.label}
           </SelectItem>
@@ -135,6 +136,7 @@ Todos los formularios usan `mode: 'onChange'`, lo que significa:
 ### 4. Combobox (Controlado)
 
 **Uso con `Controller`**:
+
 ```javascript
 <Controller
   name="customer"
@@ -156,6 +158,7 @@ Todos los formularios usan `mode: 'onChange'`, lo que significa:
 ### 5. EmailListInput (Controlado)
 
 **Uso con `Controller`**:
+
 ```javascript
 <Controller
   name="emails"
@@ -173,6 +176,7 @@ Todos los formularios usan `mode: 'onChange'`, lo que significa:
 ```
 
 **Características**:
+
 - Maneja arrays de strings (emails)
 - Validación de email integrada
 - Prevención de duplicados
@@ -180,10 +184,11 @@ Todos los formularios usan `mode: 'onChange'`, lo que significa:
 ### 6. Textarea (No Controlado)
 
 **Uso con `register`**:
+
 ```javascript
 <Textarea
   {...register('notes', {
-    maxLength: { value: 500, message: 'Máximo 500 caracteres' }
+    maxLength: { value: 500, message: 'Máximo 500 caracteres' },
   })}
   rows={4}
 />
@@ -198,15 +203,13 @@ Todos los formularios usan `mode: 'onChange'`, lo que significa:
 **Archivo**: `/src/components/Admin/Entity/EntityClient/EntityForms/CreateEntityForm/index.js`
 
 **Props**:
+
 ```javascript
-<CreateEntityForm 
-  config={entityConfig} 
-  onSuccess={handleSuccess}
-  onCancel={handleCancel}
-/>
+<CreateEntityForm config={entityConfig} onSuccess={handleSuccess} onCancel={handleCancel} />
 ```
 
 **Configuración** (desde `entitiesConfig.js`):
+
 ```javascript
 createForm: {
   title: "Nuevo Usuario",
@@ -233,6 +236,7 @@ createForm: {
 ```
 
 **Tipos de campos soportados**:
+
 - `text` - Input de texto
 - `date` - DatePicker
 - `select` - Select con opciones
@@ -241,19 +245,21 @@ createForm: {
 - `emailList` - EmailListInput
 
 **Funcionalidad**:
+
 1. **Carga dinámica de opciones**: Los campos `Autocomplete` cargan opciones desde endpoints API v2
 2. **Validación de patrones**: Convierte strings de regex a RegExp
 3. **Grid responsive**: Sistema de columnas (sm, md, lg, xl)
 4. **Envío**: Llama a `createEntity` service con datos del formulario
 
 **Ejemplo de uso**:
+
 ```javascript
-import CreateEntityForm from "@/components/Admin/Entity/EntityClient/EntityForms/CreateEntityForm";
-import { configs } from "@/configs/entitiesConfig";
+import CreateEntityForm from '@/components/Admin/Entity/EntityClient/EntityForms/CreateEntityForm';
+import { configs } from '@/configs/entitiesConfig';
 
 function CreateUserPage() {
   const config = configs['users'];
-  
+
   return (
     <CreateEntityForm
       config={config}
@@ -269,8 +275,9 @@ function CreateUserPage() {
 **Archivo**: `/src/components/Admin/Entity/EntityClient/EntityForms/EditEntityForm/index.js`
 
 **Props**:
+
 ```javascript
-<EditEntityForm 
+<EditEntityForm
   config={entityConfig}
   id={entityId}
   onSuccess={handleSuccess}
@@ -279,6 +286,7 @@ function CreateUserPage() {
 ```
 
 **Funcionalidad**:
+
 1. **Carga de datos**: Carga entidad existente desde API v2
 2. **Mapeo de datos**: Usa `mapApiDataToFormValues` para mapear datos de API a valores de formulario
 3. **Paths anidados**: Soporta paths como `company.address.street` usando `lodash.get`
@@ -286,6 +294,7 @@ function CreateUserPage() {
 5. **Envío**: Llama a `submitEntityForm` service
 
 **Función de mapeo**:
+
 ```javascript
 export function mapApiDataToFormValues(fields, data) {
   const result = {};
@@ -296,7 +305,7 @@ export function mapApiDataToFormValues(fields, data) {
       result[field.name] = data[field.name];
     }
     // Convertir fechas
-    if (field.type === "date" && result[field.name]) {
+    if (field.type === 'date' && result[field.name]) {
       result[field.name] = new Date(result[field.name]);
     }
   }
@@ -313,12 +322,14 @@ export function mapApiDataToFormValues(fields, data) {
 **Archivo**: `/src/components/Admin/OrdersManager/CreateOrderForm/index.js`
 
 **Características**:
+
 - Usa `useOrderCreateFormConfig` para configuración
 - Carga datos del cliente automáticamente cuando se selecciona
 - Usa `useFieldArray` para productos planificados (array dinámico)
 - Formatea fechas a `YYYY-MM-DD` antes de enviar
 
 **Estructura**:
+
 ```javascript
 const { defaultValues, formGroups, loading } = useOrderCreateFormConfig();
 
@@ -334,13 +345,12 @@ const { register, handleSubmit, control, watch, setValue } = useForm({
 useEffect(() => {
   const customerId = watch('customer');
   if (!customerId) return;
-  
-  getCustomer(customerId, token)
-    .then((customer) => {
-      setValue('salesperson', customer.salesperson?.id);
-      setValue('payment', customer.paymentTerm?.id);
-      // ... más campos
-    });
+
+  getCustomer(customerId, token).then((customer) => {
+    setValue('salesperson', customer.salesperson?.id);
+    setValue('payment', customer.paymentTerm?.id);
+    // ... más campos
+  });
 }, [watch('customer')]);
 
 // Array dinámico de productos
@@ -351,13 +361,14 @@ const { fields, append, remove } = useFieldArray({
 ```
 
 **Envío**:
+
 ```javascript
 const handleCreate = async (formData) => {
   const payload = {
     customer: parseInt(formData.customer),
     entryDate: format(formData.entryDate, 'yyyy-MM-dd'),
     loadDate: format(formData.loadDate, 'yyyy-MM-dd'),
-    plannedProducts: formData.plannedProducts.map(line => ({
+    plannedProducts: formData.plannedProducts.map((line) => ({
       product: parseInt(line.product),
       quantity: parseFloat(line.quantity),
       boxes: parseInt(line.boxes),
@@ -365,7 +376,7 @@ const handleCreate = async (formData) => {
       tax: parseInt(line.tax),
     })),
   };
-  
+
   const newOrder = await createOrder(payload);
   onCreate(newOrder.id);
 };
@@ -376,29 +387,31 @@ const handleCreate = async (formData) => {
 **Archivo**: `/src/components/Admin/OrdersManager/Order/OrderEditSheet/index.js`
 
 **Características**:
+
 - Usa `useOrderFormConfig` para configuración
 - Se abre en un Sheet (panel lateral)
 - Carga datos del pedido desde `OrderContext`
 - No incluye campo de cliente (no se puede cambiar)
 
 **Uso**:
+
 ```javascript
-import { useOrderContext } from "@/context/OrderContext";
+import { useOrderContext } from '@/context/OrderContext';
 
 function OrderEditSheet() {
   const { order, updateOrderData } = useOrderContext();
   const { formGroups, defaultValues } = useOrderFormConfig({ orderData: order });
-  
+
   const { register, handleSubmit, reset, control } = useForm({
     defaultValues,
     mode: 'onChange',
   });
-  
+
   // Resetear cuando cambian los valores por defecto
   useEffect(() => {
     reset(defaultValues);
   }, [defaultValues]);
-  
+
   const onSubmit = async (data) => {
     const payload = {
       ...data,
@@ -407,14 +420,12 @@ function OrderEditSheet() {
     };
     await updateOrderData(payload);
   };
-  
+
   return (
     <Sheet>
       <SheetTrigger>Editar</SheetTrigger>
       <SheetContent>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          {/* Renderizar formGroups */}
-        </form>
+        <form onSubmit={handleSubmit(onSubmit)}>{/* Renderizar formGroups */}</form>
       </SheetContent>
     </Sheet>
   );
@@ -428,18 +439,20 @@ function OrderEditSheet() {
 **⚠️ IMPORTANTE**: Este formulario **NO usa React Hook Form**. Usa `useState` directamente.
 
 **Características**:
+
 - Formulario simple con `useState`
 - Campos anidados (ej: `company.name`, `company.address.street`)
 - Actualiza `SettingsContext` al guardar
 
 **Estructura**:
+
 ```javascript
 const [values, setValues] = useState({});
 
 const handleChange = (e) => {
   setValues((prev) => ({
     ...prev,
-    [e.target.name]: e.target.value
+    [e.target.name]: e.target.value,
   }));
 };
 
@@ -461,6 +474,7 @@ const handleSubmit = async (e) => {
 **Archivo**: `/src/hooks/useOrderCreateFormConfig.js`
 
 **Retorna**:
+
 ```javascript
 {
   defaultValues: Object,      // Valores por defecto
@@ -471,6 +485,7 @@ const handleSubmit = async (e) => {
 ```
 
 **Estructura de formGroups**:
+
 ```javascript
 [
   {
@@ -492,10 +507,11 @@ const handleSubmit = async (e) => {
     ],
   },
   // ... más grupos
-]
+];
 ```
 
 **Componentes soportados**:
+
 - `Input`
 - `Select`
 - `Combobox`
@@ -508,6 +524,7 @@ const handleSubmit = async (e) => {
 **Archivo**: `/src/hooks/useOrderFormConfig.js`
 
 Similar a `useOrderCreateFormConfig` pero:
+
 - Sin campo de cliente (no se puede cambiar)
 - Valores iniciales desde datos del pedido
 - Campos adaptados para edición
@@ -536,11 +553,15 @@ Las validaciones se definen en la configuración de campos:
 ### Tipos de Validación Soportados
 
 1. **required**: Campo obligatorio
+
    ```javascript
-   rules: { required: 'Mensaje de error' }
+   rules: {
+     required: 'Mensaje de error';
+   }
    ```
 
 2. **minLength / maxLength**: Longitud mínima/máxima
+
    ```javascript
    rules: {
      minLength: { value: 3, message: 'Mínimo 3 caracteres' },
@@ -549,6 +570,7 @@ Las validaciones se definen en la configuración de campos:
    ```
 
 3. **pattern**: Expresión regular
+
    ```javascript
    rules: {
      pattern: {
@@ -559,6 +581,7 @@ Las validaciones se definen en la configuración de campos:
    ```
 
 4. **min / max**: Valores numéricos
+
    ```javascript
    rules: {
      min: { value: 0.01, message: 'Debe ser mayor que 0' },
@@ -570,8 +593,8 @@ Las validaciones se definen en la configuración de campos:
    ```javascript
    register('quantity', {
      valueAsNumber: true,
-     min: { value: 0.01, message: 'Debe ser mayor que 0' }
-   })
+     min: { value: 0.01, message: 'Debe ser mayor que 0' },
+   });
    ```
 
 ### Validación de Patrones en Entity Forms
@@ -581,11 +604,10 @@ Los formularios genéricos convierten strings de regex a RegExp:
 ```javascript
 function prepareValidations(fields) {
   return fields.map((field) => {
-    if (field.validation?.pattern?.value && 
-        typeof field.validation.pattern.value === "string") {
+    if (field.validation?.pattern?.value && typeof field.validation.pattern.value === 'string') {
       const raw = field.validation.pattern.value;
       // Remover / al inicio y final
-      const regexBody = raw.replace(/^\/|\/$/g, "");
+      const regexBody = raw.replace(/^\/|\/$/g, '');
       field.validation.pattern.value = new RegExp(regexBody);
     }
     return field;
@@ -612,8 +634,8 @@ Cuando el backend devuelve **422 Unprocessable Entity** con un cuerpo de errores
   - `errors` es un objeto: clave = nombre del campo en **camelCase**, valor = array de mensajes.
   - Arrays: notación de punto con índice, p. ej. `plannedProducts.0.product`, `emails.0`.
 
-- **Helper en el frontend**: `setErrorsFrom422(setError, errors)`  
-  - Ubicación: `/src/lib/validation/setErrorsFrom422.js`.  
+- **Helper en el frontend**: `setErrorsFrom422(setError, errors)`
+  - Ubicación: `/src/lib/validation/setErrorsFrom422.js`.
   - Recorre `errors` y llama a `setError(key, { type: 'server', message: messages[0] })` para cada clave.
 
 **Uso en formularios**  
@@ -624,9 +646,10 @@ En el `catch` del submit:
 
 Los servicios de pedidos (`orderService.createOrder`, `orderService.updateOrder`) en 422 lanzan `ApiError(message, status, errorData)` para que los componentes puedan leer `error.data.errors`. Los servicios genéricos de entidades lanzan la `Response` cuando `!response.ok`, y el formulario comprueba `err.status === 422` y parsea el cuerpo.
 
-**Resumen**  
-- Errores **siempre inline** (debajo del campo), tanto los de validación cliente como los del 422.  
-- **Toast** en submit cuando hay errores (cliente o 422).  
+**Resumen**
+
+- Errores **siempre inline** (debajo del campo), tanto los de validación cliente como los del 422.
+- **Toast** en submit cuando hay errores (cliente o 422).
 - **Botón** deshabilitado solo durante el envío (`isSubmitting` / `saving`), no por tener errores, para que el usuario pueda pulsar y ver validación y mensajes.
 
 ---
@@ -644,35 +667,31 @@ const { fields, append, remove } = useFieldArray({
 });
 
 // Añadir producto
-<Button onClick={() => append({ product: '', quantity: 0, boxes: 0 })}>
-  Añadir Producto
-</Button>
+<Button onClick={() => append({ product: '', quantity: 0, boxes: 0 })}>Añadir Producto</Button>;
 
 // Renderizar productos
-{fields.map((field, index) => (
-  <div key={field.id}>
-    <Controller
-      control={control}
-      name={`plannedProducts.${index}.product`}
-      rules={{ required: 'Producto es requerido' }}
-      render={({ field }) => (
-        <Combobox
-          options={productOptions}
-          value={field.value}
-          onChange={field.onChange}
-        />
-      )}
-    />
-    <Input
-      {...register(`plannedProducts.${index}.quantity`, {
-        required: 'Cantidad es requerida',
-        valueAsNumber: true,
-        min: { value: 0.01, message: 'Debe ser mayor que 0' }
-      })}
-    />
-    <Button onClick={() => remove(index)}>Eliminar</Button>
-  </div>
-))}
+{
+  fields.map((field, index) => (
+    <div key={field.id}>
+      <Controller
+        control={control}
+        name={`plannedProducts.${index}.product`}
+        rules={{ required: 'Producto es requerido' }}
+        render={({ field }) => (
+          <Combobox options={productOptions} value={field.value} onChange={field.onChange} />
+        )}
+      />
+      <Input
+        {...register(`plannedProducts.${index}.quantity`, {
+          required: 'Cantidad es requerida',
+          valueAsNumber: true,
+          min: { value: 0.01, message: 'Debe ser mayor que 0' },
+        })}
+      />
+      <Button onClick={() => remove(index)}>Eliminar</Button>
+    </div>
+  ));
+}
 ```
 
 ---
@@ -699,23 +718,18 @@ const renderField = (field) => {
           control={control}
           rules={field.rules}
           render={({ field: { onChange, value, onBlur } }) => (
-            <DatePicker
-              date={value}
-              onChange={onChange}
-              onBlur={onBlur}
-              {...field.props}
-            />
+            <DatePicker date={value} onChange={onChange} onBlur={onBlur} {...field.props} />
           )}
         />
       );
     case 'Select':
-      // ... similar
+    // ... similar
     case 'Combobox':
-      // ... similar
+    // ... similar
     case 'Textarea':
       return <Textarea {...commonProps} />;
     case 'emailList':
-      // ... Controller con EmailListInput
+    // ... Controller con EmailListInput
     case 'Input':
     default:
       return <Input {...commonProps} />;
@@ -726,25 +740,25 @@ const renderField = (field) => {
 ### Renderizado de Grupos
 
 ```javascript
-{formGroups.map((group) => (
-  <div key={group.group}>
-    <h3>{group.group}</h3>
-    <Separator />
-    <div className={`grid ${group.grid}`}>
-      {group.fields.map((field) => (
-        <div key={field.name}>
-          <Label>{field.label}</Label>
-          {renderField(field)}
-          {errors[field.name] && (
-            <p className="text-red-500 text-sm">
-              {errors[field.name].message}
-            </p>
-          )}
-        </div>
-      ))}
+{
+  formGroups.map((group) => (
+    <div key={group.group}>
+      <h3>{group.group}</h3>
+      <Separator />
+      <div className={`grid ${group.grid}`}>
+        {group.fields.map((field) => (
+          <div key={field.name}>
+            <Label>{field.label}</Label>
+            {renderField(field)}
+            {errors[field.name] && (
+              <p className="text-sm text-red-500">{errors[field.name].message}</p>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
-  </div>
-))}
+  ));
+}
 ```
 
 ---
@@ -756,7 +770,7 @@ const renderField = (field) => {
 ```javascript
 const onSubmit = async (formData) => {
   const toastId = toast.loading('Guardando...', getToastTheme());
-  
+
   try {
     // Preparar payload
     const payload = {
@@ -764,10 +778,10 @@ const onSubmit = async (formData) => {
       entryDate: format(formData.entryDate, 'yyyy-MM-dd'),
       // ... transformaciones
     };
-    
+
     // Enviar
     const result = await createEntity(payload);
-    
+
     toast.success('Guardado correctamente', { id: toastId });
     onSuccess(result);
   } catch (error) {
@@ -780,17 +794,19 @@ const onSubmit = async (formData) => {
   <Button type="submit" disabled={isSubmitting}>
     Guardar
   </Button>
-</form>
+</form>;
 ```
 
 ### Transformaciones Comunes
 
 1. **Fechas**: `Date` → `YYYY-MM-DD`
+
    ```javascript
-   entryDate: format(formData.entryDate, 'yyyy-MM-dd')
+   entryDate: format(formData.entryDate, 'yyyy-MM-dd');
    ```
 
 2. **Números**: Strings → Numbers
+
    ```javascript
    quantity: parseFloat(formData.quantity),
    boxes: parseInt(formData.boxes)
@@ -798,7 +814,7 @@ const onSubmit = async (formData) => {
 
 3. **IDs**: Strings → Numbers
    ```javascript
-   customer: parseInt(formData.customer)
+   customer: parseInt(formData.customer);
    ```
 
 ---
@@ -869,6 +885,7 @@ Los formularios usan Tailwind Grid:
 ```
 
 Renderizado:
+
 ```javascript
 <div className={`sm:col-span-${field.cols.sm} md:col-span-${field.cols.md} lg:col-span-${field.cols.lg} xl:col-span-${field.cols.xl}`}>
 ```
@@ -887,36 +904,42 @@ Renderizado:
 ## ⚠️ Observaciones Críticas y Mejoras Recomendadas
 
 ### 1. Falta de Zod
+
 - **Archivo**: Todo el proyecto
 - **Problema**: Se menciona React Hook Form + Zod en requisitos, pero no se encontraron schemas de Zod
 - **Impacto**: Validaciones menos robustas, no hay validación de tipos en tiempo de compilación
 - **Recomendación**: Implementar schemas Zod o documentar claramente que no se usa
 
 ### 2. SettingsForm sin React Hook Form
+
 - **Archivo**: `/src/components/Admin/Settings/SettingsForm.js`
 - **Problema**: Único formulario que no usa React Hook Form, usa useState directamente
 - **Impacto**: Inconsistencia, falta de validaciones integradas
 - **Recomendación**: Migrar a React Hook Form para consistencia
 
 ### 3. Validación de Email Básica
+
 - **Archivo**: Múltiples formularios
 - **Problema**: Regex de email básica (`/^[\w.-]+@([\w-]+\.)+[\w-]{2,4}$/`) puede rechazar emails válidos
 - **Impacto**: Usuarios con emails válidos pueden tener problemas
 - **Recomendación**: Usar librería de validación de email o regex más completa
 
 ### 4. Conversión de Fechas Inconsistente
+
 - **Archivo**: Múltiples formularios
 - **Problema**: Algunos formularios formatean fechas manualmente, otros no
 - **Impacto**: Posibles errores si se olvida formatear
 - **Recomendación**: Crear helper común para formatear fechas antes de enviar
 
 ### 5. Falta de Validación de Tipos
+
 - **Archivo**: Todos los formularios
 - **Problema**: No hay validación de tipos (TypeScript o PropTypes)
 - **Impacto**: Errores en tiempo de ejecución
 - **Recomendación**: Añadir TypeScript o PropTypes
 
 ### 6. useFieldArray sin Validación de Array
+
 - **Archivo**: `/src/components/Admin/OrdersManager/CreateOrderForm/index.js`
 - **Línea**: 87-90
 - **Problema**: No hay validación de que `plannedProducts` tenga al menos un elemento
@@ -924,24 +947,28 @@ Renderizado:
 - **Recomendación**: Añadir validación `minLength: 1` al array
 
 ### 7. Carga de Opciones sin Manejo de Errores
+
 - **Archivo**: `CreateEntityForm`, `useOrderCreateFormConfig`
 - **Problema**: Si falla la carga de opciones, el formulario se renderiza sin opciones
 - **Impacto**: Usuario no puede seleccionar valores
 - **Recomendación**: Mostrar error o estado de carga
 
 ### 8. Reset de Formulario Inconsistente
+
 - **Archivo**: Múltiples formularios
 - **Problema**: Algunos usan `reset()` después de éxito, otros no
 - **Impacto**: Inconsistencia en UX
 - **Recomendación**: Estandarizar comportamiento
 
 ### 9. Falta de Confirmación en Formularios Destructivos
+
 - **Archivo**: No encontrado
 - **Problema**: No se encontraron formularios de eliminación con confirmación
 - **Impacto**: Posibles eliminaciones accidentales
 - **Recomendación**: Añadir confirmación antes de eliminar
 
 ### 10. Validación de Patrones con Strings
+
 - **Archivo**: `CreateEntityForm`, `EditEntityForm`
 - **Línea**: 30-44, 49-57
 - **Problema**: Conversión de strings de regex puede fallar con patrones complejos
@@ -949,14 +976,15 @@ Renderizado:
 - **Recomendación**: Validar que la conversión funcione o usar RegExp directamente
 
 ### 11. Falta de Debounce en Búsquedas
+
 - **Archivo**: `CreateEntityForm` (Autocomplete)
 - **Problema**: Carga opciones inmediatamente, sin debounce
 - **Impacto**: Múltiples requests innecesarios
 - **Recomendación**: Implementar debounce en búsquedas de autocomplete
 
 ### 12. EmailListInput sin Validación de Dominio
+
 - **Archivo**: `/src/components/ui/emailListInput.jsx`
 - **Problema**: Validación de email básica (mencionado en componentes UI)
 - **Impacto**: Puede aceptar emails inválidos
 - **Recomendación**: Mejorar validación de email
-

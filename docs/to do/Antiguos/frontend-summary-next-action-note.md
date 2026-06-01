@@ -58,10 +58,10 @@ Este documento describe los cambios de contrato en la API v2 CRM para que el fro
 
 ## Resumen de campos nuevos o modificados
 
-| Dónde | Cambio |
-|-------|--------|
-| Prospect resource (todas las respuestas) | Nuevo campo `nextActionNote` |
-| POST/PUT prospects | Body acepta `nextActionNote` opcional |
-| POST prospects/{id}/schedule-action | Body acepta `nextActionNote` opcional |
-| GET crm/dashboard → reminders_today, overdue_actions | Cada ítem incluye `nextActionNote` |
-| POST commercial-interactions (sobre prospecto) | `nextActionNote` del body se sincroniza al prospecto |
+| Dónde                                                | Cambio                                               |
+| ---------------------------------------------------- | ---------------------------------------------------- |
+| Prospect resource (todas las respuestas)             | Nuevo campo `nextActionNote`                         |
+| POST/PUT prospects                                   | Body acepta `nextActionNote` opcional                |
+| POST prospects/{id}/schedule-action                  | Body acepta `nextActionNote` opcional                |
+| GET crm/dashboard → reminders_today, overdue_actions | Cada ítem incluye `nextActionNote`                   |
+| POST commercial-interactions (sobre prospecto)       | `nextActionNote` del body se sincroniza al prospecto |

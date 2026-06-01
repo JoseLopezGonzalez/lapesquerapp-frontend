@@ -3,7 +3,8 @@ import { useOrderContext } from '@/context/OrderContext';
 import { useSession } from 'next-auth/react';
 import { useStoresOptions } from '@/hooks/useStoresOptions';
 import { getPallet, getAvailablePalletsForOrder, createPallet } from '@/services/palletService';
-import { getProductOptions } from '@/services/productService';import { notify } from '@/lib/notifications';
+import { getProductOptions } from '@/services/productService';
+import { notify } from '@/lib/notifications';
 import { roundToTwoDecimals } from '../utils/roundToTwoDecimals';
 
 /**
@@ -115,12 +116,15 @@ export function useOrderPallets() {
     setIsConfirmDialogOpen(true);
   }, []);
 
-  const handleOpenPalletLabelDialog = useCallback((palletId) => {
-    const pallet = pallets.find((p) => p.id === palletId);
-    if (!pallet) return;
-    setSelectedPalletForLabel(pallet);
-    setIsPalletLabelDialogOpen(true);
-  }, [pallets]);
+  const handleOpenPalletLabelDialog = useCallback(
+    (palletId) => {
+      const pallet = pallets.find((p) => p.id === palletId);
+      if (!pallet) return;
+      setSelectedPalletForLabel(pallet);
+      setIsPalletLabelDialogOpen(true);
+    },
+    [pallets]
+  );
 
   const handleClosePalletLabelDialog = useCallback(() => {
     setIsPalletLabelDialogOpen(false);
@@ -322,7 +326,9 @@ export function useOrderPallets() {
           const linkedPalletIds = pallets.map((p) => p.id);
           const idsToSearch = palletIds.filter((id) => !linkedPalletIds.includes(id));
           if (idsToSearch.length === 0) {
-            notify.info({ title: 'Todos los palets especificados ya están vinculados a este pedido' });
+            notify.info({
+              title: 'Todos los palets especificados ya están vinculados a este pedido',
+            });
             setIsSearching(false);
             return;
           }
@@ -343,7 +349,9 @@ export function useOrderPallets() {
           foundPallets = result.data || [];
           meta = result.meta || null;
           if (foundPallets.length === 0) {
-            notify.error({ title: 'No se encontraron palets disponibles con los IDs especificados' });
+            notify.error({
+              title: 'No se encontraron palets disponibles con los IDs especificados',
+            });
             setIsSearching(false);
             return;
           }
@@ -426,11 +434,13 @@ export function useOrderPallets() {
   }, [pallets]);
 
   const handleOpenCreateFromForecastDialog = useCallback(() => {
-    const detailsWithBoxes = (plannedProductDetails || [])
-      .filter((d) => d?.id && d?.product?.id && Number(d.boxes) > 0);
+    const detailsWithBoxes = (plannedProductDetails || []).filter(
+      (d) => d?.id && d?.product?.id && Number(d.boxes) > 0
+    );
     if (detailsWithBoxes.length === 0) {
       notify.error({
-        title: 'La previsión no tiene productos con cajas. Añade líneas con cajas en la pestaña Previsión.',
+        title:
+          'La previsión no tiene productos con cajas. Añade líneas con cajas en la pestaña Previsión.',
       });
       return;
     }
@@ -466,8 +476,9 @@ export function useOrderPallets() {
       });
       return;
     }
-    const detailsWithBoxes = (plannedProductDetails || [])
-      .filter((d) => d?.id && d?.product?.id && Number(d.boxes) > 0);
+    const detailsWithBoxes = (plannedProductDetails || []).filter(
+      (d) => d?.id && d?.product?.id && Number(d.boxes) > 0
+    );
     if (detailsWithBoxes.length === 0) {
       notify.error({
         title: 'Sin productos con cajas',
@@ -496,7 +507,10 @@ export function useOrderPallets() {
     const buildGs1128 = (productId, lotVal, netWeight) => {
       const p = productOptionsMap.get(String(productId));
       const normalizedBoxGtin = String(p?.boxGtin ?? '').replace(/\D/g, '');
-      const fallbackGtinFromProduct = String(productId ?? '').replace(/\D/g, '').padStart(14, '0').slice(-14);
+      const fallbackGtinFromProduct = String(productId ?? '')
+        .replace(/\D/g, '')
+        .padStart(14, '0')
+        .slice(-14);
       const gtin = normalizedBoxGtin || fallbackGtinFromProduct || '00000000000000';
       const w = parseFloat(netWeight) || 0;
       const formatted = w.toFixed(2).replace('.', '').padStart(6, '0');
@@ -516,9 +530,7 @@ export function useOrderPallets() {
 
       for (let i = 0; i < numBoxes; i++) {
         const isLast = i === numBoxes - 1;
-        const netWeight = isLast
-          ? roundToTwoDecimals(totalQty - accumulated)
-          : standardWeight;
+        const netWeight = isLast ? roundToTwoDecimals(totalQty - accumulated) : standardWeight;
         accumulated += netWeight;
 
         const productId = detail.product?.id ?? detail.productId;

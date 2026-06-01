@@ -22,42 +22,42 @@ Según `docs/00_CORE CONSOLIDATION PLAN — ERP SaaS (Next.js + Laravel).md`:
 
 ### Rutas (App Router)
 
-| Ruta | Archivo page | Componente principal |
-|------|--------------|----------------------|
-| `/admin/employees` | `admin/[entity]/page.js` (entity=employees) | EntityClient |
-| `/admin/punches` | `admin/[entity]/page.js` (entity=punches) | EntityClient |
-| `/admin/manual-punches` | `admin/manual-punches/page.js` | ManualPunchesManager |
-| `/admin/punches-calendar` | `admin/punches-calendar/page.js` | PunchesCalendar |
-| `/admin/time-punch-manager` | `admin/time-punch-manager/page.js` | TimePunchManager |
-| `/admin/nfc-punch-manager` | `admin/nfc-punch-manager/page.js` | NFCPunchManager |
+| Ruta                        | Archivo page                                | Componente principal |
+| --------------------------- | ------------------------------------------- | -------------------- |
+| `/admin/employees`          | `admin/[entity]/page.js` (entity=employees) | EntityClient         |
+| `/admin/punches`            | `admin/[entity]/page.js` (entity=punches)   | EntityClient         |
+| `/admin/manual-punches`     | `admin/manual-punches/page.js`              | ManualPunchesManager |
+| `/admin/punches-calendar`   | `admin/punches-calendar/page.js`            | PunchesCalendar      |
+| `/admin/time-punch-manager` | `admin/time-punch-manager/page.js`          | TimePunchManager     |
+| `/admin/nfc-punch-manager`  | `admin/nfc-punch-manager/page.js`           | NFCPunchManager      |
 
 ### Servicios
 
-| Archivo | Líneas | Uso | Notas |
-|---------|--------|-----|-------|
-| `src/services/punchService.js` | ~844 | Dashboard, ManualPunches, Calendar, TimePunch, NFC | Legacy; todas las funciones de fichajes (getPunches, createPunch, createManualPunch, createBulkPunches, getPunchesByMonth, getPunchesDashboard, getPunchesStatistics, etc.) |
-| `src/services/domain/punches/punchService.js` | ~91 | EntityClient para punches (list/get/create/update/delete) | Genérico, usa generic entityService |
-| `src/services/employeeService.js` | ~222 | TimePunchManager, posiblemente otros | Legacy getEmployees, getEmployee, etc. |
-| `src/services/domain/employees/employeeService.js` | ~211 | IndividualPunchForm (getOptions), EntityClient employees | list, getById, getOptions, etc. |
+| Archivo                                            | Líneas | Uso                                                       | Notas                                                                                                                                                                       |
+| -------------------------------------------------- | ------ | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/services/punchService.js`                     | ~844   | Dashboard, ManualPunches, Calendar, TimePunch, NFC        | Legacy; todas las funciones de fichajes (getPunches, createPunch, createManualPunch, createBulkPunches, getPunchesByMonth, getPunchesDashboard, getPunchesStatistics, etc.) |
+| `src/services/domain/punches/punchService.js`      | ~91    | EntityClient para punches (list/get/create/update/delete) | Genérico, usa generic entityService                                                                                                                                         |
+| `src/services/employeeService.js`                  | ~222   | TimePunchManager, posiblemente otros                      | Legacy getEmployees, getEmployee, etc.                                                                                                                                      |
+| `src/services/domain/employees/employeeService.js` | ~211   | IndividualPunchForm (getOptions), EntityClient employees  | list, getById, getOptions, etc.                                                                                                                                             |
 
 ### Hooks
 
-| Archivo | Uso | Patrón |
-|---------|-----|--------|
+| Archivo                   | Uso                                        | Patrón                                                         |
+| ------------------------- | ------------------------------------------ | -------------------------------------------------------------- |
 | `src/hooks/usePunches.js` | Dashboard (WorkingEmployeesCard, gráficos) | **React Query** (usePunchesDashboard, usePunchesStatistics) ✅ |
 
 ### Componentes (por tamaño — criterio evolución: >150 P1, >200 P0)
 
-| Componente | Líneas | Prioridad tamaño |
-|------------|--------|-------------------|
-| `ManualPunches/BulkPunchExcelUpload.jsx` | 842 | **P0** |
-| `ManualPunches/BulkPunchForm.jsx` | 552 | **P0** |
-| `TimePunch/NFCPunchManager.jsx` | 522 | **P0** |
-| `TimePunch/TimePunchManager.jsx` | 454 | **P0** |
-| `ManualPunches/IndividualPunchForm.jsx` | 450 | **P0** |
-| `ManualPunches/PunchesCalendar/index.jsx` | 407 | **P0** |
-| `ManualPunches/PunchesCalendar/PunchDayDialog.jsx` | 381 | **P0** |
-| `ManualPunches/index.jsx` | 47 | OK |
+| Componente                                         | Líneas | Prioridad tamaño |
+| -------------------------------------------------- | ------ | ---------------- |
+| `ManualPunches/BulkPunchExcelUpload.jsx`           | 842    | **P0**           |
+| `ManualPunches/BulkPunchForm.jsx`                  | 552    | **P0**           |
+| `TimePunch/NFCPunchManager.jsx`                    | 522    | **P0**           |
+| `TimePunch/TimePunchManager.jsx`                   | 454    | **P0**           |
+| `ManualPunches/IndividualPunchForm.jsx`            | 450    | **P0**           |
+| `ManualPunches/PunchesCalendar/index.jsx`          | 407    | **P0**           |
+| `ManualPunches/PunchesCalendar/PunchDayDialog.jsx` | 381    | **P0**           |
+| `ManualPunches/index.jsx`                          | 47     | OK               |
 
 ### Configuración
 

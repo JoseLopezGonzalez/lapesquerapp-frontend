@@ -35,7 +35,7 @@ No hay conflicto grave; la recomendación es **documentar** “cuándo usar shad
 
 ## PWA y responsive
 
-- **PWA**: Manifest, íconos, splash screens por dispositivo (iPhone, iPad), theme-color, meta apple-mobile-web-app-*. Hooks para instalación (use-pwa-install, InstallPrompt). Bien integrado para uso en móvil.
+- **PWA**: Manifest, íconos, splash screens por dispositivo (iPhone, iPad), theme-color, meta apple-mobile-web-app-\*. Hooks para instalación (use-pwa-install, InstallPrompt). Bien integrado para uso en móvil.
 - **Responsive**: Layouts adaptativos (BottomNav en móvil, SideBar en desktop), NavigationSheet, formularios con variantes móvil (CreateOrderFormMobile). Uso de breakpoints y clases responsive de Tailwind.
 
 ---

@@ -14,11 +14,7 @@ export function useSpeciesOptions() {
   const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
-  const {
-    data,
-    isLoading,
-    error,
-  } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['species', 'options', tenantId ?? 'unknown'],
     queryFn: () => getSpeciesOptions(token),
     enabled: !!token && !!tenantId,

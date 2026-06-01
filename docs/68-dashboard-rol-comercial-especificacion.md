@@ -23,11 +23,11 @@ El backend aplicará la lógica de negocio y devolverá datos **ya filtrados** p
 
 ### 2.1 Roles y rutas
 
-| Origen | Detalle |
-|--------|--------|
-| `src/configs/roleConfig.ts` | El rol **`comercial`** está definido en `RoleKey` pero **no tiene ninguna ruta** en el mapa `roleConfig`. Las rutas `/admin` y `/admin/home` solo permiten `administrador`, `direccion`, `tecnico`. |
-| `src/middleware.ts` | El matcher protege `/admin/:path*`, `/operator/:path*`, `/production/:path*`, `/warehouse/:path*`. No existe segmento `/comercial`. Si un usuario con rol `comercial` intenta acceder a `/admin`, no está en `rolesAllowed` y se redirige a **/unauthorized**. |
-| `src/utils/loginUtils.ts` | Tras login, solo hay redirección específica para `operario` → `/operator`. El resto va a `safeFrom` o `/admin/home`. Un comercial iría a `/admin/home` y el middleware lo enviaría a **/unauthorized** porque `comercial` no está permitido en `/admin`. |
+| Origen                      | Detalle                                                                                                                                                                                                                                                        |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/configs/roleConfig.ts` | El rol **`comercial`** está definido en `RoleKey` pero **no tiene ninguna ruta** en el mapa `roleConfig`. Las rutas `/admin` y `/admin/home` solo permiten `administrador`, `direccion`, `tecnico`.                                                            |
+| `src/middleware.ts`         | El matcher protege `/admin/:path*`, `/operator/:path*`, `/production/:path*`, `/warehouse/:path*`. No existe segmento `/comercial`. Si un usuario con rol `comercial` intenta acceder a `/admin`, no está en `rolesAllowed` y se redirige a **/unauthorized**. |
+| `src/utils/loginUtils.ts`   | Tras login, solo hay redirección específica para `operario` → `/operator`. El resto va a `safeFrom` o `/admin/home`. Un comercial iría a `/admin/home` y el middleware lo enviaría a **/unauthorized** porque `comercial` no está permitido en `/admin`.       |
 
 **Conclusión**: Hoy el rol comercial no puede usar la app: no tiene segmento de URL ni entrada en navegación. Hay que darle un segmento propio (por ejemplo `/comercial`), igual que el operario tiene `/operator`.
 
@@ -43,13 +43,13 @@ El backend aplicará la lógica de negocio y devolverá datos **ya filtrados** p
 
 Para el **dashboard comercial** solo se usan estos 5 componentes (y mismo layout/estilo que el genérico):
 
-| # | Card | Componente | Hook | Endpoint (API v2) |
-|---|------|------------|------|-------------------|
-| 1 | Cantidad total de ventas | `TotalQuantitySoldCard` | `useOrdersTotalNetWeightStats` | `GET statistics/orders/total-net-weight?dateFrom=&dateTo=` |
-| 2 | Importe total de ventas | `TotalAmountSoldCard` | `useOrdersTotalAmountStats` | `GET statistics/orders/total-amount?dateFrom=&dateTo=` |
-| 3 | Ranking de pedidos | `OrderRankingChart` | `useOrderRankingStats` | `GET statistics/orders/ranking?groupBy=&valueType=&dateFrom=&dateTo=` (+ speciesId opcional) |
-| 4 | Ranking de ventas | `SalesBySalespersonPieChart` | `useSalesBySalesperson` | `GET orders/sales-by-salesperson?dateFrom=&dateTo=` |
-| 5 | Ventas y empresas de transporte | `TransportRadarChart` | `useTransportChartData` | `GET orders/transport-chart-data?from=&to=` |
+| #   | Card                            | Componente                   | Hook                           | Endpoint (API v2)                                                                            |
+| --- | ------------------------------- | ---------------------------- | ------------------------------ | -------------------------------------------------------------------------------------------- |
+| 1   | Cantidad total de ventas        | `TotalQuantitySoldCard`      | `useOrdersTotalNetWeightStats` | `GET statistics/orders/total-net-weight?dateFrom=&dateTo=`                                   |
+| 2   | Importe total de ventas         | `TotalAmountSoldCard`        | `useOrdersTotalAmountStats`    | `GET statistics/orders/total-amount?dateFrom=&dateTo=`                                       |
+| 3   | Ranking de pedidos              | `OrderRankingChart`          | `useOrderRankingStats`         | `GET statistics/orders/ranking?groupBy=&valueType=&dateFrom=&dateTo=` (+ speciesId opcional) |
+| 4   | Ranking de ventas               | `SalesBySalespersonPieChart` | `useSalesBySalesperson`        | `GET orders/sales-by-salesperson?dateFrom=&dateTo=`                                          |
+| 5   | Ventas y empresas de transporte | `TransportRadarChart`        | `useTransportChartData`        | `GET orders/transport-chart-data?from=&to=`                                                  |
 
 Todos los hooks están en:
 
@@ -93,33 +93,33 @@ No es objeto de este doc implementar el backend; solo se deja constancia de lo q
 
 ### 4.1 Rutas y configuración de roles
 
-| Paso | Archivo | Cambio |
-|------|---------|--------|
-| 1 | `src/configs/roleRoutesConfig.js` | Añadir `COMERCIAL_BASE = '/comercial'` y `comercialRoutes = { dashboard: COMERCIAL_BASE }`. |
-| 2 | `src/configs/roleConfig.ts` | Añadir entrada `"/comercial": ["comercial"]`. |
-| 3 | `src/middleware.ts` | Incluir `/comercial/:path*` en el `config.matcher`. Añadir lógica: si `userRole === "comercial"` y `pathname.startsWith("/admin")`, redirigir a `/comercial` (igual que operario → /operator). |
-| 4 | `src/utils/loginUtils.ts` | En `getRedirectUrl`, si `role === "comercial"` devolver `"/comercial"`. |
+| Paso | Archivo                           | Cambio                                                                                                                                                                                         |
+| ---- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | `src/configs/roleRoutesConfig.js` | Añadir `COMERCIAL_BASE = '/comercial'` y `comercialRoutes = { dashboard: COMERCIAL_BASE }`.                                                                                                    |
+| 2    | `src/configs/roleConfig.ts`       | Añadir entrada `"/comercial": ["comercial"]`.                                                                                                                                                  |
+| 3    | `src/middleware.ts`               | Incluir `/comercial/:path*` en el `config.matcher`. Añadir lógica: si `userRole === "comercial"` y `pathname.startsWith("/admin")`, redirigir a `/comercial` (igual que operario → /operator). |
+| 4    | `src/utils/loginUtils.ts`         | En `getRedirectUrl`, si `role === "comercial"` devolver `"/comercial"`.                                                                                                                        |
 
 ### 4.2 Navegación
 
-| Paso | Archivo | Cambio |
-|------|---------|--------|
-| 5 | `src/configs/navgationConfig.js` | Añadir ítem "Inicio" con `href: '/comercial'` y `allowedRoles: ["comercial"]` (misma idea que el ítem de operario con `/operator`). |
-| 6 | Gestores (`navigationManagerConfig`) | De momento el comercial solo tiene dashboard; no añadir gestores para comercial salvo que se definan más pantallas. |
+| Paso | Archivo                              | Cambio                                                                                                                              |
+| ---- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| 5    | `src/configs/navgationConfig.js`     | Añadir ítem "Inicio" con `href: '/comercial'` y `allowedRoles: ["comercial"]` (misma idea que el ítem de operario con `/operator`). |
+| 6    | Gestores (`navigationManagerConfig`) | De momento el comercial solo tiene dashboard; no añadir gestores para comercial salvo que se definan más pantallas.                 |
 
 ### 4.3 Segmento `/comercial` y layout
 
-| Paso | Archivo | Cambio |
-|------|---------|--------|
-| 7 | `src/app/comercial/layout.js` | Crear layout que renderice un cliente (p. ej. `ComercialLayoutClient`) con `dynamic = 'force-dynamic'`. |
-| 8 | `src/app/comercial/ComercialLayoutClient.jsx` (o .tsx) | Nuevo componente que: use el mismo `ResponsiveLayout` que admin/operator; pase `roles = ['comercial']` para filtrar nav; implemente una protección de ruta que solo permita rol `comercial` (y redirija al resto a `/admin/home` o login). No incluir `AdminRouteProtection` (es para admin). |
-| 9 | `src/app/comercial/page.js` | Página principal del comercial: renderizar el **dashboard comercial** (solo 5 cards). |
+| Paso | Archivo                                                | Cambio                                                                                                                                                                                                                                                                                        |
+| ---- | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 7    | `src/app/comercial/layout.js`                          | Crear layout que renderice un cliente (p. ej. `ComercialLayoutClient`) con `dynamic = 'force-dynamic'`.                                                                                                                                                                                       |
+| 8    | `src/app/comercial/ComercialLayoutClient.jsx` (o .tsx) | Nuevo componente que: use el mismo `ResponsiveLayout` que admin/operator; pase `roles = ['comercial']` para filtrar nav; implemente una protección de ruta que solo permita rol `comercial` (y redirija al resto a `/admin/home` o login). No incluir `AdminRouteProtection` (es para admin). |
+| 9    | `src/app/comercial/page.js`                            | Página principal del comercial: renderizar el **dashboard comercial** (solo 5 cards).                                                                                                                                                                                                         |
 
 ### 4.4 Dashboard comercial (solo 5 cards)
 
-| Paso | Archivo | Cambio |
-|------|---------|--------|
-| 10 | `src/components/Admin/Dashboard/ComercialDashboard/index.js` (o ruta análoga) | Nuevo componente que replique la estructura visual del dashboard genérico (saludo, nombre de usuario, ScrollArea, mismo estilo de grid/Masonry) pero solo incluya: `TotalQuantitySoldCard`, `TotalAmountSoldCard`, `OrderRankingChart`, `SalesBySalespersonPieChart`, `TransportRadarChart`. Reutilizar los componentes existentes; no duplicar lógica. Opción alternativa: componente wrapper que reciba una lista de “slots” o un flag `variant="comercial"` y el `Dashboard` actual renderice solo esos 5 en ese caso; la opción más simple y clara es un **ComercialDashboard** que importe y coloque solo esos 5. |
+| Paso | Archivo                                                                       | Cambio                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ---- | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 10   | `src/components/Admin/Dashboard/ComercialDashboard/index.js` (o ruta análoga) | Nuevo componente que replique la estructura visual del dashboard genérico (saludo, nombre de usuario, ScrollArea, mismo estilo de grid/Masonry) pero solo incluya: `TotalQuantitySoldCard`, `TotalAmountSoldCard`, `OrderRankingChart`, `SalesBySalespersonPieChart`, `TransportRadarChart`. Reutilizar los componentes existentes; no duplicar lógica. Opción alternativa: componente wrapper que reciba una lista de “slots” o un flag `variant="comercial"` y el `Dashboard` actual renderice solo esos 5 en ese caso; la opción más simple y clara es un **ComercialDashboard** que importe y coloque solo esos 5. |
 
 Detalle sugerido del layout del ComercialDashboard:
 
@@ -135,9 +135,9 @@ No hace falta cambiar hooks ni servicios: los mismos componentes ya usan los end
 
 ### 4.6 Documentación de arquitectura
 
-| Paso | Archivo | Cambio |
-|------|---------|--------|
-| 11 | `docs/arquitectura/patron-rutas-por-rol.md` | Añadir una subsección o tabla para el rol comercial: segmento `/comercial`, ruta principal `GET /comercial`, dashboard con 5 cards; listar archivos nuevos (layout, page, ComercialDashboard, ComercialRouteProtection). |
+| Paso | Archivo                                     | Cambio                                                                                                                                                                                                                   |
+| ---- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 11   | `docs/arquitectura/patron-rutas-por-rol.md` | Añadir una subsección o tabla para el rol comercial: segmento `/comercial`, ruta principal `GET /comercial`, dashboard con 5 cards; listar archivos nuevos (layout, page, ComercialDashboard, ComercialRouteProtection). |
 
 ---
 

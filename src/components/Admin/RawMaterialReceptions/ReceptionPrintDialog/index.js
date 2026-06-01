@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -25,11 +25,11 @@ export default function ReceptionPrintDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent size="2xl" className="w-full overflow-hidden flex flex-col">
+      <DialogContent size="2xl" className="flex w-full flex-col overflow-hidden">
         <DialogHeader>
           <DialogTitle>Imprimir Nota de Entrada</DialogTitle>
         </DialogHeader>
-        <div className="flex flex-col justify-center w-full flex-1 overflow-auto">
+        <div className="flex w-full flex-1 flex-col justify-center overflow-auto">
           <ReceptionReciboPrintContent
             receptionId={receptionId}
             supplier={supplier}
@@ -38,7 +38,7 @@ export default function ReceptionPrintDialog({
             details={details}
             pallets={pallets}
             creationMode={creationMode}
-            className="p-6 border border-gray-200 rounded-lg print:bg-white"
+            className="rounded-lg border border-gray-200 p-6 print:bg-white"
           />
         </div>
         <div id="reception-print-content" className="hidden print:block">
@@ -52,12 +52,12 @@ export default function ReceptionPrintDialog({
             creationMode={creationMode}
           />
         </div>
-        <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+        <div className="mt-4 flex justify-end gap-2 border-t pt-4">
           <Button variant="outline" onClick={onClose}>
             Cerrar
           </Button>
           <Button onClick={onPrint}>
-            <Printer className="h-4 w-4 mr-2" />
+            <Printer className="mr-2 h-4 w-4" />
             Imprimir
           </Button>
         </div>
@@ -65,4 +65,3 @@ export default function ReceptionPrintDialog({
     </Dialog>
   );
 }
-

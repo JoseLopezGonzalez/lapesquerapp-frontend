@@ -1,34 +1,34 @@
-"use client";
+'use client';
 
 /**
  * BottomNav - Navegación inferior para mobile
- * 
+ *
  * Componente de navegación fija inferior para dispositivos móviles.
  * Muestra 4-5 items principales con iconos y labels cortos.
- * 
+ *
  * Reglas:
  * - Solo navegación primaria (rutas principales)
  * - NUNCA acciones destructivas, configuraciones o logout
  * - Touch targets mínimo 44x44px
  * - Safe areas iOS respetadas
- * 
+ *
  * Referencia: docs/mobile-adaptation/implementaciones/01-LAYOUT-NAVEGACION.md
  */
 
-import * as React from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { motion, useReducedMotion } from "framer-motion";
-import { cn } from "@/lib/utils";
-import { MOBILE_SAFE_AREAS } from "@/lib/design-tokens-mobile";
-import { feedbackPop } from "@/lib/motion-presets";
-import { isActiveRoute } from "@/utils/navigationUtils";
-import { ChatNavItem } from "./ChatNavItem";
-import { CenterActionButton } from "./CenterActionButton";
+import * as React from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { motion, useReducedMotion } from 'framer-motion';
+import { cn } from '@/lib/utils';
+import { MOBILE_SAFE_AREAS } from '@/lib/design-tokens-mobile';
+import { feedbackPop } from '@/lib/motion-presets';
+import { isActiveRoute } from '@/utils/navigationUtils';
+import { ChatNavItem } from './ChatNavItem';
+import { CenterActionButton } from './CenterActionButton';
 
 /**
  * BottomNavItem - Item individual de la navegación inferior
- * 
+ *
  * Con icono y texto debajo
  */
 function BottomNavItem({ item, isActive, index }) {
@@ -53,36 +53,31 @@ function BottomNavItem({ item, isActive, index }) {
       exit={feedbackPop.exit}
       transition={itemTransition}
       whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
-      className="flex flex-col items-center justify-center flex-shrink-0"
+      className="flex flex-shrink-0 flex-col items-center justify-center"
     >
       {item?.onClick ? (
         // Item especial con onClick (ej. Chat IA)
         <button
           onClick={item.onClick}
           className={cn(
-            "relative flex flex-col items-center justify-center gap-1",
-            "min-h-[44px] min-w-[44px]",
-            "px-2 py-1.5 rounded-lg",
-            "transition-all duration-200",
-            "touch-none",
+            'relative flex flex-col items-center justify-center gap-1',
+            'min-h-[44px] min-w-[44px]',
+            'rounded-lg px-2 py-1.5',
+            'transition-all duration-200',
+            'touch-none',
             isActive
-              ? "text-primary bg-primary/10"
-              : "text-muted-foreground hover:text-foreground hover:bg-accent/50 active:bg-accent"
+              ? 'text-primary bg-primary/10'
+              : 'text-muted-foreground hover:text-foreground hover:bg-accent/50 active:bg-accent'
           )}
           aria-label={item?.name || 'Navegación'}
         >
-          {Icon && (
-            <Icon 
-              className={cn(
-                "w-5 h-5",
-                isActive ? "text-primary" : ""
-              )} 
-            />
-          )}
-          <span className={cn(
-            "text-[10px] font-medium leading-tight",
-            isActive ? "text-primary" : "text-muted-foreground"
-          )}>
+          {Icon && <Icon className={cn('h-5 w-5', isActive ? 'text-primary' : '')} />}
+          <span
+            className={cn(
+              'text-[10px] leading-tight font-medium',
+              isActive ? 'text-primary' : 'text-muted-foreground'
+            )}
+          >
             {item?.name || ''}
           </span>
         </button>
@@ -91,29 +86,24 @@ function BottomNavItem({ item, isActive, index }) {
         <Link
           href={item?.href || '#'}
           className={cn(
-            "relative flex flex-col items-center justify-center gap-1",
-            "min-h-[44px] min-w-[44px]",
-            "px-2 py-1.5 rounded-lg",
-            "transition-all duration-200",
-            "touch-none",
+            'relative flex flex-col items-center justify-center gap-1',
+            'min-h-[44px] min-w-[44px]',
+            'rounded-lg px-2 py-1.5',
+            'transition-all duration-200',
+            'touch-none',
             isActive
-              ? "text-primary bg-primary/10"
-              : "text-muted-foreground hover:text-foreground hover:bg-accent/50 active:bg-accent"
+              ? 'text-primary bg-primary/10'
+              : 'text-muted-foreground hover:text-foreground hover:bg-accent/50 active:bg-accent'
           )}
           aria-label={item?.name || 'Navegación'}
         >
-          {Icon && (
-            <Icon 
-              className={cn(
-                "w-5 h-5",
-                isActive ? "text-primary" : ""
-              )} 
-            />
-          )}
-          <span className={cn(
-            "text-[10px] font-medium leading-tight",
-            isActive ? "text-primary" : "text-muted-foreground"
-          )}>
+          {Icon && <Icon className={cn('h-5 w-5', isActive ? 'text-primary' : '')} />}
+          <span
+            className={cn(
+              'text-[10px] leading-tight font-medium',
+              isActive ? 'text-primary' : 'text-muted-foreground'
+            )}
+          >
             {item?.name || ''}
           </span>
         </Link>
@@ -124,7 +114,7 @@ function BottomNavItem({ item, isActive, index }) {
 
 /**
  * BottomNav - Componente principal de navegación inferior
- * 
+ *
  * @param {object} props
  * @param {Array} props.items - Items de navegación principales (4-5 máximo)
  * @param {boolean} props.sheetOpen - Si el NavigationSheet está abierto
@@ -150,29 +140,26 @@ export function BottomNav({ items, sheetOpen = false, onSheetOpenChange }) {
   return (
     <nav
       className={cn(
-        "fixed bottom-0 left-0 right-0 z-50",
-        "bg-background/95 backdrop-blur-sm",
-        "border-t",
-        "shadow-lg",
+        'fixed right-0 bottom-0 left-0 z-50',
+        'bg-background/95 backdrop-blur-sm',
+        'border-t',
+        'shadow-lg',
         MOBILE_SAFE_AREAS.BOTTOM,
-        "animate-in slide-in-from-bottom duration-300"
+        'animate-in slide-in-from-bottom duration-300'
       )}
     >
       <div
         className={cn(
-          "flex items-center justify-stretch",
-          "w-full max-w-md mx-auto",
-          "px-4 pt-3 pb-4",
-          "gap-0"
+          'flex items-center justify-stretch',
+          'mx-auto w-full max-w-md',
+          'px-4 pt-3 pb-4',
+          'gap-0'
         )}
       >
         {Array.from({ length: SLOT_COUNT }, (_, colIndex) => {
           if (colIndex === CENTER_SLOT_INDEX) {
             return (
-              <div
-                key="center"
-                className="flex flex-1 min-w-0 items-center justify-center mx-4"
-              >
+              <div key="center" className="mx-4 flex min-w-0 flex-1 items-center justify-center">
                 <CenterActionButton onOpenSheet={onSheetOpenChange} />
               </div>
             );
@@ -180,25 +167,21 @@ export function BottomNav({ items, sheetOpen = false, onSheetOpenChange }) {
           const itemIndex = colIndex < CENTER_SLOT_INDEX ? colIndex : colIndex - 1;
           const item = displayItems[itemIndex];
           if (!item) {
-            return <div key={`empty-${colIndex}`} className="flex-1 min-w-0" />;
+            return <div key={`empty-${colIndex}`} className="min-w-0 flex-1" />;
           }
-          if (item.name === "Chat IA" && !item.href) {
+          if (item.name === 'Chat IA' && !item.href) {
             return (
-              <div
-                key="chat-ai"
-                className="flex flex-1 min-w-0 items-center justify-center"
-              >
+              <div key="chat-ai" className="flex min-w-0 flex-1 items-center justify-center">
                 <ChatNavItem index={colIndex} />
               </div>
             );
           }
-          const itemHref = item.href || item.childrens?.[0]?.href || "#";
-          const isActive =
-            itemHref !== "#" ? isActiveRoute(itemHref, pathname) : false;
+          const itemHref = item.href || item.childrens?.[0]?.href || '#';
+          const isActive = itemHref !== '#' ? isActiveRoute(itemHref, pathname) : false;
           return (
             <div
               key={itemHref || item.name || `item-${colIndex}`}
-              className="flex flex-1 min-w-0 items-center justify-center"
+              className="flex min-w-0 flex-1 items-center justify-center"
             >
               <BottomNavItem
                 item={{ ...item, href: itemHref }}

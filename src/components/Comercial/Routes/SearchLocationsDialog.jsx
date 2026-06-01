@@ -69,21 +69,36 @@ export function SearchLocationsDialog({ open, onOpenChange, onSelectLocation }) 
         <DialogHeader>
           <DialogTitle>Buscar punto o dirección</DialogTitle>
           <DialogDescription>
-            Busca una ubicación y, al seleccionarla, se abrirá el diálogo para completar la nueva parada.
+            Busca una ubicación y, al seleccionarla, se abrirá el diálogo para completar la nueva
+            parada.
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-3">
           <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
-            <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar dirección, calle o ubicación" />
-            <Button type="button" variant="secondary" onClick={handleSearch} disabled={loadingSearch}>
+            <Input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Buscar dirección, calle o ubicación"
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleSearch}
+              disabled={loadingSearch}
+            >
               <MapPinPlus className="mr-2 h-4 w-4" />
               {loadingSearch ? 'Buscando...' : 'Buscar punto'}
             </Button>
           </div>
 
           {searchState.type === 'error' && (
-            <div className={cn('rounded-xl border px-3 py-2 text-sm', 'border-destructive/40 bg-destructive/5 text-destructive')}>
+            <div
+              className={cn(
+                'rounded-xl border px-3 py-2 text-sm',
+                'border-destructive/40 bg-destructive/5 text-destructive'
+              )}
+            >
               {searchState.message}
             </div>
           )}
@@ -97,7 +112,7 @@ export function SearchLocationsDialog({ open, onOpenChange, onSelectLocation }) 
           {!loadingSearch && searchState.type === 'empty' && geocodeResults.length === 0 && (
             <div className="flex min-h-[180px] items-center justify-center">
               <EmptyState
-                icon={<MapPinPlus className="h-10 w-10 text-primary" />}
+                icon={<MapPinPlus className="text-primary h-10 w-10" />}
                 title="Sin resultados"
                 description={searchState.message}
                 className="min-h-[180px] bg-transparent"
@@ -123,7 +138,7 @@ export function SearchLocationsDialog({ open, onOpenChange, onSelectLocation }) 
                         targetType: 'location',
                       });
                     }}
-                    className="rounded-lg border bg-background px-3 py-2 text-left text-sm hover:border-primary/40"
+                    className="bg-background hover:border-primary/40 rounded-lg border px-3 py-2 text-left text-sm"
                   >
                     {feature.place_name}
                   </button>

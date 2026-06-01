@@ -1,12 +1,12 @@
 /**
  * Hook usePWAInstallStrategy - Estrategia de cuándo mostrar Install Prompt
- * 
+ *
  * Nueva estrategia implementada:
  * - Mostrar siempre en la pantalla principal después de loguearse
  * - Si se cierra, volver a mostrar después de 24 horas
  * - Funciona para cualquier dispositivo
  * - Si instala, desaparecer para siempre
- * 
+ *
  * Referencia: docs/mobile-adaptation/00-PLAN-GENERAL.md
  */
 
@@ -20,15 +20,11 @@ const STORAGE_KEY_LAST_DISMISSED = 'pwa-install-last-dismissed';
 const SHOW_AFTER_HOURS = 24; // Volver a mostrar después de 24 horas
 
 // Rutas principales después del login donde se debe mostrar
-const MAIN_ROUTES = [
-  '/admin/home',
-  '/admin/dashboard',
-  '/admin'
-];
+const MAIN_ROUTES = ['/admin/home', '/admin/dashboard', '/admin'];
 
 /**
  * Hook para determinar si mostrar el Install Prompt
- * 
+ *
  * @returns {object} Estado y funciones de control
  * @returns {boolean} returns.shouldShow - Si debe mostrarse el prompt
  * @returns {boolean} returns.canShow - Si puede mostrarse (no instalado, etc.)
@@ -51,7 +47,9 @@ export function usePWAInstallStrategy() {
     }
 
     // Verificar si estamos en una ruta principal
-    const isMainRoute = MAIN_ROUTES.some(route => pathname === route || pathname.startsWith(route + '/'));
+    const isMainRoute = MAIN_ROUTES.some(
+      (route) => pathname === route || pathname.startsWith(route + '/')
+    );
     if (!isMainRoute) {
       setShouldShow(false);
       return;
@@ -63,7 +61,7 @@ export function usePWAInstallStrategy() {
       const lastDismissedTime = parseInt(lastDismissed, 10);
       const now = Date.now();
       const hoursSinceDismissed = (now - lastDismissedTime) / (1000 * 60 * 60);
-      
+
       // Si pasaron menos de 24 horas, no mostrar
       if (hoursSinceDismissed < SHOW_AFTER_HOURS) {
         setShouldShow(false);
@@ -115,4 +113,3 @@ export function usePWAInstallStrategy() {
     resetStrategy: process.env.NODE_ENV === 'development' ? resetStrategy : undefined,
   };
 }
-

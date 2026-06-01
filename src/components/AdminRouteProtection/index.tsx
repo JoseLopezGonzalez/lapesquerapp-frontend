@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useSession } from "next-auth/react";
-import { useRouter, usePathname } from "next/navigation";
-import { useEffect, type ReactNode } from "react";
-import { useIsLoggingOut } from "@/hooks/useIsLoggingOut";
-import { LogoutDialog } from "@/components/Utilities/LogoutDialog";
-import Loader from "@/components/Utilities/Loader";
+import { useSession } from 'next-auth/react';
+import { useRouter, usePathname } from 'next/navigation';
+import { useEffect, type ReactNode } from 'react';
+import { useIsLoggingOut } from '@/hooks/useIsLoggingOut';
+import { LogoutDialog } from '@/components/Utilities/LogoutDialog';
+import Loader from '@/components/Utilities/Loader';
 
 /** El operario tiene su propio segmento /operator; si llega a /admin se redirige. */
-const OPERATOR_DASHBOARD = "/operator";
-const FIELD_DASHBOARD = "/field";
+const OPERATOR_DASHBOARD = '/operator';
+const FIELD_DASHBOARD = '/field';
 
 interface AdminRouteProtectionProps {
   children: ReactNode;
@@ -25,20 +25,20 @@ export default function AdminRouteProtection({ children }: AdminRouteProtectionP
     // No redirigir durante un logout activo; el handler de logout se encarga.
     if (isLoggingOut) return;
 
-    if (status === "unauthenticated") {
+    if (status === 'unauthenticated') {
       // Sesión expirada/revocada después del montaje del componente.
       // El middleware debería haberlo capturado en la carga inicial, pero
       // si la sesión cae durante el uso, redirigimos a login aquí.
-      router.replace("/");
+      router.replace('/');
       return;
     }
 
-    if (status === "authenticated" && session?.user) {
+    if (status === 'authenticated' && session?.user) {
       const rawRole = session.user.role;
       const userRole = Array.isArray(rawRole) ? rawRole[0] : rawRole;
-      if (userRole === "operario") {
+      if (userRole === 'operario') {
         router.replace(OPERATOR_DASHBOARD);
-      } else if (userRole === "repartidor_autoventa") {
+      } else if (userRole === 'repartidor_autoventa') {
         router.replace(FIELD_DASHBOARD);
       }
     }
@@ -48,18 +48,23 @@ export default function AdminRouteProtection({ children }: AdminRouteProtectionP
     return <LogoutDialog open={true} />;
   }
 
-  if (status === "loading") {
+  if (status === 'loading') {
     return (
-      <div className="flex justify-center items-center h-screen">
+      <div className="flex h-screen items-center justify-center">
         <Loader />
       </div>
     );
   }
 
-  const role = session?.user?.role != null ? (Array.isArray(session.user.role) ? session.user.role[0] : session.user.role) : null;
-  if (status === "authenticated" && (role === "operario" || role === "repartidor_autoventa")) {
+  const role =
+    session?.user?.role != null
+      ? Array.isArray(session.user.role)
+        ? session.user.role[0]
+        : session.user.role
+      : null;
+  if (status === 'authenticated' && (role === 'operario' || role === 'repartidor_autoventa')) {
     return (
-      <div className="flex justify-center items-center h-screen">
+      <div className="flex h-screen items-center justify-center">
         <Loader />
       </div>
     );

@@ -21,12 +21,7 @@ export function useStoreData({ storeId, setIsStoreLoading }) {
   const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
-  const {
-    data,
-    isLoading,
-    error,
-    refetch,
-  } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['store', tenantId ?? 'unknown', storeId],
     queryFn: async () => {
       const fetchStore =

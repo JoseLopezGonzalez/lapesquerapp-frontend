@@ -115,7 +115,12 @@ export function createEmptyTemplateDraft(overrides: RouteEntityDraft = {}) {
 }
 
 export function createEmptyNewItemDraft(
-  overrides: Partial<Pick<RouteEntityDraft, 'name' | 'description' | 'routeDate' | 'fieldOperatorId' | 'sourceMode' | 'routeTemplateId'>> = {}
+  overrides: Partial<
+    Pick<
+      RouteEntityDraft,
+      'name' | 'description' | 'routeDate' | 'fieldOperatorId' | 'sourceMode' | 'routeTemplateId'
+    >
+  > = {}
 ) {
   return {
     name: '',
@@ -136,7 +141,9 @@ export function reorderStops(stops: RouteStop[], fromId: string | number, toId: 
   const nextStops = [...stops];
   const [moved] = nextStops.splice(oldIndex, 1);
   nextStops.splice(newIndex, 0, moved);
-  return nextStops.map((stop, index) => normalizeRouteStop({ ...stop, position: index + 1 }, index));
+  return nextStops.map((stop, index) =>
+    normalizeRouteStop({ ...stop, position: index + 1 }, index)
+  );
 }
 
 export function serializeStopsForWrite(stops: RouteStop[] = []) {
@@ -175,12 +182,14 @@ async function geocodeStop(stop: RouteStop) {
       .then((features) => {
         const feature = features?.[0];
         if (!feature?.center) {
-          if (geocodeCache.size >= MAX_GEOCODE_CACHE_SIZE) geocodeCache.delete(geocodeCache.keys().next().value!);
+          if (geocodeCache.size >= MAX_GEOCODE_CACHE_SIZE)
+            geocodeCache.delete(geocodeCache.keys().next().value!);
           geocodeCache.set(query, null);
           return null;
         }
         const coordinates = { lng: feature.center[0], lat: feature.center[1] };
-        if (geocodeCache.size >= MAX_GEOCODE_CACHE_SIZE) geocodeCache.delete(geocodeCache.keys().next().value!);
+        if (geocodeCache.size >= MAX_GEOCODE_CACHE_SIZE)
+          geocodeCache.delete(geocodeCache.keys().next().value!);
         geocodeCache.set(query, coordinates);
         return coordinates;
       })
@@ -225,7 +234,9 @@ export async function enrichStopsWithCoordinates(stops: Partial<RouteStop>[] = [
   return runWithConcurrency(normalizedStops, GEOCODE_CONCURRENCY, (stop) => geocodeStop(stop));
 }
 
-export function normalizeRouteEntity<T extends Partial<DeliveryRoute>>(route: T): T & { stops: RouteStop[] } {
+export function normalizeRouteEntity<T extends Partial<DeliveryRoute>>(
+  route: T
+): T & { stops: RouteStop[] } {
   return {
     ...route,
     stops: normalizeStops(route?.stops ?? []),

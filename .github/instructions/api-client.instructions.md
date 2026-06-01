@@ -1,5 +1,5 @@
 ---
-applyTo: "services/**/*.{js,jsx,ts,tsx},lib/**/*.{js,jsx,ts,tsx},features/**/services/**/*.{js,jsx,ts,tsx}"
+applyTo: 'services/**/*.{js,jsx,ts,tsx},lib/**/*.{js,jsx,ts,tsx},features/**/services/**/*.{js,jsx,ts,tsx}'
 ---
 
 # API client instructions

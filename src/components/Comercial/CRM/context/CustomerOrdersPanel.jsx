@@ -3,8 +3,19 @@
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import Loader from '@/components/Utilities/Loader';
 import StatusBadge from '@/components/Admin/OrdersManager/StatusBadge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { formatDecimalCurrency, formatDecimalWeight, formatInteger } from '@/helpers/formats/numbers/formatNumbers';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  formatDecimalCurrency,
+  formatDecimalWeight,
+  formatInteger,
+} from '@/helpers/formats/numbers/formatNumbers';
 import { formatDateValue } from '../utils';
 
 function resolveOrderStatusBadge(status) {
@@ -13,11 +24,7 @@ function resolveOrderStatusBadge(status) {
   return { color: 'orange', label: 'Pendiente' };
 }
 
-export default function CustomerOrdersPanel({
-  orders = [],
-  isLoading = false,
-  errorMessage = '',
-}) {
+export default function CustomerOrdersPanel({ orders = [], isLoading = false, errorMessage = '' }) {
   if (isLoading) {
     return (
       <div className="flex min-h-[220px] items-center justify-center">
@@ -31,7 +38,7 @@ export default function CustomerOrdersPanel({
       <EmptyState
         title="Error cargando pedidos"
         description={errorMessage}
-        className="h-full w-full border bg-muted/20 !min-h-[220px]"
+        className="bg-muted/20 h-full !min-h-[220px] w-full border"
       />
     );
   }
@@ -41,7 +48,7 @@ export default function CustomerOrdersPanel({
       <EmptyState
         title="Sin pedidos"
         description="Este cliente no tiene pedidos."
-        className="h-full w-full border bg-muted/20 !min-h-[220px]"
+        className="bg-muted/20 h-full !min-h-[220px] w-full border"
       />
     );
   }
@@ -74,10 +81,14 @@ export default function CustomerOrdersPanel({
                   <StatusBadge color={statusBadge.color} label={statusBadge.label} />
                 </TableCell>
                 <TableCell>{order.orderType === 'autoventa' ? 'Autoventa' : 'Estándar'}</TableCell>
-                <TableCell className="text-right">{formatDecimalWeight(order.totalNetWeight ?? 0)}</TableCell>
+                <TableCell className="text-right">
+                  {formatDecimalWeight(order.totalNetWeight ?? 0)}
+                </TableCell>
                 <TableCell className="text-right">{formatInteger(order.totalBoxes ?? 0)}</TableCell>
                 <TableCell className="text-right">{formatInteger(order.pallets ?? 0)}</TableCell>
-                <TableCell className="text-right">{formatDecimalCurrency(order.totalAmount ?? 0)}</TableCell>
+                <TableCell className="text-right">
+                  {formatDecimalCurrency(order.totalAmount ?? 0)}
+                </TableCell>
               </TableRow>
             );
           })}

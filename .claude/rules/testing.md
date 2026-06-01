@@ -99,7 +99,10 @@ describe('customerService', () => {
 
   describe('list', () => {
     it('construye la URL con los filtros correctamente', async () => {
-      const mockData = { data: [], meta: { current_page: 1, last_page: 1, per_page: 15, total: 0 } };
+      const mockData = {
+        data: [],
+        meta: { current_page: 1, last_page: 1, per_page: 15, total: 0 },
+      };
       vi.mocked(fetchEntitiesGeneric).mockResolvedValue(mockData);
 
       await customerService.list({ search: 'brisamar' }, { page: 2 });
@@ -220,10 +223,12 @@ describe('labelEditorValidation', () => {
   });
 
   it('hasDuplicateFieldKeys es true cuando hay duplicados', () => {
-    expect(hasDuplicateFieldKeys([
-      { type: 'manualField', key: 'A' },
-      { type: 'manualField', key: 'A' },
-    ])).toBe(true);
+    expect(
+      hasDuplicateFieldKeys([
+        { type: 'manualField', key: 'A' },
+        { type: 'manualField', key: 'A' },
+      ])
+    ).toBe(true);
   });
 });
 ```

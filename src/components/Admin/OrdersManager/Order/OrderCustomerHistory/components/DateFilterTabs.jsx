@@ -3,7 +3,13 @@
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MoreVertical } from 'lucide-react';
 
@@ -39,7 +45,7 @@ export default function DateFilterTabs({
       >
         <ScrollArea orientation="horizontal" className="w-full">
           <div className="flex">
-            <TabsList className="w-max min-w-full flex gap-1.5 bg-transparent p-0 h-auto">
+            <TabsList className="flex h-auto w-max min-w-full gap-1.5 bg-transparent p-0">
               <TabsTrigger value="month" className={MOBILE_TAB_CLASS}>
                 Mes
               </TabsTrigger>
@@ -81,27 +87,15 @@ export default function DateFilterTabs({
         className="w-auto"
       >
         <TabsList
-          className="grid w-full h-8"
+          className="grid h-8 w-full"
           style={{
             gridTemplateColumns: `repeat(${2 + (hasCurrentYear ? 1 : 0) + (hasYear1 ? 1 : 0)}, minmax(0, 1fr))`,
           }}
         >
-          <TabsTrigger value="month">
-            Mes
-          </TabsTrigger>
-          <TabsTrigger value="quarter">
-            Trimestre
-          </TabsTrigger>
-          {hasCurrentYear && (
-            <TabsTrigger value="year">
-              {currentYear}
-            </TabsTrigger>
-          )}
-          {hasYear1 && (
-            <TabsTrigger value="year-1">
-              {currentYear - 1}
-            </TabsTrigger>
-          )}
+          <TabsTrigger value="month">Mes</TabsTrigger>
+          <TabsTrigger value="quarter">Trimestre</TabsTrigger>
+          {hasCurrentYear && <TabsTrigger value="year">{currentYear}</TabsTrigger>}
+          {hasYear1 && <TabsTrigger value="year-1">{currentYear - 1}</TabsTrigger>}
         </TabsList>
       </Tabs>
       {yearsForSelector.length > 0 && (

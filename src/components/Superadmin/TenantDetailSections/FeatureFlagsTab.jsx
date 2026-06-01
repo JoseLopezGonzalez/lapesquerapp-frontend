@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState, useCallback } from "react";
-import { fetchSuperadmin, SuperadminApiError } from "@/lib/superadminApi";
-import { notify } from "@/lib/notifications";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import React, { useEffect, useState, useCallback } from 'react';
+import { fetchSuperadmin, SuperadminApiError } from '@/lib/superadminApi';
+import { notify } from '@/lib/notifications';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   Table,
   TableBody,
@@ -23,9 +23,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Loader2, Pencil, RotateCcw, CheckCircle2, XCircle, Flag } from "lucide-react";
-import EmptyState from "../EmptyState";
+} from '@/components/ui/table';
+import { Loader2, Pencil, RotateCcw, CheckCircle2, XCircle, Flag } from 'lucide-react';
+import EmptyState from '../EmptyState';
 
 const FLAG_DESCRIPTIONS = {
   // Mapeo opcional key → descripción corta si la API no devuelve description
@@ -37,10 +37,10 @@ function flagDescription(flag) {
 
 export default function FeatureFlagsTab({ tenantId }) {
   const [flags, setFlags] = useState([]);
-  const [plan, setPlan] = useState("");
+  const [plan, setPlan] = useState('');
   const [loading, setLoading] = useState(true);
   const [overrideDialog, setOverrideDialog] = useState(null);
-  const [overrideReason, setOverrideReason] = useState("");
+  const [overrideReason, setOverrideReason] = useState('');
   const [saving, setSaving] = useState(false);
   const [deletingKey, setDeletingKey] = useState(null);
 
@@ -50,16 +50,20 @@ export default function FeatureFlagsTab({ tenantId }) {
       const res = await fetchSuperadmin(`/tenants/${tenantId}/feature-flags`);
       const json = await res.json();
       setFlags(json.data || []);
-      setPlan(json.plan || "");
-    } catch { setFlags([]); } finally {
+      setPlan(json.plan || '');
+    } catch {
+      setFlags([]);
+    } finally {
       setLoading(false);
     }
   }, [tenantId]);
 
-  useEffect(() => { fetchFlags(); }, [fetchFlags]);
+  useEffect(() => {
+    fetchFlags();
+  }, [fetchFlags]);
 
   const handleToggle = (flag) => {
-    setOverrideReason("");
+    setOverrideReason('');
     setOverrideDialog({ ...flag, newEnabled: !flag.enabled });
   };
 
@@ -68,14 +72,17 @@ export default function FeatureFlagsTab({ tenantId }) {
     setSaving(true);
     try {
       await fetchSuperadmin(`/tenants/${tenantId}/feature-flags/${overrideDialog.flag_key}`, {
-        method: "PUT",
-        body: JSON.stringify({ enabled: overrideDialog.newEnabled, reason: overrideReason || undefined }),
+        method: 'PUT',
+        body: JSON.stringify({
+          enabled: overrideDialog.newEnabled,
+          reason: overrideReason || undefined,
+        }),
       });
-      notify.success({ title: "Override guardado" });
+      notify.success({ title: 'Override guardado' });
       setOverrideDialog(null);
       fetchFlags();
     } catch (err) {
-      notify.error({ title: err.message || "Error al guardar override" });
+      notify.error({ title: err.message || 'Error al guardar override' });
     } finally {
       setSaving(false);
     }
@@ -84,14 +91,14 @@ export default function FeatureFlagsTab({ tenantId }) {
   const handleDeleteOverride = async (flagKey) => {
     setDeletingKey(flagKey);
     try {
-      await fetchSuperadmin(`/tenants/${tenantId}/feature-flags/${flagKey}`, { method: "DELETE" });
-      notify.success({ title: "Override eliminado. Vuelve al valor del plan." });
+      await fetchSuperadmin(`/tenants/${tenantId}/feature-flags/${flagKey}`, { method: 'DELETE' });
+      notify.success({ title: 'Override eliminado. Vuelve al valor del plan.' });
       fetchFlags();
     } catch (err) {
       if (err instanceof SuperadminApiError && err.status === 404) {
-        notify.info({ title: "No habia override para este flag." });
+        notify.info({ title: 'No habia override para este flag.' });
       } else {
-        notify.error({ title: err.message || "Error al eliminar override" });
+        notify.error({ title: err.message || 'Error al eliminar override' });
       }
     } finally {
       setDeletingKey(null);
@@ -105,7 +112,8 @@ export default function FeatureFlagsTab({ tenantId }) {
           <CardTitle className="text-sm">Feature Flags</CardTitle>
           {plan && (
             <CardDescription>
-              Plan: <span className="font-medium capitalize">{plan}</span>. Los flags con override difieren del default del plan.
+              Plan: <span className="font-medium capitalize">{plan}</span>. Los flags con override
+              difieren del default del plan.
             </CardDescription>
           )}
         </CardHeader>
@@ -125,7 +133,9 @@ export default function FeatureFlagsTab({ tenantId }) {
                 Array.from({ length: 6 }).map((_, i) => (
                   <TableRow key={i}>
                     {Array.from({ length: 5 }).map((__, j) => (
-                      <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
+                      <TableCell key={j}>
+                        <Skeleton className="h-4 w-full" />
+                      </TableCell>
                     ))}
                   </TableRow>
                 ))
@@ -145,20 +155,20 @@ export default function FeatureFlagsTab({ tenantId }) {
                   <TableRow key={flag.flag_key}>
                     <TableCell>
                       <div>
-                        <span className="text-sm font-mono">{flag.flag_key}</span>
+                        <span className="font-mono text-sm">{flag.flag_key}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell text-sm text-muted-foreground max-w-[200px]">
-                      {flagDescription(flag) || "-"}
+                    <TableCell className="text-muted-foreground hidden max-w-[200px] text-sm sm:table-cell">
+                      {flagDescription(flag) || '-'}
                     </TableCell>
                     <TableCell>
                       {flag.enabled ? (
-                        <span className="flex items-center gap-1.5 text-green-600 dark:text-green-400 text-sm">
+                        <span className="flex items-center gap-1.5 text-sm text-green-600 dark:text-green-400">
                           <CheckCircle2 className="h-4 w-4" />
                           Habilitado
                         </span>
                       ) : (
-                        <span className="flex items-center gap-1.5 text-muted-foreground text-sm">
+                        <span className="text-muted-foreground flex items-center gap-1.5 text-sm">
                           <XCircle className="h-4 w-4" />
                           Deshabilitado
                         </span>
@@ -166,11 +176,14 @@ export default function FeatureFlagsTab({ tenantId }) {
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
                       {flag.has_override ? (
-                        <Badge variant="outline" className="border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400 text-xs">
+                        <Badge
+                          variant="outline"
+                          className="border-blue-500/30 bg-blue-500/10 text-xs text-blue-700 dark:text-blue-400"
+                        >
                           Override activo
                         </Badge>
                       ) : (
-                        <span className="text-xs text-muted-foreground">Default del plan</span>
+                        <span className="text-muted-foreground text-xs">Default del plan</span>
                       )}
                     </TableCell>
                     <TableCell className="text-right">
@@ -179,7 +192,7 @@ export default function FeatureFlagsTab({ tenantId }) {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleToggle(flag)}
-                          title={flag.enabled ? "Deshabilitar" : "Habilitar"}
+                          title={flag.enabled ? 'Deshabilitar' : 'Habilitar'}
                         >
                           <Pencil className="h-3.5 w-3.5" />
                         </Button>
@@ -191,9 +204,11 @@ export default function FeatureFlagsTab({ tenantId }) {
                             disabled={deletingKey === flag.flag_key}
                             title="Eliminar override (volver al plan)"
                           >
-                            {deletingKey === flag.flag_key
-                              ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                              : <RotateCcw className="h-3.5 w-3.5" />}
+                            {deletingKey === flag.flag_key ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <RotateCcw className="h-3.5 w-3.5" />
+                            )}
                           </Button>
                         )}
                       </div>
@@ -206,15 +221,20 @@ export default function FeatureFlagsTab({ tenantId }) {
         </CardContent>
       </Card>
 
-      <Dialog open={!!overrideDialog} onOpenChange={(open) => { if (!open) setOverrideDialog(null); }}>
+      <Dialog
+        open={!!overrideDialog}
+        onOpenChange={(open) => {
+          if (!open) setOverrideDialog(null);
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {overrideDialog?.newEnabled ? "Habilitar" : "Deshabilitar"} {overrideDialog?.flag_key}
+              {overrideDialog?.newEnabled ? 'Habilitar' : 'Deshabilitar'} {overrideDialog?.flag_key}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Se guardará un override para este tenant. El cambio se aplicará de inmediato.
             </p>
             <div className="grid gap-1.5">
@@ -232,7 +252,7 @@ export default function FeatureFlagsTab({ tenantId }) {
               Cancelar
             </Button>
             <Button onClick={handleSaveOverride} disabled={saving}>
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Guardar override"}
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Guardar override'}
             </Button>
           </DialogFooter>
         </DialogContent>

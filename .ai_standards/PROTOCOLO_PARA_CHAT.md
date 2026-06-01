@@ -35,10 +35,10 @@
 
 ### Decisiones
 
-| Tipo | Qué hacer |
-|------|-----------|
-| **Automáticas** | Análisis técnico, código según estándares, validaciones documentadas, estructura de archivos. **Ejecutar sin preguntar.** |
-| **Críticas** | Ambigüedad en lo que pide el usuario, conflicto entre requisitos, negocio no documentado, seguridad/datos sensibles, elección entre opciones con trade-offs. **PAUSAR:** escribe en `00_working/decisions_pending.md`, presenta opciones (A/B/C) con pros/contras, da tu recomendación y espera la respuesta del usuario antes de seguir. |
+| Tipo            | Qué hacer                                                                                                                                                                                                                                                                                                                                 |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Automáticas** | Análisis técnico, código según estándares, validaciones documentadas, estructura de archivos. **Ejecutar sin preguntar.**                                                                                                                                                                                                                 |
+| **Críticas**    | Ambigüedad en lo que pide el usuario, conflicto entre requisitos, negocio no documentado, seguridad/datos sensibles, elección entre opciones con trade-offs. **PAUSAR:** escribe en `00_working/decisions_pending.md`, presenta opciones (A/B/C) con pros/contras, da tu recomendación y espera la respuesta del usuario antes de seguir. |
 
 ### Logging
 
@@ -46,6 +46,7 @@ Tras cada sección completada, añade en `04_logs/execution_timeline.md` una ent
 
 ```markdown
 ## 🕐 [HH:MM] - [Nombre sección]
+
 **Status**: ✅ Completado
 **Documentos creados**: [listar]
 **Próximo**: [automático / crítica]
@@ -62,7 +63,7 @@ Si hay errores: documéntalos en `04_logs/errors_and_solutions.md` (descripción
 3. **Genera** `05_outputs/FINAL_REPORT.md` con:
    - Resumen ejecutivo (qué se logró)
    - Objetivos cumplidos
-   - Deliverables (archivos y docs en 01_/02_/03_/04_/05_)
+   - Deliverables (archivos y docs en 01*/02*/03*/04*/05\_)
    - Críticas resueltas (si las hubo)
    - Validaciones realizadas
    - Advertencias (si las hay)
@@ -74,7 +75,7 @@ Si hay errores: documéntalos en `04_logs/errors_and_solutions.md` (descripción
 ## 4. Resumen de reglas
 
 - Una sola fuente de verdad por concepto; el resto referencias.
-- Máximo 3–5 documentos “vivos” en uso a la vez en `00_working/`; si hace falta más, consolidar o pasar a 01_/02_/03_.
+- Máximo 3–5 documentos “vivos” en uso a la vez en `00_working/`; si hace falta más, consolidar o pasar a 01*/02*/03\_.
 - Documentos importantes: incluir **Estado**, **Última actualización** y, si aplica, tabla de **Histórico de cambios**.
 
 ---

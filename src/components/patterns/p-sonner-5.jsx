@@ -1,6 +1,6 @@
-import { toast } from "sonner"
+import { toast } from 'sonner';
 
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button';
 
 export function Pattern() {
   return (
@@ -10,11 +10,12 @@ export function Pattern() {
         variant="outline"
         className="w-full"
         onClick={() =>
-          toast("Quick notice", {
-            description: "Disappears in 2 seconds.",
+          toast('Quick notice', {
+            description: 'Disappears in 2 seconds.',
             duration: 2000,
           })
-        }>
+        }
+      >
         2s Duration
       </Button>
       <Button
@@ -22,11 +23,12 @@ export function Pattern() {
         variant="outline"
         className="w-full"
         onClick={() =>
-          toast("Standard notice", {
-            description: "Disappears in 5 seconds.",
+          toast('Standard notice', {
+            description: 'Disappears in 5 seconds.',
             duration: 5000,
           })
-        }>
+        }
+      >
         5s Duration
       </Button>
       <Button
@@ -34,11 +36,12 @@ export function Pattern() {
         variant="outline"
         className="w-full"
         onClick={() =>
-          toast("Extended notice", {
-            description: "Stays for 10 seconds.",
+          toast('Extended notice', {
+            description: 'Stays for 10 seconds.',
             duration: 10000,
           })
-        }>
+        }
+      >
         10s Duration
       </Button>
       <Button
@@ -46,12 +49,13 @@ export function Pattern() {
         variant="outline"
         className="col-span-3 w-full"
         onClick={() =>
-          toast("Persistent notice", {
-            description: "This toast stays until dismissed.",
+          toast('Persistent notice', {
+            description: 'This toast stays until dismissed.',
             duration: Infinity,
             closeButton: true,
           })
-        }>
+        }
+      >
         Persistent
       </Button>
     </div>

@@ -1,13 +1,7 @@
 'use client';
 
 import React from 'react';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetFooter,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Download, LayoutGrid, Search, X } from 'lucide-react';
@@ -44,34 +38,34 @@ export default function OrdersListFiltersSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="rounded-t-2xl pb-[env(safe-area-inset-bottom)] max-h-[85vh] flex flex-col"
+        className="flex max-h-[85vh] flex-col rounded-t-2xl pb-[env(safe-area-inset-bottom)]"
       >
-        <SheetHeader className="text-left pb-4 border-b">
+        <SheetHeader className="border-b pb-4 text-left">
           <SheetTitle className="text-lg">Buscar y filtrar</SheetTitle>
         </SheetHeader>
 
-        <div className="flex flex-col gap-5 py-4 overflow-y-auto flex-1 min-h-0">
+        <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto py-4">
           {/* Búsqueda */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Buscar</label>
+            <label className="text-foreground text-sm font-medium">Buscar</label>
             <div className="relative">
               <Input
                 value={searchText}
                 onChange={(e) => onChangeSearch(e.target.value)}
                 placeholder="Por ID o nombre de cliente"
-                className="h-12 text-base pl-4 pr-12 rounded-xl"
+                className="h-12 rounded-xl pr-12 pl-4 text-base"
                 autoFocus
               />
               <button
                 type="button"
-                className="absolute right-0 top-0 h-12 w-12 flex items-center justify-center touch-manipulation"
+                className="absolute top-0 right-0 flex h-12 w-12 touch-manipulation items-center justify-center"
                 onClick={() => searchText?.length > 0 && onChangeSearch('')}
                 aria-label={searchText ? 'Limpiar búsqueda' : 'Buscar'}
               >
                 {searchText ? (
-                  <X className="h-5 w-5 text-muted-foreground" />
+                  <X className="text-muted-foreground h-5 w-5" />
                 ) : (
-                  <Search className="h-5 w-5 text-muted-foreground" />
+                  <Search className="text-muted-foreground h-5 w-5" />
                 )}
               </button>
             </div>
@@ -79,14 +73,14 @@ export default function OrdersListFiltersSheet({
 
           {/* Filtro por estado — pill seleccionado con relleno fuerte */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Estado</label>
+            <label className="text-foreground text-sm font-medium">Estado</label>
             <Tabs value={activeTab} onValueChange={handleCategorySelect}>
-              <TabsList className="w-full grid grid-cols-3 h-12 p-1 rounded-xl bg-muted">
+              <TabsList className="bg-muted grid h-12 w-full grid-cols-3 rounded-xl p-1">
                 {categories.map((cat) => (
                   <TabsTrigger
                     key={cat.name}
                     value={cat.name}
-                    className="rounded-lg text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm data-[state=inactive]:hover:bg-muted/80"
+                    className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:hover:bg-muted/80 rounded-lg text-sm font-medium data-[state=active]:shadow-sm"
                   >
                     {cat.label}
                   </TabsTrigger>
@@ -96,13 +90,15 @@ export default function OrdersListFiltersSheet({
           </div>
 
           {/* Acciones avanzadas — visualmente secundarias */}
-          <div className="space-y-2 rounded-xl bg-muted/40 p-3">
-            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Acciones avanzadas</label>
+          <div className="bg-muted/40 space-y-2 rounded-xl p-3">
+            <label className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+              Acciones avanzadas
+            </label>
             <div className="flex flex-col gap-2">
               <Button
                 variant="ghost"
                 size="sm"
-                className="w-full h-11 justify-start gap-2.5 text-sm text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground h-11 w-full justify-start gap-2.5 text-sm"
                 onClick={() => {
                   onToggleViewMode?.();
                   onClose?.();
@@ -114,7 +110,7 @@ export default function OrdersListFiltersSheet({
               <Button
                 variant="ghost"
                 size="sm"
-                className="w-full h-11 justify-start gap-2.5 text-sm text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground h-11 w-full justify-start gap-2.5 text-sm"
                 onClick={() => {
                   onExport?.();
                   onClose?.();
@@ -126,18 +122,11 @@ export default function OrdersListFiltersSheet({
             </div>
           </div>
 
-          <SheetFooter className="flex-row gap-2 sm:gap-2 pt-4 mt-auto border-t">
-            <Button
-              variant="outline"
-              className="flex-1 h-12"
-              onClick={handleClearFilters}
-            >
+          <SheetFooter className="mt-auto flex-row gap-2 border-t pt-4 sm:gap-2">
+            <Button variant="outline" className="h-12 flex-1" onClick={handleClearFilters}>
               Limpiar filtros
             </Button>
-            <Button
-              className="flex-1 h-12"
-              onClick={() => onClose?.()}
-            >
+            <Button className="h-12 flex-1" onClick={() => onClose?.()}>
               Listo
             </Button>
           </SheetFooter>

@@ -53,7 +53,18 @@ export function useSalesChartData(params: ChartDataParams) {
   const to = range?.to?.toLocaleDateString?.('sv-SE') ?? null;
 
   return useChartData(
-    ['sales', 'chart', tenantId ?? 'unknown', from, to, speciesId, categoryId, familyId, unit, groupBy],
+    [
+      'sales',
+      'chart',
+      tenantId ?? 'unknown',
+      from,
+      to,
+      speciesId,
+      categoryId,
+      familyId,
+      unit,
+      groupBy,
+    ],
     () =>
       getSalesChartData({
         token: token as string,
@@ -81,7 +92,18 @@ export function useReceptionChartData(params: ChartDataParams) {
   const to = range?.to?.toLocaleDateString?.('sv-SE') ?? null;
 
   return useChartData(
-    ['receptions', 'chart', tenantId ?? 'unknown', from, to, speciesId, categoryId, familyId, unit, groupBy],
+    [
+      'receptions',
+      'chart',
+      tenantId ?? 'unknown',
+      from,
+      to,
+      speciesId,
+      categoryId,
+      familyId,
+      unit,
+      groupBy,
+    ],
     () =>
       getReceptionChartData({
         token: token as string,
@@ -109,7 +131,18 @@ export function useDispatchChartData(params: ChartDataParams) {
   const to = range?.to?.toLocaleDateString?.('sv-SE') ?? null;
 
   return useChartData(
-    ['dispatches', 'chart', tenantId ?? 'unknown', from, to, speciesId, categoryId, familyId, unit, groupBy],
+    [
+      'dispatches',
+      'chart',
+      tenantId ?? 'unknown',
+      from,
+      to,
+      speciesId,
+      categoryId,
+      familyId,
+      unit,
+      groupBy,
+    ],
     () =>
       getDispatchChartData({
         token: token as string,
@@ -134,7 +167,10 @@ interface TransportChartItem {
 function parseTransportChartResponse(raw: unknown): TransportChartItem[] {
   const arr = Array.isArray(raw)
     ? raw
-    : raw && typeof raw === 'object' && 'data' in raw && Array.isArray((raw as { data: unknown[] }).data)
+    : raw &&
+        typeof raw === 'object' &&
+        'data' in raw &&
+        Array.isArray((raw as { data: unknown[] }).data)
       ? (raw as { data: unknown[] }).data
       : [];
   return arr.map((item: Record<string, unknown>) => ({
@@ -166,7 +202,11 @@ export function useTransportChartData(params: { range?: { from?: Date; to?: Date
   const to = range?.to?.toLocaleDateString?.('sv-SE') ?? yearToDate.to;
   const enabled = !!token && !!from && !!to && status !== 'loading';
 
-  const { data: rawData, isLoading, error } = useQuery({
+  const {
+    data: rawData,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['transport', 'chart', tenantId ?? 'unknown', from, to, status],
     queryFn: () => getTransportChartData({ token: token as string, from, to }),
     enabled,

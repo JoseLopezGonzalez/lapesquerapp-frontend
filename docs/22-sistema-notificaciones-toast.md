@@ -29,30 +29,34 @@ Componente / hook
 
 ### Métodos disponibles
 
-| Método | Uso |
-|------|------|
-| `notify.success(message, options?)` | Confirmaciones de éxito |
-| `notify.error(message, options?)` | Errores recuperables o bloqueantes |
-| `notify.warning(message, options?)` | Advertencias y confirmaciones suaves |
-| `notify.info(message, options?)` | Información operativa no crítica |
-| `notify.loading(message, options?)` | Carga manual sin promesa |
+| Método                                        | Uso                                                 |
+| --------------------------------------------- | --------------------------------------------------- |
+| `notify.success(message, options?)`           | Confirmaciones de éxito                             |
+| `notify.error(message, options?)`             | Errores recuperables o bloqueantes                  |
+| `notify.warning(message, options?)`           | Advertencias y confirmaciones suaves                |
+| `notify.info(message, options?)`              | Información operativa no crítica                    |
+| `notify.loading(message, options?)`           | Carga manual sin promesa                            |
 | `notify.promise(promise, messages, options?)` | Flujo `loading -> success/error` con el mismo toast |
-| `notify.action(message, button, options?)` | Toast con CTA principal |
-| `notify.dismiss(id)` | Cerrar un toast concreto |
-| `notify.clear()` | Cerrar todos los toasts |
+| `notify.action(message, button, options?)`    | Toast con CTA principal                             |
+| `notify.dismiss(id)`                          | Cerrar un toast concreto                            |
+| `notify.clear()`                              | Cerrar todos los toasts                             |
 
 ### Tipos principales
 
 ```ts
-type NotifyMessage =
-  | string
-  | { title: string; description?: string };
+type NotifyMessage = string | { title: string; description?: string };
 
 interface NotifyOptions {
   id?: string | number;
   dedupeKey?: string;
   duration?: number | null;
-  position?: "top-left" | "top-center" | "top-right" | "bottom-left" | "bottom-center" | "bottom-right";
+  position?:
+    | 'top-left'
+    | 'top-center'
+    | 'top-right'
+    | 'bottom-left'
+    | 'bottom-center'
+    | 'bottom-right';
   dismissible?: boolean;
   important?: boolean;
   description?: ReactNode;
@@ -74,11 +78,11 @@ interface NotifyOptions {
 Usar `id` cuando quieras abrir un toast y actualizarlo más tarde:
 
 ```js
-const id = notify.loading({ title: "Exportando documento" });
+const id = notify.loading({ title: 'Exportando documento' });
 
 notify.success(
-  { title: "Exportacion completada" },
-  { id, description: "El archivo ya esta listo" }
+  { title: 'Exportacion completada' },
+  { id, description: 'El archivo ya esta listo' }
 );
 ```
 
@@ -87,10 +91,7 @@ notify.success(
 Usar `dedupeKey` solo en escenarios donde varias fuentes puedan disparar el mismo aviso y se quiera mostrar una sola vez.
 
 ```js
-notify.error(
-  { title: "Error al sincronizar" },
-  { dedupeKey: "sync-error" }
-);
+notify.error({ title: 'Error al sincronizar' }, { dedupeKey: 'sync-error' });
 ```
 
 ### 4. Promise toasts

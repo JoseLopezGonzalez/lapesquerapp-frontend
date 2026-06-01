@@ -1,9 +1,10 @@
 export const KEY_FIELD_TYPES = ['manualField', 'selectField', 'checkboxField', 'dateField'];
 
 export function validateLabelName(name) {
-  if (!name || name.trim().length === 0) return "El nombre no puede estar vacío";
-  if (name.length > 100) return "El nombre no puede exceder 100 caracteres";
-  if (!/^[a-zA-Z0-9\s\-_áéíóúÁÉÍÓÚñÑ()]+$/.test(name)) return "El nombre contiene caracteres no permitidos";
+  if (!name || name.trim().length === 0) return 'El nombre no puede estar vacío';
+  if (name.length > 100) return 'El nombre no puede exceder 100 caracteres';
+  if (!/^[a-zA-Z0-9\s\-_áéíóúÁÉÍÓÚñÑ()]+$/.test(name))
+    return 'El nombre contiene caracteres no permitidos';
   return null;
 }
 

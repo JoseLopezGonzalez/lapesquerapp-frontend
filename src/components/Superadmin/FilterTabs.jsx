@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React from "react";
+import React from 'react';
 
 /**
  * Tabs de filtro reutilizables para listas superadmin.
@@ -18,8 +18,8 @@ export default function FilterTabs({ tabs, activeKey, onChange }) {
           onClick={() => onChange(tab.key)}
           className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
             activeKey === tab.key
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:bg-muted"
+              ? 'bg-primary text-primary-foreground'
+              : 'text-muted-foreground hover:bg-muted'
           }`}
         >
           {tab.label}

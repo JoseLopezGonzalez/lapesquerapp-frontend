@@ -42,8 +42,8 @@ export default function CmrManualEditor() {
   }, [data]);
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between gap-4 p-4 border-b">
+    <div className="flex h-full flex-col">
+      <div className="flex items-center justify-between gap-4 border-b p-4">
         <h1 className="text-xl font-semibold">CMR Manual</h1>
         <div className="flex items-center gap-2">
           <Button
@@ -62,13 +62,13 @@ export default function CmrManualEditor() {
           </Button>
         </div>
       </div>
-      <div className="flex flex-1 min-h-0 p-4 gap-6">
+      <div className="flex min-h-0 flex-1 gap-6 p-4">
         {panelOpen && (
-          <div className="min-w-[420px] w-[680px] max-w-[min(90vw,680px)] shrink-0 overflow-y-auto border rounded-lg p-4 bg-muted/30">
+          <div className="bg-muted/30 w-[680px] max-w-[min(90vw,680px)] min-w-[420px] shrink-0 overflow-y-auto rounded-lg border p-4">
             <CmrForm value={data} onChange={setData} />
           </div>
         )}
-        <div className="flex-1 min-w-0 overflow-auto bg-muted/20 rounded-lg p-4">
+        <div className="bg-muted/20 min-w-0 flex-1 overflow-auto rounded-lg p-4">
           <CmrPreview data={data} />
         </div>
       </div>

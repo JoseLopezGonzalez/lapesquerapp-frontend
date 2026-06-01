@@ -27,7 +27,13 @@ describe('comercialOrders helpers', () => {
       { id: 2, loadDate: tomorrow.toISOString() },
     ]);
 
-    expect(categories.map((category) => category.name)).toEqual(['all', 'today', 'tomorrow', 'pending', 'finished']);
+    expect(categories.map((category) => category.name)).toEqual([
+      'all',
+      'today',
+      'tomorrow',
+      'pending',
+      'finished',
+    ]);
   });
 
   it('filters and sorts commercial orders with business rules', () => {
@@ -40,8 +46,18 @@ describe('comercialOrders helpers', () => {
 
     const filtered = filterAndSortCommercialOrders(
       [
-        { id: 1, status: 'finished', loadDate: oldFinished.toISOString(), customer: { name: 'Viejo' } },
-        { id: 2, status: 'pending', loadDate: later.toISOString(), customer: { name: 'Cliente B' } },
+        {
+          id: 1,
+          status: 'finished',
+          loadDate: oldFinished.toISOString(),
+          customer: { name: 'Viejo' },
+        },
+        {
+          id: 2,
+          status: 'pending',
+          loadDate: later.toISOString(),
+          customer: { name: 'Cliente B' },
+        },
         { id: 3, status: 'pending', loadDate: now.toISOString(), customer: { name: 'Cliente A' } },
       ],
       { searchText: 'cliente', activeCategoryName: 'pending' }

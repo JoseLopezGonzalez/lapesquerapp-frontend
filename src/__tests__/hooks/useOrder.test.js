@@ -46,7 +46,12 @@ vi.mock('@/services/taxService', () => ({ getTaxOptions: vi.fn().mockResolvedVal
 
 // Mock OrdersManagerOptionsContext (path without extension - resolves to .jsx)
 vi.mock('@/context/gestor-options/OrdersManagerOptionsContext', () => ({
-  useOrdersManagerOptions: vi.fn(() => ({ productOptions: [], taxOptions: [], productsLoading: false, taxOptionsLoading: false })),
+  useOrdersManagerOptions: vi.fn(() => ({
+    productOptions: [],
+    taxOptions: [],
+    productsLoading: false,
+    taxOptionsLoading: false,
+  })),
   OrdersManagerOptionsProvider: () => null,
   OrdersManagerOptionsContext: {},
 }));
@@ -61,7 +66,9 @@ vi.mock('@/lib/notifications', () => ({
     loading: vi.fn(() => 'toast-id'),
     success: vi.fn(),
     error: vi.fn(),
-    promise: vi.fn((p, _opts) => (typeof p === 'function' ? Promise.resolve(p()) : Promise.resolve(p))),
+    promise: vi.fn((p, _opts) =>
+      typeof p === 'function' ? Promise.resolve(p()) : Promise.resolve(p)
+    ),
   },
 }));
 
@@ -77,7 +84,12 @@ Object.defineProperty(global, 'URL', {
 global.URL.createObjectURL = mockCreateObjectURL;
 global.URL.revokeObjectURL = mockRevokeObjectURL;
 
-import { getOrder, getOrderCostAnalysis, setOrderStatus, updateOrder } from '@/services/orderService';
+import {
+  getOrder,
+  getOrderCostAnalysis,
+  setOrderStatus,
+  updateOrder,
+} from '@/services/orderService';
 import { fetchWithTenant } from '@lib/fetchWithTenant';
 import { notify } from '@/lib/notifications';
 
@@ -245,7 +257,11 @@ describe('useOrder', () => {
     });
 
     await act(async () => {
-      await result.current.exportDocument('restricted-order-signs', 'pdf', 'Letreros de transporte (Restringidos)');
+      await result.current.exportDocument(
+        'restricted-order-signs',
+        'pdf',
+        'Letreros de transporte (Restringidos)'
+      );
     });
 
     expect(fetchWithTenant).toHaveBeenCalledWith(
@@ -302,7 +318,11 @@ describe('useOrder', () => {
 
     await expect(
       act(async () => {
-        await result.current.exportDocument('restricted-order-signs', 'pdf', 'Letreros de transporte (Restringidos)');
+        await result.current.exportDocument(
+          'restricted-order-signs',
+          'pdf',
+          'Letreros de transporte (Restringidos)'
+        );
       })
     ).rejects.toThrow('Error al exportar');
 

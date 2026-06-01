@@ -5,6 +5,7 @@
 **Status**: ✅ Completado
 
 **Documentos creados**:
+
 - `01_analysis/paso1-first-action-auditoria.md` — Top 5 Riesgos Sistémicos + Top 5 Mejoras de Impacto
 - `01_analysis/step0a-scope-proveedores.md` — Scope y entidades del bloque 6
 - `01_analysis/step0-ui-behavior-proveedores.md` — Comportamiento UI actual (proveedores, liquidaciones)
@@ -19,6 +20,7 @@
 **Status**: ✅ Completado
 
 **Cambios**:
+
 - supplierService.ts, useSuppliersList, EntityClient suppliers (React Query)
 - supplierLiquidationService.ts, useSuppliersWithActivity, useSupplierLiquidationDetails
 - SupplierLiquidationList.tsx, SupplierLiquidationDetail.tsx refactor

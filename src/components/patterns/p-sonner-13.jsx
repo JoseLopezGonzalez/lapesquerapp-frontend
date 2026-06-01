@@ -1,15 +1,13 @@
-import { toast } from "sonner"
+import { toast } from 'sonner';
 
-import { Button } from "@/components/ui/button"
-import { CheckIcon } from "lucide-react"
+import { Button } from '@/components/ui/button';
+import { CheckIcon } from 'lucide-react';
 
 export function Pattern() {
   const showToast = () => {
     toast.custom(() => (
-      <div
-        className="bg-invert text-invert-foreground rounded-md flex w-[356px] items-start gap-3 border border-transparent p-4 shadow-lg">
-        <div
-          className="flex size-6 shrink-0 items-center justify-center rounded-full bg-green-500 text-white">
+      <div className="bg-invert text-invert-foreground flex w-[356px] items-start gap-3 rounded-md border border-transparent p-4 shadow-lg">
+        <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-green-500 text-white">
           <CheckIcon className="size-3.5" />
         </div>
         <div className="flex flex-1 flex-col gap-1">
@@ -22,14 +20,15 @@ export function Pattern() {
               size="xs"
               variant="outline"
               className="bg-background/10 border-border/10 text-invert-foreground"
-              onClick={() => toast.dismiss()}>
+              onClick={() => toast.dismiss()}
+            >
               View Receipt
             </Button>
           </div>
         </div>
       </div>
-    ))
-  }
+    ));
+  };
 
   return (
     <div className="flex items-center justify-center">

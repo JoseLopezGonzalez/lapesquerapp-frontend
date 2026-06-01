@@ -1,15 +1,7 @@
-"use client";
+'use client';
 
-import {
-  ChevronsUpDown,
-  LogOut,
-  MoonStar,
-} from "lucide-react";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
+import { ChevronsUpDown, LogOut, MoonStar } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,24 +10,24 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
+} from '@/components/ui/sidebar';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 function getInitials(name) {
   return name
     ? name
-        .split(" ")
+        .split(' ')
         .map((chunk) => chunk[0])
-        .join("")
+        .join('')
         .toUpperCase()
         .slice(0, 2)
-    : "UE";
+    : 'UE';
 }
 
 export function ExternalNavUser({ user }) {
@@ -53,9 +45,7 @@ export function ExternalNavUser({ user }) {
             >
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage src={user?.image} alt={user?.name} />
-                <AvatarFallback className="rounded-lg">
-                  {initials}
-                </AvatarFallback>
+                <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">{user?.name}</span>
@@ -66,7 +56,7 @@ export function ExternalNavUser({ user }) {
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="w-[--radix-dropdown-menu-trigger-width] min-w-64 rounded-lg"
-            side={isMobile ? "bottom" : "right"}
+            side={isMobile ? 'bottom' : 'right'}
             align="end"
             sideOffset={4}
           >
@@ -74,15 +64,11 @@ export function ExternalNavUser({ user }) {
               <div className="flex items-center gap-3 px-2 py-2.5 text-left">
                 <Avatar className="h-10 w-10 rounded-xl">
                   <AvatarImage src={user?.image} alt={user?.name} />
-                  <AvatarFallback className="rounded-xl">
-                    {initials}
-                  </AvatarFallback>
+                  <AvatarFallback className="rounded-xl">{initials}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-sm leading-tight">
                   <span className="truncate font-semibold">{user?.name}</span>
-                  <span className="truncate text-xs text-muted-foreground">
-                    {user?.email}
-                  </span>
+                  <span className="text-muted-foreground truncate text-xs">{user?.email}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
@@ -91,7 +77,7 @@ export function ExternalNavUser({ user }) {
 
             <DropdownMenuGroup>
               <DropdownMenuItem
-                className="focus:bg-transparent hover:bg-transparent"
+                className="hover:bg-transparent focus:bg-transparent"
                 onSelect={(event) => event.preventDefault()}
               >
                 <MoonStar />

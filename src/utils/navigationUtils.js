@@ -9,20 +9,16 @@
  * @returns {Array} - Array de items filtrados
  */
 export function filterNavigationByRoles(items, userRoles) {
-    const roles = Array.isArray(userRoles) ? userRoles : [userRoles];
-    
-    return items
-        .filter((item) =>
-            item.allowedRoles?.some((role) => roles.includes(role))
-        )
-        .map((item) => ({
-            ...item,
-            childrens: item.childrens
-                ? item.childrens.filter((child) =>
-                    child.allowedRoles?.some((role) => roles.includes(role))
-                )
-                : null,
-        }));
+  const roles = Array.isArray(userRoles) ? userRoles : [userRoles];
+
+  return items
+    .filter((item) => item.allowedRoles?.some((role) => roles.includes(role)))
+    .map((item) => ({
+      ...item,
+      childrens: item.childrens
+        ? item.childrens.filter((child) => child.allowedRoles?.some((role) => roles.includes(role)))
+        : null,
+    }));
 }
 
 /**
@@ -32,15 +28,15 @@ export function filterNavigationByRoles(items, userRoles) {
  * @returns {Array} - Array de items filtrados
  */
 export function filterNavigationByFeatures(items, userFeatures) {
-    const features = userFeatures ?? [];
-    return items
-        .filter((item) => !item.requiredFeature || features.includes(item.requiredFeature))
-        .map((item) => ({
-            ...item,
-            childrens: item.childrens
-                ? item.childrens.filter((c) => !c.requiredFeature || features.includes(c.requiredFeature))
-                : null,
-        }));
+  const features = userFeatures ?? [];
+  return items
+    .filter((item) => !item.requiredFeature || features.includes(item.requiredFeature))
+    .map((item) => ({
+      ...item,
+      childrens: item.childrens
+        ? item.childrens.filter((c) => !c.requiredFeature || features.includes(c.requiredFeature))
+        : null,
+    }));
 }
 
 /**
@@ -50,9 +46,8 @@ export function filterNavigationByFeatures(items, userFeatures) {
  * @returns {boolean} - true si la ruta está activa
  */
 export function isActiveRoute(itemHref, currentPath) {
-    if (!itemHref) return false;
-    if (itemHref === currentPath) return true;
-    if (currentPath.startsWith(itemHref + '/')) return true;
-    return false;
+  if (!itemHref) return false;
+  if (itemHref === currentPath) return true;
+  if (currentPath.startsWith(itemHref + '/')) return true;
+  return false;
 }
-

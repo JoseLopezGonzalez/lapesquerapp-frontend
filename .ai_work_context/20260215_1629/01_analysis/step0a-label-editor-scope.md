@@ -9,34 +9,34 @@
 
 Editor visual WYSIWYG para diseñar formatos de etiquetas (canvas, elementos: texto, campos, códigos de barras, QR, imágenes, rich text). Persistencia en API v2, export/import JSON, impresión.
 
-| Entidad | Descripción | Rutas / ubicación |
-|--------|-------------|-------------------|
-| **Página Label Editor** | Página admin que monta el editor | `src/app/admin/label-editor/page.js` |
-| **LabelEditor** | Componente principal del editor (canvas, toolbar, paneles) | `src/components/Admin/LabelEditor/index.js` |
-| **LabelSelectorSheet** | Sheet para elegir etiqueta existente / crear nueva | `src/components/Admin/LabelEditor/LabelSelectorSheet.jsx` |
-| **LabelEditorPreview** | Vista previa del diseño en el editor | `src/components/Admin/LabelEditor/LabelEditorPreview/index.js` |
-| **LabelRender** | Renderizado del formato (usado por editor y por impresión de cajas) | `src/components/Admin/LabelEditor/LabelRender/index.js` |
-| **LabelElement** | Render de un elemento (texto, barcode, QR, imagen, rich paragraph, etc.) | `src/components/Admin/LabelEditor/LabelRender/LabelElement/index.js` |
-| **Paneles de configuración** | QR, Barcode, RichParagraph | `QRConfigPanel.jsx`, `BarcodeConfigPanel.jsx`, `RichParagraphConfigPanel.jsx` |
-| **Otros UI del editor** | Diálogos y preview secundario | `FieldExamplesDialog.jsx`, `LabelPreview.jsx`, `LabelRender/LabelElement/RichParagraph.jsx`, `SanitaryRegister.jsx` |
-| **useLabelEditor** | Hook con toda la lógica del editor (estado, canvas, API, validación) | `src/hooks/useLabelEditor.js` |
-| **useLabel** | Hook de soporte (fechas, campos); usado por editor y por BoxLabelPrintDialog | `src/hooks/useLabel.js` |
-| **labelService** | API: getLabel, createLabel, updateLabel, getLabels, deleteLabel, duplicateLabel, getLabelsOptions | `src/services/labelService.js` |
-| **labelServiceHelpers** | Helpers de respuesta del servicio | `src/services/labelServiceHelpers.js` |
+| Entidad                      | Descripción                                                                                       | Rutas / ubicación                                                                                                   |
+| ---------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| **Página Label Editor**      | Página admin que monta el editor                                                                  | `src/app/admin/label-editor/page.js`                                                                                |
+| **LabelEditor**              | Componente principal del editor (canvas, toolbar, paneles)                                        | `src/components/Admin/LabelEditor/index.js`                                                                         |
+| **LabelSelectorSheet**       | Sheet para elegir etiqueta existente / crear nueva                                                | `src/components/Admin/LabelEditor/LabelSelectorSheet.jsx`                                                           |
+| **LabelEditorPreview**       | Vista previa del diseño en el editor                                                              | `src/components/Admin/LabelEditor/LabelEditorPreview/index.js`                                                      |
+| **LabelRender**              | Renderizado del formato (usado por editor y por impresión de cajas)                               | `src/components/Admin/LabelEditor/LabelRender/index.js`                                                             |
+| **LabelElement**             | Render de un elemento (texto, barcode, QR, imagen, rich paragraph, etc.)                          | `src/components/Admin/LabelEditor/LabelRender/LabelElement/index.js`                                                |
+| **Paneles de configuración** | QR, Barcode, RichParagraph                                                                        | `QRConfigPanel.jsx`, `BarcodeConfigPanel.jsx`, `RichParagraphConfigPanel.jsx`                                       |
+| **Otros UI del editor**      | Diálogos y preview secundario                                                                     | `FieldExamplesDialog.jsx`, `LabelPreview.jsx`, `LabelRender/LabelElement/RichParagraph.jsx`, `SanitaryRegister.jsx` |
+| **useLabelEditor**           | Hook con toda la lógica del editor (estado, canvas, API, validación)                              | `src/hooks/useLabelEditor.js`                                                                                       |
+| **useLabel**                 | Hook de soporte (fechas, campos); usado por editor y por BoxLabelPrintDialog                      | `src/hooks/useLabel.js`                                                                                             |
+| **labelService**             | API: getLabel, createLabel, updateLabel, getLabels, deleteLabel, duplicateLabel, getLabelsOptions | `src/services/labelService.js`                                                                                      |
+| **labelServiceHelpers**      | Helpers de respuesta del servicio                                                                 | `src/services/labelServiceHelpers.js`                                                                               |
 
 ---
 
 ## 2. Artefactos por tipo
 
-| Tipo | Artefactos |
-|------|------------|
-| **Páginas** | `app/admin/label-editor/page.js` |
-| **Componentes** | `LabelEditor/index.js`, `LabelSelectorSheet.jsx`, `LabelEditorPreview/`, `LabelRender/`, `LabelRender/LabelElement/`, `QRConfigPanel.jsx`, `BarcodeConfigPanel.jsx`, `RichParagraphConfigPanel.jsx`, `FieldExamplesDialog.jsx`, `LabelPreview.jsx` |
-| **Hooks** | `useLabelEditor.js`, `useLabel.js` |
-| **Servicios** | `labelService.js`, `labelServiceHelpers.js` |
-| **Estado** | Sin contexto específico; estado en `useLabelEditor` (useState local) |
-| **Tests** | **Ninguno** (no existe `*label*test*` ni tests bajo `LabelEditor/`) |
-| **Documentación** | `docs/analisis-edicion-etiquetas.md`, `docs/04-COMPONENTES-ADMIN.md` (§8 LabelEditor), `docs/02-ESTRUCTURA-PROYECTO.md` |
+| Tipo              | Artefactos                                                                                                                                                                                                                                         |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Páginas**       | `app/admin/label-editor/page.js`                                                                                                                                                                                                                   |
+| **Componentes**   | `LabelEditor/index.js`, `LabelSelectorSheet.jsx`, `LabelEditorPreview/`, `LabelRender/`, `LabelRender/LabelElement/`, `QRConfigPanel.jsx`, `BarcodeConfigPanel.jsx`, `RichParagraphConfigPanel.jsx`, `FieldExamplesDialog.jsx`, `LabelPreview.jsx` |
+| **Hooks**         | `useLabelEditor.js`, `useLabel.js`                                                                                                                                                                                                                 |
+| **Servicios**     | `labelService.js`, `labelServiceHelpers.js`                                                                                                                                                                                                        |
+| **Estado**        | Sin contexto específico; estado en `useLabelEditor` (useState local)                                                                                                                                                                               |
+| **Tests**         | **Ninguno** (no existe `*label*test*` ni tests bajo `LabelEditor/`)                                                                                                                                                                                |
+| **Documentación** | `docs/analisis-edicion-etiquetas.md`, `docs/04-COMPONENTES-ADMIN.md` (§8 LabelEditor), `docs/02-ESTRUCTURA-PROYECTO.md`                                                                                                                            |
 
 ---
 
@@ -50,12 +50,12 @@ Editor visual WYSIWYG para diseñar formatos de etiquetas (canvas, elementos: te
 
 ## 4. Métricas de tamaño (referencia auditoría)
 
-| Artefacto | Líneas | Nota |
-|-----------|--------|------|
+| Artefacto              | Líneas   | Nota                         |
+| ---------------------- | -------- | ---------------------------- |
 | `LabelEditor/index.js` | **1903** | P0: componente >> 200 líneas |
-| `useLabelEditor.js` | **1132** | P0: hook >> 200 líneas |
-| `useLabel.js` | 438 | P1: > 150 líneas |
-| `labelService.js` | 136 | Aceptable |
+| `useLabelEditor.js`    | **1132** | P0: hook >> 200 líneas       |
+| `useLabel.js`          | 438      | P1: > 150 líneas             |
+| `labelService.js`      | 136      | Aceptable                    |
 
 ---
 

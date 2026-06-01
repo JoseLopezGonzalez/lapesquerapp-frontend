@@ -14,7 +14,7 @@ Los documentos están organizados numéricamente y cada uno describe en profundi
 
 - **02-MANEJO-SESIONES-LOGIN-EXPO.md** - Documentación completa del sistema de autenticación y página de login, incluyendo NextAuth.js, manejo de sesiones JWT, middleware de protección, interceptores de errores y todos los requisitos para su implementación en Expo.
 
-*(Se añadirán más documentos según sea necesario)*
+_(Se añadirán más documentos según sea necesario)_
 
 ## 🎯 Propósito
 
@@ -55,4 +55,3 @@ Esta carpeta se actualizará conforme se documenten más componentes y funcional
 ---
 
 **Última actualización**: 2024
-

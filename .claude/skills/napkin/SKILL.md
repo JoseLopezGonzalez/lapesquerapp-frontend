@@ -1,6 +1,7 @@
 # Skill: Napkin
 
 ## Categoría
+
 Visualización
 
 ## Cuándo se activa
@@ -19,14 +20,14 @@ Usa **Mermaid** por defecto (se renderiza en GitHub, Notion, VS Code, GitLab). S
 
 ## Tipos de diagrama disponibles
 
-| Tipo | Cuándo usarlo | Sintaxis Mermaid |
-|---|---|---|
-| Flowchart | Flujos de datos, decisiones, procesos | `flowchart TD` |
-| Sequence | Comunicación entre sistemas/componentes | `sequenceDiagram` |
-| Component | Relaciones entre módulos | `graph LR` |
-| State machine | Estados de UI, ciclo de vida | `stateDiagram-v2` |
-| ER | Modelos de datos | `erDiagram` |
-| Timeline | Roadmap, fases | `timeline` |
+| Tipo          | Cuándo usarlo                           | Sintaxis Mermaid  |
+| ------------- | --------------------------------------- | ----------------- |
+| Flowchart     | Flujos de datos, decisiones, procesos   | `flowchart TD`    |
+| Sequence      | Comunicación entre sistemas/componentes | `sequenceDiagram` |
+| Component     | Relaciones entre módulos                | `graph LR`        |
+| State machine | Estados de UI, ciclo de vida            | `stateDiagram-v2` |
+| ER            | Modelos de datos                        | `erDiagram`       |
+| Timeline      | Roadmap, fases                          | `timeline`        |
 
 ---
 
@@ -39,6 +40,7 @@ Preguntar si no está claro: ¿flujo de datos? ¿arquitectura de componentes? ¿
 ### 2. Elegir el tipo
 
 Para este proyecto, los más útiles:
+
 - **Flujo de datos** → flowchart (Componente → Hook → Service → fetchWithTenant → API)
 - **Llamadas entre sistemas** → sequenceDiagram (Frontend ↔ Laravel ↔ BD)
 - **Relaciones entre módulos** → graph LR
@@ -131,6 +133,7 @@ graph LR
 ```
 
 Si el diagrama es ASCII (porque Mermaid no aplica):
+
 ```
 [contexto]
 

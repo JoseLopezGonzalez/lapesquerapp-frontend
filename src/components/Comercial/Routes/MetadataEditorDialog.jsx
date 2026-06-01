@@ -11,7 +11,13 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { CalendarDays, FileText, UserRound } from 'lucide-react';
 
@@ -29,7 +35,9 @@ export function MetadataEditorDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent size="lg">
         <DialogHeader>
-          <DialogTitle>{tab === 'routes' ? 'Editar datos de la ruta' : 'Editar datos de la plantilla'}</DialogTitle>
+          <DialogTitle>
+            {tab === 'routes' ? 'Editar datos de la ruta' : 'Editar datos de la plantilla'}
+          </DialogTitle>
           <DialogDescription>
             Ajusta el contexto general sin cargar la superficie principal del planner.
           </DialogDescription>
@@ -51,13 +59,18 @@ export function MetadataEditorDialog({
                 <UserRound className="h-4 w-4" />
                 Repartidor
               </Label>
-              <Select value={draft.fieldOperatorId || ''} onValueChange={(value) => onChange('fieldOperatorId', value)}>
+              <Select
+                value={draft.fieldOperatorId || ''}
+                onValueChange={(value) => onChange('fieldOperatorId', value)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecciona un repartidor" />
                 </SelectTrigger>
                 <SelectContent>
                   {fieldOperatorOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -69,7 +82,11 @@ export function MetadataEditorDialog({
                   <CalendarDays className="h-4 w-4" />
                   Fecha
                 </Label>
-                <Input type="date" value={draft.routeDate || ''} onChange={(event) => onChange('routeDate', event.target.value)} />
+                <Input
+                  type="date"
+                  value={draft.routeDate || ''}
+                  onChange={(event) => onChange('routeDate', event.target.value)}
+                />
               </div>
             )}
           </div>
@@ -89,7 +106,9 @@ export function MetadataEditorDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cerrar</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cerrar
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

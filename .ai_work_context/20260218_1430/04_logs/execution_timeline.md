@@ -3,7 +3,7 @@
 ## [Inicio] - Estructura de sesión
 
 **Status**: Completado
-**Documentos creados**: 00_working/*, 04_logs/execution_timeline.md
+**Documentos creados**: 00_working/\*, 04_logs/execution_timeline.md
 **Próximo**: Fase 1 — CmrCopy + layout base
 
 ## [Fase 1] - CmrCopy + layout base + cmr-print.css

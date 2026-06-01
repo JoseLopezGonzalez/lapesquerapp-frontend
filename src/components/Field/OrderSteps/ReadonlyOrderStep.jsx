@@ -16,9 +16,13 @@ export function ReadonlyOrderStep({ order }) {
             <div className="flex items-start justify-between gap-3">
               <div className="space-y-1">
                 <p className="text-lg font-semibold">Pedido #{order.id}</p>
-                <p className="text-sm text-muted-foreground">{order.customer?.name || 'Sin cliente'}</p>
+                <p className="text-muted-foreground text-sm">
+                  {order.customer?.name || 'Sin cliente'}
+                </p>
               </div>
-              <Badge variant="secondary">{getOrderTypeLabel(order.orderType ?? order.order_type)}</Badge>
+              <Badge variant="secondary">
+                {getOrderTypeLabel(order.orderType ?? order.order_type)}
+              </Badge>
             </div>
             <Badge variant="outline">{getFieldStatusLabel(order.status || 'pending')}</Badge>
           </div>
@@ -40,9 +44,7 @@ export function ReadonlyOrderStep({ order }) {
               <p className="text-muted-foreground">Ruta</p>
               {order.routeId ? (
                 <Button asChild variant="link" className="h-auto px-0">
-                  <Link href={`/field/rutas/${order.routeId}`}>
-                    Ver ruta #{order.routeId}
-                  </Link>
+                  <Link href={`/field/rutas/${order.routeId}`}>Ver ruta #{order.routeId}</Link>
                 </Button>
               ) : (
                 <p className="font-medium">Sin ruta asociada</p>

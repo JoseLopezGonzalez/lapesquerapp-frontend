@@ -15,7 +15,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components/ui/input-group';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from '@/components/ui/input-group';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import Loader from '@/components/Utilities/Loader';
@@ -32,7 +37,7 @@ const ProspectFormSheet = dynamic(() => import('./ProspectFormSheet'), {
 
 const ProspectDetail = dynamic(() => import('./ProspectDetail'), {
   loading: () => (
-    <div className="flex min-h-[360px] w-full items-center justify-center rounded-xl border bg-muted/20">
+    <div className="bg-muted/20 flex min-h-[360px] w-full items-center justify-center rounded-xl border">
       <Loader />
     </div>
   ),
@@ -51,7 +56,6 @@ const FILTER_TABS = [
   { label: 'Convertidos', value: 'customer' },
 ];
 
-
 function ProspectCard({ prospect, selected, onClick }) {
   const overdue = isOverdueDate(prospect.nextActionAt);
   const ariaExtras = [prospect.country?.name].filter(Boolean).join(' · ');
@@ -59,7 +63,7 @@ function ProspectCard({ prospect, selected, onClick }) {
   return (
     <Card
       className={cn(
-        'cursor-pointer focus-visible:outline-none transition-colors hover:bg-accent/50',
+        'hover:bg-accent/50 cursor-pointer transition-colors focus-visible:outline-none',
         selected && 'bg-accent/40'
       )}
       onClick={onClick}
@@ -74,18 +78,25 @@ function ProspectCard({ prospect, selected, onClick }) {
       }}
     >
       <CardContent className="py-0">
-        <div className="grow w-full space-y-2 sm:space-y-2">
-          <div className="flex items-center gap-2 flex-wrap">
-            <StatusPill label={prospectStatusLabels[prospect.status] ?? prospect.status} status={prospect.status} />
-            {prospect.category?.name ? <Badge variant="secondary">{prospect.category.name}</Badge> : null}
+        <div className="w-full grow space-y-2 sm:space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <StatusPill
+              label={prospectStatusLabels[prospect.status] ?? prospect.status}
+              status={prospect.status}
+            />
+            {prospect.category?.name ? (
+              <Badge variant="secondary">{prospect.category.name}</Badge>
+            ) : null}
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="text-base font-medium truncate">{prospect.companyName}</h3>
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="truncate text-base font-medium">{prospect.companyName}</h3>
           </div>
 
           <div>
-            <p className="text-sm text-muted-foreground truncate">{prospect.country?.name ?? 'Sin país'}</p>
+            <p className="text-muted-foreground truncate text-sm">
+              {prospect.country?.name ?? 'Sin país'}
+            </p>
           </div>
         </div>
       </CardContent>
@@ -104,8 +115,13 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
   const [loadedProspects, setLoadedProspects] = useState([]);
   const [formOpen, setFormOpen] = useState(forceCreate);
   const searchParam = appliedNameFilter.trim() || undefined;
-  const { data: categoryOptions = [], isLoading: categoriesLoading } = useProspectCategoryOptions(true);
-  const { data: prospects, isLoading, meta } = useProspectsList({
+  const { data: categoryOptions = [], isLoading: categoriesLoading } =
+    useProspectCategoryOptions(true);
+  const {
+    data: prospects,
+    isLoading,
+    meta,
+  } = useProspectsList({
     status: status !== 'all' ? [status] : undefined,
     categories: selectedCategoryIds.length ? selectedCategoryIds : undefined,
     perPage: PROSPECTS_PER_PAGE,
@@ -115,9 +131,10 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
   const [selectedId, setSelectedId] = useState(initialProspectId);
   const hasActiveSearch = Boolean(searchParam) || selectedCategoryIds.length > 0;
   const selectedCategories = useMemo(
-    () => selectedCategoryIds
-      .map((id) => categoryOptions.find((option) => String(option.value) === String(id)))
-      .filter(Boolean),
+    () =>
+      selectedCategoryIds
+        .map((id) => categoryOptions.find((option) => String(option.value) === String(id)))
+        .filter(Boolean),
     [categoryOptions, selectedCategoryIds]
   );
 
@@ -174,7 +191,9 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
   useEffect(() => {
     if (isMobile || !selectedId) return;
 
-    const selectedProspectStillVisible = orderedProspects.some((prospect) => String(prospect.id) === String(selectedId));
+    const selectedProspectStillVisible = orderedProspects.some(
+      (prospect) => String(prospect.id) === String(selectedId)
+    );
     if (!selectedProspectStillVisible) {
       setSelectedId(null);
     }
@@ -202,7 +221,7 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
 
   return (
     <>
-      <div className="flex h-full w-full min-h-0 min-w-0 flex-col gap-4 overflow-hidden px-4 py-3 md:px-6">
+      <div className="flex h-full min-h-0 w-full min-w-0 flex-col gap-4 overflow-hidden px-4 py-3 md:px-6">
         <div className="flex w-full flex-col gap-4 md:max-w-md">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div className="flex flex-col">
@@ -215,7 +234,7 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
                 </Button>
               </div>
 
-              <p className="mt-2 md:mt-0 text-sm text-muted-foreground">
+              <p className="text-muted-foreground mt-2 text-sm md:mt-0">
                 Seguimiento comercial ligero para cartera propia.
               </p>
             </div>
@@ -261,15 +280,23 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
             </InputGroup>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button type="button" variant="outline" size="icon" className="shrink-0" aria-label="Filtrar por categoría">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="shrink-0"
+                  aria-label="Filtrar por categoría"
+                >
                   <Filter data-icon="inline-start" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-64">
                 {categoriesLoading ? (
-                  <div className="px-2 py-1.5 text-sm text-muted-foreground">Cargando…</div>
+                  <div className="text-muted-foreground px-2 py-1.5 text-sm">Cargando…</div>
                 ) : categoryOptions.length === 0 ? (
-                  <div className="px-2 py-1.5 text-sm text-muted-foreground">Sin categorías activas</div>
+                  <div className="text-muted-foreground px-2 py-1.5 text-sm">
+                    Sin categorías activas
+                  </div>
                 ) : (
                   categoryOptions.map((option) => {
                     const value = String(option.value);
@@ -295,7 +322,7 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
                 {option.label}
                 <button
                   type="button"
-                  className="rounded-sm p-0.5 hover:bg-background/70"
+                  className="hover:bg-background/70 rounded-sm p-0.5"
                   aria-label={`Quitar filtro ${option.label}`}
                   onClick={() => toggleCategoryFilter(option.value)}
                 >
@@ -331,13 +358,15 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
             ) : orderedProspects.length === 0 ? (
               <div className="flex h-full min-h-0 w-full overflow-y-auto p-4">
                 <EmptyState
-                  title={hasActiveSearch ? 'No hay resultados' : 'Aún no tienes prospectos registrados'}
+                  title={
+                    hasActiveSearch ? 'No hay resultados' : 'Aún no tienes prospectos registrados'
+                  }
                   description={
                     hasActiveSearch
                       ? 'Prueba con otro nombre, limpia el filtro o cambia el estado del prospecto.'
                       : 'Crea el primero para empezar a alimentar la agenda comercial.'
                   }
-                  className="h-full w-full border bg-muted/20 min-h-0!"
+                  className="bg-muted/20 h-full min-h-0! w-full border"
                   button={{ name: 'Nuevo prospecto', onClick: () => setFormOpen(true) }}
                 />
               </div>
@@ -356,30 +385,31 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
                     />
                   ))}
                   {isLoadingMore ? (
-                    <div className="flex items-center justify-center py-2 text-sm text-muted-foreground">
+                    <div className="text-muted-foreground flex items-center justify-center py-2 text-sm">
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Cargando más prospectos...
                     </div>
                   ) : null}
                   {!canLoadMore && orderedProspects.length > 0 ? (
-                    <p className="py-2 text-center text-xs text-muted-foreground">No hay más prospectos para mostrar.</p>
+                    <p className="text-muted-foreground py-2 text-center text-xs">
+                      No hay más prospectos para mostrar.
+                    </p>
                   ) : null}
                 </div>
               </>
             )}
           </div>
 
-          {!isMobile && (
-            selectedId ? (
+          {!isMobile &&
+            (selectedId ? (
               <ProspectDetail prospectId={selectedId} embedded />
             ) : (
               <EmptyState
                 title="Selecciona un prospecto"
                 description="En desktop el detalle se abre en este panel sin salir de la lista."
-                className="w-full min-w-0 border bg-muted/20 min-h-[360px]"
+                className="bg-muted/20 min-h-[360px] w-full min-w-0 border"
               />
-            )
-          )}
+            ))}
         </div>
       </div>
 

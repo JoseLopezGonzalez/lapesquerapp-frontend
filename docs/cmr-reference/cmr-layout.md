@@ -1,13 +1,13 @@
 # CMR — Layout para desarrollo
 
-Referencia: [Documento de transporte (CMR)_2440 (1).pdf](../CMR-to-do/Documento%20de%20transporte%20(CMR)_2440%20(1).pdf)
+Referencia: [Documento de transporte (CMR)\_2440 (1).pdf](<../CMR-to-do/Documento%20de%20transporte%20(CMR)_2440%20(1).pdf>)
 
 ## Cabecera (una fila, tres zonas)
 
-| Zona       | Contenido |
-|-----------|-----------|
-| Izquierda | Cuadrado rojo con número de copia (1–4) + "Ejemplar para el remitente" / "Copy for sender" (y variantes por copia). |
-| Centro    | Cuadrado rojo con "X" + "C.M.R." + "Marque el que proceda". |
+| Zona      | Contenido                                                                                                                             |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Izquierda | Cuadrado rojo con número de copia (1–4) + "Ejemplar para el remitente" / "Copy for sender" (y variantes por copia).                   |
+| Centro    | Cuadrado rojo con "X" + "C.M.R." + "Marque el que proceda".                                                                           |
 | Derecha   | "DOCUMENTO DE CONTROL" + texto legal (CMR/2004/…) + "No #…" (número de documento). Caja con texto Convenio CMR (ES/EN), bordes rojos. |
 
 ## Cuerpo: dos columnas

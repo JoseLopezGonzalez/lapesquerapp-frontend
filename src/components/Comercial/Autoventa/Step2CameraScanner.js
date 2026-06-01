@@ -28,8 +28,8 @@ export default function Step2CameraScanner({ onScan, onClose, onError, boxesCoun
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-background">
-      <div className="flex-1 min-h-0 w-full pb-24">
+    <div className="bg-background fixed inset-0 z-[100] flex flex-col">
+      <div className="min-h-0 w-full flex-1 pb-24">
         <Scanner
           onScan={handleScan}
           onError={handleError}
@@ -52,11 +52,11 @@ export default function Step2CameraScanner({ onScan, onClose, onError, boxesCoun
         />
       </div>
       <div
-        className="fixed bottom-0 left-0 right-0 z-[110] w-full bg-background/95 backdrop-blur-sm p-4 pt-3 flex flex-col gap-2"
+        className="bg-background/95 fixed right-0 bottom-0 left-0 z-[110] flex w-full flex-col gap-2 p-4 pt-3 backdrop-blur-sm"
         style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
       >
-        <div className="flex items-center justify-between gap-3 min-h-8">
-          <span className="text-sm font-medium text-muted-foreground">
+        <div className="flex min-h-8 items-center justify-between gap-3">
+          <span className="text-muted-foreground text-sm font-medium">
             {boxesCount === 0
               ? 'Ninguna caja añadida'
               : boxesCount === 1
@@ -71,7 +71,7 @@ export default function Step2CameraScanner({ onScan, onClose, onError, boxesCoun
             onClick={onClose}
             aria-label="Cerrar escáner"
           >
-            <X className="h-5 w-5 mr-2" />
+            <X className="mr-2 h-5 w-5" />
             Cerrar
           </Button>
         </div>

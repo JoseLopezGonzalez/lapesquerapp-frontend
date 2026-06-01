@@ -36,7 +36,8 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 ## 1. 🔄 Código Duplicado
 
 ### 1.1. convertScannedCodeToGs1128 Duplicado
-- **Archivos**: 
+
+- **Archivos**:
   - `/src/hooks/usePallet.js`
   - `/src/components/Admin/Productions/ProductionInputsManager.jsx`
 - **Problema**: Misma función implementada en dos lugares con ligeras diferencias
@@ -45,6 +46,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `12-utilidades-helpers.md`
 
 ### 1.2. Código Duplicado en Exportaciones A3ERP
+
 - **Archivos**: Múltiples archivos de ExportModal
   - `/src/components/Admin/MarketDataExtractor/FacturaDocapesca/ExportModal/index.js`
   - `/src/components/Admin/MarketDataExtractor/ListadoComprasLonjaDeIsla/ExportModal/index.js`
@@ -55,7 +57,8 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `13-exportaciones-integraciones.md`
 
 ### 1.3. classNames vs cn
-- **Archivos**: 
+
+- **Archivos**:
   - `/src/helpers/styles/classNames.js`
   - `/src/lib/utils.js`
 - **Problema**: Dos funciones similares (`classNames` y `cn`)
@@ -68,6 +71,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 ## 2. 💀 Código Muerto
 
 ### 2.1. eanChecksum No Se Usa
+
 - **Archivo**: `/src/lib/barcodes.js`
 - **Línea**: 1-9
 - **Problema**: Función `eanChecksum` definida pero no se usa en `serializeBarcode`
@@ -76,6 +80,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `12-utilidades-helpers.md`
 
 ### 2.2. Código Comentado en barcodes.js
+
 - **Archivo**: `/src/lib/barcodes.js`
 - **Línea**: 18-36
 - **Problema**: Función `serializeBarcode` antigua comentada
@@ -84,6 +89,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `12-utilidades-helpers.md`
 
 ### 2.3. Archivo de Hook Duplicado
+
 - **Archivo**: `/src/hooks/usePrintElement copy.js`
 - **Problema**: Existe un archivo con "copy" en el nombre, probablemente duplicado accidental
 - **Impacto**: Confusión sobre cuál archivo usar
@@ -95,6 +101,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 ## 3. ⚠️ Lógica Incompleta
 
 ### 3.1. ProductionRecordImagesManager Usa Datos Mock
+
 - **Archivo**: `/src/components/Admin/Productions/ProductionRecordImagesManager.jsx`
 - **Línea**: 25-32
 - **Problema**: Usa datos mock locales, no se conecta con backend
@@ -103,6 +110,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `14-produccion-en-construccion.md`
 
 ### 3.2. Diagrama No Implementado
+
 - **Archivo**: `/src/components/Admin/Productions/ProductionView.jsx`
 - **Línea**: 313-325
 - **Problema**: Tab "Diagrama" solo muestra placeholder
@@ -111,6 +119,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `14-produccion-en-construccion.md`
 
 ### 3.3. Falta Formulario de Creación de Producción
+
 - **Archivo**: No existe
 - **Problema**: No hay forma de crear producciones desde frontend
 - **Impacto**: Debe crearse desde backend o EntityClient genérico
@@ -118,6 +127,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `14-produccion-en-construccion.md`
 
 ### 3.4. Integración Facilcom No Implementada
+
 - **Archivos**: Múltiples archivos de ExportModal
 - **Problema**: Funciones `generateExcelForFacilcom()` comentadas o no implementadas
 - **Impacto**: Usuarios no pueden exportar a Facilcom desde frontend
@@ -125,6 +135,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `13-exportaciones-integraciones.md`
 
 ### 3.5. Falta de Zod
+
 - **Archivo**: Todo el proyecto
 - **Problema**: Se menciona React Hook Form + Zod en requisitos, pero no se encontraron schemas de Zod
 - **Impacto**: Validaciones menos robustas, no hay validación de tipos en tiempo de compilación
@@ -136,6 +147,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 ## 4. ❌ Manejo de Errores
 
 ### 4.1. Manejo de Errores Incompleto en exportDocument
+
 - **Archivo**: `/src/hooks/useOrder.js`
 - **Línea**: 236-267
 - **Problema**: Error genérico "Error al exportar" sin detalles
@@ -144,6 +156,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `13-exportaciones-integraciones.md`
 
 ### 4.2. Manejo de Errores Incompleto
+
 - **Archivos**: Múltiples componentes
 - **Problema**: Algunos errores se muestran con `alert()` o `console.error`
 - **Impacto**: UX inconsistente
@@ -151,6 +164,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `14-produccion-en-construccion.md`
 
 ### 4.3. formatDate Sin Manejo de Errores
+
 - **Archivo**: `/src/helpers/formats/dates/formatDates.js`
 - **Línea**: 1-7
 - **Problema**: No valida que `date` sea una fecha válida
@@ -159,6 +173,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `12-utilidades-helpers.md`
 
 ### 4.4. getSettingValue Sin Manejo de Errores
+
 - **Archivo**: `/src/helpers/getSettingValue.js`
 - **Línea**: 5-10
 - **Problema**: No maneja errores si `getSettings()` falla
@@ -167,6 +182,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `12-utilidades-helpers.md`
 
 ### 4.5. EntityService Lanza Response en lugar de Error
+
 - **Archivo**: `/src/services/entityService.js`
 - **Línea**: 21, 37, 50
 - **Problema**: Lanza `response` directamente en lugar de `Error`
@@ -175,6 +191,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `07-servicios-api-v2.md`
 
 ### 4.6. Flujo de Exportación sin Manejo de Errores de Red
+
 - **Archivo**: `/src/hooks/useOrder.js`
 - **Problema**: Si falla la descarga, no hay manejo de errores específico
 - **Impacto**: Usuario no sabe qué pasó
@@ -182,6 +199,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `09-flujos-completos.md`
 
 ### 4.7. Carga de Datos Sin Dependencias
+
 - **Archivo**: `/src/components/Admin/Productions/ProductionView.jsx`
 - **Línea**: 40-45
 - **Problema**: Carga datos en paralelo sin considerar dependencias
@@ -194,6 +212,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 ## 5. ✅ Validaciones
 
 ### 5.1. Falta de Validación de Productos en Crear Pedido
+
 - **Archivo**: `/src/components/Admin/OrdersManager/CreateOrderForm/index.js`
 - **Problema**: No hay validación de que `plannedProducts` tenga al menos un elemento
 - **Impacto**: Se puede crear pedido sin productos
@@ -201,6 +220,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `09-flujos-completos.md`, `08-formularios.md`
 
 ### 5.2. Falta de Validación de Datos en A3ERP Export
+
 - **Archivos**: Múltiples archivos de ExportModal
 - **Problema**: No valida que `codA3erp` exista antes de exportar
 - **Impacto**: Puede generar archivos con datos inválidos
@@ -208,6 +228,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `13-exportaciones-integraciones.md`
 
 ### 5.3. Falta Validación de Consumos en Frontend
+
 - **Archivo**: `/src/components/Admin/Productions/ProductionOutputConsumptionsManager.jsx`
 - **Problema**: No valida si se consume más de lo disponible antes de enviar
 - **Impacto**: Errores solo se detectan en backend
@@ -215,6 +236,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `14-produccion-en-construccion.md`
 
 ### 5.4. Validaciones de Peso Incompletas
+
 - **Archivos**: Múltiples componentes
 - **Problema**: No valida pesos totales (inputs vs outputs) en frontend
 - **Impacto**: Errores solo se detectan en backend
@@ -222,6 +244,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `14-produccion-en-construccion.md`
 
 ### 5.5. parseEuropeanNumber Sin Validación
+
 - **Archivo**: `/src/helpers/formats/numbers/formatNumbers.js`
 - **Línea**: 36-39
 - **Problema**: No valida formato antes de parsear
@@ -230,6 +253,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `12-utilidades-helpers.md`
 
 ### 5.6. Falta de Validación de Parámetros
+
 - **Archivos**: Todos los servicios
 - **Problema**: No se valida que `token` exista antes de hacer fetch
 - **Impacto**: Errores en tiempo de ejecución si token es undefined
@@ -237,6 +261,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `07-servicios-api-v2.md`
 
 ### 5.7. Validación de Email Básica
+
 - **Archivos**: Múltiples formularios
 - **Problema**: Regex de email básica (`/^[\w.-]+@([\w-]+\.)+[\w-]{2,4}$/`) puede rechazar emails válidos
 - **Impacto**: Usuarios con emails válidos pueden tener problemas
@@ -244,6 +269,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `08-formularios.md`, `03-components-ui-shadcn.md`
 
 ### 5.8. Envío de Documentos Sin Validación de Emails
+
 - **Archivo**: `/src/components/Admin/OrdersManager/Order/OrderDocuments/index.js`
 - **Problema**: No valida formato de emails antes de enviar
 - **Impacto**: Puede enviar a emails inválidos
@@ -251,6 +277,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `13-exportaciones-integraciones.md`
 
 ### 5.9. Parámetro "from" No Validado
+
 - **Archivo**: `/src/components/LoginPage/index.js`
 - **Línea**: 65
 - **Problema**: Parámetro `from` de URL no se valida antes de redirigir
@@ -259,6 +286,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `11-autenticacion-autorizacion.md`
 
 ### 5.10. downloadFile Sin Validación de Tipo
+
 - **Archivo**: `/src/services/entityService.js`
 - **Línea**: 112
 - **Problema**: No valida que `type` sea válido antes de generar nombre
@@ -271,6 +299,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 ## 6. ⚡ Rendimiento
 
 ### 6.1. Validación de Token con Backend en Cada Request
+
 - **Archivo**: `/src/middleware.js`
 - **Línea**: 43-56
 - **Problema**: Hace fetch a `/api/v2/me` en cada request protegida
@@ -279,6 +308,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `11-autenticacion-autorizacion.md`
 
 ### 6.2. Falta de Memoización en Providers
+
 - **Archivos**: Todos los contextos
 - **Problema**: Los valores del contexto no están memoizados
 - **Impacto**: Re-renders innecesarios de todos los consumidores cuando cambia cualquier valor
@@ -286,6 +316,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `06-context-api.md`
 
 ### 6.3. ProductionInputsManager Sin Paginación
+
 - **Archivo**: `/src/components/Admin/Productions/ProductionInputsManager.jsx`
 - **Problema**: Carga todos los pallets/cajas sin paginación
 - **Impacto**: Puede ser lento con muchos datos
@@ -293,6 +324,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `14-produccion-en-construccion.md`
 
 ### 6.4. Performance con Muchos Datos
+
 - **Archivo**: `/src/components/Admin/Productions/ProductionInputsManager.jsx`
 - **Problema**: Componentes pueden ser lentos con muchos pallets/cajas
 - **Impacto**: UX degradada con grandes volúmenes
@@ -300,6 +332,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `14-produccion-en-construccion.md`
 
 ### 6.5. Falta de Compresión en Archivos Excel Grandes
+
 - **Archivos**: Múltiples archivos de ExportModal
 - **Problema**: No comprime archivos Excel grandes
 - **Impacto**: Archivos muy grandes pueden causar problemas
@@ -307,6 +340,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `13-exportaciones-integraciones.md`
 
 ### 6.6. Falta Actualización en Tiempo Real
+
 - **Archivos**: Múltiples componentes
 - **Problema**: No hay actualización automática cuando otros usuarios modifican
 - **Impacto**: Datos pueden quedar obsoletos
@@ -318,6 +352,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 ## 7. 🏗️ Arquitectura
 
 ### 7.1. StoreContext con Muchas Props de Callback
+
 - **Archivo**: `/src/context/StoreContext.js`
 - **Línea**: 10
 - **Problema**: StoreProvider requiere 4 callbacks del padre (onUpdateCurrentStoreTotalNetWeight, onAddNetWeightToStore, setIsStoreLoading)
@@ -326,6 +361,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `06-context-api.md`
 
 ### 7.2. useStore con Estado Complejo
+
 - **Archivo**: `/src/hooks/useStore.js`
 - **Línea**: 23-571
 - **Problema**: Hook muy grande (571 líneas) con mucha lógica y estado
@@ -334,6 +370,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `06-context-api.md`
 
 ### 7.3. Inconsistencia en Extracción de Datos
+
 - **Archivos**: Múltiples servicios
 - **Problema**: Algunos servicios retornan `data.data`, otros retornan `data` directamente
 - **Impacto**: Inconsistencia, posible confusión
@@ -341,6 +378,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `07-servicios-api-v2.md`
 
 ### 7.4. SettingsService con getSession() Interno
+
 - **Archivo**: `/src/services/settingsService.js`
 - **Línea**: 5-6, 21-22
 - **Problema**: Obtiene sesión internamente, diferente a otros servicios que reciben token
@@ -349,6 +387,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `07-servicios-api-v2.md`
 
 ### 7.5. AutocompleteService con getSession() Interno
+
 - **Archivo**: `/src/services/autocompleteService.js`
 - **Problema**: Similar a SettingsService, obtiene sesión internamente
 - **Impacto**: Inconsistencia
@@ -356,6 +395,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `07-servicios-api-v2.md`
 
 ### 7.6. Context API en lugar de Zustand
+
 - **Archivo**: `/src/context/`
 - **Problema**: Se menciona Zustand/Context en los requisitos, pero solo se usa Context API
 - **Impacto**: Ninguno crítico, pero puede haber confusión
@@ -363,6 +403,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `00-overview-introduction.md`
 
 ### 7.7. Middleware Complejo
+
 - **Archivo**: `/src/middleware.js`
 - **Línea**: 1-125
 - **Problema**: Middleware con mucha lógica, incluyendo validación de token con fetch al backend
@@ -371,6 +412,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `00-overview-introduction.md`
 
 ### 7.8. Mezcla de Librerías de Iconos
+
 - **Archivos**: Múltiples componentes
 - **Problema**: Se usan tres librerías de iconos diferentes: Lucide, Heroicons, React Icons
 - **Impacto**: Bundle size aumentado, inconsistencia visual potencial
@@ -378,6 +420,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `00-overview-introduction.md`
 
 ### 7.9. Inconsistencia en Nombres de Archivos
+
 - **Archivo**: `/src/components/ui/`
 - **Problema**: Algunos archivos son `.jsx` (button.jsx) y otros podrían ser `.js`
 - **Impacto**: Inconsistencia menor
@@ -389,6 +432,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 ## 8. 🔒 Seguridad
 
 ### 8.1. Store Operator sin Validación de Almacén en Backend
+
 - **Archivo**: `/src/app/warehouse/[storeId]/page.js`
 - **Problema**: Validación solo en frontend, no en backend
 - **Impacto**: Posible acceso no autorizado si se manipula el frontend
@@ -396,6 +440,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `11-autenticacion-autorizacion.md`
 
 ### 8.2. Falta de CSRF Protection
+
 - **Archivo**: `/src/app/api/auth/[...nextauth]/route.js`
 - **Problema**: No hay protección explícita contra CSRF
 - **Impacto**: Vulnerable a ataques CSRF
@@ -403,6 +448,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `11-autenticacion-autorizacion.md`
 
 ### 8.3. Token en Session No Encriptado
+
 - **Archivo**: `/src/app/api/auth/[...nextauth]/route.js`
 - **Línea**: 98-104
 - **Problema**: Token de acceso se almacena directamente en session
@@ -411,6 +457,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `11-autenticacion-autorizacion.md`
 
 ### 8.4. Secret No Validado al Inicio
+
 - **Archivo**: `/src/app/api/auth/[...nextauth]/route.js`
 - **Línea**: 116
 - **Problema**: `NEXTAUTH_SECRET` puede estar undefined sin error claro
@@ -423,6 +470,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 ## 9. 🎨 UX/UI
 
 ### 9.1. Falta de Confirmación en Eliminaciones
+
 - **Archivo**: `/src/components/Admin/Productions/ProductionRecordsManager.jsx`
 - **Línea**: 50-64
 - **Problema**: Usa `confirm()` nativo, no diálogo personalizado
@@ -431,6 +479,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `14-produccion-en-construccion.md`
 
 ### 9.2. Falta de Confirmación en Exportación Múltiple
+
 - **Archivo**: `/src/components/Admin/OrdersManager/Order/OrderExport/index.js`
 - **Línea**: 27-31
 - **Problema**: No pide confirmación antes de exportar todos
@@ -439,6 +488,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `13-exportaciones-integraciones.md`
 
 ### 9.3. Falta de Progress Indicator en Polling
+
 - **Archivo**: `/src/services/azure/index.js`
 - **Problema**: No hay indicador de progreso durante polling
 - **Impacto**: Usuario no sabe cuánto tiempo falta
@@ -446,6 +496,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `13-exportaciones-integraciones.md`
 
 ### 9.4. Exportación Sin Indicador de Progreso
+
 - **Archivos**: Múltiples componentes
 - **Problema**: Solo muestra toast, no progreso real
 - **Impacto**: Usuario no sabe cuánto falta para archivos grandes
@@ -453,6 +504,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `13-exportaciones-integraciones.md`
 
 ### 9.5. Falta Manejo de Estados de Carga Individuales
+
 - **Archivos**: Múltiples componentes
 - **Problema**: Algunos componentes no muestran estados de carga individuales
 - **Impacto**: Usuario no sabe qué está cargando
@@ -460,6 +512,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `14-produccion-en-construccion.md`
 
 ### 9.6. Falta de Logout en Todas las Páginas
+
 - **Archivos**: Múltiples componentes
 - **Problema**: No todas las páginas tienen opción de logout visible
 - **Impacto**: Usuario puede quedar atrapado si hay problemas
@@ -467,6 +520,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `11-autenticacion-autorizacion.md`
 
 ### 9.7. Navegación Entre Registros Limitada
+
 - **Archivo**: `/src/components/Admin/Productions/ProductionRecordsManager.jsx`
 - **Problema**: No hay navegación fácil entre registros relacionados
 - **Impacto**: Difícil seguir flujo de procesos
@@ -474,6 +528,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `14-produccion-en-construccion.md`
 
 ### 9.8. Falta de Validación de Roles en Algunos Componentes
+
 - **Archivos**: Múltiples componentes
 - **Problema**: Algunos componentes no validan roles antes de mostrar acciones
 - **Impacto**: Usuarios pueden ver botones que no pueden usar
@@ -485,6 +540,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 ## 10. 🔧 Mantenibilidad
 
 ### 10.1. Comentario Incorrecto en StoreContext
+
 - **Archivo**: `/src/context/StoreContext.js`
 - **Línea**: 1, 11
 - **Problema**: Comentario dice "OrderContext" y "datos del pedido" en lugar de "StoreContext" y "datos del almacén"
@@ -493,6 +549,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `06-context-api.md`
 
 ### 10.2. Falta de Documentación JSDoc
+
 - **Archivos**: Todos los componentes UI
 - **Problema**: Componentes sin JSDoc explicando props y uso
 - **Impacto**: Dificulta entender el propósito y uso de cada componente
@@ -500,6 +557,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `03-components-ui-shadcn.md`
 
 ### 10.3. Falta de Tests
+
 - **Archivos**: Todos los componentes UI
 - **Problema**: No se encontraron tests para componentes UI
 - **Impacto**: Riesgo de regresiones al modificar componentes
@@ -507,6 +565,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `03-components-ui-shadcn.md`
 
 ### 10.4. Falta de Documentación de Variables de Entorno
+
 - **Archivo**: No existe `.env.example`
 - **Problema**: No está claro qué variables de entorno se necesitan
 - **Impacto**: Dificulta el setup del proyecto para nuevos desarrolladores
@@ -514,6 +573,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `00-overview-introduction.md`
 
 ### 10.5. Falta de Documentación de Flujos de Producción
+
 - **Archivo**: No existe
 - **Problema**: No hay documentación clara de cómo funciona el flujo completo
 - **Impacto**: Difícil entender cómo usar el módulo
@@ -521,6 +581,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `14-produccion-en-construccion.md`
 
 ### 10.6. Falta de TypeScript
+
 - **Archivos**: Todos los servicios y componentes
 - **Problema**: Sin tipos, no hay validación de parámetros ni retornos
 - **Impacto**: Errores en tiempo de ejecución, menos productividad
@@ -528,6 +589,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `07-servicios-api-v2.md`, `03-components-ui-shadcn.md`
 
 ### 10.7. Falta de Storybook o Documentación Visual
+
 - **Archivo**: Proyecto completo
 - **Problema**: No hay Storybook o documentación visual de componentes
 - **Impacto**: Difícil ver todos los componentes y sus variantes en un solo lugar
@@ -539,6 +601,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 ## 11. 🔄 Configuración y Variables
 
 ### 11.1. Token Expiration Hardcodeado
+
 - **Archivo**: `/src/app/api/auth/[...nextauth]/route.js`
 - **Línea**: 67
 - **Problema**: `maxAge: 60 * 60 * 24 * 7` (7 días) está hardcodeado
@@ -547,6 +610,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `11-autenticacion-autorizacion.md`
 
 ### 11.2. Rate Limit de Azure Hardcodeado
+
 - **Archivo**: `/src/services/azure/index.js`
 - **Línea**: 77
 - **Problema**: `rateLimitDelay = 17000` está hardcodeado
@@ -555,6 +619,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `13-exportaciones-integraciones.md`
 
 ### 11.3. Timestamp en Nombre de Archivo Inconsistente
+
 - **Archivo**: `/src/services/entityService.js`
 - **Línea**: 59-64
 - **Problema**: Formato de fecha puede variar según locale
@@ -563,6 +628,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `13-exportaciones-integraciones.md`
 
 ### 11.4. next.config.mjs Vacío
+
 - **Archivo**: `next.config.mjs`
 - **Línea**: 1-4
 - **Problema**: Configuración completamente vacía, sin optimizaciones ni configuraciones específicas
@@ -575,6 +641,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 ## 12. 🔌 Integraciones y Servicios Externos
 
 ### 12.1. Polling de Azure Sin Cancelación
+
 - **Archivo**: `/src/services/azure/index.js`
 - **Línea**: 79-119
 - **Problema**: No hay forma de cancelar polling si usuario cierra componente
@@ -583,6 +650,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `13-exportaciones-integraciones.md`
 
 ### 12.2. Azure Document AI Sin Retry en Errores de Red
+
 - **Archivo**: `/src/services/azure/index.js`
 - **Problema**: Solo maneja rate limit, no otros errores de red
 - **Impacto**: Puede fallar en errores temporales de red
@@ -590,6 +658,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `13-exportaciones-integraciones.md`
 
 ### 12.3. Falta de Cache en Resultados de Azure
+
 - **Archivo**: `/src/services/azure/index.js`
 - **Problema**: No cachea resultados de análisis
 - **Impacto**: Re-analiza mismo PDF si se vuelve a subir
@@ -597,6 +666,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `13-exportaciones-integraciones.md`
 
 ### 12.4. Falta de Timeout en Requests
+
 - **Archivos**: Todos los servicios
 - **Problema**: No hay timeout configurado en fetch
 - **Impacto**: Requests pueden colgarse indefinidamente
@@ -604,6 +674,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `07-servicios-api-v2.md`
 
 ### 12.5. Falta de Retry Logic
+
 - **Archivos**: Todos los servicios
 - **Problema**: No hay lógica de reintento para errores transitorios
 - **Impacto**: Errores temporales de red causan fallos inmediatos
@@ -615,6 +686,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 ## 13. 🎯 Funcionalidades Faltantes
 
 ### 13.1. Falta de Refresh Token
+
 - **Archivo**: `/src/app/api/auth/[...nextauth]/route.js`
 - **Problema**: No hay mecanismo de refresh token
 - **Impacto**: Usuario debe hacer login nuevamente cuando expira
@@ -622,6 +694,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `11-autenticacion-autorizacion.md`
 
 ### 13.2. Falta Exportación de Datos
+
 - **Archivo**: No existe
 - **Problema**: No hay exportación a Excel/PDF de producciones
 - **Impacto**: Difícil compartir o analizar datos
@@ -629,6 +702,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `14-produccion-en-construccion.md`
 
 ### 13.3. Falta de Helper para Validar Fechas
+
 - **Archivo**: `/src/helpers/formats/dates/formatDates.js`
 - **Problema**: No hay función para validar si una fecha es válida
 - **Impacto**: Código duplicado en múltiples lugares
@@ -636,6 +710,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `12-utilidades-helpers.md`
 
 ### 13.4. Falta de Helper para Formatear Números con Unidad Personalizada
+
 - **Archivo**: `/src/helpers/formats/numbers/formatNumbers.js`
 - **Problema**: Solo hay formatos específicos (currency, weight)
 - **Impacto**: Difícil formatear con otras unidades
@@ -647,6 +722,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 ## 14. 🐛 Bugs y Comportamientos Inesperados
 
 ### 14.1. Validación de Token Expirado Incompleta
+
 - **Archivo**: `/src/app/api/auth/[...nextauth]/route.js`
 - **Línea**: 89
 - **Problema**: `tokenIsExpired` siempre es `false`, no valida realmente
@@ -655,6 +731,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `11-autenticacion-autorizacion.md`
 
 ### 14.2. AuthErrorInterceptor Modifica window.fetch Globalmente
+
 - **Archivo**: `/src/components/Utilities/AuthErrorInterceptor.js`
 - **Línea**: 12-56
 - **Problema**: Modifica `window.fetch` globalmente, puede causar conflictos
@@ -663,6 +740,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `11-autenticacion-autorizacion.md`
 
 ### 14.3. User-Agent en Todos los Requests
+
 - **Archivos**: Todos los servicios
 - **Problema**: Se envía `navigator.userAgent` en todos los requests (incluso en servidor)
 - **Impacto**: Puede fallar en SSR si `navigator` no existe
@@ -670,6 +748,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `07-servicios-api-v2.md`
 
 ### 14.4. fetchWithTenant Con Console.error en Servidor
+
 - **Archivo**: `/src/lib/fetchWithTenant.js`
 - **Línea**: 20
 - **Problema**: Usa `console.error` en servidor (debería ser `console.log`)
@@ -678,6 +757,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `12-utilidades-helpers.md`
 
 ### 14.5. Headers Comentados en storeService
+
 - **Archivo**: `/src/services/storeService.js`
 - **Línea**: 14, 44
 - **Problema**: `'Content-Type': 'application/json'` está comentado
@@ -690,6 +770,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 ## 15. 📝 Otros Problemas
 
 ### 15.1. SettingsForm sin React Hook Form
+
 - **Archivo**: `/src/components/Admin/Settings/SettingsForm.js`
 - **Problema**: Único formulario que no usa React Hook Form, usa useState directamente
 - **Impacto**: Inconsistencia, falta de validaciones integradas
@@ -697,6 +778,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `08-formularios.md`
 
 ### 15.2. Conversión de Fechas Inconsistente
+
 - **Archivos**: Múltiples formularios
 - **Problema**: Algunos formularios formatean fechas manualmente, otros no
 - **Impacto**: Posibles errores si se olvida formatear
@@ -704,6 +786,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `08-formularios.md`
 
 ### 15.3. Falta de Validación de Tipos
+
 - **Archivos**: Todos los formularios
 - **Problema**: No hay validación de tipos (TypeScript o PropTypes)
 - **Impacto**: Errores en tiempo de ejecución
@@ -711,6 +794,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `08-formularios.md`
 
 ### 15.4. useFieldArray sin Validación de Array
+
 - **Archivo**: `/src/components/Admin/OrdersManager/CreateOrderForm/index.js`
 - **Línea**: 87-90
 - **Problema**: No hay validación de que `plannedProducts` tenga al menos un elemento
@@ -719,6 +803,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `08-formularios.md`
 
 ### 15.5. Carga de Opciones sin Manejo de Errores
+
 - **Archivos**: `CreateEntityForm`, `useOrderCreateFormConfig`
 - **Problema**: Si falla la carga de opciones de autocomplete, no hay manejo claro
 - **Impacto**: Usuario puede no saber por qué no aparecen opciones
@@ -726,6 +811,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `08-formularios.md`
 
 ### 15.6. DatePicker con Ajuste Manual de Zona Horaria
+
 - **Archivo**: `/src/components/ui/datePicker.jsx`
 - **Línea**: 78-80, 95-97
 - **Problema**: Se hace `setHours(12, 0, 0, 0)` manualmente para evitar problemas UTC
@@ -734,6 +820,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `03-components-ui-shadcn.md`
 
 ### 15.7. EmailListInput sin Validación de Dominio
+
 - **Archivo**: `/src/components/ui/emailListInput.jsx`
 - **Línea**: 8-10
 - **Problema**: Regex de validación de email es básica (`/^[\w.-]+@([\w-]+\.)+[\w-]{2,4}$/`)
@@ -742,6 +829,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `03-components-ui-shadcn.md`
 
 ### 15.8. CustomSkeleton con Color Hardcodeado
+
 - **Archivo**: `/src/components/ui/CustomSkeleton.jsx`
 - **Línea**: 5
 - **Problema**: Color `bg-neutral-800` hardcodeado, no usa design tokens
@@ -750,6 +838,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `03-components-ui-shadcn.md`
 
 ### 15.9. Combobox con Scroll Personalizado
+
 - **Archivo**: `/src/components/Shadcn/Combobox/index.js`
 - **Línea**: 49-56
 - **Problema**: Scroll con rueda de ratón forzado con multiplicador `* 2`
@@ -758,6 +847,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `03-components-ui-shadcn.md`
 
 ### 15.10. DateRangePicker con Lógica Compleja
+
 - **Archivo**: `/src/components/ui/dateRangePicker.jsx`
 - **Línea**: 31-53
 - **Problema**: Lógica de botones rápidos mezclada con el componente
@@ -766,6 +856,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `03-components-ui-shadcn.md`
 
 ### 15.11. OrderContext con onChange Opcional
+
 - **Archivo**: `/src/context/OrderContext.js`
 - **Línea**: 10
 - **Problema**: `onChange` es opcional pero se usa sin validación en algunos lugares del hook
@@ -774,6 +865,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `06-context-api.md`
 
 ### 15.12. SettingsContext sin Manejo de Re-carga
+
 - **Archivo**: `/src/context/SettingsContext.js`
 - **Línea**: 13-29
 - **Problema**: Settings solo se cargan una vez al montar, no hay forma de recargar
@@ -782,6 +874,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `06-context-api.md`
 
 ### 15.13. Caché de Settings Sin TTL
+
 - **Archivo**: `/src/helpers/getSettingValue.js`
 - **Problema**: Caché nunca expira automáticamente
 - **Impacto**: Settings pueden quedar obsoletos
@@ -789,6 +882,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `12-utilidades-helpers.md`
 
 ### 15.14. formatDateShort Usa toLocaleDateString
+
 - **Archivo**: `/src/helpers/formats/dates/formatDates.js`
 - **Línea**: 20-26
 - **Problema**: Depende de locale del sistema, puede variar
@@ -797,6 +891,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `12-utilidades-helpers.md`
 
 ### 15.15. parseAzureDocumentAIResult Sin Validación
+
 - **Archivo**: `/src/helpers/azure/documentAI/index.js`
 - **Problema**: No valida estructura de datos antes de parsear
 - **Impacto**: Puede fallar silenciosamente con datos inesperados
@@ -804,13 +899,15 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `12-utilidades-helpers.md`
 
 ### 15.16. normalizeText Sin Preservar Espacios Múltiples
+
 - **Archivo**: `/src/helpers/formats/texts/index.js`
 - **Problema**: No normaliza espacios múltiples
-- **Impacto**: "José  María" no se normaliza correctamente
+- **Impacto**: "José María" no se normaliza correctamente
 - **Recomendación**: Añadir `.replace(/\s+/g, ' ')` para normalizar espacios
 - **Origen**: `12-utilidades-helpers.md`
 
 ### 15.17. goBack Sin Validación de Historial
+
 - **Archivo**: `/src/helpers/window/goBack.js`
 - **Problema**: No valida si hay historial antes de ir atrás
 - **Impacto**: Puede no hacer nada si no hay historial
@@ -818,6 +915,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `12-utilidades-helpers.md`
 
 ### 15.18. Rate Limiting Sin Limpieza
+
 - **Archivo**: `/src/app/api/auth/[...nextauth]/route.js`
 - **Línea**: 36
 - **Problema**: Solo limpia intentos viejos cuando hay nuevo intento
@@ -826,6 +924,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `11-autenticacion-autorizacion.md`
 
 ### 15.19. Falta de Logging de Intentos de Acceso No Autorizados
+
 - **Archivo**: `/src/middleware.js`
 - **Problema**: No se registran intentos de acceso no autorizados
 - **Impacto**: Difícil detectar intentos de acceso maliciosos
@@ -833,6 +932,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 - **Origen**: `11-autenticacion-autorizacion.md`
 
 ### 15.20. ProductionOutputConsumptionsManager Sin Validación de Disponibilidad
+
 - **Archivo**: `/src/components/Admin/Productions/ProductionOutputConsumptionsManager.jsx`
 - **Problema**: No valida si output está disponible antes de consumir
 - **Impacto**: Puede intentar consumir más de lo disponible
@@ -843,24 +943,24 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 
 ## 📊 Resumen por Categoría
 
-| Categoría | Cantidad | Prioridad Alta |
-|-----------|----------|----------------|
-| Código Duplicado | 3 | 2 |
-| Código Muerto | 3 | 1 |
-| Lógica Incompleta | 5 | 4 |
-| Manejo de Errores | 7 | 5 |
-| Validaciones | 10 | 8 |
-| Rendimiento | 6 | 4 |
-| Arquitectura | 9 | 6 |
-| Seguridad | 4 | 4 |
-| UX/UI | 8 | 3 |
-| Mantenibilidad | 7 | 2 |
-| Configuración | 4 | 2 |
-| Integraciones | 5 | 3 |
-| Funcionalidades Faltantes | 4 | 2 |
-| Bugs | 5 | 4 |
-| Otros | 20 | 10 |
-| **TOTAL** | **100+** | **59** |
+| Categoría                 | Cantidad | Prioridad Alta |
+| ------------------------- | -------- | -------------- |
+| Código Duplicado          | 3        | 2              |
+| Código Muerto             | 3        | 1              |
+| Lógica Incompleta         | 5        | 4              |
+| Manejo de Errores         | 7        | 5              |
+| Validaciones              | 10       | 8              |
+| Rendimiento               | 6        | 4              |
+| Arquitectura              | 9        | 6              |
+| Seguridad                 | 4        | 4              |
+| UX/UI                     | 8        | 3              |
+| Mantenibilidad            | 7        | 2              |
+| Configuración             | 4        | 2              |
+| Integraciones             | 5        | 3              |
+| Funcionalidades Faltantes | 4        | 2              |
+| Bugs                      | 5        | 4              |
+| Otros                     | 20       | 10             |
+| **TOTAL**                 | **100+** | **59**         |
 
 ---
 
@@ -903,6 +1003,7 @@ Este documento compila **todas las observaciones críticas** identificadas en la
 ## 🔗 Referencias
 
 Cada observación está documentada en detalle en su archivo de origen:
+
 - `00-overview-introduction.md` - 10 observaciones
 - `01-architecture-app-router.md` - 15 observaciones
 - `02-project-structure.md` - 13 observaciones
@@ -918,4 +1019,3 @@ Cada observación está documentada en detalle en su archivo de origen:
 - `12-utilidades-helpers.md` - 15 observaciones
 - `13-exportaciones-integraciones.md` - 15 observaciones
 - `14-produccion-en-construccion.md` - 15 observaciones
-

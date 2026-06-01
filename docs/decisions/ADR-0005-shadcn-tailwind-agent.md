@@ -9,6 +9,7 @@ A dedicated shadcn/Tailwind UI Agent role is established as the resident expert 
 The project uses Tailwind CSS v4 (which differs significantly from v3), the `radix-nova` shadcn style (not the default), oklch color tokens, and a custom registry from `reui.io`. These specifics are easily missed by a generic frontend agent, leading to inconsistent UI, wrong token usage, or components that break the design system.
 
 A dedicated agent with deep knowledge of the exact versions in use reduces the risk of:
+
 - Arbitrary color values instead of semantic tokens.
 - Duplicated UI components that shadow/ui already provides.
 - Incorrect Tailwind v4 syntax (e.g., using v3 `@layer` patterns).

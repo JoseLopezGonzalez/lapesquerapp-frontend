@@ -42,6 +42,7 @@ Integrar el template de Vercel AI Chatbot en el proyecto La PesquerApp, conectá
 ### AI Gateway (Vercel)
 
 El template usa Vercel AI Gateway por defecto, que permite:
+
 - Acceso unificado a múltiples modelos
 - Autenticación automática vía OIDC en deployments de Vercel
 - Para deployments locales: requiere `AI_GATEWAY_API_KEY` en `.env.local`
@@ -179,18 +180,23 @@ import { z } from 'zod'; // npm install zod
  */
 export const entityTools = {
   listEntities: {
-    description: 'Lista entidades de un tipo específico con filtros opcionales. Entidades disponibles: suppliers, orders, customers, products, etc.',
+    description:
+      'Lista entidades de un tipo específico con filtros opcionales. Entidades disponibles: suppliers, orders, customers, products, etc.',
     parameters: z.object({
       entityType: z.string().describe('Tipo de entidad (ej: suppliers, orders, customers)'),
-      filters: z.object({
-        search: z.string().optional(),
-        ids: z.array(z.number()).optional(),
-        // ... otros filtros según entidad
-      }).optional(),
-      pagination: z.object({
-        page: z.number().optional().default(1),
-        perPage: z.number().optional().default(12),
-      }).optional(),
+      filters: z
+        .object({
+          search: z.string().optional(),
+          ids: z.array(z.number()).optional(),
+          // ... otros filtros según entidad
+        })
+        .optional(),
+      pagination: z
+        .object({
+          page: z.number().optional().default(1),
+          perPage: z.number().optional().default(12),
+        })
+        .optional(),
     }),
     execute: async ({ entityType, filters = {}, pagination = {} }) => {
       const service = getEntityService(entityType);
@@ -311,7 +317,7 @@ export const maxDuration = 30;
 
 /**
  * POST /api/chat
- * 
+ *
  * API route para el chat AI. Usa Vercel AI SDK con tools.
  */
 export async function POST(req) {
@@ -357,10 +363,10 @@ export async function POST(req) {
     return result.toDataStreamResponse();
   } catch (error) {
     console.error('Error in chat API:', error);
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 }
 ```
@@ -413,7 +419,7 @@ export function Chat() {
   });
 
   return (
-    <div className="flex flex-col h-full max-h-[600px] border rounded-lg">
+    <div className="flex h-full max-h-[600px] flex-col rounded-lg border">
       <ScrollArea className="flex-1 p-4">
         <MessageList messages={messages} />
       </ScrollArea>
@@ -447,18 +453,14 @@ export function MessageList({ messages }) {
         >
           <div
             className={`max-w-[80%] rounded-lg p-3 ${
-              message.role === 'user'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted'
+              message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'
             }`}
           >
             <div className="text-sm whitespace-pre-wrap">{message.content}</div>
             {message.toolInvocations && (
               <div className="mt-2 text-xs opacity-70">
                 {message.toolInvocations.map((invocation) => (
-                  <div key={invocation.toolCallId}>
-                    Llamando: {invocation.toolName}
-                  </div>
+                  <div key={invocation.toolCallId}>Llamando: {invocation.toolName}</div>
                 ))}
               </div>
             )}
@@ -506,7 +508,7 @@ import { Chat } from '@/components/AI/Chat';
 export default function AIChatPage() {
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Asistente AI</h1>
+      <h1 className="mb-6 text-3xl font-bold">Asistente AI</h1>
       <Chat />
     </div>
   );
@@ -587,8 +589,7 @@ export function canUseTool(userRole, toolName) {
     admin: ['*'], // Acceso a todo
     user: ['listEntities', 'getEntity'], // Solo lectura
   };
-  return permissions[userRole]?.includes(toolName) || 
-         permissions[userRole]?.includes('*');
+  return permissions[userRole]?.includes(toolName) || permissions[userRole]?.includes('*');
 }
 ```
 
@@ -659,4 +660,3 @@ Después de completar este plan, tendremos:
 ---
 
 **Última actualización:** Enero 2025
-

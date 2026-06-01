@@ -114,7 +114,9 @@ export function getDefaultProspectFormValues(): ProspectFormValues {
   };
 }
 
-export function prospectFormValuesFromInitial(initialData: Record<string, unknown> | null | undefined): ProspectFormValues {
+export function prospectFormValuesFromInitial(
+  initialData: Record<string, unknown> | null | undefined
+): ProspectFormValues {
   if (!initialData) {
     return getDefaultProspectFormValues();
   }
@@ -142,12 +144,15 @@ export function prospectFormValuesFromInitial(initialData: Record<string, unknow
     categoryId,
     origin: normalizeOrigin(initialData.origin),
     status:
-      typeof initialData.status === 'string' && prospectStatusTuple.includes(initialData.status as (typeof prospectStatusTuple)[number])
+      typeof initialData.status === 'string' &&
+      prospectStatusTuple.includes(initialData.status as (typeof prospectStatusTuple)[number])
         ? (initialData.status as ProspectFormValues['status'])
         : 'new',
     notes: typeof initialData.notes === 'string' ? initialData.notes : '',
     commercialInterestNotes:
-      typeof initialData.commercialInterestNotes === 'string' ? initialData.commercialInterestNotes : '',
+      typeof initialData.commercialInterestNotes === 'string'
+        ? initialData.commercialInterestNotes
+        : '',
     speciesInterest: speciesStr,
     includePrimaryContact: false,
     primaryContactName: '',

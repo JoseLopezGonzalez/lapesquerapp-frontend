@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
 /**
  * ChatNavItem - Item especial para Chat IA en BottomNav
- * 
+ *
  * Item especial que no navega, sino que abre el Dialog del Chat AI
  */
 
-import * as React from "react";
-import { motion, useReducedMotion } from "framer-motion";
-import { MessageSquare } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { MOBILE_ICON_SIZES } from "@/lib/design-tokens-mobile";
-import { feedbackPop } from "@/lib/motion-presets";
-import { ChatDialog } from "./ChatDialog";
+import * as React from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
+import { MessageSquare } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { MOBILE_ICON_SIZES } from '@/lib/design-tokens-mobile';
+import { feedbackPop } from '@/lib/motion-presets';
+import { ChatDialog } from './ChatDialog';
 
 export function ChatNavItem({ index }) {
   const prefersReducedMotion = useReducedMotion();
@@ -37,24 +37,22 @@ export function ChatNavItem({ index }) {
         exit={feedbackPop.exit}
         transition={itemTransition}
         whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
-        className="flex flex-col items-center justify-center flex-shrink-0"
+        className="flex flex-shrink-0 flex-col items-center justify-center"
       >
         <button
           onClick={() => setChatOpen(true)}
           className={cn(
-            "relative flex flex-col items-center justify-center gap-1",
-            "min-h-[44px] min-w-[44px]",
-            "px-2 py-1.5 rounded-lg",
-            "transition-all duration-200",
-            "touch-none",
-            "text-muted-foreground hover:text-foreground hover:bg-accent/50 active:bg-accent"
+            'relative flex flex-col items-center justify-center gap-1',
+            'min-h-[44px] min-w-[44px]',
+            'rounded-lg px-2 py-1.5',
+            'transition-all duration-200',
+            'touch-none',
+            'text-muted-foreground hover:text-foreground hover:bg-accent/50 active:bg-accent'
           )}
           aria-label="Chat IA"
         >
-          <MessageSquare 
-            className="w-5 h-5"
-          />
-          <span className="text-[10px] font-medium leading-tight text-muted-foreground">
+          <MessageSquare className="h-5 w-5" />
+          <span className="text-muted-foreground text-[10px] leading-tight font-medium">
             Chat IA
           </span>
         </button>
@@ -65,4 +63,3 @@ export function ChatNavItem({ index }) {
     </>
   );
 }
-

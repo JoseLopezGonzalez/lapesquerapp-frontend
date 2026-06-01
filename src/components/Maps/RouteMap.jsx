@@ -172,7 +172,7 @@ function RouteMapComponent({
     return (
       <div className={surfaceClassName}>
         <EmptyState
-          icon={<MapPin className="h-10 w-10 text-primary" />}
+          icon={<MapPin className="text-primary h-10 w-10" />}
           title="Mapa no disponible"
           description="Falta configurar NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN para mostrar el planner y las rutas."
           className="h-full bg-transparent"
@@ -184,7 +184,7 @@ function RouteMapComponent({
   return (
     <div ref={containerRef} className={surfaceClassName}>
       {mapLoadError ? (
-        <div className="pointer-events-none absolute inset-x-4 top-4 z-20 rounded-xl border border-destructive/30 bg-background/95 px-3 py-2 text-sm text-destructive shadow-sm backdrop-blur">
+        <div className="border-destructive/30 bg-background/95 text-destructive pointer-events-none absolute inset-x-4 top-4 z-20 rounded-xl border px-3 py-2 text-sm shadow-sm backdrop-blur">
           No se pudo cargar el mapa base. {mapLoadError}
         </div>
       ) : null}
@@ -231,12 +231,12 @@ function RouteMapComponent({
                 }}
               >
                 <div
-                  className="rounded-full border-2 border-background p-1 text-white shadow-lg"
+                  className="border-background rounded-full border-2 p-1 text-white shadow-lg"
                   style={{ backgroundColor: getStopColor(stop) }}
                 >
                   <MapPin className="h-4 w-4" />
                 </div>
-                <span className="rounded bg-background/90 px-1.5 py-0.5 text-[10px] font-medium shadow-sm">
+                <span className="bg-background/90 rounded px-1.5 py-0.5 text-[10px] font-medium shadow-sm">
                   {stop.position}
                 </span>
               </button>

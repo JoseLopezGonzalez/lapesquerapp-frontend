@@ -12,20 +12,20 @@ Se suavizó el tema oscuro para que sea menos intenso y más agradable a la vist
 
 ### Valores antes y después
 
-| Variable | Antes | Después |
-|----------|-------|---------|
-| `--background` | 6% | 11% |
-| `--foreground` | 98% | 95% |
-| `--card` | 7% | 13% |
-| `--popover` | 7% | 13% |
-| `--secondary` | 15% | 18% |
-| `--muted` | 22% | 24% |
-| `--muted-foreground` | 49% | 55% |
-| `--accent` | 15% | 18% |
-| `--border` | 12% | 18% |
-| `--input` | 18% | 22% |
-| `--ring` | 40% | 45% |
-| `--sidebar-background` | 7% | 12% |
+| Variable               | Antes | Después |
+| ---------------------- | ----- | ------- |
+| `--background`         | 6%    | 11%     |
+| `--foreground`         | 98%   | 95%     |
+| `--card`               | 7%    | 13%     |
+| `--popover`            | 7%    | 13%     |
+| `--secondary`          | 15%   | 18%     |
+| `--muted`              | 22%   | 24%     |
+| `--muted-foreground`   | 49%   | 55%     |
+| `--accent`             | 15%   | 18%     |
+| `--border`             | 12%   | 18%     |
+| `--input`              | 18%   | 22%     |
+| `--ring`               | 40%   | 45%     |
+| `--sidebar-background` | 7%    | 12%     |
 
 ---
 
@@ -101,10 +101,10 @@ Y en el bloque de **sidebar** (`.dark` dentro de la sección Sidebar):
 
 ## Referencia rápida
 
-| Sensación deseada | Acción aproximada |
-|-------------------|-------------------|
-| Tema más claro | Subir todos los % en +3 a +5 puntos |
-| Tema más oscuro | Bajar todos los % en -3 a -5 puntos |
-| Mayor contraste de bordes | Subir `--border` y `--input` |
-| Texto más legible | Subir `--muted-foreground` (55% → 60%) |
-| Cards más definidas | Subir `--card` respecto a `--background` |
+| Sensación deseada         | Acción aproximada                        |
+| ------------------------- | ---------------------------------------- |
+| Tema más claro            | Subir todos los % en +3 a +5 puntos      |
+| Tema más oscuro           | Bajar todos los % en -3 a -5 puntos      |
+| Mayor contraste de bordes | Subir `--border` y `--input`             |
+| Texto más legible         | Subir `--muted-foreground` (55% → 60%)   |
+| Cards más definidas       | Subir `--card` respecto a `--background` |

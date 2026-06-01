@@ -10,28 +10,30 @@ GET /api/v2/pallets/available-for-order
 
 ### Parámetros Actuales (Ya Implementados)
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
+| Parámetro | Tipo    | Descripción                                                                     |
+| --------- | ------- | ------------------------------------------------------------------------------- |
 | `orderId` | integer | ID del pedido (si se proporciona, incluye palets sin pedido O del mismo pedido) |
-| `id` | string | Búsqueda por ID con coincidencias parciales |
-| `perPage` | integer | Elementos por página (default: 20, max: 100) |
-| `page` | integer | Número de página (opcional) |
+| `id`      | string  | Búsqueda por ID con coincidencias parciales                                     |
+| `perPage` | integer | Elementos por página (default: 20, max: 100)                                    |
+| `page`    | integer | Número de página (opcional)                                                     |
 
 ### Parámetro Nuevo Requerido
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
+| Parámetro | Tipo    | Descripción                                                                                                                                                                                                       |
+| --------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `storeId` | integer | **NUEVO** - ID del almacén para filtrar los palets disponibles. Si se proporciona, solo devuelve palets que están almacenados en ese almacén. Si es `null` o no se envía, devuelve palets de todos los almacenes. |
 
 ## Comportamiento Esperado
 
 ### Con `storeId` proporcionado:
+
 - Solo devolver palets que tienen `storedPallet.store_id === storeId`
 - Incluir palets en estado `registered` (1) o `stored` (2)
 - Excluir palets vinculados a otros pedidos (a menos que se proporcione `orderId` del mismo pedido)
 - Si un palet no tiene `storedPallet` (no está almacenado), no debe aparecer en los resultados cuando se filtra por `storeId`
 
 ### Sin `storeId` (comportamiento actual):
+
 - Devolver todos los palets disponibles sin filtrar por almacén
 - Mantener el comportamiento actual existente
 
@@ -67,13 +69,14 @@ El backend **DEBE** devolver siempre el campo `storedPallet` con la siguiente es
 ```json
 {
   "storedPallet": {
-    "store_id": 1,        // ID del almacén (integer, puede ser null si no está almacenado)
-    "position": "A-1"     // Posición en el almacén (string, puede ser null)
+    "store_id": 1, // ID del almacén (integer, puede ser null si no está almacenado)
+    "position": "A-1" // Posición en el almacén (string, puede ser null)
   }
 }
 ```
 
 **Importante:**
+
 - Si el palet está almacenado: `storedPallet` debe existir y contener `store_id` y `position`
 - Si el palet NO está almacenado (estado `registered`): `storedPallet` puede ser `null` o tener `store_id: null`
 - El frontend necesita `storedPallet.store_id` para:
@@ -84,31 +87,37 @@ El backend **DEBE** devolver siempre el campo `storedPallet` con la siguiente es
 ## Ejemplos de Uso
 
 ### Ejemplo 1: Filtrar por almacén específico
+
 ```
 GET /api/v2/pallets/available-for-order?orderId=123&storeId=5&perPage=50&page=1
 ```
 
 **Respuesta esperada:**
+
 - Solo palets del almacén con ID 5
 - Que estén disponibles para el pedido 123
 - Paginados con 50 resultados por página
 
 ### Ejemplo 2: Sin filtro de almacén (comportamiento actual)
+
 ```
 GET /api/v2/pallets/available-for-order?orderId=123&perPage=50&page=1
 ```
 
 **Respuesta esperada:**
+
 - Todos los palets disponibles (de todos los almacenes)
 - Que estén disponibles para el pedido 123
 - Paginados con 50 resultados por página
 
 ### Ejemplo 3: Filtrar por almacén sin orderId
+
 ```
 GET /api/v2/pallets/available-for-order?storeId=5&perPage=50&page=1
 ```
 
 **Respuesta esperada:**
+
 - Solo palets del almacén con ID 5
 - Que no estén vinculados a ningún pedido (o disponibles)
 - Paginados con 50 resultados por página
@@ -128,6 +137,7 @@ GET /api/v2/pallets/available-for-order?storeId=5&perPage=50&page=1
 ## Compatibilidad con Frontend
 
 El frontend ya está preparado para:
+
 - ✅ Enviar el parámetro `storeId` en las peticiones
 - ✅ Recibir y mostrar `storedPallet.store_id` en los resultados
 - ✅ Filtrar manualmente por almacén cuando se busca por IDs específicos (fallback si el backend no soporta el parámetro)

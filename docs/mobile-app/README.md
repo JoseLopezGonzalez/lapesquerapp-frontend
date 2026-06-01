@@ -42,4 +42,3 @@ El flujo esperado es:
 1. Definir/ajustar la visión en `plan/`.
 2. Bajar esa visión a estándares concretos en `estandares-ui/`.
 3. Bajar esos estándares a implementación y tareas rastreables en `implementacion/`.
-

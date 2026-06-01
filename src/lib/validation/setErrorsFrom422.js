@@ -7,13 +7,13 @@
  * @param {Object} errors - Objeto errors de la respuesta 422 (clave = nombre campo, valor = array de mensajes)
  */
 export function setErrorsFrom422(setError, errors) {
-    if (!errors || typeof errors !== 'object' || typeof setError !== 'function') {
-        return;
+  if (!errors || typeof errors !== 'object' || typeof setError !== 'function') {
+    return;
+  }
+  Object.entries(errors).forEach(([key, messages]) => {
+    const message = Array.isArray(messages) && messages.length > 0 ? messages[0] : String(messages);
+    if (message) {
+      setError(key, { type: 'server', message });
     }
-    Object.entries(errors).forEach(([key, messages]) => {
-        const message = Array.isArray(messages) && messages.length > 0 ? messages[0] : String(messages);
-        if (message) {
-            setError(key, { type: 'server', message });
-        }
-    });
+  });
 }

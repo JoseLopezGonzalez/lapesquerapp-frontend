@@ -29,6 +29,7 @@ GET /api/v2/customers
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -80,6 +81,7 @@ POST /api/v2/customers
 ```
 
 **Campos opcionales:**
+
 - `facil_com_code` (string): Código para exportaciones a Facilcom (máximo 255 caracteres)
 - `a3erp_code` (string): Código para exportaciones a A3ERP (máximo 255 caracteres)
 
@@ -364,4 +366,3 @@ Content-Type: application/json  (para POST/PUT)
 ```
 
 **Excepción:** `GET /api/v2/customers/op` es pública y no requiere `Authorization`.
-

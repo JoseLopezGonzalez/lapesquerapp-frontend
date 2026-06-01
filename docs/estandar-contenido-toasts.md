@@ -54,13 +54,13 @@ Usar **descripción** cuando:
 
 **Ejemplos:**
 
-| Contexto | Título | Descripción |
-|---------|--------|-------------|
-| Error al guardar | Error al actualizar pedido | No se pudieron guardar los cambios. Intente de nuevo. |
-| Éxito con detalle | Fichajes registrados | Se registraron 5 fichajes correctamente. |
-| Validación | Errores en el formulario | Por favor, corrige los 3 errores indicados. |
-| Sesión / auth | Sesión no disponible | No hay sesión activa. Inicia sesión e inténtalo de nuevo. |
-| Acción bloqueada | Caja en uso | No se puede modificar el lote de la caja #12: está siendo usada en producción. |
+| Contexto          | Título                     | Descripción                                                                    |
+| ----------------- | -------------------------- | ------------------------------------------------------------------------------ |
+| Error al guardar  | Error al actualizar pedido | No se pudieron guardar los cambios. Intente de nuevo.                          |
+| Éxito con detalle | Fichajes registrados       | Se registraron 5 fichajes correctamente.                                       |
+| Validación        | Errores en el formulario   | Por favor, corrige los 3 errores indicados.                                    |
+| Sesión / auth     | Sesión no disponible       | No hay sesión activa. Inicia sesión e inténtalo de nuevo.                      |
+| Acción bloqueada  | Caja en uso                | No se puede modificar el lote de la caja #12: está siendo usada en producción. |
 
 En código:
 
@@ -133,11 +133,11 @@ notify.success(
 
 ## Resumen
 
-| Situación | Título | Descripción |
-|-----------|--------|-------------|
-| Mensaje muy breve y claro | Corto, contextual | No necesaria |
-| Error que el usuario debe entender o actuar | Corto ("Error al …") | Sí: causa o qué hacer |
-| Éxito con detalle (cantidad, nombre, etc.) | Corto ("… guardado", "… registrado") | Sí: el detalle |
-| Validación / formulario | Corto ("Errores en el formulario", "Campo requerido") | Sí: qué corregir |
+| Situación                                   | Título                                                | Descripción           |
+| ------------------------------------------- | ----------------------------------------------------- | --------------------- |
+| Mensaje muy breve y claro                   | Corto, contextual                                     | No necesaria          |
+| Error que el usuario debe entender o actuar | Corto ("Error al …")                                  | Sí: causa o qué hacer |
+| Éxito con detalle (cantidad, nombre, etc.)  | Corto ("… guardado", "… registrado")                  | Sí: el detalle        |
+| Validación / formulario                     | Corto ("Errores en el formulario", "Campo requerido") | Sí: qué corregir      |
 
 El wrapper de notificaciones (`notify`) acepta `NotifyMessage = string | { title: string; description?: string }`. Se recomienda usar siempre el objeto `{ title, description? }` para cumplir este estándar y omitir `description` cuando el título sea suficiente.

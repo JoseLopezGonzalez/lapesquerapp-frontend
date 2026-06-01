@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext } from 'react';
 
 /**
  * @deprecated Opciones globales de productos/proveedores.
@@ -19,21 +19,20 @@ export function OptionsProvider({ children }) {
  * @returns {Object} Options context value (vacío si no hay provider)
  */
 export function useOptions() {
-    const context = useContext(OptionsContext);
-    if (!context) {
-        // Fallback: return empty arrays if context is not available
-        // This allows components to work even if not wrapped in provider
-        return {
-            productOptions: [],
-            supplierOptions: [],
-            productsLoading: true,
-            suppliersLoading: true,
-            loading: true,
-            error: null,
-            refreshProducts: () => {},
-            refreshSuppliers: () => {},
-        };
-    }
-    return context;
+  const context = useContext(OptionsContext);
+  if (!context) {
+    // Fallback: return empty arrays if context is not available
+    // This allows components to work even if not wrapped in provider
+    return {
+      productOptions: [],
+      supplierOptions: [],
+      productsLoading: true,
+      suppliersLoading: true,
+      loading: true,
+      error: null,
+      refreshProducts: () => {},
+      refreshSuppliers: () => {},
+    };
+  }
+  return context;
 }
-

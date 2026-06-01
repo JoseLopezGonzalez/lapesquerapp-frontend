@@ -2,7 +2,8 @@
 
 import { UNLOCATED_POSITION_ID } from '@/configs/config';
 import { getAvailableBoxes } from '@/helpers/pallet/boxAvailability';
-import { useEffect, useMemo, useState } from 'react';import { notify } from '@/lib/notifications';
+import { useEffect, useMemo, useState } from 'react';
+import { notify } from '@/lib/notifications';
 import { removePalletPosition } from '@/services/palletService';
 
 const initialFilters = {
@@ -41,16 +42,12 @@ export function useStorePositions({ store, setStore, token }) {
   }, [store?.content?.pallets]);
 
   const palletsOptions = useMemo(
-    () =>
-      store?.content?.pallets?.map((p) => ({ value: p.id, label: p.id })) ?? [],
+    () => store?.content?.pallets?.map((p) => ({ value: p.id, label: p.id })) ?? [],
     [store?.content?.pallets]
   );
 
   const unlocatedPallets = useMemo(
-    () =>
-      store?.content?.pallets
-        ?.filter((p) => !p.position)
-        ?.sort((a, b) => a.id - b.id) ?? [],
+    () => store?.content?.pallets?.filter((p) => !p.position)?.sort((a, b) => a.id - b.id) ?? [],
     [store?.content?.pallets]
   );
 
@@ -101,8 +98,7 @@ export function useStorePositions({ store, setStore, token }) {
         name,
         quantity: data.quantity,
         boxes: data.boxes,
-        productPercentage:
-          totalProductWeight > 0 ? (data.quantity / totalProductWeight) * 100 : 0,
+        productPercentage: totalProductWeight > 0 ? (data.quantity / totalProductWeight) * 100 : 0,
       }));
 
       return {
@@ -128,9 +124,7 @@ export function useStorePositions({ store, setStore, token }) {
         const matchProduct = hasProductFilters
           ? pallet.boxes?.some((box) => filters.products.includes(box.product?.id))
           : true;
-        const matchPallet = hasPalletFilters
-          ? filters.pallets.includes(pallet.id)
-          : true;
+        const matchPallet = hasPalletFilters ? filters.pallets.includes(pallet.id) : true;
         matchesFilters = matchProduct && matchPallet;
       }
 
@@ -154,10 +148,7 @@ export function useStorePositions({ store, setStore, token }) {
     const hasPalletFilters = filters.pallets.length > 0;
     const hasActiveFilters = hasProductFilters || hasPalletFilters;
     if (!hasActiveFilters) return false;
-    return (
-      filteredPositionsMap.has(positionId) &&
-      filteredPositionsMap.get(positionId).length > 0
-    );
+    return filteredPositionsMap.has(positionId) && filteredPositionsMap.get(positionId).length > 0;
   };
 
   const isPositionFilled = (positionId) => {

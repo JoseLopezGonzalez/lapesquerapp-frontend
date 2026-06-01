@@ -26,19 +26,19 @@ El bloque Configuración por tenant ha sido migrado a React Query, TypeScript (s
 
 ## Entregables
 
-| Archivo | Cambio |
-|---------|--------|
-| src/services/settingsService.ts | Nuevo (migración desde .js) |
-| src/types/settings.ts | Nuevo |
-| src/__tests__/services/settingsService.test.ts | Nuevo |
-| src/hooks/useSettingsData.js | Nuevo |
-| src/context/SettingsContext.js | Refactorizado |
-| src/schemas/settingsSchema.js | Nuevo |
-| src/components/Admin/Settings/SettingsForm.js | Refactorizado |
-| src/components/Admin/Settings/SettingsEmailSection.jsx | Nuevo |
-| src/components/Admin/Settings/config/sectionsConfig.js | Nuevo |
-| docs/audits/nextjs-evolution-log.md | Entrada añadida |
-| docs/00_CORE CONSOLIDATION PLAN | Rating 9/10 actualizado |
+| Archivo                                                | Cambio                      |
+| ------------------------------------------------------ | --------------------------- |
+| src/services/settingsService.ts                        | Nuevo (migración desde .js) |
+| src/types/settings.ts                                  | Nuevo                       |
+| src/**tests**/services/settingsService.test.ts         | Nuevo                       |
+| src/hooks/useSettingsData.js                           | Nuevo                       |
+| src/context/SettingsContext.js                         | Refactorizado               |
+| src/schemas/settingsSchema.js                          | Nuevo                       |
+| src/components/Admin/Settings/SettingsForm.js          | Refactorizado               |
+| src/components/Admin/Settings/SettingsEmailSection.jsx | Nuevo                       |
+| src/components/Admin/Settings/config/sectionsConfig.js | Nuevo                       |
+| docs/audits/nextjs-evolution-log.md                    | Entrada añadida             |
+| docs/00_CORE CONSOLIDATION PLAN                        | Rating 9/10 actualizado     |
 
 ---
 

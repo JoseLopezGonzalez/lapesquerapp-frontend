@@ -16,9 +16,9 @@
 
 ## Matriz de validación
 
-| Requisito | Cómo validar |
-|-----------|--------------|
-| Operario: no aviso "Algunas líneas no tienen cajas" | Hook `useOperarioCeboForm` no contiene `notify.action` por líneas sin cajas. |
-| Otros roles: solo líneas, sin palets | CreateCeboForm sin Tabs ni PalletDialog; useAdminCeboForm sin `mode === 'manual'`. |
-| Payload create solo details | Ambos hooks envían `{ supplier, date, notes, details }` a `ceboDispatchService.create`. |
-| Botón crear visible en listado cebo | entitiesConfig `hideCreateButton: false` y createRedirect definido. |
+| Requisito                                           | Cómo validar                                                                            |
+| --------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Operario: no aviso "Algunas líneas no tienen cajas" | Hook `useOperarioCeboForm` no contiene `notify.action` por líneas sin cajas.            |
+| Otros roles: solo líneas, sin palets                | CreateCeboForm sin Tabs ni PalletDialog; useAdminCeboForm sin `mode === 'manual'`.      |
+| Payload create solo details                         | Ambos hooks envían `{ supplier, date, notes, details }` a `ceboDispatchService.create`. |
+| Botón crear visible en listado cebo                 | entitiesConfig `hideCreateButton: false` y createRedirect definido.                     |

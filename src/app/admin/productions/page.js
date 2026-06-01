@@ -1,5 +1,5 @@
-import EntityClient from "@/components/Admin/Entity/EntityClient";
-import { configs } from "@/configs/entitiesConfig";
+import EntityClient from '@/components/Admin/Entity/EntityClient';
+import { configs } from '@/configs/entitiesConfig';
 
 export default async function ProductionsPage() {
   const config = configs['productions'];
@@ -10,4 +10,3 @@ export default async function ProductionsPage() {
 
   return <EntityClient config={config} />;
 }
-

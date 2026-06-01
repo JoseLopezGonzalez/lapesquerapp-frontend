@@ -22,11 +22,11 @@ Son las **únicas dos rutas** definidas en `roleRoutesConfig.js` para el comerci
 
 Ya renderiza cuatro widgets de estadísticas generales:
 
-* `TotalQuantitySoldCard` — total kg vendidos, año en curso
-* `TotalAmountSoldCard` — importe total, año en curso
-* `OrderRankingChart` — top 5 pedidos por importe
-* `SalesBySalespersonPieChart` — ventas por comercial (pie chart)
-* `TransportRadarChart` — radar de transportes
+- `TotalQuantitySoldCard` — total kg vendidos, año en curso
+- `TotalAmountSoldCard` — importe total, año en curso
+- `OrderRankingChart` — top 5 pedidos por importe
+- `SalesBySalespersonPieChart` — ventas por comercial (pie chart)
+- `TransportRadarChart` — radar de transportes
 
 Usa `useOrdersStats.ts` (hooks: `useOrdersTotalNetWeightStats`, `useOrdersTotalAmountStats`, `useOrderRankingStats`, `useSalesBySalesperson`).
 
@@ -42,11 +42,11 @@ Incluye `CreateCustomerQuickForm` — formulario rápido de cliente embebido en 
 
 ### Servicios y hooks ya disponibles reutilizables
 
-| Servicio / Hook            | Archivo                                              | Útil para CRM                                                          |
-| -------------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------- |
+| Servicio / Hook          | Archivo                                            | Útil para CRM                                                           |
+| ------------------------ | -------------------------------------------------- | ----------------------------------------------------------------------- |
 | `customerService.ts`     | `src/services/domain/customers/customerService.ts` | Lista/ficha de clientes del comercial                                   |
-| `useCustomerHistory.js`  | `src/hooks/useCustomerHistory.js`                  | Calcula `daysSinceLastOrder`, métricas, tendencias por producto      |
-| `useOrders.js`           | `src/hooks/useOrders.js`                           | Lista de pedidos filtrada por `salespeople[]`                         |
+| `useCustomerHistory.js`  | `src/hooks/useCustomerHistory.js`                  | Calcula `daysSinceLastOrder`, métricas, tendencias por producto         |
+| `useOrders.js`           | `src/hooks/useOrders.js`                           | Lista de pedidos filtrada por `salespeople[]`                           |
 | `useOrderFormOptions.js` | `src/hooks/useOrderFormOptions.js`                 | Opciones de productos, incoterms, formas de pago para el form de oferta |
 | `useIncotermsList.ts`    | `src/hooks/useIncotermsList.ts`                    | Selector de incoterm en oferta                                          |
 | `usePaymentTermsList.ts` | `src/hooks/usePaymentTermsList.ts`                 | Selector de forma de pago en oferta                                     |
@@ -71,10 +71,10 @@ Solo dos ítems activos:
 
 ## Principios de diseño
 
-* **Mínimo fricción.** Crear un lead o registrar una interacción tiene que costar menos de 30 segundos.
-* **Sin jerga CRM.** Nada de "pipeline", "opportunity stage" ni "conversion rate". El comercial ve clientes, prospectos y conversaciones.
-* **Integrado en el área del rol comercial, no como módulo independiente fuera de `/comercial`.** Toda la funcionalidad CRM vive bajo rutas `/comercial/*` — prospectos, clientes, ofertas y pedidos son subrutas dentro del mismo área del comercial, con su propia navegación interna.
-* **Un solo actor.** Diseñado para que lo use una persona, no un departamento.
+- **Mínimo fricción.** Crear un lead o registrar una interacción tiene que costar menos de 30 segundos.
+- **Sin jerga CRM.** Nada de "pipeline", "opportunity stage" ni "conversion rate". El comercial ve clientes, prospectos y conversaciones.
+- **Integrado en el área del rol comercial, no como módulo independiente fuera de `/comercial`.** Toda la funcionalidad CRM vive bajo rutas `/comercial/*` — prospectos, clientes, ofertas y pedidos son subrutas dentro del mismo área del comercial, con su propia navegación interna.
+- **Un solo actor.** Diseñado para que lo use una persona, no un departamento.
 
 ---
 
@@ -84,42 +84,42 @@ Esta sección es nueva. Antes de planificar, es importante saber qué está hech
 
 ### Entidades ya operativas
 
-| Entidad                       | Tabla                             | Estado                                              |
-| ----------------------------- | --------------------------------- | --------------------------------------------------- |
+| Entidad                     | Tabla                           | Estado                                             |
+| --------------------------- | ------------------------------- | -------------------------------------------------- |
 | `Customer`                  | `customers`                     | ✅ CRUD completo — Policy + Service + Resource     |
 | `Salesperson`               | `salespeople`                   | ✅ CRUD completo — Policy + Service + Resource     |
 | `Order`                     | `orders`                        | ✅ CRUD completo — Policy + Service + Resource     |
 | `OrderPlannedProductDetail` | `order_planned_product_details` | ✅ Líneas de pedido con producto, precio, impuesto |
-| `Product`                   | `products`                      | ✅ Con especie, zona de captura, familia, GTINs     |
+| `Product`                   | `products`                      | ✅ Con especie, zona de captura, familia, GTINs    |
 
 ### Restricciones del rol Comercial ya implementadas
 
 Las Policies de Laravel ya controlan exactamente lo que el documento de diseño describe. **No hay que construirlo.**
 
-| Acción                     | Comercial                                         | Otros roles |
-| --------------------------- | ------------------------------------------------- | ----------- |
-| Ver lista de clientes       | Solo los suyos (`salesperson_id`)               | Todos       |
-| Ver un cliente              | Solo el suyo                                      | Cualquiera  |
+| Acción                      | Comercial                                        | Otros roles |
+| --------------------------- | ------------------------------------------------ | ----------- |
+| Ver lista de clientes       | Solo los suyos (`salesperson_id`)                | Todos       |
+| Ver un cliente              | Solo el suyo                                     | Cualquiera  |
 | Crear cliente               | ✅ (se le asigna automáticamente como comercial) | ✅          |
-| Editar / eliminar cliente   | ❌ Denegado                                       | ✅          |
-| Ver lista de pedidos        | Solo los suyos                                    | Todos       |
-| Ver un pedido               | Solo el suyo                                      | Cualquiera  |
-| Crear pedido                | ✅ (solo para sus clientes)                       | ✅          |
-| Editar / eliminar pedido    | ❌ Denegado                                       | ✅          |
-| Ver lista de comerciales    | ❌ Denegado                                       | ✅          |
-| Ver opciones de comerciales | Solo el suyo (en `/options`)                    | Todos       |
+| Editar / eliminar cliente   | ❌ Denegado                                      | ✅          |
+| Ver lista de pedidos        | Solo los suyos                                   | Todos       |
+| Ver un pedido               | Solo el suyo                                     | Cualquiera  |
+| Crear pedido                | ✅ (solo para sus clientes)                      | ✅          |
+| Editar / eliminar pedido    | ❌ Denegado                                      | ✅          |
+| Ver lista de comerciales    | ❌ Denegado                                      | ✅          |
+| Ver opciones de comerciales | Solo el suyo (en `/options`)                     | Todos       |
 
 ### Endpoints ya disponibles relevantes para CRM
 
-\`# Clientes GET    /api/v2/customers                        → lista paginada con filtros GET    /api/v2/customers/{id}                   → ficha de cliente GET    /api/v2/customers/{id}/order-history     → historial de pedidos del cliente GET    /api/v2/customers/op                     → opciones para select
+\`# Clientes GET /api/v2/customers → lista paginada con filtros GET /api/v2/customers/{id} → ficha de cliente GET /api/v2/customers/{id}/order-history → historial de pedidos del cliente GET /api/v2/customers/op → opciones para select
 
 # Pedidos
 
-GET    /api/v2/orders                           → lista con filtros extensos POST   /api/v2/orders                           → crear pedido GET    /api/v2/orders/{id}                      → detalle de pedido GET    /api/v2/orders/active                    → pedidos activos (pending o fecha futura) PUT    /api/v2/orders/{id}/status               → cambio de estado GET    /api/v2/orders/sales-by-salesperson      → estadísticas por comercial
+GET /api/v2/orders → lista con filtros extensos POST /api/v2/orders → crear pedido GET /api/v2/orders/{id} → detalle de pedido GET /api/v2/orders/active → pedidos activos (pending o fecha futura) PUT /api/v2/orders/{id}/status → cambio de estado GET /api/v2/orders/sales-by-salesperson → estadísticas por comercial
 
 # Comerciales
 
-GET    /api/v2/salespeople/options              → opciones (comercial solo ve el suyo)\`
+GET /api/v2/salespeople/options → opciones (comercial solo ve el suyo)\`
 
 ### Filtros disponibles en listado de pedidos (para dashboard y listas)
 
@@ -137,21 +137,21 @@ Un contacto comercial que todavía no es cliente activo en el ERP.
 
 **Campos mínimos:**
 
-| Campo                | Tipo                               | Notas                                                                |
-| -------------------- | ---------------------------------- | -------------------------------------------------------------------- |
-| Empresa              | string                             | Razón social o nombre comercial                                     |
-| País                | FK →`countries`(`country_id`) | Igual que en `Customer`existente — no texto libre                 |
-| Especie de interés  | json                               | Array de strings — sin FK, libre                                    |
-| Origen               | enum                               | `conxemar`,`direct`,`referral`,`web`,`other`               |
-| Estado               | enum                               | Ver estados más abajo                                               |
-| Comercial asignado   | FK →`salespeople`               | Nullable                                                             |
-| Cliente vinculado    | FK →`customers`                 | Nullable — se rellena al convertir                                  |
-| Próxima acción     | date                               | Para recordatorio en dashboard                                       |
-| Notas                | text                               | Campo abierto                                                        |
-| Interés comercial   | text                               | `commercial_interest_notes`— formato, calibre, mercado objetivo… |
-| Última interacción | datetime                           | Auto-actualizado                                                     |
-| Última oferta       | datetime                           | Auto-actualizado                                                     |
-| Motivo descarte      | text                               | Solo si estado = discarded                                           |
+| Campo              | Tipo                          | Notas                                                            |
+| ------------------ | ----------------------------- | ---------------------------------------------------------------- |
+| Empresa            | string                        | Razón social o nombre comercial                                  |
+| País               | FK →`countries`(`country_id`) | Igual que en `Customer`existente — no texto libre                |
+| Especie de interés | json                          | Array de strings — sin FK, libre                                 |
+| Origen             | enum                          | `conxemar`,`direct`,`referral`,`web`,`other`                     |
+| Estado             | enum                          | Ver estados más abajo                                            |
+| Comercial asignado | FK →`salespeople`             | Nullable                                                         |
+| Cliente vinculado  | FK →`customers`               | Nullable — se rellena al convertir                               |
+| Próxima acción     | date                          | Para recordatorio en dashboard                                   |
+| Notas              | text                          | Campo abierto                                                    |
+| Interés comercial  | text                          | `commercial_interest_notes`— formato, calibre, mercado objetivo… |
+| Última interacción | datetime                      | Auto-actualizado                                                 |
+| Última oferta      | datetime                      | Auto-actualizado                                                 |
+| Motivo descarte    | text                          | Solo si estado = discarded                                       |
 
 **Estados del prospecto:**
 
@@ -169,14 +169,14 @@ Un prospecto puede tener varios contactos (compras, dirección, logística…). 
 
 > **Nota de coherencia:** El modelo `Customer` existente almacena los emails en un campo de texto con separador `;` y el campo `contact_info` como texto libre. Al convertir el prospecto en cliente, el contacto primario de `prospect_contacts` debe mapearse a los campos `emails` y `contact_info` del `Customer`. No se crea una tabla relacional nueva en customers — se respeta la estructura existente.
 
-| Campo        | Tipo                    |
-| ------------ | ----------------------- |
-| prospect\_id | FK → prospects         |
-| name         | string                  |
-| role         | string nullable (cargo) |
-| phone        | string nullable         |
-| email        | string nullable         |
-| is\_primary  | boolean default false   |
+| Campo       | Tipo                    |
+| ----------- | ----------------------- |
+| prospect_id | FK → prospects          |
+| name        | string                  |
+| role        | string nullable (cargo) |
+| phone       | string nullable         |
+| email       | string nullable         |
+| is_primary  | boolean default false   |
 
 ---
 
@@ -184,17 +184,17 @@ Un prospecto puede tener varios contactos (compras, dirección, logística…). 
 
 Cualquier contacto registrado contra un prospecto o un cliente existente.
 
-| Campo              | Tipo                     | Notas                                                         |
-| ------------------ | ------------------------ | ------------------------------------------------------------- |
-| prospect\_id       | FK → prospects nullable | Uno de los dos obligatorio                                    |
-| customer\_id       | FK → customers nullable | Uno de los dos obligatorio                                    |
-| salesperson\_id    | FK → salespeople        | Quién la registró                                           |
-| type               | enum                     | `call`,`email`,`whatsapp`,`visit`,`other`           |
-| occurred\_at       | datetime                 | Por defecto: ahora                                            |
-| summary            | string max 500           | 1-2 líneas de qué pasó                                     |
-| result             | enum                     | `interested`,`no_response`,`not_interested`,`pending` |
-| next\_action\_note | string nullable          |                                                               |
-| next\_action\_at   | date nullable            | Alimenta la agenda del dashboard                              |
+| Campo            | Tipo                    | Notas                                                 |
+| ---------------- | ----------------------- | ----------------------------------------------------- |
+| prospect_id      | FK → prospects nullable | Uno de los dos obligatorio                            |
+| customer_id      | FK → customers nullable | Uno de los dos obligatorio                            |
+| salesperson_id   | FK → salespeople        | Quién la registró                                     |
+| type             | enum                    | `call`,`email`,`whatsapp`,`visit`,`other`             |
+| occurred_at      | datetime                | Por defecto: ahora                                    |
+| summary          | string max 500          | 1-2 líneas de qué pasó                                |
+| result           | enum                    | `interested`,`no_response`,`not_interested`,`pending` |
+| next_action_note | string nullable         |                                                       |
+| next_action_at   | date nullable           | Alimenta la agenda del dashboard                      |
 
 **Constraint correcto:**
 
@@ -215,49 +215,49 @@ La oferta es una entidad propia que permite guardar qué productos y precios se 
 
 **Tabla `offers`:**
 
-| Campo             | Tipo                           | Notas                                                    |
-| ----------------- | ------------------------------ | -------------------------------------------------------- |
-| prospect\_id      | FK nullable                    | Uno de los dos                                           |
-| customer\_id      | FK nullable                    | Uno de los dos                                           |
-| salesperson\_id   | FK → salespeople              |                                                          |
-| status            | enum                           | `draft`,`sent`,`accepted`,`rejected`,`expired` |
-| send\_channel     | enum nullable                  | `email`,`pdf`,`whatsapp_text`                      |
-| sent\_at          | datetime nullable              |                                                          |
-| valid\_until      | date nullable                  |                                                          |
-| incoterm\_id      | FK →`incoterms`nullable     | Consistente con modelo `Order`existente                |
-| payment\_term\_id | FK →`payment_terms`nullable | Consistente con modelo `Order`existente                |
-| currency          | enum                           | `EUR`,`USD`— default EUR                            |
-| notes             | text nullable                  |                                                          |
-| accepted\_at      | datetime nullable              |                                                          |
-| rejected\_at      | datetime nullable              |                                                          |
-| rejection\_reason | text nullable                  |                                                          |
-| order\_id         | FK →`orders`nullable        | Al generar el pedido                                     |
+| Campo            | Tipo                        | Notas                                          |
+| ---------------- | --------------------------- | ---------------------------------------------- |
+| prospect_id      | FK nullable                 | Uno de los dos                                 |
+| customer_id      | FK nullable                 | Uno de los dos                                 |
+| salesperson_id   | FK → salespeople            |                                                |
+| status           | enum                        | `draft`,`sent`,`accepted`,`rejected`,`expired` |
+| send_channel     | enum nullable               | `email`,`pdf`,`whatsapp_text`                  |
+| sent_at          | datetime nullable           |                                                |
+| valid_until      | date nullable               |                                                |
+| incoterm_id      | FK →`incoterms`nullable     | Consistente con modelo `Order`existente        |
+| payment_term_id  | FK →`payment_terms`nullable | Consistente con modelo `Order`existente        |
+| currency         | enum                        | `EUR`,`USD`— default EUR                       |
+| notes            | text nullable               |                                                |
+| accepted_at      | datetime nullable           |                                                |
+| rejected_at      | datetime nullable           |                                                |
+| rejection_reason | text nullable               |                                                |
+| order_id         | FK →`orders`nullable        | Al generar el pedido                           |
 
 > **Nota importante:**`incoterm_id` y `payment_term_id` usan FK reales (igual que en `Order`), no strings. Las tablas `incoterms` y `payment_terms` ya existen.
 
 **Tabla `offer_lines`:**
 
-| Campo       | Tipo                      | Notas                                                                                                                                                                                                                          |
-| ----------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| offer\_id   | FK → offers              |                                                                                                                                                                                                                                |
-| product\_id | FK →`products`nullable | Si hay producto del catálogo                                                                                                                                                                                                  |
-| description | string                    | Texto libre si no hay product\_id                                                                                                                                                                                              |
-| quantity    | decimal                   |                                                                                                                                                                                                                                |
-| unit        | string                    | kg, caja, tina…                                                                                                                                                                                                               |
-| unit\_price | decimal                   |                                                                                                                                                                                                                                |
-| tax\_id     | FK →`taxes`nullable    | Consistente con `OrderPlannedProductDetail`                                                                                                                                                                                  |
-| boxes       | integer nullable          | Nº de cajas estimado. Nullable en la oferta;**obligatorio**al crear el `Order`(`StoreOrderRequest`requiere `plannedProducts.*.boxes`). Se precarga si está relleno; el comercial lo confirma al crear el pedido. |
-| currency    | string default EUR        |                                                                                                                                                                                                                                |
+| Campo       | Tipo                   | Notas                                                                                                                                                                                                            |
+| ----------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| offer_id    | FK → offers            |                                                                                                                                                                                                                  |
+| product_id  | FK →`products`nullable | Si hay producto del catálogo                                                                                                                                                                                     |
+| description | string                 | Texto libre si no hay product_id                                                                                                                                                                                 |
+| quantity    | decimal                |                                                                                                                                                                                                                  |
+| unit        | string                 | kg, caja, tina…                                                                                                                                                                                                  |
+| unit_price  | decimal                |                                                                                                                                                                                                                  |
+| tax_id      | FK →`taxes`nullable    | Consistente con `OrderPlannedProductDetail`                                                                                                                                                                      |
+| boxes       | integer nullable       | Nº de cajas estimado. Nullable en la oferta;**obligatorio**al crear el `Order`(`StoreOrderRequest`requiere `plannedProducts.*.boxes`). Se precarga si está relleno; el comercial lo confirma al crear el pedido. |
+| currency    | string default EUR     |                                                                                                                                                                                                                  |
 
 > **Nota de coherencia:**`OrderPlannedProductDetail.$fillable` usa `product_id`, `unit_price`, `tax_id` y `boxes`. Las líneas de oferta siguen exactamente el mismo patrón. El campo `boxes` es nullable en la oferta porque en fase de negociación puede no conocerse el encaje exacto de cajas; se confirma al crear el pedido.
 
 **Reglas:**
 
-* Una oferta puede originar como máximo **un pedido** (`order_id` unique cuando no es null).
-* Al crear el pedido desde la oferta, las líneas se copian como snapshot en `order_planned_product_details` — no se recalculan.
-* Una vez `accepted`, la oferta queda no editable.
-* El pedido puede incluir líneas adicionales **solo en el momento de creación**. Una vez creado el `Order`, el comercial no puede editarlo (Policy ya implementada). Las líneas extra se añaden en el formulario de creación del pedido, no después.
-* Al enviar la oferta → se actualiza `prospects.last_offer_at`.
+- Una oferta puede originar como máximo **un pedido** (`order_id` unique cuando no es null).
+- Al crear el pedido desde la oferta, las líneas se copian como snapshot en `order_planned_product_details` — no se recalculan.
+- Una vez `accepted`, la oferta queda no editable.
+- El pedido puede incluir líneas adicionales **solo en el momento de creación**. Una vez creado el `Order`, el comercial no puede editarlo (Policy ya implementada). Las líneas extra se añaden en el formulario de creación del pedido, no después.
+- Al enviar la oferta → se actualiza `prospects.last_offer_at`.
 
 ---
 
@@ -295,9 +295,9 @@ La oferta es una entidad propia que permite guardar qué productos y precios se 
 
 El sistema comprueba antes de ejecutar:
 
-* `company_name` no vacío
-* Al menos un `prospect_contact` con `is_primary = true`
-* El contacto primario tiene teléfono o email
+- `company_name` no vacío
+- Al menos un `prospect_contact` con `is_primary = true`
+- El contacto primario tiene teléfono o email
 
 No se exigen datos fiscales (`vat_number`). El `Customer` puede crearse como incompleto.
 
@@ -305,13 +305,13 @@ No se exigen datos fiscales (`vat_number`). El `Customer` puede crearse como inc
 
 ### Mapeo de campos (prospecto → Customer existente)
 
-| Campo en `Prospect`                 | Campo en `Customer`                              |
-| ------------------------------------- | -------------------------------------------------- |
-| `company_name`                      | `name`                                           |
-| `country_id`                        | `country_id`                                     |
-| `salesperson_id`                    | `salesperson_id`                                 |
-| Contacto primario → email            | `emails`(formato semicolon-separado del sistema) |
-| Contacto primario → phone + name     | `contact_info`(texto libre)                      |
+| Campo en `Prospect`                | Campo en `Customer`                              |
+| ---------------------------------- | ------------------------------------------------ |
+| `company_name`                     | `name`                                           |
+| `country_id`                       | `country_id`                                     |
+| `salesperson_id`                   | `salesperson_id`                                 |
+| Contacto primario → email          | `emails`(formato semicolon-separado del sistema) |
+| Contacto primario → phone + name   | `contact_info`(texto libre)                      |
 | Oferta aceptada →`payment_term_id` | `payment_term_id`(si existe en la oferta)        |
 
 > **⚠️ Nota sobre `incoterm_id`:** el modelo `Customer`**no tiene** campo `incoterm_id` (verificado contra `$fillable` y migraciones reales). El incoterm es por pedido (`orders.incoterm_id`), no por cliente. Al crear el `Order` desde la oferta aceptada, el `incoterm_id` de la oferta se copia al `Order`. No se guarda en el `Customer`.
@@ -325,8 +325,8 @@ No se exigen datos fiscales (`vat_number`). El `Customer` puede crearse como inc
 \`DB::transaction:
 
 1. Crear Customer con campos mapeados
-2. Actualizar Prospect: status = 'customer', customer\_id = nuevo [Customer.id](http://Customer.id)
-3. Actualizar Offer activa (si existe): customer\_id = nuevo Customer.id\`
+2. Actualizar Prospect: status = 'customer', customer_id = nuevo [Customer.id](http://Customer.id)
+3. Actualizar Offer activa (si existe): customer_id = nuevo Customer.id\`
 
 Si falla cualquier paso → rollback completo.
 
@@ -336,9 +336,9 @@ Si falla cualquier paso → rollback completo.
 
 Al crear un prospecto, el sistema comprueba (case-insensitive):
 
-* Mismo `company_name` en `prospects` o `customers` → aviso con enlace
-* Mismo email en `prospect_contacts` o campo `customers.emails` → aviso
-* Mismo teléfono en `prospect_contacts` o campo `customers.contact_info` → aviso
+- Mismo `company_name` en `prospects` o `customers` → aviso con enlace
+- Mismo email en `prospect_contacts` o campo `customers.emails` → aviso
+- Mismo teléfono en `prospect_contacts` o campo `customers.contact_info` → aviso
 
 **No bloquea.** Solo informa. El comercial decide si es un caso legítimamente distinto.
 
@@ -346,10 +346,10 @@ Al crear un prospecto, el sistema comprueba (case-insensitive):
 
 ## Visibilidad por rol
 
-| Rol                           | Prospectos                          | Interacciones  | Ofertas        |
-| ----------------------------- | ----------------------------------- | -------------- | -------------- |
-| Comercial                     | Solo los suyos (`salesperson_id`) | Solo las suyas | Solo las suyas |
-| Admin / Técnico / Dirección | Todos                               | Todas          | Todas          |
+| Rol                         | Prospectos                        | Interacciones  | Ofertas        |
+| --------------------------- | --------------------------------- | -------------- | -------------- |
+| Comercial                   | Solo los suyos (`salesperson_id`) | Solo las suyas | Solo las suyas |
+| Admin / Técnico / Dirección | Todos                             | Todas          | Todas          |
 
 Implementación: misma estrategia que `CustomerPolicy` y `OrderPolicy` ya existentes — filtro por `salesperson_id` en el método `viewAny` de cada Policy nueva.
 
@@ -361,14 +361,14 @@ Implementación: misma estrategia que `CustomerPolicy` y `OrderPolicy` ya existe
 
 ### Lo que ya existe (no construir)
 
-* `GET /api/v2/orders/sales-by-salesperson` → estadísticas de ventas por comercial
-* `GET /api/v2/orders?salespeople[]=X&status=pending` → pedidos pendientes del comercial
-* `GET /api/v2/customers/{id}/order-history` → historial de pedidos de un cliente
+- `GET /api/v2/orders/sales-by-salesperson` → estadísticas de ventas por comercial
+- `GET /api/v2/orders?salespeople[]=X&status=pending` → pedidos pendientes del comercial
+- `GET /api/v2/customers/{id}/order-history` → historial de pedidos de un cliente
 
 Con estos endpoints el frontend puede mostrar ya:
 
-* Pedidos activos del comercial
-* Clientes con últimos pedidos (ordenar por fecha y calcular días de inactividad en frontend o con filtros de fecha en el endpoint de orders)
+- Pedidos activos del comercial
+- Clientes con últimos pedidos (ordenar por fecha y calcular días de inactividad en frontend o con filtros de fecha en el endpoint de orders)
 
 ### Lo que hay que añadir (endpoints nuevos)
 
@@ -410,9 +410,9 @@ Las tres opciones coexisten.
 
 El comercial puede **crear y visualizar** pedidos desde el Order Manager existente con estas restricciones:
 
-* Solo ve sus propios pedidos → **ya implementado** en `OrderPolicy` y `OrderListService`
-* Puede crear pedidos → **ya implementado**
-* **No puede editar un pedido una vez creado** → **ya implementado** (Policy deniega update/delete a Comercial)
+- Solo ve sus propios pedidos → **ya implementado** en `OrderPolicy` y `OrderListService`
+- Puede crear pedidos → **ya implementado**
+- **No puede editar un pedido una vez creado** → **ya implementado** (Policy deniega update/delete a Comercial)
 
 **Conclusión: el Order Manager para el rol comercial ya está implementado a nivel de backend.** Solo falta que el frontend oculte/deshabilite los controles de edición según el rol.
 
@@ -420,15 +420,15 @@ El comercial puede **crear y visualizar** pedidos desde el Order Manager existen
 
 ## Relación con entidades existentes del ERP
 
-| Entidad CRM                   | Relación con ERP                                                          | Estado    |
-| ----------------------------- | -------------------------------------------------------------------------- | --------- |
-| Prospecto                     | Al convertirse crea `Customer`                                           | 🆕 Nuevo  |
-| `prospect_contacts`         | Mapea a `customers.emails`+`contact_info`al convertir                  | 🆕 Nuevo  |
-| Interacción en cliente       | Se registra contra `customers.id`(ya existe)                             | 🆕 Nuevo  |
+| Entidad CRM                   | Relación con ERP                                                   | Estado    |
+| ----------------------------- | ------------------------------------------------------------------ | --------- |
+| Prospecto                     | Al convertirse crea `Customer`                                     | 🆕 Nuevo  |
+| `prospect_contacts`           | Mapea a `customers.emails`+`contact_info`al convertir              | 🆕 Nuevo  |
+| Interacción en cliente        | Se registra contra `customers.id`(ya existe)                       | 🆕 Nuevo  |
 | Oferta                        | Usa `products`,`incoterms`,`payment_terms`,`taxes`(todo existente) | 🆕 Nuevo  |
-| Oferta aceptada               | Crea `Order`+`order_planned_product_details`(ya existen)               | 🆕 Nuevo  |
-| Dashboard comercial           | Usa `Order`,`Salesperson`,`Customer`(ya existen)                     | Parcial   |
-| Vista rol comercial en orders | `OrderPolicy`+`OrderListService`ya implementan restricciones           | ✅ Existe |
+| Oferta aceptada               | Crea `Order`+`order_planned_product_details`(ya existen)           | 🆕 Nuevo  |
+| Dashboard comercial           | Usa `Order`,`Salesperson`,`Customer`(ya existen)                   | Parcial   |
+| Vista rol comercial en orders | `OrderPolicy`+`OrderListService`ya implementan restricciones       | ✅ Existe |
 
 ---
 
@@ -438,45 +438,45 @@ El comercial puede **crear y visualizar** pedidos desde el Order Manager existen
 
 **Migraciones**
 
-* [ ] `prospects`
-* [ ] `prospect_contacts`
-* [ ] `commercial_interactions`
-* [ ] `offers` + `offer_lines`
+- [ ] `prospects`
+- [ ] `prospect_contacts`
+- [ ] `commercial_interactions`
+- [ ] `offers` + `offer_lines`
 
 **Modelos + Policies**
 
-* [ ] `Prospect` model con trait `UsesTenantConnection`
-* [ ] `ProspectContact` model
-* [ ] `CommercialInteraction` model
-* [ ] `Offer` + `OfferLine` models
-* [ ] `ProspectPolicy` (viewAny filtra por salesperson\_id para Comercial)
-* [ ] `OfferPolicy`
-* [ ] `CommercialInteractionPolicy`
+- [ ] `Prospect` model con trait `UsesTenantConnection`
+- [ ] `ProspectContact` model
+- [ ] `CommercialInteraction` model
+- [ ] `Offer` + `OfferLine` models
+- [ ] `ProspectPolicy` (viewAny filtra por salesperson_id para Comercial)
+- [ ] `OfferPolicy`
+- [ ] `CommercialInteractionPolicy`
 
 **API — Prospectos**
 
-* [ ] CRUD prospectos (`/api/v2/prospects`)
-* [ ] CRUD contactos del prospecto (`/api/v2/prospects/{id}/contacts`)
-* [ ] Endpoint conversión prospecto → customer (transacción atómica)
-* [ ] Detección de duplicados (en store/update de prospectos)
+- [ ] CRUD prospectos (`/api/v2/prospects`)
+- [ ] CRUD contactos del prospecto (`/api/v2/prospects/{id}/contacts`)
+- [ ] Endpoint conversión prospecto → customer (transacción atómica)
+- [ ] Detección de duplicados (en store/update de prospectos)
 
 **API — Interacciones**
 
-* [ ] CRUD interacciones (`/api/v2/commercial-interactions`)
-* [ ] Al crear interacción → actualizar `prospect.last_contact_at`
+- [ ] CRUD interacciones (`/api/v2/commercial-interactions`)
+- [ ] Al crear interacción → actualizar `prospect.last_contact_at`
 
 **API — Ofertas**
 
-* [ ] CRUD ofertas + líneas (`/api/v2/offers`)
-* [ ] Endpoint: generar PDF de oferta
-* [ ] Endpoint: generar texto WhatsApp formateado
-* [ ] Endpoint: envío email con PDF adjunto
-* [ ] Endpoint: crear `Order` desde `Offer` aceptada (líneas → `order_planned_product_details`) — el pedido se crea vía el flujo existente `POST /api/v2/orders`, con las líneas precargadas. El comercial puede añadir más líneas en ese mismo acto de creación. El pedido resultante se gestiona desde `/comercial/pedidos` (reutiliza el Order Manager existente).
-* [ ] El endpoint de conversión oferta → pedido debe especificar claramente que usa `POST /api/v2/orders` internamente y no crea un flujo paralelo de pedidos
+- [ ] CRUD ofertas + líneas (`/api/v2/offers`)
+- [ ] Endpoint: generar PDF de oferta
+- [ ] Endpoint: generar texto WhatsApp formateado
+- [ ] Endpoint: envío email con PDF adjunto
+- [ ] Endpoint: crear `Order` desde `Offer` aceptada (líneas → `order_planned_product_details`) — el pedido se crea vía el flujo existente `POST /api/v2/orders`, con las líneas precargadas. El comercial puede añadir más líneas en ese mismo acto de creación. El pedido resultante se gestiona desde `/comercial/pedidos` (reutiliza el Order Manager existente).
+- [ ] El endpoint de conversión oferta → pedido debe especificar claramente que usa `POST /api/v2/orders` internamente y no crea un flujo paralelo de pedidos
 
 **API — Dashboard CRM**
 
-* [ ] `GET /api/v2/crm/dashboard` (recordatorios, acciones vencidas, clientes inactivos, prospectos sin actividad)
+- [ ] `GET /api/v2/crm/dashboard` (recordatorios, acciones vencidas, clientes inactivos, prospectos sin actividad)
 
 ### Frontend
 
@@ -484,79 +484,79 @@ El comercial puede **crear y visualizar** pedidos desde el Order Manager existen
 
 #### Nuevas rutas bajo `/comercial`
 
-* [ ] `/comercial/prospectos` — listado con filtros
-* [ ] `/comercial/prospectos/[id]` — ficha de prospecto
-* [ ] `/comercial/prospectos/create` — formulario de creación
-* [ ] `/comercial/clientes` — listado de clientes propios del comercial
-* [ ] `/comercial/clientes/[id]` — ficha de cliente con interacciones y ofertas
-* [ ] `/comercial/ofertas` — listado de ofertas
-* [ ] `/comercial/ofertas/[id]` — ficha de oferta
-* [ ] `/comercial/pedidos` — pedidos propios (solo lectura — reutiliza `useOrders.js` con filtro `salespeople[]`)
+- [ ] `/comercial/prospectos` — listado con filtros
+- [ ] `/comercial/prospectos/[id]` — ficha de prospecto
+- [ ] `/comercial/prospectos/create` — formulario de creación
+- [ ] `/comercial/clientes` — listado de clientes propios del comercial
+- [ ] `/comercial/clientes/[id]` — ficha de cliente con interacciones y ofertas
+- [ ] `/comercial/ofertas` — listado de ofertas
+- [ ] `/comercial/ofertas/[id]` — ficha de oferta
+- [ ] `/comercial/pedidos` — pedidos propios (solo lectura — reutiliza `useOrders.js` con filtro `salespeople[]`)
 
 #### Actualizar archivos de configuración existentes
 
-* [ ] `navgationConfig.js` — añadir ítems para `comercial`: Mis Clientes, Prospectos, Ofertas, Mis Pedidos
-* [ ] `roleRoutesConfig.js` — añadir rutas CRM al objeto `comercialRoutes`
-* [ ] `roleConfig.ts` — añadir rutas nuevas al guard del middleware
+- [ ] `navgationConfig.js` — añadir ítems para `comercial`: Mis Clientes, Prospectos, Ofertas, Mis Pedidos
+- [ ] `roleRoutesConfig.js` — añadir rutas CRM al objeto `comercialRoutes`
+- [ ] `roleConfig.ts` — añadir rutas nuevas al guard del middleware
 
 #### Servicios nuevos (`src/services/domain/`)
 
-* [ ] `prospects/prospectService.ts` — CRUD prospectos + contactos + conversión → cliente
-* [ ] `commercial-interactions/commercialInteractionService.ts` — CRUD interacciones
-* [ ] `offers/offerService.ts` — CRUD ofertas + líneas + generar PDF + texto WhatsApp + crear pedido
-* [ ] `crm/crmDashboardService.ts` — `GET /api/v2/crm/dashboard`
+- [ ] `prospects/prospectService.ts` — CRUD prospectos + contactos + conversión → cliente
+- [ ] `commercial-interactions/commercialInteractionService.ts` — CRUD interacciones
+- [ ] `offers/offerService.ts` — CRUD ofertas + líneas + generar PDF + texto WhatsApp + crear pedido
+- [ ] `crm/crmDashboardService.ts` — `GET /api/v2/crm/dashboard`
 
 #### Hooks nuevos (`src/hooks/`)
 
-* [ ] `useProspects.ts` — lista de prospectos con filtros
-* [ ] `useProspect.ts` — detalle de un prospecto
-* [ ] `useCommercialInteractions.ts` — historial de interacciones
-* [ ] `useOffers.ts` — lista de ofertas con filtros
-* [ ] `useOffer.ts` — detalle de una oferta
-* [ ] `useCrmDashboard.ts` — recordatorios, acciones vencidas, clientes inactivos
+- [ ] `useProspects.ts` — lista de prospectos con filtros
+- [ ] `useProspect.ts` — detalle de un prospecto
+- [ ] `useCommercialInteractions.ts` — historial de interacciones
+- [ ] `useOffers.ts` — lista de ofertas con filtros
+- [ ] `useOffer.ts` — detalle de una oferta
+- [ ] `useCrmDashboard.ts` — recordatorios, acciones vencidas, clientes inactivos
 
 #### Componentes nuevos (`src/components/Comercial/`)
 
-* [ ] `Prospectos/ProspectosList` — tabla/cards de prospectos con filtros de estado y búsqueda
-* [ ] `Prospectos/ProspectoDetail` — ficha: datos + contactos + historial interacciones + ofertas
-* [ ] `Prospectos/ProspectoForm` — formulario crear/editar prospecto
-* [ ] `Prospectos/ProspectoContactsPanel` — CRUD de contactos del prospecto
-* [ ] `Prospectos/ConvertirAClienteButton` — botón con validación previa + transacción
-* [ ] `Interactions/QuickInteractionModal` — modal rápido (<30 seg) para nueva interacción
-* [ ] `Interactions/InteractionsList` — historial de interacciones (prospecto o cliente)
-* [ ] `Ofertas/OfertaForm` — formulario de oferta con líneas de producto
-* [ ] `Ofertas/OfertaLineEditor` — editor de líneas (reutiliza patrón de `OrderPlannedProductDetail`)
-* [ ] `Ofertas/OfertaSendButtons` — tres botones: email / descargar PDF / copiar texto WhatsApp
-* [ ] `Ofertas/OfertasList` — tabla de ofertas con estados
-* [ ] `CrmDashboard/RemindersWidget` — recordatorios del día y acciones vencidas
-* [ ] `CrmDashboard/InactiveCustomersWidget` — clientes sin pedido en N días
-* [ ] `CrmDashboard/ProspectsWithoutActivityWidget` — prospectos sin interacción en 7 días
+- [ ] `Prospectos/ProspectosList` — tabla/cards de prospectos con filtros de estado y búsqueda
+- [ ] `Prospectos/ProspectoDetail` — ficha: datos + contactos + historial interacciones + ofertas
+- [ ] `Prospectos/ProspectoForm` — formulario crear/editar prospecto
+- [ ] `Prospectos/ProspectoContactsPanel` — CRUD de contactos del prospecto
+- [ ] `Prospectos/ConvertirAClienteButton` — botón con validación previa + transacción
+- [ ] `Interactions/QuickInteractionModal` — modal rápido (<30 seg) para nueva interacción
+- [ ] `Interactions/InteractionsList` — historial de interacciones (prospecto o cliente)
+- [ ] `Ofertas/OfertaForm` — formulario de oferta con líneas de producto
+- [ ] `Ofertas/OfertaLineEditor` — editor de líneas (reutiliza patrón de `OrderPlannedProductDetail`)
+- [ ] `Ofertas/OfertaSendButtons` — tres botones: email / descargar PDF / copiar texto WhatsApp
+- [ ] `Ofertas/OfertasList` — tabla de ofertas con estados
+- [ ] `CrmDashboard/RemindersWidget` — recordatorios del día y acciones vencidas
+- [ ] `CrmDashboard/InactiveCustomersWidget` — clientes sin pedido en N días
+- [ ] `CrmDashboard/ProspectsWithoutActivityWidget` — prospectos sin interacción en 7 días
 
 #### Adaptar dashboard comercial existente
 
-* [ ] `ComercialDashboard/index.js` — añadir sección CRM widgets (Reminders, Inactive, Prospects) usando `useCrmDashboard.ts`
-* [ ] `SalesBySalespersonPieChart` — adaptar para rol `comercial`: mostrar métricas propias en lugar de pie chart comparativo entre todos los comerciales
-* [ ] `TotalQuantitySoldCard` / `TotalAmountSoldCard` — verificar que el backend filtra automáticamente por `salesperson_id` cuando el token es de un comercial (si no, añadir filtro explícito)
+- [ ] `ComercialDashboard/index.js` — añadir sección CRM widgets (Reminders, Inactive, Prospects) usando `useCrmDashboard.ts`
+- [ ] `SalesBySalespersonPieChart` — adaptar para rol `comercial`: mostrar métricas propias en lugar de pie chart comparativo entre todos los comerciales
+- [ ] `TotalQuantitySoldCard` / `TotalAmountSoldCard` — verificar que el backend filtra automáticamente por `salesperson_id` cuando el token es de un comercial (si no, añadir filtro explícito)
 
 #### Order Manager para rol comercial
 
-* [ ] Crear hook `useComercialOrders.ts` que llame a `GET /api/v2/orders?salespeople[]=X` con el `salesperson_id` del usuario en sesión — `useOrders.js` existente no acepta filtros, usa `getActiveOrders()` sin parámetros
-* [ ] Añadir ruta `/comercial/pedidos` que reutilice los componentes del Order Manager con `useComercialOrders.ts`
-* [ ] Ocultar controles de edición condicionalmente por `session.user.role === 'comercial'` (el backend ya deniega vía Policy)
+- [ ] Crear hook `useComercialOrders.ts` que llame a `GET /api/v2/orders?salespeople[]=X` con el `salesperson_id` del usuario en sesión — `useOrders.js` existente no acepta filtros, usa `getActiveOrders()` sin parámetros
+- [ ] Añadir ruta `/comercial/pedidos` que reutilice los componentes del Order Manager con `useComercialOrders.ts`
+- [ ] Ocultar controles de edición condicionalmente por `session.user.role === 'comercial'` (el backend ya deniega vía Policy)
 
 ---
 
 ## Lo que NO tiene este módulo
 
-* Sin puntuación de leads
-* Sin embudo visual tipo Kanban (puede añadirse después)
-* Sin automatización de emails
-* Sin integración con calendarios externos
-* Sin gestión de contratos ni documentos formales
+- Sin puntuación de leads
+- Sin embudo visual tipo Kanban (puede añadirse después)
+- Sin automatización de emails
+- Sin integración con calendarios externos
+- Sin gestión de contratos ni documentos formales
 
 ---
 
-> *Documento actualizado con código real del backend — Marzo 2026. Cotejado contra modelos, controladores, policies y migraciones existentes.*
+> _Documento actualizado con código real del backend — Marzo 2026. Cotejado contra modelos, controladores, policies y migraciones existentes._
 
 ---
 

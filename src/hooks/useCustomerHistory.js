@@ -8,10 +8,10 @@ import { useCustomerOrderHistoryRanges } from './useCustomerOrderHistoryRanges';
  * @returns {Object} Estado y funciones para el historial de cliente
  */
 export function useCustomerHistory(order) {
-    const customerId = order?.customer?.id;
-    return useCustomerOrderHistoryRanges({
-        customerId,
-        enabled: true,
-        notifyOnError: true,
-    });
+  const customerId = order?.customer?.id;
+  return useCustomerOrderHistoryRanges({
+    customerId,
+    enabled: true,
+    notifyOnError: true,
+  });
 }

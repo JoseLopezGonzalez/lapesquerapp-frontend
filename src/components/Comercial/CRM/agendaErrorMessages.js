@@ -5,9 +5,7 @@ export function extractAgendaErrorCode(error) {
   const nestedCode = error?.data?.error?.code;
   if (typeof nestedCode === 'string' && nestedCode.trim()) return nestedCode.trim().toUpperCase();
 
-  const firstFieldError = Array.isArray(error?.data?.errors)
-    ? error.data.errors[0]
-    : null;
+  const firstFieldError = Array.isArray(error?.data?.errors) ? error.data.errors[0] : null;
 
   if (typeof firstFieldError?.code === 'string' && firstFieldError.code.trim()) {
     return firstFieldError.code.trim().toUpperCase();
@@ -34,4 +32,3 @@ export function getAgendaDomainErrorMessage(error, fallbackMessage) {
   if (code && DOMAIN_MESSAGES[code]) return DOMAIN_MESSAGES[code];
   return error?.message || fallbackMessage || 'No se pudo completar la operación de agenda.';
 }
-

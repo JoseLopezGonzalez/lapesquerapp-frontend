@@ -20,9 +20,7 @@ function buildGhostStore(registeredPalletsData) {
       registeredPalletsData?.netWeightPallets ||
       1,
     totalNetWeight:
-      registeredPalletsData?.totalNetWeight ||
-      registeredPalletsData?.netWeightPallets ||
-      0,
+      registeredPalletsData?.totalNetWeight || registeredPalletsData?.netWeightPallets || 0,
     temperature: registeredPalletsData?.temperature ?? null,
     content: registeredPalletsData?.content || {
       pallets: [],
@@ -48,49 +46,41 @@ export function useStores() {
   const [isStoreLoading, setIsStoreLoading] = useState(false);
   const storesQueryKey = ['stores', tenantId ?? 'unknown', externalActor ? 'external' : 'internal'];
 
-  const {
-    data,
-    isLoading,
-    error,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useInfiniteQuery({
-    queryKey: storesQueryKey,
-    queryFn: async ({ pageParam = 1 }) => {
-      const [storesResponse, registeredPalletsData] = await Promise.all([
-        getStores(token, pageParam),
-        pageParam === 1 && !externalActor
-          ? getRegisteredPallets(token).catch(() => ({
-              id: null,
-              name: 'En espera',
-              temperature: null,
-              capacity: null,
-              netWeightPallets: 0,
-              totalNetWeight: 0,
-              content: { pallets: [], boxes: [], bigBoxes: [] },
-              map: null,
-            }))
-          : Promise.resolve(null),
-      ]);
+  const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useInfiniteQuery({
+      queryKey: storesQueryKey,
+      queryFn: async ({ pageParam = 1 }) => {
+        const [storesResponse, registeredPalletsData] = await Promise.all([
+          getStores(token, pageParam),
+          pageParam === 1 && !externalActor
+            ? getRegisteredPallets(token).catch(() => ({
+                id: null,
+                name: 'En espera',
+                temperature: null,
+                capacity: null,
+                netWeightPallets: 0,
+                totalNetWeight: 0,
+                content: { pallets: [], boxes: [], bigBoxes: [] },
+                map: null,
+              }))
+            : Promise.resolve(null),
+        ]);
 
-      const storesData = storesResponse.data || storesResponse || [];
-      const ghostStore =
-        pageParam === 1 && !externalActor
-          ? buildGhostStore(registeredPalletsData)
-          : null;
+        const storesData = storesResponse.data || storesResponse || [];
+        const ghostStore =
+          pageParam === 1 && !externalActor ? buildGhostStore(registeredPalletsData) : null;
 
-      return {
-        ghostStore,
-        stores: storesData,
-        links: storesResponse.links ?? null,
-        meta: storesResponse.meta ?? null,
-      };
-    },
-    getNextPageParam: (lastPage) => extractNextPage(lastPage?.links),
-    initialPageParam: 1,
-    enabled: !!token && !!tenantId,
-  });
+        return {
+          ghostStore,
+          stores: storesData,
+          links: storesResponse.links ?? null,
+          meta: storesResponse.meta ?? null,
+        };
+      },
+      getNextPageParam: (lastPage) => extractNextPage(lastPage?.links),
+      initialPageParam: 1,
+      enabled: !!token && !!tenantId,
+    });
 
   const stores =
     data?.pages?.reduce((acc, page) => {
@@ -132,8 +122,7 @@ export function useStores() {
             page.ghostStore?.id === storeId
               ? {
                   ...page.ghostStore,
-                  totalNetWeight:
-                    (page.ghostStore.totalNetWeight || 0) + netWeight,
+                  totalNetWeight: (page.ghostStore.totalNetWeight || 0) + netWeight,
                 }
               : page.ghostStore;
           const updatedStores = (page.stores ?? []).map((s) =>
@@ -156,8 +145,7 @@ export function useStores() {
     }
   };
 
-  const isInitialLoading =
-    isLoading || (!!token && !!tenantId && data === undefined);
+  const isInitialLoading = isLoading || (!!token && !!tenantId && data === undefined);
 
   return {
     stores,

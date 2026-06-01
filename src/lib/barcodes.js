@@ -1,19 +1,19 @@
 export function eanChecksum(digits) {
-    const nums = digits.replace(/\D/g, '').split('').map(Number)
-    let sum = 0
-    for (let i = nums.length - 1; i >= 0; i--) {
-        const n = nums[i]
-        sum += n * ((nums.length - i) % 2 === 0 ? 3 : 1)
-    }
-    return (10 - (sum % 10)) % 10
+  const nums = digits.replace(/\D/g, '').split('').map(Number);
+  let sum = 0;
+  for (let i = nums.length - 1; i >= 0; i--) {
+    const n = nums[i];
+    sum += n * ((nums.length - i) % 2 === 0 ? 3 : 1);
+  }
+  return (10 - (sum % 10)) % 10;
 }
 
 export const formatMap = {
-    'ean13': 'EAN13',
-    'ean14': 'EAN14',
-    /* 'ean13-weight': 'EAN13', */
-    'gs1-128': 'CODE128',
-}
+  ean13: 'EAN13',
+  ean14: 'EAN14',
+  /* 'ean13-weight': 'EAN13', */
+  'gs1-128': 'CODE128',
+};
 
 /* export function serializeBarcode(value, type) {
     const plain = String(value ?? '')
@@ -36,21 +36,19 @@ export const formatMap = {
 } */
 
 export function serializeBarcode(value, type) {
-    const plain = String(value ?? '');
+  const plain = String(value ?? '');
 
-    switch (type) {
-        case 'ean13':
-            return plain.replace(/\D/g, '').padStart(12, '0'); // sin checksum
+  switch (type) {
+    case 'ean13':
+      return plain.replace(/\D/g, '').padStart(12, '0'); // sin checksum
 
-        case 'ean14':
-            return plain.replace(/\D/g, '').padStart(13, '0'); // sin checksum
+    case 'ean14':
+      return plain.replace(/\D/g, '').padStart(13, '0'); // sin checksum
 
-        case 'gs1-128':
-            return plain; // mantener paréntesis y estructura GS1 intacta
+    case 'gs1-128':
+      return plain; // mantener paréntesis y estructura GS1 intacta
 
-        default:
-            return plain;
-    }
+    default:
+      return plain;
+  }
 }
-
-

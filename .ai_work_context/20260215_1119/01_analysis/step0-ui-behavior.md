@@ -175,14 +175,14 @@
 
 ## 7. Validación de reglas de negocio
 
-| Área | Regla documentada | ¿UI cumple? |
-|------|-------------------|-------------|
-| Operario solo su almacén | assignedStoreId === storeId | Sí (warehouse page) |
-| Operario no reubicar | Ocultar/deshabilitar Reubicar en PalletCard, PalletsListDialog, PositionPopover | Sí |
-| Recepciones: proveedor requerido | validateSupplier | Sí |
-| Recepciones: fecha requerida | validateDate | Sí |
-| Recepciones: al menos una línea/palet | validateReceptionDetails, validateTemporalPallets | Sí |
-| Stores: name 3-255 chars, temp -99.99 a 99.99, capacity ≥ 0 | entitiesConfig validation | Sí |
+| Área                                                        | Regla documentada                                                               | ¿UI cumple?         |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------- | ------------------- |
+| Operario solo su almacén                                    | assignedStoreId === storeId                                                     | Sí (warehouse page) |
+| Operario no reubicar                                        | Ocultar/deshabilitar Reubicar en PalletCard, PalletsListDialog, PositionPopover | Sí                  |
+| Recepciones: proveedor requerido                            | validateSupplier                                                                | Sí                  |
+| Recepciones: fecha requerida                                | validateDate                                                                    | Sí                  |
+| Recepciones: al menos una línea/palet                       | validateReceptionDetails, validateTemporalPallets                               | Sí                  |
+| Stores: name 3-255 chars, temp -99.99 a 99.99, capacity ≥ 0 | entitiesConfig validation                                                       | Sí                  |
 
 ---
 

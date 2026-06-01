@@ -5,7 +5,8 @@
 **Síntoma reportado**: "al desloguearme empezó un bucle; luego al intentar logearme con otra cuenta sigue".
 **Ejemplo observado**: `/?from=%2Fadmin%2Fhome` (en producción: subdominio tenant `brisamar.lapesquerapp.es`).
 
-**Observación de campo adicional** *(confirmada 2026-03-25)*:
+**Observación de campo adicional** _(confirmada 2026-03-25)_:
+
 - El bucle **no ocurre siempre ni en todos los contextos**: probado en otras instancias del mismo proyecto en dominios distintos → sin bucle; probado con otro PC en el mismo dominio → sin bucle; probado con otro navegador en el mismo dominio → sin bucle.
 - **Conclusión diagnóstica**: el problema **no es de servidor** (código, variables de entorno, NEXTAUTH_SECRET) sino de **estado de sesión corrompido en el navegador afectado**. Ver §1 y §4b.
 
@@ -32,7 +33,7 @@ El resultado visual es un "bucle de login" aunque en realidad es un **bucle de r
 - **Resolver de ruta por defecto**: `src/lib/auth/actor.ts`
 - **Redirección post-login**: `src/utils/loginUtils.ts` y `src/hooks/useLoginActions.ts`
 - **Interceptor global de 401**: `src/components/Utilities/AuthErrorInterceptor.tsx`
-- **Configuración de errores auth**: `src/configs/authConfig.ts` *(añadido en esta revisión)*
+- **Configuración de errores auth**: `src/configs/authConfig.ts` _(añadido en esta revisión)_
 
 ---
 
@@ -153,7 +154,7 @@ Esto puede generar transiciones rápidas de estado (`loading` ↔ `authenticated
 
 **Hallazgo adicional**: la línea `125: const tokenIsExpired = false;` está **hardcodeada** — el callback `jwt` nunca marca un token como expirado por tiempo. Esto significa que la única fuente de "expiración" para el middleware es `token.exp`, que como se vio en §3.2 puede ser `undefined`.
 
-#### 3.5 `useLoginActions.ts` — Hard redirect sin validar sesión establecida *(nuevo)*
+#### 3.5 `useLoginActions.ts` — Hard redirect sin validar sesión establecida _(nuevo)_
 
 Tras verificar el OTP y llamar a `signIn()`:
 
@@ -175,7 +176,7 @@ Tras verificar el OTP y llamar a `signIn()`:
 
 Además, `window.location.href` es una **navegación dura** (no Next.js router). Si la sesión no quedó persistida en la cookie antes de que el browser navegue, el middleware ve `token = null` → redirect a `/?from=<ruta>`.
 
-#### 3.6 `AuthErrorInterceptor.tsx` — Flag `isRedirecting` con scope de closure *(nuevo)*
+#### 3.6 `AuthErrorInterceptor.tsx` — Flag `isRedirecting` con scope de closure _(nuevo)_
 
 ```11:12:src/components/Utilities/AuthErrorInterceptor.tsx
   useEffect(() => {
@@ -188,14 +189,14 @@ Si el redirect inicial de `handleAuthError()` causa que el layout se re-renderic
 
 **Agravante**: el `setTimeout` de 1500ms (`REDIRECT_DELAY`) en línea 35 puede solaparse con un nuevo dispatch si el componente se remontó durante ese intervalo.
 
-#### 3.7 Doble interceptación simultánea (servidor + cliente) *(nuevo)*
+#### 3.7 Doble interceptación simultánea (servidor + cliente) _(nuevo)_
 
 Cuando una llamada API desde una ruta protegida devuelve 401, **dos sistemas reaccionan en paralelo**:
 
-| Capa | Mecanismo | Timing | Destino |
-|------|-----------|--------|---------|
-| Middleware (servidor) | `if (verifyResponse.status === 401)` | Inmediato (antes de que la página cargue) | `/?from=<pathname>` vía `NextResponse.redirect` |
-| `AuthErrorInterceptor` (cliente) | `window.fetch` interceptado | Inmediato + 1500ms delay | `buildLoginUrl(pathname)` vía `window.location.href` |
+| Capa                             | Mecanismo                            | Timing                                    | Destino                                              |
+| -------------------------------- | ------------------------------------ | ----------------------------------------- | ---------------------------------------------------- |
+| Middleware (servidor)            | `if (verifyResponse.status === 401)` | Inmediato (antes de que la página cargue) | `/?from=<pathname>` vía `NextResponse.redirect`      |
+| `AuthErrorInterceptor` (cliente) | `window.fetch` interceptado          | Inmediato + 1500ms delay                  | `buildLoginUrl(pathname)` vía `window.location.href` |
 
 El flujo problemático es:
 
@@ -205,7 +206,7 @@ El flujo problemático es:
 4. Esto provoca una **segunda navegación a `/`**, sobreescribiendo cualquier estado que el usuario haya iniciado en ese intervalo (por ejemplo, si ya estaba escribiendo el email).
 5. Si el usuario logra hacer login completo en esos 1500ms y ser redirigido a `/admin/home`, el `setTimeout` lo devuelve a `/` en plena sesión válida.
 
-#### 3.8 `__session_verified` no se limpia en logout *(nuevo)*
+#### 3.8 `__session_verified` no se limpia en logout _(nuevo)_
 
 La cookie de verificación tiene TTL de 5 minutos:
 
@@ -223,7 +224,7 @@ En el flujo logout → login rápido (< 5 min) con **otra cuenta**:
 
 La cookie no está atada al token/usuario actual, es solo un "cache" temporal que no distingue entre sesiones.
 
-#### 3.9 `getRedirectUrl` — Externos pueden recibir `from` hacia rutas internas *(nuevo)*
+#### 3.9 `getRedirectUrl` — Externos pueden recibir `from` hacia rutas internas _(nuevo)_
 
 ```25:30:src/utils/loginUtils.ts
   if (user?.actorType === "external_user") return safeFrom || "/external/stores-manager";
@@ -242,33 +243,33 @@ Para operarios/comerciales/repartidores, el `from` se ignora completamente. Si l
 
 ### 4) Hipótesis de causa raíz (ordenadas por probabilidad)
 
-#### H1 — `token.exp` ausente en middleware ⇒ "expira" siempre *(alta probabilidad)*
+#### H1 — `token.exp` ausente en middleware ⇒ "expira" siempre _(alta probabilidad)_
 
 **Señal**: loop inmediato para cualquier ruta protegida; `from` siempre reaparece.
 **Causa**: el middleware depende de `token.exp`, pero si `getToken()` no lo provee (o llega como `undefined`), el cálculo `(token?.exp ?? 0) * 1000 = 0` fuerza expiración perpetua.
 
-#### H2 — token existe pero `accessToken` está ausente/stale tras logout ⇒ `/me` 401 ⇒ redirect *(alta probabilidad)*
+#### H2 — token existe pero `accessToken` está ausente/stale tras logout ⇒ `/me` 401 ⇒ redirect _(alta probabilidad)_
 
 **Señal**: empieza específicamente después de logout; a veces persiste incluso al intentar iniciar sesión con otra cuenta.
 **Causa**: `middleware.ts` llama `/me` incluso si `token.accessToken` es falsy, causando 401 reproducible con `Bearer undefined`.
 
-#### H3 — `getToken()` devuelve `null` en producción (secret/cookies/subdominio) ~~*(media probabilidad)*~~ → **DESCARTADA**
+#### H3 — `getToken()` devuelve `null` en producción (secret/cookies/subdominio) ~~_(media probabilidad)_~~ → **DESCARTADA**
 
 **Descartada por**: el bucle es browser-specific (ver §4b). Si `NEXTAUTH_SECRET` fuera la causa, afectaría a todos los usuarios en ese dominio sin excepción.
 **Señal original**: el cliente cree que autenticó (o `signIn` retorna ok), pero el middleware siempre cae en `!token`.
 **Mantener como check de infra**: verificar de todos modos que `NEXTAUTH_SECRET` sea idéntico en Edge y Node por higiene (Fix D).
 
-#### H4 — `isRedirecting` flag se resetea al remontar `AuthErrorInterceptor` *(media probabilidad)*
+#### H4 — `isRedirecting` flag se resetea al remontar `AuthErrorInterceptor` _(media probabilidad)_
 
 **Señal**: el interceptor dispara múltiples redirects; la notificación de "sesión expirada" aparece varias veces.
 **Causa**: el flag vive en el closure del `useEffect`. Cada remount de Next.js durante la navegación resetea la protección.
 
-#### H5 — Doble interceptación (middleware + `AuthErrorInterceptor`) actúa sobre el mismo 401 *(media probabilidad)*
+#### H5 — Doble interceptación (middleware + `AuthErrorInterceptor`) actúa sobre el mismo 401 _(media probabilidad)_
 
 **Señal**: el loop parece "resolverse" y luego vuelve a empezar 1-2 segundos después.
 **Causa**: el `setTimeout(1500ms)` del interceptor dispara después de que el middleware ya redirigió, sobreescribiendo el estado de login recién iniciado.
 
-#### H6 — `signIn()` silent failure: `ok: false` sin `error` ⇒ redirect a ruta protegida con sesión inválida *(media-baja probabilidad)*
+#### H6 — `signIn()` silent failure: `ok: false` sin `error` ⇒ redirect a ruta protegida con sesión inválida _(media-baja probabilidad)_
 
 **Señal**: el usuario hace login con OTP exitosamente (sin mensaje de error) pero inmediatamente aparece `?from=<ruta>`.
 **Causa**: `useLoginActions.ts` solo comprueba `signInResult?.error`, no `signInResult?.ok`. NextAuth puede devolver `ok: false` sin `error` si el `authorize` devuelve `null` o lanza una excepción interna.
@@ -315,18 +316,20 @@ La cookie `next-auth.session-token` (o `__Secure-next-auth.session-token` en pro
 **Por qué persiste entre recargas y reinicios del navegador:**
 
 Las cookies de NextAuth son persistentes (`maxAge: 7 días`). El JWT corrompido sobrevive a:
+
 - Recargas de página
 - Cierre y reapertura del navegador
 - Incluso reinicios del PC
 
 Solo se elimina si:
+
 - El usuario borra manualmente las cookies del dominio
 - La cookie expira (hasta 7 días después)
 - O una nueva sesión válida sobreescribe la cookie
 
 **Por qué el intento de login con otra cuenta "también sigue" con bucle:**
 
-Al hacer login nuevo con otra cuenta, `signIn("credentials", ...)` debería sobreescribir la cookie. Pero si la sesión corrompida hace que el middleware siga redirigiendo *antes de que la nueva sesión quede guardada* (la navegación dura via `window.location.href` de `useLoginActions.ts:81` no espera a que la cookie esté flushed), el ciclo se reinicia con la nueva cuenta antes de que su cookie llegue a establecerse correctamente.
+Al hacer login nuevo con otra cuenta, `signIn("credentials", ...)` debería sobreescribir la cookie. Pero si la sesión corrompida hace que el middleware siga redirigiendo _antes de que la nueva sesión quede guardada_ (la navegación dura via `window.location.href` de `useLoginActions.ts:81` no espera a que la cookie esté flushed), el ciclo se reinicia con la nueva cuenta antes de que su cookie llegue a establecerse correctamente.
 
 **Acción inmediata para el usuario afectado:**
 
@@ -342,6 +345,7 @@ Si tras borrar la cookie desaparece el bucle, queda **confirmado** que la causa 
 ### 5) Modelo de reproducción (secuencia esperada del bucle)
 
 **Bucle primario (H1/H2):**
+
 1. Usuario llega a `/` (en subdominio).
 2. `useSession()` resuelve `authenticated` (posible estado transitorio) y Home redirige a `/admin/home`.
 3. El middleware intercepta `/admin/home` y:
@@ -352,6 +356,7 @@ Si tras borrar la cookie desaparece el bucle, queda **confirmado** que la causa 
 5. Se repite.
 
 **Bucle secundario (H4/H5 — amplificador):**
+
 1. Middleware redirige a `/?from=/admin/home`.
 2. El browser carga login. `AuthErrorInterceptor` re-monta; `isRedirecting = false`.
 3. Una llamada API en segundo plano recibe 401 → interceptor dispara nuevo `handleAuthError()`.
@@ -359,6 +364,7 @@ Si tras borrar la cookie desaparece el bucle, queda **confirmado** que la causa 
 5. Ciclo se amplifica.
 
 **Bucle post-logout con otra cuenta (H2/E):**
+
 1. Usuario A hace logout; `__session_verified` permanece activa.
 2. Usuario B hace login vía OTP. `signIn()` completa.
 3. `useLoginActions` hace `window.location.href = "/admin/home"` (navegación dura).
@@ -369,17 +375,17 @@ Si tras borrar la cookie desaparece el bucle, queda **confirmado** que la causa 
 
 ### 5b) Matriz de riesgo
 
-| Hipótesis | Probabilidad | Impacto | Prioridad |
-|-----------|-------------|---------|-----------|
-| **Cookie corrompida post-logout** *(causa raíz, §4b)* | **Confirmada** | **Crítico (origen del estado)** | **P0** |
-| H1 — `token.exp` undefined activa loop | Alta | Crítico (loop permanente dado cookie corrompida) | **P0** |
-| H2 — `Bearer undefined` → 401 activa loop | Alta | Crítico (loop post-logout dado cookie corrompida) | **P0** |
-| H5 — Doble interceptación 1500ms | Media | Alto (loop re-disparo) | **P1** |
-| H4 — `isRedirecting` reset | Media | Alto (amplificador) | **P1** |
-| H6 — `signIn` silent failure | Media-baja | Alto (loop post-login) | **P2** |
-| E — `__session_verified` cross-session | Baja | Medio (auth bypass) | **P2** |
-| H3 — `getToken()` null | ~~Media~~ **Descartada** | — | — |
-| F — `from` externo → ruta interna | Baja | Bajo (redirect extra) | **P3** |
+| Hipótesis                                             | Probabilidad             | Impacto                                           | Prioridad |
+| ----------------------------------------------------- | ------------------------ | ------------------------------------------------- | --------- |
+| **Cookie corrompida post-logout** _(causa raíz, §4b)_ | **Confirmada**           | **Crítico (origen del estado)**                   | **P0**    |
+| H1 — `token.exp` undefined activa loop                | Alta                     | Crítico (loop permanente dado cookie corrompida)  | **P0**    |
+| H2 — `Bearer undefined` → 401 activa loop             | Alta                     | Crítico (loop post-logout dado cookie corrompida) | **P0**    |
+| H5 — Doble interceptación 1500ms                      | Media                    | Alto (loop re-disparo)                            | **P1**    |
+| H4 — `isRedirecting` reset                            | Media                    | Alto (amplificador)                               | **P1**    |
+| H6 — `signIn` silent failure                          | Media-baja               | Alto (loop post-login)                            | **P2**    |
+| E — `__session_verified` cross-session                | Baja                     | Medio (auth bypass)                               | **P2**    |
+| H3 — `getToken()` null                                | ~~Media~~ **Descartada** | —                                                 | —         |
+| F — `from` externo → ruta interna                     | Baja                     | Bajo (redirect extra)                             | **P3**    |
 
 ---
 
@@ -388,6 +394,7 @@ Si tras borrar la cookie desaparece el bucle, queda **confirmado** que la causa 
 #### 6.1 Confirmar que el redirect es de middleware
 
 En DevTools → Network:
+
 - Navegar a `/admin/home`
 - Ver si la respuesta es `307/308` hacia `/?from=/admin/home` **antes de que cargue el HTML de la página**.
 
@@ -402,12 +409,14 @@ Si sí, el origen del loop es el **middleware**.
 #### 6.3 Detectar H4/H5 (amplificador del interceptor)
 
 En DevTools → Console:
+
 - Buscar múltiples impresiones del mensaje "Sesión expirada" o `console.warn("[NextAuth]...")`.
 - Si aparecen 2+ veces en < 3 segundos, el flag `isRedirecting` se está reseteando.
 
 #### 6.4 Detectar H6 (signIn silent failure)
 
 Añadir temporalmente `console.log("signInResult:", signInResult)` en `useLoginActions.ts:80`.
+
 - Si `ok: false` aparece sin `error`, estamos ante H6.
 
 ---
@@ -446,8 +455,8 @@ Archivo: `src/middleware.ts`, antes de `fetchWithTenant("/me")`.
 ```ts
 // Añadir antes de la llamada a /me (línea ~98):
 if (!token.accessToken) {
-  const loginUrl = new URL("/", req.url);
-  loginUrl.searchParams.set("from", pathname);
+  const loginUrl = new URL('/', req.url);
+  loginUrl.searchParams.set('from', pathname);
   return NextResponse.redirect(loginUrl);
 }
 ```
@@ -471,12 +480,13 @@ Exige que `accessToken` esté presente en el objeto de sesión antes de redirigi
 #### Fix D (prioridad P1): coherencia de `NEXTAUTH_SECRET` en Edge + API
 
 Verificar que `NEXTAUTH_SECRET` sea idéntico y accesible para:
+
 - `src/app/api/auth/[...nextauth]/route.ts`
 - `src/middleware.ts`
 
 Si no lo es, `getToken()` tenderá a devolver `null`.
 
-#### Fix E (prioridad P2): limpiar `__session_verified` en logout *(nuevo)*
+#### Fix E (prioridad P2): limpiar `__session_verified` en logout _(nuevo)_
 
 Archivo: la lógica de logout (handler de NextAuth o el endpoint `/logout` del backend).
 
@@ -484,13 +494,13 @@ Al hacer `signOut()` o antes de que NextAuth destruya la sesión:
 
 ```ts
 // En el handler de signOut / logout
-res.cookies.delete("__session_verified");
+res.cookies.delete('__session_verified');
 // o en middleware al detectar signOut
 ```
 
 Esto garantiza que la próxima sesión siempre se verifique contra el backend.
 
-#### Fix F (prioridad P1): sacar `isRedirecting` a nivel de módulo en `AuthErrorInterceptor` *(nuevo)*
+#### Fix F (prioridad P1): sacar `isRedirecting` a nivel de módulo en `AuthErrorInterceptor` _(nuevo)_
 
 Archivo: `src/components/Utilities/AuthErrorInterceptor.tsx`.
 
@@ -510,7 +520,7 @@ export default function AuthErrorInterceptor() {
 
 Esto garantiza que incluso si el componente se remonta durante una navegación, el flag no se resetea.
 
-#### Fix G (prioridad P1): cancelar el `setTimeout` si el componente se desmonta *(nuevo)*
+#### Fix G (prioridad P1): cancelar el `setTimeout` si el componente se desmonta _(nuevo)_
 
 Archivo: `src/components/Utilities/AuthErrorInterceptor.tsx`, `handleAuthError`.
 
@@ -535,7 +545,7 @@ return () => {
 };
 ```
 
-#### Fix H (prioridad P2): validar `signInResult.ok` en `useLoginActions.ts` *(nuevo)*
+#### Fix H (prioridad P2): validar `signInResult.ok` en `useLoginActions.ts` _(nuevo)_
 
 Archivo: `src/hooks/useLoginActions.ts`, línea ~76.
 
@@ -558,19 +568,19 @@ if (signInResult?.error || !signInResult?.ok) {
 window.location.href = getRedirectUrl(result.user, search);
 ```
 
-#### Fix I (prioridad P3): validar `from` para usuarios externos *(nuevo)*
+#### Fix I (prioridad P3): validar `from` para usuarios externos _(nuevo)_
 
 Archivo: `src/utils/loginUtils.ts`, línea 25.
 
 ```ts
 // ANTES
-if (user?.actorType === "external_user") return safeFrom || "/external/stores-manager";
+if (user?.actorType === 'external_user') return safeFrom || '/external/stores-manager';
 
 // DESPUÉS — solo usar `from` si es una ruta válida para externos
-const EXTERNAL_ALLOWED_PREFIXES = ["/external/"];
-if (user?.actorType === "external_user") {
-  const isExternalRoute = safeFrom && EXTERNAL_ALLOWED_PREFIXES.some(p => safeFrom.startsWith(p));
-  return isExternalRoute ? safeFrom : "/external/stores-manager";
+const EXTERNAL_ALLOWED_PREFIXES = ['/external/'];
+if (user?.actorType === 'external_user') {
+  const isExternalRoute = safeFrom && EXTERNAL_ALLOWED_PREFIXES.some((p) => safeFrom.startsWith(p));
+  return isExternalRoute ? safeFrom : '/external/stores-manager';
 }
 ```
 
@@ -581,7 +591,7 @@ if (user?.actorType === "external_user") {
 - **Fix A (exp ausente)**: puede aumentar requests a `/me` si se elimina el early redirect; mitigable con `__session_verified` cuando el token no tiene `exp`.
 - **Fix B (no /me sin accessToken)**: seguro y reduce carga/errores. Sin efectos colaterales conocidos.
 - **Fix C (gate defensivo en /)**: puede introducir un loader adicional si el `SessionProvider` tarda en poblar `accessToken` en el objeto de sesión, pero evita el loop.
-- **Fix E (limpiar __session_verified)**: aumenta las llamadas a `/me` en flujos logout→login rápido, pero es el comportamiento correcto.
+- **Fix E (limpiar \_\_session_verified)**: aumenta las llamadas a `/me` en flujos logout→login rápido, pero es el comportamiento correcto.
 - **Fix F (isRedirecting a módulo)**: el flag persiste entre remounts, pero también entre múltiples tabs si el módulo se cachea. Necesita considerar si el módulo es singleton (en Next.js app router, generalmente sí).
 - **Fix G (cancelar setTimeout)**: sin efectos colaterales; solo evita redirects extemporáneos.
 - **Fix H (validar ok)**: puede mostrar error donde antes había silencio; mejora la UX informando al usuario del fallo.
@@ -624,17 +634,17 @@ Buscar el bloque de expiración (líneas ~90-95) y la llamada a `/me` (líneas ~
 ```ts
 // 1. Después del check !token (línea ~88):
 if (!token.accessToken) {
-  const loginUrl = new URL("/", req.url);
-  loginUrl.searchParams.set("from", pathname);
+  const loginUrl = new URL('/', req.url);
+  loginUrl.searchParams.set('from', pathname);
   return NextResponse.redirect(loginUrl);
 }
 
 // 2. Reemplazar el bloque de expiración (líneas ~90-95):
-if (typeof token.exp === "number" && token.exp > 0) {
+if (typeof token.exp === 'number' && token.exp > 0) {
   const tokenExpiration = token.exp * 1000;
   if (Date.now() > tokenExpiration) {
-    const loginUrl = new URL("/", req.url);
-    loginUrl.searchParams.set("from", pathname);
+    const loginUrl = new URL('/', req.url);
+    loginUrl.searchParams.set('from', pathname);
     return NextResponse.redirect(loginUrl);
   }
 }
@@ -699,8 +709,8 @@ export default function AuthErrorInterceptor() {
 // Reemplazar el bloque post-signIn (líneas ~74-81):
 if (signInResult?.error || !signInResult?.ok) {
   notify.error({
-    title: "Error al iniciar sesión",
-    description: signInResult?.error || "No se pudo establecer la sesión. Inténtalo de nuevo.",
+    title: 'Error al iniciar sesión',
+    description: signInResult?.error || 'No se pudo establecer la sesión. Inténtalo de nuevo.',
   });
   return;
 }
@@ -711,7 +721,7 @@ window.location.href = getRedirectUrl(result.user, search);
 
 ```js
 // Reemplazar la condición del useEffect (línea 45):
-if (isSubdomain && status === "authenticated" && session?.user?.accessToken) {
+if (isSubdomain && status === 'authenticated' && session?.user?.accessToken) {
   router.replace(getDefaultAuthenticatedRoute(session.user));
 }
 ```

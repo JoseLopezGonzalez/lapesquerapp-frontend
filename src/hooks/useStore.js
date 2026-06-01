@@ -16,7 +16,11 @@ export function useStore({
   const { data: session } = useSession();
   const token = session?.user?.accessToken;
 
-  const { store: fetchedStore, loading, error } = useStoreData({
+  const {
+    store: fetchedStore,
+    loading,
+    error,
+  } = useStoreData({
     storeId,
     setIsStoreLoading,
   });
@@ -98,8 +102,7 @@ export function useStore({
 
     openMoveMultiplePalletsToStoreDialog: dialogs.openMoveMultiplePalletsToStoreDialog,
     closeMoveMultiplePalletsToStoreDialog: dialogs.closeMoveMultiplePalletsToStoreDialog,
-    isOpenMoveMultiplePalletsToStoreDialog:
-      dialogs.isOpenMoveMultiplePalletsToStoreDialog,
+    isOpenMoveMultiplePalletsToStoreDialog: dialogs.isOpenMoveMultiplePalletsToStoreDialog,
     updateStoreWhenOnMoveMultiplePalletsToStore:
       dialogs.updateStoreWhenOnMoveMultiplePalletsToStore,
   };

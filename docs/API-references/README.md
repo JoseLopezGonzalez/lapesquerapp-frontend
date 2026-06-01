@@ -21,6 +21,7 @@ Esta documentación está organizada por módulos:
 ## 🔑 Información General
 
 ### Base URL
+
 ```
 /api/v2
 ```
@@ -28,11 +29,13 @@ Esta documentación está organizada por módulos:
 ### Headers Requeridos
 
 #### Todas las rutas (excepto públicas)
+
 ```http
 X-Tenant: {subdomain}
 ```
 
 #### Rutas protegidas
+
 ```http
 Authorization: Bearer {access_token}
 Content-Type: application/json
@@ -41,20 +44,21 @@ Accept: application/json
 
 ### Códigos de Estado HTTP
 
-| Código | Descripción |
-|--------|-------------|
-| 200 | Éxito |
-| 201 | Creado exitosamente |
-| 400 | Solicitud incorrecta |
-| 401 | No autenticado |
-| 403 | Prohibido (sin permisos) |
-| 404 | No encontrado |
-| 422 | Error de validación |
-| 500 | Error interno del servidor |
+| Código | Descripción                |
+| ------ | -------------------------- |
+| 200    | Éxito                      |
+| 201    | Creado exitosamente        |
+| 400    | Solicitud incorrecta       |
+| 401    | No autenticado             |
+| 403    | Prohibido (sin permisos)   |
+| 404    | No encontrado              |
+| 422    | Error de validación        |
+| 500    | Error interno del servidor |
 
 ### Formato de Respuestas
 
 #### Respuesta Exitosa
+
 ```json
 {
   "message": "Mensaje descriptivo",
@@ -65,6 +69,7 @@ Accept: application/json
 ```
 
 #### Error de Validación (422)
+
 ```json
 {
   "message": "Error de validación.",
@@ -76,6 +81,7 @@ Accept: application/json
 ```
 
 #### Error de Autenticación (401)
+
 ```json
 {
   "message": "No autenticado."
@@ -83,6 +89,7 @@ Accept: application/json
 ```
 
 #### Error Genérico (400, 404, 500)
+
 ```json
 {
   "message": "Mensaje descriptivo del error",
@@ -95,7 +102,7 @@ Accept: application/json
 
 ## 🔐 Autenticación
 
-La API usa Laravel Sanctum para autenticación basada en tokens. 
+La API usa Laravel Sanctum para autenticación basada en tokens.
 
 1. Realiza una petición POST a `/api/v2/login` con email y password
 2. Recibirás un `access_token` en la respuesta
@@ -117,4 +124,3 @@ Cada módulo contiene su propia documentación con todos los endpoints. Cada end
 - [Rutas Completas](../referencia/97-Rutas-Completas.md) - Listado completo de todas las rutas
 - [Fundamentos](../fundamentos/README.md) - Conceptos básicos de la API
 - [Autenticación y Autorización](../fundamentos/02-Autenticacion-Autorizacion.md) - Guía detallada de autenticación
-

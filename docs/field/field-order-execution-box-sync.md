@@ -15,7 +15,7 @@ La ejecución se gestiona como **estado completo**: el frontend envía “la fot
 - La ejecución real se guarda en **cajas/palets** (tablas `pallets`, `boxes`, `pallet_boxes`), no en planned.
 - Solo se permite:
   - crear/editar/eliminar cajas de ejecución del pedido (por sync)
-  - crear nuevas líneas planned *solo* para extras (sin borrar las existentes)
+  - crear nuevas líneas planned _solo_ para extras (sin borrar las existentes)
   - ajustar precio/IVA de líneas planned existentes (sin tocar cantidades)
 
 ## Perímetro y headers
@@ -92,9 +92,7 @@ Usar cuando el escaneo detecta productos que no estaban en `plannedProductDetail
 
 ```json
 {
-  "plannedExtras": [
-    { "productId": 99, "unitPrice": 12.0, "taxId": 1 }
-  ]
+  "plannedExtras": [{ "productId": 99, "unitPrice": 12.0, "taxId": 1 }]
 }
 ```
 
@@ -107,9 +105,7 @@ Reglas:
 
 ```json
 {
-  "plannedAdjustments": [
-    { "plannedProductDetailId": 555, "unitPrice": 8.25, "taxId": 2 }
-  ]
+  "plannedAdjustments": [{ "plannedProductDetailId": 555, "unitPrice": 8.25, "taxId": 2 }]
 }
 ```
 
@@ -121,4 +117,3 @@ Reglas:
 ### 4) `items[]` (opcional)
 
 Puede enviarse como resumen para UI, pero **no** es la fuente de verdad: la ejecución es `boxes[]`.
-

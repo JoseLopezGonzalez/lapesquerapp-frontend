@@ -3,7 +3,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 import { crmService } from '@/services/crmService';
-import type { ConvertToCustomerPayload, Prospect, ProspectContact, ProspectContactPayload, ProspectPayload } from '@/types/crm';
+import type {
+  ConvertToCustomerPayload,
+  Prospect,
+  ProspectContact,
+  ProspectContactPayload,
+  ProspectPayload,
+} from '@/types/crm';
 
 type UseProspectsListParams = Record<string, unknown> & {
   enabled?: boolean;
@@ -40,19 +46,21 @@ function patchProspectFromPayload(
   return {
     ...currentProspect,
     companyName: payload.companyName ?? currentProspect.companyName,
-    address: 'address' in payload ? payload.address ?? null : currentProspect.address,
-    website: 'website' in payload ? payload.website ?? null : currentProspect.website,
+    address: 'address' in payload ? (payload.address ?? null) : currentProspect.address,
+    website: 'website' in payload ? (payload.website ?? null) : currentProspect.website,
     countryId: payload.countryId ?? currentProspect.countryId,
-    categoryId: 'categoryId' in payload ? payload.categoryId ?? null : currentProspect.categoryId,
+    categoryId: 'categoryId' in payload ? (payload.categoryId ?? null) : currentProspect.categoryId,
     category:
-      'categoryId' in payload && String(payload.categoryId ?? '') !== String(currentProspect.categoryId ?? '')
+      'categoryId' in payload &&
+      String(payload.categoryId ?? '') !== String(currentProspect.categoryId ?? '')
         ? null
         : currentProspect.category,
     speciesInterest: payload.speciesInterest ?? currentProspect.speciesInterest,
     origin: payload.origin ?? currentProspect.origin,
     status: payload.status ?? currentProspect.status,
     notes: payload.notes ?? currentProspect.notes,
-    commercialInterestNotes: payload.commercialInterestNotes ?? currentProspect.commercialInterestNotes,
+    commercialInterestNotes:
+      payload.commercialInterestNotes ?? currentProspect.commercialInterestNotes,
     nextActionAt: payload.nextActionAt ?? currentProspect.nextActionAt,
     nextActionNote: payload.nextActionNote ?? currentProspect.nextActionNote,
     lostReason: payload.lostReason ?? currentProspect.lostReason,
@@ -136,7 +144,7 @@ export function useProspectContacts(
 
 export function useProspectMutations() {
   const queryClient = useQueryClient();
-  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() ?? 'unknown' : 'unknown';
+  const tenantId = typeof window !== 'undefined' ? (getCurrentTenant() ?? 'unknown') : 'unknown';
 
   const invalidate = async ({
     id,
@@ -164,12 +172,19 @@ export function useProspectMutations() {
       includeAgendaSummary
         ? queryClient.invalidateQueries({ queryKey: ['crm', 'agenda', 'summary', tenantId] })
         : Promise.resolve(),
-      id ? queryClient.invalidateQueries({ queryKey: ['crm', 'prospect', 'detail', tenantId, id] }) : Promise.resolve(),
-      id ? queryClient.invalidateQueries({ queryKey: ['crm', 'prospect', 'contacts', tenantId, id] }) : Promise.resolve(),
+      id
+        ? queryClient.invalidateQueries({ queryKey: ['crm', 'prospect', 'detail', tenantId, id] })
+        : Promise.resolve(),
+      id
+        ? queryClient.invalidateQueries({ queryKey: ['crm', 'prospect', 'contacts', tenantId, id] })
+        : Promise.resolve(),
     ]);
   };
 
-  const patchProspectsListsPrimaryContact = (prospectId: number | string, contacts: ProspectContact[]) => {
+  const patchProspectsListsPrimaryContact = (
+    prospectId: number | string,
+    contacts: ProspectContact[]
+  ) => {
     const nextPrimary = getPrimaryContact(contacts);
     const listEntries = queryClient.getQueriesData<ProspectListCache>({
       queryKey: ['crm', 'prospects', 'list', tenantId],
@@ -180,7 +195,9 @@ export function useProspectMutations() {
       queryClient.setQueryData<ProspectListCache>(queryKey, {
         ...cache,
         data: cache.data.map((prospect) =>
-          String(prospect.id) === String(prospectId) ? { ...prospect, primaryContact: nextPrimary } : prospect
+          String(prospect.id) === String(prospectId)
+            ? { ...prospect, primaryContact: nextPrimary }
+            : prospect
         ),
       });
     });
@@ -235,7 +252,10 @@ export function useProspectMutations() {
         queryClient.setQueryData<ProspectDetailCache>(detailKey, {
           data: patchProspectFromPayload(previousDetail?.data, payload) ?? undefined,
         });
-        patchProspectsListsById(id, (prospect) => (patchProspectFromPayload(prospect, payload) as Prospect));
+        patchProspectsListsById(
+          id,
+          (prospect) => patchProspectFromPayload(prospect, payload) as Prospect
+        );
 
         return { detailKey, previousDetail, previousLists };
       },
@@ -373,7 +393,10 @@ export function useProspectMutations() {
           (contact) => !String(contact.id).startsWith('tmp-')
         );
         const nextContacts: ProspectContact[] = createdContact.isPrimary
-          ? [...contactsWithoutTemp.map((contact) => ({ ...contact, isPrimary: false })), createdContact]
+          ? [
+              ...contactsWithoutTemp.map((contact) => ({ ...contact, isPrimary: false })),
+              createdContact,
+            ]
           : [...contactsWithoutTemp, createdContact];
 
         const currentDetail = queryClient.getQueryData<ProspectDetailCache>(detailKey);
@@ -454,7 +477,8 @@ export function useProspectMutations() {
         const updatedContact = response?.data;
         if (!updatedContact) return;
 
-        const currentContacts = queryClient.getQueryData<ProspectContactsCache>(contactsKey)?.data ?? [];
+        const currentContacts =
+          queryClient.getQueryData<ProspectContactsCache>(contactsKey)?.data ?? [];
         let nextContacts = currentContacts.map((contact) =>
           String(contact.id) === String(contactId) ? { ...contact, ...updatedContact } : contact
         );
@@ -498,7 +522,9 @@ export function useProspectMutations() {
         });
 
         const currentContacts = previousContacts?.data ?? [];
-        const nextContacts = currentContacts.filter((contact) => String(contact.id) !== String(contactId));
+        const nextContacts = currentContacts.filter(
+          (contact) => String(contact.id) !== String(contactId)
+        );
 
         queryClient.setQueryData<ProspectContactsCache>(contactsKey, { data: nextContacts });
         queryClient.setQueryData<ProspectDetailCache>(detailKey, {

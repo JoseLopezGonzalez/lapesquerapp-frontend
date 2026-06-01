@@ -5,7 +5,11 @@ import { useSession } from 'next-auth/react';
 import { routeTemplateKeys } from '@/lib/routes/queryKeys';
 import { normalizeRouteCollection, normalizeRouteEntity } from '@/lib/routes/routeStops';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
-import { createRouteTemplate, getRouteTemplates, updateRouteTemplate } from '@/services/fieldOperatorService';
+import {
+  createRouteTemplate,
+  getRouteTemplates,
+  updateRouteTemplate,
+} from '@/services/fieldOperatorService';
 
 type TemplateParams = Record<string, string | number | boolean | null | undefined>;
 type TemplatePayload = Record<string, unknown>;
@@ -44,11 +48,18 @@ export function useRouteTemplateMutations() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: routeTemplateKeys.list(tenantId) }),
   });
 
-  const updateMutation = useMutation<unknown, Error, { templateId: number | string; payload: TemplatePayload }>({
-    mutationFn: ({ templateId, payload }) => updateRouteTemplate(token as string, templateId, payload),
+  const updateMutation = useMutation<
+    unknown,
+    Error,
+    { templateId: number | string; payload: TemplatePayload }
+  >({
+    mutationFn: ({ templateId, payload }) =>
+      updateRouteTemplate(token as string, templateId, payload),
     onSuccess: (response, variables) => {
       const updatedTemplate = normalizeRouteEntity(
-        ((response as { data?: unknown } | undefined)?.data ?? response) as Partial<import('@/types/field').DeliveryRoute>
+        ((response as { data?: unknown } | undefined)?.data ?? response) as Partial<
+          import('@/types/field').DeliveryRoute
+        >
       );
       const listEntries = queryClient.getQueriesData<{
         items?: ReturnType<typeof normalizeRouteCollection>;

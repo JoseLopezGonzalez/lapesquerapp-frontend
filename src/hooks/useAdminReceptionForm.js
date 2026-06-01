@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
-import { useRouter } from 'next/navigation';import { format } from 'date-fns';
+import { useRouter } from 'next/navigation';
+import { format } from 'date-fns';
 import { useProductOptions } from '@/hooks/useProductOptions';
 import { useSupplierOptions } from '@/hooks/useSupplierOptions';
 import { usePriceSynchronization } from '@/hooks/usePriceSynchronization';
@@ -87,11 +88,7 @@ export function useAdminReceptionForm({ onSuccess }) {
   }, [currentDetails, recalcKey]);
 
   useEffect(() => {
-    if (
-      calculatedNetWeights.length > 0 &&
-      currentDetails &&
-      Array.isArray(currentDetails)
-    ) {
+    if (calculatedNetWeights.length > 0 && currentDetails && Array.isArray(currentDetails)) {
       calculatedNetWeights.forEach((netWeight, index) => {
         if (index < currentDetails.length) {
           const calculatedWeight = parseFloat(netWeight.toFixed(2));
@@ -263,11 +260,7 @@ export function useAdminReceptionForm({ onSuccess }) {
 
         const createdReception = await createRawMaterialReception(payload);
 
-        if (
-          mode === 'manual' &&
-          createdReception?.pallets &&
-          createdReception.pallets.length > 0
-        ) {
+        if (mode === 'manual' && createdReception?.pallets && createdReception.pallets.length > 0) {
           const globalPriceMap = extractGlobalPriceMap(temporalPallets);
           const globalPricesObj = Object.fromEntries(
             Array.from(globalPriceMap.entries()).map(([key, value]) => [key, value.price])
@@ -333,10 +326,13 @@ export function useAdminReceptionForm({ onSuccess }) {
       setTimeout(() => triggerRecalc(), 50);
 
       if (data.warnings?.length > 0) {
-        notify.warning({
-          title: 'Algunas líneas no se reconocieron',
-          description: data.warnings.join('. '),
-        }, { duration: 8000 });
+        notify.warning(
+          {
+            title: 'Algunas líneas no se reconocieron',
+            description: data.warnings.join('. '),
+          },
+          { duration: 8000 }
+        );
       }
 
       announce('Datos importados desde documento', 'polite');
@@ -361,15 +357,18 @@ export function useAdminReceptionForm({ onSuccess }) {
     setIsPalletDialogOpen(true);
   }, []);
 
-  const openEditPallet = useCallback((index) => {
-    setSelectedPalletId('new');
-    setEditingPalletIndex(index);
-    setPalletMetadata({
-      prices: temporalPallets[index]?.prices || {},
-      observations: temporalPallets[index]?.observations || '',
-    });
-    setIsPalletDialogOpen(true);
-  }, [temporalPallets]);
+  const openEditPallet = useCallback(
+    (index) => {
+      setSelectedPalletId('new');
+      setEditingPalletIndex(index);
+      setPalletMetadata({
+        prices: temporalPallets[index]?.prices || {},
+        observations: temporalPallets[index]?.observations || '',
+      });
+      setIsPalletDialogOpen(true);
+    },
+    [temporalPallets]
+  );
 
   const handlePalletSave = useCallback(
     (pallet) => {
@@ -407,10 +406,13 @@ export function useAdminReceptionForm({ onSuccess }) {
     setEditingPalletIndex(null);
   }, []);
 
-  const removePallet = useCallback((index) => {
-    setTemporalPallets((prev) => prev.filter((_, i) => i !== index));
-    announce(`Palet ${index + 1} eliminado`, 'polite');
-  }, [announce]);
+  const removePallet = useCallback(
+    (index) => {
+      setTemporalPallets((prev) => prev.filter((_, i) => i !== index));
+      announce(`Palet ${index + 1} eliminado`, 'polite');
+    },
+    [announce]
+  );
 
   const updatePalletPrice = useCallback(
     (index, priceKey, newPrice) => {

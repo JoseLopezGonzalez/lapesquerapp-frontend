@@ -112,18 +112,19 @@ Sprint 3 ha quedado **implementado en su base estructural** en el repo local, co
 
 ## Resumen ejecutivo
 
-| Área | Score | Problema principal |
-|---|---|---|
-| Navegación entre páginas | **4 / 10** | Middleware bloquea cada navegación con un fetch HTTP al backend |
-| Vista de detalle de producción | **6 / 10** | QueryKey duplicada genera request extra; `@xyflow/react` en bundle siempre |
-| Editor de registro / nodo | **4 / 10** | 6–7 requests al montar, 2 duplicadas; estado triplicado; mega-hooks sin granularidad |
-| **Global del módulo** | **5 / 10** | — |
+| Área                           | Score      | Problema principal                                                                   |
+| ------------------------------ | ---------- | ------------------------------------------------------------------------------------ |
+| Navegación entre páginas       | **4 / 10** | Middleware bloquea cada navegación con un fetch HTTP al backend                      |
+| Vista de detalle de producción | **6 / 10** | QueryKey duplicada genera request extra; `@xyflow/react` en bundle siempre           |
+| Editor de registro / nodo      | **4 / 10** | 6–7 requests al montar, 2 duplicadas; estado triplicado; mega-hooks sin granularidad |
+| **Global del módulo**          | **5 / 10** | —                                                                                    |
 
 ---
 
 ## Alcance auditado
 
 ### Rutas
+
 - `src/app/admin/productions/page.js`
 - `src/app/admin/productions/loading.js`
 - `src/app/admin/productions/[id]/page.js`
@@ -133,6 +134,7 @@ Sprint 3 ha quedado **implementado en su base estructural** en el repo local, co
 - `src/app/admin/productions/[id]/records/create/page.js`
 
 ### Infraestructura transversal
+
 - `src/middleware.ts` (227 líneas)
 - `src/app/layout.js`
 - `src/app/ClientLayout.js`
@@ -142,6 +144,7 @@ Sprint 3 ha quedado **implementado en su base estructural** en el repo local, co
 - `next.config.mjs`
 
 ### Componentes
+
 - `src/components/Admin/Productions/ProductionView.jsx` (720 líneas)
 - `src/components/Admin/Productions/ProductionDiagram/index.jsx` (293 líneas)
 - `src/components/Admin/Productions/ProductionRecordEditor.jsx` (152 líneas)
@@ -151,6 +154,7 @@ Sprint 3 ha quedado **implementado en su base estructural** en el repo local, co
 - `src/components/Admin/Entity/EntityClient/index.js` (750 líneas)
 
 ### Hooks
+
 - `src/hooks/production/useProduction.ts` (34 líneas)
 - `src/hooks/production/useProductionDetail.ts` (89 líneas)
 - `src/hooks/useProductionRecord.js` (143 líneas)
@@ -159,6 +163,7 @@ Sprint 3 ha quedado **implementado en su base estructural** en el repo local, co
 - `src/hooks/production/useProductionOutputConsumptionsManager.js` (715 líneas)
 
 ### Contextos
+
 - `src/context/ProductionRecordContext.js` (255 líneas)
 
 ---
@@ -213,8 +218,9 @@ Impacto por sesión de uso:
 **Archivo**: `src/app/admin/layout.js` línea 3
 
 **Descripción**:
+
 ```javascript
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 ```
 
 Este flag desactiva ISR, SSG y el Full Route Cache de Next.js para **todas las subrutas de `/admin/`**, incluyendo producciones. Cada request genera un render completo en el servidor sin ninguna capa de caché de Next.js. En combinación con el middleware bloqueante (NAV-01), cada navegación parte de cero.
@@ -230,14 +236,16 @@ Este flag desactiva ISR, SSG y el Full Route Cache de Next.js para **todas las s
 
 **Descripción**:
 La lista de producciones (EntityClient) navega a detalle y a crear con `window.open()`:
+
 ```javascript
 const handleOpenView = (id) => {
-  const viewUrl = config.viewRoute.replace(':id', id)
-  window.open(viewUrl, '_blank')  // Abre en pestaña nueva
-}
+  const viewUrl = config.viewRoute.replace(':id', id);
+  window.open(viewUrl, '_blank'); // Abre en pestaña nueva
+};
 ```
 
 Esto tiene dos problemas de rendimiento:
+
 1. **Sin prefetch**: `<Link>` de Next.js hace prefetch automático de la ruta destino en hover. Con `window.open()` no hay prefetch — la carga es completamente "fría".
 2. **Abre en pestaña nueva**: el estado de caché de React Query no se comparte entre pestañas, por lo que la nueva pestaña empieza desde cero aunque el usuario ya tuviera esa producción en caché.
 
@@ -251,22 +259,24 @@ Esto tiene dos problemas de rendimiento:
 **Archivo**: `src/components/Admin/Productions/ProductionView.jsx` línea 14 (aprox)
 
 **Descripción**:
+
 ```javascript
 // Importación estática actual:
-import ProductionDiagram from './ProductionDiagram'
+import ProductionDiagram from './ProductionDiagram';
 // ProductionDiagram/index.jsx importa @xyflow/react y su CSS
 ```
 
 `@xyflow/react` es una librería de ~300–400 KB (con dependencias y CSS). Se incluye en el bundle de `ProductionView` aunque el usuario esté en la pestaña "Info" — la más común — y nunca abra la pestaña "Diagrama". Esto aumenta el tiempo de parse y ejecución del JS en la carga inicial de cualquier detalle de producción.
 
 **Solución recomendada**:
-```javascript
-import dynamic from 'next/dynamic'
 
-const ProductionDiagram = dynamic(
-  () => import('./ProductionDiagram'),
-  { ssr: false, loading: () => <Loader text="Cargando diagrama..." /> }
-)
+```javascript
+import dynamic from 'next/dynamic';
+
+const ProductionDiagram = dynamic(() => import('./ProductionDiagram'), {
+  ssr: false,
+  loading: () => <Loader text="Cargando diagrama..." />,
+});
 ```
 
 Esto divide el bundle: el diagrama solo se descarga y parsea cuando el usuario abre la pestaña "Diagrama". Impacto estimado en TTI (Time to Interactive): −100–200ms en la carga inicial de detalle.
@@ -297,10 +307,10 @@ Dos hooks distintos llaman al mismo endpoint `getProduction(id, token)` con quer
 
 ```typescript
 // useProduction.ts
-queryKey: ['productions', 'one', tenantId, productionId]
+queryKey: ['productions', 'one', tenantId, productionId];
 
 // useProductionDetail.ts
-queryKey: ['productions', 'detail', tenantId, productionId]
+queryKey: ['productions', 'detail', tenantId, productionId];
 ```
 
 React Query los trata como queries completamente separadas. Cuando el usuario tiene abierto un detalle de producción (`useProductionDetail`) y dentro abre un editor de record (`useProductionRecord` → `useProduction`), se lanzan **dos requests a la misma URL** a la misma producción, sin que ninguna aproveche la caché de la otra.
@@ -315,12 +325,14 @@ React Query los trata como queries completamente separadas. Cuando el usuario ti
 **Archivo**: `src/hooks/useProductionRecord.js` líneas 88–89
 
 **Descripción**:
+
 ```javascript
-queryClient.invalidateQueries({ queryKey: ['productionRecords'] })
-queryClient.invalidateQueries({ queryKey: ['productions'] })
+queryClient.invalidateQueries({ queryKey: ['productionRecords'] });
+queryClient.invalidateQueries({ queryKey: ['productions'] });
 ```
 
 Tras guardar o crear un record, se invalidan **todas** las queries que empiezan por `'productionRecords'` y `'productions'`. Esto fuerza re-fetch de:
+
 - Lista completa de producciones
 - Detalle de la producción actual (incluidos totals y processTree)
 - Todos los records de todas las producciones en caché
@@ -328,11 +340,12 @@ Tras guardar o crear un record, se invalidan **todas** las queries que empiezan 
 La gran mayoría de esas queries no han cambiado. Solo es necesario actualizar el record concreto y los totals de la producción afectada.
 
 **Solución recomendada**:
+
 ```javascript
 // Solo lo que realmente ha cambiado:
-queryClient.invalidateQueries({ queryKey: ['productionRecords', recordId] })
-queryClient.invalidateQueries({ queryKey: ['productions', 'totals', tenantId, productionId] })
-queryClient.invalidateQueries({ queryKey: ['productions', 'processTree', tenantId, productionId] })
+queryClient.invalidateQueries({ queryKey: ['productionRecords', recordId] });
+queryClient.invalidateQueries({ queryKey: ['productions', 'totals', tenantId, productionId] });
+queryClient.invalidateQueries({ queryKey: ['productions', 'processTree', tenantId, productionId] });
 ```
 
 ---
@@ -343,13 +356,14 @@ queryClient.invalidateQueries({ queryKey: ['productions', 'processTree', tenantI
 **Archivo**: `src/hooks/useProductionRecord.js` líneas 35–45
 
 **Descripción**:
+
 ```javascript
 const recordQuery = useQuery({
   queryKey: ['productionRecords', recordId],
   queryFn: () => getProductionRecord(recordId, token),
   enabled: !!token && !!recordId,
   // ← sin staleTime
-})
+});
 ```
 
 Sin `staleTime`, React Query considera los datos inmediatamente obsoletos (stale = 0ms). Cada vez que el componente recupera el foco (el usuario cambia de pestaña y vuelve), React Query lanza un refetch en background. En el editor de un record, esto puede ocurrir frecuentemente (el usuario consulta otra pestaña mientras edita) y genera requests innecesarias.
@@ -364,6 +378,7 @@ Sin `staleTime`, React Query considera los datos inmediatamente obsoletos (stale
 **Archivo**: `src/context/ProductionRecordContext.js` líneas 202–227
 
 **Descripción**:
+
 ```javascript
 const contextValue = useMemo(() => ({
   ...recordData,       // ← objeto con record, loading, saving, error
@@ -392,14 +407,15 @@ En la práctica: cada vez que el usuario guarda un campo, se produce al menos un
 **Archivo**: `src/hooks/useProductionRecord.js` líneas 49–55
 
 **Descripción**:
+
 ```javascript
-const [record, setRecord] = useState(null)
+const [record, setRecord] = useState(null);
 
 useEffect(() => {
   if (recordId && recordQuery.data !== undefined) {
-    setRecord(recordQuery.data)
+    setRecord(recordQuery.data);
   }
-}, [recordId, recordQuery.data])
+}, [recordId, recordQuery.data]);
 ```
 
 Este patrón causa un render doble en cada fetch: primero React Query actualiza `recordQuery.data` (render 1), después el `useEffect` detecta el cambio y llama a `setRecord` (render 2). El estado local `record` es una copia completamente innecesaria — podría usarse `recordQuery.data` directamente en todos los lugares donde se consume `record`.
@@ -418,15 +434,15 @@ Este patrón causa un render doble en cada fetch: primero React Query actualiza 
 **Descripción**:
 Al abrir `/admin/productions/[id]/records/[recordId]`, se lanzan simultáneamente al montar:
 
-| # | Request | Origen | Duplicado |
-|---|---|---|---|
-| 1 | `GET /production-records/{recordId}` | `useProductionRecord.js:35` | No |
-| 2 | `GET /production-records/options?production_id={id}` | `useProductionRecord.js:41` | No |
-| 3 | `GET /productions/{id}` | `useProduction` dentro del record hook | **Sí — ver DEEP-01** |
-| 4 | `GET /processes` | `useProcessOptions` | No |
-| 5 | `GET /production-inputs?production_record_id={recordId}` | `useProductionInputsManager.js:86` | No |
-| 6 | `GET /product-options` | `useProductionOutputsManager.js:95` | No |
-| 7 | `GET /product-options` | `useProductionOutputConsumptionsManager.js:85` | **Sí — duplicado del #6** |
+| #   | Request                                                  | Origen                                         | Duplicado                 |
+| --- | -------------------------------------------------------- | ---------------------------------------------- | ------------------------- |
+| 1   | `GET /production-records/{recordId}`                     | `useProductionRecord.js:35`                    | No                        |
+| 2   | `GET /production-records/options?production_id={id}`     | `useProductionRecord.js:41`                    | No                        |
+| 3   | `GET /productions/{id}`                                  | `useProduction` dentro del record hook         | **Sí — ver DEEP-01**      |
+| 4   | `GET /processes`                                         | `useProcessOptions`                            | No                        |
+| 5   | `GET /production-inputs?production_record_id={recordId}` | `useProductionInputsManager.js:86`             | No                        |
+| 6   | `GET /product-options`                                   | `useProductionOutputsManager.js:95`            | No                        |
+| 7   | `GET /product-options`                                   | `useProductionOutputConsumptionsManager.js:85` | **Sí — duplicado del #6** |
 
 **Requests efectivas al backend**: 6 únicas, de las cuales 2 repiten datos ya disponibles en el cliente (o que podrían estarlo con la caché correcta).
 
@@ -445,10 +461,10 @@ Los tres managers (`ProductionInputsManager`, `ProductionOutputsManager`, `Produ
 ```javascript
 // useProductionInputsManager.js
 useEffect(() => {
-  if (hasInitializedRef.current) return
-  loadInputs()  // ← fetch inmediato al montar
-  hasInitializedRef.current = true
-}, [session?.user?.accessToken, productionRecordId])
+  if (hasInitializedRef.current) return;
+  loadInputs(); // ← fetch inmediato al montar
+  hasInitializedRef.current = true;
+}, [session?.user?.accessToken, productionRecordId]);
 ```
 
 En un record recién creado (sin datos aún), estos fetches devuelven arrays vacíos pero consumen ancho de banda y tiempo de latencia igualmente. En un record con datos, los tres fetches se lanzan en paralelo competiendo por recursos.
@@ -468,15 +484,15 @@ Los dos hooks cargan la lista de productos con un fetch manual (no React Query):
 ```javascript
 // useProductionOutputsManager.js
 const loadProducts = async () => {
-  const response = await getProductOptions(token)  // fetch directo
-  setProducts(response.data || [])
-}
+  const response = await getProductOptions(token); // fetch directo
+  setProducts(response.data || []);
+};
 
 // useProductionOutputConsumptionsManager.js
 const loadProducts = async () => {
-  const response = await getProductOptions(token)  // mismo fetch, mismo endpoint
-  setProducts(response.data || [])
-}
+  const response = await getProductOptions(token); // mismo fetch, mismo endpoint
+  setProducts(response.data || []);
+};
 ```
 
 Al montar simultáneamente, lanzan dos requests en paralelo al mismo endpoint `GET /product-options`. No comparten caché porque están fuera de React Query. La respuesta se almacena por separado en el estado local de cada hook.
@@ -492,11 +508,11 @@ Al montar simultáneamente, lanzan dos requests en paralelo al mismo endpoint `G
 
 **Descripción**:
 
-| Hook | Líneas | `useState` count | Hooks totales |
-|---|---|---|---|
-| `useProductionInputsManager.js` | 802 | 20+ | 25+ |
-| `useProductionOutputsManager.js` | 853 | 22+ | 28+ |
-| `useProductionOutputConsumptionsManager.js` | 715 | 19+ | 22+ |
+| Hook                                        | Líneas | `useState` count | Hooks totales |
+| ------------------------------------------- | ------ | ---------------- | ------------- |
+| `useProductionInputsManager.js`             | 802    | 20+              | 25+           |
+| `useProductionOutputsManager.js`            | 853    | 22+              | 28+           |
+| `useProductionOutputConsumptionsManager.js` | 715    | 19+              | 22+           |
 
 Cada `useState` individual comparte el mismo ciclo de render. Cuando el usuario escribe en el campo `weightTolerance` (un campo de filtro de búsqueda), se actualiza ese estado, lo que causa el re-render de **todo** el componente `ProductionInputsManager` (547 líneas de JSX), incluyendo la tabla de inputs, los dialogs, los botones, y todos los subcomponentes.
 
@@ -525,16 +541,17 @@ La sincronización entre el Context y el Hook local se realiza manualmente con d
 ```javascript
 // useProductionInputsManager.js líneas 60–70
 const inputsKey = useMemo(() => {
-  const currentInputs = contextInputs.length > 0 ? contextInputs : initialInputsProp
-  if (!currentInputs || currentInputs.length === 0) return null
+  const currentInputs = contextInputs.length > 0 ? contextInputs : initialInputsProp;
+  if (!currentInputs || currentInputs.length === 0) return null;
   return currentInputs
     .map((input) => input.id || input.boxId || JSON.stringify(input))
     .sort()
-    .join(',')  // ← O(n log n), string grande, recalculado en cada render
-}, [contextInputs, initialInputsProp])
+    .join(','); // ← O(n log n), string grande, recalculado en cada render
+}, [contextInputs, initialInputsProp]);
 ```
 
 **Problemas concretos**:
+
 - Race condition si `contextInputs` y `initialInputsProp` cambian en el mismo ciclo
 - `JSON.stringify(input)` como fallback en el key — O(n) con objetos complejos
 - Si el Context actualiza los inputs mientras el hook tiene cambios pendientes, puede producirse inconsistencia
@@ -552,9 +569,15 @@ const inputsKey = useMemo(() => {
 Tres funciones de cálculo pesadas sin memoización:
 
 ```javascript
-const calculateSummaryByPallet = () => { /* itera inputs completo: O(n) */ }
-const calculateProductsBreakdown = () => { /* itera inputs completo: O(n) */ }
-const calculateTotalSummary = () => { /* itera inputs completo: O(n) */ }
+const calculateSummaryByPallet = () => {
+  /* itera inputs completo: O(n) */
+};
+const calculateProductsBreakdown = () => {
+  /* itera inputs completo: O(n) */
+};
+const calculateTotalSummary = () => {
+  /* itera inputs completo: O(n) */
+};
 ```
 
 Cada una itera sobre el array `inputs` completo en cada llamada. No están envueltas en `useMemo`, lo que significa que se recalculan en **cada render del hook** — incluyendo renders causados por cambios de estado de UI completamente ajenos (abrir un dialog, cambiar un campo de texto, hover sobre un botón).
@@ -564,10 +587,11 @@ Con 1000 inputs en un record grande, cada render ejecuta O(n)×3 iteraciones. Si
 Además, `inputsKey` en línea 60–70 ejecuta `.map().sort().join(',')` — O(n log n) — en cada render para detectar si los inputs han cambiado.
 
 **Solución recomendada**:
+
 ```javascript
-const summaryByPallet = useMemo(() => calculateSummaryByPallet(inputs), [inputs])
-const productsBreakdown = useMemo(() => calculateProductsBreakdown(inputs), [inputs])
-const totalSummary = useMemo(() => calculateTotalSummary(inputs), [inputs])
+const summaryByPallet = useMemo(() => calculateSummaryByPallet(inputs), [inputs]);
+const productsBreakdown = useMemo(() => calculateProductsBreakdown(inputs), [inputs]);
+const totalSummary = useMemo(() => calculateTotalSummary(inputs), [inputs]);
 ```
 
 ---
@@ -578,18 +602,20 @@ const totalSummary = useMemo(() => calculateTotalSummary(inputs), [inputs])
 **Archivos**: `useProductionOutputsManager.js:69–75`, `useProductionOutputConsumptionsManager.js:65–71`
 
 **Descripción**:
+
 ```javascript
 // En ambos hooks (código idéntico duplicado):
 const [showBoxes, setShowBoxes] = useState(() => {
   if (typeof window !== 'undefined') {
-    const saved = localStorage.getItem('production_show_boxes')
-    return saved !== null ? saved === 'true' : true
+    const saved = localStorage.getItem('production_show_boxes');
+    return saved !== null ? saved === 'true' : true;
   }
-  return true
-})
+  return true;
+});
 ```
 
 Dos problemas:
+
 1. **localStorage es síncrono** y bloquea el hilo principal durante la inicialización del hook. En la mayoría de casos el impacto es <1ms, pero es innecesario.
 2. **Estado duplicado**: los dos hooks mantienen su propia copia de `showBoxes`. Si el usuario activa "mostrar cajas" en outputs, el estado no se comparte automáticamente con consumptions — dependiendo de cuál se monte primero, pueden quedar desincronizados.
 
@@ -607,9 +633,15 @@ Funciones de handler que se pasan a componentes hijos no están envueltas en `us
 
 ```javascript
 // Sin useCallback:
-const handleSearchPallet = async () => { /* 80+ líneas de lógica */ }
-const handleToggleBox = (boxId, palletId) => { /* lógica de selección */ }
-const loadInputsOnly = async () => { /* fetch */ }
+const handleSearchPallet = async () => {
+  /* 80+ líneas de lógica */
+};
+const handleToggleBox = (boxId, palletId) => {
+  /* lógica de selección */
+};
+const loadInputsOnly = async () => {
+  /* fetch */
+};
 ```
 
 Estas funciones se recrean en cada render del hook. Si los componentes hijos que las reciben estuvieran envueltos en `React.memo`, no servirían de nada porque la referencia de la función cambia en cada render. Esto bloquea cualquier optimización futura de memoización en los hijos.
@@ -620,26 +652,26 @@ Estas funciones se recrean en cada render del hook. Si los componentes hijos que
 
 ## Tabla consolidada de hallazgos
 
-| ID | Área | Título | Severidad | Impacto usuario |
-|---|---|---|---|---|
-| NAV-01 | Navegación | Middleware fetch bloqueante cada 60s | 🔴 CRÍTICO | Espera de 100–500ms opaca en cada navegación |
-| NAV-02 | Navegación | `force-dynamic` desactiva caching en `/admin` | 🟠 ALTO | Overhead en cada page load |
-| NAV-03 | Navegación | `window.open()` sin prefetch en lista | 🟠 ALTO | Carga "fría" al abrir detalle desde lista |
-| NAV-04 | Navegación | `@xyflow/react` no lazy-loaded (+300KB) | 🟠 ALTO | TTI aumentado en detalle de producción |
-| NAV-05 | Navegación | `SettingsProvider` fetcha en cada AdminLayout | 🟡 MEDIO | Request extra competidora al cargar |
-| DEEP-01 | Vista detalle | QueryKey duplicada: doble fetch a `/productions/{id}` | 🔴 CRÍTICO | Request extra a cada apertura de record |
-| DEEP-02 | Vista detalle | `invalidateQueries` demasiado amplia | 🟠 ALTO | Re-fetches masivos tras guardar un record |
-| DEEP-03 | Vista detalle | `staleTime` ausente en `recordQuery` | 🟠 ALTO | Refetch en cada cambio de pestaña |
-| DEEP-04 | Vista detalle | Context invalida árbol completo en cada cambio | 🟠 ALTO | Re-renders globales al guardar, al cambiar `loading` |
-| DEEP-05 | Vista detalle | `useEffect` copia React Query data a `useState` | 🟡 MEDIO | Render extra en cada fetch del record |
-| DEEP-06 | Editor | 6–7 requests al montar, 2 duplicadas | 🔴 CRÍTICO | 2–4s de carga inicial en conexión móvil |
-| DEEP-07 | Editor | Managers fetchean sin lazy loading | 🟠 ALTO | Fetches innecesarios en records vacíos |
-| DEEP-08 | Editor | `getProductOptions` llamada 2 veces sin caché | 🟠 ALTO | Request duplicada al mismo endpoint |
-| DEEP-09 | Editor | Mega-hooks 800+ líneas, 20+ `useState` | 🟠 ALTO | Renders innecesarios ante cualquier interacción |
-| DEEP-10 | Editor | Estado triplicado: Context + Hook + Component | 🟠 ALTO | Race conditions, inconsistencias, re-renders en cascada |
-| DEEP-11 | Editor | Funciones O(n) sin `useMemo` | 🟡 MEDIO | Lag en interacciones con records grandes |
-| DEEP-12 | Editor | `localStorage` síncrono duplicado | 🟢 BAJO | Overhead mínimo en init, posible desincronización |
-| DEEP-13 | Editor | Handlers sin `useCallback` | 🟡 MEDIO | Bloquea optimizaciones futuras de memoización |
+| ID      | Área          | Título                                                | Severidad  | Impacto usuario                                         |
+| ------- | ------------- | ----------------------------------------------------- | ---------- | ------------------------------------------------------- |
+| NAV-01  | Navegación    | Middleware fetch bloqueante cada 60s                  | 🔴 CRÍTICO | Espera de 100–500ms opaca en cada navegación            |
+| NAV-02  | Navegación    | `force-dynamic` desactiva caching en `/admin`         | 🟠 ALTO    | Overhead en cada page load                              |
+| NAV-03  | Navegación    | `window.open()` sin prefetch en lista                 | 🟠 ALTO    | Carga "fría" al abrir detalle desde lista               |
+| NAV-04  | Navegación    | `@xyflow/react` no lazy-loaded (+300KB)               | 🟠 ALTO    | TTI aumentado en detalle de producción                  |
+| NAV-05  | Navegación    | `SettingsProvider` fetcha en cada AdminLayout         | 🟡 MEDIO   | Request extra competidora al cargar                     |
+| DEEP-01 | Vista detalle | QueryKey duplicada: doble fetch a `/productions/{id}` | 🔴 CRÍTICO | Request extra a cada apertura de record                 |
+| DEEP-02 | Vista detalle | `invalidateQueries` demasiado amplia                  | 🟠 ALTO    | Re-fetches masivos tras guardar un record               |
+| DEEP-03 | Vista detalle | `staleTime` ausente en `recordQuery`                  | 🟠 ALTO    | Refetch en cada cambio de pestaña                       |
+| DEEP-04 | Vista detalle | Context invalida árbol completo en cada cambio        | 🟠 ALTO    | Re-renders globales al guardar, al cambiar `loading`    |
+| DEEP-05 | Vista detalle | `useEffect` copia React Query data a `useState`       | 🟡 MEDIO   | Render extra en cada fetch del record                   |
+| DEEP-06 | Editor        | 6–7 requests al montar, 2 duplicadas                  | 🔴 CRÍTICO | 2–4s de carga inicial en conexión móvil                 |
+| DEEP-07 | Editor        | Managers fetchean sin lazy loading                    | 🟠 ALTO    | Fetches innecesarios en records vacíos                  |
+| DEEP-08 | Editor        | `getProductOptions` llamada 2 veces sin caché         | 🟠 ALTO    | Request duplicada al mismo endpoint                     |
+| DEEP-09 | Editor        | Mega-hooks 800+ líneas, 20+ `useState`                | 🟠 ALTO    | Renders innecesarios ante cualquier interacción         |
+| DEEP-10 | Editor        | Estado triplicado: Context + Hook + Component         | 🟠 ALTO    | Race conditions, inconsistencias, re-renders en cascada |
+| DEEP-11 | Editor        | Funciones O(n) sin `useMemo`                          | 🟡 MEDIO   | Lag en interacciones con records grandes                |
+| DEEP-12 | Editor        | `localStorage` síncrono duplicado                     | 🟢 BAJO    | Overhead mínimo en init, posible desincronización       |
+| DEEP-13 | Editor        | Handlers sin `useCallback`                            | 🟡 MEDIO   | Bloquea optimizaciones futuras de memoización           |
 
 ---
 
@@ -647,34 +679,34 @@ Estas funciones se recrean en cada render del hook. Si los componentes hijos que
 
 ### Sprint 1 — Impacto inmediato, bajo riesgo (1–2 días)
 
-| Hallazgo | Cambio | Archivos | Estado | Nota |
-|---|---|---|---|---|
-| NAV-01 | Aumentar TTL de `__session_verified` de 60s a 5–10 minutos | `src/middleware.ts` | ✅ Implementado | Hecho en la pasada inicial con Claude Code |
-| NAV-04 | `dynamic(() => import('./ProductionDiagram'), { ssr: false })` | `ProductionView.jsx` | ✅ Implementado | Rematado separando también `ViewModeSelector` del bundle pesado |
-| DEEP-01 | Unificar queryKey de `useProduction` a `['productions', 'detail', ...]` | `src/hooks/production/useProduction.ts` | ✅ Implementado | Hecho en la pasada inicial y consolidado usando `productionQueryKeys` |
-| DEEP-02 | Acotar `invalidateQueries` a solo las keys afectadas | `src/hooks/useProductionRecord.js` | ✅ Implementado | Rematado al rehacer `useProductionRecord` |
-| DEEP-03 | Añadir `staleTime: 30 * 1000` a `recordQuery` | `src/hooks/useProductionRecord.js` | ✅ Implementado | Rematado |
-| DEEP-05 | Eliminar `useState(record)` + `useEffect` que lo sincroniza | `src/hooks/useProductionRecord.js` | ✅ Implementado | Claude dejó una migración incompleta; se rehízo sin romper el contexto |
-| DEEP-08 | Mover `loadProducts` a `useQuery(['productOptions', tenantId])` compartido | `useProductionOutputsManager.js`, `useProductionOutputConsumptionsManager.js` | ✅ Implementado | Rematado vía `useProductOptions()` compartido |
-| DEEP-11 | Envolver `calculateSummaryByPallet`, `calculateProductsBreakdown`, `calculateTotalSummary` en `useMemo` | `useProductionInputsManager.js` | ✅ Implementado | Rematado |
-| DEEP-12 | Extraer a hook `useShowBoxesPreference()` compartido | ambos manager hooks | ✅ Implementado | Claude extrajo el hook; faltaba conectarlo en los managers |
+| Hallazgo | Cambio                                                                                                  | Archivos                                                                      | Estado          | Nota                                                                   |
+| -------- | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | --------------- | ---------------------------------------------------------------------- |
+| NAV-01   | Aumentar TTL de `__session_verified` de 60s a 5–10 minutos                                              | `src/middleware.ts`                                                           | ✅ Implementado | Hecho en la pasada inicial con Claude Code                             |
+| NAV-04   | `dynamic(() => import('./ProductionDiagram'), { ssr: false })`                                          | `ProductionView.jsx`                                                          | ✅ Implementado | Rematado separando también `ViewModeSelector` del bundle pesado        |
+| DEEP-01  | Unificar queryKey de `useProduction` a `['productions', 'detail', ...]`                                 | `src/hooks/production/useProduction.ts`                                       | ✅ Implementado | Hecho en la pasada inicial y consolidado usando `productionQueryKeys`  |
+| DEEP-02  | Acotar `invalidateQueries` a solo las keys afectadas                                                    | `src/hooks/useProductionRecord.js`                                            | ✅ Implementado | Rematado al rehacer `useProductionRecord`                              |
+| DEEP-03  | Añadir `staleTime: 30 * 1000` a `recordQuery`                                                           | `src/hooks/useProductionRecord.js`                                            | ✅ Implementado | Rematado                                                               |
+| DEEP-05  | Eliminar `useState(record)` + `useEffect` que lo sincroniza                                             | `src/hooks/useProductionRecord.js`                                            | ✅ Implementado | Claude dejó una migración incompleta; se rehízo sin romper el contexto |
+| DEEP-08  | Mover `loadProducts` a `useQuery(['productOptions', tenantId])` compartido                              | `useProductionOutputsManager.js`, `useProductionOutputConsumptionsManager.js` | ✅ Implementado | Rematado vía `useProductOptions()` compartido                          |
+| DEEP-11  | Envolver `calculateSummaryByPallet`, `calculateProductsBreakdown`, `calculateTotalSummary` en `useMemo` | `useProductionInputsManager.js`                                               | ✅ Implementado | Rematado                                                               |
+| DEEP-12  | Extraer a hook `useShowBoxesPreference()` compartido                                                    | ambos manager hooks                                                           | ✅ Implementado | Claude extrajo el hook; faltaba conectarlo en los managers             |
 
 ### Sprint 2 — Mejoras arquitectónicas, riesgo medio (3–5 días)
 
-| Hallazgo | Cambio | Archivos | Estado | Nota |
-|---|---|---|---|---|
-| NAV-02 | Evaluar mover `force-dynamic` de layout raíz a páginas específicas | `src/app/admin/layout.js` | ⏸️ Pendiente | No se tocó en esta pasada por riesgo transversal fuera de producciones |
-| NAV-03 | Reemplazar `window.open()` por `router.push()` + `<Link>` en EntityClient | `EntityClient/index.js` | ✅ Implementado parcial | Aplicado solo al bloque de producciones, tal como se decidió |
-| NAV-05 | Añadir `staleTime: 10 * 60 * 1000` a la query de settings | `src/context/SettingsContext.js` | ✅ Implementado | Hecho realmente en `useSettingsData()` y consolidado con `settingsQueryKeys` |
-| DEEP-04 | Separar `ProductionRecordContext` en slices: datos / estado de carga / colecciones | `ProductionRecordContext.js` | ✅ Implementado | Separación interna en slices memoizados, sin romper la API pública |
-| DEEP-13 | Envolver handlers principales en `useCallback` | `useProductionInputsManager.js` | ✅ Implementado | Estabilización parcial centrada en los handlers calientes del manager de inputs |
+| Hallazgo | Cambio                                                                             | Archivos                         | Estado                  | Nota                                                                            |
+| -------- | ---------------------------------------------------------------------------------- | -------------------------------- | ----------------------- | ------------------------------------------------------------------------------- |
+| NAV-02   | Evaluar mover `force-dynamic` de layout raíz a páginas específicas                 | `src/app/admin/layout.js`        | ⏸️ Pendiente            | No se tocó en esta pasada por riesgo transversal fuera de producciones          |
+| NAV-03   | Reemplazar `window.open()` por `router.push()` + `<Link>` en EntityClient          | `EntityClient/index.js`          | ✅ Implementado parcial | Aplicado solo al bloque de producciones, tal como se decidió                    |
+| NAV-05   | Añadir `staleTime: 10 * 60 * 1000` a la query de settings                          | `src/context/SettingsContext.js` | ✅ Implementado         | Hecho realmente en `useSettingsData()` y consolidado con `settingsQueryKeys`    |
+| DEEP-04  | Separar `ProductionRecordContext` en slices: datos / estado de carga / colecciones | `ProductionRecordContext.js`     | ✅ Implementado         | Separación interna en slices memoizados, sin romper la API pública              |
+| DEEP-13  | Envolver handlers principales en `useCallback`                                     | `useProductionInputsManager.js`  | ✅ Implementado         | Estabilización parcial centrada en los handlers calientes del manager de inputs |
 
 ### Sprint 3 — Refactors estructurales, riesgo alto (sprint dedicado)
 
-| Hallazgo | Cambio | Archivos | Estado | Nota |
-|---|---|---|---|---|
-| DEEP-06 + DEEP-07 | Migrar los 3 managers a React Query para eliminar fetches manuales y lazy loading real | 3 hooks managers (~2.400 líneas) | ✅ Implementado base | React Query + lazy mounting de secciones ya aplicados |
-| DEEP-09 + DEEP-10 | Subdividir mega-hooks en hooks especializados, eliminar estado triplicado | 3 hooks managers + 3 components + Context | ✅ Implementado parcial | Eliminada gran parte del estado triplicado; el despiece fino en sub-hooks aún admite hardening posterior |
+| Hallazgo          | Cambio                                                                                 | Archivos                                  | Estado                  | Nota                                                                                                     |
+| ----------------- | -------------------------------------------------------------------------------------- | ----------------------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------- |
+| DEEP-06 + DEEP-07 | Migrar los 3 managers a React Query para eliminar fetches manuales y lazy loading real | 3 hooks managers (~2.400 líneas)          | ✅ Implementado base    | React Query + lazy mounting de secciones ya aplicados                                                    |
+| DEEP-09 + DEEP-10 | Subdividir mega-hooks en hooks especializados, eliminar estado triplicado              | 3 hooks managers + 3 components + Context | ✅ Implementado parcial | Eliminada gran parte del estado triplicado; el despiece fino en sub-hooks aún admite hardening posterior |
 
 ---
 

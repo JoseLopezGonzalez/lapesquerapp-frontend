@@ -3,7 +3,14 @@
 import { AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Calendar, Package, TrendingUp, TrendingDown } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
@@ -12,7 +19,15 @@ import {
   formatInteger,
 } from '@/helpers/formats/numbers/formatNumbers';
 import { formatDateShort } from '@/helpers/formats/dates/formatDates';
-import { ResponsiveContainer, AreaChart, Area, Line, CartesianGrid, YAxis, Tooltip as RechartsTooltip } from 'recharts';
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  Line,
+  CartesianGrid,
+  YAxis,
+  Tooltip as RechartsTooltip,
+} from 'recharts';
 import ChartTooltip from './ChartTooltip';
 
 export default function ProductHistoryAccordionItem({
@@ -28,9 +43,13 @@ export default function ProductHistoryAccordionItem({
     : 'px-4 py-3 hover:bg-muted/50 transition-colors [&>svg]:transition-transform no-underline hover:no-underline';
   const itemClass = 'rounded-lg overflow-hidden';
   const titleClass = isMobile ? 'font-semibold text-lg' : 'font-medium text-base';
-  const badgeClass = isMobile ? 'flex items-center gap-1 text-xs h-6 px-2.5 cursor-help' : 'flex items-center gap-1 text-xs h-5 cursor-help';
+  const badgeClass = isMobile
+    ? 'flex items-center gap-1 text-xs h-6 px-2.5 cursor-help'
+    : 'flex items-center gap-1 text-xs h-5 cursor-help';
   const iconSize = isMobile ? 'h-3 w-3' : 'h-2.5 w-2.5';
-  const metricsGridClass = isMobile ? 'gap-x-6 gap-y-2 text-sm pr-0' : 'gap-x-4 gap-y-1 text-xs pr-4';
+  const metricsGridClass = isMobile
+    ? 'gap-x-6 gap-y-2 text-sm pr-0'
+    : 'gap-x-4 gap-y-1 text-xs pr-4';
   const metricsValueClass = isMobile ? 'font-semibold text-base' : 'font-medium text-sm';
   const contentClass = isMobile ? 'p-4 space-y-3 w-full' : 'p-3 space-y-3 w-full';
   const chartGapClass = isMobile ? 'gap-4' : 'gap-3';
@@ -40,11 +59,15 @@ export default function ProductHistoryAccordionItem({
   const chartContentClass = isMobile ? 'px-3' : 'px-2';
 
   return (
-    <AccordionItem key={product.product.id} value={product.product.id.toString()} className={itemClass}>
+    <AccordionItem
+      key={product.product.id}
+      value={product.product.id.toString()}
+      className={itemClass}
+    >
       <AccordionTrigger className={triggerClass}>
-        <div className="flex flex-col md:flex-row w-full items-start md:items-center justify-between gap-3 text-left">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex w-full flex-col items-start justify-between gap-3 text-left md:flex-row md:items-center">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
               <h3 className={titleClass}>{product.product.name}</h3>
               {trend.direction !== 'stable' && (
                 <Tooltip>
@@ -68,12 +91,18 @@ export default function ProductHistoryAccordionItem({
               )}
             </div>
             <div className={`flex items-center ${isMobile ? 'mt-2' : 'mt-1'} flex-wrap gap-1.5`}>
-              <Badge variant="outline" className={`flex items-center gap-1 text-xs ${isMobile ? 'h-6 px-2.5' : 'h-5 px-2'}`}>
+              <Badge
+                variant="outline"
+                className={`flex items-center gap-1 text-xs ${isMobile ? 'h-6 px-2.5' : 'h-5 px-2'}`}
+              >
                 <Calendar className={iconSize} />
                 <span>Último: {formatDateShort(product.last_order_date)}</span>
               </Badge>
               {product.lines?.length > 0 && (
-                <Badge variant="outline" className={`flex items-center gap-1 text-xs ${isMobile ? 'h-6 px-2.5' : 'h-5 px-2'}`}>
+                <Badge
+                  variant="outline"
+                  className={`flex items-center gap-1 text-xs ${isMobile ? 'h-6 px-2.5' : 'h-5 px-2'}`}
+                >
                   <Package className={iconSize} />
                   <span>{product.lines.length} pedidos</span>
                 </Badge>
@@ -87,15 +116,21 @@ export default function ProductHistoryAccordionItem({
             </div>
             <div className="flex flex-col items-end">
               <span className="text-muted-foreground text-xs">Peso Neto</span>
-              <span className={metricsValueClass}>{formatDecimalWeight(product.total_net_weight)}</span>
+              <span className={metricsValueClass}>
+                {formatDecimalWeight(product.total_net_weight)}
+              </span>
             </div>
             <div className="flex flex-col items-end">
               <span className="text-muted-foreground text-xs">Precio Medio</span>
-              <span className={metricsValueClass}>{formatDecimalCurrency(product.average_unit_price)}</span>
+              <span className={metricsValueClass}>
+                {formatDecimalCurrency(product.average_unit_price)}
+              </span>
             </div>
             <div className="flex flex-col items-end">
               <span className="text-muted-foreground text-xs">Importe Total</span>
-              <span className={metricsValueClass}>{formatDecimalCurrency(product.total_amount)}</span>
+              <span className={metricsValueClass}>
+                {formatDecimalCurrency(product.total_amount)}
+              </span>
             </div>
           </div>
         </div>
@@ -110,7 +145,13 @@ export default function ProductHistoryAccordionItem({
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData}>
                   <defs>
-                    <linearGradient id={`colorPrice-${product.product.id}`} x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient
+                      id={`colorPrice-${product.product.id}`}
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
                       <stop offset="5%" stopColor="currentColor" stopOpacity={0.8} />
                       <stop offset="95%" stopColor="currentColor" stopOpacity={0} />
                     </linearGradient>
@@ -138,7 +179,13 @@ export default function ProductHistoryAccordionItem({
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData}>
                   <defs>
-                    <linearGradient id={`colorWeight-${product.product.id}`} x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient
+                      id={`colorWeight-${product.product.id}`}
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
                       <stop offset="5%" stopColor="currentColor" stopOpacity={0.8} />
                       <stop offset="95%" stopColor="currentColor" stopOpacity={0} />
                     </linearGradient>
@@ -173,20 +220,30 @@ export default function ProductHistoryAccordionItem({
                 <TableHead className={isMobile ? 'text-sm' : ''}>ID Pedido</TableHead>
                 <TableHead className={isMobile ? 'text-sm' : ''}>Fecha de carga</TableHead>
                 <TableHead className={`text-right ${isMobile ? 'text-sm' : ''}`}>Cajas</TableHead>
-                <TableHead className={`text-right ${isMobile ? 'text-sm' : ''}`}>Peso Neto</TableHead>
-                <TableHead className={`text-right ${isMobile ? 'text-sm' : ''}`}>Precio Unitario</TableHead>
-                <TableHead className={`text-right ${isMobile ? 'text-sm' : ''}`}>Subtotal</TableHead>
+                <TableHead className={`text-right ${isMobile ? 'text-sm' : ''}`}>
+                  Peso Neto
+                </TableHead>
+                <TableHead className={`text-right ${isMobile ? 'text-sm' : ''}`}>
+                  Precio Unitario
+                </TableHead>
+                <TableHead className={`text-right ${isMobile ? 'text-sm' : ''}`}>
+                  Subtotal
+                </TableHead>
                 <TableHead className={`text-right ${isMobile ? 'text-sm' : ''}`}>Total</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {(product.lines || []).map((order) => (
                 <TableRow key={order.order_id}>
-                  <TableCell className={isMobile ? 'font-semibold text-sm' : 'font-medium'}>
+                  <TableCell className={isMobile ? 'text-sm font-semibold' : 'font-medium'}>
                     {order.formatted_id}
                   </TableCell>
-                  <TableCell className={isMobile ? 'text-sm' : ''}>{formatDateShort(order.load_date)}</TableCell>
-                  <TableCell className={`text-right ${isMobile ? 'text-sm font-medium' : ''}`}>{order.boxes}</TableCell>
+                  <TableCell className={isMobile ? 'text-sm' : ''}>
+                    {formatDateShort(order.load_date)}
+                  </TableCell>
+                  <TableCell className={`text-right ${isMobile ? 'text-sm font-medium' : ''}`}>
+                    {order.boxes}
+                  </TableCell>
                   <TableCell className={`text-right ${isMobile ? 'text-sm font-medium' : ''}`}>
                     {formatDecimalWeight(order.net_weight)}
                   </TableCell>

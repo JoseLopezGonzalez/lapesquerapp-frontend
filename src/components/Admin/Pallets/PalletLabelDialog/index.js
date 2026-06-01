@@ -1,92 +1,98 @@
-"use client";
+'use client';
 
-import { PALLET_LABEL_SIZE } from "@/configs/config";
+import { PALLET_LABEL_SIZE } from '@/configs/config';
 
-import { AlertTriangle, CloudAlert, Printer } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertTriangle, CloudAlert, Printer } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
-import { usePrintElement } from "@/hooks/usePrintElement";
+import { usePrintElement } from '@/hooks/usePrintElement';
 
-import PalletLabel from "@/components/Admin/Pallets/PalletLabel";
+import PalletLabel from '@/components/Admin/Pallets/PalletLabel';
 
+export default function PalletLabelDialog({ isOpen, onClose, pallet }) {
+  const { onPrint } = usePrintElement({
+    id: 'print-area-id',
+    width: PALLET_LABEL_SIZE.width,
+    height: PALLET_LABEL_SIZE.height,
+  });
 
-export default function PalletLabelDialog({isOpen , onClose , pallet}) {
+  const handleOnClickPrintLabel = () => {
+    onPrint();
+  };
 
-    const { onPrint } = usePrintElement({ id: 'print-area-id', width: PALLET_LABEL_SIZE.width, height: PALLET_LABEL_SIZE.height });
+  const handleOnClickClose = () => {
+    onClose();
+  };
 
-    const handleOnClickPrintLabel = () => {
-        onPrint();
-    }
+  // Calcular ancho máximo del diálogo basado en el tamaño de la etiqueta
+  // PALLET_LABEL_SIZE.width es "110mm", extraemos el número
+  const labelWidth = parseInt(PALLET_LABEL_SIZE.width) || 110; // default 110mm
+  // 1mm ≈ 3.779px a 96dpi, añadimos padding y margen extra
+  const maxDialogWidth = Math.max(512, labelWidth * 3.779 + 200); // mínimo 512px (max-w-lg), más espacio para padding
 
-    const handleOnClickClose = () => {
-        onClose();
-    };
-
-    // Calcular ancho máximo del diálogo basado en el tamaño de la etiqueta
-    // PALLET_LABEL_SIZE.width es "110mm", extraemos el número
-    const labelWidth = parseInt(PALLET_LABEL_SIZE.width) || 110; // default 110mm
-    // 1mm ≈ 3.779px a 96dpi, añadimos padding y margen extra
-    const maxDialogWidth = Math.max(512, (labelWidth * 3.779) + 200); // mínimo 512px (max-w-lg), más espacio para padding
-
-    return (
-        <>
-            <Dialog open={isOpen} onOpenChange={handleOnClickClose}>
-                {!pallet ? (
-                <DialogContent className="w-full  flex flex-col items-center justify-center gap-4 text-center">
-                    <DialogHeader>
-                        <DialogTitle className="sr-only">
-                            Error
-                        </DialogTitle>
-                    </DialogHeader>
-                    <div className="flex flex-col items-center justify-center gap-2 py-10">
-                        <div className="flex items-center justify-center bg-red-100 rounded-full p-5 mb-2">
-                            <CloudAlert className="w-12 h-12 text-destructive" />
-                        </div>
-                        <h2 className="text-xl font-semibold text-destructive">¡Vaya! Ocurrió un error</h2>
-                        <p className="text-muted-foreground text-sm max-w-xs">
-                            Por favor, revisa tu conexión o inténtalo nuevamente más tarde.
-                        </p>
-                        <Button variant="destructive" className="px-20 mt-5" onClick={handleOnClickClose}>
-                            Cerrar
-                        </Button>
-                    </div>
-                </DialogContent>
-            ) : (
-                <DialogContent className="w-full max-h-[90vh] overflow-hidden" style={{ maxWidth: `${maxDialogWidth}px` }}>
-                    <DialogHeader>
-                        <DialogTitle className="">
-                            {pallet?.id ? `Etiqueta - Palet #${pallet.id}` : "Nuevo Palet"}
-                        </DialogTitle>
-                    </DialogHeader>
-                        <div className="flex flex-col justify-center w-full">
-                            <Alert variant="destructive" className="w-full max-w-md">
-                                <AlertTriangle className="h-4 w-4" />
-                                <AlertTitle className="text-sm">Etiqueta con espacio limitado</AlertTitle>
-                                <AlertDescription className="text-sm">
-                                    Productos o lotes podrían no mostrarse completamente.
-                                </AlertDescription>
-                            </Alert>
-                            <div className="flex flex-col items-center gap-4 mt-4 overflow-x-auto w-full">
-                                <div className="flex-shrink-0">
-                                    {/* Vista previa - también es el área de impresión */}
-                                    <div id='print-area-id' className="text-black"
-                                        style={{ width: PALLET_LABEL_SIZE.width, height: PALLET_LABEL_SIZE.height }}>
-                                        <PalletLabel pallet={pallet} />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    <div className="flex justify-end gap-3 pt-4 border-t mt-4 ">
-                        <Button onClick={handleOnClickPrintLabel}>
-                            <Printer className="h-4 w-4" />
-                            Imprimir
-                        </Button>
-                    </div>
-                </DialogContent>
-                )}
-            </Dialog>
-        </>
-    );
+  return (
+    <>
+      <Dialog open={isOpen} onOpenChange={handleOnClickClose}>
+        {!pallet ? (
+          <DialogContent className="flex w-full flex-col items-center justify-center gap-4 text-center">
+            <DialogHeader>
+              <DialogTitle className="sr-only">Error</DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col items-center justify-center gap-2 py-10">
+              <div className="mb-2 flex items-center justify-center rounded-full bg-red-100 p-5">
+                <CloudAlert className="text-destructive h-12 w-12" />
+              </div>
+              <h2 className="text-destructive text-xl font-semibold">¡Vaya! Ocurrió un error</h2>
+              <p className="text-muted-foreground max-w-xs text-sm">
+                Por favor, revisa tu conexión o inténtalo nuevamente más tarde.
+              </p>
+              <Button variant="destructive" className="mt-5 px-20" onClick={handleOnClickClose}>
+                Cerrar
+              </Button>
+            </div>
+          </DialogContent>
+        ) : (
+          <DialogContent
+            className="max-h-[90vh] w-full overflow-hidden"
+            style={{ maxWidth: `${maxDialogWidth}px` }}
+          >
+            <DialogHeader>
+              <DialogTitle className="">
+                {pallet?.id ? `Etiqueta - Palet #${pallet.id}` : 'Nuevo Palet'}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="flex w-full flex-col justify-center">
+              <Alert variant="destructive" className="w-full max-w-md">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle className="text-sm">Etiqueta con espacio limitado</AlertTitle>
+                <AlertDescription className="text-sm">
+                  Productos o lotes podrían no mostrarse completamente.
+                </AlertDescription>
+              </Alert>
+              <div className="mt-4 flex w-full flex-col items-center gap-4 overflow-x-auto">
+                <div className="flex-shrink-0">
+                  {/* Vista previa - también es el área de impresión */}
+                  <div
+                    id="print-area-id"
+                    className="text-black"
+                    style={{ width: PALLET_LABEL_SIZE.width, height: PALLET_LABEL_SIZE.height }}
+                  >
+                    <PalletLabel pallet={pallet} />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="mt-4 flex justify-end gap-3 border-t pt-4">
+              <Button onClick={handleOnClickPrintLabel}>
+                <Printer className="h-4 w-4" />
+                Imprimir
+              </Button>
+            </div>
+          </DialogContent>
+        )}
+      </Dialog>
+    </>
+  );
 }

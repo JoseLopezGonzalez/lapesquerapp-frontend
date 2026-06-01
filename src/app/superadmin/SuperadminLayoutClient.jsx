@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import React, { useEffect, useRef, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import Link from "next/link";
-import { SuperadminAuthProvider, useSuperadminAuth } from "@/context/SuperadminAuthContext";
-import { fetchSuperadmin } from "@/lib/superadminApi";
-import { Skeleton } from "@/components/ui/skeleton";
+import React, { useEffect, useRef, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { SuperadminAuthProvider, useSuperadminAuth } from '@/context/SuperadminAuthContext';
+import { fetchSuperadmin } from '@/lib/superadminApi';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -13,7 +13,7 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+} from '@/components/ui/breadcrumb';
 import {
   LayoutDashboard,
   Building2,
@@ -23,7 +23,7 @@ import {
   History,
   Bell,
   Server,
-} from "lucide-react";
+} from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -39,7 +39,7 @@ import {
   SidebarRail,
   SidebarTrigger,
   useSidebar,
-} from "@/components/ui/sidebar";
+} from '@/components/ui/sidebar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,22 +47,25 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 function SuperadminBreadcrumb() {
   const pathname = usePathname();
-  const segments = pathname.replace(/^\/superadmin\/?/, "").split("/").filter(Boolean);
+  const segments = pathname
+    .replace(/^\/superadmin\/?/, '')
+    .split('/')
+    .filter(Boolean);
   const labels = {
-    tenants: "Tenants",
-    new: "Nuevo",
-    impersonation: "Impersonaciones",
-    alerts: "Alertas",
-    system: "Sistema",
-    login: "Login",
+    tenants: 'Tenants',
+    new: 'Nuevo',
+    impersonation: 'Impersonaciones',
+    alerts: 'Alertas',
+    system: 'Sistema',
+    login: 'Login',
   };
-  const pathSoFar = ["/superadmin"];
+  const pathSoFar = ['/superadmin'];
   return (
     <Breadcrumb>
       <BreadcrumbList>
@@ -77,8 +80,8 @@ function SuperadminBreadcrumb() {
         </BreadcrumbItem>
         {segments.map((seg, i) => {
           pathSoFar.push(seg);
-          const href = pathSoFar.join("/");
-          const label = labels[seg] ?? (seg.match(/^\d+$/) ? "Detalle" : seg);
+          const href = pathSoFar.join('/');
+          const label = labels[seg] ?? (seg.match(/^\d+$/) ? 'Detalle' : seg);
           const isLast = i === segments.length - 1;
           return (
             <React.Fragment key={href}>
@@ -101,18 +104,16 @@ function SuperadminBreadcrumb() {
 }
 
 const NAV_MAIN = [
-  { href: "/superadmin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/superadmin/tenants", label: "Tenants", icon: Building2 },
+  { href: '/superadmin', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/superadmin/tenants', label: 'Tenants', icon: Building2 },
 ];
 
 const NAV_GESTION = [
-  { href: "/superadmin/impersonation", label: "Impersonaciones", icon: History },
-  { href: "/superadmin/alerts", label: "Alertas", icon: Bell, alertBadge: true },
+  { href: '/superadmin/impersonation', label: 'Impersonaciones', icon: History },
+  { href: '/superadmin/alerts', label: 'Alertas', icon: Bell, alertBadge: true },
 ];
 
-const NAV_SISTEMA = [
-  { href: "/superadmin/system", label: "Sistema", icon: Server },
-];
+const NAV_SISTEMA = [{ href: '/superadmin/system', label: 'Sistema', icon: Server }];
 
 function useAlertCounts() {
   const [counts, setCounts] = useState({ total: 0, hasCritical: false });
@@ -121,13 +122,15 @@ function useAlertCounts() {
   useEffect(() => {
     const fetch = async () => {
       try {
-        const res = await fetchSuperadmin("/alerts?resolved=false&per_page=100");
+        const res = await fetchSuperadmin('/alerts?resolved=false&per_page=100');
         const json = await res.json();
         const data = json.data || [];
         const total = json.meta?.total ?? data.length;
-        const hasCritical = data.some((a) => a.severity === "critical");
+        const hasCritical = data.some((a) => a.severity === 'critical');
         setCounts({ total, hasCritical });
-      } catch { /* silent */ }
+      } catch {
+        /* silent */
+      }
     };
     fetch();
     intervalRef.current = setInterval(fetch, 60000);
@@ -142,16 +145,14 @@ function NavGroup({ items, pathname, alertCounts }) {
     <SidebarMenu>
       {items.map((item) => {
         const isActive =
-          item.href === "/superadmin"
-            ? pathname === "/superadmin"
-            : pathname.startsWith(item.href);
+          item.href === '/superadmin' ? pathname === '/superadmin' : pathname.startsWith(item.href);
 
         const badge = item.alertBadge && alertCounts.total > 0 ? alertCounts.total : null;
         const badgeColor = item.alertBadge
           ? alertCounts.hasCritical
-            ? "bg-destructive text-destructive-foreground"
-            : "bg-orange-500 text-white"
-          : "";
+            ? 'bg-destructive text-destructive-foreground'
+            : 'bg-orange-500 text-white'
+          : '';
 
         return (
           <SidebarMenuItem key={item.href}>
@@ -161,11 +162,7 @@ function NavGroup({ items, pathname, alertCounts }) {
                 <span>{item.label}</span>
               </Link>
             </SidebarMenuButton>
-            {badge !== null && (
-              <SidebarMenuBadge className={badgeColor}>
-                {badge}
-              </SidebarMenuBadge>
-            )}
+            {badge !== null && <SidebarMenuBadge className={badgeColor}>{badge}</SidebarMenuBadge>}
           </SidebarMenuItem>
         );
       })}
@@ -179,12 +176,12 @@ function SuperadminSidebar() {
   const { isMobile } = useSidebar();
   const alertCounts = useAlertCounts();
 
-  const displayName = user?.name || user?.email || "Superadmin";
-  const displayEmail = user?.email || "";
+  const displayName = user?.name || user?.email || 'Superadmin';
+  const displayEmail = user?.email || '';
   const initials = displayName
-    .split(" ")
+    .split(' ')
     .map((n) => n[0])
-    .join("")
+    .join('')
     .toUpperCase()
     .slice(0, 2);
 
@@ -195,7 +192,7 @@ function SuperadminSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/superadmin">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                <div className="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   <Fish className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
@@ -245,7 +242,7 @@ function SuperadminSidebar() {
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-                side={isMobile ? "bottom" : "right"}
+                side={isMobile ? 'bottom' : 'right'}
                 align="end"
                 sideOffset={4}
               >
@@ -262,7 +259,7 @@ function SuperadminSidebar() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  className="focus:bg-transparent hover:bg-transparent"
+                  className="hover:bg-transparent focus:bg-transparent"
                   onSelect={(e) => e.preventDefault()}
                 >
                   <span>Tema</span>
@@ -289,7 +286,7 @@ function AuthenticatedLayout({ children }) {
   const router = useRouter();
   const { loading, token } = useSuperadminAuth();
 
-  const isLoginPage = pathname === "/superadmin/login";
+  const isLoginPage = pathname === '/superadmin/login';
   if (isLoginPage) return <>{children}</>;
 
   if (loading) {
@@ -304,27 +301,25 @@ function AuthenticatedLayout({ children }) {
   }
 
   if (!token) {
-    router.replace("/superadmin/login");
+    router.replace('/superadmin/login');
     return null;
   }
 
   const styleSidebar = {
-    "--sidebar-width": "16rem",
-    "--sidebar-width-mobile": "16rem",
+    '--sidebar-width': '16rem',
+    '--sidebar-width-mobile': '16rem',
   };
 
   return (
     <div className="h-screen overflow-hidden">
       <SidebarProvider className="h-full" style={styleSidebar}>
         <SuperadminSidebar />
-        <main className="flex flex-col h-full overflow-hidden w-full">
+        <main className="flex h-full w-full flex-col overflow-hidden">
           <header className="flex shrink-0 items-center gap-4 border-b px-4 py-2 md:px-6">
             <SidebarTrigger />
             <SuperadminBreadcrumb />
           </header>
-          <div className="flex-1 w-full h-full overflow-y-auto p-4 md:p-6">
-            {children}
-          </div>
+          <div className="h-full w-full flex-1 overflow-y-auto p-4 md:p-6">{children}</div>
         </main>
       </SidebarProvider>
     </div>

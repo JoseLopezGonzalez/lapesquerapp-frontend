@@ -8,12 +8,12 @@ Objetivo: crear un apartado **dashboard** para el rol **operario**, con la misma
 
 De la captura “Panel de Control” se extrae:
 
-| Bloque | Contenido |
-|--------|-----------|
-| **Título** | “Panel de Control” |
-| **Barra superior** | Tres datos: **Hora** (22:51:57), **Fecha** (11/2/2026), **Día** (Miércoles). Dos botones: **Impresión Etiquetas** (verde), **Herramientas Calculadora** (morado). |
+| Bloque                | Contenido                                                                                                                                                                                                                    |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Título**            | “Panel de Control”                                                                                                                                                                                                           |
+| **Barra superior**    | Tres datos: **Hora** (22:51:57), **Fecha** (11/2/2026), **Día** (Miércoles). Dos botones: **Impresión Etiquetas** (verde), **Herramientas Calculadora** (morado).                                                            |
 | **Columna izquierda** | **Recepciones de Materia Prima** – subtítulo “Lista de recepciones”, botón **Nueva Recepción +** (azul), tabla (N°, PROVEEDOR, ESPECIE, CANTIDAD, FECHA, acción imprimir), paginación (“X resultados” + anterior/siguiente). |
-| **Columna derecha** | **Salidas de cebo** – subtítulo “Lista de salidas”, botón **Nueva Salida +** (naranja), tabla (N°, PROVEEDOR, CANTIDAD, FECHA, acción imprimir), paginación. |
+| **Columna derecha**   | **Salidas de cebo** – subtítulo “Lista de salidas”, botón **Nueva Salida +** (naranja), tabla (N°, PROVEEDOR, CANTIDAD, FECHA, acción imprimir), paginación.                                                                 |
 
 Colores de botones a respetar en shadcn: azul (Nueva Recepción), naranja (Nueva Salida), verde (Impresión Etiquetas), morado (Herramientas Calculadora).
 
@@ -84,22 +84,22 @@ Colores de botones a respetar en shadcn: azul (Nueva Recepción), naranja (Nueva
 
 ### 5.1 Rutas y estructura
 
-- **Opción A – Dashboard como vista principal del warehouse**  
+- **Opción A – Dashboard como vista principal del warehouse**
   - En `src/app/warehouse/[storeId]/page.js`: mostrar primero el **Dashboard** (panel de control). Opción secundaria (pestaña o enlace) para ir al **Mapa** (componente `Store` actual).
-- **Opción B – Dashboard en ruta propia**  
+- **Opción B – Dashboard en ruta propia**
   - Crear `src/app/warehouse/[storeId]/dashboard/page.js` y, opcionalmente, hacer que la raíz `page.js` redirija a `dashboard` para el operario. En el layout o header del warehouse, enlace “Panel de Control” / “Mapa”.
 
 Recomendación: **Opción A** con dos vistas (Dashboard + Mapa) y Dashboard por defecto, para no cambiar la URL actual del warehouse y mantener una sola “casa” del operario.
 
 ### 5.2 Componentes a crear/reutilizar
 
-| Componente | Responsabilidad | Ubicación propuesta |
-|------------|-----------------|----------------------|
-| **OperarioDashboard** | Contenedor: barra superior (hora/fecha/día + botones) + dos columnas (recepciones | salidas). | `src/components/Warehouse/OperarioDashboard/index.js` (o `Dashboard/`) |
-| **DashboardInfoBar** | Hora en tiempo real, fecha, día de la semana. | Dentro de OperarioDashboard o `Warehouse/DashboardInfoBar` |
-| **DashboardToolButtons** | Botones “Impresión Etiquetas” y “Herramientas Calculadora” (verde / morado con variantes de Button). | Dentro de OperarioDashboard o componente pequeño |
-| **ReceptionsListCard** | Card con título “Recepciones de Materia Prima”, subtítulo, botón “Nueva Recepción +” (azul), tabla (N°, PROVEEDOR, ESPECIE, CANTIDAD, FECHA, imprimir), paginación. | `Warehouse/ReceptionsListCard` o similar |
-| **DispatchesListCard** | Igual para “Salidas de cebo”: “Nueva Salida +” (naranja), columnas N°, PROVEEDOR, CANTIDAD, FECHA, imprimir, paginación. | `Warehouse/DispatchesListCard` |
+| Componente               | Responsabilidad                                                                                                                                                     | Ubicación propuesta                                        |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------- |
+| **OperarioDashboard**    | Contenedor: barra superior (hora/fecha/día + botones) + dos columnas (recepciones                                                                                   | salidas).                                                  | `src/components/Warehouse/OperarioDashboard/index.js` (o `Dashboard/`) |
+| **DashboardInfoBar**     | Hora en tiempo real, fecha, día de la semana.                                                                                                                       | Dentro de OperarioDashboard o `Warehouse/DashboardInfoBar` |
+| **DashboardToolButtons** | Botones “Impresión Etiquetas” y “Herramientas Calculadora” (verde / morado con variantes de Button).                                                                | Dentro de OperarioDashboard o componente pequeño           |
+| **ReceptionsListCard**   | Card con título “Recepciones de Materia Prima”, subtítulo, botón “Nueva Recepción +” (azul), tabla (N°, PROVEEDOR, ESPECIE, CANTIDAD, FECHA, imprimir), paginación. | `Warehouse/ReceptionsListCard` o similar                   |
+| **DispatchesListCard**   | Igual para “Salidas de cebo”: “Nueva Salida +” (naranja), columnas N°, PROVEEDOR, CANTIDAD, FECHA, imprimir, paginación.                                            | `Warehouse/DispatchesListCard`                             |
 
 Tablas con shadcn: `Table`, `TableHeader`, `TableBody`, `TableRow`, `TableCell`, `TableHead`. Paginación: componente `Pagination` existente + estado local `page`/`perPage` y llamadas a `rawMaterialReceptionService.list` / `ceboDispatchService.list`.
 

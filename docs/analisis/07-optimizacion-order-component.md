@@ -16,6 +16,7 @@ Este documento detalla las optimizaciones específicas para el componente de vis
 **Ubicación**: `Order/index.js` (OrderContent)
 
 **Problemas**:
+
 - `StatusBadge` se define dentro del componente (línea 63-96)
 - `renderStatusBadge` se recrea en cada render (línea 98-130)
 - `handleStatusChange` se recrea en cada render (línea 40-49)
@@ -32,6 +33,7 @@ Este documento detalla las optimizaciones específicas para el componente de vis
 **Ubicación**: `Order/index.js` líneas 226-238
 
 **Problema**:
+
 ```javascript
 // ❌ Múltiples includes anidados - ineficiente
 {order.transport.name.toLowerCase().includes('olano') ? (
@@ -53,6 +55,7 @@ Este documento detalla las optimizaciones específicas para el componente de vis
 **Ubicación**: `OrderDetails/index.js` líneas 13-14
 
 **Problema**:
+
 ```javascript
 // ❌ Se recalcula en cada render
 const encodedAddress = encodeURIComponent(order.shippingAddress);
@@ -70,9 +73,10 @@ const googleApiKey = 'AIzaSyBh1lKDP8noxYHU6dXDs3Yjqyg_PpC5Ks4';
 **Ubicación**: `OrderPallets/index.js` línea 57
 
 **Problema**:
+
 ```javascript
 // ❌ BUG: Compara pallet.id === pallet.id (siempre true)
-const isPalletVinculated = pallets.some(pallet => pallet.id === pallet.id);
+const isPalletVinculated = pallets.some((pallet) => pallet.id === pallet.id);
 ```
 
 **Impacto**: Crítico - Lógica incorrecta, siempre retorna true
@@ -86,10 +90,11 @@ const isPalletVinculated = pallets.some(pallet => pallet.id === pallet.id);
 **Ubicación**: `OrderPlannedProductDetails/index.js` líneas 54, 57
 
 **Problema**:
+
 ```javascript
 // ❌ Busca en arrays en cada cambio
-updatedDetails[index].product.name = productOptions.find(option => option.value === value).label;
-updatedDetails[index].tax.rate = taxOptions.find(option => option.value === value).label;
+updatedDetails[index].product.name = productOptions.find((option) => option.value === value).label;
+updatedDetails[index].tax.rate = taxOptions.find((option) => option.value === value).label;
 ```
 
 **Impacto**: Medio - Búsquedas lineales en cada cambio de input
@@ -143,12 +148,12 @@ updatedDetails[index].tax.rate = taxOptions.find(option => option.value === valu
 
 ## 📊 Impacto Esperado
 
-| Optimización | Mejora Esperada |
-|--------------|----------------|
-| useCallback en handlers | -30% re-renderizados |
-| Memoización de cálculos | -40% cálculos innecesarios |
-| Optimización de búsquedas | -60% tiempo de búsqueda |
-| Corrección de bug | Funcionalidad correcta |
+| Optimización              | Mejora Esperada            |
+| ------------------------- | -------------------------- |
+| useCallback en handlers   | -30% re-renderizados       |
+| Memoización de cálculos   | -40% cálculos innecesarios |
+| Optimización de búsquedas | -60% tiempo de búsqueda    |
+| Corrección de bug         | Funcionalidad correcta     |
 
 ---
 
@@ -159,6 +164,7 @@ updatedDetails[index].tax.rate = taxOptions.find(option => option.value === valu
 **Archivo**: `src/components/Admin/OrdersManager/Order/index.js`
 
 **Cambios**:
+
 - ✅ Movido `StatusBadge` fuera del componente (línea 33-60)
 - ✅ Creada función helper `getTransportImage` optimizada (línea 62-78)
 - ✅ `handleStatusChange` memoizado con `useCallback` (línea 95-105)
@@ -169,6 +175,7 @@ updatedDetails[index].tax.rate = taxOptions.find(option => option.value === valu
 - ✅ Reemplazada lógica de múltiples condiciones por función optimizada
 
 **Beneficios**:
+
 - Reduce re-renderizados en ~30%
 - Elimina recreación de funciones en cada render
 - Mejora la legibilidad del código
@@ -180,12 +187,14 @@ updatedDetails[index].tax.rate = taxOptions.find(option => option.value === valu
 **Archivo**: `src/components/Admin/OrdersManager/Order/OrderDetails/index.js`
 
 **Cambios**:
+
 - ✅ `encodedAddress` memoizado con `useMemo` (línea 15-18)
 - ✅ `mapUrl` memoizado con `useMemo` (línea 20-23)
 - ✅ `GOOGLE_API_KEY` movido a constante fuera del componente (línea 12)
 - ✅ Soporte para variable de entorno `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`
 
 **Beneficios**:
+
 - Evita recálculos innecesarios de `encodeURIComponent`
 - Mejora la seguridad (API key en variable de entorno)
 - Reduce cálculos en cada render
@@ -197,11 +206,13 @@ updatedDetails[index].tax.rate = taxOptions.find(option => option.value === valu
 **Archivo**: `src/components/Admin/OrdersManager/Order/OrderPallets/index.js`
 
 **Cambios**:
+
 - ✅ Corregido bug crítico en `handlePalletChange` (línea 55-63)
   - **Antes**: `pallets.some(pallet => pallet.id === pallet.id)` ❌ (siempre true)
   - **Después**: `pallets.some(existingPallet => existingPallet.id === pallet.id)` ✅
 
 **Beneficios**:
+
 - Funcionalidad correcta
 - Evita bugs de lógica
 
@@ -212,6 +223,7 @@ updatedDetails[index].tax.rate = taxOptions.find(option => option.value === valu
 **Archivo**: `src/components/Admin/OrdersManager/Order/OrderPlannedProductDetails/index.js`
 
 **Cambios**:
+
 - ✅ Creado `productOptionsMap` con `useMemo` para búsquedas O(1) (línea 30-35)
 - ✅ Creado `taxOptionsMap` con `useMemo` para búsquedas O(1) (línea 37-42)
 - ✅ Memoizado `allDetails` con `useMemo` (línea 44-47)
@@ -219,6 +231,7 @@ updatedDetails[index].tax.rate = taxOptions.find(option => option.value === valu
 - ✅ Reemplazado `.find()` por `.get()` en Maps (búsqueda O(1) vs O(n))
 
 **Beneficios**:
+
 - Reduce tiempo de búsqueda en ~60% (de O(n) a O(1))
 - Mejora significativa con muchas opciones
 - Reduce re-renderizados innecesarios
@@ -227,13 +240,13 @@ updatedDetails[index].tax.rate = taxOptions.find(option => option.value === valu
 
 ## 📊 Resultados Finales
 
-| Optimización | Estado | Mejora |
-|--------------|--------|--------|
-| useCallback en handlers | ✅ | -30% re-renderizados |
-| Memoización de cálculos | ✅ | -40% cálculos innecesarios |
-| Optimización de búsquedas | ✅ | -60% tiempo de búsqueda |
-| Corrección de bug | ✅ | Funcionalidad correcta |
-| Optimización de imágenes | ✅ | -50% evaluaciones |
+| Optimización              | Estado | Mejora                     |
+| ------------------------- | ------ | -------------------------- |
+| useCallback en handlers   | ✅     | -30% re-renderizados       |
+| Memoización de cálculos   | ✅     | -40% cálculos innecesarios |
+| Optimización de búsquedas | ✅     | -60% tiempo de búsqueda    |
+| Corrección de bug         | ✅     | Funcionalidad correcta     |
+| Optimización de imágenes  | ✅     | -50% evaluaciones          |
 
 ---
 
@@ -285,4 +298,3 @@ updatedDetails[index].tax.rate = taxOptions.find(option => option.value === valu
 4. ✅ Actualizar documentación - **COMPLETADO**
 
 **Estado Final**: ✅ Todas las optimizaciones implementadas y validadas
-

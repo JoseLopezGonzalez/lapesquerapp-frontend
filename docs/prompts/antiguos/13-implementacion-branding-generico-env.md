@@ -25,10 +25,10 @@ El “interruptor” es **solo a nivel de programación** (env), no un control v
 
 Definir y usar al menos las siguientes (nombres sugeridos; pueden ajustarse si el proyecto ya usa convenciones):
 
-| Variable | Uso | Valores ejemplo |
-|----------|-----|------------------|
-| `NEXT_PUBLIC_APP_BRANDING` | Interruptor principal | `generic` \| `pesquerapp` (o equivalente: `full`). Si no está definida o es distinta de `pesquerapp`, tratar como modo genérico. |
-| (Opcional) | Valores genéricos por defecto | Si se desea no hardcodar en código los textos genéricos, se pueden definir `NEXT_PUBLIC_APP_NAME`, `NEXT_PUBLIC_APP_SHORT_NAME`, `NEXT_PUBLIC_APP_METADATA_BASE`, etc. para modo genérico, y sus equivalentes para PesquerApp; o derivar todo del único `NEXT_PUBLIC_APP_BRANDING` con valores por defecto en el módulo de config. |
+| Variable                   | Uso                           | Valores ejemplo                                                                                                                                                                                                                                                                                                                    |
+| -------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_APP_BRANDING` | Interruptor principal         | `generic` \| `pesquerapp` (o equivalente: `full`). Si no está definida o es distinta de `pesquerapp`, tratar como modo genérico.                                                                                                                                                                                                   |
+| (Opcional)                 | Valores genéricos por defecto | Si se desea no hardcodar en código los textos genéricos, se pueden definir `NEXT_PUBLIC_APP_NAME`, `NEXT_PUBLIC_APP_SHORT_NAME`, `NEXT_PUBLIC_APP_METADATA_BASE`, etc. para modo genérico, y sus equivalentes para PesquerApp; o derivar todo del único `NEXT_PUBLIC_APP_BRANDING` con valores por defecto en el módulo de config. |
 
 El módulo de config debe exponer una API clara (por ejemplo `isGenericBranding`, `appName`, `appShortName`, `metadataBase`, `supportEmail`, `demoEmail`, `exampleEmail`, `baseDomain`, `logoAlt`) para que el resto del código no lea `process.env` directamente salvo en ese módulo.
 

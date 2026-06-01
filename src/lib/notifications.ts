@@ -4,12 +4,10 @@
  * y traduce nuestras necesidades de dominio a la librería subyacente.
  */
 
-import type { ReactNode } from "react";
-import { toast, type ExternalToast } from "sonner";
+import type { ReactNode } from 'react';
+import { toast, type ExternalToast } from 'sonner';
 
-export type NotifyMessage =
-  | string
-  | { title: string; description?: string };
+export type NotifyMessage = string | { title: string; description?: string };
 
 /**
  * Titulo = descriptivo y contextual (ej. "Cambios guardados", "Error al crear pedido").
@@ -20,7 +18,13 @@ export interface NotifyOptions {
   id?: string | number;
   dedupeKey?: string;
   duration?: number | null;
-  position?: "top-left" | "top-center" | "top-right" | "bottom-left" | "bottom-center" | "bottom-right";
+  position?:
+    | 'top-left'
+    | 'top-center'
+    | 'top-right'
+    | 'bottom-left'
+    | 'bottom-center'
+    | 'bottom-right';
   dismissible?: boolean;
   important?: boolean;
   description?: ReactNode;
@@ -40,11 +44,14 @@ type ToastId = string | number;
 const dedupeRegistry = new Map<string, ToastId>();
 
 function toContent(msg: NotifyMessage): { title: ReactNode; description?: ReactNode } {
-  if (typeof msg === "string") return { title: msg };
+  if (typeof msg === 'string') return { title: msg };
   return { title: msg.title, description: msg.description };
 }
 
-function normalizeDuration(duration: NotifyOptions["duration"], important?: boolean): number | undefined {
+function normalizeDuration(
+  duration: NotifyOptions['duration'],
+  important?: boolean
+): number | undefined {
   if (duration === null) return Infinity;
   if (duration !== undefined) return duration;
   if (important) return Infinity;
@@ -88,28 +95,28 @@ function buildToastOptions(opts: NotifyOptions | undefined): ExternalToast {
   return out;
 }
 
-function getVariantIconClass(variant: "success" | "error" | "warning" | "info"): string {
-  if (variant === "success") return "text-green-500";
-  if (variant === "error") return "text-destructive";
-  if (variant === "warning") return "text-yellow-500";
-  return "text-violet-500";
+function getVariantIconClass(variant: 'success' | 'error' | 'warning' | 'info'): string {
+  if (variant === 'success') return 'text-green-500';
+  if (variant === 'error') return 'text-destructive';
+  if (variant === 'warning') return 'text-yellow-500';
+  return 'text-violet-500';
 }
 
 function withVariantClassNames(
-  variant: "success" | "error" | "warning" | "info",
+  variant: 'success' | 'error' | 'warning' | 'info',
   options: ExternalToast
 ): ExternalToast {
   return {
     ...options,
     classNames: {
       ...options.classNames,
-      icon: [options.classNames?.icon, getVariantIconClass(variant)].filter(Boolean).join(" "),
+      icon: [options.classNames?.icon, getVariantIconClass(variant)].filter(Boolean).join(' '),
     },
   };
 }
 
 function createOrReuseToast(
-  variant: "success" | "error" | "warning" | "info" | "loading" | "message",
+  variant: 'success' | 'error' | 'warning' | 'info' | 'loading' | 'message',
   message: NotifyMessage,
   options: NotifyOptions | undefined
 ): ToastId {
@@ -131,15 +138,11 @@ function createOrReuseToast(
     description === undefined ? resolvedOptions : { ...resolvedOptions, description }
   );
   const finalToastOptions =
-    variant === "success" || variant === "error" || variant === "warning" || variant === "info"
+    variant === 'success' || variant === 'error' || variant === 'warning' || variant === 'info'
       ? withVariantClassNames(variant, toastOptions)
       : toastOptions;
   const method =
-    variant === "message"
-      ? toast
-      : variant === "loading"
-        ? toast.loading
-        : toast[variant];
+    variant === 'message' ? toast : variant === 'loading' ? toast.loading : toast[variant];
   const id = method(title, finalToastOptions);
   rememberDedupeKey(resolvedOptions?.dedupeKey, id);
   return id;
@@ -155,11 +158,11 @@ function toPromiseMessage<T>(
   fallback: { title: string; description?: string }
 ) {
   if (value == null) return fallback;
-  if (typeof value === "function") {
+  if (typeof value === 'function') {
     const out = value(input);
-    return typeof out === "string" ? { title: out } : out;
+    return typeof out === 'string' ? { title: out } : out;
   }
-  return typeof value === "string" ? { title: value } : value;
+  return typeof value === 'string' ? { title: value } : value;
 }
 
 function createPromiseId(options?: NotifyOptions): ToastId {
@@ -175,27 +178,30 @@ function buildActionConfig(button: NotifyActionButton) {
 
 export const notify = {
   success(message: NotifyMessage, options?: NotifyOptions): string {
-    return String(createOrReuseToast("success", message, options));
+    return String(createOrReuseToast('success', message, options));
   },
 
   error(message: NotifyMessage, options?: NotifyOptions): string {
-    return String(createOrReuseToast("error", message, options));
+    return String(createOrReuseToast('error', message, options));
   },
 
   warning(message: NotifyMessage, options?: NotifyOptions): string {
-    return String(createOrReuseToast("warning", message, options));
+    return String(createOrReuseToast('warning', message, options));
   },
 
   info(message: NotifyMessage, options?: NotifyOptions): string {
-    return String(createOrReuseToast("info", message, options));
+    return String(createOrReuseToast('info', message, options));
   },
 
   /**
    * Loading manual (solo para casos donde no hay promesa; preferir notify.promise para fetches).
    * Devuelve un id reutilizable en `success/error/info/warning`.
    */
-  loading(message: string | { title: string; description?: string }, options?: NotifyOptions): string {
-    return String(createOrReuseToast("loading", message, options));
+  loading(
+    message: string | { title: string; description?: string },
+    options?: NotifyOptions
+  ): string {
+    return String(createOrReuseToast('loading', message, options));
   },
 
   /**
@@ -206,16 +212,22 @@ export const notify = {
     promise: Promise<T> | (() => Promise<T>),
     messages: {
       loading: string | { title: string; description?: string };
-      success?: string | { title: string; description?: string } | ((data: T) => string | { title: string; description?: string });
-      error?: string | { title: string; description?: string } | ((err: unknown) => string | { title: string; description?: string });
+      success?:
+        | string
+        | { title: string; description?: string }
+        | ((data: T) => string | { title: string; description?: string });
+      error?:
+        | string
+        | { title: string; description?: string }
+        | ((err: unknown) => string | { title: string; description?: string });
     },
     options?: NotifyOptions
   ): Promise<T> {
-    const promiseFn = typeof promise === "function" ? promise : () => promise;
+    const promiseFn = typeof promise === 'function' ? promise : () => promise;
     const task = promiseFn();
     const toastId = createPromiseId(options);
     const loadingContent = toContent(
-      typeof messages.loading === "string" ? { title: messages.loading } : messages.loading
+      typeof messages.loading === 'string' ? { title: messages.loading } : messages.loading
     );
 
     rememberDedupeKey(options?.dedupeKey, toastId);
@@ -230,11 +242,7 @@ export const notify = {
 
     return task
       .then((data) => {
-        const success = toPromiseMessage(
-          messages.success,
-          data,
-          { title: "Operacion completada" }
-        );
+        const success = toPromiseMessage(messages.success, data, { title: 'Operacion completada' });
         notify.success(success, {
           ...options,
           id: toastId,
@@ -242,11 +250,10 @@ export const notify = {
         return data;
       })
       .catch((err) => {
-        const errorMessage = toPromiseMessage(
-          messages.error,
-          err,
-          { title: "Error", description: "Ha ocurrido un error. Intente de nuevo." }
-        );
+        const errorMessage = toPromiseMessage(messages.error, err, {
+          title: 'Error',
+          description: 'Ha ocurrido un error. Intente de nuevo.',
+        });
         notify.error(errorMessage, {
           ...options,
           id: toastId,
@@ -266,12 +273,16 @@ export const notify = {
   ): string {
     const { title, description } = toContent(message);
     const toastId = String(
-      getToastId(options)
-        ?? (options?.dedupeKey ? `notify-${options.dedupeKey}` : `notify-action-${Math.random().toString(36).slice(2, 10)}`)
+      getToastId(options) ??
+        (options?.dedupeKey
+          ? `notify-${options.dedupeKey}`
+          : `notify-action-${Math.random().toString(36).slice(2, 10)}`)
     );
     const id = toast(title, {
       ...buildToastOptions(
-        description === undefined ? { ...options, id: toastId } : { ...options, id: toastId, description }
+        description === undefined
+          ? { ...options, id: toastId }
+          : { ...options, id: toastId, description }
       ),
       action: buildActionConfig(button),
       cancel: options?.cancel ? buildActionConfig(options.cancel) : undefined,
@@ -287,7 +298,7 @@ export const notify = {
     toast.dismiss(id);
   },
 
-  clear(_position?: NotifyOptions["position"]): void {
+  clear(_position?: NotifyOptions['position']): void {
     dedupeRegistry.clear();
     toast.dismiss();
   },

@@ -198,6 +198,7 @@ Archivo: `src/app/api/auth/[...nextauth]/route.ts:57-127`, `src/hooks/useLoginAc
 Observacion verificada:
 
 Cuando el usuario introduce el OTP correctamente:
+
 1. `verifyOtp` devuelve `access_token` y `user`.
 2. `signIn("credentials", { redirect: false, accessToken, user })` es llamado.
 3. NextAuth invoca el callback `jwt` con el nuevo `user`.
@@ -245,6 +246,7 @@ Mecanismo del bucle verificado en codigo:
 `page.js` muestra `<Loader />` mientras status es "authenticated". No hace llamadas API, por lo que `AuthErrorInterceptor` no tiene nada que interceptar en la pagina raiz durante el bucle.
 
 Condicion de escape del bucle:
+
 - `__session_verified` aun vigente (< 5 min desde ultima verificacion exitosa): el middleware deja pasar, la pagina protegida monta, las queries hacen fetch con el token revocado → 401 → `AuthErrorInterceptor` → signOut → status = "unauthenticated" → LoginPage.
 - Algun provider de contexto en `ClientLayout` hace llamadas API (p.ej. `SettingsProvider`) que reciben 401 incluso desde `/` → `AuthErrorInterceptor.alreadyOnLogin = true` → `clearSession()` sin redireccion → status = "unauthenticated" → LoginPage.
 - El usuario limpia cookies manualmente.
@@ -259,6 +261,7 @@ Nivel de riesgo: **critico** — mecanismo del bucle confirmado en codigo.
 ### H6. El flag `__is_logging_out__` no se escribe en ningun handler actual
 
 Archivos:
+
 - Escritura esperada: `src/app/admin/AdminLayoutClient.jsx:23-44`, todos los layout clients
 - Lecturas: `src/lib/fetchWithTenant.js:62-64`, `src/hooks/useIsLoggingOut.ts:14`, `src/components/AdminRouteProtection/index.tsx:36`
 
@@ -267,6 +270,7 @@ Observacion verificada en codigo:
 Ningun `handleLogout` de los cinco layouts (`AdminLayoutClient`, `OperatorLayoutClient`, `ComercialLayoutClient`, `FieldLayoutClient`, `ExternalLayoutClient`) escribe `sessionStorage.setItem("__is_logging_out__", "true")`. `LogoutContext.setIsLoggingOut(true)` tampoco es llamado desde ningun handler.
 
 Consecuencia:
+
 - `fetchWithTenant` siempre lee `__is_logging_out__ === null` → nunca suprime eventos de sesion expirada durante logout.
 - `useIsLoggingOut()` siempre retorna `false`.
 - `AdminRouteProtection` nunca muestra el `LogoutDialog`.
@@ -374,8 +378,8 @@ Observacion verificada en codigo:
 ```javascript
 // page.js
 useEffect(() => {
-  if (isSubdomain && status === "authenticated" && session?.user) {
-    router.replace(getDefaultAuthenticatedRoute(session.user));  // ignora ?from=
+  if (isSubdomain && status === 'authenticated' && session?.user) {
+    router.replace(getDefaultAuthenticatedRoute(session.user)); // ignora ?from=
   }
 }, [isSubdomain, status, session, router]);
 ```
@@ -425,6 +429,7 @@ return <LoginPage />;
 ```
 
 La decision es deliberada para evitar bloquear el formulario de login mientras NextAuth resuelve. Pero hay una ventana en el arranque:
+
 1. Status = "loading" → `<LoginPage />` se muestra.
 2. Status pasa a "authenticated" → el efecto dispara `router.replace(getDefaultAuthenticatedRoute)`.
 3. `<Loader />` reemplaza `<LoginPage />` brevemente.
@@ -444,10 +449,10 @@ Observacion:
 
 ```typescript
 const response = await fetchWithTenant(`${API_URL_V2}me`, {
-  method: "GET",
+  method: 'GET',
   headers: {
     Authorization: `Bearer ${token.accessToken}`,
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
   },
 });
 // Sin tercer argumento reqHeaders
@@ -468,12 +473,14 @@ Archivos: `src/app/admin/AdminLayoutClient.jsx:23-44`, `src/services/authService
 Observacion verificada en codigo:
 
 Secuencia de `handleLogout` en `AdminLayoutClient`:
+
 1. `logoutBackend()` → llama a `/logout` → el backend revoca el token.
 2. `signOut({ redirect: false })`.
 3. `notify.success("Sesion cerrada")`.
 4. `setTimeout(() => window.location.replace('/'), 500)`.
 
 Entre el paso 1 y el paso 4, si hay queries en vuelo (TanStack Query refetching, settings, etc.) que llegaron al backend y reciben 401 (token ya revocado):
+
 - `fetchWithTenant`: `isLogoutRequest = false` (no son llamadas a `/logout`), `__is_logging_out__ = null` (flag nunca escrito).
 - Despacha `auth:session-expired`.
 - `AuthErrorInterceptor` recibe el evento, `isRedirecting = false` → llama a `handleAuthError()`.
@@ -510,14 +517,14 @@ Nivel de riesgo: **alto** — sin tests, cualquier fix puede romper el flujo san
 
 Estos bloques existen en el codigo actual pero **nunca se ejecutan** en condiciones reales:
 
-| Archivo | Lineas | Descripcion | Por que es muerto |
-|---|---|---|---|
-| `middleware.ts` | 122-141 | `if (!verifyResponse.ok)` con checks de status | `fetchWithTenant` lanza antes de retornar en servidor |
-| `route.ts` | 88-91 | `if (response.status === 401 \|\| response.status === 403) return null` | Misma razon; el catch no invalida |
-| `route.ts` | 125-126 | `const tokenIsExpired = false; if (tokenIsExpired)...` | Hardcodeado a false siempre |
-| `useIsLoggingOut.ts` | 14 | Lee `sessionStorage.__is_logging_out__` | El flag nunca se escribe |
-| `AdminRouteProtection` | 36-38 | `if (isLoggingOut) return <LogoutDialog>` | `useIsLoggingOut()` siempre false |
-| `LogoutContext.tsx` | Estado `isLoggingOut` | Context de logout | Nunca se llama a `setIsLoggingOut(true)` |
+| Archivo                | Lineas                | Descripcion                                                             | Por que es muerto                                     |
+| ---------------------- | --------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------- |
+| `middleware.ts`        | 122-141               | `if (!verifyResponse.ok)` con checks de status                          | `fetchWithTenant` lanza antes de retornar en servidor |
+| `route.ts`             | 88-91                 | `if (response.status === 401 \|\| response.status === 403) return null` | Misma razon; el catch no invalida                     |
+| `route.ts`             | 125-126               | `const tokenIsExpired = false; if (tokenIsExpired)...`                  | Hardcodeado a false siempre                           |
+| `useIsLoggingOut.ts`   | 14                    | Lee `sessionStorage.__is_logging_out__`                                 | El flag nunca se escribe                              |
+| `AdminRouteProtection` | 36-38                 | `if (isLoggingOut) return <LogoutDialog>`                               | `useIsLoggingOut()` siempre false                     |
+| `LogoutContext.tsx`    | Estado `isLoggingOut` | Context de logout                                                       | Nunca se llama a `setIsLoggingOut(true)`              |
 
 ---
 
@@ -542,6 +549,7 @@ El callback JWT tampoco invalida por 403 (H2).
 El interceptor cliente NO redirige por 403 generico (solo por el patron de "acceso externo desactivado").
 
 Resultado real: 403 de `/me` puede producir comportamiento no determinista dependiendo del mensaje backend:
+
 - Mensaje con palabras clave de auth → redirect a login (middleware).
 - Mensaje sin palabras clave → usuario pasa el middleware con datos stale, hace fetch, recibe 403 → UI muestra userMessage (sin logout), o recibe 401 si el token tambien expira → loop.
 

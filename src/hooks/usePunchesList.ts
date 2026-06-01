@@ -35,7 +35,11 @@ export function usePunchesList(params: PunchesListParams = {}) {
 /**
  * Hook para fichajes de un mes (calendario). React Query, tenant-aware.
  */
-export function usePunchesByMonth(year: number, month: number, filters: { employee_id?: number } = {}) {
+export function usePunchesByMonth(
+  year: number,
+  month: number,
+  filters: { employee_id?: number } = {}
+) {
   const { data: session } = useSession();
   const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;

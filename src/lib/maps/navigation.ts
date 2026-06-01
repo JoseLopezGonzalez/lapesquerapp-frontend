@@ -2,7 +2,11 @@ function openExternal(url: string) {
   window.open(url, '_blank', 'noopener,noreferrer');
 }
 
-export function openInGoogleMaps(lat: number | string | null | undefined, lng: number | string | null | undefined, query: string) {
+export function openInGoogleMaps(
+  lat: number | string | null | undefined,
+  lng: number | string | null | undefined,
+  query: string
+) {
   const hasCoordinates =
     lat != null && lng != null && !Number.isNaN(Number(lat)) && !Number.isNaN(Number(lng));
 
@@ -17,7 +21,11 @@ export function openInGoogleMaps(lat: number | string | null | undefined, lng: n
   openExternal(url);
 }
 
-export function openInWaze(lat: number | string | null | undefined, lng: number | string | null | undefined, query: string) {
+export function openInWaze(
+  lat: number | string | null | undefined,
+  lng: number | string | null | undefined,
+  query: string
+) {
   const hasCoordinates =
     lat != null && lng != null && !Number.isNaN(Number(lat)) && !Number.isNaN(Number(lng));
 

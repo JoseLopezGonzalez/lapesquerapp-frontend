@@ -38,9 +38,12 @@ function FieldRouteProtection({ children }) {
     );
   }
 
-  const role = session?.user?.role != null
-    ? (Array.isArray(session.user.role) ? session.user.role[0] : session.user.role)
-    : null;
+  const role =
+    session?.user?.role != null
+      ? Array.isArray(session.user.role)
+        ? session.user.role[0]
+        : session.user.role
+      : null;
 
   if (status === 'authenticated' && role !== 'repartidor_autoventa') {
     return (
@@ -99,7 +102,10 @@ export default function FieldLayoutClient({ children }) {
   );
 
   const navigationItems = React.useMemo(
-    () => filteredNavigationConfig.filter((item) => item && item.href).map((item) => ({ ...item, href: item.href })),
+    () =>
+      filteredNavigationConfig
+        .filter((item) => item && item.href)
+        .map((item) => ({ ...item, href: item.href })),
     [filteredNavigationConfig]
   );
 
@@ -110,7 +116,12 @@ export default function FieldLayoutClient({ children }) {
 
   const apps = React.useMemo(() => {
     return [
-      { name: companyName, logo: GalleryVerticalEnd, description: 'Operativa de reparto', current: true },
+      {
+        name: companyName,
+        logo: GalleryVerticalEnd,
+        description: 'Operativa de reparto',
+        current: true,
+      },
     ];
   }, [companyName]);
 

@@ -21,6 +21,7 @@
 **Objetivo**: Tipar las funciones de `punchService.js` usadas por listado y calendario, y exponerlas vía React Query sin cambiar UI.
 
 **Incluye**:
+
 - Crear `src/services/punches/punchService.ts` (o `punchService.types.ts` + migración gradual) con tipos para Punch, listado paginado, filtros.
 - Añadir hooks `usePunchesList` y `usePunchesByMonth` que usen `useQuery` con `queryKey` tenant-aware.
 - Mantener `punchService.js` existente como fachada que reexporte o que los nuevos hooks llamen a funciones que sigan en .js temporalmente (para no romper llamadas directas).
@@ -37,6 +38,7 @@
 **Objetivo**: Que todos los componentes que cargan lista de empleados usen React Query (tenant-aware).
 
 **Incluye**:
+
 - Hook `useEmployeesForPunches` (o `useEmployeeOptions`) que use `useQuery` llamando a `employeeService.getOptions()` o a `getEmployees` con parámetros adecuados.
 - Sustituir en **IndividualPunchForm**, **TimePunchManager** y **NFCPunchManager** el `useEffect` + `setEmployeeOptions`/`setEmployees` por el nuevo hook.
 - Incluir `tenantId` en queryKey.
@@ -52,6 +54,7 @@
 **Objetivo**: PunchesCalendar sin useEffect para datos; uso de `usePunchesByMonth` y estados derivados del hook.
 
 **Incluye**:
+
 - Sustituir en `PunchesCalendar/index.jsx` el estado `punchesData` + `useEffect(getPunchesByMonth)` por `usePunchesByMonth(year, month)`.
 - Mantener UI idéntica (loading/error desde el hook).
 
@@ -66,6 +69,7 @@
 **Objetivo**: Formulario individual con validación Zod, react-hook-form y `useMutation` para crear fichaje; opcionalmente usar hook de empleados ya existente.
 
 **Incluye**:
+
 - Schema Zod para formulario (empleado, tipo evento, timestamp, y si aplica exitTimestamp).
 - `useForm` con `zodResolver(schema)`.
 - `useMutation` para `createManualPunch`; onSuccess invalidar queries de punches/calendario si se desea.
@@ -82,6 +86,7 @@
 **Objetivo**: Usar hook de empleados (Bloque 9.2) y mutación para `createPunch`; eliminar useEffect de carga.
 
 **Incluye**:
+
 - Sustituir carga de empleados por hook (ya hecho en 9.2 si se aplica antes).
 - `useMutation` para el registro de fichaje; en onSuccess se puede invalidar lista de empleados (with_last_punch) y/o punches del dashboard.
 - Mantener flujo e interacción actual (botones, diálogos, mensajes).
@@ -97,6 +102,7 @@
 **Objetivo**: Bajar de ~450 líneas; extraer lógica a custom hook y subcomponentes (sin cambiar UX).
 
 **Incluye**:
+
 - Extraer `useIndividualPunchForm` (estado, validación, submit) si no se hizo en 9.4.
 - Extraer subcomponentes (por ejemplo sección de empleado, sección de fechas, botones) en archivos bajo `ManualPunches/`.
 - Mantener mismo layout y mensajes.
@@ -112,6 +118,7 @@
 **Objetivo**: Componentes por debajo de 200 líneas; extraer lógica a hook y subcomponentes.
 
 **Incluye**:
+
 - `usePunchesCalendar(year, month)` que encapsule `usePunchesByMonth` y lógica de día seleccionado/datos por día.
 - Subcomponentes para cabecera del calendario, rejilla de días, celda de día.
 - PunchDayDialog: extraer lista de fichajes por empleado a subcomponente o hook.
@@ -127,6 +134,7 @@
 **Objetivo**: Bajar líneas de BulkPunchForm y BulkPunchExcelUpload; extraer hooks (validar/enviar) y subcomponentes (tabla de filas, cabecera, ayuda).
 
 **Incluye**:
+
 - Hooks `useBulkPunchForm` y `useBulkPunchExcel` para estado de filas, validación y envío (con useMutation).
 - Subcomponentes para tabla, fila de fichaje, bloque de ayuda, botones.
 - Sin cambio de flujo ni textos.
@@ -142,6 +150,7 @@
 **Objetivo**: Llevar ambos por debajo de 200 líneas; extraer lógica a hooks y subcomponentes.
 
 **Incluye**:
+
 - Hook `useTimePunchRegistration` (empleados, registeringId, handleRegisterPunch, lastSuccess).
 - Subcomponentes para lista de empleados, tarjeta de empleado, diálogo de confirmación/éxito.
 - Mismo enfoque para NFCPunchManager (hook + subcomponentes).
@@ -157,6 +166,7 @@
 **Objetivo**: Un solo punto de uso para “punches” en el front: o bien un único `punchService` en TS que reemplace el legacy, o documentar qué usa EntityClient (domain) y qué usa el resto (nuevo servicio tipado), y deprecar llamadas directas a `punchService.js` desde componentes (que pasen a usar solo hooks).
 
 **Incluye**:
+
 - Decisión: mantener `domain/punches/punchService.js` para EntityClient y migrar el resto a `punchService.ts` + hooks, o unificar en un solo servicio TS.
 - Documentar en 01_analysis o en código.
 - No romper EntityClient ni formularios actuales.
@@ -179,12 +189,12 @@ Con esto el bloque queda con data fetching moderno y estable. Los siguientes (9.
 
 ## Matriz de validación (resumen)
 
-| Bloque | Cambio principal | Riesgo UI | Reversible |
-|--------|------------------|-----------|------------|
-| 9.1 | Tipos + hooks usePunchesList / usePunchesByMonth | Bajo | Sí |
-| 9.2 | Hook useEmployeeOptions / useEmployeesForPunches | Bajo | Sí |
-| 9.3 | PunchesCalendar usa usePunchesByMonth | Bajo | Sí |
-| 9.4 | IndividualPunchForm Zod + RHF + useMutation | Bajo | Sí |
-| 9.5 | TimePunch + NFC con hook empleados + useMutation | Bajo | Sí |
-| 9.6–9.9 | Extracción hooks/subcomponentes | Bajo | Sí |
-| 9.10 | Unificación/limpieza servicios | Medio | Con cuidado |
+| Bloque  | Cambio principal                                 | Riesgo UI | Reversible  |
+| ------- | ------------------------------------------------ | --------- | ----------- |
+| 9.1     | Tipos + hooks usePunchesList / usePunchesByMonth | Bajo      | Sí          |
+| 9.2     | Hook useEmployeeOptions / useEmployeesForPunches | Bajo      | Sí          |
+| 9.3     | PunchesCalendar usa usePunchesByMonth            | Bajo      | Sí          |
+| 9.4     | IndividualPunchForm Zod + RHF + useMutation      | Bajo      | Sí          |
+| 9.5     | TimePunch + NFC con hook empleados + useMutation | Bajo      | Sí          |
+| 9.6–9.9 | Extracción hooks/subcomponentes                  | Bajo      | Sí          |
+| 9.10    | Unificación/limpieza servicios                   | Medio     | Con cuidado |

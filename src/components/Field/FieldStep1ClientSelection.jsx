@@ -4,24 +4,14 @@ import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useFieldCustomerOptions } from '@/hooks/useFieldOptions';
 import Loader from '@/components/Utilities/Loader';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { Plus, UserRound } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export default function FieldStep1ClientSelection({
-  state,
-  setCustomer,
-  setNewCustomerName,
-}) {
+export default function FieldStep1ClientSelection({ state, setCustomer, setNewCustomerName }) {
   const { options: fieldCustomerOptions, isLoading: loadingCustomers } = useFieldCustomerOptions();
   const [newCustomerOpen, setNewCustomerOpen] = useState(false);
   const [draftNewCustomerName, setDraftNewCustomerName] = useState('');
@@ -45,7 +35,9 @@ export default function FieldStep1ClientSelection({
 
   useEffect(() => {
     if (state.customerId == null || state.customerName != null) return;
-    const selected = customerOptions.find((option) => String(option.value) === String(state.customerId));
+    const selected = customerOptions.find(
+      (option) => String(option.value) === String(state.customerId)
+    );
     if (selected) {
       setCustomer(selected.value, selected.label);
     }
@@ -63,7 +55,7 @@ export default function FieldStep1ClientSelection({
   const isNewCustomerSelected = Boolean(state.newCustomerName) && state.customerId == null;
 
   return (
-    <div className="w-full max-w-[420px] flex flex-col flex-1 min-h-0 gap-4">
+    <div className="flex min-h-0 w-full max-w-[420px] flex-1 flex-col gap-4">
       <Sheet
         open={newCustomerOpen}
         onOpenChange={(open) => {
@@ -115,17 +107,17 @@ export default function FieldStep1ClientSelection({
         </SheetContent>
       </Sheet>
 
-      <div className="w-full flex-1 min-h-0 rounded-lg border overflow-y-auto overflow-x-hidden flex flex-col">
+      <div className="flex min-h-0 w-full flex-1 flex-col overflow-x-hidden overflow-y-auto rounded-lg border">
         {loadingCustomers ? (
-          <div className="flex flex-1 items-center justify-center w-full min-h-0">
+          <div className="flex min-h-0 w-full flex-1 items-center justify-center">
             <Loader />
           </div>
         ) : (
           <div className="flex flex-col gap-2 p-3 pr-4">
             {customerOptions.length === 0 ? (
-              <div className="flex flex-1 items-center justify-center w-full py-6 min-h-0">
+              <div className="flex min-h-0 w-full flex-1 items-center justify-center py-6">
                 <EmptyState
-                  icon={<UserRound className="h-12 w-12 text-primary" strokeWidth={1.5} />}
+                  icon={<UserRound className="text-primary h-12 w-12" strokeWidth={1.5} />}
                   title="No hay clientes"
                   description="No hay clientes disponibles o crea uno con el botón «Nuevo cliente»."
                 />
@@ -147,15 +139,17 @@ export default function FieldStep1ClientSelection({
                       setCustomer(isSelected ? null : opt.value, isSelected ? null : opt.label);
                     }}
                     className={cn(
-                      'w-full text-left rounded-lg border-2 px-4 py-3 transition-colors touch-manipulation min-h-[56px] flex flex-col justify-center gap-0.5',
+                      'flex min-h-[56px] w-full touch-manipulation flex-col justify-center gap-0.5 rounded-lg border-2 px-4 py-3 text-left transition-colors',
                       isSelected
-                        ? 'border-primary border-l-4 bg-primary/5'
+                        ? 'border-primary bg-primary/5 border-l-4'
                         : 'border-border hover:border-primary/40 hover:bg-muted/50'
                     )}
                   >
-                    <span className="font-medium text-foreground">{opt.label}</span>
+                    <span className="text-foreground font-medium">{opt.label}</span>
                     {opt.isNewCustomer && (
-                      <span className="text-sm text-muted-foreground">Se creará al confirmar la autoventa</span>
+                      <span className="text-muted-foreground text-sm">
+                        Se creará al confirmar la autoventa
+                      </span>
                     )}
                   </button>
                 );

@@ -1,6 +1,7 @@
 # Skill: Caveman
 
 ## Categoría
+
 Optimización de tokens
 
 ## Cuándo se activa
@@ -57,8 +58,8 @@ MANTENER siempre:
 
 ```
 ORIGINAL (47 tokens):
-"Necesito que revises este componente de React que hemos creado para 
-gestionar el listado de pedidos. Hay un problema con la paginación que 
+"Necesito que revises este componente de React que hemos creado para
+gestionar el listado de pedidos. Hay un problema con la paginación que
 no funciona correctamente cuando se aplican filtros al mismo tiempo."
 
 CAVEMAN (14 tokens):
@@ -69,9 +70,9 @@ CAVEMAN (14 tokens):
 
 ```
 ORIGINAL (52 tokens):
-"Es importante que recuerdes que en este proyecto nunca debes usar fetch() 
-directamente. Todo el tráfico HTTP debe pasar a través de fetchWithTenant, 
-que se encarga automáticamente de añadir el header X-Tenant y el token 
+"Es importante que recuerdes que en este proyecto nunca debes usar fetch()
+directamente. Todo el tráfico HTTP debe pasar a través de fetchWithTenant,
+que se encarga automáticamente de añadir el header X-Tenant y el token
 de autorización."
 
 CAVEMAN (15 tokens):
@@ -82,8 +83,8 @@ CAVEMAN (15 tokens):
 
 ```
 ORIGINAL (38 tokens):
-"Cuando el usuario hace clic en el botón de guardar después de haber 
-modificado los datos del cliente, la aplicación muestra un error 500 
+"Cuando el usuario hace clic en el botón de guardar después de haber
+modificado los datos del cliente, la aplicación muestra un error 500
 en la consola pero el formulario no muestra ningún mensaje de error."
 
 CAVEMAN (13 tokens):
@@ -94,9 +95,10 @@ CAVEMAN (13 tokens):
 
 ## Output
 
-Solo el texto comprimido. Sin explicaciones, sin "aquí tienes la versión comprimida". 
+Solo el texto comprimido. Sin explicaciones, sin "aquí tienes la versión comprimida".
 
 Si el input tiene partes con distinta importancia, caveman puede marcar secciones:
+
 ```
 [CORE] Lo que no se puede quitar
 [CONTEXT] Lo que ayuda pero no es crítico

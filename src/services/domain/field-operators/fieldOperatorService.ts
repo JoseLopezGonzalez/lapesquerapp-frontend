@@ -2,7 +2,11 @@ import { API_URL_V2 } from '@/configs/config';
 import { getAuthToken } from '@/lib/auth/getAuthToken';
 import { fetchEntitiesGeneric, deleteEntityGeneric } from '@/services/generic/entityService';
 import { createEntityGeneric } from '@/services/generic/createEntityService';
-import { fetchEntityDataGeneric, submitEntityFormGeneric, fetchAutocompleteOptionsGeneric } from '@/services/generic/editEntityService';
+import {
+  fetchEntityDataGeneric,
+  submitEntityFormGeneric,
+  fetchAutocompleteOptionsGeneric,
+} from '@/services/generic/editEntityService';
 import { addFiltersToParams } from '@/lib/entity/filtersHelper';
 import { addWithParams } from '@/lib/entity/entityRelationsHelper';
 
@@ -37,7 +41,12 @@ export const fieldOperatorAdminService = {
   },
   async update(id: number | string, payload: FieldOperatorPayload) {
     const token = await getAuthToken();
-    const response = await submitEntityFormGeneric(`${API_URL_V2}${ENDPOINT}/${id}`, 'PUT', payload, token);
+    const response = await submitEntityFormGeneric(
+      `${API_URL_V2}${ENDPOINT}/${id}`,
+      'PUT',
+      payload,
+      token
+    );
     const result = await response.json();
     return result.data ?? result;
   },

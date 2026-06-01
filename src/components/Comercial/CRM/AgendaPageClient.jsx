@@ -3,7 +3,17 @@
 import Link from 'next/link';
 import * as React from 'react';
 import { Calendar, Check, ExternalLink, MoreVertical, Plus, Search, XCircle } from 'lucide-react';
-import { eachDayOfInterval, endOfMonth, endOfWeek, format, getDay, isSameMonth, isToday, startOfMonth, startOfWeek } from 'date-fns';
+import {
+  eachDayOfInterval,
+  endOfMonth,
+  endOfWeek,
+  format,
+  getDay,
+  isSameMonth,
+  isToday,
+  startOfMonth,
+  startOfWeek,
+} from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -18,10 +28,33 @@ import { EmptyState } from '@/components/Utilities/EmptyState';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import Loader from '@/components/Utilities/Loader';
 import { notify } from '@/lib/notifications';
 import { cn } from '@/lib/utils';
@@ -37,7 +70,13 @@ import ResolveNextActionDialog from './ResolveNextActionDialog';
 import { AgendaHeaderControls } from './AgendaHeaderControls';
 import { AgendaFiltersDialog } from './AgendaFiltersDialog';
 import { getAgendaDomainErrorMessage } from './agendaErrorMessages';
-import { agendaStatusLabels, formatDateValue, getStatusTone, isOverdueDate, toneClasses } from './utils';
+import {
+  agendaStatusLabels,
+  formatDateValue,
+  getStatusTone,
+  isOverdueDate,
+  toneClasses,
+} from './utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import InteractionsTimelinePanel from './context/InteractionsTimelinePanel';
 import OffersHistoryPanel from './context/OffersHistoryPanel';
@@ -64,17 +103,22 @@ const toneDotClasses = {
 
 function SummaryStat({ title, count, tone = 'slate' }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/30 px-2 py-0.5 text-[11px] text-foreground">
-      <span className={`size-1.5 shrink-0 rounded-full ${toneDotClasses[tone] ?? toneDotClasses.slate}`} aria-hidden />
+    <span className="border-border bg-muted/30 text-foreground inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[11px]">
+      <span
+        className={`size-1.5 shrink-0 rounded-full ${toneDotClasses[tone] ?? toneDotClasses.slate}`}
+        aria-hidden
+      />
       <span>{title}</span>
-      <span className="tabular-nums font-medium">{count}</span>
+      <span className="font-medium tabular-nums">{count}</span>
     </span>
   );
 }
 
 function AgendaStatusBadge({ status }) {
   return (
-    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${toneClasses(getStatusTone(status))}`}>
+    <span
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${toneClasses(getStatusTone(status))}`}
+    >
       {agendaStatusLabels[status] ?? status}
     </span>
   );
@@ -130,22 +174,25 @@ function AgendaToolbar({
 function AgendaEventRow({ item, onReschedule, onCancel, onComplete, onOpenContext }) {
   const isPending = item.status === 'pending';
   const isOverdue = isPending && isOverdueDate(item.scheduledAt);
-  const href = item.target.type === 'customer' ? `/comercial/clientes/${item.target.id}` : `/comercial/prospectos/${item.target.id}`;
+  const href =
+    item.target.type === 'customer'
+      ? `/comercial/clientes/${item.target.id}`
+      : `/comercial/prospectos/${item.target.id}`;
   const targetLabel = item.target.type === 'customer' ? 'Cliente' : 'Prospecto';
 
   return (
     <Card
       size="sm"
       className={cn(
-        'transition-colors cursor-pointer',
+        'cursor-pointer transition-colors',
         isOverdue && 'border-red-300 bg-red-50/50 dark:border-red-800 dark:bg-red-950/30'
       )}
       onClick={() => onOpenContext(item)}
     >
       <CardContent className="py-0">
         <div className="space-y-2 sm:space-y-2">
-          <div className="flex items-center gap-2 flex-wrap justify-between">
-            <div className="flex items-center gap-1.5 flex-wrap">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-1.5">
               <AgendaStatusBadge status={item.status} />
             </div>
             <div className="flex items-center gap-2">
@@ -160,7 +207,11 @@ function AgendaEventRow({ item, onReschedule, onCancel, onComplete, onOpenContex
                     <MoreVertical />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="min-w-[12rem]" onClick={(event) => event.stopPropagation()}>
+                <DropdownMenuContent
+                  align="end"
+                  className="min-w-[12rem]"
+                  onClick={(event) => event.stopPropagation()}
+                >
                   {isPending && (
                     <>
                       <DropdownMenuItem onSelect={() => onReschedule(item)}>
@@ -189,7 +240,7 @@ function AgendaEventRow({ item, onReschedule, onCancel, onComplete, onOpenContex
             </div>
           </div>
           <div>
-            <p className="font-medium text-base truncate">{item.label}</p>
+            <p className="truncate text-base font-medium">{item.label}</p>
           </div>
           <div className="space-y-3">
             <div>
@@ -197,18 +248,22 @@ function AgendaEventRow({ item, onReschedule, onCancel, onComplete, onOpenContex
               <p className="text-sm font-medium tabular-nums">
                 {formatDateValue(item.scheduledAt)}
                 {isOverdue && (
-                  <span className="ml-2 text-xs font-medium text-destructive">· Vencida</span>
+                  <span className="text-destructive ml-2 text-xs font-medium">· Vencida</span>
                 )}
               </p>
             </div>
             <div className="min-w-0">
               <p className="text-muted-foreground mb-1 text-xs">Nota</p>
-              <p className="text-sm font-medium whitespace-pre-wrap break-words">{item.description || '—'}</p>
+              <p className="text-sm font-medium break-words whitespace-pre-wrap">
+                {item.description || '—'}
+              </p>
             </div>
             {item.status === 'cancelled' && item.reason && (
               <div className="min-w-0">
                 <p className="text-muted-foreground mb-1 text-xs">Motivo de cancelación</p>
-                <p className="text-sm whitespace-pre-wrap break-words text-muted-foreground">{item.reason}</p>
+                <p className="text-muted-foreground text-sm break-words whitespace-pre-wrap">
+                  {item.reason}
+                </p>
               </div>
             )}
           </div>
@@ -252,7 +307,12 @@ function RescheduleAgendaDialog({ open, onOpenChange, item, onConfirm, loading }
         <div className="grid gap-4">
           <div className="grid gap-2">
             <Label>Fecha nueva</Label>
-            <DatePicker date={nextActionAt} onChange={setNextActionAt} formatStyle="short" fromDate={minDate} />
+            <DatePicker
+              date={nextActionAt}
+              onChange={setNextActionAt}
+              formatStyle="short"
+              fromDate={minDate}
+            />
           </div>
         </div>
         <DialogFooter>
@@ -278,8 +338,16 @@ function RescheduleAgendaDialog({ open, onOpenChange, item, onConfirm, loading }
 function ActionTargetPickerDialog({ open, onOpenChange, selectedDate, onConfirm }) {
   const [targetType, setTargetType] = React.useState('prospect');
   const [targetId, setTargetId] = React.useState('');
-  const { data: prospects } = useProspectsList({ page: 1, perPage: 100, enabled: open && targetType === 'prospect' });
-  const { data: customers } = useCustomersList({ page: 1, perPage: 100, enabled: open && targetType === 'customer' });
+  const { data: prospects } = useProspectsList({
+    page: 1,
+    perPage: 100,
+    enabled: open && targetType === 'prospect',
+  });
+  const { data: customers } = useCustomersList({
+    page: 1,
+    perPage: 100,
+    enabled: open && targetType === 'customer',
+  });
 
   React.useEffect(() => {
     if (!open) return;
@@ -287,9 +355,10 @@ function ActionTargetPickerDialog({ open, onOpenChange, selectedDate, onConfirm 
     setTargetId('');
   }, [open]);
 
-  const options = targetType === 'prospect'
-    ? prospects.map((item) => ({ id: item.id, label: item.companyName }))
-    : customers.map((item) => ({ id: item.id, label: item.name }));
+  const options =
+    targetType === 'prospect'
+      ? prospects.map((item) => ({ id: item.id, label: item.companyName }))
+      : customers.map((item) => ({ id: item.id, label: item.name }));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -297,13 +366,20 @@ function ActionTargetPickerDialog({ open, onOpenChange, selectedDate, onConfirm 
         <DialogHeader>
           <DialogTitle>Nueva interacción</DialogTitle>
           <DialogDescription>
-            Selecciona el prospecto o cliente para registrar la interacción del {selectedDate ? formatDateValue(selectedDate) : 'día seleccionado'}.
+            Selecciona el prospecto o cliente para registrar la interacción del{' '}
+            {selectedDate ? formatDateValue(selectedDate) : 'día seleccionado'}.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4">
           <div className="grid gap-2">
             <Label>Tipo</Label>
-            <Select value={targetType} onValueChange={(value) => { setTargetType(value); setTargetId(''); }}>
+            <Select
+              value={targetType}
+              onValueChange={(value) => {
+                setTargetType(value);
+                setTargetId('');
+              }}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Selecciona tipo" />
               </SelectTrigger>
@@ -350,7 +426,15 @@ function ActionTargetPickerDialog({ open, onOpenChange, selectedDate, onConfirm 
   );
 }
 
-function AgendaActionContextDialog({ open, onOpenChange, agendaItem, onComplete, onReschedule, onCancel, onResolveNextAction }) {
+function AgendaActionContextDialog({
+  open,
+  onOpenChange,
+  agendaItem,
+  onComplete,
+  onReschedule,
+  onCancel,
+  onResolveNextAction,
+}) {
   const targetType = agendaItem?.target?.type;
   const targetId = agendaItem?.target?.id;
   const enabled = Boolean(open && targetType && targetId);
@@ -389,56 +473,64 @@ function AgendaActionContextDialog({ open, onOpenChange, agendaItem, onComplete,
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         size="5xl"
-        className="max-h-[90vh] overflow-hidden flex flex-col"
+        className="flex max-h-[90vh] flex-col overflow-hidden"
         showCloseButton={false}
         onInteractOutside={(event) => event.preventDefault()}
         onEscapeKeyDown={(event) => event.preventDefault()}
       >
         <DialogHeader className="pr-10">
-          <DialogDescription className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+          <DialogDescription className="text-muted-foreground text-xs font-medium tracking-[0.16em] uppercase">
             {agendaItem?.target?.type === 'prospect' ? 'Prospecto' : 'Cliente'}
           </DialogDescription>
           <DialogTitle className="text-xl">{agendaItem?.label ?? 'Contexto de acción'}</DialogTitle>
-          {agendaItem && (() => {
-            const isCancelled = agendaItem.status === 'cancelled';
-            const isOverdue = agendaItem.status === 'pending' && isOverdueDate(agendaItem.scheduledAt);
-            const cardCls = isCancelled || isOverdue
-              ? 'border-red-200 bg-red-50/60 dark:border-red-800 dark:bg-red-950/20'
-              : 'border-amber-200 bg-amber-50/60 dark:border-amber-800 dark:bg-amber-950/20';
-            const iconCls = isCancelled || isOverdue
-              ? 'bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400'
-              : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400';
-            return (
-              <div className={`mt-1 flex items-start gap-3 rounded-xl border p-3 ${cardCls}`}>
-                <div className={`flex size-8 shrink-0 items-center justify-center rounded-lg ${iconCls}`}>
-                  <Calendar className="size-4" />
-                </div>
-                <div className="min-w-0 space-y-1 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-semibold text-foreground">
-                      {formatDateValue(agendaItem.scheduledAt)}
+          {agendaItem &&
+            (() => {
+              const isCancelled = agendaItem.status === 'cancelled';
+              const isOverdue =
+                agendaItem.status === 'pending' && isOverdueDate(agendaItem.scheduledAt);
+              const cardCls =
+                isCancelled || isOverdue
+                  ? 'border-red-200 bg-red-50/60 dark:border-red-800 dark:bg-red-950/20'
+                  : 'border-amber-200 bg-amber-50/60 dark:border-amber-800 dark:bg-amber-950/20';
+              const iconCls =
+                isCancelled || isOverdue
+                  ? 'bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400'
+                  : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400';
+              return (
+                <div className={`mt-1 flex items-start gap-3 rounded-xl border p-3 ${cardCls}`}>
+                  <div
+                    className={`flex size-8 shrink-0 items-center justify-center rounded-lg ${iconCls}`}
+                  >
+                    <Calendar className="size-4" />
+                  </div>
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-foreground text-sm font-semibold">
+                        {formatDateValue(agendaItem.scheduledAt)}
+                      </p>
+                      {isCancelled && (
+                        <span className="inline-flex items-center rounded-full bg-red-500/15 px-2 py-0.5 text-xs font-medium text-red-700 dark:text-red-300">
+                          Cancelada
+                        </span>
+                      )}
+                      {isOverdue && (
+                        <span className="text-destructive text-xs font-medium">· Vencida</span>
+                      )}
+                    </div>
+                    <p
+                      className={`text-sm break-words whitespace-pre-wrap ${isCancelled ? 'text-red-700/60 line-through dark:text-red-300/60' : 'text-foreground/80'}`}
+                    >
+                      {agendaItem.description || <span className="italic">Sin descripción</span>}
                     </p>
-                    {isCancelled && (
-                      <span className="inline-flex items-center rounded-full bg-red-500/15 px-2 py-0.5 text-xs font-medium text-red-700 dark:text-red-300">
-                        Cancelada
-                      </span>
-                    )}
-                    {isOverdue && (
-                      <span className="text-xs font-medium text-destructive">· Vencida</span>
+                    {isCancelled && agendaItem.reason && (
+                      <p className="text-xs text-red-700/70 dark:text-red-300/70">
+                        <span className="font-medium">Motivo:</span> {agendaItem.reason}
+                      </p>
                     )}
                   </div>
-                  <p className={`text-sm whitespace-pre-wrap break-words ${isCancelled ? 'text-red-700/60 dark:text-red-300/60 line-through' : 'text-foreground/80'}`}>
-                    {agendaItem.description || <span className="italic">Sin descripción</span>}
-                  </p>
-                  {isCancelled && agendaItem.reason && (
-                    <p className="text-xs text-red-700/70 dark:text-red-300/70">
-                      <span className="font-medium">Motivo:</span> {agendaItem.reason}
-                    </p>
-                  )}
                 </div>
-              </div>
-            );
-          })()}
+              );
+            })()}
         </DialogHeader>
 
         {/* Dropdown "Más acciones" en la esquina top-right donde estaba la X — solo para pending */}
@@ -505,10 +597,7 @@ function AgendaActionContextDialog({ open, onOpenChange, agendaItem, onComplete,
           {/* TAB PEDIDOS — solo clientes */}
           {!isProspect && (
             <TabsContent value="pedidos" className="flex-1 overflow-y-auto">
-              <CustomerOrdersPanel
-                orders={orders}
-                isLoading={ordersLoading}
-              />
+              <CustomerOrdersPanel orders={orders} isLoading={ordersLoading} />
             </TabsContent>
           )}
 
@@ -535,7 +624,9 @@ function AgendaActionContextDialog({ open, onOpenChange, agendaItem, onComplete,
           )}
 
           <DialogClose asChild>
-            <Button variant="outline" size="sm">Cerrar</Button>
+            <Button variant="outline" size="sm">
+              Cerrar
+            </Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>
@@ -553,14 +644,14 @@ function AgendaMonthCalendar({ currentMonth, onSelectDate, groupedEvents }) {
   return (
     <div className="space-y-3">
       {/* Encabezados de días de la semana (estilo calendario fichajes) */}
-      <div className="grid grid-cols-7 gap-2.5 mb-2">
+      <div className="mb-2 grid grid-cols-7 gap-2.5">
         {WEEKDAYS.map((day, index) => {
           const isWeekend = index === 5 || index === 6;
           return (
             <div
               key={day}
               className={cn(
-                'text-center text-sm font-semibold py-2.5 px-1 rounded-md',
+                'rounded-md px-1 py-2.5 text-center text-sm font-semibold',
                 isWeekend ? 'text-muted-foreground bg-muted/50' : 'text-muted-foreground'
               )}
             >
@@ -584,7 +675,9 @@ function AgendaMonthCalendar({ currentMonth, onSelectDate, groupedEvents }) {
           const isCurrentDay = isToday(day);
           const dayOfWeek = getDay(day);
           const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-          const overduePending = items.some((item) => item.status === 'pending' && isOverdueDate(item.scheduledAt));
+          const overduePending = items.some(
+            (item) => item.status === 'pending' && isOverdueDate(item.scheduledAt)
+          );
 
           return (
             <button
@@ -592,23 +685,25 @@ function AgendaMonthCalendar({ currentMonth, onSelectDate, groupedEvents }) {
               type="button"
               onClick={() => onSelectDate(day)}
               className={cn(
-                'relative min-h-[110px] p-2.5 rounded-lg border transition-all duration-200 text-left',
-                'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+                'relative min-h-[110px] rounded-lg border p-2.5 text-left transition-all duration-200',
+                'focus:ring-ring focus:ring-2 focus:ring-offset-2 focus:outline-none',
                 'shadow-sm hover:shadow-md',
-                !inCurrentMonth && 'opacity-30 bg-muted/20',
-                isCurrentDay && 'border-primary border-2 shadow-md ring-2 ring-primary/20',
+                !inCurrentMonth && 'bg-muted/20 opacity-30',
+                isCurrentDay && 'border-primary ring-primary/20 border-2 shadow-md ring-2',
                 hasItems && inCurrentMonth && 'cursor-pointer hover:scale-[1.02] hover:shadow-lg',
                 !hasItems && 'cursor-default',
                 inCurrentMonth && !hasItems && !isWeekend && 'bg-background hover:bg-muted/50',
                 isWeekend && inCurrentMonth && !hasItems && 'bg-gray-200 dark:bg-gray-800/70',
                 isWeekend && inCurrentMonth && hasItems && 'bg-gray-100/50 dark:bg-gray-800/30',
-                overduePending && inCurrentMonth && 'border-red-400 dark:border-red-600 bg-red-50 dark:bg-red-950/20 shadow-red-100 dark:shadow-red-950'
+                overduePending &&
+                  inCurrentMonth &&
+                  'border-red-400 bg-red-50 shadow-red-100 dark:border-red-600 dark:bg-red-950/20 dark:shadow-red-950'
               )}
             >
-              <div className="flex flex-col h-full relative">
+              <div className="relative flex h-full flex-col">
                 <div
                   className={cn(
-                    'text-lg font-normal absolute top-1.5 right-2',
+                    'absolute top-1.5 right-2 text-lg font-normal',
                     isCurrentDay && 'text-primary',
                     !inCurrentMonth && 'text-muted-foreground opacity-50',
                     inCurrentMonth && !isCurrentDay && 'text-foreground'
@@ -617,35 +712,35 @@ function AgendaMonthCalendar({ currentMonth, onSelectDate, groupedEvents }) {
                   {format(day, 'd')}
                 </div>
                 {hasItems && (
-                  <div className="flex-1 space-y-1.5 mt-6">
+                  <div className="mt-6 flex-1 space-y-1.5">
                     {pendingCount > 0 && (
                       <div className="flex items-center gap-1.5 text-xs">
-                        <div className="h-2 w-2 rounded-full bg-blue-600 dark:bg-blue-500 flex-shrink-0" />
-                        <span className="text-blue-700 dark:text-blue-400 font-medium leading-tight">
+                        <div className="h-2 w-2 flex-shrink-0 rounded-full bg-blue-600 dark:bg-blue-500" />
+                        <span className="leading-tight font-medium text-blue-700 dark:text-blue-400">
                           {pendingCount} {pendingCount === 1 ? 'pend.' : 'pend.'}
                         </span>
                       </div>
                     )}
                     {doneCount > 0 && (
                       <div className="flex items-center gap-1.5 text-xs">
-                        <div className="h-2 w-2 rounded-full bg-green-600 dark:bg-green-500 flex-shrink-0" />
-                        <span className="text-green-700 dark:text-green-400 font-medium leading-tight">
+                        <div className="h-2 w-2 flex-shrink-0 rounded-full bg-green-600 dark:bg-green-500" />
+                        <span className="leading-tight font-medium text-green-700 dark:text-green-400">
                           {doneCount} hechas
                         </span>
                       </div>
                     )}
                     {reprogrammedCount > 0 && (
                       <div className="flex items-center gap-1.5 text-xs">
-                        <div className="h-2 w-2 rounded-full bg-amber-500 dark:bg-amber-400 flex-shrink-0" />
-                        <span className="text-amber-700 dark:text-amber-300 font-medium leading-tight">
+                        <div className="h-2 w-2 flex-shrink-0 rounded-full bg-amber-500 dark:bg-amber-400" />
+                        <span className="leading-tight font-medium text-amber-700 dark:text-amber-300">
                           {reprogrammedCount} reprog.
                         </span>
                       </div>
                     )}
                     {cancelledCount > 0 && (
                       <div className="flex items-center gap-1.5 text-xs">
-                        <div className="h-2 w-2 rounded-full bg-red-600 dark:bg-red-500 flex-shrink-0" />
-                        <span className="text-red-700 dark:text-red-400 font-medium leading-tight">
+                        <div className="h-2 w-2 flex-shrink-0 rounded-full bg-red-600 dark:bg-red-500" />
+                        <span className="leading-tight font-medium text-red-700 dark:text-red-400">
                           {cancelledCount} canc.
                         </span>
                       </div>
@@ -661,7 +756,19 @@ function AgendaMonthCalendar({ currentMonth, onSelectDate, groupedEvents }) {
   );
 }
 
-function AgendaDayDialog({ open, onOpenChange, date, items, loading, onReschedule, onCancel, onComplete, onResolveNextAction, onNewInteraction, onOpenContext }) {
+function AgendaDayDialog({
+  open,
+  onOpenChange,
+  date,
+  items,
+  loading,
+  onReschedule,
+  onCancel,
+  onComplete,
+  onResolveNextAction,
+  onNewInteraction,
+  onOpenContext,
+}) {
   const [search, setSearch] = React.useState('');
   const [sortBy, setSortBy] = React.useState('priority');
 
@@ -678,12 +785,13 @@ function AgendaDayDialog({ open, onOpenChange, date, items, loading, onReschedul
     if (!normalizedSearch) return items;
 
     return items.filter((item) => {
-      const searchableValues = [
-        item.label,
-        item.description,
-      ];
+      const searchableValues = [item.label, item.description];
 
-      return searchableValues.some((value) => String(value ?? '').toLowerCase().includes(normalizedSearch));
+      return searchableValues.some((value) =>
+        String(value ?? '')
+          .toLowerCase()
+          .includes(normalizedSearch)
+      );
     });
   }, [items, normalizedSearch]);
 
@@ -692,11 +800,15 @@ function AgendaDayDialog({ open, onOpenChange, date, items, loading, onReschedul
 
     sorted.sort((a, b) => {
       if (sortBy === 'name_asc') {
-        return String(a.label ?? '').localeCompare(String(b.label ?? ''), 'es', { sensitivity: 'base' });
+        return String(a.label ?? '').localeCompare(String(b.label ?? ''), 'es', {
+          sensitivity: 'base',
+        });
       }
 
       if (sortBy === 'name_desc') {
-        return String(b.label ?? '').localeCompare(String(a.label ?? ''), 'es', { sensitivity: 'base' });
+        return String(b.label ?? '').localeCompare(String(a.label ?? ''), 'es', {
+          sensitivity: 'base',
+        });
       }
 
       if (sortBy === 'status') {
@@ -707,7 +819,9 @@ function AgendaDayDialog({ open, onOpenChange, date, items, loading, onReschedul
         );
 
         if (statusDiff !== 0) return statusDiff;
-        return String(a.label ?? '').localeCompare(String(b.label ?? ''), 'es', { sensitivity: 'base' });
+        return String(a.label ?? '').localeCompare(String(b.label ?? ''), 'es', {
+          sensitivity: 'base',
+        });
       }
 
       return compareAgendaItemsByPriority(a, b);
@@ -729,7 +843,9 @@ function AgendaDayDialog({ open, onOpenChange, date, items, loading, onReschedul
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent size="lg" className="max-h-[88vh] overflow-hidden">
         <DialogHeader>
-          <DialogTitle>{date ? `Agenda del ${formatDateValue(date)}` : 'Detalle del día'}</DialogTitle>
+          <DialogTitle>
+            {date ? `Agenda del ${formatDateValue(date)}` : 'Detalle del día'}
+          </DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
@@ -770,13 +886,13 @@ function AgendaDayDialog({ open, onOpenChange, date, items, loading, onReschedul
               <EmptyState
                 title="Sin acciones para este día"
                 description="Elige otra fecha del calendario o amplía el rango de filtros."
-                className="border bg-muted/20 min-h-[220px]"
+                className="bg-muted/20 min-h-[220px] border"
               />
             ) : sortedItems.length === 0 ? (
               <EmptyState
                 title="No hay coincidencias"
                 description={`No se encontraron acciones para “${search.trim()}” en este día.`}
-                className="border bg-muted/20 min-h-[220px]"
+                className="bg-muted/20 min-h-[220px] border"
               />
             ) : (
               sortedItems.map((item) => (
@@ -883,7 +999,9 @@ export default function AgendaPageClient() {
       result = result.filter((item) => `${item.target?.type}-${item.target?.id}` === targetFilter);
     }
     if (overdueOnly) {
-      result = result.filter((item) => item.status === 'pending' && isOverdueDate(item.scheduledAt));
+      result = result.filter(
+        (item) => item.status === 'pending' && isOverdueDate(item.scheduledAt)
+      );
     }
     return result;
   }, [events, targetType, statuses, targetFilter, overdueOnly]);
@@ -918,7 +1036,6 @@ export default function AgendaPageClient() {
     });
   };
 
-
   const handleReschedule = async (payload) => {
     if (!rescheduleDialog.item?.agendaActionId || !payload.nextActionAt) return;
     try {
@@ -945,7 +1062,10 @@ export default function AgendaPageClient() {
     }
     try {
       await notify.promise(
-        cancelAgendaAction.mutateAsync({ id: cancelDialog.item.agendaActionId, reason: cancelReason.trim() }),
+        cancelAgendaAction.mutateAsync({
+          id: cancelDialog.item.agendaActionId,
+          reason: cancelReason.trim(),
+        }),
         {
           loading: 'Cancelando acción...',
           success: 'Acción cancelada',
@@ -976,15 +1096,22 @@ export default function AgendaPageClient() {
     });
   };
 
-  const handleTargetPickerConfirm = async ({ targetType: nextTargetType, targetId: nextTargetId }) => {
+  const handleTargetPickerConfirm = async ({
+    targetType: nextTargetType,
+    targetId: nextTargetId,
+  }) => {
     try {
       const pendingResponse = await crmService.getPendingAgendaAction({
         targetType: nextTargetType,
         targetId: nextTargetId,
       });
       const rawPending = pendingResponse?.data ?? null;
-      const pendingAction = rawPending?.pendingAction ?? (rawPending?.agendaActionId ? rawPending : null);
-      const hasPending = typeof rawPending?.hasPending === 'boolean' ? rawPending.hasPending : Boolean(pendingAction);
+      const pendingAction =
+        rawPending?.pendingAction ?? (rawPending?.agendaActionId ? rawPending : null);
+      const hasPending =
+        typeof rawPending?.hasPending === 'boolean'
+          ? rawPending.hasPending
+          : Boolean(pendingAction);
       if (hasPending) {
         setInteractionPreflight({
           open: true,
@@ -1012,16 +1139,24 @@ export default function AgendaPageClient() {
           <CardHeader className="space-y-3 pb-3">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
-                <CardTitle className="flex items-center gap-2">
-                  Calendario mensual
-                </CardTitle>
-                <CardDescription>La agenda se trabaja desde el calendario. Pulsa un día para abrir su detalle.</CardDescription>
+                <CardTitle className="flex items-center gap-2">Calendario mensual</CardTitle>
+                <CardDescription>
+                  La agenda se trabaja desde el calendario. Pulsa un día para abrir su detalle.
+                </CardDescription>
               </div>
               <AgendaHeaderControls
-                onToday={() => { const now = new Date(); setMonth(now); handleOpenDay(now); }}
+                onToday={() => {
+                  const now = new Date();
+                  setMonth(now);
+                  handleOpenDay(now);
+                }}
                 onOpenFilters={handleOpenFilters}
-                onPrevMonth={() => setMonth((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1))}
-                onNextMonth={() => setMonth((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1))}
+                onPrevMonth={() =>
+                  setMonth((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1))
+                }
+                onNextMonth={() =>
+                  setMonth((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1))
+                }
                 onNewInteraction={() => setTargetPickerOpen(true)}
               />
             </div>
@@ -1056,7 +1191,7 @@ export default function AgendaPageClient() {
               visiblePendingCount={visiblePendingCount}
             />
           </CardHeader>
-          <CardContent className="flex-1 min-h-0 overflow-y-auto space-y-3 pt-0">
+          <CardContent className="min-h-0 flex-1 space-y-3 overflow-y-auto pt-0">
             {isLoading ? (
               <div className="flex min-h-[620px] items-center justify-center rounded-2xl border">
                 <Loader />
@@ -1074,7 +1209,9 @@ export default function AgendaPageClient() {
 
       <RescheduleAgendaDialog
         open={rescheduleDialog.open}
-        onOpenChange={(open) => setRescheduleDialog((current) => ({ ...current, open, item: open ? current.item : null }))}
+        onOpenChange={(open) =>
+          setRescheduleDialog((current) => ({ ...current, open, item: open ? current.item : null }))
+        }
         item={rescheduleDialog.item}
         onConfirm={handleReschedule}
         loading={rescheduleAgendaAction.isPending}
@@ -1090,7 +1227,9 @@ export default function AgendaPageClient() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Cancelar acción pendiente</AlertDialogTitle>
-            <AlertDialogDescription>La acción dejará de aparecer como pendiente activa en la agenda.</AlertDialogDescription>
+            <AlertDialogDescription>
+              La acción dejará de aparecer como pendiente activa en la agenda.
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="grid gap-2">
             <Label htmlFor="cancel-reason">Motivo de cancelación</Label>
@@ -1136,7 +1275,9 @@ export default function AgendaPageClient() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>¿Programar próxima acción?</AlertDialogTitle>
-            <AlertDialogDescription>Puedes fijar ahora cuándo y cómo hacer el siguiente seguimiento.</AlertDialogDescription>
+            <AlertDialogDescription>
+              Puedes fijar ahora cuándo y cómo hacer el siguiente seguimiento.
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Omitir</AlertDialogCancel>
@@ -1181,27 +1322,30 @@ export default function AgendaPageClient() {
             <AlertDialogTitle>Hay una acción pendiente sin cerrar</AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="space-y-3">
-                <span className="block text-sm text-muted-foreground">
-                  Antes de registrar una nueva interacción, ¿quieres cerrar la que ya tienes pendiente?
+                <span className="text-muted-foreground block text-sm">
+                  Antes de registrar una nueva interacción, ¿quieres cerrar la que ya tienes
+                  pendiente?
                 </span>
                 {interactionPreflight.pendingAction && (
                   <button
                     type="button"
-                    className="w-full rounded-xl border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30 p-3 flex items-start gap-3 text-left transition-colors hover:bg-amber-100 dark:hover:bg-amber-900/40 cursor-pointer"
+                    className="flex w-full cursor-pointer items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-left transition-colors hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/30 dark:hover:bg-amber-900/40"
                     onClick={() => {
                       setInteractionPreflight((current) => ({ ...current, open: false }));
                       setContextDialog({ open: true, item: interactionPreflight.pendingAction });
                     }}
                   >
-                    <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 mt-0.5">
+                    <div className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-600 dark:bg-amber-900/50 dark:text-amber-400">
                       <Calendar className="size-3.5" />
                     </div>
-                    <div className="space-y-0.5 min-w-0">
+                    <div className="min-w-0 space-y-0.5">
                       <p className="text-xs font-medium text-amber-700 dark:text-amber-400">
                         {formatDateValue(interactionPreflight.pendingAction.scheduledAt)}
                       </p>
                       {interactionPreflight.pendingAction.description && (
-                        <p className="text-sm text-foreground leading-snug">{interactionPreflight.pendingAction.description}</p>
+                        <p className="text-foreground text-sm leading-snug">
+                          {interactionPreflight.pendingAction.description}
+                        </p>
                       )}
                     </div>
                   </button>
@@ -1209,7 +1353,7 @@ export default function AgendaPageClient() {
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex-col sm:flex-col gap-2">
+          <AlertDialogFooter className="flex-col gap-2 sm:flex-col">
             <Button
               variant="outline"
               className="w-full gap-2"
@@ -1218,8 +1362,14 @@ export default function AgendaPageClient() {
                 if (interactionPreflight.pendingAction?.agendaActionId) {
                   setInteractionModal({
                     open: true,
-                    prospectId: interactionPreflight.targetType === 'prospect' ? interactionPreflight.targetId : null,
-                    customerId: interactionPreflight.targetType === 'customer' ? interactionPreflight.targetId : null,
+                    prospectId:
+                      interactionPreflight.targetType === 'prospect'
+                        ? interactionPreflight.targetId
+                        : null,
+                    customerId:
+                      interactionPreflight.targetType === 'customer'
+                        ? interactionPreflight.targetId
+                        : null,
                     agendaActionId: interactionPreflight.pendingAction.agendaActionId,
                     nextActionAt: interactionPreflight.pendingAction.scheduledAt ?? null,
                     nextActionNote: interactionPreflight.pendingAction.description ?? '',
@@ -1238,7 +1388,7 @@ export default function AgendaPageClient() {
               <Check className="size-4" />
               Cerrar acción pendiente
             </Button>
-            <div className="flex gap-2 w-full">
+            <div className="flex w-full gap-2">
               <AlertDialogAction
                 className="flex-1 whitespace-normal"
                 onClick={() => {

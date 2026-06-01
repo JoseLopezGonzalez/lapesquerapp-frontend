@@ -25,6 +25,7 @@
 Se ha implementado un sistema de chat AI completo usando **Vercel AI SDK** (versión 6) integrado con **OpenAI** (GPT-5). El chat permite consultar información del ERP mediante "tools" (funciones) que conectan con los servicios de dominio.
 
 **Características principales:**
+
 - ✅ Chat con streaming en tiempo real
 - ✅ Integración con servicios de dominio mediante tools
 - ✅ Autenticación mediante NextAuth.js
@@ -32,6 +33,7 @@ Se ha implementado un sistema de chat AI completo usando **Vercel AI SDK** (vers
 - ✅ Soporte para múltiples entidades del ERP
 
 **⚠️ Notas importantes:**
+
 - El SDK usa `prompt` (string) en lugar de `messages` cuando se usa con `useChat`
 - **Zod v3** es obligatorio (v4 no es compatible)
 - **GPT-5** es el modelo actual (GPT-4-turbo-preview ya no existe)
@@ -48,7 +50,7 @@ Se ha implementado un sistema de chat AI completo usando **Vercel AI SDK** (vers
   "@ai-sdk/openai": "^3.0.12",
   "@ai-sdk/react": "^3.0.41",
   "ai": "^6.0.39",
-  "zod": "^3.25.76"  // ⚠️ CRÍTICO: Debe ser v3, NO v4
+  "zod": "^3.25.76" // ⚠️ CRÍTICO: Debe ser v3, NO v4
 }
 ```
 
@@ -182,7 +184,7 @@ export async function POST(req) {
   try {
     // 1. Verificar autenticación
     const session = await getServerSession(authOptions);
-    
+
     if (!session?.user) {
       return new Response(
         JSON.stringify({ error: 'No autorizado. Debes iniciar sesión para usar el chat.' }),
@@ -194,10 +196,10 @@ export async function POST(req) {
     const { messages } = await req.json();
 
     if (!messages || !Array.isArray(messages)) {
-      return new Response(
-        JSON.stringify({ error: 'Se requieren mensajes válidos' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ error: 'Se requieren mensajes válidos' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
     // 3. ✅ CORRECCIÓN DEFINITIVA: Convertir UIMessage[] a CoreMessage[] para mantener el historial completo
@@ -224,7 +226,9 @@ export async function POST(req) {
         console.error(`Tool ${name} parameters is not a ZodObject`, {
           typeName: toolDef.parameters._def?.typeName,
         });
-        throw new Error(`Tool ${name} parameters must be a ZodObject, got ${toolDef.parameters._def?.typeName}`);
+        throw new Error(
+          `Tool ${name} parameters must be a ZodObject, got ${toolDef.parameters._def?.typeName}`
+        );
       }
 
       tools[name] = tool({
@@ -252,7 +256,7 @@ export async function POST(req) {
     // ✅ CORRECCIÓN DEFINITIVA: Usar messages (historial completo) con convertToCoreMessages
     // Esto mantiene la memoria del chat y cumple con el esquema que espera streamText
     const aiModel = process.env.AI_MODEL || 'gpt-5-mini';
-    
+
     const result = streamText({
       model: openai(aiModel),
       system: SYSTEM_PROMPT,
@@ -266,11 +270,11 @@ export async function POST(req) {
     return result.toUIMessageStreamResponse();
   } catch (error) {
     console.error('Error in chat API:', error);
-    
+
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: 'Error interno del servidor',
-        message: error.message 
+        message: error.message,
       }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
@@ -310,12 +314,33 @@ parameters: z.object({
 import { z } from 'zod';
 
 const AVAILABLE_ENTITIES = [
-  'suppliers', 'capture-zones', 'fishing-gears', 'cebo-dispatches',
-  'activity-logs', 'product-categories', 'product-families', 'payment-terms',
-  'species', 'transports', 'taxes', 'incoterms', 'salespeople', 'products',
-  'employees', 'customers', 'stores', 'raw-material-receptions', 'orders',
-  'boxes', 'countries', 'pallets', 'productions', 'punches', 'roles',
-  'sessions', 'users'
+  'suppliers',
+  'capture-zones',
+  'fishing-gears',
+  'cebo-dispatches',
+  'activity-logs',
+  'product-categories',
+  'product-families',
+  'payment-terms',
+  'species',
+  'transports',
+  'taxes',
+  'incoterms',
+  'salespeople',
+  'products',
+  'employees',
+  'customers',
+  'stores',
+  'raw-material-receptions',
+  'orders',
+  'boxes',
+  'countries',
+  'pallets',
+  'productions',
+  'punches',
+  'roles',
+  'sessions',
+  'users',
 ];
 
 export const entityTools = {
@@ -325,18 +350,22 @@ export const entityTools = {
 Entidades disponibles: ${AVAILABLE_ENTITIES.join(', ')}.`,
 
     parameters: z.object({
-      entityType: z.enum(AVAILABLE_ENTITIES),  // ✅ Sin .describe()
-      filters: z.object({
-        search: z.string().optional(),
-        ids: z.array(z.number()).optional(),
-        status: z.string().optional(),
-        dateFrom: z.string().optional(),
-        dateTo: z.string().optional(),
-      }).optional(),  // ✅ Sin .describe()
-      pagination: z.object({
-        page: z.number().optional().default(1),
-        perPage: z.number().optional().default(12),
-      }).optional(),  // ✅ Sin .describe()
+      entityType: z.enum(AVAILABLE_ENTITIES), // ✅ Sin .describe()
+      filters: z
+        .object({
+          search: z.string().optional(),
+          ids: z.array(z.number()).optional(),
+          status: z.string().optional(),
+          dateFrom: z.string().optional(),
+          dateTo: z.string().optional(),
+        })
+        .optional(), // ✅ Sin .describe()
+      pagination: z
+        .object({
+          page: z.number().optional().default(1),
+          perPage: z.number().optional().default(12),
+        })
+        .optional(), // ✅ Sin .describe()
     }),
 
     execute: async ({ entityType, filters = {}, pagination = {} }) => {
@@ -356,7 +385,7 @@ Entidades disponibles: ${AVAILABLE_ENTITIES.join(', ')}.`,
       }
 
       const result = await service.list(adaptedFilters, pagination);
-      
+
       return {
         success: true,
         data: result.data || [],
@@ -374,7 +403,7 @@ Entidades disponibles: ${AVAILABLE_ENTITIES.join(', ')}.`,
 ```javascript
 getActiveOrders: {
   description: 'Obtiene la lista de pedidos activos',
-  
+
   parameters: z.object({}), // ✅ CRÍTICO: SIEMPRE ZodObject directo, NUNCA .optional()
 
   execute: async () => {
@@ -411,38 +440,41 @@ export function Chat() {
   // ⚠️ CRÍTICO: En @ai-sdk/react v3, useChat NO devuelve input/handleInputChange/handleSubmit
   // Necesitamos manejar el input manualmente
   const [input, setInput] = useState('');
-  
+
   const { messages, sendMessage, status, error } = useChat({
     api: '/api/chat',
   });
-  
+
   const isLoading = status === 'streaming' || status === 'in_progress';
-  
+
   const handleInputChange = useCallback((e) => {
     setInput(e.target?.value || '');
   }, []);
-  
+
   // ✅ CRÍTICO: sendMessage acepta { text: string }
-  const handleSubmit = useCallback((e) => {
-    e?.preventDefault?.();
-    const message = input.trim();
-    if (message && !isLoading) {
-      sendMessage({ text: message }); // ✅ Formato correcto
-      setInput('');
-    }
-  }, [input, sendMessage, isLoading]);
+  const handleSubmit = useCallback(
+    (e) => {
+      e?.preventDefault?.();
+      const message = input.trim();
+      if (message && !isLoading) {
+        sendMessage({ text: message }); // ✅ Formato correcto
+        setInput('');
+      }
+    },
+    [input, sendMessage, isLoading]
+  );
 
   return (
-    <div className="flex flex-col h-full max-h-[600px] border rounded-lg bg-background">
-      <div className="border-b p-4 flex items-center gap-2">
-        <Bot className="h-5 w-5 text-primary" />
+    <div className="bg-background flex h-full max-h-[600px] flex-col rounded-lg border">
+      <div className="flex items-center gap-2 border-b p-4">
+        <Bot className="text-primary h-5 w-5" />
         <h2 className="text-lg font-semibold">Asistente AI - La PesquerApp</h2>
       </div>
 
       <ScrollArea className="flex-1 p-4">
         {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground gap-2">
-            <Bot className="h-12 w-12 mb-2 opacity-50" />
+          <div className="text-muted-foreground flex h-full flex-col items-center justify-center gap-2 text-center">
+            <Bot className="mb-2 h-12 w-12 opacity-50" />
             <p className="text-sm">Hola, soy tu asistente AI para La PesquerApp.</p>
           </div>
         )}
@@ -451,7 +483,7 @@ export function Chat() {
 
       <div className="border-t p-4">
         {error && (
-          <div className="mb-2 text-sm text-destructive">
+          <div className="text-destructive mb-2 text-sm">
             Error: {error.message || 'Ocurrió un error. Por favor intenta de nuevo.'}
           </div>
         )}
@@ -500,6 +532,7 @@ export function Chat() {
 ### Formato de Mensajes:
 
 **UIMessage (cliente - useChat):**
+
 ```javascript
 {
   id: string,
@@ -512,9 +545,10 @@ export function Chat() {
 ```
 
 **Prompt (servidor - streamText):**
+
 ```javascript
 // String extraído del último mensaje del usuario
-"Lista los proveedores"
+'Lista los proveedores';
 ```
 
 ---
@@ -529,10 +563,10 @@ export function Chat() {
 
 ```javascript
 // ❌ Incorrecto
-AI_MODEL=gpt-4-turbo-preview
+AI_MODEL = gpt - 4 - turbo - preview;
 
 // ✅ Correcto
-AI_MODEL=gpt-5-mini
+AI_MODEL = gpt - 5 - mini;
 ```
 
 ---
@@ -650,13 +684,13 @@ AI_MODEL=gpt-4-turbo-preview
 ```javascript
 // ✅ Correcto (con useChat)
 const result = streamText({
-  prompt: userText,  // String del último mensaje
+  prompt: userText, // String del último mensaje
   tools,
 });
 
 // ❌ Incorrecto (con useChat)
 const result = streamText({
-  messages,  // UIMessage[] no compatible
+  messages, // UIMessage[] no compatible
   tools,
 });
 ```

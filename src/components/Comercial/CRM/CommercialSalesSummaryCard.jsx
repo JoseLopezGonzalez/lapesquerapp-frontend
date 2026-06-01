@@ -10,9 +10,9 @@ export default function CommercialSalesSummaryCard() {
 
   if (isLoading) {
     return (
-      <Card className="p-4 rounded-2xl shadow-sm border h-full bg-gradient-to-t from-neutral-100 to-white dark:from-neutral-800 dark:to-neutral-900">
+      <Card className="h-full rounded-2xl border bg-gradient-to-t from-neutral-100 to-white p-4 shadow-sm dark:from-neutral-800 dark:to-neutral-900">
         <CardHeader className="p-0">
-          <Skeleton className="h-4 w-28 mb-3" />
+          <Skeleton className="mb-3 h-4 w-28" />
           <Skeleton className="h-8 w-40" />
         </CardHeader>
       </Card>
@@ -20,7 +20,7 @@ export default function CommercialSalesSummaryCard() {
   }
 
   return (
-    <Card className="p-4 rounded-2xl shadow-sm border h-full bg-gradient-to-t from-neutral-100 to-white dark:from-neutral-800 dark:to-neutral-900">
+    <Card className="h-full rounded-2xl border bg-gradient-to-t from-neutral-100 to-white p-4 shadow-sm dark:from-neutral-800 dark:to-neutral-900">
       <CardHeader className="p-0 pb-2">
         <CardDescription>Tus ventas este año</CardDescription>
         <CardTitle className="text-3xl font-medium tracking-tight">
@@ -28,7 +28,7 @@ export default function CommercialSalesSummaryCard() {
         </CardTitle>
       </CardHeader>
       <CardContent className="px-0 pb-0">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           {data?.value != null
             ? `${formatCurrency(data.value)} con IVA`
             : 'Sin datos suficientes para el periodo actual.'}

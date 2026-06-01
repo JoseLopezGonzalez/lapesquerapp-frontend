@@ -30,10 +30,8 @@ export function getProductionOrphanBoxes(token, params = {}) {
       const pag = payload.pagination ?? {};
       return {
         summary: {
-          totalOrphanBoxes:
-            summary.totalOrphanBoxes ?? summary.total_orphan_boxes ?? 0,
-          totalOrphanWeightKg:
-            summary.totalOrphanWeightKg ?? summary.total_orphan_weight_kg ?? 0,
+          totalOrphanBoxes: summary.totalOrphanBoxes ?? summary.total_orphan_boxes ?? 0,
+          totalOrphanWeightKg: summary.totalOrphanWeightKg ?? summary.total_orphan_weight_kg ?? 0,
         },
         boxes: payload.boxes ?? [],
         pagination: {
@@ -49,12 +47,17 @@ export function getProductionOrphanBoxes(token, params = {}) {
 
 /** @param {string|number} productionId @param {string} token @returns {Promise<Object>} */
 export function getProduction(productionId, token) {
-  return apiGet(`${API_URL_V2}productions/${productionId}`, token, {}, {
-    transform: (data) => {
-      const production = data.data || data;
-      return normalizeProduction(production);
-    },
-  });
+  return apiGet(
+    `${API_URL_V2}productions/${productionId}`,
+    token,
+    {},
+    {
+      transform: (data) => {
+        const production = data.data || data;
+        return normalizeProduction(production);
+      },
+    }
+  );
 }
 
 /**
@@ -83,9 +86,14 @@ export function getProductionByLot(lot, token) {
 
 /** @param {string|number} productionId @param {string} token @returns {Promise<Object>} */
 export function getProductionClosureCheck(productionId, token) {
-  return apiGet(`${API_URL_V2}productions/${productionId}/closure-check`, token, {}, {
-    transform: (data) => data.data || data,
-  });
+  return apiGet(
+    `${API_URL_V2}productions/${productionId}/closure-check`,
+    token,
+    {},
+    {
+      transform: (data) => data.data || data,
+    }
+  );
 }
 
 /** @param {Object} productionData @param {string} token @returns {Promise<Object>} */
@@ -125,9 +133,14 @@ export function deleteProduction(productionId, token) {
 
 /** @param {string|number} productionId @param {string} token @returns {Promise<Object>} */
 export function getProductionDiagram(productionId, token) {
-  return apiGet(`${API_URL_V2}productions/${productionId}/diagram`, token, {}, {
-    transform: (data) => data.data || data,
-  });
+  return apiGet(
+    `${API_URL_V2}productions/${productionId}/diagram`,
+    token,
+    {},
+    {
+      transform: (data) => data.data || data,
+    }
+  );
 }
 
 /** @param {string|number} productionId @param {string} token @param {{ customerId?: string|number, orderId?: string|number }} [params] @returns {Promise<Object>} */
@@ -139,21 +152,36 @@ export function getProductionProcessTree(productionId, token, params = {}) {
 
 /** @param {string|number} productionId @param {string} token @returns {Promise<Object>} */
 export function getProductionTotals(productionId, token) {
-  return apiGet(`${API_URL_V2}productions/${productionId}/totals`, token, {}, {
-    transform: (data) => data.data || data,
-  });
+  return apiGet(
+    `${API_URL_V2}productions/${productionId}/totals`,
+    token,
+    {},
+    {
+      transform: (data) => data.data || data,
+    }
+  );
 }
 
 /** @param {string|number} productionId @param {string} token @returns {Promise<Object>} */
 export function getProductionReconciliation(productionId, token) {
-  return apiGet(`${API_URL_V2}productions/${productionId}/reconciliation`, token, {}, {
-    transform: (data) => data.data || data,
-  });
+  return apiGet(
+    `${API_URL_V2}productions/${productionId}/reconciliation`,
+    token,
+    {},
+    {
+      transform: (data) => data.data || data,
+    }
+  );
 }
 
 /** @param {string|number} productionId @param {string} token @returns {Promise<Object>} */
 export function getAvailableProductsForOutputs(productionId, token) {
-  return apiGet(`${API_URL_V2}productions/${productionId}/available-products-for-outputs`, token, {}, {
-    transform: (data) => data.data || data || [],
-  });
+  return apiGet(
+    `${API_URL_V2}productions/${productionId}/available-products-for-outputs`,
+    token,
+    {},
+    {
+      transform: (data) => data.data || data || [],
+    }
+  );
 }

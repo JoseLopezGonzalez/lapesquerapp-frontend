@@ -9,15 +9,21 @@ const CMR_LEGAL_EN =
   'This carriage is subject notwithstanding any clause to the contrary, to the Convention on the Contract for the international Carriage of goods by road (CMR).';
 
 const BOX_LABELS = {
-  1:  { es: 'Remitente (nombre, dirección, pais)', en: 'Sender (name, address, country)' },
-  2:  { es: 'Destinatario (nombre, dirección, pais)', en: 'Consignee (name, address, country)' },
-  3:  { es: 'Lugar de entrega de la mercancía', en: 'Place of delivery of the goods (place, country)' },
-  4:  { es: 'Lugar y fecha de recepción de las mercancias', en: 'Place and date taking over the goods (place, country, date)' },
-  5:  { es: 'Documentos annexos', en: 'Documents attached' },
-  6:  { es: 'Marcas y nos', en: 'Marks and Nos' },
-  7:  { es: 'Número de bultos', en: 'Number of packages' },
-  8:  { es: 'Clase de embalaje', en: 'Method of packing' },
-  9:  { es: 'Natural. de la merc.', en: 'Natura of the goods' },
+  1: { es: 'Remitente (nombre, dirección, pais)', en: 'Sender (name, address, country)' },
+  2: { es: 'Destinatario (nombre, dirección, pais)', en: 'Consignee (name, address, country)' },
+  3: {
+    es: 'Lugar de entrega de la mercancía',
+    en: 'Place of delivery of the goods (place, country)',
+  },
+  4: {
+    es: 'Lugar y fecha de recepción de las mercancias',
+    en: 'Place and date taking over the goods (place, country, date)',
+  },
+  5: { es: 'Documentos annexos', en: 'Documents attached' },
+  6: { es: 'Marcas y nos', en: 'Marks and Nos' },
+  7: { es: 'Número de bultos', en: 'Number of packages' },
+  8: { es: 'Clase de embalaje', en: 'Method of packing' },
+  9: { es: 'Natural. de la merc.', en: 'Natura of the goods' },
   10: { es: 'No. Estadístico', en: 'Statistical num.' },
   11: { es: 'Peso bruto Kg', en: 'Gross weight Kg' },
   12: { es: 'Volumen m3', en: 'Volume in m3' },
@@ -25,8 +31,14 @@ const BOX_LABELS = {
   14: { es: 'Forma de pago', en: 'Instruction as to payment for carriage' },
   15: { es: 'Reembolso', en: 'COD' },
   16: { es: 'Porteador (nombre, domicilio, pais)', en: 'Carrier (name, address, country)' },
-  17: { es: 'Porteadores sucesivos (nombre, domicilio, pais)', en: 'Successive carriers (Name, address, country)' },
-  18: { es: 'Reservas y observaciones del porteador', en: "Carrier's reservations and observations" },
+  17: {
+    es: 'Porteadores sucesivos (nombre, domicilio, pais)',
+    en: 'Successive carriers (Name, address, country)',
+  },
+  18: {
+    es: 'Reservas y observaciones del porteador',
+    en: "Carrier's reservations and observations",
+  },
   19: { es: 'Estipulaciones particulares', en: 'Special agreements' },
   20: { es: 'A pagar por:', en: 'To be paid by:' },
   21: { es: 'Establecido en', en: 'Established in' },
@@ -38,8 +50,12 @@ const BOX_LABELS = {
 function getCopyConfig(copyType) {
   return cmrCopyConfig.find((c) => c.copyType === copyType) ?? cmrCopyConfig[3];
 }
-function n(v) { return v !== undefined && v !== '' ? String(v) : ''; }
-function num(v) { return typeof v === 'number' ? (v ? String(v) : '') : n(v); }
+function n(v) {
+  return v !== undefined && v !== '' ? String(v) : '';
+}
+function num(v) {
+  return typeof v === 'number' ? (v ? String(v) : '') : n(v);
+}
 function parsePlaceDate(value) {
   const s = n(value);
   const idx = s.indexOf('|');
@@ -54,7 +70,8 @@ function CellHeader({ boxNum, superscript, rightSlot, hideLabels }) {
     <div className="cmr-cell-header">
       <div className="cmr-cell-header-left">
         <span className="cmr-num-box">
-          {boxNum}{superscript && <sup style={{ fontSize: '5px', lineHeight: 0 }}>{superscript}</sup>}
+          {boxNum}
+          {superscript && <sup style={{ fontSize: '5px', lineHeight: 0 }}>{superscript}</sup>}
         </span>
         {!hideLabels && (
           <div className="cmr-cell-label-stack">
@@ -83,15 +100,17 @@ function getProductLines(d) {
   const lines = d?.productLines;
   if (Array.isArray(lines) && lines.length > 0) return lines;
   const flat = d ?? {};
-  return [{
-    marksAndNumbers: flat.marksAndNumbers ?? '',
-    numberOfPackages: flat.numberOfPackages ?? 0,
-    methodOfPacking: flat.methodOfPacking ?? '',
-    natureOfGoods: flat.natureOfGoods ?? '',
-    statisticalNumber: flat.statisticalNumber ?? '',
-    grossWeight: flat.grossWeight ?? 0,
-    volume: flat.volume ?? '',
-  }];
+  return [
+    {
+      marksAndNumbers: flat.marksAndNumbers ?? '',
+      numberOfPackages: flat.numberOfPackages ?? 0,
+      methodOfPacking: flat.methodOfPacking ?? '',
+      natureOfGoods: flat.natureOfGoods ?? '',
+      statisticalNumber: flat.statisticalNumber ?? '',
+      grossWeight: flat.grossWeight ?? 0,
+      volume: flat.volume ?? '',
+    },
+  ];
 }
 
 /** Tabla 6–12: líneas de producto (marcas, bultos, embalaje, naturaleza, estadístico, peso, volumen) */
@@ -102,7 +121,9 @@ function ProductLinesTable({ data, n, num }) {
   return (
     <table className="cmr-table cmr-table-product-lines">
       <colgroup>
-        {colWidths.map((w, i) => <col key={i} style={{ width: w }} />)}
+        {colWidths.map((w, i) => (
+          <col key={i} style={{ width: w }} />
+        ))}
       </colgroup>
       <thead>
         <tr>
@@ -111,7 +132,9 @@ function ProductLinesTable({ data, n, num }) {
               <span className="cmr-num-box">{boxNum}</span>
               <div className="cmr-cell-label-stack">
                 <span className="cmr-cell-label-es">{BOX_LABELS[boxNum]?.es ?? ''}</span>
-                {BOX_LABELS[boxNum]?.en && <span className="cmr-cell-label-en">{BOX_LABELS[boxNum].en}</span>}
+                {BOX_LABELS[boxNum]?.en && (
+                  <span className="cmr-cell-label-en">{BOX_LABELS[boxNum].en}</span>
+                )}
               </div>
             </th>
           ))}
@@ -125,7 +148,9 @@ function ProductLinesTable({ data, n, num }) {
             <td className="cmr-pl-td cmr-pl-td-8">{n(line.methodOfPacking)}</td>
             <td className="cmr-pl-td cmr-pl-td-9">{n(line.natureOfGoods)}</td>
             <td className="cmr-pl-td cmr-pl-td-10">{n(line.statisticalNumber)}</td>
-            <td className="cmr-pl-td cmr-pl-td-11">{num(line.grossWeight) ? `${num(line.grossWeight)} kg` : ''}</td>
+            <td className="cmr-pl-td cmr-pl-td-11">
+              {num(line.grossWeight) ? `${num(line.grossWeight)} kg` : ''}
+            </td>
             <td className="cmr-pl-td cmr-pl-td-12">{n(line.volume)}</td>
           </tr>
         ))}
@@ -137,18 +162,22 @@ function ProductLinesTable({ data, n, num }) {
 /** Tabla 20 — A pagar por: 6 filas × 6 celdas de datos (Remitente×2, Modena×2, Consignatario×2) */
 function PaymentTable20({ data, n }) {
   const raw = data?.payment20;
-  const rows = Array.isArray(raw) && raw.length >= 6
-    ? raw
-    : Array.from({ length: 6 }, () => Array(6).fill(''));
+  const rows =
+    Array.isArray(raw) && raw.length >= 6
+      ? raw
+      : Array.from({ length: 6 }, () => Array(6).fill(''));
   const get = (r, c) => (rows[r] && rows[r][c] != null ? String(rows[r][c]) : '');
 
   return (
     <table className="cmr-table cmr-table-payment">
       <colgroup>
         <col style={{ width: '34%' }} />
-        <col style={{ width: '11%' }} /><col style={{ width: '11%' }} />
-        <col style={{ width: '11%' }} /><col style={{ width: '11%' }} />
-        <col style={{ width: '11%' }} /><col style={{ width: '11%' }} />
+        <col style={{ width: '11%' }} />
+        <col style={{ width: '11%' }} />
+        <col style={{ width: '11%' }} />
+        <col style={{ width: '11%' }} />
+        <col style={{ width: '11%' }} />
+        <col style={{ width: '11%' }} />
       </colgroup>
       <thead>
         <tr>
@@ -159,32 +188,101 @@ function PaymentTable20({ data, n }) {
               <span className="cmr-cell-label-en">To be paid by:</span>
             </div>
           </th>
-          <th colSpan={2}>Remitente<br />Sender</th>
-          <th colSpan={2}>Modena<br />Currency</th>
-          <th colSpan={2}>Consignatario<br />Consignee</th>
+          <th colSpan={2}>
+            Remitente
+            <br />
+            Sender
+          </th>
+          <th colSpan={2}>
+            Modena
+            <br />
+            Currency
+          </th>
+          <th colSpan={2}>
+            Consignatario
+            <br />
+            Consignee
+          </th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td rowSpan={2}>Precio del transporte<br />Carriage charges<br /><br />Descuento<br />Deductions</td>
-          <td>{n(get(0, 0))}</td><td>{n(get(0, 1))}</td><td>{n(get(0, 2))}</td><td>{n(get(0, 3))}</td><td>{n(get(0, 4))}</td><td>{n(get(0, 5))}</td>
+          <td rowSpan={2}>
+            Precio del transporte
+            <br />
+            Carriage charges
+            <br />
+            <br />
+            Descuento
+            <br />
+            Deductions
+          </td>
+          <td>{n(get(0, 0))}</td>
+          <td>{n(get(0, 1))}</td>
+          <td>{n(get(0, 2))}</td>
+          <td>{n(get(0, 3))}</td>
+          <td>{n(get(0, 4))}</td>
+          <td>{n(get(0, 5))}</td>
         </tr>
         <tr>
-          <td>{n(get(1, 0))}</td><td>{n(get(1, 1))}</td><td>{n(get(1, 2))}</td><td>{n(get(1, 3))}</td><td>{n(get(1, 4))}</td><td>{n(get(1, 5))}</td>
+          <td>{n(get(1, 0))}</td>
+          <td>{n(get(1, 1))}</td>
+          <td>{n(get(1, 2))}</td>
+          <td>{n(get(1, 3))}</td>
+          <td>{n(get(1, 4))}</td>
+          <td>{n(get(1, 5))}</td>
         </tr>
         <tr>
-          <td rowSpan={3}>Liquido/Balance<br />Balance<br /><br />Suplementos<br />Sup. charges<br /><br />Gastos accesorios<br />Miscellaneous</td>
-          <td>{n(get(2, 0))}</td><td>{n(get(2, 1))}</td><td>{n(get(2, 2))}</td><td>{n(get(2, 3))}</td><td>{n(get(2, 4))}</td><td>{n(get(2, 5))}</td>
+          <td rowSpan={3}>
+            Liquido/Balance
+            <br />
+            Balance
+            <br />
+            <br />
+            Suplementos
+            <br />
+            Sup. charges
+            <br />
+            <br />
+            Gastos accesorios
+            <br />
+            Miscellaneous
+          </td>
+          <td>{n(get(2, 0))}</td>
+          <td>{n(get(2, 1))}</td>
+          <td>{n(get(2, 2))}</td>
+          <td>{n(get(2, 3))}</td>
+          <td>{n(get(2, 4))}</td>
+          <td>{n(get(2, 5))}</td>
         </tr>
         <tr>
-          <td>{n(get(3, 0))}</td><td>{n(get(3, 1))}</td><td>{n(get(3, 2))}</td><td>{n(get(3, 3))}</td><td>{n(get(3, 4))}</td><td>{n(get(3, 5))}</td>
+          <td>{n(get(3, 0))}</td>
+          <td>{n(get(3, 1))}</td>
+          <td>{n(get(3, 2))}</td>
+          <td>{n(get(3, 3))}</td>
+          <td>{n(get(3, 4))}</td>
+          <td>{n(get(3, 5))}</td>
         </tr>
         <tr>
-          <td>{n(get(4, 0))}</td><td>{n(get(4, 1))}</td><td>{n(get(4, 2))}</td><td>{n(get(4, 3))}</td><td>{n(get(4, 4))}</td><td>{n(get(4, 5))}</td>
+          <td>{n(get(4, 0))}</td>
+          <td>{n(get(4, 1))}</td>
+          <td>{n(get(4, 2))}</td>
+          <td>{n(get(4, 3))}</td>
+          <td>{n(get(4, 4))}</td>
+          <td>{n(get(4, 5))}</td>
         </tr>
         <tr>
-          <td>TOTAL<br />TOTAL</td>
-          <td>{n(get(5, 0))}</td><td>{n(get(5, 1))}</td><td>{n(get(5, 2))}</td><td>{n(get(5, 3))}</td><td>{n(get(5, 4))}</td><td>{n(get(5, 5))}</td>
+          <td>
+            TOTAL
+            <br />
+            TOTAL
+          </td>
+          <td>{n(get(5, 0))}</td>
+          <td>{n(get(5, 1))}</td>
+          <td>{n(get(5, 2))}</td>
+          <td>{n(get(5, 3))}</td>
+          <td>{n(get(5, 4))}</td>
+          <td>{n(get(5, 5))}</td>
         </tr>
       </tbody>
     </table>
@@ -194,12 +292,11 @@ function PaymentTable20({ data, n }) {
 export default function CmrCopy({ copyType, data }) {
   const config = getCopyConfig(copyType);
   const d = data ?? {};
-  const [place4, date4]   = parsePlaceDate(d.placeAndDateOfReceiptOrLoad);
+  const [place4, date4] = parsePlaceDate(d.placeAndDateOfReceiptOrLoad);
   const [place21, date21] = parsePlaceDate(d.placeAndDate);
 
   return (
     <div className="cmr-page" style={{ '--cmr-color': config.color }}>
-
       {/* ═══════════════════════════════════════════
           CABECERA
           ═══════════════════════════════════════════ */}
@@ -208,8 +305,10 @@ export default function CmrCopy({ copyType, data }) {
           <span className="cmr-header-copy-number">{config.copyNumber}</span>
           {(config.headerMain || config.headerEn) && (
             <div className="cmr-header-copy-text">
-              {config.headerMain && <span className="cmr-header-copy-main">{config.headerMain}</span>}
-              {config.headerEn  && <span className="cmr-header-copy-en">{config.headerEn}</span>}
+              {config.headerMain && (
+                <span className="cmr-header-copy-main">{config.headerMain}</span>
+              )}
+              {config.headerEn && <span className="cmr-header-copy-en">{config.headerEn}</span>}
             </div>
           )}
         </div>
@@ -219,7 +318,6 @@ export default function CmrCopy({ copyType, data }) {
           CUERPO
           ═══════════════════════════════════════════ */}
       <div className="cmr-body">
-
         {/* ── SECCIÓN SUPERIOR: izq (1-5) | der (legal,16-18) ── */}
         <div className="cmr-top-cols">
           <div className="cmr-col-left">
@@ -228,7 +326,10 @@ export default function CmrCopy({ copyType, data }) {
             <Cell boxNum={3} value={n(d.placeOfDelivery)} />
             {/* 4: fecha en cabecera, lugar en contenido */}
             <div className="cmr-cell cmr-cell-4">
-              <CellHeader boxNum={4} rightSlot={date4 ? <span className="cmr-cell-header-date">{date4}</span> : null} />
+              <CellHeader
+                boxNum={4}
+                rightSlot={date4 ? <span className="cmr-cell-header-date">{date4}</span> : null}
+              />
               <div className="cmr-cell-value">{place4 || '\u00A0'}</div>
             </div>
             <Cell boxNum={5} value={n(d.attachedDocuments)} />
@@ -273,13 +374,17 @@ export default function CmrCopy({ copyType, data }) {
                   <thead>
                     <tr>
                       <th colSpan={2} rowSpan={2} className="cmr-17bis-label-th">
-                        <span className="cmr-num-box-17bis">17<sup style={{ fontSize: '5px', lineHeight: 0 }}>Bis</sup></span>
+                        <span className="cmr-num-box-17bis">
+                          17<sup style={{ fontSize: '5px', lineHeight: 0 }}>Bis</sup>
+                        </span>
                         <div className="cmr-cell-label-stack">
                           <span className="cmr-cell-label-es">Referencia Transportista</span>
                           <span className="cmr-cell-label-en">Carrier&apos;s reference</span>
                         </div>
                       </th>
-                      <th colSpan={2} className="cmr-matricula-header">M A T R I C U L A</th>
+                      <th colSpan={2} className="cmr-matricula-header">
+                        M A T R I C U L A
+                      </th>
                     </tr>
                     <tr>
                       <th>Vehículo</th>
@@ -312,7 +417,6 @@ export default function CmrCopy({ copyType, data }) {
 
         {/* ── BANDA COMPLETA: palés (izq) | ADR | Docs (der) — ancho total ── */}
         <div className="cmr-pallets-band">
-
           {/* Etiqueta vertical PALETS/PALLETES */}
           <div className="cmr-palets-label">
             <span>PALETS</span>
@@ -323,16 +427,21 @@ export default function CmrCopy({ copyType, data }) {
           <div className="cmr-palets-5cols">
             {[
               { es: 'CARGADOS POR EL REMITENTE', en: 'LOADED BY SENDER' },
-              { es: 'REMESAS AL REMITENTE',      en: 'REMITTANCES TO SENDER' },
+              { es: 'REMESAS AL REMITENTE', en: 'REMITTANCES TO SENDER' },
               { es: 'ENTREGADOS AL DESTINATARIO', en: 'DELIVERED TO THE RECIPIENT' },
               { es: 'DEVUELTOS POR EL DESTINATARIO', en: 'RETURNED BY THE RECIPIENT' },
-              { es: 'NO DEVUELTOS, A RECOGER',   en: 'NOT RETURNED, TO PICK UP' },
+              { es: 'NO DEVUELTOS, A RECOGER', en: 'NOT RETURNED, TO PICK UP' },
             ].map((col, i) => {
-              const palletsVal = Array.isArray(d.palletsPallets) && d.palletsPallets[i] != null ? String(d.palletsPallets[i]) : '';
+              const palletsVal =
+                Array.isArray(d.palletsPallets) && d.palletsPallets[i] != null
+                  ? String(d.palletsPallets[i])
+                  : '';
               return (
                 <div key={i} className="cmr-palets-col">
                   <div className="cmr-palets-col-hdr">
-                    {col.es}<br />{col.en}
+                    {col.es}
+                    <br />
+                    {col.en}
                   </div>
                   <div className="cmr-palets-col-data">{n(palletsVal)}</div>
                 </div>
@@ -345,10 +454,21 @@ export default function CmrCopy({ copyType, data }) {
             <div className="cmr-adr-mercancias-hdr">MERCANCIAS PELIGROSAS</div>
             <div className="cmr-adr-classe-hdr">(ADR*) CLASSE</div>
             <div className="cmr-adr-col-headers">
-              <div className="cmr-adr-col"><span>Classe</span><span>Class</span></div>
-              <div className="cmr-adr-col"><span>Chiffre</span><span>Number</span></div>
-              <div className="cmr-adr-col"><span>Lettre</span><span>Letter</span></div>
-              <div className="cmr-adr-col"><span>(ADR*)</span></div>
+              <div className="cmr-adr-col">
+                <span>Classe</span>
+                <span>Class</span>
+              </div>
+              <div className="cmr-adr-col">
+                <span>Chiffre</span>
+                <span>Number</span>
+              </div>
+              <div className="cmr-adr-col">
+                <span>Lettre</span>
+                <span>Letter</span>
+              </div>
+              <div className="cmr-adr-col">
+                <span>(ADR*)</span>
+              </div>
             </div>
             <div className="cmr-adr-data-row">
               <div className="cmr-adr-col" />
@@ -367,7 +487,6 @@ export default function CmrCopy({ copyType, data }) {
                 : '\u00A0'}
             </div>
           </div>
-
         </div>
 
         {/* ── SECCIÓN INFERIOR: izq (13,14,21) | der (19,20,15) ── */}
@@ -444,7 +563,9 @@ export default function CmrCopy({ copyType, data }) {
                   <span>on</span>
                 </div>
               </div>
-              {n(d.consigneeSignature) && <div className="cmr-sig-content">{d.consigneeSignature}</div>}
+              {n(d.consigneeSignature) && (
+                <div className="cmr-sig-content">{d.consigneeSignature}</div>
+              )}
               <div className="cmr-sig-label">
                 <span>Firma y sello del consignatario</span>
                 <span>Signature and stamp of the consignee</span>
@@ -452,8 +573,8 @@ export default function CmrCopy({ copyType, data }) {
             </div>
           </div>
         </div>
-
-      </div>{/* fin cmr-body */}
+      </div>
+      {/* fin cmr-body */}
     </div>
   );
 }

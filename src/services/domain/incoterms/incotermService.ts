@@ -5,10 +5,7 @@
 
 import { API_URL_V2 } from '@/configs/config';
 import { getAuthToken } from '@/lib/auth/getAuthToken';
-import {
-  fetchEntitiesGeneric,
-  deleteEntityGeneric,
-} from '@/services/generic/entityService';
+import { fetchEntitiesGeneric, deleteEntityGeneric } from '@/services/generic/entityService';
 import { createEntityGeneric } from '@/services/generic/createEntityService';
 import {
   fetchEntityDataGeneric,
@@ -17,7 +14,12 @@ import {
 } from '@/services/generic/editEntityService';
 import { addFiltersToParams } from '@/lib/entity/filtersHelper';
 import { addWithParams } from '@/lib/entity/entityRelationsHelper';
-import type { Incoterm, CatalogListResponse, CatalogListFilters, CatalogOption } from '@/types/catalog';
+import type {
+  Incoterm,
+  CatalogListResponse,
+  CatalogListFilters,
+  CatalogOption,
+} from '@/types/catalog';
 
 const ENDPOINT = 'incoterms';
 
@@ -64,13 +66,19 @@ export const incotermService = {
   async delete(id: number | string): Promise<{ response: Response; data: unknown }> {
     const token = await getAuthToken();
     const url = `${API_URL_V2}${ENDPOINT}/${id}`;
-    return deleteEntityGeneric(url, undefined, token) as Promise<{ response: Response; data: unknown }>;
+    return deleteEntityGeneric(url, undefined, token) as Promise<{
+      response: Response;
+      data: unknown;
+    }>;
   },
 
   async deleteMultiple(ids: (number | string)[]): Promise<{ response: Response; data: unknown }> {
     const token = await getAuthToken();
     const url = `${API_URL_V2}${ENDPOINT}`;
-    return deleteEntityGeneric(url, { ids }, token) as Promise<{ response: Response; data: unknown }>;
+    return deleteEntityGeneric(url, { ids }, token) as Promise<{
+      response: Response;
+      data: unknown;
+    }>;
   },
 
   async getOptions(): Promise<CatalogOption[]> {

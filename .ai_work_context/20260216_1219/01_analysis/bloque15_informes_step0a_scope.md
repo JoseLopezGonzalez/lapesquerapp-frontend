@@ -15,49 +15,49 @@ El bloque **Informes básicos** abarca los gráficos y cards de datos que muestr
 
 ### Admin Dashboard (`components/Admin/Dashboard/`)
 
-| Componente | Hook de datos | Servicio |
-|------------|---------------|----------|
-| CurrentStockCard | useTotalStockStats | storeService.getTotalStockStats |
-| TotalQuantitySoldCard | useOrdersTotalNetWeightStats | orderService.getOrdersTotalNetWeightStats |
-| TotalAmountSoldCard | useOrdersTotalAmountStats | orderService.getOrdersTotalAmountStats |
-| NewLabelingFeatureCard | (estático / feature flag) | — |
-| OrderRankingChart | useOrderRankingStats | orderService.getOrderRankingStats |
-| SalesBySalespersonPieChart | useSalesBySalesperson | orderService.getSalesBySalesperson |
-| StockBySpeciesCard | useStockBySpeciesStats | storeService.getStockBySpeciesStats |
-| StockByProductsCard | useStockByProductsStats | storeService.getStockByProducts |
-| SalesChart | useSalesChartData | orderService.getSalesChartData |
-| ReceptionChart | useReceptionChartData | rawMaterialReceptionService |
-| DispatchChart | useDispatchChartData | ceboDispatchService |
-| TransportRadarChart | useTransportChartData | orderService.getTransportChartData |
-| WorkingEmployeesCard | usePunchesDashboard | punchService |
-| WorkerStatisticsCard | usePunchesStatistics | punchService |
+| Componente                 | Hook de datos                | Servicio                                  |
+| -------------------------- | ---------------------------- | ----------------------------------------- |
+| CurrentStockCard           | useTotalStockStats           | storeService.getTotalStockStats           |
+| TotalQuantitySoldCard      | useOrdersTotalNetWeightStats | orderService.getOrdersTotalNetWeightStats |
+| TotalAmountSoldCard        | useOrdersTotalAmountStats    | orderService.getOrdersTotalAmountStats    |
+| NewLabelingFeatureCard     | (estático / feature flag)    | —                                         |
+| OrderRankingChart          | useOrderRankingStats         | orderService.getOrderRankingStats         |
+| SalesBySalespersonPieChart | useSalesBySalesperson        | orderService.getSalesBySalesperson        |
+| StockBySpeciesCard         | useStockBySpeciesStats       | storeService.getStockBySpeciesStats       |
+| StockByProductsCard        | useStockByProductsStats      | storeService.getStockByProducts           |
+| SalesChart                 | useSalesChartData            | orderService.getSalesChartData            |
+| ReceptionChart             | useReceptionChartData        | rawMaterialReceptionService               |
+| DispatchChart              | useDispatchChartData         | ceboDispatchService                       |
+| TransportRadarChart        | useTransportChartData        | orderService.getTransportChartData        |
+| WorkingEmployeesCard       | usePunchesDashboard          | punchService                              |
+| WorkerStatisticsCard       | usePunchesStatistics         | punchService                              |
 
 ### Operario Dashboard (`components/Warehouse/`)
 
-| Componente | Hook de datos | Servicio |
-|------------|---------------|----------|
+| Componente         | Hook de datos     | Servicio                    |
+| ------------------ | ----------------- | --------------------------- |
 | ReceptionsListCard | useReceptionsList | rawMaterialReceptionService |
-| DispatchesListCard | useDispatchesList | ceboDispatchService |
+| DispatchesListCard | useDispatchesList | ceboDispatchService         |
 
 ### Hooks de datos (informes)
 
-| Hook | Archivo | Stack |
-|------|---------|-------|
-| useSalesChartData | useDashboardCharts.js | React Query ✅ |
-| useReceptionChartData | useDashboardCharts.js | React Query ✅ |
-| useDispatchChartData | useDashboardCharts.js | React Query ✅ |
-| useTransportChartData | useDashboardCharts.js | React Query ✅ |
-| useOrdersTotalNetWeightStats | useOrdersStats.js | React Query ✅ |
-| useOrdersTotalAmountStats | useOrdersStats.js | React Query ✅ |
-| useOrderRankingStats | useOrdersStats.js | React Query ✅ |
-| useSalesBySalesperson | useOrdersStats.js | React Query ✅ |
-| useTotalStockStats | useStockStats.js | React Query ✅ |
-| useStockBySpeciesStats | useStockStats.js | React Query ✅ |
-| useStockByProductsStats | useStockStats.js | React Query ✅ |
-| usePunchesDashboard | usePunches.js | React Query ✅ |
-| usePunchesStatistics | usePunches.js | React Query ✅ |
-| useReceptionsList | useReceptionsList.js | React Query ✅ |
-| useDispatchesList | useDispatchesList.js | React Query ✅ |
+| Hook                         | Archivo               | Stack          |
+| ---------------------------- | --------------------- | -------------- |
+| useSalesChartData            | useDashboardCharts.js | React Query ✅ |
+| useReceptionChartData        | useDashboardCharts.js | React Query ✅ |
+| useDispatchChartData         | useDashboardCharts.js | React Query ✅ |
+| useTransportChartData        | useDashboardCharts.js | React Query ✅ |
+| useOrdersTotalNetWeightStats | useOrdersStats.js     | React Query ✅ |
+| useOrdersTotalAmountStats    | useOrdersStats.js     | React Query ✅ |
+| useOrderRankingStats         | useOrdersStats.js     | React Query ✅ |
+| useSalesBySalesperson        | useOrdersStats.js     | React Query ✅ |
+| useTotalStockStats           | useStockStats.js      | React Query ✅ |
+| useStockBySpeciesStats       | useStockStats.js      | React Query ✅ |
+| useStockByProductsStats      | useStockStats.js      | React Query ✅ |
+| usePunchesDashboard          | usePunches.js         | React Query ✅ |
+| usePunchesStatistics         | usePunches.js         | React Query ✅ |
+| useReceptionsList            | useReceptionsList.js  | React Query ✅ |
+| useDispatchesList            | useDispatchesList.js  | React Query ✅ |
 
 ### Servicios que alimentan gráficos
 
@@ -82,6 +82,7 @@ Existe `components/Admin/Home/` con SpeciesInventoryOverview, RawMaterialRadarBa
 ## Resumen de alcance
 
 **Bloque 15 incluye:**
+
 - **14 componentes** de gráficos/cards en Admin Dashboard
 - **2 componentes** en OperarioDashboard (ReceptionsListCard, DispatchesListCard)
 - **Hooks**: useDashboardCharts, useOrdersStats, useStockStats, usePunches (Dashboard), useReceptionsList, useDispatchesList
@@ -89,6 +90,7 @@ Existe `components/Admin/Home/` con SpeciesInventoryOverview, RawMaterialRadarBa
 - **Stack actual**: React Query en todos los hooks de datos (migración ya realizada en Bloque 2)
 
 **Gaps potenciales** (a validar en STEP 1):
+
 - TypeScript: hooks y servicios en .js
 - Tests: ¿hay tests para los servicios de gráficos?
 - Tipos de respuestas API para datos de charts

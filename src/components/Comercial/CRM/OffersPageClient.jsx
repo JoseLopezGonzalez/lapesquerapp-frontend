@@ -35,14 +35,26 @@ function OfferCard({ offer, selected, onClick }) {
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate font-medium">{offer.prospect?.companyName ?? offer.customer?.name ?? `Oferta #${offer.id}`}</p>
-          <p className="text-sm text-muted-foreground">{offer.sentAt ? `Enviada ${formatDateValue(offer.sentAt)}` : 'Sin envío registrado'}</p>
+          <p className="truncate font-medium">
+            {offer.prospect?.companyName ?? offer.customer?.name ?? `Oferta #${offer.id}`}
+          </p>
+          <p className="text-muted-foreground text-sm">
+            {offer.sentAt ? `Enviada ${formatDateValue(offer.sentAt)}` : 'Sin envío registrado'}
+          </p>
         </div>
         <StatusPill label={offerStatusLabels[offer.status] ?? offer.status} status={offer.status} />
       </div>
-      <div className="mt-3 space-y-1 text-sm text-muted-foreground">
-        <p>{offer.validUntil ? `Validez: ${formatDateValue(offer.validUntil)}` : 'Sin fecha de validez'}</p>
-        <p>{offer.totalAmount != null ? formatCurrency(offer.totalAmount, offer.currency ?? 'EUR') : 'Importe pendiente de cálculo'}</p>
+      <div className="text-muted-foreground mt-3 space-y-1 text-sm">
+        <p>
+          {offer.validUntil
+            ? `Validez: ${formatDateValue(offer.validUntil)}`
+            : 'Sin fecha de validez'}
+        </p>
+        <p>
+          {offer.totalAmount != null
+            ? formatCurrency(offer.totalAmount, offer.currency ?? 'EUR')
+            : 'Importe pendiente de cálculo'}
+        </p>
       </div>
     </button>
   );
@@ -76,7 +88,9 @@ export default function OffersPageClient({ initialOfferId = null, forceCreate = 
   useEffect(() => {
     if (isMobile || !selectedId) return;
 
-    const selectedOfferStillVisible = orderedOffers.some((offer) => String(offer.id) === String(selectedId));
+    const selectedOfferStillVisible = orderedOffers.some(
+      (offer) => String(offer.id) === String(selectedId)
+    );
     if (!selectedOfferStillVisible) {
       setSelectedId(null);
     }
@@ -101,11 +115,13 @@ export default function OffersPageClient({ initialOfferId = null, forceCreate = 
 
   return (
     <>
-      <div className="flex h-full w-full min-h-0 min-w-0 flex-col gap-4 overflow-hidden px-4 py-3 md:px-6">
+      <div className="flex h-full min-h-0 w-full min-w-0 flex-col gap-4 overflow-hidden px-4 py-3 md:px-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-3xl font-light">Ofertas</h1>
-            <p className="text-sm text-muted-foreground">Histórico comercial por prospecto o cliente.</p>
+            <p className="text-muted-foreground text-sm">
+              Histórico comercial por prospecto o cliente.
+            </p>
           </div>
           <Button onClick={() => setFormOpen(true)}>
             <Plus className="mr-2 size-4" />
@@ -115,7 +131,11 @@ export default function OffersPageClient({ initialOfferId = null, forceCreate = 
 
         <div className="flex flex-col gap-4">
           <InputGroup className="w-full md:max-w-md">
-            <InputGroupInput value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar por empresa" />
+            <InputGroupInput
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Buscar por empresa"
+            />
             <InputGroupAddon>
               <Search className="size-4" />
             </InputGroupAddon>
@@ -150,7 +170,7 @@ export default function OffersPageClient({ initialOfferId = null, forceCreate = 
                   <EmptyState
                     title="Aún no has creado ninguna oferta"
                     description="Empieza con una oferta vinculada a prospecto o cliente."
-                    className="h-full w-full border bg-muted/20 !min-h-0"
+                    className="bg-muted/20 h-full !min-h-0 w-full border"
                     button={{ name: 'Nueva oferta', onClick: () => setFormOpen(true) }}
                   />
                 </div>
@@ -169,17 +189,16 @@ export default function OffersPageClient({ initialOfferId = null, forceCreate = 
             </div>
           </Card>
 
-          {!isMobile && (
-            selectedId ? (
+          {!isMobile &&
+            (selectedId ? (
               <OfferDetail offerId={selectedId} embedded />
             ) : (
               <EmptyState
                 title="Selecciona una oferta"
                 description="El detalle se abrirá aquí manteniendo la lista visible en desktop."
-                className="w-full min-w-0 border bg-muted/20 min-h-[360px]"
+                className="bg-muted/20 min-h-[360px] w-full min-w-0 border"
               />
-            )
-          )}
+            ))}
         </div>
       </div>
 

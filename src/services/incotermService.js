@@ -1,7 +1,7 @@
 // /src/services/orderService.js
-import { fetchWithTenant } from "@lib/fetchWithTenant";
-import { API_URL_V2 } from "@/configs/config";
-import { getErrorMessage } from "@/lib/api/apiHelpers";
+import { fetchWithTenant } from '@lib/fetchWithTenant';
+import { API_URL_V2 } from '@/configs/config';
+import { getErrorMessage } from '@/lib/api/apiHelpers';
 import { getUserAgent } from '@/lib/utils/getUserAgent';
 
 /**
@@ -13,28 +13,26 @@ import { getUserAgent } from '@/lib/utils/getUserAgent';
  */
 
 export async function getIncotermsOptions(token) {
-    try {
-        const response = await fetchWithTenant(`${API_URL_V2}incoterms/options`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`, // Enviar el token
-                'User-Agent': getUserAgent(), // Incluye el User-Agent del cliente
-            },
-        });
+  try {
+    const response = await fetchWithTenant(`${API_URL_V2}incoterms/options`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`, // Enviar el token
+        'User-Agent': getUserAgent(), // Incluye el User-Agent del cliente
+      },
+    });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(
-                `Error al obtener incoterms: ${getErrorMessage(errorData) || 'Código de estado ' + response.status}`
-            );
-        }
-
-        return await response.json();
-    } catch (error) {
-        console.error('Error en getIncotermsOptions:', error);
-        throw error;
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        `Error al obtener incoterms: ${getErrorMessage(errorData) || 'Código de estado ' + response.status}`
+      );
     }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error en getIncotermsOptions:', error);
+    throw error;
+  }
 }
-
-

@@ -19,6 +19,7 @@ GET /api/v2/stores
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -49,6 +50,7 @@ POST /api/v2/stores
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -61,17 +63,17 @@ Content-Type: application/json
 {
   "name": "Almacén Principal",
   "temperature": -18.5,
-  "capacity": 5000.00
+  "capacity": 5000.0
 }
 ```
 
 #### Validaciones del Backend
 
-| Campo | Tipo | Requerido | Reglas de Validación |
-|-------|------|-----------|---------------------|
-| `name` | string | Sí | Mínimo 3 caracteres, máximo 255 caracteres, único por tenant (`unique:tenant.stores,name`) |
-| `temperature` | numeric | Sí | Entre -99.99 y 99.99 (`between:-99.99,99.99`) |
-| `capacity` | numeric | Sí | Mínimo 0 (`min:0`) |
+| Campo         | Tipo    | Requerido | Reglas de Validación                                                                       |
+| ------------- | ------- | --------- | ------------------------------------------------------------------------------------------ |
+| `name`        | string  | Sí        | Mínimo 3 caracteres, máximo 255 caracteres, único por tenant (`unique:tenant.stores,name`) |
+| `temperature` | numeric | Sí        | Entre -99.99 y 99.99 (`between:-99.99,99.99`)                                              |
+| `capacity`    | numeric | Sí        | Mínimo 0 (`min:0`)                                                                         |
 
 **Nota:** Las validaciones se aplican tanto en la creación (`POST`) como en la actualización (`PUT`) de almacenes.
 
@@ -99,7 +101,7 @@ Cuando los datos no cumplen con las validaciones:
     "id": 1,
     "name": "Almacén Principal",
     "temperature": -18.5,
-    "capacity": 5000.00,
+    "capacity": 5000.0,
     "created_at": "2024-01-15T10:00:00.000000Z"
   }
 }
@@ -121,7 +123,7 @@ GET /api/v2/stores/{id}
     "id": 1,
     "name": "Almacén Principal",
     "temperature": -18.5,
-    "capacity": 5000.00
+    "capacity": 5000.0
   }
 }
 ```
@@ -140,7 +142,7 @@ PUT /api/v2/stores/{id}
 {
   "name": "Almacén Actualizado",
   "temperature": 4.0,
-  "capacity": 6000.00
+  "capacity": 6000.0
 }
 ```
 
@@ -148,11 +150,11 @@ PUT /api/v2/stores/{id}
 
 Las mismas validaciones que para la creación se aplican en la actualización:
 
-| Campo | Tipo | Requerido | Reglas de Validación |
-|-------|------|-----------|---------------------|
-| `name` | string | Sí | Mínimo 3 caracteres, máximo 255 caracteres, único por tenant (`unique:tenant.stores,name`) |
-| `temperature` | numeric | Sí | Entre -99.99 y 99.99 (`between:-99.99,99.99`) |
-| `capacity` | numeric | Sí | Mínimo 0 (`min:0`) |
+| Campo         | Tipo    | Requerido | Reglas de Validación                                                                       |
+| ------------- | ------- | --------- | ------------------------------------------------------------------------------------------ |
+| `name`        | string  | Sí        | Mínimo 3 caracteres, máximo 255 caracteres, único por tenant (`unique:tenant.stores,name`) |
+| `temperature` | numeric | Sí        | Entre -99.99 y 99.99 (`between:-99.99,99.99`)                                              |
+| `capacity`    | numeric | Sí        | Mínimo 0 (`min:0`)                                                                         |
 
 ---
 
@@ -223,7 +225,7 @@ GET /api/v2/stores/total-stock-by-products
     {
       "product_id": 1,
       "product_name": "Producto A",
-      "total_quantity": 1500.50,
+      "total_quantity": 1500.5,
       "total_boxes": 100
     }
   ]
@@ -242,13 +244,13 @@ GET /api/v2/pallets
 
 #### Query Parameters (Opcionales)
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| status | string | Estado del palet (`stored`, `shipping`, `shipped`) |
-| store_id | integer | ID del almacén |
-| order_id | integer | ID del pedido |
-| lot | string | Número de lote |
-| perPage | integer | Elementos por página |
+| Parámetro | Tipo    | Descripción                                        |
+| --------- | ------- | -------------------------------------------------- |
+| status    | string  | Estado del palet (`stored`, `shipping`, `shipped`) |
+| store_id  | integer | ID del almacén                                     |
+| order_id  | integer | ID del pedido                                      |
+| lot       | string  | Número de lote                                     |
+| perPage   | integer | Elementos por página                               |
 
 #### Response Exitosa (200)
 
@@ -338,6 +340,7 @@ GET /api/v2/pallets/registered
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -380,6 +383,7 @@ GET /api/v2/pallets/search-by-lot?lot=LOT-001
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -387,9 +391,9 @@ Authorization: Bearer {access_token}
 
 #### Query Parameters (Requeridos)
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| lot | string | Número de lote a buscar |
+| Parámetro | Tipo   | Descripción             |
+| --------- | ------ | ----------------------- |
+| lot       | string | Número de lote a buscar |
 
 #### Response Exitosa (200)
 
@@ -438,6 +442,7 @@ GET /api/v2/pallets/available-for-order
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -445,11 +450,11 @@ Authorization: Bearer {access_token}
 
 #### Query Parameters (Opcionales)
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| orderId | integer | ID del pedido (si se proporciona, incluye palets sin pedido O del mismo pedido) |
-| id | string | Búsqueda por ID con coincidencias parciales |
-| perPage | integer | Elementos por página (default: 20, max: 100) |
+| Parámetro | Tipo    | Descripción                                                                     |
+| --------- | ------- | ------------------------------------------------------------------------------- |
+| orderId   | integer | ID del pedido (si se proporciona, incluye palets sin pedido O del mismo pedido) |
+| id        | string  | Búsqueda por ID con coincidencias parciales                                     |
+| perPage   | integer | Elementos por página (default: 20, max: 100)                                    |
 
 #### Response Exitosa (200)
 
@@ -544,6 +549,7 @@ POST /api/v2/pallets/{id}/link-order
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -552,9 +558,9 @@ Content-Type: application/json
 
 #### Path Parameters
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| id | integer | ID del palet |
+| Parámetro | Tipo    | Descripción  |
+| --------- | ------- | ------------ |
+| id        | integer | ID del palet |
 
 #### Request Body
 
@@ -566,8 +572,8 @@ Content-Type: application/json
 
 #### Campos Requeridos
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
+| Campo   | Tipo    | Descripción   |
+| ------- | ------- | ------------- |
 | orderId | integer | ID del pedido |
 
 #### Response Exitosa (200)
@@ -602,6 +608,7 @@ POST /api/v2/pallets/link-orders
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -627,8 +634,8 @@ Content-Type: application/json
 
 #### Campos Requeridos
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
+| Campo   | Tipo  | Descripción                                            |
+| ------- | ----- | ------------------------------------------------------ |
 | pallets | array | Array de objetos con `id` (palet) y `orderId` (pedido) |
 
 #### Response Exitosa (200) - Sin Errores
@@ -676,6 +683,7 @@ POST /api/v2/pallets/{id}/unlink-order
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -683,9 +691,9 @@ Authorization: Bearer {access_token}
 
 #### Path Parameters
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| id | integer | ID del palet |
+| Parámetro | Tipo    | Descripción  |
+| --------- | ------- | ------------ |
+| id        | integer | ID del palet |
 
 #### Response Exitosa (200)
 
@@ -713,6 +721,7 @@ POST /api/v2/pallets/unlink-orders
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -729,8 +738,8 @@ Content-Type: application/json
 
 #### Campos Requeridos
 
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
+| Campo      | Tipo  | Descripción                        |
+| ---------- | ----- | ---------------------------------- |
 | pallet_ids | array | Array de IDs de palets (mínimo: 1) |
 
 #### Response Exitosa (200)
@@ -890,4 +899,3 @@ GET /api/v2/boxes/xlsx
   "userMessage": "El recurso especificado no existe."
 }
 ```
-

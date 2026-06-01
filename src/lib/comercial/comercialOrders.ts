@@ -16,9 +16,14 @@ type OfferReference = {
   orderId?: number | string | null;
 };
 
-export function enrichOrdersWithOffers(orders: CommercialOrder[] = [], offers: OfferReference[] = []) {
+export function enrichOrdersWithOffers(
+  orders: CommercialOrder[] = [],
+  offers: OfferReference[] = []
+) {
   const offerByOrderId = new Map(
-    (offers ?? []).filter((offer) => offer?.orderId != null).map((offer) => [String(offer.orderId), offer])
+    (offers ?? [])
+      .filter((offer) => offer?.orderId != null)
+      .map((offer) => [String(offer.orderId), offer])
   );
 
   return orders.map((order) => {

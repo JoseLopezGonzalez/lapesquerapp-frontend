@@ -1,22 +1,23 @@
-import { toast } from "sonner"
+import { toast } from 'sonner';
 
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button';
 
 export function Pattern() {
   return (
     <div className="flex items-center justify-center">
       <Button
         onClick={() =>
-          toast("Message archived", {
-            description: "The conversation has been moved to archive.",
+          toast('Message archived', {
+            description: 'The conversation has been moved to archive.',
             action: {
-              label: "Undo",
-              onClick: () => toast.success("Action undone"),
+              label: 'Undo',
+              onClick: () => toast.success('Action undone'),
             },
           })
         }
         variant="outline"
-        className="w-fit">
+        className="w-fit"
+      >
         Toast with Action
       </Button>
     </div>

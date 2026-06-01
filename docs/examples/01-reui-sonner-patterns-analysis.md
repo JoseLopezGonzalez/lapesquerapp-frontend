@@ -21,29 +21,29 @@ Este análisis se apoya en la variante `radix` del registry de ReUI, que es la m
 
 ## Tabla resumen
 
-| # | Descripción original | Capacidad principal | Interés Brisapp | Enlace fuente |
-|---|---|---|---|---|
-| 1 | Basic toast notification | Toast básico con mensaje simple | Medio | [p-sonner-1](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-1.tsx) |
-| 2 | Toast notification with description | Toast con descripción secundaria | Alto | [p-sonner-2](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-2.tsx) |
-| 3 | Toast positions | Posicionamiento por toast | Bajo | [p-sonner-3](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-3.tsx) |
-| 4 | Toast variants with colored icons | Variantes semánticas e iconos | Alto | [p-sonner-4](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-4.tsx) |
-| 5 | Toast duration options | Duración y persistencia | Alto | [p-sonner-5](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-5.tsx) |
-| 6 | Toast with action button | Acción principal tipo undo | Alto | [p-sonner-6](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-6.tsx) |
-| 7 | Promise toast with loading state | Flujo async loading -> success/error | Muy alto | [p-sonner-7](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-7.tsx) |
-| 8 | Toast with custom close and cancel buttons | Confirmación con CTA y cancelación | Alto | [p-sonner-8](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-8.tsx) |
-| 9 | Toast with custom rich content | Toast totalmente custom con avatar y CTAs | Medio | [p-sonner-9](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-9.tsx) |
-| 10 | Toast with upload progress simulation | Progreso visual actualizable | Muy alto | [p-sonner-10](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-10.tsx) |
-| 11 | Toast with status alert markup | Estado operativo rico | Medio | [p-sonner-11](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-11.tsx) |
-| 12 | Custom accent border toast | Styling con borde de acento | Medio | [p-sonner-12](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-12.tsx) |
-| 13 | Custom invert success toast | Toast invertido de éxito | Bajo | [p-sonner-13](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-13.tsx) |
-| 14 | Custom invert error toast with details | Error rico con detalle técnico | Alto | [p-sonner-14](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-14.tsx) |
-| 15 | Custom invert info toast with avatar | Invitación/colaboración con avatar | Bajo | [p-sonner-15](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-15.tsx) |
-| 16 | Custom invert warning toast with countdown | Warning temporal con acción correctiva | Alto | [p-sonner-16](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-16.tsx) |
-| 17 | Multi-action invert toast with avatar group | Workflow colaborativo con múltiples acciones | Medio | [p-sonner-17](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-17.tsx) |
-| 18 | Toast with close button on top-right | Reubicación del botón de cierre | Bajo | [p-sonner-18](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-18.tsx) |
-| 19 | Toast with custom icon | Icono custom por caso de uso | Medio | [p-sonner-19](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-19.tsx) |
-| 20 | Custom integration toast | Integración conectada con estado y acciones | Medio | [p-sonner-20](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-20.tsx) |
-| 21 | Updatable toast with ID | Actualización manual del mismo toast por `id` | Muy alto | [p-sonner-21](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-21.tsx) |
+| #   | Descripción original                        | Capacidad principal                           | Interés Brisapp | Enlace fuente                                                                                                         |
+| --- | ------------------------------------------- | --------------------------------------------- | --------------- | --------------------------------------------------------------------------------------------------------------------- |
+| 1   | Basic toast notification                    | Toast básico con mensaje simple               | Medio           | [p-sonner-1](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-1.tsx)   |
+| 2   | Toast notification with description         | Toast con descripción secundaria              | Alto            | [p-sonner-2](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-2.tsx)   |
+| 3   | Toast positions                             | Posicionamiento por toast                     | Bajo            | [p-sonner-3](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-3.tsx)   |
+| 4   | Toast variants with colored icons           | Variantes semánticas e iconos                 | Alto            | [p-sonner-4](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-4.tsx)   |
+| 5   | Toast duration options                      | Duración y persistencia                       | Alto            | [p-sonner-5](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-5.tsx)   |
+| 6   | Toast with action button                    | Acción principal tipo undo                    | Alto            | [p-sonner-6](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-6.tsx)   |
+| 7   | Promise toast with loading state            | Flujo async loading -> success/error          | Muy alto        | [p-sonner-7](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-7.tsx)   |
+| 8   | Toast with custom close and cancel buttons  | Confirmación con CTA y cancelación            | Alto            | [p-sonner-8](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-8.tsx)   |
+| 9   | Toast with custom rich content              | Toast totalmente custom con avatar y CTAs     | Medio           | [p-sonner-9](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-9.tsx)   |
+| 10  | Toast with upload progress simulation       | Progreso visual actualizable                  | Muy alto        | [p-sonner-10](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-10.tsx) |
+| 11  | Toast with status alert markup              | Estado operativo rico                         | Medio           | [p-sonner-11](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-11.tsx) |
+| 12  | Custom accent border toast                  | Styling con borde de acento                   | Medio           | [p-sonner-12](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-12.tsx) |
+| 13  | Custom invert success toast                 | Toast invertido de éxito                      | Bajo            | [p-sonner-13](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-13.tsx) |
+| 14  | Custom invert error toast with details      | Error rico con detalle técnico                | Alto            | [p-sonner-14](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-14.tsx) |
+| 15  | Custom invert info toast with avatar        | Invitación/colaboración con avatar            | Bajo            | [p-sonner-15](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-15.tsx) |
+| 16  | Custom invert warning toast with countdown  | Warning temporal con acción correctiva        | Alto            | [p-sonner-16](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-16.tsx) |
+| 17  | Multi-action invert toast with avatar group | Workflow colaborativo con múltiples acciones  | Medio           | [p-sonner-17](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-17.tsx) |
+| 18  | Toast with close button on top-right        | Reubicación del botón de cierre               | Bajo            | [p-sonner-18](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-18.tsx) |
+| 19  | Toast with custom icon                      | Icono custom por caso de uso                  | Medio           | [p-sonner-19](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-19.tsx) |
+| 20  | Custom integration toast                    | Integración conectada con estado y acciones   | Medio           | [p-sonner-20](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-20.tsx) |
+| 21  | Updatable toast with ID                     | Actualización manual del mismo toast por `id` | Muy alto        | [p-sonner-21](https://github.com/keenthemes/reui/blob/main/registry-reui/bases/radix/patterns/sonner/p-sonner-21.tsx) |
 
 ## Patrones analizados
 

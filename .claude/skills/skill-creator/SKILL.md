@@ -1,6 +1,7 @@
 # Skill: Skill Creator
 
 ## Categoría
+
 Meta / Creación
 
 ## Cuándo se activa
@@ -22,7 +23,7 @@ Guía a Jose a través del diseño de una nueva skill y la crea como archivo `SK
 Preguntas obligatorias antes de escribir nada:
 
 ```
-a) ¿Qué hace esta skill en una frase? 
+a) ¿Qué hace esta skill en una frase?
    ("Convierte código a X", "Genera Y", "Revisa Z")
 
 b) ¿Cuándo se activa? ¿Qué dice el usuario para invocarla?
@@ -34,7 +35,7 @@ c) ¿Qué produce? ¿Cuál es el output exacto?
 d) ¿Es específica de PesquerApp o es general?
    (si es específica: ¿qué módulo? ¿qué patrones usa?)
 
-e) ¿Hay alguna skill similar ya? 
+e) ¿Hay alguna skill similar ya?
    (revisar .claude/skills/ antes de crear duplicados)
 ```
 
@@ -43,6 +44,7 @@ Solo hacer 2-3 preguntas a la vez, no un interrogatorio.
 ### 2. Proponer nombre y categoría
 
 Categorías disponibles:
+
 - **Escritura** — generación o transformación de texto
 - **Desarrollo** — ayuda con código del proyecto
 - **Descubrimiento** — exploración del proyecto o capacidades
@@ -62,21 +64,27 @@ Template interno que usa Skill Creator:
 # Skill: [Nombre]
 
 ## Categoría
+
 [Categoría]
 
 ## Cuándo se activa
+
 [Frases exactas o contextos que disparan la skill]
 
 ## Qué hace
+
 [Descripción clara en 2-4 líneas]
 
 ## Proceso
+
 [Pasos concretos — qué hace el agente cuando se invoca]
 
 ## Output
+
 [Formato exacto del resultado]
 
 ## Ejemplos
+
 [Opcional — si ayuda a entender la skill]
 ```
 
@@ -87,6 +95,7 @@ Ruta: `.claude/skills/[nombre-en-kebab-case]/SKILL.md`
 ### 5. Confirmar con Jose
 
 Mostrar el archivo creado y preguntar:
+
 - ¿El "cuándo se activa" captura los casos de uso que tenías en mente?
 - ¿El output es lo que esperabas?
 - ¿Falta algo?
@@ -111,11 +120,11 @@ Confirmar que el archivo existe en la ruta correcta. FindSkills lo detectará au
 ```
 Jose: "Crea una skill para generar changelogs a partir de los commits de git"
 
-Skill Creator: 
+Skill Creator:
 "Antes de crearla, dos preguntas:
-1. ¿El changelog es para el usuario final (CHANGELOG.md en el repo) o 
+1. ¿El changelog es para el usuario final (CHANGELOG.md en el repo) o
    para comunicación interna (Slack, Notion)?
-2. ¿Quieres que la skill lea los commits automáticamente con git log, 
+2. ¿Quieres que la skill lea los commits automáticamente con git log,
    o le pegas tú el listado de commits?"
 
 Jose: "Para el CHANGELOG.md del repo, y que lea los commits sola"

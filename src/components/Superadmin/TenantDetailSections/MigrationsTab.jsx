@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import React, { useEffect, useRef, useState, useCallback } from "react";
-import { fetchSuperadmin } from "@/lib/superadminApi";
-import { notify } from "@/lib/notifications";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { fetchSuperadmin } from '@/lib/superadminApi';
+import { notify } from '@/lib/notifications';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Table,
   TableBody,
@@ -15,16 +15,20 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { ChevronLeft, ChevronRight, Loader2, Play, ChevronDown, ChevronUp, AlertTriangle, History } from "lucide-react";
-import EmptyState from "../EmptyState";
-import { formatDateTimeFull, formatDurationSeconds } from "@/utils/superadminDateUtils";
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  Play,
+  ChevronDown,
+  ChevronUp,
+  AlertTriangle,
+  History,
+} from 'lucide-react';
+import EmptyState from '../EmptyState';
+import { formatDateTimeFull, formatDurationSeconds } from '@/utils/superadminDateUtils';
 
 function MigrationSummary({ summary, onRun, running }) {
   if (!summary) return <Skeleton className="h-20 rounded" />;
@@ -32,7 +36,11 @@ function MigrationSummary({ summary, onRun, running }) {
   const runDisabled = running || summary.pending === 0;
   const runButton = (
     <Button size="sm" onClick={onRun} disabled={runDisabled}>
-      {running ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Play className="h-3.5 w-3.5" />}
+      {running ? (
+        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+      ) : (
+        <Play className="h-3.5 w-3.5" />
+      )}
       Ejecutar migraciones
     </Button>
   );
@@ -57,12 +65,18 @@ function MigrationSummary({ summary, onRun, running }) {
           <span className="text-2xl font-bold">{summary.ran}</span>
           <span className="text-muted-foreground text-sm">de {summary.total} ejecutadas</span>
           {summary.pending > 0 && (
-            <Badge variant="outline" className="border-orange-500/30 bg-orange-500/10 text-orange-700 dark:text-orange-400">
-              {summary.pending} pendiente{summary.pending !== 1 ? "s" : ""}
+            <Badge
+              variant="outline"
+              className="border-orange-500/30 bg-orange-500/10 text-orange-700 dark:text-orange-400"
+            >
+              {summary.pending} pendiente{summary.pending !== 1 ? 's' : ''}
             </Badge>
           )}
           {summary.pending === 0 && (
-            <Badge variant="outline" className="border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-400">
+            <Badge
+              variant="outline"
+              className="border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-400"
+            >
               Al día
             </Badge>
           )}
@@ -71,8 +85,8 @@ function MigrationSummary({ summary, onRun, running }) {
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              Hay {summary.pending} migración{summary.pending !== 1 ? "es" : ""} pendiente{summary.pending !== 1 ? "s" : ""}.
-              Ejecuta las migraciones para aplicarlas.
+              Hay {summary.pending} migración{summary.pending !== 1 ? 'es' : ''} pendiente
+              {summary.pending !== 1 ? 's' : ''}. Ejecuta las migraciones para aplicarlas.
             </AlertDescription>
           </Alert>
         )}
@@ -98,19 +112,28 @@ export default function MigrationsTab({ tenantId }) {
       const res = await fetchSuperadmin(`/tenants/${tenantId}/migrations`);
       const json = await res.json();
       setSummary(json.data || json);
-    } catch { /* silent */ } finally {
+    } catch {
+      /* silent */
+    } finally {
       setLoading(false);
     }
   }, [tenantId]);
 
-  const fetchHistory = useCallback(async (page = 1) => {
-    try {
-      const res = await fetchSuperadmin(`/tenants/${tenantId}/migrations/history?page=${page}&per_page=10`);
-      const json = await res.json();
-      setHistory(json.data || []);
-      setHistMeta(json.meta || null);
-    } catch { setHistory([]); }
-  }, [tenantId]);
+  const fetchHistory = useCallback(
+    async (page = 1) => {
+      try {
+        const res = await fetchSuperadmin(
+          `/tenants/${tenantId}/migrations/history?page=${page}&per_page=10`
+        );
+        const json = await res.json();
+        setHistory(json.data || []);
+        setHistMeta(json.meta || null);
+      } catch {
+        setHistory([]);
+      }
+    },
+    [tenantId]
+  );
 
   useEffect(() => {
     fetchSummary();
@@ -120,11 +143,11 @@ export default function MigrationsTab({ tenantId }) {
   const handleRun = async () => {
     setRunning(true);
     try {
-      const res = await fetchSuperadmin(`/tenants/${tenantId}/migrations/run`, { method: "POST" });
+      const res = await fetchSuperadmin(`/tenants/${tenantId}/migrations/run`, { method: 'POST' });
       const json = await res.json();
       notify.loading(
         {
-          title: "Migraciones en curso",
+          title: 'Migraciones en curso',
           description: `Run ID: ${json.run_id}`,
         },
         {
@@ -138,7 +161,9 @@ export default function MigrationsTab({ tenantId }) {
         try {
           const hRes = await fetchSuperadmin(`/tenants/${tenantId}/migrations/history?per_page=10`);
           const hJson = await hRes.json();
-          const found = (hJson.data || []).find((r) => r.id === pendingRunId.current && r.finished_at);
+          const found = (hJson.data || []).find(
+            (r) => r.id === pendingRunId.current && r.finished_at
+          );
           if (found) {
             clearInterval(pollRef.current);
             pollRef.current = null;
@@ -150,7 +175,7 @@ export default function MigrationsTab({ tenantId }) {
             if (found.success) {
               notify.success(
                 {
-                  title: "Migraciones completadas",
+                  title: 'Migraciones completadas',
                   description: `${found.migrations_applied} migración(es) aplicadas correctamente.`,
                 },
                 {
@@ -161,8 +186,9 @@ export default function MigrationsTab({ tenantId }) {
             } else {
               notify.error(
                 {
-                  title: "Fallo en migraciones",
-                  description: "La ejecución terminó con errores. Revise el historial para ver el output.",
+                  title: 'Fallo en migraciones',
+                  description:
+                    'La ejecución terminó con errores. Revise el historial para ver el output.',
                 },
                 {
                   id: toastId,
@@ -171,13 +197,15 @@ export default function MigrationsTab({ tenantId }) {
               );
             }
           }
-        } catch { /* silent */ }
+        } catch {
+          /* silent */
+        }
       }, 3000);
     } catch (err) {
       notify.error(
         {
-          title: err.message || "Error al ejecutar migraciones",
-          description: "No se pudo iniciar la ejecución de migraciones del tenant.",
+          title: err.message || 'Error al ejecutar migraciones',
+          description: 'No se pudo iniciar la ejecución de migraciones del tenant.',
         },
         {
           id: toastId,
@@ -188,7 +216,12 @@ export default function MigrationsTab({ tenantId }) {
     }
   };
 
-  useEffect(() => () => { if (pollRef.current) clearInterval(pollRef.current); }, []);
+  useEffect(
+    () => () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    },
+    []
+  );
 
   return (
     <div className="space-y-4">
@@ -214,7 +247,9 @@ export default function MigrationsTab({ tenantId }) {
                 Array.from({ length: 3 }).map((_, i) => (
                   <TableRow key={i}>
                     {Array.from({ length: 5 }).map((__, j) => (
-                      <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
+                      <TableCell key={j}>
+                        <Skeleton className="h-4 w-full" />
+                      </TableCell>
                     ))}
                   </TableRow>
                 ))
@@ -231,33 +266,48 @@ export default function MigrationsTab({ tenantId }) {
                 </TableRow>
               ) : (
                 history.map((run) => {
-                  const durationSeconds = run.started_at && run.finished_at
-                    ? (new Date(run.finished_at) - new Date(run.started_at)) / 1000
-                    : null;
-                  const durationDisplay = durationSeconds != null
-                    ? formatDurationSeconds(durationSeconds)
-                    : run.finished_at ? "-" : <span className="text-orange-500 text-xs">En curso...</span>;
+                  const durationSeconds =
+                    run.started_at && run.finished_at
+                      ? (new Date(run.finished_at) - new Date(run.started_at)) / 1000
+                      : null;
+                  const durationDisplay =
+                    durationSeconds != null ? (
+                      formatDurationSeconds(durationSeconds)
+                    ) : run.finished_at ? (
+                      '-'
+                    ) : (
+                      <span className="text-xs text-orange-500">En curso...</span>
+                    );
 
                   return (
                     <React.Fragment key={run.id}>
                       <TableRow>
-                        <TableCell className="text-sm whitespace-nowrap">{formatDateTimeFull(run.started_at)}</TableCell>
+                        <TableCell className="text-sm whitespace-nowrap">
+                          {formatDateTimeFull(run.started_at)}
+                        </TableCell>
                         <TableCell className="text-sm">{run.migrations_applied}</TableCell>
                         <TableCell>
                           {run.finished_at ? (
-                            <Badge variant="outline" className={run.success
-                              ? "border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-400"
-                              : "border-destructive/30 bg-destructive/10 text-destructive"
-                            }>
-                              {run.success ? "Éxito" : "Fallo"}
+                            <Badge
+                              variant="outline"
+                              className={
+                                run.success
+                                  ? 'border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-400'
+                                  : 'border-destructive/30 bg-destructive/10 text-destructive'
+                              }
+                            >
+                              {run.success ? 'Éxito' : 'Fallo'}
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400">
+                            <Badge
+                              variant="outline"
+                              className="border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400"
+                            >
                               En curso
                             </Badge>
                           )}
                         </TableCell>
-                        <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
+                        <TableCell className="text-muted-foreground hidden text-sm md:table-cell">
                           {durationDisplay}
                         </TableCell>
                         <TableCell className="text-right">
@@ -267,7 +317,11 @@ export default function MigrationsTab({ tenantId }) {
                               size="sm"
                               onClick={() => setExpandedId(expandedId === run.id ? null : run.id)}
                             >
-                              {expandedId === run.id ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                              {expandedId === run.id ? (
+                                <ChevronUp className="h-3.5 w-3.5" />
+                              ) : (
+                                <ChevronDown className="h-3.5 w-3.5" />
+                              )}
                             </Button>
                           )}
                         </TableCell>
@@ -275,7 +329,7 @@ export default function MigrationsTab({ tenantId }) {
                       {expandedId === run.id && run.output && (
                         <TableRow>
                           <TableCell colSpan={5} className="bg-muted/50 p-0">
-                            <pre className="p-4 text-xs font-mono overflow-x-auto whitespace-pre-wrap break-all">
+                            <pre className="overflow-x-auto p-4 font-mono text-xs break-all whitespace-pre-wrap">
                               {run.output}
                             </pre>
                           </TableCell>
@@ -289,15 +343,25 @@ export default function MigrationsTab({ tenantId }) {
           </Table>
 
           {histMeta && histMeta.last_page > 1 && (
-            <div className="flex items-center justify-between p-4 border-t">
-              <span className="text-sm text-muted-foreground">
+            <div className="flex items-center justify-between border-t p-4">
+              <span className="text-muted-foreground text-sm">
                 Página {histMeta.current_page} de {histMeta.last_page}
               </span>
               <div className="flex gap-1">
-                <Button variant="outline" size="icon-sm" disabled={histMeta.current_page <= 1} onClick={() => setHistPage(histMeta.current_page - 1)}>
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  disabled={histMeta.current_page <= 1}
+                  onClick={() => setHistPage(histMeta.current_page - 1)}
+                >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <Button variant="outline" size="icon-sm" disabled={histMeta.current_page >= histMeta.last_page} onClick={() => setHistPage(histMeta.current_page + 1)}>
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  disabled={histMeta.current_page >= histMeta.last_page}
+                  onClick={() => setHistPage(histMeta.current_page + 1)}
+                >
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>

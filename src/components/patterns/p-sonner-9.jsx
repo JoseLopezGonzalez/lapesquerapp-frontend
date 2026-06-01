@@ -1,21 +1,17 @@
-import { toast } from "sonner"
+import { toast } from 'sonner';
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 
 export function Pattern() {
   const showUserToast = () => {
     toast.custom(() => (
-      <div
-        className="bg-popover text-popover-foreground border-border rounded-md flex w-[356px] items-start gap-3 border p-4 shadow-lg">
+      <div className="bg-popover text-popover-foreground border-border flex w-[356px] items-start gap-3 rounded-md border p-4 shadow-lg">
         <Avatar className="size-9 shrink-0">
           <AvatarImage
             src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=96&h=96&dpr=2&q=80"
-            alt="Alex Johnson" />
+            alt="Alex Johnson"
+          />
           <AvatarFallback>AJ</AvatarFallback>
         </Avatar>
         <div className="flex flex-1 flex-col gap-1">
@@ -24,8 +20,7 @@ export function Pattern() {
             <span className="text-muted-foreground text-xs">2m ago</span>
           </div>
           <p className="text-muted-foreground text-sm">
-            Hey! I&apos;ve finished the design review. Let me know when
-            you&apos;re free to discuss.
+            Hey! I&apos;ve finished the design review. Let me know when you&apos;re free to discuss.
           </p>
           <div className="mt-2 flex gap-2">
             <Button size="xs" variant="outline" onClick={() => toast.dismiss()}>
@@ -37,8 +32,8 @@ export function Pattern() {
           </div>
         </div>
       </div>
-    ))
-  }
+    ));
+  };
 
   return (
     <div className="flex items-center justify-center">

@@ -1,4 +1,5 @@
 # Auditoría: EntityClient Agent
+
 # Bloque: MarketDataExtractor — Extracción de datos de documentos de lonjas
 
 **Fecha:** 2026-04-26
@@ -9,13 +10,13 @@
 
 ## 1. Archivos inspeccionados
 
-| Archivo | Relevancia |
-|---|---|
-| `src/components/Admin/Entity/EntityClient/index.js` | Componente EntityClient (referencia) |
-| `src/configs/entitiesConfig.js` | Configuración de todas las entidades |
-| `src/components/Admin/MarketDataExtractor/index.js` | Entry point del bloque auditado |
-| `src/components/Admin/MarketDataExtractor/AlbaranCofraWeb/index.js` | Vista de resultado de extracción |
-| `src/components/Admin/MarketDataExtractor/shared/DocumentProcessor.js` | Orquestador |
+| Archivo                                                                | Relevancia                           |
+| ---------------------------------------------------------------------- | ------------------------------------ |
+| `src/components/Admin/Entity/EntityClient/index.js`                    | Componente EntityClient (referencia) |
+| `src/configs/entitiesConfig.js`                                        | Configuración de todas las entidades |
+| `src/components/Admin/MarketDataExtractor/index.js`                    | Entry point del bloque auditado      |
+| `src/components/Admin/MarketDataExtractor/AlbaranCofraWeb/index.js`    | Vista de resultado de extracción     |
+| `src/components/Admin/MarketDataExtractor/shared/DocumentProcessor.js` | Orquestador                          |
 
 ---
 
@@ -35,12 +36,14 @@ Esta decisión es **correcta y justificada** por las siguientes razones:
 ## 3. Acciones de tabla y fila
 
 El bloque tiene sus propias tablas (`<Table>` de shadcn) para mostrar:
+
 - Subastas agrupadas por barco
 - Servicios de lonja
 - Líneas de compra (LonjaDeIsla)
 - Resumen vinculado de compras
 
 Estas tablas **no tienen acciones de fila estándar** (editar, ver, eliminar). Las únicas acciones son:
+
 - Checkbox de selección para vinculación
 - Badge de estado de exportabilidad
 
@@ -67,23 +70,24 @@ Si el backend implementara un endpoint para guardar el historial de extracciones
 ```javascript
 // Hipotético config futuro
 configs['lonja-extractions'] = {
-  title: "Historial de extracciones de lonjas",
-  endpoint: "lonja-extractions",
-  hideCreateButton: true,       // No se crea desde UI
+  title: 'Historial de extracciones de lonjas',
+  endpoint: 'lonja-extractions',
+  hideCreateButton: true, // No se crea desde UI
   hideEditButton: true,
   table: {
     headers: [
-      { name: "id", label: "ID", type: "id", path: "id" },
-      { name: "documentType", label: "Tipo", type: "badge", path: "document_type" },
-      { name: "fileName", label: "Archivo", type: "text", path: "file_name" },
-      { name: "processedAt", label: "Procesado", type: "datetime", path: "processed_at" },
-      { name: "status", label: "Estado", type: "badge", path: "status" },
-    ]
-  }
-}
+      { name: 'id', label: 'ID', type: 'id', path: 'id' },
+      { name: 'documentType', label: 'Tipo', type: 'badge', path: 'document_type' },
+      { name: 'fileName', label: 'Archivo', type: 'text', path: 'file_name' },
+      { name: 'processedAt', label: 'Procesado', type: 'datetime', path: 'processed_at' },
+      { name: 'status', label: 'Estado', type: 'badge', path: 'status' },
+    ],
+  },
+};
 ```
 
 Sin embargo, **no se debe implementar esto** hasta que:
+
 1. El backend tenga el endpoint
 2. Haya una necesidad real de auditoría o trazabilidad
 3. El usuario lo solicite explícitamente

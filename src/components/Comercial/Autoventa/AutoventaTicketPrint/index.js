@@ -1,6 +1,11 @@
 'use client';
 
-export default function AutoventaTicketPrint({ order, state, printId = 'autoventa-ticket-print', title = 'Autoventa' }) {
+export default function AutoventaTicketPrint({
+  order,
+  state,
+  printId = 'autoventa-ticket-print',
+  title = 'Autoventa',
+}) {
   const data = order ?? state;
   const entryDate = data?.entryDate ?? state?.entryDate ?? '';
   const customerName = data?.customer?.name ?? data?.customerName ?? state?.customerName ?? '';
@@ -15,25 +20,35 @@ export default function AutoventaTicketPrint({ order, state, printId = 'autovent
   return (
     <div
       id={printId}
-      className="hidden print:block p-4 text-sm"
+      className="hidden p-4 text-sm print:block"
       style={{ fontFamily: 'sans-serif', maxWidth: '80mm' }}
     >
-      <h2 className="font-bold text-lg mb-2">{title}</h2>
-      <p><strong>Fecha:</strong> {entryDate}</p>
-      <p><strong>Cliente:</strong> {customerName}</p>
-      {invoiceRequired && <p><strong>Factura:</strong> Sí</p>}
-      <table className="w-full border-collapse mt-2">
+      <h2 className="mb-2 text-lg font-bold">{title}</h2>
+      <p>
+        <strong>Fecha:</strong> {entryDate}
+      </p>
+      <p>
+        <strong>Cliente:</strong> {customerName}
+      </p>
+      {invoiceRequired && (
+        <p>
+          <strong>Factura:</strong> Sí
+        </p>
+      )}
+      <table className="mt-2 w-full border-collapse">
         <thead>
           <tr className="border-b">
-            <th className="text-left py-1">Producto</th>
-            <th className="text-right py-1"></th>
+            <th className="py-1 text-left">Producto</th>
+            <th className="py-1 text-right"></th>
           </tr>
         </thead>
         <tbody>
           {items.map((item, idx) => (
             <tr key={idx} className="border-b align-top">
               {/* Intentionally matches Step6Summary so screen + ticket keep the same structure. */}
-              <td className="py-1 pr-2 whitespace-normal break-words">{item.productName ?? item.productId}</td>
+              <td className="py-1 pr-2 break-words whitespace-normal">
+                {item.productName ?? item.productId}
+              </td>
               <td className="py-1 text-right text-xs whitespace-pre-line">
                 {`${item.boxesCount ?? 0} /c\n${Number(item.totalWeight).toFixed(2)} kg\n${Number(item.unitPrice).toFixed(2)} €/kg\n${Number(item.subtotal ?? 0).toFixed(2)} €`}
               </td>
@@ -41,9 +56,11 @@ export default function AutoventaTicketPrint({ order, state, printId = 'autovent
           ))}
         </tbody>
       </table>
-      <p className="font-semibold mt-2 text-right">Total: {Number(total).toFixed(2)} €</p>
+      <p className="mt-2 text-right font-semibold">Total: {Number(total).toFixed(2)} €</p>
       {observations && (
-        <p className="mt-2 text-muted-foreground"><strong>Obs.:</strong> {observations}</p>
+        <p className="text-muted-foreground mt-2">
+          <strong>Obs.:</strong> {observations}
+        </p>
       )}
     </div>
   );

@@ -3,17 +3,51 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, ChevronLeft, ChevronRight, Calendar as CalendarIcon, AlertTriangle, AlertCircle } from 'lucide-react';import { usePunchesByMonth } from '@/hooks/usePunchesList';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, getDay, startOfWeek, endOfWeek } from 'date-fns';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Loader2,
+  ChevronLeft,
+  ChevronRight,
+  Calendar as CalendarIcon,
+  AlertTriangle,
+  AlertCircle,
+} from 'lucide-react';
+import { usePunchesByMonth } from '@/hooks/usePunchesList';
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  isSameMonth,
+  isToday,
+  getDay,
+  startOfWeek,
+  endOfWeek,
+} from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { notify } from '@/lib/notifications';
 import PunchDayDialog from './PunchDayDialog';
 
 const MONTHS = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  'Enero',
+  'Febrero',
+  'Marzo',
+  'Abril',
+  'Mayo',
+  'Junio',
+  'Julio',
+  'Agosto',
+  'Septiembre',
+  'Octubre',
+  'Noviembre',
+  'Diciembre',
 ];
 
 const WEEKDAYS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
@@ -66,12 +100,12 @@ export default function PunchesCalendar() {
       return { punches: [], incidents: [], anomalies: [] };
     }
     const dayData = punchesData.punches_by_day[day];
-    
+
     // Si es la estructura antigua (solo array), convertirla
     if (Array.isArray(dayData)) {
       return { punches: dayData, incidents: [], anomalies: [] };
     }
-    
+
     // Estructura nueva
     return dayData || { punches: [], incidents: [], anomalies: [] };
   };
@@ -99,7 +133,7 @@ export default function PunchesCalendar() {
   // Obtener empleados únicos de un día
   const getDayEmployees = (day) => {
     const punches = getDayPunches(day);
-    return new Set(punches.map(p => p.employee_id)).size;
+    return new Set(punches.map((p) => p.employee_id)).size;
   };
 
   // Verificar si un día tiene incidencias o anomalías
@@ -116,7 +150,11 @@ export default function PunchesCalendar() {
       return;
     }
     const dayData = getDayData(dayNumber);
-    if (dayData.punches.length > 0 || dayData.incidents.length > 0 || dayData.anomalies.length > 0) {
+    if (
+      dayData.punches.length > 0 ||
+      dayData.incidents.length > 0 ||
+      dayData.anomalies.length > 0
+    ) {
       setSelectedDayPunches(dayData);
       setSelectedDay(dayNumber);
     }
@@ -137,23 +175,26 @@ export default function PunchesCalendar() {
   }
 
   return (
-    <div className="container mx-auto p-4 md:p-6 space-y-6 overflow-y-auto h-[calc(100vh-2rem)]">
-      <Card className="shadow-lg mb-6">
+    <div className="container mx-auto h-[calc(100vh-2rem)] space-y-6 overflow-y-auto p-4 md:p-6">
+      <Card className="mb-6 shadow-lg">
         <CardHeader className="pb-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <CardTitle>Calendario Mensual</CardTitle>
               <CardDescription>
                 {punchesData && (
                   <>
-                    {punchesData.total_punches} {punchesData.total_punches === 1 ? 'fichaje' : 'fichajes'} de {punchesData.total_employees} {punchesData.total_employees === 1 ? 'empleado' : 'empleados'}
+                    {punchesData.total_punches}{' '}
+                    {punchesData.total_punches === 1 ? 'fichaje' : 'fichajes'} de{' '}
+                    {punchesData.total_employees}{' '}
+                    {punchesData.total_employees === 1 ? 'empleado' : 'empleados'}
                   </>
                 )}
               </CardDescription>
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex flex-wrap items-center gap-2">
               <Select value={year.toString()} onValueChange={handleYearChange}>
-                <SelectTrigger className="w-[100px] h-9">
+                <SelectTrigger className="h-9 w-[100px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -165,7 +206,7 @@ export default function PunchesCalendar() {
                 </SelectContent>
               </Select>
               <Select value={month.toString()} onValueChange={handleMonthChange}>
-                <SelectTrigger className="w-[140px] h-9">
+                <SelectTrigger className="h-9 w-[140px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -176,7 +217,7 @@ export default function PunchesCalendar() {
                   ))}
                 </SelectContent>
               </Select>
-              <div className="flex items-center gap-1 border rounded-md p-1">
+              <div className="flex items-center gap-1 rounded-md border p-1">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -202,22 +243,20 @@ export default function PunchesCalendar() {
         <CardContent>
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
             </div>
           ) : (
             <div className="space-y-3">
               {/* Encabezados de días de la semana */}
-              <div className="grid grid-cols-7 gap-2.5 mb-2">
+              <div className="mb-2 grid grid-cols-7 gap-2.5">
                 {WEEKDAYS.map((day, index) => {
                   const isWeekend = index === 5 || index === 6; // Sábado (5) o Domingo (6)
                   return (
                     <div
                       key={index}
                       className={cn(
-                        "text-center text-sm font-semibold py-2.5 px-1 rounded-md",
-                        isWeekend 
-                          ? "text-muted-foreground bg-muted/50" 
-                          : "text-muted-foreground"
+                        'rounded-md px-1 py-2.5 text-center text-sm font-semibold',
+                        isWeekend ? 'text-muted-foreground bg-muted/50' : 'text-muted-foreground'
                       )}
                     >
                       {day}
@@ -235,7 +274,9 @@ export default function PunchesCalendar() {
                   const dayOfWeek = day.getDay(); // 0 = Domingo, 6 = Sábado
                   const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
                   // Solo obtener datos si el día pertenece al mes actual
-                  const dayData = isCurrentMonth ? getDayData(dayNumber) : { punches: [], incidents: [], anomalies: [] };
+                  const dayData = isCurrentMonth
+                    ? getDayData(dayNumber)
+                    : { punches: [], incidents: [], anomalies: [] };
                   const punches = dayData.punches || [];
                   const incidents = dayData.incidents || [];
                   const anomalies = dayData.anomalies || [];
@@ -249,29 +290,52 @@ export default function PunchesCalendar() {
                   return (
                     <button
                       key={index}
-                      onClick={() => (hasPunches || hasIssues) && isCurrentMonth && handleDayClick(dayNumber, day)}
-                      disabled={!hasPunches && !hasIssues || !isCurrentMonth}
+                      onClick={() =>
+                        (hasPunches || hasIssues) &&
+                        isCurrentMonth &&
+                        handleDayClick(dayNumber, day)
+                      }
+                      disabled={(!hasPunches && !hasIssues) || !isCurrentMonth}
                       className={cn(
-                        'relative min-h-[110px] p-2.5 rounded-lg border transition-all duration-200',
-                        'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+                        'relative min-h-[110px] rounded-lg border p-2.5 transition-all duration-200',
+                        'focus:ring-ring focus:ring-2 focus:ring-offset-2 focus:outline-none',
                         'shadow-sm hover:shadow-md',
                         !isCurrentMonth && 'opacity-30',
-                        isCurrentDay && 'border-primary border-2 shadow-md ring-2 ring-primary/20',
-                        (hasPunches || hasIssues) && isCurrentMonth && 'cursor-pointer hover:scale-[1.02] hover:shadow-lg',
+                        isCurrentDay && 'border-primary ring-primary/20 border-2 shadow-md ring-2',
+                        (hasPunches || hasIssues) &&
+                          isCurrentMonth &&
+                          'cursor-pointer hover:scale-[1.02] hover:shadow-lg',
                         !hasPunches && !hasIssues && 'cursor-default',
                         !isCurrentMonth && 'bg-muted/20',
-                        isCurrentMonth && !hasPunches && !hasIssues && !isWeekend && 'bg-background hover:bg-muted/50',
-                        hasIncidents && !hasAnomalies && 'border-red-400 dark:border-red-600 bg-red-50 dark:bg-red-950/20 shadow-red-100 dark:shadow-red-950',
-                        hasAnomalies && !hasIncidents && 'border-orange-400 dark:border-orange-600 bg-orange-50 dark:bg-orange-950/20 shadow-orange-100 dark:shadow-orange-950',
-                        hasIncidents && hasAnomalies && 'border-red-400 dark:border-red-600 bg-red-50 dark:bg-red-950/20 shadow-red-100 dark:shadow-red-950',
-                        isWeekend && isCurrentMonth && !hasPunches && !hasIssues && 'bg-gray-200 dark:bg-gray-800/70',
-                        isWeekend && isCurrentMonth && (hasPunches || hasIssues) && 'bg-gray-100/50 dark:bg-gray-800/30'
+                        isCurrentMonth &&
+                          !hasPunches &&
+                          !hasIssues &&
+                          !isWeekend &&
+                          'bg-background hover:bg-muted/50',
+                        hasIncidents &&
+                          !hasAnomalies &&
+                          'border-red-400 bg-red-50 shadow-red-100 dark:border-red-600 dark:bg-red-950/20 dark:shadow-red-950',
+                        hasAnomalies &&
+                          !hasIncidents &&
+                          'border-orange-400 bg-orange-50 shadow-orange-100 dark:border-orange-600 dark:bg-orange-950/20 dark:shadow-orange-950',
+                        hasIncidents &&
+                          hasAnomalies &&
+                          'border-red-400 bg-red-50 shadow-red-100 dark:border-red-600 dark:bg-red-950/20 dark:shadow-red-950',
+                        isWeekend &&
+                          isCurrentMonth &&
+                          !hasPunches &&
+                          !hasIssues &&
+                          'bg-gray-200 dark:bg-gray-800/70',
+                        isWeekend &&
+                          isCurrentMonth &&
+                          (hasPunches || hasIssues) &&
+                          'bg-gray-100/50 dark:bg-gray-800/30'
                       )}
                     >
-                      <div className="flex flex-col h-full relative">
+                      <div className="relative flex h-full flex-col">
                         <div
                           className={cn(
-                            'text-lg font-normal absolute top-1.5 right-2',
+                            'absolute top-1.5 right-2 text-lg font-normal',
                             isCurrentDay && 'text-primary',
                             !isCurrentMonth && 'text-muted-foreground opacity-50',
                             isCurrentMonth && !isCurrentDay && 'text-foreground'
@@ -280,18 +344,18 @@ export default function PunchesCalendar() {
                           {dayNumber}
                         </div>
                         {(hasPunches || hasIssues) && (
-                          <div className="flex-1 space-y-1.5 mt-6">
+                          <div className="mt-6 flex-1 space-y-1.5">
                             {hasPunches && (
                               <>
                                 <div className="flex items-center gap-1.5 text-xs">
-                                  <CalendarIcon className="h-3.5 w-3.5 text-green-600 dark:text-green-500 flex-shrink-0" />
-                                  <span className="text-green-700 dark:text-green-400 font-semibold leading-tight">
+                                  <CalendarIcon className="h-3.5 w-3.5 flex-shrink-0 text-green-600 dark:text-green-500" />
+                                  <span className="leading-tight font-semibold text-green-700 dark:text-green-400">
                                     {punchCount} {punchCount === 1 ? 'fichaje' : 'fichajes'}
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-1.5 text-xs">
-                                  <div className="h-2 w-2 rounded-full bg-blue-600 dark:bg-blue-500 flex-shrink-0" />
-                                  <span className="text-blue-700 dark:text-blue-400 font-medium leading-tight">
+                                  <div className="h-2 w-2 flex-shrink-0 rounded-full bg-blue-600 dark:bg-blue-500" />
+                                  <span className="leading-tight font-medium text-blue-700 dark:text-blue-400">
                                     {employeeCount} {employeeCount === 1 ? 'empleado' : 'empleados'}
                                   </span>
                                 </div>
@@ -299,23 +363,25 @@ export default function PunchesCalendar() {
                             )}
                             {hasIncidents && (
                               <div className="flex items-center gap-1.5 text-xs">
-                                <AlertTriangle className="h-3.5 w-3.5 text-red-600 dark:text-red-400 flex-shrink-0" />
-                                <span className="text-red-600 dark:text-red-400 font-semibold leading-tight">
-                                  {incidents.length} {incidents.length === 1 ? 'incidencia' : 'incidencias'}
+                                <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0 text-red-600 dark:text-red-400" />
+                                <span className="leading-tight font-semibold text-red-600 dark:text-red-400">
+                                  {incidents.length}{' '}
+                                  {incidents.length === 1 ? 'incidencia' : 'incidencias'}
                                 </span>
                               </div>
                             )}
                             {hasAnomalies && (
                               <div className="flex items-center gap-1.5 text-xs">
-                                <AlertCircle className="h-3.5 w-3.5 text-orange-600 dark:text-orange-400 flex-shrink-0" />
-                                <span className="text-orange-600 dark:text-orange-400 font-semibold leading-tight">
-                                  {anomalies.length} {anomalies.length === 1 ? 'anomalía' : 'anomalías'}
+                                <AlertCircle className="h-3.5 w-3.5 flex-shrink-0 text-orange-600 dark:text-orange-400" />
+                                <span className="leading-tight font-semibold text-orange-600 dark:text-orange-400">
+                                  {anomalies.length}{' '}
+                                  {anomalies.length === 1 ? 'anomalía' : 'anomalías'}
                                 </span>
                               </div>
                             )}
                             {/* Indicadores visuales */}
                             {hasPunches && (
-                              <div className="flex gap-1 mt-2 pt-1.5 border-t border-border/50">
+                              <div className="border-border/50 mt-2 flex gap-1 border-t pt-1.5">
                                 {punches
                                   .filter((p) => p.event_type === 'IN')
                                   .slice(0, 3)
@@ -329,7 +395,7 @@ export default function PunchesCalendar() {
                               </div>
                             )}
                             {punches.filter((p) => p.event_type === 'IN').length > 3 && (
-                              <div className="text-[10px] text-muted-foreground font-medium">
+                              <div className="text-muted-foreground text-[10px] font-medium">
                                 +{punches.filter((p) => p.event_type === 'IN').length - 3} más
                               </div>
                             )}
@@ -342,26 +408,28 @@ export default function PunchesCalendar() {
               </div>
 
               {/* Leyenda */}
-              <div className="flex flex-wrap items-center gap-4 pt-5 mt-5 border-t border-border/50">
+              <div className="border-border/50 mt-5 flex flex-wrap items-center gap-4 border-t pt-5">
                 <div className="flex items-center gap-2.5">
-                  <div className="h-4 w-4 rounded-md border-2 border-primary shadow-sm" />
-                  <span className="text-sm text-muted-foreground font-medium">Hoy</span>
+                  <div className="border-primary h-4 w-4 rounded-md border-2 shadow-sm" />
+                  <span className="text-muted-foreground text-sm font-medium">Hoy</span>
                 </div>
                 <div className="flex items-center gap-2.5">
-                  <div className="h-4 w-4 rounded-md border border-border bg-green-100 dark:bg-green-900/20 shadow-sm" />
-                  <span className="text-sm text-muted-foreground font-medium">Con fichajes</span>
+                  <div className="border-border h-4 w-4 rounded-md border bg-green-100 shadow-sm dark:bg-green-900/20" />
+                  <span className="text-muted-foreground text-sm font-medium">Con fichajes</span>
                 </div>
                 <div className="flex items-center gap-2.5">
-                  <div className="h-4 w-4 rounded-md border border-red-400 dark:border-red-600 bg-red-100 dark:bg-red-900/20 shadow-sm" />
-                  <span className="text-sm text-muted-foreground font-medium">Con incidencias</span>
+                  <div className="h-4 w-4 rounded-md border border-red-400 bg-red-100 shadow-sm dark:border-red-600 dark:bg-red-900/20" />
+                  <span className="text-muted-foreground text-sm font-medium">Con incidencias</span>
                 </div>
                 <div className="flex items-center gap-2.5">
-                  <div className="h-4 w-4 rounded-md border border-orange-400 dark:border-orange-600 bg-orange-100 dark:bg-orange-900/20 shadow-sm" />
-                  <span className="text-sm text-muted-foreground font-medium">Con anomalías</span>
+                  <div className="h-4 w-4 rounded-md border border-orange-400 bg-orange-100 shadow-sm dark:border-orange-600 dark:bg-orange-900/20" />
+                  <span className="text-muted-foreground text-sm font-medium">Con anomalías</span>
                 </div>
                 <div className="flex items-center gap-2.5">
                   <div className="h-2 w-8 rounded-full bg-gradient-to-r from-green-500 to-green-600 shadow-sm" />
-                  <span className="text-sm text-muted-foreground font-medium">Indicador de entrada</span>
+                  <span className="text-muted-foreground text-sm font-medium">
+                    Indicador de entrada
+                  </span>
                 </div>
               </div>
             </div>
@@ -388,4 +456,3 @@ export default function PunchesCalendar() {
     </div>
   );
 }
-

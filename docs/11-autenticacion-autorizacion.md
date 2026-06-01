@@ -16,6 +16,7 @@ La aplicación utiliza **NextAuth.js** para la gestión de autenticación y sesi
 - **Usuarios:** Creación sin campo contraseña; "Reenviar invitación" envía el magic link al correo del usuario (`POST /v2/users/{id}/resend-invitation`).
 
 **Archivos principales**:
+
 - `/src/app/api/auth/[...nextauth]/route.js` - Configuración de NextAuth
 - `/src/middleware.js` - Middleware de protección de rutas
 - `/src/configs/roleConfig.js` - Configuración de roles por ruta
@@ -36,6 +37,7 @@ La aplicación utiliza **NextAuth.js** para la gestión de autenticación y sesi
 **Estrategia de sesión**: JWT (JSON Web Token)
 
 **Configuración de sesión**:
+
 ```javascript
 session: {
   strategy: 'jwt',
@@ -49,12 +51,14 @@ session: {
 **Implementación**: Rate limiting simple en memoria por IP
 
 **Configuración**:
+
 ```javascript
 const MAX_ATTEMPTS = 5;
 const WINDOW_MS = 10 * 60 * 1000; // 10 minutos
 ```
 
 **Funcionalidad**:
+
 - Rastrea intentos de login por IP
 - Bloquea después de 5 intentos en 10 minutos
 - Mensaje: "Demasiados intentos de inicio de sesión. Intenta de nuevo más tarde."
@@ -70,8 +74,9 @@ const WINDOW_MS = 10 * 60 * 1000; // 10 minutos
    - El correo también lleva un enlace a `/auth/verify?token=xxx` para canjear desde el mismo dispositivo.
 
 2. **Tras canjear enlace o código**, el cliente recibe `access_token` y `user`. Entonces se llama a NextAuth:
+
    ```javascript
-   await signIn("credentials", {
+   await signIn('credentials', {
      redirect: false,
      accessToken: data.access_token,
      user: JSON.stringify(data.user),
@@ -79,6 +84,7 @@ const WINDOW_MS = 10 * 60 * 1000; // 10 minutos
    ```
 
 3. **NextAuth `authorize`** solo acepta credenciales token+user (no email/password ni `POST /v2/login`):
+
    ```javascript
    if (credentials?.accessToken && credentials?.user) {
      const user = JSON.parse(credentials.user);
@@ -90,7 +96,8 @@ const WINDOW_MS = 10 * 60 * 1000; // 10 minutos
 
 4. **Página `/auth/verify`:** Lee `token` de la URL, llama a `POST /v2/auth/magic-link/verify`, y tras éxito hace `signIn` con el token y user y redirige (operario → `/warehouse/{id}`, resto → `from` o `/admin/home`). Si la API devuelve 400/403, se muestra mensaje y opción de volver al login.
 
-3. **Callback JWT**
+5. **Callback JWT**
+
    ```javascript
    async jwt({ token, user }) {
      if (user) {
@@ -104,7 +111,7 @@ const WINDOW_MS = 10 * 60 * 1000; // 10 minutos
    }
    ```
 
-4. **Callback Session**
+6. **Callback Session**
    ```javascript
    async session({ session, token }) {
      if (!token) return null;
@@ -148,17 +155,14 @@ pages: {
 
 ```javascript
 export const config = {
-  matcher: [
-    '/admin/:path*',
-    '/production/:path*',
-    '/warehouse/:path*',
-  ],
+  matcher: ['/admin/:path*', '/production/:path*', '/warehouse/:path*'],
 };
 ```
 
 ### Flujo del Middleware
 
 1. **Ignorar recursos estáticos**
+
    ```javascript
    if (
      pathname.startsWith('/_next') ||
@@ -170,20 +174,23 @@ export const config = {
    ```
 
 2. **Obtener token JWT**
+
    ```javascript
    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
    ```
 
 3. **Validar existencia de token**
+
    ```javascript
    if (!token) {
-     const loginUrl = new URL("/", req.url);
-     loginUrl.searchParams.set("from", pathname);
+     const loginUrl = new URL('/', req.url);
+     loginUrl.searchParams.set('from', pathname);
      return NextResponse.redirect(loginUrl);
    }
    ```
 
 4. **Validar expiración**
+
    ```javascript
    const tokenExpiration = token?.exp * 1000;
    if (Date.now() > tokenExpiration) {
@@ -192,6 +199,7 @@ export const config = {
    ```
 
 5. **Validar token con backend**
+
    ```javascript
    const verifyResponse = await fetchWithTenant(
      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/me`,
@@ -199,32 +207,34 @@ export const config = {
        headers: { Authorization: `Bearer ${token.accessToken}` },
      }
    );
-   
+
    if (!verifyResponse.ok) {
      // Token inválido o revocado, redirigir a login
    }
    ```
 
 6. **Verificar roles**
+
    ```javascript
    // Obtener ruta coincidente más específica
    const matchingRoute = Object.keys(roleConfig)
-     .filter(route => pathname.startsWith(route))
+     .filter((route) => pathname.startsWith(route))
      .sort((a, b) => b.length - a.length)[0];
-   
+
    const rolesAllowed = roleConfig[matchingRoute] || [];
    const userRoles = Array.isArray(token.role) ? token.role : [token.role];
-   
-   const hasAccess = userRoles.some(role => rolesAllowed.includes(role));
+
+   const hasAccess = userRoles.some((role) => rolesAllowed.includes(role));
    ```
 
 7. **Manejo especial para store_operator**
+
    ```javascript
-   if (!hasAccess && userRoles.includes("store_operator") && pathname.startsWith("/admin")) {
+   if (!hasAccess && userRoles.includes('store_operator') && pathname.startsWith('/admin')) {
      if (token.assignedStoreId) {
        return NextResponse.redirect(`/warehouse/${token.assignedStoreId}`);
      } else {
-       return NextResponse.redirect("/unauthorized");
+       return NextResponse.redirect('/unauthorized');
      }
    }
    ```
@@ -232,7 +242,7 @@ export const config = {
 8. **Redirigir si no tiene acceso**
    ```javascript
    if (!rolesAllowed.length || !hasAccess) {
-     return NextResponse.redirect("/unauthorized");
+     return NextResponse.redirect('/unauthorized');
    }
    ```
 
@@ -254,14 +264,15 @@ export const config = {
 
 ```javascript
 const roleConfig = {
-  "/admin": ["admin", "manager", "superuser"],
-  "/production": ["admin", "worker", "superuser"],
-  "/admin/orders": ["admin", "manager", "superuser"],
-  "/warehouse": ["store_operator", "superuser"],
+  '/admin': ['admin', 'manager', 'superuser'],
+  '/production': ['admin', 'worker', 'superuser'],
+  '/admin/orders': ['admin', 'manager', 'superuser'],
+  '/warehouse': ['store_operator', 'superuser'],
 };
 ```
 
 **Lógica**:
+
 - Se selecciona la ruta más específica que coincida
 - El usuario debe tener al menos uno de los roles permitidos
 - `superuser` tiene acceso a todas las rutas
@@ -293,20 +304,18 @@ Los elementos de navegación también tienen `allowedRoles`:
 **Funcionalidad**: Protección adicional para rutas admin.
 
 **Características**:
+
 - Redirige `store_operator` a su almacén si intenta acceder a admin
 - Muestra loader durante validación
 - Se usa en layouts de admin
 
 **Uso**:
+
 ```jsx
-import AdminRouteProtection from "@/components/AdminRouteProtection";
+import AdminRouteProtection from '@/components/AdminRouteProtection';
 
 export default function AdminLayout({ children }) {
-  return (
-    <AdminRouteProtection>
-      {children}
-    </AdminRouteProtection>
-  );
+  return <AdminRouteProtection>{children}</AdminRouteProtection>;
 }
 ```
 
@@ -317,13 +326,13 @@ export default function AdminLayout({ children }) {
 **Funcionalidad**: Protección genérica con roles permitidos.
 
 **Props**:
+
 ```javascript
-<ProtectedRoute allowedRoles={["admin", "manager"]}>
-  {children}
-</ProtectedRoute>
+<ProtectedRoute allowedRoles={['admin', 'manager']}>{children}</ProtectedRoute>
 ```
 
 **Características**:
+
 - Valida sesión con `useSession`
 - Redirige a `/unauthorized` si no tiene rol permitido
 - Redirige a `/login` si no está autenticado
@@ -340,6 +349,7 @@ export default function AdminLayout({ children }) {
 **Archivo**: `/src/components/LoginPage/index.js`
 
 **Características**:
+
 - Validación de tenant activo y detección de subdominio para branding
 - Modo demo (subdominio "test"): solo se rellena el email
 - **Sin contraseña:** solo campo email y un botón **"Acceder"** que llama a `authService.requestAccess(email)` → `POST /v2/auth/request-access`. Tras enviar, se muestra mensaje y campo para el código de 6 dígitos; al verificar el código, `authService.verifyOtp(email, code)` y después `signIn("credentials", { accessToken, user })` y redirección
@@ -371,6 +381,7 @@ Si se supera el límite de peticiones por IP, la API devuelve **429**. El fronte
 ### Implementación
 
 **Desde Sidebar**:
+
 ```javascript
 const handleLogout = async () => {
   try {
@@ -384,6 +395,7 @@ const handleLogout = async () => {
 ```
 
 **Desde Navbar**:
+
 ```javascript
 const handleLogout = async () => {
   try {
@@ -397,6 +409,7 @@ const handleLogout = async () => {
 ```
 
 **Evento de NextAuth**:
+
 ```javascript
 events: {
   async signOut(message) {
@@ -416,7 +429,9 @@ events: {
 **Funcionalidad**: Intercepta errores de autenticación globalmente y redirige al login.
 
 **Implementación**:
+
 1. **Intercepta `window.fetch`**
+
    ```javascript
    const originalFetch = window.fetch;
    window.fetch = async (...args) => {
@@ -428,6 +443,7 @@ events: {
    ```
 
 2. **Intercepta errores globales**
+
    ```javascript
    window.addEventListener('error', handleGlobalError);
    window.addEventListener('unhandledrejection', handleGlobalError);
@@ -447,11 +463,13 @@ events: {
 **Archivo**: `/src/configs/authConfig.js`
 
 **Funcionalidades**:
+
 - `isAuthError(error)` - Detecta si un error es de autenticación
 - `isAuthStatusCode(status)` - Detecta si un status code es 401 o 403
 - `buildLoginUrl(currentPath)` - Construye URL de login con parámetro `from`
 
 **Mensajes de error detectados**:
+
 ```javascript
 AUTH_ERROR_MESSAGES: [
   'No autenticado',
@@ -461,8 +479,8 @@ AUTH_ERROR_MESSAGES: [
   'Sesión expirada',
   'Session expired',
   'Invalid token',
-  'Token expired'
-]
+  'Token expired',
+];
 ```
 
 ---
@@ -480,22 +498,22 @@ AUTH_ERROR_MESSAGES: [
 **Archivo**: `/src/app/warehouse/[storeId]/page.js`
 
 **Validaciones**:
+
 ```javascript
 // 1. Validar autenticación
-if (status === "unauthenticated") {
-  router.push("/");
+if (status === 'unauthenticated') {
+  router.push('/');
   return;
 }
 
 // 2. Validar rol (rol único string)
-if (session.user.role !== "operario" && session.user.role !== "administrador") {
-  router.push("/unauthorized");
+if (session.user.role !== 'operario' && session.user.role !== 'administrador') {
+  router.push('/unauthorized');
   return;
 }
 
 // 3. Validar que sea su almacén asignado (operario)
-if (session.user.role === "operario" && 
-    session.user.assignedStoreId !== parseInt(storeId)) {
+if (session.user.role === 'operario' && session.user.assignedStoreId !== parseInt(storeId)) {
   // Redirigir a almacén correcto o mostrar error
 }
 ```
@@ -505,6 +523,7 @@ if (session.user.role === "operario" &&
 **Componente**: `WarehouseOperatorLayout`
 
 **Características**:
+
 - Sin sidebar de navegación
 - Header con logo de la empresa colaboradora
 - Mensaje de colaboración
@@ -519,6 +538,7 @@ if (session.user.role === "operario" &&
 **Funcionalidad**: Página mostrada cuando el usuario no tiene permisos.
 
 **Características**:
+
 - Mensaje de error 403
 - Botón para volver al inicio
 - Logo de la aplicación
@@ -530,18 +550,19 @@ if (session.user.role === "operario" &&
 ### useSession Hook
 
 **Uso común**:
+
 ```javascript
 import { useSession } from 'next-auth/react';
 
 function MyComponent() {
   const { data: session, status } = useSession();
-  
+
   if (status === 'loading') return <Loader />;
   if (status === 'unauthenticated') return <LoginPrompt />;
-  
+
   const token = session?.user?.accessToken;
   const role = session?.user?.role;
-  
+
   // Usar token para llamadas API
 }
 ```
@@ -549,13 +570,14 @@ function MyComponent() {
 ### getSession (Server Side)
 
 **Uso en servicios**:
+
 ```javascript
 import { getSession } from 'next-auth/react';
 
 export async function myService() {
   const session = await getSession();
   const token = session?.user?.accessToken;
-  
+
   // Usar token para llamadas API
 }
 ```
@@ -573,11 +595,11 @@ export async function myService() {
 
 ```javascript
 // En NextAuth
-secret: process.env.NEXTAUTH_SECRET
+secret: process.env.NEXTAUTH_SECRET;
 
 // En middleware
 const verifyResponse = await fetchWithTenant(
-  `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/me`,
+  `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v2/me`
   // ...
 );
 ```
@@ -623,6 +645,7 @@ const verifyResponse = await fetchWithTenant(
 ## ⚠️ Observaciones Críticas y Mejoras Recomendadas
 
 ### 1. Rate Limiting en Memoria
+
 - **Archivo**: `/src/app/api/auth/[...nextauth]/route.js`
 - **Línea**: 7-9
 - **Problema**: Rate limiting se resetea al reiniciar el servidor
@@ -630,6 +653,7 @@ const verifyResponse = await fetchWithTenant(
 - **Recomendación**: Usar Redis o base de datos para rate limiting persistente
 
 ### 2. Validación de Token con Backend en Cada Request
+
 - **Archivo**: `/src/middleware.js`
 - **Línea**: 43-56
 - **Problema**: Hace fetch a `/api/v2/me` en cada request protegida
@@ -637,12 +661,14 @@ const verifyResponse = await fetchWithTenant(
 - **Recomendación**: Cachear validación o validar solo periódicamente
 
 ### 3. Falta de Refresh Token
+
 - **Archivo**: `/src/app/api/auth/[...nextauth]/route.js`
 - **Problema**: No hay mecanismo de refresh token
 - **Impacto**: Usuario debe hacer login nuevamente cuando expira
 - **Recomendación**: Implementar refresh token para mejor UX
 
 ### 4. Token Expiration Hardcodeado
+
 - **Archivo**: `/src/app/api/auth/[...nextauth]/route.js`
 - **Línea**: 67
 - **Problema**: `maxAge: 60 * 60 * 24 * 7` (7 días) está hardcodeado
@@ -650,6 +676,7 @@ const verifyResponse = await fetchWithTenant(
 - **Recomendación**: Mover a variable de entorno
 
 ### 5. Validación de Token Expirado Incompleta
+
 - **Archivo**: `/src/app/api/auth/[...nextauth]/route.js`
 - **Línea**: 89
 - **Problema**: `tokenIsExpired` siempre es `false`, no valida realmente
@@ -657,6 +684,7 @@ const verifyResponse = await fetchWithTenant(
 - **Recomendación**: Implementar validación real de expiración
 
 ### 6. AuthErrorInterceptor Modifica window.fetch Globalmente
+
 - **Archivo**: `/src/components/Utilities/AuthErrorInterceptor.js`
 - **Línea**: 12-56
 - **Problema**: Modifica `window.fetch` globalmente, puede causar conflictos
@@ -664,24 +692,28 @@ const verifyResponse = await fetchWithTenant(
 - **Recomendación**: Usar interceptor más específico o fetch wrapper
 
 ### 7. Falta de Validación de Roles en Algunos Componentes
+
 - **Archivo**: Múltiples componentes
 - **Problema**: Algunos componentes no validan roles antes de mostrar acciones
 - **Impacto**: Usuarios pueden ver botones que no pueden usar
 - **Recomendación**: Añadir validación de permisos en componentes críticos
 
 ### 8. Store Operator sin Validación de Almacén en Backend
+
 - **Archivo**: `/src/app/warehouse/[storeId]/page.js`
 - **Problema**: Validación solo en frontend, no en backend
 - **Impacto**: Posible acceso no autorizado si se manipula el frontend
 - **Recomendación**: Validar en backend también
 
 ### 9. Falta de Logout en Todas las Páginas
+
 - **Archivo**: Múltiples componentes
 - **Problema**: No todas las páginas tienen opción de logout visible
 - **Impacto**: Usuario puede quedar atrapado si hay problemas
 - **Recomendación**: Añadir opción de logout en layout principal
 
 ### 10. Parámetro "from" No Validado
+
 - **Archivo**: `/src/components/LoginPage/index.js`
 - **Línea**: 65
 - **Problema**: Parámetro `from` de URL no se valida antes de redirigir
@@ -689,6 +721,7 @@ const verifyResponse = await fetchWithTenant(
 - **Recomendación**: Validar que `from` sea una ruta válida de la aplicación
 
 ### 11. Rate Limiting Sin Limpieza
+
 - **Archivo**: `/src/app/api/auth/[...nextauth]/route.js`
 - **Línea**: 36
 - **Problema**: Solo limpia intentos viejos cuando hay nuevo intento
@@ -696,12 +729,14 @@ const verifyResponse = await fetchWithTenant(
 - **Recomendación**: Añadir limpieza periódica o usar TTL
 
 ### 12. Falta de CSRF Protection
+
 - **Archivo**: `/src/app/api/auth/[...nextauth]/route.js`
 - **Problema**: No hay protección explícita contra CSRF
 - **Impacto**: Vulnerable a ataques CSRF
 - **Recomendación**: NextAuth tiene protección por defecto, pero documentar y verificar
 
 ### 13. Secret No Validado al Inicio
+
 - **Archivo**: `/src/app/api/auth/[...nextauth]/route.js`
 - **Línea**: 116
 - **Problema**: `NEXTAUTH_SECRET` puede estar undefined sin error claro
@@ -709,6 +744,7 @@ const verifyResponse = await fetchWithTenant(
 - **Recomendación**: Validar que exista al inicio de la aplicación
 
 ### 14. Token en Session No Encriptado
+
 - **Archivo**: `/src/app/api/auth/[...nextauth]/route.js`
 - **Línea**: 98-104
 - **Problema**: Token de acceso se almacena directamente en session
@@ -716,8 +752,8 @@ const verifyResponse = await fetchWithTenant(
 - **Recomendación**: Considerar encriptar o almacenar de forma más segura
 
 ### 15. Falta de Logging de Intentos de Acceso No Autorizados
+
 - **Archivo**: `/src/middleware.js`
 - **Problema**: No se registran intentos de acceso no autorizados
 - **Impacto**: Difícil detectar intentos de acceso maliciosos
 - **Recomendación**: Añadir logging de intentos fallidos
-

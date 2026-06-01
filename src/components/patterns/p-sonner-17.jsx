@@ -1,48 +1,38 @@
-import { toast } from "sonner"
+import { toast } from 'sonner';
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 
 const reviewers = [
   {
-    name: "Alex Johnson",
-    avatar:
-      "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=96&h=96&dpr=2&q=80",
-    initials: "AJ",
+    name: 'Alex Johnson',
+    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=96&h=96&dpr=2&q=80',
+    initials: 'AJ',
   },
   {
-    name: "Sarah Chen",
-    avatar:
-      "https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=96&h=96&dpr=2&q=80",
-    initials: "SC",
+    name: 'Sarah Chen',
+    avatar: 'https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=96&h=96&dpr=2&q=80',
+    initials: 'SC',
   },
   {
-    name: "David Kim",
-    avatar:
-      "https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?w=96&h=96&dpr=2&q=80",
-    initials: "DK",
+    name: 'David Kim',
+    avatar: 'https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?w=96&h=96&dpr=2&q=80',
+    initials: 'DK',
   },
-]
+];
 
 export function Pattern() {
   const showToast = () => {
     toast.custom(() => (
-      <div
-        className="bg-invert text-invert-foreground rounded-md flex w-[356px] flex-col gap-3 border border-transparent p-4 shadow-lg">
+      <div className="bg-invert text-invert-foreground flex w-[356px] flex-col gap-3 rounded-md border border-transparent p-4 shadow-lg">
         <div className="flex items-center justify-between">
           <p className="text-sm font-semibold">Pull Request #284</p>
           <span className="text-invert-foreground/40 text-xs">2m ago</span>
         </div>
         <p className="text-invert-foreground/70 text-sm">
-          All reviewers approved. Ready to merge into{" "}
-          <code className="bg-background/10 rounded px-1 py-0.5 font-mono text-xs">
-            main
-          </code>
+          All reviewers approved. Ready to merge into{' '}
+          <code className="bg-background/10 rounded px-1 py-0.5 font-mono text-xs">main</code>
         </p>
         <Separator className="bg-border/10" />
         <div className="flex items-center justify-between">
@@ -50,9 +40,7 @@ export function Pattern() {
             {reviewers.map((reviewer) => (
               <Avatar key={reviewer.name} className="border-invert size-6 border-2">
                 <AvatarImage src={reviewer.avatar} alt={reviewer.name} />
-                <AvatarFallback className="text-[10px]">
-                  {reviewer.initials}
-                </AvatarFallback>
+                <AvatarFallback className="text-[10px]">{reviewer.initials}</AvatarFallback>
               </Avatar>
             ))}
           </div>
@@ -61,23 +49,25 @@ export function Pattern() {
               size="xs"
               variant="outline"
               className="bg-background/10 border-border/10 text-invert-foreground"
-              onClick={() => toast.dismiss()}>
+              onClick={() => toast.dismiss()}
+            >
               View
             </Button>
             <Button
               size="xs"
               className="border-green-800 bg-green-500 text-white hover:border-green-900 hover:bg-green-600"
               onClick={() => {
-                toast.dismiss()
-                toast.success("Merged successfully")
-              }}>
+                toast.dismiss();
+                toast.success('Merged successfully');
+              }}
+            >
               Merge
             </Button>
           </div>
         </div>
       </div>
-    ))
-  }
+    ));
+  };
 
   return (
     <div className="flex items-center justify-center">

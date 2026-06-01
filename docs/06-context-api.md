@@ -62,9 +62,7 @@ Los hooks `useProductOptions`, `useSupplierOptions` y `useTaxOptions` leen de es
 #### Props del Provider
 
 ```javascript
-<SettingsProvider>
-  {children}
-</SettingsProvider>
+<SettingsProvider>{children}</SettingsProvider>
 ```
 
 No requiere props, carga settings automáticamente.
@@ -82,7 +80,7 @@ No requiere props, carga settings automáticamente.
 #### Funcionalidad
 
 1. **Carga inicial**: Obtiene settings desde API v2 al montar
-2. **Manejo de errores**: 
+2. **Manejo de errores**:
    - Errores de autenticación: No establece settings (AuthErrorInterceptor maneja redirección)
    - Otros errores: Establece settings vacío `{}`
 3. **Invalidación de caché**: Al actualizar settings, invalida caché global en `getSettingValue`
@@ -90,27 +88,29 @@ No requiere props, carga settings automáticamente.
 #### Uso
 
 **En Componentes React**:
+
 ```javascript
-import { useSettings } from "@/context/SettingsContext";
+import { useSettings } from '@/context/SettingsContext';
 
 function MyComponent() {
   const { settings, loading, setSettings } = useSettings();
-  
+
   if (loading) return <Loader />;
-  
+
   const companyName = settings?.companyName;
-  
+
   // Actualizar settings
   const handleUpdate = async () => {
     const newSettings = await updateSettings();
     setSettings(newSettings); // Invalida caché automáticamente
   };
-  
+
   return <div>{companyName}</div>;
 }
 ```
 
 **Desde Helpers o Servicios (fuera de React)**:
+
 ```javascript
 import { getSettingValue } from '@/helpers/getSettingValue';
 
@@ -139,10 +139,12 @@ async function guardarSettings(nuevosSettings) {
 ```
 
 Esto asegura que:
+
 - Todos los componentes React que usan `useSettings` se actualizan automáticamente
 - El helper `getSettingValue` invalidará su caché y obtendrá los valores frescos en la próxima llamada
 
 **Buenas Prácticas**:
+
 - No modifiques los settings directamente: Usa siempre el flujo `updateSettings` + `setSettings`
 - No asumas que los settings están disponibles inmediatamente: Comprueba siempre el estado `loading`
 - Si usas el helper fuera de React, recuerda que el caché solo se actualiza tras llamar a `setSettings` en el Context
@@ -205,41 +207,41 @@ El contexto proporciona todo lo que retorna `useOrder()`:
   plannedProductDetails: Array,            // Productos planificados
   mergedProductDetails: Array,            // Productos planificados + producción
   options: Object,                         // Opciones (productos, impuestos)
-  
+
   // Estado
   loading: boolean,                        // Estado de carga
   error: Error | null,                    // Error si existe
   activeTab: string,                      // Tab activa ('details', etc.)
-  
+
   // Acciones de productos planificados
   plannedProductDetailActions: {
     create: Function,
     update: Function,
     delete: Function
   },
-  
+
   // Acciones de pedido
   updateOrderData: Function,               // Actualizar datos del pedido
   updateOrderStatus: Function,             // Cambiar estado del pedido
   updateTemperatureOrder: Function,       // Actualizar temperatura
-  
+
   // Exportación
   exportDocument: Function,               // Exportar documento individual
   exportDocuments: Function,              // Exportar múltiples documentos
   fastExportDocuments: Function,          // Exportación rápida
   sendDocuments: Function,                // Enviar documentos por email
-  
+
   // Incidencias
   openOrderIncident: Function,            // Crear/abrir incidencia
   resolveOrderIncident: Function,          // Resolver incidencia
   deleteOrderIncident: Function,          // Eliminar incidencia
-  
+
   // Pallets
   onEditingPallet: Function,              // Editar pallet
   onCreatingPallet: Function,             // Crear pallet
   onDeletePallet: Function,               // Eliminar pallet
   onUnlinkPallet: Function,               // Desvincular pallet
-  
+
   // UI
   setActiveTab: Function                  // Cambiar tab activa
 }
@@ -247,12 +249,12 @@ El contexto proporciona todo lo que retorna `useOrder()`:
 
 #### Funcionalidad del Hook useOrder
 
-1. **Carga inicial**: 
+1. **Carga inicial**:
    - Obtiene pedido desde API v2
    - Carga opciones de productos e impuestos
    - Merge de productos planificados con producción
 
-2. **Merge de productos**: 
+2. **Merge de productos**:
    - Combina `plannedProductDetails` con datos de producción desde pallets
    - Calcula diferencias (planificado vs real)
    - Determina estado (success, difference, pending, noPlanned)
@@ -271,7 +273,7 @@ El contexto proporciona todo lo que retorna `useOrder()`:
 #### Uso
 
 ```javascript
-import { OrderProvider, useOrderContext } from "@/context/OrderContext";
+import { OrderProvider, useOrderContext } from '@/context/OrderContext';
 
 // En la página/componente padre
 function OrderPage({ orderId }) {
@@ -284,22 +286,14 @@ function OrderPage({ orderId }) {
 
 // En componentes hijos
 function OrderContent() {
-  const { 
-    order, 
-    loading, 
-    updateOrderStatus,
-    pallets,
-    onCreatingPallet 
-  } = useOrderContext();
-  
+  const { order, loading, updateOrderStatus, pallets, onCreatingPallet } = useOrderContext();
+
   if (loading) return <Loader />;
-  
+
   return (
     <div>
       <h1>Pedido {order.id}</h1>
-      <button onClick={() => updateOrderStatus('completed')}>
-        Completar
-      </button>
+      <button onClick={() => updateOrderStatus('completed')}>Completar</button>
     </div>
   );
 }
@@ -310,6 +304,7 @@ function OrderContent() {
 Se usa en páginas específicas de pedidos, típicamente en `/src/app/admin/orders/[id]/page.js` o componentes relacionados.
 
 **Ejemplo real**:
+
 ```javascript
 // /src/components/Admin/OrdersManager/Order/index.js
 export default function Order({ orderId }) {
@@ -338,7 +333,7 @@ export default function Order({ orderId }) {
 #### Props del Provider
 
 ```javascript
-<StoreProvider 
+<StoreProvider
   storeId={number}
   onUpdateCurrentStoreTotalNetWeight={Function}
   onAddNetWeightToStore={Function}
@@ -366,12 +361,12 @@ El contexto proporciona todo lo que retorna `useStore()`:
   speciesSummary: Array,                   // Resumen por especie
   palletsOptions: Array,                   // Opciones de pallets para filtros
   productsOptions: Array,                   // Opciones de productos para filtros
-  
+
   // Estado
   loading: boolean,                        // Estado de carga
   error: Error | null,                     // Error si existe
   filters: Object,                         // Filtros activos
-  
+
   // Estado de diálogos/slideovers
   isOpenPositionSlideover: boolean,
   isOpenUnallocatedPositionSlideover: boolean,
@@ -379,14 +374,14 @@ El contexto proporciona todo lo que retorna `useStore()`:
   isOpenPalletDialog: boolean,
   isOpenPalletLabelDialog: boolean,
   isOpenMovePalletToStoreDialog: boolean,
-  
+
   // Datos de diálogos
   selectedPosition: string | null,
   addElementToPositionDialogData: Object | null,
   palletDialogData: Object | null,
   palletLabelDialogData: Object | null,
   movePalletToStoreDialogData: number | null,
-  
+
   // Funciones de posiciones
   openPositionSlideover: Function,
   closePositionSlideover: Function,
@@ -396,11 +391,11 @@ El contexto proporciona todo lo que retorna `useStore()`:
   getPositionPallets: Function,
   isPositionFilled: Function,
   isPositionRelevant: Function,
-  
+
   // Funciones de elementos
   openAddElementToPosition: Function,
   closeAddElementToPosition: Function,
-  
+
   // Funciones de pallets
   openCreatePalletDialog: Function,
   openPalletDialog: Function,
@@ -411,11 +406,11 @@ El contexto proporciona todo lo que retorna `useStore()`:
   closeMovePalletToStoreDialog: Function,
   updateStoreWhenOnChangePallet: Function,
   removePalletFromPosition: Function,
-  
+
   // Filtros
   onChangeFilters: Function,
   resetFilters: Function,
-  
+
   // Recarga
   reload: Function                         // Forzar recarga del almacén
 }
@@ -423,7 +418,7 @@ El contexto proporciona todo lo que retorna `useStore()`:
 
 #### Funcionalidad del Hook useStore
 
-1. **Carga inicial**: 
+1. **Carga inicial**:
    - Obtiene almacén desde API v2
    - Procesa pallets y posiciones
    - Calcula resúmenes (especies, productos)
@@ -451,16 +446,16 @@ El contexto proporciona todo lo que retorna `useStore()`:
 #### Uso
 
 ```javascript
-import { StoreProvider, useStoreContext } from "@/context/StoreContext";
+import { StoreProvider, useStoreContext } from '@/context/StoreContext';
 
 // En el componente padre
 function Store({ storeId }) {
   const handleUpdateWeight = (totalWeight) => {
     // Actualizar peso en lista de almacenes
   };
-  
+
   return (
-    <StoreProvider 
+    <StoreProvider
       storeId={storeId}
       onUpdateCurrentStoreTotalNetWeight={handleUpdateWeight}
       onAddNetWeightToStore={() => {}}
@@ -479,17 +474,15 @@ function StoreContent() {
     openPositionSlideover,
     isOpenPalletDialog,
     palletDialogData,
-    updateStoreWhenOnChangePallet
+    updateStoreWhenOnChangePallet,
   } = useStoreContext();
-  
+
   if (loading) return <Loader />;
-  
+
   return (
     <div>
       <h1>Almacén {store.name}</h1>
-      <button onClick={() => openPositionSlideover('A1')}>
-        Ver posición A1
-      </button>
+      <button onClick={() => openPositionSlideover('A1')}>Ver posición A1</button>
     </div>
   );
 }
@@ -500,6 +493,7 @@ function StoreContent() {
 Se usa en componentes de almacenes, típicamente en `/src/components/Admin/Stores/StoresManager/Store/index.js`.
 
 **Ejemplo real**:
+
 ```javascript
 // /src/components/Admin/Stores/StoresManager/Store/index.js
 export const Store = ({ storeId, ...callbacks }) => {
@@ -554,7 +548,7 @@ Store Component
 // Página
 export default function OrderPage({ params }) {
   const { id } = await params;
-  
+
   return (
     <OrderProvider orderId={id}>
       <OrderContent />
@@ -619,6 +613,7 @@ Esto previene errores si se usa el hook fuera del Provider.
 ### 3. Callbacks en StoreContext
 
 StoreContext requiere callbacks del componente padre para:
+
 - Actualizar peso total en lista de almacenes
 - Controlar loading desde fuera
 - Sincronizar estado entre componentes
@@ -628,6 +623,7 @@ Esto crea una dependencia bidireccional.
 ### 4. Invalidación de Caché
 
 SettingsContext invalida caché global al actualizar:
+
 - Llama a `invalidateSettingsCache()` de `/src/helpers/getSettingValue.js`
 - Asegura que helpers obtengan settings actualizados
 
@@ -636,6 +632,7 @@ SettingsContext invalida caché global al actualizar:
 ## 📊 Estadísticas de Uso
 
 Según búsqueda en el código:
+
 - **31 archivos** usan contextos
 - **OrderContext**: ~15 componentes
 - **StoreContext**: ~10 componentes
@@ -646,6 +643,7 @@ Según búsqueda en el código:
 ## ⚠️ Observaciones Críticas y Mejoras Recomendadas
 
 ### 1. Comentario Incorrecto en StoreContext
+
 - **Archivo**: `/src/context/StoreContext.js`
 - **Línea**: 1, 11
 - **Problema**: Comentario dice "OrderContext" y "datos del pedido" en lugar de "StoreContext" y "datos del almacén"
@@ -653,6 +651,7 @@ Según búsqueda en el código:
 - **Recomendación**: Corregir comentarios
 
 ### 2. StoreContext con Muchas Props de Callback
+
 - **Archivo**: `/src/context/StoreContext.js`
 - **Línea**: 10
 - **Problema**: StoreProvider requiere 4 callbacks del padre (onUpdateCurrentStoreTotalNetWeight, onAddNetWeightToStore, setIsStoreLoading)
@@ -660,12 +659,14 @@ Según búsqueda en el código:
 - **Recomendación**: Considerar mover lógica de callbacks dentro del hook o usar eventos/callbacks opcionales
 
 ### 3. Falta de Memoización en Providers
+
 - **Archivo**: Todos los contextos
 - **Problema**: Los valores del contexto no están memoizados
 - **Impacto**: Re-renders innecesarios de todos los consumidores cuando cambia cualquier valor
 - **Recomendación**: Usar `useMemo` para el valor del contexto
 
 ### 4. OrderContext con onChange Opcional
+
 - **Archivo**: `/src/context/OrderContext.js`
 - **Línea**: 10
 - **Problema**: `onChange` es opcional pero se usa sin validación en algunos lugares del hook
@@ -673,6 +674,7 @@ Según búsqueda en el código:
 - **Recomendación**: Validar existencia antes de llamar o hacer requerido
 
 ### 5. SettingsContext sin Manejo de Re-carga
+
 - **Archivo**: `/src/context/SettingsContext.js`
 - **Línea**: 13-29
 - **Problema**: Settings solo se cargan una vez al montar, no hay forma de recargar
@@ -680,6 +682,7 @@ Según búsqueda en el código:
 - **Recomendación**: Añadir función `reload()` o invalidar y recargar automáticamente
 
 ### 6. useStore con Estado Complejo
+
 - **Archivo**: `/src/hooks/useStore.js`
 - **Línea**: 23-571
 - **Problema**: Hook muy grande (571 líneas) con mucha lógica y estado
@@ -687,6 +690,7 @@ Según búsqueda en el código:
 - **Recomendación**: Dividir en hooks más pequeños (useStoreData, useStoreFilters, useStoreDialogs)
 
 ### 7. useOrder con Estado Complejo
+
 - **Archivo**: `/src/hooks/useOrder.js`
 - **Línea**: 59-645
 - **Problema**: Hook muy grande (645 líneas) con mucha lógica
@@ -694,20 +698,22 @@ Según búsqueda en el código:
 - **Recomendación**: Dividir en hooks más pequeños
 
 ### 8. Falta de TypeScript
+
 - **Archivo**: Todos los contextos
 - **Problema**: Sin tipos, no hay validación de props ni autocompletado
 - **Impacto**: Errores en tiempo de ejecución, menos productividad
 - **Recomendación**: Migrar a TypeScript o añadir PropTypes
 
 ### 9. Contextos sin Valor por Defecto
+
 - **Archivo**: Todos los contextos
 - **Problema**: Contextos creados sin valor por defecto: `createContext()`
 - **Impacto**: Si se usa fuera del Provider, el valor es `undefined` (aunque hay validación en hooks)
 - **Recomendación**: Considerar valor por defecto o mantener validación en hooks (actual)
 
 ### 10. Posible Prop Drilling en StoreContext
+
 - **Archivo**: `/src/context/StoreContext.js`
 - **Problema**: Callbacks vienen del componente padre, que probablemente los recibe de su padre
 - **Impacto**: Prop drilling a través de múltiples niveles
 - **Recomendación**: Revisar si los callbacks son realmente necesarios o pueden manejarse dentro del contexto
-

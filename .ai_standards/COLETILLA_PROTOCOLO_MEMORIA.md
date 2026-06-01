@@ -7,7 +7,9 @@
 ## 🧠 PROTOCOLO DE MEMORIA DE TRABAJO ESTÁNDAR
 
 ### ⚡ REQUISITO PREVIO
+
 Antes de procesar esta tarea, **CARGA Y REVISA**:
+
 ```
 Archivo: .ai_standards/AGENT_MEMORY_SYSTEM.md
 Propósito: Sistema estandarizado de gestión de contexto y memoria
@@ -41,10 +43,10 @@ El agente **SIEMPRE** creará esta estructura:
 
 ### ✅ PROTOCOLO DE DECISIONES
 
-| Tipo | Acción | Documentación |
-|------|--------|---------------|
-| **Automáticas** | Ejecutar sin preguntar | `04_logs/execution_timeline.md` |
-| **Críticas** | PAUSAR y preguntar | `00_working/decisions_pending.md` |
+| Tipo            | Acción                 | Documentación                     |
+| --------------- | ---------------------- | --------------------------------- |
+| **Automáticas** | Ejecutar sin preguntar | `04_logs/execution_timeline.md`   |
+| **Críticas**    | PAUSAR y preguntar     | `00_working/decisions_pending.md` |
 
 **CRÍTICAS** = Ambigüedad de especificación, contexto de negocio, datos sensibles, trade-offs
 
@@ -56,6 +58,7 @@ Después de CADA SECCIÓN completada, actualiza:
 
 ```markdown
 ## 🕐 [HH:MM:SS] - [Nombre Sección]
+
 **Status**: ✅ Completado
 **Documentos creados**: [listar]
 **Próximo**: [automático/crítica]
@@ -123,9 +126,9 @@ Guarda en `00_working/decisions_pending.md` y presenta así:
 **Contexto**: [Explicar brevemente]
 
 **Opciones disponibles**:
-  A) [Opción 1] → Beneficio: X | Desventaja: Y
-  B) [Opción 2] → Beneficio: X | Desventaja: Y
-  C) [Opción 3] → Beneficio: X | Desventaja: Y
+A) [Opción 1] → Beneficio: X | Desventaja: Y
+B) [Opción 2] → Beneficio: X | Desventaja: Y
+C) [Opción 3] → Beneficio: X | Desventaja: Y
 
 **Mi recomendación**: [Opción + justificación breve]
 

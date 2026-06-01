@@ -18,17 +18,17 @@ const TOLERANCE = 0.02; // 2 cents — covers floating-point rounding
  *   null if validation cannot be performed (missing data)
  */
 export function validateTotals(lineItems, declaredTotal, importeField = 'importe') {
-    if (!Array.isArray(lineItems) || lineItems.length === 0) return null;
-    if (declaredTotal == null) return null;
+  if (!Array.isArray(lineItems) || lineItems.length === 0) return null;
+  if (declaredTotal == null) return null;
 
-    const sum = lineItems.reduce((acc, row) => acc + (Number(row[importeField]) || 0), 0);
-    const roundedSum = Number(sum.toFixed(2));
-    const delta = Math.abs(roundedSum - Number(declaredTotal));
+  const sum = lineItems.reduce((acc, row) => acc + (Number(row[importeField]) || 0), 0);
+  const roundedSum = Number(sum.toFixed(2));
+  const delta = Math.abs(roundedSum - Number(declaredTotal));
 
-    return {
-        valid: delta <= TOLERANCE,
-        expected: Number(declaredTotal),
-        actual: roundedSum,
-        delta,
-    };
+  return {
+    valid: delta <= TOLERANCE,
+    expected: Number(declaredTotal),
+    actual: roundedSum,
+    delta,
+  };
 }

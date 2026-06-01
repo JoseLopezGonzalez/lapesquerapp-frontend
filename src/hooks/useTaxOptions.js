@@ -18,7 +18,8 @@ export const useTaxOptions = (params = {}) => {
   const [taxOptions, setTaxOptions] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const fromOrdersManager = ordersManagerOptions?.taxOptions?.length > 0 || ordersManagerOptions?.taxOptionsLoading;
+  const fromOrdersManager =
+    ordersManagerOptions?.taxOptions?.length > 0 || ordersManagerOptions?.taxOptionsLoading;
 
   useEffect(() => {
     if (!enabled) {
@@ -43,14 +44,17 @@ export const useTaxOptions = (params = {}) => {
 
     getTaxOptions(token)
       .then((taxes) => {
-        setTaxOptions((taxes || []).map(t => ({ value: t.id, label: `${t.rate} %` })));
+        setTaxOptions((taxes || []).map((t) => ({ value: t.id, label: `${t.rate} %` })));
       })
-      .catch(err => console.error('Error al cargar impuestos:', err))
+      .catch((err) => console.error('Error al cargar impuestos:', err))
       .finally(() => setLoading(false));
   }, [token, fromOrdersManager, ordersManagerOptions, enabled]);
 
   if (fromOrdersManager && ordersManagerOptions.taxOptions?.length > 0) {
-    return { taxOptions: ordersManagerOptions.taxOptions, loading: ordersManagerOptions.taxOptionsLoading ?? false };
+    return {
+      taxOptions: ordersManagerOptions.taxOptions,
+      loading: ordersManagerOptions.taxOptionsLoading ?? false,
+    };
   }
 
   return { taxOptions, loading };

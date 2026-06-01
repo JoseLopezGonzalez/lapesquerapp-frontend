@@ -15,18 +15,21 @@ DISCOVERY → IMPLEMENTACIÓN → AUDITORÍA
 ```
 
 ### Agente Discovery (`gap-discovery.md`)
+
 - **Se activa con:** descripción de problema, mejora o feature nueva
 - **Dialoga** con Jose hasta acordar la solución
 - **Produce:** `GAP-NNN-nombre.md` en `.claude/gaps/open/`
 - **Termina cuando:** Jose confirma el GAP
 
 ### Agente Implementador (`gap-implementor.md`)
+
 - **Se activa con:** confirmación del GAP por Jose
 - **Mueve** el GAP a `in-progress/` al empezar
 - **Produce:** código implementado + GAP.md con sección Implementación rellena
 - **Termina invocando** al Auditor automáticamente
 
 ### Agente Auditor (`gap-auditor.md`)
+
 - **Se activa automáticamente** tras el Implementador
 - **Produce:** GAP.md con sección Auditoría rellena + veredicto
 - **Termina moviendo** el GAP a `closed/` (si aprobado) o dejándolo en `in-progress/` (si rechazado)
@@ -57,6 +60,7 @@ Si no hay ningún GAP todavía, empezar por `GAP-001`.
 ```
 
 **Regla de movimiento:**
+
 - Discovery crea el GAP en `open/`
 - Implementador lo mueve a `in-progress/` al empezar
 - Auditor lo mueve a `closed/` si aprueba, o lo deja en `in-progress/` si rechaza
@@ -67,16 +71,16 @@ Si no hay ningún GAP todavía, empezar por `GAP-001`.
 
 Basada en `.claude/gaps/_template.md`. Campos obligatorios:
 
-| Sección | Quién la rellena | Cuándo |
-|---|---|---|
-| Metadata | Discovery | Al crear el GAP |
-| Contexto y problema | Discovery | Al crear el GAP |
-| Solución acordada | Discovery | Al crear el GAP |
-| Criterios de aceptación | Discovery | Al crear el GAP |
-| Archivos a crear/modificar | Discovery | Al crear el GAP |
-| Restricciones | Discovery | Al crear el GAP |
-| Implementación | Implementador | Al terminar la implementación |
-| Auditoría | Auditor | Al terminar la revisión |
+| Sección                    | Quién la rellena | Cuándo                        |
+| -------------------------- | ---------------- | ----------------------------- |
+| Metadata                   | Discovery        | Al crear el GAP               |
+| Contexto y problema        | Discovery        | Al crear el GAP               |
+| Solución acordada          | Discovery        | Al crear el GAP               |
+| Criterios de aceptación    | Discovery        | Al crear el GAP               |
+| Archivos a crear/modificar | Discovery        | Al crear el GAP               |
+| Restricciones              | Discovery        | Al crear el GAP               |
+| Implementación             | Implementador    | Al terminar la implementación |
+| Auditoría                  | Auditor          | Al terminar la revisión       |
 
 ---
 
@@ -93,21 +97,27 @@ Basada en `.claude/gaps/_template.md`. Campos obligatorios:
 ## Escenarios comunes
 
 ### Jose describe un bug
+
 → Discovery dialoga, crea GAP con tipo "Bug" y prioridad según urgencia
 
 ### Jose dice "impleméntalo" tras un GAP
+
 → Implementador toma el GAP de `open/`, empieza el flujo
 
 ### Implementador detecta que necesita tocar un archivo no previsto
+
 → Para, explica a Jose, espera instrucción. **Nunca actúa solo.**
 
 ### Auditor rechaza
+
 → GAP queda en `in-progress/`. Implementador lee las observaciones y corrige. El ciclo se repite desde el paso de corrección.
 
 ### Jose quiere cambiar algo de un GAP abierto
+
 → Discovery lo revisa y actualiza el archivo en `open/` antes de que lo implemente el Implementador
 
 ### Jose quiere ver el estado del proyecto
+
 → Listar `open/` + `in-progress/` + contar `closed/`
 
 ---

@@ -3,10 +3,11 @@
 ## 🕐 [09:28] - Inicio sesión / Estructura de memoria
 
 **Status**: ✅ Completado  
-**Documentos creados**:  
-- `.ai_work_context/20260215_0928/` (carpeta de sesión)  
-- `00_working/active_task.md`, `context_stack.md`, `decisions_pending.md`, `session_notes.md`  
-- `04_logs/execution_timeline.md` (este archivo)  
+**Documentos creados**:
+
+- `.ai_work_context/20260215_0928/` (carpeta de sesión)
+- `00_working/active_task.md`, `context_stack.md`, `decisions_pending.md`, `session_notes.md`
+- `04_logs/execution_timeline.md` (este archivo)
 
 **Próximo**: Esperar que el usuario indique el módulo/bloque para STEP 0a.
 
@@ -23,10 +24,11 @@
 ## 🕐 [09:50] - STEP 0 y STEP 1 Bloque Auth
 
 **Status**: ✅ Completado  
-**Documentos creados**:  
-- `01_analysis/auth-step0-ui-behavior.md` (estados UI, interacciones, flujo, validación, permisos, errores)  
+**Documentos creados**:
+
+- `01_analysis/auth-step0-ui-behavior.md` (estados UI, interacciones, flujo, validación, permisos, errores)
 - `01_analysis/auth-step1-analisis.md` (análisis por entidad, Rating antes 4/10, riesgos, mejoras P0/P1/P2)  
-**Próximo**: STEP 2 (propuesta de cambios) y aprobación del usuario.
+  **Próximo**: STEP 2 (propuesta de cambios) y aprobación del usuario.
 
 ---
 
@@ -42,7 +44,7 @@
 ## 🕐 [10:15] - STEP 3, 4, 5 — Sub-bloque 1 Auth (implementación, validación, log)
 
 **Status**: ✅ Completado  
-**Implementación**: src/types/auth.ts, src/services/authService.ts (eliminado .js), src/__tests__/services/authService.test.ts, src/__tests__/configs/authConfig.test.ts  
+**Implementación**: src/types/auth.ts, src/services/authService.ts (eliminado .js), src/**tests**/services/authService.test.ts, src/**tests**/configs/authConfig.test.ts  
 **Verificación**: Build OK, 27 tests Auth pasan  
 **Log**: docs/audits/nextjs-evolution-log.md actualizado con entrada [2026-02-15] Bloque Auth Sub-bloque 1  
 **Rating después**: 5,5/10  

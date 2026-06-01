@@ -1,7 +1,5 @@
-import PalletCreateClient from "./PalletCreateClient";
+import PalletCreateClient from './PalletCreateClient';
 
 export default async function PalletCreatePage() {
-    return (
-        <PalletCreateClient />
-    );
-} 
+  return <PalletCreateClient />;
+}

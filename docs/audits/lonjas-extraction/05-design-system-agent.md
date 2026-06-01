@@ -1,4 +1,5 @@
 # Auditoría: Design System Agent
+
 # Bloque: MarketDataExtractor — Extracción de datos de documentos de lonjas
 
 **Fecha:** 2026-04-26
@@ -9,11 +10,11 @@
 
 ## 1. Archivos inspeccionados
 
-| Archivo | Componentes revisados |
-|---|---|
-| `src/components/Admin/MarketDataExtractor/AlbaranCofraWeb/index.js` | Card, Table, Badge, Button, Dialog |
+| Archivo                                                                         | Componentes revisados                          |
+| ------------------------------------------------------------------------------- | ---------------------------------------------- |
+| `src/components/Admin/MarketDataExtractor/AlbaranCofraWeb/index.js`             | Card, Table, Badge, Button, Dialog             |
 | `src/components/Admin/MarketDataExtractor/AlbaranCofraWeb/ExportModal/index.js` | Dialog, Select, Table, Badge, Checkbox, Button |
-| `src/components/Admin/MarketDataExtractor/index.js` | Tabs |
+| `src/components/Admin/MarketDataExtractor/index.js`                             | Tabs                                           |
 
 ---
 
@@ -27,16 +28,16 @@ Este es un bloque existente en auditoría — no hay cambios, solo hallazgos de 
 
 ### 3.1 Uso de componentes shadcn/ui
 
-| Componente | Uso en el bloque | Evaluación |
-|---|---|---|
-| `Card`, `CardContent`, `CardHeader`, `CardTitle` | Vista de documento y ExportModal | ✓ Correcto |
+| Componente                                                                | Uso en el bloque                       | Evaluación |
+| ------------------------------------------------------------------------- | -------------------------------------- | ---------- |
+| `Card`, `CardContent`, `CardHeader`, `CardTitle`                          | Vista de documento y ExportModal       | ✓ Correcto |
 | `Table`, `TableHeader`, `TableBody`, `TableRow`, `TableHead`, `TableCell` | Tablas de subastas, servicios, enlaces | ✓ Correcto |
-| `Button` | Exportar, Enlazar Compras, Cancelar | ✓ Correcto |
-| `Dialog`, `DialogContent`, `DialogHeader`, `DialogTitle`, `DialogFooter` | ExportModal | ✓ Correcto |
-| `Select`, `SelectTrigger`, `SelectContent`, `SelectItem` | Selección de software | ✓ Correcto |
-| `Badge` | Estado exportable / no exportable | ⚠ Ver 4.1 |
-| `Checkbox` | Selección de compras para vincular | ✓ Correcto |
-| `Tabs`, `TabsList`, `TabsTrigger`, `TabsContent` | Individual / Masivo | ✓ Correcto |
+| `Button`                                                                  | Exportar, Enlazar Compras, Cancelar    | ✓ Correcto |
+| `Dialog`, `DialogContent`, `DialogHeader`, `DialogTitle`, `DialogFooter`  | ExportModal                            | ✓ Correcto |
+| `Select`, `SelectTrigger`, `SelectContent`, `SelectItem`                  | Selección de software                  | ✓ Correcto |
+| `Badge`                                                                   | Estado exportable / no exportable      | ⚠ Ver 4.1  |
+| `Checkbox`                                                                | Selección de compras para vincular     | ✓ Correcto |
+| `Tabs`, `TabsList`, `TabsTrigger`, `TabsContent`                          | Individual / Masivo                    | ✓ Correcto |
 
 ---
 
@@ -60,6 +61,7 @@ Este es un bloque existente en auditoría — no hay cambios, solo hallazgos de 
 Los colores `bg-green-900`, `text-green-200`, `bg-red-900`, `text-red-200` son colores Tailwind arbitrarios, no tokens del design system. En el resto de la app, los badges de estado usan variantes de shadcn o clases CSS vars del theme.
 
 Además, hay dos tokens de "semáforo" diferentes en la misma pantalla:
+
 - `text-amber-500` para advertencias (sin Badge)
 - `text-green-500` para OK (sin Badge)
 - Badge verde/rojo para exportabilidad
@@ -102,8 +104,8 @@ Las tablas de la vista del documento tienen espaciado personalizado con selector
 
 ```jsx
 // ExportModal/index.js:307-309
-<label htmlFor="software" className=" font-medium">
-    Software
+<label htmlFor="software" className="font-medium">
+  Software
 </label>
 ```
 
@@ -126,7 +128,7 @@ La prop `size="4xl"` no es estándar en el `DialogContent` de shadcn/ui. Puede s
 
 ```jsx
 // AlbaranCofraWeb/index.js:19
-<img src="/images/logos/logo-santo-cristo.png" alt="Logo" className=" h-32 mx-auto mb-4" />
+<img src="/images/logos/logo-santo-cristo.png" alt="Logo" className="mx-auto mb-4 h-32" />
 ```
 
 El atributo `alt="Logo"` no es descriptivo. Debería ser `alt="Logo Cofradía de Pescadores Santo Cristo del Mar"` para accesibilidad.
@@ -135,13 +137,13 @@ El atributo `alt="Logo"` no es descriptivo. Debería ser `alt="Logo Cofradía de
 
 ## 5. Consistencia de riesgos
 
-| Riesgo | Descripción | Severidad |
-|---|---|---|
-| Badges con colores hardcodeados | No usan tokens del design system — se rompen en futuros rebrands | Media |
-| Paleta blanco/negro forzada | Sin documentación de intención — riesgo de "corrección" involuntaria | Baja |
-| `label` nativo vs `<Label>` shadcn | Inconsistente con el resto del sistema | Baja |
-| `size="4xl"` en DialogContent | Prop no estándar de shadcn — puede perderse en actualizaciones | Baja |
-| Alt text de imagen no descriptivo | Accesibilidad deficiente | Baja |
+| Riesgo                             | Descripción                                                          | Severidad |
+| ---------------------------------- | -------------------------------------------------------------------- | --------- |
+| Badges con colores hardcodeados    | No usan tokens del design system — se rompen en futuros rebrands     | Media     |
+| Paleta blanco/negro forzada        | Sin documentación de intención — riesgo de "corrección" involuntaria | Baja      |
+| `label` nativo vs `<Label>` shadcn | Inconsistente con el resto del sistema                               | Baja      |
+| `size="4xl"` en DialogContent      | Prop no estándar de shadcn — puede perderse en actualizaciones       | Baja      |
+| Alt text de imagen no descriptivo  | Accesibilidad deficiente                                             | Baja      |
 
 ---
 

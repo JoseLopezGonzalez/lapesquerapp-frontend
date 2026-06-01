@@ -61,9 +61,13 @@ export function getDefaultCustomerFormValues(): CustomerFormValues {
   };
 }
 
-export function customerFormValuesFromInitial(initialCustomer: Record<string, unknown> | null | undefined): CustomerFormValues {
-  const safe = (value: unknown) => (typeof value === 'string' ? value : value == null ? '' : String(value));
-  const list = (value: unknown) => (Array.isArray(value) ? value.map((v) => String(v)).filter(Boolean) : []);
+export function customerFormValuesFromInitial(
+  initialCustomer: Record<string, unknown> | null | undefined
+): CustomerFormValues {
+  const safe = (value: unknown) =>
+    typeof value === 'string' ? value : value == null ? '' : String(value);
+  const list = (value: unknown) =>
+    Array.isArray(value) ? value.map((v) => String(v)).filter(Boolean) : [];
 
   const countryId =
     initialCustomer && typeof initialCustomer === 'object'
@@ -79,7 +83,9 @@ export function customerFormValuesFromInitial(initialCustomer: Record<string, un
       : '';
   const fieldOperatorId =
     initialCustomer && typeof initialCustomer === 'object'
-      ? safe((initialCustomer as any)?.fieldOperator?.id ?? (initialCustomer as any)?.field_operator_id)
+      ? safe(
+          (initialCustomer as any)?.fieldOperator?.id ?? (initialCustomer as any)?.field_operator_id
+        )
       : '';
 
   return {
@@ -87,19 +93,34 @@ export function customerFormValuesFromInitial(initialCustomer: Record<string, un
     name: safe((initialCustomer as any)?.name),
     alias: safe((initialCustomer as any)?.alias),
     vatNumber: safe((initialCustomer as any)?.vatNumber ?? (initialCustomer as any)?.vat_number),
-    billingAddress: safe((initialCustomer as any)?.billingAddress ?? (initialCustomer as any)?.billing_address),
-    shippingAddress: safe((initialCustomer as any)?.shippingAddress ?? (initialCustomer as any)?.shipping_address),
-    transportationNotes: safe((initialCustomer as any)?.transportationNotes ?? (initialCustomer as any)?.transportation_notes),
-    productionNotes: safe((initialCustomer as any)?.productionNotes ?? (initialCustomer as any)?.production_notes),
-    accountingNotes: safe((initialCustomer as any)?.accountingNotes ?? (initialCustomer as any)?.accounting_notes),
+    billingAddress: safe(
+      (initialCustomer as any)?.billingAddress ?? (initialCustomer as any)?.billing_address
+    ),
+    shippingAddress: safe(
+      (initialCustomer as any)?.shippingAddress ?? (initialCustomer as any)?.shipping_address
+    ),
+    transportationNotes: safe(
+      (initialCustomer as any)?.transportationNotes ??
+        (initialCustomer as any)?.transportation_notes
+    ),
+    productionNotes: safe(
+      (initialCustomer as any)?.productionNotes ?? (initialCustomer as any)?.production_notes
+    ),
+    accountingNotes: safe(
+      (initialCustomer as any)?.accountingNotes ?? (initialCustomer as any)?.accounting_notes
+    ),
     emails: list((initialCustomer as any)?.emails),
     ccEmails: list((initialCustomer as any)?.ccEmails ?? (initialCustomer as any)?.cc_emails),
-    contactInfo: safe((initialCustomer as any)?.contactInfo ?? (initialCustomer as any)?.contact_info),
-    operationalStatus: safe((initialCustomer as any)?.operationalStatus ?? (initialCustomer as any)?.operational_status) || 'normal',
+    contactInfo: safe(
+      (initialCustomer as any)?.contactInfo ?? (initialCustomer as any)?.contact_info
+    ),
+    operationalStatus:
+      safe(
+        (initialCustomer as any)?.operationalStatus ?? (initialCustomer as any)?.operational_status
+      ) || 'normal',
     countryId,
     paymentTermId,
     transportId,
     fieldOperatorId,
   };
 }
-

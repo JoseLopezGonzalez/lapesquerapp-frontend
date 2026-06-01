@@ -1,15 +1,10 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
+import * as React from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 /**
  * Diálogo de selección con tarjetas grandes, estilo táctil.
@@ -53,27 +48,23 @@ export function SelectionDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="flex flex-col w-[min(420px,92vw)] max-h-[85vh] p-0 gap-0 overflow-hidden"
+        className="flex max-h-[85vh] w-[min(420px,92vw)] flex-col gap-0 overflow-hidden p-0"
         hideClose={false}
       >
-        <DialogHeader className="px-6 pt-6 pb-4 shrink-0 border-b">
-          <DialogTitle className="text-base font-semibold text-left">
-            {title}
-          </DialogTitle>
+        <DialogHeader className="shrink-0 border-b px-6 pt-6 pb-4">
+          <DialogTitle className="text-left text-base font-semibold">{title}</DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 min-h-0 px-4 py-4">
+        <ScrollArea className="min-h-0 flex-1 px-4 py-4">
           <div className="flex flex-col gap-2 pr-4">
             {loading ? (
-              <p className="py-8 text-center text-sm text-muted-foreground">
-                Cargando...
-              </p>
+              <p className="text-muted-foreground py-8 text-center text-sm">Cargando...</p>
             ) : (
               options.map((opt, idx) => {
                 const optVal = opt.value;
                 const isSelected =
                   value != null &&
-                  (typeof optVal === "object"
+                  (typeof optVal === 'object'
                     ? optVal?.id === value?.id || optVal?.value === value
                     : String(optVal) === String(value));
                 return (
@@ -82,18 +73,16 @@ export function SelectionDialog({
                     type="button"
                     onClick={() => onSelect?.(isSelected ? null : opt.value)}
                     className={cn(
-                      "w-full text-left rounded-lg border-2 px-4 py-3 transition-colors touch-manipulation min-h-[56px]",
-                      "flex flex-col justify-center gap-0.5",
+                      'min-h-[56px] w-full touch-manipulation rounded-lg border-2 px-4 py-3 text-left transition-colors',
+                      'flex flex-col justify-center gap-0.5',
                       isSelected
-                        ? "border-primary border-l-4 bg-primary/5"
-                        : "border-border hover:border-primary/40 hover:bg-muted/50"
+                        ? 'border-primary bg-primary/5 border-l-4'
+                        : 'border-border hover:border-primary/40 hover:bg-muted/50'
                     )}
                   >
-                    <span className="font-medium text-foreground">{opt.label}</span>
+                    <span className="text-foreground font-medium">{opt.label}</span>
                     {opt.secondaryLabel && (
-                      <span className="text-sm text-muted-foreground">
-                        {opt.secondaryLabel}
-                      </span>
+                      <span className="text-muted-foreground text-sm">{opt.secondaryLabel}</span>
                     )}
                   </button>
                 );
@@ -102,7 +91,7 @@ export function SelectionDialog({
           </div>
         </ScrollArea>
 
-        <div className="flex gap-3 px-6 py-4 shrink-0 border-t bg-muted/30">
+        <div className="bg-muted/30 flex shrink-0 gap-3 border-t px-6 py-4">
           <Button
             type="button"
             variant="outline"

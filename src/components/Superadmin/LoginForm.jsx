@@ -1,55 +1,56 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useSuperadminAuth } from "@/context/SuperadminAuthContext";
-import { fetchSuperadmin, SuperadminApiError } from "@/lib/superadminApi";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { REGEXP_ONLY_DIGITS } from "input-otp";
-import { Fish, Loader2, Mail } from "lucide-react";
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useSuperadminAuth } from '@/context/SuperadminAuthContext';
+import { fetchSuperadmin, SuperadminApiError } from '@/lib/superadminApi';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
+import { REGEXP_ONLY_DIGITS } from 'input-otp';
+import { Fish, Loader2, Mail } from 'lucide-react';
 
 const RESEND_COOLDOWN = 60;
-const OTP_SLOT_CLASS = "rounded-md border border-input border-accent/90 shadow-inner dark:shadow-primary/10 h-11 w-10 text-base";
+const OTP_SLOT_CLASS =
+  'rounded-md border border-input border-accent/90 shadow-inner dark:shadow-primary/10 h-11 w-10 text-base';
 
 export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login, token } = useSuperadminAuth();
 
-  const [step, setStep] = useState("email");
-  const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState("");
-  const [error, setError] = useState("");
+  const [step, setStep] = useState('email');
+  const [email, setEmail] = useState('');
+  const [otp, setOtp] = useState('');
+  const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [cooldown, setCooldown] = useState(0);
   const cooldownRef = useRef(null);
 
   useEffect(() => {
-    if (token) router.replace("/superadmin");
+    if (token) router.replace('/superadmin');
   }, [token, router]);
 
   useEffect(() => {
-    const magicToken = searchParams.get("token");
+    const magicToken = searchParams.get('token');
     if (!magicToken) return;
-    setStep("verifying");
-    setError("");
+    setStep('verifying');
+    setError('');
     (async () => {
       try {
-        const res = await fetchSuperadmin("/auth/verify-magic-link", {
-          method: "POST",
+        const res = await fetchSuperadmin('/auth/verify-magic-link', {
+          method: 'POST',
           body: JSON.stringify({ token: magicToken }),
         });
         const data = await res.json();
         login(data.access_token, data.user);
-        router.replace("/superadmin");
+        router.replace('/superadmin');
       } catch (err) {
-        setError(err instanceof SuperadminApiError ? err.message : "Error al verificar el enlace.");
-        setStep("email");
+        setError(err instanceof SuperadminApiError ? err.message : 'Error al verificar el enlace.');
+        setStep('email');
       }
     })();
   }, [searchParams, login, router]);
@@ -58,77 +59,89 @@ export default function LoginForm() {
     if (cooldown <= 0) return;
     cooldownRef.current = setInterval(() => {
       setCooldown((prev) => {
-        if (prev <= 1) { clearInterval(cooldownRef.current); return 0; }
+        if (prev <= 1) {
+          clearInterval(cooldownRef.current);
+          return 0;
+        }
         return prev - 1;
       });
     }, 1000);
     return () => clearInterval(cooldownRef.current);
   }, [cooldown]);
 
-  const handleRequestAccess = useCallback(async (e) => {
-    e.preventDefault();
-    setError("");
-    setSubmitting(true);
-    try {
-      await fetchSuperadmin("/auth/request-access", {
-        method: "POST",
-        body: JSON.stringify({ email }),
-      });
-      setStep("otp");
-      setCooldown(RESEND_COOLDOWN);
-    } catch (err) {
-      setError(err instanceof SuperadminApiError ? err.message : "Error al solicitar acceso.");
-    } finally {
-      setSubmitting(false);
-    }
-  }, [email]);
+  const handleRequestAccess = useCallback(
+    async (e) => {
+      e.preventDefault();
+      setError('');
+      setSubmitting(true);
+      try {
+        await fetchSuperadmin('/auth/request-access', {
+          method: 'POST',
+          body: JSON.stringify({ email }),
+        });
+        setStep('otp');
+        setCooldown(RESEND_COOLDOWN);
+      } catch (err) {
+        setError(err instanceof SuperadminApiError ? err.message : 'Error al solicitar acceso.');
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [email]
+  );
 
-  const handleVerifyOtp = useCallback(async (codeOverride) => {
-    const code = codeOverride ?? otp;
-    if (code.length < 6) return;
-    setError("");
-    setSubmitting(true);
-    try {
-      const res = await fetchSuperadmin("/auth/verify-otp", {
-        method: "POST",
-        body: JSON.stringify({ email, code }),
-      });
-      const data = await res.json();
-      login(data.access_token, data.user);
-      router.replace("/superadmin");
-    } catch (err) {
-      setError(err instanceof SuperadminApiError ? err.message : "Error al verificar el código.");
-    } finally {
-      setSubmitting(false);
-    }
-  }, [email, otp, login, router]);
+  const handleVerifyOtp = useCallback(
+    async (codeOverride) => {
+      const code = codeOverride ?? otp;
+      if (code.length < 6) return;
+      setError('');
+      setSubmitting(true);
+      try {
+        const res = await fetchSuperadmin('/auth/verify-otp', {
+          method: 'POST',
+          body: JSON.stringify({ email, code }),
+        });
+        const data = await res.json();
+        login(data.access_token, data.user);
+        router.replace('/superadmin');
+      } catch (err) {
+        setError(err instanceof SuperadminApiError ? err.message : 'Error al verificar el código.');
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [email, otp, login, router]
+  );
 
   const handleResend = useCallback(async () => {
     if (cooldown > 0) return;
-    setError("");
+    setError('');
     try {
-      await fetchSuperadmin("/auth/request-access", {
-        method: "POST",
+      await fetchSuperadmin('/auth/request-access', {
+        method: 'POST',
         body: JSON.stringify({ email }),
       });
       setCooldown(RESEND_COOLDOWN);
     } catch (err) {
-      setError(err instanceof SuperadminApiError ? err.message : "Error al reenviar el código.");
+      setError(err instanceof SuperadminApiError ? err.message : 'Error al reenviar el código.');
     }
   }, [cooldown, email]);
 
-  const handleOtpChange = useCallback((value) => {
-    setOtp(value);
-    if (value.length === 6) handleVerifyOtp(value);
-  }, [handleVerifyOtp]);
+  const handleOtpChange = useCallback(
+    (value) => {
+      setOtp(value);
+      if (value.length === 6) handleVerifyOtp(value);
+    },
+    [handleVerifyOtp]
+  );
 
-  if (step === "verifying") {
+  if (step === 'verifying') {
     return (
       <div className="login-background flex min-h-screen items-center justify-center p-6">
         <div className="w-full max-w-sm text-center">
-          <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
-          <p className="mt-4 text-sm text-muted-foreground">Verificando enlace...</p>
-          {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
+          <Loader2 className="text-primary mx-auto h-8 w-8 animate-spin" />
+          <p className="text-muted-foreground mt-4 text-sm">Verificando enlace...</p>
+          {error && <p className="text-destructive mt-2 text-sm">{error}</p>}
         </div>
       </div>
     );
@@ -137,11 +150,11 @@ export default function LoginForm() {
   return (
     <div className="login-background flex min-h-screen items-center justify-center p-6">
       <Card className="w-full max-w-md">
-        <CardHeader className="text-center pb-2">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-            <Fish className="h-6 w-6 text-primary" />
+        <CardHeader className="pb-2 text-center">
+          <div className="bg-primary/10 mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-lg">
+            <Fish className="text-primary h-6 w-6" />
           </div>
-          <CardTitle className="text-2xl bg-clip-text text-transparent bg-gradient-to-tr from-primary to-muted-foreground">
+          <CardTitle className="from-primary to-muted-foreground bg-gradient-to-tr bg-clip-text text-2xl text-transparent">
             PesquerApp Admin
           </CardTitle>
           <CardDescription>Panel de administración de la plataforma</CardDescription>
@@ -149,7 +162,7 @@ export default function LoginForm() {
 
         <CardContent className="space-y-5">
           {/* Email step */}
-          {step === "email" && (
+          {step === 'email' && (
             <form onSubmit={handleRequestAccess} className="space-y-4">
               <div className="grid w-full items-center gap-1.5">
                 <Label htmlFor="sa-email">Email</Label>
@@ -164,23 +177,24 @@ export default function LoginForm() {
                   autoFocus
                 />
               </div>
-              {error && <p className="text-sm text-destructive">{error}</p>}
+              {error && <p className="text-destructive text-sm">{error}</p>}
               <Button type="submit" className="w-full" disabled={submitting || !email}>
-                {submitting ? "Enviando..." : "Acceder"}
+                {submitting ? 'Enviando...' : 'Acceder'}
               </Button>
             </form>
           )}
 
           {/* OTP step */}
-          {step === "otp" && (
+          {step === 'otp' && (
             <div className="space-y-4">
-              <div className="rounded-lg border bg-muted/30 p-3 text-sm text-muted-foreground">
-                <p className="flex items-center gap-2 font-medium text-foreground">
+              <div className="bg-muted/30 text-muted-foreground rounded-lg border p-3 text-sm">
+                <p className="text-foreground flex items-center gap-2 font-medium">
                   <Mail className="h-4 w-4" />
                   Revisa tu correo
                 </p>
                 <p className="mt-1">
-                  Te hemos enviado un enlace para acceder. O bien introduce aquí el código de 6 dígitos que aparece en el correo.
+                  Te hemos enviado un enlace para acceder. O bien introduce aquí el código de 6
+                  dígitos que aparece en el correo.
                 </p>
               </div>
 
@@ -199,7 +213,7 @@ export default function LoginForm() {
                     ))}
                   </InputOTPGroup>
                 </InputOTP>
-                {error && <p className="text-sm text-destructive">{error}</p>}
+                {error && <p className="text-destructive text-sm">{error}</p>}
               </div>
 
               <div className="flex flex-col gap-2">
@@ -209,12 +223,16 @@ export default function LoginForm() {
                   disabled={submitting || otp.length < 6}
                   onClick={handleVerifyOtp}
                 >
-                  {submitting ? "Verificando..." : "Verificar código"}
+                  {submitting ? 'Verificando...' : 'Verificar código'}
                 </Button>
                 <Button
                   variant="ghost"
                   type="button"
-                  onClick={() => { setStep("email"); setError(""); setOtp(""); }}
+                  onClick={() => {
+                    setStep('email');
+                    setError('');
+                    setOtp('');
+                  }}
                 >
                   Volver
                 </Button>
@@ -225,9 +243,9 @@ export default function LoginForm() {
                   type="button"
                   onClick={handleResend}
                   disabled={cooldown > 0}
-                  className="text-sm text-primary hover:underline disabled:text-muted-foreground disabled:no-underline"
+                  className="text-primary disabled:text-muted-foreground text-sm hover:underline disabled:no-underline"
                 >
-                  {cooldown > 0 ? `Reenviar código (${cooldown}s)` : "Reenviar código"}
+                  {cooldown > 0 ? `Reenviar código (${cooldown}s)` : 'Reenviar código'}
                 </button>
               </div>
             </div>

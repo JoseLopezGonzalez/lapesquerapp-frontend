@@ -8,7 +8,10 @@ type DirectionStop = {
 
 function normalizeCoordinates(stops: DirectionStop[] = []) {
   return stops
-    .filter((stop): stop is Required<Pick<DirectionStop, 'lng' | 'lat'>> & DirectionStop => stop?.lng != null && stop?.lat != null)
+    .filter(
+      (stop): stop is Required<Pick<DirectionStop, 'lng' | 'lat'>> & DirectionStop =>
+        stop?.lng != null && stop?.lat != null
+    )
     .sort((a, b) => Number(a.position ?? 0) - Number(b.position ?? 0))
     .map((stop) => [Number(stop.lng), Number(stop.lat)]);
 }

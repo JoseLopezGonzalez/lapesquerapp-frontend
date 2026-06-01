@@ -3,13 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { getCustomersOptions } from '@/services/customerService';
 import CreateCustomerQuickForm from '../CreateCustomerQuickForm';
 import Loader from '@/components/Utilities/Loader';
@@ -17,10 +11,7 @@ import { EmptyState } from '@/components/Utilities/EmptyState';
 import { UserRound, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export default function Step1ClientSelection({
-  state,
-  setCustomer,
-}) {
+export default function Step1ClientSelection({ state, setCustomer }) {
   const { data: session } = useSession();
   const token = session?.user?.accessToken;
   const [customerOptions, setCustomerOptions] = useState([]);
@@ -32,7 +23,7 @@ export default function Step1ClientSelection({
     setLoadingCustomers(true);
     getCustomersOptions(token)
       .then((data) => {
-        const raw = Array.isArray(data) ? data : data?.data ?? [];
+        const raw = Array.isArray(data) ? data : (data?.data ?? []);
         setCustomerOptions(raw.map((c) => ({ value: String(c.id), label: c.name })));
       })
       .catch(() => setCustomerOptions([]))
@@ -43,7 +34,7 @@ export default function Step1ClientSelection({
     if (!token) return;
     getCustomersOptions(token)
       .then((data) => {
-        const raw = Array.isArray(data) ? data : data?.data ?? [];
+        const raw = Array.isArray(data) ? data : (data?.data ?? []);
         setCustomerOptions(raw.map((c) => ({ value: String(c.id), label: c.name })));
       })
       .catch(() => {});
@@ -58,7 +49,7 @@ export default function Step1ClientSelection({
   const selectedId = state.customerId != null ? String(state.customerId) : null;
 
   return (
-    <div className="w-full max-w-[420px] flex flex-col flex-1 min-h-0 gap-4">
+    <div className="flex min-h-0 w-full max-w-[420px] flex-1 flex-col gap-4">
       <Sheet open={newCustomerOpen} onOpenChange={setNewCustomerOpen}>
         <SheetTrigger asChild>
           <Button type="button" className="w-full shrink-0" size="lg">
@@ -79,42 +70,44 @@ export default function Step1ClientSelection({
         </SheetContent>
       </Sheet>
 
-      <div className="w-full flex-1 min-h-0 rounded-lg border overflow-y-auto overflow-x-hidden flex flex-col">
+      <div className="flex min-h-0 w-full flex-1 flex-col overflow-x-hidden overflow-y-auto rounded-lg border">
         {loadingCustomers ? (
-          <div className="flex flex-1 items-center justify-center w-full min-h-0">
+          <div className="flex min-h-0 w-full flex-1 items-center justify-center">
             <Loader />
           </div>
         ) : (
-        <div className="flex flex-col gap-2 p-3 pr-4">
-          {customerOptions.length === 0 ? (
-            <div className="flex flex-1 items-center justify-center w-full py-6 min-h-0">
-              <EmptyState
-                icon={<UserRound className="h-12 w-12 text-primary" strokeWidth={1.5} />}
-                title="No hay clientes"
-                description="No hay clientes disponibles o crea uno con el botón «Nuevo cliente»."
-              />
-            </div>
-          ) : (
-            customerOptions.map((opt, idx) => {
-              const isSelected = selectedId != null && String(opt.value) === String(selectedId);
-              return (
-                <button
-                  key={opt.value ?? idx}
-                  type="button"
-                  onClick={() => setCustomer(isSelected ? null : opt.value, isSelected ? null : opt.label)}
-                  className={cn(
-                    'w-full text-left rounded-lg border-2 px-4 py-3 transition-colors touch-manipulation min-h-[56px] flex flex-col justify-center gap-0.5',
-                    isSelected
-                      ? 'border-primary border-l-4 bg-primary/5'
-                      : 'border-border hover:border-primary/40 hover:bg-muted/50'
-                  )}
-                >
-                  <span className="font-medium text-foreground">{opt.label}</span>
-                </button>
-              );
-            })
-          )}
-        </div>
+          <div className="flex flex-col gap-2 p-3 pr-4">
+            {customerOptions.length === 0 ? (
+              <div className="flex min-h-0 w-full flex-1 items-center justify-center py-6">
+                <EmptyState
+                  icon={<UserRound className="text-primary h-12 w-12" strokeWidth={1.5} />}
+                  title="No hay clientes"
+                  description="No hay clientes disponibles o crea uno con el botón «Nuevo cliente»."
+                />
+              </div>
+            ) : (
+              customerOptions.map((opt, idx) => {
+                const isSelected = selectedId != null && String(opt.value) === String(selectedId);
+                return (
+                  <button
+                    key={opt.value ?? idx}
+                    type="button"
+                    onClick={() =>
+                      setCustomer(isSelected ? null : opt.value, isSelected ? null : opt.label)
+                    }
+                    className={cn(
+                      'flex min-h-[56px] w-full touch-manipulation flex-col justify-center gap-0.5 rounded-lg border-2 px-4 py-3 text-left transition-colors',
+                      isSelected
+                        ? 'border-primary bg-primary/5 border-l-4'
+                        : 'border-border hover:border-primary/40 hover:bg-muted/50'
+                    )}
+                  >
+                    <span className="text-foreground font-medium">{opt.label}</span>
+                  </button>
+                );
+              })
+            )}
+          </div>
         )}
       </div>
     </div>

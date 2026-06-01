@@ -1,11 +1,11 @@
-import Link from "next/link";
-import DashboardCards from "@/components/Superadmin/DashboardCards";
-import AlertsWidget from "@/components/Superadmin/AlertsWidget";
-import QueueHealthWidget from "@/components/Superadmin/QueueHealthWidget";
-import ActivityFeed from "@/components/Superadmin/ActivityFeed";
-import ActiveSessionsBanner from "@/components/Superadmin/ActiveSessionsBanner";
-import { Button } from "@/components/ui/button";
-import { Plus, ArrowRight } from "lucide-react";
+import Link from 'next/link';
+import DashboardCards from '@/components/Superadmin/DashboardCards';
+import AlertsWidget from '@/components/Superadmin/AlertsWidget';
+import QueueHealthWidget from '@/components/Superadmin/QueueHealthWidget';
+import ActivityFeed from '@/components/Superadmin/ActivityFeed';
+import ActiveSessionsBanner from '@/components/Superadmin/ActiveSessionsBanner';
+import { Button } from '@/components/ui/button';
+import { Plus, ArrowRight } from 'lucide-react';
 
 export default function SuperadminDashboardPage() {
   return (
@@ -27,8 +27,8 @@ export default function SuperadminDashboardPage() {
           </Button>
         </div>
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="space-y-6 lg:col-span-2">
           <ActiveSessionsBanner />
           <DashboardCards />
           <AlertsWidget />

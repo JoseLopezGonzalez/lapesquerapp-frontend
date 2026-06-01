@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
 /**
  * CenterActionButton - Botón central de acción en BottomNav
- * 
+ *
  * Botón prominente que abre el NavigationSheet
  */
 
-import * as React from "react";
-import { Menu } from "lucide-react";
-import { motion, useReducedMotion } from "framer-motion";
-import { cn } from "@/lib/utils";
-import { feedbackPop } from "@/lib/motion-presets";
+import * as React from 'react';
+import { Menu } from 'lucide-react';
+import { motion, useReducedMotion } from 'framer-motion';
+import { cn } from '@/lib/utils';
+import { feedbackPop } from '@/lib/motion-presets';
 
 export function CenterActionButton({ onOpenSheet }) {
   const prefersReducedMotion = useReducedMotion();
@@ -36,20 +36,19 @@ export function CenterActionButton({ onOpenSheet }) {
       <button
         onClick={() => onOpenSheet?.(true)}
         className={cn(
-          "relative flex items-center justify-center",
-          "w-14 h-14 rounded-md",
-          "bg-primary text-primary-foreground",
-          "shadow-md",
-          "transition-all duration-200",
-          "touch-none",
-          "hover:bg-primary/90 active:bg-primary/80",
-          "hover:scale-[1.02] active:scale-[0.98]"
+          'relative flex items-center justify-center',
+          'h-14 w-14 rounded-md',
+          'bg-primary text-primary-foreground',
+          'shadow-md',
+          'transition-all duration-200',
+          'touch-none',
+          'hover:bg-primary/90 active:bg-primary/80',
+          'hover:scale-[1.02] active:scale-[0.98]'
         )}
         aria-label="Abrir menú de navegación"
       >
-        <Menu className="w-6 h-6" />
+        <Menu className="h-6 w-6" />
       </button>
     </motion.div>
   );
 }
-

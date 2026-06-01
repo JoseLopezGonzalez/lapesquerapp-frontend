@@ -16,11 +16,7 @@ const colorClasses = {
 const StatusBadge = ({ color = 'green', label = 'Terminado', className }) => {
   const classes = colorClasses[color] ?? colorClasses.green;
 
-  return (
-    <Badge className={cn(classes, className)}>
-      {label}
-    </Badge>
-  );
+  return <Badge className={cn(classes, className)}>{label}</Badge>;
 };
 
 export default StatusBadge;

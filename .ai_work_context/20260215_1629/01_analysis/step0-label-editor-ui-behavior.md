@@ -7,16 +7,16 @@
 
 ## 1. Estados de la UI
 
-| Estado | Descripción | Transición |
-|--------|-------------|------------|
-| **Sin etiqueta cargada** | Canvas vacío o recién abierto; selector de etiqueta puede mostrarse (Sheet). | Usuario abre selector → elige "Nueva" o una etiqueta existente. |
-| **Etiqueta nueva** | `labelId === null`, nombre vacío, canvas por defecto (110×90 mm), elementos vacíos. | handleCreateNewLabel() o selección "Nueva" en selector. |
-| **Etiqueta cargada** | `labelId` y nombre definidos; elementos y dimensiones de canvas desde API. | handleSelectLabel(label) desde LabelSelectorSheet. |
-| **Elemento seleccionado** | Un elemento del canvas está seleccionado; panel derecho muestra propiedades (activeElementState). | Click en elemento, o en lista de elementos; Delete/Backspace deselecciona o elimina. |
-| **Guardando** | `isSaving === true`; botón Guardar deshabilitado. | handleOnClickSave → createLabel/updateLabel. |
-| **Diálogo manual** | Impresión con campos manuales: se muestra formulario para rellenar valores. | handlePrint cuando hay manualField → setShowManualDialog(true). |
-| **Diálogo atajos teclado** | showKeyboardShortcutsDialog. | Toggle desde toolbar. |
-| **Diálogo ejemplos de campos** | showFieldExamplesDialog. | Para editar fieldExampleValues. |
+| Estado                         | Descripción                                                                                       | Transición                                                                           |
+| ------------------------------ | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| **Sin etiqueta cargada**       | Canvas vacío o recién abierto; selector de etiqueta puede mostrarse (Sheet).                      | Usuario abre selector → elige "Nueva" o una etiqueta existente.                      |
+| **Etiqueta nueva**             | `labelId === null`, nombre vacío, canvas por defecto (110×90 mm), elementos vacíos.               | handleCreateNewLabel() o selección "Nueva" en selector.                              |
+| **Etiqueta cargada**           | `labelId` y nombre definidos; elementos y dimensiones de canvas desde API.                        | handleSelectLabel(label) desde LabelSelectorSheet.                                   |
+| **Elemento seleccionado**      | Un elemento del canvas está seleccionado; panel derecho muestra propiedades (activeElementState). | Click en elemento, o en lista de elementos; Delete/Backspace deselecciona o elimina. |
+| **Guardando**                  | `isSaving === true`; botón Guardar deshabilitado.                                                 | handleOnClickSave → createLabel/updateLabel.                                         |
+| **Diálogo manual**             | Impresión con campos manuales: se muestra formulario para rellenar valores.                       | handlePrint cuando hay manualField → setShowManualDialog(true).                      |
+| **Diálogo atajos teclado**     | showKeyboardShortcutsDialog.                                                                      | Toggle desde toolbar.                                                                |
+| **Diálogo ejemplos de campos** | showFieldExamplesDialog.                                                                          | Para editar fieldExampleValues.                                                      |
 
 ---
 

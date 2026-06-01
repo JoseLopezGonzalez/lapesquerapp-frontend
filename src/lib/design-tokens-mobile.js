@@ -1,9 +1,9 @@
 /**
  * Design Tokens Mobile
- * 
+ *
  * Valores estándar para mantener coherencia visual en toda la app mobile.
  * Estos tokens deben usarse consistentemente en todos los componentes mobile.
- * 
+ *
  * Referencia: docs/mobile-adaptation/00-PLAN-GENERAL.md
  */
 
@@ -174,4 +174,3 @@ export const MOBILE_TOKENS = {
 export function combineMobileClasses(...classes) {
   return classes.filter(Boolean).join(' ');
 }
-

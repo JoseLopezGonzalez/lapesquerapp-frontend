@@ -98,13 +98,13 @@
 
 ## Orden de ejecución recomendado
 
-1. **8.1** — Tipos production.ts  
-2. **8.2** — useProductionDetail + ProductionView  
-3. **8.3** — useProcessOptions  
-4. **8.4** — useProductionRecord con React Query + mutaciones  
-5. **8.5** — Invalidación coordinada (integrar en 8.4 si es posible)  
-6. **8.6–8.8** — Reducción Inputs/Outputs/Consumptions (por tiempo, al menos uno completo o parcial)  
-7. **8.9** — Tipado productionService (mínimo)  
-8. **8.10** — Tests mínimos + CORE 9/10  
+1. **8.1** — Tipos production.ts
+2. **8.2** — useProductionDetail + ProductionView
+3. **8.3** — useProcessOptions
+4. **8.4** — useProductionRecord con React Query + mutaciones
+5. **8.5** — Invalidación coordinada (integrar en 8.4 si es posible)
+6. **8.6–8.8** — Reducción Inputs/Outputs/Consumptions (por tiempo, al menos uno completo o parcial)
+7. **8.9** — Tipado productionService (mínimo)
+8. **8.10** — Tests mínimos + CORE 9/10
 
 Con 8.1–8.5 y 8.9–8.10 el bloque queda estable, con React Query y tipado suficiente para 9/10. 8.6–8.8 mejoran mantenibilidad a medio plazo.

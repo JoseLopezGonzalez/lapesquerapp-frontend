@@ -73,6 +73,7 @@ git revert <commit-hash>
 Rating después estimado: **6/10** (sube 1 punto por migración de 2 cards).
 
 **Pendiente para siguientes sub-bloques**:
+
 - Sub-bloque 2: OrderRankingChart, SalesBySalespersonPieChart
 - Sub-bloque 3: SalesChart, ReceptionChart, DispatchChart
 - Sub-bloque 4: TransportRadarChart

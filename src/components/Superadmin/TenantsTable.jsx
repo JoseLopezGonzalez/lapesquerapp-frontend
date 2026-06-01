@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { fetchSuperadmin } from "@/lib/superadminApi";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent } from "@/components/ui/card";
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { fetchSuperadmin } from '@/lib/superadminApi';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -15,19 +15,19 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import StatusBadge from "./StatusBadge";
-import FilterTabs from "./FilterTabs";
-import { formatRelative } from "@/utils/superadminDateUtils";
-import { Plus, ChevronLeft, ChevronRight, Search, RefreshCw, Building2 } from "lucide-react";
-import EmptyState from "./EmptyState";
+} from '@/components/ui/table';
+import StatusBadge from './StatusBadge';
+import FilterTabs from './FilterTabs';
+import { formatRelative } from '@/utils/superadminDateUtils';
+import { Plus, ChevronLeft, ChevronRight, Search, RefreshCw, Building2 } from 'lucide-react';
+import EmptyState from './EmptyState';
 
 const STATUS_TABS = [
-  { key: "", label: "Todos" },
-  { key: "active", label: "Activos" },
-  { key: "suspended", label: "Suspendidos" },
-  { key: "pending", label: "Pendientes" },
-  { key: "cancelled", label: "Cancelados" },
+  { key: '', label: 'Todos' },
+  { key: 'active', label: 'Activos' },
+  { key: 'suspended', label: 'Suspendidos' },
+  { key: 'pending', label: 'Pendientes' },
+  { key: 'cancelled', label: 'Cancelados' },
 ];
 
 export default function TenantsTable() {
@@ -35,8 +35,8 @@ export default function TenantsTable() {
   const [tenants, setTenants] = useState([]);
   const [meta, setMeta] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState("");
-  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState('');
+  const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const debounceRef = useRef(null);
 
@@ -44,10 +44,10 @@ export default function TenantsTable() {
     setLoading(true);
     try {
       const qp = new URLSearchParams();
-      if (params.status) qp.set("status", params.status);
-      if (params.search) qp.set("search", params.search);
-      qp.set("page", String(params.page || 1));
-      qp.set("per_page", "15");
+      if (params.status) qp.set('status', params.status);
+      if (params.search) qp.set('search', params.search);
+      qp.set('page', String(params.page || 1));
+      qp.set('per_page', '15');
 
       const res = await fetchSuperadmin(`/tenants?${qp.toString()}`);
       const json = await res.json();
@@ -83,8 +83,13 @@ export default function TenantsTable() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-lg font-semibold">Tenants</h1>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => fetchTenants({ status, search, page })} disabled={loading}>
-            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => fetchTenants({ status, search, page })}
+            disabled={loading}
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             Actualizar
           </Button>
           <Button asChild size="sm">
@@ -99,7 +104,7 @@ export default function TenantsTable() {
       <FilterTabs tabs={STATUS_TABS} activeKey={status} onChange={handleStatusChange} />
 
       <div className="relative max-w-xs">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
         <Input
           placeholder="Buscar por nombre o subdominio..."
           value={search}
@@ -125,11 +130,21 @@ export default function TenantsTable() {
               {loading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
-                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                    <TableCell className="hidden sm:table-cell"><Skeleton className="h-4 w-20" /></TableCell>
-                    <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-14" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-16" /></TableCell>
-                    <TableCell className="hidden lg:table-cell"><Skeleton className="h-4 w-16" /></TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-32" />
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      <Skeleton className="h-4 w-20" />
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      <Skeleton className="h-4 w-14" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-5 w-16" />
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      <Skeleton className="h-4 w-16" />
+                    </TableCell>
                     <TableCell />
                   </TableRow>
                 ))
@@ -152,19 +167,19 @@ export default function TenantsTable() {
                     onClick={() => router.push(`/superadmin/tenants/${t.id}`)}
                   >
                     <TableCell className="font-medium">{t.name}</TableCell>
-                    <TableCell className="hidden sm:table-cell text-muted-foreground">
+                    <TableCell className="text-muted-foreground hidden sm:table-cell">
                       {t.subdomain}
                     </TableCell>
-                    <TableCell className="hidden md:table-cell text-muted-foreground capitalize">
-                      {t.plan || "-"}
+                    <TableCell className="text-muted-foreground hidden capitalize md:table-cell">
+                      {t.plan || '-'}
                     </TableCell>
                     <TableCell>
                       <StatusBadge status={t.status} />
                     </TableCell>
-                    <TableCell className="hidden lg:table-cell text-muted-foreground text-sm">
-                      {formatRelative(t.last_activity_at) || "-"}
+                    <TableCell className="text-muted-foreground hidden text-sm lg:table-cell">
+                      {formatRelative(t.last_activity_at) || '-'}
                     </TableCell>
-                    <TableCell className="w-8 text-muted-foreground">
+                    <TableCell className="text-muted-foreground w-8">
                       <ChevronRight className="h-4 w-4" />
                     </TableCell>
                   </TableRow>
@@ -177,7 +192,7 @@ export default function TenantsTable() {
 
       {meta && meta.last_page > 1 && (
         <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">
+          <span className="text-muted-foreground text-sm">
             Página {meta.current_page} de {meta.last_page} ({meta.total} tenants)
           </span>
           <div className="flex gap-1">

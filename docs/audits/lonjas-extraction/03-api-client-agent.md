@@ -1,4 +1,5 @@
 # Auditoría: API Client Agent
+
 # Bloque: MarketDataExtractor — Extracción de datos de documentos de lonjas
 
 **Fecha:** 2026-04-26
@@ -9,13 +10,13 @@
 
 ## 1. Archivos inspeccionados
 
-| Archivo | Propósito |
-|---|---|
-| `src/services/azure/index.js` | Servicio principal de extracción Azure Document AI |
-| `src/components/Admin/MarketDataExtractor/shared/DocumentProcessor.js` | Orquestador — consumidor del servicio Azure |
-| `src/components/Admin/MarketDataExtractor/AlbaranCofraWeb/ExportModal/index.js` | Consumidor de `linkService` y `excelGenerator` |
-| `src/services/export/linkService.js` | Servicio de vinculación de compras con API interna |
-| `src/lib/fetchWithTenant.js` | Capa HTTP centralizada |
+| Archivo                                                                         | Propósito                                          |
+| ------------------------------------------------------------------------------- | -------------------------------------------------- |
+| `src/services/azure/index.js`                                                   | Servicio principal de extracción Azure Document AI |
+| `src/components/Admin/MarketDataExtractor/shared/DocumentProcessor.js`          | Orquestador — consumidor del servicio Azure        |
+| `src/components/Admin/MarketDataExtractor/AlbaranCofraWeb/ExportModal/index.js` | Consumidor de `linkService` y `excelGenerator`     |
+| `src/services/export/linkService.js`                                            | Servicio de vinculación de compras con API interna |
+| `src/lib/fetchWithTenant.js`                                                    | Capa HTTP centralizada                             |
 
 ---
 
@@ -29,6 +30,7 @@ GET  {OPERATION_LOCATION}   (polling — URL devuelta por Azure en Operation-Loc
 ```
 
 **Modelos por tipo de documento:**
+
 - `ASOC`: `NEXT_PUBLIC_AZURE_DOCUMENT_AI_LISTADO_COMPRAS_ASOC_ARMADORES_PUNTA_DEL_MORAL_MODEL_ID`
 - `Cofra`: `NEXT_PUBLIC_AZURE_DOCUMENT_AI_ALBARAN_COFRADIA_PESCADORES_SANTO_CRISTO_DEL_MAR_MODEL_ID`
 - `LonjaDeIsla`: `NEXT_PUBLIC_AZURE_DOCUMENT_AI_LISTADO_COMPRAS_LONJA_DE_ISLA_MODEL_ID`
@@ -73,8 +75,8 @@ GET  {OPERATION_LOCATION}   (polling — URL devuelta por Azure en Operation-Loc
 ### 4.1 Respuesta inicial de Azure
 
 ```javascript
-response.headers.get('Operation-Location')  // URL para polling
-response.ok                                  // boolean
+response.headers.get('Operation-Location'); // URL para polling
+response.ok; // boolean
 ```
 
 ### 4.2 Respuesta de polling
@@ -97,7 +99,7 @@ El resultado se pasa directamente a `parseAzureDocumentAIResult()` — se asume 
 ```javascript
 // azure/index.js:56-58
 if (!response.ok) {
-    throw new Error(`Error Azure inicial: ${response.statusText}`);
+  throw new Error(`Error Azure inicial: ${response.statusText}`);
 }
 ```
 
@@ -106,7 +108,7 @@ if (!response.ok) {
 ```javascript
 // azure/index.js:101-102
 if (!resultResponse.ok) {
-    throw new Error(`Error Azure resultado: ${resultResponse.statusText}`);
+  throw new Error(`Error Azure resultado: ${resultResponse.statusText}`);
 }
 ```
 
@@ -186,12 +188,12 @@ La API de Azure usa `Ocp-Apim-Subscription-Key`, no `Bearer`. Esto es correcto p
 
 ## 7. Resumen de endpoints y riesgos
 
-| Endpoint | Tipo | Auth | Riesgo |
-|---|---|---|---|
-| Azure Document AI analyze | Externo (POST) | `Ocp-Apim-Subscription-Key` expuesta en cliente | **CRÍTICO** |
-| Azure Document AI polling | Externo (GET) | `Ocp-Apim-Subscription-Key` expuesta en cliente | **CRÍTICO** |
-| `validatePurchases()` | Interno API Laravel | Bearer token (inferido) | Info |
-| `linkAllPurchases()` | Interno API Laravel | Bearer token (inferido) | Info |
+| Endpoint                  | Tipo                | Auth                                            | Riesgo      |
+| ------------------------- | ------------------- | ----------------------------------------------- | ----------- |
+| Azure Document AI analyze | Externo (POST)      | `Ocp-Apim-Subscription-Key` expuesta en cliente | **CRÍTICO** |
+| Azure Document AI polling | Externo (GET)       | `Ocp-Apim-Subscription-Key` expuesta en cliente | **CRÍTICO** |
+| `validatePurchases()`     | Interno API Laravel | Bearer token (inferido)                         | Info        |
+| `linkAllPurchases()`      | Interno API Laravel | Bearer token (inferido)                         | Info        |
 
 ---
 

@@ -65,10 +65,7 @@ export const myEntityService = {
     queryParams.set('page', String(page));
     queryParams.set('per_page', String(perPage));
     addFiltersToParams(queryParams, filters);
-    return fetchEntitiesGeneric(
-      `${API_URL_V2}${ENDPOINT}?${queryParams.toString()}`,
-      token
-    );
+    return fetchEntitiesGeneric(`${API_URL_V2}${ENDPOINT}?${queryParams.toString()}`, token);
   },
 
   /**
@@ -129,11 +126,7 @@ export const myEntityService = {
    */
   async performAction(id: number | string, action: string, data: Record<string, unknown> = {}) {
     const token = await getAuthToken();
-    return performActionGeneric(
-      `${API_URL_V2}${ENDPOINT}/${id}/${action}`,
-      data,
-      token
-    );
+    return performActionGeneric(`${API_URL_V2}${ENDPOINT}/${id}/${action}`, data, token);
   },
 
   /**
@@ -141,11 +134,7 @@ export const myEntityService = {
    */
   async downloadReport(id: number | string, fileName: string) {
     const token = await getAuthToken();
-    return downloadFileGeneric(
-      `${API_URL_V2}${ENDPOINT}/${id}/report`,
-      token,
-      fileName
-    );
+    return downloadFileGeneric(`${API_URL_V2}${ENDPOINT}/${id}/report`, token, fileName);
   },
 };
 ```
@@ -204,15 +193,16 @@ const serviceMap = {
 
 Todo service de dominio debe exponer estos 5 métodos:
 
-| Método | HTTP | Endpoint |
-|---|---|---|
-| `list(filters, pagination)` | GET | `/${ENDPOINT}?page=X&per_page=Y&...` |
-| `getById(id)` | GET | `/${ENDPOINT}/${id}` |
-| `create(data)` | POST | `/${ENDPOINT}` |
-| `update(id, data)` | PUT/PATCH | `/${ENDPOINT}/${id}` |
-| `delete(id)` | DELETE | `/${ENDPOINT}/${id}` |
+| Método                      | HTTP      | Endpoint                             |
+| --------------------------- | --------- | ------------------------------------ |
+| `list(filters, pagination)` | GET       | `/${ENDPOINT}?page=X&per_page=Y&...` |
+| `getById(id)`               | GET       | `/${ENDPOINT}/${id}`                 |
+| `create(data)`              | POST      | `/${ENDPOINT}`                       |
+| `update(id, data)`          | PUT/PATCH | `/${ENDPOINT}/${id}`                 |
+| `delete(id)`                | DELETE    | `/${ENDPOINT}/${id}`                 |
 
 Y este método opcional muy recomendado:
+
 - `getOptions()` → GET `/${ENDPOINT}/options` (para selects/combobox)
 
 ---

@@ -22,12 +22,14 @@ POST /api/v2/login
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Content-Type: application/json
 ```
 
 #### Request Body
+
 ```json
 {
   "email": "usuario@example.com",
@@ -36,9 +38,10 @@ Content-Type: application/json
 ```
 
 #### Campos Requeridos
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| email | string | Email del usuario |
+
+| Campo    | Tipo   | Descripción            |
+| -------- | ------ | ---------------------- |
+| email    | string | Email del usuario      |
 | password | string | Contraseña del usuario |
 
 ### Response Exitosa (200)
@@ -91,6 +94,7 @@ Content-Type: application/json
 ```
 
 ### Rate Limiting
+
 Esta ruta está protegida con rate limiting: máximo 5 intentos por minuto.
 
 ---
@@ -106,6 +110,7 @@ POST /api/v2/logout
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -141,6 +146,7 @@ GET /api/v2/me
 ```
 
 #### Headers
+
 ```http
 X-Tenant: {subdomain}
 Authorization: Bearer {access_token}
@@ -186,6 +192,7 @@ GET /api/v2/public/tenant/{subdomain}
 ```
 
 #### Headers
+
 ```http
 Content-Type: application/json
 ```
@@ -194,8 +201,8 @@ Content-Type: application/json
 
 #### Path Parameters
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
+| Parámetro | Tipo   | Descripción           |
+| --------- | ------ | --------------------- |
 | subdomain | string | Subdominio del tenant |
 
 ### Response Exitosa (200)
@@ -235,4 +242,3 @@ Cuando el subdominio contiene caracteres no permitidos (espacios, `@`, etc.):
 ### Rate Limiting
 
 Este endpoint tiene un límite de **60 peticiones por minuto**. En caso de superarlo, la API devuelve **429 Too Many Requests**.
-

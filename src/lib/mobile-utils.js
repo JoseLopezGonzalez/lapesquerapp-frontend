@@ -1,9 +1,9 @@
 /**
  * Mobile Utils - Utilidades para accesibilidad mobile
- * 
+ *
  * Utilidades para manejar safe areas, scroll on focus y otras funcionalidades
  * críticas para la experiencia mobile.
- * 
+ *
  * Referencia: docs/mobile-adaptation/00-PLAN-GENERAL.md
  */
 
@@ -13,7 +13,7 @@
 
 /**
  * Obtener clases de safe area para iOS
- * 
+ *
  * @param {object} options - Opciones de safe area
  * @param {boolean} options.bottom - Añadir padding bottom con safe area
  * @param {boolean} options.top - Añadir padding top con safe area
@@ -22,26 +22,26 @@
  */
 export function getSafeAreaClasses({ bottom = false, top = false, withBottomNav = false } = {}) {
   const classes = [];
-  
+
   if (bottom) {
     classes.push('pb-[env(safe-area-inset-bottom)]');
   }
-  
+
   if (top) {
     classes.push('pt-[env(safe-area-inset-top)]');
   }
-  
+
   if (withBottomNav) {
     // 56px (h-14) + safe area
     classes.push('pb-[calc(3.5rem+env(safe-area-inset-bottom))]');
   }
-  
+
   return classes.join(' ');
 }
 
 /**
  * Hook para obtener valores de safe area (solo en cliente)
- * 
+ *
  * @returns {{ bottom: number, top: number, left: number, right: number } | null}
  */
 export function useSafeAreaInsets() {
@@ -54,7 +54,7 @@ export function useSafeAreaInsets() {
   // En la mayoría de casos, usa las clases CSS directamente
   return {
     bottom: 0, // Usar CSS env(safe-area-inset-bottom) en su lugar
-    top: 0,    // Usar CSS env(safe-area-inset-top) en su lugar
+    top: 0, // Usar CSS env(safe-area-inset-top) en su lugar
     left: 0,
     right: 0,
   };
@@ -67,7 +67,7 @@ export function useSafeAreaInsets() {
 /**
  * Manejar scroll automático cuando un input recibe focus
  * Útil para evitar que el teclado virtual tape inputs en mobile
- * 
+ *
  * @param {HTMLElement} element - Elemento que recibió focus
  * @param {object} options - Opciones de scroll
  * @param {number} options.delay - Delay antes de hacer scroll (ms) - default 300
@@ -78,12 +78,7 @@ export function useSafeAreaInsets() {
 export function scrollIntoViewOnFocus(element, options = {}) {
   if (!element || typeof window === 'undefined') return;
 
-  const {
-    delay = 300,
-    behavior = 'smooth',
-    block = 'center',
-    inline = 'nearest',
-  } = options;
+  const { delay = 300, behavior = 'smooth', block = 'center', inline = 'nearest' } = options;
 
   setTimeout(() => {
     element.scrollIntoView({
@@ -99,13 +94,13 @@ import * as React from 'react';
 
 /**
  * Hook para añadir scroll on focus a un input
- * 
+ *
  * @param {object} options - Opciones de scroll
  * @returns {function} Handler para onFocus
- * 
+ *
  * @example
  * const handleFocus = useScrollOnFocus({ delay: 300 });
- * 
+ *
  * <input onFocus={(e) => handleFocus(e.target)} />
  */
 export function useScrollOnFocus(options = {}) {
@@ -123,7 +118,7 @@ export function useScrollOnFocus(options = {}) {
 
 /**
  * Verificar si un elemento cumple con el tamaño mínimo de touch target (44x44px)
- * 
+ *
  * @param {HTMLElement} element - Elemento a verificar
  * @returns {boolean} true si cumple con el tamaño mínimo
  */
@@ -132,13 +127,13 @@ export function isValidTouchTarget(element) {
 
   const rect = element.getBoundingClientRect();
   const minSize = 44; // Apple HIG minimum
-  
+
   return rect.width >= minSize && rect.height >= minSize;
 }
 
 /**
  * Obtener clases para asegurar tamaño mínimo de touch target
- * 
+ *
  * @returns {string} Clases Tailwind
  */
 export function getMinTouchTargetClasses() {
@@ -152,7 +147,7 @@ export function getMinTouchTargetClasses() {
 /**
  * Detectar si el teclado virtual está visible (aproximación)
  * No es 100% preciso, pero útil para algunos casos
- * 
+ *
  * @returns {boolean} true si probablemente el teclado está visible
  */
 export function isKeyboardVisible() {
@@ -162,14 +157,14 @@ export function isKeyboardVisible() {
   const heightDifference = window.visualViewport
     ? window.screen.height - window.visualViewport.height
     : 0;
-  
+
   // Si la diferencia es significativa (>150px), probablemente hay teclado
   return heightDifference > 150;
 }
 
 /**
  * Hook para detectar visibilidad del teclado
- * 
+ *
  * @returns {boolean} true si el teclado probablemente está visible
  */
 export function useKeyboardVisible() {
@@ -195,4 +190,3 @@ export function useKeyboardVisible() {
 
   return isVisible;
 }
-

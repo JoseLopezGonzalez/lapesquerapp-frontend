@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState, useCallback, useRef } from "react";
-import { fetchSuperadmin, SuperadminApiError } from "@/lib/superadminApi";
-import { notify } from "@/lib/notifications";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { fetchSuperadmin, SuperadminApiError } from '@/lib/superadminApi';
+import { notify } from '@/lib/notifications';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+} from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   Table,
   TableBody,
@@ -23,20 +23,27 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { ChevronLeft, ChevronRight, Loader2, Zap, RefreshCw, History } from "lucide-react";
-import EmptyState from "@/components/Superadmin/EmptyState";
-import Link from "next/link";
-import { formatDateTime } from "@/utils/superadminDateUtils";
+} from '@/components/ui/table';
+import { ChevronLeft, ChevronRight, Loader2, Zap, RefreshCw, History } from 'lucide-react';
+import EmptyState from '@/components/Superadmin/EmptyState';
+import Link from 'next/link';
+import { formatDateTime } from '@/utils/superadminDateUtils';
 
 function ModeBadge({ mode }) {
-  if (mode === "silent") return (
-    <Badge variant="outline" className="border-orange-500/30 bg-orange-500/10 text-orange-700 dark:text-orange-400">
-      Silencioso
-    </Badge>
-  );
+  if (mode === 'silent')
+    return (
+      <Badge
+        variant="outline"
+        className="border-orange-500/30 bg-orange-500/10 text-orange-700 dark:text-orange-400"
+      >
+        Silencioso
+      </Badge>
+    );
   return (
-    <Badge variant="outline" className="border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-400">
+    <Badge
+      variant="outline"
+      className="border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-400"
+    >
       Consentido
     </Badge>
   );
@@ -49,24 +56,28 @@ function ActiveSessions() {
 
   const fetchActive = useCallback(async () => {
     try {
-      const res = await fetchSuperadmin("/impersonation/active");
+      const res = await fetchSuperadmin('/impersonation/active');
       const json = await res.json();
       setSessions(json.data || []);
-    } catch { /* silent */ } finally {
+    } catch {
+      /* silent */
+    } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => { fetchActive(); }, [fetchActive]);
+  useEffect(() => {
+    fetchActive();
+  }, [fetchActive]);
 
   const handleEnd = async (logId) => {
     setEndingId(logId);
     try {
-      await fetchSuperadmin(`/impersonation/logs/${logId}/end`, { method: "POST" });
-      notify.success({ title: "Sesión terminada" });
+      await fetchSuperadmin(`/impersonation/logs/${logId}/end`, { method: 'POST' });
+      notify.success({ title: 'Sesión terminada' });
       fetchActive();
     } catch (err) {
-      notify.error({ title: err.message || "Error al terminar la sesión" });
+      notify.error({ title: err.message || 'Error al terminar la sesión' });
     } finally {
       setEndingId(null);
     }
@@ -78,9 +89,17 @@ function ActiveSessions() {
   return (
     <Alert className="border-orange-500/40 bg-orange-50 dark:bg-orange-950/20">
       <Zap className="h-4 w-4 text-orange-500" />
-      <AlertTitle className="text-orange-700 dark:text-orange-400 flex items-center justify-between gap-2">
-        <span>{sessions.length} sesión{sessions.length !== 1 ? "es" : ""} activa{sessions.length !== 1 ? "s" : ""}</span>
-        <Button variant="ghost" size="sm" onClick={fetchActive} className="text-orange-700 dark:text-orange-400 h-8">
+      <AlertTitle className="flex items-center justify-between gap-2 text-orange-700 dark:text-orange-400">
+        <span>
+          {sessions.length} sesión{sessions.length !== 1 ? 'es' : ''} activa
+          {sessions.length !== 1 ? 's' : ''}
+        </span>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={fetchActive}
+          className="h-8 text-orange-700 dark:text-orange-400"
+        >
           <RefreshCw className="h-3.5 w-3.5" />
           Actualizar
         </Button>
@@ -88,15 +107,24 @@ function ActiveSessions() {
       <AlertDescription>
         <div className="mt-2 space-y-2">
           {sessions.map((s) => (
-            <div key={s.id} className="flex items-center justify-between rounded-md border bg-background px-3 py-2">
+            <div
+              key={s.id}
+              className="bg-background flex items-center justify-between rounded-md border px-3 py-2"
+            >
               <div className="text-sm">
                 <span className="font-medium">{s.superadmin}</span>
-                {" en "}
-                <Link href={`/superadmin/tenants/${s.tenant_id}`} className="text-primary hover:underline">
+                {' en '}
+                <Link
+                  href={`/superadmin/tenants/${s.tenant_id}`}
+                  className="text-primary hover:underline"
+                >
                   {s.tenant}
                 </Link>
-                {" — usuario ID "}{s.target_user_id}
-                {s.reason && <span className="ml-2 text-muted-foreground text-xs">({s.reason})</span>}
+                {' — usuario ID '}
+                {s.target_user_id}
+                {s.reason && (
+                  <span className="text-muted-foreground ml-2 text-xs">({s.reason})</span>
+                )}
               </div>
               <Button
                 size="sm"
@@ -104,7 +132,7 @@ function ActiveSessions() {
                 onClick={() => handleEnd(s.id)}
                 disabled={endingId === s.id}
               >
-                {endingId === s.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Terminar"}
+                {endingId === s.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Terminar'}
               </Button>
             </div>
           ))}
@@ -119,8 +147,8 @@ function HistoryTable() {
   const [meta, setMeta] = useState(null);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [tenantFilter, setTenantFilter] = useState("");
-  const [fromFilter, setFromFilter] = useState("");
+  const [tenantFilter, setTenantFilter] = useState('');
+  const [fromFilter, setFromFilter] = useState('');
   const [tenantOptions, setTenantOptions] = useState([]);
   const [tenantsLoading, setTenantsLoading] = useState(true);
   const debounceRef = useRef(null);
@@ -128,30 +156,38 @@ function HistoryTable() {
   const fetchTenants = useCallback(async () => {
     setTenantsLoading(true);
     try {
-      const res = await fetchSuperadmin("/tenants?per_page=500");
+      const res = await fetchSuperadmin('/tenants?per_page=500');
       const json = await res.json();
       const list = json.data || [];
-      setTenantOptions(list.map((t) => ({ value: String(t.id), label: `${t.name} (${t.subdomain})` })));
-    } catch { setTenantOptions([]); } finally {
+      setTenantOptions(
+        list.map((t) => ({ value: String(t.id), label: `${t.name} (${t.subdomain})` }))
+      );
+    } catch {
+      setTenantOptions([]);
+    } finally {
       setTenantsLoading(false);
     }
   }, []);
 
-  useEffect(() => { fetchTenants(); }, [fetchTenants]);
+  useEffect(() => {
+    fetchTenants();
+  }, [fetchTenants]);
 
   const fetchLogs = useCallback(async (params = {}) => {
     setLoading(true);
     try {
       const qp = new URLSearchParams();
-      qp.set("page", String(params.page || 1));
-      qp.set("per_page", "20");
-      if (params.tenant_id && params.tenant_id !== "") qp.set("tenant_id", params.tenant_id);
-      if (params.from) qp.set("from", params.from);
+      qp.set('page', String(params.page || 1));
+      qp.set('per_page', '20');
+      if (params.tenant_id && params.tenant_id !== '') qp.set('tenant_id', params.tenant_id);
+      if (params.from) qp.set('from', params.from);
       const res = await fetchSuperadmin(`/impersonation/logs?${qp}`);
       const json = await res.json();
       setLogs(json.data || []);
       setMeta(json.meta || null);
-    } catch { setLogs([]); } finally {
+    } catch {
+      setLogs([]);
+    } finally {
       setLoading(false);
     }
   }, []);
@@ -175,10 +211,10 @@ function HistoryTable() {
         <CardTitle className="text-sm">Historial de impersonaciones</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex flex-wrap gap-3 items-center">
+        <div className="flex flex-wrap items-center gap-3">
           <Select
-            value={tenantFilter || "all"}
-            onValueChange={(v) => setTenantFilter(v === "all" ? "" : v)}
+            value={tenantFilter || 'all'}
+            onValueChange={(v) => setTenantFilter(v === 'all' ? '' : v)}
             disabled={tenantsLoading}
           >
             <SelectTrigger className="w-[220px]">
@@ -199,7 +235,15 @@ function HistoryTable() {
             onChange={(e) => setFromFilter(e.target.value)}
             className="max-w-[220px]"
           />
-          <Button variant="ghost" size="sm" onClick={() => { setTenantFilter(""); setFromFilter(""); setPage(1); }}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setTenantFilter('');
+              setFromFilter('');
+              setPage(1);
+            }}
+          >
             Limpiar
           </Button>
         </div>
@@ -222,7 +266,9 @@ function HistoryTable() {
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
                     {Array.from({ length: 7 }).map((__, j) => (
-                      <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
+                      <TableCell key={j}>
+                        <Skeleton className="h-4 w-full" />
+                      </TableCell>
                     ))}
                   </TableRow>
                 ))
@@ -240,24 +286,36 @@ function HistoryTable() {
               ) : (
                 logs.map((log) => (
                   <TableRow key={log.id}>
-                    <TableCell className="text-sm whitespace-nowrap">{formatDateTime(log.started_at)}</TableCell>
-                    <TableCell className="hidden sm:table-cell text-sm">{log.superadmin}</TableCell>
+                    <TableCell className="text-sm whitespace-nowrap">
+                      {formatDateTime(log.started_at)}
+                    </TableCell>
+                    <TableCell className="hidden text-sm sm:table-cell">{log.superadmin}</TableCell>
                     <TableCell>
-                      <Link href={`/superadmin/tenants/${log.tenant_id}`} className="text-primary hover:underline text-sm">
+                      <Link
+                        href={`/superadmin/tenants/${log.tenant_id}`}
+                        className="text-primary text-sm hover:underline"
+                      >
                         {log.tenant}
                       </Link>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
                       <ModeBadge mode={log.mode} />
                     </TableCell>
-                    <TableCell className="hidden lg:table-cell text-sm max-w-[200px] truncate" title={log.reason || ""}>
-                      {log.reason || "-"}
+                    <TableCell
+                      className="hidden max-w-[200px] truncate text-sm lg:table-cell"
+                      title={log.reason || ''}
+                    >
+                      {log.reason || '-'}
                     </TableCell>
-                    <TableCell className="hidden lg:table-cell text-sm text-muted-foreground whitespace-nowrap">
-                      {log.ended_at ? formatDateTime(log.ended_at) : <span className="text-orange-500">Activa</span>}
+                    <TableCell className="text-muted-foreground hidden text-sm whitespace-nowrap lg:table-cell">
+                      {log.ended_at ? (
+                        formatDateTime(log.ended_at)
+                      ) : (
+                        <span className="text-orange-500">Activa</span>
+                      )}
                     </TableCell>
-                    <TableCell className="hidden xl:table-cell text-sm text-muted-foreground whitespace-nowrap">
-                      {log.duration_minutes != null ? `${log.duration_minutes}m` : "-"}
+                    <TableCell className="text-muted-foreground hidden text-sm whitespace-nowrap xl:table-cell">
+                      {log.duration_minutes != null ? `${log.duration_minutes}m` : '-'}
                     </TableCell>
                   </TableRow>
                 ))
@@ -268,14 +326,24 @@ function HistoryTable() {
 
         {meta && meta.last_page > 1 && (
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">
+            <span className="text-muted-foreground text-sm">
               Página {meta.current_page} de {meta.last_page} ({meta.total} registros)
             </span>
             <div className="flex gap-1">
-              <Button variant="outline" size="icon-sm" disabled={meta.current_page <= 1} onClick={() => setPage(meta.current_page - 1)}>
+              <Button
+                variant="outline"
+                size="icon-sm"
+                disabled={meta.current_page <= 1}
+                onClick={() => setPage(meta.current_page - 1)}
+              >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="icon-sm" disabled={meta.current_page >= meta.last_page} onClick={() => setPage(meta.current_page + 1)}>
+              <Button
+                variant="outline"
+                size="icon-sm"
+                disabled={meta.current_page >= meta.last_page}
+                onClick={() => setPage(meta.current_page + 1)}
+              >
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>

@@ -177,4 +177,3 @@ if (tempContainer && document.body.contains(tempContainer)) {
 4. **Documentar** en guías internas:
    - Evitar `removeChild` sin comprobación previa en callbacks asíncronos.
    - Preferir limpieza defensiva cuando se tocan nodos del DOM fuera del ciclo normal de React.
-

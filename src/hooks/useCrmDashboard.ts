@@ -40,7 +40,8 @@ export function useCrmDashboard() {
             remindersToday: pendingActionsQuery.data?.data?.counters?.remindersToday ?? 0,
             overdueActions: pendingActionsQuery.data?.data?.counters?.overdueActions ?? 0,
             inactiveCustomers: customersQuery.data?.data?.counters?.inactiveCustomers ?? 0,
-            prospectsWithoutActivity: prospectsQuery.data?.data?.counters?.prospectsWithoutActivity ?? 0,
+            prospectsWithoutActivity:
+              prospectsQuery.data?.data?.counters?.prospectsWithoutActivity ?? 0,
           },
         }
       : null;
@@ -51,9 +52,14 @@ export function useCrmDashboard() {
     prospectsQuery.error?.message ??
     null;
 
-  const isLoading = pendingActionsQuery.isLoading || customersQuery.isLoading || prospectsQuery.isLoading;
+  const isLoading =
+    pendingActionsQuery.isLoading || customersQuery.isLoading || prospectsQuery.isLoading;
   const refetch = async () => {
-    await Promise.all([pendingActionsQuery.refetch(), customersQuery.refetch(), prospectsQuery.refetch()]);
+    await Promise.all([
+      pendingActionsQuery.refetch(),
+      customersQuery.refetch(),
+      prospectsQuery.refetch(),
+    ]);
   };
 
   return {

@@ -11,13 +11,13 @@ Este documento unifica todos los TODOs de los documentos de arquitectura en un s
 
 ## 📊 Resumen de Progreso
 
-| Fase | Estado | Progreso |
-|------|--------|----------|
-| **Fase 1: Preparación** | ✅ Completada | 100% |
-| **Fase 2: Base de Servicios Genéricos** | ✅ Completada | 100% |
-| **Fase 3: Servicios de Dominio** | ✅ Completada | 100% (18 servicios) |
-| **Fase 4: Migración de Componentes** | ✅ Completada | 100% (3 componentes) |
-| **Fase 5: Validación y Testing** | ✅ Completada | 100% |
+| Fase                                    | Estado        | Progreso             |
+| --------------------------------------- | ------------- | -------------------- |
+| **Fase 1: Preparación**                 | ✅ Completada | 100%                 |
+| **Fase 2: Base de Servicios Genéricos** | ✅ Completada | 100%                 |
+| **Fase 3: Servicios de Dominio**        | ✅ Completada | 100% (18 servicios)  |
+| **Fase 4: Migración de Componentes**    | ✅ Completada | 100% (3 componentes) |
+| **Fase 5: Validación y Testing**        | ✅ Completada | 100%                 |
 
 **🎉 Todas las fases de refactorización completadas. Ver PROXIMOS-PASOS.md para continuar.**
 
@@ -66,9 +66,10 @@ Este documento unifica todos los TODOs de los documentos de arquitectura en un s
 #### ✅ Prioridad Media - Servicios existentes a refactorizar - COMPLETADO
 
 Todos los servicios de prioridad media ya han sido refactorizados:
-  - Ubicación anterior: `/src/services/productCategoryService.js` (mantener temporalmente para compatibilidad)
-  - Ubicación nueva: `/src/services/domain/product-categories/productCategoryService.js`
-  - Estado: ✅ Refactorizado y listo para usar. Funciones de compatibilidad mantenidas temporalmente.
+
+- Ubicación anterior: `/src/services/productCategoryService.js` (mantener temporalmente para compatibilidad)
+- Ubicación nueva: `/src/services/domain/product-categories/productCategoryService.js`
+- Estado: ✅ Refactorizado y listo para usar. Funciones de compatibilidad mantenidas temporalmente.
 
 - [x] **`productFamilyService.js`** → Refactorizado para usar genéricos ✅ COMPLETADO
   - Ubicación anterior: `/src/services/productFamilyService.js` (mantener temporalmente para compatibilidad)
@@ -294,4 +295,3 @@ Los servicios genéricos originales (`/services/entityService.js`, `/services/cr
 ---
 
 **Actualizar este documento:** Cada vez que se complete una tarea, marcarla como completada `[x]` y actualizar la fecha de "Última actualización".
-

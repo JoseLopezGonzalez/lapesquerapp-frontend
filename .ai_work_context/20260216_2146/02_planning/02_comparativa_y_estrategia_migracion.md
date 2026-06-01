@@ -21,6 +21,7 @@
 - **Opciones por toast**: `position` (y las que exponga la API; la doc muestra objeto con `title` y opcionalmente `description`).
 
 Inferido (por documentación y uso típico):
+
 - No se menciona `dismiss(id)` explícitamente; en librerías tipo promise-toast el “dismiss” suele ser implícito al resolver/rechazar.
 - API orientada a objeto: `sileo.success({ title: "Saved" })` más que `sileo.success("Saved")`.
 
@@ -28,16 +29,16 @@ Inferido (por documentación y uso típico):
 
 ## 2. Comparativa conceptual
 
-| Aspecto | react-hot-toast | Sileo |
-|--------|------------------|--------|
-| API estilo | `toast.success(msg, options)` / `toast(msg, options)` | `sileo.success({ title, description?, ... })` |
-| Contenido | String o ReactNode (JSX) | Objeto con `title` (y opcional `description`) |
-| Loading | `toast.loading(msg, opts)` → devuelve id; luego `toast.success(msg, { id })` / `toast.error(msg, { id })` | Promise toast: una llamada con promesa; loading/success/error automáticos |
-| Dismiss | `toast.dismiss(id)` | No documentado explícitamente; en flujo promise no suele hacer falta |
-| Tipos | success, error, loading, custom, promise | success, error, warning, info, action, promise |
-| Tema/estilo | Manual (style, className); en proyecto vía getToastTheme() | “Beautiful by default”; tema/clase no detallado en doc |
-| Posición | Opciones en Toaster/toast | top/bottom × left/center/right |
-| Duración | duration en options | No especificada en doc (asumir default o revisar API real) |
+| Aspecto     | react-hot-toast                                                                                           | Sileo                                                                     |
+| ----------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| API estilo  | `toast.success(msg, options)` / `toast(msg, options)`                                                     | `sileo.success({ title, description?, ... })`                             |
+| Contenido   | String o ReactNode (JSX)                                                                                  | Objeto con `title` (y opcional `description`)                             |
+| Loading     | `toast.loading(msg, opts)` → devuelve id; luego `toast.success(msg, { id })` / `toast.error(msg, { id })` | Promise toast: una llamada con promesa; loading/success/error automáticos |
+| Dismiss     | `toast.dismiss(id)`                                                                                       | No documentado explícitamente; en flujo promise no suele hacer falta      |
+| Tipos       | success, error, loading, custom, promise                                                                  | success, error, warning, info, action, promise                            |
+| Tema/estilo | Manual (style, className); en proyecto vía getToastTheme()                                                | “Beautiful by default”; tema/clase no detallado en doc                    |
+| Posición    | Opciones en Toaster/toast                                                                                 | top/bottom × left/center/right                                            |
+| Duración    | duration en options                                                                                       | No especificada en doc (asumir default o revisar API real)                |
 
 ---
 
@@ -64,15 +65,15 @@ Inferido (por documentación y uso típico):
 
 ### 3.3 Mapeo detallado
 
-| Caso actual (hot-toast) | Acción en wrapper/Sileo |
-|--------------------------|--------------------------|
-| success / error / info (texto) | `notify.success(msg)` → `sileo.success({ title: msg })` (igual error, info, warning) |
-| toast con getToastTheme() | Wrapper aplica opciones globales (posición, duración); tema dark/light si Sileo lo permite; si no, estándar |
-| toast con duration custom (ej. 6000) | `notify.error(msg, { duration: 6000 })`; wrapper pasa duration a Sileo si está soportado |
+| Caso actual (hot-toast)                             | Acción en wrapper/Sileo                                                                                                                                                                                                                                     |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| success / error / info (texto)                      | `notify.success(msg)` → `sileo.success({ title: msg })` (igual error, info, warning)                                                                                                                                                                        |
+| toast con getToastTheme()                           | Wrapper aplica opciones globales (posición, duración); tema dark/light si Sileo lo permite; si no, estándar                                                                                                                                                 |
+| toast con duration custom (ej. 6000)                | `notify.error(msg, { duration: 6000 })`; wrapper pasa duration a Sileo si está soportado                                                                                                                                                                    |
 | toast.loading("...") luego success/error con { id } | Opción A: `notify.promise(promise, { loading: "...", success: "...", error: "..." })` donde sea posible. Opción B: `notify.loading("...")` que devuelva id y `notify.success(msg, { id })` / `notify.error(msg, { id })` si Sileo permite actualizar por id |
-| toast con JSX (iconos en loading) | Sileo suele usar title (string). Migrar a string descriptivo (ej. "Generando PDF...") y quitar iconos en toast; o usar description si la API lo permite |
-| toast.dismiss(id) | Implementar `notify.dismiss(id)` si Sileo lo tiene; si no, documentar y en useStoreDialogs valorar usar promise toast en su lugar |
-| toast.info | `notify.info(msg)` → `sileo.info({ title: msg })` |
+| toast con JSX (iconos en loading)                   | Sileo suele usar title (string). Migrar a string descriptivo (ej. "Generando PDF...") y quitar iconos en toast; o usar description si la API lo permite                                                                                                     |
+| toast.dismiss(id)                                   | Implementar `notify.dismiss(id)` si Sileo lo tiene; si no, documentar y en useStoreDialogs valorar usar promise toast en su lugar                                                                                                                           |
+| toast.info                                          | `notify.info(msg)` → `sileo.info({ title: msg })`                                                                                                                                                                                                           |
 
 ### 3.4 Async states
 

@@ -71,7 +71,10 @@ export function useAutoventa() {
   const addBox = useCallback((box) => {
     setState((s) => ({
       ...s,
-      boxes: [...(s.boxes || []), { ...box, productId: Number(box.productId), netWeight: Number(box.netWeight) || 0 }],
+      boxes: [
+        ...(s.boxes || []),
+        { ...box, productId: Number(box.productId), netWeight: Number(box.netWeight) || 0 },
+      ],
     }));
   }, []);
 
@@ -140,7 +143,10 @@ export function useAutoventa() {
     setState({ ...initialState, entryDate: today, loadDate: today });
   }, []);
 
-  const totalAmount = (state.items || []).reduce((sum, item) => sum + (Number(item.subtotal) || 0), 0);
+  const totalAmount = (state.items || []).reduce(
+    (sum, item) => sum + (Number(item.subtotal) || 0),
+    0
+  );
 
   return {
     state,

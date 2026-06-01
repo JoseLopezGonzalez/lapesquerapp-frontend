@@ -17,7 +17,8 @@ export const useSupplierOptions = () => {
   const [supplierOptions, setSupplierOptions] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const fromReceptions = receptionsOptions?.supplierOptions?.length > 0 || receptionsOptions?.suppliersLoading;
+  const fromReceptions =
+    receptionsOptions?.supplierOptions?.length > 0 || receptionsOptions?.suppliersLoading;
 
   useEffect(() => {
     if (fromReceptions && receptionsOptions.supplierOptions?.length > 0) {
@@ -37,12 +38,15 @@ export const useSupplierOptions = () => {
 
     getSupplierOptions(token)
       .then((suppliers) => setSupplierOptions(suppliers || []))
-      .catch(err => console.error('Error al cargar proveedores:', err))
+      .catch((err) => console.error('Error al cargar proveedores:', err))
       .finally(() => setLoading(false));
   }, [token, fromReceptions, receptionsOptions]);
 
   if (fromReceptions && receptionsOptions.supplierOptions?.length > 0) {
-    return { supplierOptions: receptionsOptions.supplierOptions, loading: receptionsOptions.suppliersLoading ?? false };
+    return {
+      supplierOptions: receptionsOptions.supplierOptions,
+      loading: receptionsOptions.suppliersLoading ?? false,
+    };
   }
 
   return { supplierOptions, loading };

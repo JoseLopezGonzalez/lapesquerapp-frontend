@@ -146,9 +146,7 @@ describe('orderService', () => {
     });
 
     it('rejects when token is not provided', async () => {
-      await expect(getActiveOrders()).rejects.toThrow(
-        'No se proporcionó token de autenticación'
-      );
+      await expect(getActiveOrders()).rejects.toThrow('No se proporcionó token de autenticación');
       expect(fetchWithTenant).not.toHaveBeenCalled();
     });
 
@@ -401,7 +399,6 @@ describe('orderService', () => {
       );
       expect(result).toEqual(products);
     });
-
   });
 
   describe('updateOrder', () => {
@@ -495,9 +492,7 @@ describe('orderService', () => {
       const { getSession } = await import('next-auth/react');
       vi.mocked(getSession).mockResolvedValueOnce(null);
 
-      await expect(createOrder({})).rejects.toThrow(
-        'No hay sesión autenticada'
-      );
+      await expect(createOrder({})).rejects.toThrow('No hay sesión autenticada');
       expect(fetchWithTenant).not.toHaveBeenCalled();
     });
   });

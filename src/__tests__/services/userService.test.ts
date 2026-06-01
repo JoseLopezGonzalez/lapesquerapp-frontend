@@ -20,7 +20,10 @@ vi.mock('@/services/generic/editEntityService', () => ({
 }));
 
 import { fetchEntitiesGeneric, deleteEntityGeneric } from '@/services/generic/entityService';
-import { fetchEntityDataGeneric, fetchAutocompleteOptionsGeneric } from '@/services/generic/editEntityService';
+import {
+  fetchEntityDataGeneric,
+  fetchAutocompleteOptionsGeneric,
+} from '@/services/generic/editEntityService';
 import { fetchWithTenant } from '@/lib/fetchWithTenant';
 
 describe('userService', () => {
@@ -40,7 +43,10 @@ describe('userService', () => {
   it('list calls fetchEntitiesGeneric', async () => {
     vi.mocked(fetchEntitiesGeneric).mockResolvedValueOnce(mockListResponse as never);
     const result = await userService.list({}, { page: 1, perPage: 12 });
-    expect(fetchEntitiesGeneric).toHaveBeenCalledWith(expect.stringContaining('/users'), 'test-token');
+    expect(fetchEntitiesGeneric).toHaveBeenCalledWith(
+      expect.stringContaining('/users'),
+      'test-token'
+    );
     expect(result.data).toHaveLength(1);
   });
 
@@ -48,7 +54,10 @@ describe('userService', () => {
     const user = { id: 1, name: 'Test', email: 'test@test.com' };
     vi.mocked(fetchEntityDataGeneric).mockResolvedValueOnce(user as never);
     const result = await userService.getById(1);
-    expect(fetchEntityDataGeneric).toHaveBeenCalledWith(expect.stringContaining('/users/1'), 'test-token');
+    expect(fetchEntityDataGeneric).toHaveBeenCalledWith(
+      expect.stringContaining('/users/1'),
+      'test-token'
+    );
     expect(result).toEqual(user);
   });
 
@@ -56,7 +65,10 @@ describe('userService', () => {
     const options = [{ value: 1, label: 'Admin' }];
     vi.mocked(fetchAutocompleteOptionsGeneric).mockResolvedValueOnce(options as never);
     const result = await userService.getOptions();
-    expect(fetchAutocompleteOptionsGeneric).toHaveBeenCalledWith(expect.stringContaining('/users/options'), 'test-token');
+    expect(fetchAutocompleteOptionsGeneric).toHaveBeenCalledWith(
+      expect.stringContaining('/users/options'),
+      'test-token'
+    );
     expect(result).toEqual(options);
   });
 
@@ -66,13 +78,23 @@ describe('userService', () => {
       json: async () => ({ message: 'Enviado' }),
     } as Response);
     const result = await userService.resendInvitation(5);
-    expect(fetchWithTenant).toHaveBeenCalledWith(expect.stringContaining('/users/5/resend-invitation'), expect.objectContaining({ method: 'POST' }));
+    expect(fetchWithTenant).toHaveBeenCalledWith(
+      expect.stringContaining('/users/5/resend-invitation'),
+      expect.objectContaining({ method: 'POST' })
+    );
     expect(result.message).toBe('Enviado');
   });
 
   it('delete calls deleteEntityGeneric', async () => {
-    vi.mocked(deleteEntityGeneric).mockResolvedValueOnce({ response: {} as Response, data: {} } as never);
+    vi.mocked(deleteEntityGeneric).mockResolvedValueOnce({
+      response: {} as Response,
+      data: {},
+    } as never);
     await userService.delete(1);
-    expect(deleteEntityGeneric).toHaveBeenCalledWith(expect.stringContaining('/users/1'), undefined, 'test-token');
+    expect(deleteEntityGeneric).toHaveBeenCalledWith(
+      expect.stringContaining('/users/1'),
+      undefined,
+      'test-token'
+    );
   });
 });

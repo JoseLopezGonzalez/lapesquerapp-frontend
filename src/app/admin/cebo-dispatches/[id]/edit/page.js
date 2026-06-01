@@ -16,8 +16,8 @@ export default function EditCeboDispatchPage() {
   };
 
   return (
-    <Card className="w-full h-full p-6">
-      <CardContent className="overflow-y-auto h-full">
+    <Card className="h-full w-full p-6">
+      <CardContent className="h-full overflow-y-auto">
         <EditCeboForm dispatchId={dispatchId} onSuccess={handleOnSuccess} />
       </CardContent>
     </Card>

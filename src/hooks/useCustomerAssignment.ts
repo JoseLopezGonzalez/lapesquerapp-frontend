@@ -25,8 +25,12 @@ export function useCustomerAssignmentMutation() {
     onSuccess: async (_, variables) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: customerListKeys.listPrefix(tenantId) }),
-        queryClient.invalidateQueries({ queryKey: crmCustomerKeys.detail(tenantId, variables.customerId) }),
-        queryClient.invalidateQueries({ queryKey: adminCustomerKeys.assignment(variables.customerId) }),
+        queryClient.invalidateQueries({
+          queryKey: crmCustomerKeys.detail(tenantId, variables.customerId),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: adminCustomerKeys.assignment(variables.customerId),
+        }),
       ]);
     },
   });

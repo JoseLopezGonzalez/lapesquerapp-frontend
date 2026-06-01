@@ -29,15 +29,16 @@ Se completó la evolución del Bloque 6 Proveedores (proveedores, liquidaciones)
 
 ## Deliverables
 
-| Carpeta | Archivos |
-|---------|----------|
-| 01_analysis | paso1-first-action-auditoria.md, step0a-scope-proveedores.md, step0-ui-behavior-proveedores.md, step1-analisis-proveedores.md |
-| 02_planning | step2-proposed-changes.md |
-| 03_execution | (implementación en src/) |
-| 04_logs | execution_timeline.md |
-| 05_outputs | FINAL_REPORT.md |
+| Carpeta      | Archivos                                                                                                                      |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| 01_analysis  | paso1-first-action-auditoria.md, step0a-scope-proveedores.md, step0-ui-behavior-proveedores.md, step1-analisis-proveedores.md |
+| 02_planning  | step2-proposed-changes.md                                                                                                     |
+| 03_execution | (implementación en src/)                                                                                                      |
+| 04_logs      | execution_timeline.md                                                                                                         |
+| 05_outputs   | FINAL_REPORT.md                                                                                                               |
 
 **Archivos en src/**:
+
 - `src/services/domain/suppliers/supplierService.ts` (nuevo, eliminado .js)
 - `src/services/domain/supplier-liquidations/supplierLiquidationService.ts` (nuevo)
 - `src/hooks/useSuppliersList.ts`

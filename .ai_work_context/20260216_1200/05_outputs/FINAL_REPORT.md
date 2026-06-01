@@ -26,7 +26,7 @@ Se abordó el **Bloque 11: Usuarios y sesiones** del CORE Plan. Los servicios de
 ## Deliverables
 
 - **01_analysis/**: scope.md (alcance y resumen).
-- **Código**: src/types/user.ts, src/types/session.ts; src/services/domain/users/userService.ts, sessions/sessionService.ts, roles/roleService.ts; src/hooks/useUsersList.ts, useSessionsList.ts, useRoleOptions.ts; cambios en src/components/Admin/Entity/EntityClient/index.js; src/__tests__/services/userService.test.ts, sessionService.test.ts, roleService.test.ts. Eliminados: userService.js, sessionService.js, roleService.js.
+- **Código**: src/types/user.ts, src/types/session.ts; src/services/domain/users/userService.ts, sessions/sessionService.ts, roles/roleService.ts; src/hooks/useUsersList.ts, useSessionsList.ts, useRoleOptions.ts; cambios en src/components/Admin/Entity/EntityClient/index.js; src/**tests**/services/userService.test.ts, sessionService.test.ts, roleService.test.ts. Eliminados: userService.js, sessionService.js, roleService.js.
 - **Docs**: docs/audits/nextjs-evolution-log.md (entrada Bloque 11); docs/00_CORE CONSOLIDATION PLAN — ERP SaaS (Next.js + Laravel).md (fila 11 actualizada a 9/10).
 
 ---
@@ -39,7 +39,7 @@ Ninguna pendiente. Cambios de bajo/medio riesgo; contratos de EntityClient y ent
 
 ## Validaciones
 
-- `npm run build`: OK  
+- `npm run build`: OK
 - `npm run test -- --run src/__tests__/services/userService.test.ts src/__tests__/services/sessionService.test.ts src/__tests__/services/roleService.test.ts`: 10 tests passed
 
 ---

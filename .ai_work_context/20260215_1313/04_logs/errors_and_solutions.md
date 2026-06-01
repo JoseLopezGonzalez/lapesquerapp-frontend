@@ -1,3 +1,3 @@
 # Errores y soluciones
 
-*(Se documentan aquí los errores encontrados durante la ejecución y su resolución.)*
+_(Se documentan aquí los errores encontrados durante la ejecución y su resolución.)_

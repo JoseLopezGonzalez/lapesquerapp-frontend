@@ -28,10 +28,7 @@ export interface GetStoresResponse {
   meta: unknown;
 }
 
-export async function getStore(
-  id: number | string,
-  token: AuthToken
-): Promise<unknown> {
+export async function getStore(id: number | string, token: AuthToken): Promise<unknown> {
   const response = await fetchWithTenant(`${API_URL_V2}stores/${id}`, {
     method: 'GET',
     headers: {
@@ -42,19 +39,14 @@ export async function getStore(
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(
-      getErrorMessage(errorData) || 'Error al obtener stores'
-    );
+    throw new Error(getErrorMessage(errorData) || 'Error al obtener stores');
   }
 
   const data = await response.json();
   return data.data;
 }
 
-export async function getStores(
-  token: AuthToken,
-  page = 1
-): Promise<GetStoresResponse> {
+export async function getStores(token: AuthToken, page = 1): Promise<GetStoresResponse> {
   const url = `${API_URL_V2}stores?page=${page}&perPage=6`;
   const response = await fetchWithTenant(url, {
     method: 'GET',
@@ -66,9 +58,7 @@ export async function getStores(
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(
-      getErrorMessage(errorData) || 'Error al obtener stores'
-    );
+    throw new Error(getErrorMessage(errorData) || 'Error al obtener stores');
   }
 
   const data = await response.json();
@@ -91,9 +81,7 @@ export function getStoreOptions(token: AuthToken): Promise<unknown> {
     .then((response) => {
       if (!response.ok) {
         return response.json().then((errorData: { message?: string }) => {
-          throw new Error(
-            getErrorMessage(errorData) || 'Error al obtener los almacenes'
-          );
+          throw new Error(getErrorMessage(errorData) || 'Error al obtener los almacenes');
         });
       }
       return response.json();
@@ -104,46 +92,34 @@ export function getStoreOptions(token: AuthToken): Promise<unknown> {
 }
 
 export async function getTotalStockStats(token: AuthToken): Promise<unknown> {
-  const response = await fetchWithTenant(
-    `${API_URL_V2}statistics/stock/total`,
-    {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'User-Agent': getUserAgent(),
-      },
-    }
-  );
+  const response = await fetchWithTenant(`${API_URL_V2}statistics/stock/total`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'User-Agent': getUserAgent(),
+    },
+  });
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(
-      getErrorMessage(errorData) || 'Error al obtener el stock total'
-    );
+    throw new Error(getErrorMessage(errorData) || 'Error al obtener el stock total');
   }
 
   return response.json();
 }
 
-export async function getStockBySpeciesStats(
-  token: AuthToken
-): Promise<unknown> {
-  const response = await fetchWithTenant(
-    `${API_URL_V2}statistics/stock/total-by-species`,
-    {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'User-Agent': getUserAgent(),
-      },
-    }
-  );
+export async function getStockBySpeciesStats(token: AuthToken): Promise<unknown> {
+  const response = await fetchWithTenant(`${API_URL_V2}statistics/stock/total-by-species`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'User-Agent': getUserAgent(),
+    },
+  });
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(
-      getErrorMessage(errorData) || 'Error al obtener el stock por especies'
-    );
+    throw new Error(getErrorMessage(errorData) || 'Error al obtener el stock por especies');
   }
 
   return response.json();
@@ -152,22 +128,17 @@ export async function getStockBySpeciesStats(
 export async function getStockByProducts(
   token: AuthToken
 ): Promise<ApiListResponse<StockByProductItem>> {
-  const response = await fetchWithTenant(
-    `${API_URL_V2}stores/total-stock-by-products`,
-    {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'User-Agent': getUserAgent(),
-      },
-    }
-  );
+  const response = await fetchWithTenant(`${API_URL_V2}stores/total-stock-by-products`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'User-Agent': getUserAgent(),
+    },
+  });
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(
-      getErrorMessage(errorData) || 'Error al obtener el stock por productos'
-    );
+    throw new Error(getErrorMessage(errorData) || 'Error al obtener el stock por productos');
   }
 
   return response.json();
@@ -184,9 +155,7 @@ export async function getRegisteredPallets(token: AuthToken): Promise<unknown> {
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(
-      getErrorMessage(errorData) || 'Error al obtener los palets registrados'
-    );
+    throw new Error(getErrorMessage(errorData) || 'Error al obtener los palets registrados');
   }
 
   const data = await response.json();

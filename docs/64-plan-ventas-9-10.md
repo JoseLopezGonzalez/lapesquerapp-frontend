@@ -9,12 +9,12 @@ Plan ordenado para llevar el Bloque Ventas de **6.5/10** a **9/10**, siguiendo e
 
 ## Resumen de fases
 
-| Fase | Objetivo | Esfuerzo | Rating esperado |
-|------|----------|----------|-----------------|
-| 1 | Reducir Order (~647 líneas) | Medio | 7/10 |
-| 2 | Reducir OrderPallets (~903 líneas) | Alto | 7.5/10 |
-| 3 | Formularios + Zod | Medio | 8/10 |
-| 4 | Más tests | Medio | 9/10 |
+| Fase | Objetivo                           | Esfuerzo | Rating esperado |
+| ---- | ---------------------------------- | -------- | --------------- |
+| 1    | Reducir Order (~647 líneas)        | Medio    | 7/10            |
+| 2    | Reducir OrderPallets (~903 líneas) | Alto     | 7.5/10          |
+| 3    | Formularios + Zod                  | Medio    | 8/10            |
+| 4    | Más tests                          | Medio    | 9/10            |
 
 ---
 
@@ -25,6 +25,7 @@ Plan ordenado para llevar el Bloque Ventas de **6.5/10** a **9/10**, siguiendo e
 ### Sub-bloque 1.1: Extraer configuración y utilidades
 
 **Archivos a crear:**
+
 - `Order/config/sectionsConfig.js` — SECTIONS_CONFIG, PRIMARY_SECTION_IDS_MOBILE
 - `Order/utils/getTransportImage.js` — función helper
 
@@ -62,7 +63,8 @@ Plan ordenado para llevar el Bloque Ventas de **6.5/10** a **9/10**, siguiendo e
 
 ### Sub-bloque 1.5: Extraer OrderStatusDropdown y OrderTemperatureDropdown
 
-**Archivos**: 
+**Archivos**:
+
 - `Order/components/OrderStatusDropdown.jsx` — StatusBadge + DropdownMenu para cambiar estado
 - `Order/components/OrderTemperatureDropdown.jsx` — temperatura + DropdownMenu (0, 4, -18, -23)
 
@@ -73,6 +75,7 @@ Plan ordenado para llevar el Bloque Ventas de **6.5/10** a **9/10**, siguiendo e
 ### Sub-bloque 1.6: Extraer OrderHeaderDesktop y OrderTabsDesktop
 
 **Archivos**:
+
 - `Order/components/OrderHeaderDesktop.jsx` — header con título, transporte, badge, fecha, etc.
 - `Order/components/OrderTabsDesktop.jsx` — TabsList + TabsTrigger para secciones
 
@@ -94,7 +97,8 @@ Plan ordenado para llevar el Bloque Ventas de **6.5/10** a **9/10**, siguiendo e
 
 **Archivo**: `OrderPallets/hooks/useOrderPallets.js`
 
-**Responsabilidad**: 
+**Responsabilidad**:
+
 - Estados: isPalletDialogOpen, selectedPalletId, isStoreSelectionOpen, dialogs, search, pagination, cloning, unlinking, createFromForecast
 - Handlers: handleOpenNewPallet, handleOpenEditPallet, handleStoreSelection, handlePalletChange, handleDeletePallet, handleUnlinkPallet, handleLinkPallets, handleCreateFromForecast, etc.
 - Lógica de búsqueda, paginación, vincular/desvincular
@@ -145,6 +149,7 @@ Plan ordenado para llevar el Bloque Ventas de **6.5/10** a **9/10**, siguiendo e
 **Archivo**: `CreateOrderForm/schemas/orderCreateSchema.js` (o .ts)
 
 **Esquema Zod**:
+
 - customer: z.string().min(1, 'Cliente requerido')
 - salesperson, payment, incoterm, transport: z.string().optional()
 - loadDate: z.date()
@@ -153,6 +158,7 @@ Plan ordenado para llevar el Bloque Ventas de **6.5/10** a **9/10**, siguiendo e
 - emails: z.array(z.string().email()).optional()
 
 **Cambios en CreateOrderForm**:
+
 - `useForm({ resolver: zodResolver(orderCreateSchema), ... })`
 - Eliminar validación manual si existiera
 - setErrorsFrom422 sigue como fallback en onError
@@ -166,6 +172,7 @@ Plan ordenado para llevar el Bloque Ventas de **6.5/10** a **9/10**, siguiendo e
 **Esquema**: Campos editables del pedido (loadDate, temperature, notes, etc.)
 
 **Cambios en OrderEditSheet**:
+
 - `useForm({ resolver: zodResolver(orderEditSchema), ... })`
 - setErrorsFrom422 como fallback
 
@@ -187,6 +194,7 @@ Plan ordenado para llevar el Bloque Ventas de **6.5/10** a **9/10**, siguiendo e
 **Archivo**: `src/__tests__/hooks/useOrder.test.js`
 
 **Casos**:
+
 - Devuelve order, loading, error
 - updateOrderStatus actualiza caché
 - exportDocument llama al servicio
@@ -199,6 +207,7 @@ Plan ordenado para llevar el Bloque Ventas de **6.5/10** a **9/10**, siguiendo e
 **Archivo**: `src/__tests__/hooks/useCustomerHistory.test.js`
 
 **Casos**:
+
 - Devuelve filteredHistory, generalMetrics, loading
 - dateFilter cambia filteredHistory
 - calculateTrend devuelve dirección correcta
@@ -209,12 +218,14 @@ Plan ordenado para llevar el Bloque Ventas de **6.5/10** a **9/10**, siguiendo e
 **Archivo**: `src/__tests__/hooks/useOrders.test.js`
 
 **Casos**:
+
 - Devuelve orders, isLoading
 - Invalida caché al crear/actualizar
 
 ### Sub-bloque 4.4: Tests componentes críticos (opcional)
 
 **Archivos**:
+
 - `StatusBadge.test.jsx` — renderiza según color/label
 - `GeneralMetricsGrid.test.jsx` — renderiza métricas
 - `OrderStatusDropdown.test.jsx` — cambia estado al hacer click
@@ -239,6 +250,7 @@ Fase 4.1 → 4.2 → 4.3 (4.4 opcional)
 ```
 
 Cada sub-bloque debe:
+
 1. Implementarse de forma incremental
 2. Verificarse con `npm run build` y `npm run test:run`
 3. Registrarse en `docs/audits/nextjs-evolution-log.md`
@@ -247,14 +259,14 @@ Cada sub-bloque debe:
 
 ## Criterios de éxito 9/10
 
-| Criterio | Objetivo |
-|----------|----------|
-| Order | &lt;250 líneas |
-| OrderPallets | &lt;450 líneas |
-| Formularios Ventas | Zod + setErrorsFrom422 |
-| Tests | orderService + useOrder + useCustomerHistory + useOrders |
-| Componentes &gt;200 líneas | Ninguno crítico en Ventas |
-| TypeScript | Servicios ya migrados; componentes opcional |
+| Criterio                   | Objetivo                                                 |
+| -------------------------- | -------------------------------------------------------- |
+| Order                      | &lt;250 líneas                                           |
+| OrderPallets               | &lt;450 líneas                                           |
+| Formularios Ventas         | Zod + setErrorsFrom422                                   |
+| Tests                      | orderService + useOrder + useCustomerHistory + useOrders |
+| Componentes &gt;200 líneas | Ninguno crítico en Ventas                                |
+| TypeScript                 | Servicios ya migrados; componentes opcional              |
 
 ---
 

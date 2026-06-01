@@ -28,7 +28,10 @@ function getTenantId() {
   return typeof window !== 'undefined' ? getCurrentTenant() : null;
 }
 
-async function invalidateAgendaQueries(queryClient: ReturnType<typeof useQueryClient>, tenantId: string) {
+async function invalidateAgendaQueries(
+  queryClient: ReturnType<typeof useQueryClient>,
+  tenantId: string
+) {
   await Promise.all([
     queryClient.invalidateQueries({ queryKey: ['crm', 'agenda', tenantId] }),
     queryClient.invalidateQueries({ queryKey: ['crm', 'agenda', 'summary', tenantId] }),
@@ -57,7 +60,13 @@ export function useAgenda(params: AgendaQueryParams = {}) {
 export function useAgendaSummary(params: AgendaQueryParams = {}) {
   const { enabled = true, ...queryParams } = params;
   const tenantId = getTenantId();
-  const queryKey = ['crm', 'agenda', 'summary', tenantId ?? 'unknown', normalizeQueryParams(queryParams)];
+  const queryKey = [
+    'crm',
+    'agenda',
+    'summary',
+    tenantId ?? 'unknown',
+    normalizeQueryParams(queryParams),
+  ];
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey,
@@ -73,20 +82,45 @@ export function useAgendaSummary(params: AgendaQueryParams = {}) {
   };
 }
 
-export function usePendingAgendaAction(targetType?: 'prospect' | 'customer', targetId?: number | string, enabled = true) {
+export function usePendingAgendaAction(
+  targetType?: 'prospect' | 'customer',
+  targetId?: number | string,
+  enabled = true
+) {
   const tenantId = getTenantId();
   const safeTargetId = targetId != null ? String(targetId) : null;
-  const queryKey = ['crm', 'agenda', 'pending', tenantId ?? 'unknown', targetType ?? 'none', safeTargetId ?? 'none'];
+  const queryKey = [
+    'crm',
+    'agenda',
+    'pending',
+    tenantId ?? 'unknown',
+    targetType ?? 'none',
+    safeTargetId ?? 'none',
+  ];
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey,
-    queryFn: () => crmService.getPendingAgendaAction({ targetType: targetType as 'prospect' | 'customer', targetId: targetId as number | string }),
+    queryFn: () =>
+      crmService.getPendingAgendaAction({
+        targetType: targetType as 'prospect' | 'customer',
+        targetId: targetId as number | string,
+      }),
     enabled: !!tenantId && !!targetType && !!targetId && enabled,
   });
 
-  const rawPending = data?.data as { hasPending?: boolean; pendingAction?: AgendaAction | null; agendaActionId?: number | string } | null | undefined;
-  const pendingAction = rawPending?.pendingAction ?? (rawPending?.agendaActionId != null ? (rawPending as unknown as AgendaAction) : null);
-  const hasPending = typeof rawPending?.hasPending === 'boolean' ? rawPending.hasPending : Boolean(pendingAction);
+  const rawPending = data?.data as
+    | {
+        hasPending?: boolean;
+        pendingAction?: AgendaAction | null;
+        agendaActionId?: number | string;
+      }
+    | null
+    | undefined;
+  const pendingAction =
+    rawPending?.pendingAction ??
+    (rawPending?.agendaActionId != null ? (rawPending as unknown as AgendaAction) : null);
+  const hasPending =
+    typeof rawPending?.hasPending === 'boolean' ? rawPending.hasPending : Boolean(pendingAction);
 
   return {
     data: { hasPending, pendingAction },
@@ -102,13 +136,15 @@ export function useAgendaMutations() {
 
   return {
     rescheduleAgendaAction: useMutation({
-      mutationFn: ({ id, payload }: AgendaReschedulePayload) => crmService.rescheduleAgendaAction(id, payload),
+      mutationFn: ({ id, payload }: AgendaReschedulePayload) =>
+        crmService.rescheduleAgendaAction(id, payload),
       onSuccess: async () => {
         await invalidateAgendaQueries(queryClient, tenantId);
       },
     }),
     cancelAgendaAction: useMutation({
-      mutationFn: ({ id, reason }: { id: number | string; reason: string }) => crmService.cancelAgendaAction(id, reason),
+      mutationFn: ({ id, reason }: { id: number | string; reason: string }) =>
+        crmService.cancelAgendaAction(id, reason),
       onSuccess: async () => {
         await Promise.all([
           invalidateAgendaQueries(queryClient, tenantId),

@@ -1,7 +1,7 @@
-"use client";
-import React from "react";
-import { cn } from "@/lib/utils";
-import LabelRender from "./LabelRender";
+'use client';
+import React from 'react';
+import { cn } from '@/lib/utils';
+import LabelRender from './LabelRender';
 
 const LabelPreview = React.forwardRef(function LabelPreview(
   { label, scale = 1, highlight = false, className, ...props },
@@ -14,13 +14,13 @@ const LabelPreview = React.forwardRef(function LabelPreview(
   return (
     <div
       ref={ref}
-      className={cn("relative flex items-center justify-center", className)}
-      style={{ transform: `scale(${scale})`, transformOrigin: "top left" }}
+      className={cn('relative flex items-center justify-center', className)}
+      style={{ transform: `scale(${scale})`, transformOrigin: 'top left' }}
     >
       <div
         className={cn(
-          "relative bg-white border border-dashed shadow-md",
-          highlight && "ring-2 ring-primary"
+          'relative border border-dashed bg-white shadow-md',
+          highlight && 'ring-primary ring-2'
         )}
         style={{ width: `${width}mm`, height: `${height}mm` }}
       >

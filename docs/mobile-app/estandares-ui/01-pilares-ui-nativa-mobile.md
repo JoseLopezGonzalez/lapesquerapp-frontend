@@ -37,9 +37,9 @@ Referencias: [iOS Human Interface Guidelines](https://developer.apple.com/design
 
 ## 🎯 3. Interactuabilidad y feedback tangible
 
-- **Tamaños y zonas touch**  
-  - **Mínimo recomendado:** 44×44 px (iOS HIG, WCAG 2.2 Level AAA).  
-  - Material Design recomienda 48×48 dp (~9 mm) con espaciado ≥ 8 dp entre objetivos.  
+- **Tamaños y zonas touch**
+  - **Mínimo recomendado:** 44×44 px (iOS HIG, WCAG 2.2 Level AAA).
+  - Material Design recomienda 48×48 dp (~9 mm) con espaciado ≥ 8 dp entre objetivos.
   - En PesquerApp usamos **≥ 44×44 px** para controles interactivos y espaciado suficiente para evitar toques erróneos.
 - **Retroalimentación visual**  
   Cambio de estado en botones (hover/active/disabled), animaciones sutiles y micro-interacciones que refuercen la respuesta del sistema (ver pilar 13).
@@ -50,10 +50,10 @@ Referencias: [Apple HIG – Touch targets 44pt](https://developer.apple.com/desi
 
 ## 🖼️ 4. Estética nativa y familiaridad visual
 
-- **Inspiración en guías de plataforma**  
-  - [iOS Human Interface Guidelines (HIG)](https://developer.apple.com/design/human-interface-guidelines/)  
+- **Inspiración en guías de plataforma**
+  - [iOS Human Interface Guidelines (HIG)](https://developer.apple.com/design/human-interface-guidelines/)
   - [Android Material Design](https://m3.material.io/)  
-  Esto mejora la familiaridad y la confianza sin tener que replicar cada detalle; ShadCN ya nos da una base neutra y adaptable.
+    Esto mejora la familiaridad y la confianza sin tener que replicar cada detalle; ShadCN ya nos da una base neutra y adaptable.
 - **Evitar elementos que “sienten web”**  
   Cabeceras enormes con navegación web típica o pies de página tradicionales reducen la sensación de app. En mobile: barras compactas, contenido al frente.
 
@@ -165,24 +165,24 @@ Evitar patrones que contradigan lo que ya conocen de apps nativas (p. ej. menú 
 
 ## 🔍 16. Patrones nativos recomendados (lista directa)
 
-| Área | Recomendación |
-|------|----------------|
-| **Navegación** | Barra inferior (bottom nav); botón “Atrás” explícito; drawer solo cuando aporte valor. |
-| **Listas** | Scroll vertical; evitar scroll horizontal en listas de contenido. |
-| **Formularios** | Inputs grandes (altura mínima ~48 px); validación en tiempo real cuando sea posible. |
-| **Gestos** | Pull-to-refresh solo si es robusto; swipe para acciones contextuales cuando esté bien implementado. |
+| Área            | Recomendación                                                                                       |
+| --------------- | --------------------------------------------------------------------------------------------------- |
+| **Navegación**  | Barra inferior (bottom nav); botón “Atrás” explícito; drawer solo cuando aporte valor.              |
+| **Listas**      | Scroll vertical; evitar scroll horizontal en listas de contenido.                                   |
+| **Formularios** | Inputs grandes (altura mínima ~48 px); validación en tiempo real cuando sea posible.                |
+| **Gestos**      | Pull-to-refresh solo si es robusto; swipe para acciones contextuales cuando esté bien implementado. |
 
 ---
 
 ## 🏁 Resumen de los pilares para una PWA con sensación nativa
 
-1. **Mobile-conscious** → Contenido prioritario y jerarquía clara en pantallas pequeñas.  
-2. **Gestión de espacio y jerarquía** → Espaciado y tipografía que guíen el foco.  
-3. **Touch y feedback inmediato** → ≥ 44×44 px, estados claros y micro-interacciones.  
-4. **Patrones de navegación y gestos consistentes** → Bottom nav, atrás explícito, gestos fiables.  
-5. **Rendimiento** → Carga y animaciones rápidas, skeletons en lugar de spinners.  
-6. **Diseño claro y minimalista** → Menos ruido, más blancos.  
-7. **Accesibilidad desde el inicio** → WCAG, contraste, alternativas a gestos.  
+1. **Mobile-conscious** → Contenido prioritario y jerarquía clara en pantallas pequeñas.
+2. **Gestión de espacio y jerarquía** → Espaciado y tipografía que guíen el foco.
+3. **Touch y feedback inmediato** → ≥ 44×44 px, estados claros y micro-interacciones.
+4. **Patrones de navegación y gestos consistentes** → Bottom nav, atrás explícito, gestos fiables.
+5. **Rendimiento** → Carga y animaciones rápidas, skeletons en lugar de spinners.
+6. **Diseño claro y minimalista** → Menos ruido, más blancos.
+7. **Accesibilidad desde el inicio** → WCAG, contraste, alternativas a gestos.
 8. **Integración con el sistema (PWA)** → Standalone, iconos, splash, theme-color.
 
 ---
@@ -198,4 +198,4 @@ Evitar patrones que contradigan lo que ya conocen de apps nativas (p. ej. menú 
 
 ---
 
-*Documento de estándares para la versión mobile/PWA de PesquerApp. Revisar y actualizar cuando se añadan nuevos patrones o referencias.*
+_Documento de estándares para la versión mobile/PWA de PesquerApp. Revisar y actualizar cuando se añadan nuevos patrones o referencias._

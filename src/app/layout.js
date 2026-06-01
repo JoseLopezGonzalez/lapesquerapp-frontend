@@ -1,7 +1,7 @@
-import ClientLayout from "./ClientLayout";
-import "./globals.css";
-import { Geist, Geist_Mono } from "next/font/google";
-import { SpeedInsights } from "@vercel/speed-insights/next";
+import ClientLayout from './ClientLayout';
+import './globals.css';
+import { Geist, Geist_Mono } from 'next/font/google';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import {
   appName,
   appShortName,
@@ -10,15 +10,15 @@ import {
   appleTouchIconPath,
   ogImagePath,
   splashBasePath,
-} from "@/configs/branding";
+} from '@/configs/branding';
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
 });
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
 });
 
 const defaultTitle = `${appName} | ERP para pequeñas y medianas empresas pesqueras`;
@@ -31,12 +31,13 @@ export const metadata = {
     default: defaultTitle,
     template: `%s | ${appName}`,
   },
-  description: "ERP diseñado para empresas pesqueras. Controla producción, trazabilidad, compras, ventas y etiquetado.",
-  keywords: ["ERP", "pesca", "trazabilidad", "producción", "ventas", "industria alimentaria"],
+  description:
+    'ERP diseñado para empresas pesqueras. Controla producción, trazabilidad, compras, ventas y etiquetado.',
+  keywords: ['ERP', 'pesca', 'trazabilidad', 'producción', 'ventas', 'industria alimentaria'],
   metadataBase: new URL(metadataBaseUrl),
   openGraph: {
     title: ogTitle,
-    description: "Solución ERP moderna para pequeñas y medianas empresas del sector pesquero.",
+    description: 'Solución ERP moderna para pequeñas y medianas empresas del sector pesquero.',
     url: metadataBaseUrl,
     siteName: appName,
     images: [
@@ -47,20 +48,20 @@ export const metadata = {
         alt: ogAlt,
       },
     ],
-    locale: "es_ES",
-    type: "website",
+    locale: 'es_ES',
+    type: 'website',
   },
   twitter: {
-    card: "summary_large_image",
+    card: 'summary_large_image',
     title: twitterTitle,
-    description: "Solución completa ERP para empresas del sector pesquero.",
+    description: 'Solución completa ERP para empresas del sector pesquero.',
     images: [ogImagePath],
   },
   icons: {
     icon: faviconPath,
     apple: appleTouchIconPath,
   },
-  manifest: "/api/manifest",
+  manifest: '/api/manifest',
 };
 
 export default function RootLayout({ children }) {
@@ -71,7 +72,7 @@ export default function RootLayout({ children }) {
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black" />
         <meta name="apple-mobile-web-app-title" content={appShortName} />
-        
+
         {/* Android/Chrome PWA Meta Tags */}
         {/* theme-color controla: barra de estado (notificaciones), barra de navegación y navegador */}
         {/* Light mode: barras claras (blanco) para armonizar con fondo blanco */}
@@ -143,12 +144,11 @@ export default function RootLayout({ children }) {
           </>
         )}
         {/* Fallback - Usar apple-touch-icon si no hay splash screen específico */}
-        <link
-          rel="apple-touch-startup-image"
-          href={appleTouchIconPath}
-        />
+        <link rel="apple-touch-startup-image" href={appleTouchIconPath} />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background w-full`}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} bg-background w-full antialiased`}
+      >
         <ClientLayout>{children}</ClientLayout>
         <SpeedInsights />
       </body>

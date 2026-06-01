@@ -4,7 +4,12 @@ import { CalendarClock, CircleDot, Mail, MapPin, MessageCircle, Phone } from 'lu
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import Loader from '@/components/Utilities/Loader';
 import StatusPill from '../StatusPill';
-import { formatDateTimeValue, formatDateValue, interactionResultLabels, interactionTypeLabels } from '../utils';
+import {
+  formatDateTimeValue,
+  formatDateValue,
+  interactionResultLabels,
+  interactionTypeLabels,
+} from '../utils';
 
 const interactionTypeIcons = {
   call: Phone,
@@ -33,7 +38,7 @@ export default function InteractionsTimelinePanel({
       <EmptyState
         title={emptyTitle}
         description={emptyDescription}
-        className="h-full w-full border bg-muted/20 !min-h-[220px]"
+        className="bg-muted/20 h-full !min-h-[220px] w-full border"
       />
     );
   }
@@ -53,32 +58,42 @@ export default function InteractionsTimelinePanel({
         return (
           <div key={interaction.id} className="flex items-stretch gap-2">
             <div className="flex w-6 shrink-0 flex-col items-center self-stretch">
-              <div className="flex size-6 shrink-0 items-center justify-center rounded-full border-0 bg-primary text-primary-foreground shadow-sm">
+              <div className="bg-primary text-primary-foreground flex size-6 shrink-0 items-center justify-center rounded-full border-0 shadow-sm">
                 <TypeIcon className="size-3 stroke-[2]" />
               </div>
-              {!isLast && <div className="mt-1 min-h-0 w-0.5 flex-1 bg-muted-foreground/50" aria-hidden />}
+              {!isLast && (
+                <div className="bg-muted-foreground/50 mt-1 min-h-0 w-0.5 flex-1" aria-hidden />
+              )}
             </div>
 
             <div className={`min-w-0 flex-1 ${!isLast ? 'pb-4' : ''}`}>
               <div className="flex flex-col gap-0.5">
-                <p className="text-xs font-normal text-muted-foreground">{formatDateTimeValue(interaction.occurredAt)}</p>
+                <p className="text-muted-foreground text-xs font-normal">
+                  {formatDateTimeValue(interaction.occurredAt)}
+                </p>
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="truncate text-sm font-semibold leading-tight text-foreground">{typeLabel}</span>
+                  <span className="text-foreground truncate text-sm leading-tight font-semibold">
+                    {typeLabel}
+                  </span>
                   <StatusPill label={resultLabel} status={interaction.result} />
                 </div>
               </div>
 
-              <div className="mt-2 space-y-3 rounded-xl border bg-card p-3">
-                <p className="text-sm leading-snug whitespace-pre-wrap break-words text-foreground">{interaction.summary}</p>
+              <div className="bg-card mt-2 space-y-3 rounded-xl border p-3">
+                <p className="text-foreground text-sm leading-snug break-words whitespace-pre-wrap">
+                  {interaction.summary}
+                </p>
 
                 {interaction.nextActionAt && (
-                  <div className="space-y-1 border-t border-border/60 pt-2">
-                    <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <div className="border-border/60 space-y-1 border-t pt-2">
+                    <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
                       <CalendarClock className="size-3 shrink-0" />
                       <span>Próxima acción: {formatDateValue(interaction.nextActionAt)}</span>
                     </p>
                     {interaction.nextActionNote && (
-                      <p className="pl-4 text-xs text-muted-foreground whitespace-pre-wrap break-words">{interaction.nextActionNote}</p>
+                      <p className="text-muted-foreground pl-4 text-xs break-words whitespace-pre-wrap">
+                        {interaction.nextActionNote}
+                      </p>
                     )}
                   </div>
                 )}

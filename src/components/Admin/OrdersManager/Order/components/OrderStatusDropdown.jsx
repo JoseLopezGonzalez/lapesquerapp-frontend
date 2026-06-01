@@ -25,22 +25,13 @@ export default function OrderStatusDropdown({ status, onStatusChange }) {
         <StatusBadge color={STATUS_COLORS[status]} label={STATUS_LABELS[status]} />
       </DropdownMenuTrigger>
       <DropdownMenuContent className="flex flex-col items-end">
-        <DropdownMenuItem
-          className="cursor-pointer"
-          onClick={() => onStatusChange('pending')}
-        >
+        <DropdownMenuItem className="cursor-pointer" onClick={() => onStatusChange('pending')}>
           <StatusBadge color="orange" label="En producción" />
         </DropdownMenuItem>
-        <DropdownMenuItem
-          className="cursor-pointer"
-          onClick={() => onStatusChange('finished')}
-        >
+        <DropdownMenuItem className="cursor-pointer" onClick={() => onStatusChange('finished')}>
           <StatusBadge color="green" label="Terminado" />
         </DropdownMenuItem>
-        <DropdownMenuItem
-          className="cursor-pointer"
-          onClick={() => onStatusChange('incident')}
-        >
+        <DropdownMenuItem className="cursor-pointer" onClick={() => onStatusChange('incident')}>
           <StatusBadge color="red" label="Incidencia" />
         </DropdownMenuItem>
       </DropdownMenuContent>

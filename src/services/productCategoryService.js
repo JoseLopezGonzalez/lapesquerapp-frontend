@@ -1,6 +1,6 @@
-import { fetchWithTenant } from "@lib/fetchWithTenant";
-import { API_URL_V2 } from "@/configs/config";
-import { getErrorMessage } from "@/lib/api/apiHelpers";
+import { fetchWithTenant } from '@lib/fetchWithTenant';
+import { API_URL_V2 } from '@/configs/config';
+import { getErrorMessage } from '@/lib/api/apiHelpers';
 import { getUserAgent } from '@/lib/utils/getUserAgent';
 
 /**
@@ -9,12 +9,12 @@ import { getUserAgent } from '@/lib/utils/getUserAgent';
  * @returns {Array} Array sin duplicados
  */
 const removeDuplicateOptions = (options) => {
-    const seen = new Set();
-    return options.filter(option => {
-        const duplicate = seen.has(option.id);
-        seen.add(option.id);
-        return !duplicate;
-    });
+  const seen = new Set();
+  return options.filter((option) => {
+    const duplicate = seen.has(option.id);
+    seen.add(option.id);
+    return !duplicate;
+  });
 };
 
 /**
@@ -23,32 +23,33 @@ const removeDuplicateOptions = (options) => {
  * @returns {Promise<Array>} Array de categorías de productos
  */
 export function getProductCategoryOptions(token) {
-    return fetchWithTenant(`${API_URL_V2}product-categories/options`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-            'User-Agent': getUserAgent(),
-        },
-    })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(getErrorMessage(errorData) || 'Error al obtener las categorías de productos');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            // Eliminar duplicados antes de devolver
-            const uniqueData = removeDuplicateOptions(data);
-            return uniqueData;
-        })
-        .catch((error) => {
-            throw error;
-        })
-        .finally(() => {
+  return fetchWithTenant(`${API_URL_V2}product-categories/options`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      'User-Agent': getUserAgent(),
+    },
+  })
+    .then((response) => {
+      if (!response.ok) {
+        return response.json().then((errorData) => {
+          throw new Error(
+            getErrorMessage(errorData) || 'Error al obtener las categorías de productos'
+          );
         });
+      }
+      return response.json();
+    })
+    .then((data) => {
+      // Eliminar duplicados antes de devolver
+      const uniqueData = removeDuplicateOptions(data);
+      return uniqueData;
+    })
+    .catch((error) => {
+      throw error;
+    })
+    .finally(() => {});
 }
 
 /**
@@ -57,30 +58,32 @@ export function getProductCategoryOptions(token) {
  * @returns {Promise<Array>} Array de categorías de productos
  */
 export function getProductCategories(token) {
-    return fetchWithTenant(`${API_URL_V2}product-categories`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-            'User-Agent': getUserAgent(),
-        },
-    })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(getErrorMessage(errorData) || 'Error al obtener las categorías de productos');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            // Eliminar duplicados antes de devolver
-            const uniqueData = removeDuplicateOptions(data);
-            return uniqueData;
-        })
-        .catch((error) => {
-            throw error;
+  return fetchWithTenant(`${API_URL_V2}product-categories`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      'User-Agent': getUserAgent(),
+    },
+  })
+    .then((response) => {
+      if (!response.ok) {
+        return response.json().then((errorData) => {
+          throw new Error(
+            getErrorMessage(errorData) || 'Error al obtener las categorías de productos'
+          );
         });
+      }
+      return response.json();
+    })
+    .then((data) => {
+      // Eliminar duplicados antes de devolver
+      const uniqueData = removeDuplicateOptions(data);
+      return uniqueData;
+    })
+    .catch((error) => {
+      throw error;
+    });
 }
 
 /**
@@ -90,26 +93,28 @@ export function getProductCategories(token) {
  * @returns {Promise<Object>} Categoría de producto
  */
 export function getProductCategory(id, token) {
-    return fetchWithTenant(`${API_URL_V2}product-categories/${id}`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-            'User-Agent': getUserAgent(),
-        },
-    })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    throw new Error(getErrorMessage(errorData) || 'Error al obtener la categoría de producto');
-                });
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data;
-        })
-        .catch((error) => {
-            throw error;
+  return fetchWithTenant(`${API_URL_V2}product-categories/${id}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      'User-Agent': getUserAgent(),
+    },
+  })
+    .then((response) => {
+      if (!response.ok) {
+        return response.json().then((errorData) => {
+          throw new Error(
+            getErrorMessage(errorData) || 'Error al obtener la categoría de producto'
+          );
         });
+      }
+      return response.json();
+    })
+    .then((data) => {
+      return data;
+    })
+    .catch((error) => {
+      throw error;
+    });
 }

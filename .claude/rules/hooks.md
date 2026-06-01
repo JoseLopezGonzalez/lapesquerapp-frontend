@@ -10,6 +10,7 @@ use[Utility]          // Hook de utilidad (useDebounce, useMobile, useIsMobile)
 ```
 
 Ejemplos reales del proyecto:
+
 - `useCustomersList` — listado de clientes con paginación
 - `useCustomer` — detalle de cliente
 - `useOrderCreateForm` — formulario de creación de pedido
@@ -40,7 +41,12 @@ export function useCustomersList(
   const { filters = {}, page = 1, perPage = 12, enabled = true } = params;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
-  const { data: response, isLoading, error, refetch } = useQuery({
+  const {
+    data: response,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: customerListKeys.list(tenantId, filters as Record<string, unknown>, page, perPage),
     queryFn: () => customerService.list(filters, { page, perPage }),
     enabled: !!tenantId && enabled,
@@ -65,6 +71,7 @@ export function useCustomersList(
 ```
 
 **Contrato de retorno obligatorio para hooks de listado:**
+
 ```typescript
 { data: T[], meta: PaginationMeta, isLoading: boolean, error: string | null, refetch: () => void }
 ```
@@ -77,11 +84,11 @@ El proyecto tiene una regla ESLint que **prohíbe arrays literales en `queryKey`
 
 ```typescript
 // ❌ PROHIBIDO — ESLint lo marcará como warning
-queryKey: ['customers', tenantId, filters]
+queryKey: ['customers', tenantId, filters];
 
 // ✅ OBLIGATORIO — usar siempre una factory de queryKeys.ts
 import { customerListKeys } from '@/lib/routes/queryKeys';
-queryKey: customerListKeys.list(tenantId, filters, page, perPage)
+queryKey: customerListKeys.list(tenantId, filters, page, perPage);
 ```
 
 Si necesitas un nuevo tipo de query, añadir la factory en `src/lib/routes/queryKeys.ts`.
@@ -158,18 +165,20 @@ const { data: customers, isLoading } = useCustomersList();
 
 Los siguientes hooks NO deben recibir más lógica directamente:
 
-| Hook | Tamaño | Sub-hook destino |
-|---|---|---|
-| `src/hooks/useOrder.js` | ~40 KB | `src/hooks/orders/useOrderXxx.ts` |
-| `src/hooks/usePallet.js` | ~48 KB | `src/hooks/pallets/usePalletXxx.ts` |
-| `src/hooks/useLabelEditor.ts` | ~52 KB | `src/hooks/labels/useLabelXxx.ts` |
+| Hook                          | Tamaño | Sub-hook destino                    |
+| ----------------------------- | ------ | ----------------------------------- |
+| `src/hooks/useOrder.js`       | ~40 KB | `src/hooks/orders/useOrderXxx.ts`   |
+| `src/hooks/usePallet.js`      | ~48 KB | `src/hooks/pallets/usePalletXxx.ts` |
+| `src/hooks/useLabelEditor.ts` | ~52 KB | `src/hooks/labels/useLabelXxx.ts`   |
 
 ```typescript
 // ❌ NUNCA añadir lógica directamente al hook gigante
 // src/hooks/useOrder.js
 export function useOrder() {
   // ... 40KB de lógica
-  const newFeatureLogic = () => { /* ← NO */ };
+  const newFeatureLogic = () => {
+    /* ← NO */
+  };
 }
 
 // ✅ Crear sub-hook nuevo y usarlo desde el hook gigante o desde el componente
@@ -209,12 +218,14 @@ const { mutate, isPending } = useMutation({
 ## Dirección de dependencias en hooks
 
 Un hook solo puede importar de:
+
 - Servicios (`@/services/domain/`)
 - Helpers genéricos (`@/lib/`)
 - Tipos (`@/types/`)
 - Otros hooks de utilidad (`useDebounce`, `useMobile`)
 
 Un hook **no puede** importar de:
+
 - Componentes React
 - `@/configs/entitiesConfig.js`
 - Otros hooks de dominio (evitar acoplamiento entre hooks de entidades distintas)

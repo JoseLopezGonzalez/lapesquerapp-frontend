@@ -7,7 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import EmailListInput from '@/components/ui/emailListInput';
 import { notify } from '@/lib/notifications';
 import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
@@ -15,14 +21,20 @@ import { useUsersList } from '@/hooks/useUsersList';
 import { useFieldOperatorMutations } from '@/hooks/useFieldOperators';
 import { ArrowLeft, Save, Trash2 } from 'lucide-react';
 
-export default function FieldOperatorForm({ initialData = null, mode = 'create', onSaved, onDeleted }) {
+export default function FieldOperatorForm({
+  initialData = null,
+  mode = 'create',
+  onSaved,
+  onDeleted,
+}) {
   const router = useRouter();
   const { data: users, isLoading: loadingUsers } = useUsersList({
     filters: { role: 'repartidor_autoventa' },
     page: 1,
     perPage: 100,
   });
-  const { createFieldOperator, updateFieldOperator, deleteFieldOperator, isSaving, isDeleting } = useFieldOperatorMutations();
+  const { createFieldOperator, updateFieldOperator, deleteFieldOperator, isSaving, isDeleting } =
+    useFieldOperatorMutations();
   const {
     register,
     handleSubmit,
@@ -43,7 +55,12 @@ export default function FieldOperatorForm({ initialData = null, mode = 'create',
     if (!initialData) return;
     reset({
       name: initialData.name ?? '',
-      userId: initialData.userId != null ? String(initialData.userId) : initialData.user?.id != null ? String(initialData.user.id) : '',
+      userId:
+        initialData.userId != null
+          ? String(initialData.userId)
+          : initialData.user?.id != null
+            ? String(initialData.user.id)
+            : '',
       emails: Array.isArray(initialData.emails) ? initialData.emails : [],
       ccEmails: Array.isArray(initialData.ccEmails) ? initialData.ccEmails : [],
     });
@@ -57,7 +74,10 @@ export default function FieldOperatorForm({ initialData = null, mode = 'create',
       return true;
     });
 
-    if (initialData?.user?.id && !eligible.some((user) => String(user.id) === String(initialData.user.id))) {
+    if (
+      initialData?.user?.id &&
+      !eligible.some((user) => String(user.id) === String(initialData.user.id))
+    ) {
       eligible.unshift(initialData.user);
     }
 
@@ -76,13 +96,20 @@ export default function FieldOperatorForm({ initialData = null, mode = 'create',
     };
 
     try {
-      const action = mode === 'edit' && initialData?.id
-        ? updateFieldOperator({ id: initialData.id, payload })
-        : createFieldOperator(payload);
+      const action =
+        mode === 'edit' && initialData?.id
+          ? updateFieldOperator({ id: initialData.id, payload })
+          : createFieldOperator(payload);
 
       const saved = await notify.promise(action, {
-        loading: { title: 'Guardando operador', description: 'Persistiendo la configuración operativa.' },
-        success: { title: `Operador ${mode === 'edit' ? 'actualizado' : 'creado'}`, description: 'Los datos se han guardado correctamente.' },
+        loading: {
+          title: 'Guardando operador',
+          description: 'Persistiendo la configuración operativa.',
+        },
+        success: {
+          title: `Operador ${mode === 'edit' ? 'actualizado' : 'creado'}`,
+          description: 'Los datos se han guardado correctamente.',
+        },
         error: (err) => ({
           title: 'No se pudo guardar el operador',
           description: err?.message ?? 'Inténtalo de nuevo.',
@@ -126,7 +153,9 @@ export default function FieldOperatorForm({ initialData = null, mode = 'create',
   return (
     <Card className="border-border/70 shadow-sm">
       <CardHeader className="space-y-2">
-        <CardTitle>{mode === 'edit' ? 'Editar operador de campo' : 'Nuevo operador de campo'}</CardTitle>
+        <CardTitle>
+          {mode === 'edit' ? 'Editar operador de campo' : 'Nuevo operador de campo'}
+        </CardTitle>
         <CardDescription>
           Vincula el actor operativo a un usuario de reparto y configura los correos operativos.
         </CardDescription>
@@ -140,7 +169,7 @@ export default function FieldOperatorForm({ initialData = null, mode = 'create',
               placeholder="Ej. Ruta Norte - Juan"
               {...register('name', { required: 'El nombre es obligatorio' })}
             />
-            {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+            {errors.name && <p className="text-destructive text-sm">{errors.name.message}</p>}
           </div>
 
           <div className="space-y-2">
@@ -150,19 +179,27 @@ export default function FieldOperatorForm({ initialData = null, mode = 'create',
               control={control}
               rules={{ required: 'Selecciona un usuario de reparto' }}
               render={({ field }) => (
-                <Select value={field.value || ''} onValueChange={field.onChange} disabled={loadingUsers}>
+                <Select
+                  value={field.value || ''}
+                  onValueChange={field.onChange}
+                  disabled={loadingUsers}
+                >
                   <SelectTrigger>
-                    <SelectValue placeholder={loadingUsers ? 'Cargando usuarios...' : 'Selecciona un usuario'} />
+                    <SelectValue
+                      placeholder={loadingUsers ? 'Cargando usuarios...' : 'Selecciona un usuario'}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {userOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               )}
             />
-            {errors.userId && <p className="text-sm text-destructive">{errors.userId.message}</p>}
+            {errors.userId && <p className="text-destructive text-sm">{errors.userId.message}</p>}
           </div>
 
           <div className="space-y-2">
@@ -196,7 +233,11 @@ export default function FieldOperatorForm({ initialData = null, mode = 'create',
           </div>
 
           <div className="flex flex-wrap items-center gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => router.push('/admin/field-operators')}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push('/admin/field-operators')}
+            >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Volver
             </Button>
@@ -205,7 +246,12 @@ export default function FieldOperatorForm({ initialData = null, mode = 'create',
               <Save className="h-4 w-4" />
             </Button>
             {mode === 'edit' && (
-              <Button type="button" variant="destructive" onClick={handleDelete} disabled={isDeleting}>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={handleDelete}
+                disabled={isDeleting}
+              >
                 <Trash2 className="mr-2 h-4 w-4" />
                 Eliminar
               </Button>

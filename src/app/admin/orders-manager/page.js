@@ -1,7 +1,7 @@
 'use client';
 
-import OrdersManager from "@/components/Admin/OrdersManager";
-import { OrdersManagerOptionsProvider } from "@/context/gestor-options/OrdersManagerOptionsContext";
+import OrdersManager from '@/components/Admin/OrdersManager';
+import { OrdersManagerOptionsProvider } from '@/context/gestor-options/OrdersManagerOptionsContext';
 
 export default function OrdersManagerPage() {
   return (

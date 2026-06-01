@@ -1,6 +1,6 @@
 /**
  * LonjaDeIsla Export Helper
- * 
+ *
  * Contains logic for generating Excel rows and linkedSummary for LonjaDeIsla documents
  */
 
@@ -9,79 +9,79 @@ import { findBarcoMatch } from './lonjaDeIslaBarcoMatcher';
 import { parseEuropeanNumber } from '@/helpers/formats/numbers/formatNumbers';
 import { normalizeText } from '@/helpers/formats/texts';
 import {
-    barcos,
-    barcosVentaDirecta,
-    datosVendidurias,
-    lonjaDeIsla,
-    productos,
+  barcos,
+  barcosVentaDirecta,
+  datosVendidurias,
+  lonjaDeIsla,
+  productos,
 } from '@/components/Admin/MarketDataExtractor/ListadoComprasLonjaDeIsla/exportData';
 import {
-    buildLonjaDeIslaServiciosCalculados,
-    getPorcentajeGastosLonjaOpVendiduria,
-    shouldApplyFullTasaPescaRepercusion,
+  buildLonjaDeIslaServiciosCalculados,
+  getPorcentajeGastosLonjaOpVendiduria,
+  shouldApplyFullTasaPescaRepercusion,
 } from './portFeeRepercusion';
 
 const LONJA_CABNUMDOC_TYPES = {
-    COMPRA_CONTRATO: '5',
-    COMPRA_SUBASTA: '6',
-    SERVICIOS_CONTRATO: '7',
-    SERVICIOS_SUBASTA: '9',
-    VENTA: '8',
+  COMPRA_CONTRATO: '5',
+  COMPRA_SUBASTA: '6',
+  SERVICIOS_CONTRATO: '7',
+  SERVICIOS_SUBASTA: '9',
+  VENTA: '8',
 };
 
 function buildCabNumDoc(fechaSoloNumeros, typeDigit, sequence) {
-    return `${fechaSoloNumeros}${typeDigit}${sequence}`;
+  return `${fechaSoloNumeros}${typeDigit}${sequence}`;
 }
 
 export function isLonjaDeIslaSubastaDocument(document) {
-    const tipoVentas = document?.tables?.tipoVentas || [];
-    return tipoVentas.some((row) =>
-        normalizeText(row?.descripcion || '').includes('cinta')
-    );
+  const tipoVentas = document?.tables?.tipoVentas || [];
+  return tipoVentas.some((row) => normalizeText(row?.descripcion || '').includes('cinta'));
 }
 
 export function getLonjaDeIslaTradeType(document) {
-    return isLonjaDeIslaSubastaDocument(document) ? 'SUBASTA' : 'CONTRATO';
+  return isLonjaDeIslaSubastaDocument(document) ? 'SUBASTA' : 'CONTRATO';
 }
 
 function getLonjaDeIslaUnknownSpecies(document) {
-    const unknownSpecies = new Set();
-    const ventas = document?.tables?.ventas || [];
+  const unknownSpecies = new Set();
+  const ventas = document?.tables?.ventas || [];
 
-    ventas.forEach((linea) => {
-        const producto = productos.find(
-            (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
-        );
-        if (!producto) unknownSpecies.add(linea.especie);
-    });
+  ventas.forEach((linea) => {
+    const producto = productos.find(
+      (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
+    );
+    if (!producto) unknownSpecies.add(linea.especie);
+  });
 
-    return Array.from(unknownSpecies);
+  return Array.from(unknownSpecies);
 }
 
 function getUnmappedSpeciesWarnings(document) {
-    const unknownSpecies = getLonjaDeIslaUnknownSpecies(document);
-    if (unknownSpecies.length === 0) return [];
-    return unknownSpecies.map((s) => `Especie sin código A3: ${s}`);
+  const unknownSpecies = getLonjaDeIslaUnknownSpecies(document);
+  if (unknownSpecies.length === 0) return [];
+  return unknownSpecies.map((s) => `Especie sin código A3: ${s}`);
 }
 
 function groupVentasByVendiduria(ventasVendidurias) {
-    return Object.values(ventasVendidurias).filter(Boolean).reduce((acc, barco) => {
-        const codVendiduria = barco?.vendiduria?.cod;
-        if (!codVendiduria) return acc;
-        if (!acc[codVendiduria]) {
-            acc[codVendiduria] = {
-                vendiduria: barco.vendiduria,
-                barcos: [],
-            };
-        }
-        acc[codVendiduria].barcos.push(barco);
-        return acc;
+  return Object.values(ventasVendidurias)
+    .filter(Boolean)
+    .reduce((acc, barco) => {
+      const codVendiduria = barco?.vendiduria?.cod;
+      if (!codVendiduria) return acc;
+      if (!acc[codVendiduria]) {
+        acc[codVendiduria] = {
+          vendiduria: barco.vendiduria,
+          barcos: [],
+        };
+      }
+      acc[codVendiduria].barcos.push(barco);
+      return acc;
     }, {});
 }
 
 /**
  * Generates Excel rows for a LonjaDeIsla document
- * 
+ *
  * @param {Object} document - Processed LonjaDeIsla document (with details, tables)
  * @param {Object} options - Options for generation
  * @param {string} options.CABSERIE - Serie code (default: "LI")
@@ -89,395 +89,415 @@ function groupVentasByVendiduria(ventasVendidurias) {
  * @returns {Object} Object with rows array and nextSequence number
  */
 export function generateLonjaDeIslaExcelRows(document, options = {}) {
-    const applyFullTasaPescaRepercusion = shouldApplyFullTasaPescaRepercusion(options);
-    const porcentajeGastosLonjaOpVendiduria =
-        getPorcentajeGastosLonjaOpVendiduria(applyFullTasaPescaRepercusion);
-    const speciesWarnings = getUnmappedSpeciesWarnings(document);
-    const tradeType = getLonjaDeIslaTradeType(document);
-    const tradeLetter = tradeType === 'SUBASTA' ? 'S' : 'C';
-    const shouldGenerateServicios = tradeType !== 'SUBASTA';
-    const compraTypeDigit = tradeType === 'SUBASTA'
-        ? LONJA_CABNUMDOC_TYPES.COMPRA_SUBASTA
-        : LONJA_CABNUMDOC_TYPES.COMPRA_CONTRATO;
-    const serviciosTypeDigit = tradeType === 'SUBASTA'
-        ? LONJA_CABNUMDOC_TYPES.SERVICIOS_SUBASTA
-        : LONJA_CABNUMDOC_TYPES.SERVICIOS_CONTRATO;
+  const applyFullTasaPescaRepercusion = shouldApplyFullTasaPescaRepercusion(options);
+  const porcentajeGastosLonjaOpVendiduria = getPorcentajeGastosLonjaOpVendiduria(
+    applyFullTasaPescaRepercusion
+  );
+  const speciesWarnings = getUnmappedSpeciesWarnings(document);
+  const tradeType = getLonjaDeIslaTradeType(document);
+  const tradeLetter = tradeType === 'SUBASTA' ? 'S' : 'C';
+  const shouldGenerateServicios = tradeType !== 'SUBASTA';
+  const compraTypeDigit =
+    tradeType === 'SUBASTA'
+      ? LONJA_CABNUMDOC_TYPES.COMPRA_SUBASTA
+      : LONJA_CABNUMDOC_TYPES.COMPRA_CONTRATO;
+  const serviciosTypeDigit =
+    tradeType === 'SUBASTA'
+      ? LONJA_CABNUMDOC_TYPES.SERVICIOS_SUBASTA
+      : LONJA_CABNUMDOC_TYPES.SERVICIOS_CONTRATO;
 
-    const { CABSERIE: baseCABSERIE = "LI", startSequence = 1, startSequenceVenta } = options;
-    const { details: { fecha: fechaRaw }, tables: { ventas, vendidurias } } = document;
-    const fecha = formatDateForA3(fechaRaw);
-    // Extraer año de la fecha (últimos 2 dígitos)
-    // Intentar extraer año directamente de la cadena (formato YYYY-MM-DD o YYYY/MM/DD)
-    let año = null;
-    const añoMatch = String(fechaRaw).match(/(\d{4})/);
-    if (añoMatch) {
-        año = añoMatch[1].slice(-2);
-    } else {
-        // Fallback: usar Date object
-        const fechaObj = new Date(fechaRaw);
-        año = fechaObj.getFullYear().toString().slice(-2);
+  const { CABSERIE: baseCABSERIE = 'LI', startSequence = 1, startSequenceVenta } = options;
+  const {
+    details: { fecha: fechaRaw },
+    tables: { ventas, vendidurias },
+  } = document;
+  const fecha = formatDateForA3(fechaRaw);
+  // Extraer año de la fecha (últimos 2 dígitos)
+  // Intentar extraer año directamente de la cadena (formato YYYY-MM-DD o YYYY/MM/DD)
+  let año = null;
+  const añoMatch = String(fechaRaw).match(/(\d{4})/);
+  if (añoMatch) {
+    año = añoMatch[1].slice(-2);
+  } else {
+    // Fallback: usar Date object
+    const fechaObj = new Date(fechaRaw);
+    año = fechaObj.getFullYear().toString().slice(-2);
+  }
+  const CABSERIE = `${baseCABSERIE}${año}`;
+  const fechaSoloNumeros = String(fechaRaw).replace(/[^0-9]/g, '');
+  let albaranSequence = startSequence;
+  let ventaAlbaranSequence = startSequenceVenta ?? startSequence;
+  const processedRows = [];
+  const ventaRows = [];
+
+  // Helper functions
+  const calculateImporteFromLinea = (linea) => calculateImporte(linea.kilos, linea.precio);
+
+  // Process ventas into ventasVendidurias and ventasDirectas
+  const ventasVendidurias = [];
+  const ventasDirectas = [];
+
+  ventas.forEach((venta) => {
+    const barcoEncontrado = findBarcoMatch(barcos, venta);
+
+    if (!barcoEncontrado) {
+      return;
     }
-    const CABSERIE = `${baseCABSERIE}${año}`;
-    const fechaSoloNumeros = String(fechaRaw).replace(/[^0-9]/g, '');
-    let albaranSequence = startSequence;
-    let ventaAlbaranSequence = startSequenceVenta ?? startSequence;
-    const processedRows = [];
-    const ventaRows = [];
 
-    // Helper functions
-    const calculateImporteFromLinea = (linea) => calculateImporte(linea.kilos, linea.precio);
-    
-    // Process ventas into ventasVendidurias and ventasDirectas
-    const ventasVendidurias = [];
-    const ventasDirectas = [];
+    const nombreBarco = barcoEncontrado.barco;
+    const codBarco = `${barcoEncontrado.cod}`;
 
-    ventas.forEach((venta) => {
-        const barcoEncontrado = findBarcoMatch(barcos, venta);
+    const barcoVentaDirectaEncontrado = barcosVentaDirecta.find((barco) => barco.cod === codBarco);
 
-        if (!barcoEncontrado) {
-            return;
-        }
+    if (!barcoVentaDirectaEncontrado) {
+      const vendiduria = datosVendidurias.find(
+        (vendiduria) => vendiduria.cod === barcoEncontrado.codVendiduria
+      );
 
-        const nombreBarco = barcoEncontrado.barco;
-        const codBarco = `${barcoEncontrado.cod}`;
+      if (!vendiduria) {
+        return;
+      }
 
-        const barcoVentaDirectaEncontrado = barcosVentaDirecta.find((barco) => barco.cod === codBarco);
+      if (!ventasVendidurias[codBarco]) {
+        ventasVendidurias[codBarco] = {
+          cod: codBarco,
+          nombre: nombreBarco,
+          vendiduria: vendiduria,
+          lineas: [],
+        };
+      }
+      ventasVendidurias[codBarco].lineas.push(venta);
+    } else {
+      const armador = barcoVentaDirectaEncontrado.armador;
+      if (!ventasDirectas[codBarco]) {
+        ventasDirectas[codBarco] = {
+          cod: codBarco,
+          nombre: nombreBarco,
+          armador: armador,
+          lineas: [],
+        };
+      }
+      ventasDirectas[codBarco].lineas.push(venta);
+    }
+  });
 
-        if (!barcoVentaDirectaEncontrado) {
-            const vendiduria = datosVendidurias.find((vendiduria) => vendiduria.cod === barcoEncontrado.codVendiduria);
+  // Calculate importeTotalVentasDirectas for services
+  const importeTotalVentasDirectas = Object.values(ventasDirectas).reduce((acc, barco) => {
+    return (
+      acc +
+      barco.lineas.reduce((acc, linea) => {
+        return acc + calculateImporteFromLinea(linea);
+      }, 0)
+    );
+  }, 0);
 
-            if (!vendiduria) {
-                return;
-            }
+  const servicios = buildLonjaDeIslaServiciosCalculados(
+    applyFullTasaPescaRepercusion,
+    importeTotalVentasDirectas
+  );
 
-            if (!ventasVendidurias[codBarco]) {
-                ventasVendidurias[codBarco] = {
-                    cod: codBarco,
-                    nombre: nombreBarco,
-                    vendiduria: vendiduria,
-                    lineas: [],
-                };
-            }
-            ventasVendidurias[codBarco].lineas.push(venta);
-        } else {
-            const armador = barcoVentaDirectaEncontrado.armador;
-            if (!ventasDirectas[codBarco]) {
-                ventasDirectas[codBarco] = {
-                    cod: codBarco,
-                    nombre: nombreBarco,
-                    armador: armador,
-                    lineas: [],
-                };
-            }
-            ventasDirectas[codBarco].lineas.push(venta);
-        }
-    });
-
-    // Calculate importeTotalVentasDirectas for services
-    const importeTotalVentasDirectas = Object.values(ventasDirectas).reduce((acc, barco) => {
-        return acc + barco.lineas.reduce((acc, linea) => {
-            return acc + calculateImporteFromLinea(linea);
-        }, 0);
+  // Helper function
+  const getImporteTotal = (lineasBarco) => {
+    return lineasBarco.reduce((acc, linea) => {
+      return acc + calculateImporteFromLinea(linea);
     }, 0);
+  };
 
-    const servicios = buildLonjaDeIslaServiciosCalculados(
-        applyFullTasaPescaRepercusion,
-        importeTotalVentasDirectas,
+  // Generate rows for ventasDirectas
+  Object.values(ventasDirectas).forEach((barco) => {
+    const cabNumDoc = buildCabNumDoc(fechaSoloNumeros, compraTypeDigit, albaranSequence);
+    const cabNumDocVenta = buildCabNumDoc(
+      fechaSoloNumeros,
+      LONJA_CABNUMDOC_TYPES.VENTA,
+      ventaAlbaranSequence
     );
 
-    // Helper function
-    const getImporteTotal = (lineasBarco) => {
-        return lineasBarco.reduce((acc, linea) => {
-            return acc + calculateImporteFromLinea(linea);
-        }, 0);
-    };
+    // Hoja ALBARANESVENTA: 1 albarán por cada "venta directa" (grupo de barco) con 2 líneas
+    const importeBase = getImporteTotal(barco.lineas); // base = Σ(kilos*precio)
+    const codCliente = barco.armador?.codA3erpCliente;
 
-    // Generate rows for ventasDirectas
-    Object.values(ventasDirectas).forEach(barco => {
-        const cabNumDoc = buildCabNumDoc(
-            fechaSoloNumeros,
-            compraTypeDigit,
-            albaranSequence
-        );
-        const cabNumDocVenta = buildCabNumDoc(
-            fechaSoloNumeros,
-            LONJA_CABNUMDOC_TYPES.VENTA,
-            ventaAlbaranSequence
-        );
+    // Para ALBARANESVENTA necesitamos el código de cliente (si está vacío, abortamos).
+    if (codCliente === undefined || codCliente === null || String(codCliente).trim() === '') {
+      throw new Error(`Falta CABCODCLI (cod cliente) para el barco "${barco.nombre}"`);
+    }
 
-        // Hoja ALBARANESVENTA: 1 albarán por cada "venta directa" (grupo de barco) con 2 líneas
-        const importeBase = getImporteTotal(barco.lineas); // base = Σ(kilos*precio)
-        const codCliente = barco.armador?.codA3erpCliente;
-
-        // Para ALBARANESVENTA necesitamos el código de cliente (si está vacío, abortamos).
-        if (codCliente === undefined || codCliente === null || String(codCliente).trim() === '') {
-            throw new Error(`Falta CABCODCLI (cod cliente) para el barco "${barco.nombre}"`);
-        }
-
-            ventaRows.push({
-            CABSERIE: CABSERIE,
-            CABNUMDOC: cabNumDocVenta,
-            CABFECHA: fecha,
-            CABCODCLI: codCliente,
-            CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
-            LINCODART: 10136, // Suplido lonja (iva exento - SUPLIDO)
-            LINDESCLIN: 'Suplido lonja',
-            LINBULTOS: 1,
-            LINUNIDADES: 1,
-            LINPRCMONEDA: importeBase * 0.015,
-            LINTIPIVA: 'SUPLIDOS',
-        });
-        ventaRows.push({
-            CABSERIE: CABSERIE,
-            CABNUMDOC: cabNumDocVenta,
-            CABFECHA: fecha,
-            CABCODCLI: codCliente,
-            CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
-            LINCODART: 9998, // Gasto gestión (iva normal 21%)
-            LINDESCLIN: 'Gasto gestion',
-            LINBULTOS: 1,
-            LINUNIDADES: 1,
-            LINPRCMONEDA: importeBase * 0.01,
-            LINTIPIVA: 'ORD21',
-        });
-        ventaAlbaranSequence++;
-
-        barco.lineas.forEach(linea => {
-            const producto = productos.find(
-                (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
-            );
-            processedRows.push({
-                CABSERIE: CABSERIE,
-                CABNUMDOC: cabNumDoc,
-                CABFECHA: fecha,
-                CABCODPRO: barco.armador.codA3erp,
-                CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
-                LINCODART: producto?.codA3erp || '',
-                LINDESCLIN: linea.especie,
-                LINUNIDADES: parseDecimalValue(linea.kilos),
-                LINPRCMONEDA: parseDecimalValue(linea.precio),
-                LINTIPIVA: 'RED10',
-            });
-        });
-        albaranSequence++;
+    ventaRows.push({
+      CABSERIE: CABSERIE,
+      CABNUMDOC: cabNumDocVenta,
+      CABFECHA: fecha,
+      CABCODCLI: codCliente,
+      CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
+      LINCODART: 10136, // Suplido lonja (iva exento - SUPLIDO)
+      LINDESCLIN: 'Suplido lonja',
+      LINBULTOS: 1,
+      LINUNIDADES: 1,
+      LINPRCMONEDA: importeBase * 0.015,
+      LINTIPIVA: 'SUPLIDOS',
     });
+    ventaRows.push({
+      CABSERIE: CABSERIE,
+      CABNUMDOC: cabNumDocVenta,
+      CABFECHA: fecha,
+      CABCODCLI: codCliente,
+      CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
+      LINCODART: 9998, // Gasto gestión (iva normal 21%)
+      LINDESCLIN: 'Gasto gestion',
+      LINBULTOS: 1,
+      LINUNIDADES: 1,
+      LINPRCMONEDA: importeBase * 0.01,
+      LINTIPIVA: 'ORD21',
+    });
+    ventaAlbaranSequence++;
 
-    // Generate rows for ventasVendidurias
-    if (tradeType === 'SUBASTA') {
-        const ventasPorVendiduria = groupVentasByVendiduria(ventasVendidurias);
-        Object.values(ventasPorVendiduria).forEach(({ vendiduria, barcos }) => {
-            const cabNumDoc = buildCabNumDoc(
-                fechaSoloNumeros,
-                compraTypeDigit,
-                albaranSequence
-            );
-            let importeTotalVendiduria = 0;
+    barco.lineas.forEach((linea) => {
+      const producto = productos.find(
+        (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
+      );
+      processedRows.push({
+        CABSERIE: CABSERIE,
+        CABNUMDOC: cabNumDoc,
+        CABFECHA: fecha,
+        CABCODPRO: barco.armador.codA3erp,
+        CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre}`,
+        LINCODART: producto?.codA3erp || '',
+        LINDESCLIN: linea.especie,
+        LINUNIDADES: parseDecimalValue(linea.kilos),
+        LINPRCMONEDA: parseDecimalValue(linea.precio),
+        LINTIPIVA: 'RED10',
+      });
+    });
+    albaranSequence++;
+  });
 
-            barcos.forEach((barco) => {
-                barco.lineas.forEach((linea) => {
-                    const producto = productos.find(
-                        (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
-                    );
-                    processedRows.push({
-                        CABSERIE: CABSERIE,
-                        CABNUMDOC: cabNumDoc,
-                        CABFECHA: fecha,
-                        CABCODPRO: vendiduria.codA3erp,
-                        CABREFERENCIA: `LONJA - ${fecha} - ${vendiduria.nombre} ${tradeLetter}`,
-                        LINCODART: producto?.codA3erp || '',
-                        LINDESCLIN: linea.especie,
-                        LINUNIDADES: parseDecimalValue(linea.kilos),
-                        LINPRCMONEDA: parseDecimalValue(linea.precio),
-                        LINTIPIVA: 'RED10',
-                    });
-                    importeTotalVendiduria += calculateImporteFromLinea(linea);
-                });
-            });
+  // Generate rows for ventasVendidurias
+  if (tradeType === 'SUBASTA') {
+    const ventasPorVendiduria = groupVentasByVendiduria(ventasVendidurias);
+    Object.values(ventasPorVendiduria).forEach(({ vendiduria, barcos }) => {
+      const cabNumDoc = buildCabNumDoc(fechaSoloNumeros, compraTypeDigit, albaranSequence);
+      let importeTotalVendiduria = 0;
 
-            processedRows.push({
-                CABSERIE: CABSERIE,
-                CABNUMDOC: cabNumDoc,
-                CABFECHA: fecha,
-                CABCODPRO: lonjaDeIsla.codA3erp,
-                CABREFERENCIA: `LONJA - ${fecha} - ${vendiduria.nombre} ${tradeLetter}`,
-                LINCODART: 9999,
-                LINDESCLIN: 'Gastos de Lonja y OP',
-                LINUNIDADES: 1,
-                LINPRCMONEDA:
-                    (importeTotalVendiduria * porcentajeGastosLonjaOpVendiduria) / 100,
-                LINTIPIVA: 'RED10',
-            });
-            albaranSequence++;
+      barcos.forEach((barco) => {
+        barco.lineas.forEach((linea) => {
+          const producto = productos.find(
+            (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
+          );
+          processedRows.push({
+            CABSERIE: CABSERIE,
+            CABNUMDOC: cabNumDoc,
+            CABFECHA: fecha,
+            CABCODPRO: vendiduria.codA3erp,
+            CABREFERENCIA: `LONJA - ${fecha} - ${vendiduria.nombre} ${tradeLetter}`,
+            LINCODART: producto?.codA3erp || '',
+            LINDESCLIN: linea.especie,
+            LINUNIDADES: parseDecimalValue(linea.kilos),
+            LINPRCMONEDA: parseDecimalValue(linea.precio),
+            LINTIPIVA: 'RED10',
+          });
+          importeTotalVendiduria += calculateImporteFromLinea(linea);
         });
-    } else {
-        Object.values(ventasVendidurias).filter(Boolean).forEach(barco => {
-            const cabNumDoc = buildCabNumDoc(
-                fechaSoloNumeros,
-                compraTypeDigit,
-                albaranSequence
-            );
-            barco.lineas.forEach(linea => {
-                const producto = productos.find(
-                    (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
-                );
-                processedRows.push({
-                    CABSERIE: CABSERIE,
-                    CABNUMDOC: cabNumDoc,
-                    CABFECHA: fecha,
-                    CABCODPRO: barco.vendiduria.codA3erp,
-                    CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre} ${tradeLetter}`,
-                    LINCODART: producto?.codA3erp || '',
-                    LINDESCLIN: linea.especie,
-                    LINUNIDADES: parseDecimalValue(linea.kilos),
-                    LINPRCMONEDA: parseDecimalValue(linea.precio),
-                    LINTIPIVA: 'RED10',
-                });
-            });
+      });
 
-            const importeTotal = getImporteTotal(barco.lineas);
-
-            processedRows.push({
-                CABSERIE: CABSERIE,
-                CABNUMDOC: cabNumDoc,
-                CABFECHA: fecha,
-                CABCODPRO: lonjaDeIsla.codA3erp,
-                CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre} ${tradeLetter}`,
-                LINCODART: 9999,
-                LINDESCLIN: 'Gastos de Lonja y OP',
-                LINUNIDADES: 1,
-                LINPRCMONEDA: (importeTotal * porcentajeGastosLonjaOpVendiduria) / 100,
-                LINTIPIVA: 'RED10',
-            });
-            albaranSequence++;
+      processedRows.push({
+        CABSERIE: CABSERIE,
+        CABNUMDOC: cabNumDoc,
+        CABFECHA: fecha,
+        CABCODPRO: lonjaDeIsla.codA3erp,
+        CABREFERENCIA: `LONJA - ${fecha} - ${vendiduria.nombre} ${tradeLetter}`,
+        LINCODART: 9999,
+        LINDESCLIN: 'Gastos de Lonja y OP',
+        LINUNIDADES: 1,
+        LINPRCMONEDA: (importeTotalVendiduria * porcentajeGastosLonjaOpVendiduria) / 100,
+        LINTIPIVA: 'RED10',
+      });
+      albaranSequence++;
+    });
+  } else {
+    Object.values(ventasVendidurias)
+      .filter(Boolean)
+      .forEach((barco) => {
+        const cabNumDoc = buildCabNumDoc(fechaSoloNumeros, compraTypeDigit, albaranSequence);
+        barco.lineas.forEach((linea) => {
+          const producto = productos.find(
+            (p) => normalizeText(p.nombre) === normalizeText(linea.especie)
+          );
+          processedRows.push({
+            CABSERIE: CABSERIE,
+            CABNUMDOC: cabNumDoc,
+            CABFECHA: fecha,
+            CABCODPRO: barco.vendiduria.codA3erp,
+            CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre} ${tradeLetter}`,
+            LINCODART: producto?.codA3erp || '',
+            LINDESCLIN: linea.especie,
+            LINUNIDADES: parseDecimalValue(linea.kilos),
+            LINPRCMONEDA: parseDecimalValue(linea.precio),
+            LINTIPIVA: 'RED10',
+          });
         });
-    }
 
-    // Generate rows for servicios only for Contrato.
-    if (shouldGenerateServicios) {
-        const cabNumDocServicios = buildCabNumDoc(
-            fechaSoloNumeros,
-            serviciosTypeDigit,
-            albaranSequence
-        );
-        servicios.forEach(line => {
-            processedRows.push({
-                CABSERIE: CABSERIE,
-                CABNUMDOC: cabNumDocServicios,
-                CABFECHA: fecha,
-                CABCODPRO: lonjaDeIsla.codA3erp,
-                CABREFERENCIA: `LONJA - ${fecha} - SERVICIOS ${tradeLetter}`,
-                LINCODART: 9999,
-                LINDESCLIN: line.descripcion,
-                LINUNIDADES: line.unidades,
-                LINPRCMONEDA: line.precio,
-                LINTIPIVA: 'RED10',
-            });
+        const importeTotal = getImporteTotal(barco.lineas);
+
+        processedRows.push({
+          CABSERIE: CABSERIE,
+          CABNUMDOC: cabNumDoc,
+          CABFECHA: fecha,
+          CABCODPRO: lonjaDeIsla.codA3erp,
+          CABREFERENCIA: `LONJA - ${fecha} - ${barco.nombre} ${tradeLetter}`,
+          LINCODART: 9999,
+          LINDESCLIN: 'Gastos de Lonja y OP',
+          LINUNIDADES: 1,
+          LINPRCMONEDA: (importeTotal * porcentajeGastosLonjaOpVendiduria) / 100,
+          LINTIPIVA: 'RED10',
         });
         albaranSequence++;
-    }
+      });
+  }
 
-    return {
-        rows: processedRows,
-        nextSequence: albaranSequence,
-        ventaRows,
-        nextVentaSequence: ventaAlbaranSequence,
-        warnings: speciesWarnings,
-    };
+  // Generate rows for servicios only for Contrato.
+  if (shouldGenerateServicios) {
+    const cabNumDocServicios = buildCabNumDoc(
+      fechaSoloNumeros,
+      serviciosTypeDigit,
+      albaranSequence
+    );
+    servicios.forEach((line) => {
+      processedRows.push({
+        CABSERIE: CABSERIE,
+        CABNUMDOC: cabNumDocServicios,
+        CABFECHA: fecha,
+        CABCODPRO: lonjaDeIsla.codA3erp,
+        CABREFERENCIA: `LONJA - ${fecha} - SERVICIOS ${tradeLetter}`,
+        LINCODART: 9999,
+        LINDESCLIN: line.descripcion,
+        LINUNIDADES: line.unidades,
+        LINPRCMONEDA: line.precio,
+        LINTIPIVA: 'RED10',
+      });
+    });
+    albaranSequence++;
+  }
+
+  return {
+    rows: processedRows,
+    nextSequence: albaranSequence,
+    ventaRows,
+    nextVentaSequence: ventaAlbaranSequence,
+    warnings: speciesWarnings,
+  };
 }
 
 /**
  * Generates linkedSummary for a LonjaDeIsla document
- * 
+ *
  * @param {Object} document - Processed LonjaDeIsla document
  * @returns {Array} Array of linked summary objects
  */
 export function generateLonjaDeIslaLinkedSummary(document) {
-    const { details: { fecha }, tables: { ventas } } = document;
+  const {
+    details: { fecha },
+    tables: { ventas },
+  } = document;
 
-    const calculateImporteFromLinea = (linea) => calculateImporte(linea.kilos, linea.precio);
+  const calculateImporteFromLinea = (linea) => calculateImporte(linea.kilos, linea.precio);
 
-    // Process ventas into ventasVendidurias and ventasDirectas (same logic as Excel generation)
-    const ventasVendidurias = [];
-    const ventasDirectas = [];
+  // Process ventas into ventasVendidurias and ventasDirectas (same logic as Excel generation)
+  const ventasVendidurias = [];
+  const ventasDirectas = [];
 
-    ventas.forEach((venta) => {
-        const barcoEncontrado = findBarcoMatch(barcos, venta);
+  ventas.forEach((venta) => {
+    const barcoEncontrado = findBarcoMatch(barcos, venta);
 
-        if (!barcoEncontrado) {
-            return;
-        }
+    if (!barcoEncontrado) {
+      return;
+    }
 
-        const nombreBarco = barcoEncontrado.barco;
-        const codBarco = `${barcoEncontrado.cod}`;
+    const nombreBarco = barcoEncontrado.barco;
+    const codBarco = `${barcoEncontrado.cod}`;
 
-        const barcoVentaDirectaEncontrado = barcosVentaDirecta.find((barco) => barco.cod === codBarco);
+    const barcoVentaDirectaEncontrado = barcosVentaDirecta.find((barco) => barco.cod === codBarco);
 
-        if (!barcoVentaDirectaEncontrado) {
-            const vendiduria = datosVendidurias.find((vendiduria) => vendiduria.cod === barcoEncontrado.codVendiduria);
+    if (!barcoVentaDirectaEncontrado) {
+      const vendiduria = datosVendidurias.find(
+        (vendiduria) => vendiduria.cod === barcoEncontrado.codVendiduria
+      );
 
-            if (!vendiduria) {
-                return;
-            }
+      if (!vendiduria) {
+        return;
+      }
 
-            if (!ventasVendidurias[codBarco]) {
-                ventasVendidurias[codBarco] = {
-                    cod: codBarco,
-                    nombre: nombreBarco,
-                    vendiduria: vendiduria,
-                    lineas: [],
-                };
-            }
-            ventasVendidurias[codBarco].lineas.push(venta);
-        } else {
-            const armador = barcoVentaDirectaEncontrado.armador;
-            if (!ventasDirectas[codBarco]) {
-                ventasDirectas[codBarco] = {
-                    cod: codBarco,
-                    nombre: nombreBarco,
-                    armador: armador,
-                    lineas: [],
-                };
-            }
-            ventasDirectas[codBarco].lineas.push(venta);
-        }
-    });
-
-    // Generate linkedSummary from ventasVendidurias
-    const linkedSummaryVendidurias = Object.values(ventasVendidurias).filter(Boolean).map((venta) => {
-        const declaredTotalNetWeight = venta.lineas.reduce((acc, linea) => acc + parseDecimalValue(linea.kilos), 0);
-        const declaredTotalAmount = venta.lineas.reduce((acc, linea) => acc + calculateImporteFromLinea(linea), 0);
-        const codBrisappBarco = barcos.find((barco) => barco.cod === venta.cod)?.codBrisapp ?? null;
-
-        return {
-            supplierId: codBrisappBarco,
-            date: fecha,
-            declaredTotalNetWeight: parseFloat(declaredTotalNetWeight.toFixed(2)),
-            declaredTotalAmount: parseFloat(declaredTotalAmount.toFixed(2)),
-            barcoNombre: venta.nombre,
-            error: codBrisappBarco === null ? true : false,
+      if (!ventasVendidurias[codBarco]) {
+        ventasVendidurias[codBarco] = {
+          cod: codBarco,
+          nombre: nombreBarco,
+          vendiduria: vendiduria,
+          lineas: [],
         };
-    });
-
-    // Generate linkedSummary from ventasDirectas
-    const linkedSummaryDirectas = Object.values(ventasDirectas).filter(Boolean).map((venta) => {
-        const declaredTotalNetWeight = venta.lineas.reduce((acc, linea) => acc + parseDecimalValue(linea.kilos), 0);
-        const declaredTotalAmount = venta.lineas.reduce((acc, linea) => acc + calculateImporteFromLinea(linea), 0);
-        const codBrisappBarco = barcos.find((barco) => barco.cod === venta.cod)?.codBrisapp ?? null;
-
-        return {
-            supplierId: codBrisappBarco,
-            date: fecha,
-            declaredTotalNetWeight: parseFloat(declaredTotalNetWeight.toFixed(2)),
-            declaredTotalAmount: parseFloat(declaredTotalAmount.toFixed(2)),
-            barcoNombre: venta.nombre,
-            error: codBrisappBarco === null ? true : false,
+      }
+      ventasVendidurias[codBarco].lineas.push(venta);
+    } else {
+      const armador = barcoVentaDirectaEncontrado.armador;
+      if (!ventasDirectas[codBarco]) {
+        ventasDirectas[codBarco] = {
+          cod: codBarco,
+          nombre: nombreBarco,
+          armador: armador,
+          lineas: [],
         };
+      }
+      ventasDirectas[codBarco].lineas.push(venta);
+    }
+  });
+
+  // Generate linkedSummary from ventasVendidurias
+  const linkedSummaryVendidurias = Object.values(ventasVendidurias)
+    .filter(Boolean)
+    .map((venta) => {
+      const declaredTotalNetWeight = venta.lineas.reduce(
+        (acc, linea) => acc + parseDecimalValue(linea.kilos),
+        0
+      );
+      const declaredTotalAmount = venta.lineas.reduce(
+        (acc, linea) => acc + calculateImporteFromLinea(linea),
+        0
+      );
+      const codBrisappBarco = barcos.find((barco) => barco.cod === venta.cod)?.codBrisapp ?? null;
+
+      return {
+        supplierId: codBrisappBarco,
+        date: fecha,
+        declaredTotalNetWeight: parseFloat(declaredTotalNetWeight.toFixed(2)),
+        declaredTotalAmount: parseFloat(declaredTotalAmount.toFixed(2)),
+        barcoNombre: venta.nombre,
+        error: codBrisappBarco === null ? true : false,
+      };
     });
 
-    return [...linkedSummaryVendidurias, ...linkedSummaryDirectas];
+  // Generate linkedSummary from ventasDirectas
+  const linkedSummaryDirectas = Object.values(ventasDirectas)
+    .filter(Boolean)
+    .map((venta) => {
+      const declaredTotalNetWeight = venta.lineas.reduce(
+        (acc, linea) => acc + parseDecimalValue(linea.kilos),
+        0
+      );
+      const declaredTotalAmount = venta.lineas.reduce(
+        (acc, linea) => acc + calculateImporteFromLinea(linea),
+        0
+      );
+      const codBrisappBarco = barcos.find((barco) => barco.cod === venta.cod)?.codBrisapp ?? null;
+
+      return {
+        supplierId: codBrisappBarco,
+        date: fecha,
+        declaredTotalNetWeight: parseFloat(declaredTotalNetWeight.toFixed(2)),
+        declaredTotalAmount: parseFloat(declaredTotalAmount.toFixed(2)),
+        barcoNombre: venta.nombre,
+        error: codBrisappBarco === null ? true : false,
+      };
+    });
+
+  return [...linkedSummaryVendidurias, ...linkedSummaryDirectas];
 }
 
 export function validateLonjaDeIslaSpeciesForExport(document) {
-    return getLonjaDeIslaUnknownSpecies(document);
+  return getLonjaDeIslaUnknownSpecies(document);
 }
-

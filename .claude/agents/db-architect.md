@@ -17,7 +17,9 @@ Una regla ESLint **obliga** a usar estas factories — arrays inline en `queryKe
 // src/lib/routes/queryKeys.ts
 
 // Normalización de parámetros para queryKeys consistentes
-export function normalizeQueryParams(params: Record<string, unknown> = {}): Record<string, unknown> {
+export function normalizeQueryParams(
+  params: Record<string, unknown> = {}
+): Record<string, unknown> {
   // Ordena las claves, elimina nulls/undefined, deduplicados
   return Object.fromEntries(
     Object.entries(params)
@@ -28,10 +30,13 @@ export function normalizeQueryParams(params: Record<string, unknown> = {}): Reco
 
 // Factory de listado — jerarquía para invalidación granular
 export const customerListKeys = {
-  listPrefix: (tenantId: string | null) =>
-    ['customers', tenantId] as const,
-  list: (tenantId: string | null, filters: Record<string, unknown>, page: number, perPage: number) =>
-    ['customers', tenantId, 'list', normalizeQueryParams(filters), page, perPage] as const,
+  listPrefix: (tenantId: string | null) => ['customers', tenantId] as const,
+  list: (
+    tenantId: string | null,
+    filters: Record<string, unknown>,
+    page: number,
+    perPage: number
+  ) => ['customers', tenantId, 'list', normalizeQueryParams(filters), page, perPage] as const,
 };
 
 // Factory de detalle
@@ -42,8 +47,7 @@ export const customerDetailKeys = {
 
 // Factory de opciones para selects
 export const customerOptionKeys = {
-  list: (tenantId: string | null) =>
-    ['customers', tenantId, 'options'] as const,
+  list: (tenantId: string | null) => ['customers', tenantId, 'options'] as const,
 };
 ```
 
@@ -51,7 +55,7 @@ export const customerOptionKeys = {
 
 ```typescript
 // 1. Siempre incluir tenantId — aislamiento multi-tenant en cache
-['entity', tenantId, 'list', filters, page]
+['entity', tenantId, 'list', filters, page];
 
 // 2. Jerarquía para invalidación granular
 // Invalidar todo de un entity:      ['customers', tenantId]
@@ -59,11 +63,12 @@ export const customerOptionKeys = {
 // Invalidar un detalle específico:  ['customers', tenantId, 'detail', id]
 
 // 3. Normalizar filtros — para que el mismo filtro con diferente orden no duplique cache
-normalizeQueryParams({ search: 'bri', supplier_id: 5 })
-// → { search: 'bri', supplier_id: 5 }  (siempre mismo orden)
+normalizeQueryParams({ search: 'bri', supplier_id: 5 })[
+  // → { search: 'bri', supplier_id: 5 }  (siempre mismo orden)
 
-// 4. Tipos immutables con as const
-['customers', tenantId, 'list'] as const
+  // 4. Tipos immutables con as const
+  ('customers', tenantId, 'list')
+] as const;
 ```
 
 ---
@@ -148,6 +153,7 @@ queryClient.invalidateQueries({ queryKey: ['customers', tenantId] });
 ## Optimistic Updates — cuándo aplicar
 
 Usar optimistic updates **solo cuando**:
+
 1. La latencia de la operación es perceptible (>300ms)
 2. El rollback es simple y definido
 3. La operación falla raramente
@@ -168,7 +174,7 @@ const mutation = useMutation({
       customerListKeys.list(tenantId, {}, 1, 15),
       (old: CatalogListResponse<Customer> | undefined) => ({
         ...old,
-        data: old?.data.map(c => c.id === id ? { ...c, active: !c.active } : c) ?? [],
+        data: old?.data.map((c) => (c.id === id ? { ...c, active: !c.active } : c)) ?? [],
       })
     );
 
@@ -176,10 +182,7 @@ const mutation = useMutation({
   },
   onError: (_err, _id, context) => {
     // Rollback si falla
-    queryClient.setQueryData(
-      customerListKeys.list(tenantId, {}, 1, 15),
-      context?.previousData
-    );
+    queryClient.setQueryData(customerListKeys.list(tenantId, {}, 1, 15), context?.previousData);
   },
   onSettled: () => {
     queryClient.invalidateQueries({ queryKey: customerListKeys.listPrefix(tenantId) });
@@ -210,6 +213,7 @@ const prefetchCustomer = async (id: number) => {
 ```
 
 **NO usar prefetch para:**
+
 - Listas completas de entidades (demasiado volumen)
 - Datos que cambian muy frecuentemente
 - Rutas que el usuario raramente visitará
@@ -219,15 +223,18 @@ const prefetchCustomer = async (id: number) => {
 ## Diagnóstico de problemas de cache
 
 ### Cache miss frecuente — posibles causas
+
 1. `tenantId` es `null` al construir la queryKey → `enabled: false` → query no ejecuta
 2. Filtros no normalizados → misma query con diferentes keys → duplicación
 3. `staleTime: 0` (default) en datos que no necesitan revalidación constante
 
 ### Cache contaminado entre tenants
+
 - Verificar que `tenantId` está en todas las queryKeys
 - El queryClient se comparte entre rutas — nunca asumir tenant fijo
 
 ### Mutación no actualiza la UI
+
 - Verificar que `invalidateQueries` usa la misma estructura de key que `useQuery`
 - Usar `queryClient.getQueryCache().getAll()` en dev para inspeccionar el cache
 

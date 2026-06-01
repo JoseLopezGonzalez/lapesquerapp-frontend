@@ -2,15 +2,55 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Phone, Mail, MessageCircle, MapPin, CircleDot, MoreVertical, Pencil, UserPlus, Trash2, Plus, UserRound, FilePlus, CalendarClock, Globe, ExternalLink, Loader2, Tag } from 'lucide-react';
+import {
+  Phone,
+  Mail,
+  MessageCircle,
+  MapPin,
+  CircleDot,
+  MoreVertical,
+  Pencil,
+  UserPlus,
+  Trash2,
+  Plus,
+  UserRound,
+  FilePlus,
+  CalendarClock,
+  Globe,
+  ExternalLink,
+  Loader2,
+  Tag,
+} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { useProspect, useProspectContacts, useProspectMutations } from '@/hooks/useProspects';
 import { usePendingAgendaAction } from '@/hooks/useAgenda';
@@ -55,7 +95,11 @@ const interactionTypeIcons = {
 
 function SectionEmpty({ title, description }) {
   return (
-    <EmptyState title={title} description={description} className="h-full w-full border bg-muted/20 !min-h-0" />
+    <EmptyState
+      title={title}
+      description={description}
+      className="bg-muted/20 h-full !min-h-0 w-full border"
+    />
   );
 }
 
@@ -70,7 +114,11 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
   });
   const [interactionsPage, setInteractionsPage] = useState(1);
   const [loadedInteractions, setLoadedInteractions] = useState([]);
-  const { data: interactions, isLoading: interactionsLoading, meta: interactionsMeta } = useCommercialInteractions({
+  const {
+    data: interactions,
+    isLoading: interactionsLoading,
+    meta: interactionsMeta,
+  } = useCommercialInteractions({
     prospectId,
     perPage: 20,
     page: interactionsPage,
@@ -82,7 +130,8 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
     enabled: shouldLoadOffers,
   });
   const { updateProspect, deleteContact } = useProspectMutations();
-  const { data: categoryOptions = [], isLoading: categoriesLoading } = useProspectCategoryOptions(true);
+  const { data: categoryOptions = [], isLoading: categoriesLoading } =
+    useProspectCategoryOptions(true);
   const [isCategoryUpdating, setIsCategoryUpdating] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [interactionOpen, setInteractionOpen] = useState(false);
@@ -107,8 +156,10 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
   const handleStartInteraction = async () => {
     const response = await refetchPendingPreflight();
     const rawPending = response?.data?.data ?? null;
-    const pendingAction = rawPending?.pendingAction ?? (rawPending?.agendaActionId ? rawPending : null);
-    const hasPending = typeof rawPending?.hasPending === 'boolean' ? rawPending.hasPending : Boolean(pendingAction);
+    const pendingAction =
+      rawPending?.pendingAction ?? (rawPending?.agendaActionId ? rawPending : null);
+    const hasPending =
+      typeof rawPending?.hasPending === 'boolean' ? rawPending.hasPending : Boolean(pendingAction);
     if (hasPending) {
       setPreflightDialogOpen(true);
       return;
@@ -119,7 +170,6 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
     setInteractionNextActionNote('');
     setInteractionOpen(true);
   };
-
 
   useEffect(() => {
     setActiveTab('data');
@@ -151,13 +201,16 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
   const interactionsLastPage = Math.max(1, interactionsMeta?.last_page ?? 1);
   const canLoadMoreInteractions = interactionsPage < interactionsLastPage && !interactionsLoading;
 
-  const handleInteractionsScroll = useCallback((event) => {
-    if (!canLoadMoreInteractions) return;
-    const el = event.currentTarget;
-    if (el.scrollHeight - el.scrollTop - el.clientHeight < 180) {
-      setInteractionsPage((prev) => prev + 1);
-    }
-  }, [canLoadMoreInteractions]);
+  const handleInteractionsScroll = useCallback(
+    (event) => {
+      if (!canLoadMoreInteractions) return;
+      const el = event.currentTarget;
+      if (el.scrollHeight - el.scrollTop - el.clientHeight < 180) {
+        setInteractionsPage((prev) => prev + 1);
+      }
+    },
+    [canLoadMoreInteractions]
+  );
 
   const editingContact = useMemo(() => {
     if (editingContactId == null) return null;
@@ -167,7 +220,9 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
   const categorySelectOptions = useMemo(() => {
     const currentCategory = prospect?.category;
     if (!currentCategory?.id || !currentCategory?.name) return categoryOptions;
-    const exists = categoryOptions.some((option) => String(option.value) === String(currentCategory.id));
+    const exists = categoryOptions.some(
+      (option) => String(option.value) === String(currentCategory.id)
+    );
     if (exists) return categoryOptions;
     return [{ value: currentCategory.id, label: currentCategory.name }, ...categoryOptions];
   }, [categoryOptions, prospect?.category]);
@@ -233,7 +288,11 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
     }
 
     if (!prospect) {
-      return <div className="flex min-h-0 flex-1 items-center justify-center p-4 text-sm text-muted-foreground">No se ha encontrado el prospecto.</div>;
+      return (
+        <div className="text-muted-foreground flex min-h-0 flex-1 items-center justify-center p-4 text-sm">
+          No se ha encontrado el prospecto.
+        </div>
+      );
     }
 
     const originLabel =
@@ -256,21 +315,23 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <CardTitle className="text-2xl">{prospect.companyName}</CardTitle>
-                  {!embedded && (
-                    <StatusPill
-                      label={prospectStatusLabels[prospect.status] ?? prospect.status}
-                      status={prospect.status}
-                    />
-                  )}
+                {!embedded && (
+                  <StatusPill
+                    label={prospectStatusLabels[prospect.status] ?? prospect.status}
+                    status={prospect.status}
+                  />
+                )}
               </div>
-              <div className="flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
+              <div className="text-muted-foreground flex flex-wrap items-center gap-1 text-sm">
                 <span>{prospect.country?.name ?? 'Sin país'}</span>
                 <span aria-hidden>·</span>
                 <span>{prospect.primaryContact?.name ?? 'Sin contacto principal'}</span>
               </div>
               <div className="pt-1">
                 <Select
-                  value={String(prospect.category?.id ?? prospect.categoryId ?? CATEGORY_NONE_VALUE)}
+                  value={String(
+                    prospect.category?.id ?? prospect.categoryId ?? CATEGORY_NONE_VALUE
+                  )}
                   onValueChange={handleQuickCategoryChange}
                   disabled={categoriesLoading || isCategoryUpdating}
                 >
@@ -343,10 +404,7 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
                     </DropdownMenuItem>
                   )}
                   {prospect.status !== 'discarded' && (
-                    <DropdownMenuItem
-                      variant="destructive"
-                      onClick={() => setDiscardOpen(true)}
-                    >
+                    <DropdownMenuItem variant="destructive" onClick={() => setDiscardOpen(true)}>
                       <Trash2 />
                       Descartar prospecto
                     </DropdownMenuItem>
@@ -356,8 +414,12 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="flex w-full min-w-0 flex-1 min-h-0 flex-col py-4">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex h-full w-full min-w-0 flex-1 min-h-0 flex-col overflow-hidden">
+        <CardContent className="flex min-h-0 w-full min-w-0 flex-1 flex-col py-4">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden"
+          >
             <TabsList>
               <TabsTrigger value="data">Datos</TabsTrigger>
               <TabsTrigger value="contacts">Contactos</TabsTrigger>
@@ -365,75 +427,96 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
               <TabsTrigger value="offers">Ofertas</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="data" className="flex h-full w-full min-w-0 min-h-0 flex-1 flex-col pt-1">
-              <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border bg-card">
+            <TabsContent
+              value="data"
+              className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col pt-1"
+            >
+              <section className="bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border">
                 <div className="min-h-0 flex-1 overflow-y-auto p-4">
                   <div className="flex flex-col gap-4">
-                    <div className="overflow-hidden rounded-2xl border bg-card">
+                    <div className="bg-card overflow-hidden rounded-2xl border">
                       <div className="grid gap-0 lg:grid-cols-[minmax(0,1.15fr)_minmax(340px,0.85fr)]">
                         <div className="space-y-5 p-5">
                           <div className="space-y-2">
                             <div className="flex flex-wrap items-center gap-2">
-                              <StatusPill label={prospectStatusLabels[prospect.status] ?? prospect.status} status={prospect.status} />
-                              <span className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Ficha comercial</span>
+                              <StatusPill
+                                label={prospectStatusLabels[prospect.status] ?? prospect.status}
+                                status={prospect.status}
+                              />
+                              <span className="text-muted-foreground text-xs font-medium tracking-[0.18em] uppercase">
+                                Ficha comercial
+                              </span>
                             </div>
                             <div>
-                              <p className="text-sm text-muted-foreground">Lectura rápida del prospecto para decidir el siguiente movimiento comercial.</p>
+                              <p className="text-muted-foreground text-sm">
+                                Lectura rápida del prospecto para decidir el siguiente movimiento
+                                comercial.
+                              </p>
                             </div>
                           </div>
 
                           <div className="overflow-hidden rounded-xl border">
                             <div className="grid divide-y sm:grid-cols-4 sm:divide-x sm:divide-y-0">
                               <div className="flex items-start gap-3 px-4 py-3">
-                                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                                <div className="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-lg">
                                   <UserRound className="size-4" />
                                 </div>
                                 <div className="min-w-0">
-                                  <p className="text-xs text-muted-foreground">Origen</p>
-                                  <p className="mt-1 text-sm font-medium text-foreground">{originLabel}</p>
+                                  <p className="text-muted-foreground text-xs">Origen</p>
+                                  <p className="text-foreground mt-1 text-sm font-medium">
+                                    {originLabel}
+                                  </p>
                                 </div>
                               </div>
 
                               <div className="flex items-start gap-3 px-4 py-3">
-                                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                                <div className="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-lg">
                                   <MapPin className="size-4" />
                                 </div>
                                 <div className="min-w-0">
-                                  <p className="text-xs text-muted-foreground">País</p>
-                                  <p className="mt-1 text-sm font-medium text-foreground">{prospect.country?.name ?? 'Sin país'}</p>
+                                  <p className="text-muted-foreground text-xs">País</p>
+                                  <p className="text-foreground mt-1 text-sm font-medium">
+                                    {prospect.country?.name ?? 'Sin país'}
+                                  </p>
                                 </div>
                               </div>
 
                               <div className="flex items-start gap-3 px-4 py-3">
-                                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                                <div className="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-lg">
                                   <Tag className="size-4" />
                                 </div>
                                 <div className="min-w-0">
-                                  <p className="text-xs text-muted-foreground">Categoría</p>
-                                  <p className="mt-1 text-sm font-medium text-foreground">{prospect.category?.name ?? '-'}</p>
+                                  <p className="text-muted-foreground text-xs">Categoría</p>
+                                  <p className="text-foreground mt-1 text-sm font-medium">
+                                    {prospect.category?.name ?? '-'}
+                                  </p>
                                 </div>
                               </div>
 
                               <div className="flex items-start gap-3 px-4 py-3">
-                                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                                <div className="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-lg">
                                   <UserPlus className="size-4" />
                                 </div>
                                 <div className="min-w-0">
-                                  <p className="text-xs text-muted-foreground">
-                                    {prospect.primaryContact?.role?.trim() ? prospect.primaryContact.role : 'Contacto principal'}
+                                  <p className="text-muted-foreground text-xs">
+                                    {prospect.primaryContact?.role?.trim()
+                                      ? prospect.primaryContact.role
+                                      : 'Contacto principal'}
                                   </p>
-                                  <p className="mt-1 text-sm font-medium text-foreground">{prospect.primaryContact?.name ?? '-'}</p>
+                                  <p className="text-foreground mt-1 text-sm font-medium">
+                                    {prospect.primaryContact?.name ?? '-'}
+                                  </p>
                                 </div>
                               </div>
                             </div>
 
                             <div className="divide-y border-t">
                               <div className="flex items-start gap-3 px-4 py-3">
-                                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                                <div className="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-lg">
                                   <Globe className="size-4" />
                                 </div>
                                 <div className="min-w-0">
-                                  <p className="text-xs text-muted-foreground">Sitio web</p>
+                                  <p className="text-muted-foreground text-xs">Sitio web</p>
                                   <div className="mt-1 text-sm">
                                     {websiteTrim ? (
                                       websiteHref ? (
@@ -441,12 +524,14 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
                                           href={websiteHref}
                                           target="_blank"
                                           rel="noopener noreferrer"
-                                          className="font-medium text-primary underline-offset-4 hover:underline break-all"
+                                          className="text-primary font-medium break-all underline-offset-4 hover:underline"
                                         >
                                           {websiteTrim}
                                         </a>
                                       ) : (
-                                        <span className="break-all whitespace-pre-wrap text-foreground">{websiteTrim}</span>
+                                        <span className="text-foreground break-all whitespace-pre-wrap">
+                                          {websiteTrim}
+                                        </span>
                                       )
                                     ) : (
                                       <span className="text-muted-foreground">Sin sitio web</span>
@@ -456,13 +541,17 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
                               </div>
 
                               <div className="flex items-start gap-3 px-4 py-3">
-                                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                                <div className="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-lg">
                                   <MapPin className="size-4" />
                                 </div>
                                 <div className="min-w-0">
-                                  <p className="text-xs text-muted-foreground">Dirección</p>
-                                  <p className="mt-1 text-sm leading-6 whitespace-pre-wrap text-foreground">
-                                    {prospect.address?.trim() ? prospect.address : <span className="text-muted-foreground">Sin dirección</span>}
+                                  <p className="text-muted-foreground text-xs">Dirección</p>
+                                  <p className="text-foreground mt-1 text-sm leading-6 whitespace-pre-wrap">
+                                    {prospect.address?.trim() ? (
+                                      prospect.address
+                                    ) : (
+                                      <span className="text-muted-foreground">Sin dirección</span>
+                                    )}
                                   </p>
                                 </div>
                               </div>
@@ -470,7 +559,7 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
                           </div>
                         </div>
 
-                        <section className="overflow-hidden border-t bg-muted/15 lg:border-t-0 lg:border-l">
+                        <section className="bg-muted/15 overflow-hidden border-t lg:border-t-0 lg:border-l">
                           <ProspectLocationMap
                             address={prospect.address}
                             companyName={prospect.companyName}
@@ -503,13 +592,17 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
                                   <CalendarClock className="size-5" />
                                 </div>
                                 <div className="min-w-0 space-y-1">
-                                  <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Próxima acción</p>
-                                  <h3 className="text-lg font-semibold tracking-tight text-foreground">
-                                    {hasPendingAction ? formatDateValue(pendingAction.scheduledAt) : 'Sin agenda activa'}
+                                  <p className="text-muted-foreground text-[11px] font-medium tracking-[0.16em] uppercase">
+                                    Próxima acción
+                                  </p>
+                                  <h3 className="text-foreground text-lg font-semibold tracking-tight">
+                                    {hasPendingAction
+                                      ? formatDateValue(pendingAction.scheduledAt)
+                                      : 'Sin agenda activa'}
                                   </h3>
                                 </div>
                               </div>
-                              <p className="text-sm leading-7 whitespace-pre-wrap break-words text-foreground">
+                              <p className="text-foreground text-sm leading-7 break-words whitespace-pre-wrap">
                                 {pendingAction?.description?.trim()
                                   ? pendingAction.description
                                   : 'Todavía no hay una próxima acción registrada para este prospecto. Cuando definas el siguiente paso comercial, aparecerá aquí como referencia clara para el seguimiento.'}
@@ -520,46 +613,58 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
                       })()}
 
                       <div className="space-y-4">
-                        <section className="rounded-2xl border bg-card p-5">
+                        <section className="bg-card rounded-2xl border p-5">
                           <div className="space-y-3">
                             <div className="space-y-1">
-                              <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">Resumen comercial</p>
-                              <h3 className="text-lg font-semibold tracking-tight text-foreground">Interés y encaje del prospecto</h3>
+                              <p className="text-muted-foreground text-[11px] font-medium tracking-[0.18em] uppercase">
+                                Resumen comercial
+                              </p>
+                              <h3 className="text-foreground text-lg font-semibold tracking-tight">
+                                Interés y encaje del prospecto
+                              </h3>
                             </div>
-                            <p className="text-sm leading-7 whitespace-pre-wrap text-foreground">
+                            <p className="text-foreground text-sm leading-7 whitespace-pre-wrap">
                               {prospect.commercialInterestNotes || (
-                                <span className="text-muted-foreground">Todavía no hay contexto comercial registrado para este prospecto.</span>
+                                <span className="text-muted-foreground">
+                                  Todavía no hay contexto comercial registrado para este prospecto.
+                                </span>
                               )}
                             </p>
                           </div>
                         </section>
 
-                        <section className="rounded-2xl border bg-card p-4">
+                        <section className="bg-card rounded-2xl border p-4">
                           <div className="space-y-3">
                             <div>
-                              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Especies de interés</p>
+                              <p className="text-muted-foreground text-[11px] font-medium tracking-[0.16em] uppercase">
+                                Especies de interés
+                              </p>
                             </div>
                             {prospect.speciesInterest?.length ? (
                               <div className="flex flex-wrap gap-2">
                                 {prospect.speciesInterest.map((species) => (
                                   <span
                                     key={species}
-                                    className="inline-flex items-center rounded-full border border-primary/15 bg-primary/8 px-2.5 py-1 text-xs font-medium text-primary"
+                                    className="border-primary/15 bg-primary/8 text-primary inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium"
                                   >
                                     {species}
                                   </span>
                                 ))}
                               </div>
                             ) : (
-                              <p className="text-sm text-muted-foreground">Sin especies definidas</p>
+                              <p className="text-muted-foreground text-sm">
+                                Sin especies definidas
+                              </p>
                             )}
                           </div>
                         </section>
 
-                        <section className="rounded-2xl border bg-muted/25 p-4">
+                        <section className="bg-muted/25 rounded-2xl border p-4">
                           <div className="space-y-2">
-                            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Notas internas</p>
-                            <p className="text-sm leading-6 whitespace-pre-wrap text-muted-foreground">
+                            <p className="text-muted-foreground text-[11px] font-medium tracking-[0.16em] uppercase">
+                              Notas internas
+                            </p>
+                            <p className="text-muted-foreground text-sm leading-6 whitespace-pre-wrap">
                               {prospect.notes || 'Sin notas internas'}
                             </p>
                           </div>
@@ -571,8 +676,11 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
               </section>
             </TabsContent>
 
-            <TabsContent value="contacts" className="flex h-full w-full min-w-0 min-h-0 flex-1 flex-col pt-1">
-              <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border bg-card">
+            <TabsContent
+              value="contacts"
+              className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col pt-1"
+            >
+              <section className="bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border">
                 {contactsLoading ? (
                   <div className="flex min-h-0 flex-1 items-center justify-center">
                     <Loader />
@@ -581,7 +689,10 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
                   <div className="min-h-0 flex-1 overflow-y-auto p-4">
                     {contacts.length === 0 ? (
                       contactFormOpen ? null : (
-                        <SectionEmpty title="Sin contactos" description="Añade al menos un contacto para convertir o ofertar con contexto." />
+                        <SectionEmpty
+                          title="Sin contactos"
+                          description="Añade al menos un contacto para convertir o ofertar con contexto."
+                        />
                       )
                     ) : (
                       <div className="overflow-hidden rounded-xl border">
@@ -600,12 +711,18 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
                             {orderedContacts.map((contact) => (
                               <TableRow key={contact.id}>
                                 <TableCell className="font-medium">{contact.name}</TableCell>
-                                <TableCell className="text-muted-foreground">{contact.role || '—'}</TableCell>
-                                <TableCell className="text-muted-foreground">{contact.phone || '—'}</TableCell>
-                                <TableCell className="text-muted-foreground">{contact.email || '—'}</TableCell>
+                                <TableCell className="text-muted-foreground">
+                                  {contact.role || '—'}
+                                </TableCell>
+                                <TableCell className="text-muted-foreground">
+                                  {contact.phone || '—'}
+                                </TableCell>
+                                <TableCell className="text-muted-foreground">
+                                  {contact.email || '—'}
+                                </TableCell>
                                 <TableCell>
                                   {contact.isPrimary ? (
-                                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                                    <span className="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-xs font-medium">
                                       Principal
                                     </span>
                                   ) : (
@@ -639,7 +756,8 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
                                             {
                                               loading: 'Eliminando contacto...',
                                               success: 'Contacto eliminado',
-                                              error: (error) => error?.message || 'No se pudo eliminar el contacto',
+                                              error: (error) =>
+                                                error?.message || 'No se pudo eliminar el contacto',
                                             }
                                           );
                                           if (String(editingContactId) === String(contact.id)) {
@@ -663,8 +781,11 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
               </section>
             </TabsContent>
 
-            <TabsContent value="interactions" className="flex h-full w-full min-w-0 min-h-0 flex-1 flex-col pt-1">
-              <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border bg-card">
+            <TabsContent
+              value="interactions"
+              className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col pt-1"
+            >
+              <section className="bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border">
                 {interactionsLoading && interactionsPage === 1 ? (
                   <div className="flex min-h-0 flex-1 items-center justify-center">
                     <Loader />
@@ -677,63 +798,76 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
                     />
                   </div>
                 ) : (
-                  <div className="min-h-0 flex-1 overflow-y-auto p-4" onScroll={handleInteractionsScroll}>
+                  <div
+                    className="min-h-0 flex-1 overflow-y-auto p-4"
+                    onScroll={handleInteractionsScroll}
+                  >
                     <div className="space-y-4">
                       <div className="relative w-full space-y-4 py-2 pl-1">
                         {loadedInteractions.map((interaction, index, array) => {
-                            const isLast = index === array.length - 1;
-                            const typeLabel = interactionTypeLabels[interaction.type] ?? interaction.type;
-                            const resultLabel = interactionResultLabels[interaction.result] ?? interaction.result;
-                            const TypeIcon = interactionTypeIcons[interaction.type] ?? CircleDot;
+                          const isLast = index === array.length - 1;
+                          const typeLabel =
+                            interactionTypeLabels[interaction.type] ?? interaction.type;
+                          const resultLabel =
+                            interactionResultLabels[interaction.result] ?? interaction.result;
+                          const TypeIcon = interactionTypeIcons[interaction.type] ?? CircleDot;
 
-                            return (
-                              <div key={interaction.id} className="flex items-stretch gap-2">
-                                <div className="flex w-6 shrink-0 flex-col items-center self-stretch">
-                                  <div className="flex size-6 shrink-0 items-center justify-center rounded-full border-0 bg-primary text-primary-foreground shadow-sm">
-                                    <TypeIcon className="size-3 stroke-[2]" />
+                          return (
+                            <div key={interaction.id} className="flex items-stretch gap-2">
+                              <div className="flex w-6 shrink-0 flex-col items-center self-stretch">
+                                <div className="bg-primary text-primary-foreground flex size-6 shrink-0 items-center justify-center rounded-full border-0 shadow-sm">
+                                  <TypeIcon className="size-3 stroke-[2]" />
+                                </div>
+                                {!isLast && (
+                                  <div
+                                    className="bg-muted-foreground/50 mt-1 min-h-0 w-0.5 flex-1"
+                                    aria-hidden
+                                  />
+                                )}
+                              </div>
+
+                              <div className={`min-w-0 flex-1 ${!isLast ? 'pb-4' : ''}`}>
+                                <div className="flex flex-col gap-0.5">
+                                  <p className="text-muted-foreground text-xs font-normal">
+                                    {formatDateTimeValue(interaction.occurredAt)}
+                                  </p>
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <span className="text-foreground truncate text-sm leading-tight font-semibold">
+                                      {typeLabel}
+                                    </span>
+                                    <StatusPill label={resultLabel} status={interaction.result} />
                                   </div>
-                                  {!isLast && <div className="mt-1 min-h-0 flex-1 w-0.5 bg-muted-foreground/50" aria-hidden />}
                                 </div>
 
-                                <div className={`min-w-0 flex-1 ${!isLast ? 'pb-4' : ''}`}>
-                                  <div className="flex flex-col gap-0.5">
-                                    <p className="text-xs font-normal text-muted-foreground">
-                                      {formatDateTimeValue(interaction.occurredAt)}
-                                    </p>
-                                    <div className="flex flex-wrap items-center gap-2">
-                                      <span className="truncate text-sm font-semibold leading-tight text-foreground">
-                                        {typeLabel}
-                                      </span>
-                                      <StatusPill label={resultLabel} status={interaction.result} />
-                                    </div>
-                                  </div>
-
-                                  <div className="mt-2 space-y-3 rounded-xl border bg-card p-3">
-                                    <p className="text-sm leading-snug whitespace-pre-wrap break-words text-foreground">
-                                      {interaction.summary}
-                                    </p>
-                                    {interaction.nextActionAt && (
-                                      <div className="space-y-1 border-t border-border/60 pt-2">
-                                        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                          <CalendarClock className="size-3 shrink-0" />
-                                          <span>Próxima acción: {formatDateValue(interaction.nextActionAt)}</span>
+                                <div className="bg-card mt-2 space-y-3 rounded-xl border p-3">
+                                  <p className="text-foreground text-sm leading-snug break-words whitespace-pre-wrap">
+                                    {interaction.summary}
+                                  </p>
+                                  {interaction.nextActionAt && (
+                                    <div className="border-border/60 space-y-1 border-t pt-2">
+                                      <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
+                                        <CalendarClock className="size-3 shrink-0" />
+                                        <span>
+                                          Próxima acción:{' '}
+                                          {formatDateValue(interaction.nextActionAt)}
+                                        </span>
+                                      </p>
+                                      {interaction.nextActionNote && (
+                                        <p className="text-muted-foreground pl-4 text-xs break-words whitespace-pre-wrap">
+                                          {interaction.nextActionNote}
                                         </p>
-                                        {interaction.nextActionNote && (
-                                          <p className="whitespace-pre-wrap break-words pl-4 text-xs text-muted-foreground">
-                                            {interaction.nextActionNote}
-                                          </p>
-                                        )}
-                                      </div>
-                                    )}
-                                  </div>
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
                               </div>
-                            );
-                          })}
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                     {interactionsLoading && interactionsPage > 1 && (
-                      <div className="flex items-center justify-center py-4 text-muted-foreground">
+                      <div className="text-muted-foreground flex items-center justify-center py-4">
                         <Loader2 className="size-4 animate-spin" />
                       </div>
                     )}
@@ -742,29 +876,44 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
               </section>
             </TabsContent>
 
-            <TabsContent value="offers" className="flex h-full w-full min-w-0 min-h-0 flex-1 flex-col pt-1">
-              <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border bg-card">
+            <TabsContent
+              value="offers"
+              className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col pt-1"
+            >
+              <section className="bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border">
                 {offersLoading ? (
                   <div className="flex min-h-0 flex-1 items-center justify-center">
                     <Loader />
                   </div>
                 ) : offers.length === 0 ? (
                   <div className="min-h-0 flex-1 p-4">
-                    <SectionEmpty title="Sin ofertas" description="Crea la primera oferta desde esta ficha para pasar el prospecto a oferta enviada." />
+                    <SectionEmpty
+                      title="Sin ofertas"
+                      description="Crea la primera oferta desde esta ficha para pasar el prospecto a oferta enviada."
+                    />
                   </div>
                 ) : (
                   <div className="min-h-0 flex-1 overflow-y-auto p-4">
                     <div className="space-y-3">
                       {offers.map((offer) => (
-                        <Link key={offer.id} href={`/comercial/ofertas/${offer.id}`} className="block rounded-xl border p-4 hover:bg-accent/40">
+                        <Link
+                          key={offer.id}
+                          href={`/comercial/ofertas/${offer.id}`}
+                          className="hover:bg-accent/40 block rounded-xl border p-4"
+                        >
                           <div className="flex flex-wrap items-center justify-between gap-2">
                             <div>
                               <p className="font-medium">Oferta #{offer.id}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {offer.validUntil ? `Validez: ${formatDateValue(offer.validUntil)}` : 'Sin fecha de validez'}
+                              <p className="text-muted-foreground text-sm">
+                                {offer.validUntil
+                                  ? `Validez: ${formatDateValue(offer.validUntil)}`
+                                  : 'Sin fecha de validez'}
                               </p>
                             </div>
-                            <StatusPill label={offerStatusLabels[offer.status] ?? offer.status} status={offer.status} />
+                            <StatusPill
+                              label={offerStatusLabels[offer.status] ?? offer.status}
+                              status={offer.status}
+                            />
                           </div>
                         </Link>
                       ))}
@@ -801,7 +950,7 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
 
   return (
     <>
-      <Card className="flex h-full w-full max-w-none min-h-0 min-w-0 flex-1 basis-0 self-stretch flex-col overflow-hidden">
+      <Card className="flex h-full min-h-0 w-full max-w-none min-w-0 flex-1 basis-0 flex-col self-stretch overflow-hidden">
         {body}
       </Card>
 
@@ -855,10 +1004,16 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
               <div>
                 {pendingPreflightData?.pendingAction ? (
                   <>
-                    <span className="block text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground mb-1">Acción pendiente activa</span>
-                    <span className="block font-semibold text-foreground">{formatDateValue(pendingPreflightData.pendingAction.scheduledAt)}</span>
+                    <span className="text-muted-foreground mb-1 block text-xs font-medium tracking-[0.14em] uppercase">
+                      Acción pendiente activa
+                    </span>
+                    <span className="text-foreground block font-semibold">
+                      {formatDateValue(pendingPreflightData.pendingAction.scheduledAt)}
+                    </span>
                     {pendingPreflightData.pendingAction.description && (
-                      <span className="block mt-0.5 text-sm text-muted-foreground">{pendingPreflightData.pendingAction.description}</span>
+                      <span className="text-muted-foreground mt-0.5 block text-sm">
+                        {pendingPreflightData.pendingAction.description}
+                      </span>
                     )}
                   </>
                 ) : (

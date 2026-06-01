@@ -1,6 +1,7 @@
 # Skill: shadcn/ui for Next.js
 
 ## Categoría
+
 Desarrollo
 
 ## Cuándo se activa

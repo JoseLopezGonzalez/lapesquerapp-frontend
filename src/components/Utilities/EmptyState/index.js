@@ -1,12 +1,12 @@
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
-    Empty,
-    EmptyContent,
-    EmptyDescription,
-    EmptyHeader,
-    EmptyMedia,
-    EmptyTitle,
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
 } from '@/components/ui/empty';
 import { Package } from 'lucide-react';
 
@@ -21,24 +21,20 @@ import { Package } from 'lucide-react';
  * @param {string} [className] - Clases para el contenedor Empty (ej. "h-full bg-muted/30")
  */
 export function EmptyState({ title, description, icon, button, className }) {
-    return (
-        <Empty className={cn(className ?? 'h-full bg-muted/30', '!min-h-0')}>
-            <EmptyHeader>
-                <EmptyMedia variant="icon">
-                    {icon ?? <Package />}
-                </EmptyMedia>
-                <EmptyTitle>{title}</EmptyTitle>
-                <EmptyDescription className="max-w-xs text-pretty">
-                    {description}
-                </EmptyDescription>
-            </EmptyHeader>
-            {button && (
-                <EmptyContent>
-                    <Button variant="outline" onClick={button.onClick}>
-                        {button.name}
-                    </Button>
-                </EmptyContent>
-            )}
-        </Empty>
-    );
+  return (
+    <Empty className={cn(className ?? 'bg-muted/30 h-full', '!min-h-0')}>
+      <EmptyHeader>
+        <EmptyMedia variant="icon">{icon ?? <Package />}</EmptyMedia>
+        <EmptyTitle>{title}</EmptyTitle>
+        <EmptyDescription className="max-w-xs text-pretty">{description}</EmptyDescription>
+      </EmptyHeader>
+      {button && (
+        <EmptyContent>
+          <Button variant="outline" onClick={button.onClick}>
+            {button.name}
+          </Button>
+        </EmptyContent>
+      )}
+    </Empty>
+  );
 }

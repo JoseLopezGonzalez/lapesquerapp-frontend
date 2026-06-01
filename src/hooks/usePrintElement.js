@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback } from 'react';
 
 export function usePrintElement({ id, width = 100, height = 150, freeSize = false }) {
   const onPrint = useCallback(() => {
@@ -6,27 +6,27 @@ export function usePrintElement({ id, width = 100, height = 150, freeSize = fals
     if (!elementToPrint) return;
 
     // Crear iframe oculto
-    const iframe = document.createElement("iframe");
-    iframe.style.position = "absolute";
-    iframe.style.left = "-9999px";
-    iframe.style.top = "0";
-    iframe.style.width = "0";
-    iframe.style.height = "0";
-    iframe.style.visibility = "hidden";
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'absolute';
+    iframe.style.left = '-9999px';
+    iframe.style.top = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.visibility = 'hidden';
     document.body.appendChild(iframe);
 
     const doc = iframe.contentWindow.document;
 
     // Copiar head con estilos incluidos
     const headContent = document.head.cloneNode(true);
-    doc.head.innerHTML = "";
+    doc.head.innerHTML = '';
     [...headContent.querySelectorAll("style, link[rel='stylesheet']")].forEach((el) => {
       doc.head.appendChild(el.cloneNode(true));
     });
 
     // Estilos de impresión: freeSize omite @page size para que el contenido se ajuste al formato nativo
     const pageSizeCss = freeSize
-      ? ""
+      ? ''
       : `
         @page {
           size: ${width}mm ${height}mm;
@@ -34,7 +34,7 @@ export function usePrintElement({ id, width = 100, height = 150, freeSize = fals
         }
       `;
     const pageClassCss = freeSize
-      ? ""
+      ? ''
       : `
         .page {
           width: ${width}mm;
@@ -47,7 +47,7 @@ export function usePrintElement({ id, width = 100, height = 150, freeSize = fals
           page-break-after: auto;
         }
       `;
-    const printStyle = document.createElement("style");
+    const printStyle = document.createElement('style');
     printStyle.textContent = `
       @media print {
         ${pageSizeCss}

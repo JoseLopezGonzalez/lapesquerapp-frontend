@@ -7,10 +7,12 @@ GET /api/v2/customers/{customer_id}/order-history
 ```
 
 ### Autenticación
+
 - Requiere token Bearer en el header `Authorization`
 - Requiere header `User-Agent` (opcional pero recomendado)
 
 ### Parámetros de URL
+
 - `customer_id` (requerido): ID del cliente
 
 ### Parámetros de Query (Opcionales)
@@ -18,6 +20,7 @@ GET /api/v2/customers/{customer_id}/order-history
 El backend soporta múltiples formas de filtrar el período de datos:
 
 #### Opción 1: Por rango de fechas (recomendado para el frontend)
+
 - `date_from` (string, opcional): Fecha de inicio en formato `YYYY-MM-DD`
 - `date_to` (string, opcional): Fecha de fin en formato `YYYY-MM-DD`
 - Si ambos están presentes, filtra por ese rango (inclusive)
@@ -25,12 +28,14 @@ El backend soporta múltiples formas de filtrar el período de datos:
 - **Totales**: Se calculan solo del período filtrado
 
 #### Opción 2: Por año específico
+
 - `year` (integer, opcional): Año específico (ej: `2025`)
 - Si se envía, devuelve todos los datos de ese año
 - **Comportamiento**: Solo devuelve pedidos del año especificado
 - **Totales**: Se calculan solo de ese año
 
 #### Opción 3: Por tipo de período
+
 - `period` (string, opcional): Tipo de período relativo a la fecha actual
   - `month`: Solo mes actual
   - `quarter`: Solo trimestre actual
@@ -39,9 +44,11 @@ El backend soporta múltiples formas de filtrar el período de datos:
 - **Totales**: Se calculan solo del período actual
 
 #### Sin filtros
+
 - Si no se envía ningún parámetro, devuelve todos los datos históricos
 
 #### Ejemplos de URLs:
+
 ```
 GET /api/v2/customers/123/order-history?date_from=2025-01-01&date_to=2025-12-31
 GET /api/v2/customers/123/order-history?date_from=2025-06-01&date_to=2025-06-30
@@ -53,7 +60,9 @@ GET /api/v2/customers/123/order-history  (sin filtros, devuelve todo)
 ```
 
 #### Nota sobre el Frontend
+
 El frontend actualmente usa **Opción 1 (rango de fechas)** porque necesita flexibilidad para:
+
 - Mes pasado (no mes actual)
 - Trimestre pasado (no trimestre actual)
 - Años específicos seleccionados por el usuario
@@ -115,6 +124,7 @@ La respuesta debe incluir también los años disponibles en el historial complet
 ## Especificación de Campos
 
 ### Nivel Raíz
+
 - `message` (string, requerido): Mensaje descriptivo de la operación
 - `available_years` (array de integers, requerido): Array de años disponibles en el historial completo del cliente, ordenados descendente (más reciente primero)
   - Ejemplo: `[2026, 2025, 2024, 2023]`
@@ -125,7 +135,9 @@ La respuesta debe incluir también los años disponibles en el historial complet
 ### Objeto Producto (cada elemento del array `data`)
 
 #### `product` (object, requerido)
+
 Información del producto:
+
 - `id` (integer, requerido): ID único del producto
 - `name` (string, requerido): Nombre del producto
 - `a3erpCode` (string|null, opcional): Código A3ERP del producto
@@ -133,23 +145,31 @@ Información del producto:
 - `species_id` (integer, opcional): ID de la especie
 
 #### `total_boxes` (integer, requerido)
+
 Total de cajas vendidas del producto en todo el historial
 
 #### `total_net_weight` (number, requerido)
+
 Peso neto total vendido del producto en todo el historial (en kg)
 
 #### `average_unit_price` (number, requerido)
+
 Precio unitario promedio del producto (total_amount / total_net_weight)
 
 #### `last_order_date` (string, requerido)
+
 Fecha del último pedido del producto en formato ISO 8601: `YYYY-MM-DD`
+
 - Ejemplo: `"2026-02-06"`
 
 #### `total_amount` (number, requerido)
+
 Importe total vendido del producto en todo el historial (en la moneda del sistema)
 
 #### `trend` (object, opcional)
+
 Información de tendencia comparando con el período anterior del mismo rango:
+
 - `direction` (string): Dirección de la tendencia
   - `"up"`: Aumento respecto al período anterior
   - `"down"`: Disminución respecto al período anterior
@@ -166,18 +186,23 @@ Información de tendencia comparando con el período anterior del mismo rango:
 - **Umbral**: Si la variación es menor al 5%, se considera "stable"
 
 #### `lines` (array, requerido)
+
 Array de líneas de pedido del producto, ordenadas por fecha descendente (más reciente primero)
 
 ### Objeto Línea de Pedido (cada elemento del array `lines`)
 
 #### `order_id` (integer, requerido)
+
 ID único del pedido
 
 #### `formatted_id` (string, requerido)
+
 ID del pedido formateado para mostrar (ej: "#02416", "ORD-2026-001")
 
 #### `load_date` (string, requerido)
+
 Fecha de carga del pedido en formato ISO 8601: `YYYY-MM-DD`
+
 - Ejemplo: `"2026-02-06"`
 - **IMPORTANTE**: Este campo se usa para:
   - Filtrar por períodos (mes, trimestre, año)
@@ -185,20 +210,26 @@ Fecha de carga del pedido en formato ISO 8601: `YYYY-MM-DD`
   - Ordenar cronológicamente
 
 #### `boxes` (integer, requerido)
+
 Número de cajas en esta línea de pedido
 
 #### `net_weight` (number, requerido)
+
 Peso neto en esta línea de pedido (en kg)
 
 #### `unit_price` (string|number, requerido)
+
 Precio unitario por kg en esta línea de pedido
+
 - Puede ser string o number
 - Ejemplo: `"12.75"` o `12.75`
 
 #### `subtotal` (number, requerido)
+
 Subtotal de esta línea de pedido (antes de impuestos/descuentos)
 
 #### `total` (number, requerido)
+
 Total de esta línea de pedido (después de impuestos/descuentos)
 
 ---
@@ -231,32 +262,38 @@ El frontend utiliza estos datos de la siguiente manera:
 ## Requisitos Importantes
 
 ### ✅ Filtrado en Backend
+
 - El backend debe filtrar los datos según los parámetros de query enviados
 - Si se envía `date_from` y `date_to`, solo devolver líneas dentro de ese rango
 - Si se envía `year`, solo devolver líneas de ese año
 - Si no se envía ningún parámetro, devolver todos los datos históricos
 
 ### ✅ Años Disponibles
+
 - El campo `available_years` debe calcularse desde **TODOS** los pedidos históricos del cliente
 - No debe filtrarse por el período solicitado
 - Debe incluir todos los años únicos donde el cliente tiene pedidos
 - Debe estar ordenado descendente (año más reciente primero)
 
 ### ✅ Orden de Líneas
+
 - Las líneas dentro de cada producto deben estar ordenadas por `load_date` descendente (más reciente primero)
 - Esto facilita el cálculo de `last_order_date` en el frontend
 
 ### ✅ Formato de Fechas
+
 - Todas las fechas deben estar en formato ISO 8601: `YYYY-MM-DD`
 - Ejemplo correcto: `"2026-02-06"`
 - Ejemplo incorrecto: `"06/02/2026"` o `"2026-2-6"`
 
 ### ✅ Valores Numéricos
+
 - `net_weight`, `total_amount`, `unit_price` deben ser números (o strings numéricos)
 - `boxes` debe ser un entero
 - Los valores null/undefined deben evitarse o manejarse como 0
 
 ### ✅ Productos sin Pedidos
+
 - Si un producto no tiene pedidos, puede omitirse del array o incluirse con `lines: []`
 - El frontend filtra productos sin líneas en el período seleccionado
 
@@ -357,6 +394,7 @@ El frontend utiliza estos datos de la siguiente manera:
 ## Códigos de Error
 
 ### 404 - Cliente no encontrado
+
 ```json
 {
   "message": "Cliente no encontrado",
@@ -365,6 +403,7 @@ El frontend utiliza estos datos de la siguiente manera:
 ```
 
 ### 401 - No autorizado
+
 ```json
 {
   "message": "No autorizado",
@@ -373,6 +412,7 @@ El frontend utiliza estos datos de la siguiente manera:
 ```
 
 ### 500 - Error del servidor
+
 ```json
 {
   "message": "Error al obtener historial del cliente",
@@ -386,12 +426,12 @@ El frontend utiliza estos datos de la siguiente manera:
 
 1. **Performance**: Si el historial es muy grande, considera paginación en el futuro, pero por ahora el frontend maneja todos los datos del período filtrado.
 
-2. **Cálculos en Backend**: 
+2. **Cálculos en Backend**:
    - Los campos `total_boxes`, `total_net_weight`, `average_unit_price`, `total_amount` deben calcularse en el backend **solo del período filtrado**
    - No deben incluir datos de otros períodos
    - Esto permite al frontend mostrar métricas precisas del período seleccionado
 
-3. **Años Disponibles**: 
+3. **Años Disponibles**:
    - El campo `available_years` debe calcularse siempre desde **TODOS** los pedidos históricos
    - **NO debe filtrarse** por los parámetros de query enviados
    - Esto permite al frontend mostrar todos los años disponibles en los tabs/selector, independientemente del período que esté visualizando
@@ -400,7 +440,7 @@ El frontend utiliza estos datos de la siguiente manera:
    - Solo las líneas de pedidos que cumplen con los filtros deben incluirse en `data`
    - Si un producto no tiene pedidos en el período filtrado, puede omitirse o incluirse con `lines: []`
 
-4. **Múltiples Tenants**: Asegúrate de filtrar los datos por tenant si la aplicación es multi-tenant.
+5. **Múltiples Tenants**: Asegúrate de filtrar los datos por tenant si la aplicación es multi-tenant.
 
 ---
 

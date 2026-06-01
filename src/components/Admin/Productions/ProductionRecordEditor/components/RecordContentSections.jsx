@@ -1,107 +1,101 @@
-'use client'
+'use client';
 
-import React from 'react'
-import { Card, CardContent } from '@/components/ui/card'
-import ProductionInputsManager from '../../ProductionInputsManager'
-import ProductionOutputsManager from '../../ProductionOutputsManager'
-import ProductionOutputConsumptionsManager from '../../ProductionOutputConsumptionsManager'
-import ProductionRecordImagesManager from '../../ProductionRecordImagesManager'
-import ProductionCostsManager from '../../ProductionCostsManager'
-import { useProductionRecordContext } from '@/context/ProductionRecordContext'
+import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import ProductionInputsManager from '../../ProductionInputsManager';
+import ProductionOutputsManager from '../../ProductionOutputsManager';
+import ProductionOutputConsumptionsManager from '../../ProductionOutputConsumptionsManager';
+import ProductionRecordImagesManager from '../../ProductionRecordImagesManager';
+import ProductionCostsManager from '../../ProductionCostsManager';
+import { useProductionRecordContext } from '@/context/ProductionRecordContext';
 
 /**
  * Secciones de contenido del record (inputs, outputs, consumos, imágenes)
  */
-export const RecordContentSections = ({
-    recordId,
-    onRefresh
-}) => {
-    // Obtener datos del contexto
-    const {
-        record,
-        recordInputs,
-        recordOutputs,
-        recordConsumptions,
-        recordInputCostsSummary,
-        hasParent,
-        updateRecord
-    } = useProductionRecordContext()
+export const RecordContentSections = ({ recordId, onRefresh }) => {
+  // Obtener datos del contexto
+  const {
+    record,
+    recordInputs,
+    recordOutputs,
+    recordConsumptions,
+    recordInputCostsSummary,
+    hasParent,
+    updateRecord,
+  } = useProductionRecordContext();
 
-    // Usar updateRecord como onRefresh si está disponible
-    const handleRefresh = onRefresh || (() => updateRecord?.())
+  // Usar updateRecord como onRefresh si está disponible
+  const handleRefresh = onRefresh || (() => updateRecord?.());
 
-    if (!recordId) {
-        return (
-            <Card>
-                <CardContent className="py-8 text-center">
-                    <p className="text-muted-foreground">
-                        Crea el proceso primero para poder agregar entradas y salidas
-                    </p>
-                </CardContent>
-            </Card>
-        )
-    }
-
+  if (!recordId) {
     return (
-        <>
-            {/* Imágenes */}
-            <div className="break-inside-avoid mb-6 max-w-full w-full">
-                <ProductionRecordImagesManager
-                    productionRecordId={recordId}
-                    onRefresh={onRefresh}
-                    hideTitle={true}
-                    renderInCard={true}
-                    cardTitle="Imágenes del Proceso"
-                    cardDescription="Imágenes asociadas a este proceso de producción"
-            />
-            </div>
+      <Card>
+        <CardContent className="py-8 text-center">
+          <p className="text-muted-foreground">
+            Crea el proceso primero para poder agregar entradas y salidas
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
-            <div className="break-inside-avoid mb-6 max-w-full w-full">
-                <ProductionInputsManager
-                    productionRecordId={recordId}
-                    initialInputs={recordInputs}
-                    inputCostsSummary={recordInputCostsSummary}
-                    onRefresh={handleRefresh}
-                    hideTitle={true}
-                    renderInCard={true}
-                    cardTitle="Consumo de materia prima desde stock"
-                    cardDescription="Materia prima consumida desde el stock"
-                />
-            </div>
+  return (
+    <>
+      {/* Imágenes */}
+      <div className="mb-6 w-full max-w-full break-inside-avoid">
+        <ProductionRecordImagesManager
+          productionRecordId={recordId}
+          onRefresh={onRefresh}
+          hideTitle={true}
+          renderInCard={true}
+          cardTitle="Imágenes del Proceso"
+          cardDescription="Imágenes asociadas a este proceso de producción"
+        />
+      </div>
 
-            <div className="break-inside-avoid mb-6 max-w-full w-full">
-                <ProductionOutputConsumptionsManager
-                    productionRecordId={recordId}
-                    initialConsumptions={recordConsumptions}
-                    inputCostsSummary={recordInputCostsSummary}
-                    hasParent={hasParent}
-                    onRefresh={handleRefresh}
-                    hideTitle={true}
-                    renderInCard={true}
-                    cardTitle="Consumos de proceso anterior"
-                    cardDescription="Productos consumidos del proceso anterior"
-                />
-            </div>
+      <div className="mb-6 w-full max-w-full break-inside-avoid">
+        <ProductionInputsManager
+          productionRecordId={recordId}
+          initialInputs={recordInputs}
+          inputCostsSummary={recordInputCostsSummary}
+          onRefresh={handleRefresh}
+          hideTitle={true}
+          renderInCard={true}
+          cardTitle="Consumo de materia prima desde stock"
+          cardDescription="Materia prima consumida desde el stock"
+        />
+      </div>
 
-            <div className="break-inside-avoid mb-6 max-w-full w-full">
-                <ProductionOutputsManager
-                    productionRecordId={recordId}
-                    initialOutputs={recordOutputs}
-                    onRefresh={handleRefresh}
-                    hideTitle={true}
-                    renderInCard={true}
-                    cardTitle="Productos resultantes"
-                    cardDescription="Productos resultantes de este proceso"
-                />
-            </div>
+      <div className="mb-6 w-full max-w-full break-inside-avoid">
+        <ProductionOutputConsumptionsManager
+          productionRecordId={recordId}
+          initialConsumptions={recordConsumptions}
+          inputCostsSummary={recordInputCostsSummary}
+          hasParent={hasParent}
+          onRefresh={handleRefresh}
+          hideTitle={true}
+          renderInCard={true}
+          cardTitle="Consumos de proceso anterior"
+          cardDescription="Productos consumidos del proceso anterior"
+        />
+      </div>
 
-            {/* Costes del Proceso */}
-            <div className="break-inside-avoid mb-6 max-w-full w-full">
-                <ProductionCostsManager
-                    productionRecordId={recordId}
-                    productionId={null}
-                />
-            </div>
-        </>
-    )
-}
+      <div className="mb-6 w-full max-w-full break-inside-avoid">
+        <ProductionOutputsManager
+          productionRecordId={recordId}
+          initialOutputs={recordOutputs}
+          onRefresh={handleRefresh}
+          hideTitle={true}
+          renderInCard={true}
+          cardTitle="Productos resultantes"
+          cardDescription="Productos resultantes de este proceso"
+        />
+      </div>
+
+      {/* Costes del Proceso */}
+      <div className="mb-6 w-full max-w-full break-inside-avoid">
+        <ProductionCostsManager productionRecordId={recordId} productionId={null} />
+      </div>
+    </>
+  );
+};

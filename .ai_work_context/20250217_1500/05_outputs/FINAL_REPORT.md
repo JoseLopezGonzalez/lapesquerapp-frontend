@@ -25,14 +25,14 @@ Se ejecutó una **auditoría de solo lectura** para rastrear y documentar todas 
 
 ## Deliverables
 
-| Ubicación | Descripción |
-|-----------|-------------|
-| `01_analysis/ambito-y-fuentes.md` | Ámbito del rastreo y fuentes consultadas |
-| `02_planning/plan-auditoria.md` | Plan de ejecución (fasificado) |
-| `03_execution/log-auditoria.md` | Log de implementación y checklist |
-| `04_logs/execution_timeline.md` | Timeline de la sesión |
+| Ubicación                                              | Descripción                                     |
+| ------------------------------------------------------ | ----------------------------------------------- |
+| `01_analysis/ambito-y-fuentes.md`                      | Ámbito del rastreo y fuentes consultadas        |
+| `02_planning/plan-auditoria.md`                        | Plan de ejecución (fasificado)                  |
+| `03_execution/log-auditoria.md`                        | Log de implementación y checklist               |
+| `04_logs/execution_timeline.md`                        | Timeline de la sesión                           |
 | **`05_outputs/AUDITORIA-NOMBRE-APP-LA-PESQUERAPP.md`** | **Reporte de auditoría (entregable principal)** |
-| `05_outputs/FINAL_REPORT.md` | Este documento |
+| `05_outputs/FINAL_REPORT.md`                           | Este documento                                  |
 
 ---
 

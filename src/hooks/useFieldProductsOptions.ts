@@ -26,7 +26,7 @@ export function useFieldProductsOptions(options: FieldProductsOptionsQueryOption
     queryKey: fieldProductOptionKeys.list(tenantId),
     queryFn: () => getFieldProductsOptions(token as string),
     enabled: Boolean(token) && Boolean(tenantId) && Boolean(fieldOperatorId) && enabled,
-    select: (data) => (Array.isArray(data) ? data : (data as { data?: unknown[] })?.data ?? []),
+    select: (data) => (Array.isArray(data) ? data : ((data as { data?: unknown[] })?.data ?? [])),
     staleTime: 5 * 60 * 1000, // opciones de productos cambian poco — 5 min de stale
   });
 }

@@ -51,32 +51,32 @@ Los problemas encontrados son más de **consistencia** y **escala de componentes
 
 ## 2. Mapa de Síntomas y Superficie Impactada
 
-| Módulo | Flujo | Capa afectada | Severidad |
-|---|---|---|---|
-| CRM / Pedidos comerciales | Listado de órdenes | React Query — key | Alto |
-| Field — Rutas y Pedidos | Cualquier vista con operador | React Query — key | Alto |
-| Field — Autoventa | Creación de autoventa | React Query — invalidación | Medio |
-| Comercial — Planificador | RoutesPlannerPage completo | Render / Componente | Alto |
-| CRM — Agenda | AgendaPageClient | Render / Componente | Medio |
-| Field — Ejecución de ruta | FieldRouteExecutionPage | Render / Componente | Medio |
-| Transport | Todas las requests fallidas | Auth / logs | Bajo |
-| Geocoding | Planificador de rutas (larga sesión) | Singleton de módulo | Bajo |
-| Route Templates | Actualización de plantilla | React Query — normalización | Bajo |
+| Módulo                    | Flujo                                | Capa afectada               | Severidad |
+| ------------------------- | ------------------------------------ | --------------------------- | --------- |
+| CRM / Pedidos comerciales | Listado de órdenes                   | React Query — key           | Alto      |
+| Field — Rutas y Pedidos   | Cualquier vista con operador         | React Query — key           | Alto      |
+| Field — Autoventa         | Creación de autoventa                | React Query — invalidación  | Medio     |
+| Comercial — Planificador  | RoutesPlannerPage completo           | Render / Componente         | Alto      |
+| CRM — Agenda              | AgendaPageClient                     | Render / Componente         | Medio     |
+| Field — Ejecución de ruta | FieldRouteExecutionPage              | Render / Componente         | Medio     |
+| Transport                 | Todas las requests fallidas          | Auth / logs                 | Bajo      |
+| Geocoding                 | Planificador de rutas (larga sesión) | Singleton de módulo         | Bajo      |
+| Route Templates           | Actualización de plantilla           | React Query — normalización | Bajo      |
 
 ---
 
 ## 3. Tabla de Hallazgos Priorizados
 
-| ID | Severidad | Impacto | Esfuerzo | Riesgo | Área | Hallazgo |
-|---|---|---|---|---|---|---|
-| P01 | Alto | Alto | Bajo | Bajo | React Query | `useComercialOrders`: query key con `params` sin normalizar |
-| P02 | Alto | Alto | Bajo | Medio | React Query | `fieldOperatorId` ausente de query keys en hooks de field |
-| P03 | Alto | Medio | Bajo | Bajo | React Query | `autoventaMutation`: invalidación con key hardcodeada |
-| P04 | Alto | Medio | Alto | Alto | Render | `RoutesPlannerPage` monolítico (1404 líneas) |
-| P05 | Medio | Medio | Medio | Medio | Render | `AgendaPageClient` (700 líneas) y `FieldRouteExecutionPage` (450 líneas) |
-| P06 | Medio | Bajo | Bajo | Bajo | Auth | `console.error` hardcodeado en `fetchWithTenant.js` (producción) |
-| P07 | Bajo | Bajo | Bajo | Bajo | Singleton | `geocodeCache` de módulo sin TTL ni límite de tamaño |
-| P08 | Bajo | Bajo | Bajo | Bajo | React Query | `useRouteTemplateMutations`: `normalizeRouteCollection([x])[0]` vs `normalizeRouteEntity(x)` |
+| ID  | Severidad | Impacto | Esfuerzo | Riesgo | Área        | Hallazgo                                                                                     |
+| --- | --------- | ------- | -------- | ------ | ----------- | -------------------------------------------------------------------------------------------- |
+| P01 | Alto      | Alto    | Bajo     | Bajo   | React Query | `useComercialOrders`: query key con `params` sin normalizar                                  |
+| P02 | Alto      | Alto    | Bajo     | Medio  | React Query | `fieldOperatorId` ausente de query keys en hooks de field                                    |
+| P03 | Alto      | Medio   | Bajo     | Bajo   | React Query | `autoventaMutation`: invalidación con key hardcodeada                                        |
+| P04 | Alto      | Medio   | Alto     | Alto   | Render      | `RoutesPlannerPage` monolítico (1404 líneas)                                                 |
+| P05 | Medio     | Medio   | Medio    | Medio  | Render      | `AgendaPageClient` (700 líneas) y `FieldRouteExecutionPage` (450 líneas)                     |
+| P06 | Medio     | Bajo    | Bajo     | Bajo   | Auth        | `console.error` hardcodeado en `fetchWithTenant.js` (producción)                             |
+| P07 | Bajo      | Bajo    | Bajo     | Bajo   | Singleton   | `geocodeCache` de módulo sin TTL ni límite de tamaño                                         |
+| P08 | Bajo      | Bajo    | Bajo     | Bajo   | React Query | `useRouteTemplateMutations`: `normalizeRouteCollection([x])[0]` vs `normalizeRouteEntity(x)` |
 
 ---
 
@@ -101,6 +101,7 @@ Si el componente consumidor pasa `params` como un objeto literal (`{}`) o lo rec
 **Evidencia**
 
 `src/hooks/useComercialOrders.ts:16`
+
 ```ts
 queryKey: ['crm', 'orders', 'list', tenantId ?? 'unknown', params],
 ```
@@ -110,6 +111,7 @@ El objeto `params` se incluye directamente en la key sin normalización. React Q
 Contraste con el patrón correcto del proyecto:
 
 `src/lib/routes/queryKeys.ts:16-17`
+
 ```ts
 list: (tenantId, params = {}) =>
   ['routes', tenantId ?? 'unknown', normalizeQueryParams(params)] as const,
@@ -133,14 +135,14 @@ list: (tenantId, params = {}) =>
 
 ```ts
 export const comercialOrderKeys = {
-  all: (tenantId: string | null | undefined) =>
-    ['crm', 'orders', tenantId ?? 'unknown'] as const,
+  all: (tenantId: string | null | undefined) => ['crm', 'orders', tenantId ?? 'unknown'] as const,
   list: (tenantId: string | null | undefined, params: QueryParams = {}) =>
     ['crm', 'orders', tenantId ?? 'unknown', normalizeQueryParams(params)] as const,
 };
 ```
 
 2. Usar la factory en `useComercialOrders`:
+
 ```ts
 queryKey: comercialOrderKeys.list(tenantId, params),
 ```
@@ -179,6 +181,7 @@ Si en algún escenario el `fieldOperatorId` cambia dentro de la misma sesión (c
 **Evidencia**
 
 `src/hooks/useFieldOrders.ts:25-33`
+
 ```ts
 const query = useQuery({
   queryKey: fieldOrderKeys.list(tenantId, params),   // ← fieldOperatorId ausente
@@ -187,6 +190,7 @@ const query = useQuery({
 ```
 
 `src/hooks/useFieldRoutes.ts:24-28`
+
 ```ts
 const query = useQuery({
   queryKey: fieldRouteKeys.list(tenantId, params),   // ← mismo problema
@@ -195,6 +199,7 @@ const query = useQuery({
 ```
 
 `src/lib/routes/queryKeys.ts:28-34` — las factories de `fieldRouteKeys` y `fieldOrderKeys` no incluyen `fieldOperatorId`:
+
 ```ts
 export const fieldRouteKeys = {
   all: (tenantId) => ['field', 'routes', tenantId ?? 'unknown'] as const,
@@ -226,9 +231,22 @@ export const fieldRouteKeys = {
   all: (tenantId, fieldOperatorId?) =>
     ['field', 'routes', tenantId ?? 'unknown', fieldOperatorId ?? 'unknown'] as const,
   list: (tenantId, fieldOperatorId?, params = {}) =>
-    ['field', 'routes', tenantId ?? 'unknown', fieldOperatorId ?? 'unknown', normalizeQueryParams(params)] as const,
+    [
+      'field',
+      'routes',
+      tenantId ?? 'unknown',
+      fieldOperatorId ?? 'unknown',
+      normalizeQueryParams(params),
+    ] as const,
   detail: (tenantId, fieldOperatorId?, routeId?) =>
-    ['field', 'routes', 'detail', tenantId ?? 'unknown', fieldOperatorId ?? 'unknown', routeId] as const,
+    [
+      'field',
+      'routes',
+      'detail',
+      tenantId ?? 'unknown',
+      fieldOperatorId ?? 'unknown',
+      routeId,
+    ] as const,
 };
 ```
 
@@ -237,6 +255,7 @@ Y actualizar todos los usos en `useFieldRoutes.ts`, `useFieldOrders.ts` y `useFi
 Opción B (si `fieldOperatorId` nunca cambia en sesión, documentarlo):
 
 Añadir un comentario explícito en las factories y hooks:
+
 ```ts
 // fieldOperatorId no incluido en la key porque no puede cambiar dentro de una sesión activa.
 // Si esto cambia, actualizar las factories en queryKeys.ts.
@@ -279,13 +298,16 @@ La mutación de autoventa invalida la caché de opciones de clientes con una key
 **Evidencia**
 
 `src/hooks/useFieldOrders.ts:73-77`
+
 ```ts
 const autoventaMutation = useMutation({
   mutationFn: (payload) => createFieldAutoventa(token as string, payload),
   onSuccess: () => {
     queryClient.invalidateQueries({ queryKey: fieldOrderKeys.list(tenantId) });
     queryClient.invalidateQueries({ queryKey: fieldRouteKeys.list(tenantId) });
-    queryClient.invalidateQueries({ queryKey: ['field', 'customers', 'options', tenantId ?? 'unknown'] });
+    queryClient.invalidateQueries({
+      queryKey: ['field', 'customers', 'options', tenantId ?? 'unknown'],
+    });
     //                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     //                                          Key hardcodeada, no usa factory
   },
@@ -301,6 +323,7 @@ La key de opciones de clientes no tiene una factory exportada en `queryKeys.ts`,
 **Cambio propuesto**
 
 1. Añadir una factory en `src/lib/routes/queryKeys.ts` (o crear `src/lib/field/queryKeys.ts`):
+
 ```ts
 export const fieldCustomerOptionKeys = {
   list: (tenantId: string | null | undefined) =>
@@ -309,6 +332,7 @@ export const fieldCustomerOptionKeys = {
 ```
 
 2. Usar la factory en `autoventaMutation.onSuccess`:
+
 ```ts
 queryClient.invalidateQueries({ queryKey: fieldCustomerOptionKeys.list(tenantId) });
 ```
@@ -351,6 +375,7 @@ El componente mezcla en un único árbol: formulario de metadatos de ruta, edito
 `src/components/Comercial/Routes/RoutesPlannerPage.jsx` — 1404 líneas (confirmado por análisis del agente explorador).
 
 Responsabilidades identificadas en el componente:
+
 1. Estado de edición de ruta (nombre, fecha, operador, template).
 2. Lista de paradas con drag-drop (`@dnd-kit`).
 3. Geocoding con enriquecimiento de coordenadas (llama a `enrichStopsWithCoordinates`).
@@ -362,6 +387,7 @@ Responsabilidades identificadas en el componente:
 9. Serialización y llamada al servicio de guardado.
 
 Un componente con 9 responsabilidades distintas garantiza:
+
 - Re-renders costosos por estado no relacionado.
 - Dificultad para aplicar `React.memo` o `useMemo` eficazmente.
 - Tests prácticamente imposibles de escribir a nivel de unidad.
@@ -443,11 +469,13 @@ Mismo patrón que P04: acumulación de features sin partición paralela. Más to
 **Cambio propuesto**
 
 Para `AgendaPageClient`:
+
 1. Extraer `AgendaFilterDialog` con su propio estado local.
 2. Extraer `AgendaDayDialog` con sus acciones.
 3. Extraer `AgendaCalendarGrid` que solo recibe los eventos del mes.
 
 Para `FieldRouteExecutionPage`:
+
 1. Extraer `RouteStopDrawer` (lista de paradas).
 2. Extraer `RouteStopDetail` (detalle de parada activa).
 3. Extraer `RouteStopResultDialog` (dialog de resultado).
@@ -486,6 +514,7 @@ Cada request fallida imprime en la consola del browser los detalles del error JS
 **Evidencia**
 
 `src/lib/fetchWithTenant.js:139`
+
 ```js
 console.error('❌ Error JSON recibido:', errorJson);
 ```
@@ -505,6 +534,7 @@ Log de debugging que no se eliminó al hacer merge.
 **Cambio propuesto**
 
 Eliminar o condicionar:
+
 ```js
 // Opción A: eliminar
 // console.error('❌ Error JSON recibido:', errorJson);
@@ -547,6 +577,7 @@ En sesiones largas con muchas rutas distintas, la cache de geocoding crece indef
 **Evidencia**
 
 `src/lib/routes/routeStops.ts:16-17`
+
 ```ts
 const geocodeCache = new Map<string, { lat: number; lng: number } | null>();
 const pendingGeocodeRequests = new Map<string, Promise<{ lat: number; lng: number } | null>>();
@@ -615,9 +646,12 @@ La mutación de actualización de plantilla normaliza el resultado envolviendo e
 **Evidencia**
 
 `src/hooks/useRouteTemplates.ts:50-52`
+
 ```ts
 const updatedTemplate = normalizeRouteCollection([
-  ((response as { data?: unknown } | undefined)?.data ?? response) as Partial<import('@/types/field').DeliveryRoute>,
+  ((response as { data?: unknown } | undefined)?.data ?? response) as Partial<
+    import('@/types/field').DeliveryRoute
+  >,
 ])[0];
 ```
 
@@ -625,7 +659,9 @@ La función `normalizeRouteCollection` itera un array y llama `normalizeRouteEnt
 
 ```ts
 const updatedTemplate = normalizeRouteEntity(
-  ((response as { data?: unknown } | undefined)?.data ?? response) as Partial<import('@/types/field').DeliveryRoute>
+  ((response as { data?: unknown } | undefined)?.data ?? response) as Partial<
+    import('@/types/field').DeliveryRoute
+  >
 );
 ```
 
@@ -643,7 +679,9 @@ Inconsistencia en el uso de las funciones de normalización. Probablemente se co
 
 ```ts
 const updatedTemplate = normalizeRouteEntity(
-  ((response as { data?: unknown } | undefined)?.data ?? response) as Partial<import('@/types/field').DeliveryRoute>
+  ((response as { data?: unknown } | undefined)?.data ?? response) as Partial<
+    import('@/types/field').DeliveryRoute
+  >
 );
 ```
 
@@ -660,6 +698,7 @@ Patrones correctos que **no deben modificarse** y que pueden servir de referenci
 ### ✓ Caché de token con deduplicación de promesa en vuelo
 
 `src/lib/auth/getAuthToken.ts` implementa correctamente:
+
 - Caché de token con expiración (`cachedClientToken` + `cachedClientTokenExpiresAt`).
 - Deduplicación de la promesa en vuelo (`pendingClientTokenPromise`): múltiples calls simultáneas comparten la misma promesa de `getSession()`.
 - Limpieza de caché en 401 (`clearAuthTokenCache()` llamado desde `crmService.ts:38`).
@@ -699,31 +738,31 @@ Patrones correctos que **no deben modificarse** y que pueden servir de referenci
 
 ### Fase 1 — Quick wins (1 semana)
 
-| Tarea | Hallazgo | Estimado |
-|---|---|---|
-| Crear factory `comercialOrderKeys` y actualizar `useComercialOrders` | P01 | 1h |
-| Eliminar `console.error` en `fetchWithTenant.js` | P06 | 15min |
-| Sustituir key hardcodeada en `autoventaMutation` | P03 | 30min |
-| Añadir `MAX_GEOCODE_CACHE_SIZE` en `routeStops.ts` | P07 | 30min |
-| Sustituir `normalizeRouteCollection([x])[0]` por `normalizeRouteEntity(x)` en `useRouteTemplates` | P08 | 15min |
+| Tarea                                                                                             | Hallazgo | Estimado |
+| ------------------------------------------------------------------------------------------------- | -------- | -------- |
+| Crear factory `comercialOrderKeys` y actualizar `useComercialOrders`                              | P01      | 1h       |
+| Eliminar `console.error` en `fetchWithTenant.js`                                                  | P06      | 15min    |
+| Sustituir key hardcodeada en `autoventaMutation`                                                  | P03      | 30min    |
+| Añadir `MAX_GEOCODE_CACHE_SIZE` en `routeStops.ts`                                                | P07      | 30min    |
+| Sustituir `normalizeRouteCollection([x])[0]` por `normalizeRouteEntity(x)` en `useRouteTemplates` | P08      | 15min    |
 
 **Total estimado Fase 1: ~3 horas de desarrollo + testing.**
 
 ### Fase 2 — Estabilización estructural (2-3 semanas)
 
-| Tarea | Hallazgo | Estimado | Riesgo |
-|---|---|---|---|
-| Decidir y aplicar opción A/B para `fieldOperatorId` en query keys | P02 | 2-4h | Medio |
-| Partir `AgendaPageClient` en componentes especializados | P05 | 1-2 días | Medio |
-| Partir `FieldRouteExecutionPage` en componentes especializados | P05 | 1 día | Medio |
+| Tarea                                                             | Hallazgo | Estimado | Riesgo |
+| ----------------------------------------------------------------- | -------- | -------- | ------ |
+| Decidir y aplicar opción A/B para `fieldOperatorId` en query keys | P02      | 2-4h     | Medio  |
+| Partir `AgendaPageClient` en componentes especializados           | P05      | 1-2 días | Medio  |
+| Partir `FieldRouteExecutionPage` en componentes especializados    | P05      | 1 día    | Medio  |
 
 ### Fase 3 — Hardening (4-6 semanas, planificación en sprint)
 
-| Tarea | Hallazgo | Estimado | Riesgo |
-|---|---|---|---|
-| Partir `RoutesPlannerPage` (1404 líneas) en componentes especializados | P04 | 3-5 días | Alto |
-| Añadir validación de performance en PR para flujos críticos | — | — | — |
-| Establecer reglas de linting para query keys hardcodeadas | P01, P03 | 1 día | Bajo |
+| Tarea                                                                  | Hallazgo | Estimado | Riesgo |
+| ---------------------------------------------------------------------- | -------- | -------- | ------ |
+| Partir `RoutesPlannerPage` (1404 líneas) en componentes especializados | P04      | 3-5 días | Alto   |
+| Añadir validación de performance en PR para flujos críticos            | —        | —        | —      |
+| Establecer reglas de linting para query keys hardcodeadas              | P01, P03 | 1 día    | Bajo   |
 
 ---
 
@@ -756,7 +795,7 @@ Patrones correctos que **no deben modificarse** y que pueden servir de referenci
 ### P01 — Cambio de query key en `useComercialOrders`
 
 - **Riesgo**: Si hay código que invalida la key con el formato anterior, la invalidación dejará de funcionar.
-- **Mitigación**: `grep -r "'crm'.*'orders'"`  para encontrar todos los usos antes de cambiar.
+- **Mitigación**: `grep -r "'crm'.*'orders'"` para encontrar todos los usos antes de cambiar.
 - **Rollback**: Revertir el commit del cambio de key. No hay persistencia de caché entre sesiones.
 
 ### P02 — Añadir `fieldOperatorId` a query keys de field

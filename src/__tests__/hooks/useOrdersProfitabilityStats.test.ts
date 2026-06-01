@@ -32,8 +32,10 @@ vi.mock('@/services/orderService', () => ({
   getOrderRankingStats: vi.fn(),
   getSalesBySalesperson: vi.fn(),
   getOrdersProfitabilitySummary: (...args: unknown[]) => mockGetOrdersProfitabilitySummary(...args),
-  getOrdersProfitabilityTimeline: (...args: unknown[]) => mockGetOrdersProfitabilityTimeline(...args),
-  getOrdersProfitabilityProducts: (...args: unknown[]) => mockGetOrdersProfitabilityProducts(...args),
+  getOrdersProfitabilityTimeline: (...args: unknown[]) =>
+    mockGetOrdersProfitabilityTimeline(...args),
+  getOrdersProfitabilityProducts: (...args: unknown[]) =>
+    mockGetOrdersProfitabilityProducts(...args),
 }));
 
 function createWrapper() {

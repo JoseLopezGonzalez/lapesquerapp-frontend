@@ -1,5 +1,5 @@
 // /src/context/OrderContext.js
-'use client'
+'use client';
 import React, { createContext, useContext, useMemo, useRef, useCallback } from 'react';
 import { useOrder } from '@/hooks/useOrder';
 
@@ -10,7 +10,7 @@ const OrderContext = createContext();
 export function OrderProvider({ orderId, children, onChange }) {
   // Memoizar onChange para evitar que cambie la referencia en cada render
   const onChangeRef = useRef(onChange);
-  
+
   // Actualizar la referencia cuando onChange cambie
   React.useEffect(() => {
     onChangeRef.current = onChange;
@@ -29,11 +29,7 @@ export function OrderProvider({ orderId, children, onChange }) {
   // Memoizar el valor del contexto para evitar re-renders innecesarios
   const contextValue = useMemo(() => orderData, [orderData]);
 
-  return (
-    <OrderContext.Provider value={contextValue}>
-      {children}
-    </OrderContext.Provider>
-  );
+  return <OrderContext.Provider value={contextValue}>{children}</OrderContext.Provider>;
 }
 
 // Hook para consumir el contexto fácilmente

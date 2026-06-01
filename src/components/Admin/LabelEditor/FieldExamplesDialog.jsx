@@ -1,43 +1,54 @@
-'use client'
+'use client';
 
-import React, { useState, useEffect } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Separator } from '@/components/ui/separator'
-import { labelFields } from '@/hooks/useLabelEditor'
+import React, { useState, useEffect } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { labelFields } from '@/hooks/useLabelEditor';
 
-export default function FieldExamplesDialog({ open, onClose, fieldExampleValues, setFieldExampleValues }) {
-  const [localValues, setLocalValues] = useState({})
+export default function FieldExamplesDialog({
+  open,
+  onClose,
+  fieldExampleValues,
+  setFieldExampleValues,
+}) {
+  const [localValues, setLocalValues] = useState({});
 
   useEffect(() => {
     if (open) {
       // Inicializar con los valores actuales
-      setLocalValues({ ...fieldExampleValues })
+      setLocalValues({ ...fieldExampleValues });
     }
-  }, [open, fieldExampleValues])
+  }, [open, fieldExampleValues]);
 
   const handleChange = (fieldKey, value) => {
-    setLocalValues(prev => ({
+    setLocalValues((prev) => ({
       ...prev,
-      [fieldKey]: value
-    }))
-  }
+      [fieldKey]: value,
+    }));
+  };
 
   const handleSave = () => {
-    setFieldExampleValues(localValues)
-    onClose()
-  }
+    setFieldExampleValues(localValues);
+    onClose();
+  };
 
   const handleReset = () => {
-    const defaultValues = {}
-    Object.keys(labelFields).forEach(key => {
-      defaultValues[key] = labelFields[key].defaultValue
-    })
-    setLocalValues(defaultValues)
-  }
+    const defaultValues = {};
+    Object.keys(labelFields).forEach((key) => {
+      defaultValues[key] = labelFields[key].defaultValue;
+    });
+    setLocalValues(defaultValues);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -45,7 +56,7 @@ export default function FieldExamplesDialog({ open, onClose, fieldExampleValues,
         <DialogHeader>
           <DialogTitle>Editar Valores de Ejemplo de Campos Dinámicos</DialogTitle>
         </DialogHeader>
-        
+
         <ScrollArea className="h-[calc(85vh-200px)] pr-4">
           <div className="space-y-4 py-2">
             {Object.entries(labelFields).map(([fieldKey, fieldInfo]) => (
@@ -59,8 +70,8 @@ export default function FieldExamplesDialog({ open, onClose, fieldExampleValues,
                   onChange={(e) => handleChange(fieldKey, e.target.value)}
                   placeholder={`Ejemplo: ${fieldInfo.defaultValue}`}
                 />
-                <p className="text-xs text-muted-foreground">
-                  Campo: <code className="bg-muted px-1 py-0.5 rounded">{fieldKey}</code>
+                <p className="text-muted-foreground text-xs">
+                  Campo: <code className="bg-muted rounded px-1 py-0.5">{fieldKey}</code>
                 </p>
                 <Separator />
               </div>
@@ -68,7 +79,7 @@ export default function FieldExamplesDialog({ open, onClose, fieldExampleValues,
           </div>
         </ScrollArea>
 
-        <DialogFooter className="flex justify-between mt-4">
+        <DialogFooter className="mt-4 flex justify-between">
           <Button variant="outline" onClick={handleReset}>
             Restaurar Valores por Defecto
           </Button>
@@ -76,13 +87,10 @@ export default function FieldExamplesDialog({ open, onClose, fieldExampleValues,
             <Button variant="outline" onClick={onClose}>
               Cancelar
             </Button>
-            <Button onClick={handleSave}>
-              Guardar Cambios
-            </Button>
+            <Button onClick={handleSave}>Guardar Cambios</Button>
           </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
-

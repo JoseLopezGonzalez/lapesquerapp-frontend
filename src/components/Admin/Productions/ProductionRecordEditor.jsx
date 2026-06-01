@@ -1,154 +1,153 @@
-'use client'
+'use client';
 
-import React from 'react'
-import { useRouter } from 'next/navigation'
-import { ProductionRecordProvider, useProductionRecordContext } from '@/context/ProductionRecordContext'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import Loader from '@/components/Utilities/Loader'
-import { AlertCircle } from 'lucide-react'
-import { RecordHeader } from './ProductionRecordEditor/components/RecordHeader'
-import { ProcessInfoForm } from './ProductionRecordEditor/components/ProcessInfoForm'
-import { ProcessSummaryCard } from './ProductionRecordEditor/components/ProcessSummaryCard'
-import { RecordContentSections } from './ProductionRecordEditor/components/RecordContentSections'
-import { useRecordFormData } from './ProductionRecordEditor/hooks/useRecordFormData'
-import { useRecordFormSubmission } from './ProductionRecordEditor/hooks/useRecordFormSubmission'
-import { getProcessName, getRecordField } from '@/helpers/production/recordHelpers'
+import React from 'react';
+import { useRouter } from 'next/navigation';
+import {
+  ProductionRecordProvider,
+  useProductionRecordContext,
+} from '@/context/ProductionRecordContext';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import Loader from '@/components/Utilities/Loader';
+import { AlertCircle } from 'lucide-react';
+import { RecordHeader } from './ProductionRecordEditor/components/RecordHeader';
+import { ProcessInfoForm } from './ProductionRecordEditor/components/ProcessInfoForm';
+import { ProcessSummaryCard } from './ProductionRecordEditor/components/ProcessSummaryCard';
+import { RecordContentSections } from './ProductionRecordEditor/components/RecordContentSections';
+import { useRecordFormData } from './ProductionRecordEditor/hooks/useRecordFormData';
+import { useRecordFormSubmission } from './ProductionRecordEditor/hooks/useRecordFormSubmission';
+import { getProcessName, getRecordField } from '@/helpers/production/recordHelpers';
 
 const ProductionRecordEditorContent = ({ productionId, recordId = null }) => {
-    const router = useRouter()
-    
-    const {
-        record,
-        production,
-        processes,
-        existingRecords,
-        loading,
-        saving,
-        error,
-        isEditMode,
-        saveRecord,
-        refresh
-    } = useProductionRecordContext()
+  const router = useRouter();
 
-    const {
-        formData,
-        setFormData,
-        isFormDirty
-    } = useRecordFormData(record, processes, isEditMode)
+  const {
+    record,
+    production,
+    processes,
+    existingRecords,
+    loading,
+    saving,
+    error,
+    isEditMode,
+    saveRecord,
+    refresh,
+  } = useProductionRecordContext();
 
-    const { handleSubmit } = useRecordFormSubmission({
-        productionId,
-        recordId,
-        saveRecord,
-        formData
-    })
+  const { formData, setFormData, isFormDirty } = useRecordFormData(record, processes, isEditMode);
 
-    const handleRefresh = () => {
-        refresh()
-    }
+  const { handleSubmit } = useRecordFormSubmission({
+    productionId,
+    recordId,
+    saveRecord,
+    formData,
+  });
 
-    if (loading) {
-        return (
-            <div className="h-full w-full overflow-y-auto flex items-center justify-center">
-                <Loader />
-            </div>
-        )
-    }
+  const handleRefresh = () => {
+    refresh();
+  };
 
-    if (error && !record && isEditMode) {
-        return (
-            <div className="h-full w-full overflow-y-auto">
-                <div className="p-6">
-                    <Card className="border-destructive">
-                        <CardHeader>
-                            <CardTitle className="text-destructive flex items-center gap-2">
-                                <AlertCircle className="h-5 w-5" />
-                                Error
-                            </CardTitle>
-                            <CardDescription>{error}</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <Button onClick={() => router.push(`/admin/productions/${productionId}`)}>Volver</Button>
-                        </CardContent>
-                    </Card>
-                </div>
-            </div>
-        )
-    }
-
-    const currentRecordId = record?.id || recordId
-    // Usar helpers para manejar ambos formatos
-    const finishedAt = getRecordField(record, 'finishedAt')
-    const parentRecordId = getRecordField(record, 'parentRecordId')
-    const processName = getProcessName(record)
-    const isCompleted = finishedAt !== null && finishedAt !== undefined
-    const isRoot = !parentRecordId && (!formData.parent_record_id || formData.parent_record_id === 'none')
-
+  if (loading) {
     return (
-        <div className="h-full w-full overflow-y-auto">
-            <div className="p-6 space-y-6">
-                {/* Header */}
-                <RecordHeader
-                    productionId={productionId}
-                    isEditMode={isEditMode}
-                    recordId={recordId}
-                    processName={processName}
-                    productionLot={production?.lot}
-                    isRoot={isRoot}
-                    isCompleted={isCompleted}
-                />
+      <div className="flex h-full w-full items-center justify-center overflow-y-auto">
+        <Loader />
+      </div>
+    );
+  }
 
-                {/* Mensaje de error si existe */}
-                {error && (
-                    <Card className="border-destructive">
-                        <CardContent className="pt-6">
-                            <p className="text-sm text-destructive">{error}</p>
-                        </CardContent>
-                    </Card>
-                )}
-
-                <div className="w-full columns-1 lg:columns-2 gap-6 space-y-6">
-                    {/* Formulario de Información del Proceso */}
-                    <div className="break-inside-avoid mb-6 max-w-full w-full">
-                        <ProcessInfoForm
-                            formData={formData}
-                            onFormDataChange={setFormData}
-                            processes={processes}
-                            existingRecords={existingRecords}
-                            currentRecordId={currentRecordId}
-                            isEditMode={isEditMode}
-                            saving={saving}
-                            onSubmit={handleSubmit}
-                            isFormDirty={isFormDirty}
-                            processLabelFallback={getProcessName(record)}
-                        />
-                    </div>
-
-                    {/* Resumen del Proceso */}
-                    {currentRecordId && record && (
-                        <div className="break-inside-avoid mb-6 max-w-full w-full">
-                            <ProcessSummaryCard />
-                        </div>
-                    )}
-
-                    {/* Inputs, Outputs, Consumos e Imágenes */}
-                    <RecordContentSections
-                        recordId={currentRecordId}
-                        onRefresh={handleRefresh}
-                    />
-                </div>
-            </div>
+  if (error && !record && isEditMode) {
+    return (
+      <div className="h-full w-full overflow-y-auto">
+        <div className="p-6">
+          <Card className="border-destructive">
+            <CardHeader>
+              <CardTitle className="text-destructive flex items-center gap-2">
+                <AlertCircle className="h-5 w-5" />
+                Error
+              </CardTitle>
+              <CardDescription>{error}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={() => router.push(`/admin/productions/${productionId}`)}>
+                Volver
+              </Button>
+            </CardContent>
+          </Card>
         </div>
-    )
-}
+      </div>
+    );
+  }
+
+  const currentRecordId = record?.id || recordId;
+  // Usar helpers para manejar ambos formatos
+  const finishedAt = getRecordField(record, 'finishedAt');
+  const parentRecordId = getRecordField(record, 'parentRecordId');
+  const processName = getProcessName(record);
+  const isCompleted = finishedAt !== null && finishedAt !== undefined;
+  const isRoot =
+    !parentRecordId && (!formData.parent_record_id || formData.parent_record_id === 'none');
+
+  return (
+    <div className="h-full w-full overflow-y-auto">
+      <div className="space-y-6 p-6">
+        {/* Header */}
+        <RecordHeader
+          productionId={productionId}
+          isEditMode={isEditMode}
+          recordId={recordId}
+          processName={processName}
+          productionLot={production?.lot}
+          isRoot={isRoot}
+          isCompleted={isCompleted}
+        />
+
+        {/* Mensaje de error si existe */}
+        {error && (
+          <Card className="border-destructive">
+            <CardContent className="pt-6">
+              <p className="text-destructive text-sm">{error}</p>
+            </CardContent>
+          </Card>
+        )}
+
+        <div className="w-full columns-1 gap-6 space-y-6 lg:columns-2">
+          {/* Formulario de Información del Proceso */}
+          <div className="mb-6 w-full max-w-full break-inside-avoid">
+            <ProcessInfoForm
+              formData={formData}
+              onFormDataChange={setFormData}
+              processes={processes}
+              existingRecords={existingRecords}
+              currentRecordId={currentRecordId}
+              isEditMode={isEditMode}
+              saving={saving}
+              onSubmit={handleSubmit}
+              isFormDirty={isFormDirty}
+              processLabelFallback={getProcessName(record)}
+            />
+          </div>
+
+          {/* Resumen del Proceso */}
+          {currentRecordId && record && (
+            <div className="mb-6 w-full max-w-full break-inside-avoid">
+              <ProcessSummaryCard />
+            </div>
+          )}
+
+          {/* Inputs, Outputs, Consumos e Imágenes */}
+          <RecordContentSections recordId={currentRecordId} onRefresh={handleRefresh} />
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const ProductionRecordEditor = ({ productionId, recordId = null }) => {
-    return (
-        <ProductionRecordProvider productionId={productionId} recordId={recordId}>
-            <ProductionRecordEditorContent productionId={productionId} recordId={recordId} />
-        </ProductionRecordProvider>
-    )
-}
+  return (
+    <ProductionRecordProvider productionId={productionId} recordId={recordId}>
+      <ProductionRecordEditorContent productionId={productionId} recordId={recordId} />
+    </ProductionRecordProvider>
+  );
+};
 
-export default ProductionRecordEditor
+export default ProductionRecordEditor;

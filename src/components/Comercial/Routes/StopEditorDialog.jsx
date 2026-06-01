@@ -12,7 +12,13 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 
 export function StopEditorDialog({
@@ -47,8 +53,13 @@ export function StopEditorDialog({
           <div className="grid gap-2 md:grid-cols-2">
             <div className="space-y-2">
               <Label>Tipo de parada</Label>
-              <Select value={draft.stopType} onValueChange={(value) => setDraft((current) => ({ ...current, stopType: value }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select
+                value={draft.stopType}
+                onValueChange={(value) => setDraft((current) => ({ ...current, stopType: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="obligatoria">Obligatoria</SelectItem>
                   <SelectItem value="sugerida">Sugerida</SelectItem>
@@ -69,7 +80,9 @@ export function StopEditorDialog({
                   }))
                 }
               >
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="location">Ubicación</SelectItem>
                   <SelectItem value="customer">Cliente</SelectItem>
@@ -99,7 +112,9 @@ export function StopEditorDialog({
                 </SelectTrigger>
                 <SelectContent>
                   {customerOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -126,7 +141,9 @@ export function StopEditorDialog({
                 </SelectTrigger>
                 <SelectContent>
                   {prospectOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -135,22 +152,42 @@ export function StopEditorDialog({
 
           <div className="space-y-2">
             <Label>Etiqueta</Label>
-            <Input value={draft.label} onChange={(event) => setDraft((current) => ({ ...current, label: event.target.value }))} />
+            <Input
+              value={draft.label}
+              onChange={(event) =>
+                setDraft((current) => ({ ...current, label: event.target.value }))
+              }
+            />
           </div>
 
           <div className="space-y-2">
             <Label>Dirección</Label>
-            <Input value={draft.address} onChange={(event) => setDraft((current) => ({ ...current, address: event.target.value }))} />
+            <Input
+              value={draft.address}
+              onChange={(event) =>
+                setDraft((current) => ({ ...current, address: event.target.value }))
+              }
+            />
           </div>
 
           <div className="space-y-2">
             <Label>Notas</Label>
-            <Textarea value={draft.notes} onChange={(event) => setDraft((current) => ({ ...current, notes: event.target.value }))} rows={4} />
+            <Textarea
+              value={draft.notes}
+              onChange={(event) =>
+                setDraft((current) => ({ ...current, notes: event.target.value }))
+              }
+              rows={4}
+            />
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-          <Button onClick={() => onSave(draft)}>{mode === 'create' ? 'Añadir parada' : 'Guardar parada'}</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancelar
+          </Button>
+          <Button onClick={() => onSave(draft)}>
+            {mode === 'create' ? 'Añadir parada' : 'Guardar parada'}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

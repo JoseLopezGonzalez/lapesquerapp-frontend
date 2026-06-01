@@ -4,14 +4,11 @@ import type { ProspectContact } from '@/types/crm';
 const emailOptional = z
   .string()
   .max(200, 'Máximo 200 caracteres')
-  .refine(
-    (s) => {
-      const t = s.trim();
-      if (!t) return true;
-      return z.string().email().safeParse(t).success;
-    },
-    'Email no válido'
-  );
+  .refine((s) => {
+    const t = s.trim();
+    if (!t) return true;
+    return z.string().email().safeParse(t).success;
+  }, 'Email no válido');
 
 /**
  * Valores del formulario (strings para inputs).
@@ -37,7 +34,9 @@ export function getDefaultProspectContactFormValues(): ProspectContactFormValues
   };
 }
 
-export function prospectContactFormValuesFromContact(contact: ProspectContact | null | undefined): ProspectContactFormValues {
+export function prospectContactFormValuesFromContact(
+  contact: ProspectContact | null | undefined
+): ProspectContactFormValues {
   return {
     name: contact?.name ?? '',
     role: contact?.role ?? '',
@@ -47,9 +46,7 @@ export function prospectContactFormValuesFromContact(contact: ProspectContact | 
   };
 }
 
-export function prospectContactPayloadFromFormValues(
-  values: ProspectContactFormValues
-): {
+export function prospectContactPayloadFromFormValues(values: ProspectContactFormValues): {
   name: string;
   role: string | null;
   phone: string | null;
@@ -64,4 +61,3 @@ export function prospectContactPayloadFromFormValues(
     isPrimary: values.isPrimary,
   };
 }
-

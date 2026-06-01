@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 export default function SanitaryRegister({
   element = {},
@@ -14,27 +14,27 @@ export default function SanitaryRegister({
   const w = width || element.width || 160;
   const h = height || element.height || 110;
 
-  const strokeColor = element.borderColor || "black";
-  const strokeWidth = parseFloat(element.borderWidth || "0.10");
+  const strokeColor = element.borderColor || 'black';
+  const strokeWidth = parseFloat(element.borderWidth || '0.10');
 
   const fs = (fontSize || element.fontSize || 2) / 3;
-  const fw = fontWeight || element.fontWeight || "bold";
+  const fw = fontWeight || element.fontWeight || 'bold';
 
-  const color = element.color || "#000";
+  const color = element.color || '#000';
 
   const legacy = element.text ? element.text.split(/\n/) : [];
-  const cc = countryCode || element.countryCode || legacy[0] || "ES";
-  const an = approvalNumber || element.approvalNumber || legacy[1] || "12.021462/H";
-  const suff = suffix || element.suffix || legacy[2] || "C.E.";
+  const cc = countryCode || element.countryCode || legacy[0] || 'ES';
+  const an = approvalNumber || element.approvalNumber || legacy[1] || '12.021462/H';
+  const suff = suffix || element.suffix || legacy[2] || 'C.E.';
 
   // console.log(fs)
 
   return (
-    <div className="w-full h-full flex items-center justify-center  ">
+    <div className="flex h-full w-full items-center justify-center">
       <svg
         width="100%"
         height="100%"
-       /*  viewBox={`0 0 ${w} ${h}`} */
+        /*  viewBox={`0 0 ${w} ${h}`} */
         viewBox={`-${strokeWidth / 2} -${strokeWidth / 2} ${w + strokeWidth} ${h + strokeWidth}`}
         xmlns="http://www.w3.org/2000/svg"
       >

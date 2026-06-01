@@ -1,10 +1,11 @@
 ---
-applyTo: "src/components/ui/**/*.{js,jsx,ts,tsx},src/components/Shadcn/**/*.{js,jsx,ts,tsx},src/app/globals.css,tailwind.config.js"
+applyTo: 'src/components/ui/**/*.{js,jsx,ts,tsx},src/components/Shadcn/**/*.{js,jsx,ts,tsx},src/app/globals.css,tailwind.config.js'
 ---
 
 # shadcn/ui and Tailwind CSS instructions
 
 This project uses:
+
 - **Tailwind CSS v4.2.1** with CSS-first config (`@theme inline` in `globals.css`)
 - **shadcn/ui** with `radix-nova` style (not `default` or `new-york`)
 - **class-variance-authority** for component variants

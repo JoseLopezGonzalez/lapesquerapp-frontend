@@ -1,5 +1,5 @@
-import { ErrorPage } from '@/components/Utilities/ErrorPage'
+import { ErrorPage } from '@/components/Utilities/ErrorPage';
 
 export default function UnauthorizedPage() {
-    return <ErrorPage statusCode={403} homeHref="/admin/home" />
+  return <ErrorPage statusCode={403} homeHref="/admin/home" />;
 }

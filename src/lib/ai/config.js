@@ -1,6 +1,6 @@
 /**
  * Configuración del AI Chat
- * 
+ *
  * Define el system prompt y configuración del asistente AI
  * para La PesquerApp.
  */
@@ -201,4 +201,3 @@ Usa este formato:
 - Si ejecutas una tool, SIEMPRE genera un mensaje de texto explicando los resultados
 - El texto debe ser útil, claro y estructurado
 - Los datos crudos de las herramientas no son suficientes: debes explicarlos en lenguaje natural`;
-

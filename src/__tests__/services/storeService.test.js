@@ -121,9 +121,7 @@ describe('storeService', () => {
     });
 
     it('handles wrapped response with data property', async () => {
-      const mockData = [
-        { product_id: 1, product_name: 'Producto A', total_quantity: 10000 },
-      ];
+      const mockData = [{ product_id: 1, product_name: 'Producto A', total_quantity: 10000 }];
       fetchWithTenant.mockResolvedValueOnce(mockJsonResponse({ data: mockData }));
 
       const result = await getStockByProducts(token);

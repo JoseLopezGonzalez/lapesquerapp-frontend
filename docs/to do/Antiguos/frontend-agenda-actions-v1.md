@@ -1,14 +1,18 @@
 # CRM Frontend — Agenda Actions (V1)
 
 ## Objetivo del cambio
+
 La agenda del comercial deja de construirse mezclando:
+
 - `prospects.next_action_at/next_action_note`
 - `commercial_interactions.next_action_at/next_action_note`
 
 y pasa a tener una **fuente de verdad única**:
+
 - `agenda_actions`
 
 Esto permite:
+
 - mostrar una lista/calendario consistente
 - poder marcar “hecho” de forma determinista (ligado a un `agendaActionId`)
 - soportar reprogramaciones con historial
@@ -18,21 +22,28 @@ Esto permite:
 ## Conceptos clave (V1)
 
 ### 1) Target (a quién pertenece la acción)
+
 Una `agenda_actions` siempre pertenece a un **target**:
+
 - `prospect`
 - `customer`
 
 ### 2) Statuses
+
 En V1 los estados relevantes para UI son:
+
 - `pending`: acción activa y pendiente
 - `done`: acción ya realizada (se marca por interacción de cierre con ligadura)
 - `cancelled`: acción retirada (p.ej. al reprogramar)
 
 ### 3) Regla V1 de cardinalidad: 1 pending principal por target
+
 Para cada target (prospecto/cliente):
+
 - puede existir **como máximo una** acción `pending` “principal” activa
 
 Implicación para el front:
+
 - si el usuario intenta crear/programar otra próxima acción para el mismo target mientras aún existe una `pending`, el backend responde `422`
 - la UI debe tratar ese `422` como señal para usar el flujo de **reprogramar/cerrar** la pending existente antes
 
@@ -41,14 +52,18 @@ Implicación para el front:
 ## Fuente de datos para la UI
 
 ### Dashboard (ya no mezcla orígenes)
+
 `GET /api/v2/crm/dashboard` ahora devuelve:
+
 - `data.reminders_today`: acciones `agenda_actions` con `status=pending` y `scheduledAt` = hoy
 - `data.overdue_actions`: acciones `agenda_actions` con `status=pending` y `scheduledAt` < hoy
 
 Nota importante:
+
 - la UI ya no debe esperar items con `type="interaction"` dentro de `reminders_today/overdue_actions`
 
 ### Calendario (nuevo)
+
 - `GET /api/v2/crm/agenda?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&targetType=prospect|customer&status[]=pending|done|cancelled`
 - `GET /api/v2/crm/agenda/summary?limitNext=10`
 
@@ -59,11 +74,14 @@ Ambos endpoints consumen `agenda_actions` (no legacy).
 ## Contratos de lectura: payloads del front
 
 ### 1) Dashboard: `GET /api/v2/crm/dashboard`
+
 Cada item en:
+
 - `data.reminders_today`
 - `data.overdue_actions`
 
 tiene este shape conceptual:
+
 - `type`: `"prospect"` o `"customer"`
 - `id`: **igual que `agendaActionId`**
 - `agendaActionId`: id de la acción
@@ -75,6 +93,7 @@ tiene este shape conceptual:
 - `customerId`: id cuando `type="customer"` (si no, `null`)
 
 Ejemplo (conceptual):
+
 ```json
 {
   "type": "prospect",
@@ -90,10 +109,13 @@ Ejemplo (conceptual):
 ```
 
 ### 2) Calendario: `GET /api/v2/crm/agenda`
+
 La respuesta trae:
+
 - `data.events`: array ordenado por fecha
 
 Cada item del array:
+
 - `agendaActionId`
 - `scheduledAt` (`YYYY-MM-DD`)
 - `description`
@@ -102,6 +124,7 @@ Cada item del array:
 - `label`
 
 Ejemplo:
+
 ```json
 {
   "data": {
@@ -120,7 +143,9 @@ Ejemplo:
 ```
 
 ### 3) Summary: `GET /api/v2/crm/agenda/summary`
+
 Devuelve:
+
 - `data.overdue`
 - `data.today`
 - `data.next`
@@ -132,10 +157,13 @@ Todos los elementos usan el mismo shape que `events` (agendaActionId/scheduledAt
 ## Contratos de escritura: cómo crear, cerrar, reprogramar, cancelar
 
 ### A) Creación de próxima acción desde una interacción
+
 Endpoint:
+
 - `POST /api/v2/commercial-interactions`
 
 Regla:
+
 1. Si en la interacción llega `nextActionAt`:
    - el backend crea una `agenda_actions` con `status=pending` para el target indicado
    - la `description` proviene de `nextActionNote` (si viene, si no puede ser `null`/vacío según el caso)
@@ -143,6 +171,7 @@ Regla:
    - el backend responde `422` (regla V1 de 1 pending)
 
 Payload relevante (prospect):
+
 ```json
 {
   "prospectId": 10,
@@ -156,6 +185,7 @@ Payload relevante (prospect):
 ```
 
 Payload relevante (customer):
+
 ```json
 {
   "customerId": 44,
@@ -168,7 +198,9 @@ Payload relevante (customer):
 ```
 
 ### B) Marcar una acción como “hecho” (done) en V1
+
 Regla V1 (determinista):
+
 - marcar “done” **no se hace** con heurísticas
 - se hace **solo** cuando:
   - el front envía una interacción de cierre
@@ -176,12 +208,15 @@ Regla V1 (determinista):
   - y además incluye `agendaActionId`
 
 Endpoint:
+
 - `POST /api/v2/commercial-interactions`
 
 Requisito para cierre:
+
 - Si `nextActionAt` no se envía (o es `null`), entonces `agendaActionId` es obligatorio
 
 Ejemplo (prospect closure):
+
 ```json
 {
   "prospectId": 10,
@@ -195,17 +230,22 @@ Ejemplo (prospect closure):
 ```
 
 Consecuencias para la UI:
+
 - la acción `pending` ligada a `agendaActionId` pasa a `done`
 - desaparece como “pendiente activa” en el calendario/summary
 
 Errores típicos:
+
 - `422` si intentas cerrar sin `agendaActionId` (cuando `nextActionAt` no está presente)
 
 ### C) Reprogramar desde la agenda
+
 Endpoints:
+
 - `POST /api/v2/crm/agenda/{id}/reschedule`
 
 Efecto esperado:
+
 - la `agenda_actions` original (el `id` reprogramado) pasa a `cancelled`
 - se crea una nueva `agenda_actions` `pending` con:
   - nueva `scheduledAt`
@@ -213,6 +253,7 @@ Efecto esperado:
   - enlace histórico mediante `previous_action_id` (la UI puede ignorarlo si no muestra historial)
 
 Entrada conceptual:
+
 ```json
 {
   "nextActionAt": "2026-03-27",
@@ -222,10 +263,13 @@ Entrada conceptual:
 ```
 
 ### D) Cancelar desde la agenda
+
 Endpoint:
+
 - `POST /api/v2/crm/agenda/{id}/cancel`
 
 Efecto esperado:
+
 - la `agenda_actions` `pending` del `id` pasa a `cancelled`
 - desaparece de “pendientes activas” en el calendario/summary
 
@@ -234,18 +278,24 @@ Efecto esperado:
 ## Compatibilidad legacy (mientras el front migra)
 
 ### Prospecto: wrappers legacy
+
 Estos endpoints siguen existiendo y ahora operan sobre `agenda_actions` internamente:
+
 - `POST /api/v2/prospects/{id}/schedule-action`
 - `DELETE /api/v2/prospects/{id}/next-action`
 
 Implicación:
+
 - aunque el front use estos wrappers, el resultado visible para la UI será consistente con `agenda_actions`
 
 ### Prospecto -> Customer (transfer de pending)
+
 Endpoint:
+
 - `POST /api/v2/prospects/{id}/convert-to-customer`
 
 Efecto:
+
 - si existía una `agenda_actions.pending` para el prospecto, esa pending se **transfiere** al customer
 - para el calendario, el item puede aparecer bajo `type="customer"` en lugar de `type="prospect"`
 
@@ -254,18 +304,24 @@ Efecto:
 ## Manejo de errores para UX
 
 ### 422: ya existe una pending activa
+
 Cuándo ocurre:
+
 - intentas programar `nextActionAt` para un target que ya tiene una `agenda_actions.pending`
 
 Qué significa para el usuario:
+
 - hay una acción activa; primero debe reprogramarse/cerrarse la actual
 
 ### 422: done sin agendaActionId
+
 Cuándo ocurre:
+
 - en una interacción de cierre no llega `nextActionAt` (o llega `null`)
 - pero tampoco llega `agendaActionId`
 
 Qué significa:
+
 - para V1 el cierre siempre debe referenciar la acción concreta a marcar `done`
 
 ---
@@ -287,4 +343,3 @@ Qué significa:
 
 5. Para leer la vista:
    - dashboard y agenda leen `agenda_actions`
-

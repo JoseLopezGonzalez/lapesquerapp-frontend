@@ -75,8 +75,8 @@ export default function ReceptionReciboPrintContent({
   const padding = className ? '' : 'p-8';
   return (
     <div className={`${padding} ${baseClasses} ${className || ''}`.trim()}>
-      <h1 className="text-3xl font-bold text-center mb-6">NOTA DE ENTRADA</h1>
-      <div className="space-y-2 mb-6">
+      <h1 className="mb-6 text-center text-3xl font-bold">NOTA DE ENTRADA</h1>
+      <div className="mb-6 space-y-2">
         <div className="flex justify-between">
           <span className="font-bold">Numero:</span>
           <span>#{receptionId}</span>
@@ -90,9 +90,9 @@ export default function ReceptionReciboPrintContent({
           <span>{formattedDate}</span>
         </div>
       </div>
-      <div className="flex justify-between gap-8 mb-6">
+      <div className="mb-6 flex justify-between gap-8">
         <div className="flex-1">
-          <div className="font-bold mb-3">Artículo</div>
+          <div className="mb-3 font-bold">Artículo</div>
           <div className="space-y-2">
             {productsList.length === 0 ? (
               <div className="text-gray-500">No hay productos</div>
@@ -103,13 +103,13 @@ export default function ReceptionReciboPrintContent({
                     {product.name}
                   </div>
                 ))}
-                <div className="font-bold mt-3 pt-2 border-t">Total</div>
+                <div className="mt-3 border-t pt-2 font-bold">Total</div>
               </>
             )}
           </div>
         </div>
         <div className="text-right">
-          <div className="font-bold mb-3">Cantidad</div>
+          <div className="mb-3 font-bold">Cantidad</div>
           <div className="space-y-2">
             {productsList.length > 0 && (
               <>
@@ -118,7 +118,7 @@ export default function ReceptionReciboPrintContent({
                     {formatDecimalWeight(product.quantity)}
                   </div>
                 ))}
-                <div className="font-bold mt-3 pt-2 border-t">
+                <div className="mt-3 border-t pt-2 font-bold">
                   {formatDecimalWeight(totalQuantity)}
                 </div>
               </>
@@ -126,9 +126,9 @@ export default function ReceptionReciboPrintContent({
           </div>
         </div>
       </div>
-      <div className="space-y-1 mt-6">
+      <div className="mt-6 space-y-1">
         <div className="font-bold">Notas / Lonja:</div>
-        <div className="text-sm min-h-[40px] border-b pb-1">{notes || ''}</div>
+        <div className="min-h-[40px] border-b pb-1 text-sm">{notes || ''}</div>
       </div>
     </div>
   );

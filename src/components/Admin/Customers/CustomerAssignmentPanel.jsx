@@ -5,7 +5,13 @@ import { useQuery } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { notify } from '@/lib/notifications';
 import { useFieldOperatorOptions } from '@/hooks/useFieldOptions';
@@ -36,7 +42,9 @@ export default function CustomerAssignmentPanel({ customerId }) {
 
   const customer = customerQuery.data;
   const salespersonOptions = useMemo(() => {
-    const raw = Array.isArray(salespeopleQuery.data) ? salespeopleQuery.data : salespeopleQuery.data?.data ?? [];
+    const raw = Array.isArray(salespeopleQuery.data)
+      ? salespeopleQuery.data
+      : (salespeopleQuery.data?.data ?? []);
     return raw.map((item) => ({ value: String(item.id), label: item.name }));
   }, [salespeopleQuery.data]);
 
@@ -55,17 +63,20 @@ export default function CustomerAssignmentPanel({ customerId }) {
       field_operator_id: payload.field_operator_id ? Number(payload.field_operator_id) : null,
     };
 
-    await notify.promise(
-      updateAssignment({ customerId, payload: normalizedPayload }),
-      {
-        loading: { title: 'Actualizando asignación', description: 'Guardando ownership y acceso operativo.' },
-        success: { title: 'Asignación actualizada', description: 'Los cambios se han guardado correctamente.' },
-        error: (err) => ({
-          title: 'No se pudo actualizar la asignación',
-          description: err?.message ?? 'Inténtalo de nuevo.',
-        }),
-      }
-    );
+    await notify.promise(updateAssignment({ customerId, payload: normalizedPayload }), {
+      loading: {
+        title: 'Actualizando asignación',
+        description: 'Guardando ownership y acceso operativo.',
+      },
+      success: {
+        title: 'Asignación actualizada',
+        description: 'Los cambios se han guardado correctamente.',
+      },
+      error: (err) => ({
+        title: 'No se pudo actualizar la asignación',
+        description: err?.message ?? 'Inténtalo de nuevo.',
+      }),
+    });
 
     await customerQuery.refetch();
   };
@@ -93,7 +104,9 @@ export default function CustomerAssignmentPanel({ customerId }) {
           <Label>Comercial responsable</Label>
           <Select
             value={customer?.salesperson?.id != null ? String(customer.salesperson.id) : '__none__'}
-            onValueChange={(value) => handleAssignmentChange('salesperson_id', value === '__none__' ? null : value)}
+            onValueChange={(value) =>
+              handleAssignmentChange('salesperson_id', value === '__none__' ? null : value)
+            }
             disabled={!canEdit || isPending}
           >
             <SelectTrigger>
@@ -102,7 +115,9 @@ export default function CustomerAssignmentPanel({ customerId }) {
             <SelectContent>
               <SelectItem value="__none__">Sin comercial asignado</SelectItem>
               {salespersonOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -111,8 +126,12 @@ export default function CustomerAssignmentPanel({ customerId }) {
         <div className="space-y-2">
           <Label>Operador de campo</Label>
           <Select
-            value={customer?.fieldOperator?.id != null ? String(customer.fieldOperator.id) : '__none__'}
-            onValueChange={(value) => handleAssignmentChange('field_operator_id', value === '__none__' ? null : value)}
+            value={
+              customer?.fieldOperator?.id != null ? String(customer.fieldOperator.id) : '__none__'
+            }
+            onValueChange={(value) =>
+              handleAssignmentChange('field_operator_id', value === '__none__' ? null : value)
+            }
             disabled={!canEdit || isPending}
           >
             <SelectTrigger>
@@ -121,7 +140,9 @@ export default function CustomerAssignmentPanel({ customerId }) {
             <SelectContent>
               <SelectItem value="__none__">Sin operador asignado</SelectItem>
               {fieldOperatorOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -145,7 +166,7 @@ export default function CustomerAssignmentPanel({ customerId }) {
         </div>
 
         {!canEdit && (
-          <div className="rounded-xl border bg-muted/20 p-3 text-sm text-muted-foreground">
+          <div className="bg-muted/20 text-muted-foreground rounded-xl border p-3 text-sm">
             Tu rol puede consultar esta asignación, pero no modificarla.
           </div>
         )}

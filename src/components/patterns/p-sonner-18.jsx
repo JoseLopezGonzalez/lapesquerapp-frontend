@@ -1,22 +1,23 @@
-import { toast } from "sonner"
+import { toast } from 'sonner';
 
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button';
 
 export function Pattern() {
   return (
     <div className="flex items-center justify-center">
       <Button
         onClick={() =>
-          toast("File uploaded successfully", {
-            description: "report-2025.pdf has been saved to your documents.",
+          toast('File uploaded successfully', {
+            description: 'report-2025.pdf has been saved to your documents.',
             closeButton: true,
             classNames: {
-              closeButton: "left-auto! -right-4! -top-1!",
+              closeButton: 'left-auto! -right-4! -top-1!',
             },
           })
         }
         variant="outline"
-        className="w-fit">
+        className="w-fit"
+      >
         Toast with Close Button
       </Button>
     </div>

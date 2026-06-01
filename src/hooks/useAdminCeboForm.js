@@ -69,11 +69,7 @@ export function useAdminCeboForm({ onSuccess }) {
   }, [currentDetails, recalcKey]);
 
   useEffect(() => {
-    if (
-      calculatedNetWeights.length > 0 &&
-      currentDetails &&
-      Array.isArray(currentDetails)
-    ) {
+    if (calculatedNetWeights.length > 0 && currentDetails && Array.isArray(currentDetails)) {
       calculatedNetWeights.forEach((netWeight, index) => {
         if (index < currentDetails.length) {
           const calculatedWeight = parseFloat(netWeight.toFixed(2));
@@ -160,7 +156,9 @@ export function useAdminCeboForm({ onSuccess }) {
         const detailsForCebo = transformedDetails.map(({ product, netWeight, price }) => ({
           product,
           netWeight,
-          ...(price != null && price !== '' && !Number.isNaN(parseFloat(price)) && { price: parseFloat(price) }),
+          ...(price != null &&
+            price !== '' &&
+            !Number.isNaN(parseFloat(price)) && { price: parseFloat(price) }),
         }));
 
         const payload = {
@@ -183,7 +181,8 @@ export function useAdminCeboForm({ onSuccess }) {
           router.push(`/admin/cebo-dispatches/${created.id}/edit`);
         }
       } catch (error) {
-        const message = error?.message || error?.response?.data?.message || 'No se pudo crear la salida de cebo';
+        const message =
+          error?.message || error?.response?.data?.message || 'No se pudo crear la salida de cebo';
         notify.error({ title: 'Error al crear la salida de cebo', description: message });
       }
     },

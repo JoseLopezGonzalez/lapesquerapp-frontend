@@ -2,11 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import {
-  fetchSuperadmin,
-  getSuperadminToken,
-  setSuperadminToken,
-} from '@/lib/superadminApi';
+import { fetchSuperadmin, getSuperadminToken, setSuperadminToken } from '@/lib/superadminApi';
 
 const SuperadminAuthContext = createContext(null);
 
@@ -27,7 +23,9 @@ export function SuperadminAuthProvider({ children }) {
   const logout = useCallback(async () => {
     try {
       await fetchSuperadmin('/auth/logout', { method: 'POST' });
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     setSuperadminToken(null);
     setTokenState(null);
     setUser(null);
@@ -74,11 +72,7 @@ export function SuperadminAuthProvider({ children }) {
 
   const value = { token, user, loading, login, logout, refreshUser };
 
-  return (
-    <SuperadminAuthContext.Provider value={value}>
-      {children}
-    </SuperadminAuthContext.Provider>
-  );
+  return <SuperadminAuthContext.Provider value={value}>{children}</SuperadminAuthContext.Provider>;
 }
 
 export function useSuperadminAuth() {

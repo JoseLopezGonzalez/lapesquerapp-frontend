@@ -42,9 +42,9 @@ async function getSpainAverageDieselPrice() {
 
   const data: DieselApiResponse = await response.json();
   const prices = Array.isArray(data?.ListaEESSPrecio)
-    ? data.ListaEESSPrecio
-        .map((station: DieselStation) => parseSpanishDecimal(station?.['Precio Gasoleo A']))
-        .filter((value): value is number => value != null)
+    ? data.ListaEESSPrecio.map((station: DieselStation) =>
+        parseSpanishDecimal(station?.['Precio Gasoleo A'])
+      ).filter((value): value is number => value != null)
     : [];
 
   if (prices.length === 0) {

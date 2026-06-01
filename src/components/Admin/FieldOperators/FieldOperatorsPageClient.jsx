@@ -19,34 +19,42 @@ export default function FieldOperatorsPageClient() {
   const role = Array.isArray(session?.user?.role) ? session.user.role[0] : session?.user?.role;
 
   if (status === 'loading') {
-    return <div className="flex min-h-[50vh] items-center justify-center"><Loader /></div>;
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <Loader />
+      </div>
+    );
   }
 
   if (role !== 'administrador' && role !== 'direccion') {
     return (
       <div className="p-6">
         <EmptyState
-          icon={<MapPinned className="h-10 w-10 text-primary" />}
+          icon={<MapPinned className="text-primary h-10 w-10" />}
           title="Acceso restringido"
           description="Solo administración y dirección pueden gestionar operadores de campo."
-          className="border bg-muted/20"
+          className="bg-muted/20 border"
         />
       </div>
     );
   }
 
   if (isLoading) {
-    return <div className="flex min-h-[50vh] items-center justify-center"><Loader /></div>;
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <Loader />
+      </div>
+    );
   }
 
   if (error) {
     return (
       <div className="p-6">
         <EmptyState
-          icon={<MapPinned className="h-10 w-10 text-primary" />}
+          icon={<MapPinned className="text-primary h-10 w-10" />}
           title="No se pudieron cargar los operadores"
           description={error}
-          className="border bg-muted/20"
+          className="bg-muted/20 border"
         />
       </div>
     );
@@ -57,7 +65,9 @@ export default function FieldOperatorsPageClient() {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Operadores de campo</h1>
-          <p className="text-sm text-muted-foreground">Gestiona la identidad operativa de reparto y autoventa.</p>
+          <p className="text-muted-foreground text-sm">
+            Gestiona la identidad operativa de reparto y autoventa.
+          </p>
         </div>
         <Button onClick={() => setCreateOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
@@ -67,10 +77,10 @@ export default function FieldOperatorsPageClient() {
 
       {data.length === 0 ? (
         <EmptyState
-          icon={<MapPinned className="h-10 w-10 text-primary" />}
+          icon={<MapPinned className="text-primary h-10 w-10" />}
           title="Sin operadores de campo"
           description="Crea el primero para poder asignar clientes y usar el espacio operativo."
-          className="min-h-[300px] border bg-muted/20"
+          className="bg-muted/20 min-h-[300px] border"
         />
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
@@ -87,9 +97,19 @@ export default function FieldOperatorsPageClient() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2 text-sm text-muted-foreground">
-                  <p>Emails: {Array.isArray(operator.emails) && operator.emails.length > 0 ? operator.emails.join(', ') : 'Sin emails'}</p>
-                  <p>CC: {Array.isArray(operator.ccEmails) && operator.ccEmails.length > 0 ? operator.ccEmails.join(', ') : 'Sin copia'}</p>
+                <div className="text-muted-foreground space-y-2 text-sm">
+                  <p>
+                    Emails:{' '}
+                    {Array.isArray(operator.emails) && operator.emails.length > 0
+                      ? operator.emails.join(', ')
+                      : 'Sin emails'}
+                  </p>
+                  <p>
+                    CC:{' '}
+                    {Array.isArray(operator.ccEmails) && operator.ccEmails.length > 0
+                      ? operator.ccEmails.join(', ')
+                      : 'Sin copia'}
+                  </p>
                 </div>
                 <Button asChild className="w-full justify-between">
                   <Link href={`/admin/field-operators/${operator.id}`}>

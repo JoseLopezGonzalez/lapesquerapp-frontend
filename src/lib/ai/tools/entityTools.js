@@ -1,9 +1,9 @@
 /**
  * Tools genéricas para operaciones CRUD en entidades del ERP
- * 
+ *
  * Estas tools actúan como puente entre el AI Chat y los servicios de dominio.
  * Usan el entityServiceMapper para obtener el servicio correcto dinámicamente.
- * 
+ *
  * El AI Chat nunca conoce URLs, endpoints ni detalles técnicos.
  * Solo trabaja con semántica de negocio (entidades, filtros, paginación).
  */
@@ -16,12 +16,32 @@ import { z } from 'zod';
  * Array literal para usar en z.enum()
  */
 const AVAILABLE_ENTITIES = [
-  'suppliers', 'capture-zones', 'fishing-gears', 'cebo-dispatches',
-  'activity-logs', 'product-categories', 'product-families', 'payment-terms',
-  'species', 'transports', 'taxes', 'incoterms', 'salespeople', 'products',
-  'employees', 'customers', 'stores', 'raw-material-receptions', 'orders',
-  'boxes', 'countries', 'pallets', 'productions', 'punches',
-  'sessions', 'users'
+  'suppliers',
+  'capture-zones',
+  'fishing-gears',
+  'cebo-dispatches',
+  'activity-logs',
+  'product-categories',
+  'product-families',
+  'payment-terms',
+  'species',
+  'transports',
+  'taxes',
+  'incoterms',
+  'salespeople',
+  'products',
+  'employees',
+  'customers',
+  'stores',
+  'raw-material-receptions',
+  'orders',
+  'boxes',
+  'countries',
+  'pallets',
+  'productions',
+  'punches',
+  'sessions',
+  'users',
 ];
 
 /**
@@ -40,7 +60,7 @@ Ejemplos de uso:
 - "Lista los proveedores"
 - "Muéstrame los pedidos activos"
 - "Busca clientes cuyo nombre contenga 'Pesca'"`,
-    
+
     // ⚠️ CRÍTICO: OpenAI Responses API (GPT-5) es muy estricto con JSON Schema
     // Objetos anidados opcionales pueden causar type: "None"
     // Simplificamos el schema: en lugar de objetos opcionales, todos los campos son opcionales en el nivel raíz
@@ -70,10 +90,10 @@ Ejemplos de uso:
       if (status) filters.status = status;
       if (dateFrom) filters.dateFrom = dateFrom;
       if (dateTo) filters.dateTo = dateTo;
-      
+
       // Adaptar filtros si es necesario (algunos servicios esperan formatos específicos)
       const adaptedFilters = { ...filters };
-      
+
       // Si hay dates, algunas entidades las esperan en formato dates.start/dates.end
       if (dateFrom || dateTo) {
         adaptedFilters.dates = {
@@ -91,7 +111,7 @@ Ejemplos de uso:
       };
 
       const result = await service.list(adaptedFilters, pagination);
-      
+
       // Devolver en formato estructurado
       return {
         success: true,
@@ -125,7 +145,7 @@ Ejemplos de uso:
       }
 
       const result = await service.getById(id);
-      
+
       return {
         success: true,
         data: result,
@@ -154,7 +174,7 @@ Ejemplos de uso:
       }
 
       const options = await service.getOptions();
-      
+
       return {
         success: true,
         options: options || [],
@@ -163,4 +183,3 @@ Ejemplos de uso:
     },
   },
 };
-

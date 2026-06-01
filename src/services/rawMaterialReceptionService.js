@@ -1,8 +1,8 @@
 // /src/services/rawMaterialReceptionService.js
-import { fetchWithTenant } from "@lib/fetchWithTenant";
-import { API_URL_V2 } from "@/configs/config";
-import { getAuthToken } from "@/lib/auth/getAuthToken";
-import { getErrorMessage, handleServiceResponse } from "@/lib/api/apiHelpers";
+import { fetchWithTenant } from '@lib/fetchWithTenant';
+import { API_URL_V2 } from '@/configs/config';
+import { getAuthToken } from '@/lib/auth/getAuthToken';
+import { getErrorMessage, handleServiceResponse } from '@/lib/api/apiHelpers';
 import { getUserAgent } from '@/lib/utils/getUserAgent';
 
 /**
@@ -15,28 +15,28 @@ import { getUserAgent } from '@/lib/utils/getUserAgent';
  * @returns {Promise<Object>} The created reception data returned by the API.
  */
 export const createRawMaterialReception = async (receptionPayload) => {
-    const token = await getAuthToken();
+  const token = await getAuthToken();
 
-    try {
-        const response = await fetchWithTenant(`${API_URL_V2}raw-material-receptions`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                Authorization: `Bearer ${token}`,
-                'User-Agent': getUserAgent(),
-            },
-            body: JSON.stringify(receptionPayload),
-        });
+  try {
+    const response = await fetchWithTenant(`${API_URL_V2}raw-material-receptions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Authorization: `Bearer ${token}`,
+        'User-Agent': getUserAgent(),
+      },
+      body: JSON.stringify(receptionPayload),
+    });
 
-        // Si fetchWithTenant no lanzó error, la respuesta es OK
-        const data = await response.json();
-        return data.data || data;
-    } catch (error) {
-        console.error("Error en createRawMaterialReception:", error);
-        // El error ya viene con userMessage desde fetchWithTenant, solo re-lanzarlo
-        throw error;
-    }
+    // Si fetchWithTenant no lanzó error, la respuesta es OK
+    const data = await response.json();
+    return data.data || data;
+  } catch (error) {
+    console.error('Error en createRawMaterialReception:', error);
+    // El error ya viene con userMessage desde fetchWithTenant, solo re-lanzarlo
+    throw error;
+  }
 };
 
 /**
@@ -50,28 +50,28 @@ export const createRawMaterialReception = async (receptionPayload) => {
  * @returns {Promise<Object>} The updated reception data returned by the API.
  */
 export const updateRawMaterialReception = async (receptionId, receptionPayload) => {
-    const token = await getAuthToken();
+  const token = await getAuthToken();
 
-    try {
-        const response = await fetchWithTenant(`${API_URL_V2}raw-material-receptions/${receptionId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                Authorization: `Bearer ${token}`,
-                'User-Agent': getUserAgent(),
-            },
-            body: JSON.stringify(receptionPayload),
-        });
+  try {
+    const response = await fetchWithTenant(`${API_URL_V2}raw-material-receptions/${receptionId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Authorization: `Bearer ${token}`,
+        'User-Agent': getUserAgent(),
+      },
+      body: JSON.stringify(receptionPayload),
+    });
 
-        // Si fetchWithTenant no lanzó error, la respuesta es OK
-        const data = await response.json();
-        return data.data || data;
-    } catch (error) {
-        console.error("Error en updateRawMaterialReception:", error);
-        // El error ya viene con userMessage desde fetchWithTenant, solo re-lanzarlo
-        throw error;
-    }
+    // Si fetchWithTenant no lanzó error, la respuesta es OK
+    const data = await response.json();
+    return data.data || data;
+  } catch (error) {
+    console.error('Error en updateRawMaterialReception:', error);
+    // El error ya viene con userMessage desde fetchWithTenant, solo re-lanzarlo
+    throw error;
+  }
 };
 
 /**
@@ -83,22 +83,22 @@ export const updateRawMaterialReception = async (receptionId, receptionPayload) 
  * @throws {Error} Throws an error if the request fails or the response is not OK.
  */
 export function getRawMaterialReception(receptionId, token) {
-    return fetchWithTenant(`${API_URL_V2}raw-material-receptions/${receptionId}`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-            'User-Agent': getUserAgent(),
-        },
+  return fetchWithTenant(`${API_URL_V2}raw-material-receptions/${receptionId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      'User-Agent': getUserAgent(),
+    },
+  })
+    .then(async (response) => {
+      const data = await handleServiceResponse(response, null, 'Error al obtener la recepción');
+      if (!data) return null;
+      return data.data || data;
     })
-        .then(async (response) => {
-            const data = await handleServiceResponse(response, null, 'Error al obtener la recepción');
-            if (!data) return null;
-            return data.data || data;
-        })
-        .catch((error) => {
-            throw error;
-        });
+    .catch((error) => {
+      throw error;
+    });
 }
 
 /**
@@ -109,22 +109,21 @@ export function getRawMaterialReception(receptionId, token) {
  * @throws {Error} Throws an error if the request fails.
  */
 export function getSupplierOptions(token) {
-    return fetchWithTenant(`${API_URL_V2}suppliers/options`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-            'User-Agent': getUserAgent(),
-        },
+  return fetchWithTenant(`${API_URL_V2}suppliers/options`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      'User-Agent': getUserAgent(),
+    },
+  })
+    .then(async (response) => {
+      return await handleServiceResponse(response, [], 'Error al obtener los proveedores');
     })
-        .then(async (response) => {
-            return await handleServiceResponse(response, [], 'Error al obtener los proveedores');
-        })
-        .then((data) => {
-            return data.map((item) => ({ value: item.id.toString(), label: item.name }));
-        })
-        .catch((error) => {
-            throw error;
-        });
+    .then((data) => {
+      return data.map((item) => ({ value: item.id.toString(), label: item.name }));
+    })
+    .catch((error) => {
+      throw error;
+    });
 }
-

@@ -48,12 +48,12 @@ Una BD central (o tabla en la BD principal) que sea la fuente de verdad de todos
 
 Crear una BD central separada (o usar la BD del sistema base) con una tabla `tenants` que contenga al menos:
 
-* Identificador único, subdominio, nombre de empresa.
-* Estado: `pending`, `active`, `suspended`, `cancelled`.
-* Plan contratado y fecha de renovación.
-* Nombre de la BD del tenant (para el sistema de resolución multi-tenant ya existente).
-* Fecha de creación y de última actividad.
-* Configuración inicial: logo, datos de empresa, zona horaria.
+- Identificador único, subdominio, nombre de empresa.
+- Estado: `pending`, `active`, `suspended`, `cancelled`.
+- Plan contratado y fecha de renovación.
+- Nombre de la BD del tenant (para el sistema de resolución multi-tenant ya existente).
+- Fecha de creación y de última actividad.
+- Configuración inicial: logo, datos de empresa, zona horaria.
 
 Esta tabla ya alimenta el sistema de resolución de tenant actual (que identifica qué BD usar por subdominio). Se trata de formalizarla y ampliarla, no de crear algo desde cero si ya existe alguna forma de mapeo subdominio→BD.
 
@@ -71,10 +71,10 @@ Un conjunto de endpoints protegidos por un sistema de autenticación independien
 
 Estos endpoints permiten:
 
-* Listar, crear, activar, suspender y eliminar tenants.
-* Ver el estado de suscripción y plan de cada tenant.
-* Consultar métricas básicas de uso por tenant (último acceso, volumen de datos).
-* Forzar el onboarding de un tenant (trigger manual del flujo del punto 4).
+- Listar, crear, activar, suspender y eliminar tenants.
+- Ver el estado de suscripción y plan de cada tenant.
+- Consultar métricas básicas de uso por tenant (último acceso, volumen de datos).
+- Forzar el onboarding de un tenant (trigger manual del flujo del punto 4).
 
 La autenticación del superadmin puede reutilizar el sistema de magic link ya implementado pero apuntando a la BD central, no a la de ningún tenant.
 
@@ -84,10 +84,10 @@ Ruta separada: `/superadmin` con su propio layout, sin relación con `/admin`, `
 
 Vistas principales:
 
-* Lista de tenants con estado, plan y acceso rápido a detalles.
-* Detalle de tenant: datos, estado de suscripción, acciones (activar, suspender).
-* Formulario de creación de nuevo tenant (dispara el flujo de onboarding del punto 4).
-* Vista de suscripciones y facturación (en una primera fase puede ser solo informativa, sin pasarela de pago).
+- Lista de tenants con estado, plan y acceso rápido a detalles.
+- Detalle de tenant: datos, estado de suscripción, acciones (activar, suspender).
+- Formulario de creación de nuevo tenant (dispara el flujo de onboarding del punto 4).
+- Vista de suscripciones y facturación (en una primera fase puede ser solo informativa, sin pasarela de pago).
 
 ---
 
@@ -156,8 +156,8 @@ Tabla o campos en la BD del tenant con su configuración propia. Un endpoint aut
 
 ## Notas para el agente
 
-* El sistema de resolución de tenant por subdominio ya está implementado. No reinventar, extender.
-* El magic link ya existe. Reutilizar el mecanismo para el login del superadmin apuntando a la BD central.
-* Las migraciones de tenant ya existen. El onboarding solo necesita ejecutarlas automáticamente en la BD nueva.
-* El Job de onboarding debe loguear cada paso en la tabla central de tenants para poder diagnosticar fallos.
-* No implementar pasarela de pago en esta fase. La gestión de suscripciones es informativa (estado y fechas manuales o webhooks en fase posterior).
+- El sistema de resolución de tenant por subdominio ya está implementado. No reinventar, extender.
+- El magic link ya existe. Reutilizar el mecanismo para el login del superadmin apuntando a la BD central.
+- Las migraciones de tenant ya existen. El onboarding solo necesita ejecutarlas automáticamente en la BD nueva.
+- El Job de onboarding debe loguear cada paso en la tabla central de tenants para poder diagnosticar fallos.
+- No implementar pasarela de pago en esta fase. La gestión de suscripciones es informativa (estado y fechas manuales o webhooks en fase posterior).

@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState, useCallback } from "react";
-import { fetchSuperadmin, SuperadminApiError } from "@/lib/superadminApi";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useEffect, useState, useCallback } from 'react';
+import { fetchSuperadmin, SuperadminApiError } from '@/lib/superadminApi';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -12,21 +12,24 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import ImpersonationButtons from "./ImpersonationButtons";
-import { formatDate } from "@/utils/superadminDateUtils";
-import { CheckCircle2, XCircle, Clock, Users } from "lucide-react";
-import EmptyState from "../EmptyState";
+} from '@/components/ui/table';
+import ImpersonationButtons from './ImpersonationButtons';
+import { formatDate } from '@/utils/superadminDateUtils';
+import { CheckCircle2, XCircle, Clock, Users } from 'lucide-react';
+import EmptyState from '../EmptyState';
 
 const ROLE_COLORS = {
-  administrador: "border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-400",
-  operario: "border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-400",
-  comercial: "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400",
+  administrador: 'border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-400',
+  operario: 'border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-400',
+  comercial: 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400',
 };
 
 function isOnboardingIncomplete(tenant) {
   if (tenant.onboarding) {
-    return tenant.onboarding.status !== "completed" && tenant.onboarding.step < tenant.onboarding.total_steps;
+    return (
+      tenant.onboarding.status !== 'completed' &&
+      tenant.onboarding.step < tenant.onboarding.total_steps
+    );
   }
   return (tenant.onboarding_step ?? 0) < 8;
 }
@@ -36,7 +39,7 @@ export default function TenantUsersTable({ tenant }) {
   const [loading, setLoading] = useState(true);
   const [unavailable, setUnavailable] = useState(false);
 
-  const dbNotReady = tenant.status === "pending" && isOnboardingIncomplete(tenant);
+  const dbNotReady = tenant.status === 'pending' && isOnboardingIncomplete(tenant);
 
   const fetchUsers = useCallback(async () => {
     if (dbNotReady) {
@@ -58,7 +61,9 @@ export default function TenantUsersTable({ tenant }) {
     }
   }, [tenant.id, dbNotReady]);
 
-  useEffect(() => { fetchUsers(); }, [fetchUsers]);
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
   if (unavailable || dbNotReady) {
     return (
@@ -67,9 +72,10 @@ export default function TenantUsersTable({ tenant }) {
           <CardTitle className="text-sm">Usuarios del tenant</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="text-muted-foreground flex items-center gap-2 text-sm">
             <Clock className="h-4 w-4" />
-            La base de datos del tenant aun no esta disponible. Los usuarios se mostraran cuando el onboarding se complete.
+            La base de datos del tenant aun no esta disponible. Los usuarios se mostraran cuando el
+            onboarding se complete.
           </div>
         </CardContent>
       </Card>
@@ -97,11 +103,21 @@ export default function TenantUsersTable({ tenant }) {
             {loading ? (
               Array.from({ length: 3 }).map((_, i) => (
                 <TableRow key={i}>
-                  <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                  <TableCell className="hidden sm:table-cell"><Skeleton className="h-4 w-32" /></TableCell>
-                  <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                  <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-8" /></TableCell>
-                  <TableCell className="hidden lg:table-cell"><Skeleton className="h-4 w-20" /></TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-24" />
+                  </TableCell>
+                  <TableCell className="hidden sm:table-cell">
+                    <Skeleton className="h-4 w-32" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-20" />
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    <Skeleton className="h-4 w-8" />
+                  </TableCell>
+                  <TableCell className="hidden lg:table-cell">
+                    <Skeleton className="h-4 w-20" />
+                  </TableCell>
                   <TableCell />
                 </TableRow>
               ))
@@ -120,9 +136,11 @@ export default function TenantUsersTable({ tenant }) {
               users.map((u) => (
                 <TableRow key={u.id}>
                   <TableCell className="font-medium">{u.name}</TableCell>
-                  <TableCell className="hidden sm:table-cell text-muted-foreground">{u.email}</TableCell>
+                  <TableCell className="text-muted-foreground hidden sm:table-cell">
+                    {u.email}
+                  </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className={ROLE_COLORS[u.role] || ""}>
+                    <Badge variant="outline" className={ROLE_COLORS[u.role] || ''}>
                       {u.role}
                     </Badge>
                   </TableCell>
@@ -130,14 +148,14 @@ export default function TenantUsersTable({ tenant }) {
                     {u.active ? (
                       <CheckCircle2 className="h-4 w-4 text-green-500" />
                     ) : (
-                      <XCircle className="h-4 w-4 text-muted-foreground" />
+                      <XCircle className="text-muted-foreground h-4 w-4" />
                     )}
                   </TableCell>
-                  <TableCell className="hidden lg:table-cell text-sm text-muted-foreground">
+                  <TableCell className="text-muted-foreground hidden text-sm lg:table-cell">
                     {formatDate(u.created_at)}
                   </TableCell>
                   <TableCell className="text-right">
-                    {u.role === "administrador" && (
+                    {u.role === 'administrador' && (
                       <ImpersonationButtons tenantId={tenant.id} user={u} />
                     )}
                   </TableCell>
