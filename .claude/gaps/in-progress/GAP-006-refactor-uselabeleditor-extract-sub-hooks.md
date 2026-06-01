@@ -60,15 +60,40 @@ La validación del label editor ya está parcialmente extraída en `src/hooks/la
 
 ## Implementación
 
-> Rellena el Agente Implementador
-
 ### Archivos creados
+
+- `src/hooks/labels/labelValidation.ts` — migración TypeScript de `labelEditorValidation.js`: `validateLabelName`, `hasDuplicateFieldKeys`, `hasElementValidationError`, `getElementValidationErrorReason`, `hasAnyElementValidationErrors`, `KEY_FIELD_TYPES`
+- `src/hooks/labels/labelEditorHelpers.ts` — utilidades de normalización compartidas: `normalizeElement`, `normalizeElements`
+- `src/hooks/labels/useLabelCanvasInteraction.ts` — extrae drag/resize del canvas: estado interno `isDragging/isResizing/dragOffset/resizeStart`, refs, `handleMouseDown`, `handleResizeMouseDown`, `handleMouseMove`, `handleMouseUp`, `canvasRef`, `useEffect` de event listeners
+- `src/hooks/labels/useLabelPersistence.ts` — extrae persistencia: `saveMutation` (createLabel/updateLabel), `deleteMutation`, `handleSave`, `handleOnClickSave`, `handleDeleteLabel`, `handleSelectLabel`, `handleCreateNewLabel`, `exportJSON`, `importJSON`, `validateLabelJSON`, `handleImportJSON`, `fileInputRef`, `isSaving`
+- `src/hooks/labels/useLabelPrint.ts` — extrae lógica de impresión: `manualValues` (estado local), `showManualDialog`, `manualForm`, `usePrintElement`, `handlePrint`, `handleConfirmManual`
+- `src/__tests__/hooks/labels/labelValidation.test.ts` — test migrado desde `labelEditorValidation.test.js`, import actualizado a `@/hooks/labels/labelValidation`
 
 ### Archivos modificados
 
+- `src/hooks/useLabelEditor.ts` — reescrito como orquestador: 1376 → 816 líneas. Importa los 3 sub-hooks, elimina estados/funciones extraídas, mantiene API pública idéntica. Import de validación cambiado de `@/hooks/labelEditorValidation` a `@/hooks/labels/labelValidation`. Import de `normalizeElement` desde `@/hooks/labels/labelEditorHelpers`.
+
+### Archivos eliminados
+
+- `src/hooks/labelEditorValidation.js` — migrado a `src/hooks/labels/labelValidation.ts`
+- `src/hooks/labelEditorValidation.test.js` — migrado a `src/__tests__/hooks/labels/labelValidation.test.ts`
+
 ### Decisiones tomadas durante la implementación
 
+1. **`clearEditor` en el orquestador:** `deleteMutation.onSuccess` llama a `clearEditor`. Como `clearEditor` modifica estado del orquestador, se define ahí y se pasa como parámetro a `useLabelPersistence`.
+
+2. **`updateElement` antes de `useLabelCanvasInteraction`:** El hook de canvas necesita `updateElement` para las operaciones de drag/resize. `updateElement` se define en el orquestador antes de la llamada al sub-hook.
+
+3. **`normalizeElement` vs `normalizeElements`:** `normalizeElement` se importa en el orquestador (para `addElement`, `updateElement`, `selectedElementData`). `normalizeElements` solo la necesita `useLabelPersistence` — la importa directamente desde `labelEditorHelpers`.
+
+4. **`useLabelPrint` recibe `elements` como param:** `handlePrint` necesita filtrar `manualField` del array de elementos, que vive en el orquestador. Se pasa como parámetro al sub-hook.
+
+5. **Nombre del archivo de validación:** El GAP sugería `useLabelValidation.ts` pero se usó `labelValidation.ts` (sin prefijo `use`) porque el módulo no es un hook React, son funciones puras. Consistente con el patrón `labelEditorHelpers.ts`.
+
 ### Desviaciones del plan (si las hay)
+
+- `labelEditorValidation.js` se migró a `labelValidation.ts` (sin prefijo `use`) en lugar de `useLabelValidation.ts`, porque contiene funciones puras, no hooks.
+- `handleCanvasRotationChange` (función interna de `useLabelEditor.ts`) no se añadió al retorno público — no estaba en la API pública original y se mantiene como función interna de `rotateCanvasTo`.
 
 ---
 

@@ -1,29 +1,24 @@
 // useLabelEditor.ts
-import { createLabel, deleteLabel, updateLabel } from '@/services/labelService';
 import { useSession } from 'next-auth/react';
 import {
   useState,
-  useRef,
   useCallback,
-  useEffect,
   useMemo,
-  type RefObject,
   type Dispatch,
+  type RefObject,
   type SetStateAction,
 } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { getLabelsQueryKey } from '@/hooks/useLabels';
-import { usePrintElement } from '@/hooks/usePrintElement';
 import { formatDecimal, parseEuropeanNumber } from '@/helpers/formats/numbers/formatNumbers';
 import { formatDate, addDays, parseDate } from '@/hooks/useLabel';
 import {
   KEY_FIELD_TYPES,
-  validateLabelName,
-  hasDuplicateFieldKeys,
   hasElementValidationError,
   getElementValidationErrorReason,
-  hasAnyElementValidationErrors,
-} from '@/hooks/labelEditorValidation';
+} from '@/hooks/labels/labelValidation';
+import { normalizeElement } from '@/hooks/labels/labelEditorHelpers';
+import { useLabelCanvasInteraction } from '@/hooks/labels/useLabelCanvasInteraction';
+import { useLabelPersistence } from '@/hooks/labels/useLabelPersistence';
+import { useLabelPrint } from '@/hooks/labels/useLabelPrint';
 import { notify } from '@/lib/notifications';
 import type {
   Label,
@@ -33,7 +28,6 @@ import type {
   LabelFieldOption,
   DataContext,
   LabelFieldsMap,
-  LabelFormat,
 } from '@/types/labelEditor';
 
 /** Return type of useLabelEditor hook */
@@ -137,11 +131,9 @@ const getFieldName = (field: string): string => labelFields[field]?.label ?? fie
 
 const pxToMm = (px: number): number => px / 3.78;
 
-/** Escapa caracteres especiales para usar en RegExp. */
 const escapeRegex = (str: string): string =>
   String(str || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-/** Reemplaza el token {{oldKey}} por {{newKey}} en content (todas las ocurrencias). */
 const replacePlaceholderInContent = (
   content: string | null | undefined,
   oldKey: string,
@@ -153,7 +145,6 @@ const replacePlaceholderInContent = (
   return String(content).replace(token, `{{${newKey}}}`);
 };
 
-/** Misma normalización que el panel "Nombre del campo": solo [a-zA-Z0-9 ], primera letra mayúscula. */
 const normalizeKeyForStorage = (raw: string): string => {
   const filtered = String(raw || '').replace(/[^a-zA-Z0-9 ]/g, '');
   const i = filtered.search(/[a-zA-Z]/);
@@ -161,137 +152,24 @@ const normalizeKeyForStorage = (raw: string): string => {
   return filtered.slice(0, i) + filtered[i].toUpperCase() + filtered.slice(i + 1);
 };
 
-// Valor por defecto de netWeight para usar cuando no hay valor disponible
 const NET_WEIGHT_DEFAULT = '20,000 kg';
 
-// Función para formatear netWeight según el tipo de campo
 const formatNetWeightField = (value: string | number, fieldName: string): string | number => {
   if (!value) return value;
-
-  // Parsear el valor (puede venir como "20,000 kg" o como número)
   let numValue =
     typeof value === 'string'
       ? parseEuropeanNumber(value.replace(/kg/gi, '').trim())
       : Number(value) || 0;
-
   if (fieldName === 'netWeightFormatted') {
-    // Formato decimal con separadores (ej: 1.234,56)
     return formatDecimal(numValue);
   } else if (fieldName === 'netWeight6digits') {
-    // Redondear a 2 decimales y multiplicar por 100 para obtener un entero de 6 dígitos
-    // Ejemplo: 20,00 kg → 2000 → 002000
-    const roundedValue = Math.round(numValue * 100) / 100; // Redondear a 2 decimales
-    const integerValue = Math.round(roundedValue * 100); // Multiplicar por 100 para obtener entero
+    const roundedValue = Math.round(numValue * 100) / 100;
+    const integerValue = Math.round(roundedValue * 100);
     return String(integerValue).padStart(6, '0');
   }
-
-  // Para netWeight sin formato, devolver valor original
   return value;
 };
 
-/**
- * Normaliza un elemento para asegurar que todas las propiedades de formato
- * tengan valores explícitos y canónicos (nunca undefined, nunca números, nunca strings mixtos)
- *
- * Regla de oro: La UI no interpreta estado, solo lo refleja.
- */
-const normalizeElement = (
-  element: LabelElement | null | undefined
-): LabelElement | null | undefined => {
-  if (!element) return element;
-
-  // Normalizar fontWeight: "bold" | "normal" (nunca números ni undefined)
-  let fontWeight = element.fontWeight;
-  if (fontWeight === 700 || fontWeight === '700') {
-    fontWeight = 'bold';
-  } else if (!fontWeight || fontWeight === 'normal') {
-    fontWeight = 'normal';
-  }
-
-  // Normalizar fontStyle: "italic" | "normal" (nunca undefined)
-  let fontStyle = element.fontStyle || 'normal';
-  if (fontStyle === 'oblique') {
-    fontStyle = 'italic'; // Tratar oblique como italic
-  }
-
-  // Normalizar textDecoration: "none" | "underline" | "line-through" (nunca undefined)
-  let textDecoration = element.textDecoration || 'none';
-
-  // Normalizar textTransform: "none" | "uppercase" | "lowercase" | "capitalize" (nunca undefined)
-  let textTransform = element.textTransform || 'none';
-
-  // Normalizar horizontalAlign: convertir textAlign legacy a horizontalAlign si es necesario
-  let horizontalAlign = element.horizontalAlign;
-  if (!horizontalAlign && element.textAlign) {
-    // Migración legacy: textAlign -> horizontalAlign
-    horizontalAlign = element.textAlign;
-  }
-  // Asegurar valores válidos
-  if (
-    !horizontalAlign ||
-    !['left', 'center', 'right', 'justify'].includes(String(horizontalAlign))
-  ) {
-    horizontalAlign = 'left';
-  } else {
-    horizontalAlign = String(horizontalAlign) as 'left' | 'center' | 'right' | 'justify';
-  }
-
-  // Normalizar verticalAlign: "start" | "end" | "center" (nunca undefined)
-  let verticalAlign = element.verticalAlign || 'start';
-  if (!['start', 'end', 'center'].includes(String(verticalAlign))) {
-    verticalAlign = 'start';
-  } else {
-    verticalAlign = String(verticalAlign) as 'start' | 'end' | 'center';
-  }
-
-  // Normalizar direction para líneas: "horizontal" | "vertical" (nunca undefined)
-  let direction = element.direction;
-  if (element.type === 'line') {
-    direction = direction || 'horizontal';
-    if (!['horizontal', 'vertical'].includes(String(direction))) {
-      direction = 'horizontal';
-    } else {
-      direction = String(direction) as 'horizontal' | 'vertical';
-    }
-  }
-
-  // Normalizar strokeWidth para líneas (siempre número positivo)
-  let strokeWidth = element.strokeWidth;
-  if (element.type === 'line') {
-    strokeWidth = typeof strokeWidth === 'number' && strokeWidth > 0 ? strokeWidth : 0.1;
-  }
-
-  const normalized: LabelElement = {
-    ...element,
-    fontWeight,
-    fontStyle,
-    textDecoration,
-    textTransform,
-    horizontalAlign,
-    verticalAlign,
-    // Mantener textAlign para compatibilidad, pero no usarlo en la UI
-    textAlign: horizontalAlign, // Sincronizar con horizontalAlign
-  };
-
-  // Añadir propiedades específicas de línea si es necesario
-  if (element.type === 'line') {
-    const lineProps = normalized as LabelElement & { direction?: string; strokeWidth?: number };
-    lineProps.direction = direction as string;
-    lineProps.strokeWidth = strokeWidth as number;
-  }
-
-  return normalized;
-};
-
-/**
- * Normaliza un array de elementos
- */
-const normalizeElements = (elements: unknown): LabelElement[] => {
-  if (!Array.isArray(elements)) return [];
-  return elements.map(normalizeElement).filter((el): el is LabelElement => el != null);
-};
-
-/** Calcula la fecha de vista previa para un dateField (system con offset opcional, fieldOffset). Evita referencias circulares. */
 function getDateFieldPreviewValue(
   el: LabelElement | null | undefined,
   elementsList: LabelElement[],
@@ -346,7 +224,6 @@ export function useLabelEditor(
   const [labelId, setLabelId] = useState<string | null>(null);
 
   const [fieldExampleValues, setFieldExampleValues] = useState<Record<string, string>>(() => {
-    // Inicializar con los valores por defecto de labelFields
     const initialValues: Record<string, string> = {};
     Object.keys(labelFields).forEach((key) => {
       initialValues[key] = labelFields[key].defaultValue;
@@ -356,39 +233,108 @@ export function useLabelEditor(
   const [showFieldExamplesDialog, setShowFieldExamplesDialog] = useState(false);
 
   const [selectedElement, setSelectedElement] = useState<string | null>(null);
-
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [isResizing, setIsResizing] = useState(false);
-  const [resizeCorner, setResizeCorner] = useState<string | null>(null);
-  const [resizeStart, setResizeStart] = useState<{
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    elX: number;
-    elY: number;
-  } | null>(null);
   const [zoom, setZoom] = useState(1);
   const [canvasWidth, setCanvasWidth] = useState(400);
   const [canvasHeight, setCanvasHeight] = useState(300);
   const [canvasRotation, setCanvasRotation] = useState(0);
-  const canvasRef = useRef<HTMLDivElement | null>(null);
-  const mouseDownPosRef = useRef<{ x: number; y: number } | null>(null);
-  const wasSelectedOnMouseDownRef = useRef(false);
-  const clickedElementIdRef = useRef<string | null>(null);
-  const { data: session } = useSession();
-
   const [openSelector, setOpenSelector] = useState(false);
-  const [manualValues, setManualValues] = useState<Record<string, string>>({});
-  const [showManualDialog, setShowManualDialog] = useState(false);
-  const [manualForm, setManualForm] = useState<Record<string, string>>({});
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const { onPrint } = usePrintElement({
-    id: 'print-area',
-    width: canvasWidth / 4,
-    height: canvasHeight / 4,
+
+  const { data: session } = useSession();
+  const token = session?.user?.accessToken as string | undefined;
+
+  const clearEditor = () => {
+    setSelectedLabel(null);
+    setElements([]);
+    setLabelName('');
+    setLabelId(null);
+    setSelectedElement(null);
+  };
+
+  const updateElement = (id: string, updates: Partial<LabelElement>) => {
+    setElements((prev) => {
+      const target = prev.find((el) => el.id === id);
+      const isKeyField = target && KEY_FIELD_TYPES.includes(target.type);
+      const newKey = updates.key !== undefined ? String(updates.key || '').trim() : '';
+      const oldKey = target ? String(target.key || '').trim() : '';
+      const shouldReplicateKey = isKeyField && oldKey !== '' && newKey !== '' && oldKey !== newKey;
+
+      let updated: LabelElement[] = prev.map((el) => {
+        if (el.id === id) {
+          const merged = { ...el, ...updates };
+          const normalized = normalizeElement(merged);
+          return (normalized ?? merged) as LabelElement;
+        }
+        return el;
+      });
+
+      if (shouldReplicateKey) {
+        updated = updated.map((el) => {
+          const hasContent = el.qrContent || el.html || el.barcodeContent;
+          if (!hasContent) return el;
+          const next = { ...el };
+          if (el.qrContent)
+            next.qrContent = replacePlaceholderInContent(el.qrContent as string, oldKey, newKey);
+          if (el.html) next.html = replacePlaceholderInContent(el.html as string, oldKey, newKey);
+          if (el.barcodeContent)
+            next.barcodeContent = replacePlaceholderInContent(
+              el.barcodeContent as string,
+              oldKey,
+              newKey
+            );
+          return next as LabelElement;
+        });
+      }
+
+      return updated;
+    });
+  };
+
+  const { canvasRef, handleMouseDown, handleResizeMouseDown } = useLabelCanvasInteraction({
+    selectedElement,
+    setSelectedElement,
+    zoom,
+    canvasWidth,
+    canvasHeight,
+    elements,
+    updateElement,
   });
+
+  const {
+    fileInputRef,
+    isSaving,
+    handleOnClickSave,
+    handleDeleteLabel,
+    handleSelectLabel,
+    handleCreateNewLabel,
+    exportJSON,
+    handleImportJSON,
+  } = useLabelPersistence({
+    elements,
+    labelName,
+    labelId,
+    canvasWidth,
+    canvasHeight,
+    canvasRotation,
+    token,
+    setLabelId,
+    setSelectedLabel,
+    setElements,
+    setLabelName,
+    setCanvasWidth,
+    setCanvasHeight,
+    setCanvasRotation,
+    setSelectedElement,
+    clearEditor,
+  });
+
+  const {
+    showManualDialog,
+    setShowManualDialog,
+    manualForm,
+    setManualForm,
+    handlePrint,
+    handleConfirmManual,
+  } = useLabelPrint({ elements, canvasWidth, canvasHeight });
 
   const manualFieldOptions = useMemo((): LabelFieldOption[] => {
     const seen = new Set<string>();
@@ -412,7 +358,6 @@ export function useLabelEditor(
 
   const allFieldOptions = useMemo((): LabelFieldOption[] => {
     const baseOptions: LabelFieldOption[] = [...fieldOptions, ...manualFieldOptions];
-    // Agregar campos virtuales para netWeight con formatos específicos
     const netWeightField = fieldOptions.find((opt) => opt.value === 'netWeight');
     if (netWeightField) {
       return [
@@ -422,7 +367,7 @@ export function useLabelEditor(
       ];
     }
     return baseOptions;
-  }, [manualFieldOptions, fieldOptions]);
+  }, [manualFieldOptions]);
 
   const getDefaultValuesFromElements = useCallback((): Record<string, string> => {
     const values: Record<string, string> = {};
@@ -435,33 +380,28 @@ export function useLabelEditor(
     const seenFields = new Set<string>();
 
     elements.forEach((el) => {
-      // 🔹 Campos dinámicos directos tipo "field"
       const fieldStr = el.field != null ? String(el.field) : '';
       if (el.type === 'field' && fieldStr && labelFields[fieldStr] && !seenFields.has(fieldStr)) {
         values[fieldStr] = fieldExampleValues[fieldStr] || labelFields[fieldStr].defaultValue;
         seenFields.add(fieldStr);
       }
 
-      // 🔹 Campos manuales tipo "manualField"
       const keyStr = el.key != null ? String(el.key) : '';
       if (el.type === 'manualField' && keyStr && !seenFields.has(keyStr)) {
         values[keyStr] = String(el.sample ?? '');
         seenFields.add(keyStr);
       }
 
-      // 🔹 Campos select tipo "selectField" (se rellenan al imprimir, en editor usamos sample)
       if (el.type === 'selectField' && keyStr && !seenFields.has(keyStr)) {
         values[keyStr] = String(el.sample ?? (Array.isArray(el.options) && el.options[0]) ?? '');
         seenFields.add(keyStr);
       }
 
-      // 🔹 Campos checkbox tipo "checkboxField" (en editor mostramos el contenido; al imprimir depende del check)
       if (el.type === 'checkboxField' && keyStr && !seenFields.has(keyStr)) {
         values[keyStr] = String(el.content ?? '');
         seenFields.add(keyStr);
       }
 
-      // 🔹 Campos fecha tipo "dateField" (manual → sample; resto → calculado para vista previa; fieldOffset usa cache)
       if (el.type === 'dateField' && keyStr && !seenFields.has(keyStr)) {
         values[keyStr] =
           String(
@@ -472,7 +412,6 @@ export function useLabelEditor(
         seenFields.add(keyStr);
       }
 
-      // 🔹 Campos usados como {{placeholders}} en QR, Barcode, Parrafos ricos...
       const contents = [el.html, el.qrContent, el.barcodeContent];
       contents.forEach((content) => {
         extractPlaceholders(typeof content === 'string' ? content : undefined).forEach((field) => {
@@ -487,101 +426,6 @@ export function useLabelEditor(
     return values;
   }, [elements, fieldExampleValues]);
 
-  const queryClient = useQueryClient();
-  type SaveMutationVars = {
-    labelId?: string;
-    labelName: string;
-    labelFormat: LabelFormat;
-    token?: string;
-  };
-  const saveMutation = useMutation({
-    mutationFn: async ({
-      labelId: id,
-      labelName: name,
-      labelFormat: format,
-      token: t,
-    }: SaveMutationVars) => {
-      const token = t ?? '';
-      if (id) return updateLabel(id, name, format, token);
-      return createLabel(name, format, token);
-    },
-    onSuccess: (data, variables) => {
-      if (!variables.labelId && data?.data) {
-        setLabelId(data.data.id);
-        setSelectedLabel(data.data);
-      }
-      notify.success({
-        title: `Etiqueta ${variables.labelId ? 'actualizada' : 'guardada'} correctamente`,
-      });
-      queryClient.invalidateQueries({ queryKey: getLabelsQueryKey() });
-    },
-    onError: (err: Error) => {
-      const e = err as Error & {
-        userMessage?: string;
-        data?: { userMessage?: string };
-        response?: { data?: { userMessage?: string } };
-      };
-      const msg =
-        e?.userMessage ||
-        e?.data?.userMessage ||
-        e?.response?.data?.userMessage ||
-        e?.message ||
-        'Error al guardar etiqueta.';
-      notify.error({ title: msg });
-    },
-  });
-  type DeleteMutationVars = { labelId: string; token?: string };
-  const deleteMutation = useMutation({
-    mutationFn: ({ labelId: id, token: t }: DeleteMutationVars) => deleteLabel(id, t ?? ''),
-    onSuccess: () => {
-      notify.success({ title: 'Etiqueta eliminada correctamente' });
-      clearEditor();
-      queryClient.invalidateQueries({ queryKey: getLabelsQueryKey() });
-    },
-    onError: (err: Error) => {
-      const e = err as Error & { userMessage?: string; data?: { userMessage?: string } };
-      const msg =
-        e?.userMessage || e?.data?.userMessage || e?.message || 'Error al eliminar etiqueta.';
-      notify.error({ title: msg });
-    },
-  });
-
-  const isSaving = saveMutation.isPending;
-
-  const handleSave = async () => {
-    const validationError = validateLabelName(labelName);
-    if (validationError) {
-      notify.error({ title: validationError });
-      return;
-    }
-    if (hasDuplicateFieldKeys(elements)) {
-      notify.error({ title: 'Error: hay campos con el mismo nombre' });
-      return;
-    }
-    if (hasAnyElementValidationErrors(elements)) {
-      notify.error({
-        title:
-          'Completa el nombre de todos los campos y las opciones de los campos tipo select antes de guardar.',
-      });
-      return;
-    }
-    const token = session?.user?.accessToken;
-    const labelFormat = {
-      elements,
-      canvas: { width: canvasWidth, height: canvasHeight, rotation: canvasRotation },
-    };
-    saveMutation.mutate({ labelId: labelId || undefined, labelName, labelFormat, token });
-  };
-
-  const handleDeleteLabel = async () => {
-    if (!labelId) {
-      notify.error({ title: 'No hay etiqueta seleccionada para eliminar' });
-      return;
-    }
-    deleteMutation.mutate({ labelId, token: session?.user?.accessToken });
-  };
-
-  /* Mejorable, se puede extraer a initial element por cada tipo */
   const addElement = (type: LabelElementType) => {
     const newElement = {
       id: `element-${Date.now()}`,
@@ -626,7 +470,7 @@ export function useLabelEditor(
       textTransform: 'none',
       horizontalAlign: 'left',
       verticalAlign: 'start',
-      textAlign: 'left', // Mantener para compatibilidad
+      textAlign: 'left',
       text: type === 'text' ? 'Texto ejemplo' : undefined,
       countryCode: type === 'sanitaryRegister' ? 'ES' : undefined,
       approvalNumber: type === 'sanitaryRegister' ? '12.021462/H' : undefined,
@@ -679,7 +523,6 @@ export function useLabelEditor(
       direction: type === 'line' ? 'horizontal' : undefined,
       strokeWidth: type === 'line' ? 0.1 : undefined,
     };
-    // Normalizar antes de agregar
     const normalizedElement = normalizeElement(newElement) ?? (newElement as LabelElement);
     setElements((prev) => [...prev, normalizedElement]);
     setSelectedElement(normalizedElement.id);
@@ -714,45 +557,6 @@ export function useLabelEditor(
     setSelectedElement(copy.id);
   };
 
-  const updateElement = (id: string, updates: Partial<LabelElement>) => {
-    setElements((prev) => {
-      const target = prev.find((el) => el.id === id);
-      const isKeyField = target && KEY_FIELD_TYPES.includes(target.type);
-      const newKey = updates.key !== undefined ? String(updates.key || '').trim() : '';
-      const oldKey = target ? String(target.key || '').trim() : '';
-      const shouldReplicateKey = isKeyField && oldKey !== '' && newKey !== '' && oldKey !== newKey;
-
-      let updated: LabelElement[] = prev.map((el) => {
-        if (el.id === id) {
-          const merged = { ...el, ...updates };
-          const normalized = normalizeElement(merged);
-          return (normalized ?? merged) as LabelElement;
-        }
-        return el;
-      });
-
-      if (shouldReplicateKey) {
-        updated = updated.map((el) => {
-          const hasContent = el.qrContent || el.html || el.barcodeContent;
-          if (!hasContent) return el;
-          const next = { ...el };
-          if (el.qrContent)
-            next.qrContent = replacePlaceholderInContent(el.qrContent as string, oldKey, newKey);
-          if (el.html) next.html = replacePlaceholderInContent(el.html as string, oldKey, newKey);
-          if (el.barcodeContent)
-            next.barcodeContent = replacePlaceholderInContent(
-              el.barcodeContent as string,
-              oldKey,
-              newKey
-            );
-          return next as LabelElement;
-        });
-      }
-
-      return updated;
-    });
-  };
-
   const getFieldValue = (field: string): string => {
     const keys = field.split('.');
     let value: unknown = dataContext;
@@ -762,278 +566,14 @@ export function useLabelEditor(
     return value != null ? String(value) : field;
   };
 
-  const handleMouseDown = (e: React.MouseEvent, elementId: string) => {
-    e.preventDefault();
-
-    // Guardar el elementId y si el elemento ya estaba seleccionado
-    clickedElementIdRef.current = elementId;
-    wasSelectedOnMouseDownRef.current = selectedElement === elementId;
-
-    // Guardar la posición inicial del mouse
-    mouseDownPosRef.current = {
-      x: e.clientX,
-      y: e.clientY,
-    };
-
-    // Si el elemento ya estaba seleccionado, no seleccionarlo de nuevo todavía
-    // Esperaremos a ver si hay movimiento en handleMouseMove
-    if (!wasSelectedOnMouseDownRef.current) {
-      setSelectedElement(elementId);
-    }
-
-    setIsDragging(true);
-    const element = elements.find((el) => el.id === elementId);
-    if (element && canvasRef.current) {
-      const rect = canvasRef.current.getBoundingClientRect();
-      setDragOffset({
-        x: pxToMm(e.clientX - rect.left) / zoom - element.x,
-        y: pxToMm(e.clientY - rect.top) / zoom - element.y,
-      });
-    }
-  };
-
-  const handleResizeMouseDown = (e: React.MouseEvent, elementId: string, corner: string) => {
-    e.preventDefault();
-    setSelectedElement(elementId);
-    setIsResizing(true);
-    setResizeCorner(corner);
-    const element = elements.find((el) => el.id === elementId);
-    if (element && canvasRef.current) {
-      const rect = canvasRef.current.getBoundingClientRect();
-      setResizeStart({
-        x: pxToMm(e.clientX - rect.left) / zoom,
-        y: pxToMm(e.clientY - rect.top) / zoom,
-        width: element.width,
-        height: element.height,
-        elX: element.x,
-        elY: element.y,
-      });
-    }
-  };
-
-  const handleMouseMove = useCallback(
-    (e: MouseEvent) => {
-      if ((!isDragging && !isResizing) || !canvasRef.current) return;
-
-      // Si el elemento estaba seleccionado y ahora hay movimiento, seleccionarlo y empezar a arrastrar
-      if (
-        isDragging &&
-        wasSelectedOnMouseDownRef.current &&
-        mouseDownPosRef.current &&
-        clickedElementIdRef.current
-      ) {
-        const movedX = Math.abs(e.clientX - mouseDownPosRef.current.x);
-        const movedY = Math.abs(e.clientY - mouseDownPosRef.current.y);
-        const threshold = 3; // 3 píxeles de umbral para considerar movimiento
-
-        if (movedX > threshold || movedY > threshold) {
-          // Hay movimiento significativo, seleccionar el elemento y continuar con el arrastre
-          if (!selectedElement) {
-            setSelectedElement(clickedElementIdRef.current);
-          }
-        }
-      }
-
-      if (!selectedElement) return;
-
-      const rect = canvasRef.current.getBoundingClientRect();
-      const curX = pxToMm(e.clientX - rect.left) / zoom;
-      const curY = pxToMm(e.clientY - rect.top) / zoom;
-
-      if (isDragging) {
-        const newX = curX - dragOffset.x;
-        const newY = curY - dragOffset.y;
-        const element = elements.find((el) => el.id === selectedElement);
-        const maxX = canvasWidth - (element?.width || 0);
-        const maxY = canvasHeight - (element?.height || 0);
-        updateElement(selectedElement, {
-          x: Math.max(0, Math.min(maxX, newX)),
-          y: Math.max(0, Math.min(maxY, newY)),
-        });
-      }
-
-      if (isResizing && resizeStart) {
-        const dx = curX - resizeStart.x;
-        const dy = curY - resizeStart.y;
-        let { width, height, elX, elY } = resizeStart;
-        let newProps = {};
-
-        switch (resizeCorner) {
-          case 'se':
-            width += dx;
-            height += dy;
-            break;
-          case 'sw':
-            width -= dx;
-            height += dy;
-            elX += dx;
-            break;
-          case 'ne':
-            width += dx;
-            height -= dy;
-            elY += dy;
-            break;
-          case 'nw':
-            width -= dx;
-            height -= dy;
-            elX += dx;
-            elY += dy;
-            break;
-          default:
-            break;
-        }
-
-        width = Math.max(10 / 3.78, width); // ≈2.65mm mínimo
-        height = Math.max(10 / 3.78, height);
-        const maxX = canvasWidth - width;
-        const maxY = canvasHeight - height;
-
-        newProps = {
-          x: Math.max(0, Math.min(maxX, elX)),
-          y: Math.max(0, Math.min(maxY, elY)),
-          width,
-          height,
-        };
-
-        updateElement(selectedElement, newProps);
-      }
-    },
-    [
-      isDragging,
-      isResizing,
-      selectedElement,
-      dragOffset,
-      resizeStart,
-      resizeCorner,
-      zoom,
-      canvasWidth,
-      canvasHeight,
-      elements,
-    ]
-  );
-
-  const handleMouseUp = useCallback((e: MouseEvent) => {
-    // Si el elemento ya estaba seleccionado y no hubo movimiento significativo, deseleccionarlo
-    if (
-      wasSelectedOnMouseDownRef.current &&
-      mouseDownPosRef.current &&
-      e &&
-      clickedElementIdRef.current
-    ) {
-      const movedX = Math.abs(e.clientX - mouseDownPosRef.current.x);
-      const movedY = Math.abs(e.clientY - mouseDownPosRef.current.y);
-      const threshold = 3; // 3 píxeles de umbral
-
-      if (movedX <= threshold && movedY <= threshold) {
-        // No hubo movimiento significativo, deseleccionar
-        setSelectedElement(null);
-      }
-    }
-
-    setIsDragging(false);
-    setIsResizing(false);
-    mouseDownPosRef.current = null;
-    wasSelectedOnMouseDownRef.current = false;
-    clickedElementIdRef.current = null;
-  }, []);
-
   const handleSelectElementCard = (elementId: string | null) => {
     elementId === selectedElement ? setSelectedElement(null) : setSelectedElement(elementId);
   };
 
-  useEffect(() => {
-    if (isDragging || isResizing) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-      return () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-      };
-    }
-  }, [isDragging, isResizing, handleMouseMove, handleMouseUp]);
-
-  const exportJSON = (name = 'label-structure.json') => {
-    const jsonData = {
-      name,
-      elements: elements.map(({ id, ...el }) => el),
-      canvas: { width: canvasWidth, height: canvasHeight, rotation: canvasRotation },
-    };
-    const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = name.endsWith('.json') ? name : `${name}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const importJSON = (jsonData: {
-    elements?: unknown[];
-    canvas?: { width?: number; height?: number; rotation?: number };
-    name?: string;
-  }) => {
-    if (!jsonData) return;
-    if (Array.isArray(jsonData.elements)) {
-      const newElements = jsonData.elements.map((el: unknown, i: number) => ({
-        id: `element-${Date.now()}-${i}`,
-        ...(el as object),
-      }));
-      // Normalizar elementos al importar JSON
-      const normalizedElements = normalizeElements(newElements);
-      setElements(normalizedElements);
-    }
-    if (jsonData.canvas) {
-      setCanvasWidth(jsonData.canvas.width || canvasWidth);
-      setCanvasHeight(jsonData.canvas.height || canvasHeight);
-      setCanvasRotation(jsonData.canvas.rotation || 0);
-    }
-    return jsonData.name || '';
-  };
-
-  const validateLabelJSON = (data: unknown): boolean => {
-    if (!data || typeof data !== 'object') {
-      throw new Error('El archivo JSON no es válido');
-    }
-    const d = data as { elements?: unknown; canvas?: { width?: number; height?: number } };
-    if (!Array.isArray(d.elements)) {
-      throw new Error('El formato de elementos no es válido. Debe ser un array.');
-    }
-    if (!d.canvas || typeof d.canvas.width !== 'number' || typeof d.canvas.height !== 'number') {
-      throw new Error('El formato del canvas no es válido. Debe tener width y height numéricos.');
-    }
-    return true;
-  };
-
-  const handleImportJSON = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev: ProgressEvent<FileReader>) => {
-      try {
-        const result = ev.target?.result;
-        if (typeof result !== 'string') return;
-        const data = JSON.parse(result);
-        validateLabelJSON(data);
-        const name = importJSON(data);
-        setLabelName(name ?? '');
-        notify.success({ title: 'Etiqueta importada correctamente' });
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Error al importar la etiqueta';
-        notify.error({ title: errorMessage });
-        console.error('Error al importar etiqueta:', err);
-      }
-    };
-    reader.readAsText(file);
-  };
-
-  // Normalizar el elemento seleccionado antes de pasarlo a la UI
-  // Usar useMemo para hacerlo reactivo y forzar re-render cuando cambia
-  // Crear un objeto nuevo para forzar detección de cambios en React
   const selectedElementData = useMemo((): LabelElement | null => {
     if (!selectedElement) return null;
     const element = elements.find((el) => el.id === selectedElement);
     if (!element) return null;
-    // Crear un objeto completamente nuevo para forzar detección de cambios
     return normalizeElement({ ...element }) ?? null;
   }, [selectedElement, elements]);
 
@@ -1101,109 +641,29 @@ export function useLabelEditor(
     updateElement(id, { rotation: angle, width, height });
   };
 
-  const handleCanvasRotationChange = (angle: number) => {
-    rotateCanvasTo(angle);
-  };
-
-  const handleSelectLabel = (label: Label) => {
-    const labelId = label.id;
-    const labelName = label.name || '';
-    const format = label.format;
-    setSelectedLabel(label); // ✅ Guardar el objeto completo, no solo el formato
-    setCanvasWidth(format.canvas.width);
-    setCanvasHeight(format.canvas.height);
-    setCanvasRotation(format.canvas.rotation || 0);
-    // Normalizar elementos al cargar desde la BD
-    const normalizedElements = normalizeElements(format.elements || []);
-    setElements(normalizedElements);
-    setLabelName(labelName || '');
-    setLabelId(labelId);
-    setSelectedElement(null); // Reset panel derecho al cambiar de formato
-  };
-
-  /* Limpiar editor - usado cuando se elimina la etiqueta actual */
-  const clearEditor = () => {
-    setSelectedLabel(null);
-    setElements([]);
-    setLabelName('');
-    setLabelId(null);
-    setSelectedElement(null);
-    // Mantener dimensiones del canvas por si el usuario quiere crear nueva
-  };
-
-  /* Extraer en una constante EmptyLabelData */
-  const handleCreateNewLabel = () => {
-    const model = { id: null, name: '', canvas: { width: 110, height: 90, rotation: 0 } };
-    setSelectedLabel(model);
-    setCanvasWidth(model.canvas.width);
-    setCanvasHeight(model.canvas.height);
-    setCanvasRotation(0);
-    setElements([]);
-    setLabelName('');
-    setLabelId(null);
-    setSelectedElement(null); // Reset panel derecho
-  };
-
-  const handlePrint = () => {
-    const manualFields = elements.filter((el) => el.type === 'manualField');
-    if (manualFields.length > 0) {
-      const formValues: Record<string, string> = {};
-      manualFields.forEach((el) => {
-        const k = String(el.key ?? '');
-        formValues[k] = manualValues[k] || String(el.sample ?? '') || '';
-      });
-      setManualForm(formValues);
-      setShowManualDialog(true);
-    } else {
-      onPrint();
-    }
-  };
-
-  const handleConfirmManual = () => {
-    setManualValues(manualForm);
-    setShowManualDialog(false);
-    setTimeout(() => {
-      onPrint();
-      setManualValues({});
-    }, 0);
-  };
-
-  const handleOnClickSave = () => {
-    handleSave();
-  };
-
-  /**
-   * Ajusta automáticamente el tamaño del elemento seleccionado al contenido
-   */
   const autoFitToContent = (elementId: string) => {
     if (!elementId || !canvasRef.current) return;
 
     const element = elements.find((el) => el.id === elementId);
     if (!element) return;
 
-    // Solo funciona para elementos de texto
     const textTypes = ['text', 'field', 'manualField', 'richParagraph', 'sanitaryRegister'];
     if (!textTypes.includes(element.type)) {
       notify.error({ title: 'Esta función solo está disponible para elementos de texto' });
       return;
     }
 
-    // Función auxiliar para obtener valores de ejemplo (similar a LabelElement)
     const getExampleValue = (key: string): string => {
-      // Si es un campo de netWeight con formato específico, aplicar el formato
       if (key === 'netWeightFormatted' || key === 'netWeight6digits') {
-        // Usar el valor de netWeight si existe, si no usar el valor por defecto
         const baseValue =
           fieldExampleValues['netWeight'] ||
           labelFields['netWeight']?.defaultValue ||
           NET_WEIGHT_DEFAULT;
         return String(formatNetWeightField(baseValue, key));
       }
-      // Usar fieldExampleValues primero, luego defaultValue de labelFields, o el sample para campos manuales
       return fieldExampleValues[key] || labelFields[key]?.defaultValue || '';
     };
 
-    // Función para reemplazar placeholders en texto/HTML con valores de ejemplo
     const replacePlaceholders = (str: string): string => {
       if (!str) return '';
       return str.replace(/{{([^}]+)}}/g, (_, field) => {
@@ -1212,7 +672,6 @@ export function useLabelEditor(
       });
     };
 
-    // Crear un elemento temporal fuera del DOM para medir
     const tempContainer = document.createElement('div');
     tempContainer.style.position = 'absolute';
     tempContainer.style.visibility = 'hidden';
@@ -1234,9 +693,7 @@ export function useLabelEditor(
       tempElement.style.fontFamily = 'inherit';
       tempElement.style.lineHeight = '1.2';
 
-      // Para richParagraph, permitir múltiples líneas
       if (element.type === 'richParagraph') {
-        // Si es justify, usar el ancho actual para medir correctamente
         if (element.horizontalAlign === 'justify') {
           tempElement.style.width = `${element.width || 50}mm`;
         } else {
@@ -1246,23 +703,18 @@ export function useLabelEditor(
         tempElement.style.wordWrap = 'break-word';
       }
 
-      // Obtener el contenido según el tipo usando valores de ejemplo
       if (element.type === 'text') {
         tempElement.textContent = String(element.text ?? '');
       } else if (element.type === 'field') {
-        // Usar valores de ejemplo en lugar de getFieldValue
         const fieldKey = String(element.field ?? '');
         const exampleValue = getExampleValue(fieldKey);
         tempElement.textContent = exampleValue || fieldKey;
       } else if (element.type === 'manualField') {
-        // Usar sample si existe, sino usar valor de ejemplo
         tempElement.textContent = String(
           element.sample ?? getExampleValue(String(element.key ?? '')) ?? ''
         );
       } else if (element.type === 'richParagraph') {
-        // Para richParagraph, reemplazar placeholders con valores de ejemplo antes de medir
         const htmlWithExamples = replacePlaceholders(String(element.html ?? ''));
-        // Limpiar fontSize inline para que use el del contenedor
         const processHtml = (html: string): string => {
           if (!html) return '';
           const parser = new DOMParser();
@@ -1279,7 +731,6 @@ export function useLabelEditor(
         };
         tempElement.innerHTML = processHtml(htmlWithExamples);
       } else if (element.type === 'sanitaryRegister') {
-        // Para sanitaryRegister, construir el texto
         const parts: string[] = [];
         if (element.countryCode) parts.push(String(element.countryCode));
         if (element.approvalNumber) parts.push(String(element.approvalNumber));
@@ -1288,21 +739,16 @@ export function useLabelEditor(
       }
 
       tempContainer.appendChild(tempElement);
-
-      // Forzar reflow para que el navegador calcule el tamaño
       tempContainer.offsetHeight;
 
-      // Medir el tamaño
       const rect = tempElement.getBoundingClientRect();
       const widthMm = pxToMm(rect.width);
       const heightMm = pxToMm(rect.height);
 
-      // Limpiar
       document.body.removeChild(tempContainer);
 
-      // Actualizar el elemento con un pequeño margen
-      const minSize = 5; // Mínimo 5mm
-      const margin = 1; // Margen de 1mm
+      const minSize = 5;
+      const margin = 1;
       updateElement(elementId, {
         width: Math.max(minSize, widthMm + margin),
         height: Math.max(minSize, heightMm + margin),

@@ -4,9 +4,9 @@ import {
   hasDuplicateFieldKeys,
   hasElementValidationError,
   hasAnyElementValidationErrors,
-} from './labelEditorValidation';
+} from '@/hooks/labels/labelValidation';
 
-describe('labelEditorValidation', () => {
+describe('labelValidation', () => {
   it('validateLabelName returns error for empty', () => {
     expect(validateLabelName('')).toBeTruthy();
   });
@@ -19,13 +19,17 @@ describe('labelEditorValidation', () => {
   it('hasDuplicateFieldKeys true for duplicates', () => {
     expect(
       hasDuplicateFieldKeys([
-        { type: 'manualField', key: 'A' },
-        { type: 'manualField', key: 'A' },
+        { type: 'manualField', key: 'A' } as Parameters<typeof hasDuplicateFieldKeys>[0][0],
+        { type: 'manualField', key: 'A' } as Parameters<typeof hasDuplicateFieldKeys>[0][0],
       ])
     ).toBe(true);
   });
   it('hasElementValidationError true for empty key', () => {
-    expect(hasElementValidationError({ type: 'manualField', key: '' })).toBe(true);
+    expect(
+      hasElementValidationError({ type: 'manualField', key: '' } as Parameters<
+        typeof hasElementValidationError
+      >[0])
+    ).toBe(true);
   });
   it('hasAnyElementValidationErrors false for empty', () => {
     expect(hasAnyElementValidationErrors([])).toBe(false);
