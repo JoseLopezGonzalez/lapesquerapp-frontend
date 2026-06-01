@@ -5,7 +5,7 @@
 - **Tipo:** Refactor
 - **Módulo:** Stock
 - **Prioridad:** Alta
-- **Estado:** open
+- **Estado:** in-progress
 - **Fecha:** 2026-05-31
 - **Autor:** Jose
 
@@ -61,15 +61,34 @@ El módulo de producción ya sigue este patrón: `src/hooks/production/` tiene s
 
 ## Implementación
 
-> Rellena el Agente Implementador
-
 ### Archivos creados
 
-### Archivos modificados
+- `src/hooks/pallets/palletHelpers.ts` — tipos TypeScript (`PalletBox`, `PalletState`, `BoxCreationData`, `ProductOption`) + constantes (`STORAGE_KEYS`, `emptyPallet`) + funciones puras compartidas (`recalculatePalletStats`, `palletDataEqual`, `boxContentEqual`, `normNum`, `roundToTwoDecimals`, `generateUniqueIntId`, `getInitialBoxCreationData`, `resetBoxCreationDataPreservingDiscounts`, `saveDiscountPreferences`)
+- `src/hooks/pallets/usePalletBoxOperations.ts` — operaciones CRUD sobre cajas individuales y en bloque: `addBox`, `duplicateBox`, `deleteBox`, `editBox` (4 métodos), `bulkEditBoxes` (5 métodos), `editObservations`, `editOrderId`, `setBoxPrinted`, `deleteAllBoxes`. Incluye helpers GS1-128 locales (`getGs1128`, `getGs1128WithPounds`) y lookup de producto (`getProductById`, `getBoxGtinById`).
+- `src/hooks/pallets/usePalletBoxCreation.ts` — formulario de creación de cajas: `boxCreationDataChange`, `onAddNewBox` (5 métodos: manual/average/bulk/lector/gs1), `onDeleteScannedCode`, `onResetBoxCreationData`. Importa `parseGs1128Line` y `normalizeScannedCodeToGs1128` para procesado de códigos de barras.
+- `src/hooks/pallets/usePalletSave.ts` — persistencia en backend: `onSavingChanges` (create vs update, con lógica de permisos de coste via `canManagePalletCostFields`).
+- `src/hooks/usePallet.ts` — orquestador que declara todo el estado, efectos de carga de datos, efectos de auto-submit de escáner, computed values (`temporalProductsSummary`, `hasPalletChanges`, etc.) y ensambla la API pública. Re-exporta `saveDiscountPreferences` para compatibilidad con el componente `PalletView`.
+
+### Archivos eliminados
+
+- `src/hooks/usePallet.js` — reemplazado íntegramente por `src/hooks/usePallet.ts`
 
 ### Decisiones tomadas durante la implementación
 
+1. **Estado en el orquestador**: todo el estado (`pallet`, `temporalPallet`, `boxCreationData`, etc.) vive en `usePallet.ts`. Los sub-hooks reciben estado + setters como parámetros y devuelven solo funciones. Patrón idéntico al de `useOrder.ts` (GAP-004).
+
+2. **Helpers compartidos en `palletHelpers.ts`**: las funciones puras y los tipos se extraen a un archivo auxiliar (no un hook) accesible por todos los sub-hooks, evitando duplicación.
+
+3. **Efectos de auto-submit del escáner en el orquestador**: los dos `useEffect` que auto-disparan `onAddNewBox({ method: 'lector' })` y `onDeleteScannedCode()` cuando el código escaneado alcanza longitud ≥42 se colocan en el orquestador, donde están disponibles tanto el estado `boxCreationData` como las funciones devueltas por los sub-hooks. Los deps arrays son intencionalmente incompletos (solo la longitud del código importa para el trigger) — suprimido con `eslint-disable-next-line`.
+
+4. **Re-exportación de `saveDiscountPreferences`**: `PalletView/index.js` importa `{ usePallet, saveDiscountPreferences }` de `@/hooks/usePallet`. Se mantiene via `export { saveDiscountPreferences } from './pallets/palletHelpers'` en `usePallet.ts`.
+
+5. **Casts de JS legacy**: `createPallet`, `updatePallet`, `getPallet`, `getActiveOrdersOptions`, `getProductOptions`, `canManagePalletCostFields` son funciones `.js` sin tipos exportados. Se usa `as (args) => ReturnType` donde TypeScript no puede inferir.
+
 ### Desviaciones del plan (si las hay)
+
+- La función `onDeleteScannedCode` también modifica `temporalPallet` (filtra la caja del palet), por lo que se ubica en `usePalletBoxCreation` (no en `usePalletBoxOperations`) ya que está conceptualmente ligada al flujo de creación por escáner.
+- `editObservations`, `editOrderId`, `setBoxPrinted` y `deleteAllBoxes` se incluyen en `usePalletBoxOperations` por ser operaciones sobre el estado del palet, aunque no son estrictamente "operaciones de caja".
 
 ---
 
