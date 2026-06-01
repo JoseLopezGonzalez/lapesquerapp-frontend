@@ -31,8 +31,9 @@ function aggregateLineas(lineas) {
 }
 
 export default function LonjaDeIslaVentaDirectaCard({ ventasDirectasArray = [], servicios = [] }) {
-  if (!ventasDirectasArray.length) return null;
   const [expandedByBarco, setExpandedByBarco] = useState({});
+
+  if (!ventasDirectasArray.length) return null;
 
   const totalVentaDirecta = ventasDirectasArray.reduce(
     (acc, barco) => {

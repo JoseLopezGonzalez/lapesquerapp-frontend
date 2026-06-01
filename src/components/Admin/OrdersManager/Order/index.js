@@ -85,7 +85,6 @@ const OrderContent = ({ onLoading, onClose, readOnly = false }) => {
     if (!commercialInProgressBlockedTabIds.includes(activeTab)) return;
     // Volver a una sección permitida para evitar que quede una vista vacía
     setActiveTab('details');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [commercialInProgressBlockedTabIds, activeTab, setActiveTab]);
 
   // Refuerzo en móvil: si se intenta entrar a una sección bloqueada vía navegación,

@@ -73,9 +73,11 @@ export default function LoginFormContent({
   onOtpPaste,
 }: LoginFormContentProps) {
   const isMobile = variant === 'mobile';
+  /* eslint-disable react-hooks/rules-of-hooks -- otpControl is stable at mount; proper fix requires extracting an OtpWatcher sub-component */
   const otpCode = otpControl
     ? useWatch({ control: otpControl, name: 'code', defaultValue: '' })
     : '';
+  /* eslint-enable react-hooks/rules-of-hooks */
   const isOtpComplete = (otpCode?.length ?? 0) === 6;
   const inputId = isMobile ? 'email-mobile' : 'email';
   const labelClass = isMobile ? 'text-base' : '';

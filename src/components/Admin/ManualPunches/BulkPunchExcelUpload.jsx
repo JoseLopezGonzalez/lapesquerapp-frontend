@@ -720,8 +720,8 @@ export default function BulkPunchExcelUpload() {
                 Debes validar los fichajes antes de registrar
               </p>
               <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
-                Haz clic en "Validar" para verificar la integridad de los datos con los registros
-                existentes
+                Haz clic en &quot;Validar&quot; para verificar la integridad de los datos con los
+                registros existentes
               </p>
             </div>
           </div>
@@ -891,13 +891,13 @@ export default function BulkPunchExcelUpload() {
             • Empleado: Nombre completo del trabajador (debe coincidir exactamente con el nombre
             registrado)
           </p>
-          <p>• Tipo: "Entrada" o "Salida"</p>
+          <p>• Tipo: &quot;Entrada&quot; o &quot;Salida&quot;</p>
           <p>
             • Formato de fecha: YYYY-MM-DD HH:mm:ss, YYYY-MM-DDTHH:mm:ss o formato de fecha de Excel
           </p>
           <p>
             • Para crear una sesión completa, añade dos filas consecutivas con el mismo empleado:
-            una con "Entrada" y otra con "Salida"
+            una con &quot;Entrada&quot; y otra con &quot;Salida&quot;
           </p>
           <p>
             • <strong>Es obligatorio validar</strong> los fichajes antes de registrar para verificar

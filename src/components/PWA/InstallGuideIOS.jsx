@@ -47,6 +47,12 @@ export function InstallGuideIOS({ trigger, open, onOpenChange, hideIfNotIOS = tr
     }
   }, [open]);
 
+  // Detectar Android
+  const isAndroid = React.useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return /Android/.test(navigator.userAgent);
+  }, []);
+
   // No mostrar si no es iOS o ya está instalada (solo si hideIfNotIOS es true)
   if (hideIfNotIOS && (!isIOS || isInstalled)) {
     return null;
@@ -56,12 +62,6 @@ export function InstallGuideIOS({ trigger, open, onOpenChange, hideIfNotIOS = tr
     setIsOpen(newOpen);
     onOpenChange?.(newOpen);
   };
-
-  // Detectar Android
-  const isAndroid = React.useMemo(() => {
-    if (typeof window === 'undefined') return false;
-    return /Android/.test(navigator.userAgent);
-  }, []);
 
   // Contenido para mobile (iOS o Android)
   const mobileContent = (
@@ -114,13 +114,15 @@ export function InstallGuideIOS({ trigger, open, onOpenChange, hideIfNotIOS = tr
             {isIOS ? (
               <>
                 En el menú que aparece, desplázate y selecciona la opción
-                <strong> "Añadir a pantalla de inicio"</strong> o <strong>"Añadir a inicio"</strong>
+                <strong> &quot;Añadir a pantalla de inicio&quot;</strong> o{' '}
+                <strong>&quot;Añadir a inicio&quot;</strong>
               </>
             ) : (
               <>
                 En el menú que aparece, busca y selecciona la opción
-                <strong> "Instalar app"</strong>, <strong>"Añadir a pantalla de inicio"</strong> o{' '}
-                <strong>"Instalar"</strong>
+                <strong> &quot;Instalar app&quot;</strong>,{' '}
+                <strong>&quot;Añadir a pantalla de inicio&quot;</strong> o{' '}
+                <strong>&quot;Instalar&quot;</strong>
               </>
             )}
           </p>
@@ -142,7 +144,7 @@ export function InstallGuideIOS({ trigger, open, onOpenChange, hideIfNotIOS = tr
           </div>
           <p className="text-muted-foreground ml-11 text-sm">
             Revisa el nombre y el icono de la app, luego toca
-            <strong> "Añadir"</strong> para confirmar
+            <strong> &quot;Añadir&quot;</strong> para confirmar
           </p>
           <div className="bg-muted ml-11 rounded-lg p-4">
             <div className="flex items-center gap-3 text-sm">
@@ -201,11 +203,11 @@ export function InstallGuideIOS({ trigger, open, onOpenChange, hideIfNotIOS = tr
             <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold">
               2
             </div>
-            <h3 className="font-semibold">Haz clic en "Instalar"</h3>
+            <h3 className="font-semibold">Haz clic en &quot;Instalar&quot;</h3>
           </div>
           <p className="text-muted-foreground ml-11 text-sm">
-            Haz clic en el icono y selecciona <strong>"Instalar"</strong> o
-            <strong> "Instalar aplicación"</strong> en el menú que aparece
+            Haz clic en el icono y selecciona <strong>&quot;Instalar&quot;</strong> o
+            <strong> &quot;Instalar aplicación&quot;</strong> en el menú que aparece
           </p>
           <div className="bg-muted ml-11 rounded-lg p-4">
             <div className="flex items-center gap-3 text-sm">
@@ -225,7 +227,7 @@ export function InstallGuideIOS({ trigger, open, onOpenChange, hideIfNotIOS = tr
           </div>
           <p className="text-muted-foreground ml-11 text-sm">
             Aparecerá un diálogo de confirmación. Revisa la información y haz clic en
-            <strong> "Instalar"</strong> para confirmar
+            <strong> &quot;Instalar&quot;</strong> para confirmar
           </p>
           <div className="bg-muted ml-11 rounded-lg p-4">
             <div className="flex items-center gap-3 text-sm">

@@ -425,8 +425,8 @@ export default function LabelSelectorSheet({
           <DialogHeader>
             <DialogTitle>¿Eliminar etiqueta?</DialogTitle>
             <DialogDescription>
-              Estás a punto de eliminar la etiqueta <strong>"{labelToDelete?.name}"</strong>. Esta
-              acción no se puede deshacer.
+              Estás a punto de eliminar la etiqueta{' '}
+              <strong>&quot;{labelToDelete?.name}&quot;</strong>. Esta acción no se puede deshacer.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

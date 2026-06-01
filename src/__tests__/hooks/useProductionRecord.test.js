@@ -54,8 +54,10 @@ const createWrapper = () => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
-  return ({ children }) =>
+  const Wrapper = ({ children }) =>
     React.createElement(QueryClientProvider, { client: queryClient }, children);
+  Wrapper.displayName = 'TestWrapper';
+  return Wrapper;
 };
 
 describe('useProductionRecord', () => {

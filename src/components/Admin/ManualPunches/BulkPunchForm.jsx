@@ -366,8 +366,8 @@ export default function BulkPunchForm() {
                 Debes validar los fichajes antes de registrar
               </p>
               <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
-                Haz clic en "Validar" para verificar la integridad de los datos con los registros
-                existentes
+                Haz clic en &quot;Validar&quot; para verificar la integridad de los datos con los
+                registros existentes
               </p>
             </div>
           </div>
@@ -442,7 +442,7 @@ export default function BulkPunchForm() {
         {rows.length === 0 ? (
           <div className="rounded-md border border-dashed py-12 text-center">
             <p className="text-muted-foreground mb-4 text-sm">
-              No hay fichajes añadidos. Haz clic en "Añadir Fila" para comenzar.
+              No hay fichajes añadidos. Haz clic en &quot;Añadir Fila&quot; para comenzar.
             </p>
             <Button type="button" onClick={addRow} variant="outline">
               <Plus className="mr-2 h-4 w-4" />
@@ -567,7 +567,7 @@ export default function BulkPunchForm() {
         {/* Información adicional */}
         <div className="text-muted-foreground space-y-1 text-xs">
           <p>• Puedes añadir múltiples filas y completarlas todas antes de registrar</p>
-          <p>• Usa "Añadir Sesión Completa" para crear entrada y salida de una vez</p>
+          <p>• Usa &quot;Añadir Sesión Completa&quot; para crear entrada y salida de una vez</p>
           <p>
             • <strong>Es obligatorio validar</strong> los fichajes antes de registrar para verificar
             la integridad con los datos existentes

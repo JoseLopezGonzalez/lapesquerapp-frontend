@@ -515,7 +515,6 @@ export default function EntityClient({ config }) {
         isLoadingRef.current = false;
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, filters, config.endpoint]); // Remover fetchData de dependencias para evitar loops
 
   const handlePageChange = (newPage) => {

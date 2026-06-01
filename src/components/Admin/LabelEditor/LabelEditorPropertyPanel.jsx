@@ -35,8 +35,17 @@ import {
   AlignVerticalJustifyEnd,
   AlignVerticalJustifyCenter,
   Maximize,
+  BetweenHorizonalEnd,
+  Italic,
+  Underline,
+  Strikethrough,
+  CaseUpper,
+  CaseLower,
+  CaseSensitive,
 } from 'lucide-react';
 import { BoldIcon } from '@heroicons/react/20/solid';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import QRConfigPanel from './QRConfigPanel';
 import BarcodeConfigPanel from './BarcodeConfigPanel';
 import RichParagraphConfigPanel from './RichParagraphConfigPanel';
