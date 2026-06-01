@@ -99,24 +99,56 @@ La validación del label editor ya está parcialmente extraída en `src/hooks/la
 
 ## Auditoría
 
-> Rellena el Agente Auditor
+> Auditado por Agente Auditor — 2026-06-01
 
-### Resultado: ✅ APROBADO | ⚠️ APROBADO CON OBSERVACIONES | ❌ RECHAZADO
+### Resultado: ❌ RECHAZADO
 
-### Puntuación: [X/10]
+### Puntuación: 6/10
 
 ### Checklist
 
-- [ ] Criterios de aceptación cumplidos
-- [ ] Sin fetch() directo
-- [ ] Sin hardcode de tenant
-- [ ] Sin archivos .js nuevos
-- [ ] Sin any sin justificación
-- [ ] Hooks gigantes no tocados sin permiso
-- [ ] entitiesConfig.js no tocado sin permiso
-- [ ] Patrones de .claude/rules/ respetados
-- [ ] Nomenclatura correcta
+- [x] Sin fetch() directo — ninguno en los sub-hooks
+- [x] Sin hardcode de tenant — correcto
+- [x] Sin archivos .js nuevos — todos los archivos nuevos son .ts
+- [x] Sin any sin justificación — no hay any sin contextualizar
+- [x] Hooks gigantes no tocados sin permiso — useLabelEditor.ts es el objetivo del GAP
+- [x] entitiesConfig.js no tocado sin permiso — no tocado
+- [x] Patrones de .claude/rules/ respetados — types desde labelEditor.ts, nomenclatura correcta
+- [x] Nomenclatura correcta — labelValidation.ts, labelEditorHelpers.ts, useLabelCanvasInteraction.ts, useLabelPersistence.ts, useLabelPrint.ts
+- [ ] **Criterios de aceptación cumplidos — FALLA: `npm run build` roto**
 
-### Observaciones para Jose
+### Defecto bloqueante
+
+**`src/components/Admin/LabelEditor/LabelEditorLeftPanel.jsx` no fue actualizado.**
+
+Este componente sigue importando desde `@/hooks/labelEditorValidation` (línea 39), que fue eliminado en este GAP. El build falla con:
+
+```
+Module not found: Can't resolve '@/hooks/labelEditorValidation'
+./src/components/Admin/LabelEditor/LabelEditorLeftPanel.jsx:36:1
+```
+
+El criterio de aceptación exige `npm run build` pasa sin errores — este criterio **falla**. El commit no actualiza todos los consumidores del módulo eliminado.
+
+### Lo que está bien
+
+- `src/hooks/labels/` existe con **5 archivos** extraídos (3 sub-hooks + 2 helpers de utilidad pura): supera el mínimo de 3
+- Todos los sub-hooks `.ts` importan tipos explícitos de `src/types/labelEditor.ts`
+- `useLabelEditor.ts` reducido de 1376 → 822 líneas como orquestador
+- API pública de `useLabelEditor` intacta — el return object devuelve exactamente los mismos campos que antes
+- `labelEditorValidation.js` eliminado correctamente, migrado a `src/hooks/labels/labelValidation.ts`
+- Test migrado a `src/__tests__/hooks/labels/labelValidation.test.ts` con import correcto — pasa 6/6
+- `npm run lint` — 0 errores nuevos (307 warnings pre-existentes)
+- Tests de `labelValidation.test.ts` pasan; los 4 test files que fallan son pre-existentes y no relacionados con este GAP
+
+### Corrección requerida para aprobar
+
+1. Actualizar `src/components/Admin/LabelEditor/LabelEditorLeftPanel.jsx` línea 39:
+   - Cambiar: `from '@/hooks/labelEditorValidation'`
+   - Por: `from '@/hooks/labels/labelValidation'`
+2. Verificar que no existen otros archivos `.js`/`.jsx`/`.ts`/`.tsx` que importen desde `@/hooks/labelEditorValidation`
+3. Re-ejecutar `npm run build` — debe completar sin errores de módulo
 
 ### Estado final de la implementación
+
+Rechazado. Corregir el import roto en `LabelEditorLeftPanel.jsx` y volver a someter a auditoría.
