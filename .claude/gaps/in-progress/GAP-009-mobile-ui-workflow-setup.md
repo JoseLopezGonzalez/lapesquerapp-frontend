@@ -122,15 +122,48 @@ proyecto como contexto reutilizable:
 
 ## Implementación
 
-> Rellena el Agente Implementador
+> Agente Implementador — 2026-06-01
 
 ### Archivos creados
 
+```
+.claude/skills/mobile-ui.md
+.claude/skills/mobile-crud-generator.md
+.claude/skills/mobile-preview.md
+.claude/agents/mobile-ui-agent.md
+.claude/commands/mobile.md
+.claude/mobile-inventory.md
+```
+
 ### Archivos modificados
+
+- `.claude/gaps/in-progress/GAP-009-mobile-ui-workflow-setup.md` (este archivo — sección implementación)
 
 ### Decisiones tomadas durante la implementación
 
+1. **`useIsMobileSafe` en lugar de `useMediaQuery`:** El proyecto ya tiene `useIsMobileSafe`
+   en `src/hooks/use-mobile.jsx`. Todos los skills referencian este hook real.
+
+2. **`vaul` para NavigationSheet:** El NavigationSheet existente usa la librería `vaul`
+   (Drawer), no el Sheet de shadcn. Los skills reflejan esto para no generar confusión.
+
+3. **Inventario basado en análisis real:** Las ~60 vistas del inventario se obtuvieron
+   de `find . -path "*/app/*" -name "page.*"` — no son estimaciones. Los estados
+   (✅/🔶/⬜) se determinaron buscando `useIsMobile|Mobile\b` en el código.
+
+4. **Fase 6-B (npx skills) omitida:** El entorno remoto de Claude Code on the web no
+   tiene acceso a `npx skills`. Los skills externos relevantes (`find-skills`,
+   `skill-creator`) ya están instalados en el proyecto. Se documenta como paso manual.
+
+5. **Sprint 1 prioriza el rol `field`:** Los repartidores (rol `field`) son usuarios
+   exclusivamente mobile. Sus vistas tienen mayor impacto que cualquier mejora en admin.
+
 ### Desviaciones del plan (si las hay)
+
+- La Fase 6-B (npx skills externos) no se ejecutó — `npx skills` no disponible en el
+  entorno. Los skills `find-skills` y `skill-creator` ya existían. Para instalar los
+  demás (web-design-guidelines, vercel-react-best-practices, etc.) hacerlo manualmente
+  en entorno local con: `npx skills add vercel-labs/agent-skills --skill [nombre] --agent claude-code`
 
 ---
 
