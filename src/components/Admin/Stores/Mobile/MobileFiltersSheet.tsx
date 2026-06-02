@@ -76,10 +76,6 @@ export function MobileFiltersSheet({ open, onOpenChange }: MobileFiltersSheetPro
               notFoundMessage="No se encontraron productos"
               onChange={handleAddProduct}
               loading={loading}
-              value={undefined}
-              className={undefined}
-              onBlur={undefined}
-              onOpenChange={undefined}
             />
             {selectedProducts.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-2">
@@ -110,10 +106,6 @@ export function MobileFiltersSheet({ open, onOpenChange }: MobileFiltersSheetPro
               notFoundMessage="No se encontraron palés"
               onChange={handleAddPallet}
               loading={loading}
-              value={undefined}
-              className={undefined}
-              onBlur={undefined}
-              onOpenChange={undefined}
             />
             {selectedPallets.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-2">
