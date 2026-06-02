@@ -27,7 +27,7 @@
 | OrdersManager — lista | Admin | `/admin/orders-manager` | 🔶 | — | OrderCard ✅, filtros mobile ✅, paginación pendiente |
 | OrdersManager — detalle | Admin | `/admin/orders/[id]` | 🔶 | — | Header/Summary/SectionList ✅, secciones internas ⬜ |
 | OrdersManager — crear | Admin | `/admin/orders/create` | 🔶 | — | CreateOrderFormMobile ✅, validación pendiente |
-| StoresManager | Admin | `/admin/stores-manager` | 🔶 | `mobile/stores-manager` | Lista vertical ✅, mapa full-screen ✅, filtros bottom sheet ✅, dialogs reutilizados ✅ |
+| StoresManager | Admin | `/admin/stores-manager` | ✅ | — | Lista vertical, mapa full-screen, filtros bottom sheet, dialogs reutilizados |
 | StoresManager | Operator | `/operator/stores-manager` | ⬜ | — | Misma vista que admin — pendiente switch mobile |
 | StoresManager | External | `/external/stores-manager` | ⬜ | — | Versión limitada — pendiente |
 | Warehouse store | Warehouse | `/warehouse/[storeId]` | ⬜ | — | Vista de almacén por tienda |
