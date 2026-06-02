@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Layers, Package, Plus } from 'lucide-react';
+import { Layers, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
@@ -13,6 +13,7 @@ import {
 import { useStoreContext } from '@/context/StoreContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import PalletCard from './PalletCard';
+import { PalletCardStack } from '../PalletCardStack';
 
 interface PositionSlideoverProps {
   onClose?: () => void;
@@ -53,7 +54,7 @@ export default function PositionSlideover({ onClose, position = 'A5' }: Position
           <SheetDescription>Detalles de la posición seleccionada</SheetDescription>
         </SheetHeader>
 
-        <div>
+        <div className={isMobile ? 'px-4' : ''}>
           <Button
             className="flex w-full items-center justify-center gap-2"
             onClick={handleOnClickAddElement}
@@ -63,25 +64,37 @@ export default function PositionSlideover({ onClose, position = 'A5' }: Position
           </Button>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-2 py-4">
-          <div className="space-y-4">
-            {pallets.length === 0 ? (
-              <Card className="bg-muted/30 flex flex-col items-center justify-center border-dashed p-6 text-center">
-                <Layers className="text-muted-foreground mb-3 h-10 w-10" />
-                <h3 className="mb-1 text-lg font-medium">No hay elementos</h3>
-                <p className="text-muted-foreground mb-4 text-sm">
-                  No hay elementos ubicados en esta posición.
-                </p>
-                <Button className="flex items-center gap-2">
-                  <Plus className="h-4 w-4" />
-                  Agregar elemento
-                </Button>
-              </Card>
-            ) : (
-              pallets.map((pallet) => <PalletCard key={pallet.id} pallet={pallet} />)
-            )}
+        {pallets.length === 0 ? (
+          <div className="py-4">
+            <Card className="bg-muted/30 mx-4 flex flex-col items-center justify-center border-dashed p-6 text-center">
+              <Layers className="text-muted-foreground mb-3 h-10 w-10" />
+              <h3 className="mb-1 text-lg font-medium">No hay elementos</h3>
+              <p className="text-muted-foreground mb-4 text-sm">
+                No hay elementos ubicados en esta posición.
+              </p>
+              <Button className="flex items-center gap-2" onClick={handleOnClickAddElement}>
+                <Plus className="h-4 w-4" />
+                Agregar elemento
+              </Button>
+            </Card>
           </div>
-        </div>
+        ) : isMobile ? (
+          <div className="py-4">
+            <PalletCardStack>
+              {pallets.map((pallet) => (
+                <PalletCard key={pallet.id} pallet={pallet} />
+              ))}
+            </PalletCardStack>
+          </div>
+        ) : (
+          <div className="min-h-0 flex-1 overflow-y-auto px-2 py-4">
+            <div className="space-y-4">
+              {pallets.map((pallet) => (
+                <PalletCard key={pallet.id} pallet={pallet} />
+              ))}
+            </div>
+          </div>
+        )}
       </SheetContent>
     </Sheet>
   );
