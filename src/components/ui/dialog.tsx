@@ -7,34 +7,26 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { XIcon } from "lucide-react"
 
-function Dialog({
-  ...props
-}) {
+function Dialog({ ...props }: React.ComponentProps<typeof DialogPrimitive.Root>) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />;
 }
 
-function DialogTrigger({
-  ...props
-}) {
+function DialogTrigger({ ...props }: React.ComponentProps<typeof DialogPrimitive.Trigger>) {
   return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />;
 }
 
-function DialogPortal({
-  ...props
-}) {
+function DialogPortal({ ...props }: React.ComponentProps<typeof DialogPrimitive.Portal>) {
   return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />;
 }
 
-function DialogClose({
-  ...props
-}) {
+function DialogClose({ ...props }: React.ComponentProps<typeof DialogPrimitive.Close>) {
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />;
 }
 
 function DialogOverlay({
-  className = undefined,
+  className,
   ...props
-}) {
+}: React.ComponentProps<typeof DialogPrimitive.Overlay>) {
   return (
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
@@ -42,11 +34,12 @@ function DialogOverlay({
         "fixed inset-0 isolate z-50 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
         className
       )}
-      {...props} />
+      {...props}
+    />
   );
 }
 
-const dialogContentSizeClasses = {
+const dialogContentSizeClasses: Record<string, string> = {
   sm: "sm:max-w-sm",
   default: "sm:max-w-sm",
   md: "sm:max-w-md",
@@ -61,13 +54,18 @@ const dialogContentSizeClasses = {
   full: "sm:max-w-[calc(100%-2rem)]",
 };
 
+interface DialogContentProps extends React.ComponentProps<typeof DialogPrimitive.Content> {
+  showCloseButton?: boolean;
+  size?: keyof typeof dialogContentSizeClasses;
+}
+
 function DialogContent({
-  className = undefined,
+  className,
   children,
   showCloseButton = true,
   size = "default",
   ...props
-}) {
+}: DialogContentProps) {
   const sizeClass = dialogContentSizeClasses[size] ?? dialogContentSizeClasses.default;
   return (
     <DialogPortal>
@@ -79,11 +77,12 @@ function DialogContent({
           sizeClass,
           className
         )}
-        {...props}>
+        {...props}
+      >
         {children}
         {showCloseButton && (
           <DialogPrimitive.Close data-slot="dialog-close" asChild>
-            <Button variant="ghost" className="absolute top-2 right-2" size="icon-sm">
+            <Button variant="ghost" className="absolute top-2 right-2 h-7 w-7" size="icon">
               <XIcon />
               <span className="sr-only">Close</span>
             </Button>
@@ -94,24 +93,21 @@ function DialogContent({
   );
 }
 
-function DialogHeader({
-  className = undefined,
-  ...props
-}) {
+function DialogHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       data-slot="dialog-header"
       className={cn("flex flex-col gap-2", className)}
-      {...props} />
+      {...props}
+    />
   );
 }
 
-function DialogFooter({
-  className = undefined,
-  showCloseButton = false,
-  children,
-  ...props
-}) {
+interface DialogFooterProps extends React.HTMLAttributes<HTMLDivElement> {
+  showCloseButton?: boolean;
+}
+
+function DialogFooter({ className, showCloseButton = false, children, ...props }: DialogFooterProps) {
   return (
     <div
       data-slot="dialog-footer"
@@ -119,7 +115,8 @@ function DialogFooter({
         "-mx-4 -mb-4 flex flex-col-reverse gap-2 rounded-b-xl border-t bg-muted/50 p-4 sm:flex-row sm:justify-end",
         className
       )}
-      {...props}>
+      {...props}
+    >
       {children}
       {showCloseButton && (
         <DialogPrimitive.Close asChild>
@@ -131,21 +128,22 @@ function DialogFooter({
 }
 
 function DialogTitle({
-  className = undefined,
+  className,
   ...props
-}) {
+}: React.ComponentProps<typeof DialogPrimitive.Title>) {
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
       className={cn("text-base leading-none font-medium", className)}
-      {...props} />
+      {...props}
+    />
   );
 }
 
 function DialogDescription({
-  className = undefined,
+  className,
   ...props
-}) {
+}: React.ComponentProps<typeof DialogPrimitive.Description>) {
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"
@@ -153,7 +151,8 @@ function DialogDescription({
         "text-sm text-muted-foreground *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground",
         className
       )}
-      {...props} />
+      {...props}
+    />
   );
 }
 

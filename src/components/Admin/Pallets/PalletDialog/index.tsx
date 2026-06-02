@@ -8,8 +8,21 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 
 import { usePallet } from '@/hooks/usePallet';
 import type { PalletState } from '@/hooks/pallets/palletHelpers';
-import PalletView from './PalletView';
+import type { ComponentType } from 'react';
+import PalletViewJS from './PalletView';
 import { useSession } from 'next-auth/react';
+
+// PalletView is a .js file; cast to proper TypeScript types
+const PalletView = PalletViewJS as ComponentType<{
+  palletId: string | number | null;
+  onChange: (...args: unknown[]) => unknown;
+  initialStoreId?: string | number | null;
+  initialOrderId?: string | number | null;
+  wrappedInDialog?: boolean;
+  onSaveTemporal?: ((pallet: PalletState) => void) | null;
+  initialPallet?: PalletState | null;
+  readOnly?: boolean;
+}>;
 import { isExternalActor } from '@/lib/auth/actor';
 
 interface PalletDialogProps {
@@ -51,7 +64,7 @@ export default function PalletDialog({
     initialPallet,
   });
 
-  const receptionId = temporalPallet?.receptionId;
+  const receptionId = temporalPallet?.receptionId as string | number | null | undefined;
   const belongsToReception = receptionId !== null && receptionId !== undefined;
 
   const handleOnClickClose = () => {

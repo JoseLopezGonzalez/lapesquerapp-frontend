@@ -32,7 +32,11 @@ export default function PositionSlideover({ onClose, position = 'A5' }: Position
     getPosition,
   } = useStoreContext();
 
-  const pallets = getPositionPallets(selectedPosition);
+  const pallets = getPositionPallets(selectedPosition) as Array<{
+    id: string | number;
+    lots: string[];
+    [key: string]: unknown;
+  }>;
   const positionData = getPosition(selectedPosition);
 
   const handleOnClickAddElement = () => {
