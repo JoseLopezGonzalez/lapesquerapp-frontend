@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
 interface PalletCardStackProps {
@@ -19,7 +19,7 @@ interface CardPresentation {
   pointerEvents: 'auto' | 'none';
 }
 
-const MOBILE_PRESET: Record<string, Omit<CardPresentation, 'pointerEvents'>> = {
+const DECK_PRESET: Record<string, Omit<CardPresentation, 'pointerEvents'>> = {
   '-2': { x: -52, y: 24, scale: 0.88, rotate: -3, opacity: 0.35, zIndex: 10 },
   '-1': { x: -26, y: 12, scale: 0.94, rotate: -1.5, opacity: 0.72, zIndex: 20 },
   '0': { x: 0, y: 0, scale: 1, rotate: 0, opacity: 1, zIndex: 30 },
@@ -28,19 +28,18 @@ const MOBILE_PRESET: Record<string, Omit<CardPresentation, 'pointerEvents'>> = {
 };
 
 function getPresentation(offset: number): CardPresentation | null {
-  const key = String(offset);
-  const preset = MOBILE_PRESET[key];
+  const preset = DECK_PRESET[String(offset)];
   if (!preset) return null;
-  return {
-    ...preset,
-    pointerEvents: offset === 0 ? 'auto' : 'none',
-  };
+  return { ...preset, pointerEvents: offset === 0 ? 'auto' : 'none' };
 }
 
 export function PalletCardStack({ children, label, className }: PalletCardStackProps) {
   const [activeIndex, setActiveIndex] = useState(0);
+  // undefined = not yet measured (use auto height via ghost in flow)
+  const [containerHeight, setContainerHeight] = useState<number | undefined>(undefined);
   const touchStartX = useRef(0);
   const touchDelta = useRef(0);
+  const ghostRef = useRef<HTMLDivElement>(null);
   const count = children.length;
 
   const goTo = useCallback(
@@ -48,7 +47,26 @@ export function PalletCardStack({ children, label, className }: PalletCardStackP
     [count]
   );
 
+  // ResizeObserver tracks the active card's rendered height via the ghost element.
+  // When activeIndex changes React re-renders the ghost with new content → observer
+  // fires with the new height → state update → CSS height transition animates.
+  useEffect(() => {
+    const el = ghostRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => {
+      const h = entries[0]?.contentRect.height;
+      if (h) setContainerHeight(Math.ceil(h));
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   if (count === 0) return null;
+
+  // After first measurement the ghost moves to absolute so it doesn't interfere
+  // with the explicitly-sized container. Before measurement it stays in flow so
+  // the container has a natural height (no flash of collapsed content).
+  const ghostIsAbsolute = containerHeight !== undefined;
 
   return (
     <div
@@ -81,11 +99,32 @@ export function PalletCardStack({ children, label, className }: PalletCardStackP
         </div>
       )}
 
-      {/* Stage */}
-      <div className="relative isolate overflow-hidden px-8 pt-2 pb-4 [perspective:1200px]">
-        <div className="relative mx-auto w-full max-w-[480px]">
-          {/* Ghost: invisible active card in normal flow → container auto-height */}
-          <div className="pointer-events-none invisible" aria-hidden="true">
+      {/*
+       * Stage: no overflow-hidden so cards aren't clipped while height animates.
+       * pb-8 provides room for the translateY(24px) of offset ±2 cards.
+       * px-8 gives lateral breathing space for the side-card peek effect.
+       */}
+      <div className="relative isolate px-8 pt-2 pb-8">
+        <div
+          className="relative mx-auto w-full max-w-[480px]"
+          style={{
+            height: containerHeight ?? 'auto',
+            // Only apply transition after the first measurement so the initial
+            // render snaps to the correct height without an unwanted animation.
+            transition: ghostIsAbsolute ? 'height 480ms cubic-bezier(0.22,1,0.36,1)' : undefined,
+          }}
+        >
+          {/* Ghost: measures the active card height for the ResizeObserver.
+              In normal flow before first measurement → provides auto height.
+              Absolute thereafter → height is driven by explicit inline style. */}
+          <div
+            ref={ghostRef}
+            className={cn(
+              'pointer-events-none invisible w-full',
+              ghostIsAbsolute && 'absolute inset-x-0 top-0'
+            )}
+            aria-hidden="true"
+          >
             {children[activeIndex]}
           </div>
 
