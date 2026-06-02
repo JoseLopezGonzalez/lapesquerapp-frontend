@@ -1,7 +1,6 @@
 'use client';
 
 import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
@@ -34,14 +33,6 @@ interface MobileStoreListViewProps {
   onLoadMore: () => void;
 }
 
-function OccupancyBadge({ status }: { status: 'low' | 'medium' | 'high' }) {
-  if (status === 'low') return <Badge className="bg-green-500 text-white text-[10px]">Libre</Badge>;
-  if (status === 'medium')
-    return <Badge className="bg-yellow-500 text-white text-[10px]">Medio</Badge>;
-  return (
-    <Badge className="animate-pulse bg-red-600 text-white text-[10px]">Lleno</Badge>
-  );
-}
 
 function MobileStoreCard({
   store,
@@ -98,7 +89,6 @@ function MobileStoreCard({
       <div className="min-w-0 flex-1">
         <div className="mb-1 flex items-center gap-2">
           <span className="truncate text-sm font-semibold">{store.name}</span>
-          {!isGhostStore && <OccupancyBadge status={occupancyStatus} />}
         </div>
 
         {isGhostStore ? (
