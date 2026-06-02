@@ -1,7 +1,7 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
 import {
@@ -137,6 +137,24 @@ export function MobileStoreListView({
   onSelectStore,
   onLoadMore,
 }: MobileStoreListViewProps) {
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!hasMoreStores || loadingMore) return;
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) onLoadMore();
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMoreStores, loadingMore, onLoadMore]);
+
   if (!stores || stores.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-2 p-8 text-center">
@@ -157,24 +175,10 @@ export function MobileStoreListView({
         />
       ))}
 
-      {/* Load more */}
-      {hasMoreStores && (
-        <Button
-          variant="outline"
-          className="mt-1 w-full"
-          onClick={onLoadMore}
-          disabled={loadingMore}
-        >
-          {loadingMore ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Cargando…
-            </>
-          ) : (
-            'Ver más almacenes'
-          )}
-        </Button>
-      )}
+      {/* Sentinel de infinite scroll */}
+      <div ref={sentinelRef} className="flex h-10 items-center justify-center">
+        {loadingMore && <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />}
+      </div>
     </div>
   );
 }
