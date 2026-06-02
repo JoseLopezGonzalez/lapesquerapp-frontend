@@ -6,7 +6,8 @@ import Link from 'next/link';
 import { ExternalLink, Package } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-import { usePallet, type PalletState } from '@/hooks/usePallet';
+import { usePallet } from '@/hooks/usePallet';
+import type { PalletState } from '@/hooks/pallets/palletHelpers';
 import PalletView from './PalletView';
 import { useSession } from 'next-auth/react';
 import { isExternalActor } from '@/lib/auth/actor';
