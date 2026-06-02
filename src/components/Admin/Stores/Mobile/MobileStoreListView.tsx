@@ -9,16 +9,12 @@ import {
   ChevronRight,
   Loader2,
   Package,
-  Plus,
   Sparkles,
   ThermometerSnowflake,
 } from 'lucide-react';
 import { TbTruckLoading } from 'react-icons/tb';
 import { REGISTERED_PALLETS_STORE_ID } from '@/hooks/useStores';
 import { cn } from '@/lib/utils';
-import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
-import { isExternalActor } from '@/lib/auth/actor';
 
 interface Store {
   id: string | number;
@@ -151,30 +147,11 @@ export function MobileStoreListView({
   onSelectStore,
   onLoadMore,
 }: MobileStoreListViewProps) {
-  const { data: session } = useSession();
-  const router = useRouter();
-  const externalActor = isExternalActor(session?.user);
-
-  const realStores = stores.filter((s) => s.id !== REGISTERED_PALLETS_STORE_ID);
-
   if (!stores || stores.length === 0) {
     return (
-      <div className="flex flex-col gap-3 p-4">
-        {!externalActor && (
-          <div
-            role="button"
-            onClick={() => router.push('/admin/stores/create')}
-            className="border-muted-foreground/25 hover:border-primary hover:bg-primary/5 flex w-full cursor-pointer items-center justify-center gap-3 rounded-xl border-2 border-dashed p-6 transition-colors"
-          >
-            <div className="border-primary/20 bg-primary/10 flex h-10 w-10 items-center justify-center rounded-full border">
-              <Plus className="text-primary h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-sm font-medium">Crear almacén</p>
-              <p className="text-muted-foreground text-xs">Añade tu primer almacén</p>
-            </div>
-          </div>
-        )}
+      <div className="flex flex-col items-center justify-center gap-2 p-8 text-center">
+        <p className="text-sm font-medium">Sin almacenes</p>
+        <p className="text-muted-foreground text-xs">No hay almacenes disponibles.</p>
       </div>
     );
   }
@@ -189,20 +166,6 @@ export function MobileStoreListView({
           onClick={() => onSelectStore(store.id)}
         />
       ))}
-
-      {/* Crear almacén — solo si no es externo y hay almacenes */}
-      {realStores.length > 0 && !externalActor && (
-        <div
-          role="button"
-          onClick={() => router.push('/admin/stores/create')}
-          className="border-muted-foreground/25 hover:border-primary hover:bg-primary/5 flex w-full cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed p-4 transition-colors"
-        >
-          <div className="border-primary/20 bg-primary/10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border">
-            <Plus className="text-primary h-4 w-4" />
-          </div>
-          <span className="text-sm font-medium">Nuevo almacén</span>
-        </div>
-      )}
 
       {/* Load more */}
       {hasMoreStores && (

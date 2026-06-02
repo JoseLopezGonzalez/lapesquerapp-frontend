@@ -86,7 +86,7 @@ export default function UnallocatedPositionSlideover() {
   return (
     <Sheet open={open} onOpenChange={closeUnallocatedPositionSlideover}>
       {/*  <SheetTrigger>Open</SheetTrigger> */}
-      <SheetContent className="flex h-full w-[400px] flex-col sm:w-[900px] sm:min-w-[430px]">
+      <SheetContent className="flex h-full w-full flex-col sm:w-[900px] sm:min-w-[430px]">
         <SheetHeader>
           <SheetTitle>Elementos sin ubicar</SheetTitle>
           <SheetDescription>Detalles de la posición seleccionada</SheetDescription>

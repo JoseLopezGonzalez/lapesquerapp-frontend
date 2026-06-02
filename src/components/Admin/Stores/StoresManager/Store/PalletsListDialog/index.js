@@ -156,7 +156,10 @@ export function PalletsListDialog() {
         </Button>
         {/* <Button variant="outline">Palets</Button> */}
       </DialogTrigger>
-      <DialogContent size="6xl">
+      <DialogContent
+        size="6xl"
+        className="max-sm:top-0 max-sm:left-0 max-sm:h-dvh max-sm:max-h-dvh max-sm:w-full max-sm:max-w-full max-sm:translate-x-0 max-sm:translate-y-0 max-sm:overflow-y-auto max-sm:rounded-none"
+      >
         <DialogHeader>
           <DialogTitle>Palets</DialogTitle>
         </DialogHeader>
