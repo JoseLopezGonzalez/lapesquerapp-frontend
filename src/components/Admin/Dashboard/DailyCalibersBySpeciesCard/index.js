@@ -9,14 +9,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import { Combobox } from '@/components/Shadcn/Combobox';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { RadialBar, RadialBarChart } from 'recharts';
@@ -35,12 +29,28 @@ const CHART_COLORS = [
   'var(--chart-5)',
 ];
 
+const SPECIES_ALL_OPTION = {
+  value: 'all',
+  label: 'Todas las especies',
+};
+
 export function DailyCalibersBySpeciesCard() {
   const [date, setDate] = useState(todayYmd);
   const [speciesId, setSpeciesId] = useState('all');
 
   const { data: speciesOptions = [], isLoading: speciesLoading } = useSpeciesOptions();
   const { data, isLoading, error } = useDailyCalibersBySpecies(date, speciesId);
+
+  const speciesComboboxOptions = useMemo(
+    () => [
+      SPECIES_ALL_OPTION,
+      ...speciesOptions.map((opt) => ({
+        value: String(opt.id),
+        label: opt.name,
+      })),
+    ],
+    [speciesOptions]
+  );
 
   const totalKg = data?.total_weight_kg ?? 0;
   const calibers = data?.calibers ?? [];
@@ -108,19 +118,17 @@ export function DailyCalibersBySpeciesCard() {
           </div>
         </div>
         <div className="flex w-full flex-row gap-2">
-          <Select value={speciesId} onValueChange={setSpeciesId} className="min-w-0 flex-1">
-            <SelectTrigger className="h-10">
-              <SelectValue placeholder="Seleccionar especie" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas las especies</SelectItem>
-              {speciesOptions.map((opt) => (
-                <SelectItem key={opt.id} value={String(opt.id)}>
-                  {opt.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="min-w-0 flex-1">
+            <Combobox
+              options={speciesComboboxOptions}
+              placeholder="Seleccionar especie"
+              searchPlaceholder="Buscar especie..."
+              notFoundMessage="No se encontraron especies"
+              value={speciesId}
+              onChange={(value) => setSpeciesId(value || 'all')}
+              className="h-10"
+            />
+          </div>
           <Input
             type="date"
             value={date}

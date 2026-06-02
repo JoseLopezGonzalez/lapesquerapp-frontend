@@ -1,7 +1,7 @@
 'use client';
 
 import { notify } from '@/lib/notifications';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { SearchX } from 'lucide-react';
 import {
   Bar,
@@ -33,6 +33,7 @@ import {
   formatDecimalCurrency,
   formatDecimalWeight,
 } from '@/helpers/formats/numbers/formatNumbers';
+import { Combobox } from '@/components/Shadcn/Combobox';
 import { useSpeciesOptions } from '@/hooks/useSpeciesOptions';
 import { useOrderRankingStats } from '@/hooks/useOrdersStats';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -45,6 +46,11 @@ import { PiMicrosoftExcelLogoFill } from 'react-icons/pi';
 const initialDateRange = {
   from: actualYearRange.from,
   to: actualYearRange.to,
+};
+
+const SPECIES_ALL_OPTION = {
+  value: 'all',
+  label: 'Todas las especies',
 };
 
 export function OrderRankingChart() {
@@ -81,6 +87,17 @@ export function OrderRankingChart() {
       formatter: formatDecimalWeight,
     },
   }[valueType];
+
+  const speciesComboboxOptions = useMemo(
+    () => [
+      SPECIES_ALL_OPTION,
+      ...speciesOptions.map((opt) => ({
+        value: String(opt.id),
+        label: opt.name,
+      })),
+    ],
+    [speciesOptions]
+  );
 
   const handleExportToExcel = async () => {
     if (fullData.length === 0) {
@@ -176,19 +193,15 @@ export function OrderRankingChart() {
           <div className="w-full min-w-0">
             <DateRangePicker dateRange={range} onChange={setRange} />
           </div>
-          <Select value={speciesId} onValueChange={setSpeciesId}>
-            <SelectTrigger className="w-full min-w-0">
-              <SelectValue placeholder="Todas las especies" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas las especies</SelectItem>
-              {speciesOptions.map((option) => (
-                <SelectItem key={option.id} value={option.id}>
-                  {option.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Combobox
+            options={speciesComboboxOptions}
+            placeholder="Todas las especies"
+            searchPlaceholder="Buscar especie..."
+            notFoundMessage="No se encontraron especies"
+            value={speciesId}
+            onChange={(value) => setSpeciesId(value || 'all')}
+            className="w-full min-w-0"
+          />
         </div>
       </CardHeader>
 

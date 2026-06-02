@@ -19,6 +19,7 @@ import {
 import { AreaChart, Area, CartesianGrid, XAxis } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Combobox } from '@/components/Shadcn/Combobox';
 import { useSpeciesOptions } from '@/hooks/useSpeciesOptions';
 import { useProductCategoryOptions } from '@/hooks/useProductOptions';
 import { useProductFamilyOptions } from '@/hooks/useProductOptions';
@@ -34,6 +35,11 @@ import { DateRangePicker } from '@/components/ui/dateRangePicker';
 const initialDateRange = {
   from: actualYearRange.from,
   to: actualYearRange.to,
+};
+
+const SPECIES_ALL_OPTION = {
+  value: 'all',
+  label: 'Todas las especies',
 };
 
 export function SalesChart() {
@@ -66,6 +72,17 @@ export function SalesChart() {
     return chartData.reduce((sum, item) => sum + (item.value || 0), 0);
   }, [chartData, unit]);
 
+  const speciesComboboxOptions = useMemo(
+    () => [
+      SPECIES_ALL_OPTION,
+      ...speciesOptions.map((opt) => ({
+        value: String(opt.id),
+        label: opt.name,
+      })),
+    ],
+    [speciesOptions]
+  );
+
   return (
     <Card className="box-border w-full max-w-full min-w-0 overflow-hidden">
       <CardHeader className="w-full max-w-full min-w-0 space-y-4 pb-2">
@@ -79,7 +96,7 @@ export function SalesChart() {
 
       <CardContent className="w-full max-w-full min-w-0 space-y-4 overflow-x-hidden">
         <Tabs onValueChange={setGroupBy} value={groupBy}>
-          <TabsList className="w-auto">
+          <TabsList>
             <TabsTrigger value="day">Día</TabsTrigger>
             <TabsTrigger value="week">Semana</TabsTrigger>
             <TabsTrigger value="month">Mes</TabsTrigger>
@@ -93,24 +110,16 @@ export function SalesChart() {
             </div>
           </div>
           <div className="3xl:col-span-2 box-border w-full min-w-0 md:col-span-6">
-            <Select
+            <Combobox
+              options={speciesComboboxOptions}
+              placeholder="Todas las especies"
+              searchPlaceholder="Buscar especie..."
+              notFoundMessage="No se encontraron especies"
               value={speciesId}
-              onValueChange={setSpeciesId}
-              className="box-border w-full"
-              disabled={speciesLoading}
-            >
-              <SelectTrigger className="box-border h-12 w-full max-w-full min-w-0 md:h-auto">
-                <SelectValue placeholder="Seleccionar especie" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas las especies</SelectItem>
-                {speciesOptions.map((option) => (
-                  <SelectItem key={option.id} value={option.id}>
-                    {option.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              onChange={(value) => setSpeciesId(value || 'all')}
+              loading={speciesLoading}
+              className="box-border h-12 w-full max-w-full min-w-0 md:h-auto"
+            />
           </div>
           <div className="3xl:col-span-3 box-border w-full min-w-0 md:col-span-3">
             <Select

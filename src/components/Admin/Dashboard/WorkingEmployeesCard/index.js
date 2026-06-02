@@ -4,19 +4,18 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePunchesDashboard } from '@/hooks/usePunches';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Users,
-  Clock,
   UserCheck,
   LogIn,
   LogOut,
-  Coffee,
   PlayCircle,
   PauseCircle,
   XCircle,
   Activity,
   AlertTriangle,
-  Calendar,
+  Info,
 } from 'lucide-react';
 import { formatDateHour } from '@/helpers/formats/dates/formatDates';
 
@@ -53,7 +52,6 @@ export function WorkingEmployeesCard() {
 
   const statistics = data?.statistics || {};
   const allEmployees = data?.allEmployees || [];
-  const workingEmployees = data?.workingEmployees || [];
   const recentPunches = data?.recentPunches || [];
   const errors = data?.errors || {};
   const missingPunches = errors?.missingPunches || [];
@@ -62,7 +60,6 @@ export function WorkingEmployeesCard() {
   const totalEmployees = statistics.totalEmployees || 0;
   const totalEntriesToday = statistics.totalEntriesToday || 0;
   const totalExitsToday = statistics.totalExitsToday || 0;
-  const entriesByDevice = statistics.entriesByDevice || {};
 
   const formatTime = (timestamp) => {
     if (!timestamp) return '';
@@ -87,27 +84,23 @@ export function WorkingEmployeesCard() {
     const statusConfig = {
       trabajando: {
         label: 'Trabajando',
-        variant: 'default',
         icon: PlayCircle,
-        className: 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20',
+        className: 'bg-primary/10 text-primary border-primary/20',
       },
       descansando: {
         label: 'Descansando',
-        variant: 'secondary',
-        icon: Coffee,
-        className: 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20',
+        icon: PauseCircle,
+        className: 'bg-muted text-muted-foreground border-border',
       },
       no_ha_fichado: {
         label: 'No ha fichado',
-        variant: 'outline',
         icon: XCircle,
-        className: 'bg-gray-500/10 text-gray-700 dark:text-gray-400 border-gray-500/20',
+        className: 'bg-muted text-muted-foreground border-border',
       },
       ha_finalizado: {
         label: 'Finalizado',
-        variant: 'outline',
         icon: PauseCircle,
-        className: 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20',
+        className: 'bg-muted text-muted-foreground border-border',
       },
     };
     return statusConfig[status] || statusConfig.no_ha_fichado;
@@ -116,13 +109,18 @@ export function WorkingEmployeesCard() {
   const workingPercentage =
     totalEmployees > 0 ? ((totalWorking / totalEmployees) * 100).toFixed(1) : 0;
 
-  // Agrupar empleados por estado
   const employeesByStatus = {
     trabajando: allEmployees.filter((e) => e.status === 'trabajando'),
     descansando: allEmployees.filter((e) => e.status === 'descansando'),
     ha_finalizado: allEmployees.filter((e) => e.status === 'ha_finalizado'),
     no_ha_fichado: allEmployees.filter((e) => e.status === 'no_ha_fichado'),
   };
+
+  const otherStatuses = [
+    ...employeesByStatus.descansando,
+    ...employeesByStatus.ha_finalizado,
+    ...employeesByStatus.no_ha_fichado,
+  ];
 
   return (
     <Card className="w-full max-w-full overflow-hidden">
@@ -145,13 +143,10 @@ export function WorkingEmployeesCard() {
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* Estadísticas del día - Mejorado */}
         <div className="grid grid-cols-3 gap-3">
           <div className="bg-muted/50 flex flex-col items-center rounded-lg border p-3">
-            <div className="mb-1.5 flex items-center gap-2">
-              <div className="rounded-md bg-green-500/10 p-1.5">
-                <LogIn className="h-4 w-4 text-green-600 dark:text-green-400" />
-              </div>
+            <div className="mb-1.5 flex items-center gap-1.5">
+              <LogIn className="text-muted-foreground h-3.5 w-3.5" />
               <span className="text-foreground text-lg font-bold">{totalEntriesToday}</span>
             </div>
             <span className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
@@ -159,10 +154,8 @@ export function WorkingEmployeesCard() {
             </span>
           </div>
           <div className="bg-muted/50 flex flex-col items-center rounded-lg border p-3">
-            <div className="mb-1.5 flex items-center gap-2">
-              <div className="rounded-md bg-red-500/10 p-1.5">
-                <LogOut className="h-4 w-4 text-red-600 dark:text-red-400" />
-              </div>
+            <div className="mb-1.5 flex items-center gap-1.5">
+              <LogOut className="text-muted-foreground h-3.5 w-3.5" />
               <span className="text-foreground text-lg font-bold">{totalExitsToday}</span>
             </div>
             <span className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
@@ -170,10 +163,8 @@ export function WorkingEmployeesCard() {
             </span>
           </div>
           <div className="bg-muted/50 flex flex-col items-center rounded-lg border p-3">
-            <div className="mb-1.5 flex items-center gap-2">
-              <div className="bg-primary/10 rounded-md p-1.5">
-                <Activity className="text-primary h-4 w-4" />
-              </div>
+            <div className="mb-1.5 flex items-center gap-1.5">
+              <Activity className="text-muted-foreground h-3.5 w-3.5" />
               <span className="text-foreground text-lg font-bold">{workingPercentage}%</span>
             </div>
             <span className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
@@ -182,7 +173,6 @@ export function WorkingEmployeesCard() {
           </div>
         </div>
 
-        {/* Barra de progreso mejorada */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between text-xs">
             <span className="text-muted-foreground font-medium">Tasa de actividad del día</span>
@@ -190,216 +180,123 @@ export function WorkingEmployeesCard() {
           </div>
           <div className="bg-muted h-2.5 w-full overflow-hidden rounded-full">
             <div
-              className="from-primary to-primary/80 h-full bg-gradient-to-r shadow-sm transition-all duration-700 ease-out"
+              className="bg-primary/80 h-full transition-all duration-500 ease-out"
               style={{ width: `${workingPercentage}%` }}
             />
           </div>
         </div>
 
-        {/* Lista de todos los empleados con estados */}
         {allEmployees.length > 0 ? (
           <div className="space-y-4">
-            {/* Trabajando ahora - Diseño mejorado */}
             {employeesByStatus.trabajando.length > 0 && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between border-b pb-1">
                   <div className="flex items-center gap-2">
-                    <PlayCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                    <PlayCircle className="text-primary h-4 w-4" />
                     <span className="text-sm font-semibold">Trabajando ahora</span>
                   </div>
                   <Badge variant="secondary" className="px-2 py-0.5 text-[10px]">
                     {employeesByStatus.trabajando.length}
                   </Badge>
                 </div>
-                <div className="max-h-72 space-y-2 overflow-y-auto pr-1">
-                  {employeesByStatus.trabajando.map((employee) => {
+                <div className="max-h-72 space-y-1.5 overflow-y-auto pr-1">
+                  {employeesByStatus.trabajando.slice(0, 8).map((employee) => {
                     const statusConfig = getStatusBadge(employee.status);
                     const StatusIcon = statusConfig.icon;
                     return (
                       <div
                         key={employee.id}
-                        className="group from-card to-muted/20 hover:from-card hover:to-muted/40 relative rounded-lg border bg-gradient-to-br p-3 shadow-sm transition-all duration-200 hover:shadow"
+                        className="bg-muted/30 flex items-center justify-between rounded-md border p-2.5"
                       >
-                        {/* Header principal */}
-                        <div className="mb-2 flex items-center justify-between gap-3">
-                          <div className="flex min-w-0 flex-1 items-center gap-2">
-                            <div className="from-primary/20 to-primary/10 border-primary/20 flex-shrink-0 rounded-lg border bg-gradient-to-br p-1.5">
-                              <Users className="text-primary h-3.5 w-3.5" />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <span className="text-foreground block truncate text-sm font-semibold">
-                                {employee.name}
-                              </span>
-                              {employee.currentEntryTimestamp && (
-                                <span className="text-muted-foreground mt-0.5 flex items-center gap-1 text-[10px]">
-                                  <LogIn className="h-2.5 w-2.5 text-green-600 dark:text-green-400" />
-                                  Entrada: {formatTime(employee.currentEntryTimestamp)}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex flex-shrink-0 flex-col items-end gap-1">
-                            <Badge
-                              variant="secondary"
-                              className="bg-primary/10 text-primary border-primary/20 px-2.5 py-1 text-xs font-bold"
-                            >
-                              {employee.todayTotalHoursFormatted || '0h 0m'}
-                            </Badge>
-                            {employee.currentSessionFormatted && (
-                              <span className="text-primary flex items-center gap-1 text-[10px] font-medium">
-                                <Clock className="h-2.5 w-2.5" />
-                                {employee.currentSessionFormatted}
-                              </span>
-                            )}
-                          </div>
+                        <div className="flex min-w-0 flex-1 items-center gap-2">
+                          <span className="truncate text-sm font-medium">{employee.name}</span>
+                          <Badge
+                            variant="outline"
+                            className={`gap-1 px-1.5 py-0.5 text-[10px] ${statusConfig.className}`}
+                          >
+                            <StatusIcon className="h-3 w-3" />
+                            {statusConfig.label}
+                          </Badge>
                         </div>
-
-                        {/* Estadísticas en grid */}
-                        <div className="mb-2 grid grid-cols-3 gap-2">
-                          <div className="bg-muted/50 flex flex-col items-center rounded-md border p-1.5">
-                            <span className="text-muted-foreground mb-0.5 text-[9px] tracking-wide uppercase">
-                              Sesiones
-                            </span>
-                            <span className="text-foreground text-xs font-bold">
-                              {employee.completeSessionsCount || 0}
-                            </span>
-                          </div>
-                          {employee.breakTimeFormatted ? (
-                            <div className="bg-muted/50 flex flex-col items-center rounded-md border p-1.5">
-                              <span className="text-muted-foreground mb-0.5 text-[9px] tracking-wide uppercase">
-                                Descanso
-                              </span>
-                              <span className="text-foreground text-xs font-bold">
-                                {employee.breakTimeFormatted}
-                              </span>
-                            </div>
-                          ) : (
-                            <div className="bg-muted/30 flex flex-col items-center rounded-md border border-dashed p-1.5">
-                              <span className="text-muted-foreground mb-0.5 text-[9px] tracking-wide uppercase">
-                                Descanso
-                              </span>
-                              <span className="text-muted-foreground text-xs font-bold">-</span>
-                            </div>
-                          )}
-                          <div className="bg-muted/50 flex flex-col items-center rounded-md border p-1.5">
-                            <span className="text-muted-foreground mb-0.5 text-[9px] tracking-wide uppercase">
-                              Entradas
-                            </span>
-                            <span className="text-foreground text-xs font-bold">
-                              {employee.todayEntriesCount || 0}
-                            </span>
-                          </div>
+                        <div className="ml-2 flex items-center gap-2">
+                          <span className="text-foreground text-xs font-semibold whitespace-nowrap">
+                            {employee.todayTotalHoursFormatted || '0h'}
+                          </span>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  type="button"
+                                  className="text-muted-foreground hover:text-foreground inline-flex"
+                                  aria-label="Ver detalles del trabajador"
+                                >
+                                  <Info className="h-3.5 w-3.5" />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent className="max-w-xs">
+                                <div className="space-y-1 text-xs">
+                                  <p className="font-semibold">{employee.name}</p>
+                                  <p>Entradas hoy: {employee.todayEntriesCount || 0}</p>
+                                  <p>Sesiones: {employee.completeSessionsCount || 0}</p>
+                                  {employee.currentEntryTimestamp && (
+                                    <p>Última entrada: {formatTime(employee.currentEntryTimestamp)}</p>
+                                  )}
+                                  {employee.currentSessionFormatted && (
+                                    <p>Sesión actual: {employee.currentSessionFormatted}</p>
+                                  )}
+                                  {employee.breakTimeFormatted && (
+                                    <p>Descanso: {employee.breakTimeFormatted}</p>
+                                  )}
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         </div>
-
-                        {/* Barra de progreso mejorada */}
-                        {employee.todayTotalHours > 0 && (
-                          <div className="mt-2">
-                            {(() => {
-                              const hours = employee.todayTotalHours || 0;
-                              const percentage = Math.round((hours / 8) * 100);
-                              const barWidth = Math.min(percentage, 100);
-
-                              // Determinar color según horas
-                              let barColorClass = '';
-                              if (hours <= 8) {
-                                // Gris hasta 8h (normal)
-                                barColorClass =
-                                  'bg-gradient-to-r from-gray-500 via-gray-500/90 to-gray-500/80';
-                              } else if (hours <= 10) {
-                                // Amarillo de 8-10h
-                                barColorClass =
-                                  'bg-gradient-to-r from-yellow-500 via-yellow-500/90 to-yellow-500/80';
-                              } else {
-                                // Rojo >10h
-                                barColorClass =
-                                  'bg-gradient-to-r from-red-500 via-red-500/90 to-red-500/80';
-                              }
-
-                              return (
-                                <>
-                                  <div className="mb-1 flex items-center justify-between">
-                                    <span className="text-muted-foreground text-[10px] font-medium">
-                                      Progreso del día
-                                    </span>
-                                    <span className="text-foreground text-[10px] font-semibold">
-                                      {percentage}%
-                                    </span>
-                                  </div>
-                                  <div className="bg-muted h-2 w-full overflow-hidden rounded-full shadow-inner">
-                                    <div
-                                      className={`${barColorClass} h-full shadow-sm transition-all duration-700 ease-out`}
-                                      style={{
-                                        width: `${barWidth}%`,
-                                      }}
-                                    />
-                                  </div>
-                                </>
-                              );
-                            })()}
-                          </div>
-                        )}
                       </div>
                     );
                   })}
+                  {employeesByStatus.trabajando.length > 8 && (
+                    <div className="text-muted-foreground pt-1 text-center text-[10px] font-medium">
+                      +{employeesByStatus.trabajando.length - 8} más
+                    </div>
+                  )}
                 </div>
               </div>
             )}
 
-            {/* Otros estados - Diseño mejorado */}
-            {(employeesByStatus.descansando.length > 0 ||
-              employeesByStatus.ha_finalizado.length > 0 ||
-              employeesByStatus.no_ha_fichado.length > 0) && (
+            {otherStatuses.length > 0 && (
               <div className="space-y-2.5 border-t pt-3">
                 <div className="flex items-center gap-2 pb-1">
                   <Activity className="text-muted-foreground h-3.5 w-3.5" />
                   <span className="text-sm font-semibold">Otros estados</span>
                 </div>
                 <div className="max-h-40 space-y-1.5 overflow-y-auto">
-                  {[
-                    ...employeesByStatus.descansando,
-                    ...employeesByStatus.ha_finalizado,
-                    ...employeesByStatus.no_ha_fichado,
-                  ]
-                    .slice(0, 6)
-                    .map((employee) => {
-                      const statusConfig = getStatusBadge(employee.status);
-                      const StatusIcon = statusConfig.icon;
-                      return (
-                        <div
-                          key={employee.id}
-                          className="bg-muted/30 hover:bg-muted/50 flex items-center justify-between rounded-md border p-2 text-xs transition-colors"
-                        >
-                          <div className="flex min-w-0 flex-1 items-center gap-2">
-                            <StatusIcon className="h-3.5 w-3.5 flex-shrink-0" />
-                            <span className="truncate font-medium">{employee.name}</span>
-                          </div>
-                          <div className="ml-2 flex items-center gap-2">
-                            {employee.todayTotalHoursFormatted && (
-                              <span className="text-muted-foreground font-mono text-[10px]">
-                                {employee.todayTotalHoursFormatted}
-                              </span>
-                            )}
-                            <Badge
-                              variant="outline"
-                              className={`px-1.5 py-0.5 text-[10px] ${statusConfig.className}`}
-                            >
-                              {statusConfig.label}
-                            </Badge>
-                          </div>
+                  {otherStatuses.slice(0, 6).map((employee) => {
+                    const statusConfig = getStatusBadge(employee.status);
+                    const StatusIcon = statusConfig.icon;
+                    return (
+                      <div
+                        key={employee.id}
+                        className="bg-muted/30 flex items-center justify-between rounded-md border p-2 text-xs"
+                      >
+                        <div className="flex min-w-0 flex-1 items-center gap-2">
+                          <StatusIcon className="text-muted-foreground h-3.5 w-3.5 flex-shrink-0" />
+                          <span className="truncate font-medium">{employee.name}</span>
                         </div>
-                      );
-                    })}
-                  {employeesByStatus.descansando.length +
-                    employeesByStatus.ha_finalizado.length +
-                    employeesByStatus.no_ha_fichado.length >
-                    6 && (
+                        <div className="ml-2 flex items-center gap-2">
+                          <span className="text-muted-foreground font-mono text-[10px]">
+                            {employee.todayTotalHoursFormatted || '0h'}
+                          </span>
+                          <Badge variant="outline" className={`px-1.5 py-0.5 text-[10px] ${statusConfig.className}`}>
+                            {statusConfig.label}
+                          </Badge>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {otherStatuses.length > 6 && (
                     <div className="text-muted-foreground pt-1 text-center text-[10px] font-medium">
-                      +
-                      {employeesByStatus.descansando.length +
-                        employeesByStatus.ha_finalizado.length +
-                        employeesByStatus.no_ha_fichado.length -
-                        6}{' '}
-                      más
+                      +{otherStatuses.length - 6} más
                     </div>
                   )}
                 </div>
@@ -413,31 +310,26 @@ export function WorkingEmployeesCard() {
           </div>
         )}
 
-        {/* Fichajes recientes - Diseño mejorado */}
         {recentPunches.length > 0 && (
           <div className="space-y-2.5 border-t pt-3">
             <div className="flex items-center justify-between pb-1">
               <div className="flex items-center gap-2">
                 <Activity className="text-muted-foreground h-3.5 w-3.5" />
-                <span className="text-sm font-semibold">Fichajes recientes</span>
+                <span className="text-sm font-semibold">Movimientos recientes</span>
               </div>
               <span className="text-muted-foreground text-[10px] font-medium">Últimos 30 min</span>
             </div>
-            <div className="max-h-36 space-y-1.5 overflow-y-auto">
-              {recentPunches.slice(0, 6).map((punch) => (
+            <div className="max-h-32 space-y-1.5 overflow-y-auto">
+              {recentPunches.slice(0, 4).map((punch) => (
                 <div
                   key={punch.id}
-                  className="bg-muted/30 hover:bg-muted/50 flex items-center justify-between rounded-md border p-2 text-xs transition-colors"
+                  className="bg-muted/30 flex items-center justify-between rounded-md border p-2 text-xs"
                 >
                   <div className="flex min-w-0 flex-1 items-center gap-2">
                     {punch.eventType === 'IN' ? (
-                      <div className="rounded bg-green-500/10 p-1">
-                        <LogIn className="h-3 w-3 text-green-600 dark:text-green-400" />
-                      </div>
+                      <LogIn className="text-muted-foreground h-3.5 w-3.5" />
                     ) : (
-                      <div className="rounded bg-red-500/10 p-1">
-                        <LogOut className="h-3 w-3 text-red-600 dark:text-red-400" />
-                      </div>
+                      <LogOut className="text-muted-foreground h-3.5 w-3.5" />
                     )}
                     <span className="truncate font-medium">{punch.employeeName}</span>
                   </div>
@@ -445,16 +337,26 @@ export function WorkingEmployeesCard() {
                     <span className="text-muted-foreground font-mono text-[10px]">
                       {formatDateTime(punch.timestamp)}
                     </span>
-                    <Badge
-                      variant="outline"
-                      className={`px-1.5 py-0.5 text-[10px] ${
-                        punch.eventType === 'IN'
-                          ? 'border-green-500/20 bg-green-500/10 text-green-700 dark:text-green-400'
-                          : 'border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-400'
-                      }`}
-                    >
-                      {punch.eventType}
-                    </Badge>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            type="button"
+                            className="text-muted-foreground hover:text-foreground inline-flex"
+                            aria-label="Ver detalle del fichaje"
+                          >
+                            <Info className="h-3.5 w-3.5" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <p className="text-xs">
+                            {punch.eventType === 'IN' ? 'Entrada' : 'Salida'} de{' '}
+                            <span className="font-semibold">{punch.employeeName}</span>
+                          </p>
+                          <p className="text-xs">{formatDateHour(punch.timestamp)}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 </div>
               ))}
@@ -462,74 +364,59 @@ export function WorkingEmployeesCard() {
           </div>
         )}
 
-        {/* Incidencias de días anteriores */}
         {missingPunches.length > 0 && (
           <div className="space-y-2.5 border-t pt-3">
             <div className="flex items-center justify-between pb-1">
               <div className="flex items-center gap-2">
-                <AlertTriangle className="h-3.5 w-3.5 text-orange-600 dark:text-orange-400" />
-                <span className="text-sm font-semibold">Incidencias</span>
+                <AlertTriangle className="text-muted-foreground h-3.5 w-3.5" />
+                <span className="text-sm font-semibold">Incidencias abiertas</span>
               </div>
-              <Badge
-                variant="outline"
-                className="border-orange-500/20 bg-orange-500/10 px-2 py-0.5 text-[10px] text-orange-700 dark:text-orange-400"
-              >
+              <Badge variant="outline" className="px-2 py-0.5 text-[10px]">
                 {totalMissingPunches}
               </Badge>
             </div>
-            <div className="max-h-40 space-y-1.5 overflow-y-auto">
-              {missingPunches.map((incident, index) => {
-                const incidentDate = new Date(incident.date);
-                const formattedDate = incidentDate.toLocaleDateString('es-ES', {
-                  day: '2-digit',
-                  month: 'short',
-                });
-
-                return (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between rounded-md border border-orange-500/20 bg-orange-500/5 p-2 text-xs transition-colors hover:bg-orange-500/10"
-                  >
-                    <div className="flex min-w-0 flex-1 items-center gap-2">
-                      <div className="flex-shrink-0 rounded bg-orange-500/20 p-1">
-                        <AlertTriangle className="h-3 w-3 text-orange-600 dark:text-orange-400" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-foreground truncate font-semibold">
-                            {incident.employeeName}
-                          </span>
-                        </div>
-                        <div className="text-muted-foreground mt-0.5 flex items-center gap-2 text-[10px]">
-                          <span className="flex items-center gap-0.5">
-                            <Calendar className="h-2.5 w-2.5" />
-                            {formattedDate}
-                          </span>
-                          {incident.daysAgo !== undefined && (
-                            <span className="text-muted-foreground">
-                              ({incident.daysAgo === 1 ? 'Ayer' : `Hace ${incident.daysAgo} días`})
-                            </span>
-                          )}
-                          {incident.entryTimestamp && (
-                            <span className="flex items-center gap-0.5">
-                              <LogIn className="h-2.5 w-2.5 text-green-600 dark:text-green-400" />
-                              {formatDateTime(incident.entryTimestamp)}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="ml-2 flex flex-shrink-0 flex-col items-end gap-0.5">
-                      {incident.hoursOpen !== undefined && (
-                        <span className="text-[10px] font-semibold text-orange-600 dark:text-orange-400">
-                          {incident.hoursOpen.toFixed(1)}h
-                        </span>
-                      )}
-                      <span className="text-muted-foreground text-[9px]">Sin salida</span>
-                    </div>
+            <div className="max-h-32 space-y-1.5 overflow-y-auto">
+              {missingPunches.slice(0, 3).map((incident, index) => (
+                <div key={index} className="bg-muted/30 flex items-center justify-between rounded-md border p-2 text-xs">
+                  <div className="min-w-0 flex-1">
+                    <span className="text-foreground block truncate font-medium">
+                      {incident.employeeName}
+                    </span>
+                    <span className="text-muted-foreground block text-[10px]">
+                      {new Date(incident.date).toLocaleDateString('es-ES')}
+                    </span>
                   </div>
-                );
-              })}
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          className="text-muted-foreground hover:text-foreground ml-2 inline-flex"
+                          aria-label="Ver detalle de la incidencia"
+                        >
+                          <Info className="h-3.5 w-3.5" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <div className="space-y-1 text-xs">
+                          <p className="font-semibold">{incident.employeeName}</p>
+                          <p>Fecha: {new Date(incident.date).toLocaleDateString('es-ES')}</p>
+                          {incident.daysAgo !== undefined && (
+                            <p>{incident.daysAgo === 1 ? 'Ayer' : `Hace ${incident.daysAgo} días`}</p>
+                          )}
+                          {incident.entryTimestamp && <p>Entrada: {formatDateTime(incident.entryTimestamp)}</p>}
+                          {incident.hoursOpen !== undefined && <p>Sin salida: {incident.hoursOpen.toFixed(1)}h</p>}
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+              ))}
+              {missingPunches.length > 3 && (
+                <div className="text-muted-foreground pt-1 text-center text-[10px] font-medium">
+                  +{missingPunches.length - 3} más
+                </div>
+              )}
             </div>
           </div>
         )}

@@ -97,7 +97,7 @@ export function OrdersProfitabilityTimelineCard() {
         </div>
 
         <Tabs value={granularity} onValueChange={setGranularity}>
-          <TabsList className="w-auto">
+          <TabsList>
             <TabsTrigger value="day">Día</TabsTrigger>
             <TabsTrigger value="week">Semana</TabsTrigger>
             <TabsTrigger value="month">Mes</TabsTrigger>
