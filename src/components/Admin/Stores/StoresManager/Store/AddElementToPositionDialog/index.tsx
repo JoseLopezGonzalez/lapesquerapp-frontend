@@ -27,81 +27,26 @@ import {
   getAvailableNetWeight,
 } from '@/helpers/pallet/boxAvailability';
 
-const availablePallets = [
-  {
-    id: '2001',
-    products: [{ name: 'Pulpo eviscerado congelado en bloque', category: 'Pulpo' }],
-    lotNumbers: ['L-2023-08-01'],
-    netWeight: 245.5,
-    boxCount: 2,
-    location: 'B3',
-  },
-  {
-    id: '2002',
-    products: [{ name: 'Calamar patagónico limpio', category: 'Calamar' }],
-    lotNumbers: ['L-2023-08-02'],
-    netWeight: 180.0,
-    boxCount: 3,
-  },
-  {
-    id: '2003',
-    products: [{ name: 'Merluza fileteada', category: 'Merluza' }],
-    lotNumbers: ['L-2023-08-03'],
-    netWeight: 120.75,
-    boxCount: 4,
-    location: 'C7',
-  },
-  {
-    id: '2004',
-    products: [
-      { name: 'Pulpo cocido refrigerado', category: 'Pulpo', weight: 110.5, boxCount: 2 },
-      { name: 'Calamar limpio', category: 'Calamar', weight: 90.0, boxCount: 1 },
-    ],
-    lotNumbers: ['L-2023-08-04', 'L-2023-08-05'],
-    netWeight: 200.5,
-    boxCount: 3,
-  },
-  {
-    id: '2005',
-    products: [{ name: 'Rape cola', category: 'Rape' }],
-    lotNumbers: ['L-2023-08-06'],
-    netWeight: 95.25,
-    boxCount: 2,
-    location: 'D2',
-  },
-  {
-    id: '2006',
-    products: [
-      { name: 'Pulpo entero congelado IQF', category: 'Pulpo' },
-      { name: 'Pulpo cocido', category: 'Pulpo', weight: 85.5, boxCount: 1 },
-      { name: 'Calamar anillas', category: 'Calamar', weight: 75.0, boxCount: 2 },
-    ],
-    lotNumbers: ['L-2023-08-07', 'L-2023-08-08'],
-    netWeight: 310.0,
-    boxCount: 5,
-  },
-  {
-    id: '2007',
-    products: [{ name: 'Merluza del Cantábrico', category: 'Merluza' }],
-    lotNumbers: ['L-2023-08-09'],
-    netWeight: 175.0,
-    boxCount: 3,
-  },
-  {
-    id: '2008',
-    products: [{ name: 'Pulpo Mauritania', category: 'Pulpo' }],
-    lotNumbers: ['L-2023-08-10'],
-    netWeight: 290.5,
-    boxCount: 2,
-    location: 'A2',
-  },
-];
+interface Pallet {
+  id: string | number;
+  position?: string | null;
+  products?: { name?: string }[];
+  lotNumbers?: string[];
+  location?: string;
+  boxes?: { product?: { id: string | number; name: string }; netWeight?: string | number; lot?: string }[];
+}
 
-export default function AddElementToPosition({ open }) {
+interface PalletInfo {
+  productsSummaryArray: { name: string; netWeight: number; boxCount: number }[];
+  availableBoxCount: number;
+  availableNetWeight: number;
+  hasMultipleProducts: boolean;
+}
+
+export default function AddElementToPosition({ open }: { open: boolean }) {
   const {
     addElementToPositionDialogData,
     closeAddElementToPosition,
-    unlocatedPallets,
     pallets,
     changePalletsPosition,
   } = useStoreContext();
@@ -109,21 +54,21 @@ export default function AddElementToPosition({ open }) {
   const position = addElementToPositionDialogData;
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedPalletIds, setSelectedPalletIds] = useState([]);
+  const [selectedPalletIds, setSelectedPalletIds] = useState<(string | number)[]>([]);
   const [activeTab, setActiveTab] = useState('unlocated');
   const { data: session } = useSession();
   const token = session?.user?.accessToken;
 
   const onSubmit = () => {
     assignPalletsToPosition(position, selectedPalletIds, token)
-      .then((response) => {
+      .then(() => {
         notify.success({ title: 'Pallets ubicados correctamente' });
         setSelectedPalletIds([]);
         setSearchQuery('');
         changePalletsPosition(selectedPalletIds, position);
         closeAddElementToPosition();
       })
-      .catch((error) => {
+      .catch((error: unknown) => {
         console.error('Error al ubicar los pallets:', error);
         notify.error({ title: 'Error al ubicar los pallets' });
       });
@@ -140,16 +85,16 @@ export default function AddElementToPosition({ open }) {
       notify.error({ title: 'Debe seleccionar al menos un pallet para ubicar' });
       return;
     }
-    onSubmit(selectedPalletIds);
+    onSubmit();
   };
 
-  const togglePalletSelection = (palletId) => {
+  const togglePalletSelection = (palletId: string | number) => {
     setSelectedPalletIds((prev) =>
       prev.includes(palletId) ? prev.filter((id) => id !== palletId) : [...prev, palletId]
     );
   };
 
-  const filteredPallets = pallets.filter((pallet) => {
+  const filteredPallets = (pallets as Pallet[]).filter((pallet) => {
     if (activeTab === 'unlocated' && pallet.position) {
       return false;
     }
@@ -175,7 +120,6 @@ export default function AddElementToPosition({ open }) {
     )
       return true;
     if (pallet.location && String(pallet.location).toLowerCase().includes(query)) return true;
-    // Buscar por producto en boxes
     if (
       Array.isArray(pallet.boxes) &&
       pallet.boxes.some((box) =>
@@ -185,7 +129,6 @@ export default function AddElementToPosition({ open }) {
       )
     )
       return true;
-    // Buscar por lote en boxes
     if (
       Array.isArray(pallet.boxes) &&
       pallet.boxes.some((box) =>
@@ -198,11 +141,12 @@ export default function AddElementToPosition({ open }) {
     return false;
   });
 
-  const unlocatedCount = availablePallets.filter((p) => !p.location).length;
-
   return (
     <Dialog open={open} onOpenChange={handleOnClose}>
-      <DialogContent size="lg" className="flex max-h-[90vh] flex-col">
+      <DialogContent
+        size="lg"
+        className="flex max-h-[90vh] flex-col max-sm:top-0 max-sm:left-0 max-sm:h-dvh max-sm:max-h-dvh max-sm:w-full max-sm:max-w-full max-sm:translate-x-0 max-sm:translate-y-0 max-sm:overflow-y-auto max-sm:rounded-none"
+      >
         <DialogHeader>
           <DialogTitle>Seleccionar pallets para posición {position}</DialogTitle>
           <DialogDescription>
@@ -283,34 +227,44 @@ export default function AddElementToPosition({ open }) {
   );
 }
 
-function PalletList({ pallets, selectedPalletIds, togglePalletSelection }) {
+function PalletList({
+  pallets,
+  selectedPalletIds,
+  togglePalletSelection,
+}: {
+  pallets: Pallet[];
+  selectedPalletIds: (string | number)[];
+  togglePalletSelection: (id: string | number) => void;
+}) {
   return (
     <ScrollArea className="h-[50vh] py-3 pr-4">
       <div className="flex flex-col gap-3 py-1">
         {pallets.length > 0 ? (
           pallets.map((pallet) => {
             const isSelected = selectedPalletIds.includes(pallet.id);
-            // Solo contar cajas disponibles
             const availableBoxes = getAvailableBoxes(pallet.boxes || []);
             const availableBoxCount = getAvailableBoxesCount(pallet);
             const availableNetWeight = getAvailableNetWeight(pallet);
 
-            const productsSummary = availableBoxes.reduce((acc, box) => {
-              const product = box.product;
-              if (!acc[product.id]) {
-                acc[product.id] = {
-                  name: product.name,
-                  netWeight: 0,
-                  boxCount: 0,
-                };
-              }
-              acc[product.id].netWeight += Number(box.netWeight);
-              acc[product.id].boxCount += 1;
-              return acc;
-            }, {});
+            const productsSummary = (availableBoxes as { product: { id: string | number; name: string }; netWeight: string | number }[]).reduce(
+              (acc: Record<string | number, { name: string; netWeight: number; boxCount: number }>, box) => {
+                const product = box.product;
+                if (!acc[product.id]) {
+                  acc[product.id] = {
+                    name: product.name,
+                    netWeight: 0,
+                    boxCount: 0,
+                  };
+                }
+                acc[product.id].netWeight += Number(box.netWeight);
+                acc[product.id].boxCount += 1;
+                return acc;
+              },
+              {}
+            );
             const productsSummaryArray = Object.values(productsSummary);
-
             const hasMultipleProducts = productsSummaryArray.length > 1;
+
             return (
               <div
                 key={pallet.id}
@@ -353,15 +307,15 @@ function PalletList({ pallets, selectedPalletIds, togglePalletSelection }) {
                     {productsSummaryArray.map((product, index) => (
                       <div key={index} className="line-clamp-1">
                         {product.name}
-                        {product.netWeight && ` (${product.netWeight.toFixed(1)} kg)`}
-                        {product.boxCount &&
+                        {product.netWeight > 0 && ` (${product.netWeight.toFixed(1)} kg)`}
+                        {product.boxCount > 0 &&
                           ` - ${product.boxCount} ${product.boxCount === 1 ? 'caja' : 'cajas'}`}
                       </div>
                     ))}
                   </div>
 
                   <div className="text-muted-foreground mt-1.5 flex items-center text-xs">
-                    <span>Total: {availableNetWeight.toFixed(1)} kg</span>
+                    <span>Total: {(availableNetWeight as number).toFixed(1)} kg</span>
                     <span className="mx-1.5">|</span>
                     <span>
                       {availableBoxCount} {availableBoxCount === 1 ? 'caja' : 'cajas'}

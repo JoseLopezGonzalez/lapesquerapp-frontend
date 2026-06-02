@@ -41,29 +41,26 @@ export default function MoveMultiplePalletsToStoreDialog() {
   const token = session?.user?.accessToken;
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedStoreValue, setSelectedStoreValue] = useState(null);
-  const [selectedPalletIds, setSelectedPalletIds] = useState(new Set());
+  const [selectedStoreValue, setSelectedStoreValue] = useState<string | number | null>(null);
+  const [selectedPalletIds, setSelectedPalletIds] = useState<Set<string | number>>(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { storeOptions, loading: storesLoading } = useStoresOptions();
 
-  // Obtener todos los pallets del almacén actual
   const allPallets = useMemo(() => {
     return store?.content?.pallets || [];
   }, [store]);
 
-  // Filtrar almacenes según búsqueda
-  const filteredStores = storeOptions.filter((store) =>
-    store.label?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredStores = storeOptions.filter((s: { label?: string }) =>
+    s.label?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Filtrar pallets según búsqueda
   const [palletSearchQuery, setPalletSearchQuery] = useState('');
   const filteredPallets = useMemo(() => {
     if (!palletSearchQuery) return allPallets;
     const query = palletSearchQuery.toLowerCase();
     return allPallets.filter(
-      (pallet) =>
+      (pallet: { id: string | number; lots?: string[] }) =>
         pallet.id.toString().toLowerCase().includes(query) ||
         pallet.lots?.some((lot) => lot.toLowerCase().includes(query))
     );
@@ -77,7 +74,7 @@ export default function MoveMultiplePalletsToStoreDialog() {
     closeMoveMultiplePalletsToStoreDialog();
   };
 
-  const handleTogglePallet = (palletId) => {
+  const handleTogglePallet = (palletId: string | number) => {
     setSelectedPalletIds((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(palletId)) {
@@ -93,7 +90,7 @@ export default function MoveMultiplePalletsToStoreDialog() {
     if (selectedPalletIds.size === filteredPallets.length) {
       setSelectedPalletIds(new Set());
     } else {
-      setSelectedPalletIds(new Set(filteredPallets.map((p) => p.id)));
+      setSelectedPalletIds(new Set(filteredPallets.map((p: { id: string | number }) => p.id)));
     }
   };
 
@@ -124,9 +121,12 @@ export default function MoveMultiplePalletsToStoreDialog() {
         token
       );
 
-      const { moved_count, total_count, errors } = response;
+      const { moved_count, total_count, errors } = response as {
+        moved_count: number;
+        total_count: number;
+        errors?: { pallet_id: number; error: string }[];
+      };
 
-      // Mostrar mensaje de éxito con detalles
       if (moved_count > 0) {
         let desc = `Se movieron ${moved_count} palet(s) correctamente.`;
         if (errors && errors.length > 0) {
@@ -135,7 +135,6 @@ export default function MoveMultiplePalletsToStoreDialog() {
         notify.success({ title: 'Palets movidos', description: desc });
       }
 
-      // Mostrar errores individuales si existen
       if (errors && errors.length > 0) {
         errors.forEach(({ pallet_id, error }) => {
           notify.error({
@@ -145,7 +144,6 @@ export default function MoveMultiplePalletsToStoreDialog() {
         });
       }
 
-      // Actualizar el store
       updateStoreWhenOnMoveMultiplePalletsToStore({
         palletIds: palletIdsArray,
         storeId: Number(selectedStoreValue),
@@ -153,12 +151,12 @@ export default function MoveMultiplePalletsToStoreDialog() {
 
       resetAndClose();
     } catch (error) {
-      // Priorizar userMessage sobre message para mostrar errores en formato natural
+      const err = error as { userMessage?: string; data?: { userMessage?: string }; response?: { data?: { userMessage?: string } }; message?: string };
       const errorMessage =
-        error.userMessage ||
-        error.data?.userMessage ||
-        error.response?.data?.userMessage ||
-        error.message ||
+        err.userMessage ||
+        err.data?.userMessage ||
+        err.response?.data?.userMessage ||
+        err.message ||
         'No se pudieron mover los palets. Intente de nuevo.';
       notify.error({ title: 'Error al mover palets', description: errorMessage });
     } finally {
@@ -166,7 +164,7 @@ export default function MoveMultiplePalletsToStoreDialog() {
     }
   };
 
-  const handleStoreClick = (value) => {
+  const handleStoreClick = (value: string | number) => {
     setSelectedStoreValue((prev) => (prev === value ? null : value));
   };
 
@@ -176,13 +174,12 @@ export default function MoveMultiplePalletsToStoreDialog() {
   const allSelected =
     filteredPallets.length > 0 && selectedPalletIds.size === filteredPallets.length;
 
-  // Función helper para obtener información del pallet
-  const getPalletInfo = (pallet) => {
+  const getPalletInfo = (pallet: { boxes?: unknown[]; [key: string]: unknown }) => {
     const availableBoxes = getAvailableBoxes(pallet.boxes || []);
     const availableBoxCount = getAvailableBoxesCount(pallet);
     const availableNetWeight = getAvailableNetWeight(pallet);
 
-    const productsSummary = availableBoxes.reduce((acc, box) => {
+    const productsSummary = availableBoxes.reduce((acc: Record<string | number, { name: string; netWeight: number; boxCount: number }>, box: { product: { id: string | number; name: string }; netWeight: string | number }) => {
       const product = box.product;
       if (!acc[product.id]) {
         acc[product.id] = {
@@ -208,7 +205,10 @@ export default function MoveMultiplePalletsToStoreDialog() {
 
   return (
     <Dialog open={isOpen} onOpenChange={resetAndClose}>
-      <DialogContent size="7xl" className="flex max-h-[90vh] flex-col overflow-hidden">
+      <DialogContent
+        size="7xl"
+        className="flex max-h-[90vh] flex-col overflow-hidden max-sm:top-0 max-sm:left-0 max-sm:h-dvh max-sm:max-h-dvh max-sm:w-full max-sm:max-w-full max-sm:translate-x-0 max-sm:translate-y-0 max-sm:overflow-y-auto max-sm:rounded-none"
+      >
         <DialogHeader className="shrink-0">
           <DialogTitle>Traspaso masivo de palets</DialogTitle>
           <DialogDescription>
@@ -216,7 +216,7 @@ export default function MoveMultiplePalletsToStoreDialog() {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex min-h-0 flex-1 gap-4 overflow-hidden">
+        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden sm:flex-row">
           {/* Sección izquierda: Selección de pallets */}
           <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2">
             <div className="flex items-center justify-between">
@@ -262,7 +262,7 @@ export default function MoveMultiplePalletsToStoreDialog() {
                 </div>
               ) : (
                 <div className="flex flex-col gap-3 p-3">
-                  {filteredPallets.map((pallet) => {
+                  {filteredPallets.map((pallet: { id: string | number; lots?: string[]; observations?: string; boxes?: unknown[] }) => {
                     const isSelected = selectedPalletIds.has(pallet.id);
                     const palletInfo = getPalletInfo(pallet);
 
@@ -385,8 +385,8 @@ export default function MoveMultiplePalletsToStoreDialog() {
             </ScrollArea>
           </div>
 
-          {/* Separador vertical */}
-          <div className="bg-border w-px" />
+          {/* Separador vertical (oculto en mobile) */}
+          <div className="bg-border hidden w-px sm:block" />
 
           {/* Sección derecha: Selección de almacén */}
           <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2">
@@ -428,19 +428,19 @@ export default function MoveMultiplePalletsToStoreDialog() {
             ) : (
               <ScrollArea className="min-h-0 flex-1 rounded-md border">
                 <div className="flex flex-col gap-2 p-3">
-                  {filteredStores.map((store) => {
-                    const isSelected = selectedStoreValue === store.value;
+                  {filteredStores.map((s: { value: string | number; label?: string }) => {
+                    const isSelected = selectedStoreValue === s.value;
                     return (
                       <div
-                        key={store.value}
+                        key={s.value}
                         className={`hover:bg-accent flex cursor-pointer items-center justify-between rounded-md border p-3 transition-colors ${
                           isSelected ? 'border-primary bg-accent' : ''
                         }`}
-                        onClick={() => handleStoreClick(store.value)}
+                        onClick={() => handleStoreClick(s.value)}
                       >
                         <div className="flex items-center space-x-2">
                           <Warehouse className="text-muted-foreground h-5 w-5" />
-                          <span className="text-sm font-medium">{store.label}</span>
+                          <span className="text-sm font-medium">{s.label}</span>
                         </div>
                         {isSelected && <Check className="text-primary h-4 w-4" />}
                       </div>

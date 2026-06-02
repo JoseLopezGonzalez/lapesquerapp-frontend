@@ -31,11 +31,11 @@ export default function MovePalletToStoreDialog() {
   const token = session?.user?.accessToken;
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedStoreValue, setSelectedStoreValue] = useState(null);
+  const [selectedStoreValue, setSelectedStoreValue] = useState<string | number | null>(null);
 
   const { storeOptions, loading } = useStoresOptions();
 
-  const filteredStores = storeOptions.filter((store) =>
+  const filteredStores = storeOptions.filter((store: { label?: string }) =>
     store.label?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -71,7 +71,7 @@ export default function MovePalletToStoreDialog() {
       });
   };
 
-  const handleStoreClick = (value) => {
+  const handleStoreClick = (value: string | number) => {
     setSelectedStoreValue((prev) => (prev === value ? null : value));
   };
 
@@ -84,7 +84,10 @@ export default function MovePalletToStoreDialog() {
 
   return (
     <Dialog open={isOpen} onOpenChange={resetAndClose}>
-      <DialogContent size="lg" className="flex max-h-[85vh] flex-col">
+      <DialogContent
+        size="lg"
+        className="flex max-h-[85vh] flex-col max-sm:top-0 max-sm:left-0 max-sm:h-dvh max-sm:max-h-dvh max-sm:w-full max-sm:max-w-full max-sm:translate-x-0 max-sm:translate-y-0 max-sm:overflow-y-auto max-sm:rounded-none"
+      >
         <DialogHeader>
           <DialogTitle>Traspaso de almacén - Palet #{palletId}</DialogTitle>
         </DialogHeader>
@@ -123,7 +126,7 @@ export default function MovePalletToStoreDialog() {
         ) : (
           <ScrollArea className="h-[45vh] w-full pr-3">
             <div className="flex h-full flex-col gap-2 py-1">
-              {filteredStores.map((store) => {
+              {filteredStores.map((store: { value: string | number; label?: string }) => {
                 const isSelected = selectedStoreValue === store.value;
                 return (
                   <div
