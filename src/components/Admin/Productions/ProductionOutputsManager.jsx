@@ -561,6 +561,11 @@ const ProductionOutputsManager = ({
         ? Math.min(1, totalAvailableSourceWeight / totalRequiredSourceWeight)
         : 0;
 
+    // Track remaining per source across rows to prevent accumulated rounding from exceeding totals
+    const remainingByKey = new Map(
+      availableSources.map((option) => [option.key, option.totalWeight])
+    );
+
     validRows.forEach((row) => {
       const requiredSourceWeight = getSourceWeightFromAdjustedOutputWeight(
         parseFloat(row.weight_kg || 0) || 0
@@ -568,10 +573,11 @@ const ProductionOutputsManager = ({
       const targetSourceWeight = requiredSourceWeight * coverageRatio;
       const nextSources = availableSources
         .map((option) => {
-          const sourceWeight = roundToTwo(
-            targetSourceWeight * (option.totalWeight / totalAvailableSourceWeight)
-          );
+          const remaining = remainingByKey.get(option.key) ?? 0;
+          const proportional = targetSourceWeight * (option.totalWeight / totalAvailableSourceWeight);
+          const sourceWeight = roundToTwo(Math.min(proportional, remaining));
           if (sourceWeight <= 0) return null;
+          remainingByKey.set(option.key, roundToTwo(remaining - sourceWeight));
           return {
             source_type: option.source_type,
             product_id: option.product_id,
@@ -665,6 +671,11 @@ const ProductionOutputsManager = ({
       return;
     }
 
+    // Track remaining per source across rows to prevent accumulated rounding from exceeding totals
+    const remainingByKey = new Map(
+      availableSources.map((option) => [option.key, option.totalWeight])
+    );
+
     validRows.forEach((row) => {
       const matchingSources = availableSources.filter(
         (option) => String(option.matched_product_id || '') === String(row.product_id || '')
@@ -686,10 +697,11 @@ const ProductionOutputsManager = ({
 
       const nextSources = matchingSources
         .map((option) => {
-          const sourceWeight = roundToTwo(
-            targetSourceWeight * (option.totalWeight / totalMatchingWeight)
-          );
+          const remaining = remainingByKey.get(option.key) ?? 0;
+          const proportional = targetSourceWeight * (option.totalWeight / totalMatchingWeight);
+          const sourceWeight = roundToTwo(Math.min(proportional, remaining));
           if (sourceWeight <= 0) return null;
+          remainingByKey.set(option.key, roundToTwo(remaining - sourceWeight));
           return {
             source_type: option.source_type,
             product_id: option.product_id,
