@@ -109,7 +109,7 @@ export function PalletCardStack({ children, label, className }: PalletCardStackP
        */}
       <div className="relative isolate px-8 pt-2 pb-8">
         <div
-          className="relative mx-auto w-full max-w-[480px]"
+          className="relative mx-auto w-full max-w-[480px] overflow-hidden"
           style={{
             height: containerHeight ?? 'auto',
             // Transition only after first measurement; auto→px can't animate.
@@ -136,6 +136,16 @@ export function PalletCardStack({ children, label, className }: PalletCardStackP
             if (!p) return null;
             const isActive = offset === 0;
 
+            // Gradient fade anchored to containerHeight so the dissolve always
+            // happens just before the overflow:hidden clip, regardless of the
+            // card's own height. Active card has no mask.
+            const fadeFrom = containerHeight ? Math.round(containerHeight * 0.68) : 0;
+            const fadeTo = containerHeight ? Math.round(containerHeight * 0.97) : 0;
+            const mask =
+              !isActive && containerHeight
+                ? `linear-gradient(to bottom, black ${fadeFrom}px, transparent ${fadeTo}px)`
+                : undefined;
+
             return (
               <div
                 key={i}
@@ -143,7 +153,7 @@ export function PalletCardStack({ children, label, className }: PalletCardStackP
                 // protagonist instead of stretching it full-width (inset-x-0).
                 className={cn(
                   'absolute top-0 left-1/2 w-[min(100%,420px)]',
-                  '[transition-property:transform,opacity,box-shadow]',
+                  '[transition-property:transform,opacity,box-shadow,mask-image,-webkit-mask-image]',
                   '[transition-duration:480ms]',
                   '[transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
                   'will-change-transform',
@@ -155,6 +165,8 @@ export function PalletCardStack({ children, label, className }: PalletCardStackP
                   transform: `translateX(calc(-50% + ${p.x}px)) translateY(${p.y}px) scale(${p.scale}) rotate(${p.rotate}deg)`,
                   transformOrigin: 'bottom center',
                   pointerEvents: p.pointerEvents,
+                  WebkitMaskImage: mask,
+                  maskImage: mask,
                 }}
                 onClick={() => !isActive && goTo(i)}
               >
