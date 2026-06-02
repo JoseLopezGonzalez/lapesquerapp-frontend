@@ -20,8 +20,8 @@ interface PalletLabelDialogProps {
 export default function PalletLabelDialog({ isOpen, onClose, pallet }: PalletLabelDialogProps) {
   const { onPrint } = usePrintElement({
     id: 'print-area-id',
-    width: PALLET_LABEL_SIZE.width,
-    height: PALLET_LABEL_SIZE.height,
+    width: parseInt(PALLET_LABEL_SIZE.width) || 110,
+    height: parseInt(PALLET_LABEL_SIZE.height) || 90,
   });
 
   const handleOnClickPrintLabel = () => {

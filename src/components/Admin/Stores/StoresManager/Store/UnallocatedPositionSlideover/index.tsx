@@ -23,7 +23,11 @@ export default function UnallocatedPositionSlideover() {
     unlocatedPallets,
   } = useStoreContext();
 
-  const pallets = unlocatedPallets;
+  const pallets = unlocatedPallets as Array<{
+    id: string | number;
+    lots: string[];
+    [key: string]: unknown;
+  }>;
 
   return (
     <Sheet

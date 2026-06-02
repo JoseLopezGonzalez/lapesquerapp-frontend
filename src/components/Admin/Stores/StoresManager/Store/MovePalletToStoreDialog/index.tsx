@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ChangeEvent } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -54,7 +54,7 @@ export default function MovePalletToStoreDialog() {
       return;
     }
 
-    movePalletToStore(palletId, selectedStoreValue, token)
+    movePalletToStore(palletId, selectedStoreValue, token as string)
       .then(() => {
         notify.success({
           title: 'Palet movido',
@@ -96,10 +96,11 @@ export default function MovePalletToStoreDialog() {
         <div className="relative my-2">
           <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
           <Input
+            type="text"
             placeholder="Buscar almacén..."
             className="pl-9"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
           />
           {searchQuery && (
             <Button

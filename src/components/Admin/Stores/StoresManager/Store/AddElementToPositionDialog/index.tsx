@@ -1,7 +1,7 @@
 'use client';
 
 import { notify } from '@/lib/notifications';
-import { useState } from 'react';
+import { useState, type ChangeEvent } from 'react';
 import { Layers, Search, X, Check, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -33,7 +33,11 @@ interface Pallet {
   products?: { name?: string }[];
   lotNumbers?: string[];
   location?: string;
-  boxes?: { product?: { id: string | number; name: string }; netWeight?: string | number; lot?: string }[];
+  boxes?: {
+    product?: { id: string | number; name: string };
+    netWeight?: string | number;
+    lot?: string;
+  }[];
 }
 
 interface PalletInfo {
@@ -60,7 +64,7 @@ export default function AddElementToPosition({ open }: { open: boolean }) {
   const token = session?.user?.accessToken;
 
   const onSubmit = () => {
-    assignPalletsToPosition(position, selectedPalletIds, token)
+    assignPalletsToPosition(position, selectedPalletIds.map(Number), token as string)
       .then(() => {
         notify.success({ title: 'Pallets ubicados correctamente' });
         setSelectedPalletIds([]);
@@ -157,23 +161,28 @@ export default function AddElementToPosition({ open }: { open: boolean }) {
         <Tabs
           defaultValue="unlocated"
           className="w-full"
-          onValueChange={(value) => {
+          onValueChange={(value: string) => {
             setActiveTab(value);
             setSelectedPalletIds([]);
           }}
         >
           <TabsList className="mb-4 grid w-full flex-1 grid-cols-2">
-            <TabsTrigger value="unlocated">Pallets sin ubicar</TabsTrigger>
-            <TabsTrigger value="all">Todos los pallets</TabsTrigger>
+            <TabsTrigger className="" value="unlocated">
+              Pallets sin ubicar
+            </TabsTrigger>
+            <TabsTrigger className="" value="all">
+              Todos los pallets
+            </TabsTrigger>
           </TabsList>
 
           <div className="relative my-2">
             <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
             <Input
+              type="text"
               placeholder="Buscar por ID, producto o lote..."
               className="pl-9"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
             />
             {searchQuery && (
               <Button
@@ -246,8 +255,16 @@ function PalletList({
             const availableBoxCount = getAvailableBoxesCount(pallet);
             const availableNetWeight = getAvailableNetWeight(pallet);
 
-            const productsSummary = (availableBoxes as { product: { id: string | number; name: string }; netWeight: string | number }[]).reduce(
-              (acc: Record<string | number, { name: string; netWeight: number; boxCount: number }>, box) => {
+            const productsSummary = (
+              availableBoxes as {
+                product: { id: string | number; name: string };
+                netWeight: string | number;
+              }[]
+            ).reduce(
+              (
+                acc: Record<string | number, { name: string; netWeight: number; boxCount: number }>,
+                box
+              ) => {
                 const product = box.product;
                 if (!acc[product.id]) {
                   acc[product.id] = {
