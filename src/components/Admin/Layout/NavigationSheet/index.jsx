@@ -75,7 +75,8 @@ export function NavigationSheet({
           {/* Handle visual para drag */}
           <div className="bg-muted-foreground/30 mx-auto mt-4 flex h-1.5 w-12 flex-shrink-0 rounded-full" />
 
-          <div className="flex h-full min-h-0 w-full flex-col overflow-hidden [&_[data-sidebar=group-label]]:px-4 [&_[data-sidebar=group-label]]:py-3 [&_[data-sidebar=group-label]]:text-sm [&_[data-sidebar=menu-button]]:min-h-[56px] [&_[data-sidebar=menu-button]]:gap-3 [&_[data-sidebar=menu-button]]:px-4 [&_[data-sidebar=menu-button]]:py-3 [&_[data-sidebar=menu-button]]:text-base [&_[data-sidebar=menu-button]_svg]:size-6 [&_[data-sidebar=menu-button][data-size=lg]]:min-h-[64px] [&_[data-sidebar=menu-button][data-size=lg]]:text-base [&_[data-sidebar=menu-sub-button]]:min-h-[52px] [&_[data-sidebar=menu-sub-button]]:px-4 [&_[data-sidebar=menu-sub-button]]:py-3 [&_[data-sidebar=menu-sub-button]]:text-base [&_[data-sidebar=menu-sub-button]_svg]:size-5">
+          {/* Área de navegación scrollable — flex-1 para ocupar el espacio disponible */}
+          <div className="min-h-0 w-full flex-1 overflow-hidden [&_[data-sidebar=group-label]]:px-4 [&_[data-sidebar=group-label]]:py-3 [&_[data-sidebar=group-label]]:text-sm [&_[data-sidebar=menu-button]]:min-h-[56px] [&_[data-sidebar=menu-button]]:gap-3 [&_[data-sidebar=menu-button]]:px-4 [&_[data-sidebar=menu-button]]:py-3 [&_[data-sidebar=menu-button]]:text-base [&_[data-sidebar=menu-button]_svg]:size-6 [&_[data-sidebar=menu-button][data-size=lg]]:min-h-[64px] [&_[data-sidebar=menu-button][data-size=lg]]:text-base [&_[data-sidebar=menu-sub-button]]:min-h-[52px] [&_[data-sidebar=menu-sub-button]]:px-4 [&_[data-sidebar=menu-sub-button]]:py-3 [&_[data-sidebar=menu-sub-button]]:text-base [&_[data-sidebar=menu-sub-button]_svg]:size-5">
             <SidebarProvider>
               <div className="flex h-full min-h-0 w-full flex-col overflow-hidden">
                 {apps && apps.length > 0 && (
@@ -104,48 +105,48 @@ export function NavigationSheet({
                     </>
                   )}
                 </div>
-
-                {/* Cuenta / Menú de usuario — siempre visible en la parte inferior */}
-                {user && onUserMenuOpen && (
-                  <div className="w-full flex-shrink-0 border-t px-4 py-3">
-                    <button
-                      type="button"
-                      onClick={onUserMenuOpen}
-                      className={cn(
-                        'flex w-full items-center gap-3',
-                        'min-h-[56px] rounded-lg px-4 py-3',
-                        'text-left text-base font-medium',
-                        'hover:bg-accent active:bg-accent/80',
-                        'transition-colors duration-150'
-                      )}
-                      aria-label="Cuenta y menú de usuario"
-                    >
-                      <Avatar className="h-10 w-10 shrink-0 rounded-lg">
-                        <AvatarImage src={user?.avatar} alt={user?.name} />
-                        <AvatarFallback className="rounded-lg text-sm font-semibold">
-                          {user?.name
-                            ? user.name
-                                .split(' ')
-                                .map((n) => n[0])
-                                .join('')
-                                .toUpperCase()
-                                .slice(0, 2)
-                            : 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex min-w-0 flex-1 flex-col text-left">
-                        <span className="truncate font-medium">{user?.name || 'Usuario'}</span>
-                        <span className="text-muted-foreground truncate text-sm">
-                          {user?.email || ''}
-                        </span>
-                      </div>
-                      <User className="text-muted-foreground h-5 w-5 shrink-0" />
-                    </button>
-                  </div>
-                )}
               </div>
             </SidebarProvider>
           </div>
+
+          {/* Cuenta / Menú de usuario — hijo directo de Drawer.Content (flex-col), siempre visible */}
+          {user && onUserMenuOpen && (
+            <div className="w-full flex-shrink-0 border-t px-4 py-3">
+              <button
+                type="button"
+                onClick={onUserMenuOpen}
+                className={cn(
+                  'flex w-full items-center gap-3',
+                  'min-h-[56px] rounded-lg px-4 py-3',
+                  'text-left text-base font-medium',
+                  'hover:bg-accent active:bg-accent/80',
+                  'transition-colors duration-150'
+                )}
+                aria-label="Cuenta y menú de usuario"
+              >
+                <Avatar className="h-10 w-10 shrink-0 rounded-lg">
+                  <AvatarImage src={user?.avatar} alt={user?.name} />
+                  <AvatarFallback className="rounded-lg text-sm font-semibold">
+                    {user?.name
+                      ? user.name
+                          .split(' ')
+                          .map((n) => n[0])
+                          .join('')
+                          .toUpperCase()
+                          .slice(0, 2)
+                      : 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex min-w-0 flex-1 flex-col text-left">
+                  <span className="truncate font-medium">{user?.name || 'Usuario'}</span>
+                  <span className="text-muted-foreground truncate text-sm">
+                    {user?.email || ''}
+                  </span>
+                </div>
+                <User className="text-muted-foreground h-5 w-5 shrink-0" />
+              </button>
+            </div>
+          )}
         </Drawer.Content>
       </Drawer.Portal>
     </Drawer.Root>
