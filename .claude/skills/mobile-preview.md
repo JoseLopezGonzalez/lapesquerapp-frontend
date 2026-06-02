@@ -52,18 +52,42 @@ export function NombreVista(props) {
 
 ### Paso 4 — Ruta de preview (solo en rama mobile/*)
 
-Crear `src/app/[ruta-existente]/preview/page.tsx` que renderiza directamente
-el componente mobile sin layout, para ver en DevTools mobile o en el móvil real:
+Crear `src/app/[ruta-existente]/preview/page.tsx` que renderiza el componente mobile
+**con el layout real** (BottomNav + NavigationSheet), para probar la experiencia completa
+tal y como la verá el usuario en producción.
 
 ```typescript
-// src/app/admin/orders-manager/preview/page.tsx
+// src/app/field/preview/page.tsx  (ejemplo para rol field)
+import { FieldLayoutClient } from '@/app/field/FieldLayoutClient';
+import { FieldHomeMobile } from '@/components/Field/FieldHomeMobile';
+
+export default function MobilePreview() {
+  // Con el layout real — BottomNav + NavigationSheet incluidos
+  return (
+    <FieldLayoutClient>
+      <FieldHomeMobile />
+    </FieldLayoutClient>
+  );
+}
+```
+
+```typescript
+// src/app/admin/orders-manager/preview/page.tsx  (ejemplo para rol admin)
+import { AdminLayoutClient } from '@/app/admin/AdminLayoutClient';
 import { OrdersMobile } from '@/components/Admin/OrdersManager/OrdersMobile';
 
 export default function MobilePreview() {
-  // Sin layout, sin BottomNav — render directo para preview
-  return <OrdersMobile />;
+  return (
+    <AdminLayoutClient>
+      <OrdersMobile />
+    </AdminLayoutClient>
+  );
 }
 ```
+
+**Por qué con layout completo:** el BottomNav ocupa ~80px en la parte inferior y el
+NavigationSheet interactúa con el contenido. Probar sin él da una falsa sensación de
+espacio que luego no existe en producción.
 
 **Esta ruta SOLO existe en la rama `mobile/*` y nunca se mergea a main/develop.**
 
