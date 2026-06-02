@@ -28,21 +28,21 @@ export function MobileFiltersSheet({ open, onOpenChange }: MobileFiltersSheetPro
     .map((pallet: string) => palletsOptions.find((opt: { value: string }) => opt.value === pallet))
     .filter(Boolean);
 
-  const handleAddProduct = (value: string) => {
+  const handleAddProduct = (value: string | number) => {
     if (!value || filters.products.some((p: string) => p === value)) return;
     onChangeFilters({ ...filters, products: [...filters.products, value] });
   };
 
-  const handleRemoveProduct = (value: string) => {
+  const handleRemoveProduct = (value: string | number) => {
     onChangeFilters({ ...filters, products: filters.products.filter((p: string) => p !== value) });
   };
 
-  const handleAddPallet = (value: string) => {
+  const handleAddPallet = (value: string | number) => {
     if (!value || filters.pallets.some((p: string) => p === value)) return;
     onChangeFilters({ ...filters, pallets: [...filters.pallets, value] });
   };
 
-  const handleRemovePallet = (value: string) => {
+  const handleRemovePallet = (value: string | number) => {
     onChangeFilters({ ...filters, pallets: filters.pallets.filter((p: string) => p !== value) });
   };
 

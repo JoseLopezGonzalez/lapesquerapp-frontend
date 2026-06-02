@@ -1,6 +1,5 @@
 'use client';
 
-import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -81,7 +80,7 @@ function MobileStoreCard({
         : '[&_[data-slot=progress-indicator]]:animate-pulse [&_[data-slot=progress-indicator]]:bg-red-600';
 
   return (
-    <Card
+    <div
       role="button"
       tabIndex={disabled ? -1 : 0}
       aria-label={store.name}
@@ -93,7 +92,7 @@ function MobileStoreCard({
         }
       }}
       className={cn(
-        'flex w-full items-center gap-3 border-l-4 p-4 transition-colors active:bg-accent/60',
+        'bg-card text-card-foreground flex w-full items-center gap-3 rounded-xl border border-l-4 p-4 shadow-sm transition-colors active:bg-accent/60',
         borderClass,
         disabled && 'pointer-events-none opacity-60',
         !disabled && 'cursor-pointer'
@@ -140,7 +139,7 @@ function MobileStoreCard({
 
       {/* Chevron */}
       <ChevronRight className="text-muted-foreground h-4 w-4 shrink-0" />
-    </Card>
+    </div>
   );
 }
 
@@ -162,10 +161,10 @@ export function MobileStoreListView({
     return (
       <div className="flex flex-col gap-3 p-4">
         {!externalActor && (
-          <Card
+          <div
             role="button"
             onClick={() => router.push('/admin/stores/create')}
-            className="border-muted-foreground/25 hover:border-primary hover:bg-primary/5 flex w-full cursor-pointer items-center justify-center gap-3 border-2 border-dashed p-6 transition-colors"
+            className="border-muted-foreground/25 hover:border-primary hover:bg-primary/5 flex w-full cursor-pointer items-center justify-center gap-3 rounded-xl border-2 border-dashed p-6 transition-colors"
           >
             <div className="border-primary/20 bg-primary/10 flex h-10 w-10 items-center justify-center rounded-full border">
               <Plus className="text-primary h-5 w-5" />
@@ -174,7 +173,7 @@ export function MobileStoreListView({
               <p className="text-sm font-medium">Crear almacén</p>
               <p className="text-muted-foreground text-xs">Añade tu primer almacén</p>
             </div>
-          </Card>
+          </div>
         )}
       </div>
     );
@@ -193,16 +192,16 @@ export function MobileStoreListView({
 
       {/* Crear almacén — solo si no es externo y hay almacenes */}
       {realStores.length > 0 && !externalActor && (
-        <Card
+        <div
           role="button"
           onClick={() => router.push('/admin/stores/create')}
-          className="border-muted-foreground/25 hover:border-primary hover:bg-primary/5 flex w-full cursor-pointer items-center gap-3 border-2 border-dashed p-4 transition-colors"
+          className="border-muted-foreground/25 hover:border-primary hover:bg-primary/5 flex w-full cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed p-4 transition-colors"
         >
           <div className="border-primary/20 bg-primary/10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border">
             <Plus className="text-primary h-4 w-4" />
           </div>
           <span className="text-sm font-medium">Nuevo almacén</span>
-        </Card>
+        </div>
       )}
 
       {/* Load more */}
