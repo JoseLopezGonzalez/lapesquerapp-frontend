@@ -46,7 +46,6 @@ export function ChatNavItem({ index }) {
             'min-h-[44px] min-w-[44px]',
             'rounded-lg px-2 py-1.5',
             'transition-all duration-200',
-            'touch-none',
             'text-muted-foreground hover:text-foreground hover:bg-accent/50 active:bg-accent'
           )}
           aria-label="Chat IA"

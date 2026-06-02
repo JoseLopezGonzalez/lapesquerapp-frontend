@@ -77,8 +77,9 @@ export default function AdminLayoutClient({ children }) {
     // 4. Chat IA - Item especial con onClick (no tiene href)
     const chatIAItem = {
       name: 'Chat IA',
+      type: 'chat',
       icon: MessageSquare,
-      href: null, // No es una ruta, es una acción
+      href: null,
     };
 
     // Construir array final, filtrando items que no existen (Cuenta va en el sheet del menú)

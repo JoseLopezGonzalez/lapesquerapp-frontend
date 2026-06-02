@@ -64,7 +64,6 @@ function BottomNavItem({ item, isActive, index }) {
             'min-h-[44px] min-w-[44px]',
             'rounded-lg px-2 py-1.5',
             'transition-all duration-200',
-            'touch-none',
             isActive
               ? 'text-primary bg-primary/10'
               : 'text-muted-foreground hover:text-foreground hover:bg-accent/50 active:bg-accent'
@@ -90,7 +89,6 @@ function BottomNavItem({ item, isActive, index }) {
             'min-h-[44px] min-w-[44px]',
             'rounded-lg px-2 py-1.5',
             'transition-all duration-200',
-            'touch-none',
             isActive
               ? 'text-primary bg-primary/10'
               : 'text-muted-foreground hover:text-foreground hover:bg-accent/50 active:bg-accent'
@@ -160,7 +158,7 @@ export function BottomNav({ items, sheetOpen = false, onSheetOpenChange }) {
           if (colIndex === CENTER_SLOT_INDEX) {
             return (
               <div key="center" className="mx-4 flex min-w-0 flex-1 items-center justify-center">
-                <CenterActionButton onOpenSheet={onSheetOpenChange} />
+                <CenterActionButton onOpenSheet={onSheetOpenChange} sheetOpen={sheetOpen} />
               </div>
             );
           }
@@ -169,7 +167,7 @@ export function BottomNav({ items, sheetOpen = false, onSheetOpenChange }) {
           if (!item) {
             return <div key={`empty-${colIndex}`} className="min-w-0 flex-1" />;
           }
-          if (item.name === 'Chat IA' && !item.href) {
+          if (item.type === 'chat') {
             return (
               <div key="chat-ai" className="flex min-w-0 flex-1 items-center justify-center">
                 <ChatNavItem index={colIndex} />

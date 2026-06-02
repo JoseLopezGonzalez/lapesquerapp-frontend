@@ -62,7 +62,7 @@ export function NavigationSheet({
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange} shouldScaleBackground>
       <Drawer.Portal>
-        <Drawer.Overlay className="fixed inset-0 z-50 bg-black/80" />
+        <Drawer.Overlay className="fixed inset-0 z-50 bg-black/60" />
         <Drawer.Content
           className={cn(
             'bg-background fixed right-0 bottom-0 left-0 z-50 mt-24 flex h-[85vh] flex-col rounded-t-[10px]',
@@ -84,7 +84,7 @@ export function NavigationSheet({
                   </div>
                 )}
 
-                <div className="min-h-0 w-full flex-1 overflow-y-auto pb-24">
+                <div className="min-h-0 w-full flex-1 overflow-y-auto">
                   {activeNavigationManagersItems && activeNavigationManagersItems.length > 0 && (
                     <div className="w-full p-4">
                       <NavManagers items={activeNavigationManagersItems} />
@@ -103,46 +103,46 @@ export function NavigationSheet({
                       </div>
                     </>
                   )}
-
-                  {/* Cuenta / Menú de usuario - abre el diálogo de usuario */}
-                  {user && onUserMenuOpen && (
-                    <div className="w-full flex-shrink-0 border-t px-4 py-3">
-                      <button
-                        type="button"
-                        onClick={onUserMenuOpen}
-                        className={cn(
-                          'flex w-full items-center gap-3',
-                          'min-h-[56px] rounded-lg px-4 py-3',
-                          'text-left text-base font-medium',
-                          'hover:bg-accent active:bg-accent/80',
-                          'transition-colors duration-150'
-                        )}
-                        aria-label="Cuenta y menú de usuario"
-                      >
-                        <Avatar className="h-10 w-10 shrink-0 rounded-lg">
-                          <AvatarImage src={user?.avatar} alt={user?.name} />
-                          <AvatarFallback className="rounded-lg text-sm font-semibold">
-                            {user?.name
-                              ? user.name
-                                  .split(' ')
-                                  .map((n) => n[0])
-                                  .join('')
-                                  .toUpperCase()
-                                  .slice(0, 2)
-                              : 'U'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex min-w-0 flex-1 flex-col text-left">
-                          <span className="truncate font-medium">{user?.name || 'Usuario'}</span>
-                          <span className="text-muted-foreground truncate text-sm">
-                            {user?.email || ''}
-                          </span>
-                        </div>
-                        <User className="text-muted-foreground h-5 w-5 shrink-0" />
-                      </button>
-                    </div>
-                  )}
                 </div>
+
+                {/* Cuenta / Menú de usuario — siempre visible en la parte inferior */}
+                {user && onUserMenuOpen && (
+                  <div className="w-full flex-shrink-0 border-t px-4 py-3">
+                    <button
+                      type="button"
+                      onClick={onUserMenuOpen}
+                      className={cn(
+                        'flex w-full items-center gap-3',
+                        'min-h-[56px] rounded-lg px-4 py-3',
+                        'text-left text-base font-medium',
+                        'hover:bg-accent active:bg-accent/80',
+                        'transition-colors duration-150'
+                      )}
+                      aria-label="Cuenta y menú de usuario"
+                    >
+                      <Avatar className="h-10 w-10 shrink-0 rounded-lg">
+                        <AvatarImage src={user?.avatar} alt={user?.name} />
+                        <AvatarFallback className="rounded-lg text-sm font-semibold">
+                          {user?.name
+                            ? user.name
+                                .split(' ')
+                                .map((n) => n[0])
+                                .join('')
+                                .toUpperCase()
+                                .slice(0, 2)
+                            : 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex min-w-0 flex-1 flex-col text-left">
+                        <span className="truncate font-medium">{user?.name || 'Usuario'}</span>
+                        <span className="text-muted-foreground truncate text-sm">
+                          {user?.email || ''}
+                        </span>
+                      </div>
+                      <User className="text-muted-foreground h-5 w-5 shrink-0" />
+                    </button>
+                  </div>
+                )}
               </div>
             </SidebarProvider>
           </div>
