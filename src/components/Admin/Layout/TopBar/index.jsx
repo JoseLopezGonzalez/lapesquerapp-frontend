@@ -124,8 +124,8 @@ export function TopBar({
             {/* Header con avatar y info */}
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-3 px-3 py-3">
-                <Avatar className="h-10 w-10 rounded-lg">
-                  <AvatarImage src={user?.avatar} alt={user?.name} />
+                <Avatar className="h-10 w-10 rounded-lg after:rounded-lg">
+                  <AvatarImage src={user?.avatar} alt={user?.name} className="rounded-lg" />
                   <AvatarFallback className="rounded-lg text-sm">{initials}</AvatarFallback>
                 </Avatar>
                 <div className="flex min-w-0 flex-1 flex-col">

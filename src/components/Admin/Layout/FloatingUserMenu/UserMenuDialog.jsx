@@ -115,8 +115,8 @@ export function UserMenuDialog({ open, onOpenChange, user }) {
 
         <div className="flex-shrink-0 px-4 py-3">
           <div className="flex items-center gap-4">
-            <Avatar className="h-16 w-16 rounded-lg">
-              <AvatarImage src={user?.avatar} alt={user?.name} />
+            <Avatar className="h-16 w-16 rounded-lg after:rounded-lg">
+              <AvatarImage src={user?.avatar} alt={user?.name} className="rounded-lg" />
               <AvatarFallback className="rounded-lg text-lg font-semibold">
                 {initials}
               </AvatarFallback>

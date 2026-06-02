@@ -124,8 +124,8 @@ export function NavigationSheet({
                 )}
                 aria-label="Cuenta y menú de usuario"
               >
-                <Avatar className="h-10 w-10 shrink-0 rounded-lg">
-                  <AvatarImage src={user?.avatar} alt={user?.name} />
+                <Avatar className="h-10 w-10 shrink-0 rounded-lg after:rounded-lg">
+                  <AvatarImage src={user?.avatar} alt={user?.name} className="rounded-lg" />
                   <AvatarFallback className="rounded-lg text-sm font-semibold">
                     {user?.name
                       ? user.name

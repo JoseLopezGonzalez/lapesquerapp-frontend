@@ -29,18 +29,26 @@ import {
 } from '@/components/ui/sidebar';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { ChatButton } from '@/components/AI/ChatButton';
-
 import { useRouter } from 'next/navigation';
 
-export function NavUser({ user }) {
+interface NavUserProps {
+  user: {
+    name: string;
+    email: string;
+    avatar?: string;
+    logout?: () => void;
+  };
+}
+
+export function NavUser({ user }: NavUserProps) {
   const { isMobile } = useSidebar();
   const router = useRouter();
-  /* iniciales 2 caracteres en mayuscula */
   const initials = user.name
     .split(' ')
     .map((n) => n[0])
     .join('')
-    .toUpperCase();
+    .toUpperCase()
+    .slice(0, 2);
 
   return (
     <SidebarMenu>
@@ -51,8 +59,8 @@ export function NavUser({ user }) {
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.avatar} alt={user.name} />
+              <Avatar className="h-8 w-8 rounded-lg after:rounded-lg">
+                <AvatarImage src={user.avatar} alt={user.name} className="rounded-lg" />
                 <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
@@ -70,8 +78,8 @@ export function NavUser({ user }) {
           >
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
+                <Avatar className="h-8 w-8 rounded-lg after:rounded-lg">
+                  <AvatarImage src={user.avatar} alt={user.name} className="rounded-lg" />
                   <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
@@ -93,7 +101,7 @@ export function NavUser({ user }) {
                 <DropdownMenuItem
                   className="cursor-pointer"
                   onSelect={(e) => {
-                    e.preventDefault(); // ✅ Prevenir el cierre automático del dropdown
+                    e.preventDefault();
                   }}
                 >
                   <MessageSquare />
@@ -113,9 +121,7 @@ export function NavUser({ user }) {
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer"
-                onClick={() => {
-                  router.push('/admin/settings');
-                }}
+                onClick={() => router.push('/admin/settings')}
               >
                 <Settings />
                 Configuración
