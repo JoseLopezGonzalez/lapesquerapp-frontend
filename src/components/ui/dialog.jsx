@@ -32,7 +32,7 @@ function DialogClose({
 }
 
 function DialogOverlay({
-  className,
+  className = undefined,
   ...props
 }) {
   return (
@@ -62,7 +62,7 @@ const dialogContentSizeClasses = {
 };
 
 function DialogContent({
-  className,
+  className = undefined,
   children,
   showCloseButton = true,
   size = "default",
@@ -95,7 +95,7 @@ function DialogContent({
 }
 
 function DialogHeader({
-  className,
+  className = undefined,
   ...props
 }) {
   return (
@@ -107,7 +107,7 @@ function DialogHeader({
 }
 
 function DialogFooter({
-  className,
+  className = undefined,
   showCloseButton = false,
   children,
   ...props
@@ -131,7 +131,7 @@ function DialogFooter({
 }
 
 function DialogTitle({
-  className,
+  className = undefined,
   ...props
 }) {
   return (
@@ -143,7 +143,7 @@ function DialogTitle({
 }
 
 function DialogDescription({
-  className,
+  className = undefined,
   ...props
 }) {
   return (
