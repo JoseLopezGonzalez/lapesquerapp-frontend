@@ -11,6 +11,18 @@ import PalletView from './PalletView';
 import { useSession } from 'next-auth/react';
 import { isExternalActor } from '@/lib/auth/actor';
 
+interface PalletDialogProps {
+  palletId?: string | number | null;
+  isOpen: boolean;
+  onChange: (...args: unknown[]) => unknown;
+  initialStoreId?: string | number | null;
+  initialOrderId?: string | number | null;
+  onCloseDialog: () => void;
+  onSaveTemporal?: ((pallet: unknown) => void) | null;
+  initialPallet?: unknown;
+  readOnly?: boolean;
+}
+
 export default function PalletDialog({
   palletId,
   isOpen,
@@ -21,10 +33,9 @@ export default function PalletDialog({
   onSaveTemporal = null,
   initialPallet = null,
   readOnly = false,
-}) {
+}: PalletDialogProps) {
   const { data: session } = useSession();
   const externalActor = isExternalActor(session?.user);
-  // Get pallet data to check for receptionId
   const { temporalPallet } = usePallet({
     id:
       palletId && !palletId?.toString().startsWith('temp-')
@@ -39,17 +50,16 @@ export default function PalletDialog({
     initialPallet,
   });
 
-  const receptionId = temporalPallet?.receptionId;
+  const receptionId = (temporalPallet as { receptionId?: string | number | null } | null)?.receptionId;
   const belongsToReception = receptionId !== null && receptionId !== undefined;
 
   const handleOnClickClose = () => {
     onCloseDialog();
-    /* onClose(); */
   };
 
-  const handleSaveTemporal = (temporalPallet) => {
-    if (onSaveTemporal && temporalPallet) {
-      onSaveTemporal(temporalPallet);
+  const handleSaveTemporal = (temporalPalletData: unknown) => {
+    if (onSaveTemporal && temporalPalletData) {
+      onSaveTemporal(temporalPalletData);
       if (onCloseDialog) {
         onCloseDialog();
       }
@@ -61,7 +71,7 @@ export default function PalletDialog({
       <Dialog open={isOpen} onOpenChange={handleOnClickClose}>
         <DialogContent
           size="full"
-          className="flex h-[90vh] max-h-[90vh] flex-col overflow-hidden"
+          className="flex h-[90vh] max-h-[90vh] flex-col overflow-hidden max-sm:top-0 max-sm:left-0 max-sm:h-dvh max-sm:max-h-dvh max-sm:w-full max-sm:max-w-full max-sm:translate-x-0 max-sm:translate-y-0 max-sm:overflow-y-auto max-sm:rounded-none"
           aria-describedby={undefined}
         >
           <DialogHeader>

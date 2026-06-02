@@ -11,7 +11,13 @@ import { usePrintElement } from '@/hooks/usePrintElement';
 
 import PalletLabel from '@/components/Admin/Pallets/PalletLabel';
 
-export default function PalletLabelDialog({ isOpen, onClose, pallet }) {
+interface PalletLabelDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  pallet: unknown;
+}
+
+export default function PalletLabelDialog({ isOpen, onClose, pallet }: PalletLabelDialogProps) {
   const { onPrint } = usePrintElement({
     id: 'print-area-id',
     width: PALLET_LABEL_SIZE.width,
@@ -26,17 +32,19 @@ export default function PalletLabelDialog({ isOpen, onClose, pallet }) {
     onClose();
   };
 
-  // Calcular ancho máximo del diálogo basado en el tamaño de la etiqueta
-  // PALLET_LABEL_SIZE.width es "110mm", extraemos el número
-  const labelWidth = parseInt(PALLET_LABEL_SIZE.width) || 110; // default 110mm
-  // 1mm ≈ 3.779px a 96dpi, añadimos padding y margen extra
-  const maxDialogWidth = Math.max(512, labelWidth * 3.779 + 200); // mínimo 512px (max-w-lg), más espacio para padding
+  const labelWidth = parseInt(PALLET_LABEL_SIZE.width) || 110;
+  const maxDialogWidth = Math.max(512, labelWidth * 3.779 + 200);
+
+  const mobileFullScreen =
+    'max-sm:top-0 max-sm:left-0 max-sm:h-dvh max-sm:max-h-dvh max-sm:w-full max-sm:max-w-full max-sm:translate-x-0 max-sm:translate-y-0 max-sm:overflow-y-auto max-sm:rounded-none';
 
   return (
     <>
       <Dialog open={isOpen} onOpenChange={handleOnClickClose}>
         {!pallet ? (
-          <DialogContent className="flex w-full flex-col items-center justify-center gap-4 text-center">
+          <DialogContent
+            className={`flex w-full flex-col items-center justify-center gap-4 text-center ${mobileFullScreen}`}
+          >
             <DialogHeader>
               <DialogTitle className="sr-only">Error</DialogTitle>
             </DialogHeader>
@@ -55,12 +63,14 @@ export default function PalletLabelDialog({ isOpen, onClose, pallet }) {
           </DialogContent>
         ) : (
           <DialogContent
-            className="max-h-[90vh] w-full overflow-hidden"
+            className={`max-h-[90vh] w-full overflow-hidden ${mobileFullScreen}`}
             style={{ maxWidth: `${maxDialogWidth}px` }}
           >
             <DialogHeader>
-              <DialogTitle className="">
-                {pallet?.id ? `Etiqueta - Palet #${pallet.id}` : 'Nuevo Palet'}
+              <DialogTitle>
+                {(pallet as { id?: string | number })?.id
+                  ? `Etiqueta - Palet #${(pallet as { id?: string | number }).id}`
+                  : 'Nuevo Palet'}
               </DialogTitle>
             </DialogHeader>
             <div className="flex w-full flex-col justify-center">
@@ -73,7 +83,6 @@ export default function PalletLabelDialog({ isOpen, onClose, pallet }) {
               </Alert>
               <div className="mt-4 flex w-full flex-col items-center gap-4 overflow-x-auto">
                 <div className="flex-shrink-0">
-                  {/* Vista previa - también es el área de impresión */}
                   <div
                     id="print-area-id"
                     className="text-black"

@@ -70,7 +70,7 @@ export default function MobileStoresManager() {
 
   /* Vista de lista */
   return (
-    <div className="h-full overflow-y-auto">
+    <div className="flex h-full flex-col overflow-hidden">
       {isInitialLoading ? (
         <MobileStoreListSkeleton />
       ) : (
