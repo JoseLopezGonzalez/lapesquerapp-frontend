@@ -1,13 +1,19 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from '@/components/ui/input-group';
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
 import {
   ChevronRight,
   Loader2,
   Package,
+  Search,
   Sparkles,
   ThermometerSnowflake,
 } from 'lucide-react';
@@ -137,6 +143,7 @@ export function MobileStoreListView({
   onSelectStore,
   onLoadMore,
 }: MobileStoreListViewProps) {
+  const [search, setSearch] = useState('');
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -155,29 +162,74 @@ export function MobileStoreListView({
     return () => observer.disconnect();
   }, [hasMoreStores, loadingMore, onLoadMore]);
 
-  if (!stores || stores.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-2 p-8 text-center">
-        <p className="text-sm font-medium">Sin almacenes</p>
-        <p className="text-muted-foreground text-xs">No hay almacenes disponibles.</p>
-      </div>
-    );
-  }
+  const realStores = (stores ?? []).filter((s) => s.id !== REGISTERED_PALLETS_STORE_ID);
+
+  const filteredStores = search.trim()
+    ? (stores ?? []).filter((s) =>
+        s.name.toLowerCase().includes(search.trim().toLowerCase())
+      )
+    : (stores ?? []);
+
+  const isEmpty = !stores || stores.length === 0;
 
   return (
-    <div className="flex flex-col gap-2 p-3">
-      {stores.map((store) => (
-        <MobileStoreCard
-          key={store.id}
-          store={store}
-          disabled={isStoreLoading}
-          onClick={() => onSelectStore(store.id)}
-        />
-      ))}
+    <div className="flex h-full flex-col overflow-hidden">
+      {/* Header */}
+      <div className="flex-shrink-0 px-4 pt-5 pb-3">
+        <h2 className="text-xl font-semibold">Almacenes</h2>
+        {realStores.length > 0 && (
+          <p className="text-muted-foreground text-sm">
+            {realStores.length} almacén{realStores.length !== 1 ? 'es' : ''}
+          </p>
+        )}
+      </div>
 
-      {/* Sentinel de infinite scroll */}
-      <div ref={sentinelRef} className="flex h-10 items-center justify-center">
-        {loadingMore && <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />}
+      {/* Buscador */}
+      <div className="flex-shrink-0 px-3 pb-3">
+        <InputGroup className="h-10 w-full">
+          <InputGroupInput
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar almacén…"
+          />
+          <InputGroupAddon align="inline-end">
+            <Search className="size-4" />
+          </InputGroupAddon>
+        </InputGroup>
+      </div>
+
+      {/* Lista */}
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        {isEmpty ? (
+          <div className="flex flex-col items-center justify-center gap-2 p-8 text-center">
+            <p className="text-sm font-medium">Sin almacenes</p>
+            <p className="text-muted-foreground text-xs">No hay almacenes disponibles.</p>
+          </div>
+        ) : filteredStores.length === 0 ? (
+          <div className="flex flex-col items-center justify-center gap-2 p-8 text-center">
+            <p className="text-sm font-medium">Sin resultados</p>
+            <p className="text-muted-foreground text-xs">
+              No hay almacenes que coincidan con «{search}».
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2 px-3 pb-3">
+            {filteredStores.map((store) => (
+              <MobileStoreCard
+                key={store.id}
+                store={store}
+                disabled={isStoreLoading}
+                onClick={() => onSelectStore(store.id)}
+              />
+            ))}
+
+            {/* Sentinel de infinite scroll */}
+            <div ref={sentinelRef} className="flex h-10 items-center justify-center">
+              {loadingMore && <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
