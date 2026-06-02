@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { ExternalLink, Package } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-import { usePallet } from '@/hooks/usePallet';
+import { usePallet, type PalletState } from '@/hooks/usePallet';
 import PalletView from './PalletView';
 import { useSession } from 'next-auth/react';
 import { isExternalActor } from '@/lib/auth/actor';
@@ -18,8 +18,8 @@ interface PalletDialogProps {
   initialStoreId?: string | number | null;
   initialOrderId?: string | number | null;
   onCloseDialog: () => void;
-  onSaveTemporal?: ((pallet: unknown) => void) | null;
-  initialPallet?: unknown;
+  onSaveTemporal?: ((pallet: PalletState) => void) | null;
+  initialPallet?: PalletState | null;
   readOnly?: boolean;
 }
 
@@ -50,14 +50,14 @@ export default function PalletDialog({
     initialPallet,
   });
 
-  const receptionId = (temporalPallet as { receptionId?: string | number | null } | null)?.receptionId;
+  const receptionId = temporalPallet?.receptionId;
   const belongsToReception = receptionId !== null && receptionId !== undefined;
 
   const handleOnClickClose = () => {
     onCloseDialog();
   };
 
-  const handleSaveTemporal = (temporalPalletData: unknown) => {
+  const handleSaveTemporal = (temporalPalletData: PalletState) => {
     if (onSaveTemporal && temporalPalletData) {
       onSaveTemporal(temporalPalletData);
       if (onCloseDialog) {
