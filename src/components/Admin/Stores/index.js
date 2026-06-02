@@ -12,8 +12,17 @@ import { Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { isExternalActor } from '@/lib/auth/actor';
+import { useIsMobile } from '@/hooks/use-mobile';
+import MobileStoresManager from './Mobile/MobileStoresManager';
 
 export default function StoresManager() {
+  const isMobile = useIsMobile();
+  if (isMobile) return <MobileStoresManager />;
+
+  return <StoresManagerDesktop />;
+}
+
+function StoresManagerDesktop() {
   const {
     stores,
     isInitialLoading,
