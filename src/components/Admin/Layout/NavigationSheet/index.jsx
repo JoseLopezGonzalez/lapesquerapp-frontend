@@ -77,7 +77,7 @@ export function NavigationSheet({
 
           {/* Área de navegación scrollable — flex-1 para ocupar el espacio disponible */}
           <div className="min-h-0 w-full flex-1 overflow-hidden [&_[data-sidebar=group-label]]:px-4 [&_[data-sidebar=group-label]]:py-3 [&_[data-sidebar=group-label]]:text-sm [&_[data-sidebar=menu-button]]:min-h-[56px] [&_[data-sidebar=menu-button]]:gap-3 [&_[data-sidebar=menu-button]]:px-4 [&_[data-sidebar=menu-button]]:py-3 [&_[data-sidebar=menu-button]]:text-base [&_[data-sidebar=menu-button]_svg]:size-6 [&_[data-sidebar=menu-button][data-size=lg]]:min-h-[64px] [&_[data-sidebar=menu-button][data-size=lg]]:text-base [&_[data-sidebar=menu-sub-button]]:min-h-[52px] [&_[data-sidebar=menu-sub-button]]:px-4 [&_[data-sidebar=menu-sub-button]]:py-3 [&_[data-sidebar=menu-sub-button]]:text-base [&_[data-sidebar=menu-sub-button]_svg]:size-5">
-            <SidebarProvider>
+            <SidebarProvider className="min-h-0 h-full">
               <div className="flex h-full min-h-0 w-full flex-col overflow-hidden">
                 {apps && apps.length > 0 && (
                   <div className="w-full flex-shrink-0 border-b p-4">
