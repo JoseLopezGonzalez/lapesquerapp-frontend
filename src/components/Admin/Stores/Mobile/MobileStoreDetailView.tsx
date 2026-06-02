@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { useStoreContext } from '@/context/StoreContext';
+import { useHideBottomNav } from '@/context/BottomNavContext';
 import { UNLOCATED_POSITION_ID } from '@/configs/config';
 import { REGISTERED_PALLETS_STORE_ID } from '@/hooks/useStores';
 import { cn } from '@/lib/utils';
@@ -43,6 +44,7 @@ export function MobileStoreDetailView({
   onBack,
 }: MobileStoreDetailViewProps) {
   const [filtersOpen, setFiltersOpen] = useState(false);
+  useHideBottomNav();
 
   const {
     loading,
