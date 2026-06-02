@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowLeft, ArrowRightLeft, Filter, LocateFixed, Plus } from 'lucide-react';
+import { ArrowLeft, ArrowRightLeft, Filter, LocateFixed, MoreHorizontal, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -16,12 +16,14 @@ import UnallocatedPositionSlideover from '../StoresManager/Store/UnallocatedPosi
 import AddElementToPosition from '../StoresManager/Store/AddElementToPositionDialog';
 import PalletKanbanView from '../StoresManager/Store/PalletKanbanView';
 import { MobileFiltersSheet } from './MobileFiltersSheet';
+import { MobileStoreLoader } from './MobileStoreLoader';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import PalletLabelDialog from '../../Pallets/PalletLabelDialog';
@@ -91,6 +93,51 @@ export function MobileStoreDetailView({
           <span className="sr-only">Volver</span>
         </Button>
         <span className="flex-1 truncate text-sm font-semibold">{displayStoreName}</span>
+
+        {/* Actions dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0">
+              <MoreHorizontal className="h-5 w-5" />
+              <span className="sr-only">Acciones</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-52">
+            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+            <DropdownMenuGroup>
+              {!isGhostStore && (
+                <>
+                  <DropdownMenuItem
+                    onClick={openUnallocatedPositionSlideover}
+                    className={cn(
+                      isUnallocatedRelevant && 'text-green-600 focus:text-green-600',
+                      isUnallocatedFilled && 'text-primary focus:text-primary'
+                    )}
+                  >
+                    <LocateFixed className="mr-2 h-4 w-4" />
+                    Sin ubicar
+                    {(isUnallocatedRelevant || isUnallocatedFilled) && (
+                      <span className="ml-auto h-2 w-2 rounded-full bg-current" />
+                    )}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={openCreatePalletDialog}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Nuevo palet
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
+              <DropdownMenuItem
+                onClick={openMoveMultiplePalletsToStoreDialog}
+                disabled={!store?.content?.pallets || store.content.pallets.length === 0}
+              >
+                <ArrowRightLeft className="mr-2 h-4 w-4" />
+                Traspaso masivo
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
         {!isGhostStore && (
           <Button
             variant="ghost"
@@ -111,24 +158,11 @@ export function MobileStoreDetailView({
       {/* Content */}
       <div className="relative min-h-0 flex-1 overflow-hidden">
         {loading ? (
-          <div className="flex h-full items-center justify-center">
-            <div className="text-muted-foreground text-sm">Cargando almacén…</div>
-          </div>
+          <MobileStoreLoader storeName={displayStoreName} />
         ) : isGhostStore ? (
           /* Ghost store — kanban view */
-          <div className="relative h-full overflow-hidden">
+          <div className="h-full overflow-hidden">
             <PalletKanbanView />
-            <div className="absolute right-4 bottom-4 z-10">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={openMoveMultiplePalletsToStoreDialog}
-                disabled={!store?.content?.pallets || store.content.pallets.length === 0}
-              >
-                <ArrowRightLeft className="mr-1.5 h-4 w-4" />
-                Traspaso masivo
-              </Button>
-            </div>
           </div>
         ) : (
           /* Normal store — full-screen map */
@@ -136,44 +170,6 @@ export function MobileStoreDetailView({
             <MapContainer>
               <Map onClickPosition={() => {}} isPositionEmpty={() => {}} />
             </MapContainer>
-
-            {/* FAB strip — bottom of map, above safe area */}
-            <div className="absolute right-3 bottom-3 left-3 z-10 flex flex-wrap items-center justify-end gap-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                className={cn('flex items-center gap-1.5', unallocatedButtonClass)}
-                onClick={openUnallocatedPositionSlideover}
-              >
-                <LocateFixed className="h-4 w-4" />
-                Sin ubicar
-              </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <Plus className="mr-1 h-4 w-4" />
-                    Nuevo
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-44">
-                  <DropdownMenuLabel>Crear elementos</DropdownMenuLabel>
-                  <DropdownMenuGroup>
-                    <DropdownMenuItem onClick={openCreatePalletDialog}>Palet</DropdownMenuItem>
-                    <DropdownMenuItem disabled>Tinas</DropdownMenuItem>
-                    <DropdownMenuItem disabled>Cajas</DropdownMenuItem>
-                  </DropdownMenuGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={openMoveMultiplePalletsToStoreDialog}
-                disabled={!store?.content?.pallets || store.content.pallets.length === 0}
-              >
-                <ArrowRightLeft className="mr-1 h-4 w-4" />
-                Traspaso
-              </Button>
-            </div>
           </Card>
         )}
       </div>
