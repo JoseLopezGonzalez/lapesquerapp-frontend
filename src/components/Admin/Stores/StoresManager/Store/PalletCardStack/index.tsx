@@ -9,31 +9,21 @@ interface PalletCardStackProps {
   className?: string;
 }
 
-interface CardPresentation {
-  x: number;
-  y: number;
-  scale: number;
-  rotate: number;
-  opacity: number;
-  zIndex: number;
-  pointerEvents: 'auto' | 'none';
-}
+const DECK_CONFIG = [
+  { tx: 0, scale: 1.0, opacity: 1.0, z: 10 },
+  { tx: 28, scale: 0.9, opacity: 0.55, z: 8 },
+  { tx: 44, scale: 0.8, opacity: 0.28, z: 6 },
+] as const;
 
-const MOBILE_PRESET: Record<string, Omit<CardPresentation, 'pointerEvents'>> = {
-  '-2': { x: -52, y: 24, scale: 0.88, rotate: -3, opacity: 0.35, zIndex: 10 },
-  '-1': { x: -26, y: 12, scale: 0.94, rotate: -1.5, opacity: 0.72, zIndex: 20 },
-  '0': { x: 0, y: 0, scale: 1, rotate: 0, opacity: 1, zIndex: 30 },
-  '1': { x: 26, y: 12, scale: 0.94, rotate: 1.5, opacity: 0.72, zIndex: 20 },
-  '2': { x: 52, y: 24, scale: 0.88, rotate: 3, opacity: 0.35, zIndex: 10 },
-};
-
-function getPresentation(offset: number): CardPresentation | null {
-  const key = String(offset);
-  const preset = MOBILE_PRESET[key];
-  if (!preset) return null;
+function getCardStyle(offset: number): React.CSSProperties | null {
+  const abs = Math.abs(offset);
+  if (abs >= DECK_CONFIG.length) return null;
+  const { tx, scale, opacity, z } = DECK_CONFIG[abs];
+  const dir = offset >= 0 ? 1 : -1;
   return {
-    ...preset,
-    pointerEvents: offset === 0 ? 'auto' : 'none',
+    transform: `translateX(${dir * tx}%) scale(${scale})`,
+    opacity,
+    zIndex: z,
   };
 }
 
@@ -65,7 +55,6 @@ export function PalletCardStack({ children, label, className }: PalletCardStackP
         else if (touchDelta.current > 40) goTo(activeIndex - 1);
       }}
     >
-      {/* Header */}
       {(label || count > 1) && (
         <div className="flex items-center justify-between px-4">
           {label && (
@@ -81,48 +70,33 @@ export function PalletCardStack({ children, label, className }: PalletCardStackP
         </div>
       )}
 
-      {/* Stage */}
-      <div className="relative isolate overflow-hidden px-8 pt-2 pb-4 [perspective:1200px]">
-        <div className="relative mx-auto w-full max-w-[480px]">
-          {/* Ghost: invisible active card in normal flow → container auto-height */}
-          <div className="pointer-events-none invisible" aria-hidden="true">
-            {children[activeIndex]}
-          </div>
-
-          {children.map((child, i) => {
-            const offset = i - activeIndex;
-            const p = getPresentation(offset);
-            if (!p) return null;
-            const isActive = offset === 0;
-
-            return (
-              <div
-                key={i}
-                className={cn(
-                  'absolute top-0 left-1/2 w-[min(100%,420px)]',
-                  '[transition-property:transform,opacity,box-shadow]',
-                  '[transition-duration:480ms]',
-                  '[transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
-                  'will-change-transform',
-                  !isActive && 'cursor-pointer'
-                )}
-                style={{
-                  zIndex: p.zIndex,
-                  opacity: p.opacity,
-                  transform: `translateX(calc(-50% + ${p.x}px)) translateY(${p.y}px) scale(${p.scale}) rotate(${p.rotate}deg)`,
-                  transformOrigin: 'bottom center',
-                  pointerEvents: p.pointerEvents,
-                }}
-                onClick={() => !isActive && goTo(i)}
-              >
-                {child}
-              </div>
-            );
-          })}
+      <div className="relative mx-6">
+        {/* Ghost element: invisible active card in normal flow → correct container height */}
+        <div className="pointer-events-none invisible" aria-hidden="true">
+          {children[activeIndex]}
         </div>
+
+        {children.map((child, i) => {
+          const offset = i - activeIndex;
+          const style = getCardStyle(offset);
+          if (!style) return null;
+          const isActive = offset === 0;
+          return (
+            <div
+              key={i}
+              className={cn(
+                'absolute inset-x-0 top-0 transition-all duration-300 ease-out',
+                !isActive && 'cursor-pointer'
+              )}
+              style={style}
+              onClick={() => !isActive && goTo(i)}
+            >
+              {child}
+            </div>
+          );
+        })}
       </div>
 
-      {/* Dot indicators */}
       {count > 1 && count <= 12 && (
         <div className="flex justify-center gap-1.5 pb-1">
           {Array.from({ length: count }).map((_, i) => (
