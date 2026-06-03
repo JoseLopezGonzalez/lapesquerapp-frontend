@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useStoreContext } from '@/context/StoreContext';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import PalletCard from '../PositionSlideover/PalletCard';
-import { PalletCardStack } from '../PalletCardStack';
 import { REGISTERED_PALLETS_STORE_ID } from '@/hooks/useStores';
 import Masonry from 'react-masonry-css';
 import { Package } from 'lucide-react';
@@ -50,45 +49,24 @@ export default function PalletKanbanView() {
   }
 
   return (
-    <>
-      {/* Mobile: horizontal swipe — CSS hidden on md+ (no JS timing dependency) */}
-      <div className="h-full overflow-y-auto md:hidden">
-        <div className="py-4">
-          <PalletCardStack label="Palets en espera">
-            {allPallets.map((pallet) => (
+    <ScrollArea className="h-full w-full">
+      <div className="p-4">
+        <Masonry
+          breakpointCols={breakpointColumnsObj}
+          className="masonry-grid"
+          columnClassName="masonry-grid_column"
+        >
+          {allPallets.map((pallet) => (
+            <div key={pallet.id} className="mb-4">
               <PalletCard
-                key={pallet.id}
                 pallet={pallet}
                 isFlipped={flippedId === pallet.id}
                 onFlip={(f) => setFlippedId(f ? pallet.id : null)}
               />
-            ))}
-          </PalletCardStack>
-        </div>
+            </div>
+          ))}
+        </Masonry>
       </div>
-
-      {/* Desktop: masonry grid — CSS hidden below md */}
-      <div className="hidden h-full w-full md:block">
-        <ScrollArea className="h-full w-full">
-          <div className="p-4">
-            <Masonry
-              breakpointCols={breakpointColumnsObj}
-              className="masonry-grid"
-              columnClassName="masonry-grid_column"
-            >
-              {allPallets.map((pallet) => (
-                <div key={pallet.id} className="mb-4">
-                  <PalletCard
-                    pallet={pallet}
-                    isFlipped={flippedId === pallet.id}
-                    onFlip={(f) => setFlippedId(f ? pallet.id : null)}
-                  />
-                </div>
-              ))}
-            </Masonry>
-          </div>
-        </ScrollArea>
-      </div>
-    </>
+    </ScrollArea>
   );
 }

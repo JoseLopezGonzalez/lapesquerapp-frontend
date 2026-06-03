@@ -13,7 +13,6 @@ import {
 import { useStoreContext } from '@/context/StoreContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import PalletCard from '../PositionSlideover/PalletCard';
-import { PalletCardStack } from '../PalletCardStack';
 
 export default function UnallocatedPositionSlideover() {
   const [flippedId, setFlippedId] = useState<string | number | null>(null);
@@ -60,35 +59,18 @@ export default function UnallocatedPositionSlideover() {
             </Card>
           </div>
         ) : (
-          <>
-            {/* Mobile: horizontal swipe — CSS hidden on md+ (no JS timing dependency) */}
-            <div className="py-4 md:hidden">
-              <PalletCardStack>
-                {pallets.map((pallet) => (
-                  <PalletCard
-                    key={pallet.id}
-                    pallet={pallet}
-                    isFlipped={flippedId === pallet.id}
-                    onFlip={(f) => setFlippedId(f ? pallet.id : null)}
-                  />
-                ))}
-              </PalletCardStack>
+          <div className="min-h-0 flex-1 overflow-y-auto px-2 py-4">
+            <div className="space-y-4">
+              {pallets.map((pallet) => (
+                <PalletCard
+                  key={pallet.id}
+                  pallet={pallet}
+                  isFlipped={flippedId === pallet.id}
+                  onFlip={(f) => setFlippedId(f ? pallet.id : null)}
+                />
+              ))}
             </div>
-
-            {/* Desktop: vertical scroll — CSS hidden below md */}
-            <div className="hidden min-h-0 flex-1 overflow-y-auto px-2 py-4 md:block">
-              <div className="space-y-4">
-                {pallets.map((pallet) => (
-                  <PalletCard
-                    key={pallet.id}
-                    pallet={pallet}
-                    isFlipped={flippedId === pallet.id}
-                    onFlip={(f) => setFlippedId(f ? pallet.id : null)}
-                  />
-                ))}
-              </div>
-            </div>
-          </>
+          </div>
         )}
       </SheetContent>
     </Sheet>
