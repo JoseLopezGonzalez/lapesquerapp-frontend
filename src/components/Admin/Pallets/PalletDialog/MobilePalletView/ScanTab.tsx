@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { type ChangeEvent, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { ChevronDown, ChevronUp, Package, Plus, RotateCcw, Scan, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -114,7 +114,7 @@ export default function ScanTab({
                   type="text"
                   placeholder="Lote"
                   value={boxCreationData.lot}
-                  onChange={(e) => boxCreationDataChange('lot', e.target.value)}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => boxCreationDataChange('lot', e.target.value)}
                   disabled={isReadOnly}
                 />
               </div>
@@ -125,7 +125,7 @@ export default function ScanTab({
                   step="0.01"
                   placeholder="0.00"
                   value={boxCreationData.netWeight}
-                  onChange={(e) => boxCreationDataChange('netWeight', e.target.value)}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => boxCreationDataChange('netWeight', e.target.value)}
                   className="text-right"
                   disabled={isReadOnly}
                 />
@@ -139,7 +139,7 @@ export default function ScanTab({
                   step="0.01"
                   placeholder="Opcional"
                   value={boxCreationData.manualCostPerKg}
-                  onChange={(e) => boxCreationDataChange('manualCostPerKg', e.target.value)}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => boxCreationDataChange('manualCostPerKg', e.target.value)}
                   className="text-right"
                   disabled={isReadOnly}
                 />

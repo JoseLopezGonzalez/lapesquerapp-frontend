@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { type ChangeEvent, useState } from 'react';
 import { AlertTriangle, ChevronDown, ChevronUp, Copy, Package, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -111,7 +111,7 @@ export default function BoxesTab({
                           <label className="text-xs font-medium text-muted-foreground">Lote</label>
                           <Input
                             defaultValue={box.lot}
-                            onChange={(e) => onEditLot(box.id, e.target.value)}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => onEditLot(box.id, e.target.value)}
                             className="h-8 text-sm"
                           />
                         </div>
@@ -122,7 +122,7 @@ export default function BoxesTab({
                           <Input
                             type="number"
                             defaultValue={box.netWeight}
-                            onChange={(e) => onEditNetWeight(box.id, parseFloat(e.target.value))}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => onEditNetWeight(box.id, parseFloat(e.target.value))}
                             className="h-8 text-right text-sm"
                           />
                         </div>
@@ -149,7 +149,7 @@ export default function BoxesTab({
                                     ? String(box.manualCostPerKg)
                                     : ''
                                 }
-                                onChange={(e) => onEditManualCost(box.id, e.target.value)}
+                                onChange={(e: ChangeEvent<HTMLInputElement>) => onEditManualCost(box.id, e.target.value)}
                                 className="h-8 text-right text-sm"
                               />
                             </div>

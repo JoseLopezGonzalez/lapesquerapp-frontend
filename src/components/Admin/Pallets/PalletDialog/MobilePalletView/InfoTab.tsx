@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { type ChangeEvent, useState } from 'react';
 import { ChevronDown, ChevronUp, Link2Off } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -103,7 +103,7 @@ export default function InfoTab({
         <Label className="text-sm font-medium">Observaciones</Label>
         <Textarea
           defaultValue={temporalPallet.observations ?? ''}
-          onChange={(e) => onEditObservations(e.target.value)}
+          onChange={(e: ChangeEvent<HTMLTextAreaElement>) => onEditObservations(e.target.value)}
           className="min-h-[80px] resize-none"
           placeholder="Observaciones sobre este palet..."
           disabled={isReadOnly}
