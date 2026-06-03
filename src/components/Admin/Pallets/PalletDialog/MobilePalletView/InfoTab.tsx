@@ -120,9 +120,9 @@ export default function InfoTab({
             onValueChange={(value: string) => onEditOrderId(value || null)}
           >
             <SelectTrigger className="" loading={activeOrdersLoading}>
-              <SelectValue placeholder="Sin pedido asignado" />
+              <SelectValue placeholder="Sin pedido asignado" loading={activeOrdersLoading} />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent loading={activeOrdersLoading}>
               {activeOrdersOptions.map((order) => (
                 <SelectItem key={order.id} value={String(order.id)}>
                   #{order.name} — {formatDateShort(order.load_date)}
