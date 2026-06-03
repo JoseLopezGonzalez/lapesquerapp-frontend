@@ -8,8 +8,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 
 import { usePallet, type PalletState } from '@/hooks/usePallet';
 import PalletView from './PalletView';
+import MobilePalletView from './MobilePalletView';
 import { useSession } from 'next-auth/react';
 import { isExternalActor } from '@/lib/auth/actor';
+import { useIsMobileSafe } from '@/hooks/use-mobile';
 
 interface PalletDialogProps {
   palletId?: string | number | null;
@@ -36,13 +38,17 @@ export default function PalletDialog({
 }: PalletDialogProps) {
   const { data: session } = useSession();
   const externalActor = isExternalActor(session?.user);
+  const { isMobile, mounted } = useIsMobileSafe();
+
+  const effectivePalletId =
+    palletId && !palletId?.toString().startsWith('temp-')
+      ? palletId
+      : palletId === 'new'
+        ? 'new'
+        : null;
+
   const { temporalPallet } = usePallet({
-    id:
-      palletId && !palletId?.toString().startsWith('temp-')
-        ? palletId
-        : palletId === 'new'
-          ? 'new'
-          : null,
+    id: effectivePalletId,
     onChange: () => {},
     initialStoreId,
     initialOrderId,
@@ -71,7 +77,7 @@ export default function PalletDialog({
       <Dialog open={isOpen} onOpenChange={handleOnClickClose}>
         <DialogContent
           size="full"
-          className="flex h-[90vh] max-h-[90vh] flex-col overflow-hidden max-sm:top-0 max-sm:left-0 max-sm:h-dvh max-sm:max-h-dvh max-sm:w-full max-sm:max-w-full max-sm:translate-x-0 max-sm:translate-y-0 max-sm:overflow-y-auto max-sm:rounded-none"
+          className="flex h-[90vh] max-h-[90vh] flex-col overflow-hidden max-sm:top-0 max-sm:left-0 max-sm:h-dvh max-sm:max-h-dvh max-sm:w-full max-sm:max-w-full max-sm:translate-x-0 max-sm:translate-y-0 max-sm:overflow-hidden max-sm:rounded-none"
           aria-describedby={undefined}
         >
           <DialogHeader>
@@ -109,23 +115,29 @@ export default function PalletDialog({
               )}
             </DialogTitle>
           </DialogHeader>
-          <div className="flex min-h-0 w-full flex-1 overflow-hidden pb-4">
-            <PalletView
-              palletId={
-                palletId && !palletId?.toString().startsWith('temp-')
-                  ? palletId
-                  : palletId === 'new'
-                    ? 'new'
-                    : null
-              }
-              onChange={onChange}
-              initialStoreId={initialStoreId as null | undefined}
-              initialOrderId={initialOrderId as null | undefined}
-              wrappedInDialog={true}
-              onSaveTemporal={(onSaveTemporal ? handleSaveTemporal : null) as null | undefined}
-              initialPallet={initialPallet as null | undefined}
-              readOnly={readOnly}
-            />
+          <div className="flex min-h-0 w-full flex-1 overflow-hidden pb-4 max-sm:pb-0">
+            {mounted && isMobile ? (
+              <MobilePalletView
+                palletId={effectivePalletId}
+                onChange={onChange}
+                initialStoreId={initialStoreId as null | undefined}
+                initialOrderId={initialOrderId as null | undefined}
+                onSaveTemporal={(onSaveTemporal ? handleSaveTemporal : null) as null | undefined}
+                initialPallet={initialPallet as null | undefined}
+                readOnly={readOnly}
+              />
+            ) : (
+              <PalletView
+                palletId={effectivePalletId}
+                onChange={onChange}
+                initialStoreId={initialStoreId as null | undefined}
+                initialOrderId={initialOrderId as null | undefined}
+                wrappedInDialog={true}
+                onSaveTemporal={(onSaveTemporal ? handleSaveTemporal : null) as null | undefined}
+                initialPallet={initialPallet as null | undefined}
+                readOnly={readOnly}
+              />
+            )}
           </div>
         </DialogContent>
       </Dialog>
