@@ -124,7 +124,7 @@ export default function MobilePalletView({
 
       <Tabs
         value={activeTab}
-        onValueChange={(v) => {
+        onValueChange={(v: string) => {
           setActiveTab(v);
           if (v === 'info' && showHistorial) refetchTimeline();
         }}

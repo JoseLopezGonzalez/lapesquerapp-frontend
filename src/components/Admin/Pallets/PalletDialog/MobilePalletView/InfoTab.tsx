@@ -117,7 +117,7 @@ export default function InfoTab({
           <Select
             disabled={orderIdBlocked || isReadOnly || activeOrdersLoading}
             value={temporalPallet.orderId ? String(temporalPallet.orderId) : ''}
-            onValueChange={(value) => onEditOrderId(value || null)}
+            onValueChange={(value: string) => onEditOrderId(value || null)}
           >
             <SelectTrigger loading={activeOrdersLoading}>
               <SelectValue placeholder="Sin pedido asignado" />
