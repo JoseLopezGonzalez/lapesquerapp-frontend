@@ -119,7 +119,7 @@ export default function InfoTab({
             value={temporalPallet.orderId ? String(temporalPallet.orderId) : ''}
             onValueChange={(value: string) => onEditOrderId(value || null)}
           >
-            <SelectTrigger loading={activeOrdersLoading}>
+            <SelectTrigger className="" loading={activeOrdersLoading}>
               <SelectValue placeholder="Sin pedido asignado" />
             </SelectTrigger>
             <SelectContent>
