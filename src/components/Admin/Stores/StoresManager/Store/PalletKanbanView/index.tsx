@@ -8,7 +8,6 @@ import { PalletCardStack } from '../PalletCardStack';
 import { REGISTERED_PALLETS_STORE_ID } from '@/hooks/useStores';
 import Masonry from 'react-masonry-css';
 import { Package } from 'lucide-react';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 const breakpointColumnsObj = {
   default: 3,
@@ -22,7 +21,6 @@ const breakpointColumnsObj = {
 export default function PalletKanbanView() {
   const [flippedId, setFlippedId] = useState<string | number | null>(null);
   const { store } = useStoreContext();
-  const isMobile = useIsMobile();
 
   const isGhostStore = store?.id === REGISTERED_PALLETS_STORE_ID;
 
@@ -51,9 +49,10 @@ export default function PalletKanbanView() {
     );
   }
 
-  if (isMobile) {
-    return (
-      <div className="h-full overflow-y-auto">
+  return (
+    <>
+      {/* Mobile: horizontal swipe — CSS hidden on md+ (no JS timing dependency) */}
+      <div className="h-full overflow-y-auto md:hidden">
         <div className="py-4">
           <PalletCardStack label="Palets en espera">
             {allPallets.map((pallet) => (
@@ -67,28 +66,29 @@ export default function PalletKanbanView() {
           </PalletCardStack>
         </div>
       </div>
-    );
-  }
 
-  return (
-    <ScrollArea className="h-full w-full">
-      <div className="p-4">
-        <Masonry
-          breakpointCols={breakpointColumnsObj}
-          className="masonry-grid"
-          columnClassName="masonry-grid_column"
-        >
-          {allPallets.map((pallet) => (
-            <div key={pallet.id} className="mb-4">
-              <PalletCard
-                pallet={pallet}
-                isFlipped={flippedId === pallet.id}
-                onFlip={(f) => setFlippedId(f ? pallet.id : null)}
-              />
-            </div>
-          ))}
-        </Masonry>
+      {/* Desktop: masonry grid — CSS hidden below md */}
+      <div className="hidden h-full w-full md:block">
+        <ScrollArea className="h-full w-full">
+          <div className="p-4">
+            <Masonry
+              breakpointCols={breakpointColumnsObj}
+              className="masonry-grid"
+              columnClassName="masonry-grid_column"
+            >
+              {allPallets.map((pallet) => (
+                <div key={pallet.id} className="mb-4">
+                  <PalletCard
+                    pallet={pallet}
+                    isFlipped={flippedId === pallet.id}
+                    onFlip={(f) => setFlippedId(f ? pallet.id : null)}
+                  />
+                </div>
+              ))}
+            </Masonry>
+          </div>
+        </ScrollArea>
       </div>
-    </ScrollArea>
+    </>
   );
 }

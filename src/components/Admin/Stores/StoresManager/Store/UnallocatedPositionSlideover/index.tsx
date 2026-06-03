@@ -59,32 +59,36 @@ export default function UnallocatedPositionSlideover() {
               </p>
             </Card>
           </div>
-        ) : isMobile ? (
-          <div className="py-4">
-            <PalletCardStack>
-              {pallets.map((pallet) => (
-                <PalletCard
-                  key={pallet.id}
-                  pallet={pallet}
-                  isFlipped={flippedId === pallet.id}
-                  onFlip={(f) => setFlippedId(f ? pallet.id : null)}
-                />
-              ))}
-            </PalletCardStack>
-          </div>
         ) : (
-          <div className="min-h-0 flex-1 overflow-y-auto px-2 py-4">
-            <div className="space-y-4">
-              {pallets.map((pallet) => (
-                <PalletCard
-                  key={pallet.id}
-                  pallet={pallet}
-                  isFlipped={flippedId === pallet.id}
-                  onFlip={(f) => setFlippedId(f ? pallet.id : null)}
-                />
-              ))}
+          <>
+            {/* Mobile: horizontal swipe — CSS hidden on md+ (no JS timing dependency) */}
+            <div className="py-4 md:hidden">
+              <PalletCardStack>
+                {pallets.map((pallet) => (
+                  <PalletCard
+                    key={pallet.id}
+                    pallet={pallet}
+                    isFlipped={flippedId === pallet.id}
+                    onFlip={(f) => setFlippedId(f ? pallet.id : null)}
+                  />
+                ))}
+              </PalletCardStack>
             </div>
-          </div>
+
+            {/* Desktop: vertical scroll — CSS hidden below md */}
+            <div className="hidden min-h-0 flex-1 overflow-y-auto px-2 py-4 md:block">
+              <div className="space-y-4">
+                {pallets.map((pallet) => (
+                  <PalletCard
+                    key={pallet.id}
+                    pallet={pallet}
+                    isFlipped={flippedId === pallet.id}
+                    onFlip={(f) => setFlippedId(f ? pallet.id : null)}
+                  />
+                ))}
+              </div>
+            </div>
+          </>
         )}
       </SheetContent>
     </Sheet>
