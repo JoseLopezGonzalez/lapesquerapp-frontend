@@ -55,8 +55,11 @@ interface PalletCardProps {
 
 export default function PalletCard({ pallet, isFlipped = false, onFlip }: PalletCardProps) {
   const [containerHeight, setContainerHeight] = useState<number | undefined>(undefined);
+  const [shrinking, setShrinking] = useState(false);
   const frontRef = useRef<HTMLDivElement>(null);
   const backRef = useRef<HTMLDivElement>(null);
+  const containerHeightRef = useRef<number | undefined>(undefined);
+  const heightSetByFlipTo = useRef(false);
   const { data: session } = useSession();
   const isMobile = useIsMobile();
 
@@ -106,14 +109,41 @@ export default function PalletCard({ pallet, isFlipped = false, onFlip }: Pallet
   const receptionId = pallet.receptionId;
   const belongsToReception = receptionId !== null && receptionId !== undefined;
 
-  // Measure front face on mount to establish initial container height
+  // Measure front face on mount
   useEffect(() => {
-    if (frontRef.current) setContainerHeight(frontRef.current.offsetHeight);
+    if (frontRef.current) {
+      const h = frontRef.current.offsetHeight;
+      containerHeightRef.current = h;
+      setContainerHeight(h);
+    }
   }, []);
 
+  // Sync height when isFlipped changes from the parent (auto-unflip).
+  // Without this, containerHeight stays at the flipped face height while the
+  // other face rotates in, causing content to overflow and cards to overlap.
+  useEffect(() => {
+    if (heightSetByFlipTo.current) {
+      // flipTo already set the correct height — just clear the flag
+      heightSetByFlipTo.current = false;
+      return;
+    }
+    const ref = isFlipped ? backRef : frontRef;
+    if (!ref.current) return;
+    const target = ref.current.offsetHeight;
+    const current = containerHeightRef.current ?? 0;
+    setShrinking(target < current);
+    containerHeightRef.current = target;
+    setContainerHeight(target);
+  }, [isFlipped]);  
+
   const flipTo = (flip: boolean) => {
-    const ref = flip ? backRef : frontRef;
-    if (ref.current) setContainerHeight(ref.current.offsetHeight);
+    const targetRef = flip ? backRef : frontRef;
+    const current = containerHeightRef.current ?? 0;
+    const target = targetRef.current?.offsetHeight ?? current;
+    heightSetByFlipTo.current = true;
+    setShrinking(target < current);
+    containerHeightRef.current = target;
+    setContainerHeight(target);
     onFlip?.(flip);
   };
 
@@ -123,12 +153,17 @@ export default function PalletCard({ pallet, isFlipped = false, onFlip }: Pallet
   };
 
   // overflow:hidden intentionally absent on the scene — it flattens preserve-3d per CSS spec.
+  // When shrinking (flipping to a shorter face), delay the height change by half the
+  // rotation duration so the outgoing face has already rotated past 90° (invisible)
+  // before the container starts to collapse, preventing overlap with cards below.
   const sceneStyle: CSSProperties =
     containerHeight !== undefined
       ? {
           perspective: '1000px',
           height: containerHeight,
-          transition: 'height 480ms cubic-bezier(0.22, 1, 0.36, 1)',
+          transition: shrinking
+            ? 'height 240ms cubic-bezier(0.22, 1, 0.36, 1) 240ms'
+            : 'height 480ms cubic-bezier(0.22, 1, 0.36, 1)',
         }
       : { perspective: '1000px' };
 
