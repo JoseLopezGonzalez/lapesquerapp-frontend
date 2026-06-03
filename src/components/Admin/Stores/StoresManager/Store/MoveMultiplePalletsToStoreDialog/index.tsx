@@ -118,7 +118,7 @@ export default function MoveMultiplePalletsToStoreDialog() {
       const response = await moveMultiplePalletsToStore(
         palletIdsArray,
         Number(selectedStoreValue),
-        token as string
+        token ?? ''
       );
 
       const { moved_count, total_count, errors } = response as {
@@ -184,10 +184,7 @@ export default function MoveMultiplePalletsToStoreDialog() {
     const availableBoxCount = getAvailableBoxesCount(pallet);
     const availableNetWeight = getAvailableNetWeight(pallet);
 
-    const productsSummary: Record<
-      string | number,
-      { name: string; netWeight: number; boxCount: number }
-    > = availableBoxes.reduce(
+    const productsSummary = availableBoxes.reduce(
       (
         acc: Record<string | number, { name: string; netWeight: number; boxCount: number }>,
         box: { product: { id: string | number; name: string }; netWeight: string | number }
@@ -206,7 +203,11 @@ export default function MoveMultiplePalletsToStoreDialog() {
       },
       {}
     );
-    const productsSummaryArray = Object.values(productsSummary);
+    const productsSummaryArray = Object.values(productsSummary) as {
+      name: string;
+      netWeight: number;
+      boxCount: number;
+    }[];
     const hasMultipleProducts = productsSummaryArray.length > 1;
 
     return {
@@ -249,7 +250,6 @@ export default function MoveMultiplePalletsToStoreDialog() {
             <div className="relative">
               <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
               <Input
-                type="text"
                 placeholder="Buscar palet por ID o lote..."
                 className="pl-9"
                 value={palletSearchQuery}
@@ -290,117 +290,119 @@ export default function MoveMultiplePalletsToStoreDialog() {
                       const palletInfo = getPalletInfo(pallet);
 
                       return (
-                        <div key={pallet.id} onClick={() => handleTogglePallet(pallet.id)}>
-                          <Card
-                            className={`cursor-pointer transition-all ${
-                              isSelected
-                                ? 'border-primary bg-accent shadow-md'
-                                : 'hover:border-primary/50'
-                            }`}
+                        <Card
+                          key={pallet.id}
+                          className={`cursor-pointer transition-all ${
+                            isSelected
+                              ? 'border-primary bg-accent shadow-md'
+                              : 'hover:border-primary/50'
+                          }`}
+                        >
+                          <CardContent
+                            className="p-3"
+                            onClick={() => handleTogglePallet(pallet.id)}
                           >
-                            <CardContent className="p-3">
-                              <div className="flex items-start gap-3">
-                                <Checkbox
-                                  checked={isSelected}
-                                  onCheckedChange={() => handleTogglePallet(pallet.id)}
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="mt-1"
-                                />
-                                <div className="min-w-0 flex-1">
-                                  {/* Header con ID */}
-                                  <div className="mb-2 flex items-center gap-2">
-                                    <div className="flex flex-shrink-0 items-center gap-2 rounded-md bg-black p-1.5 text-white">
-                                      <Layers className="h-4 w-4" />
-                                    </div>
-                                    <h4 className="text-foreground truncate text-base font-medium">
-                                      Palet #{pallet.id}
-                                    </h4>
+                            <div className="flex items-start gap-3">
+                              <Checkbox
+                                checked={isSelected}
+                                onCheckedChange={() => handleTogglePallet(pallet.id)}
+                                onClick={(e) => e.stopPropagation()}
+                                className="mt-1"
+                              />
+                              <div className="min-w-0 flex-1">
+                                {/* Header con ID */}
+                                <div className="mb-2 flex items-center gap-2">
+                                  <div className="flex flex-shrink-0 items-center gap-2 rounded-md bg-black p-1.5 text-white">
+                                    <Layers className="h-4 w-4" />
                                   </div>
+                                  <h4 className="text-foreground truncate text-base font-medium">
+                                    Palet #{pallet.id}
+                                  </h4>
+                                </div>
 
-                                  {/* Productos */}
+                                {/* Productos */}
+                                <div className="mb-2">
+                                  <div className="text-muted-foreground mb-1.5 text-xs font-medium">
+                                    Productos:
+                                  </div>
+                                  <div className="space-y-2">
+                                    {palletInfo.productsSummaryArray.map((product, index) => (
+                                      <div
+                                        key={index}
+                                        className="flex min-w-0 flex-col overflow-hidden"
+                                      >
+                                        <p className="text-foreground truncate text-sm font-medium">
+                                          {product.name}
+                                        </p>
+                                        {palletInfo.hasMultipleProducts && (
+                                          <div className="text-muted-foreground mt-0.5 flex items-center text-xs">
+                                            <span className="truncate">
+                                              {formatDecimalWeight(product.netWeight)}
+                                            </span>
+                                            <span className="mx-1.5 flex-shrink-0">|</span>
+                                            <span className="flex-shrink-0">
+                                              {product.boxCount}{' '}
+                                              {product.boxCount === 1 ? 'caja' : 'cajas'}
+                                            </span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+
+                                {/* Lotes */}
+                                {pallet.lots && pallet.lots.length > 0 && (
                                   <div className="mb-2">
-                                    <div className="text-muted-foreground mb-1.5 text-xs font-medium">
-                                      Productos:
+                                    <div className="text-muted-foreground mb-1 text-xs font-medium">
+                                      Lotes:
                                     </div>
-                                    <div className="space-y-2">
-                                      {palletInfo.productsSummaryArray.map((product, index) => (
-                                        <div
-                                          key={index}
-                                          className="flex min-w-0 flex-col overflow-hidden"
+                                    <div className="flex flex-wrap gap-1">
+                                      {pallet.lots.map((lot, idx) => (
+                                        <Badge
+                                          key={idx}
+                                          variant="outline"
+                                          className="bg-accent text-accent-foreground border-input max-w-full truncate text-xs"
                                         >
-                                          <p className="text-foreground truncate text-sm font-medium">
-                                            {product.name}
-                                          </p>
-                                          {palletInfo.hasMultipleProducts && (
-                                            <div className="text-muted-foreground mt-0.5 flex items-center text-xs">
-                                              <span className="truncate">
-                                                {formatDecimalWeight(product.netWeight)}
-                                              </span>
-                                              <span className="mx-1.5 flex-shrink-0">|</span>
-                                              <span className="flex-shrink-0">
-                                                {product.boxCount}{' '}
-                                                {product.boxCount === 1 ? 'caja' : 'cajas'}
-                                              </span>
-                                            </div>
-                                          )}
-                                        </div>
+                                          <span className="truncate">{lot}</span>
+                                        </Badge>
                                       ))}
                                     </div>
                                   </div>
+                                )}
 
-                                  {/* Lotes */}
-                                  {pallet.lots && pallet.lots.length > 0 && (
-                                    <div className="mb-2">
-                                      <div className="text-muted-foreground mb-1 text-xs font-medium">
-                                        Lotes:
-                                      </div>
-                                      <div className="flex flex-wrap gap-1">
-                                        {pallet.lots.map((lot, idx) => (
-                                          <Badge
-                                            key={idx}
-                                            variant="outline"
-                                            className="bg-accent text-accent-foreground border-input max-w-full truncate text-xs"
-                                          >
-                                            <span className="truncate">{lot}</span>
-                                          </Badge>
-                                        ))}
-                                      </div>
+                                {/* Observaciones */}
+                                {pallet.observations && (
+                                  <div className="mb-2">
+                                    <div className="text-muted-foreground mb-1 text-xs font-medium">
+                                      Observaciones:
                                     </div>
-                                  )}
-
-                                  {/* Observaciones */}
-                                  {pallet.observations && (
-                                    <div className="mb-2">
-                                      <div className="text-muted-foreground mb-1 text-xs font-medium">
-                                        Observaciones:
-                                      </div>
-                                      <div className="text-foreground bg-muted/50 line-clamp-3 rounded-md p-2 text-xs break-words">
-                                        {pallet.observations}
-                                      </div>
+                                    <div className="text-foreground bg-muted/50 line-clamp-3 rounded-md p-2 text-xs break-words">
+                                      {pallet.observations}
                                     </div>
-                                  )}
-                                </div>
+                                  </div>
+                                )}
                               </div>
-                            </CardContent>
+                            </div>
+                          </CardContent>
 
-                            {/* Footer con resumen */}
-                            <CardFooter className="w-full p-0">
-                              <div className="divide-border grid w-full grid-cols-2 divide-x">
-                                <div className="bg-accent/40 flex items-center justify-center py-2">
-                                  <span className="text-sm font-semibold">
-                                    {palletInfo.availableBoxCount}{' '}
-                                    {palletInfo.availableBoxCount === 1 ? 'caja' : 'cajas'}
-                                  </span>
-                                </div>
-                                <div className="bg-accent/40 flex items-center justify-center py-2">
-                                  <span className="text-sm font-semibold">
-                                    {formatDecimalWeight(palletInfo.availableNetWeight)}
-                                  </span>
-                                </div>
+                          {/* Footer con resumen */}
+                          <CardFooter className="w-full p-0">
+                            <div className="divide-border grid w-full grid-cols-2 divide-x">
+                              <div className="bg-accent/40 flex items-center justify-center py-2">
+                                <span className="text-sm font-semibold">
+                                  {palletInfo.availableBoxCount}{' '}
+                                  {palletInfo.availableBoxCount === 1 ? 'caja' : 'cajas'}
+                                </span>
                               </div>
-                            </CardFooter>
-                          </Card>
-                        </div>
+                              <div className="bg-accent/40 flex items-center justify-center py-2">
+                                <span className="text-sm font-semibold">
+                                  {formatDecimalWeight(palletInfo.availableNetWeight)}
+                                </span>
+                              </div>
+                            </div>
+                          </CardFooter>
+                        </Card>
                       );
                     }
                   )}
@@ -423,7 +425,6 @@ export default function MoveMultiplePalletsToStoreDialog() {
             <div className="relative">
               <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
               <Input
-                type="text"
                 placeholder="Buscar almacén..."
                 className="pl-9"
                 value={searchQuery}

@@ -1,8 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import { useStoreContext } from '@/context/StoreContext';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import PalletCard from '../PositionSlideover/PalletCard';
+import { PalletCardStack } from '../PalletCardStack';
 import { REGISTERED_PALLETS_STORE_ID } from '@/hooks/useStores';
 import Masonry from 'react-masonry-css';
 import { Package } from 'lucide-react';
@@ -18,6 +20,7 @@ const breakpointColumnsObj = {
 };
 
 export default function PalletKanbanView() {
+  const [flippedId, setFlippedId] = useState<string | number | null>(null);
   const { store } = useStoreContext();
   const isMobile = useIsMobile();
 
@@ -50,11 +53,18 @@ export default function PalletKanbanView() {
 
   if (isMobile) {
     return (
-      <div className="h-full overflow-y-auto px-4 py-4">
-        <div className="space-y-4">
-          {allPallets.map((pallet) => (
-            <PalletCard key={pallet.id} pallet={pallet} />
-          ))}
+      <div className="h-full overflow-y-auto">
+        <div className="py-4">
+          <PalletCardStack label="Palets en espera">
+            {allPallets.map((pallet) => (
+              <PalletCard
+                key={pallet.id}
+                pallet={pallet}
+                isFlipped={flippedId === pallet.id}
+                onFlip={(f) => setFlippedId(f ? pallet.id : null)}
+              />
+            ))}
+          </PalletCardStack>
         </div>
       </div>
     );
@@ -70,7 +80,11 @@ export default function PalletKanbanView() {
         >
           {allPallets.map((pallet) => (
             <div key={pallet.id} className="mb-4">
-              <PalletCard pallet={pallet} />
+              <PalletCard
+                pallet={pallet}
+                isFlipped={flippedId === pallet.id}
+                onFlip={(f) => setFlippedId(f ? pallet.id : null)}
+              />
             </div>
           ))}
         </Masonry>

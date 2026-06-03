@@ -18,10 +18,12 @@ interface PalletLabelDialogProps {
 }
 
 export default function PalletLabelDialog({ isOpen, onClose, pallet }: PalletLabelDialogProps) {
+  const labelWidth = parseInt(PALLET_LABEL_SIZE.width) || 110;
+  const labelHeight = parseInt(PALLET_LABEL_SIZE.height) || 150;
   const { onPrint } = usePrintElement({
     id: 'print-area-id',
-    width: parseInt(PALLET_LABEL_SIZE.width) || 110,
-    height: parseInt(PALLET_LABEL_SIZE.height) || 90,
+    width: labelWidth,
+    height: labelHeight,
   });
 
   const handleOnClickPrintLabel = () => {
@@ -32,7 +34,6 @@ export default function PalletLabelDialog({ isOpen, onClose, pallet }: PalletLab
     onClose();
   };
 
-  const labelWidth = parseInt(PALLET_LABEL_SIZE.width) || 110;
   const maxDialogWidth = Math.max(512, labelWidth * 3.779 + 200);
 
   const mobileFullScreen =

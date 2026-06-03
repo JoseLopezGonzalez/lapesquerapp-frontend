@@ -6,23 +6,9 @@ import Link from 'next/link';
 import { ExternalLink, Package } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-import { usePallet } from '@/hooks/usePallet';
-import type { PalletState } from '@/hooks/pallets/palletHelpers';
-import type { ComponentType } from 'react';
-import PalletViewJS from './PalletView';
+import { usePallet, type PalletState } from '@/hooks/usePallet';
+import PalletView from './PalletView';
 import { useSession } from 'next-auth/react';
-
-// PalletView is a .js file; cast to proper TypeScript types
-const PalletView = PalletViewJS as ComponentType<{
-  palletId: string | number | null;
-  onChange: (...args: unknown[]) => unknown;
-  initialStoreId?: string | number | null;
-  initialOrderId?: string | number | null;
-  wrappedInDialog?: boolean;
-  onSaveTemporal?: ((pallet: PalletState) => void) | null;
-  initialPallet?: PalletState | null;
-  readOnly?: boolean;
-}>;
 import { isExternalActor } from '@/lib/auth/actor';
 
 interface PalletDialogProps {
@@ -133,11 +119,11 @@ export default function PalletDialog({
                     : null
               }
               onChange={onChange}
-              initialStoreId={initialStoreId}
-              initialOrderId={initialOrderId}
+              initialStoreId={initialStoreId as null | undefined}
+              initialOrderId={initialOrderId as null | undefined}
               wrappedInDialog={true}
-              onSaveTemporal={onSaveTemporal ? handleSaveTemporal : null}
-              initialPallet={initialPallet}
+              onSaveTemporal={(onSaveTemporal ? handleSaveTemporal : null) as null | undefined}
+              initialPallet={initialPallet as null | undefined}
               readOnly={readOnly}
             />
           </div>

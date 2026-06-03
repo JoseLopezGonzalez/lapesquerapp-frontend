@@ -54,7 +54,7 @@ export default function MovePalletToStoreDialog() {
       return;
     }
 
-    movePalletToStore(palletId, selectedStoreValue, token as string)
+    movePalletToStore(palletId, selectedStoreValue, token ?? '')
       .then(() => {
         notify.success({
           title: 'Palet movido',
@@ -96,7 +96,6 @@ export default function MovePalletToStoreDialog() {
         <div className="relative my-2">
           <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
           <Input
-            type="text"
             placeholder="Buscar almacén..."
             className="pl-9"
             value={searchQuery}

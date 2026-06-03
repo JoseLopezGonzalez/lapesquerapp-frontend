@@ -21,6 +21,7 @@ import { usePalletBoxCreation } from './pallets/usePalletBoxCreation';
 import { usePalletSave } from './pallets/usePalletSave';
 
 export { saveDiscountPreferences } from './pallets/palletHelpers';
+export type { PalletState } from './pallets/palletHelpers';
 
 interface UsePalletParams {
   id: string | number | null;

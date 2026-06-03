@@ -49,10 +49,11 @@ interface PalletCardProps {
     boxes?: unknown[];
     [key: string]: unknown;
   };
+  isFlipped?: boolean;
+  onFlip?: (flipped: boolean) => void;
 }
 
-export default function PalletCard({ pallet }: PalletCardProps) {
-  const [isFlipped, setIsFlipped] = useState(false);
+export default function PalletCard({ pallet, isFlipped = false, onFlip }: PalletCardProps) {
   const [containerHeight, setContainerHeight] = useState<number | undefined>(undefined);
   const frontRef = useRef<HTMLDivElement>(null);
   const backRef = useRef<HTMLDivElement>(null);
@@ -113,7 +114,7 @@ export default function PalletCard({ pallet }: PalletCardProps) {
   const flipTo = (flip: boolean) => {
     const ref = flip ? backRef : frontRef;
     if (ref.current) setContainerHeight(ref.current.offsetHeight);
-    setIsFlipped(flip);
+    onFlip?.(flip);
   };
 
   const handleAction = (fn: () => void) => {

@@ -50,7 +50,7 @@ function TabsList({
 }
 
 function TabsTrigger({
-  className,
+  className = '',
   ...props
 }) {
   return (

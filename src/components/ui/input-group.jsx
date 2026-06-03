@@ -46,7 +46,7 @@ const inputGroupAddonVariants = cva(
 )
 
 function InputGroupAddon({
-  className,
+  className = '',
   align = "inline-start",
   ...props
 }) {
@@ -113,7 +113,7 @@ function InputGroupText({
 }
 
 function InputGroupInput({
-  className,
+  className = '',
   ...props
 }) {
   return (

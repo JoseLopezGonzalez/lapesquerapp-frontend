@@ -64,7 +64,7 @@ export default function AddElementToPosition({ open }: { open: boolean }) {
   const token = session?.user?.accessToken;
 
   const onSubmit = () => {
-    assignPalletsToPosition(position, selectedPalletIds.map(Number), token as string)
+    assignPalletsToPosition(position, selectedPalletIds.map(Number), token ?? '')
       .then(() => {
         notify.success({ title: 'Pallets ubicados correctamente' });
         setSelectedPalletIds([]);
@@ -167,18 +167,13 @@ export default function AddElementToPosition({ open }: { open: boolean }) {
           }}
         >
           <TabsList className="mb-4 grid w-full flex-1 grid-cols-2">
-            <TabsTrigger className="" value="unlocated">
-              Pallets sin ubicar
-            </TabsTrigger>
-            <TabsTrigger className="" value="all">
-              Todos los pallets
-            </TabsTrigger>
+            <TabsTrigger value="unlocated">Pallets sin ubicar</TabsTrigger>
+            <TabsTrigger value="all">Todos los pallets</TabsTrigger>
           </TabsList>
 
           <div className="relative my-2">
             <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
             <Input
-              type="text"
               placeholder="Buscar por ID, producto o lote..."
               className="pl-9"
               value={searchQuery}

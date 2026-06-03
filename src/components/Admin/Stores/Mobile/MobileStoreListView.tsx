@@ -185,13 +185,12 @@ export function MobileStoreListView({
       <div className="flex-shrink-0 px-3 pb-3">
         <InputGroup className="h-10 w-full">
           <InputGroupInput
-            className=""
             type="text"
             value={search}
             onChange={(e: ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
             placeholder="Buscar almacén…"
           />
-          <InputGroupAddon className="" align="inline-end">
+          <InputGroupAddon align="inline-end">
             <Search className="size-4" />
           </InputGroupAddon>
         </InputGroup>
