@@ -178,7 +178,7 @@ export default function InfoTab({
                 </div>
               ) : (
                 <PalletTimeline
-                  timeline={timeline ?? []}
+                  timeline={(timeline ?? []) as never[]}
                   loading={false}
                   error={null}
                   openStates={timelineOpenStates}
