@@ -13,7 +13,6 @@ import {
 import { useStoreContext } from '@/context/StoreContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import PalletCard from './PalletCard';
-import { PalletCardStack } from '../PalletCardStack';
 
 interface PositionSlideoverProps {
   onClose?: () => void;
@@ -49,7 +48,7 @@ export default function PositionSlideover({ onClose, position = 'A5' }: Position
         side={isMobile ? 'bottom' : 'right'}
         className={
           isMobile
-            ? 'max-h-[85vh] overflow-y-auto rounded-t-2xl'
+            ? 'flex max-h-[85vh] flex-col rounded-t-2xl'
             : 'flex h-full w-[900px] min-w-[430px] flex-col'
         }
       >
@@ -82,16 +81,8 @@ export default function PositionSlideover({ onClose, position = 'A5' }: Position
               </Button>
             </Card>
           </div>
-        ) : isMobile ? (
-          <div className="py-4">
-            <PalletCardStack>
-              {pallets.map((pallet) => (
-                <PalletCard key={pallet.id} pallet={pallet} />
-              ))}
-            </PalletCardStack>
-          </div>
         ) : (
-          <div className="min-h-0 flex-1 overflow-y-auto px-2 py-4">
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
             <div className="space-y-4">
               {pallets.map((pallet) => (
                 <PalletCard key={pallet.id} pallet={pallet} />
