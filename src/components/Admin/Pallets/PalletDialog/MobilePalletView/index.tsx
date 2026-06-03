@@ -14,7 +14,10 @@ import type { PalletState } from '@/hooks/usePallet';
 import type { PalletTimelineEntry } from '@/services/palletService';
 import ScanTab from './ScanTab';
 import BoxesTab from './BoxesTab';
+import ResumenTab from './ResumenTab';
 import InfoTab from './InfoTab';
+import EliminarTab from './EliminarTab';
+import HistorialTab from './HistorialTab';
 
 interface MobilePalletViewProps {
   palletId: string | number | null | undefined;
@@ -56,6 +59,7 @@ export default function MobilePalletView({
     boxCreationDataChange,
     onAddNewBox,
     onResetBoxCreationData,
+    deleteAllBoxes,
     hasPalletChanges,
     onSavingChanges,
     resetAllChanges,
@@ -91,6 +95,11 @@ export default function MobilePalletView({
     }
   };
 
+  const handleTabChange = (v: string) => {
+    setActiveTab(v);
+    if (v === 'historial' && showHistorial) refetchTimeline();
+  };
+
   if (loading || !temporalPallet) {
     return (
       <div className="flex h-full w-full flex-1 items-center justify-center">
@@ -124,31 +133,50 @@ export default function MobilePalletView({
 
       <Tabs
         value={activeTab}
-        onValueChange={(v: string) => {
-          setActiveTab(v);
-          if (v === 'info' && showHistorial) refetchTimeline();
-        }}
+        onValueChange={handleTabChange}
         className="flex min-h-0 flex-1 flex-col"
       >
-        <TabsList className="mx-3 mt-2 grid shrink-0 grid-cols-3">
-          <TabsTrigger value="escanear" className="text-xs">
-            Escanear
-          </TabsTrigger>
-          <TabsTrigger value="cajas" className="flex items-center gap-1.5 text-xs">
-            Cajas
-            {totalBoxes > 0 && (
-              <Badge
-                variant="secondary"
-                className="h-4 min-w-[1rem] rounded-full px-1 py-0 text-[10px] leading-none"
+        {/* Scrollable tab bar */}
+        <div className="shrink-0 overflow-x-auto scrollbar-none px-3 pt-2">
+          <TabsList className="inline-flex h-auto w-auto min-w-full gap-0.5 p-0.5">
+            <TabsTrigger value="escanear" className="flex-1 whitespace-nowrap px-3 text-xs">
+              Escanear
+            </TabsTrigger>
+            <TabsTrigger
+              value="cajas"
+              className="flex flex-1 items-center gap-1 whitespace-nowrap px-3 text-xs"
+            >
+              Cajas
+              {totalBoxes > 0 && (
+                <Badge
+                  variant="secondary"
+                  className="h-4 min-w-[1rem] rounded-full px-1 py-0 text-[10px] leading-none"
+                >
+                  {totalBoxes}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="resumen" className="flex-1 whitespace-nowrap px-3 text-xs">
+              Resumen
+            </TabsTrigger>
+            <TabsTrigger value="info" className="flex-1 whitespace-nowrap px-3 text-xs">
+              Detalles
+            </TabsTrigger>
+            {!isReadOnly && (
+              <TabsTrigger
+                value="eliminar"
+                className="flex-1 whitespace-nowrap px-3 text-xs text-destructive data-[state=active]:text-destructive"
               >
-                {totalBoxes}
-              </Badge>
+                Eliminar
+              </TabsTrigger>
             )}
-          </TabsTrigger>
-          <TabsTrigger value="info" className="text-xs">
-            Info
-          </TabsTrigger>
-        </TabsList>
+            {showHistorial && (
+              <TabsTrigger value="historial" className="flex-1 whitespace-nowrap px-3 text-xs">
+                Historial
+              </TabsTrigger>
+            )}
+          </TabsList>
+        </div>
 
         <TabsContent value="escanear" className="mt-0 min-h-0 flex-1 overflow-auto px-3 py-3">
           <ScanTab
@@ -178,6 +206,10 @@ export default function MobilePalletView({
           />
         </TabsContent>
 
+        <TabsContent value="resumen" className="mt-0 min-h-0 flex-1 overflow-auto px-3 py-3">
+          <ResumenTab temporalPallet={temporalPallet} />
+        </TabsContent>
+
         <TabsContent value="info" className="mt-0 min-h-0 flex-1 overflow-auto px-3 py-3">
           <InfoTab
             temporalPallet={temporalPallet}
@@ -194,14 +226,32 @@ export default function MobilePalletView({
             orderIdBlocked={orderIdBlocked}
             isReadOnly={isReadOnly}
             externalActor={externalActor}
-            timeline={timeline as PalletTimelineEntry[] | null | undefined}
-            timelineLoading={timelineLoading}
-            showHistorial={showHistorial}
           />
         </TabsContent>
+
+        {!isReadOnly && (
+          <TabsContent value="eliminar" className="mt-0 min-h-0 flex-1 overflow-auto px-3 py-3">
+            <EliminarTab
+              temporalPallet={temporalPallet}
+              onDeleteBox={(boxId) => editPallet.box.delete(boxId)}
+              onDeleteAllBoxes={deleteAllBoxes}
+              onDeleteScannedCode={(code) => boxCreationDataChange('deleteScannedCode', code)}
+              isReadOnly={isReadOnly}
+            />
+          </TabsContent>
+        )}
+
+        {showHistorial && (
+          <TabsContent value="historial" className="mt-0 min-h-0 flex-1 overflow-auto px-3 py-3">
+            <HistorialTab
+              timeline={timeline as PalletTimelineEntry[] | null | undefined}
+              timelineLoading={timelineLoading}
+            />
+          </TabsContent>
+        )}
       </Tabs>
 
-      {/* Sticky save/discard bar — only visible when there are unsaved changes */}
+      {/* Sticky save/discard bar */}
       {!isReadOnly && hasPalletChanges && (
         <div
           className="shrink-0 border-t bg-background/95 px-3 py-3 backdrop-blur-sm"
