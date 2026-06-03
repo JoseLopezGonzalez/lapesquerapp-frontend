@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Layers } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import {
@@ -15,6 +16,7 @@ import PalletCard from '../PositionSlideover/PalletCard';
 import { PalletCardStack } from '../PalletCardStack';
 
 export default function UnallocatedPositionSlideover() {
+  const [flippedId, setFlippedId] = useState<string | number | null>(null);
   const isMobile = useIsMobile();
 
   const {
@@ -23,7 +25,11 @@ export default function UnallocatedPositionSlideover() {
     unlocatedPallets,
   } = useStoreContext();
 
-  const pallets = unlocatedPallets;
+  const pallets = unlocatedPallets as Array<{
+    id: string | number;
+    lots: string[];
+    [key: string]: unknown;
+  }>;
 
   return (
     <Sheet
@@ -57,7 +63,12 @@ export default function UnallocatedPositionSlideover() {
           <div className="py-4">
             <PalletCardStack>
               {pallets.map((pallet) => (
-                <PalletCard key={pallet.id} pallet={pallet} />
+                <PalletCard
+                  key={pallet.id}
+                  pallet={pallet}
+                  isFlipped={flippedId === pallet.id}
+                  onFlip={(f) => setFlippedId(f ? pallet.id : null)}
+                />
               ))}
             </PalletCardStack>
           </div>
@@ -65,7 +76,12 @@ export default function UnallocatedPositionSlideover() {
           <div className="min-h-0 flex-1 overflow-y-auto px-2 py-4">
             <div className="space-y-4">
               {pallets.map((pallet) => (
-                <PalletCard key={pallet.id} pallet={pallet} />
+                <PalletCard
+                  key={pallet.id}
+                  pallet={pallet}
+                  isFlipped={flippedId === pallet.id}
+                  onFlip={(f) => setFlippedId(f ? pallet.id : null)}
+                />
               ))}
             </div>
           </div>

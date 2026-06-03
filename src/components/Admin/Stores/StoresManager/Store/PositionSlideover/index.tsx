@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Layers, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -21,6 +22,7 @@ interface PositionSlideoverProps {
 }
 
 export default function PositionSlideover({ onClose, position = 'A5' }: PositionSlideoverProps) {
+  const [flippedId, setFlippedId] = useState<string | number | null>(null);
   const isMobile = useIsMobile();
 
   const {
@@ -32,7 +34,11 @@ export default function PositionSlideover({ onClose, position = 'A5' }: Position
     getPosition,
   } = useStoreContext();
 
-  const pallets = getPositionPallets(selectedPosition);
+  const pallets = getPositionPallets(selectedPosition) as Array<{
+    id: string | number;
+    lots: string[];
+    [key: string]: unknown;
+  }>;
   const positionData = getPosition(selectedPosition);
 
   const handleOnClickAddElement = () => {
@@ -82,7 +88,12 @@ export default function PositionSlideover({ onClose, position = 'A5' }: Position
           <div className="py-4">
             <PalletCardStack>
               {pallets.map((pallet) => (
-                <PalletCard key={pallet.id} pallet={pallet} />
+                <PalletCard
+                  key={pallet.id}
+                  pallet={pallet}
+                  isFlipped={flippedId === pallet.id}
+                  onFlip={(f) => setFlippedId(f ? pallet.id : null)}
+                />
               ))}
             </PalletCardStack>
           </div>
@@ -90,7 +101,12 @@ export default function PositionSlideover({ onClose, position = 'A5' }: Position
           <div className="min-h-0 flex-1 overflow-y-auto px-2 py-4">
             <div className="space-y-4">
               {pallets.map((pallet) => (
-                <PalletCard key={pallet.id} pallet={pallet} />
+                <PalletCard
+                  key={pallet.id}
+                  pallet={pallet}
+                  isFlipped={flippedId === pallet.id}
+                  onFlip={(f) => setFlippedId(f ? pallet.id : null)}
+                />
               ))}
             </div>
           </div>

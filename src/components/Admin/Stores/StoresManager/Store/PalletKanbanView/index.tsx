@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useStoreContext } from '@/context/StoreContext';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import PalletCard from '../PositionSlideover/PalletCard';
@@ -19,6 +20,7 @@ const breakpointColumnsObj = {
 };
 
 export default function PalletKanbanView() {
+  const [flippedId, setFlippedId] = useState<string | number | null>(null);
   const { store } = useStoreContext();
   const isMobile = useIsMobile();
 
@@ -26,7 +28,11 @@ export default function PalletKanbanView() {
 
   if (!isGhostStore) return null;
 
-  const allPallets = store?.content?.pallets || [];
+  const allPallets = (store?.content?.pallets || []) as Array<{
+    id: string | number;
+    lots: string[];
+    [key: string]: unknown;
+  }>;
 
   if (allPallets.length === 0) {
     return (
@@ -51,7 +57,12 @@ export default function PalletKanbanView() {
         <div className="py-4">
           <PalletCardStack label="Palets en espera">
             {allPallets.map((pallet) => (
-              <PalletCard key={pallet.id} pallet={pallet} />
+              <PalletCard
+                key={pallet.id}
+                pallet={pallet}
+                isFlipped={flippedId === pallet.id}
+                onFlip={(f) => setFlippedId(f ? pallet.id : null)}
+              />
             ))}
           </PalletCardStack>
         </div>
@@ -69,7 +80,11 @@ export default function PalletKanbanView() {
         >
           {allPallets.map((pallet) => (
             <div key={pallet.id} className="mb-4">
-              <PalletCard pallet={pallet} />
+              <PalletCard
+                pallet={pallet}
+                isFlipped={flippedId === pallet.id}
+                onFlip={(f) => setFlippedId(f ? pallet.id : null)}
+              />
             </div>
           ))}
         </Masonry>
