@@ -1,13 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from '@/components/ui/input-group';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
 import {
   ChevronRight,
@@ -39,7 +35,6 @@ interface MobileStoreListViewProps {
   onLoadMore: () => void;
 }
 
-
 function MobileStoreCard({
   store,
   disabled,
@@ -51,10 +46,8 @@ function MobileStoreCard({
 }) {
   const isGhostStore = store.id === REGISTERED_PALLETS_STORE_ID;
   const capacity = store.capacity || store.totalNetWeight || 1;
-  const fillPercentage =
-    capacity > 0 ? ((store.totalNetWeight ?? 0) / capacity) * 100 : 0;
-  const occupancyStatus =
-    fillPercentage <= 50 ? 'low' : fillPercentage <= 80 ? 'medium' : 'high';
+  const fillPercentage = capacity > 0 ? ((store.totalNetWeight ?? 0) / capacity) * 100 : 0;
+  const occupancyStatus = fillPercentage <= 50 ? 'low' : fillPercentage <= 80 ? 'medium' : 'high';
 
   const borderClass = isGhostStore
     ? 'border-l-slate-400 dark:border-l-slate-600'
@@ -85,7 +78,7 @@ function MobileStoreCard({
         }
       }}
       className={cn(
-        'bg-card text-card-foreground flex w-full items-center gap-3 rounded-xl border border-l-4 p-4 shadow-sm transition-colors active:bg-accent/60',
+        'bg-card text-card-foreground active:bg-accent/60 flex w-full items-center gap-3 rounded-xl border border-l-4 p-4 shadow-sm transition-colors',
         borderClass,
         disabled && 'pointer-events-none opacity-60',
         !disabled && 'cursor-pointer'
@@ -124,7 +117,13 @@ function MobileStoreCard({
         )}
 
         <Progress
-          value={isGhostStore ? ((store.content?.pallets?.length ?? 0) > 0 ? 100 : 0) : Math.min(fillPercentage, 100)}
+          value={
+            isGhostStore
+              ? (store.content?.pallets?.length ?? 0) > 0
+                ? 100
+                : 0
+              : Math.min(fillPercentage, 100)
+          }
           className={cn('h-1.5', progressClass)}
         />
       </div>
@@ -165,9 +164,7 @@ export function MobileStoreListView({
   const realStores = (stores ?? []).filter((s) => s.id !== REGISTERED_PALLETS_STORE_ID);
 
   const filteredStores = search.trim()
-    ? (stores ?? []).filter((s) =>
-        s.name.toLowerCase().includes(search.trim().toLowerCase())
-      )
+    ? (stores ?? []).filter((s) => s.name.toLowerCase().includes(search.trim().toLowerCase()))
     : (stores ?? []);
 
   const isEmpty = !stores || stores.length === 0;
@@ -190,7 +187,7 @@ export function MobileStoreListView({
           <InputGroupInput
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
             placeholder="Buscar almacén…"
           />
           <InputGroupAddon align="inline-end">

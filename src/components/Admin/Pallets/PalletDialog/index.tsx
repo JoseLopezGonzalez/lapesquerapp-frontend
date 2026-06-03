@@ -50,7 +50,7 @@ export default function PalletDialog({
     initialPallet,
   });
 
-  const receptionId = temporalPallet?.receptionId;
+  const receptionId = temporalPallet?.receptionId as string | number | null | undefined;
   const belongsToReception = receptionId !== null && receptionId !== undefined;
 
   const handleOnClickClose = () => {
@@ -119,11 +119,11 @@ export default function PalletDialog({
                     : null
               }
               onChange={onChange}
-              initialStoreId={initialStoreId}
-              initialOrderId={initialOrderId}
+              initialStoreId={initialStoreId as null | undefined}
+              initialOrderId={initialOrderId as null | undefined}
               wrappedInDialog={true}
-              onSaveTemporal={onSaveTemporal ? handleSaveTemporal : null}
-              initialPallet={initialPallet}
+              onSaveTemporal={(onSaveTemporal ? handleSaveTemporal : null) as null | undefined}
+              initialPallet={initialPallet as null | undefined}
               readOnly={readOnly}
             />
           </div>
