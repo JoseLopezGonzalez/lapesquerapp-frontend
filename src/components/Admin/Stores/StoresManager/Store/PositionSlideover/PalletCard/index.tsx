@@ -12,6 +12,7 @@ import {
   ExternalLink,
   Eye,
   MoreVertical,
+  RotateCcw,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
@@ -384,12 +385,29 @@ export default function PalletCard({ pallet }: PalletCardProps) {
           onClick={() => flipTo(false)}
         >
           {/* Back header */}
-          <div className={cn('px-4 py-3', isRelevant ? 'bg-green-500 text-white' : 'bg-muted/40')}>
+          <div
+            className={cn(
+              'flex items-center justify-between px-4 py-3',
+              isRelevant ? 'bg-green-500 text-white' : 'bg-muted/40'
+            )}
+          >
             <p
               className={cn('text-sm font-semibold', isRelevant ? 'text-white' : 'text-foreground')}
             >
               Acciones · Palet #{pallet.id}
             </p>
+            <button
+              className={cn(
+                'flex h-8 w-8 items-center justify-center rounded-lg transition-colors',
+                isRelevant
+                  ? 'text-white/80 hover:bg-white/20 hover:text-white active:bg-white/30'
+                  : 'text-muted-foreground hover:bg-foreground/10 active:bg-foreground/15'
+              )}
+              onClick={() => flipTo(false)}
+            >
+              <RotateCcw className="h-4 w-4" />
+              <span className="sr-only">Volver al palet</span>
+            </button>
           </div>
 
           {/* Action rows — vertically centered in remaining space */}
