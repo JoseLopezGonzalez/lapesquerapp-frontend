@@ -12,7 +12,6 @@ import {
   ExternalLink,
   Eye,
   MoreVertical,
-  X,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
@@ -124,18 +123,18 @@ export default function PalletCard({ pallet }: PalletCardProps) {
             'bg-card overflow-hidden rounded-2xl border shadow-sm',
             isRelevant
               ? 'border-green-400/60 ring-2 ring-green-400/30 dark:border-green-500/60'
-              : 'border-border'
+              : 'border-border',
+            isMobile && 'cursor-pointer select-none active:opacity-70'
           )}
           style={{ backfaceVisibility: 'hidden' }}
+          onClick={isMobile ? () => setIsFlipped(true) : undefined}
         >
           {/* Header */}
           <div
             className={cn(
               'flex items-start justify-between gap-2 px-4 py-3',
-              isRelevant ? 'bg-green-500 text-white' : 'bg-muted/40',
-              isMobile && 'cursor-pointer transition-opacity select-none active:opacity-70'
+              isRelevant ? 'bg-green-500 text-white' : 'bg-muted/40'
             )}
-            onClick={isMobile ? () => setIsFlipped(true) : undefined}
           >
             <div className="flex min-w-0 flex-1 items-center gap-2.5">
               <div
@@ -202,17 +201,7 @@ export default function PalletCard({ pallet }: PalletCardProps) {
               </div>
             </div>
 
-            {/* Desktop: dropdown menu · Mobile: static flip hint */}
-            {isMobile ? (
-              <div
-                className={cn(
-                  'flex h-8 w-8 flex-shrink-0 items-center justify-center',
-                  isRelevant ? 'text-white/60' : 'text-muted-foreground/60'
-                )}
-              >
-                <MoreVertical className="h-4 w-4" />
-              </div>
-            ) : (
+            {!isMobile && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -353,7 +342,7 @@ export default function PalletCard({ pallet }: PalletCardProps) {
         {/* ─── BACK FACE (mobile actions) ─── */}
         <div
           className={cn(
-            'bg-card overflow-hidden rounded-2xl border shadow-sm',
+            'bg-card cursor-pointer overflow-hidden rounded-2xl border shadow-sm',
             isRelevant
               ? 'border-green-400/60 ring-2 ring-green-400/30 dark:border-green-500/60'
               : 'border-border'
@@ -364,33 +353,15 @@ export default function PalletCard({ pallet }: PalletCardProps) {
             position: 'absolute',
             inset: 0,
           }}
+          onClick={() => setIsFlipped(false)}
         >
           {/* Back header */}
-          <div
-            className={cn(
-              'flex items-center justify-between px-4 py-3',
-              isRelevant ? 'bg-green-500 text-white' : 'bg-muted/40'
-            )}
-          >
+          <div className={cn('px-4 py-3', isRelevant ? 'bg-green-500 text-white' : 'bg-muted/40')}>
             <p
               className={cn('text-sm font-semibold', isRelevant ? 'text-white' : 'text-foreground')}
             >
               Acciones · Palet #{pallet.id}
             </p>
-            <Button
-              variant="ghost"
-              size="icon"
-              className={cn(
-                'h-8 w-8',
-                isRelevant
-                  ? 'text-white hover:bg-white/20 hover:text-white'
-                  : 'text-muted-foreground'
-              )}
-              onClick={() => setIsFlipped(false)}
-            >
-              <X className="h-4 w-4" />
-              <span className="sr-only">Volver</span>
-            </Button>
           </div>
 
           {/* Action rows */}
