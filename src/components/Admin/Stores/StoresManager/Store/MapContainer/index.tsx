@@ -20,11 +20,17 @@ const MapContainer = ({ children, isMobile = false }: MapContainerProps) => {
     }
   }, []);
 
-  const initialScale = isMobile ? 0.7 : 1.2;
-  const minScale = isMobile ? 0.15 : 0.3;
-  const maxScale = isMobile ? 6 : 3;
+  const initialScale = isMobile ? 1 : 1.2;
+  const minScale = isMobile ? 0.2 : 0.3;
+  const maxScale = isMobile ? 8 : 3;
+  // On mobile: height fills the viewport minus the store detail header (~108px).
+  // Width is derived from the SVG viewBox ratio (10000 / 3000 ≈ 3.333) so the
+  // SVG fills the full height at scale 1. The user pans horizontally to explore.
   const contentStyle: React.CSSProperties = isMobile
-    ? { width: '2000px', height: '600px' }
+    ? {
+        height: 'calc(100dvh - 108px)',
+        width: 'calc((100dvh - 108px) * 3.333)',
+      }
     : { marginLeft: 0, width: '100%', minHeight: '600px', height: 'auto' };
 
   return (
