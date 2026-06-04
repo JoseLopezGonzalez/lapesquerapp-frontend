@@ -8,6 +8,16 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -146,6 +156,7 @@ function MobileLightbox({ attachment, palletId, canDelete, onDelete, onUpdateNot
       <DialogContent
         className="flex max-h-[92dvh] w-full max-w-full flex-col gap-0 overflow-hidden rounded-t-2xl p-0"
         aria-describedby={undefined}
+        showCloseButton={false}
       >
         <DialogTitle className="sr-only">{attachment.originalName}</DialogTitle>
 
@@ -230,6 +241,7 @@ export default function ImagenesTab({ palletId }: ImagenesTabProps) {
     usePalletAttachments(palletId);
 
   const [lightboxAtt, setLightboxAtt] = useState<PalletAttachment | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [notes, setNotes] = useState('');
   const [hasCamera, setHasCamera] = useState(false);
@@ -406,7 +418,7 @@ export default function ImagenesTab({ palletId }: ImagenesTabProps) {
               attachment={att}
               palletId={palletId}
               canDelete={canDelete}
-              onDelete={(id) => deleteMutation.mutate(id)}
+              onDelete={(id) => setConfirmDeleteId(id)}
               onClick={() => setLightboxAtt(att)}
             />
           ))}
@@ -418,7 +430,7 @@ export default function ImagenesTab({ palletId }: ImagenesTabProps) {
           attachment={lightboxAtt}
           palletId={palletId}
           canDelete={canDelete}
-          onDelete={(id) => deleteMutation.mutate(id)}
+          onDelete={(id) => { setConfirmDeleteId(id); setLightboxAtt(null); }}
           onUpdateNotes={(id, n) => {
             updateMutation.mutate({ attachmentId: id, notes: n });
             setLightboxAtt((prev) => prev && prev.id === id ? { ...prev, notes: n } : prev);
@@ -427,6 +439,30 @@ export default function ImagenesTab({ palletId }: ImagenesTabProps) {
           isUpdating={updateMutation.isPending}
         />
       )}
+
+      <AlertDialog
+        open={confirmDeleteId !== null}
+        onOpenChange={(open) => { if (!open) setConfirmDeleteId(null); }}
+      >
+        <AlertDialogContent size="sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar imagen?</AlertDialogTitle>
+            <AlertDialogDescription>Esta acción no se puede deshacer.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => {
+                if (confirmDeleteId !== null) deleteMutation.mutate(confirmDeleteId);
+                setConfirmDeleteId(null);
+              }}
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

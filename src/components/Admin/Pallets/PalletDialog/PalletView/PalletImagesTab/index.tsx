@@ -18,6 +18,16 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   usePalletAttachments,
   notifyIfInvalidPalletImageFile,
 } from '@/hooks/pallets/usePalletAttachments';
@@ -142,6 +152,7 @@ function Lightbox({ attachment, palletId, canDelete, onDelete, onUpdateNotes, on
       <DialogContent
         className="flex max-h-[92vh] max-w-3xl flex-col gap-0 overflow-hidden p-0"
         aria-describedby={undefined}
+        showCloseButton={false}
       >
         <DialogTitle className="sr-only">{attachment.originalName}</DialogTitle>
 
@@ -345,10 +356,9 @@ export default function PalletImagesTab({ palletId }: PalletImagesTabProps) {
     usePalletAttachments(palletId);
 
   const [lightboxAtt, setLightboxAtt] = useState<PalletAttachment | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
-  const handleDelete = (id: number) => {
-    deleteMutation.mutate(id);
-  };
+  const handleDelete = (id: number) => setConfirmDeleteId(id);
 
   const handleUpdateNotes = (id: number, notes: string | null) => {
     updateMutation.mutate({ attachmentId: id, notes });
@@ -433,12 +443,36 @@ export default function PalletImagesTab({ palletId }: PalletImagesTabProps) {
           attachment={lightboxAtt}
           palletId={palletId}
           canDelete={canDelete}
-          onDelete={handleDelete}
+          onDelete={(id) => { handleDelete(id); setLightboxAtt(null); }}
           onUpdateNotes={handleUpdateNotes}
           onClose={() => setLightboxAtt(null)}
           isUpdating={updateMutation.isPending}
         />
       )}
+
+      <AlertDialog
+        open={confirmDeleteId !== null}
+        onOpenChange={(open) => { if (!open) setConfirmDeleteId(null); }}
+      >
+        <AlertDialogContent size="sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar imagen?</AlertDialogTitle>
+            <AlertDialogDescription>Esta acción no se puede deshacer.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => {
+                if (confirmDeleteId !== null) deleteMutation.mutate(confirmDeleteId);
+                setConfirmDeleteId(null);
+              }}
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
