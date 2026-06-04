@@ -283,7 +283,7 @@ export function MobileStoreListView({
               value={activeTab}
               onValueChange={(v: string) => setActiveTab(v as TabId)}
             >
-              <div className="flex justify-center overflow-x-auto scrollbar-hide">
+              <div className="scrollbar-hide overflow-x-auto">
                 <TabsList className="w-max">
                   <TabsTrigger value="all">Todos</TabsTrigger>
                   <TabsTrigger value="low">Libres</TabsTrigger>
