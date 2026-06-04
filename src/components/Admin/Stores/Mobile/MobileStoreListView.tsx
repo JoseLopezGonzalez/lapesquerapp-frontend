@@ -13,11 +13,16 @@ import {
   ChevronRight,
   Loader2,
   Package,
+  ScanLine,
   Search,
   Sparkles,
   ThermometerSnowflake,
   Warehouse,
 } from 'lucide-react';
+import PalletDialog from '@/components/Admin/Pallets/PalletDialog';
+import { MobilePalletQrScanner } from './MobilePalletQrScanner';
+import { parseQrPayload } from '@/lib/qr/parseQrPayload';
+import { notify } from '@/lib/notifications';
 import { REGISTERED_PALLETS_STORE_ID } from '@/hooks/useStores';
 import { cn } from '@/lib/utils';
 
@@ -163,7 +168,42 @@ export function MobileStoreListView({
 }: MobileStoreListViewProps) {
   const router = useRouter();
   const [search, setSearch] = useState('');
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [palletDialogId, setPalletDialogId] = useState<number | null>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const lastScannedRef = useRef({ code: '', at: 0 });
+
+  const handleScannedPalletQr = (rawValue: string) => {
+    const code = String(rawValue ?? '').trim();
+    if (!code) return;
+
+    const now = Date.now();
+    const { code: lastCode, at: lastAt } = lastScannedRef.current;
+    if (code === lastCode && now - lastAt < 1800) return;
+    lastScannedRef.current = { code, at: now };
+
+    const payload = parseQrPayload(code);
+    const palletId = payload.P || (/^\d+$/.test(code) ? code : null);
+
+    if (!palletId || !/^\d+$/.test(String(palletId))) {
+      notify.error({
+        title: 'QR no reconocido',
+        description: 'No se encontró un identificador de palet en el código escaneado.',
+      });
+      return;
+    }
+
+    setScannerOpen(false);
+    setPalletDialogId(Number(palletId));
+  };
+
+  const handleScannerError = (message: string) => {
+    notify.error({
+      title: 'No se pudo abrir la cámara',
+      description: message || 'Revisa permisos del navegador e inténtalo de nuevo.',
+    });
+    setScannerOpen(false);
+  };
 
   useEffect(() => {
     if (!hasMoreStores || loadingMore) return;
@@ -206,8 +246,15 @@ export function MobileStoreListView({
           <h2 className="flex-1 truncate text-center text-xl font-normal dark:text-white">
             Almacenes
           </h2>
-          {/* Espaciador para centrar el título */}
-          <div className="h-12 w-12 shrink-0" aria-hidden />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setScannerOpen(true)}
+            className="hover:bg-muted h-12 min-h-12 w-12 min-w-12 shrink-0 rounded-full"
+            aria-label="Escanear QR de palet"
+          >
+            <ScanLine className="h-6 w-6" />
+          </Button>
         </div>
       </div>
 
@@ -258,6 +305,24 @@ export function MobileStoreListView({
           </div>
         )}
       </div>
+
+      {/* Escáner QR global — sin contexto de almacén */}
+      {scannerOpen && (
+        <MobilePalletQrScanner
+          onScan={handleScannedPalletQr}
+          onClose={() => setScannerOpen(false)}
+          onError={handleScannerError}
+        />
+      )}
+
+      {/* Editor de palet abierto directamente desde QR */}
+      <PalletDialog
+        palletId={palletDialogId}
+        isOpen={palletDialogId !== null}
+        onChange={() => {}}
+        initialStoreId={null}
+        onCloseDialog={() => setPalletDialogId(null)}
+      />
     </div>
   );
 }
