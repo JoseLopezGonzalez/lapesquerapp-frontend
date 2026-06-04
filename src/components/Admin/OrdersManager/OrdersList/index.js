@@ -146,13 +146,13 @@ const OrdersList = ({
               Pedidos Activos
             </h2>
             <Button
-              variant="default"
+              variant="ghost"
               size="icon"
               onClick={onClickAddNewOrder}
-              className="h-11 min-h-11 w-11 min-w-11 shrink-0"
+              className="hover:bg-muted h-12 min-h-12 w-12 min-w-12 shrink-0 rounded-full"
               aria-label="Crear nuevo pedido"
             >
-              <Plus className="h-5 w-5" />
+              <Plus className="h-6 w-6" />
             </Button>
           </div>
         ) : (

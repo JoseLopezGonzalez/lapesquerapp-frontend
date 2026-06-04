@@ -100,29 +100,17 @@ function MobileStoreCard({
         !disabled && 'cursor-pointer active:bg-accent/60'
       )}
     >
-      <CardContent>
-        <div className="flex items-center gap-4">
-          {/* Ancla visual — icono con background semántico */}
-          <div
-            className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-xl', iconBg)}
-          >
-            {isGhostStore ? (
-              <Sparkles className={cn('h-5 w-5', iconColor)} />
-            ) : (
-              <Warehouse className={cn('h-5 w-5', iconColor)} />
-            )}
-          </div>
-
-          {/* Info */}
-          <div className="min-w-0 flex-1">
-            <p className="mb-1 truncate text-base font-semibold leading-tight">{store.name}</p>
+      <CardContent className="py-0">
+        <div className="flex w-full min-w-0 grow items-center gap-3 pr-1">
+          <div className="min-w-0 flex-1 space-y-1">
+            <p className="truncate text-base leading-tight font-medium">{store.name}</p>
 
             {isGhostStore ? (
-              <p className="text-muted-foreground mb-2.5 text-sm">
+              <p className="text-muted-foreground text-sm tabular-nums">
                 {store.content?.pallets?.length ?? 0} palés en espera
               </p>
             ) : (
-              <div className="text-muted-foreground mb-2.5 flex items-center gap-3 text-sm">
+              <div className="text-muted-foreground flex items-center gap-3 text-sm tabular-nums">
                 {store.temperature != null && (
                   <span className="flex items-center gap-1.5">
                     <ThermometerSnowflake className="h-3.5 w-3.5 shrink-0" />
@@ -150,8 +138,7 @@ function MobileStoreCard({
             />
           </div>
 
-          {/* Chevron */}
-          <ChevronRight className="text-muted-foreground h-5 w-5 shrink-0" />
+          <ChevronRight className="text-muted-foreground h-5 w-5 flex-shrink-0" aria-hidden />
         </div>
       </CardContent>
     </Card>
