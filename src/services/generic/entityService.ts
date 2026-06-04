@@ -10,13 +10,7 @@ import { getAuthToken } from '@/lib/auth/getAuthToken';
 import { getErrorMessage } from '@/lib/api/apiHelpers';
 import { getUserAgent } from '@/lib/utils/getUserAgent';
 
-interface AuthHeaders {
-  'Content-Type': string;
-  Authorization: string;
-  'User-Agent': string;
-}
-
-const getAuthHeaders = async (token?: string | null): Promise<AuthHeaders> => {
+const getAuthHeaders = async (token?: string | null): Promise<Record<string, string>> => {
   const resolvedToken = token ?? (await getAuthToken());
   return {
     'Content-Type': 'application/json',
@@ -38,7 +32,7 @@ export const deleteEntityGeneric = async (
   token?: string | null
 ): Promise<{ response: Response; data: unknown }> => {
   const headers = await getAuthHeaders(token);
-  const options: RequestInit = { method: 'DELETE', headers: headers as HeadersInit };
+  const options: RequestInit = { method: 'DELETE', headers};
   if (body) options.body = JSON.stringify(body);
 
   const response = await fetchWithTenant(url, options);
@@ -59,7 +53,7 @@ export const performActionGeneric = async (
   const headers = await getAuthHeaders(token);
   const response = await fetchWithTenant(url, {
     method,
-    headers: headers as HeadersInit,
+    headers,
     body: JSON.stringify(body),
   });
   if (!response.ok) throw response;
@@ -80,7 +74,7 @@ export const downloadFileGeneric = async (
   const currentDateTime = `${formattedDate}__${formattedTime}`;
 
   try {
-    const response = await fetchWithTenant(url, { method: 'GET', headers: headers as HeadersInit });
+    const response = await fetchWithTenant(url, { method: 'GET', headers});
 
     if (!response.ok) {
       let errorData: Record<string, unknown> | null = null;
