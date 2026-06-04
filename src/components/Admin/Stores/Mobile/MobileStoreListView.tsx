@@ -80,7 +80,7 @@ function MobileStoreCard({
     : occupancyStatus === 'low'
       ? '[&_[data-slot=progress-indicator]]:bg-green-500'
       : occupancyStatus === 'medium'
-        ? '[&_[data-slot=progress-indicator]]:bg-yellow-500'
+        ? '[&_[data-slot=progress-indicator]]:bg-orange-500'
         : '[&_[data-slot=progress-indicator]]:animate-pulse [&_[data-slot=progress-indicator]]:bg-red-600';
 
   return (
