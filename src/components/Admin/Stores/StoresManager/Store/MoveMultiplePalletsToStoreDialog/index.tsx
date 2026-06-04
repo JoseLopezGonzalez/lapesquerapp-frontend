@@ -61,14 +61,17 @@ export default function MoveMultiplePalletsToStoreDialog() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentStep, setCurrentStep] = useState<Step>(1);
 
-  const { storeOptions, loading: storesLoading } = useStoresOptions();
+  const { storeOptions, loading: storesLoading } = useStoresOptions() as {
+    storeOptions: { value: string | number; label: string }[];
+    loading: boolean;
+  };
 
   const allPallets = useMemo(() => {
     return store?.content?.pallets || [];
   }, [store]);
 
-  const filteredStores = storeOptions.filter((s: { label?: string }) =>
-    s.label?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredStores = storeOptions.filter((s) =>
+    s.label.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const [palletSearchQuery, setPalletSearchQuery] = useState('');
@@ -84,7 +87,7 @@ export default function MoveMultiplePalletsToStoreDialog() {
 
   const selectedStoreName = useMemo(
     () =>
-      storeOptions.find((s: { value: string | number; label?: string }) => s.value === selectedStoreValue)?.label ??
+      storeOptions.find((s) => s.value === selectedStoreValue)?.label ??
       'Almacén',
     [storeOptions, selectedStoreValue]
   );
@@ -460,7 +463,7 @@ export default function MoveMultiplePalletsToStoreDialog() {
       ) : (
         <ScrollArea className="min-h-0 flex-1 rounded-md border">
           <div className="flex flex-col gap-2 p-3">
-            {filteredStores.map((s: { value: string | number; label?: string }) => {
+            {filteredStores.map((s) => {
               const isSelected = selectedStoreValue === s.value;
               return (
                 <div
