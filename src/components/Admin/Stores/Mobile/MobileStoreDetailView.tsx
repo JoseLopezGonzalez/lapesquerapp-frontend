@@ -150,25 +150,34 @@ export function MobileStoreDetailView({
     setScannerOpen(false);
   };
 
+  if (loading) {
+    return <MobileStoreLoader storeName={displayStoreName} />;
+  }
+
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      {/* Header */}
-      <div className="flex shrink-0 items-center gap-2 border-b px-3 py-2">
-        <Button variant="ghost" size="icon" onClick={onBack} className="h-9 w-9 shrink-0">
-          <ArrowLeft className="h-5 w-5" />
-          <span className="sr-only">Volver</span>
+      {/* Header — formato estandarizado */}
+      <div className="flex shrink-0 items-center gap-2 px-2 pt-4 pb-3">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onBack}
+          className="hover:bg-muted h-12 min-h-12 w-12 min-w-12 shrink-0 rounded-full"
+          aria-label="Volver"
+        >
+          <ArrowLeft className="h-6 w-6" />
         </Button>
-        <span className="flex-1 truncate text-sm font-semibold">{displayStoreName}</span>
+        <h2 className="flex-1 truncate text-xl font-normal dark:text-white">{displayStoreName}</h2>
 
         {/* Filtros — solo en almacén normal */}
         {!isGhostStore && (
           <Button
             variant="ghost"
             size="icon"
-            className="relative h-9 w-9 shrink-0"
+            className="hover:bg-muted relative h-12 min-h-12 w-12 min-w-12 shrink-0 rounded-full"
             onClick={() => setFiltersOpen(true)}
           >
-            <Filter className="h-5 w-5" />
+            <Filter className="h-6 w-6" />
             {activeFilterCount > 0 && (
               <Badge className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center p-0 text-[10px]">
                 {activeFilterCount}
@@ -180,18 +189,22 @@ export function MobileStoreDetailView({
         <Button
           variant="ghost"
           size="icon"
-          className="h-9 w-9 shrink-0"
+          className="hover:bg-muted h-12 min-h-12 w-12 min-w-12 shrink-0 rounded-full"
           onClick={() => setScannerOpen(true)}
           aria-label="Escanear QR de palet"
         >
-          <ScanLine className="h-5 w-5" />
+          <ScanLine className="h-6 w-6" />
         </Button>
 
-        {/* Dropdown de acciones — tres puntos verticales */}
+        {/* Dropdown de acciones */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0">
-              <MoreVertical className="h-5 w-5" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hover:bg-muted h-12 min-h-12 w-12 min-w-12 shrink-0 rounded-full"
+            >
+              <MoreVertical className="h-6 w-6" />
               <span className="sr-only">Acciones</span>
             </Button>
           </DropdownMenuTrigger>
@@ -243,15 +256,11 @@ export function MobileStoreDetailView({
 
       {/* Content */}
       <div className="relative min-h-0 flex-1 overflow-hidden">
-        {loading ? (
-          <MobileStoreLoader storeName={displayStoreName} />
-        ) : isGhostStore ? (
-          /* Ghost store — kanban view */
+        {isGhostStore ? (
           <div className="h-full overflow-hidden">
             <PalletKanbanView />
           </div>
         ) : (
-          /* Normal store — full-screen map */
           <Card className="relative h-full overflow-auto rounded-none border-0">
             <MapContainer>
               <Map onClickPosition={() => {}} isPositionEmpty={() => {}} />

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
@@ -261,37 +262,39 @@ export function MobileStoreListView({
       </div>
 
       {/* Lista */}
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        {isEmpty ? (
-          <div className="flex flex-col items-center justify-center gap-2 p-8 text-center">
-            <p className="text-sm font-medium">Sin almacenes</p>
-            <p className="text-muted-foreground text-xs">No hay almacenes disponibles.</p>
-          </div>
-        ) : filteredStores.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-2 p-8 text-center">
-            <p className="text-sm font-medium">Sin resultados</p>
-            <p className="text-muted-foreground text-xs">
-              No hay almacenes que coincidan con «{search}».
-            </p>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-3 px-4 pb-4">
-            {filteredStores.map((store) => (
-              <MobileStoreCard
-                key={store.id}
-                store={store}
-                disabled={isStoreLoading}
-                onClick={() => onSelectStore(store.id)}
-              />
-            ))}
-
-            {/* Sentinel de infinite scroll */}
-            <div ref={sentinelRef} className="flex h-10 items-center justify-center">
-              {loadingMore && <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />}
+      {isEmpty ? (
+        <div className="flex flex-col items-center justify-center gap-2 p-8 text-center">
+          <p className="text-sm font-medium">Sin almacenes</p>
+          <p className="text-muted-foreground text-xs">No hay almacenes disponibles.</p>
+        </div>
+      ) : filteredStores.length === 0 ? (
+        <div className="flex flex-col items-center justify-center gap-2 p-8 text-center">
+          <p className="text-sm font-medium">Sin resultados</p>
+          <p className="text-muted-foreground text-xs">
+            No hay almacenes que coincidan con «{search}».
+          </p>
+        </div>
+      ) : (
+        <div className="relative min-h-0 flex-1 overflow-hidden">
+          <div className="from-background pointer-events-none absolute top-0 right-0 left-0 z-10 h-8 bg-gradient-to-b to-transparent" />
+          <div className="from-background pointer-events-none absolute right-0 bottom-0 left-0 z-10 h-8 bg-gradient-to-t to-transparent" />
+          <ScrollArea className="h-full w-full">
+            <div className="flex flex-col gap-4 pt-2 pr-2 pb-6 pl-2">
+              {filteredStores.map((store) => (
+                <MobileStoreCard
+                  key={store.id}
+                  store={store}
+                  disabled={isStoreLoading}
+                  onClick={() => onSelectStore(store.id)}
+                />
+              ))}
+              <div ref={sentinelRef} className="flex h-6 items-center justify-center">
+                {loadingMore && <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />}
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          </ScrollArea>
+        </div>
+      )}
 
       {/* Escáner QR global — sin contexto de almacén */}
       {scannerOpen && (
