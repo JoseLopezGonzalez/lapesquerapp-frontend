@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
@@ -74,7 +75,7 @@ function MobileStoreCard({
         : '[&_[data-slot=progress-indicator]]:animate-pulse [&_[data-slot=progress-indicator]]:bg-red-600';
 
   return (
-    <div
+    <Card
       role="button"
       tabIndex={disabled ? -1 : 0}
       aria-label={store.name}
@@ -86,65 +87,64 @@ function MobileStoreCard({
         }
       }}
       className={cn(
-        'bg-card text-card-foreground active:bg-accent/60 flex w-full items-center gap-4 rounded-xl border p-5 shadow-sm transition-colors',
+        'transition-colors',
         disabled && 'pointer-events-none opacity-60',
-        !disabled && 'cursor-pointer'
+        !disabled && 'cursor-pointer active:bg-accent/60'
       )}
     >
-      {/* Ancla visual — icono con background semántico */}
-      <div className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-xl', iconBg)}>
-        {isGhostStore ? (
-          <Sparkles className={cn('h-5 w-5', iconColor)} />
-        ) : (
-          <Warehouse className={cn('h-5 w-5', iconColor)} />
-        )}
-      </div>
-
-      {/* Info */}
-      <div className="min-w-0 flex-1">
-        <div className="mb-1 flex items-center justify-between gap-2">
-          <span className="truncate text-base font-semibold">{store.name}</span>
-          {!isGhostStore && (
-            <span className={cn('shrink-0 text-xs font-medium tabular-nums', iconColor)}>
-              {Math.round(fillPercentage)}%
-            </span>
-          )}
-        </div>
-
-        {isGhostStore ? (
-          <p className="text-muted-foreground mb-2.5 text-sm">
-            {store.content?.pallets?.length ?? 0} palés en espera
-          </p>
-        ) : (
-          <div className="text-muted-foreground mb-2.5 flex items-center gap-3 text-sm">
-            {store.temperature != null && (
-              <span className="flex items-center gap-1.5">
-                <ThermometerSnowflake className="h-3.5 w-3.5 shrink-0" />
-                {store.temperature} ºC
-              </span>
+      <CardContent>
+        <div className="flex items-center gap-4">
+          {/* Ancla visual — icono con background semántico */}
+          <div
+            className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-xl', iconBg)}
+          >
+            {isGhostStore ? (
+              <Sparkles className={cn('h-5 w-5', iconColor)} />
+            ) : (
+              <Warehouse className={cn('h-5 w-5', iconColor)} />
             )}
-            <span className="flex items-center gap-1.5">
-              <Package className="h-3.5 w-3.5 shrink-0" />
-              {formatDecimalWeight(store.totalNetWeight ?? 0)} cargado
-            </span>
           </div>
-        )}
 
-        <Progress
-          value={
-            isGhostStore
-              ? (store.content?.pallets?.length ?? 0) > 0
-                ? 100
-                : 0
-              : Math.min(fillPercentage, 100)
-          }
-          className={cn('h-2.5', progressClass)}
-        />
-      </div>
+          {/* Info */}
+          <div className="min-w-0 flex-1">
+            <p className="mb-1 truncate text-base font-semibold leading-tight">{store.name}</p>
 
-      {/* Chevron */}
-      <ChevronRight className="text-muted-foreground h-5 w-5 shrink-0" />
-    </div>
+            {isGhostStore ? (
+              <p className="text-muted-foreground mb-2.5 text-sm">
+                {store.content?.pallets?.length ?? 0} palés en espera
+              </p>
+            ) : (
+              <div className="text-muted-foreground mb-2.5 flex items-center gap-3 text-sm">
+                {store.temperature != null && (
+                  <span className="flex items-center gap-1.5">
+                    <ThermometerSnowflake className="h-3.5 w-3.5 shrink-0" />
+                    {store.temperature} ºC
+                  </span>
+                )}
+                <span className="flex items-center gap-1.5">
+                  <Package className="h-3.5 w-3.5 shrink-0" />
+                  {formatDecimalWeight(store.totalNetWeight ?? 0)}
+                </span>
+              </div>
+            )}
+
+            <Progress
+              value={
+                isGhostStore
+                  ? (store.content?.pallets?.length ?? 0) > 0
+                    ? 100
+                    : 0
+                  : Math.min(fillPercentage, 100)
+              }
+              className={cn('h-2.5', progressClass)}
+            />
+          </div>
+
+          {/* Chevron */}
+          <ChevronRight className="text-muted-foreground h-5 w-5 shrink-0" />
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
