@@ -48,6 +48,16 @@ export function buildPalletImageUploadFilename(
   return `palet-${palletId}-${timestamp}.${extension}`;
 }
 
+/** File con nombre corto; más fiable que solo el 3.er argumento de FormData.append en móvil. */
+export function preparePalletImageUploadFile(
+  file: File,
+  palletId: number | string
+): File {
+  const name = buildPalletImageUploadFilename(file, palletId);
+  const type = file.type || 'image/jpeg';
+  return new File([file], name, { type, lastModified: file.lastModified });
+}
+
 export const palletAttachmentService = {
   async list(
     palletId: number | string,
@@ -71,8 +81,8 @@ export const palletAttachmentService = {
   ): Promise<PalletAttachment> {
     const token = await getAuthToken();
     const formData = new FormData();
-    const uploadFilename = buildPalletImageUploadFilename(file, palletId);
-    formData.append('file', file, uploadFilename);
+    const fileToUpload = preparePalletImageUploadFile(file, palletId);
+    formData.append('file', fileToUpload);
     formData.append('collection', 'pallet_image');
     if (notes?.trim()) formData.append('notes', notes.trim());
     return uploadMultipart(`${endpoint(palletId)}`, token, formData) as Promise<PalletAttachment>;

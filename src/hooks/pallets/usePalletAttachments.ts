@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 import { palletAttachmentKeys } from '@/lib/routes/queryKeys';
 import {
+  buildPalletImageUploadFilename,
   palletAttachmentService,
   type PalletAttachment,
 } from '@/services/domain/pallets/palletAttachmentService';
@@ -14,12 +15,16 @@ import { ApiError, getErrorMessage } from '@/lib/api/apiHelpers';
 function formatAttachmentErrorToast(
   err: unknown,
   action: string,
-  file?: File
+  file?: File,
+  palletId?: number | string | null
 ): { title: string; description: string } {
   const lines: string[] = [];
 
   if (file) {
-    lines.push(`Archivo: ${file.name || '(sin nombre)'}`);
+    lines.push(`Nombre dispositivo: ${file.name || '(sin nombre)'}`);
+    if (palletId != null) {
+      lines.push(`Nombre enviado: ${buildPalletImageUploadFilename(file, palletId)}`);
+    }
     lines.push(`Tipo: ${file.type || '(vacío)'}`);
     lines.push(`Tamaño: ${file.size} bytes (${(file.size / (1024 * 1024)).toFixed(2)} MB)`);
   }
@@ -57,9 +62,10 @@ function formatAttachmentErrorToast(
 function notifyAttachmentError(
   err: unknown,
   action: string,
-  file?: File
+  file?: File,
+  palletId?: number | string | null
 ): void {
-  const { title, description } = formatAttachmentErrorToast(err, action, file);
+  const { title, description } = formatAttachmentErrorToast(err, action, file, palletId);
   notify.error(
     { title, description },
     { duration: 14_000, important: true }
@@ -128,7 +134,7 @@ export function usePalletAttachments(
       notify.success('Imagen subida correctamente');
     },
     onError: (err: unknown, variables) => {
-      notifyAttachmentError(err, 'subir la imagen', variables?.file);
+      notifyAttachmentError(err, 'subir la imagen', variables?.file, palletId);
     },
   });
 
@@ -145,7 +151,7 @@ export function usePalletAttachments(
       notify.success('Nota actualizada');
     },
     onError: (err: unknown) => {
-      notifyAttachmentError(err, 'actualizar la nota');
+      notifyAttachmentError(err, 'actualizar la nota', undefined, palletId);
     },
   });
 
@@ -157,7 +163,7 @@ export function usePalletAttachments(
       notify.success('Imagen eliminada');
     },
     onError: (err: unknown) => {
-      notifyAttachmentError(err, 'eliminar la imagen');
+      notifyAttachmentError(err, 'eliminar la imagen', undefined, palletId);
     },
   });
 
