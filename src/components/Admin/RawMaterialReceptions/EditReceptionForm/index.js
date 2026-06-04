@@ -526,16 +526,18 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                   numberOfBoxes: boxes.length,
                   netWeight: boxes.reduce((sum, box) => sum + (parseFloat(box.netWeight) || 0), 0),
                   observations: pallet.observations || '',
+                  palletTareWeightKg: pallet.palletTareWeightKg ?? null,
                 },
                 prices: palletPricesObj, // Prices filtered for this pallet's boxes
                 observations: pallet.observations || '',
+                palletTareWeightKg: pallet.palletTareWeightKg ?? null,
                 isLocked: lockedIds.includes(pallet.id),
               };
             });
 
             setTemporalPallets(convertedPallets);
             // Guardar estado inicial de pallets para detectar cambios
-            setInitialPalletsState(JSON.stringify(convertedPallets));
+            setInitialPalletsState(JSON.stringify(normalizePalletsForComparison(convertedPallets)));
           }
 
           // Cargar datos básicos del formulario
@@ -724,6 +726,14 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
 
         // Normalizar observaciones: convertir null/undefined a string vacío
         const normalizedObservations = item.observations || item.pallet?.observations || '';
+        const rawPalletTareWeightKg =
+          item.pallet?.palletTareWeightKg ?? item.palletTareWeightKg ?? null;
+        const normalizedPalletTareWeightKg =
+          rawPalletTareWeightKg === null ||
+          rawPalletTareWeightKg === undefined ||
+          rawPalletTareWeightKg === ''
+            ? null
+            : parseFloat(rawPalletTareWeightKg);
 
         // Normalizar peso neto: calcular siempre desde las cajas normalizadas para consistencia
         // Esto asegura que el peso siempre se calcule de la misma manera
@@ -739,9 +749,15 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
             numberOfBoxes: normalizedBoxes.length,
             netWeight: calculatedNetWeight,
             observations: normalizedObservations,
+            palletTareWeightKg: Number.isFinite(normalizedPalletTareWeightKg)
+              ? normalizedPalletTareWeightKg
+              : null,
           },
           prices: normalizedPrices,
           observations: normalizedObservations,
+          palletTareWeightKg: Number.isFinite(normalizedPalletTareWeightKg)
+            ? normalizedPalletTareWeightKg
+            : null,
         };
       })
       .sort((a, b) => {
@@ -1330,6 +1346,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                       <TableRow>
                         <TableHead>#</TableHead>
                         <TableHead>Observaciones</TableHead>
+                        <TableHead>Tara Palet</TableHead>
                         <TableHead>Cajas</TableHead>
                         <TableHead>Peso Neto</TableHead>
                         <TableHead>Producto - Lote / Precio (€/kg)</TableHead>
@@ -1350,6 +1367,18 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                               ) : (
                                 <span className="text-muted-foreground text-sm italic">
                                   Sin observaciones
+                                </span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {pallet?.palletTareWeightKg !== null &&
+                              pallet?.palletTareWeightKg !== undefined &&
+                              pallet?.palletTareWeightKg !== '' &&
+                              Number.isFinite(Number(pallet.palletTareWeightKg)) ? (
+                                formatDecimalWeight(Number(pallet.palletTareWeightKg))
+                              ) : (
+                                <span className="text-muted-foreground text-sm italic">
+                                  Sin tara
                                 </span>
                               )}
                             </TableCell>
@@ -1937,6 +1966,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                 headers={[
                   { label: '#', className: '' },
                   { label: 'Observaciones', className: '' },
+                  { label: 'Tara Palet', className: '' },
                   { label: 'Cajas', className: '' },
                   { label: 'Peso Neto', className: '' },
                   { label: 'Producto - Lote / Precio (€/kg)', className: '' },
@@ -1968,6 +1998,16 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                             <span className="text-muted-foreground italic">Sin observaciones</span>
                           )}
                         </div>
+                      </TableCell>
+                      <TableCell>
+                        {pallet.palletTareWeightKg !== null &&
+                        pallet.palletTareWeightKg !== undefined &&
+                        pallet.palletTareWeightKg !== '' &&
+                        Number.isFinite(Number(pallet.palletTareWeightKg)) ? (
+                          formatDecimalWeight(Number(pallet.palletTareWeightKg))
+                        ) : (
+                          <span className="text-muted-foreground text-sm italic">Sin tara</span>
+                        )}
                       </TableCell>
                       <TableCell>{pallet.numberOfBoxes || pallet.boxes?.length || 0}</TableCell>
                       <TableCell>{formatDecimalWeight(pallet.netWeight || 0)}</TableCell>
@@ -2256,9 +2296,11 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                       (sum, box) => sum + (parseFloat(box.netWeight) || 0),
                       0
                     ),
+                    palletTareWeightKg: palletWithId.palletTareWeightKg ?? null,
                   },
                   prices: palletMetadata.prices || {},
                   observations: pallet.observations ?? palletMetadata.observations ?? '',
+                  palletTareWeightKg: palletWithId.palletTareWeightKg ?? null,
                 };
                 return updated;
               });
@@ -2304,6 +2346,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                   pallet: pallet,
                   prices: newPalletPrices,
                   observations: pallet.observations || '',
+                  palletTareWeightKg: pallet.palletTareWeightKg ?? null,
                 };
 
                 // Notificar al usuario si se establecieron precios automáticamente

@@ -191,5 +191,16 @@ export const validateTemporalPallets = (temporalPallets) => {
     return 'Debe completar al menos un palet válido con producto y cajas';
   }
 
+  const invalidTare = temporalPallets.some((item) => {
+    const value = item?.pallet?.palletTareWeightKg ?? item?.palletTareWeightKg;
+    if (value === null || value === undefined || value === '') return false;
+    const parsed = parseFloat(value);
+    return isNaN(parsed) || parsed < 0;
+  });
+
+  if (invalidTare) {
+    return 'La tara del palet debe ser un número mayor o igual que 0';
+  }
+
   return null;
 };

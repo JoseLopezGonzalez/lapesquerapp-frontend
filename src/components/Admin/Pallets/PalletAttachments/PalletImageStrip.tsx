@@ -54,17 +54,7 @@ export function PalletImageStrip({ palletId }: PalletImageStripProps) {
     perPage: STRIP_LIMIT,
   });
 
-  if (isLoading) {
-    return (
-      <div className="flex gap-1.5 px-4 pb-3 pt-1">
-        {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-12 w-12 rounded-md" />
-        ))}
-      </div>
-    );
-  }
-
-  if (attachments.length === 0) return null;
+  if (isLoading || attachments.length === 0) return null;
 
   const visible = attachments.slice(0, STRIP_LIMIT);
   const overflow = total - visible.length;

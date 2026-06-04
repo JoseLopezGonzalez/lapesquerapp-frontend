@@ -220,6 +220,7 @@ export default function MobilePalletView({
           <InfoTab
             temporalPallet={temporalPallet}
             onEditObservations={(obs) => editPallet.observations(obs)}
+            onEditPalletTareWeightKg={(value) => editPallet.palletTareWeightKg(value)}
             onEditOrderId={(id) => editPallet.orderId(id)}
             activeOrdersOptions={
               activeOrdersOptions as Array<{

@@ -2,6 +2,7 @@
 
 import { type ChangeEvent } from 'react';
 import { Link2Off } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -23,6 +24,7 @@ interface OrderOption {
 interface InfoTabProps {
   temporalPallet: PalletState;
   onEditObservations: (obs: string) => void;
+  onEditPalletTareWeightKg: (value: string) => void;
   onEditOrderId: (id: number | string | null) => void;
   activeOrdersOptions: OrderOption[];
   activeOrdersLoading: boolean;
@@ -34,6 +36,7 @@ interface InfoTabProps {
 export default function InfoTab({
   temporalPallet,
   onEditObservations,
+  onEditPalletTareWeightKg,
   onEditOrderId,
   activeOrdersOptions,
   activeOrdersLoading,
@@ -43,8 +46,26 @@ export default function InfoTab({
 }: InfoTabProps) {
   return (
     <div className="flex flex-col gap-5 pb-4">
+      <div className="flex flex-col gap-2">
+        <Label className="text-sm font-medium">Tara del palet vacío (kg)</Label>
+        <Input
+          type="number"
+          min="0"
+          step="0.01"
+          inputMode="decimal"
+          defaultValue={temporalPallet.palletTareWeightKg ?? ''}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => onEditPalletTareWeightKg(e.target.value)}
+          className="text-right"
+          placeholder="0.00"
+          disabled={isReadOnly}
+        />
+        <p className="text-xs text-muted-foreground">
+          Peso físico del palet vacío. No modifica el peso neto.
+        </p>
+      </div>
+
       {/* Observations */}
-      <div className="space-y-2">
+      <div className="flex flex-col gap-2">
         <Label className="text-sm font-medium">Observaciones</Label>
         <Textarea
           defaultValue={temporalPallet.observations ?? ''}

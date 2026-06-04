@@ -379,6 +379,7 @@ export function useAdminReceptionForm({ onSuccess }) {
             pallet,
             prices: palletMetadata.prices || {},
             observations: pallet.observations ?? palletMetadata.observations ?? '',
+            palletTareWeightKg: pallet.palletTareWeightKg ?? null,
           };
           return updated;
         });
@@ -389,6 +390,7 @@ export function useAdminReceptionForm({ onSuccess }) {
             pallet,
             prices: {},
             observations: pallet.observations || '',
+            palletTareWeightKg: pallet.palletTareWeightKg ?? null,
           },
         ]);
       }

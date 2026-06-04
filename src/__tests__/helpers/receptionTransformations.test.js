@@ -82,6 +82,40 @@ describe('receptionTransformations', () => {
     });
   });
 
+  describe('transformPalletsToApiFormat', () => {
+    test('includes pallet tare weight as number or null', () => {
+      const temporalPallets = [
+        {
+          pallet: {
+            id: 10,
+            observations: 'Palet madera',
+            palletTareWeightKg: '22.25',
+            boxes: [{ id: 100, product: { id: 1 }, lot: 'LOT001', netWeight: '10' }],
+          },
+          observations: 'Palet madera',
+        },
+        {
+          pallet: {
+            observations: '',
+            palletTareWeightKg: '',
+            boxes: [{ id: 200, product: { id: 2 }, lot: 'LOT002', netWeight: '15' }],
+          },
+        },
+      ];
+
+      const result = transformPalletsToApiFormat(temporalPallets, new Set([100]));
+
+      expect(result[0]).toMatchObject({
+        id: 10,
+        observations: 'Palet madera',
+        palletTareWeightKg: 22.25,
+      });
+      expect(result[1]).toMatchObject({
+        palletTareWeightKg: null,
+      });
+    });
+  });
+
   describe('buildProductLotSummary', () => {
     test('builds summary correctly', () => {
       const pallet = {

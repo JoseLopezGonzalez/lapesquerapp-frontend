@@ -20,6 +20,7 @@ export interface PalletBox {
 export interface PalletState {
   id: number | string | null;
   observations?: string;
+  palletTareWeightKg?: number | string | null;
   state?: { id: number; name: string } | null;
   productsNames?: string[];
   boxes: PalletBox[];
@@ -65,6 +66,7 @@ export const STORAGE_KEYS = {
 export const emptyPallet: PalletState = {
   id: null,
   observations: '',
+  palletTareWeightKg: null,
   state: { id: 1, name: 'Registrado' },
   productsNames: [],
   boxes: [],
@@ -159,6 +161,7 @@ export function roundToTwoDecimals(weight: unknown): number {
 
 export function normNum(v: unknown): number | null {
   if (v === null || v === undefined) return null;
+  if (typeof v === 'string' && v.trim() === '') return null;
   const n = Number(v);
   return Number.isNaN(n) ? null : n;
 }
@@ -181,6 +184,7 @@ export function palletDataEqual(
   if (!original && !temporal) return true;
   if (!original || !temporal) return false;
   if ((original.observations ?? '') !== (temporal.observations ?? '')) return false;
+  if (normNum(original.palletTareWeightKg) !== normNum(temporal.palletTareWeightKg)) return false;
 
   const oStateId = (original.state as Record<string, unknown> | null)?.id ?? original.state;
   const tStateId = (temporal.state as Record<string, unknown> | null)?.id ?? temporal.state;

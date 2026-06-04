@@ -16,6 +16,12 @@ export default function ResumenTab({ temporalPallet }: ResumenTabProps) {
       .filter((n): n is string => Boolean(n))
   ).size;
   const uniqueLots = new Set(boxes.map((b) => b.lot).filter(Boolean)).size;
+  const palletTareWeight = Number(temporalPallet.palletTareWeightKg);
+  const hasPalletTareWeight =
+    temporalPallet.palletTareWeightKg !== null &&
+    temporalPallet.palletTareWeightKg !== undefined &&
+    temporalPallet.palletTareWeightKg !== '' &&
+    Number.isFinite(palletTareWeight);
 
   const productNames = [
     ...new Set(
@@ -37,6 +43,13 @@ export default function ResumenTab({ temporalPallet }: ResumenTabProps) {
         <div className="flex flex-col gap-1 rounded-lg bg-muted/50 p-3">
           <span className="text-xs text-muted-foreground">Peso neto</span>
           <span className="text-2xl font-semibold">{formatDecimalWeight(totalWeight)}</span>
+          <span className="text-xs text-muted-foreground">kg</span>
+        </div>
+        <div className="flex flex-col gap-1 rounded-lg bg-muted/50 p-3">
+          <span className="text-xs text-muted-foreground">Tara palet</span>
+          <span className="text-2xl font-semibold">
+            {hasPalletTareWeight ? formatDecimalWeight(palletTareWeight) : '-'}
+          </span>
           <span className="text-xs text-muted-foreground">kg</span>
         </div>
         <div className="flex flex-col gap-1 rounded-lg bg-muted/50 p-3">

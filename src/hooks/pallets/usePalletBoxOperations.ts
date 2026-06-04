@@ -48,6 +48,7 @@ export interface UsePalletBoxOperationsResult {
   editBox: EditBoxMethods;
   bulkEditBoxes: BulkEditBoxesMethods;
   editObservations: (observations: string) => void;
+  editPalletTareWeightKg: (palletTareWeightKg: string) => void;
   editOrderId: (orderId: number | string | null) => void;
   setBoxPrinted: (boxId: number | string) => void;
   deleteAllBoxes: () => void;
@@ -488,6 +489,11 @@ export function usePalletBoxOperations({
     setTemporalPallet((prev) => (prev ? { ...prev, observations } : prev));
   };
 
+  const editPalletTareWeightKg = (palletTareWeightKg: string) => {
+    if (!temporalPallet) return;
+    setTemporalPallet((prev) => (prev ? { ...prev, palletTareWeightKg } : prev));
+  };
+
   const editOrderId = (orderId: number | string | null) => {
     if (!temporalPallet) return;
     setTemporalPallet((prev) => (prev ? { ...prev, orderId } : prev));
@@ -521,6 +527,7 @@ export function usePalletBoxOperations({
     editBox,
     bulkEditBoxes,
     editObservations,
+    editPalletTareWeightKg,
     editOrderId,
     setBoxPrinted,
     deleteAllBoxes,

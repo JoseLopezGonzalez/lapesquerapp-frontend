@@ -114,6 +114,13 @@ export const transformPalletsToApiFormat = (temporalPallets, originalBoxIds = ne
     .filter((p) => p !== null);
 
   return validPallets.map(({ item, pallet, validBoxes }) => {
+    const rawPalletTareWeightKg = pallet.palletTareWeightKg ?? item.palletTareWeightKg;
+    const palletTareWeightKg =
+      rawPalletTareWeightKg === null ||
+      rawPalletTareWeightKg === undefined ||
+      rawPalletTareWeightKg === ''
+        ? null
+        : parseFloat(rawPalletTareWeightKg);
     const boxes = validBoxes.map((box) => {
       const boxData = {
         product: {
@@ -138,6 +145,7 @@ export const transformPalletsToApiFormat = (temporalPallets, originalBoxIds = ne
     return {
       ...(pallet.id && { id: pallet.id }),
       observations: item.observations || pallet.observations || undefined,
+      palletTareWeightKg: Number.isFinite(palletTareWeightKg) ? palletTareWeightKg : null,
       boxes: boxes,
     };
   });
@@ -273,9 +281,11 @@ export const mapBackendPalletsToTemporal = (
         numberOfBoxes: boxes.length,
         netWeight: boxes.reduce((sum, box) => sum + (parseFloat(box.netWeight) || 0), 0),
         observations: backendPallet.observations || '',
+        palletTareWeightKg: backendPallet.palletTareWeightKg ?? null,
       },
       prices: preservedMetadata.prices,
       observations: preservedMetadata.observations,
+      palletTareWeightKg: backendPallet.palletTareWeightKg ?? null,
       isLocked: lockedIds.includes(backendPallet.id),
     });
   });

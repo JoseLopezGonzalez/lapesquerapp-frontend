@@ -1008,11 +1008,29 @@ export default function PalletView({
                         </CardHeader>
                         <CardContent className="space-y-4">
                           <div className="space-y-2">
+                            <Label htmlFor="pallet-tare-weight">Tara del palet vacío (kg)</Label>
+                            <Input
+                              id="pallet-tare-weight"
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              placeholder="0.00"
+                              defaultValue={temporalPallet.palletTareWeightKg ?? ''}
+                              onChange={(e) => editPallet.palletTareWeightKg(e.target.value)}
+                              className="max-w-[220px] text-right"
+                              disabled={isReadOnly}
+                            />
+                            <p className="text-muted-foreground text-xs">
+                              Peso físico del palet vacío. No modifica el peso neto de las cajas.
+                            </p>
+                          </div>
+                          <div className="space-y-2">
                             <Label>Observaciones</Label>
                             <Textarea
                               defaultValue={temporalPallet.observations || ''}
                               onChange={(e) => editPallet.observations(e.target.value)}
                               className="min-h-[80px]"
+                              disabled={isReadOnly}
                             />
                           </div>
                           {!externalActor && (
@@ -2146,7 +2164,7 @@ export default function PalletView({
                           <CardTitle className="text-xl">Resumen General del Palet</CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <div className="grid grid-cols-4 gap-4">
+                          <div className="grid grid-cols-5 gap-4">
                             <div className="bg-foreground-50 flex items-center gap-2 rounded-lg border p-2">
                               <div className="bg-foreground-200/50 rounded-lg p-2.5">
                                 <Box className="h-6 w-6" />
@@ -2188,6 +2206,23 @@ export default function PalletView({
                                   {formatDecimalWeight(temporalPallet.netWeight)}
                                 </h4>
                                 <span className="text-muted-foreground text-sm">Peso total</span>
+                              </div>
+                            </div>
+
+                            <div className="bg-foreground-50 flex items-center gap-2 rounded-lg border p-2">
+                              <div className="bg-foreground-200/50 rounded-lg p-2.5">
+                                <Weight className="h-6 w-6" />
+                              </div>
+                              <div className="flex flex-col">
+                                <h4 className="text-lg font-medium">
+                                  {temporalPallet.palletTareWeightKg !== null &&
+                                  temporalPallet.palletTareWeightKg !== undefined &&
+                                  temporalPallet.palletTareWeightKg !== '' &&
+                                  Number.isFinite(Number(temporalPallet.palletTareWeightKg))
+                                    ? formatDecimalWeight(Number(temporalPallet.palletTareWeightKg))
+                                    : '-'}
+                                </h4>
+                                <span className="text-muted-foreground text-sm">Tara palet</span>
                               </div>
                             </div>
                           </div>

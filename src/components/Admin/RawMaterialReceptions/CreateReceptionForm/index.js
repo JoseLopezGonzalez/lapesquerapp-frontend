@@ -591,6 +591,7 @@ export default function CreateReceptionForm({ onSuccess }) {
                     headers={[
                       { label: '#', className: '' },
                       { label: 'Observaciones', className: '' },
+                      { label: 'Tara Palet', className: '' },
                       { label: 'Cajas', className: '' },
                       { label: 'Peso Neto', className: '' },
                       {
@@ -616,6 +617,16 @@ export default function CreateReceptionForm({ onSuccess }) {
                                 </span>
                               )}
                             </div>
+                          </TableCell>
+                          <TableCell>
+                            {pallet.palletTareWeightKg !== null &&
+                            pallet.palletTareWeightKg !== undefined &&
+                            pallet.palletTareWeightKg !== '' &&
+                            Number.isFinite(Number(pallet.palletTareWeightKg)) ? (
+                              formatDecimalWeight(Number(pallet.palletTareWeightKg))
+                            ) : (
+                              <span className="text-muted-foreground text-sm italic">Sin tara</span>
+                            )}
                           </TableCell>
                           <TableCell>{pallet.numberOfBoxes || pallet.boxes?.length || 0}</TableCell>
                           <TableCell>{formatDecimalWeight(pallet.netWeight || 0)}</TableCell>

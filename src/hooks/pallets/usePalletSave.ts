@@ -21,6 +21,12 @@ export interface UsePalletSaveResult {
   onSavingChanges: () => Promise<void>;
 }
 
+const normalizePalletTareWeight = (value: unknown): number | null => {
+  if (value === null || value === undefined || value === '') return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : NaN;
+};
+
 export function usePalletSave({
   temporalPallet,
   setPallet,
@@ -49,11 +55,27 @@ export function usePalletSave({
     const palletPayload = canCost
       ? temporalPallet
       : (stripPalletCostFieldsFromPayload(temporalPallet) as PalletState);
+    const palletTareWeightKg = normalizePalletTareWeight(palletPayload.palletTareWeightKg);
+    if (
+      Number.isNaN(palletTareWeightKg) ||
+      (palletTareWeightKg !== null && palletTareWeightKg < 0)
+    ) {
+      notify.error({
+        title: 'Tara del palet no válida',
+        description: 'La tara del palet debe ser un número mayor o igual que 0.',
+      });
+      setSaving(false);
+      return;
+    }
+    const normalizedPalletPayload = {
+      ...palletPayload,
+      palletTareWeightKg,
+    };
     const safeToken = token ?? '';
 
     if (temporalPallet.id === null) {
       (createPallet as (payload: unknown, token: string) => Promise<unknown>)(
-        palletPayload,
+        normalizedPalletPayload,
         safeToken
       )
         .then((data: unknown) => {
@@ -80,7 +102,7 @@ export function usePalletSave({
     } else {
       (updatePallet as (id: unknown, payload: unknown, token: string) => Promise<unknown>)(
         temporalPallet.id,
-        palletPayload,
+        normalizedPalletPayload,
         safeToken
       )
         .then((data: unknown) => {
