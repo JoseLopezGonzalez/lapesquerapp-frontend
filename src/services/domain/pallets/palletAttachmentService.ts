@@ -72,7 +72,7 @@ export const palletAttachmentService = {
 
   async delete(palletId: number | string, attachmentId: number): Promise<void> {
     const token = await getAuthToken();
-    return deleteEntityGeneric(`${endpoint(palletId)}/${attachmentId}`, null, token);
+    await deleteEntityGeneric(`${endpoint(palletId)}/${attachmentId}`, null, token);
   },
 
   /** Descarga el archivo y devuelve un Blob URL listo para usar en <img src>. */
