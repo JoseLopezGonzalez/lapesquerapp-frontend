@@ -37,6 +37,7 @@ const OrderPallets = ({ readOnly = false }) => {
     setFilterStoreId,
     searchResults,
     selectedPalletIds,
+    selectedLinkedPalletIds,
     isSearching,
     isInitialLoading,
     isLinking,
@@ -46,6 +47,8 @@ const OrderPallets = ({ readOnly = false }) => {
     isCloning,
     unlinkingPalletId,
     isUnlinkingAll,
+    isPrintingExpeditionLabels,
+    canPrintExpeditionLabels,
     isCreateFromForecastDialogOpen,
     createFromForecastLot,
     setCreateFromForecastLot,
@@ -62,6 +65,11 @@ const OrderPallets = ({ readOnly = false }) => {
     handleUnlinkPallet,
     handleOpenPalletLabelDialog,
     handleClosePalletLabelDialog,
+    handleToggleLinkedPalletSelection,
+    handleSelectAllLinkedPallets,
+    handleDeselectAllLinkedPallets,
+    handlePrintPalletExpeditionLabel,
+    handlePrintSelectedPalletExpeditionLabels,
     handleClonePallet,
     handleConfirmAction,
     handleCancelAction,
@@ -95,6 +103,10 @@ const OrderPallets = ({ readOnly = false }) => {
               onUnlink={handleUnlinkPallet}
               onDelete={handleDeletePallet}
               onPrintLabel={handleOpenPalletLabelDialog}
+              onPrintExpeditionLabel={handlePrintPalletExpeditionLabel}
+              canPrintExpeditionLabels={canPrintExpeditionLabels}
+              selectedPalletIds={selectedLinkedPalletIds}
+              onToggleSelection={handleToggleLinkedPalletSelection}
               isCloning={isCloning}
               unlinkingPalletId={unlinkingPalletId}
             />
@@ -110,6 +122,10 @@ const OrderPallets = ({ readOnly = false }) => {
                   onUnlink={handleUnlinkPallet}
                   onDelete={handleDeletePallet}
                   onPrintLabel={handleOpenPalletLabelDialog}
+                  onPrintExpeditionLabel={handlePrintPalletExpeditionLabel}
+                  canPrintExpeditionLabels={canPrintExpeditionLabels}
+                  selectedPalletIds={selectedLinkedPalletIds}
+                  onToggleSelection={handleToggleLinkedPalletSelection}
                   isCloning={isCloning}
                   unlinkingPalletId={unlinkingPalletId}
                 />
@@ -125,6 +141,10 @@ const OrderPallets = ({ readOnly = false }) => {
             onLink={handleOpenLinkPalletsDialog}
             onCreateFromForecast={handleOpenCreateFromForecastDialog}
             onUnlinkAll={handleUnlinkAllPallets}
+            selectedPalletCount={selectedLinkedPalletIds.length}
+            isPrintingExpeditionLabels={isPrintingExpeditionLabels}
+            canPrintExpeditionLabels={canPrintExpeditionLabels}
+            onPrintSelectedExpeditionLabels={handlePrintSelectedPalletExpeditionLabels}
           />
         </div>
       ) : (
@@ -138,6 +158,10 @@ const OrderPallets = ({ readOnly = false }) => {
             onLink={handleOpenLinkPalletsDialog}
             onCreateFromForecast={handleOpenCreateFromForecastDialog}
             onUnlinkAll={handleUnlinkAllPallets}
+            selectedPalletCount={selectedLinkedPalletIds.length}
+            isPrintingExpeditionLabels={isPrintingExpeditionLabels}
+            canPrintExpeditionLabels={canPrintExpeditionLabels}
+            onPrintSelectedExpeditionLabels={handlePrintSelectedPalletExpeditionLabels}
           />
           <CardContent className="flex-1 overflow-auto">
             <OrderPalletsContent
@@ -149,6 +173,12 @@ const OrderPallets = ({ readOnly = false }) => {
               onUnlink={handleUnlinkPallet}
               onDelete={handleDeletePallet}
               onPrintLabel={handleOpenPalletLabelDialog}
+              onPrintExpeditionLabel={handlePrintPalletExpeditionLabel}
+              canPrintExpeditionLabels={canPrintExpeditionLabels}
+              selectedPalletIds={selectedLinkedPalletIds}
+              onToggleSelection={handleToggleLinkedPalletSelection}
+              onSelectAll={handleSelectAllLinkedPallets}
+              onDeselectAll={handleDeselectAllLinkedPallets}
               isCloning={isCloning}
               unlinkingPalletId={unlinkingPalletId}
             />

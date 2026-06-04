@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,6 +29,10 @@ export default function OrderPalletCard({
   onUnlink,
   onDelete,
   onPrintLabel,
+  onPrintExpeditionLabel,
+  canPrintExpeditionLabels = true,
+  selected = false,
+  onToggleSelection,
   isCloning = false,
   isUnlinking = false,
   readOnly = false,
@@ -71,11 +76,18 @@ export default function OrderPalletCard({
   return (
     <Card className="bg-card border-border overflow-hidden shadow-md">
       <CardHeader className="flex flex-row items-center justify-between space-x-2 p-4 pb-2">
-        <div className="flex items-center space-x-2">
+        <div className="flex min-w-0 items-center space-x-2">
+          {canPrintExpeditionLabels && (
+            <Checkbox
+              checked={selected}
+              onCheckedChange={() => onToggleSelection?.(pallet.id)}
+              aria-label={`Seleccionar palet ${pallet.id}`}
+            />
+          )}
           <div className="flex items-center gap-2 rounded-md bg-black p-1.5 text-white">
             <Layers className="h-5 w-5" />
           </div>
-          <h3 className="text-foreground text-xl font-medium">Palet #{pallet.id}</h3>
+          <h3 className="text-foreground truncate text-xl font-medium">Palet #{pallet.id}</h3>
           {pallet.receptionId && (
             <TooltipProvider>
               <Tooltip>
@@ -101,82 +113,95 @@ export default function OrderPalletCard({
             </TooltipProvider>
           )}
         </div>
-        {!readOnly && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-muted-foreground h-8 w-8">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-4 w-4"
-                >
-                  <circle cx="12" cy="12" r="1" />
-                  <circle cx="12" cy="5" r="1" />
-                  <circle cx="12" cy="19" r="1" />
-                </svg>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52">
-              {onPrintLabel && (
-                <DropdownMenuItem
-                  className="cursor-pointer"
-                  onClick={() => onPrintLabel(pallet.id)}
-                >
-                  <Printer className="mr-2 h-4 w-4" />
-                  Imprimir etiqueta
-                </DropdownMenuItem>
-              )}
+        <div className="flex items-center gap-1">
+          {canPrintExpeditionLabels && onPrintExpeditionLabel && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-muted-foreground h-8 w-8"
+              onClick={() => onPrintExpeditionLabel(pallet.id)}
+              aria-label={`Etiqueta de expedición del palet ${pallet.id}`}
+            >
+              <Printer className="h-4 w-4" />
+            </Button>
+          )}
+          {!readOnly && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="text-muted-foreground h-8 w-8">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-4 w-4"
+                  >
+                    <circle cx="12" cy="12" r="1" />
+                    <circle cx="12" cy="5" r="1" />
+                    <circle cx="12" cy="19" r="1" />
+                  </svg>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                {onPrintLabel && (
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={() => onPrintLabel(pallet.id)}
+                  >
+                    <Printer className="mr-2 h-4 w-4" />
+                    Imprimir etiqueta
+                  </DropdownMenuItem>
+                )}
 
-              <>
-                {onPrintLabel && <DropdownMenuSeparator />}
-                <DropdownMenuItem
-                  className="cursor-pointer"
-                  onClick={() => onClone(pallet.id)}
-                  disabled={belongsToReception || isCloning}
-                >
-                  <Copy className="mr-2 h-4 w-4" />
-                  Clonar
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="cursor-pointer"
-                  onClick={() => onEdit(pallet.id)}
-                  title={
-                    belongsToReception
-                      ? 'Ver palet (solo lectura - pertenece a una recepción)'
-                      : undefined
-                  }
-                >
-                  <Edit className="mr-2 h-4 w-4" />
-                  {belongsToReception ? 'Ver palet' : 'Editar'}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => onUnlink(pallet.id)}
-                  disabled={isUnlinking}
-                  className="cursor-pointer"
-                >
-                  <Unlink className="mr-2 h-4 w-4" />
-                  Desvincular
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => onDelete(pallet.id)}
-                  disabled={belongsToReception}
-                  className="text-destructive focus:text-destructive cursor-pointer"
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Eliminar
-                </DropdownMenuItem>
-              </>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+                <>
+                  {onPrintLabel && <DropdownMenuSeparator />}
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={() => onClone(pallet.id)}
+                    disabled={belongsToReception || isCloning}
+                  >
+                    <Copy className="mr-2 h-4 w-4" />
+                    Clonar
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={() => onEdit(pallet.id)}
+                    title={
+                      belongsToReception
+                        ? 'Ver palet (solo lectura - pertenece a una recepción)'
+                        : undefined
+                    }
+                  >
+                    <Edit className="mr-2 h-4 w-4" />
+                    {belongsToReception ? 'Ver palet' : 'Editar'}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => onUnlink(pallet.id)}
+                    disabled={isUnlinking}
+                    className="cursor-pointer"
+                  >
+                    <Unlink className="mr-2 h-4 w-4" />
+                    Desvincular
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => onDelete(pallet.id)}
+                    disabled={belongsToReception}
+                    className="text-destructive focus:text-destructive cursor-pointer"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Eliminar
+                  </DropdownMenuItem>
+                </>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
       </CardHeader>
 
       <CardContent className="p-4 pt-0">

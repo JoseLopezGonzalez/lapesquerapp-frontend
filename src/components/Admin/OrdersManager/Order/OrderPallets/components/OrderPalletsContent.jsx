@@ -1,5 +1,6 @@
 import React from 'react';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/Utilities/EmptyState/index';
 import OrderPalletCard from '../OrderPalletCard';
 import OrderPalletTableRow from '../OrderPalletTableRow';
@@ -16,6 +17,12 @@ const OrderPalletsContent = ({
   onUnlink,
   onDelete,
   onPrintLabel,
+  onPrintExpeditionLabel,
+  canPrintExpeditionLabels = true,
+  selectedPalletIds = [],
+  onToggleSelection,
+  onSelectAll,
+  onDeselectAll,
   isCloning,
   unlinkingPalletId,
 }) => {
@@ -46,6 +53,10 @@ const OrderPalletsContent = ({
             onUnlink={onUnlink}
             onDelete={onDelete}
             onPrintLabel={onPrintLabel}
+            onPrintExpeditionLabel={onPrintExpeditionLabel}
+            canPrintExpeditionLabels={canPrintExpeditionLabels}
+            selected={selectedPalletIds.includes(pallet.id)}
+            onToggleSelection={onToggleSelection}
             isCloning={isCloning}
             isUnlinking={unlinkingPalletId === pallet.id}
           />
@@ -54,11 +65,27 @@ const OrderPalletsContent = ({
     );
   }
 
+  const selectedCount = selectedPalletIds.length;
+  const allSelected = pallets.length > 0 && selectedCount === pallets.length;
+  const partiallySelected = selectedCount > 0 && !allSelected;
+
   return (
     <div className="max-h-[500px] overflow-y-auto rounded-md border">
       <Table>
         <TableHeader>
           <TableRow>
+            {canPrintExpeditionLabels && (
+              <TableHead className="w-[48px]">
+                <Checkbox
+                  checked={allSelected ? true : partiallySelected ? 'indeterminate' : false}
+                  onCheckedChange={(checked) => {
+                    if (checked) onSelectAll?.();
+                    else onDeselectAll?.();
+                  }}
+                  aria-label="Seleccionar todos los palets"
+                />
+              </TableHead>
+            )}
             <TableHead>ID</TableHead>
             <TableHead>Productos</TableHead>
             <TableHead>Lotes</TableHead>
@@ -80,6 +107,10 @@ const OrderPalletsContent = ({
               onClone={onClone}
               onUnlink={onUnlink}
               onDelete={onDelete}
+              onPrintExpeditionLabel={onPrintExpeditionLabel}
+              canPrintExpeditionLabels={canPrintExpeditionLabels}
+              selected={selectedPalletIds.includes(pallet.id)}
+              onToggleSelection={onToggleSelection}
               isCloning={isCloning}
               unlinkingPalletId={unlinkingPalletId}
             />

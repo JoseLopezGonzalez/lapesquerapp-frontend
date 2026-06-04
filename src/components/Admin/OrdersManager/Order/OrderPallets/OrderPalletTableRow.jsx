@@ -2,8 +2,9 @@
 
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Edit, Copy, Unlink, Trash2, Loader2 } from 'lucide-react';
+import { Edit, Copy, Unlink, Trash2, Loader2, Printer } from 'lucide-react';
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
 import { formatCostPerKg, formatTotalCost } from '@/helpers/production/costFormatters';
 
@@ -13,6 +14,10 @@ export default function OrderPalletTableRow({
   onClone,
   onUnlink,
   onDelete,
+  onPrintExpeditionLabel,
+  canPrintExpeditionLabels = true,
+  selected = false,
+  onToggleSelection,
   isCloning,
   unlinkingPalletId,
   readOnly = false,
@@ -32,6 +37,15 @@ export default function OrderPalletTableRow({
 
   return (
     <TableRow className="border-muted hover:bg-muted/20 border-b last:border-0">
+      {canPrintExpeditionLabels && (
+        <TableCell className="px-4 py-3">
+          <Checkbox
+            checked={selected}
+            onCheckedChange={() => onToggleSelection?.(pallet.id)}
+            aria-label={`Seleccionar palet ${pallet.id}`}
+          />
+        </TableCell>
+      )}
       <TableCell className="px-4 py-3">{pallet.id}</TableCell>
       <TableCell className="px-4 py-3 whitespace-pre-wrap">{productNames || '-'}</TableCell>
       <TableCell className="max-w-[150px] truncate px-4 py-3" title={lots}>
@@ -53,9 +67,42 @@ export default function OrderPalletTableRow({
       <TableCell className="px-4 py-3">
         <div className="flex justify-end gap-1">
           {readOnly ? (
-            <span className="text-muted-foreground text-xs">-</span>
+            canPrintExpeditionLabels ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => onPrintExpeditionLabel?.(pallet.id)}
+                  >
+                    <Printer className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Etiqueta de expedición</p>
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              <span className="text-muted-foreground text-xs">-</span>
+            )
           ) : (
             <>
+              {canPrintExpeditionLabels && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => onPrintExpeditionLabel?.(pallet.id)}
+                    >
+                      <Printer className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Etiqueta de expedición</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button

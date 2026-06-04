@@ -90,6 +90,7 @@ import {
   setOrderStatus,
   updateOrder,
 } from '@/services/orderService';
+import { useSession } from 'next-auth/react';
 import { fetchWithTenant } from '@lib/fetchWithTenant';
 import { notify } from '@/lib/notifications';
 
@@ -118,6 +119,10 @@ describe('useOrder', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    useSession.mockReturnValue({
+      data: { user: { accessToken: 'test-token', role: 'administrador' } },
+      status: 'authenticated',
+    });
     mockCreateObjectURL.mockReturnValue('blob:mock-url');
     getOrder.mockResolvedValue(mockOrder);
     getOrderCostAnalysis.mockResolvedValue({
@@ -272,7 +277,36 @@ describe('useOrder', () => {
     );
   });
 
-  it('exposes restricted-order-signs in export catalogs', async () => {
+  it('exportDocument resolves pallet expedition labels endpoint', async () => {
+    fetchWithTenant.mockResolvedValue({
+      ok: true,
+      blob: () => Promise.resolve(mockBlob),
+      headers: { get: () => null },
+    });
+
+    const { result } = renderHook(() => useOrder(1), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    await act(async () => {
+      await result.current.exportDocument(
+        'pallet-expedition-labels',
+        'pdf',
+        'Etiquetas de expedición de palets'
+      );
+    });
+
+    expect(fetchWithTenant).toHaveBeenCalledWith(
+      'https://api.test/v2/orders/1/pdf/pallet-expedition-labels',
+      expect.any(Object)
+    );
+  });
+
+  it('exposes restricted documents and pallet expedition labels in non-commercial export catalogs', async () => {
     const { result } = renderHook(() => useOrder(1), {
       wrapper: createWrapper(),
     });
@@ -288,6 +322,11 @@ describe('useOrder', () => {
           label: 'Letreros de transporte (Restringidos)',
           types: ['pdf'],
         }),
+        expect.objectContaining({
+          name: 'pallet-expedition-labels',
+          label: 'Etiquetas de expedición de palets',
+          types: ['pdf'],
+        }),
       ])
     );
 
@@ -298,8 +337,67 @@ describe('useOrder', () => {
           label: 'Letreros de transporte (Restringidos)',
           type: 'pdf',
         }),
+        expect.objectContaining({
+          name: 'pallet-expedition-labels',
+          label: 'Etiquetas de expedición de palets',
+          type: 'pdf',
+        }),
       ])
     );
+  });
+
+  it('hides restricted documents and pallet expedition labels for commercial role', async () => {
+    useSession.mockReturnValue({
+      data: { user: { accessToken: 'test-token', role: 'comercial' } },
+      status: 'authenticated',
+    });
+
+    const { result } = renderHook(() => useOrder(1), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    const documentNames = result.current.exportDocuments.map((doc) => doc.name);
+    const fastDocumentNames = result.current.fastExportDocuments.map((doc) => doc.name);
+
+    expect(documentNames).not.toContain('restricted-loading-note');
+    expect(documentNames).not.toContain('restricted-order-signs');
+    expect(documentNames).not.toContain('pallet-expedition-labels');
+    expect(fastDocumentNames).not.toContain('restricted-loading-note');
+    expect(fastDocumentNames).not.toContain('restricted-order-signs');
+    expect(fastDocumentNames).not.toContain('pallet-expedition-labels');
+  });
+
+  it('blocks direct pallet expedition labels export for commercial role', async () => {
+    useSession.mockReturnValue({
+      data: { user: { accessToken: 'test-token', role: 'comercial' } },
+      status: 'authenticated',
+    });
+
+    const { result } = renderHook(() => useOrder(1), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    await act(async () => {
+      await result.current.exportDocument(
+        'pallet-expedition-labels',
+        'pdf',
+        'Etiquetas de expedición de palets'
+      );
+    });
+
+    expect(fetchWithTenant).not.toHaveBeenCalled();
+    expect(notify.error).toHaveBeenCalledWith({
+      title: 'Documento no disponible',
+      description: 'Este documento no está disponible para el rol Comercial.',
+    });
   });
 
   it('propagates export errors so notify.promise can handle 403 responses', async () => {

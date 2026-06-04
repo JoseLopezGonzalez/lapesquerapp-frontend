@@ -23,6 +23,26 @@ interface FastExportDocumentConfig {
   type: string;
 }
 
+const COMMERCIAL_RESTRICTED_DOCUMENT_NAMES = new Set([
+  'restricted-loading-note',
+  'restricted-order-signs',
+  'pallet-expedition-labels',
+]);
+
+function getSessionRoles(session: Session | null): string[] {
+  const role = session?.user?.role;
+  if (!role) return [];
+  return Array.isArray(role) ? role.map(String) : [String(role)];
+}
+
+function isCommercialSession(session: Session | null): boolean {
+  return getSessionRoles(session).includes('comercial');
+}
+
+function isCommercialRestrictedDocument(documentName: string): boolean {
+  return COMMERCIAL_RESTRICTED_DOCUMENT_NAMES.has(documentName);
+}
+
 function getOrderExportUrl({
   orderId,
   documentName,
@@ -74,6 +94,21 @@ const exportDocuments: ExportDocumentConfig[] = [
     label: 'Letreros de transporte (Restringidos)',
     types: ['pdf'],
     fields: ['Expedidor', 'Información del palet', 'QR del palet', 'QR del pedido'],
+  },
+  {
+    name: 'pallet-expedition-labels',
+    label: 'Etiquetas de expedición de palets',
+    types: ['pdf'],
+    fields: [
+      'Empresa',
+      'QR del palet',
+      'Nº de palet',
+      'Pedido',
+      'Cliente/destino',
+      'Transporte',
+      'Cajas',
+      'Peso neto',
+    ],
   },
   {
     name: 'order-packing-list',
@@ -138,6 +173,7 @@ const fastExportDocuments: FastExportDocumentConfig[] = [
   { name: 'order-cmr', label: 'Documento de transporte (CMR)', type: 'pdf' },
   { name: 'order-signs', label: 'Letreros de transporte', type: 'pdf' },
   { name: 'restricted-order-signs', label: 'Letreros de transporte (Restringidos)', type: 'pdf' },
+  { name: 'pallet-expedition-labels', label: 'Etiquetas de expedición de palets', type: 'pdf' },
   { name: 'order-packing-list', label: 'Packing List', type: 'pdf' },
 ];
 
@@ -160,8 +196,18 @@ export function useOrderDocuments({
   order,
   session,
 }: UseOrderDocumentsParams): UseOrderDocumentsResult {
+  const isCommercial = isCommercialSession(session);
+
   const exportDocument = async (documentName: string, type: string, documentLabel: string) => {
     if (!order) return;
+    if (isCommercial && isCommercialRestrictedDocument(documentName)) {
+      notify.error({
+        title: 'Documento no disponible',
+        description: 'Este documento no está disponible para el rol Comercial.',
+      });
+      return;
+    }
+
     const toastId = `order-export-${order.id}-${documentName}-${type}`;
     const doExport = async () => {
       const response = await fetchWithTenant(
@@ -261,10 +307,18 @@ export function useOrderDocuments({
       .then((data: { data: unknown }) => data.data);
   };
 
+  const visibleExportDocuments = isCommercial
+    ? exportDocuments.filter((doc) => !isCommercialRestrictedDocument(doc.name))
+    : exportDocuments;
+
+  const visibleFastExportDocuments = isCommercial
+    ? fastExportDocuments.filter((doc) => !isCommercialRestrictedDocument(doc.name))
+    : fastExportDocuments;
+
   return {
     exportDocument,
-    exportDocuments,
-    fastExportDocuments,
+    exportDocuments: visibleExportDocuments,
+    fastExportDocuments: visibleFastExportDocuments,
     sendDocuments: {
       customDocuments: sendCustomDocuments,
       standardDocuments: sendStandarDocuments,

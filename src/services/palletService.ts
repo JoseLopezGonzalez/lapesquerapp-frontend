@@ -42,6 +42,39 @@ export interface LinkPalletPayload {
   orderId: number | string;
 }
 
+function buildPdfDownloadName(baseName: string): string {
+  const now = new Date();
+  const formattedDate = now.toLocaleDateString().replace(/\//g, '-');
+  const formattedTime = now.toTimeString().split(' ')[0].replace(/:/g, '-');
+  return `${baseName}__${formattedDate}__${formattedTime}.pdf`;
+}
+
+async function downloadPdfResponse(response: Response, fileName: string): Promise<boolean> {
+  if (!response.ok) {
+    const errorData = (await response.clone().json().catch(() => null)) as object | null;
+    const errorText = await response
+      .clone()
+      .text()
+      .catch(() => '');
+    throw new Error(
+      (errorData && getErrorMessage(errorData)) ||
+        errorText ||
+        `Error HTTP ${response.status}: ${response.statusText}`
+    );
+  }
+
+  const blob = await response.blob();
+  const downloadUrl = window.URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = downloadUrl;
+  anchor.download = fileName;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.URL.revokeObjectURL(downloadUrl);
+  return true;
+}
+
 // --- Pallet Timeline (GET /api/v2/pallets/{id}/timeline) ---
 
 /** Single timeline entry; details shape depends on type */
@@ -80,6 +113,48 @@ export function getPallet(palletId: number | string, token: AuthToken): Promise<
     .catch((error) => {
       throw error;
     });
+}
+
+export async function downloadPalletExpeditionLabel(
+  palletId: number | string,
+  token: AuthToken
+): Promise<boolean> {
+  const response = await fetchWithTenant(`${API_URL_V2}pallets/${palletId}/pdf/expedition-label`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/pdf',
+      Authorization: `Bearer ${token}`,
+      'User-Agent': getUserAgent(),
+    },
+  });
+
+  return downloadPdfResponse(
+    response,
+    buildPdfDownloadName(`etiqueta-expedicion-palet-${palletId}`)
+  );
+}
+
+export async function downloadPalletExpeditionLabels(
+  palletIds: Array<number | string>,
+  token: AuthToken
+): Promise<boolean> {
+  const normalizedPalletIds = palletIds
+    .map((id) => Number(id))
+    .filter((id) => Number.isFinite(id));
+
+  const response = await fetchWithTenant(`${API_URL_V2}pallets/pdf/expedition-labels`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/pdf',
+      Authorization: `Bearer ${token}`,
+      'User-Agent': getUserAgent(),
+    },
+    body: JSON.stringify({ palletIds: normalizedPalletIds }),
+  });
+
+  return downloadPdfResponse(response, buildPdfDownloadName('etiquetas-expedicion-palets'));
 }
 
 export async function getPalletTimeline(

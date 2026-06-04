@@ -1,8 +1,14 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useOrderContext } from '@/context/OrderContext';
 import { useSession } from 'next-auth/react';
 import { useStoresOptions } from '@/hooks/useStoresOptions';
-import { getPallet, getAvailablePalletsForOrder, createPallet } from '@/services/palletService';
+import {
+  getPallet,
+  getAvailablePalletsForOrder,
+  createPallet,
+  downloadPalletExpeditionLabel,
+  downloadPalletExpeditionLabels,
+} from '@/services/palletService';
 import { getProductOptions } from '@/services/productService';
 import { notify } from '@/lib/notifications';
 import { roundToTwoDecimals } from '../utils/roundToTwoDecimals';
@@ -23,6 +29,9 @@ export function useOrderPallets() {
     onUnlinkAllPallets,
   } = useOrderContext();
   const { data: session } = useSession();
+  const rawRole = session?.user?.role;
+  const roles = Array.isArray(rawRole) ? rawRole : rawRole ? [rawRole] : [];
+  const canPrintExpeditionLabels = !roles.includes('comercial');
   const { storeOptions, loading: storesLoading } = useStoresOptions();
 
   const [isPalletDialogOpen, setIsPalletDialogOpen] = useState(false);
@@ -50,11 +59,21 @@ export function useOrderPallets() {
   const [isCloning, setIsCloning] = useState(false);
   const [unlinkingPalletId, setUnlinkingPalletId] = useState(null);
   const [isUnlinkingAll, setIsUnlinkingAll] = useState(false);
+  const [selectedLinkedPalletIds, setSelectedLinkedPalletIds] = useState([]);
+  const [isPrintingExpeditionLabels, setIsPrintingExpeditionLabels] = useState(false);
 
   const [isCreateFromForecastDialogOpen, setIsCreateFromForecastDialogOpen] = useState(false);
   const [createFromForecastLot, setCreateFromForecastLot] = useState('');
   const [createFromForecastStoreId, setCreateFromForecastStoreId] = useState(null);
   const [isCreatingFromForecast, setIsCreatingFromForecast] = useState(false);
+
+  useEffect(() => {
+    const linkedIds = new Set((pallets || []).map((p) => p.id));
+    setSelectedLinkedPalletIds((prev) => {
+      const next = prev.filter((id) => linkedIds.has(id));
+      return next.length === prev.length ? prev : next;
+    });
+  }, [pallets]);
 
   const generateUniqueBoxId = useCallback(() => {
     return Date.now() + Math.random();
@@ -130,6 +149,109 @@ export function useOrderPallets() {
     setIsPalletLabelDialogOpen(false);
     setTimeout(() => setSelectedPalletForLabel(null), 1000);
   }, []);
+
+  const getTokenOrNotify = useCallback(() => {
+    const token = session?.user?.accessToken;
+    if (!token) {
+      notify.error({
+        title: 'Sesión no disponible',
+        description: 'No se pudo obtener el token de autenticación. Inicia sesión de nuevo.',
+      });
+      return null;
+    }
+    return token;
+  }, [session?.user?.accessToken]);
+
+  const handleToggleLinkedPalletSelection = useCallback((palletId) => {
+    setSelectedLinkedPalletIds((prev) =>
+      prev.includes(palletId) ? prev.filter((id) => id !== palletId) : [...prev, palletId]
+    );
+  }, []);
+
+  const handleSelectAllLinkedPallets = useCallback(() => {
+    setSelectedLinkedPalletIds((pallets || []).map((p) => p.id));
+  }, [pallets]);
+
+  const handleDeselectAllLinkedPallets = useCallback(() => {
+    setSelectedLinkedPalletIds([]);
+  }, []);
+
+  const handlePrintPalletExpeditionLabel = useCallback(
+    async (palletId) => {
+      if (!canPrintExpeditionLabels) {
+        notify.error({
+          title: 'Documento no disponible',
+          description: 'Este documento no está disponible para el rol Comercial.',
+        });
+        return;
+      }
+      const token = getTokenOrNotify();
+      if (!token || !palletId) return;
+
+      await notify.promise(downloadPalletExpeditionLabel(palletId, token), {
+        loading: {
+          title: 'Generando etiqueta',
+          description: `Preparando la etiqueta de expedición del palet #${palletId}.`,
+        },
+        success: {
+          title: 'Etiqueta generada',
+          description: 'El PDF ya está listo para descarga.',
+        },
+        error: (error) => ({
+          title: 'Error al generar la etiqueta',
+          description:
+            error?.userMessage ||
+            error?.data?.userMessage ||
+            error?.response?.data?.userMessage ||
+            error?.message ||
+            'No se pudo generar la etiqueta de expedición.',
+        }),
+      });
+    },
+    [canPrintExpeditionLabels, getTokenOrNotify]
+  );
+
+  const handlePrintSelectedPalletExpeditionLabels = useCallback(async () => {
+    if (!canPrintExpeditionLabels) {
+      notify.error({
+        title: 'Documento no disponible',
+        description: 'Este documento no está disponible para el rol Comercial.',
+      });
+      return;
+    }
+    if (selectedLinkedPalletIds.length === 0) {
+      notify.error({ title: 'Selecciona al menos un palet' });
+      return;
+    }
+
+    const token = getTokenOrNotify();
+    if (!token) return;
+
+    setIsPrintingExpeditionLabels(true);
+    try {
+      await notify.promise(downloadPalletExpeditionLabels(selectedLinkedPalletIds, token), {
+        loading: {
+          title: 'Generando etiquetas',
+          description: `Preparando ${selectedLinkedPalletIds.length} etiqueta(s) de expedición.`,
+        },
+        success: {
+          title: 'Etiquetas generadas',
+          description: 'El PDF ya está listo para descarga.',
+        },
+        error: (error) => ({
+          title: 'Error al generar etiquetas',
+          description:
+            error?.userMessage ||
+            error?.data?.userMessage ||
+            error?.response?.data?.userMessage ||
+            error?.message ||
+            'No se pudieron generar las etiquetas de expedición.',
+        }),
+      });
+    } finally {
+      setIsPrintingExpeditionLabels(false);
+    }
+  }, [canPrintExpeditionLabels, selectedLinkedPalletIds, getTokenOrNotify]);
 
   const handleClonePallet = useCallback(
     async (palletId) => {
@@ -624,6 +746,7 @@ export function useOrderPallets() {
     setFilterStoreId,
     searchResults,
     selectedPalletIds,
+    selectedLinkedPalletIds,
     isSearching,
     isInitialLoading,
     isLinking,
@@ -633,6 +756,8 @@ export function useOrderPallets() {
     isCloning,
     unlinkingPalletId,
     isUnlinkingAll,
+    isPrintingExpeditionLabels,
+    canPrintExpeditionLabels,
     isCreateFromForecastDialogOpen,
     createFromForecastLot,
     setCreateFromForecastLot,
@@ -649,6 +774,11 @@ export function useOrderPallets() {
     handleUnlinkPallet,
     handleOpenPalletLabelDialog,
     handleClosePalletLabelDialog,
+    handleToggleLinkedPalletSelection,
+    handleSelectAllLinkedPallets,
+    handleDeselectAllLinkedPallets,
+    handlePrintPalletExpeditionLabel,
+    handlePrintSelectedPalletExpeditionLabels,
     handleClonePallet,
     handleConfirmAction,
     handleCancelAction,

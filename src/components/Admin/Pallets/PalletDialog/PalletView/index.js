@@ -82,7 +82,7 @@ import { usePrintElement } from '@/hooks/usePrintElement';
 import PalletLabel from '@/components/Admin/Pallets/PalletLabel';
 import SummaryPieChart from './SummaryPieChart';
 import { notify } from '@/lib/notifications';
-import { deletePalletTimeline } from '@/services/palletService';
+import { deletePalletTimeline, downloadPalletExpeditionLabel } from '@/services/palletService';
 import { getProductionByLot } from '@/services/productionService';
 import BoxesLabels from './BoxesLabels';
 import { PalletTimeline } from './PalletTimeline';
@@ -134,6 +134,7 @@ export default function PalletView({
   const [mainTab, setMainTab] = useState('edicion');
   const [deletingTimeline, setDeletingTimeline] = useState(false);
   const [resolvingProductionLot, setResolvingProductionLot] = useState(null);
+  const [isDownloadingExpeditionLabel, setIsDownloadingExpeditionLabel] = useState(false);
 
   // Estado de expansión de los eventos del historial
   const [timelineOpenStates, setTimelineOpenStates] = useState(() =>
@@ -167,6 +168,7 @@ export default function PalletView({
     !externalActor && roles.some((r) => r === 'administrador' || r === 'tecnico');
   const canDeletePalletData = canDeletePallet(session?.user);
   const canEditCost = canManagePalletCostFields(session?.user);
+  const canPrintExpeditionLabels = !roles.includes('comercial');
 
   const orderIdBlocked = initialOrderId !== null;
 
@@ -183,6 +185,61 @@ export default function PalletView({
 
   const handleOnClickPrintLabel = () => {
     onPrint();
+  };
+
+  const handleOnClickDownloadExpeditionLabel = async () => {
+    if (!canPrintExpeditionLabels) {
+      notify.error({
+        title: 'Documento no disponible',
+        description: 'Este documento no está disponible para el rol Comercial.',
+      });
+      return;
+    }
+    const token = session?.user?.accessToken;
+    const effectivePalletId = temporalPallet?.id ?? palletId;
+    if (!token) {
+      notify.error({
+        title: 'Sesión no disponible',
+        description: 'No se pudo obtener el token de autenticación. Inicia sesión de nuevo.',
+      });
+      return;
+    }
+    if (
+      !effectivePalletId ||
+      effectivePalletId === 'new' ||
+      String(effectivePalletId).startsWith('temp-')
+    ) {
+      notify.error({
+        title: 'Guarda el palet antes de imprimir',
+        description: 'La etiqueta de expedición solo está disponible para palets guardados.',
+      });
+      return;
+    }
+
+    setIsDownloadingExpeditionLabel(true);
+    try {
+      await notify.promise(downloadPalletExpeditionLabel(effectivePalletId, token), {
+        loading: {
+          title: 'Generando etiqueta',
+          description: `Preparando la etiqueta de expedición del palet #${effectivePalletId}.`,
+        },
+        success: {
+          title: 'Etiqueta generada',
+          description: 'El PDF ya está listo para descarga.',
+        },
+        error: (error) => ({
+          title: 'Error al generar la etiqueta',
+          description:
+            error?.userMessage ||
+            error?.data?.userMessage ||
+            error?.response?.data?.userMessage ||
+            error?.message ||
+            'No se pudo generar la etiqueta de expedición.',
+        }),
+      });
+    } finally {
+      setIsDownloadingExpeditionLabel(false);
+    }
   };
 
   const handleOpenProductionByLot = async (lot) => {
@@ -2252,10 +2309,25 @@ export default function PalletView({
                         <div className="bg-card text-card-foreground h-20 w-full rounded-t-xl border border-b-0 bg-white"></div>
                       </div>
                     </div>
-                    <Button onClick={handleOnClickPrintLabel}>
-                      <Printer className="mr-2 h-4 w-4" />
-                      Imprimir Etiqueta
-                    </Button>
+                    <div className="flex flex-wrap justify-center gap-2">
+                      <Button variant="outline" onClick={handleOnClickPrintLabel}>
+                        <Printer className="mr-2 h-4 w-4" />
+                        Imprimir etiqueta interna
+                      </Button>
+                      {canPrintExpeditionLabels && (
+                        <Button
+                          onClick={handleOnClickDownloadExpeditionLabel}
+                          disabled={isDownloadingExpeditionLabel}
+                        >
+                          {isDownloadingExpeditionLabel ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <Printer className="mr-2 h-4 w-4" />
+                          )}
+                          Etiqueta expedición
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </TabsContent>
 
