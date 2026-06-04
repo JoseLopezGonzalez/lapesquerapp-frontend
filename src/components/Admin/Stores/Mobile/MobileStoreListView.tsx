@@ -233,9 +233,9 @@ export function MobileStoreListView({
   const isEmpty = !stores || stores.length === 0;
 
   return (
-    <div className="flex h-full flex-col overflow-hidden">
-      {/* Header — mismo sistema que gestor de pedidos mobile */}
-      <div className="flex-shrink-0 pt-4 pb-3">
+    <div className="relative flex h-full flex-col overflow-hidden">
+      {/* Header */}
+      <div className="bg-background flex-shrink-0 px-0 pt-4 pb-3">
         <div className="flex items-center justify-between gap-2 px-2">
           <Button
             variant="ghost"
@@ -261,73 +261,79 @@ export function MobileStoreListView({
         </div>
       </div>
 
-      {/* Buscador */}
-      <div className="flex-shrink-0 px-4 pb-3">
-        <InputGroup className="w-full">
-          <InputGroupInput
-            type="text"
-            value={search}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
-            placeholder="Buscar almacén…"
-          />
-          <InputGroupAddon>
-            <Search className="size-4" />
-          </InputGroupAddon>
-        </InputGroup>
-      </div>
+      {/* Contenido — estructura idéntica a gestor de pedidos */}
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-4">
+        {/* Buscador + tabs */}
+        <div className="w-full flex-shrink-0 mb-3 space-y-4 pt-1">
+          <InputGroup className="w-full">
+            <InputGroupInput
+              type="text"
+              value={search}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
+              placeholder="Buscar almacén…"
+            />
+            <InputGroupAddon>
+              <Search className="size-4" />
+            </InputGroupAddon>
+          </InputGroup>
 
-      {/* Tabs de estado — solo cuando hay almacenes */}
-      {!isEmpty && (
-        <div className="flex-shrink-0 pb-3">
-          <Tabs className="" value={activeTab} onValueChange={(v: string) => setActiveTab(v as TabId)}>
-            <div className="flex justify-center overflow-x-auto scrollbar-hide">
-              <TabsList className="w-max">
-                <TabsTrigger value="all">Todos</TabsTrigger>
-                <TabsTrigger value="low">Libres</TabsTrigger>
-                <TabsTrigger value="medium">Ocupados</TabsTrigger>
-                <TabsTrigger value="high">Llenos</TabsTrigger>
-              </TabsList>
-            </div>
-          </Tabs>
-        </div>
-      )}
-
-      {/* Lista */}
-      {isEmpty ? (
-        <div className="flex flex-col items-center justify-center gap-2 p-8 text-center">
-          <p className="text-sm font-medium">Sin almacenes</p>
-          <p className="text-muted-foreground text-xs">No hay almacenes disponibles.</p>
-        </div>
-      ) : filteredByTab.length === 0 ? (
-        <div className="flex flex-col items-center justify-center gap-2 p-8 text-center">
-          <p className="text-sm font-medium">Sin resultados</p>
-          <p className="text-muted-foreground text-xs">
-            {search.trim()
-              ? `No hay almacenes que coincidan con «${search}».`
-              : 'No hay almacenes con este estado.'}
-          </p>
-        </div>
-      ) : (
-        <div className="relative min-h-0 flex-1 overflow-hidden">
-          <div className="from-background pointer-events-none absolute top-0 right-0 left-0 z-10 h-8 bg-gradient-to-b to-transparent" />
-          <div className="from-background pointer-events-none absolute right-0 bottom-0 left-0 z-10 h-8 bg-gradient-to-t to-transparent" />
-          <ScrollArea className="h-full w-full">
-            <div className="flex flex-col gap-4 pt-2 pr-2 pb-6 pl-2">
-              {filteredByTab.map((store) => (
-                <MobileStoreCard
-                  key={store.id}
-                  store={store}
-                  disabled={isStoreLoading}
-                  onClick={() => onSelectStore(store.id)}
-                />
-              ))}
-              <div ref={sentinelRef} className="flex h-2 items-center justify-center">
-                {loadingMore && <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />}
+          {!isEmpty && (
+            <Tabs
+              className=""
+              value={activeTab}
+              onValueChange={(v: string) => setActiveTab(v as TabId)}
+            >
+              <div className="flex justify-center overflow-x-auto scrollbar-hide">
+                <TabsList className="w-max">
+                  <TabsTrigger value="all">Todos</TabsTrigger>
+                  <TabsTrigger value="low">Libres</TabsTrigger>
+                  <TabsTrigger value="medium">Ocupados</TabsTrigger>
+                  <TabsTrigger value="high">Llenos</TabsTrigger>
+                </TabsList>
               </div>
-            </div>
-          </ScrollArea>
+            </Tabs>
+          )}
         </div>
-      )}
+
+        {/* Lista */}
+        {isEmpty ? (
+          <div className="flex flex-col items-center justify-center gap-2 p-8 text-center">
+            <p className="text-sm font-medium">Sin almacenes</p>
+            <p className="text-muted-foreground text-xs">No hay almacenes disponibles.</p>
+          </div>
+        ) : filteredByTab.length === 0 ? (
+          <div className="flex flex-col items-center justify-center gap-2 p-8 text-center">
+            <p className="text-sm font-medium">Sin resultados</p>
+            <p className="text-muted-foreground text-xs">
+              {search.trim()
+                ? `No hay almacenes que coincidan con «${search}».`
+                : 'No hay almacenes con este estado.'}
+            </p>
+          </div>
+        ) : (
+          <div className="relative min-h-0 flex-1 overflow-hidden">
+            <div className="from-background pointer-events-none absolute top-0 right-0 left-0 z-10 h-8 bg-gradient-to-b to-transparent" />
+            <div className="from-background pointer-events-none absolute right-0 bottom-0 left-0 z-10 h-8 bg-gradient-to-t to-transparent" />
+            <ScrollArea className="h-full w-full">
+              <div className="flex flex-col gap-4 pt-2 pr-2 pb-6 pl-2">
+                {filteredByTab.map((store) => (
+                  <MobileStoreCard
+                    key={store.id}
+                    store={store}
+                    disabled={isStoreLoading}
+                    onClick={() => onSelectStore(store.id)}
+                  />
+                ))}
+                <div ref={sentinelRef} className="flex h-2 items-center justify-center">
+                  {loadingMore && (
+                    <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />
+                  )}
+                </div>
+              </div>
+            </ScrollArea>
+          </div>
+        )}
+      </div>
 
       {/* Escáner QR global — sin contexto de almacén */}
       {scannerOpen && (
