@@ -121,10 +121,12 @@ function MobileStoreCard({
                     {store.temperature} ºC
                   </span>
                 )}
-                <span className="flex items-center gap-1.5">
-                  <Package className="h-3.5 w-3.5 shrink-0" />
-                  {formatDecimalWeight(store.totalNetWeight ?? 0)}
-                </span>
+                {(store.totalNetWeight ?? 0) > 0 && (
+                  <span className="flex items-center gap-1.5">
+                    <Package className="h-3.5 w-3.5 shrink-0" />
+                    {formatDecimalWeight(store.totalNetWeight ?? 0)}
+                  </span>
+                )}
               </div>
             )}
 
@@ -186,8 +188,8 @@ export function MobileStoreListView({
   return (
     <div className="flex h-full flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex-shrink-0 px-4 pt-6 pb-4">
-        <h2 className="text-2xl font-bold">Almacenes</h2>
+      <div className="flex-shrink-0 px-4 pt-4 pb-3">
+        <h2 className="text-xl font-normal dark:text-white">Almacenes</h2>
         {realStores.length > 0 && (
           <p className="text-muted-foreground mt-0.5 text-sm">
             {realStores.length} almacén{realStores.length !== 1 ? 'es' : ''}
@@ -196,15 +198,15 @@ export function MobileStoreListView({
       </div>
 
       {/* Buscador */}
-      <div className="flex-shrink-0 px-4 pb-4">
-        <InputGroup className="h-11 w-full">
+      <div className="flex-shrink-0 px-4 pb-3">
+        <InputGroup className="w-full">
           <InputGroupInput
             type="text"
             value={search}
             onChange={(e: ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
             placeholder="Buscar almacén…"
           />
-          <InputGroupAddon align="inline-end">
+          <InputGroupAddon>
             <Search className="size-4" />
           </InputGroupAddon>
         </InputGroup>
