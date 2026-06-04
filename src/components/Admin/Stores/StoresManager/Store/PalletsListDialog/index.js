@@ -23,7 +23,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { getAvailableBoxesCount, getAvailableNetWeight } from '@/helpers/pallet/boxAvailability';
 import { useSession } from 'next-auth/react';
 
-export function PalletsListDialog() {
+export function PalletsListDialog({ open, onOpenChange } = {}) {
+  const isControlled = open !== undefined;
   const {
     speciesSummary,
     store,
@@ -149,13 +150,17 @@ export function PalletsListDialog() {
   };
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="secondary" className="w-full">
-          Palets
-        </Button>
-        {/* <Button variant="outline">Palets</Button> */}
-      </DialogTrigger>
+    <Dialog
+      open={isControlled ? open : undefined}
+      onOpenChange={isControlled ? onOpenChange : undefined}
+    >
+      {!isControlled && (
+        <DialogTrigger asChild>
+          <Button variant="secondary" className="w-full">
+            Palets
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent
         size="6xl"
         className="max-sm:top-0 max-sm:left-0 max-sm:h-dvh max-sm:max-h-dvh max-sm:w-full max-sm:max-w-full max-sm:translate-x-0 max-sm:translate-y-0 max-sm:overflow-y-auto max-sm:rounded-none"
@@ -246,8 +251,8 @@ export function PalletsListDialog() {
 
           {/* Tabla de palets */}
 
-          <div className="max-h-[315px] overflow-y-auto rounded-md border">
-            <table className="w-full text-sm">
+          <div className="max-h-[315px] overflow-x-auto overflow-y-auto rounded-md border">
+            <table className="w-full min-w-[580px] text-sm">
               <thead>
                 <tr className="text-muted-foreground bg-muted text-left font-medium">
                   <th className="px-4 py-2">ID</th>

@@ -1,7 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowLeft, ArrowRightLeft, Filter, LocateFixed, MoreHorizontal, Plus } from 'lucide-react';
+import {
+  ArrowLeft,
+  ArrowRightLeft,
+  BarChart2,
+  Filter,
+  Layers,
+  LocateFixed,
+  MoreVertical,
+  Plus,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -31,6 +40,8 @@ import PalletLabelDialog from '../../Pallets/PalletLabelDialog';
 import MovePalletToStoreDialog from '../StoresManager/Store/MovePalletToStoreDialog';
 import MoveMultiplePalletsToStoreDialog from '../StoresManager/Store/MoveMultiplePalletsToStoreDialog';
 import PalletDialog from '@/components/Admin/Pallets/PalletDialog';
+import { PalletsListDialog } from '../StoresManager/Store/PalletsListDialog';
+import { ProductSummaryDialog } from '../StoresManager/Store/ProductSummaryDialog';
 
 interface MobileStoreDetailViewProps {
   passedStoreId: string | number;
@@ -44,6 +55,8 @@ export function MobileStoreDetailView({
   onBack,
 }: MobileStoreDetailViewProps) {
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [palletsDialogOpen, setPalletsDialogOpen] = useState(false);
+  const [productsDialogOpen, setProductsDialogOpen] = useState(false);
   useHideBottomNav();
 
   const {
@@ -80,12 +93,6 @@ export function MobileStoreDetailView({
   const isUnallocatedRelevant = isPositionRelevant(UNLOCATED_POSITION_ID);
   const isUnallocatedFilled = isPositionFilled(UNLOCATED_POSITION_ID);
 
-  const unallocatedButtonClass = isUnallocatedRelevant
-    ? 'bg-green-500 hover:bg-green-400 text-white border-green-500'
-    : isUnallocatedFilled
-      ? 'bg-primary/75 hover:bg-primary/90 text-background border-primary/75'
-      : '';
-
   return (
     <div className="flex h-full flex-col overflow-hidden">
       {/* Header */}
@@ -96,11 +103,28 @@ export function MobileStoreDetailView({
         </Button>
         <span className="flex-1 truncate text-sm font-semibold">{displayStoreName}</span>
 
-        {/* Actions dropdown */}
+        {/* Filtros — solo en almacén normal */}
+        {!isGhostStore && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative h-9 w-9 shrink-0"
+            onClick={() => setFiltersOpen(true)}
+          >
+            <Filter className="h-5 w-5" />
+            {activeFilterCount > 0 && (
+              <Badge className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center p-0 text-[10px]">
+                {activeFilterCount}
+              </Badge>
+            )}
+          </Button>
+        )}
+
+        {/* Dropdown de acciones — tres puntos verticales */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0">
-              <MoreHorizontal className="h-5 w-5" />
+              <MoreVertical className="h-5 w-5" />
               <span className="sr-only">Acciones</span>
             </Button>
           </DropdownMenuTrigger>
@@ -127,6 +151,15 @@ export function MobileStoreDetailView({
                     Nuevo palet
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setPalletsDialogOpen(true)}>
+                    <Layers className="mr-2 h-4 w-4" />
+                    Palets
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setProductsDialogOpen(true)}>
+                    <BarChart2 className="mr-2 h-4 w-4" />
+                    Productos
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
                 </>
               )}
               <DropdownMenuItem
@@ -139,22 +172,6 @@ export function MobileStoreDetailView({
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
-
-        {!isGhostStore && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="relative h-9 w-9 shrink-0"
-            onClick={() => setFiltersOpen(true)}
-          >
-            <Filter className="h-5 w-5" />
-            {activeFilterCount > 0 && (
-              <Badge className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center p-0 text-[10px]">
-                {activeFilterCount}
-              </Badge>
-            )}
-          </Button>
-        )}
       </div>
 
       {/* Content */}
@@ -200,6 +217,10 @@ export function MobileStoreDetailView({
       />
       <MovePalletToStoreDialog />
       <MoveMultiplePalletsToStoreDialog />
+
+      {/* Dialogs de informes (controlados desde el dropdown) */}
+      <PalletsListDialog open={palletsDialogOpen} onOpenChange={setPalletsDialogOpen} />
+      <ProductSummaryDialog open={productsDialogOpen} onOpenChange={setProductsDialogOpen} />
     </div>
   );
 }

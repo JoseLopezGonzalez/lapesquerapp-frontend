@@ -89,7 +89,7 @@ export default function ProductSummary() {
 
   return (
     <>
-      <div className="bg-background text-foreground min-w-[700px] px-2 pb-2">
+      <div className="bg-background text-foreground w-full px-2 pb-2">
         <div className="text-muted-foreground/90 mb-6 flex items-center text-sm">
           <span>
             {totalSpecies} {totalSpecies > 1 ? 'Especies' : 'Especie'}
@@ -177,8 +177,8 @@ export default function ProductSummary() {
               </div>
             </div>
 
-            <div className="max-h-[315px] overflow-y-auto rounded-md border">
-              <table className="w-full">
+            <div className="max-h-[315px] overflow-x-auto overflow-y-auto rounded-md border">
+              <table className="w-full min-w-[420px]">
                 {/* <tbody >
                                 {filteredProducts.map((product) => {
                                     return (

@@ -8,8 +8,6 @@ import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Combobox } from '@/components/Shadcn/Combobox';
 import { useStoreContext } from '@/context/StoreContext';
-import { PalletsListDialog } from '../StoresManager/Store/PalletsListDialog';
-import { ProductSummaryDialog } from '../StoresManager/Store/ProductSummaryDialog';
 
 interface MobileFiltersSheetProps {
   open: boolean;
@@ -146,13 +144,6 @@ export function MobileFiltersSheet({ open, onOpenChange }: MobileFiltersSheetPro
             </div>
           </div>
 
-          <Separator />
-
-          {/* Acciones de informes */}
-          <div className="flex flex-col gap-2">
-            <PalletsListDialog />
-            <ProductSummaryDialog />
-          </div>
         </div>
       </SheetContent>
     </Sheet>
