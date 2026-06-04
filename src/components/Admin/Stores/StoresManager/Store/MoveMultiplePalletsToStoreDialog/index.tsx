@@ -84,7 +84,7 @@ export default function MoveMultiplePalletsToStoreDialog() {
 
   const selectedStoreName = useMemo(
     () =>
-      storeOptions.find((s: { value: string | number }) => s.value === selectedStoreValue)?.label ??
+      storeOptions.find((s: { value: string | number; label?: string }) => s.value === selectedStoreValue)?.label ??
       'Almacén',
     [storeOptions, selectedStoreValue]
   );

@@ -150,7 +150,8 @@ export function PalletsListDialog({ open, onOpenChange }: PalletsListDialogProps
       const productNames = Array.from(
         new Set(fullPallet?.boxes?.map((b) => b.product?.name))
       ).join(', ');
-      const lots = Array.isArray(fullPallet?.lots) ? fullPallet.lots.join(', ') : '';
+      const lots =
+        fullPallet && Array.isArray(fullPallet.lots) ? fullPallet.lots.join(', ') : '';
       const observations = fullPallet?.observations ?? '';
 
       return {
