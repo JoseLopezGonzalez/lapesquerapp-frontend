@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ChangeEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -273,7 +273,7 @@ export function PalletsListDialog({ open, onOpenChange }: PalletsListDialogProps
               placeholder="Buscar palet por ID, producto, lote u observaciones..."
               className="max-w-[500px]"
               value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchText(e.target.value)}
             />
             <div className="bg-muted text-muted-foreground flex items-center justify-center rounded-full px-3 py-1 text-xs">
               {filteredPallets.length} palets
