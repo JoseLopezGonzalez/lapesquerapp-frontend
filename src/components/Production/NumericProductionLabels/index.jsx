@@ -49,13 +49,12 @@ function getLabelKey(label) {
   return label.modifier ? `${label.main}${label.modifier}` : label.main;
 }
 
-function LabelMark({ label, preview = false, forPrint = false }) {
+function LabelMark({ label, preview = false }) {
   return (
     <span
       className={cn(
         'relative inline-flex items-start justify-center font-black leading-none text-black',
-        preview && 'min-w-[4.5rem]',
-        !preview && !forPrint && 'min-w-[48mm]'
+        preview ? 'min-w-[4.5rem]' : 'min-w-[48mm]'
       )}
     >
       <span className={cn(label.modifier && (preview ? 'pr-7' : 'pr-[14mm]'))}>{label.main}</span>
@@ -153,46 +152,21 @@ function PrintableLabels({ selectedLabel, quantity }) {
   const copies = selectedLabel ? Array.from({ length: quantity }, (_, index) => index) : [];
 
   return (
-    <div id={PRINT_AREA_ID} className="hidden">
+    <div id={PRINT_AREA_ID} className="hidden print:block">
       {copies.map((copy) => (
         <div
           key={copy}
-          className="page"
-          style={{
-            width: `${PRINT_WIDTH_MM}mm`,
-            height: `${PRINT_HEIGHT_MM}mm`,
-            margin: 0,
-            padding: 0,
-            boxSizing: 'border-box',
-            overflow: 'hidden',
-            background: 'white',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
+          className="page flex items-center justify-center bg-white"
+          style={{ width: `${PRINT_WIDTH_MM}mm`, height: `${PRINT_HEIGHT_MM}mm` }}
         >
-          <div
-            style={{
-              width: '100%',
-              height: '100%',
-              margin: 0,
-              padding: 0,
-              boxSizing: 'border-box',
-              border: '0.6mm solid #000',
-              background: '#fff',
-              color: '#000',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
+          <div className="flex h-[44mm] w-[74mm] items-center justify-center rounded-[4mm] border-[0.6mm] border-black bg-white text-black">
             <span
               className={cn(
                 'font-black leading-none',
                 selectedLabel.modifier ? 'text-[30mm]' : 'text-[36mm]'
               )}
             >
-              <LabelMark label={selectedLabel} forPrint />
+              <LabelMark label={selectedLabel} />
             </span>
           </div>
         </div>
@@ -208,7 +182,6 @@ export default function NumericProductionLabels() {
     id: PRINT_AREA_ID,
     width: PRINT_WIDTH_MM,
     height: PRINT_HEIGHT_MM,
-    minimalStyles: true,
   });
 
   const handlePrintLabel = React.useCallback(

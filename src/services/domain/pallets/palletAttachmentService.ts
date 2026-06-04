@@ -28,6 +28,26 @@ export interface PalletAttachmentListResponse {
 
 const endpoint = (palletId: number | string) => `${API_URL_V2}pallets/${palletId}/attachments`;
 
+const MIME_TO_EXTENSION: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/jpg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+};
+
+/** Nombre corto y predecible; evita nombres largos del sistema al capturar con cámara. */
+export function buildPalletImageUploadFilename(
+  file: File,
+  palletId: number | string
+): string {
+  const fromMime = MIME_TO_EXTENSION[file.type];
+  const fromName = file.name.split('.').pop()?.toLowerCase().replace('jpeg', 'jpg');
+  const extension =
+    fromMime ?? (fromName && ['jpg', 'png', 'webp'].includes(fromName) ? fromName : 'jpg');
+  const timestamp = Date.now();
+  return `palet-${palletId}-${timestamp}.${extension}`;
+}
+
 export const palletAttachmentService = {
   async list(
     palletId: number | string,
@@ -51,7 +71,8 @@ export const palletAttachmentService = {
   ): Promise<PalletAttachment> {
     const token = await getAuthToken();
     const formData = new FormData();
-    formData.append('file', file);
+    const uploadFilename = buildPalletImageUploadFilename(file, palletId);
+    formData.append('file', file, uploadFilename);
     formData.append('collection', 'pallet_image');
     if (notes?.trim()) formData.append('notes', notes.trim());
     return uploadMultipart(`${endpoint(palletId)}`, token, formData) as Promise<PalletAttachment>;
