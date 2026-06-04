@@ -51,7 +51,7 @@ export function usePalletAttachments(
       notify.success('Imagen subida correctamente');
     },
     onError: (err: unknown) => {
-      notify.error(getErrorMessage(err) || 'Error al subir la imagen');
+      notify.error(getErrorMessage(err as object) || 'Error al subir la imagen');
     },
   });
 
@@ -68,7 +68,7 @@ export function usePalletAttachments(
       notify.success('Nota actualizada');
     },
     onError: (err: unknown) => {
-      notify.error(getErrorMessage(err) || 'Error al actualizar la nota');
+      notify.error(getErrorMessage(err as object) || 'Error al actualizar la nota');
     },
   });
 
@@ -80,7 +80,7 @@ export function usePalletAttachments(
       notify.success('Imagen eliminada');
     },
     onError: (err: unknown) => {
-      notify.error(getErrorMessage(err) || 'Error al eliminar la imagen');
+      notify.error(getErrorMessage(err as object) || 'Error al eliminar la imagen');
     },
   });
 
