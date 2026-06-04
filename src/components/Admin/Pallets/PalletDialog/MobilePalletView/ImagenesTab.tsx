@@ -1,12 +1,18 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
-import { Upload, Trash2, Loader2, ImageOff, ImageIcon, Pencil, Check, X } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Upload, Trash2, Loader2, ImageOff, ImageIcon, Pencil, Check, X, Camera, Images } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { usePalletAttachments } from '@/hooks/pallets/usePalletAttachments';
 import {
   palletAttachmentService,
@@ -14,6 +20,22 @@ import {
 } from '@/services/domain/pallets/palletAttachmentService';
 import { formatDateHour } from '@/helpers/formats/dates/formatDates';
 import { cn } from '@/lib/utils';
+
+async function deviceHasCamera(): Promise<boolean> {
+  if (typeof navigator === 'undefined') return false;
+
+  const isMobileUa = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if (!navigator.mediaDevices?.enumerateDevices) return isMobileUa;
+
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    if (devices.some((device) => device.kind === 'videoinput')) return true;
+  } catch {
+    // Sin permiso o API no disponible
+  }
+
+  return isMobileUa;
+}
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -207,7 +229,24 @@ export default function ImagenesTab({ palletId }: ImagenesTabProps) {
   const [lightboxAtt, setLightboxAtt] = useState<PalletAttachment | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [notes, setNotes] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [hasCamera, setHasCamera] = useState(false);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    deviceHasCamera().then((available) => {
+      if (!cancelled) setHasCamera(available);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const clearFileInputs = () => {
+    if (galleryInputRef.current) galleryInputRef.current.value = '';
+    if (cameraInputRef.current) cameraInputRef.current.value = '';
+  };
 
   const handleFiles = (files: FileList | null) => {
     if (!files?.length) return;
@@ -221,7 +260,11 @@ export default function ImagenesTab({ palletId }: ImagenesTabProps) {
     uploadMutation.mutate(
       { file: pendingFile, notes },
       {
-        onSuccess: () => { setPendingFile(null); setNotes(''); if (inputRef.current) inputRef.current.value = ''; },
+        onSuccess: () => {
+          setPendingFile(null);
+          setNotes('');
+          clearFileInputs();
+        },
       }
     );
   };
@@ -244,7 +287,10 @@ export default function ImagenesTab({ palletId }: ImagenesTabProps) {
               </div>
               <button
                 className="text-xs text-muted-foreground underline"
-                onClick={() => { setPendingFile(null); if (inputRef.current) inputRef.current.value = ''; }}
+                onClick={() => {
+                  setPendingFile(null);
+                  clearFileInputs();
+                }}
               >
                 Cambiar
               </button>
@@ -263,26 +309,65 @@ export default function ImagenesTab({ palletId }: ImagenesTabProps) {
               Subir imagen
             </Button>
           </div>
+        ) : hasCamera ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className={cn(
+                  'flex w-full flex-col items-center gap-2 rounded-xl border-2 border-dashed p-5 transition-colors',
+                  'border-border active:border-primary active:bg-primary/5'
+                )}
+              >
+                <Upload className="h-6 w-6 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">Toca para añadir una imagen</p>
+                <p className="text-xs text-muted-foreground">Foto o galería · JPG, PNG o WebP · máx. 10 MB</p>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center" className="w-56">
+              <DropdownMenuItem
+                className="gap-2 py-2.5"
+                onClick={() => cameraInputRef.current?.click()}
+              >
+                <Camera className="h-4 w-4" />
+                Hacer foto
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="gap-2 py-2.5"
+                onClick={() => galleryInputRef.current?.click()}
+              >
+                <Images className="h-4 w-4" />
+                Elegir de la galería
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         ) : (
           <button
+            type="button"
             className={cn(
               'flex w-full flex-col items-center gap-2 rounded-xl border-2 border-dashed p-5 transition-colors',
               'border-border active:border-primary active:bg-primary/5'
             )}
-            onClick={() => inputRef.current?.click()}
+            onClick={() => galleryInputRef.current?.click()}
           >
             <Upload className="h-6 w-6 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">
-              Toca para seleccionar una imagen
-            </p>
+            <p className="text-sm text-muted-foreground">Toca para seleccionar una imagen</p>
             <p className="text-xs text-muted-foreground">JPG, PNG o WebP · máx. 10 MB</p>
           </button>
         )}
 
         <input
-          ref={inputRef}
+          ref={galleryInputRef}
           type="file"
           accept="image/jpeg,image/png,image/webp"
+          className="hidden"
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFiles(e.target.files)}
+        />
+        <input
+          ref={cameraInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          capture="environment"
           className="hidden"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFiles(e.target.files)}
         />

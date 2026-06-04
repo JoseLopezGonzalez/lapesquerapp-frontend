@@ -47,7 +47,7 @@ export default function BoxesTab({
         <div className="space-y-1 text-center">
           <p className="font-medium">Sin cajas</p>
           <p className="text-sm text-muted-foreground">
-            Ve a &ldquo;Escanear&rdquo; para añadir cajas al palet.
+            Ve a &ldquo;Añadir&rdquo; para añadir cajas al palet.
           </p>
         </div>
       </div>

@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { AlertCircle, CloudAlert, Loader2, RotateCcw, Save } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePallet, saveDiscountPreferences } from '@/hooks/usePallet';
@@ -84,8 +83,6 @@ export default function MobilePalletView({
   const isReadOnly = (receptionId !== null && receptionId !== undefined) || readOnlyProp;
   const orderIdBlocked = initialOrderId !== null;
 
-  const totalBoxes = temporalPallet?.boxes?.length ?? 0;
-
   const handleSave = () => {
     if (isReadOnly) return;
     saveDiscountPreferences(boxCreationData);
@@ -139,46 +136,35 @@ export default function MobilePalletView({
       >
         {/* Scrollable tab bar */}
         <div className="shrink-0 overflow-x-auto scrollbar-none px-3 pt-2">
-          <TabsList className="inline-flex h-auto w-auto min-w-full gap-0.5 p-0.5">
-            <TabsTrigger value="escanear" className="flex-1 whitespace-nowrap px-3 text-xs">
-              Escanear
+          <TabsList className="w-max">
+            <TabsTrigger value="escanear" className="flex-none whitespace-nowrap">
+              Añadir
             </TabsTrigger>
-            <TabsTrigger
-              value="cajas"
-              className="flex flex-1 items-center gap-1 whitespace-nowrap px-3 text-xs"
-            >
+            <TabsTrigger value="cajas" className="flex-none whitespace-nowrap">
               Cajas
-              {totalBoxes > 0 && (
-                <Badge
-                  variant="secondary"
-                  className="h-4 min-w-[1rem] rounded-full px-1 py-0 text-[10px] leading-none"
-                >
-                  {totalBoxes}
-                </Badge>
-              )}
             </TabsTrigger>
-            <TabsTrigger value="resumen" className="flex-1 whitespace-nowrap px-3 text-xs">
-              Resumen
-            </TabsTrigger>
-            <TabsTrigger value="info" className="flex-1 whitespace-nowrap px-3 text-xs">
+            <TabsTrigger value="info" className="flex-none whitespace-nowrap">
               Detalles
             </TabsTrigger>
-            {!isReadOnly && (
-              <TabsTrigger
-                value="eliminar"
-                className="flex-1 whitespace-nowrap px-3 text-xs text-destructive data-[state=active]:text-destructive"
-              >
-                Eliminar
-              </TabsTrigger>
-            )}
+            <TabsTrigger value="resumen" className="flex-none whitespace-nowrap">
+              Resumen
+            </TabsTrigger>
             {showHistorial && (
-              <TabsTrigger value="imagenes" className="flex-1 whitespace-nowrap px-3 text-xs">
+              <TabsTrigger value="imagenes" className="flex-none whitespace-nowrap">
                 Imágenes
               </TabsTrigger>
             )}
             {showHistorial && (
-              <TabsTrigger value="historial" className="flex-1 whitespace-nowrap px-3 text-xs">
+              <TabsTrigger value="historial" className="flex-none whitespace-nowrap">
                 Historial
+              </TabsTrigger>
+            )}
+            {!isReadOnly && (
+              <TabsTrigger
+                value="eliminar"
+                className="flex-none whitespace-nowrap text-destructive data-[state=active]:text-destructive"
+              >
+                Eliminar
               </TabsTrigger>
             )}
           </TabsList>

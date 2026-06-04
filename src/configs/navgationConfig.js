@@ -183,18 +183,6 @@ export const navigationConfig = [
     ],
   },
   {
-    name: 'Etiquetas',
-    icon: Tags,
-    allowedRoles: ['administrador', 'direccion', 'operario', 'tecnico'],
-    childrens: [
-      {
-        name: 'Numéricas',
-        href: '/production/number_label',
-        allowedRoles: ['administrador', 'direccion', 'operario', 'tecnico'],
-      },
-    ],
-  },
-  {
     name: 'Pedidos',
     icon: PencilSquareIcon,
     allowedRoles: ['administrador', 'direccion', 'tecnico'],
