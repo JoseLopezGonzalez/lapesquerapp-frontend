@@ -167,6 +167,7 @@ export function usePallet({
     editBox,
     bulkEditBoxes,
     editObservations,
+    editPalletTareWeightKg,
     editOrderId,
     setBoxPrinted,
     deleteAllBoxes,
