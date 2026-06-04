@@ -17,7 +17,6 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
-import { EmptyState } from '@/components/Utilities/EmptyState';
 import { usePalletAttachments } from '@/hooks/pallets/usePalletAttachments';
 import { palletAttachmentService, type PalletAttachment } from '@/services/domain/pallets/palletAttachmentService';
 import { formatDateHour } from '@/helpers/formats/dates/formatDates';
@@ -403,12 +402,14 @@ export default function PalletImagesTab({ palletId }: PalletImagesTabProps) {
       {/* Panel derecho — galería */}
       <div className="min-w-0 flex-1 overflow-y-auto py-4 pb-6 pr-1">
         {attachments.length === 0 ? (
-          <div className="flex h-full items-center justify-center">
-            <EmptyState
-              icon={<ImageIcon className="h-12 w-12 text-primary" strokeWidth={1.5} />}
-              title="Sin imágenes"
-              description="Sube la primera imagen desde el panel izquierdo"
-            />
+          <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+              <ImageIcon className="h-8 w-8 text-muted-foreground/60" strokeWidth={1.5} />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">Sin imágenes</p>
+              <p className="text-xs text-muted-foreground">Sube la primera imagen desde el panel izquierdo</p>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-3 gap-4 xl:grid-cols-4">
