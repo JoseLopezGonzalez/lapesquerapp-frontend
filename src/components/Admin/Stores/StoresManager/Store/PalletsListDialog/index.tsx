@@ -16,14 +16,50 @@ import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { useStoreContext } from '@/context/StoreContext';
-import { formatDecimalWeight, formatDecimal } from '@/helpers/formats/numbers/formatNumbers';
+import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
 import { PiMicrosoftExcelLogo } from 'react-icons/pi';
 import { Edit, Printer, MapPinHouse, Copy } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { getAvailableBoxesCount, getAvailableNetWeight } from '@/helpers/pallet/boxAvailability';
 import { useSession } from 'next-auth/react';
 
-export function PalletsListDialog({ open, onOpenChange } = {}) {
+interface PalletsListDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+interface SpeciesSummaryItem {
+  name: string;
+  percentage: number;
+  quantity: number;
+}
+
+interface PalletBox {
+  product?: {
+    name?: string;
+    species?: { name?: string };
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+interface StorePallet {
+  id: string | number;
+  boxes: PalletBox[];
+  lots?: string[] | string;
+  observations?: string;
+  receptionId?: string | number | null;
+  position?: string | null;
+  [key: string]: unknown;
+}
+
+interface FilteredPalletRow {
+  id: string | number;
+  totalWeight: number;
+  totalBoxes: number;
+}
+
+export function PalletsListDialog({ open, onOpenChange }: PalletsListDialogProps = {}) {
   const isControlled = open !== undefined;
   const {
     speciesSummary,
@@ -36,24 +72,21 @@ export function PalletsListDialog({ open, onOpenChange } = {}) {
     isDuplicatingPallet,
   } = useStoreContext();
   const { data: session } = useSession();
-  const [selectedSpecies, setSelectedSpecies] = useState(null);
-  const [filteredPallets, setFilteredPallets] = useState([]);
+  const [selectedSpecies, setSelectedSpecies] = useState<string | null>(null);
+  const [filteredPallets, setFilteredPallets] = useState<FilteredPalletRow[]>([]);
   const [searchText, setSearchText] = useState('');
 
-  const storeName = store?.name ?? '';
+  const storeName = (store?.name as string) ?? '';
 
-  // Operario no puede reubicar pallets (normalizar por si role viene como array)
   const rawRole = session?.user?.role;
   const isStoreOperator = (Array.isArray(rawRole) ? rawRole[0] : rawRole) === 'operario';
 
-  // Asegurar que pallets siempre sea un array
-  const safePallets = pallets || [];
-
-  const currentSpecies = speciesSummary.find((s) => s.name === selectedSpecies);
+  const safePallets: StorePallet[] = pallets || [];
 
   useEffect(() => {
-    if (speciesSummary.length) {
-      setSelectedSpecies(speciesSummary[0].name);
+    const summary = speciesSummary as SpeciesSummaryItem[];
+    if (summary.length) {
+      setSelectedSpecies(summary[0].name);
     }
   }, [speciesSummary]);
 
@@ -73,7 +106,9 @@ export function PalletsListDialog({ open, onOpenChange } = {}) {
         const idMatch = pallet.id?.toString()?.toLowerCase().includes(search);
 
         const productNames = (pallet.boxes ?? []).map((box) => box?.product?.name).filter(Boolean);
-        const productsMatch = productNames.some((name) => name.toLowerCase().includes(search));
+        const productsMatch = productNames.some((name) =>
+          (name as string).toLowerCase().includes(search)
+        );
 
         const lotsArray = Array.isArray(pallet.lots)
           ? pallet.lots
@@ -90,7 +125,6 @@ export function PalletsListDialog({ open, onOpenChange } = {}) {
         return idMatch || productsMatch || lotsMatch || observationsMatch;
       })
       .map((pallet) => {
-        // Usar valores del backend si están disponibles, sino calcular desde cajas disponibles
         const totalBoxes = getAvailableBoxesCount(pallet);
         const totalWeight = getAvailableNetWeight(pallet);
         return {
@@ -103,10 +137,8 @@ export function PalletsListDialog({ open, onOpenChange } = {}) {
     setFilteredPallets(filtered);
   }, [selectedSpecies, searchText, safePallets]);
 
-  // Total palets en el almacén (no filtrado)
   const totalPallets = safePallets.length;
 
-  // Peso neto total de todos los palets (solo cajas disponibles)
   const totalWeight = safePallets.reduce((total, pallet) => {
     return total + getAvailableNetWeight(pallet);
   }, 0);
@@ -115,15 +147,15 @@ export function PalletsListDialog({ open, onOpenChange } = {}) {
     const [XLSX, { saveAs }] = await Promise.all([import('xlsx'), import('file-saver')]);
     const data = filteredPallets.map((p) => {
       const fullPallet = safePallets.find((pa) => pa.id === p.id);
-      const productNames = Array.from(new Set(fullPallet?.boxes?.map((b) => b.product?.name))).join(
-        ', '
-      );
-      const lots = fullPallet?.lots?.join(', ') ?? '';
+      const productNames = Array.from(
+        new Set(fullPallet?.boxes?.map((b) => b.product?.name))
+      ).join(', ');
+      const lots = Array.isArray(fullPallet?.lots) ? fullPallet.lots.join(', ') : '';
       const observations = fullPallet?.observations ?? '';
 
       return {
         Palet: p.id,
-        Ubicación: fullPallet?.position || '-', // Nueva columna
+        Ubicación: fullPallet?.position || '-',
         Artículos: productNames,
         Lotes: lots,
         Observaciones: observations,
@@ -138,7 +170,7 @@ export function PalletsListDialog({ open, onOpenChange } = {}) {
     const formattedStoreName = storeName
       .replace(/\s+/g, '_')
       .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '');
+      .replace(/[̀-ͯ]/g, '');
 
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
@@ -148,6 +180,8 @@ export function PalletsListDialog({ open, onOpenChange } = {}) {
     const blob = new Blob([excelBuffer], { type: 'application/vnd.ms-excel' });
     saveAs(blob, `Palets_${formattedStoreName}_${formattedDate}.xlsx`);
   };
+
+  const species = speciesSummary as SpeciesSummaryItem[];
 
   return (
     <Dialog
@@ -171,7 +205,7 @@ export function PalletsListDialog({ open, onOpenChange } = {}) {
 
         <div className="bg-background text-foreground w-full px-2 pb-2">
           <div className="text-muted-foreground/90 mb-6 flex items-center text-sm">
-            <span>{speciesSummary.length} especies</span>
+            <span>{species.length} especies</span>
             <Separator orientation="vertical" className="mx-2 h-3" />
             <span>{totalPallets} palets</span>
             <Separator orientation="vertical" className="mx-2 h-3" />
@@ -183,14 +217,12 @@ export function PalletsListDialog({ open, onOpenChange } = {}) {
             <h3 className="text-muted-foreground mb-3 text-sm font-medium">Especies</h3>
             <ScrollArea className="w-full pb-4 whitespace-nowrap">
               <div className="flex space-x-2 p-2">
-                {speciesSummary.map((s, idx) => (
+                {species.map((s, idx) => (
                   <Card
                     key={idx}
                     className={cn(
                       'bg-card flex-shrink-0 cursor-pointer border hover:shadow-md',
-                      selectedSpecies === s.name
-                        ? 'shadow-foreground-400 shadow-md'
-                        : 'border-muted'
+                      selectedSpecies === s.name ? 'shadow-foreground-400 shadow-md' : 'border-muted'
                     )}
                     onClick={() => setSelectedSpecies(s.name)}
                   >
@@ -250,7 +282,6 @@ export function PalletsListDialog({ open, onOpenChange } = {}) {
           </div>
 
           {/* Tabla de palets */}
-
           <div className="max-h-[315px] overflow-x-auto overflow-y-auto rounded-md border">
             <table className="w-full min-w-[580px] text-sm">
               <thead>
@@ -273,7 +304,7 @@ export function PalletsListDialog({ open, onOpenChange } = {}) {
                     new Set(fullPallet.boxes.map((b) => b.product?.name).filter(Boolean))
                   ).join('\n');
 
-                  const lots = fullPallet.lots ?? [];
+                  const lots = Array.isArray(fullPallet.lots) ? fullPallet.lots : [];
                   const observations = fullPallet.observations ?? '';
 
                   return (
@@ -325,7 +356,7 @@ export function PalletsListDialog({ open, onOpenChange } = {}) {
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button
-                                variant=""
+                                variant="default"
                                 size="icon"
                                 onClick={() => openPalletLabelDialog(pallet.id)}
                               >
@@ -351,7 +382,6 @@ export function PalletsListDialog({ open, onOpenChange } = {}) {
                               <p>Duplicar</p>
                             </TooltipContent>
                           </Tooltip>
-                          {/* Opción Reubicar - Solo visible para usuarios que no son store_operator */}
                           {!isStoreOperator && (
                             <Tooltip>
                               <TooltipTrigger asChild>

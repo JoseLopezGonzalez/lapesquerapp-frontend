@@ -1,3 +1,5 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -8,7 +10,12 @@ import {
 } from '@/components/ui/dialog';
 import ProductSummary from './ProductSummary';
 
-export function ProductSummaryDialog({ open, onOpenChange } = {}) {
+interface ProductSummaryDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function ProductSummaryDialog({ open, onOpenChange }: ProductSummaryDialogProps = {}) {
   const isControlled = open !== undefined;
 
   return (
