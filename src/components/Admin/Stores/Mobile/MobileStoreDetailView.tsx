@@ -167,49 +167,47 @@ export function MobileStoreDetailView({
         >
           <ArrowLeft className="h-6 w-6" />
         </Button>
-        <h2 className="flex-1 truncate text-xl font-normal dark:text-white">{displayStoreName}</h2>
+        <h2 className="flex-1 truncate text-center text-xl font-normal dark:text-white">
+          {displayStoreName}
+        </h2>
 
-        {/* Filtros — solo en almacén normal */}
-        {!isGhostStore && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="hover:bg-muted relative h-12 min-h-12 w-12 min-w-12 shrink-0 rounded-full"
-            onClick={() => setFiltersOpen(true)}
-          >
-            <Filter className="h-6 w-6" />
-            {activeFilterCount > 0 && (
-              <Badge className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center p-0 text-[10px]">
-                {activeFilterCount}
-              </Badge>
-            )}
-          </Button>
-        )}
-
-        <Button
-          variant="ghost"
-          size="icon"
-          className="hover:bg-muted h-12 min-h-12 w-12 min-w-12 shrink-0 rounded-full"
-          onClick={() => setScannerOpen(true)}
-          aria-label="Escanear QR de palet"
-        >
-          <ScanLine className="h-6 w-6" />
-        </Button>
-
-        {/* Dropdown de acciones */}
+        {/* Único action button derecho — consolida filtro, escáner y acciones */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
               size="icon"
-              className="hover:bg-muted h-12 min-h-12 w-12 min-w-12 shrink-0 rounded-full"
+              className="hover:bg-muted relative h-12 min-h-12 w-12 min-w-12 shrink-0 rounded-full"
             >
               <MoreVertical className="h-6 w-6" />
+              {activeFilterCount > 0 && (
+                <Badge className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center p-0 text-[10px]">
+                  {activeFilterCount}
+                </Badge>
+              )}
               <span className="sr-only">Acciones</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-52">
-            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+            <DropdownMenuGroup>
+              <DropdownMenuItem onClick={() => setScannerOpen(true)}>
+                <ScanLine className="mr-2 h-4 w-4" />
+                Escanear QR
+              </DropdownMenuItem>
+              {!isGhostStore && (
+                <DropdownMenuItem onClick={() => setFiltersOpen(true)}>
+                  <Filter className="mr-2 h-4 w-4" />
+                  Filtrar
+                  {activeFilterCount > 0 && (
+                    <span className="bg-primary text-primary-foreground ml-auto flex h-4 w-4 items-center justify-center rounded-full text-[10px]">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel>Almacén</DropdownMenuLabel>
             <DropdownMenuGroup>
               {!isGhostStore && (
                 <>

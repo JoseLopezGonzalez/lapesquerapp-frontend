@@ -228,7 +228,7 @@ const OrdersList = ({
             className={isMobile ? 'mt-0' : 'mt-5 mb-5'}
           >
             {isMobile ? (
-              <div className="scrollbar-hide -mx-4 overflow-x-auto px-4">
+              <div className="flex justify-center overflow-x-auto scrollbar-hide">
                 <TabsList className="w-max">
                   {visibleCategories.map((category) => (
                     <TabsTrigger key={category.name} value={category.name}>

@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
 import {
@@ -154,8 +155,11 @@ export function MobileStoreListView({
   onSelectStore,
   onLoadMore,
 }: MobileStoreListViewProps) {
+  type TabId = 'all' | 'low' | 'medium' | 'high';
+
   const router = useRouter();
   const [search, setSearch] = useState('');
+  const [activeTab, setActiveTab] = useState<TabId>('all');
   const [scannerOpen, setScannerOpen] = useState(false);
   const [palletDialogId, setPalletDialogId] = useState<number | null>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -215,6 +219,17 @@ export function MobileStoreListView({
     ? (stores ?? []).filter((s) => s.name.toLowerCase().includes(search.trim().toLowerCase()))
     : (stores ?? []);
 
+  const filteredByTab =
+    activeTab === 'all'
+      ? filteredStores
+      : filteredStores.filter((s) => {
+          if (s.id === REGISTERED_PALLETS_STORE_ID) return false;
+          const cap = s.capacity || s.totalNetWeight || 1;
+          const fill = cap > 0 ? ((s.totalNetWeight ?? 0) / cap) * 100 : 0;
+          const status = fill <= 50 ? 'low' : fill <= 80 ? 'medium' : 'high';
+          return status === activeTab;
+        });
+
   const isEmpty = !stores || stores.length === 0;
 
   return (
@@ -261,17 +276,35 @@ export function MobileStoreListView({
         </InputGroup>
       </div>
 
+      {/* Tabs de estado — solo cuando hay almacenes */}
+      {!isEmpty && (
+        <div className="flex-shrink-0 pb-3">
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabId)}>
+            <div className="flex justify-center overflow-x-auto scrollbar-hide">
+              <TabsList className="w-max">
+                <TabsTrigger value="all">Todos</TabsTrigger>
+                <TabsTrigger value="low">Libres</TabsTrigger>
+                <TabsTrigger value="medium">Ocupados</TabsTrigger>
+                <TabsTrigger value="high">Llenos</TabsTrigger>
+              </TabsList>
+            </div>
+          </Tabs>
+        </div>
+      )}
+
       {/* Lista */}
       {isEmpty ? (
         <div className="flex flex-col items-center justify-center gap-2 p-8 text-center">
           <p className="text-sm font-medium">Sin almacenes</p>
           <p className="text-muted-foreground text-xs">No hay almacenes disponibles.</p>
         </div>
-      ) : filteredStores.length === 0 ? (
+      ) : filteredByTab.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-2 p-8 text-center">
           <p className="text-sm font-medium">Sin resultados</p>
           <p className="text-muted-foreground text-xs">
-            No hay almacenes que coincidan con «{search}».
+            {search.trim()
+              ? `No hay almacenes que coincidan con «${search}».`
+              : 'No hay almacenes con este estado.'}
           </p>
         </div>
       ) : (
@@ -280,7 +313,7 @@ export function MobileStoreListView({
           <div className="from-background pointer-events-none absolute right-0 bottom-0 left-0 z-10 h-8 bg-gradient-to-t to-transparent" />
           <ScrollArea className="h-full w-full">
             <div className="flex flex-col gap-4 pt-2 pr-2 pb-6 pl-2">
-              {filteredStores.map((store) => (
+              {filteredByTab.map((store) => (
                 <MobileStoreCard
                   key={store.id}
                   store={store}
@@ -288,7 +321,7 @@ export function MobileStoreListView({
                   onClick={() => onSelectStore(store.id)}
                 />
               ))}
-              <div ref={sentinelRef} className="flex h-6 items-center justify-center">
+              <div ref={sentinelRef} className="flex h-2 items-center justify-center">
                 {loadingMore && <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />}
               </div>
             </div>
