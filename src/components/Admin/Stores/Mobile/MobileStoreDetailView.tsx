@@ -255,9 +255,11 @@ export function MobileStoreDetailView({
       {/* Content */}
       <div className="relative min-h-0 flex-1 overflow-hidden">
         {isGhostStore ? (
-          <div className="h-full overflow-hidden">
+          <>
+            <div className="from-background pointer-events-none absolute top-0 right-0 left-0 z-10 h-8 bg-gradient-to-b to-transparent" />
+            <div className="from-background pointer-events-none absolute right-0 bottom-0 left-0 z-10 h-8 bg-gradient-to-t to-transparent" />
             <PalletKanbanView />
-          </div>
+          </>
         ) : (
           <Card className="relative h-full overflow-auto rounded-none border-0">
             <MapContainer>

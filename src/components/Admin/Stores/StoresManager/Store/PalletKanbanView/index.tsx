@@ -50,7 +50,7 @@ export default function PalletKanbanView() {
 
   return (
     <ScrollArea className="h-full w-full">
-      <div className="p-4">
+      <div className="pt-2 pr-2 pb-6 pl-2">
         <Masonry
           breakpointCols={breakpointColumnsObj}
           className="masonry-grid"
