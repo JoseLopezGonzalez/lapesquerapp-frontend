@@ -462,7 +462,6 @@ export default function PalletImagesTab({ palletId }: PalletImagesTabProps) {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
-              variant="destructive"
               onClick={() => {
                 if (confirmDeleteId !== null) deleteMutation.mutate(confirmDeleteId);
                 setConfirmDeleteId(null);

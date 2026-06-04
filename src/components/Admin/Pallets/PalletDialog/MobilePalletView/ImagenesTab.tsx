@@ -452,7 +452,6 @@ export default function ImagenesTab({ palletId }: ImagenesTabProps) {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
-              variant="destructive"
               onClick={() => {
                 if (confirmDeleteId !== null) deleteMutation.mutate(confirmDeleteId);
                 setConfirmDeleteId(null);
