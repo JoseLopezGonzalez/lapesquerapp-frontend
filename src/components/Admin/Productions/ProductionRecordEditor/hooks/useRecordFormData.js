@@ -29,7 +29,7 @@ function snapshotEqual(a, b) {
 /**
  * Hook para manejar el estado del formulario de record de producción
  */
-export const useRecordFormData = (record, processes, isEditMode) => {
+export const useRecordFormData = (record, processes, isEditMode, defaultParentRecordId = null) => {
   const [formData, setFormData] = useState({
     process_id: 'none',
     parent_record_id: 'none',
@@ -43,6 +43,23 @@ export const useRecordFormData = (record, processes, isEditMode) => {
 
   /** Valores guardados en servidor (o vacíos en alta) para detectar cambios sin guardar. */
   const baselineFormRef = useRef({ ...EMPTY_FORM_BASELINE });
+
+  // Alta con padre prefijado (p. ej. subproceso desde detalle del padre)
+  useEffect(() => {
+    if (isEditMode || !defaultParentRecordId) {
+      return;
+    }
+
+    const parentId = String(defaultParentRecordId);
+    setFormData((prev) => {
+      if (prev.parent_record_id === parentId) {
+        return prev;
+      }
+      const next = { ...EMPTY_FORM_BASELINE, parent_record_id: parentId };
+      baselineFormRef.current = { ...next };
+      return next;
+    });
+  }, [isEditMode, defaultParentRecordId]);
 
   // Inicializar formulario cuando se carga el record
   useEffect(() => {

@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import CreateProductionRecordDialog from '@/components/Admin/Productions/CreateProductionRecordDialog';
 import {
   ProductionRecordProvider,
   useProductionRecordContext,
@@ -20,6 +21,7 @@ import { getProcessName, getRecordField } from '@/helpers/production/recordHelpe
 
 const ProductionRecordEditorContent = ({ productionId, recordId = null }) => {
   const router = useRouter();
+  const [createChildOpen, setCreateChildOpen] = useState(false);
 
   const {
     record,
@@ -86,6 +88,13 @@ const ProductionRecordEditorContent = ({ productionId, recordId = null }) => {
   const isCompleted = finishedAt !== null && finishedAt !== undefined;
   const isRoot =
     !parentRecordId && (!formData.parent_record_id || formData.parent_record_id === 'none');
+  const isClosed = production?.isClosed === true;
+  const parentRecordLabel =
+    processName && currentRecordId
+      ? `${processName} (#${currentRecordId})`
+      : currentRecordId
+        ? `Proceso #${currentRecordId}`
+        : '';
 
   return (
     <div className="h-full w-full overflow-y-auto">
@@ -99,6 +108,10 @@ const ProductionRecordEditorContent = ({ productionId, recordId = null }) => {
           productionLot={production?.lot}
           isRoot={isRoot}
           isCompleted={isCompleted}
+          onCreateChild={
+            isEditMode && currentRecordId ? () => setCreateChildOpen(true) : undefined
+          }
+          createChildDisabled={isClosed}
         />
 
         {/* Mensaje de error si existe */}
@@ -138,6 +151,17 @@ const ProductionRecordEditorContent = ({ productionId, recordId = null }) => {
           <RecordContentSections recordId={currentRecordId} onRefresh={handleRefresh} />
         </div>
       </div>
+
+      {isEditMode && currentRecordId ? (
+        <CreateProductionRecordDialog
+          open={createChildOpen}
+          onOpenChange={setCreateChildOpen}
+          productionId={productionId}
+          onRefresh={handleRefresh}
+          defaultParentRecordId={currentRecordId}
+          fixedParentRecordLabel={parentRecordLabel}
+        />
+      ) : null}
     </div>
   );
 };

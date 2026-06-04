@@ -163,7 +163,7 @@ function MobileLightbox({ attachment, palletId, canDelete, onDelete, onUpdateNot
             <div className="mt-2 space-y-2">
               <Textarea
                 value={notesValue}
-                onChange={(e) => setNotesValue(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNotesValue(e.target.value)}
                 placeholder="Añade una nota…"
                 className="min-h-[60px] resize-none text-sm"
                 maxLength={500}
@@ -252,7 +252,7 @@ export default function ImagenesTab({ palletId }: ImagenesTabProps) {
             <Textarea
               placeholder="Nota opcional"
               value={notes}
-              onChange={(e) => setNotes(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNotes(e.target.value)}
               className="min-h-[60px] resize-none text-sm"
               maxLength={500}
             />
@@ -284,7 +284,7 @@ export default function ImagenesTab({ palletId }: ImagenesTabProps) {
           type="file"
           accept="image/jpeg,image/png,image/webp"
           className="hidden"
-          onChange={(e) => handleFiles(e.target.files)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFiles(e.target.files)}
         />
       </div>
 

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, CheckCircle, Clock, Loader2 } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Clock, GitBranchPlus, Loader2 } from 'lucide-react';
 
 /**
  * Header del editor de record de producción
@@ -17,6 +17,8 @@ export const RecordHeader = ({
   productionLot,
   isRoot,
   isCompleted,
+  onCreateChild,
+  createChildDisabled = false,
 }) => {
   const router = useRouter();
   const [isNavigating, setIsNavigating] = useState(false);
@@ -55,6 +57,19 @@ export const RecordHeader = ({
       </div>
       {isEditMode && (
         <div className="flex items-center gap-2">
+          {onCreateChild ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={createChildDisabled}
+              onClick={onCreateChild}
+              data-icon="inline-start"
+            >
+              <GitBranchPlus />
+              Subproceso
+            </Button>
+          ) : null}
           {isRoot && <Badge variant="outline">Proceso Raíz</Badge>}
           {isCompleted ? (
             <Badge variant="default" className="bg-green-500">

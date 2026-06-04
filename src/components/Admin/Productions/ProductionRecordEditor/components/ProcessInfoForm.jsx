@@ -36,6 +36,9 @@ export const ProcessInfoForm = ({
   layout = 'card',
   /** Si el `process_id` del registro no viene en la lista de opciones, mostrar este nombre (p. ej. `record.process.name`). */
   processLabelFallback = '',
+  /** Si se define, el padre queda fijado (no editable) — p. ej. crear subproceso desde el detalle del padre. */
+  fixedParentRecordId = null,
+  fixedParentRecordLabel = '',
 }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -105,44 +108,50 @@ export const ProcessInfoForm = ({
       {/* Proceso Padre - OPCIONAL */}
       <div className="space-y-1.5">
         <Label htmlFor="parent_record_id" className="text-sm">
-          Proceso Padre (Opcional)
+          {fixedParentRecordId ? 'Proceso padre' : 'Proceso Padre (Opcional)'}
         </Label>
-        <Select
-          value={formData.parent_record_id}
-          onValueChange={(value) => onFormDataChange({ ...formData, parent_record_id: value })}
-          disabled={saving}
-        >
-          <SelectTrigger className="h-9">
-            <SelectValue placeholder="Selecciona un proceso padre" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">Ninguno (Proceso raíz)</SelectItem>
-            {existingRecords && existingRecords.length > 0 ? (
-              existingRecords
-                .filter((record) => {
-                  // La API retorna 'value' en lugar de 'id'
-                  const recordId = record?.value ?? record?.id;
-                  // Comparar como strings para evitar problemas de tipo
-                  return recordId != null && String(recordId) !== String(currentRecordId);
-                })
-                .map((record) => {
-                  // La API retorna 'value' y 'label' directamente
-                  const recordId = record?.value ?? record?.id;
-                  const label = record?.label || `Proceso #${recordId}`;
+        {fixedParentRecordId ? (
+          <div className="border-input bg-muted/40 text-foreground flex h-9 w-full min-w-0 items-center rounded-lg border px-3 text-sm">
+            {fixedParentRecordLabel?.trim() || `Proceso #${fixedParentRecordId}`}
+          </div>
+        ) : (
+          <Select
+            value={formData.parent_record_id}
+            onValueChange={(value) => onFormDataChange({ ...formData, parent_record_id: value })}
+            disabled={saving}
+          >
+            <SelectTrigger className="h-9">
+              <SelectValue placeholder="Selecciona un proceso padre" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Ninguno (Proceso raíz)</SelectItem>
+              {existingRecords && existingRecords.length > 0 ? (
+                existingRecords
+                  .filter((record) => {
+                    // La API retorna 'value' en lugar de 'id'
+                    const recordId = record?.value ?? record?.id;
+                    // Comparar como strings para evitar problemas de tipo
+                    return recordId != null && String(recordId) !== String(currentRecordId);
+                  })
+                  .map((record) => {
+                    // La API retorna 'value' y 'label' directamente
+                    const recordId = record?.value ?? record?.id;
+                    const label = record?.label || `Proceso #${recordId}`;
 
-                  return (
-                    <SelectItem key={recordId} value={String(recordId)}>
-                      {label}
-                    </SelectItem>
-                  );
-                })
-            ) : (
-              <SelectItem value="no-records" disabled>
-                No hay procesos disponibles
-              </SelectItem>
-            )}
-          </SelectContent>
-        </Select>
+                    return (
+                      <SelectItem key={recordId} value={String(recordId)}>
+                        {label}
+                      </SelectItem>
+                    );
+                  })
+              ) : (
+                <SelectItem value="no-records" disabled>
+                  No hay procesos disponibles
+                </SelectItem>
+              )}
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
       {/* Fechas de Inicio y Finalización */}

@@ -205,7 +205,7 @@ function Lightbox({ attachment, palletId, canDelete, onDelete, onUpdateNotes, on
             <div className="mt-2 space-y-2">
               <Textarea
                 value={notesValue}
-                onChange={(e) => setNotesValue(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNotesValue(e.target.value)}
                 placeholder="Añade una nota a esta imagen…"
                 className="min-h-[60px] resize-none text-sm"
                 maxLength={500}
@@ -282,7 +282,7 @@ function UploadZone({ onFile, isUploading }: UploadZoneProps) {
           type="file"
           accept="image/jpeg,image/png,image/webp"
           className="hidden"
-          onChange={(e) => handleFiles(e.target.files)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFiles(e.target.files)}
         />
         {isUploading ? (
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -317,7 +317,7 @@ function UploadZone({ onFile, isUploading }: UploadZoneProps) {
           <Textarea
             placeholder="Nota opcional (máx. 500 caracteres)"
             value={notes}
-            onChange={(e) => setNotes(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNotes(e.target.value)}
             className="min-h-[60px] resize-none text-sm"
             maxLength={500}
           />

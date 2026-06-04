@@ -18,11 +18,20 @@ import { useRecordFormSubmission } from '@/components/Admin/Productions/Producti
 import Loader from '@/components/Utilities/Loader';
 import { Loader2 } from 'lucide-react';
 
-const CreateProductionRecordDialogBody = ({ productionId }) => {
+const CreateProductionRecordDialogBody = ({
+  productionId,
+  defaultParentRecordId = null,
+  fixedParentRecordLabel = '',
+}) => {
   const { record, processes, existingRecords, loading, saving, error, isEditMode, saveRecord } =
     useProductionRecordContext();
 
-  const { formData, setFormData, isFormDirty } = useRecordFormData(record, processes, isEditMode);
+  const { formData, setFormData, isFormDirty } = useRecordFormData(
+    record,
+    processes,
+    isEditMode,
+    defaultParentRecordId
+  );
 
   const { handleSubmit, isNavigatePending } = useRecordFormSubmission({
     productionId,
@@ -74,6 +83,8 @@ const CreateProductionRecordDialogBody = ({ productionId }) => {
         saving={blocking}
         onSubmit={handleSubmit}
         isFormDirty={isFormDirty}
+        fixedParentRecordId={defaultParentRecordId}
+        fixedParentRecordLabel={fixedParentRecordLabel}
       />
     </div>
   );
@@ -82,15 +93,25 @@ const CreateProductionRecordDialogBody = ({ productionId }) => {
 /**
  * Diálogo con el formulario de creación de proceso (antes en /records/create).
  */
-const CreateProductionRecordDialog = ({ open, onOpenChange, productionId, onRefresh }) => {
+const CreateProductionRecordDialog = ({
+  open,
+  onOpenChange,
+  productionId,
+  onRefresh,
+  defaultParentRecordId = null,
+  fixedParentRecordLabel = '',
+}) => {
+  const isChildCreate = defaultParentRecordId != null && defaultParentRecordId !== '';
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent size="2xl" className="max-h-[min(90vh,840px)] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Nuevo proceso</DialogTitle>
+          <DialogTitle>{isChildCreate ? 'Nuevo subproceso' : 'Nuevo proceso'}</DialogTitle>
           <DialogDescription>
-            Elige el tipo de proceso y, si aplica, el proceso padre. Al crear, irás al detalle para
-            registrar entradas y salidas.
+            {isChildCreate
+              ? 'El proceso actual queda como padre. Elige el tipo de subproceso; al crear irás a su detalle.'
+              : 'Elige el tipo de proceso y, si aplica, el proceso padre. Al crear, irás al detalle para registrar entradas y salidas.'}
           </DialogDescription>
         </DialogHeader>
         {open ? (
@@ -99,7 +120,11 @@ const CreateProductionRecordDialog = ({ open, onOpenChange, productionId, onRefr
             recordId={null}
             onRefresh={onRefresh}
           >
-            <CreateProductionRecordDialogBody productionId={productionId} />
+            <CreateProductionRecordDialogBody
+              productionId={productionId}
+              defaultParentRecordId={defaultParentRecordId}
+              fixedParentRecordLabel={fixedParentRecordLabel}
+            />
           </ProductionRecordProvider>
         ) : null}
       </DialogContent>
