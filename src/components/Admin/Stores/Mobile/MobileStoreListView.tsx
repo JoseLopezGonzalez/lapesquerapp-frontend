@@ -1,12 +1,15 @@
 'use client';
 
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
 import {
+  ArrowLeft,
   ChevronRight,
   Loader2,
   Package,
@@ -158,6 +161,7 @@ export function MobileStoreListView({
   onSelectStore,
   onLoadMore,
 }: MobileStoreListViewProps) {
+  const router = useRouter();
   const [search, setSearch] = useState('');
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -187,14 +191,24 @@ export function MobileStoreListView({
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      {/* Header */}
-      <div className="flex-shrink-0 px-4 pt-4 pb-3">
-        <h2 className="text-xl font-normal dark:text-white">Almacenes</h2>
-        {realStores.length > 0 && (
-          <p className="text-muted-foreground mt-0.5 text-sm">
-            {realStores.length} almacén{realStores.length !== 1 ? 'es' : ''}
-          </p>
-        )}
+      {/* Header — mismo sistema que gestor de pedidos mobile */}
+      <div className="flex-shrink-0 pt-4 pb-3">
+        <div className="flex items-center justify-between gap-2 px-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.back()}
+            className="hover:bg-muted h-12 min-h-12 w-12 min-w-12 shrink-0 rounded-full"
+            aria-label="Volver"
+          >
+            <ArrowLeft className="h-6 w-6" />
+          </Button>
+          <h2 className="flex-1 truncate text-center text-xl font-normal dark:text-white">
+            Almacenes
+          </h2>
+          {/* Espaciador para centrar el título */}
+          <div className="h-12 w-12 shrink-0" aria-hidden />
+        </div>
       </div>
 
       {/* Buscador */}
