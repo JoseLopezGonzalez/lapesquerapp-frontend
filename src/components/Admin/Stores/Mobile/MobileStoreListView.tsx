@@ -12,8 +12,8 @@ import {
   Search,
   Sparkles,
   ThermometerSnowflake,
+  Warehouse,
 } from 'lucide-react';
-import { TbTruckLoading } from 'react-icons/tb';
 import { REGISTERED_PALLETS_STORE_ID } from '@/hooks/useStores';
 import { cn } from '@/lib/utils';
 
@@ -49,13 +49,21 @@ function MobileStoreCard({
   const fillPercentage = capacity > 0 ? ((store.totalNetWeight ?? 0) / capacity) * 100 : 0;
   const occupancyStatus = fillPercentage <= 50 ? 'low' : fillPercentage <= 80 ? 'medium' : 'high';
 
-  const borderClass = isGhostStore
-    ? 'border-l-slate-400 dark:border-l-slate-600'
+  const iconBg = isGhostStore
+    ? 'bg-slate-100 dark:bg-slate-800'
     : occupancyStatus === 'low'
-      ? 'border-l-green-500'
+      ? 'bg-green-50 dark:bg-green-950'
       : occupancyStatus === 'medium'
-        ? 'border-l-yellow-500'
-        : 'border-l-red-600';
+        ? 'bg-yellow-50 dark:bg-yellow-950'
+        : 'bg-red-50 dark:bg-red-950';
+
+  const iconColor = isGhostStore
+    ? 'text-slate-500'
+    : occupancyStatus === 'low'
+      ? 'text-green-600'
+      : occupancyStatus === 'medium'
+        ? 'text-yellow-600'
+        : 'text-red-600';
 
   const progressClass = isGhostStore
     ? '[&_[data-slot=progress-indicator]]:bg-slate-500/80'
@@ -78,39 +86,45 @@ function MobileStoreCard({
         }
       }}
       className={cn(
-        'bg-card text-card-foreground active:bg-accent/60 flex w-full items-center gap-3 rounded-xl border border-l-4 p-4 shadow-sm transition-colors',
-        borderClass,
+        'bg-card text-card-foreground active:bg-accent/60 flex w-full items-center gap-4 rounded-xl border p-5 shadow-sm transition-colors',
         disabled && 'pointer-events-none opacity-60',
         !disabled && 'cursor-pointer'
       )}
     >
+      {/* Ancla visual — icono con background semántico */}
+      <div className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-xl', iconBg)}>
+        {isGhostStore ? (
+          <Sparkles className={cn('h-5 w-5', iconColor)} />
+        ) : (
+          <Warehouse className={cn('h-5 w-5', iconColor)} />
+        )}
+      </div>
+
       {/* Info */}
       <div className="min-w-0 flex-1">
-        <div className="mb-1 flex items-center gap-2">
-          <span className="truncate text-sm font-semibold">{store.name}</span>
+        <div className="mb-1 flex items-center justify-between gap-2">
+          <span className="truncate text-base font-semibold">{store.name}</span>
+          {!isGhostStore && (
+            <span className={cn('shrink-0 text-xs font-medium tabular-nums', iconColor)}>
+              {Math.round(fillPercentage)}%
+            </span>
+          )}
         </div>
 
         {isGhostStore ? (
-          <p className="text-muted-foreground mb-2 flex items-center gap-1 text-xs">
-            <Sparkles className="h-3 w-3" />
+          <p className="text-muted-foreground mb-2.5 text-sm">
             {store.content?.pallets?.length ?? 0} palés en espera
           </p>
         ) : (
-          <div className="text-muted-foreground mb-2 flex flex-wrap gap-x-3 gap-y-0.5 text-xs">
+          <div className="text-muted-foreground mb-2.5 flex items-center gap-3 text-sm">
             {store.temperature != null && (
-              <span className="flex items-center gap-1">
-                <ThermometerSnowflake className="h-3 w-3" />
+              <span className="flex items-center gap-1.5">
+                <ThermometerSnowflake className="h-3.5 w-3.5 shrink-0" />
                 {store.temperature} ºC
               </span>
             )}
-            {store.capacity != null && (
-              <span className="flex items-center gap-1">
-                <TbTruckLoading className="h-3 w-3" />
-                {formatDecimalWeight(store.capacity)}
-              </span>
-            )}
-            <span className="flex items-center gap-1">
-              <Package className="h-3 w-3" />
+            <span className="flex items-center gap-1.5">
+              <Package className="h-3.5 w-3.5 shrink-0" />
               {formatDecimalWeight(store.totalNetWeight ?? 0)} cargado
             </span>
           </div>
@@ -124,12 +138,12 @@ function MobileStoreCard({
                 : 0
               : Math.min(fillPercentage, 100)
           }
-          className={cn('h-1.5', progressClass)}
+          className={cn('h-2.5', progressClass)}
         />
       </div>
 
       {/* Chevron */}
-      <ChevronRight className="text-muted-foreground h-4 w-4 shrink-0" />
+      <ChevronRight className="text-muted-foreground h-5 w-5 shrink-0" />
     </div>
   );
 }
@@ -172,18 +186,18 @@ export function MobileStoreListView({
   return (
     <div className="flex h-full flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex-shrink-0 px-4 pt-5 pb-3">
-        <h2 className="text-xl font-semibold">Almacenes</h2>
+      <div className="flex-shrink-0 px-4 pt-6 pb-4">
+        <h2 className="text-2xl font-bold">Almacenes</h2>
         {realStores.length > 0 && (
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground mt-0.5 text-sm">
             {realStores.length} almacén{realStores.length !== 1 ? 'es' : ''}
           </p>
         )}
       </div>
 
       {/* Buscador */}
-      <div className="flex-shrink-0 px-3 pb-3">
-        <InputGroup className="h-10 w-full">
+      <div className="flex-shrink-0 px-4 pb-4">
+        <InputGroup className="h-11 w-full">
           <InputGroupInput
             type="text"
             value={search}
@@ -211,7 +225,7 @@ export function MobileStoreListView({
             </p>
           </div>
         ) : (
-          <div className="flex flex-col gap-2 px-3 pb-3">
+          <div className="flex flex-col gap-3 px-4 pb-4">
             {filteredStores.map((store) => (
               <MobileStoreCard
                 key={store.id}
@@ -234,9 +248,9 @@ export function MobileStoreListView({
 
 export function MobileStoreListSkeleton() {
   return (
-    <div className="flex flex-col gap-2 p-3">
+    <div className="flex flex-col gap-3 p-4">
       {Array.from({ length: 4 }).map((_, i) => (
-        <Skeleton key={i} className="h-24 w-full rounded-xl" />
+        <Skeleton key={i} className="h-[108px] w-full rounded-xl" />
       ))}
     </div>
   );
