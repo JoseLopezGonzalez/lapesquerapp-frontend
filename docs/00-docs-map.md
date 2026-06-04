@@ -38,7 +38,7 @@
 | 16-23 | [16-guia-auth-magic-link-otp.md](./16-guia-auth-magic-link-otp.md) … [23-uso-settings.md](./23-uso-settings.md) | Guías y config                             |
 | —     | [guia-branding-generico-env.md](./guia-branding-generico-env.md)                                                | Branding genérico / La PesquerApp por .env |
 | 40    | [40-plan-core-consolidation-erp.md](./40-plan-core-consolidation-erp.md)                                        | Plan consolidación Core                    |
-| 50-66 | analisis, endpoints, especificaciones, implementaciones                                                         | Docs técnicos                              |
+| 50-73 | analisis, endpoints, especificaciones, implementaciones                                                         | Docs técnicos, incluido [sistema de payloads QR](./73-sistema-payloads-qr.md) |
 
 ## Subcarpetas
 

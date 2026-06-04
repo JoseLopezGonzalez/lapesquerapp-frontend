@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   ArrowLeft,
   ArrowRightLeft,
@@ -10,6 +10,7 @@ import {
   LocateFixed,
   MoreVertical,
   Plus,
+  ScanLine,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -42,6 +43,9 @@ import MoveMultiplePalletsToStoreDialog from '../StoresManager/Store/MoveMultipl
 import PalletDialog from '@/components/Admin/Pallets/PalletDialog';
 import { PalletsListDialog } from '../StoresManager/Store/PalletsListDialog';
 import { ProductSummaryDialog } from '../StoresManager/Store/ProductSummaryDialog';
+import { MobilePalletQrScanner } from './MobilePalletQrScanner';
+import { parseQrPayload } from '@/lib/qr/parseQrPayload';
+import { notify } from '@/lib/notifications';
 
 interface MobileStoreDetailViewProps {
   passedStoreId: string | number;
@@ -57,6 +61,8 @@ export function MobileStoreDetailView({
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [palletsDialogOpen, setPalletsDialogOpen] = useState(false);
   const [productsDialogOpen, setProductsDialogOpen] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const lastScannedRef = useRef({ code: '', at: 0 });
   useHideBottomNav();
 
   const {
@@ -70,6 +76,7 @@ export function MobileStoreDetailView({
     palletDialogData,
     clonedPalletData,
     updateStoreWhenOnChangePallet,
+    openPalletDialog,
     openCreatePalletDialog,
     store,
     closePalletLabelDialog,
@@ -92,6 +99,56 @@ export function MobileStoreDetailView({
 
   const isUnallocatedRelevant = isPositionRelevant(UNLOCATED_POSITION_ID);
   const isUnallocatedFilled = isPositionFilled(UNLOCATED_POSITION_ID);
+
+  const handleScannedPalletQr = (rawValue: string) => {
+    const code = String(rawValue ?? '').trim();
+    if (!code) return;
+
+    const now = Date.now();
+    const { code: lastCode, at: lastAt } = lastScannedRef.current;
+    if (code === lastCode && now - lastAt < 1800) return;
+    lastScannedRef.current = { code, at: now };
+
+    const payload = parseQrPayload(code);
+    const palletId = payload.P || (/^\d+$/.test(code) ? code : null);
+
+    if (!palletId || !/^\d+$/.test(String(palletId))) {
+      notify.error({
+        title: 'QR no reconocido',
+        description: 'No se encontró un identificador de palet en el código escaneado.',
+      });
+      return;
+    }
+
+    const numericPalletId = Number(palletId);
+    const palletInStore = store?.content?.pallets?.some(
+      (pallet: { id?: string | number }) => Number(pallet.id) === numericPalletId
+    );
+
+    setScannerOpen(false);
+    openPalletDialog(numericPalletId);
+
+    if (palletInStore) {
+      notify.success({ title: `Palet #${numericPalletId} localizado` }, { duration: 1200 });
+      return;
+    }
+
+    notify.info(
+      {
+        title: `Abriendo palet #${numericPalletId}`,
+        description: 'No aparece en este almacén, pero se abrirá su ficha.',
+      },
+      { duration: 1800 }
+    );
+  };
+
+  const handleScannerError = (message: string) => {
+    notify.error({
+      title: 'No se pudo abrir la cámara',
+      description: message || 'Revisa permisos del navegador e inténtalo de nuevo.',
+    });
+    setScannerOpen(false);
+  };
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -119,6 +176,16 @@ export function MobileStoreDetailView({
             )}
           </Button>
         )}
+
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-9 w-9 shrink-0"
+          onClick={() => setScannerOpen(true)}
+          aria-label="Escanear QR de palet"
+        >
+          <ScanLine className="h-5 w-5" />
+        </Button>
 
         {/* Dropdown de acciones — tres puntos verticales */}
         <DropdownMenu>
@@ -217,6 +284,14 @@ export function MobileStoreDetailView({
       />
       <MovePalletToStoreDialog />
       <MoveMultiplePalletsToStoreDialog />
+
+      {scannerOpen && (
+        <MobilePalletQrScanner
+          onScan={handleScannedPalletQr}
+          onClose={() => setScannerOpen(false)}
+          onError={handleScannerError}
+        />
+      )}
 
       {/* Dialogs de informes (controlados desde el dropdown) */}
       <PalletsListDialog open={palletsDialogOpen} onOpenChange={setPalletsDialogOpen} />
