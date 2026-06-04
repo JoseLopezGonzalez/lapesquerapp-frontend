@@ -262,7 +262,7 @@ export function MobileStoreDetailView({
           </>
         ) : (
           <Card className="relative h-full overflow-auto rounded-none border-0">
-            <MapContainer>
+            <MapContainer isMobile>
               <Map onClickPosition={() => {}} isPositionEmpty={() => {}} />
             </MapContainer>
           </Card>
