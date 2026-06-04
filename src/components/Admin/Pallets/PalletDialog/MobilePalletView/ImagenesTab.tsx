@@ -13,7 +13,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { usePalletAttachments } from '@/hooks/pallets/usePalletAttachments';
+import {
+  usePalletAttachments,
+  notifyIfInvalidPalletImageFile,
+} from '@/hooks/pallets/usePalletAttachments';
 import {
   palletAttachmentService,
   type PalletAttachment,
@@ -251,7 +254,7 @@ export default function ImagenesTab({ palletId }: ImagenesTabProps) {
   const handleFiles = (files: FileList | null) => {
     if (!files?.length) return;
     const file = files[0];
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) return;
+    if (!notifyIfInvalidPalletImageFile(file)) return;
     setPendingFile(file);
   };
 

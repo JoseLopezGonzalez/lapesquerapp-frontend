@@ -17,7 +17,10 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
-import { usePalletAttachments } from '@/hooks/pallets/usePalletAttachments';
+import {
+  usePalletAttachments,
+  notifyIfInvalidPalletImageFile,
+} from '@/hooks/pallets/usePalletAttachments';
 import { palletAttachmentService, type PalletAttachment } from '@/services/domain/pallets/palletAttachmentService';
 import { formatDateHour } from '@/helpers/formats/dates/formatDates';
 import { cn } from '@/lib/utils';
@@ -27,8 +30,6 @@ function formatBytes(bytes: number): string {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
-
-const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 // Carga y cachea un blob URL, revocándolo al desmontar
 function useImageBlobUrl(palletId: number | string, attachmentId: number) {
@@ -245,7 +246,7 @@ function UploadZone({ onFile, isUploading }: UploadZoneProps) {
   const handleFiles = (files: FileList | null) => {
     if (!files?.length) return;
     const file = files[0];
-    if (!ACCEPTED_TYPES.includes(file.type)) return;
+    if (!notifyIfInvalidPalletImageFile(file)) return;
     setPendingFile(file);
   };
 
