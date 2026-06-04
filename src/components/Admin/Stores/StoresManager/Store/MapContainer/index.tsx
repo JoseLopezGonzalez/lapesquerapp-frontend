@@ -34,7 +34,7 @@ const MapContainer = ({ children, isMobile = false }: MapContainerProps) => {
           initialScale={1}
           minScale={0.2}
           maxScale={8}
-          centerOnInit
+          centerOnInit={false}
           wheel={{ step: 0.1 }}
           doubleClick={{ disabled: true }}
           limitToBounds={false}
