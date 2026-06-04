@@ -2,6 +2,7 @@ import { API_URL_V2 } from '@/configs/config';
 import { getAuthToken } from '@/lib/auth/getAuthToken';
 import { apiRequest, uploadMultipart, ApiError, getErrorMessage } from '@/lib/api/apiHelpers';
 import { deleteEntityGeneric } from '@/services/generic/entityService';
+import { compressImage } from '@/lib/utils/compressImage';
 
 export interface PalletAttachment {
   id: number;
@@ -81,7 +82,8 @@ export const palletAttachmentService = {
   ): Promise<PalletAttachment> {
     const token = await getAuthToken();
     const formData = new FormData();
-    const fileToUpload = preparePalletImageUploadFile(file, palletId);
+    const compressed = await compressImage(file);
+    const fileToUpload = preparePalletImageUploadFile(compressed, palletId);
     formData.append('file', fileToUpload);
     formData.append('collection', 'pallet_image');
     if (notes?.trim()) formData.append('notes', notes.trim());
