@@ -279,7 +279,7 @@ export function MobileStoreListView({
       {/* Tabs de estado — solo cuando hay almacenes */}
       {!isEmpty && (
         <div className="flex-shrink-0 pb-3">
-          <Tabs className="" value={activeTab} onValueChange={(v) => setActiveTab(v as TabId)}>
+          <Tabs className="" value={activeTab} onValueChange={(v: string) => setActiveTab(v as TabId)}>
             <div className="flex justify-center overflow-x-auto scrollbar-hide">
               <TabsList className="w-max">
                 <TabsTrigger value="all">Todos</TabsTrigger>
