@@ -296,3 +296,49 @@ export const apiPostFormData = async (url, token, formData, config = {}) => {
     }
   );
 };
+
+/**
+ * Upload multipart/form-data al backend Laravel con X-Tenant y Authorization.
+ *
+ * fetchWithTenant fuerza Content-Type: application/json, lo que destruye el
+ * boundary del multipart. Este helper es el único caso justificado de fetch()
+ * directo en src/lib — replica la detección de tenant de fetchWithTenant pero
+ * omite Content-Type para que el navegador lo establezca con el boundary correcto.
+ *
+ * @param {string} url - URL completa del endpoint
+ * @param {string} token - Bearer token de NextAuth
+ * @param {FormData} formData - FormData con el archivo y campos
+ * @returns {Promise<any>} - JSON de la respuesta (sin envoltura data para POST /attachments)
+ */
+export const uploadMultipart = async (url, token, formData) => {
+  const clientHost = window.location.host;
+  const parts = clientHost.split('.');
+  const isLocal = clientHost.includes('localhost');
+  const tenant = isLocal
+    ? parts.length > 1 && parts[0] !== 'localhost'
+      ? parts[0]
+      : 'dev'
+    : parts[0];
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'X-Tenant': tenant,
+      Authorization: `Bearer ${token}`,
+      // Sin Content-Type: el navegador lo establece con el boundary correcto
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    let errorData = null;
+    try {
+      errorData = await response.json();
+    } catch {
+      errorData = { message: response.statusText };
+    }
+    throw new ApiError(getErrorMessage(errorData), response.status, errorData);
+  }
+
+  return response.json();
+};

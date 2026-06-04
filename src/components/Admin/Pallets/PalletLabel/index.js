@@ -1,5 +1,6 @@
 // PalletLabel.js
 import React from 'react';
+import QRCode from 'react-qr-code';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -9,6 +10,7 @@ import {
   getAvailableBoxesCount,
   getAvailableNetWeight,
 } from '@/helpers/pallet/boxAvailability';
+import { buildPalletQrPayload } from '@/lib/qr/buildPalletQrPayload';
 
 const PalletLabel = ({ pallet }) => {
   // Usar valores del backend si están disponibles, sino calcular desde cajas disponibles
@@ -27,6 +29,7 @@ const PalletLabel = ({ pallet }) => {
   const availableBoxes = getAvailableBoxes(normalizedBoxes);
   const availableBoxCount = getAvailableBoxesCount(pallet);
   const availableNetWeight = getAvailableNetWeight(pallet);
+  const qrPayload = buildPalletQrPayload(pallet);
 
   // Obtener productos únicos de las cajas disponibles
   const uniqueProducts = [
@@ -40,12 +43,19 @@ const PalletLabel = ({ pallet }) => {
 
   return (
     <Card className="flex h-full w-full flex-col overflow-hidden bg-white p-0 text-neutral-900 dark:bg-white dark:text-neutral-900">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-3xl font-bold">Palet #{pallet.id}</CardTitle>
-        {pallet.orderId && (
-          <p className="text-sm text-gray-600 dark:text-gray-600">
-            Pedido vinculado: #{pallet.orderId}
-          </p>
+      <CardHeader className="flex flex-row items-start justify-between gap-3 pb-2">
+        <div className="min-w-0 flex-1">
+          <CardTitle className="truncate text-3xl font-bold">Palet #{pallet.id}</CardTitle>
+          {pallet.orderId && (
+            <p className="text-sm text-gray-600 dark:text-gray-600">
+              Pedido vinculado: #{pallet.orderId}
+            </p>
+          )}
+        </div>
+        {qrPayload && (
+          <div className="shrink-0 bg-white p-1" aria-label={`QR ${qrPayload}`}>
+            <QRCode value={qrPayload} size={72} level="M" />
+          </div>
         )}
       </CardHeader>
       <CardContent className="flex-1 space-y-2 text-sm print:space-y-1 print:text-xs">

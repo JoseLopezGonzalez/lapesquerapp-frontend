@@ -18,6 +18,7 @@ import ResumenTab from './ResumenTab';
 import InfoTab from './InfoTab';
 import EliminarTab from './EliminarTab';
 import HistorialTab from './HistorialTab';
+import ImagenesTab from './ImagenesTab';
 
 interface MobilePalletViewProps {
   palletId: string | number | null | undefined;
@@ -171,6 +172,11 @@ export default function MobilePalletView({
               </TabsTrigger>
             )}
             {showHistorial && (
+              <TabsTrigger value="imagenes" className="flex-1 whitespace-nowrap px-3 text-xs">
+                Imágenes
+              </TabsTrigger>
+            )}
+            {showHistorial && (
               <TabsTrigger value="historial" className="flex-1 whitespace-nowrap px-3 text-xs">
                 Historial
               </TabsTrigger>
@@ -238,6 +244,12 @@ export default function MobilePalletView({
               onDeleteScannedCode={(code) => boxCreationDataChange('deleteScannedCode', code)}
               isReadOnly={isReadOnly}
             />
+          </TabsContent>
+        )}
+
+        {showHistorial && (
+          <TabsContent value="imagenes" className="mt-0 min-h-0 flex-1 overflow-auto px-3 py-3">
+            <ImagenesTab palletId={palletId!} />
           </TabsContent>
         )}
 

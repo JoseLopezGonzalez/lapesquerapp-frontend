@@ -30,6 +30,7 @@ import {
   PackageOpen,
   CalendarClock,
   MapPinned,
+  Tags,
 } from 'lucide-react';
 
 export const navigationConfig = [
@@ -178,6 +179,18 @@ export const navigationConfig = [
         href: '/admin/productions/control-panel',
         allowedRoles: ['administrador', 'direccion', 'tecnico'],
         requiredFeature: 'module.production',
+      },
+    ],
+  },
+  {
+    name: 'Etiquetas',
+    icon: Tags,
+    allowedRoles: ['administrador', 'direccion', 'operario', 'tecnico'],
+    childrens: [
+      {
+        name: 'Numéricas',
+        href: '/production/number_label',
+        allowedRoles: ['administrador', 'direccion', 'operario', 'tecnico'],
       },
     ],
   },
@@ -404,6 +417,12 @@ export const navigationManagerConfig = [
     allowedRoles: ['administrador', 'direccion', 'tecnico'],
     href: '/admin/label-editor',
     requiredFeature: 'module.labels',
+  },
+  {
+    name: 'Etiquetas numéricas',
+    icon: Tags,
+    allowedRoles: ['administrador', 'direccion', 'operario', 'tecnico'],
+    href: '/production/number_label',
   },
   {
     name: 'CMR Manual',

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox';
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
 import { getAvailableBoxesCount, getAvailableNetWeight } from '@/helpers/pallet/boxAvailability';
+import { PalletImageStrip } from '@/components/Admin/Pallets/PalletAttachments/PalletImageStrip';
 
 export default function SearchPalletCard({
   pallet,
@@ -158,6 +159,8 @@ export default function SearchPalletCard({
           </div>
         )}
       </CardContent>
+
+      <PalletImageStrip palletId={pallet.id} />
 
       <CardFooter className="w-full p-0">
         <div className="divide-border grid w-full grid-cols-2 divide-x">

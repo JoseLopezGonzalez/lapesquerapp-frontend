@@ -37,6 +37,7 @@ import {
   Minus,
   History,
   Euro,
+  Images,
 } from 'lucide-react';
 import { PiShrimp } from 'react-icons/pi';
 
@@ -81,6 +82,7 @@ import { usePalletTimeline } from '@/hooks/usePalletTimeline';
 import { usePrintElement } from '@/hooks/usePrintElement';
 import PalletLabel from '@/components/Admin/Pallets/PalletLabel';
 import SummaryPieChart from './SummaryPieChart';
+import PalletImagesTab from './PalletImagesTab';
 import { notify } from '@/lib/notifications';
 import { deletePalletTimeline, downloadPalletExpeditionLabel } from '@/services/palletService';
 import { getProductionByLot } from '@/services/productionService';
@@ -584,6 +586,11 @@ export default function PalletView({
                   <TabsTrigger value="boxesLabels" className="flex items-center gap-2">
                     <FileText className="h-4 w-4" /> Etiquetas Cajas
                   </TabsTrigger>
+                  {showHistorialTab && (
+                    <TabsTrigger value="imagenes" className="flex items-center gap-2">
+                      <Images className="h-4 w-4" /> Imágenes
+                    </TabsTrigger>
+                  )}
                   {showHistorialTab && (
                     <TabsTrigger value="historial" className="flex items-center gap-2">
                       <History className="h-4 w-4" /> Historial
@@ -2334,6 +2341,12 @@ export default function PalletView({
                 <TabsContent value="boxesLabels" className="mt-0 w-full">
                   <BoxesLabels pallet={temporalPallet} setBoxPrinted={setBoxPrinted} />
                 </TabsContent>
+
+                {showHistorialTab && (
+                  <TabsContent value="imagenes" className="mt-0 flex min-h-0 flex-1 flex-col data-[state=inactive]:hidden">
+                    <PalletImagesTab palletId={palletId} />
+                  </TabsContent>
+                )}
 
                 {showHistorialTab && (
                   <TabsContent

@@ -212,3 +212,20 @@ export const productFamilyOptionKeys = {
 export const settingsQueryKeys = {
   detail: (tenantId: string | null | undefined) => ['settings', tenantId ?? 'unknown'] as const,
 };
+
+export const palletAttachmentKeys = {
+  listPrefix: (tenantId: string | null | undefined, palletId: number | string | null | undefined) =>
+    ['pallets', 'attachments', tenantId ?? 'unknown', palletId] as const,
+  list: (
+    tenantId: string | null | undefined,
+    palletId: number | string | null | undefined,
+    params: Record<string, unknown> = {}
+  ) =>
+    [
+      'pallets',
+      'attachments',
+      tenantId ?? 'unknown',
+      palletId,
+      normalizeQueryParams(params),
+    ] as const,
+};

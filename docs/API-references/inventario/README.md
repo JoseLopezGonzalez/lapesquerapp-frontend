@@ -7,6 +7,7 @@ Documentación de endpoints para gestión de almacenes, palets y cajas.
 - [Almacenes (Stores)](#almacenes-stores)
 - [Palets](#palets)
 - [Cajas (Boxes)](#cajas-boxes)
+- [Adjuntos de Palets](./pallets-attachments.md) — imágenes y archivos adjuntos por palet
 
 ---
 

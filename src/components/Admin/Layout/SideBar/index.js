@@ -31,7 +31,10 @@ export function AppSidebar() {
   const currentPath = usePathname();
   const { data: session } = useSession();
   const rawRole = session?.user?.role;
-  const roles = Array.isArray(rawRole) ? rawRole.filter(Boolean) : rawRole ? [rawRole] : [];
+  const roles = React.useMemo(
+    () => (Array.isArray(rawRole) ? rawRole.filter(Boolean) : rawRole ? [rawRole] : []),
+    [rawRole]
+  );
 
   const username = session?.user?.name || 'Desconocido';
   const email = session?.user?.email || 'Desconocido';
@@ -62,7 +65,9 @@ export function AppSidebar() {
     }
   }, []);
 
-  const features = session?.user?.features ?? [];
+  const rawFeatures = session?.user?.features;
+  const features = React.useMemo(() => rawFeatures ?? [], [rawFeatures]);
+  const isProductionPath = currentPath?.startsWith('/production');
 
   // Filtrar navegación por roles y features
   const filteredNavigationConfig = React.useMemo(
@@ -89,13 +94,13 @@ export function AppSidebar() {
           name: companyName,
           logo: GalleryVerticalEnd,
           description: 'Administración',
-          current: true,
+          current: !isProductionPath,
         },
         {
           name: companyName,
           logo: AudioWaveform,
           description: 'Producción',
-          current: false,
+          current: isProductionPath,
         },
         {
           name: companyName,
@@ -119,6 +124,7 @@ export function AppSidebar() {
       filteredNavigationConfig,
       filteredNavigationManagerConfig,
       currentPath,
+      isProductionPath,
     ]
   );
 

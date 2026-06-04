@@ -44,6 +44,7 @@
 
 - **analisis/** — Análisis técnicos, optimizaciones (01-09-\*)
 - **API-references/** — Referencias de endpoints
+  - [inventario/pallets-attachments.md](./API-references/inventario/pallets-attachments.md) — API adjuntos de palets: upload, descarga autenticada, notas, permisos por rol
 - **arquitectura-servicios/** — Arquitectura de servicios (00-03-\*)
 - **audits/** — Auditorías
   - [productions-performance-audit-2026-03-24.md](./audits/productions-performance-audit-2026-03-24.md) — Auditoría I: rendimiento y fluidez percibida (13 hallazgos, implementados)

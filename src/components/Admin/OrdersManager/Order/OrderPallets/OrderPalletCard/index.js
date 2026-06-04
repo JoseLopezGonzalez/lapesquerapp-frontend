@@ -21,6 +21,7 @@ import {
   getAvailableBoxesCount,
   getAvailableNetWeight,
 } from '@/helpers/pallet/boxAvailability';
+import { PalletImageStrip } from '@/components/Admin/Pallets/PalletAttachments/PalletImageStrip';
 
 export default function OrderPalletCard({
   pallet,
@@ -278,6 +279,8 @@ export default function OrderPalletCard({
           </div>
         </div>
       </CardContent>
+
+      <PalletImageStrip palletId={pallet.id} />
 
       <CardFooter className="w-full p-0">
         <div className="divide-border grid w-full grid-cols-2 divide-x">

@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { AudioWaveform, Earth, GalleryVerticalEnd } from 'lucide-react';
+import { AudioWaveform, Earth, GalleryVerticalEnd, MessageSquare } from 'lucide-react';
 import { ResponsiveLayout } from '@/components/Admin/Layout/ResponsiveLayout';
 import { navigationConfig, navigationManagerConfig } from '@/configs/navgationConfig';
 import { useSettings } from '@/context/SettingsContext';
@@ -12,8 +12,9 @@ import { filterNavigationByRoles } from '@/utils/navigationUtils';
 import { notify } from '@/lib/notifications';
 import Loader from '@/components/Utilities/Loader';
 
-/** Solo permite rol operario; redirige al resto a /admin/home */
-function OperatorRouteProtection({ children }) {
+const PRODUCTION_ROLES = ['administrador', 'direccion', 'operario', 'tecnico'];
+
+function ProductionRouteProtection({ children }) {
   const { data: session, status } = useSession();
   const router = useRouter();
 
@@ -22,10 +23,13 @@ function OperatorRouteProtection({ children }) {
       router.replace('/');
       return;
     }
+
     if (status === 'authenticated' && session?.user) {
-      const role = Array.isArray(session.user.role) ? session.user.role[0] : session.user.role;
-      if (role !== 'operario') {
-        router.replace('/admin/home');
+      const roles = Array.isArray(session.user.role) ? session.user.role : [session.user.role];
+      const hasProductionAccess = roles.some((role) => PRODUCTION_ROLES.includes(role));
+
+      if (!hasProductionAccess) {
+        router.replace('/unauthorized');
       }
     }
   }, [status, session, router]);
@@ -38,13 +42,15 @@ function OperatorRouteProtection({ children }) {
     );
   }
 
-  const role =
+  const roles =
     session?.user?.role != null
       ? Array.isArray(session.user.role)
-        ? session.user.role[0]
-        : session.user.role
-      : null;
-  if (status === 'authenticated' && role !== 'operario') {
+        ? session.user.role
+        : [session.user.role]
+      : [];
+  const hasProductionAccess = roles.some((role) => PRODUCTION_ROLES.includes(role));
+
+  if (status === 'authenticated' && !hasProductionAccess) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <Loader />
@@ -55,9 +61,14 @@ function OperatorRouteProtection({ children }) {
   return <>{children}</>;
 }
 
-export default function OperatorLayoutClient({ children }) {
+export default function ProductionLayoutClient({ children }) {
   const { data: session } = useSession();
-  const roles = React.useMemo(() => ['operario'], []);
+  const rawRole = session?.user?.role;
+  const roles = React.useMemo(
+    () => (Array.isArray(rawRole) ? rawRole.filter(Boolean) : rawRole ? [rawRole] : []),
+    [rawRole]
+  );
+
   const username = session?.user?.name || 'Desconocido';
   const email = session?.user?.email || 'Desconocido';
   const { settings, loading } = useSettings();
@@ -90,13 +101,36 @@ export default function OperatorLayoutClient({ children }) {
     [roles]
   );
 
-  const bottomNavItems = React.useMemo(
-    () => filteredNavigationConfig.filter((item) => item?.href),
-    [filteredNavigationConfig]
+  const filteredManagers = React.useMemo(
+    () => filterNavigationByRoles(navigationManagerConfig, roles),
+    [roles]
   );
 
+  const bottomNavItems = React.useMemo(() => {
+    const productionLabelsItem = filteredManagers.find(
+      (item) => item.href === '/production/number_label'
+    );
+    const homeItem = filteredNavigationConfig.find((item) =>
+      roles.includes('operario') ? item.href === '/operator' : item.href === '/admin/home'
+    );
+    const chatIAItem = roles.includes('operario')
+      ? null
+      : {
+          name: 'Chat IA',
+          type: 'chat',
+          icon: MessageSquare,
+          href: null,
+        };
+
+    return [homeItem, productionLabelsItem, chatIAItem].filter(Boolean);
+  }, [filteredManagers, filteredNavigationConfig, roles]);
+
   const user = React.useMemo(
-    () => ({ name: username, email: email, logout: handleLogout }),
+    () => ({
+      name: username,
+      email,
+      logout: handleLogout,
+    }),
     [username, email, handleLogout]
   );
 
@@ -104,37 +138,36 @@ export default function OperatorLayoutClient({ children }) {
     () =>
       filteredNavigationConfig
         .filter((item) => item && (item.href || item.childrens?.length > 0))
-        .map((item) => ({ ...item, href: item.href || item.childrens?.[0]?.href || '#' })),
+        .map((item) => ({
+          ...item,
+          href: item.href || item.childrens?.[0]?.href || '#',
+        })),
     [filteredNavigationConfig]
-  );
-
-  const navigationManagersItems = React.useMemo(
-    () => filterNavigationByRoles(navigationManagerConfig, roles),
-    [roles]
   );
 
   const apps = React.useMemo(() => {
     const companyName =
       !loading && settings?.['company.name'] ? settings['company.name'] : 'Empresa';
+
     return [
-      { name: companyName, logo: GalleryVerticalEnd, description: 'Administración', current: true },
-      { name: companyName, logo: AudioWaveform, description: 'Producción', current: false },
+      { name: companyName, logo: GalleryVerticalEnd, description: 'Administración', current: false },
+      { name: companyName, logo: AudioWaveform, description: 'Producción', current: true },
       { name: companyName, logo: Earth, description: 'World Trade', current: false },
     ];
   }, [settings, loading]);
 
   return (
-    <OperatorRouteProtection>
+    <ProductionRouteProtection>
       <ResponsiveLayout
         bottomNavItems={bottomNavItems}
         user={user}
         navigationItems={navigationItems}
-        navigationManagersItems={navigationManagersItems}
+        navigationManagersItems={filteredManagers}
         apps={apps}
         loading={loading}
       >
         {children}
       </ResponsiveLayout>
-    </OperatorRouteProtection>
+    </ProductionRouteProtection>
   );
 }

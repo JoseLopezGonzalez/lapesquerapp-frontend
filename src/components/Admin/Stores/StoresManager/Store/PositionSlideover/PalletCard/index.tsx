@@ -28,6 +28,7 @@ import {
 import { useStoreContext } from '@/context/StoreContext';
 import { useSession } from 'next-auth/react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { PalletImageStrip } from '@/components/Admin/Pallets/PalletAttachments/PalletImageStrip';
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
 import {
   getAvailableBoxes,
@@ -384,6 +385,8 @@ export default function PalletCard({ pallet, isFlipped = false, onFlip }: Pallet
               </div>
             )}
           </div>
+
+          <PalletImageStrip palletId={pallet.id} />
 
           {/* Stats footer */}
           <div className="grid grid-cols-2 divide-x border-t">
