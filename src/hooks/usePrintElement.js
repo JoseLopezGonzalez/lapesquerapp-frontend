@@ -49,8 +49,8 @@ export function usePrintElement({ id, width = 100, height = 150, freeSize = fals
       `;
     const printStyle = document.createElement('style');
     printStyle.textContent = `
+      ${pageSizeCss}
       @media print {
-        ${pageSizeCss}
         body {
           margin: 0;
           padding: 0;
