@@ -1,6 +1,6 @@
 import { SupplierLiquidationShowDetail } from '@/components/Admin/SupplierLiquidations/SupplierLiquidationShowDetail';
 
-export default function SupplierLiquidationShowPage({ params }) {
-  const liquidationId = Number(params.id);
-  return <SupplierLiquidationShowDetail liquidationId={liquidationId} />;
+export default async function SupplierLiquidationShowPage({ params }) {
+  const { id } = await params;
+  return <SupplierLiquidationShowDetail liquidationId={Number(id)} />;
 }
