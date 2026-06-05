@@ -67,6 +67,7 @@ import { productionService } from './productions/productionService';
 import { punchService } from './punches/punchService';
 // TODO: migrate to .ts
 import { externalUserService } from './external-users/externalUserService';
+import { supplierLiquidationDomainService } from './supplier-liquidations/supplierLiquidationDomainService';
 
 /**
  * Mapa de nombres de entidades a servicios de dominio
@@ -105,6 +106,7 @@ const entityServiceMap: Record<string, DomainService> = {
   users: userService,
   'external-users': externalUserService,
   'field-operators': fieldOperatorAdminService,
+  'supplier-liquidations': supplierLiquidationDomainService,
 };
 
 /**

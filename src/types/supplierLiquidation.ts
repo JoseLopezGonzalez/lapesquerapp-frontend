@@ -106,13 +106,35 @@ export interface SupplierLiquidationDetails {
   existing_liquidation?: ExistingLiquidation | null;
 }
 
-/** Params to close a liquidation */
-export interface CloseLiquidationParams {
+/** Params to create a liquidation */
+export interface CreateLiquidationParams {
   supplier_id: number | string;
   start_date: string;
   end_date: string;
   reception_ids: number[];
   dispatch_ids: number[];
+}
+
+/** Params for PDF generation of a created liquidation */
+export interface LiquidationPdfParams {
+  liquidationId: number | string;
+  supplierName?: string;
+  paymentMethod?: 'cash' | 'transfer' | null;
+  hasManagementFee?: boolean;
+  showTransferPayment?: boolean;
+}
+
+/** Params for preview PDF (before creating) */
+export interface LiquidationPreviewPdfParams {
+  supplierId: number | string;
+  startDate: string;
+  endDate: string;
+  supplierName?: string;
+  selectedReceptions?: number[];
+  selectedDispatches?: number[];
+  paymentMethod?: 'cash' | 'transfer' | null;
+  hasManagementFee?: boolean;
+  showTransferPayment?: boolean;
 }
 
 // ─── CRUD de liquidaciones cerradas ──────────────────────────────────────────

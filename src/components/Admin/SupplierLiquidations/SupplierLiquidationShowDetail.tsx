@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { Loader2, ArrowLeft, LockOpen, Lock, User, Calendar } from 'lucide-react';
+import { Loader2, ArrowLeft, Trash2, Download, Calendar, Lock } from 'lucide-react';
 import { notify } from '@/lib/notifications';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,6 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,10 +31,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { supplierLiquidationKeys } from '@/lib/routes/queryKeys';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
+import { supplierLiquidationKeys } from '@/lib/routes/queryKeys';
 import { useSupplierLiquidationShow } from '@/hooks/useSupplierLiquidationShow';
-import { reopenLiquidation } from '@/services/domain/supplier-liquidations/supplierLiquidationService';
+import {
+  deleteLiquidation,
+  downloadLiquidationPdf,
+} from '@/services/domain/supplier-liquidations/supplierLiquidationService';
 import type { LiquidationReception, LiquidationDispatch } from '@/types/supplierLiquidation';
 
 function formatCurrency(value: number | undefined | null): string {
@@ -77,27 +81,62 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
   const router = useRouter();
   const queryClient = useQueryClient();
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
-  const [reopening, setReopening] = useState(false);
+
+  const [deleting, setDeleting] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'transfer'>('cash');
+  const [hasManagementFee, setHasManagementFee] = useState(false);
+  const [showTransferPayment, setShowTransferPayment] = useState(true);
 
   const { data, isLoading, error } = useSupplierLiquidationShow(liquidationId);
 
-  const handleReopen = async () => {
-    setReopening(true);
+  const handleDelete = async () => {
+    setDeleting(true);
     try {
-      await notify.promise(reopenLiquidation(liquidationId), {
-        loading: 'Reabriendo liquidación...',
-        success: 'Liquidación reabierta. Redirigiendo...',
+      await notify.promise(deleteLiquidation(liquidationId), {
+        loading: 'Eliminando liquidación...',
+        success: 'Liquidación eliminada. Las recepciones y salidas han quedado libres.',
         error: (err: unknown) => {
           const e = err as { message?: string };
-          return e?.message ?? 'Error al reabrir la liquidación';
+          return e?.message ?? 'Error al eliminar la liquidación';
         },
       });
       queryClient.invalidateQueries({
         queryKey: supplierLiquidationKeys.closedListPrefix(tenantId),
       });
-      router.push('/admin/supplier-liquidations?tab=historial');
+      router.push('/admin/supplier-liquidations');
     } finally {
-      setReopening(false);
+      setDeleting(false);
+    }
+  };
+
+  const handleDownloadPdf = async () => {
+    if (!data) return;
+    if (!paymentMethod) {
+      notify.error({ title: 'Selecciona un método de pago' });
+      return;
+    }
+    setDownloadingPdf(true);
+    try {
+      await notify.promise(
+        downloadLiquidationPdf({
+          liquidationId,
+          supplierName: data.supplier?.name ?? 'Liquidacion',
+          paymentMethod,
+          hasManagementFee,
+          showTransferPayment,
+        }),
+        {
+          loading: 'Generando PDF...',
+          success: 'PDF descargado',
+          error: (err: unknown) => {
+            const e = err as { message?: string };
+            return e?.message ?? 'Error al descargar el PDF';
+          },
+        }
+      );
+    } finally {
+      setDownloadingPdf(false);
     }
   };
 
@@ -117,9 +156,12 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
             <p className="text-destructive mb-4">
               {(error as Error)?.message ?? 'No se pudo cargar la liquidación'}
             </p>
-            <Button variant="outline" onClick={() => router.push('/admin/supplier-liquidations?tab=historial')}>
+            <Button
+              variant="outline"
+              onClick={() => router.push('/admin/supplier-liquidations')}
+            >
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Volver al historial
+              Volver
             </Button>
           </CardContent>
         </Card>
@@ -136,47 +178,59 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
     <div className="flex h-full min-h-0 w-full flex-col overflow-hidden">
       {/* Header */}
       <div className="flex flex-shrink-0 items-center justify-between p-6 pb-2">
-        <Button
-          variant="outline"
-          onClick={() => router.push('/admin/supplier-liquidations?tab=historial')}
-        >
+        <Button variant="outline" onClick={() => router.push('/admin/supplier-liquidations')}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Volver al historial
+          Volver
         </Button>
 
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="outline" disabled={reopening}>
-              {reopening ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <LockOpen className="mr-2 h-4 w-4" />
-              )}
-              Reabrir Liquidación
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>¿Reabrir esta liquidación?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Las recepciones y salidas de cebo vinculadas quedarán disponibles de nuevo para
-                incluirse en futuras liquidaciones. Esta acción no se puede deshacer
-                automáticamente.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction onClick={handleReopen}>Reabrir</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <div className="flex items-center gap-2">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" disabled={deleting}>
+                {deleting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="mr-2 h-4 w-4" />
+                )}
+                Eliminar
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>¿Eliminar esta liquidación?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Las recepciones y salidas de cebo vinculadas quedarán disponibles de nuevo para
+                  incluirse en futuras liquidaciones. Esta acción no se puede deshacer.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDelete}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  Eliminar
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+          <Button onClick={handleDownloadPdf} disabled={downloadingPdf}>
+            {downloadingPdf ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="mr-2 h-4 w-4" />
+            )}
+            Generar PDF
+          </Button>
+        </div>
       </div>
 
-      {/* Info del proveedor y liquidación */}
+      {/* Info proveedor + metadata */}
       <div className="bg-muted/50 mx-6 mb-2 flex-shrink-0 rounded-lg p-4">
         <div className="flex flex-wrap items-start gap-4 text-sm">
           <div>
-            <p className="text-lg font-semibold">{supplier?.name ?? '—'}</p>
+            <p className="text-base font-semibold">{supplier?.name ?? '—'}</p>
             {supplier?.contact_person && (
               <p className="text-muted-foreground text-xs">{supplier.contact_person}</p>
             )}
@@ -195,20 +249,68 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
           <div className="flex items-center gap-1.5">
             <Lock className="text-muted-foreground h-4 w-4 shrink-0" />
             <span className="text-muted-foreground">
-              Cerrada el {formatDateTime(liquidation.closed_at)}
+              Creada el {formatDateTime(liquidation.closed_at)}
             </span>
           </div>
-          <div className="ml-auto flex items-center gap-1.5">
-            <Badge variant="secondary" className="flex items-center gap-1">
-              <User className="h-3 w-3" />
-              {/* closed_by no está en el show response actualmente — se puede añadir */}
-              Liquidación #{liquidation.id}
-            </Badge>
+          <div className="ml-auto">
+            <Badge variant="secondary">Liquidación #{liquidation.id}</Badge>
           </div>
         </div>
       </div>
 
-      {/* Resumen */}
+      {/* Opciones de pago para el PDF */}
+      <div className="bg-muted/50 mx-6 mb-2 flex-shrink-0 rounded-lg p-4">
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-4">
+            <label className="text-sm font-medium whitespace-nowrap">Método de pago cebo:</label>
+            <div
+              className="bg-muted relative inline-flex h-9 w-[180px] cursor-pointer items-center rounded-lg p-1"
+              onClick={() => setPaymentMethod((m) => (m === 'cash' ? 'transfer' : 'cash'))}
+            >
+              <div
+                className={`bg-background absolute h-7 w-[86px] rounded-md shadow-sm transition-transform duration-200 ease-in-out ${paymentMethod === 'cash' ? 'translate-x-0' : 'translate-x-[88px]'}`}
+              />
+              <div className="relative flex h-full w-full items-center justify-center">
+                <span
+                  className={`z-10 flex-1 text-center text-sm font-medium transition-colors duration-200 ${paymentMethod === 'cash' ? 'text-foreground' : 'text-muted-foreground'}`}
+                >
+                  Efectivo
+                </span>
+                <span
+                  className={`z-10 flex-1 text-center text-sm font-medium transition-colors duration-200 ${paymentMethod === 'transfer' ? 'text-foreground' : 'text-muted-foreground'}`}
+                >
+                  Transferencia
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="border-border/50 border-t" />
+          <div className="flex flex-wrap items-center gap-6">
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="hasManagementFee"
+                checked={hasManagementFee}
+                onCheckedChange={(checked) => setHasManagementFee(!!checked)}
+              />
+              <label htmlFor="hasManagementFee" className="cursor-pointer text-sm">
+                Lleva gasto de gestión (2.5% sobre declarado sin IVA)
+              </label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="showTransferPayment"
+                checked={showTransferPayment}
+                onCheckedChange={(checked) => setShowTransferPayment(!!checked)}
+              />
+              <label htmlFor="showTransferPayment" className="cursor-pointer text-sm">
+                Mostrar pago por transferencia
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Resumen de totales */}
       {summary && (
         <div className="mx-6 mb-2 flex-shrink-0">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -228,7 +330,7 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
               <p className="text-muted-foreground text-xs">Importe declarado</p>
               <p className="mt-0.5 font-semibold">{formatCurrency(summary.total_declared_amount)}</p>
             </div>
-            {summary.total_dispatches > 0 && (
+            {(summary.total_dispatches ?? 0) > 0 && (
               <>
                 <div className="bg-muted/50 rounded-lg p-3">
                   <p className="text-muted-foreground text-xs">Peso salidas cebo</p>
@@ -264,7 +366,7 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
                 </Badge>
               </CardTitle>
               <CardDescription>
-                Recepciones de materia prima con sus productos y salidas relacionadas
+                Recepciones de materia prima incluidas en esta liquidación
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -369,7 +471,7 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
                     {allDispatches.length}
                   </Badge>
                 </CardTitle>
-                <CardDescription>Todas las salidas de cebo del período</CardDescription>
+                <CardDescription>Salidas de cebo incluidas en esta liquidación</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto rounded-md border">
@@ -398,7 +500,9 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
                                 </span>
                                 {dispatch.export_type && (
                                   <Badge
-                                    variant={dispatch.export_type === 'a3erp' ? 'default' : 'secondary'}
+                                    variant={
+                                      dispatch.export_type === 'a3erp' ? 'default' : 'secondary'
+                                    }
                                     className="text-xs"
                                   >
                                     {dispatch.export_type === 'a3erp' ? 'A3ERP' : 'FACILCOM'}
@@ -409,7 +513,10 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
                           </TableRow>
                           {dispatch.products?.map((product, i) => {
                             let amountWithIva = product.amount;
-                            if ((dispatch.iva_amount ?? 0) > 0 && (dispatch.base_amount ?? 0) > 0) {
+                            if (
+                              (dispatch.iva_amount ?? 0) > 0 &&
+                              (dispatch.base_amount ?? 0) > 0
+                            ) {
                               amountWithIva +=
                                 (product.amount / dispatch.base_amount) * dispatch.iva_amount;
                             }
