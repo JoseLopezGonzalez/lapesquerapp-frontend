@@ -42,8 +42,8 @@ const LABEL_GROUPS = Array.from({ length: COLS }, (_, col) =>
 );
 
 const PRINT_AREA_ID = 'numeric-label-print-area';
-const PRINT_WIDTH_MM = 80;
-const PRINT_HEIGHT_MM = 50;
+const PRINT_WIDTH_MM = 74;
+const PRINT_HEIGHT_MM = 44;
 
 function getLabelKey(label) {
   return label.modifier ? `${label.main}${label.modifier}` : label.main;
@@ -156,19 +156,17 @@ function PrintableLabels({ selectedLabel, quantity }) {
       {copies.map((copy) => (
         <div
           key={copy}
-          className="page flex items-center justify-center bg-white"
+          className="page flex items-center justify-center overflow-hidden rounded-[4mm] border-[0.6mm] border-black bg-white text-black"
           style={{ width: `${PRINT_WIDTH_MM}mm`, height: `${PRINT_HEIGHT_MM}mm` }}
         >
-          <div className="flex h-[44mm] w-[74mm] items-center justify-center rounded-[4mm] border-[0.6mm] border-black bg-white text-black">
-            <span
-              className={cn(
-                'font-black leading-none',
-                selectedLabel.modifier ? 'text-[30mm]' : 'text-[36mm]'
-              )}
-            >
-              <LabelMark label={selectedLabel} />
-            </span>
-          </div>
+          <span
+            className={cn(
+              'font-black leading-none',
+              selectedLabel.modifier ? 'text-[30mm]' : 'text-[36mm]'
+            )}
+          >
+            <LabelMark label={selectedLabel} />
+          </span>
         </div>
       ))}
     </div>
