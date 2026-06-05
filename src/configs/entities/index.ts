@@ -9,6 +9,7 @@ import catalogConfig from './entitiesConfig.catalog';
 import stockConfig from './entitiesConfig.stock';
 import crmConfig from './entitiesConfig.crm';
 import fieldConfig from './entitiesConfig.field';
+import suppliersConfig from './entitiesConfig.suppliers';
 
 export const configs = {
   ...productionConfig,
@@ -18,4 +19,5 @@ export const configs = {
   ...stockConfig,
   ...crmConfig,
   ...fieldConfig,
+  ...suppliersConfig,
 };

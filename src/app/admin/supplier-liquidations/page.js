@@ -1,5 +1,7 @@
-import { SupplierLiquidationList } from '@/components/Admin/SupplierLiquidations/SupplierLiquidationList';
+import EntityClient from '@/components/Admin/Entity/EntityClient';
+import { configs } from '@/configs/entitiesConfig';
 
 export default function SupplierLiquidationsPage() {
-  return <SupplierLiquidationList />;
+  const config = configs['supplier-liquidations'];
+  return <EntityClient config={config} />;
 }

@@ -114,3 +114,46 @@ export interface CloseLiquidationParams {
   reception_ids: number[];
   dispatch_ids: number[];
 }
+
+// ─── CRUD de liquidaciones cerradas ──────────────────────────────────────────
+
+/** Item en el listado paginado de liquidaciones cerradas */
+export interface SupplierLiquidationListItem {
+  id: number;
+  supplier_id: number;
+  supplier: { id: number; name: string };
+  start_date: string;
+  end_date: string;
+  closed_at: string;
+  closed_by_user_id: number | null;
+  closed_by: { id: number; name: string } | null;
+  notes: string | null;
+  receptions_count: number;
+  dispatches_count: number;
+}
+
+/** Filtros para el listado de liquidaciones cerradas */
+export interface SupplierLiquidationListFilters {
+  suppliers?: number[];
+  dates?: { start?: string; end?: string };
+  closed_at?: { start?: string; end?: string };
+  page?: number;
+  perPage?: number;
+}
+
+/** Respuesta del endpoint GET /supplier-liquidations/{id}/show */
+export interface SupplierLiquidationShowResponse {
+  liquidation: {
+    id: number;
+    supplier_id: number;
+    start_date: string;
+    end_date: string;
+    closed_at: string;
+    closed_by_user_id: number | null;
+    notes: string | null;
+  };
+  supplier: LiquidationSupplier;
+  receptions: LiquidationReception[];
+  dispatches: LiquidationDispatch[];
+  summary: LiquidationSummary;
+}

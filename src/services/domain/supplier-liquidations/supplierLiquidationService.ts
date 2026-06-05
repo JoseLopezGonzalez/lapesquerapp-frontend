@@ -11,7 +11,11 @@ import type {
   SupplierLiquidationDetails,
   CloseLiquidationParams,
   ExistingLiquidation,
+  SupplierLiquidationListItem,
+  SupplierLiquidationListFilters,
+  SupplierLiquidationShowResponse,
 } from '@/types/supplierLiquidation';
+import type { CatalogListResponse } from '@/types/catalog';
 
 const BASE_URL = `${API_URL_V2}supplier-liquidations`;
 
@@ -275,4 +279,88 @@ export async function reopenLiquidation(liquidationId: number | string): Promise
     (err as Error & { status?: number; data?: unknown }).data = errorData;
     throw err;
   }
+}
+
+/**
+ * Obtiene el listado paginado de liquidaciones cerradas.
+ */
+export async function getSupplierLiquidationsList(
+  filters: SupplierLiquidationListFilters = {}
+): Promise<CatalogListResponse<SupplierLiquidationListItem>> {
+  const token = await getAuthToken();
+  const { suppliers, dates, closed_at, page = 1, perPage = 15 } = filters;
+
+  const queryParams = new URLSearchParams();
+  queryParams.set('page', String(page));
+  queryParams.set('per_page', String(perPage));
+
+  if (suppliers?.length) {
+    suppliers.forEach((id) => queryParams.append('suppliers[]', String(id)));
+  }
+  if (dates?.start) queryParams.set('dates[start]', dates.start);
+  if (dates?.end) queryParams.set('dates[end]', dates.end);
+  if (closed_at?.start) queryParams.set('closed_at[start]', closed_at.start);
+  if (closed_at?.end) queryParams.set('closed_at[end]', closed_at.end);
+
+  const response = await fetchWithTenant(`${BASE_URL}?${queryParams.toString()}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      Authorization: `Bearer ${token}`,
+      'User-Agent': getUserAgent(),
+    },
+  });
+
+  if (!response.ok) {
+    let errorData: { message?: string } = {
+      message: `Error ${response.status}: ${response.statusText}`,
+    };
+    try {
+      errorData = (await response.json()) ?? errorData;
+    } catch {
+      // use default
+    }
+    throw new Error(
+      getErrorMessage(errorData) || 'Error al obtener el listado de liquidaciones.'
+    );
+  }
+
+  return response.json();
+}
+
+/**
+ * Obtiene el detalle completo de una liquidación cerrada (vista histórico).
+ */
+export async function getSupplierLiquidationShow(
+  liquidationId: number | string
+): Promise<SupplierLiquidationShowResponse> {
+  const token = await getAuthToken();
+
+  const response = await fetchWithTenant(`${BASE_URL}/${liquidationId}/show`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      Authorization: `Bearer ${token}`,
+      'User-Agent': getUserAgent(),
+    },
+  });
+
+  if (!response.ok) {
+    let errorData: { message?: string } = {
+      message: `Error ${response.status}: ${response.statusText}`,
+    };
+    try {
+      errorData = (await response.json()) ?? errorData;
+    } catch {
+      // use default
+    }
+    throw new Error(
+      getErrorMessage(errorData) || 'Error al obtener el detalle de la liquidación.'
+    );
+  }
+
+  const data = await response.json();
+  return (data.data ?? data) as SupplierLiquidationShowResponse;
 }

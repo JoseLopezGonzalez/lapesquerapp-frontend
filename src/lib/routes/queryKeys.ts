@@ -214,6 +214,7 @@ export const settingsQueryKeys = {
 };
 
 export const supplierLiquidationKeys = {
+  // Calculadora (efímera, por proveedor + rango)
   detailPrefix: (
     tenantId: string | null | undefined,
     supplierId: number | string | null | undefined
@@ -236,6 +237,22 @@ export const supplierLiquidationKeys = {
     startDate: string | undefined,
     endDate: string | undefined
   ) => ['suppliers-with-activity', tenantId ?? 'unknown', startDate, endDate] as const,
+  // CRUD historial de cerradas
+  closedListPrefix: (tenantId: string | null | undefined) =>
+    ['supplier-liquidations-closed', tenantId ?? 'unknown'] as const,
+  closedList: (
+    tenantId: string | null | undefined,
+    filters: Record<string, unknown> = {}
+  ) =>
+    [
+      'supplier-liquidations-closed',
+      tenantId ?? 'unknown',
+      normalizeQueryParams(filters),
+    ] as const,
+  closedShow: (
+    tenantId: string | null | undefined,
+    liquidationId: number | string | null | undefined
+  ) => ['supplier-liquidation-show', tenantId ?? 'unknown', liquidationId] as const,
 };
 
 export const palletAttachmentKeys = {
