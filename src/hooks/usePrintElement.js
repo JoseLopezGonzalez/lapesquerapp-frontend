@@ -24,15 +24,10 @@ export function usePrintElement({ id, width = 100, height = 150, freeSize = fals
       doc.head.appendChild(el.cloneNode(true));
     });
 
-    // Estilos de impresión: freeSize omite @page size para que el contenido se ajuste al formato nativo
+    // @page margin: 0 siempre activo; size solo cuando !freeSize
     const pageSizeCss = freeSize
-      ? ''
-      : `
-        @page {
-          size: ${width}mm ${height}mm;
-          margin: 0;
-        }
-      `;
+      ? '@page { margin: 0; }'
+      : `@page { size: ${width}mm ${height}mm; margin: 0; }`;
     const pageClassCss = freeSize
       ? ''
       : `
@@ -63,6 +58,10 @@ export function usePrintElement({ id, width = 100, height = 150, freeSize = fals
 
     // Copiar contenido
     doc.body.innerHTML = elementToPrint.outerHTML;
+
+    // Forzar visibilidad: no depender de que Tailwind print:block funcione en el iframe
+    const printAreaInIframe = doc.getElementById(id);
+    if (printAreaInIframe) printAreaInIframe.style.display = 'block';
 
     // Esperar a que se cargue todo y luego imprimir
     setTimeout(() => {

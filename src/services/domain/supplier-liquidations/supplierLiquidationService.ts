@@ -6,7 +6,12 @@ import { API_URL_V2 } from '@/configs/config';
 import { getAuthToken } from '@/lib/auth/getAuthToken';
 import { getErrorMessage } from '@/lib/api/apiHelpers';
 import { getUserAgent } from '@/lib/utils/getUserAgent';
-import type { SupplierWithActivity, SupplierLiquidationDetails } from '@/types/supplierLiquidation';
+import type {
+  SupplierWithActivity,
+  SupplierLiquidationDetails,
+  CloseLiquidationParams,
+  ExistingLiquidation,
+} from '@/types/supplierLiquidation';
 
 const BASE_URL = `${API_URL_V2}supplier-liquidations`;
 
@@ -200,4 +205,74 @@ export async function downloadSupplierLiquidationPdf(params: DownloadPdfParams):
   window.URL.revokeObjectURL(downloadUrl);
 
   return true;
+}
+
+/**
+ * Cierra una liquidación: persiste el registro y vincula las recepciones/salidas.
+ */
+export async function closeLiquidation(
+  params: CloseLiquidationParams
+): Promise<ExistingLiquidation> {
+  const token = await getAuthToken();
+
+  const response = await fetchWithTenant(`${BASE_URL}/close`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      Authorization: `Bearer ${token}`,
+      'User-Agent': getUserAgent(),
+    },
+    body: JSON.stringify(params),
+  });
+
+  if (!response.ok) {
+    let errorData: { message?: string; errors?: Record<string, string[]> } = {
+      message: `Error ${response.status}: ${response.statusText}`,
+    };
+    try {
+      errorData = (await response.json()) ?? errorData;
+    } catch {
+      // use default
+    }
+    const err = new Error(getErrorMessage(errorData) || 'Error al cerrar la liquidación');
+    (err as Error & { status?: number; data?: unknown }).status = response.status;
+    (err as Error & { status?: number; data?: unknown }).data = errorData;
+    throw err;
+  }
+
+  const data = await response.json();
+  return (data.data ?? data) as ExistingLiquidation;
+}
+
+/**
+ * Reabre una liquidación: elimina el registro y libera todas las recepciones/salidas.
+ */
+export async function reopenLiquidation(liquidationId: number | string): Promise<void> {
+  const token = await getAuthToken();
+
+  const response = await fetchWithTenant(`${BASE_URL}/${liquidationId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      Authorization: `Bearer ${token}`,
+      'User-Agent': getUserAgent(),
+    },
+  });
+
+  if (!response.ok) {
+    let errorData: { message?: string } = {
+      message: `Error ${response.status}: ${response.statusText}`,
+    };
+    try {
+      errorData = (await response.json()) ?? errorData;
+    } catch {
+      // use default
+    }
+    const err = new Error(getErrorMessage(errorData) || 'Error al reabrir la liquidación');
+    (err as Error & { status?: number; data?: unknown }).status = response.status;
+    (err as Error & { status?: number; data?: unknown }).data = errorData;
+    throw err;
+  }
 }

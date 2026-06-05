@@ -50,6 +50,8 @@ export interface LiquidationReception {
   declared_total_net_weight?: number | null;
   declared_total_amount?: number | null;
   related_dispatches?: LiquidationDispatch[];
+  supplier_liquidation_id?: number | null;
+  liquidation_closed_at?: string | null;
 }
 
 /** Dispatch in liquidation detail */
@@ -62,6 +64,16 @@ export interface LiquidationDispatch {
   base_amount?: number;
   iva_amount?: number;
   total_amount: number;
+  supplier_liquidation_id?: number | null;
+  liquidation_closed_at?: string | null;
+}
+
+/** Closed liquidation record returned by the backend */
+export interface ExistingLiquidation {
+  id: number;
+  closed_at: string;
+  start_date: string;
+  end_date: string;
 }
 
 /** Liquidation summary */
@@ -91,4 +103,14 @@ export interface SupplierLiquidationDetails {
   receptions: LiquidationReception[];
   dispatches: LiquidationDispatch[];
   summary?: LiquidationSummary;
+  existing_liquidation?: ExistingLiquidation | null;
+}
+
+/** Params to close a liquidation */
+export interface CloseLiquidationParams {
+  supplier_id: number | string;
+  start_date: string;
+  end_date: string;
+  reception_ids: number[];
+  dispatch_ids: number[];
 }

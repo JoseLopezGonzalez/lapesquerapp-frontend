@@ -42,8 +42,7 @@ const LABEL_GROUPS = Array.from({ length: COLS }, (_, col) =>
 );
 
 const PRINT_AREA_ID = 'numeric-label-print-area';
-const PRINT_WIDTH_MM = 74;
-const PRINT_HEIGHT_MM = 44;
+const PRINT_HEIGHT_MM = 50;
 
 function getLabelKey(label) {
   return label.modifier ? `${label.main}${label.modifier}` : label.main;
@@ -156,16 +155,46 @@ function PrintableLabels({ selectedLabel, quantity }) {
       {copies.map((copy) => (
         <div
           key={copy}
-          className="page flex items-center justify-center overflow-hidden rounded-[4mm] border-[0.6mm] border-black bg-white text-black"
-          style={{ width: `${PRINT_WIDTH_MM}mm`, height: `${PRINT_HEIGHT_MM}mm` }}
+          style={{
+            width: '100%',
+            height: `${PRINT_HEIGHT_MM}mm`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'white',
+            color: 'black',
+            overflow: 'hidden',
+            pageBreakAfter: 'always',
+          }}
         >
           <span
-            className={cn(
-              'font-black leading-none',
-              selectedLabel.modifier ? 'text-[30mm]' : 'text-[36mm]'
-            )}
+            style={{
+              position: 'relative',
+              display: 'inline-flex',
+              alignItems: 'flex-start',
+              justifyContent: 'center',
+              fontWeight: 900,
+              lineHeight: 1,
+              fontSize: selectedLabel.modifier ? '30mm' : '36mm',
+            }}
           >
-            <LabelMark label={selectedLabel} />
+            <span style={{ paddingRight: selectedLabel.modifier ? '14mm' : undefined }}>
+              {selectedLabel.main}
+            </span>
+            {selectedLabel.modifier ? (
+              <span
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  right: 0,
+                  fontWeight: 900,
+                  fontSize: '18mm',
+                  lineHeight: 1,
+                }}
+              >
+                {selectedLabel.modifier}
+              </span>
+            ) : null}
           </span>
         </div>
       ))}
@@ -178,8 +207,7 @@ export default function NumericProductionLabels() {
   const [selectedLabel, setSelectedLabel] = React.useState(null);
   const { onPrint } = usePrintElement({
     id: PRINT_AREA_ID,
-    width: PRINT_WIDTH_MM,
-    height: PRINT_HEIGHT_MM,
+    freeSize: true,
   });
 
   const handlePrintLabel = React.useCallback(

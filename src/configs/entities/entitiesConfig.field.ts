@@ -100,6 +100,22 @@ const fieldConfig: Record<string, any> = {
             },
           ],
         },
+        /* Estado liquidación */
+        {
+          name: 'liquidation',
+          label: 'Liquidación',
+          filters: [
+            {
+              name: 'liquidation_status',
+              label: 'Estado liquidación',
+              type: 'pairSelectBoxes',
+              options: [
+                { name: 'open', label: 'Sin liquidar', value: false },
+                { name: 'closed', label: 'Liquidada', value: false },
+              ],
+            },
+          ],
+        },
       ],
     },
     table: {
@@ -113,6 +129,18 @@ const fieldConfig: Record<string, any> = {
         { name: 'notes', label: 'Notas', type: 'text', path: 'notes' },
         /* netWeight */
         { name: 'netWeight', label: 'Peso neto', type: 'weight', path: 'netWeight' },
+        /* liquidationStatus */
+        {
+          name: 'liquidationStatus',
+          label: 'Liquidación',
+          type: 'badge',
+          path: 'supplier_liquidation_id',
+          hideOnMobile: true,
+          options: {
+            null: { label: 'Sin liquidar', color: 'success', outline: true },
+            default: { label: 'Liquidada', color: 'secondary', outline: true },
+          },
+        },
       ],
     },
     exports: [
