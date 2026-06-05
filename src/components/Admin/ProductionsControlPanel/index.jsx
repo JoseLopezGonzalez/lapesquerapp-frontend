@@ -9,7 +9,6 @@ import {
   ArrowDownUp,
   CheckCircle2,
   ChevronDown,
-  ChevronLeft,
   ChevronRight,
   ArrowRight,
   ChevronUp,
@@ -82,6 +81,7 @@ import {
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { PaginationFooter } from '@/components/Admin/Entity/EntityClient/EntityTable/EntityFooter/PaginationFooter';
 import { useProductionControlPanel } from '@/hooks/production/useProductionControlPanel';
 import {
   useProductionOrphanBoxes,
@@ -1100,7 +1100,11 @@ function ProductionTable({
                             <span className="sr-only">Ver alertas</span>
                           </Button>
                           <Button asChild variant="outline" size="icon-sm">
-                            <Link href={`/admin/productions/${production.id}`}>
+                            <Link
+                              href={`/admin/productions/${production.id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
                               <ArrowRight className="size-4" />
                               <span className="sr-only">Abrir producción</span>
                             </Link>
@@ -1124,33 +1128,13 @@ function ProductionTable({
               <span>Conciliación filtrada en cliente en V1.</span>
             ) : null}
           </div>
-          <div className="flex items-center justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((current) => Math.max(1, current - 1))}
-              disabled={page <= 1 || fetching}
-            >
-              <ChevronLeft className="mr-2 size-4" />
-              Anterior
-            </Button>
-            <Badge variant="outline">
-              {page} / {pagination.lastPage || 1}
-            </Badge>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                setPage((current) => Math.min(pagination.lastPage || current + 1, current + 1))
-              }
-              disabled={page >= (pagination.lastPage || 1) || fetching}
-            >
-              Siguiente
-              <ChevronRight className="ml-2 size-4" />
-            </Button>
-          </div>
+          <PaginationFooter
+            meta={{ totalPages: pagination.lastPage || 1 }}
+            currentPage={page}
+            onPageChange={(newPage) => {
+              if (!fetching) setPage(newPage);
+            }}
+          />
         </div>
       </CardContent>
     </Card>
