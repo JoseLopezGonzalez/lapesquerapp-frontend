@@ -155,7 +155,7 @@ const productionConfig: Record<string, any> = {
           path: 'supplier_liquidation_id',
           hideOnMobile: true,
           options: {
-            null: { label: 'Sin liquidar', color: 'success', outline: true },
+            undefined: { label: 'Sin liquidar', color: 'success', outline: true },
             default: { label: 'Liquidada', color: 'secondary', outline: true },
           },
         },
