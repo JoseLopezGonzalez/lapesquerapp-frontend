@@ -2,9 +2,9 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { Loader2, ArrowLeft, Download, FilePlus } from 'lucide-react';
+import { Loader2, ArrowLeft, Download, FilePlus, ListFilter } from 'lucide-react';
 import { notify } from '@/lib/notifications';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,7 +18,15 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 import { supplierLiquidationKeys } from '@/lib/routes/queryKeys';
 import { useSupplierLiquidationDetails } from '@/hooks/useSupplierLiquidationDetails';
@@ -26,6 +34,8 @@ import {
   createLiquidation,
   downloadLiquidationPreviewPdf,
 } from '@/services/domain/supplier-liquidations/supplierLiquidationService';
+import { rawMaterialReceptionService } from '@/services/domain/raw-material-receptions/rawMaterialReceptionService';
+import { ceboDispatchService } from '@/services/domain/cebo-dispatches/ceboDispatchService';
 import type { LiquidationReception, LiquidationDispatch } from '@/types/supplierLiquidation';
 
 function formatCurrency(value: number | undefined | null): string {
@@ -56,6 +66,172 @@ function formatDate(dateString: string | undefined | null): string {
   }
 }
 
+// ─── Dialog: items sin liquidar ──────────────────────────────────────────────
+
+function PendingItemsDialog({
+  supplierId,
+  supplierName,
+  open,
+  onClose,
+}: {
+  supplierId: number;
+  supplierName: string;
+  open: boolean;
+  onClose: () => void;
+}) {
+  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
+
+  const { data: receptionsData, isLoading: loadingReceptions } = useQuery({
+    queryKey: ['pending-receptions', tenantId, supplierId],
+    queryFn: () =>
+      rawMaterialReceptionService.list(
+        { suppliers: [supplierId], liquidation_status: 'open' },
+        { page: 1, perPage: 100 }
+      ),
+    enabled: open && !!tenantId,
+  });
+
+  const { data: dispatchesData, isLoading: loadingDispatches } = useQuery({
+    queryKey: ['pending-dispatches', tenantId, supplierId],
+    queryFn: () =>
+      ceboDispatchService.list(
+        { suppliers: [supplierId], liquidation_status: 'open' },
+        { page: 1, perPage: 100 }
+      ),
+    enabled: open && !!tenantId,
+  });
+
+  const receptions = receptionsData?.data ?? [];
+  const dispatches = dispatchesData?.data ?? [];
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>
+            Pendientes sin liquidar — {supplierName}
+          </DialogTitle>
+        </DialogHeader>
+
+        <Tabs defaultValue="receptions" className="mt-2">
+          <TabsList>
+            <TabsTrigger value="receptions">
+              Recepciones
+              {!loadingReceptions && (
+                <Badge variant="secondary" className="ml-2 h-5 rounded-full px-1.5 text-xs">
+                  {receptions.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="dispatches">
+              Salidas de cebo
+              {!loadingDispatches && (
+                <Badge variant="secondary" className="ml-2 h-5 rounded-full px-1.5 text-xs">
+                  {dispatches.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="receptions" className="mt-3">
+            {loadingReceptions ? (
+              <div className="space-y-2">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Skeleton key={i} className="h-10 w-full rounded-md" />
+                ))}
+              </div>
+            ) : receptions.length === 0 ? (
+              <p className="text-muted-foreground py-8 text-center text-sm">
+                No hay recepciones sin liquidar para este proveedor
+              </p>
+            ) : (
+              <div className="max-h-[400px] overflow-auto rounded-md border">
+                <Table>
+                  <TableHeader className="bg-background sticky top-0">
+                    <TableRow>
+                      <TableHead className="w-16">#</TableHead>
+                      <TableHead>Fecha</TableHead>
+                      <TableHead className="text-right">Peso Neto</TableHead>
+                      <TableHead className="text-right">Importe</TableHead>
+                      <TableHead className="text-right">Importe Declarado</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {receptions.map((r) => (
+                      <TableRow key={r.id}>
+                        <TableCell className="font-bold">#{r.id}</TableCell>
+                        <TableCell>{formatDate(r.date)}</TableCell>
+                        <TableCell className="text-right">
+                          {r.netWeight != null
+                            ? formatWeight(r.netWeight)
+                            : '—'}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {r.totalAmount != null
+                            ? formatCurrency(r.totalAmount)
+                            : '—'}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {r.declaredTotalAmount != null
+                            ? formatCurrency(r.declaredTotalAmount)
+                            : '—'}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="dispatches" className="mt-3">
+            {loadingDispatches ? (
+              <div className="space-y-2">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Skeleton key={i} className="h-10 w-full rounded-md" />
+                ))}
+              </div>
+            ) : dispatches.length === 0 ? (
+              <p className="text-muted-foreground py-8 text-center text-sm">
+                No hay salidas de cebo sin liquidar para este proveedor
+              </p>
+            ) : (
+              <div className="max-h-[400px] overflow-auto rounded-md border">
+                <Table>
+                  <TableHeader className="bg-background sticky top-0">
+                    <TableRow>
+                      <TableHead className="w-16">#</TableHead>
+                      <TableHead>Fecha</TableHead>
+                      <TableHead className="text-right">Peso Neto</TableHead>
+                      <TableHead className="text-right">Notas</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {dispatches.map((d) => (
+                      <TableRow key={d.id}>
+                        <TableCell className="font-bold">#{d.id}</TableCell>
+                        <TableCell>{formatDate(d.date)}</TableCell>
+                        <TableCell className="text-right">
+                          {d.netWeight != null ? formatWeight(d.netWeight) : '—'}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-right text-sm">
+                          {d.notes || '—'}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -72,6 +248,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
 
   const [creatingLiquidation, setCreatingLiquidation] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [pendingDialogOpen, setPendingDialogOpen] = useState(false);
   const [selectedReceptions, setSelectedReceptions] = useState<number[]>([]);
   const [selectedDispatches, setSelectedDispatches] = useState<number[]>([]);
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'transfer'>('cash');
@@ -286,6 +463,14 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
         </Button>
 
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setPendingDialogOpen(true)}
+          >
+            <ListFilter className="mr-2 h-4 w-4" />
+            Ver pendientes
+          </Button>
+
           <Button variant="outline" onClick={handlePreviewPdf} disabled={downloadingPdf}>
             {downloadingPdf ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -305,6 +490,14 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
           </Button>
         </div>
       </div>
+
+      {/* Dialog: items sin liquidar */}
+      <PendingItemsDialog
+        supplierId={supplierId}
+        supplierName={data?.supplier?.name ?? ''}
+        open={pendingDialogOpen}
+        onClose={() => setPendingDialogOpen(false)}
+      />
 
       {/* Info proveedor */}
       <div className="bg-muted/50 mx-6 mb-2 flex-shrink-0 rounded-lg p-4">

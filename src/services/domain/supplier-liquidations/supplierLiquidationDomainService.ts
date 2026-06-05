@@ -24,7 +24,7 @@ export const supplierLiquidationDomainService = {
     return fetchEntitiesGeneric(
       `${API_URL_V2}${ENDPOINT}?${queryParams.toString()}`,
       token
-    );
+    ) as Promise<CatalogListResponse<SupplierLiquidationListItem>>;
   },
 
   async delete(id: number | string): Promise<void> {
