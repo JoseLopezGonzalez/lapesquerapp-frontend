@@ -243,10 +243,21 @@ export default function ImagenesTab({ palletId }: ImagenesTabProps) {
   const [lightboxAtt, setLightboxAtt] = useState<PalletAttachment | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [notes, setNotes] = useState('');
   const [hasCamera, setHasCamera] = useState(false);
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!pendingFile) {
+      setPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(pendingFile);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [pendingFile]);
 
   useEffect(() => {
     let cancelled = false;
@@ -294,6 +305,15 @@ export default function ImagenesTab({ palletId }: ImagenesTabProps) {
 
         {pendingFile ? (
           <div className="space-y-2">
+            {previewUrl && (
+              <div className="overflow-hidden rounded-xl border bg-muted/30">
+                <img
+                  src={previewUrl}
+                  alt={`Vista previa de ${pendingFile.name}`}
+                  className="aspect-video w-full object-cover"
+                />
+              </div>
+            )}
             <div className="flex items-center gap-3 rounded-xl border bg-primary/5 p-3">
               <ImageIcon className="h-5 w-5 flex-shrink-0 text-primary" />
               <div className="min-w-0 flex-1">

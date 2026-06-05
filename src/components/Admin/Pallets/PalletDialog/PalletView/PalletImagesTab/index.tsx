@@ -252,7 +252,18 @@ function UploadZone({ onFile, isUploading }: UploadZoneProps) {
   const [dragging, setDragging] = useState(false);
   const [notes, setNotes] = useState('');
   const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!pendingFile) {
+      setPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(pendingFile);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [pendingFile]);
 
   const handleFiles = (files: FileList | null) => {
     if (!files?.length) return;
@@ -299,7 +310,15 @@ function UploadZone({ onFile, isUploading }: UploadZoneProps) {
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         ) : pendingFile ? (
           <>
-            <ImageIcon className="h-6 w-6 text-primary" />
+            {previewUrl && (
+              <div className="w-full overflow-hidden rounded-lg border bg-muted/30">
+                <img
+                  src={previewUrl}
+                  alt={`Vista previa de ${pendingFile.name}`}
+                  className="aspect-video w-full object-cover"
+                />
+              </div>
+            )}
             <p className="max-w-full truncate text-center text-sm font-medium text-foreground">
               {pendingFile.name}
             </p>
