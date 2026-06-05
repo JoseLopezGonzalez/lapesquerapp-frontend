@@ -1,6 +1,7 @@
 'use client';
 import { useQuery } from '@tanstack/react-query';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
+import { supplierLiquidationKeys } from '@/lib/routes/queryKeys';
 import { getSuppliersWithActivity } from '@/services/domain/supplier-liquidations/supplierLiquidationService';
 
 export function useSuppliersWithActivity(params: {
@@ -13,7 +14,7 @@ export function useSuppliersWithActivity(params: {
   const hasDates = !!startDate && !!endDate && startDate <= endDate;
 
   return useQuery({
-    queryKey: ['suppliers-with-activity', tenantId ?? 'unknown', startDate, endDate],
+    queryKey: supplierLiquidationKeys.suppliersWithActivity(tenantId, startDate, endDate),
     queryFn: () => getSuppliersWithActivity(startDate!, endDate!),
     enabled: !!tenantId && enabled && !!hasDates,
   });

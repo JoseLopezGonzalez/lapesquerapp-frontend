@@ -1,6 +1,7 @@
 'use client';
 import { useQuery } from '@tanstack/react-query';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
+import { supplierLiquidationKeys } from '@/lib/routes/queryKeys';
 import { getSupplierLiquidationDetails } from '@/services/domain/supplier-liquidations/supplierLiquidationService';
 
 export function useSupplierLiquidationDetails(params: {
@@ -14,13 +15,7 @@ export function useSupplierLiquidationDetails(params: {
   const hasParams = !!supplierId && !!startDate && !!endDate;
 
   return useQuery({
-    queryKey: [
-      'supplier-liquidation-details',
-      tenantId ?? 'unknown',
-      supplierId,
-      startDate,
-      endDate,
-    ],
+    queryKey: supplierLiquidationKeys.detail(tenantId, supplierId, startDate, endDate),
     queryFn: () => getSupplierLiquidationDetails(supplierId!, startDate!, endDate!),
     enabled: !!tenantId && enabled && !!hasParams,
   });

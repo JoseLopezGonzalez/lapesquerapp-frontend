@@ -24,6 +24,7 @@ import {
   Printer,
   FileText,
   ShoppingCart,
+  Lock,
 } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
@@ -55,6 +56,7 @@ import {
   formatDecimalCurrency,
 } from '@/helpers/formats/numbers/formatNumbers';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import {
@@ -139,6 +141,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
   const [creationMode, setCreationMode] = useState(null); // 'lines', 'pallets', or null (old receptions)
   const [canEdit, setCanEdit] = useState(true);
   const [cannotEditReason, setCannotEditReason] = useState(null);
+  const [supplierLiquidationId, setSupplierLiquidationId] = useState(null);
   // Estados para modo 'pallets'
   const [temporalPallets, setTemporalPallets] = useState([]);
   const [isPalletDialogOpen, setIsPalletDialogOpen] = useState(false);
@@ -417,6 +420,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
 
         // Si podemos editar (total o parcial o por palet vinculado), permitir la carga
         const finalCanEdit = canEditFull || canEditPartial || canEditDespiteLinkedPallet;
+        setSupplierLiquidationId(reception.supplier_liquidation_id ?? null);
         setCanEdit(finalCanEdit);
         setCannotEditReason(canEditPartial || canEditDespiteLinkedPallet ? null : cannotEditReason);
 
@@ -1226,6 +1230,14 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
           </AlertDescription>
         </Alert>
 
+        {supplierLiquidationId != null && (
+          <div className="mb-4 flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-4 py-2.5">
+            <Lock className="h-4 w-4 text-muted-foreground shrink-0" />
+            <span className="text-sm text-muted-foreground">Esta recepción pertenece a una liquidación cerrada</span>
+            <Badge variant="secondary" className="ml-auto">Liquidada</Badge>
+          </div>
+        )}
+
         <div className="flex flex-col gap-6">
           <Card>
             <CardContent className="pt-6">
@@ -1553,6 +1565,14 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
           </Button>
         </div>
       </div>
+
+      {supplierLiquidationId != null && (
+        <div className="mb-2 flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-4 py-2.5">
+          <Lock className="h-4 w-4 text-muted-foreground shrink-0" />
+          <span className="text-sm text-muted-foreground">Esta recepción pertenece a una liquidación cerrada</span>
+          <Badge variant="secondary" className="ml-auto">Liquidada</Badge>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit(handleUpdate)} className="flex flex-col gap-8">
         {/* Supplier and Date Section */}

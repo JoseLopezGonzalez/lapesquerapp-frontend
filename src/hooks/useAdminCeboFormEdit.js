@@ -68,6 +68,7 @@ export function useAdminCeboFormEdit({ dispatchId, onSuccess }) {
 
   const [loading, setLoading] = useState(true);
   const [recalcKey, setRecalcKey] = useState(0);
+  const [supplierLiquidationId, setSupplierLiquidationId] = useState(null);
   const loadedIdRef = useRef(null);
 
   const {
@@ -180,6 +181,7 @@ export function useAdminCeboFormEdit({ dispatchId, onSuccess }) {
         if (values) {
           reset(values);
         }
+        setSupplierLiquidationId(dispatch?.supplier_liquidation_id ?? null);
         loadedIdRef.current = dispatchId;
       })
       .catch(() => {
@@ -331,5 +333,6 @@ export function useAdminCeboFormEdit({ dispatchId, onSuccess }) {
     announce,
     Announcer,
     loading,
+    supplierLiquidationId,
   };
 }

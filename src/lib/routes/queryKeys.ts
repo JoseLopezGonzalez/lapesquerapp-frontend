@@ -213,6 +213,31 @@ export const settingsQueryKeys = {
   detail: (tenantId: string | null | undefined) => ['settings', tenantId ?? 'unknown'] as const,
 };
 
+export const supplierLiquidationKeys = {
+  detailPrefix: (
+    tenantId: string | null | undefined,
+    supplierId: number | string | null | undefined
+  ) => ['supplier-liquidation-details', tenantId ?? 'unknown', supplierId] as const,
+  detail: (
+    tenantId: string | null | undefined,
+    supplierId: number | string | null | undefined,
+    startDate: string | undefined,
+    endDate: string | undefined
+  ) =>
+    [
+      'supplier-liquidation-details',
+      tenantId ?? 'unknown',
+      supplierId,
+      startDate,
+      endDate,
+    ] as const,
+  suppliersWithActivity: (
+    tenantId: string | null | undefined,
+    startDate: string | undefined,
+    endDate: string | undefined
+  ) => ['suppliers-with-activity', tenantId ?? 'unknown', startDate, endDate] as const,
+};
+
 export const palletAttachmentKeys = {
   listPrefix: (tenantId: string | null | undefined, palletId: number | string | null | undefined) =>
     ['pallets', 'attachments', tenantId ?? 'unknown', palletId] as const,

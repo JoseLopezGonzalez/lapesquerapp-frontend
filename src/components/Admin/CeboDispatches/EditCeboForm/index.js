@@ -2,7 +2,9 @@
 
 import React from 'react';
 import { Controller } from 'react-hook-form';
+import { Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -66,6 +68,7 @@ export default function EditCeboForm({ dispatchId, onSuccess }) {
     suppliersLoading,
     loading,
     Announcer,
+    supplierLiquidationId,
   } = form;
 
   if (loading) {
@@ -87,6 +90,14 @@ export default function EditCeboForm({ dispatchId, onSuccess }) {
   return (
     <div className="h-full w-full p-6">
       <Announcer />
+
+      {supplierLiquidationId != null && (
+        <div className="mb-4 flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-4 py-2.5">
+          <Lock className="h-4 w-4 text-muted-foreground shrink-0" />
+          <span className="text-sm text-muted-foreground">Esta salida de cebo pertenece a una liquidación cerrada</span>
+          <Badge variant="secondary" className="ml-auto">Liquidada</Badge>
+        </div>
+      )}
 
       <div className="mb-6 flex items-start justify-between">
         <h1 className="mb-4 text-2xl font-semibold">Editar salida de cebo</h1>

@@ -31,6 +31,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
+import { supplierLiquidationKeys } from '@/lib/routes/queryKeys';
 import { useSupplierLiquidationDetails } from '@/hooks/useSupplierLiquidationDetails';
 import {
   downloadSupplierLiquidationPdf,
@@ -129,13 +130,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
   }, [error]);
 
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
-  const liquidationQueryKey = [
-    'supplier-liquidation-details',
-    tenantId ?? 'unknown',
-    supplierId,
-    startDate,
-    endDate,
-  ];
+  const liquidationQueryKey = supplierLiquidationKeys.detail(tenantId, supplierId, startDate, endDate);
 
   const handleDownloadPdf = async () => {
     if (!startDate || !endDate || !data) return;
