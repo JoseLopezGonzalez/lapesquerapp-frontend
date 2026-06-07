@@ -1,20 +1,27 @@
-// /src/context/OrderContext.js
 'use client';
+
 import React, { createContext, useContext } from 'react';
 import { useStore } from '@/hooks/useStore';
 
-// Creamos el contexto
-const StoreContext = createContext();
+type StoreContextValue = ReturnType<typeof useStore>;
 
-// Componente proveedor del contexto
+const StoreContext = createContext<StoreContextValue | undefined>(undefined);
+
+interface StoreProviderProps {
+  storeId: string | number;
+  onUpdateCurrentStoreTotalNetWeight?: ((storeId: string | number, totalNetWeight: number) => void) | null;
+  onAddNetWeightToStore?: ((storeId: string | number, weight: number) => void) | null;
+  setIsStoreLoading?: ((loading: boolean) => void) | null;
+  children: React.ReactNode;
+}
+
 export function StoreProvider({
   storeId,
   onUpdateCurrentStoreTotalNetWeight,
   onAddNetWeightToStore,
   setIsStoreLoading,
   children,
-}) {
-  // Se obtienen los datos del pedido utilizando el hook
+}: StoreProviderProps) {
   const orderData = useStore({
     storeId,
     onUpdateCurrentStoreTotalNetWeight,
@@ -25,7 +32,6 @@ export function StoreProvider({
   return <StoreContext.Provider value={orderData}>{children}</StoreContext.Provider>;
 }
 
-// Hook para consumir el contexto fácilmente
 export function useStoreContext() {
   const context = useContext(StoreContext);
   if (!context) {

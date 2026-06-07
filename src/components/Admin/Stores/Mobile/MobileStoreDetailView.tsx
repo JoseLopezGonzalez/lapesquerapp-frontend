@@ -74,6 +74,7 @@ export function MobileStoreDetailView({
     isPositionRelevant,
     isPositionFilled,
     palletDialogData,
+    palletDialogInitialTab,
     clonedPalletData,
     updateStoreWhenOnChangePallet,
     openPalletDialog,
@@ -285,6 +286,7 @@ export function MobileStoreDetailView({
         initialStoreId={storeId}
         onCloseDialog={closePalletDialog}
         initialPallet={clonedPalletData}
+        initialTab={palletDialogInitialTab}
       />
       <PalletLabelDialog
         isOpen={isOpenPalletLabelDialog}
