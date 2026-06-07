@@ -87,13 +87,13 @@ export function MobileStoreDetailView({
     filters,
   } = useStoreContext();
 
-  const storeId = store?.id || passedStoreId;
+  const storeId = (store?.id as string | number | undefined) || passedStoreId;
   const isGhostStore =
     storeId === REGISTERED_PALLETS_STORE_ID ||
     passedStoreId === REGISTERED_PALLETS_STORE_ID ||
     store?.name === 'En espera';
 
-  const displayStoreName = passedStoreName || store?.name || 'Almacén';
+  const displayStoreName = (passedStoreName || (store?.name as string | undefined) || 'Almacén') as string;
 
   const activeFilterCount =
     (filters?.products?.length ?? 0) + (filters?.pallets?.length ?? 0);

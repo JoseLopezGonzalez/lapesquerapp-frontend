@@ -25,7 +25,7 @@ export default function PalletKanbanView() {
 
   if (!isGhostStore) return null;
 
-  const allPallets = (store?.content?.pallets || []) as Array<{
+  const allPallets = ((store?.content as { pallets?: unknown[] } | undefined)?.pallets || []) as Array<{
     id: string | number;
     lots: string[];
     [key: string]: unknown;

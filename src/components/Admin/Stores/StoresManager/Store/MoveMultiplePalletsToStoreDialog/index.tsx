@@ -67,7 +67,7 @@ export default function MoveMultiplePalletsToStoreDialog() {
   };
 
   const allPallets = useMemo(() => {
-    return store?.content?.pallets || [];
+    return (store?.content as { pallets?: unknown[] } | undefined)?.pallets || [];
   }, [store]);
 
   const filteredStores = storeOptions.filter((s) =>
