@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { REGISTERED_PALLETS_STORE_ID } from '@/hooks/useStores';
 import { useStoreData } from '@/hooks/useStoreData';
 import { useStorePositions } from '@/hooks/useStorePositions';
-import { useStoreDialogs } from '@/hooks/useStoreDialogs';
+import { useStoreDialogs, type StoreData } from '@/hooks/useStoreDialogs';
 
 interface UseStoreParams {
   storeId: string | number;
@@ -31,7 +31,7 @@ export function useStore({
     storeId,
     setIsStoreLoading,
   });
-  const [store, setStore] = useState<Record<string, unknown> | null>(null);
+  const [store, setStore] = useState<StoreData | null>(null);
 
   useEffect(() => {
     setStore(fetchedStore ?? null);

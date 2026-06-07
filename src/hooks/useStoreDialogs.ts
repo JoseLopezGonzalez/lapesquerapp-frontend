@@ -5,12 +5,12 @@ import { getAvailableNetWeight } from '@/helpers/pallet/boxAvailability';
 import { useRef, useState } from 'react';
 import { notify } from '@/lib/notifications';
 
-interface StoreBox {
+export interface StoreBox {
   netWeight?: number;
   [key: string]: unknown;
 }
 
-interface StorePallet {
+export interface StorePallet {
   id: string | number;
   boxes?: StoreBox[];
   store?: { id: string | number } | null;
@@ -20,7 +20,7 @@ interface StorePallet {
   [key: string]: unknown;
 }
 
-interface StoreData {
+export interface StoreData {
   id: string | number;
   name?: string;
   content?: { pallets?: StorePallet[] };
