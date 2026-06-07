@@ -27,6 +27,7 @@ interface MobilePalletViewProps {
   onSaveTemporal?: ((pallet: PalletState) => void) | null;
   initialPallet?: PalletState | null;
   readOnly?: boolean;
+  initialTab?: string;
 }
 
 export default function MobilePalletView({
@@ -37,13 +38,16 @@ export default function MobilePalletView({
   onSaveTemporal = null,
   initialPallet = null,
   readOnly: readOnlyProp = false,
+  initialTab,
 }: MobilePalletViewProps) {
   const { data: session } = useSession();
   const externalActor = isExternalActor(session?.user);
   const canEditCost = canManagePalletCostFields(session?.user);
 
   const isNew = !palletId || palletId === 'new' || String(palletId).startsWith('temp-');
-  const [activeTab, setActiveTab] = useState<string>(isNew ? 'escanear' : 'cajas');
+  const [activeTab, setActiveTab] = useState<string>(
+    initialTab ?? (isNew ? 'escanear' : 'cajas')
+  );
 
   const {
     temporalPallet,

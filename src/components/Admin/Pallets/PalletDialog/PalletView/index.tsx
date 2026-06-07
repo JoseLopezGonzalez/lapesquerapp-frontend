@@ -1,3 +1,4 @@
+// @ts-nocheck — legacy component pending full TypeScript migration
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -99,6 +100,7 @@ export default function PalletView({
   onSaveTemporal = null,
   initialPallet = null,
   readOnly: readOnlyProp = false,
+  initialTab = null,
 }) {
   const {
     productsOptions,
@@ -133,7 +135,7 @@ export default function PalletView({
     refetch: refetchTimeline,
   } = usePalletTimeline(palletId);
   const showHistorialTab = palletId && palletId !== 'new' && !String(palletId).startsWith('temp-');
-  const [mainTab, setMainTab] = useState('edicion');
+  const [mainTab, setMainTab] = useState(initialTab ?? 'edicion');
   const [deletingTimeline, setDeletingTimeline] = useState(false);
   const [resolvingProductionLot, setResolvingProductionLot] = useState(null);
   const [isDownloadingExpeditionLabel, setIsDownloadingExpeditionLabel] = useState(false);

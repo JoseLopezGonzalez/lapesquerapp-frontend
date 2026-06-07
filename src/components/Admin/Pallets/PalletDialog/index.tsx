@@ -23,6 +23,7 @@ interface PalletDialogProps {
   onSaveTemporal?: ((pallet: PalletState) => void) | null;
   initialPallet?: PalletState | null;
   readOnly?: boolean;
+  initialTab?: string | null;
 }
 
 export default function PalletDialog({
@@ -35,6 +36,7 @@ export default function PalletDialog({
   onSaveTemporal = null,
   initialPallet = null,
   readOnly = false,
+  initialTab = null,
 }: PalletDialogProps) {
   const { data: session } = useSession();
   const externalActor = isExternalActor(session?.user);
@@ -125,6 +127,7 @@ export default function PalletDialog({
                 onSaveTemporal={(onSaveTemporal ? handleSaveTemporal : null) as null | undefined}
                 initialPallet={initialPallet as null | undefined}
                 readOnly={readOnly}
+                initialTab={initialTab ?? undefined}
               />
             ) : (
               <PalletView
@@ -136,6 +139,7 @@ export default function PalletDialog({
                 onSaveTemporal={(onSaveTemporal ? handleSaveTemporal : null) as null | undefined}
                 initialPallet={initialPallet as null | undefined}
                 readOnly={readOnly}
+                initialTab={initialTab ?? undefined}
               />
             )}
           </div>
