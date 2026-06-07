@@ -1,7 +1,7 @@
 // @ts-nocheck — legacy component pending full TypeScript migration
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import React from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
@@ -39,6 +39,7 @@ import {
   History,
   Euro,
   Images,
+  Hash,
 } from 'lucide-react';
 import { PiShrimp } from 'react-icons/pi';
 
@@ -70,6 +71,16 @@ import { Separator } from '@/components/ui/separator';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 import { Combobox } from '@/components/Shadcn/Combobox';
 import Loader from '@/components/Utilities/Loader';
@@ -280,12 +291,13 @@ export default function PalletView({
     }
   };
 
-  const handleDeleteTimeline = async () => {
+  const handleDeleteTimeline = () => {
     if (!palletId || deletingTimeline || !session?.user?.accessToken) return;
-    const confirmed = window.confirm(
-      '¿Borrar todo el historial de este palet? Esta acción no se puede deshacer.'
-    );
-    if (!confirmed) return;
+    setDeleteTimelineConfirmOpen(true);
+  };
+
+  const handleConfirmDeleteTimeline = async () => {
+    if (!palletId || !session?.user?.accessToken) return;
     setDeletingTimeline(true);
     try {
       const res = await deletePalletTimeline(palletId, session.user.accessToken);
@@ -300,11 +312,21 @@ export default function PalletView({
 
   const [selectedBox, setSelectedBox] = useState(null);
   const [activeTab, setActiveTab] = useState('disponibles');
+  const [addBoxesTab, setAddBoxesTab] = useState('lector');
+  const [deleteBoxConfirmId, setDeleteBoxConfirmId] = useState(null);
+  const [deleteTimelineConfirmOpen, setDeleteTimelineConfirmOpen] = useState(false);
+  const scannerInputRef = useRef(null);
   const [bulkActionType, setBulkActionType] = useState(null); // 'lot', 'weight', 'weightAdd' o 'product'
   const [bulkActionValue, setBulkActionValue] = useState('');
   const [weightOperation, setWeightOperation] = useState('add'); // 'add' o 'subtract'
   const [oldProductId, setOldProductId] = useState('');
   const [newProductId, setNewProductId] = useState('');
+
+  useEffect(() => {
+    if (addBoxesTab === 'lector' && scannerInputRef.current) {
+      scannerInputRef.current.focus();
+    }
+  }, [addBoxesTab]);
 
   // Obtener productos únicos disponibles en el palet
   const availableProductsInPallet = useMemo(() => {
@@ -380,7 +402,6 @@ export default function PalletView({
 
   const handleOnClickDeleteBox = (boxId) => {
     if (isReadOnly) return;
-    // Check if box is available before allowing delete
     const box = temporalPallet?.boxes?.find((b) => b.id === boxId);
     if (box && !isBoxAvailable(box)) {
       const productionInfo = getBoxProductionInfo(box);
@@ -393,7 +414,14 @@ export default function PalletView({
       });
       return;
     }
-    editPallet.box.delete(boxId);
+    setDeleteBoxConfirmId(boxId);
+  };
+
+  const handleConfirmDeleteBox = () => {
+    if (deleteBoxConfirmId !== null) {
+      editPallet.box.delete(deleteBoxConfirmId);
+      setDeleteBoxConfirmId(null);
+    }
   };
 
   const handleOnClickDeleteAllBoxes = () => {
@@ -544,10 +572,11 @@ export default function PalletView({
                 <AlertCircle className="h-4 w-4 text-orange-600" />
                 <AlertDescription className="flex items-center gap-2">
                   <span className="text-orange-800">
-                    Este palet pertenece a una recepción. Puedes visualizar el contenido pero no
-                    editarlo.
+                    {belongsToReception
+                      ? 'Este palet pertenece a una recepción de materia prima. Solo visualización.'
+                      : 'Este palet está en modo solo lectura.'}
                   </span>
-                  {receptionId && !externalActor && (
+                  {belongsToReception && receptionId && !externalActor && (
                     <Link
                       href={`/admin/raw-material-receptions/${receptionId}/edit`}
                       className="flex items-center gap-1 text-sm font-medium text-orange-700 underline hover:text-orange-900"
@@ -571,14 +600,15 @@ export default function PalletView({
                 <TabsList className="mb-4 w-fit justify-start self-start">
                   <TabsTrigger value="edicion" className="flex items-center gap-2">
                     <Edit className="h-4 w-4" /> Edición
+                    {hasPalletChanges && (
+                      <span className="ml-1 h-2 w-2 rounded-full bg-orange-400" />
+                    )}
                   </TabsTrigger>
-                  <TabsTrigger
-                    value="acciones-masivas"
-                    className="flex items-center gap-2"
-                    disabled={isReadOnly}
-                  >
-                    <Layers className="h-4 w-4" /> Acciones Masivas
-                  </TabsTrigger>
+                  {!isReadOnly && (
+                    <TabsTrigger value="acciones-masivas" className="flex items-center gap-2">
+                      <Layers className="h-4 w-4" /> Acciones Masivas
+                    </TabsTrigger>
+                  )}
                   <TabsTrigger value="resumen" className="flex items-center gap-2">
                     <Eye className="h-4 w-4" /> Resumen
                   </TabsTrigger>
@@ -601,7 +631,7 @@ export default function PalletView({
                   {canDeletePalletData && (
                     <TabsTrigger
                       value="eliminar"
-                      className="flex items-center gap-2 bg-red-200 text-red-800 hover:bg-red-300"
+                      className="flex items-center gap-2 text-destructive data-[state=active]:text-destructive"
                       disabled={isReadOnly}
                     >
                       <Trash2 className="h-4 w-4" /> Eliminar
@@ -622,7 +652,7 @@ export default function PalletView({
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <Tabs defaultValue="lector">
+                          <Tabs value={addBoxesTab} onValueChange={setAddBoxesTab}>
                             <TabsList>
                               <TabsTrigger value="lector">
                                 <Scan />
@@ -637,11 +667,11 @@ export default function PalletView({
                                 Masiva
                               </TabsTrigger>
                               <TabsTrigger value="promedio">
-                                <Package />
+                                <Weight />
                                 Promedio
                               </TabsTrigger>
                               <TabsTrigger value="codes">
-                                <Package />
+                                <Hash />
                                 Codigos GS1
                               </TabsTrigger>
                             </TabsList>
@@ -651,12 +681,12 @@ export default function PalletView({
                               <div className="space-y-2">
                                 <Label htmlFor="codigo-escaneado">Código escaneado</Label>
                                 <Input
+                                  ref={scannerInputRef}
                                   value={boxCreationData.scannedCode}
                                   onChange={(e) => {
                                     boxCreationDataChange('scannedCode', e.target.value);
                                   }}
                                   type="text"
-                                  autoFocus
                                   id="codigo-escaneado"
                                   placeholder="Escanea aquí..."
                                   className="font-mono"
@@ -1017,7 +1047,7 @@ export default function PalletView({
                               min="0"
                               step="0.01"
                               placeholder="0.00"
-                              defaultValue={temporalPallet.palletTareWeightKg ?? ''}
+                              value={temporalPallet.palletTareWeightKg ?? ''}
                               onChange={(e) => editPallet.palletTareWeightKg(e.target.value)}
                               className="max-w-[220px] text-right"
                               disabled={isReadOnly}
@@ -1029,7 +1059,7 @@ export default function PalletView({
                           <div className="space-y-2">
                             <Label>Observaciones</Label>
                             <Textarea
-                              defaultValue={temporalPallet.observations || ''}
+                              value={temporalPallet.observations ?? ''}
                               onChange={(e) => editPallet.observations(e.target.value)}
                               className="min-h-[80px]"
                               disabled={isReadOnly}
@@ -1337,9 +1367,12 @@ export default function PalletView({
                                   </div>
                                 )}
                                 {!boxAvailable && (
-                                  <span className="text-muted-foreground text-xs">
-                                    🔒 No editable
-                                  </span>
+                                  <Badge
+                                    variant="outline"
+                                    className="cursor-default border-orange-200 bg-orange-50 text-xs text-orange-700"
+                                  >
+                                    En Producción
+                                  </Badge>
                                 )}
                               </TableCell>
                             </TableRow>
@@ -1350,14 +1383,31 @@ export default function PalletView({
                           <>
                             <div className="flex flex-shrink-0 items-center justify-between">
                               <h3 className="text-lg font-semibold">Cajas en el Palet</h3>
-                              <div className="text-muted-foreground/90 bg-foreground-50 flex items-center rounded-full px-4 py-1 text-sm">
-                                <span>{summaryData.numberOfBoxes} cajas</span>
+                              <div className="text-muted-foreground bg-muted/50 flex items-center rounded-full px-4 py-1 text-sm">
+                                <span>
+                                  <span className="text-foreground font-semibold">
+                                    {summaryData.numberOfBoxes}
+                                  </span>{' '}
+                                  cajas
+                                </span>
                                 <Separator orientation="vertical" className="mx-2 h-3" />
-                                <span>{formatDecimalWeight(summaryData.netWeight)}</span>
+                                <span className="text-foreground font-semibold">
+                                  {formatDecimalWeight(summaryData.netWeight)}
+                                </span>
                                 <Separator orientation="vertical" className="mx-2 h-3" />
-                                <span>{summaryData.totalProducts} productos</span>
+                                <span>
+                                  <span className="text-foreground font-semibold">
+                                    {summaryData.totalProducts}
+                                  </span>{' '}
+                                  productos
+                                </span>
                                 <Separator orientation="vertical" className="mx-2 h-3" />
-                                <span>{summaryData.totalLots} lotes</span>
+                                <span>
+                                  <span className="text-foreground font-semibold">
+                                    {summaryData.totalLots}
+                                  </span>{' '}
+                                  lotes
+                                </span>
                               </div>
                             </div>
 
@@ -1408,7 +1458,7 @@ export default function PalletView({
                                               Coste/kg
                                             </TableHead>
                                           )}
-                                          <TableHead className="min-w-[150px]">Estado</TableHead>
+                                          <TableHead className="w-[100px]">Acciones</TableHead>
                                         </TableRow>
                                       </TableHeader>
                                       <TableBody>
@@ -1453,8 +1503,52 @@ export default function PalletView({
                                                 <TableCell>{box.lot}</TableCell>
                                                 <TableCell>{box.gs1128}</TableCell>
                                                 <TableCell>{box.netWeight} kg</TableCell>
+                                                {canEditCost && (
+                                                  <TableCell className="text-right text-sm">
+                                                    {box.traceableCostPerKg != null ? (
+                                                      <span className="text-green-700">
+                                                        {parseFloat(box.traceableCostPerKg).toFixed(2)} €/kg
+                                                      </span>
+                                                    ) : box.manualCostPerKg != null ? (
+                                                      <span className="text-blue-600">
+                                                        {parseFloat(box.manualCostPerKg).toFixed(2)} €/kg
+                                                      </span>
+                                                    ) : (
+                                                      <span className="text-muted-foreground">—</span>
+                                                    )}
+                                                  </TableCell>
+                                                )}
                                                 <TableCell>
-                                                  {!boxAvailable && productionInfo ? (
+                                                  {boxAvailable ? (
+                                                    <div className="flex gap-1">
+                                                      <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8"
+                                                        onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          handleOnClickDuplicateBox(box.id);
+                                                        }}
+                                                        disabled={isReadOnly}
+                                                        title="Duplicar caja"
+                                                      >
+                                                        <Copy className="h-4 w-4" />
+                                                      </Button>
+                                                      <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="text-destructive h-8 w-8"
+                                                        onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          handleOnClickDeleteBox(box.id);
+                                                        }}
+                                                        disabled={isReadOnly}
+                                                        title="Eliminar caja"
+                                                      >
+                                                        <Trash2 className="h-4 w-4" />
+                                                      </Button>
+                                                    </div>
+                                                  ) : productionInfo ? (
                                                     <TooltipProvider>
                                                       <Tooltip>
                                                         <TooltipTrigger asChild>
@@ -1480,22 +1574,7 @@ export default function PalletView({
                                                         </TooltipContent>
                                                       </Tooltip>
                                                     </TooltipProvider>
-                                                  ) : (
-                                                    <TooltipProvider>
-                                                      <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                          <div className="inline-flex h-6 w-6 cursor-help items-center justify-center rounded-full border border-green-200 bg-green-100 text-green-700 transition-colors hover:bg-green-200">
-                                                            <CheckCircle className="h-3.5 w-3.5" />
-                                                          </div>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                          <p className="font-semibold">
-                                                            Disponible
-                                                          </p>
-                                                        </TooltipContent>
-                                                      </Tooltip>
-                                                    </TooltipProvider>
-                                                  )}
+                                                  ) : null}
                                                 </TableCell>
                                               </TableRow>
                                             );
@@ -1547,8 +1626,8 @@ export default function PalletView({
                                     <div className="flex h-full items-center justify-center">
                                       <EmptyState
                                         icon={
-                                          <CheckCircle
-                                            className="text-primary h-12 w-12"
+                                          <Factory
+                                            className="text-muted-foreground h-12 w-12"
                                             strokeWidth={1.5}
                                           />
                                         }
@@ -2642,7 +2721,7 @@ export default function PalletView({
               <Button
                 variant="outline"
                 onClick={handleOnClickReset}
-                disabled={saving || isReadOnly}
+                disabled={saving || isReadOnly || !hasPalletChanges}
               >
                 Deshacer
               </Button>
@@ -2663,6 +2742,55 @@ export default function PalletView({
           </div>
         )}
       </div>
+
+      {/* Confirmación: eliminar caja */}
+      <AlertDialog
+        open={deleteBoxConfirmId !== null}
+        onOpenChange={(open) => { if (!open) setDeleteBoxConfirmId(null); }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar esta caja?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción eliminará la caja del palet. No se puede deshacer una vez guardado.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleConfirmDeleteBox}
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Confirmación: borrar historial completo */}
+      <AlertDialog
+        open={deleteTimelineConfirmOpen}
+        onOpenChange={setDeleteTimelineConfirmOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Borrar todo el historial?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Se eliminará permanentemente todo el historial de este palet. Esta acción no se puede
+              deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleConfirmDeleteTimeline}
+            >
+              Borrar historial
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
