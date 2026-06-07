@@ -27,7 +27,7 @@ interface MobilePalletViewProps {
   onSaveTemporal?: ((pallet: PalletState) => void) | null;
   initialPallet?: PalletState | null;
   readOnly?: boolean;
-  initialTab?: string;
+  initialTab?: string | null;
 }
 
 export default function MobilePalletView({
