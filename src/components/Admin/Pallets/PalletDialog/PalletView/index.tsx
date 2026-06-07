@@ -102,6 +102,18 @@ import BoxesLabels from './BoxesLabels';
 import { PalletTimeline } from './PalletTimeline';
 import { canDeletePallet, canManagePalletCostFields, isExternalActor } from '@/lib/auth/actor';
 
+interface PalletViewProps {
+  palletId?: string | number | null;
+  onChange?: (...args: unknown[]) => unknown;
+  initialStoreId?: string | number | null;
+  initialOrderId?: string | number | null;
+  wrappedInDialog?: boolean;
+  onSaveTemporal?: ((pallet: unknown) => void) | null;
+  initialPallet?: unknown;
+  readOnly?: boolean;
+  initialTab?: string | null;
+}
+
 export default function PalletView({
   palletId,
   onChange = () => {},
@@ -112,7 +124,7 @@ export default function PalletView({
   initialPallet = null,
   readOnly: readOnlyProp = false,
   initialTab = null,
-}) {
+}: PalletViewProps) {
   const {
     productsOptions,
     productsLoading,
