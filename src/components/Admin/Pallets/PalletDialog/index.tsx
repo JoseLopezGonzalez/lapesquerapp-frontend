@@ -127,7 +127,7 @@ export default function PalletDialog({
                 onSaveTemporal={(onSaveTemporal ? handleSaveTemporal : null) as null | undefined}
                 initialPallet={initialPallet as null | undefined}
                 readOnly={readOnly}
-                initialTab={initialTab ?? undefined}
+                initialTab={initialTab}
               />
             ) : (
               <PalletView
@@ -139,7 +139,7 @@ export default function PalletDialog({
                 onSaveTemporal={(onSaveTemporal ? handleSaveTemporal : null) as null | undefined}
                 initialPallet={initialPallet as null | undefined}
                 readOnly={readOnly}
-                initialTab={initialTab ?? undefined}
+                initialTab={initialTab}
               />
             )}
           </div>
