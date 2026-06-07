@@ -5,16 +5,38 @@ import { getAvailableNetWeight } from '@/helpers/pallet/boxAvailability';
 import { useRef, useState } from 'react';
 import { notify } from '@/lib/notifications';
 
-/**
- * Hook para estado y handlers de diálogos/slideovers del almacén.
- * @param {Object} params
- * @param {Object} params.store - Datos del almacén
- * @param {Function} params.setStore - Setter del store
- * @param {string} [params.token] - Token de autenticación
- * @param {string} params.storeId - ID del almacén
- * @param {Function} [params.onUpdateCurrentStoreTotalNetWeight] - Callback al actualizar peso total
- * @param {Function} [params.onAddNetWeightToStore] - Callback al añadir peso a otro almacén
- */
+interface StoreBox {
+  netWeight?: number;
+  [key: string]: unknown;
+}
+
+interface StorePallet {
+  id: string | number;
+  boxes?: StoreBox[];
+  store?: { id: string | number } | null;
+  storeId?: string | number | null;
+  receptionId?: string | number | null;
+  orderId?: string | number | null;
+  [key: string]: unknown;
+}
+
+interface StoreData {
+  id: string | number;
+  name?: string;
+  content?: { pallets?: StorePallet[] };
+  totalNetWeight?: number;
+  [key: string]: unknown;
+}
+
+interface UseStoreDialogsParams {
+  store: StoreData | null;
+  setStore: React.Dispatch<React.SetStateAction<StoreData | null>>;
+  token: string | undefined;
+  storeId: string | number;
+  onUpdateCurrentStoreTotalNetWeight?: ((storeId: string | number, totalNetWeight: number) => void) | null;
+  onAddNetWeightToStore?: ((storeId: string | number, weight: number) => void) | null;
+}
+
 export function useStoreDialogs({
   store,
   setStore,
@@ -22,32 +44,37 @@ export function useStoreDialogs({
   storeId,
   onUpdateCurrentStoreTotalNetWeight,
   onAddNetWeightToStore,
-}) {
+}: UseStoreDialogsParams) {
   const [isOpenPositionSlideover, setIsOpenPositionSlideover] = useState(false);
   const [isOpenUnallocatedPositionSlideover, setIsOpenUnallocatedPositionSlideover] =
     useState(false);
-  const [selectedPosition, setSelectedPosition] = useState(null);
+  const [selectedPosition, setSelectedPosition] = useState<string | number | null>(null);
 
   const [isOpenAddElementToPositionDialog, setIsOpenAddElementToPositionDialog] = useState(false);
-  const [addElementToPositionDialogData, setAddElementToPositionDialogData] = useState(null);
+  const [addElementToPositionDialogData, setAddElementToPositionDialogData] = useState<
+    string | number | null
+  >(null);
 
   const [isOpenPalletDialog, setIsOpenPalletDialog] = useState(false);
-  const [palletDialogData, setPalletDialogData] = useState(null);
-  const [clonedPalletData, setClonedPalletData] = useState(null);
+  const [palletDialogData, setPalletDialogData] = useState<string | number | null>(null);
+  const [palletDialogInitialTab, setPalletDialogInitialTab] = useState<string | null>(null);
+  const [clonedPalletData, setClonedPalletData] = useState<StorePallet | null>(null);
   const [isDuplicatingPallet, setIsDuplicatingPallet] = useState(false);
 
   const [isOpenPalletLabelDialog, setIsOpenPalletLabelDialog] = useState(false);
-  const [palletLabelDialogData, setPalletLabelDialogData] = useState(null);
+  const [palletLabelDialogData, setPalletLabelDialogData] = useState<StorePallet | null>(null);
 
   const [isOpenMovePalletToStoreDialog, setIsOpenMovePalletToStoreDialog] = useState(false);
-  const [movePalletToStoreDialogData, setMovePalletToStoreDialogData] = useState(null);
+  const [movePalletToStoreDialogData, setMovePalletToStoreDialogData] = useState<
+    string | number | null
+  >(null);
 
   const [isOpenMoveMultiplePalletsToStoreDialog, setIsOpenMoveMultiplePalletsToStoreDialog] =
     useState(false);
 
-  const pallets = store?.content?.pallets || [];
+  const pallets: StorePallet[] = store?.content?.pallets || [];
 
-  const openPositionSlideover = (positionId) => {
+  const openPositionSlideover = (positionId: string | number) => {
     setSelectedPosition(positionId);
     setIsOpenPositionSlideover(true);
   };
@@ -58,10 +85,9 @@ export function useStoreDialogs({
   };
 
   const openUnallocatedPositionSlideover = () => setIsOpenUnallocatedPositionSlideover(true);
-
   const closeUnallocatedPositionSlideover = () => setIsOpenUnallocatedPositionSlideover(false);
 
-  const openAddElementToPosition = (id) => {
+  const openAddElementToPosition = (id: string | number) => {
     setIsOpenAddElementToPositionDialog(true);
     setAddElementToPositionDialogData(id);
   };
@@ -71,7 +97,7 @@ export function useStoreDialogs({
     setTimeout(() => setAddElementToPositionDialogData(null), 1000);
   };
 
-  const openMovePalletToStoreDialog = (palletId) => {
+  const openMovePalletToStoreDialog = (palletId: string | number) => {
     setMovePalletToStoreDialogData(palletId);
     setIsOpenMovePalletToStoreDialog(true);
   };
@@ -83,11 +109,10 @@ export function useStoreDialogs({
 
   const openMoveMultiplePalletsToStoreDialog = () =>
     setIsOpenMoveMultiplePalletsToStoreDialog(true);
-
   const closeMoveMultiplePalletsToStoreDialog = () =>
     setIsOpenMoveMultiplePalletsToStoreDialog(false);
 
-  const openPalletLabelDialog = (palletId) => {
+  const openPalletLabelDialog = (palletId: string | number) => {
     const pallet = store?.content?.pallets?.find((p) => p.id === palletId);
     if (!pallet) return;
     setPalletLabelDialogData(pallet);
@@ -99,13 +124,15 @@ export function useStoreDialogs({
     setTimeout(() => setPalletLabelDialogData(null), 1000);
   };
 
-  const openPalletDialog = (palletId) => {
+  const openPalletDialog = (palletId: string | number, initialTab: string | null = null) => {
     setPalletDialogData(palletId);
+    setPalletDialogInitialTab(initialTab);
     setIsOpenPalletDialog(true);
   };
 
   const openCreatePalletDialog = () => {
     setPalletDialogData('new');
+    setPalletDialogInitialTab(null);
     setClonedPalletData(null);
     setIsOpenPalletDialog(true);
   };
@@ -114,6 +141,7 @@ export function useStoreDialogs({
     setIsOpenPalletDialog(false);
     setTimeout(() => {
       setPalletDialogData(null);
+      setPalletDialogInitialTab(null);
       setClonedPalletData(null);
     }, 1000);
   };
@@ -121,7 +149,7 @@ export function useStoreDialogs({
   const nextBoxIdRef = useRef(Date.now());
   const generateUniqueBoxId = () => ++nextBoxIdRef.current;
 
-  const openDuplicatePalletDialog = async (palletId) => {
+  const openDuplicatePalletDialog = async (palletId: string | number) => {
     if (!token) {
       notify.error({ title: 'No se pudo obtener el token de autenticación' });
       return;
@@ -132,48 +160,59 @@ export function useStoreDialogs({
       const originalPallet = await notify.promise(getPallet(palletId, token), {
         loading: 'Duplicando...',
         success: 'Datos del palet cargados',
-        error: (error) => {
+        error: (error: unknown) => {
+          const err = error as Record<string, unknown>;
           const desc =
-            error?.userMessage ||
-            error?.data?.userMessage ||
-            error?.response?.data?.userMessage ||
-            error?.message ||
+            (err?.userMessage as string | undefined) ||
+            ((err?.data as Record<string, unknown> | undefined)?.userMessage as
+              | string
+              | undefined) ||
+            (
+              (err?.response as Record<string, unknown> | undefined)?.data as
+                | Record<string, unknown>
+                | undefined
+            )?.userMessage as string | undefined ||
+            (err?.message as string | undefined) ||
             'No se pudo cargar el palet. Intente de nuevo.';
           return { title: 'Error al duplicar el palet', description: desc };
         },
       });
 
-      const clonedPallet = {
-        ...originalPallet,
-        id: null,
+      const original = originalPallet as StorePallet;
+      const clonedPallet: StorePallet = {
+        ...original,
+        id: null as unknown as string,
         receptionId: null,
         boxes:
-          originalPallet.boxes?.map((box) => ({
+          original.boxes?.map((box) => ({
             ...box,
             id: generateUniqueBoxId(),
             new: true,
           })) ?? [],
-        store: originalPallet.store ? { id: originalPallet.store.id } : null,
-        storeId: originalPallet.storeId || originalPallet.store?.id || storeId,
+        store: original.store ? { id: original.store.id } : null,
+        storeId: original.storeId || original.store?.id || storeId,
         orderId: null,
       };
 
       setClonedPalletData(clonedPallet);
       setPalletDialogData('new');
+      setPalletDialogInitialTab(null);
       setIsOpenPalletDialog(true);
     } finally {
       setIsDuplicatingPallet(false);
     }
   };
 
-  const updateStoreWhenOnChangePallet = (updatedPallet) => {
+  const updateStoreWhenOnChangePallet = (updatedPallet: StorePallet) => {
     setStore((prevStore) => {
       if (!prevStore?.content?.pallets) return prevStore;
       const existingPallets = prevStore.content.pallets || [];
       const palletIndex = existingPallets.findIndex((p) => p.id === updatedPallet.id);
       const updatedPallets =
         palletIndex !== -1
-          ? existingPallets.map((p) => (p.id === updatedPallet.id ? { ...p, ...updatedPallet } : p))
+          ? existingPallets.map((p) =>
+              p.id === updatedPallet.id ? { ...p, ...updatedPallet } : p
+            )
           : [...existingPallets, updatedPallet];
 
       const totalNetWeight = updatedPallets.reduce(
@@ -181,10 +220,10 @@ export function useStoreDialogs({
         0
       );
 
-      const newStore = {
+      const newStore: StoreData = {
         ...prevStore,
         content: { ...prevStore.content, pallets: updatedPallets },
-        totalNetWeight: totalNetWeight,
+        totalNetWeight,
       };
 
       if (onUpdateCurrentStoreTotalNetWeight) {
@@ -198,10 +237,16 @@ export function useStoreDialogs({
     }
   };
 
-  const updateStoreWhenOnMovePalletToStore = ({ palletId, storeId: targetStoreId }) => {
+  const updateStoreWhenOnMovePalletToStore = ({
+    palletId,
+    storeId: targetStoreId,
+  }: {
+    palletId: string | number;
+    storeId: string | number;
+  }) => {
     const pallet = store?.content?.pallets?.find((p) => p.id === palletId);
     const palletTotalNetWeight =
-      pallet?.boxes?.reduce((sum, box) => sum + (box.netWeight || 0), 0) || 0;
+      pallet?.boxes?.reduce((sum, box) => sum + (Number(box.netWeight) || 0), 0) || 0;
 
     if (onAddNetWeightToStore) {
       onAddNetWeightToStore(targetStoreId, palletTotalNetWeight);
@@ -211,14 +256,14 @@ export function useStoreDialogs({
       if (!prevStore?.content?.pallets) return prevStore;
       const updatedPallets = prevStore.content.pallets.filter((p) => p.id !== palletId);
       const totalNetWeight = updatedPallets.reduce(
-        (total, pallet) => total + getAvailableNetWeight(pallet),
+        (total, p) => total + getAvailableNetWeight(p),
         0
       );
 
-      const newStore = {
+      const newStore: StoreData = {
         ...prevStore,
         content: { ...prevStore.content, pallets: updatedPallets },
-        totalNetWeight: totalNetWeight,
+        totalNetWeight,
       };
 
       if (onUpdateCurrentStoreTotalNetWeight) {
@@ -228,11 +273,17 @@ export function useStoreDialogs({
     });
   };
 
-  const updateStoreWhenOnMoveMultiplePalletsToStore = ({ palletIds, storeId: targetStoreId }) => {
+  const updateStoreWhenOnMoveMultiplePalletsToStore = ({
+    palletIds,
+    storeId: targetStoreId,
+  }: {
+    palletIds: (string | number)[];
+    storeId: string | number;
+  }) => {
     const movedPallets = store?.content?.pallets?.filter((p) => palletIds.includes(p.id)) ?? [];
     const totalMovedWeight = movedPallets.reduce((sum, pallet) => {
       const palletWeight =
-        pallet.boxes?.reduce((boxSum, box) => boxSum + (box.netWeight || 0), 0) ?? 0;
+        pallet.boxes?.reduce((boxSum, box) => boxSum + (Number(box.netWeight) || 0), 0) ?? 0;
       return sum + palletWeight;
     }, 0);
 
@@ -246,14 +297,14 @@ export function useStoreDialogs({
         (pallet) => !palletIds.includes(pallet.id)
       );
       const totalNetWeight = updatedPallets.reduce(
-        (total, pallet) => total + getAvailableNetWeight(pallet),
+        (total, p) => total + getAvailableNetWeight(p),
         0
       );
 
-      const newStore = {
+      const newStore: StoreData = {
         ...prevStore,
         content: { ...prevStore.content, pallets: updatedPallets },
-        totalNetWeight: totalNetWeight,
+        totalNetWeight,
       };
 
       if (onUpdateCurrentStoreTotalNetWeight) {
@@ -282,6 +333,7 @@ export function useStoreDialogs({
 
     isOpenPalletDialog,
     palletDialogData,
+    palletDialogInitialTab,
     clonedPalletData,
     isDuplicatingPallet,
     openPalletDialog,

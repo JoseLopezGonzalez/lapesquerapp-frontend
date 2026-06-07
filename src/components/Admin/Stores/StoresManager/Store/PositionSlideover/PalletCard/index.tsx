@@ -386,7 +386,12 @@ export default function PalletCard({ pallet, isFlipped = false, onFlip }: Pallet
             )}
           </div>
 
-          <PalletImageStrip palletId={pallet.id} />
+          <PalletImageStrip
+            palletId={pallet.id}
+            onClickStrip={
+              !externalActor ? () => openPalletDialog(pallet.id, 'imagenes') : undefined
+            }
+          />
 
           {/* Stats footer */}
           <div className="grid grid-cols-2 divide-x border-t">

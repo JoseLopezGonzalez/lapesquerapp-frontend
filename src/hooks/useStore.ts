@@ -7,14 +7,21 @@ import { useStoreData } from '@/hooks/useStoreData';
 import { useStorePositions } from '@/hooks/useStorePositions';
 import { useStoreDialogs } from '@/hooks/useStoreDialogs';
 
+interface UseStoreParams {
+  storeId: string | number;
+  onUpdateCurrentStoreTotalNetWeight?: ((storeId: string | number, totalNetWeight: number) => void) | null;
+  onAddNetWeightToStore?: ((storeId: string | number, weight: number) => void) | null;
+  setIsStoreLoading?: ((loading: boolean) => void) | null;
+}
+
 export function useStore({
   storeId,
   onUpdateCurrentStoreTotalNetWeight,
   onAddNetWeightToStore,
   setIsStoreLoading,
-}) {
+}: UseStoreParams) {
   const { data: session } = useSession();
-  const token = session?.user?.accessToken;
+  const token = session?.user?.accessToken as string | undefined;
 
   const {
     store: fetchedStore,
@@ -24,7 +31,7 @@ export function useStore({
     storeId,
     setIsStoreLoading,
   });
-  const [store, setStore] = useState(null);
+  const [store, setStore] = useState<Record<string, unknown> | null>(null);
 
   useEffect(() => {
     setStore(fetchedStore ?? null);
@@ -74,6 +81,7 @@ export function useStore({
     openPalletDialog: dialogs.openPalletDialog,
     closePalletDialog: dialogs.closePalletDialog,
     palletDialogData: dialogs.palletDialogData,
+    palletDialogInitialTab: dialogs.palletDialogInitialTab,
     clonedPalletData: dialogs.clonedPalletData,
     openDuplicatePalletDialog: dialogs.openDuplicatePalletDialog,
     isDuplicatingPallet: dialogs.isDuplicatingPallet,

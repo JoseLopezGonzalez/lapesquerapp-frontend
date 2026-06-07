@@ -1,3 +1,4 @@
+// @ts-nocheck — legacy component pending full TypeScript migration
 'use client';
 
 import Map from './MapContainer/Map';
@@ -45,6 +46,7 @@ export const StoreContent = ({ passedStoreId, passedStoreName }) => {
     isPositionRelevant,
     isPositionFilled,
     palletDialogData,
+    palletDialogInitialTab,
     clonedPalletData,
     updateStoreWhenOnChangePallet,
     openCreatePalletDialog,
@@ -114,6 +116,7 @@ export const StoreContent = ({ passedStoreId, passedStoreName }) => {
           initialStoreId={storeId}
           onCloseDialog={closePalletDialog}
           initialPallet={clonedPalletData}
+          initialTab={palletDialogInitialTab}
         />
         <PalletLabelDialog
           isOpen={isOpenPalletLabelDialog}
@@ -200,6 +203,7 @@ export const StoreContent = ({ passedStoreId, passedStoreName }) => {
           initialStoreId={storeId}
           onCloseDialog={closePalletDialog}
           initialPallet={clonedPalletData}
+          initialTab={palletDialogInitialTab}
         />
         <PalletLabelDialog
           isOpen={isOpenPalletLabelDialog}
