@@ -41,6 +41,7 @@ import PalletLabelDialog from '../../Pallets/PalletLabelDialog';
 import MovePalletToStoreDialog from '../StoresManager/Store/MovePalletToStoreDialog';
 import MoveMultiplePalletsToStoreDialog from '../StoresManager/Store/MoveMultiplePalletsToStoreDialog';
 import PalletDialog from '@/components/Admin/Pallets/PalletDialog';
+import { type PalletState } from '@/hooks/usePallet';
 import { PalletsListDialog } from '../StoresManager/Store/PalletsListDialog';
 import { ProductSummaryDialog } from '../StoresManager/Store/ProductSummaryDialog';
 import { MobilePalletQrScanner } from './MobilePalletQrScanner';
@@ -286,7 +287,7 @@ export function MobileStoreDetailView({
         onChange={updateStoreWhenOnChangePallet as (...args: unknown[]) => unknown}
         initialStoreId={storeId}
         onCloseDialog={closePalletDialog}
-        initialPallet={clonedPalletData}
+        initialPallet={clonedPalletData as PalletState | null}
         initialTab={palletDialogInitialTab}
       />
       <PalletLabelDialog
