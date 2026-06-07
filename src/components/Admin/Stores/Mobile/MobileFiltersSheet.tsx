@@ -20,11 +20,11 @@ export function MobileFiltersSheet({ open, onOpenChange }: MobileFiltersSheetPro
 
   const selectedProducts = filters.products
     .map((product: string) => productsOptions.find((opt: { value: string }) => opt.value === product))
-    .filter(Boolean);
+    .filter((p): p is { value: string; label: string } => Boolean(p));
 
   const selectedPallets = filters.pallets
     .map((pallet: string) => palletsOptions.find((opt: { value: string }) => opt.value === pallet))
-    .filter(Boolean);
+    .filter((p): p is { value: string; label: string } => Boolean(p));
 
   const handleAddProduct = (value: string | number) => {
     if (!value || filters.products.some((p: string) => p === value)) return;
