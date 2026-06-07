@@ -100,6 +100,7 @@ export function MobileStoreDetailView({
 
   const isUnallocatedRelevant = isPositionRelevant(UNLOCATED_POSITION_ID);
   const isUnallocatedFilled = isPositionFilled(UNLOCATED_POSITION_ID);
+  const storeContent = store?.content as { pallets?: Array<{ id?: string | number }> } | undefined;
 
   const handleScannedPalletQr = (rawValue: string) => {
     const code = String(rawValue ?? '').trim();
@@ -122,8 +123,8 @@ export function MobileStoreDetailView({
     }
 
     const numericPalletId = Number(palletId);
-    const palletInStore = store?.content?.pallets?.some(
-      (pallet: { id?: string | number }) => Number(pallet.id) === numericPalletId
+    const palletInStore = storeContent?.pallets?.some(
+      (pallet) => Number(pallet.id) === numericPalletId
     );
 
     setScannerOpen(false);
@@ -243,7 +244,7 @@ export function MobileStoreDetailView({
               )}
               <DropdownMenuItem
                 onClick={openMoveMultiplePalletsToStoreDialog}
-                disabled={!store?.content?.pallets || store.content.pallets.length === 0}
+                disabled={!storeContent?.pallets?.length}
               >
                 <ArrowRightLeft className="mr-2 h-4 w-4" />
                 Traspaso masivo
