@@ -283,7 +283,7 @@ export function MobileStoreDetailView({
       <PalletDialog
         isOpen={isOpenPalletDialog}
         palletId={palletDialogData}
-        onChange={updateStoreWhenOnChangePallet}
+        onChange={updateStoreWhenOnChangePallet as (...args: unknown[]) => unknown}
         initialStoreId={storeId}
         onCloseDialog={closePalletDialog}
         initialPallet={clonedPalletData}
