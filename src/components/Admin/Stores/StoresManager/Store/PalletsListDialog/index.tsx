@@ -147,7 +147,7 @@ export function PalletsListDialog({ open, onOpenChange }: PalletsListDialogProps
       ).join(', ');
       const lots =
         fullPallet && Array.isArray(fullPallet.lots) ? fullPallet.lots.join(', ') : '';
-      const observations = fullPallet?.observations ?? '';
+      const observations = String(fullPallet?.observations ?? '');
 
       return {
         Palet: p.id,
@@ -303,7 +303,7 @@ export function PalletsListDialog({ open, onOpenChange }: PalletsListDialogProps
                   ).join('\n');
 
                   const lots = Array.isArray(fullPallet.lots) ? fullPallet.lots : [];
-                  const observations = fullPallet.observations ?? '';
+                  const observations = String(fullPallet.observations ?? '');
 
                   return (
                     <tr
