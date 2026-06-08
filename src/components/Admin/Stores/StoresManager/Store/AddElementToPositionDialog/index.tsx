@@ -64,7 +64,8 @@ export default function AddElementToPosition({ open }: { open: boolean }) {
   const token = session?.user?.accessToken;
 
   const onSubmit = () => {
-    assignPalletsToPosition(position, selectedPalletIds.map(Number), token ?? '')
+    if (position === null) return;
+    assignPalletsToPosition(String(position), selectedPalletIds.map(Number), token ?? '')
       .then(() => {
         notify.success({ title: 'Pallets ubicados correctamente' });
         setSelectedPalletIds([]);
