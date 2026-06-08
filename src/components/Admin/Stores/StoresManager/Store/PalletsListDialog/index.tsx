@@ -22,6 +22,7 @@ import { Edit, Printer, MapPinHouse, Copy } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { getAvailableBoxesCount, getAvailableNetWeight } from '@/helpers/pallet/boxAvailability';
 import { useSession } from 'next-auth/react';
+import type { StorePallet } from '@/hooks/useStoreDialogs';
 
 interface PalletsListDialogProps {
   open?: boolean;
@@ -40,16 +41,6 @@ interface PalletBox {
     species?: { name?: string };
     [key: string]: unknown;
   };
-  [key: string]: unknown;
-}
-
-interface StorePallet {
-  id: string | number;
-  boxes: PalletBox[];
-  lots?: string[] | string;
-  observations?: string;
-  receptionId?: string | number | null;
-  position?: string | null;
   [key: string]: unknown;
 }
 
@@ -81,7 +72,7 @@ export function PalletsListDialog({ open, onOpenChange }: PalletsListDialogProps
   const rawRole = session?.user?.role;
   const isStoreOperator = (Array.isArray(rawRole) ? rawRole[0] : rawRole) === 'operario';
 
-  const safePallets: StorePallet[] = pallets || [];
+  const safePallets: StorePallet[] = (pallets || []) as StorePallet[];
 
   useEffect(() => {
     const summary = speciesSummary as SpeciesSummaryItem[];
@@ -94,7 +85,9 @@ export function PalletsListDialog({ open, onOpenChange }: PalletsListDialogProps
     if (!selectedSpecies || !safePallets.length) return;
 
     const speciesPallets = safePallets.filter((pallet) =>
-      pallet.boxes.some((box) => box?.product?.species?.name === selectedSpecies)
+      (pallet.boxes ?? []).some(
+        (box) => (box as PalletBox).product?.species?.name === selectedSpecies
+      )
     );
 
     const search = searchText.trim().toLowerCase();
@@ -105,7 +98,9 @@ export function PalletsListDialog({ open, onOpenChange }: PalletsListDialogProps
 
         const idMatch = pallet.id?.toString()?.toLowerCase().includes(search);
 
-        const productNames = (pallet.boxes ?? []).map((box) => box?.product?.name).filter(Boolean);
+        const productNames = (pallet.boxes ?? [])
+          .map((box) => (box as PalletBox).product?.name)
+          .filter(Boolean);
         const productsMatch = productNames.some((name) =>
           (name as string).toLowerCase().includes(search)
         );
@@ -148,7 +143,7 @@ export function PalletsListDialog({ open, onOpenChange }: PalletsListDialogProps
     const data = filteredPallets.map((p) => {
       const fullPallet = safePallets.find((pa) => pa.id === p.id);
       const productNames = Array.from(
-        new Set(fullPallet?.boxes?.map((b) => b.product?.name))
+        new Set(fullPallet?.boxes?.map((b) => (b as PalletBox).product?.name))
       ).join(', ');
       const lots =
         fullPallet && Array.isArray(fullPallet.lots) ? fullPallet.lots.join(', ') : '';
@@ -302,7 +297,9 @@ export function PalletsListDialog({ open, onOpenChange }: PalletsListDialogProps
                   if (!fullPallet) return null;
 
                   const productNames = Array.from(
-                    new Set(fullPallet.boxes.map((b) => b.product?.name).filter(Boolean))
+                    new Set(
+                    (fullPallet.boxes ?? []).map((b) => (b as PalletBox).product?.name).filter(Boolean)
+                  )
                   ).join('\n');
 
                   const lots = Array.isArray(fullPallet.lots) ? fullPallet.lots : [];
