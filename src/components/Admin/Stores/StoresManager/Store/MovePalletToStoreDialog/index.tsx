@@ -46,6 +46,7 @@ export default function MovePalletToStoreDialog() {
   };
 
   const handleSubmit = () => {
+    if (!palletId) return;
     if (!selectedStoreValue) {
       notify.error({
         title: 'Almacén de destino requerido',
