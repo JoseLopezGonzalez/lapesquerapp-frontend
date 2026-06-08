@@ -29,7 +29,7 @@ export function useStore({
     error,
   } = useStoreData({
     storeId: String(storeId),
-    setIsStoreLoading,
+    setIsStoreLoading: setIsStoreLoading ?? undefined,
   });
   const [store, setStore] = useState<StoreData | null>(null);
 
