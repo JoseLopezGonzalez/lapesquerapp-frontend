@@ -41,6 +41,7 @@ export default function PositionSlideover({ onClose, position = 'A5' }: Position
   const positionData = getPosition(selectedPosition);
 
   const handleOnClickAddElement = () => {
+    if (selectedPosition === null || selectedPosition === undefined) return;
     openAddElementToPosition(selectedPosition);
   };
 
