@@ -5,6 +5,8 @@ import { Camera, Plus } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePalletAttachments } from '@/hooks/pallets/usePalletAttachments';
 import { palletAttachmentService } from '@/services/domain/pallets/palletAttachmentService';
+import { PalletLightboxDialog } from './PalletLightboxDialog';
+import { PalletUploadDialog } from './PalletUploadDialog';
 import { PalletQuickImagesDialog } from './PalletQuickImagesDialog';
 import { cn } from '@/lib/utils';
 
@@ -61,12 +63,19 @@ export function PalletImageStrip({ palletId, canInteract = true }: PalletImageSt
     perPage: STRIP_LIMIT,
   });
 
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogInitialIndex, setDialogInitialIndex] = useState<number | undefined>(undefined);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const [galleryOpen, setGalleryOpen] = useState(false);
 
-  const openAt = (index?: number) => {
-    setDialogInitialIndex(index);
-    setDialogOpen(true);
+  const openLightbox = (index: number) => {
+    setLightboxIndex(index);
+    setLightboxOpen(true);
+  };
+
+  const handleUploadSuccess = () => {
+    setUploadOpen(false);
+    setGalleryOpen(true);
   };
 
   const visible = attachments.slice(0, STRIP_LIMIT);
@@ -83,7 +92,7 @@ export function PalletImageStrip({ palletId, canInteract = true }: PalletImageSt
           </>
         )}
 
-        {/* Loaded: clickable thumbnails */}
+        {/* Loaded: clickable thumbnails → open lightbox */}
         {!isLoading &&
           visible.map((att, i) => (
             <button
@@ -95,7 +104,7 @@ export function PalletImageStrip({ palletId, canInteract = true }: PalletImageSt
                   ? 'cursor-pointer hover:scale-[1.06] hover:ring-2 hover:ring-primary/40'
                   : 'cursor-default'
               )}
-              onClick={canInteract ? () => openAt(i) : undefined}
+              onClick={canInteract ? () => openLightbox(i) : undefined}
               disabled={!canInteract}
               title={canInteract ? 'Ver imagen' : undefined}
             >
@@ -103,7 +112,7 @@ export function PalletImageStrip({ palletId, canInteract = true }: PalletImageSt
             </button>
           ))}
 
-        {/* Overflow badge */}
+        {/* Overflow badge → opens lightbox at first hidden image */}
         {!isLoading && overflow > 0 && (
           <button
             type="button"
@@ -111,7 +120,7 @@ export function PalletImageStrip({ palletId, canInteract = true }: PalletImageSt
               'flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-md bg-muted text-xs font-semibold text-muted-foreground transition-colors',
               canInteract ? 'cursor-pointer hover:bg-muted/70' : 'cursor-default'
             )}
-            onClick={canInteract ? () => openAt(STRIP_LIMIT) : undefined}
+            onClick={canInteract ? () => openLightbox(STRIP_LIMIT) : undefined}
             disabled={!canInteract}
             title={canInteract ? `Ver ${overflow} imágenes más` : undefined}
           >
@@ -124,7 +133,7 @@ export function PalletImageStrip({ palletId, canInteract = true }: PalletImageSt
           <button
             type="button"
             className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-md border-2 border-dashed border-muted-foreground/20 text-muted-foreground/50 transition-colors hover:border-primary/40 hover:bg-muted/30 hover:text-primary"
-            onClick={() => openAt(undefined)}
+            onClick={() => setUploadOpen(true)}
             title="Añadir foto"
           >
             {attachments.length === 0 && !isLoading ? (
@@ -137,12 +146,30 @@ export function PalletImageStrip({ palletId, canInteract = true }: PalletImageSt
       </div>
 
       {canInteract && (
-        <PalletQuickImagesDialog
-          palletId={palletId}
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-          initialLightboxIndex={dialogInitialIndex}
-        />
+        <>
+          {/* Lightbox: opens at clicked thumbnail index */}
+          <PalletLightboxDialog
+            palletId={palletId}
+            open={lightboxOpen}
+            onOpenChange={setLightboxOpen}
+            initialIndex={lightboxIndex}
+          />
+
+          {/* Upload: solo dialog for adding a new image */}
+          <PalletUploadDialog
+            palletId={palletId}
+            open={uploadOpen}
+            onOpenChange={setUploadOpen}
+            onUploadSuccess={handleUploadSuccess}
+          />
+
+          {/* Gallery: full view shown after a successful upload */}
+          <PalletQuickImagesDialog
+            palletId={palletId}
+            open={galleryOpen}
+            onOpenChange={setGalleryOpen}
+          />
+        </>
       )}
     </>
   );

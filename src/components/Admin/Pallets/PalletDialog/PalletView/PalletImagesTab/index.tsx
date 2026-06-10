@@ -164,7 +164,7 @@ function ImageCard({ attachment, palletId, canDelete, onDelete, onClick }: Image
   );
 }
 
-interface LightboxProps {
+export interface LightboxProps {
   attachments: PalletAttachment[];
   currentIndex: number;
   palletId: number | string;
@@ -177,7 +177,7 @@ interface LightboxProps {
   notesOverrides: Map<number, string | null>;
 }
 
-function Lightbox({
+export function Lightbox({
   attachments,
   currentIndex,
   palletId,
@@ -424,12 +424,12 @@ function Lightbox({
   );
 }
 
-interface UploadZoneProps {
+export interface UploadZoneProps {
   onFile: (file: File, notes: string) => void;
   isUploading: boolean;
 }
 
-function UploadZone({ onFile, isUploading }: UploadZoneProps) {
+export function UploadZone({ onFile, isUploading }: UploadZoneProps) {
   const [dragging, setDragging] = useState(false);
   const [notes, setNotes] = useState('');
   const [pendingFile, setPendingFile] = useState<File | null>(null);
