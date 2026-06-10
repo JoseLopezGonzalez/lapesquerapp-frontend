@@ -187,7 +187,7 @@ export function useStorePositions({ store, setStore, token }: UseStorePositionsP
       ?.sort((a, b) => Number(a.id) - Number(b.id)) ?? [];
 
   const getPosition = (positionId: string | number | null | undefined) =>
-    (store as { map?: { posiciones?: Array<{ id: string | number }> } } | null)?.map?.posiciones?.find(
+    (store as { map?: { posiciones?: Array<{ id: string | number; nombre?: string; [key: string]: unknown }> } } | null)?.map?.posiciones?.find(
       (p) => p.id === positionId
     ) ?? null;
 
