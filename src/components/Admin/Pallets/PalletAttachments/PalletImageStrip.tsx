@@ -1,13 +1,14 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { ImageIcon, Camera } from 'lucide-react';
+import { Camera, Plus } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePalletAttachments } from '@/hooks/pallets/usePalletAttachments';
 import { palletAttachmentService } from '@/services/domain/pallets/palletAttachmentService';
+import { PalletQuickImagesDialog } from './PalletQuickImagesDialog';
 import { cn } from '@/lib/utils';
 
-const STRIP_LIMIT = 4;
+const STRIP_LIMIT = 3;
 
 interface ThumbProps {
   palletId: number | string;
@@ -51,71 +52,98 @@ function AuthThumb({ palletId, attachmentId }: ThumbProps) {
 
 interface PalletImageStripProps {
   palletId: number | string;
-  /** Abre el dialog del palet en el tab de imágenes */
-  onClickStrip?: () => void;
+  /** Si false, los thumbnails y el botón añadir no son clicables (actores externos). */
+  canInteract?: boolean;
 }
 
-export function PalletImageStrip({ palletId, onClickStrip }: PalletImageStripProps) {
+export function PalletImageStrip({ palletId, canInteract = true }: PalletImageStripProps) {
   const { attachments, total, isLoading } = usePalletAttachments(palletId, {
     perPage: STRIP_LIMIT,
   });
 
-  if (isLoading) return null;
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogInitialIndex, setDialogInitialIndex] = useState<number | undefined>(undefined);
 
-  // No images: show "Añadir foto" affordance if interactive
-  if (attachments.length === 0) {
-    if (!onClickStrip) return null;
-    return (
-      <button
-        type="button"
-        className="flex w-full items-center gap-1.5 px-4 pb-3 pt-1 text-xs text-muted-foreground/60 transition-colors hover:text-muted-foreground"
-        onClick={onClickStrip}
-      >
-        <Camera className="h-3.5 w-3.5 flex-shrink-0" />
-        Añadir foto
-      </button>
-    );
-  }
+  const openAt = (index?: number) => {
+    setDialogInitialIndex(index);
+    setDialogOpen(true);
+  };
 
   const visible = attachments.slice(0, STRIP_LIMIT);
   const overflow = total - visible.length;
 
-  const inner = (
-    <>
-      {visible.map((att) => (
-        <div
-          key={att.id}
-          className={cn(
-            'relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-md',
-            onClickStrip && 'transition-transform group-hover:scale-[1.04]'
-          )}
-        >
-          <AuthThumb palletId={palletId} attachmentId={att.id} />
-        </div>
-      ))}
-      {overflow > 0 && (
-        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-md bg-muted text-xs font-semibold text-muted-foreground">
-          +{overflow}
-        </div>
-      )}
-      <ImageIcon className="ml-auto h-3.5 w-3.5 flex-shrink-0 text-muted-foreground/50" />
-    </>
-  );
-
-  if (onClickStrip) {
-    return (
-      <button
-        type="button"
-        className="group flex w-full items-center gap-1.5 px-4 pb-3 pt-1 transition-opacity hover:opacity-80"
-        onClick={onClickStrip}
-        title="Ver imágenes"
-      >
-        {inner}
-      </button>
-    );
-  }
-
   return (
-    <div className="flex items-center gap-1.5 px-4 pb-3 pt-1">{inner}</div>
+    <>
+      <div className="flex items-center gap-1.5 px-4 pb-3 pt-1">
+        {/* Loading: two skeleton thumbs to reserve height */}
+        {isLoading && (
+          <>
+            <Skeleton className="h-12 w-12 flex-shrink-0 rounded-md" />
+            <Skeleton className="h-12 w-12 flex-shrink-0 rounded-md" />
+          </>
+        )}
+
+        {/* Loaded: clickable thumbnails */}
+        {!isLoading &&
+          visible.map((att, i) => (
+            <button
+              key={att.id}
+              type="button"
+              className={cn(
+                'relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-md transition-transform',
+                canInteract
+                  ? 'cursor-pointer hover:scale-[1.06] hover:ring-2 hover:ring-primary/40'
+                  : 'cursor-default'
+              )}
+              onClick={canInteract ? () => openAt(i) : undefined}
+              disabled={!canInteract}
+              title={canInteract ? 'Ver imagen' : undefined}
+            >
+              <AuthThumb palletId={palletId} attachmentId={att.id} />
+            </button>
+          ))}
+
+        {/* Overflow badge */}
+        {!isLoading && overflow > 0 && (
+          <button
+            type="button"
+            className={cn(
+              'flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-md bg-muted text-xs font-semibold text-muted-foreground transition-colors',
+              canInteract ? 'cursor-pointer hover:bg-muted/70' : 'cursor-default'
+            )}
+            onClick={canInteract ? () => openAt(STRIP_LIMIT) : undefined}
+            disabled={!canInteract}
+            title={canInteract ? `Ver ${overflow} imágenes más` : undefined}
+          >
+            +{overflow}
+          </button>
+        )}
+
+        {/* Add button — always shown when canInteract, same size as thumbnails */}
+        {canInteract && (
+          <button
+            type="button"
+            className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-md border-2 border-dashed border-muted-foreground/20 text-muted-foreground/50 transition-colors hover:border-primary/40 hover:bg-muted/30 hover:text-primary"
+            onClick={() => openAt(undefined)}
+            title="Añadir foto"
+          >
+            {attachments.length === 0 && !isLoading ? (
+              <Camera className="h-4 w-4" />
+            ) : (
+              <Plus className="h-4 w-4" />
+            )}
+          </button>
+        )}
+      </div>
+
+      {canInteract && (
+        <PalletQuickImagesDialog
+          palletId={palletId}
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          initialLightboxIndex={dialogInitialIndex}
+        />
+      )}
+    </>
   );
 }

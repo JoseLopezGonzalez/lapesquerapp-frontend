@@ -559,9 +559,10 @@ function UploadZone({ onFile, isUploading }: UploadZoneProps) {
 
 interface PalletImagesTabProps {
   palletId: number | string;
+  initialLightboxIndex?: number;
 }
 
-export default function PalletImagesTab({ palletId }: PalletImagesTabProps) {
+export default function PalletImagesTab({ palletId, initialLightboxIndex }: PalletImagesTabProps) {
   const { data: session } = useSession();
   const rawRole = session?.user?.role;
   const roles: string[] = Array.isArray(rawRole) ? rawRole : rawRole ? [rawRole] : [];
@@ -573,6 +574,20 @@ export default function PalletImagesTab({ palletId }: PalletImagesTabProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [notesOverrides, setNotesOverrides] = useState<Map<number, string | null>>(new Map());
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+
+  const initialIndexApplied = useRef(false);
+
+  // Auto-open lightbox at initialLightboxIndex once attachments are available
+  useEffect(() => {
+    if (
+      initialLightboxIndex !== undefined &&
+      !initialIndexApplied.current &&
+      attachments.length > 0
+    ) {
+      initialIndexApplied.current = true;
+      setLightboxIndex(Math.min(initialLightboxIndex, attachments.length - 1));
+    }
+  }, [attachments.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Clamp lightboxIndex when attachments update (e.g. after deletion)
   useEffect(() => {
