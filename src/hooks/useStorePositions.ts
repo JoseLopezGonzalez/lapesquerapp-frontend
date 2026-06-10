@@ -49,7 +49,7 @@ export function useStorePositions({ store, setStore, token }: UseStorePositionsP
   }, [store?.content?.pallets]);
 
   const palletsOptions = useMemo(
-    () => store?.content?.pallets?.map((p) => ({ value: p.id, label: p.id })) ?? [],
+    () => store?.content?.pallets?.map((p) => ({ value: p.id, label: String(p.id) })) ?? [],
     [store?.content?.pallets]
   );
 
