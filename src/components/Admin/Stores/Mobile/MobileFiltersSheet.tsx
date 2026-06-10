@@ -19,29 +19,29 @@ export function MobileFiltersSheet({ open, onOpenChange }: MobileFiltersSheetPro
     useStoreContext();
 
   const selectedProducts = filters.products
-    .map((product: string) => productsOptions.find((opt: { value: string }) => opt.value === product))
-    .filter((p): p is { value: string; label: string } => Boolean(p));
+    .map((product) => productsOptions.find((opt) => opt.value === product))
+    .filter((p): p is { value: string | number; label: string } => Boolean(p));
 
   const selectedPallets = filters.pallets
-    .map((pallet: string) => palletsOptions.find((opt: { value: string }) => opt.value === pallet))
-    .filter((p): p is { value: string; label: string } => Boolean(p));
+    .map((pallet) => palletsOptions.find((opt) => opt.value === pallet))
+    .filter((p): p is { value: string | number; label: string } => Boolean(p));
 
   const handleAddProduct = (value: string | number) => {
-    if (!value || filters.products.some((p: string) => p === value)) return;
+    if (!value || filters.products.some((p) => p === value)) return;
     onChangeFilters({ ...filters, products: [...filters.products, value] });
   };
 
   const handleRemoveProduct = (value: string | number) => {
-    onChangeFilters({ ...filters, products: filters.products.filter((p: string) => p !== value) });
+    onChangeFilters({ ...filters, products: filters.products.filter((p) => p !== value) });
   };
 
   const handleAddPallet = (value: string | number) => {
-    if (!value || filters.pallets.some((p: string) => p === value)) return;
+    if (!value || filters.pallets.some((p) => p === value)) return;
     onChangeFilters({ ...filters, pallets: [...filters.pallets, value] });
   };
 
   const handleRemovePallet = (value: string | number) => {
-    onChangeFilters({ ...filters, pallets: filters.pallets.filter((p: string) => p !== value) });
+    onChangeFilters({ ...filters, pallets: filters.pallets.filter((p) => p !== value) });
   };
 
   const handleReset = () => {
@@ -77,7 +77,7 @@ export function MobileFiltersSheet({ open, onOpenChange }: MobileFiltersSheetPro
             />
             {selectedProducts.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-2">
-                {selectedProducts.map((product: { value: string; label: string }) => (
+                {selectedProducts.map((product) => (
                   <Badge key={product.value} className="flex items-center gap-1 px-2">
                     {product.label}
                     <button
@@ -107,7 +107,7 @@ export function MobileFiltersSheet({ open, onOpenChange }: MobileFiltersSheetPro
             />
             {selectedPallets.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-2">
-                {selectedPallets.map((pallet: { value: string; label: string }) => (
+                {selectedPallets.map((pallet) => (
                   <Badge key={pallet.value} className="flex items-center gap-1 px-2">
                     {pallet.label}
                     <button
