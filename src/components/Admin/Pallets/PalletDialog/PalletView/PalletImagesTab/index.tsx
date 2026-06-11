@@ -34,7 +34,9 @@ import {
   notifyIfInvalidPalletImageFile,
 } from '@/hooks/pallets/usePalletAttachments';
 import {
-  palletAttachmentService,
+  getBlobUrlCached,
+  getThumbnailBlobUrlCached,
+  invalidateBlobUrlCache,
   type PalletAttachment,
 } from '@/services/domain/pallets/palletAttachmentService';
 import { formatDateHour } from '@/helpers/formats/dates/formatDates';
@@ -46,31 +48,26 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function useImageBlobUrl(palletId: number | string, attachmentId: number) {
+function useImageBlobUrl(palletId: number | string, attachmentId: number, thumbnail = false) {
   const [src, setSrc] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const urlRef = useRef<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    palletAttachmentService
-      .getBlobUrl(palletId, attachmentId)
+    const fetch = thumbnail
+      ? getThumbnailBlobUrlCached(palletId, attachmentId)
+      : getBlobUrlCached(palletId, attachmentId);
+    fetch
       .then((url) => {
-        if (cancelled) {
-          URL.revokeObjectURL(url);
-          return;
+        if (!cancelled) {
+          setSrc(url);
+          setLoading(false);
         }
-        urlRef.current = url;
-        setSrc(url);
-        setLoading(false);
       })
-      .catch(() => setLoading(false));
-    return () => {
-      cancelled = true;
-      if (urlRef.current) URL.revokeObjectURL(urlRef.current);
-    };
-  }, [palletId, attachmentId]);
+      .catch(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [palletId, attachmentId, thumbnail]);
 
   return { src, loading };
 }
@@ -83,7 +80,7 @@ interface ContactThumbProps {
 }
 
 function ContactThumb({ palletId, attachment, isActive, onClick }: ContactThumbProps) {
-  const { src, loading } = useImageBlobUrl(palletId, attachment.id);
+  const { src, loading } = useImageBlobUrl(palletId, attachment.id, true);
   return (
     <button
       type="button"
@@ -118,7 +115,7 @@ interface ImageCardProps {
 }
 
 function ImageCard({ attachment, palletId, canDelete, onDelete, onClick }: ImageCardProps) {
-  const { src, loading } = useImageBlobUrl(palletId, attachment.id);
+  const { src, loading } = useImageBlobUrl(palletId, attachment.id, true);
 
   return (
     <div

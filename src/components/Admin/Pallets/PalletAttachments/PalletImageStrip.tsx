@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Camera, Plus } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePalletAttachments } from '@/hooks/pallets/usePalletAttachments';
-import { palletAttachmentService } from '@/services/domain/pallets/palletAttachmentService';
+import { getThumbnailBlobUrlCached } from '@/services/domain/pallets/palletAttachmentService';
 import { PalletLightboxDialog } from './PalletLightboxDialog';
 import { PalletUploadDialog } from './PalletUploadDialog';
 import { PalletQuickImagesDialog } from './PalletQuickImagesDialog';
@@ -19,25 +19,13 @@ interface ThumbProps {
 
 function AuthThumb({ palletId, attachmentId }: ThumbProps) {
   const [src, setSrc] = useState<string | null>(null);
-  const urlRef = useRef<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    palletAttachmentService
-      .getBlobUrl(palletId, attachmentId)
-      .then((url) => {
-        if (cancelled) {
-          URL.revokeObjectURL(url);
-          return;
-        }
-        urlRef.current = url;
-        setSrc(url);
-      })
+    getThumbnailBlobUrlCached(palletId, attachmentId)
+      .then((url) => { if (!cancelled) setSrc(url); })
       .catch(() => {});
-    return () => {
-      cancelled = true;
-      if (urlRef.current) URL.revokeObjectURL(urlRef.current);
-    };
+    return () => { cancelled = true; };
   }, [palletId, attachmentId]);
 
   if (!src) return <Skeleton className="h-full w-full rounded-md" />;

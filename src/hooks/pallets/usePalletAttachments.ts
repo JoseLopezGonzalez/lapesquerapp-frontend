@@ -6,6 +6,8 @@ import { palletAttachmentKeys } from '@/lib/routes/queryKeys';
 import {
   buildPalletImageUploadFilename,
   palletAttachmentService,
+  invalidateBlobUrlCache,
+  invalidateThumbnailBlobUrlCache,
   type PalletAttachment,
 } from '@/services/domain/pallets/palletAttachmentService';
 import { notify } from '@/lib/notifications';
@@ -158,7 +160,9 @@ export function usePalletAttachments(
   const deleteMutation = useMutation({
     mutationFn: (attachmentId: number) =>
       palletAttachmentService.delete(palletId!, attachmentId),
-    onSuccess: () => {
+    onSuccess: (_data, attachmentId) => {
+      invalidateBlobUrlCache(palletId!, attachmentId);
+      invalidateThumbnailBlobUrlCache(palletId!, attachmentId);
       queryClient.invalidateQueries({ queryKey: prefixKey });
       notify.success('Imagen eliminada');
     },

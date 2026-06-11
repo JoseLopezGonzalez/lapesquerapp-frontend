@@ -117,4 +117,66 @@ export const palletAttachmentService = {
     });
     return URL.createObjectURL(blob);
   },
+
+  /** Descarga la versión thumbnail (≤300px, generada y cacheada en servidor). */
+  async getThumbnailBlobUrl(palletId: number | string, attachmentId: number): Promise<string> {
+    const token = await getAuthToken();
+    const blob: Blob = await apiRequest(`${endpoint(palletId)}/${attachmentId}/thumbnail`, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return URL.createObjectURL(blob);
+  },
 };
+
+/**
+ * Caché de sesión: attachmentId → Promise<blobUrl>
+ * La Promise se almacena (no el resultado), así múltiples componentes
+ * que pidan la misma imagen simultáneamente comparten una única petición.
+ * Las URLs persisten durante toda la sesión — no se revocan al desmontar
+ * componentes, lo que elimina re-descargas al abrir/cerrar diálogos.
+ */
+const blobUrlCache = new Map<string, Promise<string>>();
+
+export function getBlobUrlCached(
+  palletId: number | string,
+  attachmentId: number
+): Promise<string> {
+  const key = `${palletId}:${attachmentId}`;
+  if (!blobUrlCache.has(key)) {
+    blobUrlCache.set(key, palletAttachmentService.getBlobUrl(palletId, attachmentId));
+  }
+  return blobUrlCache.get(key)!;
+}
+
+/** Elimina una entrada de caché (llamar tras borrar un attachment). */
+export function invalidateBlobUrlCache(
+  palletId: number | string,
+  attachmentId: number
+): void {
+  blobUrlCache.delete(`${palletId}:${attachmentId}`);
+}
+
+/** Caché de thumbnails: misma estrategia que blobUrlCache pero para /thumbnail. */
+const thumbnailBlobUrlCache = new Map<string, Promise<string>>();
+
+export function getThumbnailBlobUrlCached(
+  palletId: number | string,
+  attachmentId: number
+): Promise<string> {
+  const key = `${palletId}:${attachmentId}`;
+  if (!thumbnailBlobUrlCache.has(key)) {
+    thumbnailBlobUrlCache.set(
+      key,
+      palletAttachmentService.getThumbnailBlobUrl(palletId, attachmentId)
+    );
+  }
+  return thumbnailBlobUrlCache.get(key)!;
+}
+
+export function invalidateThumbnailBlobUrlCache(
+  palletId: number | string,
+  attachmentId: number
+): void {
+  thumbnailBlobUrlCache.delete(`${palletId}:${attachmentId}`);
+}
