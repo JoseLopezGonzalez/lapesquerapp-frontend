@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Printer, Tag, PlusCircle, LogOut, CircleCheck } from 'lucide-react';
+import { Printer, Tag, Tags, PlusCircle, LogOut, CircleCheck } from 'lucide-react';
 import { usePrintElement } from '@/hooks/usePrintElement';
 import { notify } from '@/lib/notifications';
 import ReceptionReciboPrintContent from '@/components/Admin/RawMaterialReceptions/ReceptionPrintDialog/ReceptionReciboPrintContent';
@@ -15,15 +15,21 @@ import ReceptionReciboPrintContent from '@/components/Admin/RawMaterialReception
  * Ofrece: Imprimir recibo (directo), Imprimir letreros (nombre producto), Ir a salida de cebo (mismo proveedor), Volver al inicio.
  */
 const LABELS_PRINT_ID = 'product-labels-print-content';
+const LOT_LABELS_PRINT_ID = 'lot-labels-print-content';
 const RECIBO_PRINT_ID = 'reception-recibo-print-content';
 
 export default function ReceptionSuccessActions({ reception, onExit, createCeboHref }) {
   const router = useRouter();
   const [reciboPrintData, setReciboPrintData] = useState(null);
   const [labelsToPrint, setLabelsToPrint] = useState(null);
+  const [lotLabelsToPrint, setLotLabelsToPrint] = useState(null);
 
   const { onPrint: onPrintLabels } = usePrintElement({
     id: LABELS_PRINT_ID,
+    freeSize: true,
+  });
+  const { onPrint: onPrintLotLabels } = usePrintElement({
+    id: LOT_LABELS_PRINT_ID,
     freeSize: true,
   });
   const { onPrint: onPrintRecibo } = usePrintElement({
@@ -70,6 +76,24 @@ export default function ReceptionSuccessActions({ reception, onExit, createCeboH
     setLabelsToPrint(names);
   };
 
+  const handlePrintLotLabels = () => {
+    if (!reception) return;
+    const lots = (reception.details || [])
+      .filter((d) => d.lot)
+      .flatMap((d) => {
+        const count = Math.max(1, parseInt(d.boxes ?? 1, 10) || 1);
+        return Array.from({ length: count }, () => d.lot);
+      });
+    if (lots.length === 0) {
+      notify.error({
+        title: 'Sin lotes',
+        description: 'No hay líneas con lote en esta recepción para imprimir etiquetas.',
+      });
+      return;
+    }
+    setLotLabelsToPrint(lots);
+  };
+
   useEffect(() => {
     if (!labelsToPrint?.length) return;
     const t = setTimeout(() => {
@@ -78,6 +102,15 @@ export default function ReceptionSuccessActions({ reception, onExit, createCeboH
     }, 200);
     return () => clearTimeout(t);
   }, [labelsToPrint, onPrintLabels]);
+
+  useEffect(() => {
+    if (!lotLabelsToPrint?.length) return;
+    const t = setTimeout(() => {
+      onPrintLotLabels();
+      setLotLabelsToPrint(null);
+    }, 200);
+    return () => clearTimeout(t);
+  }, [lotLabelsToPrint, onPrintLotLabels]);
 
   useEffect(() => {
     if (!reciboPrintData) return;
@@ -173,6 +206,15 @@ export default function ReceptionSuccessActions({ reception, onExit, createCeboH
                 variant="outline"
                 size="lg"
                 className="min-h-[64px] max-w-[260px] min-w-[160px] flex-1 touch-manipulation gap-3 py-4 text-xl transition-transform active:scale-[0.98]"
+                onClick={handlePrintLotLabels}
+              >
+                <Tags className="h-6 w-6 shrink-0" />
+                Etiq. Lote
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                className="min-h-[64px] max-w-[260px] min-w-[160px] flex-1 touch-manipulation gap-3 py-4 text-xl transition-transform active:scale-[0.98]"
                 onClick={handleSalidaCebo}
               >
                 <PlusCircle className="h-6 w-6 shrink-0" />
@@ -218,6 +260,23 @@ export default function ReceptionSuccessActions({ reception, onExit, createCeboH
                 style={{ pageBreakAfter: i < labelsToPrint.length - 1 ? 'always' : 'auto' }}
               >
                 <span className="text-center text-3xl font-bold break-words">{name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Contenido oculto para impresión de etiquetas de lote: una por cada caja */}
+      {lotLabelsToPrint?.length > 0 && (
+        <div id={LOT_LABELS_PRINT_ID} className="hidden print:block">
+          <div className="space-y-4 p-4">
+            {lotLabelsToPrint.map((lot, i) => (
+              <div
+                key={`lot-${lot}-${i}`}
+                className="flex min-h-[80px] items-center justify-center rounded-lg border border-black p-6"
+                style={{ pageBreakAfter: i < lotLabelsToPrint.length - 1 ? 'always' : 'auto' }}
+              >
+                <span className="text-center text-3xl font-bold break-words">{lot}</span>
               </div>
             ))}
           </div>
