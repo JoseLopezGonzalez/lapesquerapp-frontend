@@ -10,8 +10,6 @@ import {
   DialogTrigger,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Card, CardContent } from '@/components/ui/card';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -211,72 +209,61 @@ export function PalletsListDialog({ open, onOpenChange }: PalletsListDialogProps
             <span>{formatDecimalWeight(totalWeight)}</span>
           </div>
 
-          {/* Especies */}
-          <div className="mb-6">
-            <h3 className="text-muted-foreground mb-3 text-sm font-medium">Especies</h3>
-            <ScrollArea className="w-full pb-4 whitespace-nowrap">
-              <div className="flex space-x-2 p-2">
+          {/* Especies — pills con fade a los lados estilo mobile */}
+          <div className="mb-5">
+            <h3 className="text-muted-foreground mb-2.5 text-sm font-medium">Especies</h3>
+            <div className="relative -mx-2">
+              {/* Fade izquierdo */}
+              <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-background to-transparent" />
+              {/* Fade derecho */}
+              <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-background to-transparent" />
+
+              <div className="flex gap-2 overflow-x-auto px-4 py-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {species.map((s, idx) => (
-                  <Card
+                  <button
                     key={idx}
-                    className={cn(
-                      'bg-card flex-shrink-0 cursor-pointer border hover:shadow-md',
-                      selectedSpecies === s.name ? 'shadow-foreground-400 shadow-md' : 'border-muted'
-                    )}
+                    type="button"
                     onClick={() => setSelectedSpecies(s.name)}
+                    className={cn(
+                      'flex-shrink-0 cursor-pointer rounded-full px-3.5 py-1.5 text-sm font-medium whitespace-nowrap transition-all',
+                      selectedSpecies === s.name
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/70'
+                    )}
                   >
-                    <CardContent className="flex items-center space-x-3 p-3">
-                      <div
-                        className={cn(
-                          'flex h-8 w-8 items-center justify-center rounded-full',
-                          selectedSpecies === s.name
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted text-muted-foreground'
-                        )}
-                      >
-                        <span className="text-sm font-semibold">{s.name[0]}</span>
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-baseline justify-between gap-3">
-                          <div className="truncate pr-1 text-sm font-medium" title={s.name}>
-                            {s.name}
-                          </div>
-                          <div
-                            className={cn(
-                              'rounded-sm px-1.5 py-0.5 text-xs font-medium',
-                              selectedSpecies === s.name
-                                ? 'bg-primary/10 text-primary'
-                                : 'bg-muted text-muted-foreground'
-                            )}
-                          >
-                            {s.percentage.toFixed(0)}%
-                          </div>
-                        </div>
-                        <div className="text-muted-foreground mt-0.5 text-xs">
-                          {formatDecimalWeight(s.quantity)}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                    {s.name}
+                    <span
+                      className={cn(
+                        'ml-1.5 text-xs',
+                        selectedSpecies === s.name ? 'opacity-70' : 'opacity-50'
+                      )}
+                    >
+                      {s.percentage.toFixed(0)}%
+                    </span>
+                  </button>
                 ))}
               </div>
-              <ScrollBar orientation="horizontal" />
-            </ScrollArea>
+            </div>
           </div>
 
           {/* Buscador */}
-          <div className="mb-3 flex items-center justify-between gap-2">
+          <div className="mb-3 flex items-center gap-2">
             <Input
               type="text"
-              placeholder="Buscar palet por ID, producto, lote u observaciones..."
-              className="max-w-[500px]"
+              placeholder="Buscar por ID, producto, lote…"
+              className="min-w-0 flex-1"
               value={searchText}
               onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchText(e.target.value)}
             />
-            <div className="bg-muted text-muted-foreground flex flex-shrink-0 items-center justify-center rounded-full px-3 py-1 text-xs">
+            {/* Desktop: count + peso */}
+            <div className="bg-muted text-muted-foreground hidden flex-shrink-0 items-center rounded-full px-3 py-1 text-xs sm:flex">
               {filteredPallets.length} palets
               <Separator orientation="vertical" className="bg-muted-foreground mx-2 h-3" />
               {formatDecimalWeight(filteredPallets.reduce((sum, p) => sum + p.totalWeight, 0))}
+            </div>
+            {/* Mobile: solo count */}
+            <div className="bg-muted text-muted-foreground flex-shrink-0 rounded-full px-2.5 py-1 text-xs sm:hidden">
+              {filteredPallets.length}
             </div>
           </div>
 
