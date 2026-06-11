@@ -23,6 +23,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { getAvailableBoxesCount, getAvailableNetWeight } from '@/helpers/pallet/boxAvailability';
 import { useSession } from 'next-auth/react';
 import type { StorePallet } from '@/hooks/useStoreDialogs';
+import { PalletImageStrip } from '@/components/Admin/Pallets/PalletAttachments/PalletImageStrip';
 
 interface PalletsListDialogProps {
   open?: boolean;
@@ -262,7 +263,7 @@ export function PalletsListDialog({ open, onOpenChange }: PalletsListDialogProps
           </div>
 
           {/* Buscador */}
-          <div className="mb-3 flex items-center justify-between">
+          <div className="mb-3 flex items-center justify-between gap-2">
             <Input
               type="text"
               placeholder="Buscar palet por ID, producto, lote u observaciones..."
@@ -270,19 +271,20 @@ export function PalletsListDialog({ open, onOpenChange }: PalletsListDialogProps
               value={searchText}
               onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchText(e.target.value)}
             />
-            <div className="bg-muted text-muted-foreground flex items-center justify-center rounded-full px-3 py-1 text-xs">
+            <div className="bg-muted text-muted-foreground flex flex-shrink-0 items-center justify-center rounded-full px-3 py-1 text-xs">
               {filteredPallets.length} palets
               <Separator orientation="vertical" className="bg-muted-foreground mx-2 h-3" />
               {formatDecimalWeight(filteredPallets.reduce((sum, p) => sum + p.totalWeight, 0))}
             </div>
           </div>
 
-          {/* Tabla de palets */}
-          <div className="max-h-[315px] overflow-x-auto overflow-y-auto rounded-md border">
-            <table className="w-full min-w-[580px] text-sm">
+          {/* ── DESKTOP: tabla con columna de fotos ── */}
+          <div className="hidden sm:block max-h-[315px] overflow-x-auto overflow-y-auto rounded-md border">
+            <table className="w-full min-w-[820px] text-sm">
               <thead>
                 <tr className="text-muted-foreground bg-muted text-left font-medium">
                   <th className="px-4 py-2">ID</th>
+                  <th className="px-4 py-2">Fotos</th>
                   <th className="px-4 py-2">Artículos</th>
                   <th className="px-4 py-2">Lotes</th>
                   <th className="px-4 py-2">Observaciones</th>
@@ -298,8 +300,8 @@ export function PalletsListDialog({ open, onOpenChange }: PalletsListDialogProps
 
                   const productNames = Array.from(
                     new Set(
-                    (fullPallet.boxes ?? []).map((b) => (b as PalletBox).product?.name).filter(Boolean)
-                  )
+                      (fullPallet.boxes ?? []).map((b) => (b as PalletBox).product?.name).filter(Boolean)
+                    )
                   ).join('\n');
 
                   const lots = Array.isArray(fullPallet.lots) ? fullPallet.lots : [];
@@ -310,19 +312,22 @@ export function PalletsListDialog({ open, onOpenChange }: PalletsListDialogProps
                       key={pallet.id}
                       className="border-muted hover:bg-muted/20 border-b last:border-0"
                     >
-                      <td className="px-4 py-3">{pallet.id}</td>
-                      <td className="px-4 py-3 whitespace-pre-wrap">{productNames}</td>
-                      <td className="max-w-[150px] truncate px-4 py-3" title={lots.join(', ')}>
+                      <td className="px-4 py-2 font-medium">{pallet.id}</td>
+                      <td className="py-1">
+                        <PalletImageStrip palletId={fullPallet.id} canInteract={false} />
+                      </td>
+                      <td className="px-4 py-2 whitespace-pre-wrap">{productNames}</td>
+                      <td className="max-w-[150px] truncate px-4 py-2" title={lots.join(', ')}>
                         {lots.join(', ')}
                       </td>
-                      <td className="max-w-[200px] truncate px-4 py-3" title={observations}>
+                      <td className="max-w-[200px] truncate px-4 py-2" title={observations}>
                         {observations}
                       </td>
-                      <td className="px-4 py-3 text-right">{pallet.totalBoxes}</td>
-                      <td className="px-4 py-3 text-right text-nowrap">
+                      <td className="px-4 py-2 text-right">{pallet.totalBoxes}</td>
+                      <td className="px-4 py-2 text-right text-nowrap">
                         {formatDecimalWeight(pallet.totalWeight)}
                       </td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-4 py-2 text-right">
                         <div className="flex justify-end gap-1">
                           {(() => {
                             const receptionId = fullPallet?.receptionId;
@@ -404,7 +409,110 @@ export function PalletsListDialog({ open, onOpenChange }: PalletsListDialogProps
               </tbody>
             </table>
           </div>
+
+          {/* ── MOBILE: cards apiladas ── */}
+          <div className="sm:hidden space-y-2.5">
+            {filteredPallets.map((pallet) => {
+              const fullPallet = safePallets.find((p) => p.id === pallet.id);
+              if (!fullPallet) return null;
+
+              const productNames = Array.from(
+                new Set(
+                  (fullPallet.boxes ?? []).map((b) => (b as PalletBox).product?.name).filter(Boolean)
+                )
+              ) as string[];
+
+              const lots = Array.isArray(fullPallet.lots) ? fullPallet.lots : [];
+              const observations = String(fullPallet.observations ?? '');
+
+              return (
+                <div
+                  key={pallet.id}
+                  className="overflow-hidden rounded-xl border bg-card"
+                >
+                  {/* Cabecera de la card */}
+                  <div className="flex items-center justify-between gap-2 bg-muted/40 px-3 py-2">
+                    <span className="text-sm font-semibold">Palet #{pallet.id}</span>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => openPalletDialog(pallet.id)}
+                        title="Ver / Editar"
+                      >
+                        <Edit className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => openPalletLabelDialog(pallet.id)}
+                        title="Imprimir etiqueta"
+                      >
+                        <Printer className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => openDuplicatePalletDialog(pallet.id)}
+                        disabled={isDuplicatingPallet}
+                        title="Duplicar"
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                      </Button>
+                      {!isStoreOperator && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => openMovePalletToStoreDialog(pallet.id)}
+                          title="Reubicar"
+                        >
+                          <MapPinHouse className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Cuerpo */}
+                  <div className="space-y-1.5 px-3 py-2.5">
+                    {productNames.length > 0 && (
+                      <p className="text-sm leading-snug text-foreground">
+                        {productNames.join(' · ')}
+                      </p>
+                    )}
+                    {lots.length > 0 && (
+                      <p className="text-xs text-muted-foreground">
+                        Lotes: {lots.join(', ')}
+                      </p>
+                    )}
+                    {observations && (
+                      <p className="line-clamp-1 text-xs italic text-muted-foreground">
+                        {observations}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span className="font-medium tabular-nums text-foreground">
+                        {pallet.totalBoxes}
+                      </span>
+                      <span>{pallet.totalBoxes === 1 ? 'caja' : 'cajas'}</span>
+                      <span className="opacity-40">·</span>
+                      <span className="font-medium tabular-nums text-foreground">
+                        {formatDecimalWeight(pallet.totalWeight)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Strip de fotos — usa su propio padding interno */}
+                  <PalletImageStrip palletId={fullPallet.id} canInteract={false} />
+                </div>
+              );
+            })}
+          </div>
         </div>
+
         <DialogFooter>
           <Button variant="secondary" onClick={generateExcel}>
             <PiMicrosoftExcelLogo className="mr-2" />

@@ -132,7 +132,7 @@ export function PalletImageStrip({ palletId, canInteract = true }: PalletImageSt
         {canInteract && (
           <button
             type="button"
-            className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-md border-2 border-dashed border-muted-foreground/20 text-muted-foreground/50 transition-colors hover:border-primary/40 hover:bg-muted/30 hover:text-primary"
+            className="flex h-12 w-12 flex-shrink-0 cursor-pointer items-center justify-center rounded-md border-2 border-dashed border-muted-foreground/20 text-muted-foreground/50 transition-colors hover:border-primary/40 hover:bg-muted/30 hover:text-primary"
             onClick={() => setUploadOpen(true)}
             title="Añadir foto"
           >

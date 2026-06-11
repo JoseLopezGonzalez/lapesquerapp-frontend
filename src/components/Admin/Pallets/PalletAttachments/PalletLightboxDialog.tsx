@@ -13,6 +13,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { usePalletAttachments } from '@/hooks/pallets/usePalletAttachments';
 import { Lightbox } from '@/components/Admin/Pallets/PalletDialog/PalletView/PalletImagesTab';
 
@@ -71,13 +72,24 @@ export function PalletLightboxDialog({
 
   if (!open) return null;
 
-  // Loading shell — same dark bg as the lightbox for a seamless transition
+  // Loading shell — dialog opens immediately, spinner stays contained inside
   if (isLoading || attachments.length === 0) {
-    return isLoading ? (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-        <Loader2 className="h-10 w-10 animate-spin text-white/40" />
-      </div>
-    ) : null;
+    if (!isLoading) return null;
+    return (
+      <Dialog open onOpenChange={() => onOpenChange(false)}>
+        <DialogContent
+          className="flex max-h-[95vh] flex-col gap-0 overflow-hidden p-0"
+          size="5xl"
+          aria-describedby={undefined}
+          showCloseButton={false}
+        >
+          <DialogTitle className="sr-only">Cargando imágenes…</DialogTitle>
+          <div className="flex min-h-[400px] items-center justify-center bg-zinc-950">
+            <Loader2 className="h-10 w-10 animate-spin text-white/40" />
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
   }
 
   return (
