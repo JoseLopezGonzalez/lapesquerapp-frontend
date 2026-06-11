@@ -130,11 +130,10 @@ export const palletAttachmentService = {
 };
 
 /**
- * Caché de sesión: attachmentId → Promise<blobUrl>
- * La Promise se almacena (no el resultado), así múltiples componentes
- * que pidan la misma imagen simultáneamente comparten una única petición.
- * Las URLs persisten durante toda la sesión — no se revocan al desmontar
- * componentes, lo que elimina re-descargas al abrir/cerrar diálogos.
+ * Caché de sesión: key → Promise<blobUrl>
+ * Almacena la Promise (no el resultado) para que peticiones concurrentes
+ * del mismo attachment compartan una única llamada HTTP.
+ * Los fallos se eliminan del caché para permitir reintento.
  */
 const blobUrlCache = new Map<string, Promise<string>>();
 
@@ -144,7 +143,11 @@ export function getBlobUrlCached(
 ): Promise<string> {
   const key = `${palletId}:${attachmentId}`;
   if (!blobUrlCache.has(key)) {
-    blobUrlCache.set(key, palletAttachmentService.getBlobUrl(palletId, attachmentId));
+    const promise = palletAttachmentService.getBlobUrl(palletId, attachmentId).catch((err) => {
+      blobUrlCache.delete(key);
+      throw err;
+    });
+    blobUrlCache.set(key, promise);
   }
   return blobUrlCache.get(key)!;
 }
@@ -157,7 +160,12 @@ export function invalidateBlobUrlCache(
   blobUrlCache.delete(`${palletId}:${attachmentId}`);
 }
 
-/** Caché de thumbnails: misma estrategia que blobUrlCache pero para /thumbnail. */
+/**
+ * Caché de thumbnails con fallback automático a la descarga completa.
+ * Si /thumbnail falla (404, 500, etc.), intenta /download para que la
+ * imagen siempre se muestre aunque el endpoint de thumbnail no esté listo.
+ * Si ambos fallan, elimina la entrada del caché para permitir reintento.
+ */
 const thumbnailBlobUrlCache = new Map<string, Promise<string>>();
 
 export function getThumbnailBlobUrlCached(
@@ -166,10 +174,16 @@ export function getThumbnailBlobUrlCached(
 ): Promise<string> {
   const key = `${palletId}:${attachmentId}`;
   if (!thumbnailBlobUrlCache.has(key)) {
-    thumbnailBlobUrlCache.set(
-      key,
-      palletAttachmentService.getThumbnailBlobUrl(palletId, attachmentId)
-    );
+    const promise = palletAttachmentService
+      .getThumbnailBlobUrl(palletId, attachmentId)
+      .catch(() =>
+        // Thumbnail no disponible → caer al download completo como respaldo
+        palletAttachmentService.getBlobUrl(palletId, attachmentId).catch((err) => {
+          thumbnailBlobUrlCache.delete(key);
+          throw err;
+        })
+      );
+    thumbnailBlobUrlCache.set(key, promise);
   }
   return thumbnailBlobUrlCache.get(key)!;
 }
