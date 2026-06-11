@@ -24,6 +24,7 @@ import { getAvailableBoxesCount, getAvailableNetWeight } from '@/helpers/pallet/
 import { useSession } from 'next-auth/react';
 import type { StorePallet } from '@/hooks/useStoreDialogs';
 import { PalletImageStrip } from '@/components/Admin/Pallets/PalletAttachments/PalletImageStrip';
+import PalletCard from '@/components/Admin/Stores/StoresManager/Store/PositionSlideover/PalletCard';
 
 interface PalletsListDialogProps {
   open?: boolean;
@@ -67,6 +68,7 @@ export function PalletsListDialog({ open, onOpenChange }: PalletsListDialogProps
   const [selectedSpecies, setSelectedSpecies] = useState<string | null>(null);
   const [filteredPallets, setFilteredPallets] = useState<FilteredPalletRow[]>([]);
   const [searchText, setSearchText] = useState('');
+  const [flippedId, setFlippedId] = useState<string | number | null>(null);
 
   const storeName = (store?.name as string) ?? '';
 
@@ -410,104 +412,21 @@ export function PalletsListDialog({ open, onOpenChange }: PalletsListDialogProps
             </table>
           </div>
 
-          {/* ── MOBILE: cards apiladas ── */}
-          <div className="sm:hidden space-y-2.5">
+          {/* ── MOBILE: PalletCard existente ── */}
+          <div className="sm:hidden space-y-4">
             {filteredPallets.map((pallet) => {
               const fullPallet = safePallets.find((p) => p.id === pallet.id);
               if (!fullPallet) return null;
-
-              const productNames = Array.from(
-                new Set(
-                  (fullPallet.boxes ?? []).map((b) => (b as PalletBox).product?.name).filter(Boolean)
-                )
-              ) as string[];
-
-              const lots = Array.isArray(fullPallet.lots) ? fullPallet.lots : [];
-              const observations = String(fullPallet.observations ?? '');
-
               return (
-                <div
+                <PalletCard
                   key={pallet.id}
-                  className="overflow-hidden rounded-xl border bg-card"
-                >
-                  {/* Cabecera de la card */}
-                  <div className="flex items-center justify-between gap-2 bg-muted/40 px-3 py-2">
-                    <span className="text-sm font-semibold">Palet #{pallet.id}</span>
-                    <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={() => openPalletDialog(pallet.id)}
-                        title="Ver / Editar"
-                      >
-                        <Edit className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={() => openPalletLabelDialog(pallet.id)}
-                        title="Imprimir etiqueta"
-                      >
-                        <Printer className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={() => openDuplicatePalletDialog(pallet.id)}
-                        disabled={isDuplicatingPallet}
-                        title="Duplicar"
-                      >
-                        <Copy className="h-3.5 w-3.5" />
-                      </Button>
-                      {!isStoreOperator && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7"
-                          onClick={() => openMovePalletToStoreDialog(pallet.id)}
-                          title="Reubicar"
-                        >
-                          <MapPinHouse className="h-3.5 w-3.5" />
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Cuerpo */}
-                  <div className="space-y-1.5 px-3 py-2.5">
-                    {productNames.length > 0 && (
-                      <p className="text-sm leading-snug text-foreground">
-                        {productNames.join(' · ')}
-                      </p>
-                    )}
-                    {lots.length > 0 && (
-                      <p className="text-xs text-muted-foreground">
-                        Lotes: {lots.join(', ')}
-                      </p>
-                    )}
-                    {observations && (
-                      <p className="line-clamp-1 text-xs italic text-muted-foreground">
-                        {observations}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span className="font-medium tabular-nums text-foreground">
-                        {pallet.totalBoxes}
-                      </span>
-                      <span>{pallet.totalBoxes === 1 ? 'caja' : 'cajas'}</span>
-                      <span className="opacity-40">·</span>
-                      <span className="font-medium tabular-nums text-foreground">
-                        {formatDecimalWeight(pallet.totalWeight)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Strip de fotos — usa su propio padding interno */}
-                  <PalletImageStrip palletId={fullPallet.id} canInteract={false} />
-                </div>
+                  pallet={{
+                    ...fullPallet,
+                    lots: Array.isArray(fullPallet.lots) ? (fullPallet.lots as string[]) : [],
+                  }}
+                  isFlipped={flippedId === pallet.id}
+                  onFlip={(f) => setFlippedId(f ? pallet.id : null)}
+                />
               );
             })}
           </div>
