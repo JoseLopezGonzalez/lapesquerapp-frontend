@@ -273,7 +273,7 @@ export default function ReceptionSuccessActions({ reception, onExit, createCeboH
             {lotLabelsToPrint.map((lot, i) => (
               <div
                 key={`lot-${lot}-${i}`}
-                className="flex min-h-[80px] items-center justify-center rounded-lg border border-black p-6"
+                className="flex min-h-[80px] items-center justify-center p-6"
                 style={{ pageBreakAfter: i < lotLabelsToPrint.length - 1 ? 'always' : 'auto' }}
               >
                 <span className="text-center text-3xl font-bold break-words">{lot}</span>
