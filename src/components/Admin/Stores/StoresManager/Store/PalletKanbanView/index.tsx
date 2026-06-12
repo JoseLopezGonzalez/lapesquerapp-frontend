@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useStoreContext } from '@/context/StoreContext';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import PalletCard from '../PositionSlideover/PalletCard';
-import { REGISTERED_PALLETS_STORE_ID } from '@/hooks/useStores';
 import Masonry from 'react-masonry-css';
 import { Package } from 'lucide-react';
 
@@ -21,10 +20,6 @@ export default function PalletKanbanView() {
   const [flippedId, setFlippedId] = useState<string | number | null>(null);
   const { store } = useStoreContext();
 
-  const isGhostStore = store?.id === REGISTERED_PALLETS_STORE_ID;
-
-  if (!isGhostStore) return null;
-
   const allPallets = ((store?.content as { pallets?: unknown[] } | undefined)?.pallets || []) as Array<{
     id: string | number;
     lots: string[];
@@ -40,9 +35,9 @@ export default function PalletKanbanView() {
             <Package className="text-primary h-6 w-6" strokeWidth={1.5} />
           </div>
         </div>
-        <h2 className="mt-4 text-lg font-medium tracking-tight">No hay palets registrados</h2>
+        <h2 className="mt-4 text-lg font-medium tracking-tight">No hay palets en este almacén</h2>
         <p className="text-muted-foreground mt-2 max-w-[300px] text-center text-xs whitespace-normal">
-          Los palets en estado &quot;registered&quot; aparecerán aquí.
+          Los palets de este almacén aparecerán aquí.
         </p>
       </div>
     );

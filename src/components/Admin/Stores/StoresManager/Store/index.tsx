@@ -5,7 +5,8 @@ import Map from './MapContainer/Map';
 import MapContainer from './MapContainer';
 import LoadingStoreDetails from '../LoadingStoreDetails';
 import { StoreProvider, useStoreContext } from '@/context/StoreContext';
-import { LocateFixed, Plus, ArrowRightLeft } from 'lucide-react';
+import { LocateFixed, Plus, ArrowRightLeft, MapPin, LayoutGrid } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import Filters from './Filters';
 import { Card } from '@/components/ui/card';
@@ -65,6 +66,8 @@ export const StoreContent = ({ passedStoreId, passedStoreName }) => {
     store?.id === REGISTERED_PALLETS_STORE_ID ||
     passedStoreId === REGISTERED_PALLETS_STORE_ID ||
     store?.name === 'En espera';
+
+  const [viewMode, setViewMode] = useState<'map' | 'kanban'>('map');
 
   const handleOnClickUnallocatedPosition = () => {
     // console.log("Unallocated positions clicked");
@@ -141,20 +144,62 @@ export const StoreContent = ({ passedStoreId, passedStoreName }) => {
   return (
     <>
       <div className="flex h-full w-full items-center justify-center gap-4">
-        {/* Map */}
+        {/* Map / Kanban Card */}
         <Card className="relative flex h-full w-full flex-1 items-center justify-center overflow-auto">
-          <MapContainer>
-            <Map onClickPosition={() => {}} isPositionEmpty={() => {}} />
-          </MapContainer>
+          {viewMode === 'map' ? (
+            <MapContainer>
+              <Map onClickPosition={() => {}} isPositionEmpty={() => {}} />
+            </MapContainer>
+          ) : (
+            <PalletKanbanView />
+          )}
+
+          {/* Toggle vista — esquina inferior izquierda */}
+          <div className="absolute left-4 bottom-4 z-10">
+            <div className="bg-muted inline-flex h-9 items-center justify-center gap-1 rounded-lg p-1 shadow-sm">
+              <button
+                type="button"
+                onClick={() => setViewMode('map')}
+                className={cn(
+                  'inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-all duration-200',
+                  viewMode === 'map'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:bg-muted/80 cursor-pointer'
+                )}
+                title="Vista de mapa interactivo"
+              >
+                <MapPin className={cn('h-3.5 w-3.5', viewMode === 'map' && 'text-primary')} />
+                Mapa
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('kanban')}
+                className={cn(
+                  'inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-all duration-200',
+                  viewMode === 'kanban'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:bg-muted/80 cursor-pointer'
+                )}
+                title="Vista de tarjetas"
+              >
+                <LayoutGrid className={cn('h-3.5 w-3.5', viewMode === 'kanban' && 'text-primary')} />
+                Tarjetas
+              </button>
+            </div>
+          </div>
+
+          {/* Acciones — esquina inferior derecha */}
           <div className="absolute right-4 bottom-4 z-10 flex items-center gap-2">
-            <Button
-              variant="secondary"
-              className={`flex items-center gap-2 ${fondoClasses} `}
-              onClick={handleOnClickUnallocatedPosition}
-            >
-              <LocateFixed size={24} />
-              Elementos sin ubicar
-            </Button>
+            {viewMode === 'map' && (
+              <Button
+                variant="secondary"
+                className={`flex items-center gap-2 ${fondoClasses} `}
+                onClick={handleOnClickUnallocatedPosition}
+              >
+                <LocateFixed size={24} />
+                Elementos sin ubicar
+              </Button>
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">
