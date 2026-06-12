@@ -3,7 +3,6 @@
 import React, { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useSession } from 'next-auth/react';
-import { toast } from 'sonner';
 import { useMutation } from '@tanstack/react-query';
 import {
   Dialog,
@@ -26,6 +25,9 @@ import {
 import { useSpeciesOptions } from '@/hooks/useSpeciesOptions';
 import { useCaptureZoneOptions } from '@/hooks/useProductBlockCatalogOptions';
 import { updateProduction } from '@/services/productionService';
+import { ApiError, getErrorMessage } from '@/lib/api/apiHelpers';
+import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
+import { notify } from '@/lib/notifications';
 import { Loader2, Lock } from 'lucide-react';
 
 const EMPTY_OPTION = '__none__';
@@ -75,7 +77,8 @@ export default function EditProductionHeaderDialog({ open, onOpenChange, product
     control,
     handleSubmit,
     reset,
-    formState: { isDirty },
+    setError,
+    formState: { isDirty, errors },
   } = useForm({
     defaultValues: getDefaultValues(production),
   });
@@ -109,7 +112,7 @@ export default function EditProductionHeaderDialog({ open, onOpenChange, product
       return updateProduction(production.id, payload, token);
     },
     onSuccess: async () => {
-      toast.success('Cabecera de producción actualizada');
+      notify.success('Cabecera de producción actualizada');
       onOpenChange(false);
       reset(getDefaultValues(production));
       if (onSaved) {
@@ -117,7 +120,11 @@ export default function EditProductionHeaderDialog({ open, onOpenChange, product
       }
     },
     onError: (error) => {
-      toast.error(error?.message || 'No se pudo actualizar la producción');
+      if (error instanceof ApiError && error.status === 422 && error.data?.errors) {
+        setErrorsFrom422(setError, error.data.errors);
+      } else {
+        notify.error(error instanceof ApiError ? getErrorMessage(error.data) : error?.message);
+      }
     },
   });
 
@@ -146,8 +153,12 @@ export default function EditProductionHeaderDialog({ open, onOpenChange, product
                 id="production-lot"
                 placeholder="Introduce el lote"
                 disabled={isClosed || updateMutation.isPending}
+                aria-invalid={!!errors.lot}
                 {...register('lot')}
               />
+              {errors.lot && (
+                <p className="text-xs text-red-400">* {errors.lot.message}</p>
+              )}
             </div>
 
             <div className="space-y-2">
