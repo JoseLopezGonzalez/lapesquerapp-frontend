@@ -325,13 +325,26 @@ export function QrScannerWidget({
 }: QrScannerWidgetProps) {
   const [phase, setPhase] = useState<ScanPhase>({ type: 'searching' });
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // phaseRef is kept manually in sync with every setPhase call to avoid
+  // the async gap between setState and the sync-useEffect pattern. This
+  // lets handleDetect/handleConfirm/handleClose read the current phase
+  // synchronously without stale-closure issues.
   const phaseRef = useRef<ScanPhase>(phase);
+
   const clearDetectionRef = useRef<ReturnType<typeof setTimeout>>(null);
   const autoCloseRef = useRef<ReturnType<typeof setTimeout>>(null);
 
-  useEffect(() => {
-    phaseRef.current = phase;
-  }, [phase]);
+  // Stable refs for parent callbacks so the auto-close timer never captures
+  // a stale function and the effect never re-runs due to reference changes.
+  const onScanRef = useRef(onScan);
+  const onCloseRef = useRef(onClose);
+  useEffect(() => { onScanRef.current = onScan; }, [onScan]);
+  useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
+
+  // Guard: true once onScan has been fired for the current successful scan,
+  // so manual close and auto-close can never both fire it.
+  const onScanFiredRef = useRef(false);
 
   useEffect(
     () => () => {
@@ -341,69 +354,92 @@ export function QrScannerWidget({
     [],
   );
 
-  // Auto-close after success result
+  // Auto-close 1800 ms after a successful result.
+  // Only [phase] in deps — onScan/onClose are read through refs to prevent
+  // the timer from being cancelled and rescheduled on every parent re-render.
   useEffect(() => {
     if (phase.type !== 'result' || phase.status !== 'success') return;
+    onScanFiredRef.current = false; // reset for this result
     const { rawValue } = phase;
     autoCloseRef.current = setTimeout(() => {
-      onScan(rawValue);
-      onClose();
+      if (!onScanFiredRef.current) {
+        onScanFiredRef.current = true;
+        onScanRef.current(rawValue);
+      }
+      onCloseRef.current();
     }, 1800);
     return () => clearTimeout(autoCloseRef.current ?? undefined);
-  }, [phase, onScan, onClose]);
+  }, [phase]);
 
   const handleDetect = useCallback((codes: DetectedCode[]) => {
-    const current = phaseRef.current;
-    if (current.type === 'result') return;
+    // phaseRef is kept synchronously up-to-date, so this check is safe
+    // even before React flushes the pending setPhase calls.
+    if (phaseRef.current.type === 'result') return;
 
     clearTimeout(clearDetectionRef.current ?? undefined);
 
     const code = codes[0];
     if (!code?.rawValue) return;
 
-    setPhase({
+    const newPhase: ScanPhase = {
       type: 'detected',
       rawValue: code.rawValue,
       cornerPoints: code.cornerPoints ?? [],
-    });
+    };
+    phaseRef.current = newPhase;
+    setPhase(newPhase);
 
-    // Reset to searching if QR leaves frame
+    // If the QR leaves frame, reset to searching
     clearDetectionRef.current = setTimeout(() => {
-      setPhase((prev) => (prev.type === 'detected' ? { type: 'searching' } : prev));
+      if (phaseRef.current.type === 'detected') {
+        const searching: ScanPhase = { type: 'searching' };
+        phaseRef.current = searching;
+        setPhase(searching);
+      }
     }, 800);
   }, []);
 
   const handleConfirm = useCallback(() => {
+    // phaseRef is updated synchronously so this guard prevents double-fire
+    // even when the button is tapped twice before React re-renders.
     const current = phaseRef.current;
     if (current.type !== 'detected') return;
     const { rawValue } = current;
 
     const result: QrValidateResult = validate ? validate(rawValue) : { ok: true };
+    const newPhase: ScanPhase = result.ok
+      ? { type: 'result', rawValue, status: 'success', message: successText }
+      : { type: 'result', rawValue, status: 'fail', message: result.message };
 
-    if (result.ok) {
-      playScanSuccess();
-      setPhase({ type: 'result', rawValue, status: 'success', message: successText });
-    } else {
-      playScanFail();
-      setPhase({ type: 'result', rawValue, status: 'fail', message: result.message });
-    }
+    // Update ref BEFORE setPhase so concurrent handleDetect calls see
+    // 'result' immediately and skip the detection branch.
+    phaseRef.current = newPhase;
+
+    if (result.ok) playScanSuccess();
+    else playScanFail();
+
+    setPhase(newPhase);
   }, [validate, successText]);
 
   const handleRetry = useCallback(() => {
     clearTimeout(clearDetectionRef.current ?? undefined);
-    setPhase({ type: 'searching' });
+    const searching: ScanPhase = { type: 'searching' };
+    phaseRef.current = searching;
+    onScanFiredRef.current = false;
+    setPhase(searching);
   }, []);
 
   const handleClose = useCallback(() => {
-    const current = phaseRef.current;
     clearTimeout(autoCloseRef.current ?? undefined);
     clearTimeout(clearDetectionRef.current ?? undefined);
-    // If closing during success result, fire onScan before closing
-    if (current.type === 'result' && current.status === 'success') {
-      onScan(current.rawValue);
+    // Fire onScan if closing during a successful result, but only once.
+    const current = phaseRef.current;
+    if (current.type === 'result' && current.status === 'success' && !onScanFiredRef.current) {
+      onScanFiredRef.current = true;
+      onScanRef.current(current.rawValue);
     }
-    onClose();
-  }, [onScan, onClose]);
+    onCloseRef.current();
+  }, []);
 
   const handleError = useCallback(
     (error: unknown) => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { type ChangeEvent, useState } from 'react';
+import { type ChangeEvent, useCallback, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { ChevronDown, ChevronUp, Package, Plus, RotateCcw, Scan, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Combobox } from '@/components/Shadcn/Combobox';
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
+import { parseGs1128Line } from '@/lib/gs1128Parser';
 import type { BoxCreationData, PalletBox, PalletState, ProductOption } from '@/hooks/pallets/palletHelpers';
+import type { QrValidateResult } from '@/components/Shared/QrScannerWidget';
 
 const QrScannerWidget = dynamic(
   () => import('@/components/Shared/QrScannerWidget').then((m) => ({ default: m.QrScannerWidget })),
@@ -43,6 +45,14 @@ export default function ScanTab({
 }: ScanTabProps) {
   const [scannerOpen, setScannerOpen] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
+
+  const validateGs1128 = useCallback(
+    (rawValue: string): QrValidateResult => {
+      const parsed = parseGs1128Line(rawValue, productsOptions);
+      return parsed ? { ok: true } : { ok: false, message: 'Código GS1-128 no reconocido' };
+    },
+    [productsOptions],
+  );
 
   const handleScannedCode = (rawValue: string) => {
     const code = String(rawValue ?? '').trim();
@@ -210,6 +220,7 @@ export default function ScanTab({
           onScan={handleScannedCode}
           onClose={() => setScannerOpen(false)}
           onError={() => setScannerOpen(false)}
+          validate={validateGs1128}
           statusText="Apunta al código GS1-128 de la caja"
           successText="Caja registrada"
         />
