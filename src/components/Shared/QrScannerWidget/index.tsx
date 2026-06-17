@@ -159,7 +159,6 @@ function ResultOverlay({
       className="fixed inset-0 z-[120] flex flex-col items-center justify-center px-8"
       style={{ animation: 'qr-result-in 0.25s ease-out' }}
     >
-      {/* Radial gradient */}
       <div
         className="absolute inset-0"
         style={{
@@ -169,9 +168,7 @@ function ResultOverlay({
         }}
       />
 
-      {/* Card */}
       <div className="relative z-10 flex flex-col items-center gap-6">
-        {/* QR + badge */}
         <div
           className="relative"
           style={{ animation: 'qr-result-scale 0.38s cubic-bezier(0.34,1.56,0.64,1)' }}
@@ -200,7 +197,6 @@ function ResultOverlay({
           </div>
         </div>
 
-        {/* Message */}
         <p
           className={cn(
             'text-center text-lg font-semibold drop-shadow-sm',
@@ -211,7 +207,6 @@ function ResultOverlay({
           {message}
         </p>
 
-        {/* Actions */}
         <div
           className="flex gap-3"
           style={{ animation: 'qr-result-in 0.3s ease-out 0.25s both' }}
@@ -223,7 +218,7 @@ function ResultOverlay({
               onClick={onClose}
               className="border-white/25 bg-white/10 text-white hover:bg-white/20 hover:text-white"
             >
-              Cerrar ahora
+              Cerrar escáner
             </Button>
           ) : (
             <>
@@ -326,60 +321,61 @@ export function QrScannerWidget({
   const [phase, setPhase] = useState<ScanPhase>({ type: 'searching' });
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // phaseRef is kept manually in sync with every setPhase call to avoid
-  // the async gap between setState and the sync-useEffect pattern. This
-  // lets handleDetect/handleConfirm/handleClose read the current phase
-  // synchronously without stale-closure issues.
   const phaseRef = useRef<ScanPhase>(phase);
 
-  const autoCloseRef = useRef<ReturnType<typeof setTimeout>>(null);
+  // clearDetectionRef: resets to searching when QR leaves frame (cleared/reset
+  // on every handleDetect call so it only fires if 800ms pass with no detection).
+  const clearDetectionRef = useRef<ReturnType<typeof setTimeout>>(null);
+  // autoResetRef: after a successful result, resets to searching so the user
+  // can continue scanning without reopening the scanner.
+  const autoResetRef = useRef<ReturnType<typeof setTimeout>>(null);
 
-  // Stable refs for parent callbacks so the auto-close timer never captures
-  // a stale function and the effect never re-runs due to reference changes.
   const onScanRef = useRef(onScan);
   const onCloseRef = useRef(onClose);
   useEffect(() => { onScanRef.current = onScan; }, [onScan]);
   useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
 
-  // Guard: true once onScan has been fired for the current successful scan,
-  // so manual close and auto-close can never both fire it.
   const onScanFiredRef = useRef(false);
 
   useEffect(
     () => () => {
-      clearTimeout(autoCloseRef.current ?? undefined);
+      clearTimeout(clearDetectionRef.current ?? undefined);
+      clearTimeout(autoResetRef.current ?? undefined);
     },
     [],
   );
 
-  // Auto-close 1800 ms after a successful result.
-  // Only [phase] in deps — onScan/onClose are read through refs to prevent
-  // the timer from being cancelled and rescheduled on every parent re-render.
+  // After a successful result: fire onScan immediately, then auto-reset to
+  // searching after 1500 ms so the user can scan more codes without reopening.
   useEffect(() => {
     if (phase.type !== 'result' || phase.status !== 'success') return;
-    onScanFiredRef.current = false; // reset for this result
-    const { rawValue } = phase;
-    autoCloseRef.current = setTimeout(() => {
-      if (!onScanFiredRef.current) {
-        onScanFiredRef.current = true;
-        onScanRef.current(rawValue);
-      }
-      onCloseRef.current();
-    }, 1800);
-    return () => clearTimeout(autoCloseRef.current ?? undefined);
+
+    if (!onScanFiredRef.current) {
+      onScanFiredRef.current = true;
+      onScanRef.current(phase.rawValue);
+    }
+
+    autoResetRef.current = setTimeout(() => {
+      const searching: ScanPhase = { type: 'searching' };
+      phaseRef.current = searching;
+      onScanFiredRef.current = false;
+      setPhase(searching);
+    }, 1500);
+
+    return () => clearTimeout(autoResetRef.current ?? undefined);
   }, [phase]);
 
   const handleDetect = useCallback((codes: DetectedCode[]) => {
-    // Once in result phase, stop processing — the scan is done.
     if (phaseRef.current.type === 'result') return;
+
+    clearTimeout(clearDetectionRef.current ?? undefined);
 
     const code = codes[0];
     if (!code?.rawValue) return;
 
-    // Update detected phase on every library callback so the corner-point
-    // outline tracks the code live. The phase stays 'detected' until the
-    // user explicitly presses "Leer código" or closes — there is no
-    // automatic timeout that resets back to searching.
+    // Update detected phase on every library callback (allowMultiple keeps the
+    // library calling every scanDelay ms while the code is in frame), so corner
+    // points track the code live.
     const newPhase: ScanPhase = {
       type: 'detected',
       rawValue: code.rawValue,
@@ -387,13 +383,22 @@ export function QrScannerWidget({
     };
     phaseRef.current = newPhase;
     setPhase(newPhase);
+
+    // If the library stops calling (QR left frame), reset to searching after
+    // 800 ms so the user can't confirm a code that's no longer visible.
+    clearDetectionRef.current = setTimeout(() => {
+      if (phaseRef.current.type === 'detected') {
+        const searching: ScanPhase = { type: 'searching' };
+        phaseRef.current = searching;
+        setPhase(searching);
+      }
+    }, 800);
   }, []);
 
   const handleConfirm = useCallback(() => {
-    // phaseRef is updated synchronously so this guard prevents double-fire
-    // even when the button is tapped twice before React re-renders.
     const current = phaseRef.current;
     if (current.type !== 'detected') return;
+    clearTimeout(clearDetectionRef.current ?? undefined);
     const { rawValue } = current;
 
     const result: QrValidateResult = validate ? validate(rawValue) : { ok: true };
@@ -401,8 +406,6 @@ export function QrScannerWidget({
       ? { type: 'result', rawValue, status: 'success', message: successText }
       : { type: 'result', rawValue, status: 'fail', message: result.message };
 
-    // Update ref BEFORE setPhase so concurrent handleDetect calls see
-    // 'result' immediately and skip the detection branch.
     phaseRef.current = newPhase;
 
     if (result.ok) playScanSuccess();
@@ -412,6 +415,8 @@ export function QrScannerWidget({
   }, [validate, successText]);
 
   const handleRetry = useCallback(() => {
+    clearTimeout(clearDetectionRef.current ?? undefined);
+    clearTimeout(autoResetRef.current ?? undefined);
     const searching: ScanPhase = { type: 'searching' };
     phaseRef.current = searching;
     onScanFiredRef.current = false;
@@ -419,13 +424,8 @@ export function QrScannerWidget({
   }, []);
 
   const handleClose = useCallback(() => {
-    clearTimeout(autoCloseRef.current ?? undefined);
-    // Fire onScan if closing during a successful result, but only once.
-    const current = phaseRef.current;
-    if (current.type === 'result' && current.status === 'success' && !onScanFiredRef.current) {
-      onScanFiredRef.current = true;
-      onScanRef.current(current.rawValue);
-    }
+    clearTimeout(clearDetectionRef.current ?? undefined);
+    clearTimeout(autoResetRef.current ?? undefined);
     onCloseRef.current();
   }, []);
 
@@ -440,7 +440,6 @@ export function QrScannerWidget({
 
   return (
     <div className="bg-background fixed inset-0 z-[100] flex flex-col">
-      {/* Video + overlays */}
       <div ref={containerRef} className="relative min-h-0 w-full flex-1 pb-24">
         <Scanner
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -449,6 +448,10 @@ export function QrScannerWidget({
           formats={formats as Parameters<typeof Scanner>[0]['formats']}
           constraints={CAMERA_CONSTRAINTS}
           scanDelay={150}
+          allowMultiple
+          paused={phase.type === 'result'}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          components={{ audio: false, tracker: false } as any}
           styles={{
             container: {
               width: '100%',
