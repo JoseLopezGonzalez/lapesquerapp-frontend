@@ -1,17 +1,89 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { PlusCircle, LogOut, CircleCheck } from 'lucide-react';
+import { CircleCheck, LogOut, Printer, PlusCircle } from 'lucide-react';
+import { usePrintElement } from '@/hooks/usePrintElement';
+import CeboDispatchReciboPrintContent from './CeboDispatchReciboPrintContent';
 
-/**
- * Pantalla de éxito tras crear una salida de cebo (rol operario).
- * Ofrece: Nueva salida de cebo, Volver al inicio.
- */
-export default function CeboSuccessActions({ dispatch, onExit, onNew }) {
+const CEBO_RECIBO_PRINT_ID = 'cebo-recibo-print-content';
+
+interface DispatchDetail {
+  product?: { id?: number | string; name?: string; alias?: string } | null;
+  netWeight?: number | string | null;
+}
+
+interface CeboDispatch {
+  id?: number | string;
+  supplier?: { id?: number | string; name?: string; label?: string; alias?: string } | string | null;
+  date?: string | null;
+  notes?: string | null;
+  details?: DispatchDetail[];
+  [key: string]: unknown;
+}
+
+interface PrintData {
+  dispatchId?: number | string;
+  supplier?: CeboDispatch['supplier'];
+  date?: string | null;
+  notes?: string;
+  details?: DispatchDetail[];
+}
+
+interface CeboSuccessActionsProps {
+  dispatch: CeboDispatch;
+  onExit: () => void;
+  onNew?: () => void;
+}
+
+export default function CeboSuccessActions({ dispatch, onExit, onNew }: CeboSuccessActionsProps) {
   const router = useRouter();
+  const [printData, setPrintData] = useState<PrintData | null>(null);
+
+  const { onPrint: onPrintRecibo } = usePrintElement({
+    id: CEBO_RECIBO_PRINT_ID,
+    freeSize: true,
+  });
+
+  const buildPrintData = (): PrintData => ({
+    dispatchId: dispatch.id,
+    supplier: dispatch.supplier,
+    date: dispatch.date,
+    notes: dispatch.notes ?? '',
+    details: dispatch.details ?? [],
+  });
+
+  const handlePrintRecibo = () => {
+    if (!dispatch) return;
+    setPrintData(buildPrintData());
+  };
+
+  useEffect(() => {
+    if (!printData) return;
+    const t = setTimeout(() => {
+      onPrintRecibo();
+      setPrintData(null);
+    }, 200);
+    return () => clearTimeout(t);
+  }, [printData, onPrintRecibo]);
+
+  // Auto-print ticket on mount
+  const autoTriggered = useRef(false);
+  useEffect(() => {
+    if (autoTriggered.current || !dispatch) return;
+    autoTriggered.current = true;
+    setPrintData({
+      dispatchId: dispatch.id,
+      supplier: dispatch.supplier,
+      date: dispatch.date,
+      notes: dispatch.notes ?? '',
+      details: dispatch.details ?? [],
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleNewDispatch = () => {
     if (onNew) {
@@ -80,6 +152,15 @@ export default function CeboSuccessActions({ dispatch, onExit, onNew }) {
                 variant="default"
                 size="lg"
                 className="min-h-[64px] max-w-[260px] min-w-[160px] flex-1 touch-manipulation gap-3 py-4 text-xl transition-transform active:scale-[0.98]"
+                onClick={handlePrintRecibo}
+              >
+                <Printer className="h-6 w-6 shrink-0" />
+                Recibo
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                className="min-h-[64px] max-w-[260px] min-w-[160px] flex-1 touch-manipulation gap-3 py-4 text-xl transition-transform active:scale-[0.98]"
                 onClick={handleNewDispatch}
               >
                 <PlusCircle className="h-6 w-6 shrink-0" />
@@ -98,6 +179,18 @@ export default function CeboSuccessActions({ dispatch, onExit, onNew }) {
           </CardContent>
         </Card>
       </motion.div>
+
+      {printData && (
+        <div id={CEBO_RECIBO_PRINT_ID} className="hidden print:block">
+          <CeboDispatchReciboPrintContent
+            dispatchId={printData.dispatchId}
+            supplier={printData.supplier}
+            date={printData.date}
+            notes={printData.notes}
+            details={printData.details}
+          />
+        </div>
+      )}
     </div>
   );
 }

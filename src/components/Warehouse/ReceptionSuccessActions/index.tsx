@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -10,19 +10,63 @@ import { usePrintElement } from '@/hooks/usePrintElement';
 import { notify } from '@/lib/notifications';
 import ReceptionReciboPrintContent from '@/components/Admin/RawMaterialReceptions/ReceptionPrintDialog/ReceptionReciboPrintContent';
 
-/**
- * Pantalla de éxito tras crear una recepción (rol operario).
- * Ofrece: Imprimir recibo (directo), Imprimir letreros (nombre producto), Ir a salida de cebo (mismo proveedor), Volver al inicio.
- */
 const LABELS_PRINT_ID = 'product-labels-print-content';
 const LOT_LABELS_PRINT_ID = 'lot-labels-print-content';
 const RECIBO_PRINT_ID = 'reception-recibo-print-content';
 
-export default function ReceptionSuccessActions({ reception, onExit, createCeboHref }) {
+interface ReceptionDetail {
+  product?: { id?: number | string; name?: string; alias?: string } | null;
+  productName?: string;
+  netWeight?: number | string | null;
+  lot?: string | null;
+  boxes?: number | string | null;
+}
+
+interface ReceptionPallet {
+  pallet?: unknown;
+  [key: string]: unknown;
+}
+
+interface Reception {
+  id?: number | string;
+  supplier?: { id?: number | string; name?: string; label?: string; alias?: string } | string | null;
+  date?: string | null;
+  notes?: string | null;
+  details?: ReceptionDetail[];
+  pallets?: (ReceptionPallet | unknown)[];
+  creationMode?: string | null;
+  [key: string]: unknown;
+}
+
+interface ReciboPrintData {
+  receptionId?: number | string;
+  supplier?: Reception['supplier'];
+  date?: string | null;
+  notes?: string;
+  details?: ReceptionDetail[];
+  pallets?: ReceptionPallet[];
+  creationMode?: string | null;
+}
+
+interface ReceptionSuccessActionsProps {
+  reception: Reception;
+  onExit: () => void;
+  createCeboHref?: string;
+}
+
+/**
+ * Pantalla de éxito tras crear una recepción (rol operario).
+ * Ofrece: Imprimir recibo (directo), Imprimir letreros (nombre producto), Ir a salida de cebo (mismo proveedor), Volver al inicio.
+ */
+export default function ReceptionSuccessActions({
+  reception,
+  onExit,
+  createCeboHref,
+}: ReceptionSuccessActionsProps) {
   const router = useRouter();
-  const [reciboPrintData, setReciboPrintData] = useState(null);
-  const [labelsToPrint, setLabelsToPrint] = useState(null);
-  const [lotLabelsToPrint, setLotLabelsToPrint] = useState(null);
+  const [reciboPrintData, setReciboPrintData] = useState<ReciboPrintData | null>(null);
+  const [labelsToPrint, setLabelsToPrint] = useState<string[] | null>(null);
+  const [lotLabelsToPrint, setLotLabelsToPrint] = useState<(string | null)[] | null>(null);
 
   const { onPrint: onPrintLabels } = usePrintElement({
     id: LABELS_PRINT_ID,
@@ -37,28 +81,33 @@ export default function ReceptionSuccessActions({ reception, onExit, createCeboH
     freeSize: true,
   });
 
-  const receptionId = reception?.id;
-  const supplierId = reception?.supplier?.id ?? reception?.supplier;
+  const supplierId = reception?.supplier && typeof reception.supplier === 'object'
+    ? (reception.supplier as { id?: number | string }).id
+    : reception?.supplier;
 
-  const handlePrintRecibo = () => {
-    if (!reception) return;
+  const buildReciboPrintData = (): ReciboPrintData => {
     const details = (reception.details || []).map((d) => ({
       ...d,
       productName: d.productName ?? d.product?.name ?? d.product?.alias,
       product: d.product,
       netWeight: d.netWeight,
     }));
-    setReciboPrintData({
+    return {
       receptionId: reception.id,
       supplier: reception.supplier,
       date: reception.date,
       notes: reception.notes ?? '',
       details,
       pallets: (reception.pallets || []).map((p) =>
-        p && typeof p === 'object' && 'pallet' in p ? p : { pallet: p }
+        p && typeof p === 'object' && 'pallet' in (p as object) ? (p as ReceptionPallet) : { pallet: p }
       ),
       creationMode: reception.creationMode || 'lines',
-    });
+    };
+  };
+
+  const handlePrintRecibo = () => {
+    if (!reception) return;
+    setReciboPrintData(buildReciboPrintData());
   };
 
   const handlePrintLabels = () => {
@@ -81,8 +130,8 @@ export default function ReceptionSuccessActions({ reception, onExit, createCeboH
     const lots = (reception.details || [])
       .filter((d) => d.lot)
       .flatMap((d) => {
-        const count = Math.max(1, parseInt(d.boxes ?? 1, 10) || 1);
-        return Array.from({ length: count }, () => d.lot);
+        const count = Math.max(1, parseInt(String(d.boxes ?? 1), 10) || 1);
+        return Array.from({ length: count }, () => d.lot ?? null);
       });
     if (lots.length === 0) {
       notify.error({
@@ -120,6 +169,30 @@ export default function ReceptionSuccessActions({ reception, onExit, createCeboH
     }, 200);
     return () => clearTimeout(t);
   }, [reciboPrintData, onPrintRecibo]);
+
+  // Auto-print recibo on mount
+  const autoTriggered = useRef(false);
+  useEffect(() => {
+    if (autoTriggered.current || !reception) return;
+    autoTriggered.current = true;
+    setReciboPrintData({
+      receptionId: reception.id,
+      supplier: reception.supplier,
+      date: reception.date,
+      notes: reception.notes ?? '',
+      details: (reception.details || []).map((d) => ({
+        ...d,
+        productName: d.productName ?? d.product?.name ?? d.product?.alias,
+        product: d.product,
+        netWeight: d.netWeight,
+      })),
+      pallets: (reception.pallets || []).map((p) =>
+        p && typeof p === 'object' && 'pallet' in (p as object) ? (p as ReceptionPallet) : { pallet: p }
+      ),
+      creationMode: reception.creationMode || 'lines',
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSalidaCebo = () => {
     const base = createCeboHref ?? '/admin/cebo-dispatches/create';
@@ -249,8 +322,8 @@ export default function ReceptionSuccessActions({ reception, onExit, createCeboH
         </div>
       )}
 
-      {/* Contenido oculto para impresión de letreros: se monta al pulsar Letreros y se imprime directamente */}
-      {labelsToPrint?.length > 0 && (
+      {/* Contenido oculto para impresión de letreros */}
+      {labelsToPrint && labelsToPrint.length > 0 && (
         <div id={LABELS_PRINT_ID} className="hidden print:block">
           <div className="space-y-4 p-4">
             {labelsToPrint.map((name, i) => (
@@ -267,7 +340,7 @@ export default function ReceptionSuccessActions({ reception, onExit, createCeboH
       )}
 
       {/* Contenido oculto para impresión de etiquetas de lote: una por cada caja */}
-      {lotLabelsToPrint?.length > 0 && (
+      {lotLabelsToPrint && lotLabelsToPrint.length > 0 && (
         <div id={LOT_LABELS_PRINT_ID} className="hidden print:block">
           <div className="space-y-4 p-4">
             {lotLabelsToPrint.map((lot, i) => (
