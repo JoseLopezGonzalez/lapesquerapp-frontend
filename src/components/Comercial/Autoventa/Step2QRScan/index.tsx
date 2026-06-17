@@ -163,7 +163,7 @@ export default function Step2QRScan({
       <div className={`${isDev ? 'block' : 'hidden md:block'} w-full shrink-0 space-y-2`}>
         <Textarea
           value={manualCodes}
-          onChange={(e) => setManualCodes(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setManualCodes(e.target.value)}
           placeholder="Pega uno o varios códigos GS1-128, uno por línea"
           className="min-h-24 resize-none"
         />
