@@ -14,8 +14,6 @@ export default function OperatorDispatchesCreatePage() {
   const { data: session, status } = useSession();
   const [createdDispatch, setCreatedDispatch] = useState<Record<string, unknown> | null>(null);
 
-  const storeId =
-    session?.user?.assignedStoreId != null ? String(session.user.assignedStoreId) : null;
   const initialSupplierId = searchParams.get('supplierId') ?? null;
 
   const handleOnCreate = (dispatch: Record<string, unknown>) => {
@@ -47,7 +45,6 @@ export default function OperatorDispatchesCreatePage() {
         <OperarioCreateCeboForm
           onSuccess={handleOnCreate}
           onCancel={() => router.push(operatorRoutes.dashboard)}
-          storeId={storeId}
           initialSupplierId={initialSupplierId}
         />
       )}
