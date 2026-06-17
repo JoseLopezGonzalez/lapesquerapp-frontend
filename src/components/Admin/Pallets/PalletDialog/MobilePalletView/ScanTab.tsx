@@ -48,7 +48,7 @@ export default function ScanTab({
 
   const validateGs1128 = useCallback(
     (rawValue: string): QrValidateResult => {
-      const parsed = parseGs1128Line(rawValue, productsOptions);
+      const parsed = parseGs1128Line(rawValue, productsOptions as { value: unknown; label: unknown; boxGtin: unknown }[]);
       return parsed ? { ok: true } : { ok: false, message: 'Código GS1-128 no reconocido' };
     },
     [productsOptions],
