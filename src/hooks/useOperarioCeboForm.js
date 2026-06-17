@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { format } from 'date-fns';
 import { ceboDispatchService } from '@/services/domain/cebo-dispatches/ceboDispatchService';
@@ -84,7 +84,7 @@ export const STEPS_CEBO = [
   { id: 3, title: 'Líneas', description: 'Añada productos, tara y peso bruto' },
 ];
 
-export function useOperarioCeboForm({ onSuccess }) {
+export function useOperarioCeboForm({ onSuccess, initialSupplierId = null }) {
   const [step, setStep] = useState(0);
   const [editingLineIndex, setEditingLineIndex] = useState(null);
   const [lineDialogOpen, setLineDialogOpen] = useState(false);
@@ -150,6 +150,19 @@ export function useOperarioCeboForm({ onSuccess }) {
         options: groups[letter].sort((a, b) => (a.label || '').localeCompare(b.label || '', 'es')),
       }));
   }, [supplierOptions]);
+
+  const initialSupplierApplied = useRef(false);
+  useEffect(() => {
+    if (!initialSupplierId || suppliersLoading || initialSupplierApplied.current) return;
+    if (!supplierOptions?.length) return;
+    const match = supplierOptions.find(
+      (opt) => String(opt.value?.id ?? opt.value) === String(initialSupplierId)
+    );
+    if (match) {
+      initialSupplierApplied.current = true;
+      setValue('supplier', match.value, { shouldValidate: false });
+    }
+  }, [initialSupplierId, suppliersLoading, supplierOptions, setValue]);
 
   useEffect(() => {
     let cancelled = false;

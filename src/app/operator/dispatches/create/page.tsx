@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import OperarioCreateCeboForm from '@/components/Warehouse/OperarioCreateCeboForm';
 import CeboSuccessActions from '@/components/Warehouse/CeboSuccessActions';
@@ -10,13 +10,15 @@ import Loader from '@/components/Utilities/Loader';
 
 export default function OperatorDispatchesCreatePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session, status } = useSession();
-  const [createdDispatch, setCreatedDispatch] = useState(null);
+  const [createdDispatch, setCreatedDispatch] = useState<Record<string, unknown> | null>(null);
 
   const storeId =
     session?.user?.assignedStoreId != null ? String(session.user.assignedStoreId) : null;
+  const initialSupplierId = searchParams.get('supplierId') ?? null;
 
-  const handleOnCreate = (dispatch) => {
+  const handleOnCreate = (dispatch: Record<string, unknown>) => {
     setCreatedDispatch(dispatch);
   };
 
@@ -46,6 +48,7 @@ export default function OperatorDispatchesCreatePage() {
           onSuccess={handleOnCreate}
           onCancel={() => router.push(operatorRoutes.dashboard)}
           storeId={storeId}
+          initialSupplierId={initialSupplierId}
         />
       )}
     </div>

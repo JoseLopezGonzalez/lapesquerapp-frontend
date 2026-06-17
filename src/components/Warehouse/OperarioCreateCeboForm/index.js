@@ -48,8 +48,8 @@ const TARE_OPTIONS = [
   { value: '1.5', label: '1,50kg' },
 ];
 
-export default function OperarioCreateCeboForm({ onSuccess, onCancel, storeId = null }) {
-  const form = useOperarioCeboForm({ onSuccess });
+export default function OperarioCreateCeboForm({ onSuccess, onCancel, storeId = null, initialSupplierId = null }) {
+  const form = useOperarioCeboForm({ onSuccess, initialSupplierId });
   const {
     step,
     setStep,
