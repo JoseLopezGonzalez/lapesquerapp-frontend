@@ -46,6 +46,12 @@ const CAMERA_CONSTRAINTS = {
   frameRate: { ideal: 30, min: 15 },
 };
 
+// Stable reference — prevents Scanner from re-initialising on every render.
+// audio: false  → silence library's own detection beep
+// tracker: false → hide library's built-in highlight (we draw our own SVG)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const SCANNER_COMPONENTS = { audio: false, tracker: false } as any;
+
 // ─── Coordinate mapping ────────────────────────────────────────────────────────
 
 function mapToDisplay(
@@ -323,11 +329,8 @@ export function QrScannerWidget({
 
   const phaseRef = useRef<ScanPhase>(phase);
 
-  // clearDetectionRef: resets to searching when QR leaves frame (cleared/reset
-  // on every handleDetect call so it only fires if 800ms pass with no detection).
-  const clearDetectionRef = useRef<ReturnType<typeof setTimeout>>(null);
-  // autoResetRef: after a successful result, resets to searching so the user
-  // can continue scanning without reopening the scanner.
+  // autoResetRef: after a successful result, auto-resets to 'searching' so the
+  // scanner stays open and the user can scan more codes without reopening.
   const autoResetRef = useRef<ReturnType<typeof setTimeout>>(null);
 
   const onScanRef = useRef(onScan);
@@ -339,14 +342,13 @@ export function QrScannerWidget({
 
   useEffect(
     () => () => {
-      clearTimeout(clearDetectionRef.current ?? undefined);
       clearTimeout(autoResetRef.current ?? undefined);
     },
     [],
   );
 
-  // After a successful result: fire onScan immediately, then auto-reset to
-  // searching after 1500 ms so the user can scan more codes without reopening.
+  // After a successful result: fire onScan immediately, show the overlay for
+  // 1500 ms, then auto-reset to 'searching' so more codes can be scanned.
   useEffect(() => {
     if (phase.type !== 'result' || phase.status !== 'success') return;
 
@@ -366,16 +368,16 @@ export function QrScannerWidget({
   }, [phase]);
 
   const handleDetect = useCallback((codes: DetectedCode[]) => {
+    // Stop processing once a result is being shown.
     if (phaseRef.current.type === 'result') return;
-
-    clearTimeout(clearDetectionRef.current ?? undefined);
 
     const code = codes[0];
     if (!code?.rawValue) return;
 
-    // Update detected phase on every library callback (allowMultiple keeps the
-    // library calling every scanDelay ms while the code is in frame), so corner
-    // points track the code live.
+    // The library deduplicates by code value, so this callback fires once per
+    // unique code detected (not continuously). We update the phase on every
+    // call: a different code replaces the previous one; the same code keeps
+    // the overlay at the detected position until the user acts.
     const newPhase: ScanPhase = {
       type: 'detected',
       rawValue: code.rawValue,
@@ -383,22 +385,11 @@ export function QrScannerWidget({
     };
     phaseRef.current = newPhase;
     setPhase(newPhase);
-
-    // If the library stops calling (QR left frame), reset to searching after
-    // 800 ms so the user can't confirm a code that's no longer visible.
-    clearDetectionRef.current = setTimeout(() => {
-      if (phaseRef.current.type === 'detected') {
-        const searching: ScanPhase = { type: 'searching' };
-        phaseRef.current = searching;
-        setPhase(searching);
-      }
-    }, 800);
   }, []);
 
   const handleConfirm = useCallback(() => {
     const current = phaseRef.current;
     if (current.type !== 'detected') return;
-    clearTimeout(clearDetectionRef.current ?? undefined);
     const { rawValue } = current;
 
     const result: QrValidateResult = validate ? validate(rawValue) : { ok: true };
@@ -415,7 +406,6 @@ export function QrScannerWidget({
   }, [validate, successText]);
 
   const handleRetry = useCallback(() => {
-    clearTimeout(clearDetectionRef.current ?? undefined);
     clearTimeout(autoResetRef.current ?? undefined);
     const searching: ScanPhase = { type: 'searching' };
     phaseRef.current = searching;
@@ -424,7 +414,6 @@ export function QrScannerWidget({
   }, []);
 
   const handleClose = useCallback(() => {
-    clearTimeout(clearDetectionRef.current ?? undefined);
     clearTimeout(autoResetRef.current ?? undefined);
     onCloseRef.current();
   }, []);
@@ -447,11 +436,8 @@ export function QrScannerWidget({
           onError={handleError}
           formats={formats as Parameters<typeof Scanner>[0]['formats']}
           constraints={CAMERA_CONSTRAINTS}
+          components={SCANNER_COMPONENTS}
           scanDelay={150}
-          allowMultiple
-          paused={phase.type === 'result'}
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          components={{ audio: false, tracker: false } as any}
           styles={{
             container: {
               width: '100%',
