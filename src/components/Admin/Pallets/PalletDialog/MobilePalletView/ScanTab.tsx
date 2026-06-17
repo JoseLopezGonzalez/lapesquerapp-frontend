@@ -1,6 +1,6 @@
 'use client';
 
-import { type ChangeEvent, useRef, useState } from 'react';
+import { type ChangeEvent, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { ChevronDown, ChevronUp, Package, Plus, RotateCcw, Scan, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,12 +11,10 @@ import { Combobox } from '@/components/Shadcn/Combobox';
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
 import type { BoxCreationData, PalletBox, PalletState, ProductOption } from '@/hooks/pallets/palletHelpers';
 
-const Step2CameraScanner = dynamic(
-  () => import('@/components/Comercial/Autoventa/Step2CameraScanner'),
+const QrScannerWidget = dynamic(
+  () => import('@/components/Shared/QrScannerWidget').then((m) => ({ default: m.QrScannerWidget })),
   { ssr: false }
 );
-
-const DEBOUNCE_MS = 2500;
 
 interface ScanTabProps {
   temporalPallet: PalletState;
@@ -45,19 +43,10 @@ export default function ScanTab({
 }: ScanTabProps) {
   const [scannerOpen, setScannerOpen] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
-  const lastScannedRef = useRef<{ code: string; at: number }>({ code: '', at: 0 });
 
   const handleScannedCode = (rawValue: string) => {
     const code = String(rawValue ?? '').trim();
     if (!code) return;
-
-    const now = Date.now();
-    if (code === lastScannedRef.current.code && now - lastScannedRef.current.at < DEBOUNCE_MS) {
-      return;
-    }
-    lastScannedRef.current = { code, at: now };
-
-    // Set via the hook's existing scannedCode flow — auto-triggers onAddNewBox({ method: 'lector' })
     boxCreationDataChange('scannedCode', code);
   };
 
@@ -217,11 +206,12 @@ export default function ScanTab({
 
       {/* Fullscreen camera scanner */}
       {scannerOpen && (
-        <Step2CameraScanner
+        <QrScannerWidget
           onScan={handleScannedCode}
           onClose={() => setScannerOpen(false)}
           onError={() => setScannerOpen(false)}
-          boxesCount={boxes.length}
+          statusText="Apunta al código GS1-128 de la caja"
+          successText="Caja registrada"
         />
       )}
     </div>

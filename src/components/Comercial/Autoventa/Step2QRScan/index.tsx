@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
@@ -9,8 +9,34 @@ import { Package, Scan, Trash2 } from 'lucide-react';
 import { getProductOptions } from '@/services/productService';
 import { notify } from '@/lib/notifications';
 import { parseGs1128Line } from '@/lib/gs1128Parser';
+import type { QrValidateResult } from '@/components/Shared/QrScannerWidget';
 
-const Step2CameraScanner = dynamic(() => import('../Step2CameraScanner'), { ssr: false });
+const QrScannerWidget = dynamic(
+  () => import('@/components/Shared/QrScannerWidget').then((m) => ({ default: m.QrScannerWidget })),
+  { ssr: false },
+);
+
+interface ProductOption {
+  value: string | number;
+  label: string;
+  boxGtin?: string | null;
+}
+
+interface ParsedBox {
+  productId: string | number;
+  productName?: string;
+  lot?: string;
+  netWeight: number;
+  gs1128?: string;
+}
+
+interface Step2QRScanProps {
+  state: { boxes?: ParsedBox[] };
+  addBox: (box: ParsedBox) => void;
+  removeBox?: (index: number) => void;
+  removeAllBoxes: () => void;
+  loadProductOptions?: (token: string) => Promise<unknown>;
+}
 
 export default function Step2QRScan({
   state,
@@ -18,53 +44,53 @@ export default function Step2QRScan({
   removeBox,
   removeAllBoxes,
   loadProductOptions = getProductOptions,
-}) {
+}: Step2QRScanProps) {
   const isDev = process.env.NODE_ENV === 'development';
   const { data: session } = useSession();
-  const token = session?.user?.accessToken;
-  const [productsOptions, setProductsOptions] = useState([]);
+  const token = (session?.user as { accessToken?: string } | undefined)?.accessToken;
+
+  const [productsOptions, setProductsOptions] = useState<ProductOption[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [scannerOpen, setScannerOpen] = useState(false);
   const [manualCodes, setManualCodes] = useState('');
-  const lastScannedRef = useRef({ code: '', at: 0 });
-  const DEBOUNCE_MS = 2500;
 
   useEffect(() => {
     if (!token) return;
     setLoadingProducts(true);
     loadProductOptions(token)
       .then((data) => {
-        const raw = Array.isArray(data) ? data : (data?.data ?? []);
+        const raw = Array.isArray(data) ? data : ((data as { data?: unknown[] })?.data ?? []);
         setProductsOptions(
-          raw.map((p) => ({
-            value: p.id ?? p.value,
-            label: p.name ?? p.label ?? '',
+          (raw as Array<{ id?: unknown; value?: unknown; name?: string; label?: string; boxGtin?: string }>).map((p) => ({
+            value: (p.id ?? p.value) as string | number,
+            label: (p.name ?? p.label ?? '') as string,
             boxGtin: p.boxGtin ?? null,
-          }))
+          })),
         );
       })
       .catch(() => setProductsOptions([]))
       .finally(() => setLoadingProducts(false));
   }, [token, loadProductOptions]);
 
-  const handleScannedCode = (rawValue) => {
-    const code = String(rawValue ?? '').trim();
-    if (!code) return;
-    const now = Date.now();
-    const { code: lastCode, at: lastAt } = lastScannedRef.current;
-    if (code === lastCode && now - lastAt < DEBOUNCE_MS) return;
-    lastScannedRef.current = { code, at: now };
+  const validateGs1128 = useCallback(
+    (rawValue: string): QrValidateResult => {
+      const parsed = parseGs1128Line(rawValue, productsOptions);
+      return parsed ? { ok: true } : { ok: false, message: 'Código GS1-128 no reconocido' };
+    },
+    [productsOptions],
+  );
 
-    const parsed = parseGs1128Line(code, productsOptions);
-    if (parsed) {
-      addBox(parsed);
-      notify.success({ title: 'Caja añadida' }, { duration: 800 });
-    } else {
-      notify.error({ title: 'Código no válido' }, { duration: 800 });
-    }
-  };
+  const handleScannedCode = useCallback(
+    (rawValue: string) => {
+      const code = String(rawValue ?? '').trim();
+      if (!code) return;
+      const parsed = parseGs1128Line(code, productsOptions);
+      if (parsed) addBox(parsed);
+    },
+    [productsOptions, addBox],
+  );
 
-  const handleScannerError = (message) => {
+  const handleScannerError = (message: string) => {
     notify.error({ title: message || 'No se pudo acceder a la cámara.' }, { duration: 800 });
     setScannerOpen(false);
   };
@@ -72,7 +98,7 @@ export default function Step2QRScan({
   const handleManualCodesSubmit = () => {
     const lines = manualCodes
       .split(/\r?\n/)
-      .map((line) => line.trim())
+      .map((l) => l.trim())
       .filter(Boolean);
 
     if (lines.length === 0) {
@@ -99,7 +125,7 @@ export default function Step2QRScan({
           title: added === 1 ? 'Caja añadida' : `${added} cajas añadidas`,
           description: invalid > 0 ? `${invalid} códigos no se pudieron leer.` : undefined,
         },
-        { duration: 1800 }
+        { duration: 1800 },
       );
       setManualCodes('');
       return;
@@ -110,7 +136,7 @@ export default function Step2QRScan({
         title: 'No se pudo leer ningún código',
         description: 'Revisa el formato GS1-128 e inténtalo de nuevo.',
       },
-      { duration: 1800 }
+      { duration: 1800 },
     );
   };
 
@@ -134,7 +160,7 @@ export default function Step2QRScan({
       <div className={`${isDev ? 'block' : 'hidden md:block'} w-full shrink-0 space-y-2`}>
         <Textarea
           value={manualCodes}
-          onChange={(event) => setManualCodes(event.target.value)}
+          onChange={(e) => setManualCodes(e.target.value)}
           placeholder="Pega uno o varios códigos GS1-128, uno por línea"
           className="min-h-24 resize-none"
         />
@@ -150,11 +176,14 @@ export default function Step2QRScan({
       </div>
 
       {scannerOpen && (
-        <Step2CameraScanner
+        <QrScannerWidget
           onScan={handleScannedCode}
           onClose={() => setScannerOpen(false)}
           onError={handleScannerError}
-          boxesCount={boxes.length}
+          validate={validateGs1128}
+          statusText="Apunta al código de la caja"
+          successText="Caja añadida"
+          formats={['code_128', 'qr_code']}
         />
       )}
 
@@ -176,7 +205,7 @@ export default function Step2QRScan({
             <div className="space-y-2 text-center">
               <h3 className="text-lg font-semibold">Ninguna caja añadida</h3>
               <p className="text-muted-foreground max-w-[280px] text-sm">
-                Escanea códigos QR con el lector para añadir cajas.
+                Escanea códigos con el lector para añadir cajas.
               </p>
             </div>
           </div>

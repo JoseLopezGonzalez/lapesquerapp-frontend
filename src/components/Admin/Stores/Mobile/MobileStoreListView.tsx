@@ -22,8 +22,14 @@ import {
   Warehouse,
 } from 'lucide-react';
 import PalletDialog from '@/components/Admin/Pallets/PalletDialog';
-import { MobilePalletQrScanner } from './MobilePalletQrScanner';
+import dynamic from 'next/dynamic';
 import { parseQrPayload } from '@/lib/qr/parseQrPayload';
+import type { QrValidateResult } from '@/components/Shared/QrScannerWidget';
+
+const QrScannerWidget = dynamic(
+  () => import('@/components/Shared/QrScannerWidget').then((m) => ({ default: m.QrScannerWidget })),
+  { ssr: false }
+);
 import { notify } from '@/lib/notifications';
 import { REGISTERED_PALLETS_STORE_ID } from '@/hooks/useStores';
 import { cn } from '@/lib/utils';
@@ -163,29 +169,20 @@ export function MobileStoreListView({
   const [scannerOpen, setScannerOpen] = useState(false);
   const [palletDialogId, setPalletDialogId] = useState<number | null>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
-  const lastScannedRef = useRef({ code: '', at: 0 });
+
+  const validatePalletQr = (rawValue: string): QrValidateResult => {
+    const payload = parseQrPayload(rawValue);
+    const palletId = payload.P || (/^\d+$/.test(rawValue) ? rawValue : null);
+    if (!palletId || !/^\d+$/.test(String(palletId))) {
+      return { ok: false, message: 'No se encontró un identificador de palet.' };
+    }
+    return { ok: true };
+  };
 
   const handleScannedPalletQr = (rawValue: string) => {
-    const code = String(rawValue ?? '').trim();
-    if (!code) return;
-
-    const now = Date.now();
-    const { code: lastCode, at: lastAt } = lastScannedRef.current;
-    if (code === lastCode && now - lastAt < 1800) return;
-    lastScannedRef.current = { code, at: now };
-
-    const payload = parseQrPayload(code);
-    const palletId = payload.P || (/^\d+$/.test(code) ? code : null);
-
-    if (!palletId || !/^\d+$/.test(String(palletId))) {
-      notify.error({
-        title: 'QR no reconocido',
-        description: 'No se encontró un identificador de palet en el código escaneado.',
-      });
-      return;
-    }
-
-    setScannerOpen(false);
+    const payload = parseQrPayload(rawValue);
+    const palletId = payload.P || (/^\d+$/.test(rawValue) ? rawValue : null);
+    if (!palletId) return;
     setPalletDialogId(Number(palletId));
   };
 
@@ -337,10 +334,13 @@ export function MobileStoreListView({
 
       {/* Escáner QR global — sin contexto de almacén */}
       {scannerOpen && (
-        <MobilePalletQrScanner
+        <QrScannerWidget
           onScan={handleScannedPalletQr}
           onClose={() => setScannerOpen(false)}
           onError={handleScannerError}
+          validate={validatePalletQr}
+          statusText="Apunta al QR del palet"
+          successText="Palet localizado"
         />
       )}
 

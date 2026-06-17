@@ -1,184 +1,158 @@
 # 74 — QrScannerWidget: Rediseño del Lector de QR
 
-> **Estado:** En diseño — pendiente de implementación  
+> **Estado:** Implementado  
 > **Rama:** `claude/qr-reader-enhancement-rbq3t1`  
 > **Afecta a:** módulos Almacén, Palets, Autoventa (Field + Comercial)
 
 ---
 
-## Problema que resuelve
+## Problema resuelto
 
-El lector de QR actual opera en modo **always-on**: desde el momento en que el usuario abre el escáner, la cámara procesa frames continuamente. El único mecanismo anti-duplicados es un debounce de 1800-3000 ms. Esto produce:
-
-- Lecturas accidentales cuando el usuario aún está apuntando
-- Sin distinción visual entre "apuntando", "leyendo activamente" y "código detectado"
-- Dos componentes scanner paralelos (`Step2CameraScanner.js` y `MobilePalletQrScanner.tsx`) con lógica idéntica sin unificar
-
-El objetivo es simular el comportamiento de un lector físico de pistola: el usuario **decide conscientemente** cuándo ejecutar la lectura pulsando un botón ("gatillo"), y recibe feedback visual claro de cada fase.
+El lector de QR anterior operaba en modo **always-on**: desde que se abría, la cámara procesaba frames continuamente y el único mecanismo anti-duplicados era un debounce de 1800–3000 ms. Sin distinción visual entre "apuntando", "leyendo" y "código detectado". Dos componentes scanner paralelos con lógica idéntica sin unificar.
 
 ---
 
-## Decisiones de diseño
+## Diseño: Detect → Highlight → Confirm
 
-| Pregunta | Decisión | Razonamiento |
+La cámara siempre está activa y buscando. Cuando detecta un QR en el encuadre:
+1. Se dibuja un polígono SVG (con glow verde) sobre el código detectado en tiempo real
+2. Aparece el botón **"Leer código"** con efecto shimmer en la barra inferior
+3. El usuario pulsa para confirmar — a partir de ese momento se procesa el valor
+
+Este modelo es análogo al de un lector físico de pistola: el operario apunta, ve el código marcado, y pulsa el gatillo. Elimina lecturas accidentales sin añadir pasos extra.
+
+---
+
+## State machine: 3 fases
+
+```
+SEARCHING ──[QR entra en encuadre]──▶ DETECTED ──[usuario pulsa "Leer"]──▶ RESULT
+    ◀──[QR sale del encuadre (~800ms)]──              ◀──[reintentar / fail]──┘
+```
+
+### SEARCHING
+- Cámara activa, escaneo continuo
+- Corner guides blancos/sutiles
+- Scan line animada (gradiente primary, traversal 1.8s)
+- Barra inferior: texto de instrucción + botón "Cerrar"
+
+### DETECTED
+- Polígono SVG sobre el QR detectado con `drop-shadow` verde → actualiza en tiempo real si el código se mueve
+- Círculos verdes en los 4 cornerPoints
+- Corner guides se ponen en `--primary`
+- Barra inferior: botón **"Leer código"** con shimmer animado
+- Si el QR sale del encuadre → vuelve a SEARCHING a los 800 ms
+
+### RESULT (success)
+- Overlay fijo `z-[120]`, cubre toda la pantalla sobre el vídeo
+- `radial-gradient` verde desde centro → transparente
+- QR generado del valor leído (react-qr-code) con ring verde + badge checkmark
+- Texto de éxito contextual (prop `successText`)
+- Auto-cierra a los 1800 ms → dispara `onScan(rawValue)` + `onClose()`
+- Botón "Cerrar ahora" disponible (cierra inmediatamente)
+
+### RESULT (fail)
+- Mismo overlay con `radial-gradient` rojo
+- QR generado + badge X rojo
+- Mensaje de error (devuelto por la función `validate`)
+- Botones "Cerrar" y "Volver a intentar" → vuelve a SEARCHING
+
+---
+
+## Feedback sensorial
+
+### Sonido (`src/lib/scannerSound.ts`)
+Síntesis vía Web Audio API — sin dependencias, sin archivos de audio.
+
+| Evento | Tipo | Frecuencia | Sensación |
+|---|---|---|---|
+| Success | `sine` | 880 → 1320 Hz + 1100 → 1600 Hz (delay 140ms) | Ding ascendente limpio |
+| Fail | `sawtooth` | 380 → 170 Hz | Buzz descendente grave |
+
+### Vibración (`navigator.vibrate`)
+| Evento | Patrón | Sensación |
 |---|---|---|
-| ¿Librería base? | Mantener `@yudiel/react-qr-scanner` | Ya instalada, soporta `paused` prop, wrapper de `@zxing` |
-| ¿Construir desde cero? | No | `BarcodeDetector` API tiene soporte inconsistente; `jsQR` sin mantenimiento |
-| ¿Auto-confirm o confirmación explícita? | **Auto-confirm por defecto** (`autoConfirm={true}`) | El usuario ya tomó la decisión al pulsar "Leer". Fluidez operativa |
-| ¿Confirmación manual disponible? | Sí, via prop `autoConfirm={false}` | Para contextos donde el código debe validarse visualmente antes de aceptar |
-| ¿Pantalla completa o modal overlay? | **Pantalla completa** (como ahora) | Más seguro en móvil, maximiza área de cámara |
-| ¿Unificar formatos QR + barcode? | Prop `formats` expuesta, `['qr_code']` por defecto | Permite reutilizar para GS1-128 en el futuro sin cambiar la API |
-| ¿Animaciones con Framer Motion? | No — solo Tailwind keyframes | CLAUDE.md prohíbe Framer Motion en pantallas operativas |
+| Success | `[40, 60, 40]` | Dos pulsos cortos — confirmación |
+| Fail | `[200]` | Un pulso largo — alerta |
 
 ---
 
-## State machine: 3 estados
+## Coordinate mapping: video → pantalla
+
+Los `cornerPoints` del BarcodeDetector vienen en el espacio intrínseco del vídeo (ej. 1280×960). El vídeo se renderiza con `object-fit: cover` en el contenedor. La transformación:
 
 ```
-        ┌──────────────────────────────────────────────────────┐
-        │                                                      │
-        ▼                                                      │
-   ┌─────────┐   pulsa "Leer QR"   ┌───────────┐   detecta   ┌──────────┐
-   │  IDLE   │ ──────────────────▶ │ SCANNING  │ ──────────▶ │ DETECTED │
-   └─────────┘                     └───────────┘             └──────────┘
-        ▲                               │                          │
-        │                               │ onError / onClose        │ auto-confirm
-        │                               ▼                          │ (o usuario confirma)
-        │                           [cerrar]                       │
-        │                                                          ▼
-        └───────────────────────── "Volver a intentar" ────── onScan(value)
+scale  = max(displayW / videoW, displayH / videoH)
+offsetX = (displayW - videoW × scale) / 2
+offsetY = (displayH - videoH × scale) / 2
+displayX = cornerPoint.x × scale + offsetX
+displayY = cornerPoint.y × scale + offsetY
 ```
 
-### Estado IDLE — "Apuntando"
-
-- Cámara visible, `paused={true}` en la librería (no procesa frames, solo muestra video)
-- Corner guides estáticos en el viewfinder (4 esquinas tipo cámara iOS)
-- Barra inferior: botón `"Leer QR"` prominente (full-width, tamaño `lg`)
-- Texto instruccional: `statusText` prop o fallback genérico
-
-### Estado SCANNING — "Buscando código"
-
-- Cámara activa, `paused={false}`, procesando frames
-- Scan line animada atravesando el viewfinder verticalmente (Tailwind `animate-[scan]`)
-- Borde del viewfinder pulsa en `--primary` (`animate-pulse`)
-- Texto: "Buscando código..."
-- Botón secundario pequeño: "Cancelar" (vuelve a IDLE)
-
-### Estado DETECTED — "Código encontrado"
-
-- Librería vuelve a `paused={true}` inmediatamente al detectar
-- Flash verde breve en viewfinder (transición CSS `bg-green-500/20` → transparente, ~400ms)
-- Icono checkmark animado sobre el viewfinder
-- Si `autoConfirm={true}`: llama a `onScan(value)` directamente (el flash es el único feedback)
-- Si `autoConfirm={false}`: barra inferior muestra valor detectado + botones "Confirmar" / "Volver a intentar"
-
----
-
-## Diseño visual del viewfinder
-
-```
-┌──────────────────────────────────────────────────────────┐
-│                                                          │
-│    ┌──                                        ──┐        │
-│    │  ← corner guides SVG (4 esquinas)          │        │
-│    │                                            │        │
-│    │              [zona QR]                     │        │
-│    │                                            │        │
-│    │  ─────────── scan line ──────────────────  │  ← solo en SCANNING
-│    │                                            │        │
-│    └──                                        ──┘        │
-│                                                          │
-└──────────────────────────────────────────────────────────┘
-```
-
-**Corner guides:** SVG inline, 4 esquinas con `stroke="currentColor"` en `text-primary`. Sin dependencias extra.
-
-**Scan line:** `div` absoluto con `animation: scanLine 1.5s ease-in-out infinite`.
-
-```css
-@keyframes scanLine {
-  0%   { transform: translateY(0); opacity: 1; }
-  50%  { opacity: 0.6; }
-  100% { transform: translateY(100%); opacity: 1; }
-}
-```
-
-**Flash verde (DETECTED):** Clase condicional `bg-green-500/20` con `transition-all duration-400` en el contenedor del viewfinder.
+Implementado en la función `mapToDisplay()` dentro del componente.
 
 ---
 
 ## API del componente
 
 ```typescript
-interface QrScannerWidgetProps {
-  onScan: (rawValue: string) => void;
+// src/components/Shared/QrScannerWidget/index.tsx
+
+export type QrValidateResult = { ok: true } | { ok: false; message: string };
+
+export interface QrScannerWidgetProps {
+  onScan: (rawValue: string) => void;       // llamado solo en éxito, tras cerrar
   onClose: () => void;
-  onError?: (message: string) => void;
-  statusText?: string;           // Label informativo en barra inferior
-  formats?: ScannerProps['formats']; // default: ['qr_code']
-  autoConfirm?: boolean;         // default: true
-  scanDelay?: number;            // default: 200 (más agresivo, el debounce es ahora el botón)
+  onError?: (message: string) => void;      // error de cámara
+  statusText?: string;                       // texto barra inferior en SEARCHING
+  successText?: string;                      // mensaje en pantalla de éxito (default: "Código leído correctamente")
+  formats?: string[];                        // default: ['qr_code']
+  validate?: (rawValue: string) => QrValidateResult; // si no se pasa, siempre success
 }
 ```
 
-> **Nota sobre `scanDelay`:** Con el modelo press-to-scan, el debounce manual (1800-3000ms) es innecesario. El usuario controla el timing con el botón. Se puede bajar a 200ms para detectar más rápido en SCANNING.
+### Prop `validate`
+Función **síncrona** que recibe el valor raw y decide si es válido. Si falla → pantalla RESULT fail con el mensaje devuelto. Si no se proporciona → siempre success.
 
 ---
 
-## Estructura de archivos
+## Uso por contexto
 
-```
-src/components/Shared/QrScannerWidget/
-├── index.tsx                 ← export principal + state machine
-└── ScannerViewfinder.tsx     ← viewfinder + corner guides + scan line + flash
-```
-
-**Localización:** `Shared/` porque lo usan múltiples roles (Almacén, Palets, Field, Comercial).
-
----
-
-## Plan de migración
-
-Una vez creado `QrScannerWidget`, sustituir en estos 5 puntos de consumo:
-
-| Archivo | Componente actual | Acción |
-|---|---|---|
-| `src/components/Admin/Pallets/PalletDialog/MobilePalletView/ScanTab.tsx` | `Step2CameraScanner` | Reemplazar import |
-| `src/components/Admin/Pallets/PalletDialog/MobilePalletView/EliminarTab.tsx` | `Step2CameraScanner` | Reemplazar import |
-| `src/components/Admin/Stores/Mobile/MobileStoreListView.tsx` | `MobilePalletQrScanner` | Reemplazar import |
-| `src/components/Admin/Stores/Mobile/MobileStoreDetailView.tsx` | `MobilePalletQrScanner` | Reemplazar import |
-| `src/components/Comercial/Autoventa/Step2QRScan/index.js` | `Step2CameraScanner` | Reemplazar import + migrar a `.tsx` |
-
-Tras la migración completa:
-- Eliminar `src/components/Comercial/Autoventa/Step2CameraScanner.js`
-- Eliminar `src/components/Admin/Stores/Mobile/MobilePalletQrScanner.tsx`
-- Migrar `Step2QRScan/index.js` → `.tsx` (regla de oro 3: JS legacy al tocar)
+| Contexto | `formats` | `validate` | `statusText` | `successText` |
+|---|---|---|---|---|
+| Almacén → localizar palet | `['qr_code']` | ✅ `validatePalletQr` | "Apunta al QR del palet" | "Palet localizado" |
+| Almacén detalle → localizar palet | `['qr_code']` | ✅ `validatePalletQr` | "Apunta al QR del palet" | "Palet localizado" |
+| Palets → añadir caja | `['qr_code']` | — | "Apunta al código GS1-128 de la caja" | "Caja registrada" |
+| Palets → eliminar caja | `['qr_code']` | — | "Apunta al código GS1-128 de la caja a eliminar" | "Código leído" |
+| Autoventa → añadir caja | `['code_128','qr_code']` | ✅ `validateGs1128` | "Apunta al código de la caja" | "Caja añadida" |
 
 ---
 
-## Prop `statusText` por contexto de uso
+## Componentes eliminados
 
-| Contexto | `statusText` |
+| Archivo eliminado | Reemplazado por |
 |---|---|
-| Palets — añadir caja | `"Apunta al código GS1-128 de la caja"` |
-| Palets — eliminar caja | `"Apunta al código GS1-128 de la caja a eliminar"` |
-| Almacén — localizar palet | `"Apunta al QR del palet"` |
-| Autoventa — añadir caja | `"Apunta al código de la caja"` |
+| `src/components/Comercial/Autoventa/Step2CameraScanner.js` | `QrScannerWidget` |
+| `src/components/Admin/Stores/Mobile/MobilePalletQrScanner.tsx` | `QrScannerWidget` |
+| `src/components/Comercial/Autoventa/Step2QRScan/index.js` | `Step2QRScan/index.tsx` (migrado a TS) |
 
 ---
 
-## Pendiente de decidir / afinar
+## Animaciones CSS (`src/app/globals.css`)
 
-- [ ] ¿Los corner guides ocupan toda la pantalla o tienen un recuadro centrado fijo (ej. 280×280px)?
-- [ ] ¿El botón "Leer QR" es solo texto + icono, o incluye algún efecto visual (ej. borde pulsante en idle)?
-- [ ] ¿En modo `autoConfirm={false}`, mostrar el valor raw o una versión legible (ej. "Caja: GTIN…")?
-- [ ] ¿El estado SCANNING tiene un timeout (ej. 8s sin detección → vuelve a IDLE con mensaje)?
-- [ ] ¿La scan line es horizontal (clásica) o se adapta a los corner guides (recorre el recuadro interior)?
+```css
+@keyframes qr-scan-line   { 0%→100%: traversal top 11%→89%, fade in/out }
+@keyframes qr-shimmer     { shimmer horizontal en el botón "Leer" }
+@keyframes qr-result-in   { fade in del overlay de resultado }
+@keyframes qr-result-scale { scale+translateY del QR card en resultado }
+@keyframes qr-badge-pop   { pop del badge checkmark/X }
+```
 
 ---
 
 ## Archivos relacionados
 
+- `src/lib/scannerSound.ts` — síntesis de sonido + vibración
 - `src/lib/qr/parseQrPayload.ts` — parser de payloads QR internos
 - `src/lib/gs1128Parser.js` — parser de códigos GS1-128 de cajas
 - `docs/73-sistema-payloads-qr.md` — especificación del formato de payload QR

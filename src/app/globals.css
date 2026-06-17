@@ -367,4 +367,28 @@ select:focus-visible,
   .animate-shimmer {
     animation: shimmer 1.5s infinite;
   }
+
+  /* QrScannerWidget */
+  @keyframes qr-scan-line {
+    0%   { top: 11%; opacity: 0; }
+    7%   { opacity: 1; }
+    93%  { opacity: 1; }
+    100% { top: 89%; opacity: 0; }
+  }
+  @keyframes qr-shimmer {
+    from { background-position: -200% center; }
+    to   { background-position:  200% center; }
+  }
+  @keyframes qr-result-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes qr-result-scale {
+    from { transform: scale(0.55) translateY(12px); opacity: 0; }
+    to   { transform: scale(1)    translateY(0);    opacity: 1; }
+  }
+  @keyframes qr-badge-pop {
+    from { transform: scale(0.2); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+  }
 }

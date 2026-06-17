@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { ScanSearch, Trash2, TriangleAlert } from 'lucide-react';
 import {
@@ -18,12 +18,10 @@ import { Button } from '@/components/ui/button';
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
 import type { PalletBox, PalletState } from '@/hooks/pallets/palletHelpers';
 
-const Step2CameraScanner = dynamic(
-  () => import('@/components/Comercial/Autoventa/Step2CameraScanner'),
+const QrScannerWidget = dynamic(
+  () => import('@/components/Shared/QrScannerWidget').then((m) => ({ default: m.QrScannerWidget })),
   { ssr: false }
 );
-
-const DEBOUNCE_MS = 2500;
 
 interface EliminarTabProps {
   temporalPallet: PalletState;
@@ -41,18 +39,12 @@ export default function EliminarTab({
   isReadOnly,
 }: EliminarTabProps) {
   const [scannerOpen, setScannerOpen] = useState(false);
-  const lastScannedRef = useRef<{ code: string; at: number }>({ code: '', at: 0 });
 
   const boxes: PalletBox[] = temporalPallet.boxes ?? [];
 
   const handleScannedCode = (rawValue: string) => {
     const code = String(rawValue ?? '').trim();
     if (!code) return;
-    const now = Date.now();
-    if (code === lastScannedRef.current.code && now - lastScannedRef.current.at < DEBOUNCE_MS) {
-      return;
-    }
-    lastScannedRef.current = { code, at: now };
     onDeleteScannedCode(code);
   };
 
@@ -159,11 +151,12 @@ export default function EliminarTab({
 
       {/* Camera scanner */}
       {scannerOpen && (
-        <Step2CameraScanner
+        <QrScannerWidget
           onScan={handleScannedCode}
           onClose={() => setScannerOpen(false)}
           onError={() => setScannerOpen(false)}
-          boxesCount={boxes.length}
+          statusText="Apunta al código GS1-128 de la caja a eliminar"
+          successText="Código leído"
         />
       )}
     </div>

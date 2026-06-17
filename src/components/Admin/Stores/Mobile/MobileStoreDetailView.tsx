@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import {
   ArrowLeft,
   ArrowRightLeft,
@@ -44,8 +44,14 @@ import PalletDialog from '@/components/Admin/Pallets/PalletDialog';
 import { type PalletState } from '@/hooks/usePallet';
 import { PalletsListDialog } from '../StoresManager/Store/PalletsListDialog';
 import { ProductSummaryDialog } from '../StoresManager/Store/ProductSummaryDialog';
-import { MobilePalletQrScanner } from './MobilePalletQrScanner';
+import dynamic from 'next/dynamic';
 import { parseQrPayload } from '@/lib/qr/parseQrPayload';
+import type { QrValidateResult } from '@/components/Shared/QrScannerWidget';
+
+const QrScannerWidget = dynamic(
+  () => import('@/components/Shared/QrScannerWidget').then((m) => ({ default: m.QrScannerWidget })),
+  { ssr: false }
+);
 import { notify } from '@/lib/notifications';
 
 interface MobileStoreDetailViewProps {
@@ -63,7 +69,6 @@ export function MobileStoreDetailView({
   const [palletsDialogOpen, setPalletsDialogOpen] = useState(false);
   const [productsDialogOpen, setProductsDialogOpen] = useState(false);
   const [scannerOpen, setScannerOpen] = useState(false);
-  const lastScannedRef = useRef({ code: '', at: 0 });
   useHideBottomNav();
 
   const {
@@ -103,46 +108,36 @@ export function MobileStoreDetailView({
   const isUnallocatedFilled = isPositionFilled(UNLOCATED_POSITION_ID);
   const storeContent = store?.content as { pallets?: Array<{ id?: string | number }> } | undefined;
 
-  const handleScannedPalletQr = (rawValue: string) => {
-    const code = String(rawValue ?? '').trim();
-    if (!code) return;
-
-    const now = Date.now();
-    const { code: lastCode, at: lastAt } = lastScannedRef.current;
-    if (code === lastCode && now - lastAt < 1800) return;
-    lastScannedRef.current = { code, at: now };
-
-    const payload = parseQrPayload(code);
-    const palletId = payload.P || (/^\d+$/.test(code) ? code : null);
-
+  const validatePalletQr = (rawValue: string): QrValidateResult => {
+    const payload = parseQrPayload(rawValue);
+    const palletId = payload.P || (/^\d+$/.test(rawValue) ? rawValue : null);
     if (!palletId || !/^\d+$/.test(String(palletId))) {
-      notify.error({
-        title: 'QR no reconocido',
-        description: 'No se encontró un identificador de palet en el código escaneado.',
-      });
-      return;
+      return { ok: false, message: 'No se encontró un identificador de palet.' };
     }
+    return { ok: true };
+  };
+
+  const handleScannedPalletQr = (rawValue: string) => {
+    const payload = parseQrPayload(rawValue);
+    const palletId = payload.P || (/^\d+$/.test(rawValue) ? rawValue : null);
+    if (!palletId) return;
 
     const numericPalletId = Number(palletId);
     const palletInStore = storeContent?.pallets?.some(
-      (pallet) => Number(pallet.id) === numericPalletId
+      (pallet) => Number(pallet.id) === numericPalletId,
     );
 
-    setScannerOpen(false);
     openPalletDialog(numericPalletId);
 
-    if (palletInStore) {
-      notify.success({ title: `Palet #${numericPalletId} localizado` }, { duration: 1200 });
-      return;
+    if (!palletInStore) {
+      notify.info(
+        {
+          title: `Abriendo palet #${numericPalletId}`,
+          description: 'No aparece en este almacén, pero se abrirá su ficha.',
+        },
+        { duration: 1800 },
+      );
     }
-
-    notify.info(
-      {
-        title: `Abriendo palet #${numericPalletId}`,
-        description: 'No aparece en este almacén, pero se abrirá su ficha.',
-      },
-      { duration: 1800 }
-    );
   };
 
   const handleScannerError = (message: string) => {
@@ -299,10 +294,13 @@ export function MobileStoreDetailView({
       <MoveMultiplePalletsToStoreDialog />
 
       {scannerOpen && (
-        <MobilePalletQrScanner
+        <QrScannerWidget
           onScan={handleScannedPalletQr}
           onClose={() => setScannerOpen(false)}
           onError={handleScannerError}
+          validate={validatePalletQr}
+          statusText="Apunta al QR del palet"
+          successText="Palet localizado"
         />
       )}
 
