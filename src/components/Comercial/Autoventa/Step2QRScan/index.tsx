@@ -72,9 +72,12 @@ export default function Step2QRScan({
       .finally(() => setLoadingProducts(false));
   }, [token, loadProductOptions]);
 
+  // parseGs1128Line (JS) infers boxGtin as required; ProductOption has it optional.
+  type Gs1OptionsArg = { value: unknown; label: unknown; boxGtin: unknown }[];
+
   const validateGs1128 = useCallback(
     (rawValue: string): QrValidateResult => {
-      const parsed = parseGs1128Line(rawValue, productsOptions);
+      const parsed = parseGs1128Line(rawValue, productsOptions as Gs1OptionsArg);
       return parsed ? { ok: true } : { ok: false, message: 'Código GS1-128 no reconocido' };
     },
     [productsOptions],
@@ -84,7 +87,7 @@ export default function Step2QRScan({
     (rawValue: string) => {
       const code = String(rawValue ?? '').trim();
       if (!code) return;
-      const parsed = parseGs1128Line(code, productsOptions);
+      const parsed = parseGs1128Line(code, productsOptions as Gs1OptionsArg);
       if (parsed) addBox(parsed);
     },
     [productsOptions, addBox],
@@ -110,7 +113,7 @@ export default function Step2QRScan({
     let invalid = 0;
 
     lines.forEach((line) => {
-      const parsed = parseGs1128Line(line, productsOptions);
+      const parsed = parseGs1128Line(line, productsOptions as Gs1OptionsArg);
       if (parsed) {
         addBox(parsed);
         added += 1;
