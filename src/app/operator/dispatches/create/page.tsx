@@ -1,12 +1,23 @@
 'use client';
 
 import { useState } from 'react';
+import { type ComponentType } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import OperarioCreateCeboForm from '@/components/Warehouse/OperarioCreateCeboForm';
+import OperarioCreateCeboFormJS from '@/components/Warehouse/OperarioCreateCeboForm';
 import CeboSuccessActions from '@/components/Warehouse/CeboSuccessActions';
 import { operatorRoutes } from '@/configs/roleRoutesConfig';
 import Loader from '@/components/Utilities/Loader';
+
+interface CeboFormProps {
+  onSuccess: (dispatch: Record<string, unknown>) => void;
+  onCancel: () => void;
+  initialSupplierId?: string | null;
+}
+
+// JS source file infers prop types from default values (null → null | undefined).
+// This cast declares the actual accepted types without touching the legacy JS file.
+const OperarioCreateCeboForm = OperarioCreateCeboFormJS as unknown as ComponentType<CeboFormProps>;
 
 export default function OperatorDispatchesCreatePage() {
   const router = useRouter();
