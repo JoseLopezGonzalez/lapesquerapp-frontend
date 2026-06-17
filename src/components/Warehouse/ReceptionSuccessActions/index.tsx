@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { type ComponentType, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,22 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Printer, Tag, Tags, PlusCircle, LogOut, CircleCheck } from 'lucide-react';
 import { usePrintElement } from '@/hooks/usePrintElement';
 import { notify } from '@/lib/notifications';
-import ReceptionReciboPrintContent from '@/components/Admin/RawMaterialReceptions/ReceptionPrintDialog/ReceptionReciboPrintContent';
+import ReceptionReciboPrintContentJS from '@/components/Admin/RawMaterialReceptions/ReceptionPrintDialog/ReceptionReciboPrintContent';
+
+interface ReceptionPrintContentProps {
+  receptionId?: number | string;
+  supplier?: unknown;
+  date?: string | null;
+  notes?: string;
+  details?: object[];
+  pallets?: object[];
+  creationMode?: string | null;
+  className?: string;
+}
+
+// JS source file infers details/pallets as never[] from empty-array defaults.
+// This cast declares the actual accepted types without touching the legacy JS file.
+const ReceptionReciboPrintContent = ReceptionReciboPrintContentJS as unknown as ComponentType<ReceptionPrintContentProps>;
 
 const LABELS_PRINT_ID = 'product-labels-print-content';
 const LOT_LABELS_PRINT_ID = 'lot-labels-print-content';
