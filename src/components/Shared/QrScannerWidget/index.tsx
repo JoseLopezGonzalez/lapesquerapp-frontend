@@ -249,12 +249,10 @@ function ResultOverlay({
 function BottomBar({
   phase,
   statusText,
-  onConfirm,
   onClose,
 }: {
   phase: ScanPhase;
   statusText?: string;
-  onConfirm: () => void;
   onClose: () => void;
 }) {
   if (phase.type === 'result') return null;
@@ -280,31 +278,14 @@ function BottomBar({
       )}
 
       {phase.type === 'detected' && (
-        <div className="flex items-center gap-3">
-          <Button
-            type="button"
-            size="lg"
-            className="flex-1 text-base font-semibold"
-            style={{
-              backgroundImage:
-                'linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--primary)) 30%, rgba(255,255,255,0.22) 50%, hsl(var(--primary)) 70%, hsl(var(--primary)) 100%)',
-              backgroundSize: '200% auto',
-              animation: 'qr-shimmer 1.6s linear infinite',
-            }}
-            onClick={onConfirm}
-          >
-            <Check className="mr-2 h-5 w-5" />
-            Leer código
-          </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            size="lg"
-            className="shrink-0 px-3"
-            onClick={onClose}
-            aria-label="Cerrar escáner"
-          >
-            <X className="h-5 w-5" />
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-2 text-primary">
+            <Check className="h-4 w-4 shrink-0 animate-pulse" />
+            <span className="truncate text-sm font-medium">Código detectado</span>
+          </div>
+          <Button type="button" variant="secondary" size="sm" className="shrink-0" onClick={onClose}>
+            <X className="mr-1.5 h-4 w-4" />
+            Cancelar
           </Button>
         </div>
       )}
@@ -328,11 +309,13 @@ export function QrScannerWidget({
 
   // phaseRef is kept manually in sync with every setPhase call to avoid
   // the async gap between setState and the sync-useEffect pattern. This
-  // lets handleDetect/handleConfirm/handleClose read the current phase
-  // synchronously without stale-closure issues.
+  // lets handleDetect/handleClose read the current phase synchronously
+  // without stale-closure issues.
   const phaseRef = useRef<ScanPhase>(phase);
 
-  const clearDetectionRef = useRef<ReturnType<typeof setTimeout>>(null);
+  // confirmTimerRef: set when entering detected phase; fires auto-confirm after
+  // a brief visual pause showing the detection outline.
+  const confirmTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
   const autoCloseRef = useRef<ReturnType<typeof setTimeout>>(null);
 
   // Stable refs for parent callbacks so the auto-close timer never captures
@@ -348,7 +331,7 @@ export function QrScannerWidget({
 
   useEffect(
     () => () => {
-      clearTimeout(clearDetectionRef.current ?? undefined);
+      clearTimeout(confirmTimerRef.current ?? undefined);
       clearTimeout(autoCloseRef.current ?? undefined);
     },
     [],
@@ -371,58 +354,46 @@ export function QrScannerWidget({
     return () => clearTimeout(autoCloseRef.current ?? undefined);
   }, [phase]);
 
-  const handleDetect = useCallback((codes: DetectedCode[]) => {
-    // phaseRef is kept synchronously up-to-date, so this check is safe
-    // even before React flushes the pending setPhase calls.
-    if (phaseRef.current.type === 'result') return;
+  const handleDetect = useCallback(
+    (codes: DetectedCode[]) => {
+      // Only enter detected from searching — prevent re-triggering while
+      // counting down to auto-confirm or while showing the result overlay.
+      if (phaseRef.current.type !== 'searching') return;
 
-    clearTimeout(clearDetectionRef.current ?? undefined);
+      const code = codes[0];
+      if (!code?.rawValue) return;
 
-    const code = codes[0];
-    if (!code?.rawValue) return;
+      const { rawValue, cornerPoints } = code;
+      const detectedPhase: ScanPhase = {
+        type: 'detected',
+        rawValue,
+        cornerPoints: cornerPoints ?? [],
+      };
+      phaseRef.current = detectedPhase;
+      setPhase(detectedPhase);
 
-    const newPhase: ScanPhase = {
-      type: 'detected',
-      rawValue: code.rawValue,
-      cornerPoints: code.cornerPoints ?? [],
-    };
-    phaseRef.current = newPhase;
-    setPhase(newPhase);
-
-    // If the QR leaves frame, reset to searching
-    clearDetectionRef.current = setTimeout(() => {
-      if (phaseRef.current.type === 'detected') {
-        const searching: ScanPhase = { type: 'searching' };
-        phaseRef.current = searching;
-        setPhase(searching);
-      }
-    }, 800);
-  }, []);
-
-  const handleConfirm = useCallback(() => {
-    // phaseRef is updated synchronously so this guard prevents double-fire
-    // even when the button is tapped twice before React re-renders.
-    const current = phaseRef.current;
-    if (current.type !== 'detected') return;
-    const { rawValue } = current;
-
-    const result: QrValidateResult = validate ? validate(rawValue) : { ok: true };
-    const newPhase: ScanPhase = result.ok
-      ? { type: 'result', rawValue, status: 'success', message: successText }
-      : { type: 'result', rawValue, status: 'fail', message: result.message };
-
-    // Update ref BEFORE setPhase so concurrent handleDetect calls see
-    // 'result' immediately and skip the detection branch.
-    phaseRef.current = newPhase;
-
-    if (result.ok) playScanSuccess();
-    else playScanFail();
-
-    setPhase(newPhase);
-  }, [validate, successText]);
+      // Auto-confirm after a brief visual pause: show the detection outline,
+      // then validate and transition to the result overlay automatically.
+      // This avoids the UX trap of a confirm button appearing mid-gesture and
+      // being accidentally tapped.
+      confirmTimerRef.current = setTimeout(() => {
+        if (phaseRef.current.type !== 'detected') return;
+        const { rawValue: rv } = phaseRef.current;
+        const result: QrValidateResult = validate ? validate(rv) : { ok: true };
+        const resultPhase: ScanPhase = result.ok
+          ? { type: 'result', rawValue: rv, status: 'success', message: successText }
+          : { type: 'result', rawValue: rv, status: 'fail', message: result.message };
+        phaseRef.current = resultPhase;
+        if (result.ok) playScanSuccess();
+        else playScanFail();
+        setPhase(resultPhase);
+      }, 800);
+    },
+    [validate, successText],
+  );
 
   const handleRetry = useCallback(() => {
-    clearTimeout(clearDetectionRef.current ?? undefined);
+    clearTimeout(confirmTimerRef.current ?? undefined);
     const searching: ScanPhase = { type: 'searching' };
     phaseRef.current = searching;
     onScanFiredRef.current = false;
@@ -431,7 +402,7 @@ export function QrScannerWidget({
 
   const handleClose = useCallback(() => {
     clearTimeout(autoCloseRef.current ?? undefined);
-    clearTimeout(clearDetectionRef.current ?? undefined);
+    clearTimeout(confirmTimerRef.current ?? undefined);
     // Fire onScan if closing during a successful result, but only once.
     const current = phaseRef.current;
     if (current.type === 'result' && current.status === 'success' && !onScanFiredRef.current) {
@@ -494,7 +465,6 @@ export function QrScannerWidget({
       <BottomBar
         phase={phase}
         statusText={statusText}
-        onConfirm={handleConfirm}
         onClose={handleClose}
       />
     </div>
