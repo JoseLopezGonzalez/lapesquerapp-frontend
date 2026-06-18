@@ -44,6 +44,7 @@ export default function ScanTab({
   canEditCost,
 }: ScanTabProps) {
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [sessionCount, setSessionCount] = useState(0);
   const [manualOpen, setManualOpen] = useState(false);
 
   const validateGs1128 = useCallback(
@@ -58,6 +59,7 @@ export default function ScanTab({
     const code = String(rawValue ?? '').trim();
     if (!code) return;
     boxCreationDataChange('scannedCode', code);
+    setSessionCount((prev) => prev + 1);
   };
 
   const boxes: PalletBox[] = temporalPallet.boxes ?? [];
@@ -68,8 +70,8 @@ export default function ScanTab({
       {/* Hero scan button */}
       <Button
         size="lg"
-        className="h-16 w-full gap-2.5 text-base font-semibold"
-        onClick={() => setScannerOpen(true)}
+        className="h-16 w-full gap-2.5 text-base font-semibold shadow-md disabled:opacity-70"
+        onClick={() => { setSessionCount(0); setScannerOpen(true); }}
         disabled={isReadOnly || productsLoading}
       >
         <Scan className="h-5 w-5" />
@@ -223,6 +225,8 @@ export default function ScanTab({
           validate={validateGs1128}
           statusText="Apunta al código GS1-128 de la caja"
           successText="Caja registrada"
+          boxCount={boxes.length}
+          sessionCount={sessionCount}
         />
       )}
     </div>

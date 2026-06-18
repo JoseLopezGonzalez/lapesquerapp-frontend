@@ -27,6 +27,8 @@ export interface QrScannerWidgetProps {
   successText?: string;
   formats?: string[];
   validate?: (rawValue: string) => QrValidateResult;
+  boxCount?: number;
+  sessionCount?: number;
 }
 
 type ScanPhase =
@@ -364,6 +366,8 @@ export function QrScannerWidget({
   successText = 'Código leído correctamente',
   formats = ['qr_code'],
   validate,
+  boxCount,
+  sessionCount,
 }: QrScannerWidgetProps) {
   const [phase, setPhase] = useState<ScanPhase>({ type: 'searching' });
   const containerRef = useRef<HTMLDivElement>(null);
@@ -534,6 +538,22 @@ export function QrScannerWidget({
         </button>
       )}
 
+      {/* Box counter pill — top-left, symmetric to close button */}
+      {phase.type !== 'result' && boxCount !== undefined && (
+        <div
+          className="fixed left-4 z-[110] flex h-11 items-center gap-1.5 rounded-full bg-black/40 px-4 text-sm text-white backdrop-blur-md"
+          style={{ top: 'max(1rem, calc(env(safe-area-inset-top) + 0.5rem))' }}
+        >
+          <span className="text-white/70">{boxCount}</span>
+          {sessionCount !== undefined && sessionCount > 0 && (
+            <>
+              <span className="text-white/30">·</span>
+              <span className="font-semibold text-green-400">+{sessionCount}</span>
+            </>
+          )}
+        </div>
+      )}
+
       {/* Floating confirm button — centered bottom, appears when QR is detected */}
       {phase.type === 'detected' && (
         <div
@@ -546,7 +566,7 @@ export function QrScannerWidget({
             className="flex h-14 items-center gap-2.5 rounded-full px-10 text-base font-semibold text-white shadow-2xl transition-transform active:scale-95"
             style={{
               backgroundImage:
-                'linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--primary)) 30%, rgba(255,255,255,0.22) 50%, hsl(var(--primary)) 70%, hsl(var(--primary)) 100%)',
+                'linear-gradient(90deg, var(--primary) 0%, var(--primary) 30%, rgba(255,255,255,0.22) 50%, var(--primary) 70%, var(--primary) 100%)',
               backgroundSize: '200% auto',
               animation: 'qr-shimmer 1.6s linear infinite',
               boxShadow: '0 8px 32px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.1)',
