@@ -34,6 +34,7 @@ export interface QrScannerWidgetProps {
 type ScanPhase =
   | { type: 'searching' }
   | { type: 'detected'; rawValue: string; cornerPoints: ReadonlyArray<Point> }
+  | { type: 'multiple'; codes: ScannedCode[] }
   | { type: 'result'; rawValue: string; status: 'success' | 'fail'; message: string };
 
 // ─── Coordinate mapping ────────────────────────────────────────────────────────
@@ -254,6 +255,62 @@ function DetectionOverlay({
   );
 }
 
+function MultipleDetectionOverlay({
+  codes,
+  containerRef,
+  onSelect,
+}: {
+  codes: ScannedCode[];
+  containerRef: React.RefObject<HTMLDivElement | null>;
+  onSelect: (code: ScannedCode) => void;
+}) {
+  return (
+    <svg className="pointer-events-none absolute inset-0 h-full w-full overflow-visible">
+      <defs>
+        <filter id="qr-multi-glow" x="-25%" y="-25%" width="150%" height="150%">
+          <feGaussianBlur stdDeviation="4" result="blur" />
+          <feComposite in="SourceGraphic" in2="blur" operator="over" />
+        </filter>
+      </defs>
+      {codes.map((code, i) => {
+        const mapped = mapToDisplay(code.cornerPoints, containerRef.current);
+        if (mapped.length < 3) return null;
+        const path = roundedPolygonPath(mapped, 14);
+        return (
+          <g key={i} className="pointer-events-auto cursor-pointer" onClick={() => onSelect(code)}>
+            <path d={path} fill="rgba(251,191,36,0.10)" />
+            <path
+              d={path}
+              fill="none"
+              stroke="rgba(251,191,36,0.45)"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+            <path
+              d={path}
+              fill="none"
+              stroke="rgb(251,191,36)"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              pathLength="100"
+              strokeDasharray="10 5"
+              filter="url(#qr-multi-glow)"
+            >
+              <animate
+                attributeName="stroke-dashoffset"
+                from="15"
+                to="0"
+                dur="0.5s"
+                repeatCount="indefinite"
+              />
+            </path>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
 function ResultOverlay({
   rawValue,
   status,
@@ -364,7 +421,7 @@ export function QrScannerWidget({
   onClose,
   onError,
   successText = 'Código leído correctamente',
-  formats = ['qr_code'],
+  formats = ['qr_code', 'code_128'],
   validate,
   boxCount,
   sessionCount,
@@ -413,10 +470,13 @@ export function QrScannerWidget({
     if (phaseRef.current.type === 'result') return;
 
     if (codes.length === 0) {
-      if (phaseRef.current.type === 'detected' && !lostDetectionRef.current) {
+      if (
+        (phaseRef.current.type === 'detected' || phaseRef.current.type === 'multiple') &&
+        !lostDetectionRef.current
+      ) {
         lostDetectionRef.current = setTimeout(() => {
           lostDetectionRef.current = null;
-          if (phaseRef.current.type === 'detected') {
+          if (phaseRef.current.type === 'detected' || phaseRef.current.type === 'multiple') {
             const searching: ScanPhase = { type: 'searching' };
             phaseRef.current = searching;
             setPhase(searching);
@@ -429,14 +489,19 @@ export function QrScannerWidget({
     clearTimeout(lostDetectionRef.current ?? undefined);
     lostDetectionRef.current = null;
 
-    const code = codes[0];
-    const newPhase: ScanPhase = {
-      type: 'detected',
-      rawValue: code.rawValue,
-      cornerPoints: code.cornerPoints,
-    };
-    phaseRef.current = newPhase;
-    setPhase(newPhase);
+    if (codes.length === 1) {
+      const newPhase: ScanPhase = {
+        type: 'detected',
+        rawValue: codes[0].rawValue,
+        cornerPoints: codes[0].cornerPoints,
+      };
+      phaseRef.current = newPhase;
+      setPhase(newPhase);
+    } else {
+      const newPhase: ScanPhase = { type: 'multiple', codes };
+      phaseRef.current = newPhase;
+      setPhase(newPhase);
+    }
   }, []);
 
   const handleError = useCallback(
@@ -462,6 +527,21 @@ export function QrScannerWidget({
     lostDetectionRef.current = null;
 
     const { rawValue } = current;
+    const result: QrValidateResult = validate ? validate(rawValue) : { ok: true };
+    const newPhase: ScanPhase = result.ok
+      ? { type: 'result', rawValue, status: 'success', message: successText }
+      : { type: 'result', rawValue, status: 'fail', message: result.message };
+
+    playTone(result.ok ? 'success' : 'fail');
+    phaseRef.current = newPhase;
+    setPhase(newPhase);
+  }, [validate, successText]);
+
+  const handleConfirmCode = useCallback((code: ScannedCode) => {
+    clearTimeout(lostDetectionRef.current ?? undefined);
+    lostDetectionRef.current = null;
+
+    const { rawValue } = code;
     const result: QrValidateResult = validate ? validate(rawValue) : { ok: true };
     const newPhase: ScanPhase = result.ok
       ? { type: 'result', rawValue, status: 'success', message: successText }
@@ -514,6 +594,14 @@ export function QrScannerWidget({
           <DetectionOverlay cornerPoints={phase.cornerPoints} containerRef={containerRef} />
         )}
 
+        {phase.type === 'multiple' && (
+          <MultipleDetectionOverlay
+            codes={phase.codes}
+            containerRef={containerRef}
+            onSelect={handleConfirmCode}
+          />
+        )}
+
         {phase.type === 'result' && (
           <ResultOverlay
             rawValue={phase.rawValue}
@@ -551,6 +639,18 @@ export function QrScannerWidget({
               <span className="font-semibold text-green-400">+{sessionCount}</span>
             </>
           )}
+        </div>
+      )}
+
+      {/* Hint pill — centered bottom, appears when multiple codes detected */}
+      {phase.type === 'multiple' && (
+        <div
+          className="fixed bottom-0 left-0 right-0 z-[110] flex justify-center"
+          style={{ paddingBottom: 'calc(2.5rem + env(safe-area-inset-bottom))' }}
+        >
+          <div className="flex h-12 items-center gap-2 rounded-full bg-black/50 px-6 text-sm text-white/80 backdrop-blur-md">
+            Toca el código que quieres leer
+          </div>
         </div>
       )}
 

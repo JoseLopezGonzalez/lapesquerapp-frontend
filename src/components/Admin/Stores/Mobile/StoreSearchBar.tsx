@@ -1,7 +1,7 @@
 'use client';
 
 import { type ChangeEvent, useMemo, useRef, useState } from 'react';
-import { Filter, ScanLine, Search, X } from 'lucide-react';
+import { Filter, MapPin, ScanLine, Search, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,25 +25,40 @@ type StorePallet = {
   }>;
 };
 
+type SpeciesEntry = {
+  products?: Array<{ name: string; quantity: number; boxes: number }>;
+};
+
 export function StoreSearchBar({ onScannerOpen }: StoreSearchBarProps) {
   const [query, setQuery] = useState('');
   const [filtersSheetOpen, setFiltersSheetOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { store, productsOptions, openPalletDialog, onChangeFilters, filters } =
+  const { store, speciesSummary, productsOptions, openPalletDialog, onChangeFilters, filters } =
     useStoreContext();
+
+  // Mapa de nombre de artículo → { kg, cajas } para mostrar en los resultados
+  const productSummaryMap = useMemo(() => {
+    const map = new Map<string, { kg: number; boxes: number }>();
+    (speciesSummary as SpeciesEntry[]).forEach((species) => {
+      species.products?.forEach((p) => {
+        map.set(p.name, { kg: p.quantity, boxes: p.boxes });
+      });
+    });
+    return map;
+  }, [speciesSummary]);
 
   // Datos enriquecidos de cada palet: nombres de producto y lotes que contiene
   const palletSearchData = useMemo(() => {
     return ((store?.content?.pallets as StorePallet[] | undefined) ?? []).map((pallet) => {
-      const productNames: string[] = [];
+      const productNamesLower: string[] = [];
       const productHints: string[] = [];
       const lots: string[] = [];
 
       (pallet.boxes ?? []).forEach((box) => {
         const name = box.product?.name;
-        if (name && !productNames.includes(name.toLowerCase())) {
-          productNames.push(name.toLowerCase());
+        if (name && !productNamesLower.includes(name.toLowerCase())) {
+          productNamesLower.push(name.toLowerCase());
           productHints.push(name);
         }
         const lot = box.lot;
@@ -52,12 +67,7 @@ export function StoreSearchBar({ onScannerOpen }: StoreSearchBarProps) {
         }
       });
 
-      return {
-        id: pallet.id,
-        productNames,
-        productHint: productHints[0] ?? '',
-        lots,
-      };
+      return { id: pallet.id, productNamesLower, productHint: productHints[0] ?? '', lots };
     });
   }, [store?.content?.pallets]);
 
@@ -75,7 +85,7 @@ export function StoreSearchBar({ onScannerOpen }: StoreSearchBarProps) {
   const q = query.trim().toLowerCase();
   const showResults = q.length >= 1;
 
-  // Palets que coinciden por ID
+  // Palets por ID
   const palletsByIdMatch = showResults
     ? palletSearchData
         .filter((p) => String(p.id).includes(q))
@@ -83,29 +93,26 @@ export function StoreSearchBar({ onScannerOpen }: StoreSearchBarProps) {
         .map((p) => ({ id: p.id, hint: '' }))
     : [];
 
-  // Palets que coinciden por nombre de producto (deduplicados respecto a los de ID)
+  // Palets por nombre de producto (deduplicados)
   const palletsByProductMatch = showResults
     ? palletSearchData
         .filter(
           (p) =>
-            p.productNames.some((name) => name.includes(q)) &&
+            p.productNamesLower.some((n) => n.includes(q)) &&
             !palletsByIdMatch.some((pm) => pm.id === p.id),
         )
         .slice(0, 4)
         .map((p) => ({ id: p.id, hint: p.productHint }))
     : [];
 
-  // Palets que coinciden por lote (deduplicados)
-  const existingPalletIds = new Set([
+  // Palets por lote (deduplicados)
+  const existingIds = new Set([
     ...palletsByIdMatch.map((p) => p.id),
     ...palletsByProductMatch.map((p) => p.id),
   ]);
   const palletsByLotMatch = showResults
     ? palletSearchData
-        .filter(
-          (p) =>
-            p.lots.some((lot) => lot.includes(q)) && !existingPalletIds.has(p.id),
-        )
+        .filter((p) => p.lots.some((l) => l.includes(q)) && !existingIds.has(p.id))
         .slice(0, 3)
         .map((p) => ({
           id: p.id,
@@ -115,12 +122,12 @@ export function StoreSearchBar({ onScannerOpen }: StoreSearchBarProps) {
 
   const allMatchingPallets = [...palletsByIdMatch, ...palletsByProductMatch, ...palletsByLotMatch];
 
-  // Artículos como opción de filtro
+  // Artículos como filtro
   const filteredProducts = showResults
-    ? productsOptions.filter((p) => String(p.label).toLowerCase().includes(q)).slice(0, 4)
+    ? productsOptions.filter((p) => String(p.label).toLowerCase().includes(q)).slice(0, 5)
     : [];
 
-  // Lotes como opción de filtro
+  // Lotes como filtro
   const filteredLots = showResults
     ? allLots.filter((lot) => lot.toLowerCase().includes(q)).slice(0, 4)
     : [];
@@ -132,8 +139,16 @@ export function StoreSearchBar({ onScannerOpen }: StoreSearchBarProps) {
     filters.products.length + filters.pallets.length + filters.lots.length;
 
   // Handlers
-  const handleSelectPallet = (palletId: string | number) => {
+  const handleOpenPallet = (palletId: string | number) => {
     openPalletDialog(Number(palletId));
+    setQuery('');
+    inputRef.current?.blur();
+  };
+
+  const handleFilterPallet = (palletId: string | number) => {
+    if (!filters.pallets.some((p) => p === palletId)) {
+      onChangeFilters({ ...filters, pallets: [...filters.pallets, palletId] });
+    }
     setQuery('');
     inputRef.current?.blur();
   };
@@ -147,9 +162,8 @@ export function StoreSearchBar({ onScannerOpen }: StoreSearchBarProps) {
   };
 
   const handleSelectLot = (lot: string) => {
-    const currentLots = filters.lots ?? [];
-    if (!currentLots.includes(lot)) {
-      onChangeFilters({ ...filters, lots: [...currentLots, lot] } as typeof filters & { lots: string[] });
+    if (!filters.lots.includes(lot)) {
+      onChangeFilters({ ...filters, lots: [...filters.lots, lot] });
     }
     setQuery('');
     inputRef.current?.blur();
@@ -158,7 +172,7 @@ export function StoreSearchBar({ onScannerOpen }: StoreSearchBarProps) {
   return (
     <div className="shrink-0 px-3 pb-2">
       <div className="flex items-center gap-2">
-        {/* Input de búsqueda */}
+        {/* Input */}
         <div className="relative min-w-0 flex-1">
           <InputGroup className="h-10">
             <InputGroupAddon align="inline-start">
@@ -199,44 +213,73 @@ export function StoreSearchBar({ onScannerOpen }: StoreSearchBarProps) {
                 <p className="text-muted-foreground px-4 py-3 text-sm">Sin resultados</p>
               ) : (
                 <>
+                  {/* Palets — abrir o filtrar */}
                   {allMatchingPallets.length > 0 && (
                     <>
                       <p className="text-muted-foreground px-4 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wider">
                         Palets
                       </p>
                       {allMatchingPallets.map((p) => (
-                        <button
-                          key={p.id}
-                          onClick={() => handleSelectPallet(p.id)}
-                          className="hover:bg-muted flex w-full items-baseline gap-2 px-4 py-2.5 text-left"
-                        >
-                          <span className="text-sm">Palet #{p.id}</span>
-                          {p.hint && (
-                            <span className="text-muted-foreground truncate text-xs">{p.hint}</span>
-                          )}
-                        </button>
+                        <div key={p.id} className="hover:bg-muted flex w-full items-center">
+                          {/* Acción primaria: abrir ficha */}
+                          <button
+                            onClick={() => handleOpenPallet(p.id)}
+                            className="flex min-w-0 flex-1 items-baseline gap-2 px-4 py-2.5 text-left"
+                          >
+                            <span className="shrink-0 text-sm">Palet #{p.id}</span>
+                            {p.hint && (
+                              <span className="text-muted-foreground truncate text-xs">
+                                {p.hint}
+                              </span>
+                            )}
+                          </button>
+                          {/* Acción secundaria: filtrar en mapa */}
+                          <button
+                            onClick={() => handleFilterPallet(p.id)}
+                            className="text-muted-foreground hover:text-foreground shrink-0 px-3 py-2.5"
+                            aria-label={`Filtrar por palet ${p.id}`}
+                            title="Resaltar en mapa"
+                          >
+                            <MapPin className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
                       ))}
                     </>
                   )}
 
+                  {/* Artículos — filtro con resumen */}
                   {filteredProducts.length > 0 && (
                     <>
                       <p className="text-muted-foreground px-4 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wider">
                         Artículos
                       </p>
-                      {filteredProducts.map((p) => (
-                        <button
-                          key={p.value}
-                          onClick={() => handleSelectProduct(p.value)}
-                          className="hover:bg-muted flex w-full items-center justify-between px-4 py-2.5 text-left text-sm"
-                        >
-                          {p.label}
-                          <span className="text-muted-foreground text-xs">Filtrar</span>
-                        </button>
-                      ))}
+                      {filteredProducts.map((p) => {
+                        const summary = productSummaryMap.get(String(p.label));
+                        return (
+                          <button
+                            key={p.value}
+                            onClick={() => handleSelectProduct(p.value)}
+                            className="hover:bg-muted flex w-full items-center gap-3 px-4 py-2.5 text-left"
+                          >
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm">{p.label}</p>
+                              {summary && (
+                                <p className="text-muted-foreground text-xs">
+                                  {summary.boxes} cajas · {summary.kg % 1 === 0
+                                    ? summary.kg.toFixed(0)
+                                    : summary.kg.toFixed(1)}{' '}
+                                  kg
+                                </p>
+                              )}
+                            </div>
+                            <span className="text-muted-foreground shrink-0 text-xs">Filtrar</span>
+                          </button>
+                        );
+                      })}
                     </>
                   )}
 
+                  {/* Lotes — filtro */}
                   {filteredLots.length > 0 && (
                     <>
                       <p className="text-muted-foreground px-4 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wider">
@@ -261,7 +304,7 @@ export function StoreSearchBar({ onScannerOpen }: StoreSearchBarProps) {
           )}
         </div>
 
-        {/* Botón de filtros activos — solo visible cuando hay filtros */}
+        {/* Botón filtros activos */}
         {activeFilterCount > 0 && (
           <Button
             variant="outline"
