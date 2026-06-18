@@ -1,23 +1,36 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { AlertCircle, CloudAlert, Loader2, RotateCcw, Save } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePallet, saveDiscountPreferences } from '@/hooks/usePallet';
 import { usePalletTimeline } from '@/hooks/usePalletTimeline';
 import { isExternalActor, canManagePalletCostFields } from '@/lib/auth/actor';
+import { parseGs1128Line } from '@/lib/gs1128Parser';
 import type { PalletState } from '@/hooks/usePallet';
 import type { PalletTimelineEntry } from '@/services/palletService';
-import ScanTab from './ScanTab';
+import type { QrValidateResult } from '@/components/Shared/QrScannerWidget';
+import type { PalletScreen } from './types';
+import HubScreen from './HubScreen';
+import AddManualScreen from './AddManualScreen';
+import TaraScreen from './TaraScreen';
+import ObservacionesScreen from './ObservacionesScreen';
+import PedidoScreen from './PedidoScreen';
 import BoxesTab from './BoxesTab';
 import ResumenTab from './ResumenTab';
-import InfoTab from './InfoTab';
+import ImagenesTab from './ImagenesTab';
 import EliminarTab from './EliminarTab';
 import HistorialTab from './HistorialTab';
-import ImagenesTab from './ImagenesTab';
+
+const QrScannerWidget = dynamic(
+  () => import('@/components/Shared/QrScannerWidget').then((m) => ({ default: m.QrScannerWidget })),
+  { ssr: false }
+);
+
+export type { PalletScreen } from './types';
 
 interface MobilePalletViewProps {
   palletId: string | number | null | undefined;
@@ -38,16 +51,15 @@ export default function MobilePalletView({
   onSaveTemporal = null,
   initialPallet = null,
   readOnly: readOnlyProp = false,
-  initialTab,
 }: MobilePalletViewProps) {
   const { data: session } = useSession();
   const externalActor = isExternalActor(session?.user);
   const canEditCost = canManagePalletCostFields(session?.user);
 
   const isNew = !palletId || palletId === 'new' || String(palletId).startsWith('temp-');
-  const [activeTab, setActiveTab] = useState<string>(
-    initialTab ?? (isNew ? 'escanear' : 'cajas')
-  );
+  const [activeScreen, setActiveScreen] = useState<PalletScreen>('hub');
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [sessionCount, setSessionCount] = useState(0);
 
   const {
     temporalPallet,
@@ -97,9 +109,34 @@ export default function MobilePalletView({
     }
   };
 
-  const handleTabChange = (v: string) => {
-    setActiveTab(v);
-    if (v === 'historial' && showHistorial) refetchTimeline();
+  const navigateTo = (screen: PalletScreen) => {
+    if (screen === 'historial' && showHistorial) refetchTimeline();
+    setActiveScreen(screen);
+  };
+
+  const goToHub = useCallback(() => setActiveScreen('hub'), []);
+
+  const handleOpenScanner = () => {
+    setSessionCount(0);
+    setScannerOpen(true);
+  };
+
+  const validateGs1128 = useCallback(
+    (rawValue: string): QrValidateResult => {
+      const parsed = parseGs1128Line(
+        rawValue,
+        productsOptions as { value: unknown; label: unknown; boxGtin: unknown }[]
+      );
+      return parsed ? { ok: true } : { ok: false, message: 'Código GS1-128 no reconocido' };
+    },
+    [productsOptions]
+  );
+
+  const handleScannedCode = (rawValue: string) => {
+    const code = String(rawValue ?? '').trim();
+    if (!code) return;
+    boxCreationDataChange('scannedCode', code);
+    setSessionCount((prev) => prev + 1);
   };
 
   if (loading || !temporalPallet) {
@@ -122,6 +159,121 @@ export default function MobilePalletView({
     );
   }
 
+  const boxes = temporalPallet.boxes ?? [];
+
+  const renderScreen = () => {
+    switch (activeScreen) {
+      case 'hub':
+        return (
+          <HubScreen
+            temporalPallet={temporalPallet}
+            isNew={isNew}
+            isReadOnly={isReadOnly}
+            externalActor={externalActor}
+            showHistorial={showHistorial}
+            onNavigate={navigateTo}
+            onOpenScanner={handleOpenScanner}
+          />
+        );
+
+      case 'add-manual':
+        return (
+          <AddManualScreen
+            productsOptions={productsOptions}
+            productsLoading={productsLoading}
+            boxCreationData={boxCreationData}
+            boxCreationDataChange={boxCreationDataChange}
+            onAddNewBox={onAddNewBox}
+            onResetBoxCreationData={onResetBoxCreationData}
+            onBack={goToHub}
+            isReadOnly={isReadOnly}
+            canEditCost={canEditCost}
+          />
+        );
+
+      case 'cajas':
+        return (
+          <BoxesTab
+            temporalPallet={temporalPallet}
+            onDeleteBox={(boxId) => editPallet.box.delete(boxId)}
+            onDuplicateBox={(boxId) => editPallet.box.duplicate(boxId)}
+            onEditLot={(boxId, lot) => editPallet.box.edit.lot(boxId, lot)}
+            onEditNetWeight={(boxId, w) => editPallet.box.edit.netWeight(boxId, w)}
+            onEditManualCost={(boxId, v) => editPallet.box.edit.manualCostPerKg(boxId, v)}
+            isReadOnly={isReadOnly}
+            canEditCost={canEditCost}
+            onBack={goToHub}
+          />
+        );
+
+      case 'tara':
+        return (
+          <TaraScreen
+            temporalPallet={temporalPallet}
+            onEditPalletTareWeightKg={(v) => editPallet.palletTareWeightKg(v)}
+            onBack={goToHub}
+            isReadOnly={isReadOnly}
+          />
+        );
+
+      case 'observaciones':
+        return (
+          <ObservacionesScreen
+            temporalPallet={temporalPallet}
+            onEditObservations={(obs) => editPallet.observations(obs)}
+            onBack={goToHub}
+            isReadOnly={isReadOnly}
+          />
+        );
+
+      case 'pedido':
+        return (
+          <PedidoScreen
+            temporalPallet={temporalPallet}
+            onEditOrderId={(id) => editPallet.orderId(id)}
+            activeOrdersOptions={
+              activeOrdersOptions as Array<{
+                id: string | number;
+                name: string;
+                load_date: string;
+              }>
+            }
+            activeOrdersLoading={activeOrdersLoading}
+            orderIdBlocked={orderIdBlocked}
+            onBack={goToHub}
+            isReadOnly={isReadOnly}
+          />
+        );
+
+      case 'resumen':
+        return <ResumenTab temporalPallet={temporalPallet} onBack={goToHub} />;
+
+      case 'imagenes':
+        return <ImagenesTab palletId={palletId!} onBack={goToHub} />;
+
+      case 'historial':
+        return (
+          <HistorialTab
+            timeline={timeline as PalletTimelineEntry[] | null | undefined}
+            timelineLoading={timelineLoading}
+            onBack={goToHub}
+          />
+        );
+
+      case 'eliminar':
+        return (
+          <EliminarTab
+            temporalPallet={temporalPallet}
+            onDeleteBox={(boxId) => editPallet.box.delete(boxId)}
+            onDeleteAllBoxes={deleteAllBoxes}
+            onDeleteScannedCode={(code) => boxCreationDataChange('deleteScannedCode', code)}
+            isReadOnly={isReadOnly}
+            onBack={goToHub}
+          />
+        );
+    }
+  };
+
   return (
     <div className="flex h-full min-h-0 w-full flex-col">
       {isReadOnly && (
@@ -133,126 +285,39 @@ export default function MobilePalletView({
         </Alert>
       )}
 
-      <Tabs
-        value={activeTab}
-        onValueChange={handleTabChange}
-        className="flex min-h-0 flex-1 flex-col"
-      >
-        {/* Scrollable tab bar */}
-        <div className="shrink-0 overflow-x-auto scrollbar-none px-3 pt-2">
-          <TabsList className="w-max">
-            <TabsTrigger value="escanear" className="flex-none whitespace-nowrap">
-              Añadir
-            </TabsTrigger>
-            <TabsTrigger value="cajas" className="flex-none whitespace-nowrap">
-              Cajas
-            </TabsTrigger>
-            <TabsTrigger value="info" className="flex-none whitespace-nowrap">
-              Detalles
-            </TabsTrigger>
-            <TabsTrigger value="resumen" className="flex-none whitespace-nowrap">
-              Resumen
-            </TabsTrigger>
-            {showHistorial && (
-              <TabsTrigger value="imagenes" className="flex-none whitespace-nowrap">
-                Imágenes
-              </TabsTrigger>
-            )}
-            {showHistorial && (
-              <TabsTrigger value="historial" className="flex-none whitespace-nowrap">
-                Historial
-              </TabsTrigger>
-            )}
-            {!isReadOnly && (
-              <TabsTrigger
-                value="eliminar"
-                className="flex-none whitespace-nowrap text-destructive data-[state=active]:text-destructive"
-              >
-                Eliminar
-              </TabsTrigger>
-            )}
-          </TabsList>
+      {/* Hub header — palet ID + box count badge */}
+      {activeScreen === 'hub' && (
+        <div className="flex shrink-0 items-center justify-between border-b px-4 py-3">
+          <h1 className="text-base font-semibold">
+            {isNew ? 'Nuevo palet' : `Palet #${palletId}`}
+          </h1>
+          {boxes.length > 0 && (
+            <span className="flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+              {boxes.length} {boxes.length === 1 ? 'caja' : 'cajas'}
+            </span>
+          )}
         </div>
+      )}
 
-        <TabsContent value="escanear" className="mt-0 min-h-0 flex-1 overflow-auto px-3 py-3">
-          <ScanTab
-            temporalPallet={temporalPallet}
-            productsOptions={productsOptions}
-            productsLoading={productsLoading}
-            boxCreationData={boxCreationData}
-            boxCreationDataChange={boxCreationDataChange}
-            onAddNewBox={onAddNewBox}
-            onResetBoxCreationData={onResetBoxCreationData}
-            onDeleteBox={(boxId) => editPallet.box.delete(boxId)}
-            isReadOnly={isReadOnly}
-            canEditCost={canEditCost}
-          />
-        </TabsContent>
+      {/* Screen content */}
+      <div className="min-h-0 flex-1 overflow-hidden">
+        {renderScreen()}
+      </div>
 
-        <TabsContent value="cajas" className="mt-0 min-h-0 flex-1 overflow-auto px-3 py-3">
-          <BoxesTab
-            temporalPallet={temporalPallet}
-            onDeleteBox={(boxId) => editPallet.box.delete(boxId)}
-            onDuplicateBox={(boxId) => editPallet.box.duplicate(boxId)}
-            onEditLot={(boxId, lot) => editPallet.box.edit.lot(boxId, lot)}
-            onEditNetWeight={(boxId, w) => editPallet.box.edit.netWeight(boxId, w)}
-            onEditManualCost={(boxId, v) => editPallet.box.edit.manualCostPerKg(boxId, v)}
-            isReadOnly={isReadOnly}
-            canEditCost={canEditCost}
-          />
-        </TabsContent>
-
-        <TabsContent value="resumen" className="mt-0 min-h-0 flex-1 overflow-auto px-3 py-3">
-          <ResumenTab temporalPallet={temporalPallet} />
-        </TabsContent>
-
-        <TabsContent value="info" className="mt-0 min-h-0 flex-1 overflow-auto px-3 py-3">
-          <InfoTab
-            temporalPallet={temporalPallet}
-            onEditObservations={(obs) => editPallet.observations(obs)}
-            onEditPalletTareWeightKg={(value) => editPallet.palletTareWeightKg(value)}
-            onEditOrderId={(id) => editPallet.orderId(id)}
-            activeOrdersOptions={
-              activeOrdersOptions as Array<{
-                id: string | number;
-                name: string;
-                load_date: string;
-              }>
-            }
-            activeOrdersLoading={activeOrdersLoading}
-            orderIdBlocked={orderIdBlocked}
-            isReadOnly={isReadOnly}
-            externalActor={externalActor}
-          />
-        </TabsContent>
-
-        {!isReadOnly && (
-          <TabsContent value="eliminar" className="mt-0 min-h-0 flex-1 overflow-auto px-3 py-3">
-            <EliminarTab
-              temporalPallet={temporalPallet}
-              onDeleteBox={(boxId) => editPallet.box.delete(boxId)}
-              onDeleteAllBoxes={deleteAllBoxes}
-              onDeleteScannedCode={(code) => boxCreationDataChange('deleteScannedCode', code)}
-              isReadOnly={isReadOnly}
-            />
-          </TabsContent>
-        )}
-
-        {showHistorial && (
-          <TabsContent value="imagenes" className="mt-0 min-h-0 flex-1 overflow-auto px-3 py-3">
-            <ImagenesTab palletId={palletId!} />
-          </TabsContent>
-        )}
-
-        {showHistorial && (
-          <TabsContent value="historial" className="mt-0 min-h-0 flex-1 overflow-auto px-3 py-3">
-            <HistorialTab
-              timeline={timeline as PalletTimelineEntry[] | null | undefined}
-              timelineLoading={timelineLoading}
-            />
-          </TabsContent>
-        )}
-      </Tabs>
+      {/* Fullscreen QR scanner */}
+      {scannerOpen && (
+        <QrScannerWidget
+          onScan={handleScannedCode}
+          onClose={() => setScannerOpen(false)}
+          onError={() => setScannerOpen(false)}
+          validate={validateGs1128}
+          statusText="Apunta al código GS1-128 de la caja"
+          successText="Caja registrada"
+          boxCount={boxes.length}
+          sessionCount={sessionCount}
+        />
+      )}
 
       {/* Sticky save/discard bar */}
       {!isReadOnly && hasPalletChanges && (

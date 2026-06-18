@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Upload, Trash2, Loader2, ImageOff, ImageIcon, Pencil, Check, X, Camera, Images } from 'lucide-react';
+import { ArrowLeft, Upload, Trash2, Loader2, ImageOff, ImageIcon, Pencil, Check, X, Camera, Images } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -229,9 +229,10 @@ function MobileLightbox({ attachment, palletId, canDelete, onDelete, onUpdateNot
 
 interface ImagenesTabProps {
   palletId: number | string;
+  onBack?: () => void;
 }
 
-export default function ImagenesTab({ palletId }: ImagenesTabProps) {
+export default function ImagenesTab({ palletId, onBack }: ImagenesTabProps) {
   const { data: session } = useSession();
   const rawRole = session?.user?.role;
   const roles: string[] = Array.isArray(rawRole) ? rawRole : rawRole ? [rawRole] : [];
@@ -296,7 +297,16 @@ export default function ImagenesTab({ palletId }: ImagenesTabProps) {
   };
 
   return (
-    <div className="space-y-4 pb-6">
+    <div className="flex h-full flex-col">
+      {onBack && (
+        <div className="flex shrink-0 items-center gap-2 border-b px-3 py-3">
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onBack}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h2 className="text-base font-semibold">Imágenes</h2>
+        </div>
+      )}
+    <div className="overflow-auto px-3 py-3 space-y-4 pb-6">
       {/* Upload section */}
       <div className="space-y-3">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -482,6 +492,7 @@ export default function ImagenesTab({ palletId }: ImagenesTabProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+    </div>
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
-import { ScanSearch, Trash2, TriangleAlert } from 'lucide-react';
+import { ArrowLeft, ScanSearch, Trash2, TriangleAlert } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,6 +29,7 @@ interface EliminarTabProps {
   onDeleteAllBoxes: () => void;
   onDeleteScannedCode: (code: string) => void;
   isReadOnly: boolean;
+  onBack?: () => void;
 }
 
 export default function EliminarTab({
@@ -37,6 +38,7 @@ export default function EliminarTab({
   onDeleteAllBoxes,
   onDeleteScannedCode,
   isReadOnly,
+  onBack,
 }: EliminarTabProps) {
   const [scannerOpen, setScannerOpen] = useState(false);
 
@@ -50,14 +52,33 @@ export default function EliminarTab({
 
   if (isReadOnly) {
     return (
-      <p className="py-10 text-center text-sm text-muted-foreground">
-        Este palet es de solo lectura.
-      </p>
+      <div className="flex h-full flex-col">
+        {onBack && (
+          <div className="flex shrink-0 items-center gap-2 border-b px-3 py-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onBack}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <h2 className="text-base font-semibold">Eliminar cajas</h2>
+          </div>
+        )}
+        <p className="py-10 text-center text-sm text-muted-foreground">
+          Este palet es de solo lectura.
+        </p>
+      </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-4 pb-4">
+    <div className="flex h-full flex-col">
+      {onBack && (
+        <div className="flex shrink-0 items-center gap-2 border-b px-3 py-3">
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onBack}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h2 className="text-base font-semibold">Eliminar cajas</h2>
+        </div>
+      )}
+    <div className="flex flex-col gap-4 overflow-auto px-3 py-4 pb-4">
       {/* Scan to delete */}
       <Button
         size="lg"
@@ -159,6 +180,7 @@ export default function EliminarTab({
           successText="Código leído"
         />
       )}
+    </div>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { type ChangeEvent, useState } from 'react';
-import { AlertTriangle, ChevronDown, ChevronUp, Copy, Package, Trash2 } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, ChevronDown, ChevronUp, Copy, Package, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -17,6 +17,7 @@ interface BoxesTabProps {
   onEditManualCost: (boxId: number | string, value: unknown) => void;
   isReadOnly: boolean;
   canEditCost: boolean;
+  onBack?: () => void;
 }
 
 export default function BoxesTab({
@@ -28,6 +29,7 @@ export default function BoxesTab({
   onEditManualCost,
   isReadOnly,
   canEditCost,
+  onBack,
 }: BoxesTabProps) {
   const [expandedBoxId, setExpandedBoxId] = useState<number | string | null>(null);
 
@@ -40,22 +42,41 @@ export default function BoxesTab({
 
   if (boxes.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 py-16">
-        <div className="rounded-full bg-muted p-4">
-          <Package className="h-10 w-10 text-muted-foreground" strokeWidth={1.5} />
-        </div>
-        <div className="space-y-1 text-center">
-          <p className="font-medium">Sin cajas</p>
-          <p className="text-sm text-muted-foreground">
-            Ve a &ldquo;Añadir&rdquo; para añadir cajas al palet.
-          </p>
+      <div className="flex h-full flex-col">
+        {onBack && (
+          <div className="flex shrink-0 items-center gap-2 border-b px-3 py-3">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onBack}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <h2 className="text-base font-semibold">Cajas del palet</h2>
+          </div>
+        )}
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 py-16">
+          <div className="rounded-full bg-muted p-4">
+            <Package className="h-10 w-10 text-muted-foreground" strokeWidth={1.5} />
+          </div>
+          <div className="space-y-1 text-center">
+            <p className="font-medium">Sin cajas</p>
+            <p className="text-sm text-muted-foreground">
+              Ve a &ldquo;Añadir&rdquo; para añadir cajas al palet.
+            </p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex h-full flex-col">
+      {onBack && (
+        <div className="flex shrink-0 items-center gap-2 border-b px-3 py-3">
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onBack}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h2 className="text-base font-semibold">Cajas del palet</h2>
+        </div>
+      )}
+    <div className="flex flex-col gap-3 overflow-auto px-3 py-3">
       {/* Summary strip */}
       <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2 text-sm">
         <span className="font-medium">{boxes.length} cajas</span>
@@ -210,6 +231,7 @@ export default function BoxesTab({
           );
         })}
       </ul>
+    </div>
     </div>
   );
 }
