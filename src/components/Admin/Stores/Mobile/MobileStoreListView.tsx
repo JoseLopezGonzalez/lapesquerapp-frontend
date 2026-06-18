@@ -183,6 +183,7 @@ export function MobileStoreListView({
     const payload = parseQrPayload(rawValue);
     const palletId = payload.P || (/^\d+$/.test(rawValue) ? rawValue : null);
     if (!palletId) return;
+    setScannerOpen(false);
     setPalletDialogId(Number(palletId));
   };
 
