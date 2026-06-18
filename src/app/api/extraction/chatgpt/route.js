@@ -6,7 +6,7 @@ import { CHATGPT_EXTRACTION_PROMPTS } from '@/lib/extraction/chatgptPrompts';
 import { ALLOWED_OPENAI_MODELS, isReasoningModel } from '@/lib/extraction/extractionModels';
 
 export const runtime = 'nodejs';
-export const maxDuration = 300;
+export const maxDuration = 60;
 
 export async function POST(req) {
   try {

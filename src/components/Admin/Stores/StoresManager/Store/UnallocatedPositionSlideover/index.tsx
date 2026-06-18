@@ -45,7 +45,7 @@ export default function UnallocatedPositionSlideover() {
       >
         <SheetHeader>
           <SheetTitle>Elementos sin ubicar</SheetTitle>
-          <SheetDescription>Palés pendientes de asignar a una posición</SheetDescription>
+          <SheetDescription>Palets pendientes de asignar a una posición</SheetDescription>
         </SheetHeader>
 
         {pallets.length === 0 ? (
@@ -54,7 +54,7 @@ export default function UnallocatedPositionSlideover() {
               <Layers className="text-muted-foreground mb-3 h-10 w-10" />
               <h3 className="mb-1 text-lg font-medium">No hay elementos</h3>
               <p className="text-muted-foreground text-sm">
-                No hay palés pendientes de ubicar en este almacén.
+                No hay palets pendientes de ubicar en este almacén.
               </p>
             </Card>
           </div>

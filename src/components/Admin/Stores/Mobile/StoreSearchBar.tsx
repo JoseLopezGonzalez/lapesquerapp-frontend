@@ -1,9 +1,14 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { type ChangeEvent, useRef, useState } from 'react';
 import { ScanLine, Search, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from '@/components/ui/input-group';
 import { useStoreContext } from '@/context/StoreContext';
 
 interface StoreSearchBarProps {
@@ -74,42 +79,42 @@ export function StoreSearchBar({ onScannerOpen }: StoreSearchBarProps) {
 
   return (
     <div className="shrink-0 px-3 pb-2">
-      {/* Input container — relative so el dropdown queda anclado aquí */}
       <div className="relative">
-        <div className="relative flex items-center">
-          <Search className="text-muted-foreground pointer-events-none absolute left-3 h-4 w-4" />
-          <input
+        <InputGroup className="h-10">
+          <InputGroupAddon align="inline-start">
+            <Search className="size-4" />
+          </InputGroupAddon>
+          <InputGroupInput
             ref={inputRef}
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar palé, artículo..."
-            className="bg-muted focus:ring-primary h-10 w-full rounded-full border-0 pl-9 pr-20 text-sm outline-none focus:ring-2 focus:ring-offset-0"
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)}
+            placeholder="Buscar palet, artículo..."
           />
-          {query ? (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-10 h-7 w-7 rounded-full"
-              onClick={() => setQuery('')}
-              aria-label="Limpiar búsqueda"
+          <InputGroupAddon align="inline-end">
+            {query ? (
+              <InputGroupButton
+                className=""
+                size="icon-xs"
+                onClick={() => setQuery('')}
+                aria-label="Limpiar búsqueda"
+              >
+                <X className="size-3.5" />
+              </InputGroupButton>
+            ) : null}
+            <InputGroupButton
+              className=""
+              size="icon-sm"
+              onClick={onScannerOpen}
+              aria-label="Escanear QR"
             >
-              <X className="h-3.5 w-3.5" />
-            </Button>
-          ) : null}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute right-1 h-8 w-8 rounded-full"
-            onClick={onScannerOpen}
-            aria-label="Escanear QR"
-          >
-            <ScanLine className="h-4 w-4" />
-          </Button>
-        </div>
+              <ScanLine className="size-4" />
+            </InputGroupButton>
+          </InputGroupAddon>
+        </InputGroup>
 
         {/* Resultados inline */}
         {showResults && (
-          <div className="border-border bg-background absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-xl border shadow-lg">
+          <div className="border-border bg-background absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-lg border shadow-lg">
             {!hasResults ? (
               <p className="text-muted-foreground px-4 py-3 text-sm">Sin resultados</p>
             ) : (
@@ -117,7 +122,7 @@ export function StoreSearchBar({ onScannerOpen }: StoreSearchBarProps) {
                 {filteredPallets.length > 0 && (
                   <>
                     <p className="text-muted-foreground px-4 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wider">
-                      Palés
+                      Palets
                     </p>
                     {filteredPallets.map((p) => (
                       <button
@@ -125,7 +130,7 @@ export function StoreSearchBar({ onScannerOpen }: StoreSearchBarProps) {
                         onClick={() => handleSelectPallet(p.value)}
                         className="hover:bg-muted w-full px-4 py-2.5 text-left text-sm"
                       >
-                        Palé #{p.label}
+                        Palet #{p.label}
                       </button>
                     ))}
                   </>
@@ -170,11 +175,11 @@ export function StoreSearchBar({ onScannerOpen }: StoreSearchBarProps) {
           ))}
           {selectedPallets.map((p) => (
             <Badge key={p.value} variant="secondary" className="flex items-center gap-1 pr-1">
-              Palé #{p.label}
+              Palet #{p.label}
               <button
                 onClick={() => handleRemovePallet(p.value)}
                 className="ml-0.5 rounded-full"
-                aria-label={`Quitar filtro palé ${p.label}`}
+                aria-label={`Quitar filtro palet ${p.label}`}
               >
                 <X className="h-3 w-3" />
               </button>

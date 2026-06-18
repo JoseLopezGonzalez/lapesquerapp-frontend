@@ -115,7 +115,7 @@ function MobileStoreCard({
 
             {isGhostStore ? (
               <p className="text-muted-foreground text-sm tabular-nums">
-                {store.content?.pallets?.length ?? 0} palés en espera
+                {store.content?.pallets?.length ?? 0} palets en espera
               </p>
             ) : (
               <div className="text-muted-foreground flex items-center gap-3 text-sm tabular-nums">

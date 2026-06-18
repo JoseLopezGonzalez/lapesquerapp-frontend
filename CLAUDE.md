@@ -186,6 +186,7 @@ npm run test:run     # Vitest una ejecución (para CI)
 6. **Hooks gigantes** — `useOrder` 40 KB · `usePallet` 48 KB · `useLabelEditor` 52 KB. Pendiente refactor en sub-hooks.
 7. **Cobertura de tests** — 20 archivos de test para 269 componentes y 84+ hooks.
 8. **`entityServiceMapper.js`** — candidato prioritario de migración a TypeScript.
+9. **`maxDuration` en extracción de PDF** — `src/app/api/extraction/chatgpt/route.js` tiene `maxDuration = 60` por límite del plan Hobby de Vercel (máx 60s). El ideal sería 300s para extracciones con modelos lentos (o-series). Opciones: (a) mover la extracción a un endpoint del backend Laravel, (b) upgrade a Vercel Pro, (c) implementar extracción asíncrona con polling.
 
 ---
 

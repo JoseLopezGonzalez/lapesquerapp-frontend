@@ -94,14 +94,14 @@ export function MobileFiltersSheet({ open, onOpenChange }: MobileFiltersSheetPro
 
           <Separator />
 
-          {/* Palés */}
+          {/* Palets */}
           <div>
-            <h3 className="mb-2 text-sm font-medium">Id Palés</h3>
+            <h3 className="mb-2 text-sm font-medium">Id Palets</h3>
             <Combobox
               options={palletsOptions}
-              placeholder="Buscar palé"
-              searchPlaceholder="Buscar palé"
-              notFoundMessage="No se encontraron palés"
+              placeholder="Buscar palet"
+              searchPlaceholder="Buscar palet"
+              notFoundMessage="No se encontraron palets"
               onChange={handleAddPallet}
               loading={loading}
             />

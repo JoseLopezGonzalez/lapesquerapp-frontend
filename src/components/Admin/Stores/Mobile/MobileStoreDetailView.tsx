@@ -166,38 +166,6 @@ export function MobileStoreDetailView({
           {displayStoreName}
         </h2>
 
-        {/* Toggle mapa / tarjetas — solo en almacenes reales */}
-        {!isGhostStore && (
-          <div className="flex shrink-0 overflow-hidden rounded-lg border">
-            <button
-              onClick={() => setViewMode('map')}
-              className={cn(
-                'flex h-9 w-9 items-center justify-center border-r transition-colors',
-                viewMode === 'map'
-                  ? 'bg-muted text-foreground'
-                  : 'text-muted-foreground hover:bg-muted/50',
-              )}
-              aria-label="Vista mapa"
-              title="Vista de mapa"
-            >
-              <MapPin className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => setViewMode('kanban')}
-              className={cn(
-                'flex h-9 w-9 items-center justify-center transition-colors',
-                viewMode === 'kanban'
-                  ? 'bg-muted text-foreground'
-                  : 'text-muted-foreground hover:bg-muted/50',
-              )}
-              aria-label="Vista tarjetas"
-              title="Vista de tarjetas"
-            >
-              <LayoutGrid className="h-4 w-4" />
-            </button>
-          </div>
-        )}
-
         {/* Menú secundario — solo acciones menos frecuentes */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -250,7 +218,30 @@ export function MobileStoreDetailView({
 
       {/* Barra de búsqueda unificada — solo en almacenes reales */}
       {!isGhostStore && (
-        <StoreSearchBar onScannerOpen={() => setScannerOpen(true)} />
+        <>
+          <StoreSearchBar onScannerOpen={() => setScannerOpen(true)} />
+          {/* Toggle mapa / tarjetas */}
+          <div className="flex shrink-0 gap-2 px-3 pb-3">
+            <Button
+              variant={viewMode === 'map' ? 'default' : 'outline'}
+              size="sm"
+              className="flex-1"
+              onClick={() => setViewMode('map')}
+            >
+              <MapPin className="mr-1.5 h-3.5 w-3.5" />
+              Mapa
+            </Button>
+            <Button
+              variant={viewMode === 'kanban' ? 'default' : 'outline'}
+              size="sm"
+              className="flex-1"
+              onClick={() => setViewMode('kanban')}
+            >
+              <LayoutGrid className="mr-1.5 h-3.5 w-3.5" />
+              Tarjetas
+            </Button>
+          </div>
+        </>
       )}
 
       {/* Contenido principal */}
@@ -275,13 +266,13 @@ export function MobileStoreDetailView({
           </>
         )}
 
-        {/* FAB — crear palé */}
+        {/* FAB — crear palet */}
         {!isGhostStore && (
           <Button
             onClick={openCreatePalletDialog}
             size="icon"
-            className="absolute right-4 bottom-4 z-20 h-14 w-14 rounded-full shadow-lg"
-            aria-label="Nuevo palé"
+            className="absolute right-4 bottom-4 z-20 h-14 w-14 shadow-lg"
+            aria-label="Nuevo palet"
           >
             <Plus className="h-6 w-6" />
           </Button>
