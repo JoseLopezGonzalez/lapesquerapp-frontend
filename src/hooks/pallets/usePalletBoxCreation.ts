@@ -234,10 +234,6 @@ export function usePalletBoxCreation({
         isPounds: parsed.isPounds as boolean,
         originalWeightInPounds: (parsed.originalWeightInPounds as number | undefined) ?? null,
       });
-      notify.success({
-        title: 'Caja añadida',
-        description: 'La caja se ha añadido al palet correctamente desde el código escaneado.',
-      });
     } else if (method === 'gs1') {
       const { gs1codes } = boxCreationData;
 
