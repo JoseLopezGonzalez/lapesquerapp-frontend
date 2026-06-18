@@ -218,30 +218,7 @@ export function MobileStoreDetailView({
 
       {/* Barra de búsqueda unificada — solo en almacenes reales */}
       {!isGhostStore && (
-        <>
-          <StoreSearchBar onScannerOpen={() => setScannerOpen(true)} />
-          {/* Toggle mapa / tarjetas */}
-          <div className="flex shrink-0 gap-2 px-3 pb-3">
-            <Button
-              variant={viewMode === 'map' ? 'default' : 'outline'}
-              size="sm"
-              className="flex-1"
-              onClick={() => setViewMode('map')}
-            >
-              <MapPin className="mr-1.5 h-3.5 w-3.5" />
-              Mapa
-            </Button>
-            <Button
-              variant={viewMode === 'kanban' ? 'default' : 'outline'}
-              size="sm"
-              className="flex-1"
-              onClick={() => setViewMode('kanban')}
-            >
-              <LayoutGrid className="mr-1.5 h-3.5 w-3.5" />
-              Tarjetas
-            </Button>
-          </div>
-        </>
+        <StoreSearchBar onScannerOpen={() => setScannerOpen(true)} />
       )}
 
       {/* Contenido principal */}
@@ -264,6 +241,23 @@ export function MobileStoreDetailView({
             <div className="from-background pointer-events-none absolute right-0 bottom-0 left-0 z-10 h-8 bg-gradient-to-t to-transparent" />
             <PalletKanbanView />
           </>
+        )}
+
+        {/* Botón toggle vista — esquina inferior izquierda */}
+        {!isGhostStore && (
+          <Button
+            variant="outline"
+            size="icon"
+            className="absolute left-4 bottom-4 z-20 h-14 w-14 shadow-lg"
+            onClick={() => setViewMode(viewMode === 'map' ? 'kanban' : 'map')}
+            aria-label={viewMode === 'map' ? 'Ver tarjetas' : 'Ver mapa'}
+          >
+            {viewMode === 'map' ? (
+              <LayoutGrid className="h-5 w-5" />
+            ) : (
+              <MapPin className="h-5 w-5" />
+            )}
+          </Button>
         )}
 
         {/* FAB — crear palet */}
