@@ -171,6 +171,7 @@ export default function PalletCard({ pallet, isFlipped = false, onFlip }: Pallet
   return (
     <div className="isolate w-full" style={sceneStyle}>
       <div
+        className="w-full"
         style={{
           transformStyle: 'preserve-3d',
           transition: 'transform 480ms cubic-bezier(0.22, 1, 0.36, 1)',
@@ -183,7 +184,7 @@ export default function PalletCard({ pallet, isFlipped = false, onFlip }: Pallet
         <div
           ref={frontRef}
           className={cn(
-            'bg-card overflow-hidden rounded-2xl border shadow-sm',
+            'bg-card w-full overflow-hidden rounded-2xl border shadow-sm',
             isRelevant
               ? 'border-green-400/60 ring-2 ring-green-400/30 dark:border-green-500/60'
               : 'border-border',
@@ -340,10 +341,10 @@ export default function PalletCard({ pallet, isFlipped = false, onFlip }: Pallet
                 {productsSummaryArray.map((product, i) => (
                   <div key={i} className="flex min-w-0 items-start gap-2">
                     <div className="bg-foreground/8 mt-0.5 h-1.5 w-1.5 flex-shrink-0 rounded-full" />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm leading-tight font-medium">{product.name}</p>
+                    <div className="min-w-0 flex-1 overflow-hidden">
+                      <p className="line-clamp-2 text-sm leading-tight font-medium">{product.name}</p>
                       {hasMultipleProducts && (
-                        <p className="text-muted-foreground mt-0.5 text-xs">
+                        <p className="text-muted-foreground mt-0.5 truncate text-xs">
                           {formatDecimalWeight(product.netWeight)}
                           <span className="mx-1 opacity-40">·</span>
                           {product.boxCount} {product.boxCount === 1 ? 'caja' : 'cajas'}

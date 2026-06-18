@@ -5,15 +5,13 @@ import {
   ArrowLeft,
   ArrowRightLeft,
   BarChart2,
-  Filter,
-  Layers,
+  LayoutGrid,
   LocateFixed,
+  MapPin,
   MoreVertical,
   Plus,
-  ScanLine,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { useStoreContext } from '@/context/StoreContext';
 import { useHideBottomNav } from '@/context/BottomNavContext';
@@ -26,14 +24,13 @@ import PositionSlideover from '../StoresManager/Store/PositionSlideover';
 import UnallocatedPositionSlideover from '../StoresManager/Store/UnallocatedPositionSlideover';
 import AddElementToPosition from '../StoresManager/Store/AddElementToPositionDialog';
 import PalletKanbanView from '../StoresManager/Store/PalletKanbanView';
-import { MobileFiltersSheet } from './MobileFiltersSheet';
 import { MobileStoreLoader } from './MobileStoreLoader';
+import { StoreSearchBar } from './StoreSearchBar';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -42,17 +39,16 @@ import MovePalletToStoreDialog from '../StoresManager/Store/MovePalletToStoreDia
 import MoveMultiplePalletsToStoreDialog from '../StoresManager/Store/MoveMultiplePalletsToStoreDialog';
 import PalletDialog from '@/components/Admin/Pallets/PalletDialog';
 import { type PalletState } from '@/hooks/usePallet';
-import { PalletsListDialog } from '../StoresManager/Store/PalletsListDialog';
 import { ProductSummaryDialog } from '../StoresManager/Store/ProductSummaryDialog';
 import dynamic from 'next/dynamic';
 import { parseQrPayload } from '@/lib/qr/parseQrPayload';
 import type { QrValidateResult } from '@/components/Shared/QrScannerWidget';
+import { notify } from '@/lib/notifications';
 
 const QrScannerWidget = dynamic(
   () => import('@/components/Shared/QrScannerWidget').then((m) => ({ default: m.QrScannerWidget })),
   { ssr: false }
 );
-import { notify } from '@/lib/notifications';
 
 interface MobileStoreDetailViewProps {
   passedStoreId: string | number;
@@ -65,8 +61,7 @@ export function MobileStoreDetailView({
   passedStoreName,
   onBack,
 }: MobileStoreDetailViewProps) {
-  const [filtersOpen, setFiltersOpen] = useState(false);
-  const [palletsDialogOpen, setPalletsDialogOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'map' | 'kanban'>('map');
   const [productsDialogOpen, setProductsDialogOpen] = useState(false);
   const [scannerOpen, setScannerOpen] = useState(false);
   useHideBottomNav();
@@ -90,7 +85,6 @@ export function MobileStoreDetailView({
     palletLabelDialogData,
     closePalletDialog,
     openMoveMultiplePalletsToStoreDialog,
-    filters,
   } = useStoreContext();
 
   const storeId = (store?.id as string | number | undefined) || passedStoreId;
@@ -99,10 +93,11 @@ export function MobileStoreDetailView({
     passedStoreId === REGISTERED_PALLETS_STORE_ID ||
     store?.name === 'En espera';
 
-  const displayStoreName = (passedStoreName || (store?.name as string | undefined) || 'Almacén') as string;
-
-  const activeFilterCount =
-    (filters?.products?.length ?? 0) + (filters?.pallets?.length ?? 0);
+  const displayStoreName = (
+    passedStoreName ||
+    (store?.name as string | undefined) ||
+    'Almacén'
+  ) as string;
 
   const isUnallocatedRelevant = isPositionRelevant(UNLOCATED_POSITION_ID);
   const isUnallocatedFilled = isPositionFilled(UNLOCATED_POSITION_ID);
@@ -154,7 +149,7 @@ export function MobileStoreDetailView({
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      {/* Header — formato estandarizado */}
+      {/* Header */}
       <div className="flex shrink-0 items-center gap-2 px-2 pt-4 pb-3">
         <Button
           variant="ghost"
@@ -165,78 +160,71 @@ export function MobileStoreDetailView({
         >
           <ArrowLeft className="h-6 w-6" />
         </Button>
+
         <h2 className="flex-1 truncate text-center text-xl font-normal dark:text-white">
           {displayStoreName}
         </h2>
 
-        {/* Único action button derecho — consolida filtro, escáner y acciones */}
+        {/* Toggle mapa / tarjetas — solo en almacenes reales */}
+        {!isGhostStore && (
+          <div className="flex shrink-0 overflow-hidden rounded-lg border">
+            <button
+              onClick={() => setViewMode('map')}
+              className={cn(
+                'flex h-9 w-9 items-center justify-center border-r transition-colors',
+                viewMode === 'map'
+                  ? 'bg-muted text-foreground'
+                  : 'text-muted-foreground hover:bg-muted/50',
+              )}
+              aria-label="Vista mapa"
+              title="Vista de mapa"
+            >
+              <MapPin className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('kanban')}
+              className={cn(
+                'flex h-9 w-9 items-center justify-center transition-colors',
+                viewMode === 'kanban'
+                  ? 'bg-muted text-foreground'
+                  : 'text-muted-foreground hover:bg-muted/50',
+              )}
+              aria-label="Vista tarjetas"
+              title="Vista de tarjetas"
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+
+        {/* Menú secundario — solo acciones menos frecuentes */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
               size="icon"
-              className="hover:bg-muted relative h-12 min-h-12 w-12 min-w-12 shrink-0 rounded-full"
+              className="hover:bg-muted h-12 min-h-12 w-12 min-w-12 shrink-0 rounded-full"
             >
               <MoreVertical className="h-6 w-6" />
-              {activeFilterCount > 0 && (
-                <Badge className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center p-0 text-[10px]">
-                  {activeFilterCount}
-                </Badge>
-              )}
-              <span className="sr-only">Acciones</span>
+              <span className="sr-only">Más acciones</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-52">
+          <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => setScannerOpen(true)}>
-                <ScanLine className="mr-2 h-4 w-4" />
-                Escanear QR
-              </DropdownMenuItem>
               {!isGhostStore && (
-                <DropdownMenuItem onClick={() => setFiltersOpen(true)}>
-                  <Filter className="mr-2 h-4 w-4" />
-                  Filtrar
-                  {activeFilterCount > 0 && (
-                    <span className="bg-primary text-primary-foreground ml-auto flex h-4 w-4 items-center justify-center rounded-full text-[10px]">
-                      {activeFilterCount}
-                    </span>
+                <DropdownMenuItem
+                  onClick={openUnallocatedPositionSlideover}
+                  className={cn(
+                    isUnallocatedRelevant && 'text-green-600 focus:text-green-600',
+                    isUnallocatedFilled && 'text-primary focus:text-primary',
+                  )}
+                >
+                  <LocateFixed className="mr-2 h-4 w-4" />
+                  Sin ubicar
+                  {(isUnallocatedRelevant || isUnallocatedFilled) && (
+                    <span className="ml-auto h-2 w-2 rounded-full bg-current" />
                   )}
                 </DropdownMenuItem>
-              )}
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuLabel>Almacén</DropdownMenuLabel>
-            <DropdownMenuGroup>
-              {!isGhostStore && (
-                <>
-                  <DropdownMenuItem
-                    onClick={openUnallocatedPositionSlideover}
-                    className={cn(
-                      isUnallocatedRelevant && 'text-green-600 focus:text-green-600',
-                      isUnallocatedFilled && 'text-primary focus:text-primary'
-                    )}
-                  >
-                    <LocateFixed className="mr-2 h-4 w-4" />
-                    Sin ubicar
-                    {(isUnallocatedRelevant || isUnallocatedFilled) && (
-                      <span className="ml-auto h-2 w-2 rounded-full bg-current" />
-                    )}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={openCreatePalletDialog}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Nuevo palet
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => setPalletsDialogOpen(true)}>
-                    <Layers className="mr-2 h-4 w-4" />
-                    Palets
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setProductsDialogOpen(true)}>
-                    <BarChart2 className="mr-2 h-4 w-4" />
-                    Productos
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                </>
               )}
               <DropdownMenuItem
                 onClick={openMoveMultiplePalletsToStoreDialog}
@@ -245,12 +233,26 @@ export function MobileStoreDetailView({
                 <ArrowRightLeft className="mr-2 h-4 w-4" />
                 Traspaso masivo
               </DropdownMenuItem>
+              {!isGhostStore && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setProductsDialogOpen(true)}>
+                    <BarChart2 className="mr-2 h-4 w-4" />
+                    Resumen productos
+                  </DropdownMenuItem>
+                </>
+              )}
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
 
-      {/* Content */}
+      {/* Barra de búsqueda unificada — solo en almacenes reales */}
+      {!isGhostStore && (
+        <StoreSearchBar onScannerOpen={() => setScannerOpen(true)} />
+      )}
+
+      {/* Contenido principal */}
       <div className="relative min-h-0 flex-1 overflow-hidden">
         {isGhostStore ? (
           <>
@@ -258,19 +260,32 @@ export function MobileStoreDetailView({
             <div className="from-background pointer-events-none absolute right-0 bottom-0 left-0 z-10 h-8 bg-gradient-to-t to-transparent" />
             <PalletKanbanView />
           </>
-        ) : (
+        ) : viewMode === 'map' ? (
           <Card className="relative h-full overflow-auto rounded-none border-0">
             <MapContainer isMobile>
               <Map onClickPosition={() => {}} isPositionEmpty={() => {}} />
             </MapContainer>
           </Card>
+        ) : (
+          <>
+            <div className="from-background pointer-events-none absolute top-0 right-0 left-0 z-10 h-8 bg-gradient-to-b to-transparent" />
+            <div className="from-background pointer-events-none absolute right-0 bottom-0 left-0 z-10 h-8 bg-gradient-to-t to-transparent" />
+            <PalletKanbanView />
+          </>
+        )}
+
+        {/* FAB — crear palé */}
+        {!isGhostStore && (
+          <Button
+            onClick={openCreatePalletDialog}
+            size="icon"
+            className="absolute right-4 bottom-4 z-20 h-14 w-14 rounded-full shadow-lg"
+            aria-label="Nuevo palé"
+          >
+            <Plus className="h-6 w-6" />
+          </Button>
         )}
       </div>
-
-      {/* Filters bottom sheet */}
-      {!isGhostStore && (
-        <MobileFiltersSheet open={filtersOpen} onOpenChange={setFiltersOpen} />
-      )}
 
       {/* Slideovres y diálogos reutilizados del desktop */}
       <PositionSlideover />
@@ -304,8 +319,6 @@ export function MobileStoreDetailView({
         />
       )}
 
-      {/* Dialogs de informes (controlados desde el dropdown) */}
-      <PalletsListDialog open={palletsDialogOpen} onOpenChange={setPalletsDialogOpen} />
       <ProductSummaryDialog open={productsDialogOpen} onOpenChange={setProductsDialogOpen} />
     </div>
   );
