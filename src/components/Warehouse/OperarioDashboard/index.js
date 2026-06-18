@@ -84,35 +84,35 @@ export default function OperarioDashboard({ storeId = null }) {
       {/* Grid de 4 cards: Hora, Fecha, Día, Acciones — mismo estilo que dashboard normal */}
       <div className="grid shrink-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card className={DASHBOARD_CARD_CLASS + ' flex flex-col justify-center'}>
-          <CardContent className="flex items-center gap-3 p-6">
-            <div className="bg-muted flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
-              <Clock className="text-muted-foreground h-5 w-5" />
+          <CardContent className="flex items-center gap-3 px-4 py-3">
+            <div className="bg-muted flex h-8 w-8 shrink-0 items-center justify-center rounded-lg">
+              <Clock className="text-muted-foreground h-4 w-4" />
             </div>
             <div>
-              <p className="text-muted-foreground text-sm font-medium">Hora</p>
-              <p className="text-3xl font-medium tracking-tight tabular-nums">{timeStr}</p>
+              <p className="text-muted-foreground text-xs font-medium">Hora</p>
+              <p className="text-xl font-medium tracking-tight tabular-nums">{timeStr}</p>
             </div>
           </CardContent>
         </Card>
         <Card className={DASHBOARD_CARD_CLASS + ' flex flex-col justify-center'}>
-          <CardContent className="flex items-center gap-3 p-6">
-            <div className="bg-muted flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
-              <Calendar className="text-muted-foreground h-5 w-5" />
+          <CardContent className="flex items-center gap-3 px-4 py-3">
+            <div className="bg-muted flex h-8 w-8 shrink-0 items-center justify-center rounded-lg">
+              <Calendar className="text-muted-foreground h-4 w-4" />
             </div>
             <div>
-              <p className="text-muted-foreground text-sm font-medium">Fecha</p>
-              <p className="text-3xl font-medium tracking-tight">{dateStr}</p>
+              <p className="text-muted-foreground text-xs font-medium">Fecha</p>
+              <p className="text-xl font-medium tracking-tight">{dateStr}</p>
             </div>
           </CardContent>
         </Card>
         <Card className={DASHBOARD_CARD_CLASS + ' flex flex-col justify-center'}>
-          <CardContent className="flex items-center gap-3 p-6">
-            <div className="bg-muted flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
-              <Calendar className="text-muted-foreground h-5 w-5" />
+          <CardContent className="flex items-center gap-3 px-4 py-3">
+            <div className="bg-muted flex h-8 w-8 shrink-0 items-center justify-center rounded-lg">
+              <Calendar className="text-muted-foreground h-4 w-4" />
             </div>
             <div>
-              <p className="text-muted-foreground text-sm font-medium">Día</p>
-              <p className="text-3xl font-medium tracking-tight">{dayStr}</p>
+              <p className="text-muted-foreground text-xs font-medium">Día</p>
+              <p className="text-xl font-medium tracking-tight">{dayStr}</p>
             </div>
           </CardContent>
         </Card>
@@ -132,13 +132,13 @@ export default function OperarioDashboard({ storeId = null }) {
           }}
           aria-label="Abrir calculadora de peso neto"
         >
-          <CardContent className="flex items-center gap-3 p-6">
-            <div className="bg-muted flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
-              <Calculator className="text-muted-foreground h-5 w-5" />
+          <CardContent className="flex items-center gap-3 px-4 py-3">
+            <div className="bg-muted flex h-8 w-8 shrink-0 items-center justify-center rounded-lg">
+              <Calculator className="text-muted-foreground h-4 w-4" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-muted-foreground text-sm font-medium">Herramientas</p>
-              <p className="truncate text-3xl font-medium tracking-tight">Calculadora</p>
+              <p className="text-muted-foreground text-xs font-medium">Herramientas</p>
+              <p className="truncate text-xl font-medium tracking-tight">Calculadora</p>
             </div>
           </CardContent>
         </Card>

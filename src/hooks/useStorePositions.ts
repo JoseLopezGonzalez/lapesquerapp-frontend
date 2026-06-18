@@ -12,12 +12,14 @@ interface Filters {
   types: { pallet: boolean; box: boolean; tub: boolean };
   products: (string | number)[];
   pallets: (string | number)[];
+  lots: string[];
 }
 
 const initialFilters: Filters = {
   types: { pallet: true, box: true, tub: true },
   products: [],
   pallets: [],
+  lots: [],
 };
 
 interface UseStorePositionsParams {
@@ -126,7 +128,8 @@ export function useStorePositions({ store, setStore, token }: UseStorePositionsP
     const map = new Map<string | number, StorePallet[]>();
     const hasProductFilters = filters.products.length > 0;
     const hasPalletFilters = filters.pallets.length > 0;
-    const hasActiveFilters = hasProductFilters || hasPalletFilters;
+    const hasLotFilters = filters.lots.length > 0;
+    const hasActiveFilters = hasProductFilters || hasPalletFilters || hasLotFilters;
 
     store?.content?.pallets?.forEach((pallet) => {
       let matchesFilters = true;
@@ -138,7 +141,13 @@ export function useStorePositions({ store, setStore, token }: UseStorePositionsP
             })
           : true;
         const matchPallet = hasPalletFilters ? filters.pallets.includes(pallet.id) : true;
-        matchesFilters = (matchProduct ?? false) && matchPallet;
+        const matchLot = hasLotFilters
+          ? pallet.boxes?.some((box) => {
+              const lot = (box as { lot?: string }).lot;
+              return lot ? filters.lots.includes(lot) : false;
+            })
+          : true;
+        matchesFilters = (matchProduct ?? false) && matchPallet && (matchLot ?? false);
       }
 
       if (!matchesFilters) return;
@@ -160,7 +169,7 @@ export function useStorePositions({ store, setStore, token }: UseStorePositionsP
   const isPositionRelevant = (positionId: string | number) => {
     const hasProductFilters = filters.products.length > 0;
     const hasPalletFilters = filters.pallets.length > 0;
-    const hasActiveFilters = hasProductFilters || hasPalletFilters;
+    const hasActiveFilters = hasProductFilters || hasPalletFilters || filters.lots.length > 0;
     if (!hasActiveFilters) return false;
     return filteredPositionsMap.has(positionId) && (filteredPositionsMap.get(positionId)?.length ?? 0) > 0;
   };
@@ -173,7 +182,7 @@ export function useStorePositions({ store, setStore, token }: UseStorePositionsP
   const isPalletRelevant = (palletId: string | number) => {
     const hasProductFilters = filters.products.length > 0;
     const hasPalletFilters = filters.pallets.length > 0;
-    const hasActiveFilters = hasProductFilters || hasPalletFilters;
+    const hasActiveFilters = hasProductFilters || hasPalletFilters || filters.lots.length > 0;
     if (!hasActiveFilters) return false;
     for (const pallets of filteredPositionsMap.values()) {
       if (pallets.some((p) => p.id === palletId)) return true;
