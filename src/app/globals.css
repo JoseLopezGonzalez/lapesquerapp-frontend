@@ -340,7 +340,9 @@ select:focus-visible,
 .masonry-grid_column {
   padding-left: 1rem;
   background-clip: padding-box;
-  min-width: 320px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 .masonry-grid_column > div {
   display: block;

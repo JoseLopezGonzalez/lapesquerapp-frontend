@@ -169,7 +169,7 @@ export default function PalletCard({ pallet, isFlipped = false, onFlip }: Pallet
       : { perspective: '1000px' };
 
   return (
-    <div className="isolate" style={sceneStyle}>
+    <div className="isolate w-full" style={sceneStyle}>
       <div
         style={{
           transformStyle: 'preserve-3d',
@@ -338,7 +338,7 @@ export default function PalletCard({ pallet, isFlipped = false, onFlip }: Pallet
               </p>
               <div className="space-y-1.5">
                 {productsSummaryArray.map((product, i) => (
-                  <div key={i} className="flex items-start gap-2">
+                  <div key={i} className="flex min-w-0 items-start gap-2">
                     <div className="bg-foreground/8 mt-0.5 h-1.5 w-1.5 flex-shrink-0 rounded-full" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm leading-tight font-medium">{product.name}</p>
@@ -365,7 +365,8 @@ export default function PalletCard({ pallet, isFlipped = false, onFlip }: Pallet
                     <Badge
                       key={lot}
                       variant="outline"
-                      className="bg-accent/60 text-accent-foreground border-border/60 text-xs"
+                      className="bg-accent/60 text-accent-foreground border-border/60 max-w-full truncate text-xs"
+                      title={lot}
                     >
                       {lot}
                     </Badge>
@@ -390,14 +391,14 @@ export default function PalletCard({ pallet, isFlipped = false, onFlip }: Pallet
 
           {/* Stats footer */}
           <div className="grid grid-cols-2 divide-x border-t">
-            <div className="flex items-center justify-center gap-1.5 py-2.5">
-              <span className="text-sm font-semibold tabular-nums">{availableBoxCount}</span>
-              <span className="text-muted-foreground text-xs">
+            <div className="flex min-w-0 items-center justify-center gap-1.5 py-2.5">
+              <span className="truncate text-sm font-semibold tabular-nums">{availableBoxCount}</span>
+              <span className="text-muted-foreground shrink-0 text-xs">
                 {availableBoxCount === 1 ? 'caja' : 'cajas'}
               </span>
             </div>
-            <div className="flex items-center justify-center gap-1.5 py-2.5">
-              <span className="text-sm font-semibold tabular-nums">
+            <div className="flex min-w-0 items-center justify-center gap-1.5 py-2.5">
+              <span className="truncate text-sm font-semibold tabular-nums">
                 {formatDecimalWeight(availableNetWeight)}
               </span>
             </div>
