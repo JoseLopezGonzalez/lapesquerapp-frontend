@@ -122,6 +122,7 @@ export function MobileStoreDetailView({
       (pallet) => Number(pallet.id) === numericPalletId,
     );
 
+    setScannerOpen(false);
     openPalletDialog(numericPalletId);
 
     if (!palletInStore) {

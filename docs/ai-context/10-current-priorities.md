@@ -43,6 +43,12 @@ Documentación de referencia: `docs/to do/26-03-2026/agenda-next-action-ux-backe
 
 ---
 
+## Refactors pendientes programados
+
+- **Unificación hooks autoventa** (`useFieldAutoventa` + `useAutoventa`): ~170 líneas duplicadas, baja prioridad. Ver `docs/74-refactor-hooks-autoventa-duplicacion.md`.
+
+---
+
 ## No hacer ahora
 
 - No rediseñar la aplicación completa.
