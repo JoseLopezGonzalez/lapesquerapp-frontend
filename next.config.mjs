@@ -1,12 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   transpilePackages: ['mapbox-gl'],
-  // WASM support for barcode-detector (ZXing WASM) and @undecaf/zbar-wasm
-  // Both scanner backends load .wasm bundles at runtime via dynamic import.
-  webpack: (config) => {
-    config.experiments = { ...config.experiments, asyncWebAssembly: true };
-    return config;
-  },
+  // Next.js 16 uses Turbopack by default. Both WASM scanner packages
+  // (barcode-detector / @undecaf/zbar-wasm) load their .wasm files via
+  // internal fetch() at runtime — no static .wasm imports — so Turbopack
+  // handles them without special config. An empty turbopack key here tells
+  // Next.js we are aware of Turbopack and intentionally have no overrides.
+  turbopack: {},
   // Eliminar console.log/info/debug en producción (mantener error/warn)
   // Nota: con Turbopack puede no aplicarse; verificar con build
   compiler: {
