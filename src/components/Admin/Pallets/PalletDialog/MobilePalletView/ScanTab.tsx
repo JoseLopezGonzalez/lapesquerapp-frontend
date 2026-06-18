@@ -11,7 +11,7 @@ import { Combobox } from '@/components/Shadcn/Combobox';
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
 import { parseGs1128Line } from '@/lib/gs1128Parser';
 import type { BoxCreationData, PalletBox, PalletState, ProductOption } from '@/hooks/pallets/palletHelpers';
-import type { QrValidateResult, ScannerBackend } from '@/components/Shared/QrScannerWidget';
+import type { QrValidateResult } from '@/components/Shared/QrScannerWidget';
 
 const QrScannerWidget = dynamic(
   () => import('@/components/Shared/QrScannerWidget').then((m) => ({ default: m.QrScannerWidget })),
@@ -43,7 +43,7 @@ export default function ScanTab({
   isReadOnly,
   canEditCost,
 }: ScanTabProps) {
-  const [scannerBackend, setScannerBackend] = useState<ScannerBackend | null>(null);
+  const [scannerOpen, setScannerOpen] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
 
   const validateGs1128 = useCallback(
@@ -65,31 +65,16 @@ export default function ScanTab({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Hero scan buttons — one per backend */}
-      <div className="flex w-full gap-2">
-        <button
-          type="button"
-          onClick={() => setScannerBackend('barcode-detector')}
-          disabled={isReadOnly || productsLoading}
-          className="flex h-16 flex-1 items-center justify-center gap-2.5 rounded-xl text-base font-semibold text-white shadow-lg transition-transform active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
-          style={{
-            background: 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.82) 100%)',
-            boxShadow: '0 4px 20px hsl(var(--primary) / 0.35), 0 0 0 1px hsl(var(--primary) / 0.2)',
-          }}
-        >
-          <Scan className="h-5 w-5" />
-          Escanear (ZXing)
-        </button>
-        <button
-          type="button"
-          onClick={() => setScannerBackend('zbar')}
-          disabled={isReadOnly || productsLoading}
-          className="flex h-16 flex-1 items-center justify-center gap-2.5 rounded-xl border border-primary/30 bg-primary/8 text-base font-semibold text-primary shadow-sm transition-transform active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
-        >
-          <Scan className="h-5 w-5" />
-          Escanear (ZBar)
-        </button>
-      </div>
+      {/* Hero scan button */}
+      <Button
+        size="lg"
+        className="h-16 w-full gap-2.5 text-base font-semibold"
+        onClick={() => setScannerOpen(true)}
+        disabled={isReadOnly || productsLoading}
+      >
+        <Scan className="h-5 w-5" />
+        Escanear con cámara
+      </Button>
 
       {/* Manual entry */}
       {!isReadOnly && (
@@ -230,12 +215,11 @@ export default function ScanTab({
       )}
 
       {/* Fullscreen camera scanner */}
-      {scannerBackend && (
+      {scannerOpen && (
         <QrScannerWidget
-          backend={scannerBackend}
           onScan={handleScannedCode}
-          onClose={() => setScannerBackend(null)}
-          onError={() => setScannerBackend(null)}
+          onClose={() => setScannerOpen(false)}
+          onError={() => setScannerOpen(false)}
           validate={validateGs1128}
           statusText="Apunta al código GS1-128 de la caja"
           successText="Caja registrada"
