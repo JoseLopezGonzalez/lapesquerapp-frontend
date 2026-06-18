@@ -55,7 +55,10 @@ export default function Step2QRScan({
   const [manualCodes, setManualCodes] = useState('');
 
   useEffect(() => {
-    if (!token) return;
+    if (!token) {
+      setLoadingProducts(false);
+      return;
+    }
     setLoadingProducts(true);
     loadProductOptions(token)
       .then((data) => {

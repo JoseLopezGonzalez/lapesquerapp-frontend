@@ -3,12 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import QRCode from 'react-qr-code';
 import { Button } from '@/components/ui/button';
-import { Check, ScanLine, X } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { playScanFail, playScanSuccess } from '@/lib/scannerSound';
 import { useBarcodeScanner, type ScannerBackend, type ScannedCode } from '@/hooks/useBarcodeScanner';
 
-// Re-export so callers only need to import from this file.
 export type { ScannerBackend };
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -21,12 +19,6 @@ interface Point {
 export type QrValidateResult = { ok: true } | { ok: false; message: string };
 
 export interface QrScannerWidgetProps {
-  /**
-   * WASM decode engine to use:
-   *   'barcode-detector' (default) → ZXing WASM via W3C BarcodeDetector ponyfill
-   *   'zbar'                       → ZBar WASM via @undecaf/zbar-wasm
-   * Both work on iOS Safari and Android Chrome.
-   */
   backend?: ScannerBackend;
   onScan: (rawValue: string) => void;
   onClose: () => void;
@@ -43,11 +35,6 @@ type ScanPhase =
   | { type: 'result'; rawValue: string; status: 'success' | 'fail'; message: string };
 
 // ─── Coordinate mapping ────────────────────────────────────────────────────────
-//
-// The corner points returned by both backends are in video-pixel space
-// (0,0 at top-left of the raw video frame, dimensions = video.videoWidth × videoHeight).
-// The <video> element is rendered with objectFit: cover, so we must map those
-// coordinates to CSS-pixel display space, accounting for the cover scale and offset.
 
 function mapToDisplay(
   cornerPoints: ReadonlyArray<Point>,
@@ -65,6 +52,79 @@ function mapToDisplay(
   const oX = (dW - vW * scale) / 2;
   const oY = (dH - vH * scale) / 2;
   return cornerPoints.map(({ x, y }) => ({ x: x * scale + oX, y: y * scale + oY }));
+}
+
+// Builds a rounded polygon SVG path. Uses quadratic bezier curves at each corner.
+function roundedPolygonPath(points: Point[], radius = 12): string {
+  if (points.length < 3) return '';
+  const n = points.length;
+  const segs: string[] = [];
+
+  for (let i = 0; i < n; i++) {
+    const prev = points[(i - 1 + n) % n];
+    const curr = points[i];
+    const next = points[(i + 1) % n];
+
+    const v1 = { x: prev.x - curr.x, y: prev.y - curr.y };
+    const v2 = { x: next.x - curr.x, y: next.y - curr.y };
+    const l1 = Math.hypot(v1.x, v1.y);
+    const l2 = Math.hypot(v2.x, v2.y);
+    const r = Math.min(radius, l1 / 2, l2 / 2);
+
+    const p1 = { x: curr.x + (v1.x / l1) * r, y: curr.y + (v1.y / l1) * r };
+    const p2 = { x: curr.x + (v2.x / l2) * r, y: curr.y + (v2.y / l2) * r };
+
+    if (i === 0) segs.push(`M ${p1.x.toFixed(1)} ${p1.y.toFixed(1)}`);
+    else segs.push(`L ${p1.x.toFixed(1)} ${p1.y.toFixed(1)}`);
+
+    segs.push(`Q ${curr.x.toFixed(1)} ${curr.y.toFixed(1)} ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`);
+  }
+  segs.push('Z');
+  return segs.join(' ');
+}
+
+function getBoundingBox(points: Point[]) {
+  const xs = points.map((p) => p.x);
+  const ys = points.map((p) => p.y);
+  return { minX: Math.min(...xs), maxX: Math.max(...xs), minY: Math.min(...ys), maxY: Math.max(...ys) };
+}
+
+// ─── Audio feedback ───────────────────────────────────────────────────────────
+
+function playTone(type: 'success' | 'fail') {
+  try {
+    const ctx = new AudioContext();
+    const master = ctx.createGain();
+    master.connect(ctx.destination);
+
+    const schedule = (freq: number, waveform: OscillatorType, startAt: number, duration: number, volume: number) => {
+      const osc = ctx.createOscillator();
+      const env = ctx.createGain();
+      osc.type = waveform;
+      osc.frequency.value = freq;
+      osc.connect(env);
+      env.connect(master);
+      env.gain.setValueAtTime(0, ctx.currentTime + startAt);
+      env.gain.linearRampToValueAtTime(volume, ctx.currentTime + startAt + 0.01);
+      env.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startAt + duration);
+      osc.start(ctx.currentTime + startAt);
+      osc.stop(ctx.currentTime + startAt + duration + 0.05);
+    };
+
+    if (type === 'success') {
+      // Ascending double-beep: 880 Hz → 1320 Hz (industrial scanner "confirmed" feel)
+      schedule(880, 'sine', 0, 0.18, 0.9);
+      schedule(1320, 'sine', 0.2, 0.22, 0.85);
+    } else {
+      // Descending buzzer: 440 Hz → 280 Hz square wave (prominent error alarm)
+      schedule(440, 'square', 0, 0.22, 0.7);
+      schedule(280, 'square', 0.25, 0.25, 0.7);
+    }
+
+    setTimeout(() => ctx.close(), 700);
+  } catch {
+    // AudioContext not available (SSR or sandboxed environment)
+  }
 }
 
 // ─── Sub-components ────────────────────────────────────────────────────────────
@@ -108,34 +168,86 @@ function DetectionOverlay({
   const mapped = mapToDisplay(cornerPoints, containerRef.current);
   if (mapped.length < 3) return null;
 
-  const pts = mapped.map((p) => `${p.x},${p.y}`).join(' ');
+  const path = roundedPolygonPath(mapped, 14);
+  const bb = getBoundingBox(mapped);
 
   return (
     <svg className="pointer-events-none absolute inset-0 h-full w-full overflow-visible">
       <defs>
-        <filter id="qr-glow">
-          <feGaussianBlur stdDeviation="3" result="blur" />
+        <filter id="qr-glow" x="-25%" y="-25%" width="150%" height="150%">
+          <feGaussianBlur stdDeviation="4" result="blur" />
           <feComposite in="SourceGraphic" in2="blur" operator="over" />
         </filter>
+        <clipPath id="qr-det-clip">
+          <path d={path} />
+        </clipPath>
+        {/* Gradient for the sweep line: fade in/out at edges */}
+        <linearGradient id="qr-sweep-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="rgba(34,197,94,0)" />
+          <stop offset="40%" stopColor="rgba(34,197,94,0.8)" />
+          <stop offset="60%" stopColor="rgba(34,197,94,0.8)" />
+          <stop offset="100%" stopColor="rgba(34,197,94,0)" />
+        </linearGradient>
       </defs>
-      <polygon
-        points={pts}
-        fill="rgba(34,197,94,0.10)"
+
+      {/* Subtle fill tint */}
+      <path d={path} fill="rgba(34,197,94,0.07)" />
+
+      {/* Solid base stroke */}
+      <path
+        d={path}
+        fill="none"
+        stroke="rgba(34,197,94,0.35)"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+
+      {/* Marching dash overlay — gives the "active scanner" feel */}
+      <path
+        d={path}
+        fill="none"
         stroke="rgb(34,197,94)"
         strokeWidth="2.5"
-        strokeLinejoin="round"
+        strokeLinecap="round"
+        pathLength="100"
+        strokeDasharray="10 5"
         filter="url(#qr-glow)"
-      />
-      {mapped.map((p, i) => (
-        <circle
-          key={i}
-          cx={p.x}
-          cy={p.y}
-          r="5"
-          fill="rgb(34,197,94)"
-          style={{ filter: 'drop-shadow(0 0 4px rgb(34,197,94))' }}
+      >
+        <animate
+          attributeName="stroke-dashoffset"
+          from="15"
+          to="0"
+          dur="0.5s"
+          repeatCount="indefinite"
         />
-      ))}
+      </path>
+
+      {/* Sweep line clipped to the detection polygon */}
+      <line
+        x1={bb.minX + 8}
+        y1={bb.minY}
+        x2={bb.maxX - 8}
+        y2={bb.minY}
+        stroke="rgba(34,197,94,0.6)"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        clipPath="url(#qr-det-clip)"
+      >
+        <animate
+          attributeName="y1"
+          values={`${bb.minY.toFixed(1)};${bb.maxY.toFixed(1)};${bb.minY.toFixed(1)}`}
+          dur="2s"
+          repeatCount="indefinite"
+          calcMode="ease-in-out"
+        />
+        <animate
+          attributeName="y2"
+          values={`${bb.minY.toFixed(1)};${bb.maxY.toFixed(1)};${bb.minY.toFixed(1)}`}
+          dur="2s"
+          repeatCount="indefinite"
+          calcMode="ease-in-out"
+        />
+      </line>
     </svg>
   );
 }
@@ -242,72 +354,6 @@ function ResultOverlay({
   );
 }
 
-function BottomBar({
-  phase,
-  statusText,
-  onConfirm,
-  onClose,
-}: {
-  phase: ScanPhase;
-  statusText?: string;
-  onConfirm: () => void;
-  onClose: () => void;
-}) {
-  if (phase.type === 'result') return null;
-
-  return (
-    <div
-      className="bg-background/95 fixed right-0 bottom-0 left-0 z-[110] flex flex-col gap-3 p-4 pt-3 backdrop-blur-sm"
-      style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
-    >
-      {phase.type === 'searching' && (
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-2 text-muted-foreground">
-            <ScanLine className="h-4 w-4 shrink-0" />
-            <span className="truncate text-sm">
-              {statusText ?? 'Apunta el código al encuadre'}
-            </span>
-          </div>
-          <Button type="button" variant="secondary" size="sm" className="shrink-0" onClick={onClose}>
-            <X className="mr-1.5 h-4 w-4" />
-            Cerrar
-          </Button>
-        </div>
-      )}
-
-      {phase.type === 'detected' && (
-        <div className="flex items-center gap-3">
-          <Button
-            type="button"
-            size="lg"
-            className="flex-1 text-base font-semibold"
-            style={{
-              backgroundImage:
-                'linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--primary)) 30%, rgba(255,255,255,0.22) 50%, hsl(var(--primary)) 70%, hsl(var(--primary)) 100%)',
-              backgroundSize: '200% auto',
-              animation: 'qr-shimmer 1.6s linear infinite',
-            }}
-            onClick={onConfirm}
-          >
-            <Check className="mr-2 h-5 w-5" />
-            Leer código
-          </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            size="lg"
-            className="shrink-0 px-3"
-            onClick={onClose}
-            aria-label="Cerrar escáner"
-          >
-            <X className="h-5 w-5" />
-          </Button>
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ─── Main component ────────────────────────────────────────────────────────────
 
 export function QrScannerWidget({
@@ -315,7 +361,6 @@ export function QrScannerWidget({
   onScan,
   onClose,
   onError,
-  statusText,
   successText = 'Código leído correctamente',
   formats = ['qr_code'],
   validate,
@@ -324,14 +369,7 @@ export function QrScannerWidget({
   const containerRef = useRef<HTMLDivElement>(null);
 
   const phaseRef = useRef<ScanPhase>(phase);
-
-  // autoResetRef: after a successful result, auto-resets to 'searching' so the
-  // scanner stays open and the user can scan more codes without reopening.
   const autoResetRef = useRef<ReturnType<typeof setTimeout>>(null);
-
-  // lostDetectionRef: when the detection loop returns empty (QR left the frame),
-  // we wait 400 ms before resetting to 'searching'. The debounce prevents flicker
-  // caused by momentary tracking gaps as the user moves the camera.
   const lostDetectionRef = useRef<ReturnType<typeof setTimeout>>(null);
 
   const onScanRef = useRef(onScan);
@@ -349,8 +387,6 @@ export function QrScannerWidget({
     [],
   );
 
-  // After a successful result: fire onScan immediately, show the overlay for
-  // 1500 ms, then auto-reset to 'searching' so more codes can be scanned.
   useEffect(() => {
     if (phase.type !== 'result' || phase.status !== 'success') return;
 
@@ -370,13 +406,9 @@ export function QrScannerWidget({
   }, [phase]);
 
   const handleDetect = useCallback((codes: ScannedCode[]) => {
-    // Do not process detections while a result is being displayed.
     if (phaseRef.current.type === 'result') return;
 
     if (codes.length === 0) {
-      // Nothing detected this frame. If we were in 'detected' state, start the
-      // debounce: if still empty after 400 ms, reset to 'searching' so the button
-      // disappears and the user knows the code is no longer in frame.
       if (phaseRef.current.type === 'detected' && !lostDetectionRef.current) {
         lostDetectionRef.current = setTimeout(() => {
           lostDetectionRef.current = null;
@@ -390,9 +422,6 @@ export function QrScannerWidget({
       return;
     }
 
-    // Code found — cancel any pending "lost" timer and update the overlay.
-    // Because the detection loop fires every ~100 ms, cornerPoints update on
-    // every frame: the SVG highlight tracks the code live as the camera moves.
     clearTimeout(lostDetectionRef.current ?? undefined);
     lostDetectionRef.current = null;
 
@@ -425,7 +454,6 @@ export function QrScannerWidget({
     const current = phaseRef.current;
     if (current.type !== 'detected') return;
 
-    // Cancel the "lost" timer — user confirmed before the 400 ms debounce fired.
     clearTimeout(lostDetectionRef.current ?? undefined);
     lostDetectionRef.current = null;
 
@@ -435,11 +463,8 @@ export function QrScannerWidget({
       ? { type: 'result', rawValue, status: 'success', message: successText }
       : { type: 'result', rawValue, status: 'fail', message: result.message };
 
+    playTone(result.ok ? 'success' : 'fail');
     phaseRef.current = newPhase;
-
-    if (result.ok) playScanSuccess();
-    else playScanFail();
-
     setPhase(newPhase);
   }, [validate, successText]);
 
@@ -460,25 +485,15 @@ export function QrScannerWidget({
   }, []);
 
   return (
-    <div className="bg-background fixed inset-0 z-[100] flex flex-col">
-      <div ref={containerRef} className="relative min-h-0 w-full flex-1 pb-24">
-        {/*
-          We own the <video> element entirely. No third-party library renders
-          into this subtree, so there is no interference between the library's
-          internal state and our own phase state machine.
-        */}
+    <div className="bg-background fixed inset-0 z-[100]">
+      {/* Full-screen camera view */}
+      <div ref={containerRef} className="relative h-full w-full">
         <video
           ref={videoRef}
           playsInline
           muted
           className="h-full w-full object-cover"
         />
-
-        {/*
-          Hidden canvas used exclusively by the ZBar backend to extract a
-          per-frame ImageData snapshot. The BarcodeDetector backend reads the
-          video element directly and does not touch this canvas.
-        */}
         <canvas ref={canvasRef} className="hidden" aria-hidden />
 
         {!isReady && (
@@ -506,12 +521,42 @@ export function QrScannerWidget({
         )}
       </div>
 
-      <BottomBar
-        phase={phase}
-        statusText={statusText}
-        onConfirm={handleConfirm}
-        onClose={handleClose}
-      />
+      {/* Floating close button — top-right, always visible except during result overlay */}
+      {phase.type !== 'result' && (
+        <button
+          type="button"
+          onClick={handleClose}
+          aria-label="Cerrar escáner"
+          className="fixed right-4 z-[110] flex h-11 w-11 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-md transition-colors hover:bg-black/60 active:scale-95"
+          style={{ top: 'max(1rem, calc(env(safe-area-inset-top) + 0.5rem))' }}
+        >
+          <X className="h-5 w-5" />
+        </button>
+      )}
+
+      {/* Floating confirm button — centered bottom, appears when QR is detected */}
+      {phase.type === 'detected' && (
+        <div
+          className="fixed bottom-0 left-0 right-0 z-[110] flex justify-center"
+          style={{ paddingBottom: 'calc(2.5rem + env(safe-area-inset-bottom))' }}
+        >
+          <button
+            type="button"
+            onClick={handleConfirm}
+            className="flex h-14 items-center gap-2.5 rounded-full px-10 text-base font-semibold text-white shadow-2xl transition-transform active:scale-95"
+            style={{
+              backgroundImage:
+                'linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--primary)) 30%, rgba(255,255,255,0.22) 50%, hsl(var(--primary)) 70%, hsl(var(--primary)) 100%)',
+              backgroundSize: '200% auto',
+              animation: 'qr-shimmer 1.6s linear infinite',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.1)',
+            }}
+          >
+            <Check className="h-5 w-5" strokeWidth={2.5} />
+            Leer código
+          </button>
+        </div>
+      )}
     </div>
   );
 }
