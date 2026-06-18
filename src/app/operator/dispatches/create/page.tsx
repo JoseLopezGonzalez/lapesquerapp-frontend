@@ -50,7 +50,6 @@ export default function OperatorDispatchesCreatePage() {
         <CeboSuccessActions
           dispatch={createdDispatch}
           onExit={handleExitSuccess}
-          onNew={() => setCreatedDispatch(null)}
         />
       ) : (
         <OperarioCreateCeboForm

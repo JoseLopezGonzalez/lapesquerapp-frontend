@@ -2,10 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { CircleCheck, LogOut, Printer, PlusCircle } from 'lucide-react';
+import { CircleCheck, LogOut, Printer } from 'lucide-react';
 import { usePrintElement } from '@/hooks/usePrintElement';
 import CeboDispatchReciboPrintContent from './CeboDispatchReciboPrintContent';
 
@@ -36,11 +35,9 @@ interface PrintData {
 interface CeboSuccessActionsProps {
   dispatch: CeboDispatch;
   onExit: () => void;
-  onNew?: () => void;
 }
 
-export default function CeboSuccessActions({ dispatch, onExit, onNew }: CeboSuccessActionsProps) {
-  const router = useRouter();
+export default function CeboSuccessActions({ dispatch, onExit }: CeboSuccessActionsProps) {
   const [printData, setPrintData] = useState<PrintData | null>(null);
 
   const { onPrint: onPrintRecibo } = usePrintElement({
@@ -84,14 +81,6 @@ export default function CeboSuccessActions({ dispatch, onExit, onNew }: CeboSucc
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const handleNewDispatch = () => {
-    if (onNew) {
-      onNew();
-    } else {
-      router.push('/admin/cebo-dispatches/create');
-    }
-  };
 
   return (
     <div className="flex min-h-0 w-full flex-1 flex-col items-center justify-center gap-8 px-4 py-6">
@@ -156,15 +145,6 @@ export default function CeboSuccessActions({ dispatch, onExit, onNew }: CeboSucc
               >
                 <Printer className="h-6 w-6 shrink-0" />
                 Recibo
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className="min-h-[64px] max-w-[260px] min-w-[160px] flex-1 touch-manipulation gap-3 py-4 text-xl transition-transform active:scale-[0.98]"
-                onClick={handleNewDispatch}
-              >
-                <PlusCircle className="h-6 w-6 shrink-0" />
-                Nueva salida de cebo
               </Button>
               <Button
                 variant="ghost"

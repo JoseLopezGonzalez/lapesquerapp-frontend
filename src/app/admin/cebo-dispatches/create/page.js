@@ -54,7 +54,6 @@ export default function CreateCeboDispatchPage() {
           <CeboSuccessActions
             dispatch={createdDispatch}
             onExit={handleExitSuccess}
-            onNew={() => setCreatedDispatch(null)}
           />
         ) : (
           <div className="flex min-h-0 flex-1 flex-col">

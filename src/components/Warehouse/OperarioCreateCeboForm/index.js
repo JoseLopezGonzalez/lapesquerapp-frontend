@@ -106,6 +106,16 @@ export default function OperarioCreateCeboForm({ onSuccess, onCancel, storeId = 
     }
   }, [step, speciesValue, speciesLoading]);
 
+  useEffect(() => {
+    if (step === 1 && supplierValue != null && !suppliersLoading) {
+      const suppId = typeof supplierValue === 'object'
+        ? (supplierValue?.id ?? supplierValue?.value)
+        : supplierValue;
+      const el = document.getElementById(`supplier-opt-${suppId}`);
+      if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+  }, [step, supplierValue, suppliersLoading]);
+
   const getProductLabel = (val) => {
     if (val == null) return '-';
     const id = typeof val === 'object' ? (val?.id ?? val?.value) : val;
@@ -308,6 +318,7 @@ export default function OperarioCreateCeboForm({ onSuccess, onCancel, storeId = 
                         return (
                           <button
                             key={optVal?.id ?? optVal ?? idx}
+                            id={isSelected ? `supplier-opt-${optVal?.id ?? optVal}` : undefined}
                             type="button"
                             onClick={() =>
                               setValue('supplier', isSelected ? null : opt.value, {

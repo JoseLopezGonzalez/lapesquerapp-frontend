@@ -207,6 +207,21 @@ export default function DispatchesListCard({ storeId = null }) {
                     ))
                   )}
                 </TableBody>
+                {data.length > 0 && (
+                  <tfoot>
+                    <tr className="bg-muted/50 border-t">
+                      <td colSpan={2} className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                        Total página
+                      </td>
+                      <td className="px-4 py-2 text-right text-sm font-semibold tabular-nums">
+                        {showAllQuantities
+                          ? `${data.reduce((acc, row) => acc + getDispatchNetWeight(row), 0).toFixed(2)} kg`
+                          : '*****'}
+                      </td>
+                      <td colSpan={2} />
+                    </tr>
+                  </tfoot>
+                )}
               </table>
             </div>
             <div className="shrink-0">

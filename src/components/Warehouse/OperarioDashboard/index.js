@@ -83,8 +83,8 @@ export default function OperarioDashboard({ storeId = null }) {
 
       {/* Grid de 4 cards: Hora, Fecha, Día, Acciones — mismo estilo que dashboard normal */}
       <div className="grid shrink-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className={DASHBOARD_CARD_CLASS}>
-          <CardContent className="flex items-center gap-3 pt-6">
+        <Card className={DASHBOARD_CARD_CLASS + ' flex flex-col justify-center'}>
+          <CardContent className="flex items-center gap-3 p-6">
             <div className="bg-muted flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
               <Clock className="text-muted-foreground h-5 w-5" />
             </div>
@@ -94,8 +94,8 @@ export default function OperarioDashboard({ storeId = null }) {
             </div>
           </CardContent>
         </Card>
-        <Card className={DASHBOARD_CARD_CLASS}>
-          <CardContent className="flex items-center gap-3 pt-6">
+        <Card className={DASHBOARD_CARD_CLASS + ' flex flex-col justify-center'}>
+          <CardContent className="flex items-center gap-3 p-6">
             <div className="bg-muted flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
               <Calendar className="text-muted-foreground h-5 w-5" />
             </div>
@@ -105,8 +105,8 @@ export default function OperarioDashboard({ storeId = null }) {
             </div>
           </CardContent>
         </Card>
-        <Card className={DASHBOARD_CARD_CLASS}>
-          <CardContent className="flex items-center gap-3 pt-6">
+        <Card className={DASHBOARD_CARD_CLASS + ' flex flex-col justify-center'}>
+          <CardContent className="flex items-center gap-3 p-6">
             <div className="bg-muted flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
               <Calendar className="text-muted-foreground h-5 w-5" />
             </div>
@@ -119,7 +119,7 @@ export default function OperarioDashboard({ storeId = null }) {
         <Card
           className={
             DASHBOARD_CARD_CLASS +
-            ' hover:border-primary/30 hover:bg-muted/30 cursor-pointer transition-colors'
+            ' flex flex-col justify-center hover:border-primary/30 hover:bg-muted/30 cursor-pointer transition-colors'
           }
           onClick={() => setCalculatorOpen(true)}
           role="button"
@@ -132,7 +132,7 @@ export default function OperarioDashboard({ storeId = null }) {
           }}
           aria-label="Abrir calculadora de peso neto"
         >
-          <CardContent className="flex items-center gap-3 pt-6">
+          <CardContent className="flex items-center gap-3 p-6">
             <div className="bg-muted flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
               <Calculator className="text-muted-foreground h-5 w-5" />
             </div>
