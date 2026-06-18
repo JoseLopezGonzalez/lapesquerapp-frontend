@@ -9,7 +9,7 @@ import { Package, Scan, Trash2 } from 'lucide-react';
 import { getProductOptions } from '@/services/productService';
 import { notify } from '@/lib/notifications';
 import { parseGs1128Line } from '@/lib/gs1128Parser';
-import type { QrValidateResult } from '@/components/Shared/QrScannerWidget';
+import type { QrValidateResult, ScannerBackend } from '@/components/Shared/QrScannerWidget';
 
 const QrScannerWidget = dynamic(
   () => import('@/components/Shared/QrScannerWidget').then((m) => ({ default: m.QrScannerWidget })),
@@ -51,7 +51,7 @@ export default function Step2QRScan({
 
   const [productsOptions, setProductsOptions] = useState<ProductOption[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
-  const [scannerOpen, setScannerOpen] = useState(false);
+  const [scannerBackend, setScannerBackend] = useState<ScannerBackend | null>(null);
   const [manualCodes, setManualCodes] = useState('');
 
   useEffect(() => {
@@ -95,7 +95,7 @@ export default function Step2QRScan({
 
   const handleScannerError = (message: string) => {
     notify.error({ title: message || 'No se pudo acceder a la cámara.' }, { duration: 800 });
-    setScannerOpen(false);
+    setScannerBackend(null);
   };
 
   const handleManualCodesSubmit = () => {
@@ -147,16 +147,28 @@ export default function Step2QRScan({
 
   return (
     <div className="flex min-h-0 w-full max-w-[420px] flex-1 flex-col gap-4">
-      <div className="w-full shrink-0">
+      {/* Two scan buttons — one per WASM engine — so both can be tested side by side */}
+      <div className="flex w-full shrink-0 gap-2">
         <Button
           type="button"
           size="lg"
-          className="w-full"
-          onClick={() => setScannerOpen(true)}
+          className="flex-1"
+          onClick={() => setScannerBackend('barcode-detector')}
           disabled={loadingProducts}
         >
           <Scan className="mr-2 h-4 w-4" />
-          Escanear con cámara
+          Escanear (ZXing)
+        </Button>
+        <Button
+          type="button"
+          size="lg"
+          variant="outline"
+          className="flex-1"
+          onClick={() => setScannerBackend('zbar')}
+          disabled={loadingProducts}
+        >
+          <Scan className="mr-2 h-4 w-4" />
+          Escanear (ZBar)
         </Button>
       </div>
 
@@ -178,10 +190,11 @@ export default function Step2QRScan({
         </Button>
       </div>
 
-      {scannerOpen && (
+      {scannerBackend && (
         <QrScannerWidget
+          backend={scannerBackend}
           onScan={handleScannedCode}
-          onClose={() => setScannerOpen(false)}
+          onClose={() => setScannerBackend(null)}
           onError={handleScannerError}
           validate={validateGs1128}
           statusText="Apunta al código de la caja"

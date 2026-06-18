@@ -1,12 +1,15 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Scanner } from '@yudiel/react-qr-scanner';
 import QRCode from 'react-qr-code';
 import { Button } from '@/components/ui/button';
 import { Check, ScanLine, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { playScanFail, playScanSuccess } from '@/lib/scannerSound';
+import { useBarcodeScanner, type ScannerBackend, type ScannedCode } from '@/hooks/useBarcodeScanner';
+
+// Re-export so callers only need to import from this file.
+export type { ScannerBackend };
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -15,14 +18,16 @@ interface Point {
   y: number;
 }
 
-interface DetectedCode {
-  rawValue?: string;
-  cornerPoints?: ReadonlyArray<Point>;
-}
-
 export type QrValidateResult = { ok: true } | { ok: false; message: string };
 
 export interface QrScannerWidgetProps {
+  /**
+   * WASM decode engine to use:
+   *   'barcode-detector' (default) → ZXing WASM via W3C BarcodeDetector ponyfill
+   *   'zbar'                       → ZBar WASM via @undecaf/zbar-wasm
+   * Both work on iOS Safari and Android Chrome.
+   */
+  backend?: ScannerBackend;
   onScan: (rawValue: string) => void;
   onClose: () => void;
   onError?: (message: string) => void;
@@ -37,22 +42,12 @@ type ScanPhase =
   | { type: 'detected'; rawValue: string; cornerPoints: ReadonlyArray<Point> }
   | { type: 'result'; rawValue: string; status: 'success' | 'fail'; message: string };
 
-// ─── Camera constraints ────────────────────────────────────────────────────────
-
-const CAMERA_CONSTRAINTS = {
-  facingMode: 'environment',
-  width: { ideal: 1280, min: 480, max: 1920 },
-  height: { ideal: 960, min: 480, max: 1440 },
-  frameRate: { ideal: 30, min: 15 },
-};
-
-// Stable reference — prevents Scanner from re-initialising on every render.
-// audio: false  → silence library's own detection beep
-// tracker: false → hide library's built-in highlight (we draw our own SVG)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const SCANNER_COMPONENTS = { audio: false, tracker: false } as any;
-
 // ─── Coordinate mapping ────────────────────────────────────────────────────────
+//
+// The corner points returned by both backends are in video-pixel space
+// (0,0 at top-left of the raw video frame, dimensions = video.videoWidth × videoHeight).
+// The <video> element is rendered with objectFit: cover, so we must map those
+// coordinates to CSS-pixel display space, accounting for the cover scale and offset.
 
 function mapToDisplay(
   cornerPoints: ReadonlyArray<Point>,
@@ -316,6 +311,7 @@ function BottomBar({
 // ─── Main component ────────────────────────────────────────────────────────────
 
 export function QrScannerWidget({
+  backend = 'barcode-detector',
   onScan,
   onClose,
   onError,
@@ -333,6 +329,11 @@ export function QrScannerWidget({
   // scanner stays open and the user can scan more codes without reopening.
   const autoResetRef = useRef<ReturnType<typeof setTimeout>>(null);
 
+  // lostDetectionRef: when the detection loop returns empty (QR left the frame),
+  // we wait 400 ms before resetting to 'searching'. The debounce prevents flicker
+  // caused by momentary tracking gaps as the user moves the camera.
+  const lostDetectionRef = useRef<ReturnType<typeof setTimeout>>(null);
+
   const onScanRef = useRef(onScan);
   const onCloseRef = useRef(onClose);
   useEffect(() => { onScanRef.current = onScan; }, [onScan]);
@@ -343,6 +344,7 @@ export function QrScannerWidget({
   useEffect(
     () => () => {
       clearTimeout(autoResetRef.current ?? undefined);
+      clearTimeout(lostDetectionRef.current ?? undefined);
     },
     [],
   );
@@ -367,31 +369,67 @@ export function QrScannerWidget({
     return () => clearTimeout(autoResetRef.current ?? undefined);
   }, [phase]);
 
-  const handleDetect = useCallback((codes: DetectedCode[]) => {
-    // Stop processing once a result is being shown.
+  const handleDetect = useCallback((codes: ScannedCode[]) => {
+    // Do not process detections while a result is being displayed.
     if (phaseRef.current.type === 'result') return;
 
-    const code = codes[0];
-    if (!code?.rawValue) return;
+    if (codes.length === 0) {
+      // Nothing detected this frame. If we were in 'detected' state, start the
+      // debounce: if still empty after 400 ms, reset to 'searching' so the button
+      // disappears and the user knows the code is no longer in frame.
+      if (phaseRef.current.type === 'detected' && !lostDetectionRef.current) {
+        lostDetectionRef.current = setTimeout(() => {
+          lostDetectionRef.current = null;
+          if (phaseRef.current.type === 'detected') {
+            const searching: ScanPhase = { type: 'searching' };
+            phaseRef.current = searching;
+            setPhase(searching);
+          }
+        }, 400);
+      }
+      return;
+    }
 
-    // The library deduplicates by code value, so this callback fires once per
-    // unique code detected (not continuously). We update the phase on every
-    // call: a different code replaces the previous one; the same code keeps
-    // the overlay at the detected position until the user acts.
+    // Code found — cancel any pending "lost" timer and update the overlay.
+    // Because the detection loop fires every ~100 ms, cornerPoints update on
+    // every frame: the SVG highlight tracks the code live as the camera moves.
+    clearTimeout(lostDetectionRef.current ?? undefined);
+    lostDetectionRef.current = null;
+
+    const code = codes[0];
     const newPhase: ScanPhase = {
       type: 'detected',
       rawValue: code.rawValue,
-      cornerPoints: code.cornerPoints ?? [],
+      cornerPoints: code.cornerPoints,
     };
     phaseRef.current = newPhase;
     setPhase(newPhase);
   }, []);
 
+  const handleError = useCallback(
+    (error: Error) => {
+      onError?.(error.message ?? 'Error al acceder a la cámara.');
+    },
+    [onError],
+  );
+
+  const { videoRef, canvasRef, isReady } = useBarcodeScanner({
+    backend,
+    formats,
+    scanDelay: 100,
+    onDetect: handleDetect,
+    onError: handleError,
+  });
+
   const handleConfirm = useCallback(() => {
     const current = phaseRef.current;
     if (current.type !== 'detected') return;
-    const { rawValue } = current;
 
+    // Cancel the "lost" timer — user confirmed before the 400 ms debounce fired.
+    clearTimeout(lostDetectionRef.current ?? undefined);
+    lostDetectionRef.current = null;
+
+    const { rawValue } = current;
     const result: QrValidateResult = validate ? validate(rawValue) : { ok: true };
     const newPhase: ScanPhase = result.ok
       ? { type: 'result', rawValue, status: 'success', message: successText }
@@ -407,6 +445,8 @@ export function QrScannerWidget({
 
   const handleRetry = useCallback(() => {
     clearTimeout(autoResetRef.current ?? undefined);
+    clearTimeout(lostDetectionRef.current ?? undefined);
+    lostDetectionRef.current = null;
     const searching: ScanPhase = { type: 'searching' };
     phaseRef.current = searching;
     onScanFiredRef.current = false;
@@ -415,39 +455,37 @@ export function QrScannerWidget({
 
   const handleClose = useCallback(() => {
     clearTimeout(autoResetRef.current ?? undefined);
+    clearTimeout(lostDetectionRef.current ?? undefined);
     onCloseRef.current();
   }, []);
-
-  const handleError = useCallback(
-    (error: unknown) => {
-      const e = error as { message?: string };
-      const message = e?.message ?? (typeof error === 'string' ? error : 'Error al acceder a la cámara.');
-      onError?.(message);
-    },
-    [onError],
-  );
 
   return (
     <div className="bg-background fixed inset-0 z-[100] flex flex-col">
       <div ref={containerRef} className="relative min-h-0 w-full flex-1 pb-24">
-        <Scanner
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          onScan={handleDetect as any}
-          onError={handleError}
-          formats={formats as Parameters<typeof Scanner>[0]['formats']}
-          constraints={CAMERA_CONSTRAINTS}
-          components={SCANNER_COMPONENTS}
-          scanDelay={150}
-          styles={{
-            container: {
-              width: '100%',
-              height: '100%',
-              position: 'relative',
-              overflow: 'hidden',
-            },
-            video: { width: '100%', height: '100%', objectFit: 'cover' },
-          }}
+        {/*
+          We own the <video> element entirely. No third-party library renders
+          into this subtree, so there is no interference between the library's
+          internal state and our own phase state machine.
+        */}
+        <video
+          ref={videoRef}
+          playsInline
+          muted
+          className="h-full w-full object-cover"
         />
+
+        {/*
+          Hidden canvas used exclusively by the ZBar backend to extract a
+          per-frame ImageData snapshot. The BarcodeDetector backend reads the
+          video element directly and does not touch this canvas.
+        */}
+        <canvas ref={canvasRef} className="hidden" aria-hidden />
+
+        {!isReady && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+            <span className="text-sm text-white/70">Iniciando cámara…</span>
+          </div>
+        )}
 
         <CornerGuides active={phase.type === 'detected'} />
 
