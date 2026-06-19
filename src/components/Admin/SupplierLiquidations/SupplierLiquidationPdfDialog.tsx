@@ -58,6 +58,7 @@ export function SupplierLiquidationPdfDialog({
           <div className="flex flex-col gap-2">
             <label className="text-sm font-medium">Método de pago cebo:</label>
             <Tabs
+              className=""
               value={paymentMethod}
               onValueChange={(value) => onPaymentMethodChange(value as PaymentMethod)}
             >
