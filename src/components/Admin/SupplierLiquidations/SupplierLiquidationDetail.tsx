@@ -22,6 +22,7 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -494,6 +495,14 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
     receptions?.flatMap((reception) => reception.related_dispatches ?? []) ?? [];
   const allDispatches = [...allRelatedDispatches, ...(dispatches ?? [])];
 
+  const selectedReceptionItems = receptions?.filter((r) => selectedReceptions.includes(r.id)) ?? [];
+  const selectedDispatchItems = allDispatches.filter((d) => selectedDispatches.includes(d.id));
+  const selRecWeight = selectedReceptionItems.reduce((sum, r) => sum + (r.calculated_total_net_weight ?? 0), 0);
+  const selRecAmount = selectedReceptionItems.reduce((sum, r) => sum + (r.calculated_total_amount ?? 0), 0);
+  const selDispWeight = selectedDispatchItems.reduce((sum, d) => sum + (d.total_net_weight ?? 0), 0);
+  const selDispBase = selectedDispatchItems.reduce((sum, d) => sum + (d.base_amount ?? d.total_amount ?? 0), 0);
+  const selDispTotal = selectedDispatchItems.reduce((sum, d) => sum + (d.total_amount ?? 0), 0);
+
   const allReceptionIds = receptions?.map((r) => r.id) ?? [];
   const allDispatchIds = allDispatches.map((d) => d.id);
 
@@ -752,6 +761,23 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
                       </TableRow>
                     )}
                   </TableBody>
+                  {(receptions?.length ?? 0) > 0 && (
+                    <TableFooter>
+                      <TableRow>
+                        <TableCell />
+                        <TableCell className="text-sm font-semibold">
+                          {selectedReceptions.length}/{receptions?.length ?? 0} seleccionadas
+                        </TableCell>
+                        <TableCell className="text-right font-semibold">
+                          {selRecWeight > 0 ? formatWeight(selRecWeight) : '—'}
+                        </TableCell>
+                        <TableCell />
+                        <TableCell className="text-right font-semibold">
+                          {selRecAmount > 0 ? formatCurrency(selRecAmount) : '—'}
+                        </TableCell>
+                      </TableRow>
+                    </TableFooter>
+                  )}
                 </Table>
               </div>
             </CardContent>
@@ -893,6 +919,26 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
                       );
                       })}
                     </TableBody>
+                    {allDispatches.length > 0 && (
+                      <TableFooter>
+                        <TableRow>
+                          <TableCell />
+                          <TableCell className="text-sm font-semibold">
+                            {selectedDispatches.length}/{allDispatches.length} seleccionadas
+                          </TableCell>
+                          <TableCell className="text-right font-semibold">
+                            {selDispWeight > 0 ? formatWeight(selDispWeight) : '—'}
+                          </TableCell>
+                          <TableCell />
+                          <TableCell className="text-right font-semibold">
+                            {selDispBase > 0 ? formatCurrency(selDispBase) : '—'}
+                          </TableCell>
+                          <TableCell className="text-right font-semibold">
+                            {selDispTotal > 0 ? formatCurrency(selDispTotal) : '—'}
+                          </TableCell>
+                        </TableRow>
+                      </TableFooter>
+                    )}
                   </Table>
                 </div>
               </CardContent>

@@ -11,10 +11,12 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { cn } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -326,44 +328,61 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
         </div>
       </div>
 
-      {/* Resumen de totales */}
+      {/* Resumen de totales — barra compacta */}
       {summary && (
         <div className="mx-6 mb-2 flex-shrink-0">
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div className="bg-muted/50 rounded-lg p-3">
-              <p className="text-muted-foreground text-xs">Peso recepcionado</p>
-              <p className="mt-0.5 font-semibold">{formatWeight(summary.total_receptions_weight)}</p>
-            </div>
-            <div className="bg-muted/50 rounded-lg p-3">
-              <p className="text-muted-foreground text-xs">Importe recepcionado</p>
-              <p className="mt-0.5 font-semibold">{formatCurrency(summary.total_receptions_amount)}</p>
-            </div>
-            <div className="bg-muted/50 rounded-lg p-3">
-              <p className="text-muted-foreground text-xs">Peso declarado</p>
-              <p className="mt-0.5 font-semibold">{formatWeight(summary.total_declared_weight)}</p>
-            </div>
-            <div className="bg-muted/50 rounded-lg p-3">
-              <p className="text-muted-foreground text-xs">Importe declarado</p>
-              <p className="mt-0.5 font-semibold">{formatCurrency(summary.total_declared_amount)}</p>
-            </div>
+          <div className="bg-muted/50 flex flex-wrap items-center gap-x-1 gap-y-1 rounded-lg px-4 py-2 text-sm">
+            {/* Recepciones */}
+            <span className="text-muted-foreground text-xs font-medium">Recepciones</span>
+            <span className="font-semibold">{formatWeight(summary.total_receptions_weight)}</span>
+            <span className="text-muted-foreground">·</span>
+            <span className="font-semibold">{formatCurrency(summary.total_receptions_amount)}</span>
+
+            {/* Declarado */}
+            <Separator orientation="vertical" className="mx-2 h-4 shrink-0" />
+            <span className="text-muted-foreground text-xs font-medium">Declarado</span>
+            <span className={cn(
+              'font-semibold',
+              summary.weight_difference != null && Math.abs(summary.weight_difference) > 0.01
+                ? 'text-amber-600 dark:text-amber-400'
+                : ''
+            )}>
+              {formatWeight(summary.total_declared_weight)}
+            </span>
+            <span className="text-muted-foreground">·</span>
+            <span className="font-semibold">{formatCurrency(summary.total_declared_amount)}</span>
+
+            {/* Salidas cebo */}
             {(summary.total_dispatches ?? 0) > 0 && (
               <>
-                <div className="bg-muted/50 rounded-lg p-3">
-                  <p className="text-muted-foreground text-xs">Peso salidas cebo</p>
-                  <p className="mt-0.5 font-semibold">{formatWeight(summary.total_dispatches_weight)}</p>
-                </div>
-                <div className="bg-muted/50 rounded-lg p-3">
-                  <p className="text-muted-foreground text-xs">Base salidas cebo</p>
-                  <p className="mt-0.5 font-semibold">{formatCurrency(summary.total_dispatches_base_amount)}</p>
-                </div>
-                <div className="bg-muted/50 rounded-lg p-3">
-                  <p className="text-muted-foreground text-xs">IVA salidas cebo</p>
-                  <p className="mt-0.5 font-semibold">{formatCurrency(summary.total_dispatches_iva_amount)}</p>
-                </div>
-                <div className="bg-muted/50 rounded-lg p-3">
-                  <p className="text-muted-foreground text-xs">Total salidas cebo</p>
-                  <p className="mt-0.5 font-semibold">{formatCurrency(summary.total_dispatches_amount)}</p>
-                </div>
+                <Separator orientation="vertical" className="mx-2 h-4 shrink-0" />
+                <span className="text-muted-foreground text-xs font-medium">Salidas cebo</span>
+                <span className="font-semibold">{formatWeight(summary.total_dispatches_weight)}</span>
+                <span className="text-muted-foreground">·</span>
+                {summary.has_iva_in_dispatches ? (
+                  <>
+                    <span className="text-muted-foreground text-xs">Base</span>
+                    <span className="font-semibold">{formatCurrency(summary.total_dispatches_base_amount)}</span>
+                    <span className="text-muted-foreground text-xs">IVA</span>
+                    <span className="font-semibold">{formatCurrency(summary.total_dispatches_iva_amount)}</span>
+                    <span className="text-muted-foreground">·</span>
+                  </>
+                ) : null}
+                <span className="font-semibold">{formatCurrency(summary.total_dispatches_amount)}</span>
+              </>
+            )}
+
+            {/* Resultado neto */}
+            {summary.net_amount != null && (
+              <>
+                <Separator orientation="vertical" className="mx-2 h-4 shrink-0" />
+                <span className="text-muted-foreground text-xs font-medium">Resultado neto</span>
+                <span className={cn(
+                  'font-bold',
+                  summary.net_amount >= 0 ? 'text-green-700 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                )}>
+                  {formatCurrency(summary.net_amount)}
+                </span>
               </>
             )}
           </div>
@@ -503,6 +522,30 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
                       </TableRow>
                     )}
                   </TableBody>
+                  {summary && (receptions?.length ?? 0) > 0 && (
+                    <TableFooter>
+                      <TableRow>
+                        <TableCell />
+                        <TableCell className="text-sm font-semibold">
+                          Total — {summary.total_receptions ?? receptions?.length ?? 0}{' '}
+                          {(summary.total_receptions ?? receptions?.length ?? 0) === 1
+                            ? 'recepción'
+                            : 'recepciones'}
+                        </TableCell>
+                        <TableCell className="text-right font-semibold">
+                          {formatWeight(summary.total_receptions_weight)}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-right text-xs">
+                          {summary.total_declared_weight != null
+                            ? `Decl: ${formatWeight(summary.total_declared_weight)}`
+                            : '—'}
+                        </TableCell>
+                        <TableCell className="text-right font-semibold">
+                          {formatCurrency(summary.total_receptions_amount)}
+                        </TableCell>
+                      </TableRow>
+                    </TableFooter>
+                  )}
                 </Table>
               </div>
             </CardContent>
@@ -629,6 +672,33 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
                       );
                       })}
                     </TableBody>
+                    {summary && (summary.total_dispatches ?? 0) > 0 && (
+                      <TableFooter>
+                        <TableRow>
+                          <TableCell />
+                          <TableCell className="text-sm font-semibold">
+                            Total — {summary.total_dispatches ?? allDispatches.length}{' '}
+                            {(summary.total_dispatches ?? allDispatches.length) === 1
+                              ? 'salida'
+                              : 'salidas'}
+                          </TableCell>
+                          <TableCell className="text-right font-semibold">
+                            {formatWeight(summary.total_dispatches_weight)}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground text-right text-xs">
+                            {summary.has_iva_in_dispatches
+                              ? `IVA: ${formatCurrency(summary.total_dispatches_iva_amount)}`
+                              : '—'}
+                          </TableCell>
+                          <TableCell className="text-right font-semibold">
+                            {formatCurrency(summary.total_dispatches_base_amount)}
+                          </TableCell>
+                          <TableCell className="text-right font-semibold">
+                            {formatCurrency(summary.total_dispatches_amount)}
+                          </TableCell>
+                        </TableRow>
+                      </TableFooter>
+                    )}
                   </Table>
                 </div>
               </CardContent>
