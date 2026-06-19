@@ -265,7 +265,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
   const [showTransferPayment, setShowTransferPayment] = useState(true);
   const [expandedReceptions, setExpandedReceptions] = useState<Set<number>>(() => new Set());
   const [expandedDispatches, setExpandedDispatches] = useState<Set<number>>(() => new Set());
-  const [viewMode, setViewMode] = useState<'table' | 'calendar'>('table');
+  const [viewMode, setViewMode] = useState<'table' | 'calendar'>('calendar');
 
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 

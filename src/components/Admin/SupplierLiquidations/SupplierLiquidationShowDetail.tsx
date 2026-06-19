@@ -91,7 +91,7 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
   const [showTransferPayment, setShowTransferPayment] = useState(true);
   const [expandedReceptions, setExpandedReceptions] = useState<Set<number>>(() => new Set());
   const [expandedDispatches, setExpandedDispatches] = useState<Set<number>>(() => new Set());
-  const [viewMode, setViewMode] = useState<'table' | 'calendar'>('table');
+  const [viewMode, setViewMode] = useState<'table' | 'calendar'>('calendar');
 
   const { data, isLoading, error } = useSupplierLiquidationShow(liquidationId);
 
