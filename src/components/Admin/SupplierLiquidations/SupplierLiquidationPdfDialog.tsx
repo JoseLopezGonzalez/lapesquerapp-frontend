@@ -60,7 +60,7 @@ export function SupplierLiquidationPdfDialog({
             <Tabs
               className=""
               value={paymentMethod}
-              onValueChange={(value) => onPaymentMethodChange(value as PaymentMethod)}
+              onValueChange={(value: string) => onPaymentMethodChange(value as PaymentMethod)}
             >
               <TabsList>
                 <TabsTrigger value="cash">
