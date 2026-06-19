@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { Loader2, ArrowLeft, Trash2, Download, Calendar, Lock } from 'lucide-react';
+import { Loader2, ArrowLeft, Trash2, Download, Calendar, Lock, ChevronDown, ChevronRight, ChevronsDownUp } from 'lucide-react';
 import { notify } from '@/lib/notifications';
 import { Button } from '@/components/ui/button';
 import {
@@ -88,6 +88,8 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'transfer'>('cash');
   const [hasManagementFee, setHasManagementFee] = useState(false);
   const [showTransferPayment, setShowTransferPayment] = useState(true);
+  const [expandedReceptions, setExpandedReceptions] = useState<Set<number>>(() => new Set());
+  const [expandedDispatches, setExpandedDispatches] = useState<Set<number>>(() => new Set());
 
   const { data, isLoading, error } = useSupplierLiquidationShow(liquidationId);
 
@@ -176,6 +178,46 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
     receptions?.flatMap((r) => r.related_dispatches ?? []) ?? [];
   const allDispatches = [...allRelatedDispatches, ...(dispatches ?? [])];
 
+  const allReceptionIds = receptions?.map((r) => r.id) ?? [];
+  const allDispatchIds = allDispatches.map((d) => d.id);
+
+  const allReceptionsExpanded =
+    allReceptionIds.length > 0 && allReceptionIds.every((id) => expandedReceptions.has(id));
+  const allDispatchesExpanded =
+    allDispatchIds.length > 0 && allDispatchIds.every((id) => expandedDispatches.has(id));
+
+  const toggleReceptionExpanded = (id: number) =>
+    setExpandedReceptions((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  const toggleDispatchExpanded = (id: number) =>
+    setExpandedDispatches((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  const toggleExpandAllReceptions = () => {
+    if (allReceptionsExpanded) {
+      setExpandedReceptions(new Set());
+    } else {
+      setExpandedReceptions(new Set(allReceptionIds));
+    }
+  };
+
+  const toggleExpandAllDispatches = () => {
+    if (allDispatchesExpanded) {
+      setExpandedDispatches(new Set());
+    } else {
+      setExpandedDispatches(new Set(allDispatchIds));
+    }
+  };
+
   return (
     <div className="flex h-full min-h-0 w-full flex-col overflow-hidden">
       {/* Header */}
@@ -188,7 +230,7 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
         <div className="flex items-center gap-2">
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="outline" disabled={deleting}>
+              <Button variant="destructive" disabled={deleting}>
                 {deleting ? (
                   <Loader2 data-icon="inline-start" className="animate-spin" />
                 ) : (
@@ -217,9 +259,9 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
             </AlertDialogContent>
           </AlertDialog>
 
-          <Button variant="outline" onClick={() => setPdfPreviewDialogOpen(true)}>
+          <Button onClick={() => setPdfPreviewDialogOpen(true)}>
             <Download data-icon="inline-start" />
-            Vista previa PDF
+            Generar PDF
           </Button>
         </div>
       </div>
@@ -227,6 +269,7 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
       <SupplierLiquidationPdfDialog
         open={pdfPreviewDialogOpen}
         onClose={() => setPdfPreviewDialogOpen(false)}
+        title="Generar PDF"
         idPrefix="show"
         paymentMethod={paymentMethod}
         onPaymentMethodChange={setPaymentMethod}
@@ -318,16 +361,24 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
         <div className="space-y-6 p-6 pt-2">
           {/* Tabla recepciones */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                Recepciones
-                <Badge variant="outline" className="text-xs font-normal">
-                  {receptions?.length ?? 0}
-                </Badge>
-              </CardTitle>
-              <CardDescription>
-                Recepciones de materia prima incluidas en esta liquidación
-              </CardDescription>
+            <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
+              <div className="space-y-1.5">
+                <CardTitle className="flex items-center gap-2">
+                  Recepciones
+                  <Badge variant="outline" className="text-xs font-normal">
+                    {receptions?.length ?? 0}
+                  </Badge>
+                </CardTitle>
+                <CardDescription>
+                  Recepciones de materia prima incluidas en esta liquidación
+                </CardDescription>
+              </div>
+              {allReceptionIds.length > 0 && (
+                <Button variant="outline" size="sm" className="shrink-0" onClick={toggleExpandAllReceptions}>
+                  <ChevronsDownUp data-icon="inline-start" />
+                  {allReceptionsExpanded ? 'Contraer todo' : 'Expandir todo'}
+                </Button>
+              )}
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto rounded-md border">
@@ -343,17 +394,30 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
                   </TableHeader>
                   <TableBody>
                     {receptions && receptions.length > 0 ? (
-                      receptions.map((reception: LiquidationReception) => (
+                      receptions.map((reception: LiquidationReception) => {
+                        const isReceptionExpanded = expandedReceptions.has(reception.id);
+                        return (
                         <React.Fragment key={`reception-${reception.id}`}>
-                          <TableRow className="bg-blue-200/50 font-bold dark:bg-blue-800/30">
+                          <TableRow
+                            className="bg-blue-200/50 cursor-pointer font-bold dark:bg-blue-800/30"
+                            aria-expanded={isReceptionExpanded}
+                            onClick={() => toggleReceptionExpanded(reception.id)}
+                          >
                             <TableCell>
                               <Lock className="text-muted-foreground h-3.5 w-3.5" />
                             </TableCell>
                             <TableCell colSpan={4}>
-                              Recepción #{reception.id} — {formatDate(reception.date)}
+                              <span className="flex items-center gap-2">
+                                {isReceptionExpanded ? (
+                                  <ChevronDown className="text-muted-foreground h-4 w-4 shrink-0" />
+                                ) : (
+                                  <ChevronRight className="text-muted-foreground h-4 w-4 shrink-0" />
+                                )}
+                                Recepción #{reception.id} — {formatDate(reception.date)}
+                              </span>
                             </TableCell>
                           </TableRow>
-                          {reception.products?.map((product, i) => (
+                          {isReceptionExpanded && reception.products?.map((product, i) => (
                             <TableRow
                               key={`rec-${reception.id}-p-${product.id ?? i}`}
                               className="bg-blue-50/50 dark:bg-blue-950/20"
@@ -374,7 +438,7 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
                               </TableCell>
                             </TableRow>
                           ))}
-                          {reception.products && reception.products.length > 0 && (
+                          {isReceptionExpanded && reception.products && reception.products.length > 0 && (
                             <>
                               <TableRow className="bg-blue-100/50 font-semibold dark:bg-blue-900/30">
                                 <TableCell />
@@ -407,7 +471,8 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
                             </>
                           )}
                         </React.Fragment>
-                      ))
+                      );
+                      })
                     ) : (
                       <TableRow>
                         <TableCell colSpan={5} className="text-muted-foreground py-8 text-center">
@@ -424,14 +489,20 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
           {/* Tabla salidas de cebo */}
           {allDispatches.length > 0 && (
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  Salidas de Cebo
-                  <Badge variant="outline" className="text-xs font-normal">
-                    {allDispatches.length}
-                  </Badge>
-                </CardTitle>
-                <CardDescription>Salidas de cebo incluidas en esta liquidación</CardDescription>
+              <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
+                <div className="space-y-1.5">
+                  <CardTitle className="flex items-center gap-2">
+                    Salidas de Cebo
+                    <Badge variant="outline" className="text-xs font-normal">
+                      {allDispatches.length}
+                    </Badge>
+                  </CardTitle>
+                  <CardDescription>Salidas de cebo incluidas en esta liquidación</CardDescription>
+                </div>
+                <Button variant="outline" size="sm" className="shrink-0" onClick={toggleExpandAllDispatches}>
+                  <ChevronsDownUp data-icon="inline-start" />
+                  {allDispatchesExpanded ? 'Contraer todo' : 'Expandir todo'}
+                </Button>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto rounded-md border">
@@ -447,14 +518,25 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {allDispatches.map((dispatch: LiquidationDispatch) => (
+                      {allDispatches.map((dispatch: LiquidationDispatch) => {
+                        const isDispatchExpanded = expandedDispatches.has(dispatch.id);
+                        return (
                         <React.Fragment key={`dispatch-${dispatch.id}`}>
-                          <TableRow className="bg-orange-200/50 font-bold dark:bg-orange-800/30">
+                          <TableRow
+                            className="bg-orange-200/50 cursor-pointer font-bold dark:bg-orange-800/30"
+                            aria-expanded={isDispatchExpanded}
+                            onClick={() => toggleDispatchExpanded(dispatch.id)}
+                          >
                             <TableCell>
                               <Lock className="text-muted-foreground h-3.5 w-3.5" />
                             </TableCell>
                             <TableCell colSpan={5}>
                               <div className="flex items-center gap-2">
+                                {isDispatchExpanded ? (
+                                  <ChevronDown className="text-muted-foreground h-4 w-4 shrink-0" />
+                                ) : (
+                                  <ChevronRight className="text-muted-foreground h-4 w-4 shrink-0" />
+                                )}
                                 <span>
                                   Salida #{dispatch.id} — {formatDate(dispatch.date)}
                                 </span>
@@ -471,7 +553,7 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
                               </div>
                             </TableCell>
                           </TableRow>
-                          {dispatch.products?.map((product, i) => {
+                          {isDispatchExpanded && dispatch.products?.map((product, i) => {
                             let amountWithIva = product.amount;
                             if (
                               (dispatch.iva_amount ?? 0) > 0 &&
@@ -505,7 +587,7 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
                               </TableRow>
                             );
                           })}
-                          {dispatch.products && dispatch.products.length > 0 && (
+                          {isDispatchExpanded && dispatch.products && dispatch.products.length > 0 && (
                             <TableRow className="bg-orange-100/50 font-semibold dark:bg-orange-900/30">
                               <TableCell />
                               <TableCell>Total</TableCell>
@@ -522,7 +604,8 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
                             </TableRow>
                           )}
                         </React.Fragment>
-                      ))}
+                      );
+                      })}
                     </TableBody>
                   </Table>
                 </div>

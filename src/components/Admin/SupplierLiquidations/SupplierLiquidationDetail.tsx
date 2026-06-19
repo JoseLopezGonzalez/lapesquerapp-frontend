@@ -32,6 +32,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -116,34 +117,29 @@ function PendingItemsDialog({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent size="4xl">
         <DialogHeader>
-          <DialogTitle>
-            Pendientes sin liquidar — {supplierName}
-          </DialogTitle>
+          <DialogTitle>Pendientes sin liquidar</DialogTitle>
+          <DialogDescription>{supplierName}</DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="receptions" className="mt-2">
+        <Tabs defaultValue="receptions">
           <TabsList>
             <TabsTrigger value="receptions">
               Recepciones
               {!loadingReceptions && (
-                <Badge variant="secondary" className="ml-2 h-5 rounded-full px-1.5 text-xs">
-                  {receptions.length}
-                </Badge>
+                <Badge variant="secondary">{receptions.length}</Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="dispatches">
               Salidas de cebo
               {!loadingDispatches && (
-                <Badge variant="secondary" className="ml-2 h-5 rounded-full px-1.5 text-xs">
-                  {dispatches.length}
-                </Badge>
+                <Badge variant="secondary">{dispatches.length}</Badge>
               )}
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="receptions" className="mt-3">
+          <TabsContent value="receptions">
             {loadingReceptions ? (
               <div className="space-y-2">
                 {Array.from({ length: 5 }).map((_, i) => (
@@ -194,7 +190,7 @@ function PendingItemsDialog({
             )}
           </TabsContent>
 
-          <TabsContent value="dispatches" className="mt-3">
+          <TabsContent value="dispatches">
             {loadingDispatches ? (
               <div className="space-y-2">
                 {Array.from({ length: 5 }).map((_, i) => (
@@ -524,7 +520,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
       {/* Header */}
       <div className="flex flex-shrink-0 items-center justify-between p-6 pb-2">
         <Button
-          variant="outline"
+          variant="ghost"
           onClick={() => router.push('/admin/supplier-liquidations/nueva')}
         >
           <ArrowLeft data-icon="inline-start" />
