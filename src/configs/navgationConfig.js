@@ -111,7 +111,7 @@ export const navigationConfig = [
     name: 'Inicio',
     icon: HomeIcon,
     href: '/admin/home',
-    allowedRoles: ['administrador', 'direccion', 'tecnico'],
+    allowedRoles: ['administrador', 'direccion', 'tecnico', 'supervisor'],
   },
   {
     name: 'Almacenes',

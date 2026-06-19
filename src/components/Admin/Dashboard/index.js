@@ -46,6 +46,8 @@ export default function Dashboard() {
   const [greeting] = useState(() => getGreeting());
   const { data: session } = useSession();
   const userName = session?.user?.name || 'Usuario';
+  const userRole = Array.isArray(session?.user?.role) ? session.user.role[0] : session?.user?.role;
+  const isSupervisor = userRole === 'supervisor';
 
   return (
     <div className="flex h-full w-full flex-col gap-4 px-4 py-3 md:px-6">
@@ -83,9 +85,11 @@ export default function Dashboard() {
             <div>
               <DailyCalibersBySpeciesCard />
             </div>
-            <div>
-              <OrderRankingChart />
-            </div>
+            {!isSupervisor && (
+              <div>
+                <OrderRankingChart />
+              </div>
+            )}
             <div>
               <SalesBySalespersonPieChart />
             </div>

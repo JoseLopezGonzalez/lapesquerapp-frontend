@@ -209,6 +209,12 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(operatorUrl);
   }
 
+  // Supervisor: solo puede acceder a /admin/home — cualquier otra ruta /admin redirige ahí
+  if (userRole === 'supervisor' && pathname.startsWith('/admin') && !pathname.startsWith('/admin/home')) {
+    const homeUrl = new URL('/admin/home', req.url);
+    return NextResponse.redirect(homeUrl);
+  }
+
   // Comercial: todo /admin redirige a /comercial
   if (userRole === 'comercial' && pathname.startsWith('/admin')) {
     const comercialUrl = new URL('/comercial', req.url);
