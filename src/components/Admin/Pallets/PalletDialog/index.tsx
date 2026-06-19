@@ -195,7 +195,19 @@ export default function PalletDialog({
               </DialogTitle>
             </DialogHeader>
           )}
-          <div className="flex min-h-0 w-full flex-1 overflow-hidden pb-4 max-sm:pb-0">
+          <div className="relative flex min-h-0 w-full flex-1 overflow-hidden pb-4 max-sm:pb-0">
+            {/* Floating X button on sub-screens — hub already shows X in its header */}
+            {useMobileHeader && mobileActiveScreen !== 'hub' && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleOnClickClose}
+                className="absolute top-4 right-3 z-10 h-12 w-12 rounded-full hover:bg-muted"
+                aria-label="Cerrar"
+              >
+                <X className="h-6 w-6" />
+              </Button>
+            )}
             {mounted && isMobile ? (
               <MobilePalletView
                 palletId={effectivePalletId}

@@ -40,7 +40,6 @@ export default function ObservacionesScreen({
           placeholder="Anotaciones sobre este palet..."
           maxLength={MAX_LENGTH}
           disabled={isReadOnly}
-          autoFocus={!isReadOnly}
         />
         <p className="text-right text-xs text-muted-foreground">
           {value.length} / {MAX_LENGTH}

@@ -1,14 +1,9 @@
 'use client';
 
+import { useMemo } from 'react';
 import { Link2Off } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Combobox } from '@/components/Shadcn/Combobox';
 import { formatDateShort } from '@/helpers/formats/dates/formatDates';
 import type { PalletState } from '@/hooks/pallets/palletHelpers';
 import { MobilePalletScreenHeader } from './MobilePalletScreenHeader';
@@ -38,50 +33,60 @@ export default function PedidoScreen({
   onBack,
   isReadOnly,
 }: PedidoScreenProps) {
+  const comboboxOptions = useMemo(() => {
+    const opts = activeOrdersOptions.map((order) => ({
+      value: String(order.id),
+      label: `#${order.name} — ${formatDateShort(order.load_date)}`,
+    }));
+
+    // If current order is not in the active list, add it so it shows correctly
+    const currentId = temporalPallet.orderId ? String(temporalPallet.orderId) : null;
+    if (currentId && !activeOrdersOptions.some((o) => String(o.id) === currentId)) {
+      opts.push({ value: currentId, label: `#${currentId} — Pedido actual` });
+    }
+
+    return opts;
+  }, [activeOrdersOptions, temporalPallet.orderId]);
+
+  const currentValue = temporalPallet.orderId ? String(temporalPallet.orderId) : undefined;
+
   return (
     <div className="flex h-full flex-col">
       <MobilePalletScreenHeader title="Pedido vinculado" onBack={onBack} />
 
-      {/* Content */}
       <div className="flex flex-col gap-4 px-4 py-6">
         <p className="text-sm text-muted-foreground">
           Vincula este palet a un pedido activo para trazabilidad.
         </p>
 
-        <Select
+        <Combobox
+          options={comboboxOptions}
+          placeholder="Sin pedido asignado"
+          searchPlaceholder="Buscar por número de pedido..."
+          notFoundMessage="No se encontraron pedidos"
+          value={currentValue}
+          onChange={(value) => onEditOrderId(value || null)}
           disabled={orderIdBlocked || isReadOnly || activeOrdersLoading}
-          value={temporalPallet.orderId ? String(temporalPallet.orderId) : ''}
-          onValueChange={(value: string) => onEditOrderId(value || null)}
-        >
-          <SelectTrigger className="w-full" loading={activeOrdersLoading}>
-            <SelectValue placeholder="Sin pedido asignado" loading={activeOrdersLoading} />
-          </SelectTrigger>
-          <SelectContent loading={activeOrdersLoading}>
-            {activeOrdersOptions.map((order) => (
-              <SelectItem key={order.id} value={String(order.id)}>
-                #{order.name} — {formatDateShort(order.load_date)}
-              </SelectItem>
-            ))}
-            {temporalPallet.orderId &&
-              !activeOrdersOptions.some(
-                (o) => String(o.id) === String(temporalPallet.orderId)
-              ) && (
-                <SelectItem value={String(temporalPallet.orderId)}>
-                  #{temporalPallet.orderId} — Pedido actual
-                </SelectItem>
-              )}
-          </SelectContent>
-        </Select>
+          loading={activeOrdersLoading}
+        />
+
+        {orderIdBlocked && (
+          <p className="text-xs text-muted-foreground">
+            El pedido fue asignado desde el origen y no puede cambiarse aquí.
+          </p>
+        )}
 
         {temporalPallet.orderId && !orderIdBlocked && !isReadOnly && (
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="sm"
+            className="w-fit gap-1.5 text-destructive hover:bg-destructive/5 hover:text-destructive"
             onClick={() => onEditOrderId(null)}
-            className="flex items-center gap-1.5 text-sm text-destructive hover:text-red-600"
           >
             <Link2Off className="h-4 w-4" />
             Desvincular del pedido
-          </button>
+          </Button>
         )}
       </div>
     </div>

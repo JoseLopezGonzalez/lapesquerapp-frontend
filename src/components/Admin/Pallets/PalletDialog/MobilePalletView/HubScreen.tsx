@@ -118,11 +118,13 @@ export default function HubScreen({
             id: 'imagenes' as PalletScreen,
             icon: ImageIcon,
             label: 'Imágenes',
+            sublabel: 'Fotos del palet',
           },
           {
             id: 'historial' as PalletScreen,
             icon: History,
             label: 'Historial',
+            sublabel: 'Ver actividad',
           },
         ]
       : []),

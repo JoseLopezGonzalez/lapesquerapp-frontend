@@ -26,7 +26,7 @@ export default function HistorialTab({ timeline, timelineLoading, onBack }: Hist
   return (
     <div className="flex h-full flex-col">
       {onBack && <MobilePalletScreenHeader title="Historial" onBack={onBack} />}
-      <div className="overflow-auto px-3 py-3 pb-4">
+      <div className="min-h-0 flex-1 overflow-auto px-3 py-3 pb-4">
         {timelineLoading ? (
           <div className="space-y-2">
             {[1, 2, 3, 4].map((i) => (

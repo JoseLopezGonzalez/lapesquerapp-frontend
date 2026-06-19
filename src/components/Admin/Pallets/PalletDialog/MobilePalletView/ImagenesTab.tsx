@@ -81,8 +81,9 @@ function useImageBlobUrl(palletId: number | string, attachmentId: number) {
     };
   }, [palletId, attachmentId]);
 
-  // Carga inicial
-  useState(() => { load(); });
+  useEffect(() => {
+    return load();
+  }, [load]);
 
   return { src, loading };
 }
@@ -300,7 +301,7 @@ export default function ImagenesTab({ palletId, onBack }: ImagenesTabProps) {
   return (
     <div className="flex h-full flex-col">
       {onBack && <MobilePalletScreenHeader title="Imágenes" onBack={onBack} />}
-    <div className="overflow-auto px-3 py-3 space-y-4 pb-6">
+    <div className="min-h-0 flex-1 overflow-auto px-3 py-3 space-y-4 pb-6">
       {/* Upload section */}
       <div className="space-y-3">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">

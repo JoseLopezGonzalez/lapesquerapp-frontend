@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { AlertCircle, CloudAlert, Loader2, RotateCcw, Save } from 'lucide-react';
+import { AlertCircle, CloudAlert, Loader2, RefreshCcw, RotateCcw, Save } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -44,7 +44,19 @@ interface MobilePalletViewProps {
   onActiveScreenChange?: (screen: PalletScreen) => void;
 }
 
-export default function MobilePalletView({
+// Outer wrapper holds retry key so re-mounting the inner component re-initialises usePallet
+export default function MobilePalletView(props: MobilePalletViewProps) {
+  const [retryKey, setRetryKey] = useState(0);
+  return (
+    <MobilePalletViewInner
+      key={retryKey}
+      {...props}
+      onRetry={() => setRetryKey((k) => k + 1)}
+    />
+  );
+}
+
+function MobilePalletViewInner({
   palletId,
   onChange = () => {},
   initialStoreId = null,
@@ -53,7 +65,8 @@ export default function MobilePalletView({
   initialPallet = null,
   readOnly: readOnlyProp = false,
   onActiveScreenChange,
-}: MobilePalletViewProps) {
+  onRetry,
+}: MobilePalletViewProps & { onRetry: () => void }) {
   const { data: session } = useSession();
   const externalActor = isExternalActor(session?.user);
   const canEditCost = canManagePalletCostFields(session?.user);
@@ -152,8 +165,9 @@ export default function MobilePalletView({
 
   if (loading || !temporalPallet) {
     return (
-      <div className="flex h-full w-full flex-1 items-center justify-center">
+      <div className="flex h-full w-full flex-1 flex-col items-center justify-center gap-2">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <p className="text-sm text-muted-foreground">Cargando palet…</p>
       </div>
     );
   }
@@ -166,11 +180,19 @@ export default function MobilePalletView({
         </div>
         <h2 className="text-lg font-semibold text-destructive">Error al cargar el palet</h2>
         <p className="text-center text-sm text-muted-foreground">{error}</p>
+        <Button variant="outline" onClick={onRetry} className="mt-1 gap-2">
+          <RefreshCcw className="h-4 w-4" />
+          Reintentar
+        </Button>
       </div>
     );
   }
 
   const boxes = temporalPallet.boxes ?? [];
+
+  // Screens with their own bottom CTA don't show the global save bar to avoid double bottom bars
+  const showSaveBar =
+    !isReadOnly && hasPalletChanges && activeScreen !== 'add-manual' && activeScreen !== 'eliminar';
 
   const renderScreen = () => {
     switch (activeScreen) {
@@ -199,6 +221,7 @@ export default function MobilePalletView({
             onBack={goToHub}
             isReadOnly={isReadOnly}
             canEditCost={canEditCost}
+            hasPalletChanges={hasPalletChanges}
           />
         );
 
@@ -279,6 +302,7 @@ export default function MobilePalletView({
             onDeleteAllBoxes={deleteAllBoxes}
             onDeleteScannedCode={(code) => boxCreationDataChange('deleteScannedCode', code)}
             isReadOnly={isReadOnly}
+            hasPalletChanges={hasPalletChanges}
             onBack={goToHub}
           />
         );
@@ -315,8 +339,8 @@ export default function MobilePalletView({
         />
       )}
 
-      {/* Sticky save/discard bar */}
-      {!isReadOnly && hasPalletChanges && (
+      {/* Sticky save/discard bar — hidden on screens with their own bottom CTA */}
+      {showSaveBar && (
         <div
           className="shrink-0 bg-background/95 px-3 py-3 backdrop-blur-sm"
           style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}

@@ -1,13 +1,14 @@
 'use client';
 
-import { type ChangeEvent } from 'react';
-import { Plus, RotateCcw } from 'lucide-react';
+import { type ChangeEvent, useState } from 'react';
+import { Check, Plus, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Combobox } from '@/components/Shadcn/Combobox';
 import type { BoxCreationData, ProductOption } from '@/hooks/pallets/palletHelpers';
 import { MobilePalletScreenHeader } from './MobilePalletScreenHeader';
+import { UnsavedChangesBanner } from './UnsavedChangesBanner';
 
 interface AddManualScreenProps {
   productsOptions: ProductOption[];
@@ -19,6 +20,7 @@ interface AddManualScreenProps {
   onBack: () => void;
   isReadOnly: boolean;
   canEditCost: boolean;
+  hasPalletChanges?: boolean;
 }
 
 export default function AddManualScreen({
@@ -31,10 +33,26 @@ export default function AddManualScreen({
   onBack,
   isReadOnly,
   canEditCost,
+  hasPalletChanges = false,
 }: AddManualScreenProps) {
+  const [productError, setProductError] = useState<string | null>(null);
+  const [justAdded, setJustAdded] = useState(false);
+
+  const handleAdd = () => {
+    if (!boxCreationData.productId) {
+      setProductError('Selecciona un artículo antes de añadir');
+      return;
+    }
+    setProductError(null);
+    onAddNewBox({ method: 'manual' });
+    setJustAdded(true);
+    setTimeout(() => setJustAdded(false), 1200);
+  };
+
   return (
     <div className="flex h-full flex-col">
       <MobilePalletScreenHeader title="Añadir caja manualmente" onBack={onBack} />
+      <UnsavedChangesBanner visible={hasPalletChanges} />
 
       {/* Form */}
       <div className="flex flex-1 flex-col gap-5 overflow-auto px-4 py-5">
@@ -46,10 +64,16 @@ export default function AddManualScreen({
             searchPlaceholder="Buscar artículo..."
             notFoundMessage="No se encontraron artículos"
             value={boxCreationData.productId}
-            onChange={(value) => boxCreationDataChange('productId', value)}
+            onChange={(value) => {
+              boxCreationDataChange('productId', value);
+              if (value) setProductError(null);
+            }}
             disabled={isReadOnly}
             loading={productsLoading}
           />
+          {productError && (
+            <p className="text-xs text-destructive">{productError}</p>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -102,20 +126,37 @@ export default function AddManualScreen({
       </div>
 
       {/* CTAs sticky at bottom */}
-      <div className="shrink-0 px-4 py-4" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}>
+      <div
+        className="shrink-0 px-4 py-4"
+        style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
+      >
         <div className="flex gap-3">
           <Button
             size="lg"
             className="flex-1 gap-2"
-            onClick={() => onAddNewBox({ method: 'manual' })}
-            disabled={productsLoading || isReadOnly}
+            onClick={handleAdd}
+            disabled={productsLoading || isReadOnly || justAdded}
           >
-            <Plus className="h-5 w-5" />
-            Añadir al palet
+            {justAdded ? (
+              <>
+                <Check className="h-5 w-5" />
+                Añadida
+              </>
+            ) : (
+              <>
+                <Plus className="h-5 w-5" />
+                Añadir al palet
+              </>
+            )}
           </Button>
-          <Button variant="outline" size="lg" className="flex-1 gap-2" onClick={onResetBoxCreationData}>
+          <Button
+            variant="ghost"
+            size="lg"
+            className="gap-2 px-4"
+            onClick={onResetBoxCreationData}
+          >
             <RotateCcw className="h-4 w-4" />
-            Limpiar campos
+            Limpiar
           </Button>
         </div>
       </div>

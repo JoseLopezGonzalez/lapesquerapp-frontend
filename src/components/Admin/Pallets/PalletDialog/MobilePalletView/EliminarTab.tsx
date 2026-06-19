@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
 import type { PalletBox, PalletState } from '@/hooks/pallets/palletHelpers';
 import { MobilePalletScreenHeader } from './MobilePalletScreenHeader';
+import { UnsavedChangesBanner } from './UnsavedChangesBanner';
 
 const QrScannerWidget = dynamic(
   () => import('@/components/Shared/QrScannerWidget').then((m) => ({ default: m.QrScannerWidget })),
@@ -30,6 +31,7 @@ interface EliminarTabProps {
   onDeleteAllBoxes: () => void;
   onDeleteScannedCode: (code: string) => void;
   isReadOnly: boolean;
+  hasPalletChanges?: boolean;
   onBack?: () => void;
 }
 
@@ -39,6 +41,7 @@ export default function EliminarTab({
   onDeleteAllBoxes,
   onDeleteScannedCode,
   isReadOnly,
+  hasPalletChanges = false,
   onBack,
 }: EliminarTabProps) {
   const [scannerOpen, setScannerOpen] = useState(false);
@@ -65,6 +68,7 @@ export default function EliminarTab({
   return (
     <div className="flex h-full flex-col">
       {onBack && <MobilePalletScreenHeader title="Eliminar cajas" onBack={onBack} />}
+      <UnsavedChangesBanner visible={hasPalletChanges} />
 
       <div className="flex min-h-0 flex-1 flex-col gap-4 px-3 py-4 pb-4">
         <div className="flex shrink-0 flex-col gap-4">
@@ -93,8 +97,8 @@ export default function EliminarTab({
                 </div>
                 <AlertDialogTitle>¿Eliminar todas las cajas?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Se eliminarán las {boxes.length} caja{boxes.length !== 1 ? 's' : ''} del palet. Esta
-                  acción no se puede deshacer una vez guardado.
+                  Se eliminarán las {boxes.length} caja{boxes.length !== 1 ? 's' : ''} del palet.
+                  Esta acción no se puede deshacer una vez guardado.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -121,7 +125,7 @@ export default function EliminarTab({
                 {boxes.length} caja{boxes.length !== 1 ? 's' : ''} en el palet
               </p>
               <ul className="divide-y overflow-hidden rounded-lg border">
-                {[...boxes].reverse().map((box) => (
+                {boxes.map((box) => (
                   <li key={box.id} className="flex items-center gap-3 px-3 py-3">
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">
