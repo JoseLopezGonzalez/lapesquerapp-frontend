@@ -82,10 +82,15 @@ export default function AdminLayoutClient({ children }) {
       href: null,
     };
 
+    const isSupervisor = roles.includes('supervisor');
+
     // Construir array final, filtrando items que no existen (Cuenta va en el sheet del menú)
-    const items = [inicioItem, gestorPedidosItem, almacenesInteractivosItem, chatIAItem].filter(
-      (item) => item !== undefined && item !== null
-    );
+    const items = [
+      inicioItem,
+      gestorPedidosItem,
+      almacenesInteractivosItem,
+      isSupervisor ? null : chatIAItem,
+    ].filter((item) => item !== undefined && item !== null);
 
     return items;
   }, [filteredNavigationConfig, roles]);
