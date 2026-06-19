@@ -45,6 +45,7 @@ export default function EliminarTab({
   onBack,
 }: EliminarTabProps) {
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [confirmDeleteBoxId, setConfirmDeleteBoxId] = useState<number | string | null>(null);
 
   const boxes: PalletBox[] = temporalPallet.boxes ?? [];
 
@@ -71,22 +72,22 @@ export default function EliminarTab({
       <UnsavedChangesBanner visible={hasPalletChanges} />
 
       <div className="flex min-h-0 flex-1 flex-col gap-4 px-3 py-4 pb-4">
-        <div className="flex shrink-0 flex-col gap-4">
+        <div className="flex shrink-0 flex-col gap-3">
           <Button
             size="lg"
             variant="outline"
-            className="h-16 w-full border-destructive/40 text-base text-destructive hover:bg-destructive/5 hover:text-destructive"
+            className="h-14 w-full border-destructive/40 text-base text-destructive hover:bg-destructive/5 hover:text-destructive"
             onClick={() => setScannerOpen(true)}
             disabled={boxes.length === 0}
           >
-            <ScanSearch className="mr-3 h-6 w-6" />
+            <ScanSearch className="mr-3 h-5 w-5" />
             Escanear para eliminar
           </Button>
 
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive" className="w-full" disabled={boxes.length === 0}>
-                <Trash2 className="mr-2 h-4 w-4" />
+              <Button size="lg" variant="destructive" className="h-14 w-full" disabled={boxes.length === 0}>
+                <Trash2 className="mr-2 h-5 w-5" />
                 Eliminar todas las cajas
               </Button>
             </AlertDialogTrigger>
@@ -141,8 +142,8 @@ export default function EliminarTab({
                         type="button"
                         variant="ghost"
                         size="icon"
-                        className="h-9 w-9 shrink-0 text-muted-foreground hover:text-destructive"
-                        onClick={() => onDeleteBox(box.id)}
+                        className="h-10 w-10 shrink-0 text-muted-foreground hover:text-destructive"
+                        onClick={() => setConfirmDeleteBoxId(box.id)}
                         aria-label="Eliminar caja"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -159,6 +160,35 @@ export default function EliminarTab({
           )}
         </div>
       </div>
+
+      {/* Confirmation dialog for individual delete */}
+      <AlertDialog
+        open={confirmDeleteBoxId !== null}
+        onOpenChange={(open) => {
+          if (!open) setConfirmDeleteBoxId(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar esta caja?</AlertDialogTitle>
+            <AlertDialogDescription>
+              La caja se eliminará del palet. Esta acción no se puede deshacer una vez guardado.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (confirmDeleteBoxId !== null) onDeleteBox(confirmDeleteBoxId);
+                setConfirmDeleteBoxId(null);
+              }}
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {scannerOpen && (
         <QrScannerWidget

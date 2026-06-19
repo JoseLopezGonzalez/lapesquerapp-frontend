@@ -248,7 +248,7 @@ export default function ImagenesTab({ palletId, onBack }: ImagenesTabProps) {
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [notes, setNotes] = useState('');
-  const [hasCamera, setHasCamera] = useState(false);
+  const [hasCamera, setHasCamera] = useState<boolean | null>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
@@ -315,7 +315,7 @@ export default function ImagenesTab({ palletId, onBack }: ImagenesTabProps) {
                 <img
                   src={previewUrl}
                   alt={`Vista previa de ${pendingFile.name}`}
-                  className="aspect-video w-full object-cover"
+                  className="aspect-[4/3] w-full object-contain"
                 />
               </div>
             )}
@@ -349,7 +349,7 @@ export default function ImagenesTab({ palletId, onBack }: ImagenesTabProps) {
               Subir imagen
             </Button>
           </div>
-        ) : hasCamera ? (
+        ) : hasCamera === true ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
@@ -382,6 +382,7 @@ export default function ImagenesTab({ palletId, onBack }: ImagenesTabProps) {
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
+          /* hasCamera === false or null (still detecting) — single dropzone works for both */
           <button
             type="button"
             className={cn(

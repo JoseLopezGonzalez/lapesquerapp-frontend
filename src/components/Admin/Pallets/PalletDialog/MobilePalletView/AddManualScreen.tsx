@@ -5,7 +5,7 @@ import { Check, Plus, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Combobox } from '@/components/Shadcn/Combobox';
+import { MobileCombobox } from '@/components/Shadcn/MobileCombobox';
 import type { BoxCreationData, ProductOption } from '@/hooks/pallets/palletHelpers';
 import { MobilePalletScreenHeader } from './MobilePalletScreenHeader';
 import { UnsavedChangesBanner } from './UnsavedChangesBanner';
@@ -21,6 +21,7 @@ interface AddManualScreenProps {
   isReadOnly: boolean;
   canEditCost: boolean;
   hasPalletChanges?: boolean;
+  totalBoxCount?: number;
 }
 
 export default function AddManualScreen({
@@ -34,6 +35,7 @@ export default function AddManualScreen({
   isReadOnly,
   canEditCost,
   hasPalletChanges = false,
+  totalBoxCount = 0,
 }: AddManualScreenProps) {
   const [productError, setProductError] = useState<string | null>(null);
   const [justAdded, setJustAdded] = useState(false);
@@ -54,15 +56,26 @@ export default function AddManualScreen({
       <MobilePalletScreenHeader title="Añadir caja manualmente" onBack={onBack} />
       <UnsavedChangesBanner visible={hasPalletChanges} />
 
+      {/* Running box counter */}
+      {totalBoxCount > 0 && (
+        <div className="shrink-0 border-b bg-muted/40 px-4 py-1.5">
+          <p className="text-xs text-muted-foreground">
+            Cajas en el palet:{' '}
+            <span className="font-semibold text-foreground">{totalBoxCount}</span>
+          </p>
+        </div>
+      )}
+
       {/* Form */}
       <div className="flex flex-1 flex-col gap-5 overflow-auto px-4 py-5">
         <div className="space-y-1.5">
           <Label className="text-sm">Artículo</Label>
-          <Combobox
+          <MobileCombobox
             options={productsOptions}
             placeholder="Seleccionar artículo"
             searchPlaceholder="Buscar artículo..."
             notFoundMessage="No se encontraron artículos"
+            title="Seleccionar artículo"
             value={boxCreationData.productId}
             onChange={(value) => {
               boxCreationDataChange('productId', value);
@@ -71,9 +84,7 @@ export default function AddManualScreen({
             disabled={isReadOnly}
             loading={productsLoading}
           />
-          {productError && (
-            <p className="text-xs text-destructive">{productError}</p>
-          )}
+          {productError && <p className="text-xs text-destructive">{productError}</p>}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -92,15 +103,14 @@ export default function AddManualScreen({
           <div className="space-y-1.5">
             <Label className="text-sm">Peso neto (kg)</Label>
             <Input
-              type="number"
-              step="0.01"
+              type="text"
+              inputMode="decimal"
               placeholder="0.00"
               value={boxCreationData.netWeight}
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                 boxCreationDataChange('netWeight', e.target.value)
               }
               className="text-right"
-              inputMode="decimal"
               disabled={isReadOnly}
             />
           </div>
@@ -110,15 +120,14 @@ export default function AddManualScreen({
           <div className="space-y-1.5">
             <Label className="text-sm">Coste manual (€/kg)</Label>
             <Input
-              type="number"
-              step="0.01"
+              type="text"
+              inputMode="decimal"
               placeholder="Opcional"
               value={boxCreationData.manualCostPerKg}
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                 boxCreationDataChange('manualCostPerKg', e.target.value)
               }
               className="text-right"
-              inputMode="decimal"
               disabled={isReadOnly}
             />
           </div>
@@ -127,7 +136,7 @@ export default function AddManualScreen({
 
       {/* CTAs sticky at bottom */}
       <div
-        className="shrink-0 px-4 py-4"
+        className="shrink-0 border-t bg-background px-4 py-4"
         style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
       >
         <div className="flex gap-3">
@@ -150,9 +159,9 @@ export default function AddManualScreen({
             )}
           </Button>
           <Button
-            variant="ghost"
+            variant="outline"
             size="lg"
-            className="gap-2 px-4"
+            className="min-w-[88px] gap-2"
             onClick={onResetBoxCreationData}
           >
             <RotateCcw className="h-4 w-4" />

@@ -18,12 +18,15 @@ export default function ResumenTab({ temporalPallet, onBack }: ResumenTabProps) 
       .filter((n): n is string => Boolean(n))
   ).size;
   const uniqueLots = new Set(boxes.map((b) => b.lot).filter(Boolean)).size;
+
   const palletTareWeight = Number(temporalPallet.palletTareWeightKg);
   const hasPalletTareWeight =
     temporalPallet.palletTareWeightKg !== null &&
     temporalPallet.palletTareWeightKg !== undefined &&
     temporalPallet.palletTareWeightKg !== '' &&
     Number.isFinite(palletTareWeight);
+
+  const grossWeight = hasPalletTareWeight ? totalWeight + palletTareWeight : null;
 
   const productNames = [
     ...new Set(
@@ -46,7 +49,7 @@ export default function ResumenTab({ temporalPallet, onBack }: ResumenTabProps) 
           </p>
         ) : (
           <div className="flex flex-col gap-5">
-            {/* Metrics grid — 4 cards 2x2, last row full-width */}
+            {/* Metrics grid */}
             <div className="grid grid-cols-2 gap-2">
               <div className="flex flex-col gap-1 rounded-lg border bg-card p-3">
                 <span className="text-xs text-muted-foreground">Cajas</span>
@@ -70,11 +73,21 @@ export default function ResumenTab({ temporalPallet, onBack }: ResumenTabProps) 
                 <span className="text-xs text-muted-foreground">Productos</span>
                 <span className="text-2xl font-semibold">{uniqueProducts}</span>
               </div>
-              {/* Full-width last card to avoid asymmetric grid */}
-              <div className="col-span-2 flex flex-col gap-1 rounded-lg border bg-card p-3">
+              <div className="flex flex-col gap-1 rounded-lg border bg-card p-3">
                 <span className="text-xs text-muted-foreground">Lotes</span>
                 <span className="text-2xl font-semibold">{uniqueLots}</span>
               </div>
+
+              {/* Gross weight — only when tare is set */}
+              {grossWeight !== null && (
+                <div className="col-span-2 flex flex-col gap-1 rounded-lg border border-primary/20 bg-primary/5 p-3">
+                  <span className="text-xs text-muted-foreground">Peso bruto estimado</span>
+                  <span className="text-2xl font-semibold text-primary">
+                    {formatDecimalWeight(grossWeight)}
+                  </span>
+                  <span className="text-xs text-muted-foreground">kg (neto + tara)</span>
+                </div>
+              )}
             </div>
 
             {productNames.length > 0 && (
@@ -84,8 +97,8 @@ export default function ResumenTab({ temporalPallet, onBack }: ResumenTabProps) 
                 </p>
                 <ul className="space-y-1">
                   {productNames.map((name) => (
-                    <li key={name} className="rounded-md border bg-card px-3 py-2 text-sm">
-                      {name}
+                    <li key={name} className="text-sm text-foreground">
+                      · {name}
                     </li>
                   ))}
                 </ul>

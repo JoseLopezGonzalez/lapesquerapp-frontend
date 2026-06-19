@@ -1,6 +1,6 @@
 'use client';
 
-import { type ChangeEvent, useState } from 'react';
+import { type ChangeEvent, useRef, useState } from 'react';
 import { AlertTriangle, ChevronDown, ChevronUp, Copy, Package, Trash2 } from 'lucide-react';
 import {
   AlertDialog,
@@ -29,6 +29,7 @@ interface BoxesTabProps {
   isReadOnly: boolean;
   canEditCost: boolean;
   onBack?: () => void;
+  onNavigateToAdd?: () => void;
 }
 
 // ─── Controlled expanded panel ────────────────────────────────────────────────
@@ -98,20 +99,20 @@ function BoxExpandedPanel({
               setLocalLot(e.target.value);
               onEditLot(e.target.value);
             }}
-            className="h-8 text-sm"
+            className="h-10 text-sm"
           />
         </div>
         <div className="space-y-1">
           <label className="text-xs font-medium text-muted-foreground">Peso (kg)</label>
           <Input
-            type="number"
+            type="text"
+            inputMode="decimal"
             value={localWeight}
             onChange={(e: ChangeEvent<HTMLInputElement>) => {
               setLocalWeight(e.target.value);
               onEditNetWeight(parseFloat(e.target.value));
             }}
-            className="h-8 text-right text-sm"
-            inputMode="decimal"
+            className="h-10 text-right text-sm"
           />
         </div>
       </div>
@@ -128,16 +129,15 @@ function BoxExpandedPanel({
                 Coste manual (€/kg)
               </label>
               <Input
-                type="number"
-                step="0.01"
+                type="text"
+                inputMode="decimal"
                 placeholder="Opcional"
                 value={localCost}
                 onChange={(e: ChangeEvent<HTMLInputElement>) => {
                   setLocalCost(e.target.value);
                   onEditManualCost(e.target.value);
                 }}
-                className="h-8 text-right text-sm"
-                inputMode="decimal"
+                className="h-10 text-right text-sm"
               />
             </div>
           )}
@@ -149,7 +149,7 @@ function BoxExpandedPanel({
           type="button"
           variant="outline"
           size="sm"
-          className="h-9 flex-1"
+          className="h-11 flex-1"
           onClick={onDuplicateBox}
         >
           <Copy className="mr-1.5 h-3.5 w-3.5" />
@@ -159,7 +159,7 @@ function BoxExpandedPanel({
           type="button"
           variant="outline"
           size="sm"
-          className="h-9 flex-1 border-destructive/30 text-destructive hover:bg-destructive/5 hover:text-destructive"
+          className="h-11 flex-1 border-destructive/30 text-destructive hover:bg-destructive/5 hover:text-destructive"
           onClick={onRequestDelete}
         >
           <Trash2 className="mr-1.5 h-3.5 w-3.5" />
@@ -182,15 +182,24 @@ export default function BoxesTab({
   isReadOnly,
   canEditCost,
   onBack,
+  onNavigateToAdd,
 }: BoxesTabProps) {
   const [expandedBoxId, setExpandedBoxId] = useState<number | string | null>(null);
   const [confirmDeleteBoxId, setConfirmDeleteBoxId] = useState<number | string | null>(null);
+  const expandedRef = useRef<HTMLLIElement | null>(null);
 
   const boxes: PalletBox[] = temporalPallet.boxes ?? [];
   const totalWeight = boxes.reduce((sum, box) => sum + parseFloat(String(box.netWeight ?? 0)), 0);
 
   const handleToggle = (boxId: number | string) => {
-    setExpandedBoxId((prev) => (prev === boxId ? null : boxId));
+    const isOpening = expandedBoxId !== boxId;
+    setExpandedBoxId(isOpening ? boxId : null);
+    if (isOpening) {
+      // Scroll the row into view after the panel animates open
+      setTimeout(() => {
+        expandedRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 80);
+    }
   };
 
   if (boxes.length === 0) {
@@ -204,9 +213,14 @@ export default function BoxesTab({
           <div className="space-y-1 text-center">
             <p className="font-medium">Sin cajas</p>
             <p className="text-sm text-muted-foreground">
-              Ve a &ldquo;Añadir&rdquo; para añadir cajas al palet.
+              Añade cajas usando Escanear o Añadir manual.
             </p>
           </div>
+          {!isReadOnly && onNavigateToAdd && (
+            <Button variant="outline" size="sm" onClick={onNavigateToAdd}>
+              <span>Añadir caja</span>
+            </Button>
+          )}
         </div>
       </div>
     );
@@ -218,7 +232,7 @@ export default function BoxesTab({
 
       <div className="min-h-0 flex-1 overflow-auto px-3 py-3">
         {/* Summary strip */}
-        <div className="mb-3 flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2 text-sm">
+        <div className="mb-3 flex items-center justify-between rounded-lg border bg-muted/30 px-3 py-2 text-sm">
           <span className="font-medium">{boxes.length} cajas</span>
           <span className="text-muted-foreground">{formatDecimalWeight(totalWeight)} total</span>
         </div>
@@ -231,7 +245,11 @@ export default function BoxesTab({
             const canEdit = !isReadOnly && isAvailable;
 
             return (
-              <li key={box.id} className="bg-background">
+              <li
+                key={box.id}
+                className="bg-background"
+                ref={isExpanded ? expandedRef : null}
+              >
                 {/* Main row */}
                 <button
                   type="button"

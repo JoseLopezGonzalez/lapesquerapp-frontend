@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { Link2Off } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Combobox } from '@/components/Shadcn/Combobox';
+import { MobileCombobox } from '@/components/Shadcn/MobileCombobox';
 import { formatDateShort } from '@/helpers/formats/dates/formatDates';
 import type { PalletState } from '@/hooks/pallets/palletHelpers';
 import { MobilePalletScreenHeader } from './MobilePalletScreenHeader';
@@ -59,11 +59,12 @@ export default function PedidoScreen({
           Vincula este palet a un pedido activo para trazabilidad.
         </p>
 
-        <Combobox
+        <MobileCombobox
           options={comboboxOptions}
           placeholder="Sin pedido asignado"
           searchPlaceholder="Buscar por número de pedido..."
           notFoundMessage="No se encontraron pedidos"
+          title="Seleccionar pedido"
           value={currentValue}
           onChange={(value) => onEditOrderId(value || null)}
           disabled={orderIdBlocked || isReadOnly || activeOrdersLoading}
@@ -79,9 +80,9 @@ export default function PedidoScreen({
         {temporalPallet.orderId && !orderIdBlocked && !isReadOnly && (
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             size="sm"
-            className="w-fit gap-1.5 text-destructive hover:bg-destructive/5 hover:text-destructive"
+            className="w-fit gap-1.5 border-destructive/40 text-destructive hover:bg-destructive/5 hover:text-destructive"
             onClick={() => onEditOrderId(null)}
           >
             <Link2Off className="h-4 w-4" />

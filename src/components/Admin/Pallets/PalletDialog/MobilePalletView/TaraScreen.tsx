@@ -1,6 +1,6 @@
 'use client';
 
-import { type ChangeEvent } from 'react';
+import { type ChangeEvent, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { PalletIllustration } from './PalletIllustration';
 import type { PalletState } from '@/hooks/pallets/palletHelpers';
@@ -19,6 +19,13 @@ export default function TaraScreen({
   onBack,
   isReadOnly,
 }: TaraScreenProps) {
+  const [value, setValue] = useState(String(temporalPallet.palletTareWeightKg ?? ''));
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setValue(e.target.value);
+    onEditPalletTareWeightKg(e.target.value);
+  };
+
   return (
     <div className="flex h-full flex-col">
       <MobilePalletScreenHeader title="Tara del palet" onBack={onBack} />
@@ -37,14 +44,11 @@ export default function TaraScreen({
 
           <div className="relative flex items-center">
             <Input
-              type="number"
-              min="0"
-              step="0.01"
+              type="text"
               inputMode="decimal"
-              defaultValue={temporalPallet.palletTareWeightKg ?? ''}
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                onEditPalletTareWeightKg(e.target.value)
-              }
+              min="0"
+              value={value}
+              onChange={handleChange}
               className="h-16 pr-14 text-right text-3xl font-semibold tabular-nums"
               placeholder="0.00"
               disabled={isReadOnly}

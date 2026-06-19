@@ -4,6 +4,16 @@ import { useCallback, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { AlertCircle, CloudAlert, Loader2, RefreshCcw, RotateCcw, Save } from 'lucide-react';
 import { useSession } from 'next-auth/react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { usePallet, saveDiscountPreferences } from '@/hooks/usePallet';
@@ -75,6 +85,7 @@ function MobilePalletViewInner({
   const [activeScreen, setActiveScreen] = useState<PalletScreen>('hub');
   const [scannerOpen, setScannerOpen] = useState(false);
   const [sessionCount, setSessionCount] = useState(0);
+  const [discardDialogOpen, setDiscardDialogOpen] = useState(false);
 
   useEffect(() => {
     setActiveScreen('hub');
@@ -127,6 +138,11 @@ function MobilePalletViewInner({
     } else {
       onSavingChanges();
     }
+  };
+
+  const handleDiscardConfirmed = () => {
+    resetAllChanges();
+    setDiscardDialogOpen(false);
   };
 
   const navigateTo = (screen: PalletScreen) => {
@@ -190,9 +206,17 @@ function MobilePalletViewInner({
 
   const boxes = temporalPallet.boxes ?? [];
 
-  // Screens with their own bottom CTA don't show the global save bar to avoid double bottom bars
+  // Screens that manage their own bottom CTA don't show the global save bar.
+  // Read-only screens (resumen, historial, imagenes) also excluded — nothing to save there.
+  const SCREENS_WITHOUT_SAVE_BAR: PalletScreen[] = [
+    'add-manual',
+    'eliminar',
+    'resumen',
+    'historial',
+    'imagenes',
+  ];
   const showSaveBar =
-    !isReadOnly && hasPalletChanges && activeScreen !== 'add-manual' && activeScreen !== 'eliminar';
+    !isReadOnly && hasPalletChanges && !SCREENS_WITHOUT_SAVE_BAR.includes(activeScreen);
 
   const renderScreen = () => {
     switch (activeScreen) {
@@ -222,6 +246,7 @@ function MobilePalletViewInner({
             isReadOnly={isReadOnly}
             canEditCost={canEditCost}
             hasPalletChanges={hasPalletChanges}
+            totalBoxCount={boxes.length}
           />
         );
 
@@ -237,6 +262,7 @@ function MobilePalletViewInner({
             isReadOnly={isReadOnly}
             canEditCost={canEditCost}
             onBack={goToHub}
+            onNavigateToAdd={() => navigateTo('add-manual')}
           />
         );
 
@@ -339,7 +365,7 @@ function MobilePalletViewInner({
         />
       )}
 
-      {/* Sticky save/discard bar — hidden on screens with their own bottom CTA */}
+      {/* Sticky save/discard bar */}
       {showSaveBar && (
         <div
           className="shrink-0 bg-background/95 px-3 py-3 backdrop-blur-sm"
@@ -350,7 +376,7 @@ function MobilePalletViewInner({
               variant="outline"
               size="lg"
               className="flex-1"
-              onClick={resetAllChanges}
+              onClick={() => setDiscardDialogOpen(true)}
               disabled={saving}
             >
               <RotateCcw />
@@ -363,6 +389,29 @@ function MobilePalletViewInner({
           </div>
         </div>
       )}
+
+      {/* Discard confirmation */}
+      <AlertDialog open={discardDialogOpen} onOpenChange={setDiscardDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Descartar los cambios?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {boxes.length > 0
+                ? `Se perderán todos los cambios, incluyendo las ${boxes.length} caja${boxes.length !== 1 ? 's' : ''} del palet. Esta acción no se puede deshacer.`
+                : 'Se perderán todos los cambios realizados en este palet.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleDiscardConfirmed}
+            >
+              Descartar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
