@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { Check, ChevronsUpDown, Loader2, Search } from 'lucide-react';
+import { Check, ChevronsUpDown, Loader2, Search, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -96,7 +96,19 @@ export function MobileCombobox({
           className="flex h-[75dvh] flex-col gap-0 rounded-t-2xl p-0"
         >
           <SheetHeader className="shrink-0 border-b px-4 pb-3 pt-4">
-            <SheetTitle className="text-base">{title ?? placeholder}</SheetTitle>
+            <div className="flex items-center justify-between">
+              <SheetTitle className="text-base">{title ?? placeholder}</SheetTitle>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => setOpen(false)}
+                className="h-8 w-8 shrink-0"
+                aria-label="Cerrar"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
           </SheetHeader>
 
           <div className="shrink-0 border-b px-3 py-2">

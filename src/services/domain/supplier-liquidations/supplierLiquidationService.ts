@@ -25,14 +25,15 @@ const BASE_URL = `${API_URL_V2}supplier-liquidations`;
  * Obtiene la lista de proveedores con actividad en un rango de fechas.
  */
 export async function getSuppliersWithActivity(
-  startDate: string,
-  endDate: string
+  startDate: string | undefined,
+  endDate: string | undefined,
+  onlyUnliquidated?: boolean
 ): Promise<SupplierWithActivity[]> {
   const token = await getAuthToken();
-  const queryParams = new URLSearchParams({
-    'dates[start]': startDate,
-    'dates[end]': endDate,
-  });
+  const queryParams = new URLSearchParams();
+  if (startDate) queryParams.set('dates[start]', startDate);
+  if (endDate) queryParams.set('dates[end]', endDate);
+  if (onlyUnliquidated) queryParams.set('only_unliquidated', '1');
 
   const response = await fetchWithTenant(`${BASE_URL}/suppliers?${queryParams.toString()}`, {
     method: 'GET',
@@ -68,14 +69,13 @@ export async function getSuppliersWithActivity(
  */
 export async function getSupplierLiquidationDetails(
   supplierId: number | string,
-  startDate: string,
-  endDate: string
+  startDate?: string,
+  endDate?: string
 ): Promise<SupplierLiquidationDetails> {
   const token = await getAuthToken();
-  const queryParams = new URLSearchParams({
-    'dates[start]': startDate,
-    'dates[end]': endDate,
-  });
+  const queryParams = new URLSearchParams();
+  if (startDate) queryParams.set('dates[start]', startDate);
+  if (endDate) queryParams.set('dates[end]', endDate);
 
   const response = await fetchWithTenant(
     `${BASE_URL}/${supplierId}/details?${queryParams.toString()}`,

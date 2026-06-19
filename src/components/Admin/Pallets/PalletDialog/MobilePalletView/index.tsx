@@ -245,7 +245,6 @@ function MobilePalletViewInner({
             onBack={goToHub}
             isReadOnly={isReadOnly}
             canEditCost={canEditCost}
-            hasPalletChanges={hasPalletChanges}
             totalBoxCount={boxes.length}
           />
         );

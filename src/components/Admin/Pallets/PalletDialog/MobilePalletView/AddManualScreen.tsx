@@ -2,13 +2,22 @@
 
 import { type ChangeEvent, useState } from 'react';
 import { Check, Plus, RotateCcw } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { MobileCombobox } from '@/components/Shadcn/MobileCombobox';
 import type { BoxCreationData, ProductOption } from '@/hooks/pallets/palletHelpers';
 import { MobilePalletScreenHeader } from './MobilePalletScreenHeader';
-import { UnsavedChangesBanner } from './UnsavedChangesBanner';
 
 interface AddManualScreenProps {
   productsOptions: ProductOption[];
@@ -20,7 +29,6 @@ interface AddManualScreenProps {
   onBack: () => void;
   isReadOnly: boolean;
   canEditCost: boolean;
-  hasPalletChanges?: boolean;
   totalBoxCount?: number;
 }
 
@@ -34,11 +42,14 @@ export default function AddManualScreen({
   onBack,
   isReadOnly,
   canEditCost,
-  hasPalletChanges = false,
   totalBoxCount = 0,
 }: AddManualScreenProps) {
   const [productError, setProductError] = useState<string | null>(null);
   const [justAdded, setJustAdded] = useState(false);
+  const [quantity, setQuantity] = useState('1');
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+
+  const parsedQuantity = Math.max(1, parseInt(quantity) || 1);
 
   const handleAdd = () => {
     if (!boxCreationData.productId) {
@@ -46,25 +57,25 @@ export default function AddManualScreen({
       return;
     }
     setProductError(null);
-    onAddNewBox({ method: 'manual' });
+    for (let i = 0; i < parsedQuantity; i++) {
+      onAddNewBox({ method: 'manual' });
+    }
+    boxCreationDataChange('lot', '');
+    boxCreationDataChange('netWeight', '');
+    setQuantity('1');
     setJustAdded(true);
-    setTimeout(() => setJustAdded(false), 1200);
+    setTimeout(() => setJustAdded(false), 600);
+  };
+
+  const handleConfirmReset = () => {
+    onResetBoxCreationData();
+    setQuantity('1');
+    setResetDialogOpen(false);
   };
 
   return (
     <div className="flex h-full flex-col">
       <MobilePalletScreenHeader title="Añadir caja manualmente" onBack={onBack} />
-      <UnsavedChangesBanner visible={hasPalletChanges} />
-
-      {/* Running box counter */}
-      {totalBoxCount > 0 && (
-        <div className="shrink-0 border-b bg-muted/40 px-4 py-1.5">
-          <p className="text-xs text-muted-foreground">
-            Cajas en el palet:{' '}
-            <span className="font-semibold text-foreground">{totalBoxCount}</span>
-          </p>
-        </div>
-      )}
 
       {/* Form */}
       <div className="flex flex-1 flex-col gap-5 overflow-auto px-4 py-5">
@@ -110,10 +121,24 @@ export default function AddManualScreen({
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                 boxCreationDataChange('netWeight', e.target.value)
               }
-              className="text-right"
               disabled={isReadOnly}
             />
           </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label className="text-sm">Número de cajas</Label>
+          <Input
+            type="text"
+            inputMode="numeric"
+            placeholder="1"
+            value={quantity}
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              setQuantity(e.target.value.replace(/\D/g, ''))
+            }
+            disabled={isReadOnly}
+            className="w-28"
+          />
         </div>
 
         {canEditCost && (
@@ -127,7 +152,6 @@ export default function AddManualScreen({
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                 boxCreationDataChange('manualCostPerKg', e.target.value)
               }
-              className="text-right"
               disabled={isReadOnly}
             />
           </div>
@@ -136,9 +160,13 @@ export default function AddManualScreen({
 
       {/* CTAs sticky at bottom */}
       <div
-        className="shrink-0 border-t bg-background px-4 py-4"
+        className="shrink-0 border-t bg-background px-4 pb-4 pt-3"
         style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
       >
+        <p className="mb-2.5 text-center text-xs text-muted-foreground">
+          Cajas en el palet:{' '}
+          <span className="font-semibold text-foreground">{totalBoxCount}</span>
+        </p>
         <div className="flex gap-3">
           <Button
             size="lg"
@@ -149,12 +177,12 @@ export default function AddManualScreen({
             {justAdded ? (
               <>
                 <Check className="h-5 w-5" />
-                Añadida
+                {parsedQuantity > 1 ? `${parsedQuantity} añadidas` : 'Añadida'}
               </>
             ) : (
               <>
                 <Plus className="h-5 w-5" />
-                Añadir al palet
+                {parsedQuantity > 1 ? `Añadir ${parsedQuantity} al palet` : 'Añadir al palet'}
               </>
             )}
           </Button>
@@ -162,13 +190,29 @@ export default function AddManualScreen({
             variant="outline"
             size="lg"
             className="min-w-[88px] gap-2"
-            onClick={onResetBoxCreationData}
+            onClick={() => setResetDialogOpen(true)}
+            disabled={isReadOnly}
           >
             <RotateCcw className="h-4 w-4" />
             Limpiar
           </Button>
         </div>
       </div>
+
+      <AlertDialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Limpiar el formulario?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Se borrarán el artículo, lote, peso y cantidad seleccionados.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmReset}>Limpiar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

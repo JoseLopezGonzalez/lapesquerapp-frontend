@@ -6,6 +6,8 @@ import { Loader2, Search, ChevronRight } from 'lucide-react';
 import { notify } from '@/lib/notifications';
 import { DateRangePicker } from '@/components/ui/dateRangePicker';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import {
   Table,
   TableBody,
@@ -32,25 +34,34 @@ function formatWeight(value: number | undefined | null): string {
   );
 }
 
+interface AppliedFilters {
+  startDate: string | undefined;
+  endDate: string | undefined;
+  onlyUnliquidated: boolean;
+}
+
 export function SupplierLiquidationList() {
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({
     from: undefined,
     to: undefined,
   });
+  const [onlyUnliquidated, setOnlyUnliquidated] = useState(false);
+  const [applied, setApplied] = useState<AppliedFilters | null>(null);
 
   const startDate = dateRange.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined;
   const endDate = dateRange.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined;
   const hasValidRange = !!startDate && !!endDate && startDate <= endDate;
+  const canSearch = hasValidRange || onlyUnliquidated;
 
   const {
     data: suppliers = [],
     isLoading,
     error,
-    refetch,
   } = useSuppliersWithActivity({
-    startDate,
-    endDate,
-    enabled: hasValidRange,
+    startDate: applied?.startDate,
+    endDate: applied?.endDate,
+    onlyUnliquidated: applied?.onlyUnliquidated ?? false,
+    enabled: !!applied,
   });
 
   useEffect(() => {
@@ -66,34 +77,32 @@ export function SupplierLiquidationList() {
   }, [error]);
 
   const handleBuscar = () => {
-    if (!dateRange.from || !dateRange.to) {
+    if (!canSearch) {
       notify.error({
-        title: 'Rango de fechas requerido',
-        description: 'Seleccione fecha de inicio y fin para buscar.',
+        title: 'Filtro requerido',
+        description: 'Seleccione un rango de fechas o active "Solo no liquidadas".',
       });
       return;
     }
-    if (dateRange.from > dateRange.to) {
+    if (dateRange.from && dateRange.to && dateRange.from > dateRange.to) {
       notify.error({
         title: 'Fechas inválidas',
         description: 'La fecha de inicio debe ser anterior a la fecha de fin.',
       });
       return;
     }
-    refetch();
+    setApplied({ startDate, endDate, onlyUnliquidated });
   };
 
   const handleSupplierClick = (supplierId: number, ev?: React.MouseEvent) => {
-    if (!dateRange.from || !dateRange.to) {
-      notify.error({
-        title: 'Rango de fechas requerido',
-        description: 'Seleccione fecha de inicio y fin.',
-      });
-      return;
-    }
-    const s = format(dateRange.from, 'yyyy-MM-dd');
-    const end = format(dateRange.to, 'yyyy-MM-dd');
-    window.open(`/admin/supplier-liquidations/${supplierId}?start=${s}&end=${end}`, '_blank');
+    const params = new URLSearchParams();
+    if (applied?.startDate) params.set('start', applied.startDate);
+    if (applied?.endDate) params.set('end', applied.endDate);
+    const qs = params.toString();
+    window.open(
+      `/admin/supplier-liquidations/${supplierId}${qs ? `?${qs}` : ''}`,
+      '_blank'
+    );
     ev?.stopPropagation();
   };
 
@@ -113,9 +122,19 @@ export function SupplierLiquidationList() {
                 <label className="mb-2 block text-sm font-medium">Rango de fechas</label>
                 <DateRangePicker dateRange={dateRange} onChange={setDateRange} />
               </div>
+              <div className="flex items-center gap-2 pb-0.5">
+                <Checkbox
+                  id="only-unliquidated"
+                  checked={onlyUnliquidated}
+                  onCheckedChange={(checked) => setOnlyUnliquidated(Boolean(checked))}
+                />
+                <Label htmlFor="only-unliquidated" className="cursor-pointer text-sm">
+                  Solo no liquidadas
+                </Label>
+              </div>
               <Button
                 onClick={handleBuscar}
-                disabled={!dateRange.from || !dateRange.to || isLoading}
+                disabled={!canSearch || isLoading}
                 className="w-full sm:w-auto"
               >
                 {isLoading ? (
@@ -148,7 +167,7 @@ export function SupplierLiquidationList() {
           </div>
         )}
 
-        {!isLoading && !error && dateRange.from && dateRange.to && (
+        {!isLoading && !error && !!applied && (
           <>
             {suppliers.length === 0 ? (
               <div className="text-muted-foreground flex h-full items-center justify-center py-12 text-center">
@@ -171,10 +190,10 @@ export function SupplierLiquidationList() {
                         <TableHead className="bg-background text-right">Recepciones</TableHead>
                         <TableHead className="bg-background text-right">Salidas de Cebo</TableHead>
                         <TableHead className="bg-background text-right">Peso Recepciones</TableHead>
-                        <TableHead className="bg-background text-right">Peso Salidas</TableHead>
                         <TableHead className="bg-background text-right">
                           Importe Recepciones
                         </TableHead>
+                        <TableHead className="bg-background text-right">Peso Salidas</TableHead>
                         <TableHead className="bg-background text-right">Importe Salidas</TableHead>
                         <TableHead className="bg-background text-center">Acción</TableHead>
                       </TableRow>
@@ -193,10 +212,10 @@ export function SupplierLiquidationList() {
                             {formatWeight(supplier.total_receptions_weight)}
                           </TableCell>
                           <TableCell className="text-right">
-                            {formatWeight(supplier.total_dispatches_weight)}
+                            {formatCurrency(supplier.total_receptions_amount)}
                           </TableCell>
                           <TableCell className="text-right">
-                            {formatCurrency(supplier.total_receptions_amount)}
+                            {formatWeight(supplier.total_dispatches_weight)}
                           </TableCell>
                           <TableCell className="text-right">
                             {formatCurrency(supplier.total_dispatches_amount)}
@@ -220,9 +239,11 @@ export function SupplierLiquidationList() {
           </>
         )}
 
-        {!isLoading && !error && (!dateRange.from || !dateRange.to) && (
+        {!isLoading && !error && !applied && (
           <div className="text-muted-foreground flex h-full items-center justify-center py-12 text-center">
-            <p className="text-sm">Seleccione un rango de fechas para comenzar</p>
+            <p className="text-sm">
+              Seleccione un rango de fechas o active &ldquo;Solo no liquidadas&rdquo; para comenzar
+            </p>
           </div>
         )}
       </div>

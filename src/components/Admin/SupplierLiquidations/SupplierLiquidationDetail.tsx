@@ -4,7 +4,16 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { Loader2, ArrowLeft, Download, FilePlus, ListFilter } from 'lucide-react';
+import {
+  Loader2,
+  ArrowLeft,
+  Download,
+  FilePlus,
+  ListFilter,
+  ChevronDown,
+  ChevronRight,
+  ChevronsDownUp,
+} from 'lucide-react';
 import { notify } from '@/lib/notifications';
 import { Button } from '@/components/ui/button';
 import {
@@ -26,6 +35,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { SupplierLiquidationPdfDialog } from '@/components/Admin/SupplierLiquidations/SupplierLiquidationPdfDialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 import { supplierLiquidationKeys } from '@/lib/routes/queryKeys';
@@ -243,26 +253,35 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
     supplierId,
     startDate,
     endDate,
-    enabled: !!startDate && !!endDate,
   });
 
   const [creatingLiquidation, setCreatingLiquidation] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [pendingDialogOpen, setPendingDialogOpen] = useState(false);
+  const [pdfPreviewDialogOpen, setPdfPreviewDialogOpen] = useState(false);
   const [selectedReceptions, setSelectedReceptions] = useState<number[]>([]);
   const [selectedDispatches, setSelectedDispatches] = useState<number[]>([]);
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'transfer'>('cash');
   const [hasManagementFee, setHasManagementFee] = useState(false);
   const [showTransferPayment, setShowTransferPayment] = useState(true);
+  const [expandedReceptions, setExpandedReceptions] = useState<Set<number>>(() => new Set());
+  const [expandedDispatches, setExpandedDispatches] = useState<Set<number>>(() => new Set());
 
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
   useEffect(() => {
     if (!data) return;
-    const allReceptionIds = data.receptions?.map((r) => r.id) ?? [];
-    const allDispatchIds = data.dispatches?.map((d) => d.id) ?? [];
+    const allReceptionIds =
+      data.receptions?.filter((r) => !r.supplier_liquidation_id).map((r) => r.id) ?? [];
+    const allDispatchIds =
+      data.dispatches?.filter((d) => !d.supplier_liquidation_id).map((d) => d.id) ?? [];
     const relatedDispatchIds =
-      data.receptions?.flatMap((r) => r.related_dispatches?.map((d) => d.id) ?? []) ?? [];
+      data.receptions?.flatMap(
+        (r) =>
+          r.related_dispatches
+            ?.filter((d) => !d.supplier_liquidation_id)
+            .map((d) => d.id) ?? []
+      ) ?? [];
     setSelectedReceptions(allReceptionIds);
     setSelectedDispatches([...new Set([...allDispatchIds, ...relatedDispatchIds])]);
   }, [data]);
@@ -308,8 +327,11 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
     return { receptionsToSend, dispatchesToSend };
   };
 
+  const resolvedStartDate = startDate ?? data?.date_range?.start ?? undefined;
+  const resolvedEndDate = endDate ?? data?.date_range?.end ?? undefined;
+
   const handlePreviewPdf = async () => {
-    if (!startDate || !endDate || !data) return;
+    if (!data) return;
     if (!paymentMethod) {
       notify.error({ title: 'Selecciona un método de pago antes de previsualizar' });
       return;
@@ -320,8 +342,8 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
       await notify.promise(
         downloadLiquidationPreviewPdf({
           supplierId,
-          startDate,
-          endDate,
+          startDate: resolvedStartDate ?? '',
+          endDate: resolvedEndDate ?? '',
           supplierName: data.supplier?.name ?? 'Proveedor',
           selectedReceptions: receptionsToSend,
           selectedDispatches: dispatchesToSend,
@@ -340,13 +362,14 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
           },
         }
       );
+      setPdfPreviewDialogOpen(false);
     } finally {
       setDownloadingPdf(false);
     }
   };
 
   const handleCreateLiquidation = async () => {
-    if (!startDate || !endDate || !data) return;
+    if (!data) return;
     if (selectedReceptions.length === 0 && selectedDispatches.length === 0) {
       notify.error({ title: 'Selecciona al menos una recepción o salida de cebo' });
       return;
@@ -357,8 +380,8 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
       const result = await notify.promise(
         createLiquidation({
           supplier_id: supplierId,
-          start_date: startDate,
-          end_date: endDate,
+          start_date: resolvedStartDate ?? '',
+          end_date: resolvedEndDate ?? '',
           reception_ids: selectedReceptions,
           dispatch_ids: selectedDispatches,
         }),
@@ -392,14 +415,38 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
 
+  const toggleReceptionExpanded = (id: number) =>
+    setExpandedReceptions((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  const toggleDispatchExpanded = (id: number) =>
+    setExpandedDispatches((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
   const selectAllReceptions = () =>
-    setSelectedReceptions(data?.receptions?.map((r) => r.id) ?? []);
+    setSelectedReceptions(
+      data?.receptions?.filter((r) => !r.supplier_liquidation_id).map((r) => r.id) ?? []
+    );
   const deselectAllReceptions = () => setSelectedReceptions([]);
 
   const selectAllDispatches = () => {
-    const direct = data?.dispatches?.map((d) => d.id) ?? [];
+    const direct =
+      data?.dispatches?.filter((d) => !d.supplier_liquidation_id).map((d) => d.id) ?? [];
     const related =
-      data?.receptions?.flatMap((r) => r.related_dispatches?.map((d) => d.id) ?? []) ?? [];
+      data?.receptions?.flatMap(
+        (r) =>
+          r.related_dispatches
+            ?.filter((d) => !d.supplier_liquidation_id)
+            .map((d) => d.id) ?? []
+      ) ?? [];
     setSelectedDispatches([...new Set([...direct, ...related])]);
   };
   const deselectAllDispatches = () => setSelectedDispatches([]);
@@ -425,15 +472,13 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
               <CardContent className="pt-6">
                 <div className="py-12 text-center">
                   <p className="text-destructive mb-2 text-lg font-medium">
-                    {!startDate || !endDate
-                      ? 'Fechas no especificadas'
-                      : ((error as Error)?.message ?? 'Error al cargar los datos')}
+                    {(error as Error)?.message ?? 'Error al cargar los datos'}
                   </p>
                   <Button
                     variant="outline"
                     onClick={() => router.push('/admin/supplier-liquidations/nueva')}
                   >
-                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    <ArrowLeft data-icon="inline-start" />
                     Volver
                   </Button>
                 </div>
@@ -450,6 +495,30 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
     receptions?.flatMap((reception) => reception.related_dispatches ?? []) ?? [];
   const allDispatches = [...allRelatedDispatches, ...(dispatches ?? [])];
 
+  const allReceptionIds = receptions?.map((r) => r.id) ?? [];
+  const allDispatchIds = allDispatches.map((d) => d.id);
+
+  const allReceptionsExpanded =
+    allReceptionIds.length > 0 && allReceptionIds.every((id) => expandedReceptions.has(id));
+  const allDispatchesExpanded =
+    allDispatchIds.length > 0 && allDispatchIds.every((id) => expandedDispatches.has(id));
+
+  const toggleExpandAllReceptions = () => {
+    if (allReceptionsExpanded) {
+      setExpandedReceptions(new Set());
+    } else {
+      setExpandedReceptions(new Set(allReceptionIds));
+    }
+  };
+
+  const toggleExpandAllDispatches = () => {
+    if (allDispatchesExpanded) {
+      setExpandedDispatches(new Set());
+    } else {
+      setExpandedDispatches(new Set(allDispatchIds));
+    }
+  };
+
   return (
     <div className="flex h-full min-h-0 w-full flex-col overflow-hidden">
       {/* Header */}
@@ -458,7 +527,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
           variant="outline"
           onClick={() => router.push('/admin/supplier-liquidations/nueva')}
         >
-          <ArrowLeft className="mr-2 h-4 w-4" />
+          <ArrowLeft data-icon="inline-start" />
           Volver
         </Button>
 
@@ -467,24 +536,20 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
             variant="outline"
             onClick={() => setPendingDialogOpen(true)}
           >
-            <ListFilter className="mr-2 h-4 w-4" />
+            <ListFilter data-icon="inline-start" />
             Ver pendientes
           </Button>
 
-          <Button variant="outline" onClick={handlePreviewPdf} disabled={downloadingPdf}>
-            {downloadingPdf ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Download className="mr-2 h-4 w-4" />
-            )}
+          <Button variant="outline" onClick={() => setPdfPreviewDialogOpen(true)}>
+            <Download data-icon="inline-start" />
             Vista previa PDF
           </Button>
 
           <Button onClick={handleCreateLiquidation} disabled={creatingLiquidation}>
             {creatingLiquidation ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 data-icon="inline-start" className="animate-spin" />
             ) : (
-              <FilePlus className="mr-2 h-4 w-4" />
+              <FilePlus data-icon="inline-start" />
             )}
             Crear Liquidación
           </Button>
@@ -497,6 +562,20 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
         supplierName={data?.supplier?.name ?? ''}
         open={pendingDialogOpen}
         onClose={() => setPendingDialogOpen(false)}
+      />
+
+      <SupplierLiquidationPdfDialog
+        open={pdfPreviewDialogOpen}
+        onClose={() => setPdfPreviewDialogOpen(false)}
+        idPrefix="preview"
+        paymentMethod={paymentMethod}
+        onPaymentMethodChange={setPaymentMethod}
+        hasManagementFee={hasManagementFee}
+        onHasManagementFeeChange={setHasManagementFee}
+        showTransferPayment={showTransferPayment}
+        onShowTransferPaymentChange={setShowTransferPayment}
+        downloadingPdf={downloadingPdf}
+        onDownload={handlePreviewPdf}
       />
 
       {/* Info proveedor */}
@@ -513,69 +592,23 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
         </div>
       </div>
 
-      {/* Opciones de pago */}
-      {data?.summary && (
-        <div className="bg-muted/50 mx-6 mb-2 flex-shrink-0 rounded-lg p-4">
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-4">
-              <label className="text-sm font-medium whitespace-nowrap">Método de pago cebo:</label>
-              <div
-                className="bg-muted relative inline-flex h-9 w-[180px] cursor-pointer items-center rounded-lg p-1"
-                onClick={() => setPaymentMethod((m) => (m === 'cash' ? 'transfer' : 'cash'))}
-              >
-                <div
-                  className={`bg-background absolute h-7 w-[86px] rounded-md shadow-sm transition-transform duration-200 ease-in-out ${paymentMethod === 'cash' ? 'translate-x-0' : 'translate-x-[88px]'}`}
-                />
-                <div className="relative flex h-full w-full items-center justify-center">
-                  <span
-                    className={`z-10 flex-1 text-center text-sm font-medium transition-colors duration-200 ${paymentMethod === 'cash' ? 'text-foreground' : 'text-muted-foreground'}`}
-                  >
-                    Efectivo
-                  </span>
-                  <span
-                    className={`z-10 flex-1 text-center text-sm font-medium transition-colors duration-200 ${paymentMethod === 'transfer' ? 'text-foreground' : 'text-muted-foreground'}`}
-                  >
-                    Transferencia
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div className="border-border/50 border-t" />
-            <div className="flex flex-wrap items-center gap-6">
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="hasManagementFee"
-                  checked={hasManagementFee}
-                  onCheckedChange={(checked) => setHasManagementFee(!!checked)}
-                />
-                <label htmlFor="hasManagementFee" className="cursor-pointer text-sm">
-                  Lleva gasto de gestión (2.5% sobre declarado sin IVA)
-                </label>
-              </div>
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="showTransferPayment"
-                  checked={showTransferPayment}
-                  onCheckedChange={(checked) => setShowTransferPayment(!!checked)}
-                />
-                <label htmlFor="showTransferPayment" className="cursor-pointer text-sm">
-                  Mostrar pago por transferencia
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       <ScrollArea className="h-full min-h-0 w-full flex-1">
         <div className="space-y-6 p-6 pt-2">
           {/* Tabla recepciones */}
           <Card>
-            <CardHeader>
-              <CardTitle>Recepciones</CardTitle>
-              <CardDescription>
-                Recepciones de materia prima con sus productos y salidas relacionadas
-              </CardDescription>
+            <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
+              <div className="space-y-1.5">
+                <CardTitle>Recepciones</CardTitle>
+                <CardDescription>
+                  Recepciones de materia prima con sus productos y salidas relacionadas
+                </CardDescription>
+              </div>
+              {allReceptionIds.length > 0 && (
+                <Button variant="outline" size="sm" className="shrink-0" onClick={toggleExpandAllReceptions}>
+                  <ChevronsDownUp data-icon="inline-start" />
+                  {allReceptionsExpanded ? 'Contraer todo' : 'Expandir todo'}
+                </Button>
+              )}
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto rounded-md border">
@@ -584,10 +617,10 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
                     <TableRow>
                       <TableHead className="w-12">
                         <Checkbox
-                          checked={
-                            selectedReceptions.length === (data?.receptions?.length ?? 0) &&
-                            selectedReceptions.length > 0
-                          }
+                          checked={(() => {
+                            const selectable = data?.receptions?.filter((r) => !r.supplier_liquidation_id) ?? [];
+                            return selectable.length > 0 && selectable.every((r) => selectedReceptions.includes(r.id));
+                          })()}
                           onCheckedChange={(checked) =>
                             checked ? selectAllReceptions() : deselectAllReceptions()
                           }
@@ -601,20 +634,40 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
                   </TableHeader>
                   <TableBody>
                     {receptions && receptions.length > 0 ? (
-                      receptions.map((reception: LiquidationReception) => (
+                      receptions.map((reception: LiquidationReception) => {
+                        const isReceptionExpanded = expandedReceptions.has(reception.id);
+                        const isReceptionLiquidated = !!reception.supplier_liquidation_id;
+                        return (
                         <React.Fragment key={`reception-${reception.id}`}>
-                          <TableRow className="bg-blue-200/50 font-bold dark:bg-blue-800/30">
-                            <TableCell>
+                          <TableRow
+                            className={`bg-blue-200/50 cursor-pointer font-bold dark:bg-blue-800/30 ${isReceptionLiquidated ? 'opacity-50' : ''}`}
+                            aria-expanded={isReceptionExpanded}
+                            onClick={() => toggleReceptionExpanded(reception.id)}
+                          >
+                            <TableCell onClick={(e) => e.stopPropagation()}>
                               <Checkbox
                                 checked={selectedReceptions.includes(reception.id)}
-                                onCheckedChange={() => toggleReception(reception.id)}
+                                disabled={isReceptionLiquidated}
+                                onCheckedChange={() => !isReceptionLiquidated && toggleReception(reception.id)}
                               />
                             </TableCell>
                             <TableCell colSpan={4}>
-                              Recepción #{reception.id} - {formatDate(reception.date)}
+                              <span className="flex items-center gap-2">
+                                {isReceptionExpanded ? (
+                                  <ChevronDown className="text-muted-foreground h-4 w-4 shrink-0" />
+                                ) : (
+                                  <ChevronRight className="text-muted-foreground h-4 w-4 shrink-0" />
+                                )}
+                                Recepción #{reception.id} - {formatDate(reception.date)}
+                                {reception.supplier_liquidation_id && (
+                                  <Badge variant="outline" className="border-amber-400 text-xs text-amber-600 dark:text-amber-400">
+                                    Liq. #{reception.supplier_liquidation_id}
+                                  </Badge>
+                                )}
+                              </span>
                             </TableCell>
                           </TableRow>
-                          {reception.products?.map((product, i) => (
+                          {isReceptionExpanded && reception.products?.map((product, i) => (
                             <TableRow
                               key={`rec-${reception.id}-p-${product.id ?? i}`}
                               className="bg-blue-50/50 dark:bg-blue-950/20"
@@ -635,7 +688,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
                               </TableCell>
                             </TableRow>
                           ))}
-                          {reception.products && reception.products.length > 0 && (
+                          {isReceptionExpanded && reception.products && reception.products.length > 0 && (
                             <>
                               <TableRow className="bg-blue-100/50 font-semibold dark:bg-blue-900/30">
                                 <TableCell />
@@ -668,7 +721,8 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
                             </>
                           )}
                         </React.Fragment>
-                      ))
+                      );
+                      })
                     ) : (
                       <TableRow>
                         <TableCell colSpan={5} className="text-muted-foreground py-8 text-center">
@@ -685,9 +739,15 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
           {/* Tabla salidas de cebo */}
           {allDispatches.length > 0 && (
             <Card>
-              <CardHeader>
-                <CardTitle>Salidas de Cebo</CardTitle>
-                <CardDescription>Todas las salidas de cebo del período</CardDescription>
+              <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
+                <div className="space-y-1.5">
+                  <CardTitle>Salidas de Cebo</CardTitle>
+                  <CardDescription>Todas las salidas de cebo del período</CardDescription>
+                </div>
+                <Button variant="outline" size="sm" className="shrink-0" onClick={toggleExpandAllDispatches}>
+                  <ChevronsDownUp data-icon="inline-start" />
+                  {allDispatchesExpanded ? 'Contraer todo' : 'Expandir todo'}
+                </Button>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto rounded-md border">
@@ -696,10 +756,10 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
                       <TableRow>
                         <TableHead className="w-12">
                           <Checkbox
-                            checked={
-                              selectedDispatches.length === allDispatches.length &&
-                              allDispatches.length > 0
-                            }
+                            checked={(() => {
+                              const selectable = allDispatches.filter((d) => !d.supplier_liquidation_id);
+                              return selectable.length > 0 && selectable.every((d) => selectedDispatches.includes(d.id));
+                            })()}
                             onCheckedChange={(checked) =>
                               checked ? selectAllDispatches() : deselectAllDispatches()
                             }
@@ -713,20 +773,38 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {allDispatches.map((dispatch: LiquidationDispatch) => (
+                      {allDispatches.map((dispatch: LiquidationDispatch) => {
+                        const isDispatchExpanded = expandedDispatches.has(dispatch.id);
+                        const isDispatchLiquidated = !!dispatch.supplier_liquidation_id;
+                        return (
                         <React.Fragment key={`dispatch-${dispatch.id}`}>
-                          <TableRow className="bg-orange-200/50 font-bold dark:bg-orange-800/30">
-                            <TableCell>
+                          <TableRow
+                            className={`bg-orange-200/50 cursor-pointer font-bold dark:bg-orange-800/30 ${isDispatchLiquidated ? 'opacity-50' : ''}`}
+                            aria-expanded={isDispatchExpanded}
+                            onClick={() => toggleDispatchExpanded(dispatch.id)}
+                          >
+                            <TableCell onClick={(e) => e.stopPropagation()}>
                               <Checkbox
                                 checked={selectedDispatches.includes(dispatch.id)}
-                                onCheckedChange={() => toggleDispatch(dispatch.id)}
+                                disabled={isDispatchLiquidated}
+                                onCheckedChange={() => !isDispatchLiquidated && toggleDispatch(dispatch.id)}
                               />
                             </TableCell>
                             <TableCell colSpan={5}>
                               <div className="flex items-center gap-2">
+                                {isDispatchExpanded ? (
+                                  <ChevronDown className="text-muted-foreground h-4 w-4 shrink-0" />
+                                ) : (
+                                  <ChevronRight className="text-muted-foreground h-4 w-4 shrink-0" />
+                                )}
                                 <span>
                                   Salida #{dispatch.id} - {formatDate(dispatch.date)}
                                 </span>
+                                {dispatch.supplier_liquidation_id && (
+                                  <Badge variant="outline" className="border-amber-400 text-xs text-amber-600 dark:text-amber-400">
+                                    Liq. #{dispatch.supplier_liquidation_id}
+                                  </Badge>
+                                )}
                                 {dispatch.export_type && (
                                   <Badge
                                     variant={
@@ -740,7 +818,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
                               </div>
                             </TableCell>
                           </TableRow>
-                          {dispatch.products?.map((product, i) => {
+                          {isDispatchExpanded && dispatch.products?.map((product, i) => {
                             let amountWithIva = product.amount;
                             if (
                               (dispatch.iva_amount ?? 0) > 0 &&
@@ -774,7 +852,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
                               </TableRow>
                             );
                           })}
-                          {dispatch.products && dispatch.products.length > 0 && (
+                          {isDispatchExpanded && dispatch.products && dispatch.products.length > 0 && (
                             <TableRow className="bg-orange-100/50 font-semibold dark:bg-orange-900/30">
                               <TableCell />
                               <TableCell>Total</TableCell>
@@ -791,7 +869,8 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
                             </TableRow>
                           )}
                         </React.Fragment>
-                      ))}
+                      );
+                      })}
                     </TableBody>
                   </Table>
                 </div>

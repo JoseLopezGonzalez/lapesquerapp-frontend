@@ -19,7 +19,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,6 +37,7 @@ import {
   deleteLiquidation,
   downloadLiquidationPdf,
 } from '@/services/domain/supplier-liquidations/supplierLiquidationService';
+import { SupplierLiquidationPdfDialog } from '@/components/Admin/SupplierLiquidations/SupplierLiquidationPdfDialog';
 import type { LiquidationReception, LiquidationDispatch } from '@/types/supplierLiquidation';
 
 function formatCurrency(value: number | undefined | null): string {
@@ -84,6 +84,7 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
 
   const [deleting, setDeleting] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [pdfPreviewDialogOpen, setPdfPreviewDialogOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'transfer'>('cash');
   const [hasManagementFee, setHasManagementFee] = useState(false);
   const [showTransferPayment, setShowTransferPayment] = useState(true);
@@ -135,6 +136,7 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
           },
         }
       );
+      setPdfPreviewDialogOpen(false);
     } finally {
       setDownloadingPdf(false);
     }
@@ -160,7 +162,7 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
               variant="outline"
               onClick={() => router.push('/admin/supplier-liquidations')}
             >
-              <ArrowLeft className="mr-2 h-4 w-4" />
+              <ArrowLeft data-icon="inline-start" />
               Volver
             </Button>
           </CardContent>
@@ -179,7 +181,7 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
       {/* Header */}
       <div className="flex flex-shrink-0 items-center justify-between p-6 pb-2">
         <Button variant="outline" onClick={() => router.push('/admin/supplier-liquidations')}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
+          <ArrowLeft data-icon="inline-start" />
           Volver
         </Button>
 
@@ -188,9 +190,9 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
             <AlertDialogTrigger asChild>
               <Button variant="outline" disabled={deleting}>
                 {deleting ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 data-icon="inline-start" className="animate-spin" />
                 ) : (
-                  <Trash2 className="mr-2 h-4 w-4" />
+                  <Trash2 data-icon="inline-start" />
                 )}
                 Eliminar
               </Button>
@@ -215,16 +217,26 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
             </AlertDialogContent>
           </AlertDialog>
 
-          <Button onClick={handleDownloadPdf} disabled={downloadingPdf}>
-            {downloadingPdf ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Download className="mr-2 h-4 w-4" />
-            )}
-            Generar PDF
+          <Button variant="outline" onClick={() => setPdfPreviewDialogOpen(true)}>
+            <Download data-icon="inline-start" />
+            Vista previa PDF
           </Button>
         </div>
       </div>
+
+      <SupplierLiquidationPdfDialog
+        open={pdfPreviewDialogOpen}
+        onClose={() => setPdfPreviewDialogOpen(false)}
+        idPrefix="show"
+        paymentMethod={paymentMethod}
+        onPaymentMethodChange={setPaymentMethod}
+        hasManagementFee={hasManagementFee}
+        onHasManagementFeeChange={setHasManagementFee}
+        showTransferPayment={showTransferPayment}
+        onShowTransferPaymentChange={setShowTransferPayment}
+        downloadingPdf={downloadingPdf}
+        onDownload={handleDownloadPdf}
+      />
 
       {/* Info proveedor + metadata */}
       <div className="bg-muted/50 mx-6 mb-2 flex-shrink-0 rounded-lg p-4">
@@ -254,58 +266,6 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
           </div>
           <div className="ml-auto">
             <Badge variant="secondary">Liquidación #{liquidation.id}</Badge>
-          </div>
-        </div>
-      </div>
-
-      {/* Opciones de pago para el PDF */}
-      <div className="bg-muted/50 mx-6 mb-2 flex-shrink-0 rounded-lg p-4">
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-4">
-            <label className="text-sm font-medium whitespace-nowrap">Método de pago cebo:</label>
-            <div
-              className="bg-muted relative inline-flex h-9 w-[180px] cursor-pointer items-center rounded-lg p-1"
-              onClick={() => setPaymentMethod((m) => (m === 'cash' ? 'transfer' : 'cash'))}
-            >
-              <div
-                className={`bg-background absolute h-7 w-[86px] rounded-md shadow-sm transition-transform duration-200 ease-in-out ${paymentMethod === 'cash' ? 'translate-x-0' : 'translate-x-[88px]'}`}
-              />
-              <div className="relative flex h-full w-full items-center justify-center">
-                <span
-                  className={`z-10 flex-1 text-center text-sm font-medium transition-colors duration-200 ${paymentMethod === 'cash' ? 'text-foreground' : 'text-muted-foreground'}`}
-                >
-                  Efectivo
-                </span>
-                <span
-                  className={`z-10 flex-1 text-center text-sm font-medium transition-colors duration-200 ${paymentMethod === 'transfer' ? 'text-foreground' : 'text-muted-foreground'}`}
-                >
-                  Transferencia
-                </span>
-              </div>
-            </div>
-          </div>
-          <div className="border-border/50 border-t" />
-          <div className="flex flex-wrap items-center gap-6">
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="hasManagementFee"
-                checked={hasManagementFee}
-                onCheckedChange={(checked) => setHasManagementFee(!!checked)}
-              />
-              <label htmlFor="hasManagementFee" className="cursor-pointer text-sm">
-                Lleva gasto de gestión (2.5% sobre declarado sin IVA)
-              </label>
-            </div>
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="showTransferPayment"
-                checked={showTransferPayment}
-                onCheckedChange={(checked) => setShowTransferPayment(!!checked)}
-              />
-              <label htmlFor="showTransferPayment" className="cursor-pointer text-sm">
-                Mostrar pago por transferencia
-              </label>
-            </div>
           </div>
         </div>
       </div>

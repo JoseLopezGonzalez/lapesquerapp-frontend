@@ -12,11 +12,10 @@ export function useSupplierLiquidationDetails(params: {
 }) {
   const { supplierId, startDate, endDate, enabled = true } = params;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
-  const hasParams = !!supplierId && !!startDate && !!endDate;
 
   return useQuery({
     queryKey: supplierLiquidationKeys.detail(tenantId, supplierId, startDate, endDate),
-    queryFn: () => getSupplierLiquidationDetails(supplierId!, startDate!, endDate!),
-    enabled: !!tenantId && enabled && !!hasParams,
+    queryFn: () => getSupplierLiquidationDetails(supplierId!, startDate, endDate),
+    enabled: !!tenantId && enabled && !!supplierId,
   });
 }

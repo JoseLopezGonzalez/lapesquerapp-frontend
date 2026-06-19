@@ -235,8 +235,10 @@ export const supplierLiquidationKeys = {
   suppliersWithActivity: (
     tenantId: string | null | undefined,
     startDate: string | undefined,
-    endDate: string | undefined
-  ) => ['suppliers-with-activity', tenantId ?? 'unknown', startDate, endDate] as const,
+    endDate: string | undefined,
+    onlyUnliquidated?: boolean
+  ) =>
+    ['suppliers-with-activity', tenantId ?? 'unknown', startDate, endDate, onlyUnliquidated] as const,
   // CRUD historial de cerradas
   closedListPrefix: (tenantId: string | null | undefined) =>
     ['supplier-liquidations-closed', tenantId ?? 'unknown'] as const,
