@@ -13,6 +13,8 @@ import {
   ChevronDown,
   ChevronRight,
   ChevronsDownUp,
+  LayoutList,
+  CalendarDays,
 } from 'lucide-react';
 import { notify } from '@/lib/notifications';
 import { Button } from '@/components/ui/button';
@@ -37,6 +39,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { SupplierLiquidationPdfDialog } from '@/components/Admin/SupplierLiquidations/SupplierLiquidationPdfDialog';
+import { SupplierLiquidationCalendarView } from '@/components/Admin/SupplierLiquidations/SupplierLiquidationCalendarView';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 import { supplierLiquidationKeys } from '@/lib/routes/queryKeys';
@@ -262,6 +265,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
   const [showTransferPayment, setShowTransferPayment] = useState(true);
   const [expandedReceptions, setExpandedReceptions] = useState<Set<number>>(() => new Set());
   const [expandedDispatches, setExpandedDispatches] = useState<Set<number>>(() => new Set());
+  const [viewMode, setViewMode] = useState<'table' | 'calendar'>('table');
 
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
@@ -528,6 +532,28 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
         </Button>
 
         <div className="flex items-center gap-2">
+          {/* View mode toggle */}
+          <div className="flex items-center rounded-md border">
+            <Button
+              variant={viewMode === 'table' ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('table')}
+              className="rounded-r-none border-r"
+            >
+              <LayoutList className="h-4 w-4" />
+              Tabla
+            </Button>
+            <Button
+              variant={viewMode === 'calendar' ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('calendar')}
+              className="rounded-l-none"
+            >
+              <CalendarDays className="h-4 w-4" />
+              Calendario
+            </Button>
+          </div>
+
           <Button
             variant="outline"
             onClick={() => setPendingDialogOpen(true)}
@@ -589,7 +615,18 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
       </div>
 
       <ScrollArea className="h-full min-h-0 w-full flex-1">
-        <div className="space-y-6 p-6 pt-2">
+        {/* Calendar view */}
+        {viewMode === 'calendar' && resolvedStartDate && resolvedEndDate && (
+          <SupplierLiquidationCalendarView
+            receptions={receptions ?? []}
+            dispatches={allDispatches}
+            startDate={resolvedStartDate}
+            endDate={resolvedEndDate}
+          />
+        )}
+
+        {/* Table view */}
+        <div className={viewMode === 'table' ? 'space-y-6 p-6 pt-2' : 'hidden'}>
           {/* Tabla recepciones */}
           <Card>
             <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
@@ -878,3 +915,4 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
     </div>
   );
 }
+
