@@ -24,10 +24,9 @@ export default function TaraScreen({
       <MobilePalletScreenHeader title="Tara del palet" onBack={onBack} />
 
       {/* Content */}
-      <div className="flex flex-1 flex-col items-center justify-center gap-8 px-6 py-6">
-        {/* Illustration */}
-        <div className="w-full max-w-[260px]">
-          <PalletIllustration className="w-full text-foreground drop-shadow-sm" />
+      <div className="flex flex-1 flex-col items-center justify-center gap-8 px-4 py-6">
+        <div className="w-full max-w-[min(100%,400px)]">
+          <PalletIllustration />
         </div>
 
         {/* Input area */}

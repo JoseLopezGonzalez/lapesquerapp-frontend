@@ -63,15 +63,15 @@ export default function BoxesTab({
   return (
     <div className="flex h-full flex-col">
       {onBack && <MobilePalletScreenHeader title="Cajas del palet" onBack={onBack} />}
-    <div className="flex flex-col gap-3 overflow-auto px-3 py-3">
-      {/* Summary strip */}
-      <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2 text-sm">
-        <span className="font-medium">{boxes.length} cajas</span>
-        <span className="text-muted-foreground">{formatDecimalWeight(totalWeight)} total</span>
-      </div>
 
-      {/* Boxes list */}
-      <ul className="overflow-hidden rounded-lg border divide-y">
+      <div className="flex min-h-0 flex-1 flex-col gap-3 px-3 py-3">
+        <div className="flex shrink-0 items-center justify-between rounded-lg bg-muted/50 px-3 py-2 text-sm">
+          <span className="font-medium">{boxes.length} cajas</span>
+          <span className="text-muted-foreground">{formatDecimalWeight(totalWeight)} total</span>
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <ul className="divide-y overflow-hidden rounded-lg border">
         {boxes.map((box) => {
           const isExpanded = expandedBoxId === box.id;
           const isAvailable = box.isAvailable !== false;
@@ -217,8 +217,9 @@ export default function BoxesTab({
             </li>
           );
         })}
-      </ul>
-    </div>
+          </ul>
+        </div>
+      </div>
     </div>
   );
 }
