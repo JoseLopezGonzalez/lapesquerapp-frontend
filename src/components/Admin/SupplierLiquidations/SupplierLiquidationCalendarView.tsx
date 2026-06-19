@@ -152,27 +152,33 @@ export function SupplierLiquidationCalendarView({
                         const dayOfWeek = day.getDay();
                         const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
-                        // Liquidation state
-                        const liqReceptions = dayData.receptions.filter(
-                          (r) => !!r.supplier_liquidation_id
+                        // Per-type free/locked counts
+                        const freeRec = dayData.receptions.filter(
+                          (r) => !r.supplier_liquidation_id
                         ).length;
-                        const liqDispatches = dayData.dispatches.filter(
-                          (d) => !!d.supplier_liquidation_id
+                        const lockedRec = dayData.receptions.length - freeRec;
+                        const freeDisp = dayData.dispatches.filter(
+                          (d) => !d.supplier_liquidation_id
                         ).length;
-                        const totalDay = dayData.receptions.length + dayData.dispatches.length;
-                        const totalLiq = liqReceptions + liqDispatches;
-                        const allLiquidated = hasActivity && totalLiq === totalDay;
-                        const someLiquidated = !allLiquidated && totalLiq > 0;
+                        const lockedDisp = dayData.dispatches.length - freeDisp;
 
-                        // Visual bars: up to 3 reception bars + up to 3 dispatch bars
-                        const recBars = dayData.receptions.slice(0, 3);
-                        const dispBars = dayData.dispatches.slice(
-                          0,
-                          Math.max(0, 6 - recBars.length)
-                        );
+                        const hasFreeRec = freeRec > 0;
+                        const hasFreeDisp = freeDisp > 0;
+                        const hasLockedRec = lockedRec > 0;
+                        const hasLockedDisp = lockedDisp > 0;
+                        const totalLiq = lockedRec + lockedDisp;
+                        const allLiquidated =
+                          hasActivity && totalLiq === dayData.receptions.length + dayData.dispatches.length;
+
+                        // Visual bars: free (blue/orange) + locked (amber), up to 2 each
+                        const freeRecBars = Math.min(freeRec, 2);
+                        const freeDispBars = Math.min(freeDisp, 2);
+                        const lockedBars = Math.min(totalLiq, 2);
+                        const totalBars = freeRecBars + freeDispBars + lockedBars;
                         const overflowCount =
-                          Math.max(0, dayData.receptions.length - recBars.length) +
-                          Math.max(0, dayData.dispatches.length - dispBars.length);
+                          Math.max(0, freeRec - freeRecBars) +
+                          Math.max(0, freeDisp - freeDispBars) +
+                          Math.max(0, totalLiq - lockedBars);
 
                         return (
                           <button
@@ -201,23 +207,21 @@ export function SupplierLiquidationCalendarView({
                               inRange &&
                                 allLiquidated &&
                                 'border-amber-400 bg-amber-50 shadow-amber-100 dark:border-amber-600 dark:bg-amber-950/20 dark:shadow-amber-950',
-                              // Recepciones only (free)
+                              // Color based on FREE items (shows what is still available)
                               inRange &&
                                 !allLiquidated &&
-                                hasReceptions &&
-                                !hasDispatches &&
+                                hasFreeRec &&
+                                !hasFreeDisp &&
                                 'border-blue-300 bg-blue-50 dark:border-blue-700 dark:bg-blue-950/20',
-                              // Salidas only (free)
                               inRange &&
                                 !allLiquidated &&
-                                hasDispatches &&
-                                !hasReceptions &&
+                                hasFreeDisp &&
+                                !hasFreeRec &&
                                 'border-orange-300 bg-orange-50 dark:border-orange-700 dark:bg-orange-950/20',
-                              // Both types (free)
                               inRange &&
                                 !allLiquidated &&
-                                hasReceptions &&
-                                hasDispatches &&
+                                hasFreeRec &&
+                                hasFreeDisp &&
                                 'border-green-300 bg-green-50 dark:border-green-700 dark:bg-green-950/20',
                               // Hover
                               hasActivity &&
@@ -246,66 +250,73 @@ export function SupplierLiquidationCalendarView({
                               {/* Activity */}
                               {hasActivity && inRange && (
                                 <div className="mt-6 flex-1 space-y-1.5">
-                                  {/* All liquidated badge */}
-                                  {allLiquidated && (
-                                    <div className="flex items-center gap-1.5 text-xs">
-                                      <Lock className="h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
-                                      <span className="font-semibold leading-tight text-amber-700 dark:text-amber-400">
-                                        Liquidado
-                                      </span>
-                                    </div>
-                                  )}
-
-                                  {/* Reception count */}
-                                  {hasReceptions && (
+                                  {/* Free receptions */}
+                                  {hasFreeRec && (
                                     <div className="flex items-center gap-1.5 text-xs">
                                       <Package className="h-3.5 w-3.5 shrink-0 text-blue-600 dark:text-blue-500" />
                                       <span className="font-semibold leading-tight text-blue-700 dark:text-blue-400">
-                                        {dayData.receptions.length}{' '}
-                                        {dayData.receptions.length === 1
-                                          ? 'recepción'
-                                          : 'recepciones'}
+                                        {freeRec}{' '}
+                                        {freeRec === 1 ? 'recepción' : 'recepciones'}
                                       </span>
                                     </div>
                                   )}
 
-                                  {/* Dispatch count */}
-                                  {hasDispatches && (
+                                  {/* Locked receptions */}
+                                  {hasLockedRec && (
+                                    <div className="flex items-center gap-1.5 text-xs">
+                                      <Lock className="h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+                                      <span className="font-semibold leading-tight text-amber-700 dark:text-amber-400">
+                                        {lockedRec}{' '}
+                                        {lockedRec === 1 ? 'recepción liq.' : 'recepciones liq.'}
+                                      </span>
+                                    </div>
+                                  )}
+
+                                  {/* Free dispatches */}
+                                  {hasFreeDisp && (
                                     <div className="flex items-center gap-1.5 text-xs">
                                       <Truck className="h-3.5 w-3.5 shrink-0 text-orange-600 dark:text-orange-500" />
                                       <span className="font-semibold leading-tight text-orange-700 dark:text-orange-400">
-                                        {dayData.dispatches.length}{' '}
-                                        {dayData.dispatches.length === 1 ? 'salida' : 'salidas'}
+                                        {freeDisp}{' '}
+                                        {freeDisp === 1 ? 'salida' : 'salidas'}
                                       </span>
                                     </div>
                                   )}
 
-                                  {/* Partial liquidated indicator */}
-                                  {someLiquidated && (
+                                  {/* Locked dispatches */}
+                                  {hasLockedDisp && (
                                     <div className="flex items-center gap-1.5 text-xs">
-                                      <Lock className="h-3 w-3 shrink-0 text-amber-500 dark:text-amber-400" />
-                                      <span className="leading-tight text-amber-600 dark:text-amber-400">
-                                        {totalLiq}{' '}
-                                        {totalLiq === 1 ? 'liquidado' : 'liquidados'}
+                                      <Lock className="h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+                                      <span className="font-semibold leading-tight text-amber-700 dark:text-amber-400">
+                                        {lockedDisp}{' '}
+                                        {lockedDisp === 1 ? 'salida liq.' : 'salidas liq.'}
                                       </span>
                                     </div>
                                   )}
 
-                                  {/* Visual bars */}
-                                  <div className="mt-2 flex gap-1 border-t border-border/50 pt-1.5">
-                                    {recBars.map((_, i) => (
-                                      <div
-                                        key={`r${i}`}
-                                        className="h-2 w-full rounded-full bg-gradient-to-r from-blue-400 to-blue-600 shadow-sm"
-                                      />
-                                    ))}
-                                    {dispBars.map((_, i) => (
-                                      <div
-                                        key={`d${i}`}
-                                        className="h-2 w-full rounded-full bg-gradient-to-r from-orange-400 to-orange-600 shadow-sm"
-                                      />
-                                    ))}
-                                  </div>
+                                  {/* Visual bars: blue=free rec · orange=free disp · amber=locked */}
+                                  {totalBars > 0 && (
+                                    <div className="mt-2 flex gap-1 border-t border-border/50 pt-1.5">
+                                      {Array.from({ length: freeRecBars }).map((_, i) => (
+                                        <div
+                                          key={`fr${i}`}
+                                          className="h-2 w-full rounded-full bg-gradient-to-r from-blue-400 to-blue-600 shadow-sm"
+                                        />
+                                      ))}
+                                      {Array.from({ length: freeDispBars }).map((_, i) => (
+                                        <div
+                                          key={`fd${i}`}
+                                          className="h-2 w-full rounded-full bg-gradient-to-r from-orange-400 to-orange-600 shadow-sm"
+                                        />
+                                      ))}
+                                      {Array.from({ length: lockedBars }).map((_, i) => (
+                                        <div
+                                          key={`lk${i}`}
+                                          className="h-2 w-full rounded-full bg-gradient-to-r from-amber-300 to-amber-500 shadow-sm"
+                                        />
+                                      ))}
+                                    </div>
+                                  )}
                                   {overflowCount > 0 && (
                                     <div className="text-[10px] font-medium text-muted-foreground">
                                       +{overflowCount} más
@@ -347,11 +358,15 @@ export function SupplierLiquidationCalendarView({
               </div>
               <div className="flex items-center gap-2.5">
                 <div className="h-2 w-6 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 shadow-sm" />
-                <span className="text-sm font-medium text-muted-foreground">Recep.</span>
+                <span className="text-sm font-medium text-muted-foreground">Recep. libre</span>
               </div>
               <div className="flex items-center gap-2.5">
                 <div className="h-2 w-6 rounded-full bg-gradient-to-r from-orange-400 to-orange-600 shadow-sm" />
-                <span className="text-sm font-medium text-muted-foreground">Salida</span>
+                <span className="text-sm font-medium text-muted-foreground">Salida libre</span>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <div className="h-2 w-6 rounded-full bg-gradient-to-r from-amber-300 to-amber-500 shadow-sm" />
+                <span className="text-sm font-medium text-muted-foreground">Liq.</span>
               </div>
             </div>
           </div>

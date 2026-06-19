@@ -265,7 +265,6 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
   const [showTransferPayment, setShowTransferPayment] = useState(true);
   const [expandedReceptions, setExpandedReceptions] = useState<Set<number>>(() => new Set());
   const [expandedDispatches, setExpandedDispatches] = useState<Set<number>>(() => new Set());
-  const [viewMode, setViewMode] = useState<'table' | 'calendar'>('calendar');
 
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
@@ -520,7 +519,7 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
   };
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-col overflow-hidden">
+    <Tabs defaultValue="calendar" className="flex h-full min-h-0 w-full flex-col overflow-hidden">
       {/* Header */}
       <div className="flex flex-shrink-0 items-center justify-between p-6 pb-2">
         <Button
@@ -532,27 +531,16 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
         </Button>
 
         <div className="flex items-center gap-2">
-          {/* View mode toggle */}
-          <div className="flex items-center rounded-md border">
-            <Button
-              variant={viewMode === 'table' ? 'secondary' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('table')}
-              className="rounded-r-none border-r"
-            >
-              <LayoutList className="h-4 w-4" />
-              Tabla
-            </Button>
-            <Button
-              variant={viewMode === 'calendar' ? 'secondary' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('calendar')}
-              className="rounded-l-none"
-            >
-              <CalendarDays className="h-4 w-4" />
+          <TabsList>
+            <TabsTrigger value="table">
+              <LayoutList />
+              Detalle
+            </TabsTrigger>
+            <TabsTrigger value="calendar">
+              <CalendarDays />
               Calendario
-            </Button>
-          </div>
+            </TabsTrigger>
+          </TabsList>
 
           <Button
             variant="outline"
@@ -615,18 +603,18 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
       </div>
 
       <ScrollArea className="h-full min-h-0 w-full flex-1">
-        {/* Calendar view */}
-        {viewMode === 'calendar' && resolvedStartDate && resolvedEndDate && (
-          <SupplierLiquidationCalendarView
-            receptions={receptions ?? []}
-            dispatches={allDispatches}
-            startDate={resolvedStartDate}
-            endDate={resolvedEndDate}
-          />
-        )}
+        <TabsContent value="calendar" className="m-0">
+          {resolvedStartDate && resolvedEndDate && (
+            <SupplierLiquidationCalendarView
+              receptions={receptions ?? []}
+              dispatches={allDispatches}
+              startDate={resolvedStartDate}
+              endDate={resolvedEndDate}
+            />
+          )}
+        </TabsContent>
 
-        {/* Table view */}
-        <div className={viewMode === 'table' ? 'space-y-6 p-6 pt-2' : 'hidden'}>
+        <TabsContent value="table" className="m-0 space-y-6 p-6 pt-2">
           {/* Tabla recepciones */}
           <Card>
             <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
@@ -910,9 +898,9 @@ export function SupplierLiquidationDetail({ supplierId }: { supplierId: number }
               </CardContent>
             </Card>
           )}
-        </div>
+        </TabsContent>
       </ScrollArea>
-    </div>
+    </Tabs>
   );
 }
 

@@ -39,6 +39,7 @@ import {
 } from '@/services/domain/supplier-liquidations/supplierLiquidationService';
 import { SupplierLiquidationPdfDialog } from '@/components/Admin/SupplierLiquidations/SupplierLiquidationPdfDialog';
 import { SupplierLiquidationCalendarView } from '@/components/Admin/SupplierLiquidations/SupplierLiquidationCalendarView';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import type { LiquidationReception, LiquidationDispatch } from '@/types/supplierLiquidation';
 
 function formatCurrency(value: number | undefined | null): string {
@@ -91,7 +92,6 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
   const [showTransferPayment, setShowTransferPayment] = useState(true);
   const [expandedReceptions, setExpandedReceptions] = useState<Set<number>>(() => new Set());
   const [expandedDispatches, setExpandedDispatches] = useState<Set<number>>(() => new Set());
-  const [viewMode, setViewMode] = useState<'table' | 'calendar'>('calendar');
 
   const { data, isLoading, error } = useSupplierLiquidationShow(liquidationId);
 
@@ -221,7 +221,7 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
   };
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-col overflow-hidden">
+    <Tabs defaultValue="calendar" className="flex h-full min-h-0 w-full flex-col overflow-hidden">
       {/* Header */}
       <div className="flex flex-shrink-0 items-center justify-between p-6 pb-2">
         <Button variant="outline" onClick={() => router.push('/admin/supplier-liquidations')}>
@@ -230,27 +230,16 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
         </Button>
 
         <div className="flex items-center gap-2">
-          {/* View mode toggle */}
-          <div className="flex items-center rounded-md border">
-            <Button
-              variant={viewMode === 'table' ? 'secondary' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('table')}
-              className="rounded-r-none border-r"
-            >
-              <LayoutList className="h-4 w-4" />
-              Tabla
-            </Button>
-            <Button
-              variant={viewMode === 'calendar' ? 'secondary' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('calendar')}
-              className="rounded-l-none"
-            >
-              <CalendarDays className="h-4 w-4" />
+          <TabsList>
+            <TabsTrigger value="table">
+              <LayoutList />
+              Detalle
+            </TabsTrigger>
+            <TabsTrigger value="calendar">
+              <CalendarDays />
               Calendario
-            </Button>
-          </div>
+            </TabsTrigger>
+          </TabsList>
 
           <AlertDialog>
             <AlertDialogTrigger asChild>
@@ -382,18 +371,16 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
       )}
 
       <ScrollArea className="h-full min-h-0 w-full flex-1">
-        {/* Calendar view */}
-        {viewMode === 'calendar' && (
+        <TabsContent value="calendar" className="m-0">
           <SupplierLiquidationCalendarView
             receptions={receptions ?? []}
             dispatches={allDispatches}
             startDate={liquidation.start_date}
             endDate={liquidation.end_date}
           />
-        )}
+        </TabsContent>
 
-        {/* Table view */}
-        <div className={viewMode === 'table' ? 'space-y-6 p-6 pt-2' : 'hidden'}>
+        <TabsContent value="table" className="m-0 space-y-6 p-6 pt-2">
           {/* Tabla recepciones */}
           <Card>
             <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
@@ -647,8 +634,8 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
               </CardContent>
             </Card>
           )}
-        </div>
+        </TabsContent>
       </ScrollArea>
-    </div>
+    </Tabs>
   );
 }
