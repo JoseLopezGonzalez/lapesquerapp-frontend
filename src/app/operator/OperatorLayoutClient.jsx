@@ -9,6 +9,7 @@ import { ResponsiveLayout } from '@/components/Admin/Layout/ResponsiveLayout';
 import { navigationConfig, navigationManagerConfig } from '@/configs/navgationConfig';
 import { useSettings } from '@/context/SettingsContext';
 import { filterNavigationByRoles } from '@/utils/navigationUtils';
+import { getOperarioBottomNavItems } from '@/utils/operarioBottomNav';
 import { notify } from '@/lib/notifications';
 import Loader from '@/components/Utilities/Loader';
 
@@ -90,9 +91,14 @@ export default function OperatorLayoutClient({ children }) {
     [roles]
   );
 
+  const navigationManagersItems = React.useMemo(
+    () => filterNavigationByRoles(navigationManagerConfig, roles),
+    [roles]
+  );
+
   const bottomNavItems = React.useMemo(
-    () => filteredNavigationConfig.filter((item) => item?.href),
-    [filteredNavigationConfig]
+    () => getOperarioBottomNavItems(filteredNavigationConfig, navigationManagersItems),
+    [filteredNavigationConfig, navigationManagersItems]
   );
 
   const user = React.useMemo(
@@ -106,11 +112,6 @@ export default function OperatorLayoutClient({ children }) {
         .filter((item) => item && (item.href || item.childrens?.length > 0))
         .map((item) => ({ ...item, href: item.href || item.childrens?.[0]?.href || '#' })),
     [filteredNavigationConfig]
-  );
-
-  const navigationManagersItems = React.useMemo(
-    () => filterNavigationByRoles(navigationManagerConfig, roles),
-    [roles]
   );
 
   const apps = React.useMemo(() => {

@@ -1,12 +1,13 @@
 'use client';
 
 import * as React from 'react';
-import { Minus, Plus } from 'lucide-react';
+import { Minus, Monitor, Plus } from 'lucide-react';
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
 } from '@/components/ui/input-group';
+import { EmptyState } from '@/components/Utilities/EmptyState';
 import { usePrintElement } from '@/hooks/usePrintElement';
 import { cn } from '@/lib/utils';
 
@@ -224,28 +225,39 @@ export default function NumericProductionLabels() {
 
   return (
     <main className="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-xl">
-      <div className="min-h-0 flex-1 overflow-y-auto bg-transparent px-4 py-5 sm:px-6 lg:px-8">
-        <div className="mx-auto flex min-h-full max-w-7xl flex-col justify-center gap-6">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            {LABEL_GROUPS.map((group, index) => (
-              <LabelStrip
-                key={index}
-                labels={group}
-                groupIndex={index}
-                onPrint={handlePrintLabel}
-              />
-            ))}
-          </div>
-
-          <QuantitySelector
-            quantity={quantity}
-            onDecrease={() => setQuantity((current) => Math.max(1, current - 1))}
-            onIncrease={() => setQuantity((current) => current + 1)}
-          />
-        </div>
+      <div className="flex min-h-0 flex-1 flex-col md:hidden">
+        <EmptyState
+          className="min-h-full flex-1 bg-transparent"
+          title="Solo disponible en ordenador"
+          description="Las etiquetas numéricas están pensadas para pantallas de escritorio e impresión. Accede desde un ordenador para utilizar esta herramienta."
+          icon={<Monitor />}
+        />
       </div>
 
-      <PrintableLabels selectedLabel={selectedLabel} quantity={quantity} />
+      <div className="hidden min-h-0 flex-1 flex-col overflow-hidden md:flex">
+        <div className="min-h-0 flex-1 overflow-y-auto bg-transparent px-4 py-5 sm:px-6 lg:px-8">
+          <div className="mx-auto flex min-h-full max-w-7xl flex-col justify-center gap-6">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+              {LABEL_GROUPS.map((group, index) => (
+                <LabelStrip
+                  key={index}
+                  labels={group}
+                  groupIndex={index}
+                  onPrint={handlePrintLabel}
+                />
+              ))}
+            </div>
+
+            <QuantitySelector
+              quantity={quantity}
+              onDecrease={() => setQuantity((current) => Math.max(1, current - 1))}
+              onIncrease={() => setQuantity((current) => current + 1)}
+            />
+          </div>
+        </div>
+
+        <PrintableLabels selectedLabel={selectedLabel} quantity={quantity} />
+      </div>
     </main>
   );
 }

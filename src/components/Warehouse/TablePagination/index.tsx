@@ -4,13 +4,27 @@ import { Button } from '@/components/ui/button';
 import { Pagination, PaginationContent, PaginationItem } from '@/components/ui/pagination';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 
-export default function TablePagination({ page, lastPage, total, perPage = 10, onPageChange }) {
+interface TablePaginationProps {
+  page: number;
+  lastPage: number;
+  total: number;
+  perPage?: number;
+  onPageChange: (page: number) => void;
+}
+
+export default function TablePagination({
+  page,
+  lastPage,
+  total,
+  perPage = 10,
+  onPageChange,
+}: TablePaginationProps) {
   const from = total === 0 ? 0 : (page - 1) * perPage + 1;
   const to = total === 0 ? 0 : Math.min(page * perPage, total);
 
   return (
-    <div className="mt-4 flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-muted-foreground order-2 flex-1 text-sm whitespace-nowrap sm:order-1">
+    <div className="mt-4 flex w-full flex-row items-center justify-between gap-3">
+      <p className="text-muted-foreground flex-1 text-sm whitespace-nowrap">
         {total > 0 ? (
           <>
             {total} resultado{total !== 1 ? 's' : ''}
@@ -24,7 +38,7 @@ export default function TablePagination({ page, lastPage, total, perPage = 10, o
         )}
       </p>
 
-      <Pagination className="order-1 justify-end sm:order-2">
+      <Pagination className="w-auto justify-end">
         <PaginationContent className="gap-0 divide-x overflow-hidden rounded-lg border">
           <PaginationItem>
             <Button

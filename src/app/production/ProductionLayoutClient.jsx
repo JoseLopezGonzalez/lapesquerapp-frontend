@@ -9,6 +9,7 @@ import { ResponsiveLayout } from '@/components/Admin/Layout/ResponsiveLayout';
 import { navigationConfig, navigationManagerConfig } from '@/configs/navgationConfig';
 import { useSettings } from '@/context/SettingsContext';
 import { filterNavigationByRoles } from '@/utils/navigationUtils';
+import { getOperarioBottomNavItems } from '@/utils/operarioBottomNav';
 import { notify } from '@/lib/notifications';
 import Loader from '@/components/Utilities/Loader';
 
@@ -107,20 +108,20 @@ export default function ProductionLayoutClient({ children }) {
   );
 
   const bottomNavItems = React.useMemo(() => {
+    if (roles.includes('operario')) {
+      return getOperarioBottomNavItems(filteredNavigationConfig, filteredManagers);
+    }
+
     const productionLabelsItem = filteredManagers.find(
       (item) => item.href === '/production/number_label'
     );
-    const homeItem = filteredNavigationConfig.find((item) =>
-      roles.includes('operario') ? item.href === '/operator' : item.href === '/admin/home'
-    );
-    const chatIAItem = roles.includes('operario')
-      ? null
-      : {
-          name: 'Chat IA',
-          type: 'chat',
-          icon: MessageSquare,
-          href: null,
-        };
+    const homeItem = filteredNavigationConfig.find((item) => item.href === '/admin/home');
+    const chatIAItem = {
+      name: 'Chat IA',
+      type: 'chat',
+      icon: MessageSquare,
+      href: null,
+    };
 
     return [homeItem, productionLabelsItem, chatIAItem].filter(Boolean);
   }, [filteredManagers, filteredNavigationConfig, roles]);
