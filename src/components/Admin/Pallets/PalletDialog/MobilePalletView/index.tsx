@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { AlertCircle, CloudAlert, Loader2, RotateCcw, Save } from 'lucide-react';
 import { useSession } from 'next-auth/react';
@@ -41,6 +41,7 @@ interface MobilePalletViewProps {
   initialPallet?: PalletState | null;
   readOnly?: boolean;
   initialTab?: string | null;
+  onActiveScreenChange?: (screen: PalletScreen) => void;
 }
 
 export default function MobilePalletView({
@@ -51,6 +52,7 @@ export default function MobilePalletView({
   onSaveTemporal = null,
   initialPallet = null,
   readOnly: readOnlyProp = false,
+  onActiveScreenChange,
 }: MobilePalletViewProps) {
   const { data: session } = useSession();
   const externalActor = isExternalActor(session?.user);
@@ -60,6 +62,11 @@ export default function MobilePalletView({
   const [activeScreen, setActiveScreen] = useState<PalletScreen>('hub');
   const [scannerOpen, setScannerOpen] = useState(false);
   const [sessionCount, setSessionCount] = useState(0);
+
+  useEffect(() => {
+    setActiveScreen('hub');
+    onActiveScreenChange?.('hub');
+  }, [palletId, onActiveScreenChange]);
 
   const {
     temporalPallet,
@@ -112,9 +119,13 @@ export default function MobilePalletView({
   const navigateTo = (screen: PalletScreen) => {
     if (screen === 'historial' && showHistorial) refetchTimeline();
     setActiveScreen(screen);
+    onActiveScreenChange?.(screen);
   };
 
-  const goToHub = useCallback(() => setActiveScreen('hub'), []);
+  const goToHub = useCallback(() => {
+    setActiveScreen('hub');
+    onActiveScreenChange?.('hub');
+  }, [onActiveScreenChange]);
 
   const handleOpenScanner = () => {
     setSessionCount(0);
@@ -285,23 +296,8 @@ export default function MobilePalletView({
         </Alert>
       )}
 
-      {/* Hub header — palet ID + box count badge */}
-      {activeScreen === 'hub' && (
-        <div className="flex shrink-0 items-center justify-between border-b px-4 py-3">
-          <h1 className="text-base font-semibold">
-            {isNew ? 'Nuevo palet' : `Palet #${palletId}`}
-          </h1>
-          {boxes.length > 0 && (
-            <span className="flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
-              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-              {boxes.length} {boxes.length === 1 ? 'caja' : 'cajas'}
-            </span>
-          )}
-        </div>
-      )}
-
       {/* Screen content */}
-      <div className="min-h-0 flex-1 overflow-hidden">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         {renderScreen()}
       </div>
 
@@ -322,25 +318,22 @@ export default function MobilePalletView({
       {/* Sticky save/discard bar */}
       {!isReadOnly && hasPalletChanges && (
         <div
-          className="shrink-0 border-t bg-background/95 px-3 py-3 backdrop-blur-sm"
+          className="shrink-0 bg-background/95 px-3 py-3 backdrop-blur-sm"
           style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
         >
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <Button
               variant="outline"
+              size="lg"
               className="flex-1"
               onClick={resetAllChanges}
               disabled={saving}
             >
-              <RotateCcw className="mr-2 h-4 w-4" />
+              <RotateCcw />
               Descartar
             </Button>
-            <Button className="flex-1" onClick={handleSave} disabled={saving}>
-              {saving ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Save className="mr-2 h-4 w-4" />
-              )}
+            <Button size="lg" className="flex-1" onClick={handleSave} disabled={saving}>
+              {saving ? <Loader2 className="animate-spin" /> : <Save />}
               Guardar
             </Button>
           </div>

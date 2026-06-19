@@ -1,12 +1,13 @@
 'use client';
 
 import { type ChangeEvent } from 'react';
-import { ArrowLeft, Plus, RotateCcw } from 'lucide-react';
+import { Plus, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Combobox } from '@/components/Shadcn/Combobox';
 import type { BoxCreationData, ProductOption } from '@/hooks/pallets/palletHelpers';
+import { MobilePalletScreenHeader } from './MobilePalletScreenHeader';
 
 interface AddManualScreenProps {
   productsOptions: ProductOption[];
@@ -33,13 +34,7 @@ export default function AddManualScreen({
 }: AddManualScreenProps) {
   return (
     <div className="flex h-full flex-col">
-      {/* Header */}
-      <div className="flex shrink-0 items-center gap-2 border-b px-3 py-3">
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onBack}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <h2 className="text-base font-semibold">Añadir caja manualmente</h2>
-      </div>
+      <MobilePalletScreenHeader title="Añadir caja manualmente" onBack={onBack} />
 
       {/* Form */}
       <div className="flex flex-1 flex-col gap-5 overflow-auto px-4 py-5">
@@ -107,18 +102,18 @@ export default function AddManualScreen({
       </div>
 
       {/* CTAs sticky at bottom */}
-      <div className="shrink-0 border-t px-4 py-4" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}>
-        <div className="flex flex-col gap-2">
+      <div className="shrink-0 px-4 py-4" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}>
+        <div className="flex gap-3">
           <Button
             size="lg"
-            className="w-full gap-2"
+            className="flex-1 gap-2"
             onClick={() => onAddNewBox({ method: 'manual' })}
             disabled={productsLoading || isReadOnly}
           >
             <Plus className="h-5 w-5" />
             Añadir al palet
           </Button>
-          <Button variant="outline" className="w-full gap-2" onClick={onResetBoxCreationData}>
+          <Button variant="outline" size="lg" className="flex-1 gap-2" onClick={onResetBoxCreationData}>
             <RotateCcw className="h-4 w-4" />
             Limpiar campos
           </Button>

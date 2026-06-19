@@ -13,6 +13,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 import type { PalletState } from '@/hooks/pallets/palletHelpers';
 import type { PalletScreen } from './types';
 
@@ -32,7 +33,6 @@ interface HubCard {
   label: string;
   sublabel?: string;
   variant?: 'primary' | 'destructive' | 'default';
-  fullWidth?: boolean;
   badge?: number;
 }
 
@@ -94,7 +94,7 @@ export default function HubScreen({
       id: 'tara',
       icon: Scale,
       label: 'Tara palet',
-      sublabel: hasTara ? `${temporalPallet.palletTareWeightKg} kg` : '— kg',
+      sublabel: hasTara ? `${temporalPallet.palletTareWeightKg} kg` : 'Sin establecer',
     },
     ...(!externalActor
       ? [
@@ -134,7 +134,6 @@ export default function HubScreen({
             label: 'Eliminar cajas',
             sublabel: boxes.length > 0 ? `${boxes.length} cajas` : 'Sin cajas',
             variant: 'destructive' as const,
-            fullWidth: true,
           },
         ]
       : []),
@@ -148,14 +147,10 @@ export default function HubScreen({
     }
   };
 
-  const mainCards = cards.filter((c) => !c.fullWidth);
-  const fullWidthCards = cards.filter((c) => c.fullWidth);
-
   return (
-    <div className="flex flex-col gap-3 overflow-auto px-3 py-4">
-      {/* 2-column grid */}
+    <div className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto px-3 py-4 pb-6">
       <div className="grid grid-cols-2 gap-3">
-        {mainCards.map((card) => (
+        {cards.map((card) => (
           <button
             key={card.id}
             type="button"
@@ -174,9 +169,11 @@ export default function HubScreen({
           >
             {/* Badge */}
             {card.badge !== undefined && (
-              <span className="absolute right-3 top-3 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-semibold text-primary-foreground">
+              <Badge
+                className="absolute top-3 right-3 min-w-7 px-2 text-xs font-semibold tabular-nums shadow-sm"
+              >
                 {card.badge}
-              </span>
+              </Badge>
             )}
 
             {/* Icon */}
@@ -210,30 +207,6 @@ export default function HubScreen({
           </button>
         ))}
       </div>
-
-      {/* Full-width cards (Eliminar) */}
-      {fullWidthCards.map((card) => (
-        <button
-          key={card.id}
-          type="button"
-          onClick={() => handleCardClick(card)}
-          className={cn(
-            'flex h-14 w-full items-center gap-3 rounded-2xl border px-4 text-left transition-all active:scale-[0.98]',
-            card.variant === 'destructive' &&
-              'border-destructive/25 bg-destructive/5 hover:bg-destructive/10'
-          )}
-        >
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-destructive/10 text-destructive">
-            <card.icon className="h-4 w-4" />
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-destructive">{card.label}</p>
-            {card.sublabel && (
-              <p className="text-xs text-muted-foreground">{card.sublabel}</p>
-            )}
-          </div>
-        </button>
-      ))}
     </div>
   );
 }

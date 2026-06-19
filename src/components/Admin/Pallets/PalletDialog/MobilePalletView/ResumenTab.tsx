@@ -1,9 +1,8 @@
 'use client';
 
-import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
 import type { PalletState } from '@/hooks/pallets/palletHelpers';
+import { MobilePalletScreenHeader } from './MobilePalletScreenHeader';
 
 interface ResumenTabProps {
   temporalPallet: PalletState;
@@ -38,14 +37,7 @@ export default function ResumenTab({ temporalPallet, onBack }: ResumenTabProps) 
 
   return (
     <div className="flex h-full flex-col">
-      {onBack && (
-        <div className="flex shrink-0 items-center gap-2 border-b px-3 py-3">
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onBack}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <h2 className="text-base font-semibold">Resumen</h2>
-        </div>
-      )}
+      {onBack && <MobilePalletScreenHeader title="Resumen" onBack={onBack} />}
     <div className="flex flex-col gap-5 overflow-auto px-3 py-4 pb-6">
       <div className="grid grid-cols-2 gap-2">
         <div className="flex flex-col gap-1 rounded-lg bg-muted/50 p-3">

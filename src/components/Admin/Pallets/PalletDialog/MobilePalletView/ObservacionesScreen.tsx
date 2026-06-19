@@ -1,10 +1,9 @@
 'use client';
 
 import { type ChangeEvent, useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import type { PalletState } from '@/hooks/pallets/palletHelpers';
+import { MobilePalletScreenHeader } from './MobilePalletScreenHeader';
 
 const MAX_LENGTH = 500;
 
@@ -30,13 +29,7 @@ export default function ObservacionesScreen({
 
   return (
     <div className="flex h-full flex-col">
-      {/* Header */}
-      <div className="flex shrink-0 items-center gap-2 border-b px-3 py-3">
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onBack}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <h2 className="text-base font-semibold">Observaciones</h2>
-      </div>
+      <MobilePalletScreenHeader title="Observaciones" onBack={onBack} />
 
       {/* Content */}
       <div className="flex flex-1 flex-col gap-2 px-4 py-4">

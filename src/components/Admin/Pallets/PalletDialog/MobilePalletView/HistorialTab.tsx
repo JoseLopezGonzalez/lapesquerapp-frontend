@@ -1,11 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PalletTimeline } from '../PalletView/PalletTimeline';
 import type { PalletTimelineEntry } from '@/services/palletService';
+import { MobilePalletScreenHeader } from './MobilePalletScreenHeader';
 
 interface HistorialTabProps {
   timeline: PalletTimelineEntry[] | null | undefined;
@@ -26,14 +25,7 @@ export default function HistorialTab({ timeline, timelineLoading, onBack }: Hist
 
   return (
     <div className="flex h-full flex-col">
-      {onBack && (
-        <div className="flex shrink-0 items-center gap-2 border-b px-3 py-3">
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onBack}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <h2 className="text-base font-semibold">Historial</h2>
-        </div>
-      )}
+      {onBack && <MobilePalletScreenHeader title="Historial" onBack={onBack} />}
       <div className="overflow-auto px-3 py-3 pb-4">
         {timelineLoading ? (
           <div className="space-y-2">

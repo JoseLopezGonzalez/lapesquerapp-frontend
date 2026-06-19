@@ -269,13 +269,7 @@ export function usePallet({
 
   const hasPalletChanges = !temporalPallet
     ? false
-    : temporalPallet.id === null
-      ? (temporalPallet.boxes?.length ?? 0) > 0 ||
-        String(temporalPallet.observations ?? '').trim() !== '' ||
-        String(temporalPallet.palletTareWeightKg ?? '').trim() !== '' ||
-        temporalPallet.store != null ||
-        temporalPallet.orderId != null
-      : !palletDataEqual(pallet, temporalPallet);
+    : !palletDataEqual(pallet, temporalPallet);
 
   return {
     pallet,

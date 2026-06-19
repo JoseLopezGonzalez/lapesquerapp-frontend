@@ -1,12 +1,13 @@
 'use client';
 
 import { type ChangeEvent, useState } from 'react';
-import { AlertTriangle, ArrowLeft, ChevronDown, ChevronUp, Copy, Package, Trash2 } from 'lucide-react';
+import { AlertTriangle, ChevronDown, ChevronUp, Copy, Package, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
 import type { PalletBox, PalletState } from '@/hooks/pallets/palletHelpers';
+import { MobilePalletScreenHeader } from './MobilePalletScreenHeader';
 
 interface BoxesTabProps {
   temporalPallet: PalletState;
@@ -43,14 +44,7 @@ export default function BoxesTab({
   if (boxes.length === 0) {
     return (
       <div className="flex h-full flex-col">
-        {onBack && (
-          <div className="flex shrink-0 items-center gap-2 border-b px-3 py-3">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onBack}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <h2 className="text-base font-semibold">Cajas del palet</h2>
-          </div>
-        )}
+        {onBack && <MobilePalletScreenHeader title="Cajas del palet" onBack={onBack} />}
         <div className="flex flex-1 flex-col items-center justify-center gap-4 py-16">
           <div className="rounded-full bg-muted p-4">
             <Package className="h-10 w-10 text-muted-foreground" strokeWidth={1.5} />
@@ -68,19 +62,12 @@ export default function BoxesTab({
 
   return (
     <div className="flex h-full flex-col">
-      {onBack && (
-        <div className="flex shrink-0 items-center gap-2 border-b px-3 py-3">
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onBack}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <h2 className="text-base font-semibold">Cajas del palet</h2>
-        </div>
-      )}
+      {onBack && <MobilePalletScreenHeader title="Cajas del palet" onBack={onBack} />}
     <div className="flex flex-col gap-3 overflow-auto px-3 py-3">
       {/* Summary strip */}
       <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2 text-sm">
         <span className="font-medium">{boxes.length} cajas</span>
-        <span className="text-muted-foreground">{formatDecimalWeight(totalWeight)} kg total</span>
+        <span className="text-muted-foreground">{formatDecimalWeight(totalWeight)} total</span>
       </div>
 
       {/* Boxes list */}
@@ -106,7 +93,7 @@ export default function BoxesTab({
                   <p className="mt-0.5 text-xs text-muted-foreground">
                     {box.lot ? `Lote: ${box.lot} · ` : ''}
                     <span className="font-medium text-foreground">
-                      {formatDecimalWeight(box.netWeight)} kg
+                      {formatDecimalWeight(box.netWeight)}
                     </span>
                     {!isAvailable && (
                       <Badge variant="secondary" className="ml-1.5 py-0 text-[10px]">
@@ -211,7 +198,7 @@ export default function BoxesTab({
                       <p>
                         Peso:{' '}
                         <span className="text-foreground">
-                          {formatDecimalWeight(box.netWeight)} kg
+                          {formatDecimalWeight(box.netWeight)}
                         </span>
                       </p>
                       {box.gs1128 && (

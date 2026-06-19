@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
-import { ArrowLeft, ScanSearch, Trash2, TriangleAlert } from 'lucide-react';
+import { ScanSearch, Trash2, TriangleAlert } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,6 +17,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
 import type { PalletBox, PalletState } from '@/hooks/pallets/palletHelpers';
+import { MobilePalletScreenHeader } from './MobilePalletScreenHeader';
 
 const QrScannerWidget = dynamic(
   () => import('@/components/Shared/QrScannerWidget').then((m) => ({ default: m.QrScannerWidget })),
@@ -53,14 +54,7 @@ export default function EliminarTab({
   if (isReadOnly) {
     return (
       <div className="flex h-full flex-col">
-        {onBack && (
-          <div className="flex shrink-0 items-center gap-2 border-b px-3 py-3">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onBack}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <h2 className="text-base font-semibold">Eliminar cajas</h2>
-          </div>
-        )}
+        {onBack && <MobilePalletScreenHeader title="Eliminar cajas" onBack={onBack} />}
         <p className="py-10 text-center text-sm text-muted-foreground">
           Este palet es de solo lectura.
         </p>
@@ -70,14 +64,7 @@ export default function EliminarTab({
 
   return (
     <div className="flex h-full flex-col">
-      {onBack && (
-        <div className="flex shrink-0 items-center gap-2 border-b px-3 py-3">
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onBack}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <h2 className="text-base font-semibold">Eliminar cajas</h2>
-        </div>
-      )}
+      {onBack && <MobilePalletScreenHeader title="Eliminar cajas" onBack={onBack} />}
     <div className="flex flex-col gap-4 overflow-auto px-3 py-4 pb-4">
       {/* Scan to delete */}
       <Button
