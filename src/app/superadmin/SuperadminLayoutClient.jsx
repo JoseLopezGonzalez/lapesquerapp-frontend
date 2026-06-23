@@ -23,6 +23,8 @@ import {
   History,
   Bell,
   Server,
+  Users,
+  Flag,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -63,6 +65,8 @@ function SuperadminBreadcrumb() {
     impersonation: 'Impersonaciones',
     alerts: 'Alertas',
     system: 'Sistema',
+    admins: 'Administradores',
+    'feature-flags': 'Feature Flags',
     login: 'Login',
   };
   const pathSoFar = ['/superadmin'];
@@ -111,9 +115,13 @@ const NAV_MAIN = [
 const NAV_GESTION = [
   { href: '/superadmin/impersonation', label: 'Impersonaciones', icon: History },
   { href: '/superadmin/alerts', label: 'Alertas', icon: Bell, alertBadge: true },
+  { href: '/superadmin/admins', label: 'Administradores', icon: Users },
 ];
 
-const NAV_SISTEMA = [{ href: '/superadmin/system', label: 'Sistema', icon: Server }];
+const NAV_SISTEMA = [
+  { href: '/superadmin/system', label: 'Sistema', icon: Server },
+  { href: '/superadmin/feature-flags', label: 'Feature Flags', icon: Flag },
+];
 
 function useAlertCounts() {
   const [counts, setCounts] = useState({ total: 0, hasCritical: false });

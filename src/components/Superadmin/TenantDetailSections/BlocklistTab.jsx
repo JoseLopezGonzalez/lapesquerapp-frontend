@@ -29,6 +29,11 @@ import { Loader2, Plus, Trash2, ShieldCheck } from 'lucide-react';
 import { formatDateTime } from '@/utils/superadminDateUtils';
 import EmptyState from '../EmptyState';
 
+function isBlockExpired(block) {
+  if (!block.expires_at) return false;
+  return new Date(block.expires_at) < new Date();
+}
+
 const TYPE_COLORS = {
   ip: 'border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-400',
   email: 'border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-400',
@@ -111,7 +116,9 @@ export default function BlocklistTab({ tenantId }) {
     <>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
-          <CardTitle className="text-sm">Blocklist IP / Email ({blocks.length})</CardTitle>
+          <CardTitle className="text-sm">
+            Blocklist IP / Email ({blocks.filter((b) => !isBlockExpired(b)).length} activos)
+          </CardTitle>
           <Button
             size="sm"
             onClick={() => {
@@ -158,8 +165,10 @@ export default function BlocklistTab({ tenantId }) {
                   </TableCell>
                 </TableRow>
               ) : (
-                blocks.map((b) => (
-                  <TableRow key={b.id}>
+                blocks.map((b) => {
+                  const expired = isBlockExpired(b);
+                  return (
+                  <TableRow key={b.id} className={expired ? 'opacity-50' : ''}>
                     <TableCell>
                       <Badge variant="outline" className={TYPE_COLORS[b.type] || ''}>
                         {b.type}
@@ -172,8 +181,16 @@ export default function BlocklistTab({ tenantId }) {
                     <TableCell className="text-muted-foreground hidden text-sm md:table-cell">
                       {b.blocked_by?.name || '-'}
                     </TableCell>
-                    <TableCell className="text-muted-foreground hidden text-sm lg:table-cell">
-                      {b.expires_at ? formatDateTime(b.expires_at) : 'Indefinido'}
+                    <TableCell className="hidden text-sm lg:table-cell">
+                      {expired ? (
+                        <span className="text-muted-foreground">
+                          Expirado · {formatDateTime(b.expires_at)}
+                        </span>
+                      ) : b.expires_at ? (
+                        <span className="text-muted-foreground">{formatDateTime(b.expires_at)}</span>
+                      ) : (
+                        <span className="text-muted-foreground">Indefinido</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button
@@ -191,7 +208,8 @@ export default function BlocklistTab({ tenantId }) {
                       </Button>
                     </TableCell>
                   </TableRow>
-                ))
+                );
+                })
               )}
             </TableBody>
           </Table>

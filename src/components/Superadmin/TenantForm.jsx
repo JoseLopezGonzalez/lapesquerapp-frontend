@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import SubdomainField from './SubdomainField';
 import { Loader2, ArrowLeft } from 'lucide-react';
 
-const PLAN_OPTIONS = ['basic', 'pro', 'enterprise'];
+const PLAN_OPTIONS = ['basic', 'professional', 'enterprise'];
 
 const TIMEZONE_OPTIONS = [
   'Europe/Madrid',

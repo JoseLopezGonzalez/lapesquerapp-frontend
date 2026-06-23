@@ -11,9 +11,8 @@ export default function QueueHealthWidget({ showRefresh = false }) {
   const [health, setHealth] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const intervalRef = useRef(null);
-
   const [error, setError] = useState(false);
+  const intervalRef = useRef(null);
 
   const fetchHealth = useCallback(async (manual = false) => {
     if (manual) setRefreshing(true);
@@ -38,6 +37,7 @@ export default function QueueHealthWidget({ showRefresh = false }) {
   }, [fetchHealth]);
 
   if (loading) return <Skeleton className="h-20 rounded-lg" />;
+
   if (error || !health) {
     return (
       <Card className="border-muted">
@@ -49,32 +49,25 @@ export default function QueueHealthWidget({ showRefresh = false }) {
     );
   }
 
-  const isHealthy = health.healthy && health.failed_jobs === 0;
-  const hasFailedJobs = health.failed_jobs > 0;
-  const isUnhealthy = !health.healthy;
+  // Derive health from documented fields: pending_jobs, failed_jobs, driver
+  const failedJobs = health.failed_jobs ?? 0;
+  const pendingJobs = health.pending_jobs ?? 0;
+  const hasFailedJobs = failedJobs > 0;
 
-  const dotColor = isUnhealthy
-    ? 'bg-destructive'
-    : hasFailedJobs
-      ? 'bg-orange-500'
-      : 'bg-green-500';
-
-  const statusText = isUnhealthy
-    ? 'Cola no disponible'
-    : hasFailedJobs
-      ? `${health.failed_jobs} trabajo${health.failed_jobs !== 1 ? 's' : ''} fallido${health.failed_jobs !== 1 ? 's' : ''}`
-      : 'Cola operativa';
+  const dotColor = hasFailedJobs ? 'bg-destructive' : 'bg-green-500';
+  const statusText = hasFailedJobs
+    ? `${failedJobs} trabajo${failedJobs !== 1 ? 's' : ''} fallido${failedJobs !== 1 ? 's' : ''}`
+    : 'Cola operativa';
 
   return (
-    <Card
-      className={
-        isUnhealthy ? 'border-destructive/50' : hasFailedJobs ? 'border-orange-500/40' : ''
-      }
-    >
+    <Card className={hasFailedJobs ? 'border-destructive/50' : ''}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="flex items-center gap-2 text-sm">
           <Server className="h-4 w-4" />
           Estado de la cola
+          {health.driver && (
+            <span className="text-muted-foreground font-normal">({health.driver})</span>
+          )}
         </CardTitle>
         {showRefresh && (
           <Button variant="ghost" size="sm" onClick={() => fetchHealth(true)} disabled={refreshing}>
@@ -84,18 +77,11 @@ export default function QueueHealthWidget({ showRefresh = false }) {
       </CardHeader>
       <CardContent>
         <div className="flex items-center gap-3">
-          <span
-            className={`inline-flex h-3 w-3 rounded-full ${dotColor} ${isUnhealthy ? '' : 'animate-pulse'}`}
-          />
+          <span className={`inline-flex h-3 w-3 rounded-full ${dotColor} animate-pulse`} />
           <span className="text-sm font-medium">{statusText}</span>
-          {health.pending_jobs > 0 && (
+          {pendingJobs > 0 && (
             <span className="text-muted-foreground text-xs">
-              {health.pending_jobs} pendiente{health.pending_jobs !== 1 ? 's' : ''}
-            </span>
-          )}
-          {isUnhealthy && health.redis_status && (
-            <span className="text-destructive max-w-xs truncate text-xs">
-              {health.redis_status}
+              {pendingJobs} pendiente{pendingJobs !== 1 ? 's' : ''}
             </span>
           )}
         </div>

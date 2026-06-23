@@ -156,7 +156,11 @@ export default function TenantUsersTable({ tenant }) {
                   </TableCell>
                   <TableCell className="text-right">
                     {u.role === 'administrador' && (
-                      <ImpersonationButtons tenantId={tenant.id} user={u} />
+                      <ImpersonationButtons
+                        tenantId={tenant.id}
+                        tenantSubdomain={tenant.subdomain}
+                        user={u}
+                      />
                     )}
                   </TableCell>
                 </TableRow>

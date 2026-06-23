@@ -82,7 +82,9 @@ export default function ActivityFeed() {
                 <div key={i} className="flex items-start gap-3 px-4 py-3">
                   <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${colorClass}`} />
                   <div className="min-w-0 flex-1">
-                    <p className="line-clamp-2 text-sm leading-snug">{item.message}</p>
+                    <p className="line-clamp-2 text-sm leading-snug">
+                      {item.description ?? item.message}
+                    </p>
                     <div className="mt-0.5 flex items-center gap-2">
                       {item.tenant_id && (
                         <Link
@@ -93,7 +95,7 @@ export default function ActivityFeed() {
                         </Link>
                       )}
                       <span className="text-muted-foreground text-[10px]">
-                        {formatRelative(item.at)}
+                        {formatRelative(item.timestamp ?? item.at)}
                       </span>
                     </div>
                   </div>

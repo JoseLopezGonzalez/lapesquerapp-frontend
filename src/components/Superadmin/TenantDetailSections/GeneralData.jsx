@@ -57,7 +57,7 @@ const EDITABLE_FIELDS = [
   'admin_email',
 ];
 
-const PLAN_OPTIONS = ['basic', 'pro', 'enterprise'];
+const PLAN_OPTIONS = ['basic', 'professional', 'enterprise'];
 const TIMEZONE_OPTIONS = [
   'Europe/Madrid',
   'Atlantic/Canary',

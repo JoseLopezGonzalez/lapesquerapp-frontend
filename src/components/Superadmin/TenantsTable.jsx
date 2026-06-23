@@ -22,6 +22,25 @@ import { formatRelative } from '@/utils/superadminDateUtils';
 import { Plus, ChevronLeft, ChevronRight, Search, RefreshCw, Building2 } from 'lucide-react';
 import EmptyState from './EmptyState';
 
+const ONBOARDING_DOT = {
+  completed: { color: 'bg-green-500', label: 'Onboarding completado' },
+  in_progress: { color: 'bg-amber-400', label: 'Onboarding en progreso' },
+  failed: { color: 'bg-destructive', label: 'Onboarding fallido' },
+  pending: { color: 'bg-muted-foreground/40', label: 'Onboarding pendiente' },
+};
+
+function OnboardingDot({ onboarding }) {
+  if (!onboarding) return null;
+  const { color, label } = ONBOARDING_DOT[onboarding.status] ?? ONBOARDING_DOT.pending;
+  return (
+    <span
+      className={`ml-1.5 inline-block h-2 w-2 rounded-full ${color} shrink-0`}
+      title={label}
+      aria-label={label}
+    />
+  );
+}
+
 const STATUS_TABS = [
   { key: '', label: 'Todos' },
   { key: 'active', label: 'Activos' },
@@ -174,7 +193,10 @@ export default function TenantsTable() {
                       {t.plan || '-'}
                     </TableCell>
                     <TableCell>
-                      <StatusBadge status={t.status} />
+                      <span className="inline-flex items-center">
+                        <StatusBadge status={t.status} />
+                        <OnboardingDot onboarding={t.onboarding} />
+                      </span>
                     </TableCell>
                     <TableCell className="text-muted-foreground hidden text-sm lg:table-cell">
                       {formatRelative(t.last_activity_at) || '-'}
