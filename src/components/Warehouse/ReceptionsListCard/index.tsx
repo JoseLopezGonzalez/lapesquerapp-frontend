@@ -16,11 +16,12 @@ import TablePagination from '../TablePagination';
 import { useReceptionsList } from '@/hooks/useReceptionsList';
 import { rawMaterialReceptionService } from '@/services/domain/raw-material-receptions/rawMaterialReceptionService';
 import { formatDate } from '@/helpers/formats/dates/formatDates';
-import { Printer, Loader2, Eye, EyeOff, Package } from 'lucide-react';
+import { Printer, Loader2, Eye, EyeOff, Package, Tags } from 'lucide-react';
 import Loader from '@/components/Utilities/Loader';
 import { EmptyState as _EmptyState } from '@/components/Utilities/EmptyState';
 import { notify } from '@/lib/notifications';
 import { operatorRoutes } from '@/configs/roleRoutesConfig';
+import { usePrintElement } from '@/hooks/usePrintElement';
 
 // JS interop: cast table sub-components to standard HTML element props (className inferred required)
 const TableBody = _TableBody as React.FC<ComponentProps<'tbody'>>;
@@ -54,6 +55,7 @@ const ReceptionPrintDialog = dynamic(
 }>;
 
 const PER_PAGE = 9;
+const LOT_LABELS_PRINT_ID = 'receptions-list-lot-labels-print-content';
 
 interface ReceptionsListCardProps {
   storeId?: string | number | null;
@@ -68,8 +70,15 @@ export default function ReceptionsListCard({ storeId = null }: ReceptionsListCar
   const [printDialogOpen, setPrintDialogOpen] = useState(false);
   const [printData, setPrintData] = useState<unknown>(null);
   const [loadingPrintId, setLoadingPrintId] = useState<string | number | null>(null);
+  const [loadingLotPrintId, setLoadingLotPrintId] = useState<string | number | null>(null);
+  const [lotLabelsToPrint, setLotLabelsToPrint] = useState<(string | null)[] | null>(null);
   const [showAllQuantities, setShowAllQuantities] = useState(false);
   const [revealedRowIds, setRevealedRowIds] = useState<Set<string | number>>(() => new Set());
+
+  const { onPrint: onPrintLotLabels } = usePrintElement({
+    id: LOT_LABELS_PRINT_ID,
+    freeSize: true,
+  });
 
   useEffect(() => {
     setIsNavigating(false);
@@ -125,6 +134,48 @@ export default function ReceptionsListCard({ storeId = null }: ReceptionsListCar
       setLoadingPrintId(null);
     }
   };
+
+  const handlePrintLotClick = async (row: { id: string | number }) => {
+    setLoadingLotPrintId(row.id);
+    try {
+      const reception = await rawMaterialReceptionService.getById(row.id);
+      const details = ((reception as { details?: unknown[] }).details || []) as Array<{
+        lot?: string | null;
+        boxes?: number | string | null;
+      }>;
+      const lots = details
+        .filter((d) => d.lot)
+        .flatMap((d) => {
+          const count = Math.max(1, parseInt(String(d.boxes ?? 1), 10) || 1);
+          return Array.from({ length: count }, () => d.lot ?? null);
+        });
+      if (lots.length === 0) {
+        notify.error({
+          title: 'Sin lotes',
+          description: 'No hay líneas con lote en esta recepción para imprimir etiquetas.',
+        });
+        return;
+      }
+      setLotLabelsToPrint(lots);
+    } catch (err) {
+      console.error('Error al cargar recepción para imprimir lotes:', err);
+      notify.error({
+        title: 'Error al cargar recepción',
+        description: 'No se pudo cargar la recepción. Intente de nuevo.',
+      });
+    } finally {
+      setLoadingLotPrintId(null);
+    }
+  };
+
+  useEffect(() => {
+    if (!lotLabelsToPrint?.length) return;
+    const t = setTimeout(() => {
+      onPrintLotLabels();
+      setLotLabelsToPrint(null);
+    }, 200);
+    return () => clearTimeout(t);
+  }, [lotLabelsToPrint, onPrintLotLabels]);
 
   const rows = (data ?? []) as Array<{
     id: string | number;
@@ -263,13 +314,27 @@ export default function ReceptionsListCard({ storeId = null }: ReceptionsListCar
                         size="icon"
                         className="h-8 w-8"
                         disabled={loadingPrintId != null}
-                        title="Imprimir"
+                        title="Imprimir recibo"
                         onClick={() => handlePrintClick(row)}
                       >
                         {loadingPrintId === row.id ? (
                           <Loader2 className="h-3.5 w-3.5 animate-spin" />
                         ) : (
                           <Printer className="h-3.5 w-3.5" />
+                        )}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8"
+                        disabled={loadingLotPrintId != null}
+                        title="Imprimir etiquetas de lote"
+                        onClick={() => handlePrintLotClick(row)}
+                      >
+                        {loadingLotPrintId === row.id ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Tags className="h-3.5 w-3.5" />
                         )}
                       </Button>
                     </div>
@@ -296,7 +361,7 @@ export default function ReceptionsListCard({ storeId = null }: ReceptionsListCar
                     <TableHead className="bg-card">ESPECIE</TableHead>
                     <TableHead className="bg-card text-right">CANTIDAD</TableHead>
                     <TableHead className="bg-card">FECHA</TableHead>
-                    <TableHead className="bg-card w-12" />
+                    <TableHead className="bg-card w-20" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -345,20 +410,36 @@ export default function ReceptionsListCard({ storeId = null }: ReceptionsListCar
                         </TableCell>
                         <TableCell>{row.date ? formatDate(row.date) : '—'}</TableCell>
                         <TableCell>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                            disabled={loadingPrintId != null}
-                            title="Imprimir"
-                            onClick={() => handlePrintClick(row)}
-                          >
-                            {loadingPrintId === row.id ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <Printer className="h-4 w-4" />
-                            )}
-                          </Button>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8"
+                              disabled={loadingPrintId != null}
+                              title="Imprimir recibo"
+                              onClick={() => handlePrintClick(row)}
+                            >
+                              {loadingPrintId === row.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Printer className="h-4 w-4" />
+                              )}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8"
+                              disabled={loadingLotPrintId != null}
+                              title="Imprimir etiquetas de lote"
+                              onClick={() => handlePrintLotClick(row)}
+                            >
+                              {loadingLotPrintId === row.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Tags className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))
@@ -411,6 +492,22 @@ export default function ReceptionsListCard({ storeId = null }: ReceptionsListCar
           pallets={pd.pallets}
           creationMode={pd.creationMode}
         />
+      )}
+
+      {lotLabelsToPrint && lotLabelsToPrint.length > 0 && (
+        <div id={LOT_LABELS_PRINT_ID} className="hidden print:block">
+          <div className="space-y-4 p-4">
+            {lotLabelsToPrint.map((lot, i) => (
+              <div
+                key={`lot-${lot}-${i}`}
+                className="flex min-h-[80px] items-center justify-center p-6"
+                style={{ pageBreakAfter: i < lotLabelsToPrint.length - 1 ? 'always' : 'auto' }}
+              >
+                <span className="text-center text-3xl font-bold break-words">{lot}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
     </Card>
   );
