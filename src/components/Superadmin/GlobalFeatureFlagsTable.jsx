@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, RefreshCw, Flag } from 'lucide-react';
 import EmptyState from './EmptyState';
 
@@ -154,7 +154,7 @@ export default function GlobalFeatureFlagsTable() {
                       {togglingKey === flag.key ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
-                        <Switch
+                        <Checkbox
                           checked={!!flag.enabled}
                           onCheckedChange={() => handleToggle(flag)}
                           aria-label={`Toggle ${flag.key}`}
