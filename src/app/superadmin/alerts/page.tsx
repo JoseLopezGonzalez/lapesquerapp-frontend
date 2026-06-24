@@ -48,7 +48,7 @@ interface Alert {
   severity: string;
   message?: string;
   title?: string;
-  tenant?: string;
+  tenant?: { id: number | string; subdomain: string; [key: string]: unknown };
   tenant_id?: number | string;
   occurred_at?: string;
   created_at?: string;

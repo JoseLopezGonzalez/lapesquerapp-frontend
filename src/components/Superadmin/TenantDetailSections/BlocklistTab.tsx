@@ -44,6 +44,7 @@ interface BlockEntry {
   reason?: string | null;
   expires_at?: string | null;
   created_at?: string;
+  blocked_by?: { name?: string; [key: string]: unknown } | null;
   [key: string]: unknown;
 }
 
