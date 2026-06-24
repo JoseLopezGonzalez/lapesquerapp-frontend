@@ -24,12 +24,15 @@ export function SettingsEmailSection({
   setShowPassword,
   hadPreviousConfig,
 }) {
+  const mailErrors = errors?.company?.mail;
+
   return (
     <div className="space-y-4 p-0">
       <h2 className="mb-2 text-lg font-semibold">Configuración de Emails Salientes</h2>
       <div className="mb-4 rounded-md border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-950/20">
         <p className="text-xs text-blue-800 dark:text-blue-200">
-          <strong>Importante:</strong> Todos los campos marcados con * son obligatorios.
+          <strong>Opcional:</strong> Rellena los campos marcados con * solo si quieres configurar el
+          envío de correos. Si rellenas alguno, deberás completar todos.
         </p>
       </div>
       <div className="space-y-6">
@@ -44,10 +47,8 @@ export function SettingsEmailSection({
                 placeholder="smtp.gmail.com"
                 autoComplete="off"
               />
-              {errors['company.mail.host'] && (
-                <p className="text-destructive mt-1 text-sm">
-                  {errors['company.mail.host'].message}
-                </p>
+              {mailErrors?.host && (
+                <p className="text-destructive mt-1 text-sm">{mailErrors.host.message}</p>
               )}
             </div>
             <div>
@@ -60,14 +61,12 @@ export function SettingsEmailSection({
                 {...register('company.mail.port')}
                 autoComplete="off"
               />
-              {errors['company.mail.port'] && (
-                <p className="text-destructive mt-1 text-sm">
-                  {errors['company.mail.port'].message}
-                </p>
+              {mailErrors?.port && (
+                <p className="text-destructive mt-1 text-sm">{mailErrors.port.message}</p>
               )}
             </div>
             <div>
-              <Label htmlFor="company.mail.encryption">Encriptación *</Label>
+              <Label htmlFor="company.mail.encryption">Encriptación</Label>
               <Select
                 value={mailEncryption || 'tls'}
                 onValueChange={(v) => setValue('company.mail.encryption', v)}
@@ -80,10 +79,8 @@ export function SettingsEmailSection({
                   <SelectItem value="ssl">SSL</SelectItem>
                 </SelectContent>
               </Select>
-              {errors['company.mail.encryption'] && (
-                <p className="text-destructive mt-1 text-sm">
-                  {errors['company.mail.encryption'].message}
-                </p>
+              {mailErrors?.encryption && (
+                <p className="text-destructive mt-1 text-sm">{mailErrors.encryption.message}</p>
               )}
             </div>
           </div>
@@ -100,14 +97,12 @@ export function SettingsEmailSection({
                 placeholder="noreply@empresa.com"
                 autoComplete="off"
               />
-              {errors['company.mail.username'] && (
-                <p className="text-destructive mt-1 text-sm">
-                  {errors['company.mail.username'].message}
-                </p>
+              {mailErrors?.username && (
+                <p className="text-destructive mt-1 text-sm">{mailErrors.username.message}</p>
               )}
             </div>
             <div>
-              <Label htmlFor="company.mail.password">Contraseña *</Label>
+              <Label htmlFor="company.mail.password">Contraseña</Label>
               <div className="relative">
                 <Input
                   id="company.mail.password"
@@ -118,7 +113,6 @@ export function SettingsEmailSection({
                     hadPreviousConfig ? '•••••••• (deja vacío para mantener actual)' : '••••••••'
                   }
                   autoComplete="new-password"
-                  required={!hadPreviousConfig}
                 />
                 <button
                   type="button"
@@ -131,7 +125,7 @@ export function SettingsEmailSection({
               <p className="text-muted-foreground mt-1 text-xs">
                 {hadPreviousConfig
                   ? 'Deja vacío para mantener la contraseña actual'
-                  : 'La contraseña SMTP es obligatoria'}
+                  : 'Necesaria al configurar SMTP por primera vez'}
               </p>
             </div>
           </div>
@@ -148,10 +142,8 @@ export function SettingsEmailSection({
                 placeholder="noreply@empresa.com"
                 autoComplete="off"
               />
-              {errors['company.mail.from_address'] && (
-                <p className="text-destructive mt-1 text-sm">
-                  {errors['company.mail.from_address'].message}
-                </p>
+              {mailErrors?.from_address && (
+                <p className="text-destructive mt-1 text-sm">{mailErrors.from_address.message}</p>
               )}
             </div>
             <div>

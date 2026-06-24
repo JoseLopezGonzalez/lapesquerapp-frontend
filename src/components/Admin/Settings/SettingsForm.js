@@ -16,6 +16,44 @@ import { settingsSchema } from '@/schemas/settingsSchema';
 import { SECTIONS } from './config/sectionsConfig';
 import { SettingsEmailSection } from './SettingsEmailSection';
 
+/** Converts flat dot-key settings from the API to nested object for react-hook-form. */
+function flatToNested(flat) {
+  const result = {};
+  for (const [key, value] of Object.entries(flat)) {
+    if (value === undefined || value === null) continue;
+    const parts = key.split('.');
+    let current = result;
+    for (let i = 0; i < parts.length - 1; i++) {
+      if (!current[parts[i]] || typeof current[parts[i]] !== 'object') {
+        current[parts[i]] = {};
+      }
+      current = current[parts[i]];
+    }
+    current[parts[parts.length - 1]] = value;
+  }
+  return result;
+}
+
+/** Converts nested form data back to flat dot-key pairs for the API. */
+function nestedToFlat(obj, prefix = '') {
+  const result = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value === undefined || value === null) continue;
+    const flatKey = prefix ? `${prefix}.${key}` : key;
+    if (typeof value === 'object' && !Array.isArray(value)) {
+      Object.assign(result, nestedToFlat(value, flatKey));
+    } else {
+      result[flatKey] = value;
+    }
+  }
+  return result;
+}
+
+/** Accesses a nested error by dot-notated path (e.g. 'company.mail.host'). */
+function getError(errors, path) {
+  return path.split('.').reduce((acc, key) => acc?.[key], errors);
+}
+
 export default function SettingsForm() {
   const { settings, loading, setSettings } = useSettings();
   const [saving, setSaving] = useState(false);
@@ -40,7 +78,7 @@ export default function SettingsForm() {
 
   useEffect(() => {
     if (!loading && settings && Object.keys(settings).length > 0) {
-      reset(settings);
+      reset(flatToNested(settings));
       setEmailPassword('');
       if (
         settings['company.mail.host'] &&
@@ -53,7 +91,8 @@ export default function SettingsForm() {
   }, [loading, settings, reset]);
 
   const onValidSubmit = async (data) => {
-    if (!hadPreviousConfig && !emailPassword) {
+    const smtpHost = data?.company?.mail?.host;
+    if (!hadPreviousConfig && smtpHost && !emailPassword) {
       notify.error({
         title: 'Contraseña SMTP requerida',
         description: 'Introduce la contraseña del correo SMTP para guardar la configuración.',
@@ -62,13 +101,13 @@ export default function SettingsForm() {
     }
     setSaving(true);
     try {
-      const payload = { ...data };
-      if (emailPassword) payload['company.mail.password'] = emailPassword;
-      const result = await updateSettings(payload);
+      const flatPayload = nestedToFlat(data);
+      if (emailPassword) flatPayload['company.mail.password'] = emailPassword;
+      const result = await updateSettings(flatPayload);
       if (result && result.authError) return;
-      setSettings(payload);
+      setSettings(flatPayload);
       setEmailPassword('');
-      setHadPreviousConfig(true);
+      if (smtpHost) setHadPreviousConfig(true);
       notify.success({
         title: 'Configuración guardada',
         description: 'Los cambios de configuración se han guardado correctamente.',
@@ -108,8 +147,10 @@ export default function SettingsForm() {
                   <div key={field.name}>
                     <Label htmlFor={field.name}>{field.label}</Label>
                     <Input id={field.name} {...register(field.name)} autoComplete="off" />
-                    {errors[field.name] && (
-                      <p className="text-destructive mt-1 text-sm">{errors[field.name].message}</p>
+                    {getError(errors, field.name) && (
+                      <p className="text-destructive mt-1 text-sm">
+                        {getError(errors, field.name)?.message}
+                      </p>
                     )}
                   </div>
                 ))}

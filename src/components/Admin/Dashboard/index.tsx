@@ -52,10 +52,9 @@ export default function Dashboard() {
 
   return (
     <div className="flex h-full w-full flex-col gap-4 px-4 py-3 md:px-6">
+      <CompanySetupAlert />
       <ScrollArea className="h-full w-full pr-4">
         <div className="flex h-full w-full flex-col gap-4 pb-4">
-          <CompanySetupAlert />
-
           <div className="w-full">
             <div className="mb-2 flex flex-col items-start justify-center md:mb-4">
               <p className="md:text-md text-lg text-neutral-500 dark:text-neutral-400">
