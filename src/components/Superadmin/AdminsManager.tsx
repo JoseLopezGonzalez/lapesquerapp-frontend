@@ -31,12 +31,20 @@ import { Loader2, Plus, Trash2, Users } from 'lucide-react';
 import { formatDate } from '@/utils/superadminDateUtils';
 import EmptyState from './EmptyState';
 
+interface AdminUser {
+  id: number | string;
+  name: string;
+  email: string;
+  created_at?: string;
+  [key: string]: unknown;
+}
+
 export default function AdminsManager() {
   const { user: currentUser } = useSuperadminAuth();
-  const [admins, setAdmins] = useState([]);
+  const [admins, setAdmins] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -46,7 +54,7 @@ export default function AdminsManager() {
     reset,
     setError,
     formState: { errors },
-  } = useForm({ defaultValues: { name: '', email: '', password: '' } });
+  } = useForm<Record<string, string>>({ defaultValues: { name: '', email: '', password: '' } });
 
   const fetchAdmins = useCallback(async () => {
     setLoading(true);
@@ -65,7 +73,7 @@ export default function AdminsManager() {
     fetchAdmins();
   }, [fetchAdmins]);
 
-  const handleCreate = async (values) => {
+  const handleCreate = async (values: Record<string, string>) => {
     setSaving(true);
     try {
       await fetchSuperadmin('/admins', {
@@ -77,12 +85,15 @@ export default function AdminsManager() {
       reset();
       fetchAdmins();
     } catch (err) {
-      if (err instanceof SuperadminApiError && err.status === 422 && err.data?.errors) {
-        Object.entries(err.data.errors).forEach(([field, msgs]) => {
-          setError(field, { message: msgs[0] });
-        });
+      if (err instanceof SuperadminApiError && err.status === 422) {
+        const errData = err.data as { errors?: Record<string, string[]> };
+        if (errData.errors) {
+          Object.entries(errData.errors).forEach(([field, msgs]) => {
+            setError(field, { message: msgs[0] });
+          });
+        }
       } else {
-        notify.error({ title: err.message || 'Error al crear el administrador' });
+        notify.error({ title: (err as Error).message || 'Error al crear el administrador' });
       }
     } finally {
       setSaving(false);
@@ -98,13 +109,13 @@ export default function AdminsManager() {
       setDeleteTarget(null);
       fetchAdmins();
     } catch (err) {
-      notify.error({ title: err.message || 'Error al eliminar el administrador' });
+      notify.error({ title: (err as Error).message || 'Error al eliminar el administrador' });
     } finally {
       setDeleting(false);
     }
   };
 
-  const isSelf = (admin) => admin.id === currentUser?.id || admin.email === currentUser?.email;
+  const isSelf = (admin: AdminUser) => admin.id === currentUser?.id || admin.email === currentUser?.email;
 
   return (
     <>

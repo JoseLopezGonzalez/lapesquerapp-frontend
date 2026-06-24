@@ -18,10 +18,21 @@ import ErrorLogsTab from '@/components/Superadmin/TenantDetailSections/ErrorLogs
 import { ArrowLeft } from 'lucide-react';
 import StatusBadge from '@/components/Superadmin/StatusBadge';
 
+interface TenantData {
+  id: number | string;
+  name: string;
+  status: string;
+  subdomain: string;
+  plan?: string;
+  onboarding?: { status: string; step: number; total_steps: number; [key: string]: unknown };
+  onboarding_step?: number;
+  [key: string]: unknown;
+}
+
 export default function TenantDetailPage() {
   const { id } = useParams();
   const router = useRouter();
-  const [tenant, setTenant] = useState(null);
+  const [tenant, setTenant] = useState<TenantData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -31,7 +42,7 @@ export default function TenantDetailPage() {
       const json = await res.json();
       setTenant(json.data || json);
     } catch (err) {
-      setError(err.message || 'Error al cargar el tenant');
+      setError((err as Error).message || 'Error al cargar el tenant');
     } finally {
       setLoading(false);
     }

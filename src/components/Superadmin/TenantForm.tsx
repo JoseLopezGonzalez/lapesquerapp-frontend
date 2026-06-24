@@ -43,7 +43,7 @@ export default function TenantForm() {
     control,
     setError,
     formState: { errors },
-  } = useForm({
+  } = useForm<Record<string, string>>({
     defaultValues: {
       name: '',
       subdomain: '',
@@ -54,7 +54,7 @@ export default function TenantForm() {
     },
   });
 
-  const onSubmit = async (values) => {
+  const onSubmit = async (values: Record<string, string>) => {
     setSaving(true);
     try {
       const res = await fetchSuperadmin('/tenants', {
@@ -69,12 +69,15 @@ export default function TenantForm() {
       notify.success({ title: 'Tenant creado', description: 'Onboarding en progreso.' });
       router.push(`/superadmin/tenants/${newId}`);
     } catch (err) {
-      if (err instanceof SuperadminApiError && err.status === 422 && err.data?.errors) {
-        Object.entries(err.data.errors).forEach(([field, msgs]) => {
-          setError(field, { message: msgs[0] });
-        });
+      if (err instanceof SuperadminApiError && err.status === 422) {
+        const errData = err.data as { errors?: Record<string, string[]> };
+        if (errData.errors) {
+          Object.entries(errData.errors).forEach(([field, msgs]) => {
+            setError(field, { message: msgs[0] });
+          });
+        }
       } else {
-        notify.error({ title: err.message || 'Error al crear el tenant' });
+        notify.error({ title: (err as Error).message || 'Error al crear el tenant' });
       }
     } finally {
       setSaving(false);
