@@ -172,7 +172,7 @@ function GlobalErrorLogs() {
 export default function SystemPage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [running, setRunning] = useState(false);
-  const [result, setResult] = useState<Record<string, unknown> | null>(null);
+  const [result, setResult] = useState<{ message?: string; tenants_queued?: number; [key: string]: unknown } | null>(null);
 
   const handleRunAll = async () => {
     setRunning(true);
