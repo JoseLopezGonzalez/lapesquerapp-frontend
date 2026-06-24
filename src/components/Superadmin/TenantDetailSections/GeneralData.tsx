@@ -110,7 +110,7 @@ export default function GeneralData({ tenant, onRefresh }: { tenant: Tenant; onR
     control,
     setError,
     formState: { errors },
-  } = useForm({
+  } = useForm<Record<string, string>>({
     defaultValues: EDITABLE_FIELDS.reduce<Record<string, string>>((acc, f) => {
       acc[f] = String(tenant[f] || '');
       return acc;
@@ -163,7 +163,7 @@ export default function GeneralData({ tenant, onRefresh }: { tenant: Tenant; onR
                   {FIELD_LABELS[key] || key}
                 </span>
                 <span className="text-sm">
-                  {key === 'status' ? <StatusBadge status={value} /> : formatValue(key, value)}
+                  {key === 'status' ? <StatusBadge status={value as string} /> : formatValue(key, value)}
                 </span>
               </div>
             );

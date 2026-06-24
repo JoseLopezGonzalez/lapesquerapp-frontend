@@ -18,7 +18,9 @@ import StatusBadge from './StatusBadge';
 import { formatDate } from '@/utils/superadminDateUtils';
 import { Building2, CheckCircle2, PauseCircle, Clock, XCircle } from 'lucide-react';
 
-const STAT_CARDS = [
+type StatKey = 'total' | 'active' | 'suspended' | 'pending' | 'cancelled';
+
+const STAT_CARDS: Array<{ key: StatKey; label: string; icon: React.ElementType; color: string }> = [
   { key: 'total', label: 'Total', icon: Building2, color: 'text-foreground' },
   {
     key: 'active',
