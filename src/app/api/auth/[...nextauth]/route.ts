@@ -125,6 +125,10 @@ export const authOptions: NextAuthOptions = {
                 currentUser as { assigned_store_id: number }
               ).assigned_store_id;
             }
+            const freshName = (currentUser as { name?: string }).name;
+            if (freshName) token.name = freshName;
+            const freshEmail = (currentUser as { email?: string }).email;
+            if (freshEmail) token.email = freshEmail;
             const features = (currentUser as { features?: string[] }).features;
             if (Array.isArray(features)) token.features = features;
             token.lastRefresh = Date.now();
