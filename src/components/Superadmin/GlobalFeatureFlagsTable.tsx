@@ -30,6 +30,7 @@ interface GlobalFlag {
   enabled: boolean;
   description?: string | null;
   plans?: string[];
+  plan?: string;
   [key: string]: unknown;
 }
 

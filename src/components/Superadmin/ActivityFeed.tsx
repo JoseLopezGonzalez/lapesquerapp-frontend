@@ -88,8 +88,8 @@ export default function ActivityFeed() {
         ) : (
           <div className="divide-y">
             {items.map((item, i) => {
-              const Icon = TYPE_ICONS[item.type] || Activity;
-              const colorClass = SEVERITY_COLORS[item.severity] || 'text-muted-foreground';
+              const Icon = TYPE_ICONS[item.type ?? ''] || Activity;
+              const colorClass = SEVERITY_COLORS[item.severity ?? ''] || 'text-muted-foreground';
               return (
                 <div key={i} className="flex items-start gap-3 px-4 py-3">
                   <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${colorClass}`} />
