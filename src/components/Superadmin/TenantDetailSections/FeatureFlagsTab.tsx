@@ -28,7 +28,7 @@ import {
 import { Loader2, Pencil, RotateCcw, CheckCircle2, XCircle, Flag } from 'lucide-react';
 import EmptyState from '../EmptyState';
 
-const FLAG_DESCRIPTIONS = {
+const FLAG_DESCRIPTIONS: Record<string, string> = {
   // Mapeo opcional key → descripción corta si la API no devuelve description
 };
 

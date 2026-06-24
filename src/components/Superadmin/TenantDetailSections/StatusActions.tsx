@@ -103,7 +103,7 @@ function getActions(tenant: Tenant): TenantAction[] {
   }
 }
 
-const CONFIRM_MESSAGES = {
+const CONFIRM_MESSAGES: Record<string, string> = {
   activate: '¿Activar este tenant? Se habilitará el acceso de los usuarios.',
   suspend: '¿Suspender este tenant? Los usuarios no podrán acceder mientras esté suspendido.',
   cancel: '¿Cancelar este tenant? Se desactivará el acceso.',

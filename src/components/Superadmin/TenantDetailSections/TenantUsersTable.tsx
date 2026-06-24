@@ -18,7 +18,7 @@ import { formatDate } from '@/utils/superadminDateUtils';
 import { CheckCircle2, XCircle, Clock, Users } from 'lucide-react';
 import EmptyState from '../EmptyState';
 
-const ROLE_COLORS = {
+const ROLE_COLORS: Record<string, string> = {
   administrador: 'border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-400',
   operario: 'border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-400',
   comercial: 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400',

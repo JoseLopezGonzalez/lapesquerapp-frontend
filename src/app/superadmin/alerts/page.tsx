@@ -37,7 +37,7 @@ const SEVERITY_TABS = [
   { key: 'resolved', label: 'Resueltas' },
 ];
 
-const SEVERITY_COLORS = {
+const SEVERITY_COLORS: Record<string, string> = {
   critical: 'border-destructive/30 bg-destructive/10 text-destructive',
   warning: 'border-orange-500/30 bg-orange-500/10 text-orange-700 dark:text-orange-400',
   info: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400',

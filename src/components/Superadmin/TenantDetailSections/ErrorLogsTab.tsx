@@ -19,7 +19,7 @@ import { formatDateTime } from '@/utils/superadminDateUtils';
 import FilterTabs from '../FilterTabs';
 import EmptyState from '../EmptyState';
 
-const METHOD_COLORS = {
+const METHOD_COLORS: Record<string, string> = {
   GET: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400',
   POST: 'border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-400',
   PUT: 'border-orange-500/30 bg-orange-500/10 text-orange-700 dark:text-orange-400',
@@ -41,6 +41,8 @@ interface ErrorLog {
   occurred_at?: string;
   message?: string;
   trace?: string;
+  error_class?: string;
+  error_message?: string;
   [key: string]: unknown;
 }
 
@@ -92,7 +94,7 @@ export default function ErrorLogsTab({ tenantId }: { tenantId: number | string }
     fetchLogs({ page, days });
   }, [page, days, fetchLogs]);
 
-  const handleDaysChange = (newDays) => {
+  const handleDaysChange = (newDays: string) => {
     setDays(Number(newDays));
     setPage(1);
   };
@@ -146,7 +148,7 @@ export default function ErrorLogsTab({ tenantId }: { tenantId: number | string }
                       {formatDateTime(log.occurred_at)}
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
-                      <Badge variant="outline" className={METHOD_COLORS[log.method] || ''}>
+                      <Badge variant="outline" className={METHOD_COLORS[log.method ?? ''] ?? ''}>
                         {log.method}
                       </Badge>
                     </TableCell>
@@ -154,7 +156,7 @@ export default function ErrorLogsTab({ tenantId }: { tenantId: number | string }
                       className="text-muted-foreground max-w-[180px] truncate font-mono text-sm"
                       title={log.url}
                     >
-                      {shortUrl(log.url)}
+                      {shortUrl(log.url ?? '')}
                     </TableCell>
                     <TableCell
                       className="text-muted-foreground hidden max-w-[180px] truncate text-xs md:table-cell"

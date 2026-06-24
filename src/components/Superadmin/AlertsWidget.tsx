@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { AlertTriangle, Bell, ArrowRight } from 'lucide-react';
 
 export default function AlertsWidget() {
-  const [counts, setCounts] = useState(null);
+  const [counts, setCounts] = useState<{ critical: number; warning: number; info: number; total: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 

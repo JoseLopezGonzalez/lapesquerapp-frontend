@@ -3,7 +3,7 @@
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
-const STATUS_CONFIG = {
+const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   active: {
     label: 'Activo',
     className: 'border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-400',

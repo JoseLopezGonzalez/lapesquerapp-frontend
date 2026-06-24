@@ -59,7 +59,7 @@ function SuperadminBreadcrumb() {
     .replace(/^\/superadmin\/?/, '')
     .split('/')
     .filter(Boolean);
-  const labels = {
+  const labels: Record<string, string> = {
     tenants: 'Tenants',
     new: 'Nuevo',
     impersonation: 'Impersonaciones',

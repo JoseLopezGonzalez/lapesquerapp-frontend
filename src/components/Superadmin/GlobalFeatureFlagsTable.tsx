@@ -19,7 +19,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, RefreshCw, Flag } from 'lucide-react';
 import EmptyState from './EmptyState';
 
-const PLAN_COLORS = {
+const PLAN_COLORS: Record<string, string> = {
   basic: 'border-slate-500/30 bg-slate-500/10 text-slate-700 dark:text-slate-400',
   professional: 'border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-400',
   enterprise: 'border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-400',

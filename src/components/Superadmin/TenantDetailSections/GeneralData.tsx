@@ -28,7 +28,7 @@ import { Pencil, Loader2 } from 'lucide-react';
 
 const READONLY_FIELDS = ['subdomain', 'database'];
 
-const FIELD_LABELS = {
+const FIELD_LABELS: Record<string, string> = {
   name: 'Nombre',
   subdomain: 'Subdominio',
   database: 'Base de datos',

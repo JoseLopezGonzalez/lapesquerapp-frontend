@@ -52,7 +52,7 @@ function isBlockExpired(block: BlockEntry): boolean {
   return new Date(block.expires_at) < new Date();
 }
 
-const TYPE_COLORS = {
+const TYPE_COLORS: Record<string, string> = {
   ip: 'border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-400',
   email: 'border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-400',
 };

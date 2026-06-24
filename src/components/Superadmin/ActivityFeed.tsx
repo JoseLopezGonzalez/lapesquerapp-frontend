@@ -10,14 +10,14 @@ import { Button } from '@/components/ui/button';
 import { UserCheck, Database, AlertTriangle, Building2, Activity, RefreshCw } from 'lucide-react';
 import EmptyState from './EmptyState';
 
-const TYPE_ICONS = {
+const TYPE_ICONS: Record<string, React.ElementType> = {
   impersonation: UserCheck,
   migration: Database,
   alert: AlertTriangle,
   tenant_status: Building2,
 };
 
-const SEVERITY_COLORS = {
+const SEVERITY_COLORS: Record<string, string> = {
   critical: 'text-destructive',
   warning: 'text-orange-500',
   info: 'text-blue-500',

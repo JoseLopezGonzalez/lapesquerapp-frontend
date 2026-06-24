@@ -22,14 +22,37 @@ import { formatRelative } from '@/utils/superadminDateUtils';
 import { Plus, ChevronLeft, ChevronRight, Search, RefreshCw, Building2 } from 'lucide-react';
 import EmptyState from './EmptyState';
 
-const ONBOARDING_DOT = {
+const ONBOARDING_DOT: Record<string, { color: string; label: string }> = {
   completed: { color: 'bg-green-500', label: 'Onboarding completado' },
   in_progress: { color: 'bg-amber-400', label: 'Onboarding en progreso' },
   failed: { color: 'bg-destructive', label: 'Onboarding fallido' },
   pending: { color: 'bg-muted-foreground/40', label: 'Onboarding pendiente' },
 };
 
-function OnboardingDot({ onboarding }) {
+interface TenantRow {
+  id: number | string;
+  name: string;
+  subdomain: string;
+  plan?: string | null;
+  status: string;
+  onboarding?: { status: string; [key: string]: unknown } | null;
+  last_activity_at?: string | null;
+  [key: string]: unknown;
+}
+
+interface TenantMeta {
+  current_page: number;
+  last_page: number;
+  total: number;
+}
+
+interface FetchParams {
+  status?: string;
+  search?: string;
+  page?: number;
+}
+
+function OnboardingDot({ onboarding }: { onboarding?: { status: string; [key: string]: unknown } | null }) {
   if (!onboarding) return null;
   const { color, label } = ONBOARDING_DOT[onboarding.status] ?? ONBOARDING_DOT.pending;
   return (
@@ -51,15 +74,15 @@ const STATUS_TABS = [
 
 export default function TenantsTable() {
   const router = useRouter();
-  const [tenants, setTenants] = useState([]);
-  const [meta, setMeta] = useState(null);
+  const [tenants, setTenants] = useState<TenantRow[]>([]);
+  const [meta, setMeta] = useState<TenantMeta | null>(null);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
-  const debounceRef = useRef(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const fetchTenants = useCallback(async (params = {}) => {
+  const fetchTenants = useCallback(async (params: FetchParams = {}) => {
     setLoading(true);
     try {
       const qp = new URLSearchParams();
@@ -92,7 +115,7 @@ export default function TenantsTable() {
     return () => clearTimeout(debounceRef.current);
   }, [search]);
 
-  const handleStatusChange = (newStatus) => {
+  const handleStatusChange = (newStatus: string) => {
     setStatus(newStatus);
     setPage(1);
   };

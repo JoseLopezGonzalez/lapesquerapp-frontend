@@ -27,7 +27,7 @@ import {
 import { Loader2, Play, RefreshCw, ChevronDown, ChevronRight } from 'lucide-react';
 import QueueHealthWidget from '@/components/Superadmin/QueueHealthWidget';
 
-const LEVEL_COLORS = {
+const LEVEL_COLORS: Record<string, string> = {
   error: 'border-destructive/30 bg-destructive/10 text-destructive',
   warning: 'border-orange-500/30 bg-orange-500/10 text-orange-700 dark:text-orange-400',
   info: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400',
@@ -139,7 +139,7 @@ function GlobalErrorLogs() {
                         )}
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={LEVEL_COLORS[log.level] || ''}>
+                        <Badge variant="outline" className={LEVEL_COLORS[log.level ?? ''] ?? ''}>
                           {log.level || 'error'}
                         </Badge>
                       </TableCell>
