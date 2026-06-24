@@ -111,7 +111,10 @@ export function NavUser({ user }: NavUserProps) {
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => router.push('/admin/profile')}
+              >
                 <BadgeCheck />
                 Cuenta
               </DropdownMenuItem>

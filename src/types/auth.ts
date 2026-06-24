@@ -21,8 +21,6 @@ export interface AuthUser {
   externalUserType?: 'maquilador' | null;
   allowedStoreIds?: number[];
   assigned_store_id?: number | null;
-  company_name?: string | null;
-  company_logo_url?: string | null;
   [key: string]: unknown;
 }
 

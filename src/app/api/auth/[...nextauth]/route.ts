@@ -64,15 +64,11 @@ export const authOptions: NextAuthOptions = {
         token.role = Array.isArray(rawRole) ? (rawRole[0] ?? null) : (rawRole ?? null);
         const u = user as {
           assignedStoreId?: number;
-          companyName?: string;
-          companyLogoUrl?: string;
           actorType?: 'internal_user' | 'external_user' | null;
           externalUserType?: 'maquilador' | null;
           allowedStoreIds?: number[];
         };
         if (u.assignedStoreId != null) token.assignedStoreId = u.assignedStoreId;
-        if (u.companyName) token.companyName = u.companyName;
-        if (u.companyLogoUrl) token.companyLogoUrl = u.companyLogoUrl;
         token.actorType = u.actorType ?? 'internal_user';
         token.externalUserType = u.externalUserType ?? null;
         token.allowedStoreIds = Array.isArray(u.allowedStoreIds) ? u.allowedStoreIds : [];
@@ -128,12 +124,6 @@ export const authOptions: NextAuthOptions = {
               token.assignedStoreId = (
                 currentUser as { assigned_store_id: number }
               ).assigned_store_id;
-            }
-            if ((currentUser as { company_name?: string }).company_name) {
-              token.companyName = (currentUser as { company_name: string }).company_name;
-            }
-            if ((currentUser as { company_logo_url?: string }).company_logo_url) {
-              token.companyLogoUrl = (currentUser as { company_logo_url: string }).company_logo_url;
             }
             const features = (currentUser as { features?: string[] }).features;
             if (Array.isArray(features)) token.features = features;

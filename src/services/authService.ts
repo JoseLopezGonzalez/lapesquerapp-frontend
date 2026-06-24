@@ -150,6 +150,51 @@ export async function logout(): Promise<Response | { ok: boolean }> {
   }
 }
 
+export interface UpdateMePayload {
+  name?: string;
+  email?: string;
+}
+
+export interface UpdateMeResponse {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Actualiza el perfil del usuario autenticado (solo usuarios internos).
+ */
+export async function updateCurrentUser(payload: UpdateMePayload): Promise<UpdateMeResponse> {
+  const token = await getAuthToken();
+
+  const response = await fetchWithTenant(`${API_URL_V2}me`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const data = (await response.json().catch(() => ({}))) as UpdateMeResponse & {
+    message?: string;
+    errors?: Record<string, string[]>;
+  };
+
+  if (!response.ok) {
+    const err = new Error(data.message ?? 'Error al actualizar el perfil.') as AuthApiError;
+    err.status = response.status;
+    err.data = data as unknown as Record<string, unknown>;
+    throw err;
+  }
+
+  return data;
+}
+
 /**
  * Obtiene los datos actualizados del usuario desde el backend.
  */

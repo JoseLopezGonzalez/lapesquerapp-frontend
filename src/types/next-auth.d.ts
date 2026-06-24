@@ -12,8 +12,6 @@ declare module 'next-auth' {
       externalUserType?: 'maquilador' | null;
       allowedStoreIds?: number[];
       assignedStoreId?: number | null;
-      companyName?: string | null;
-      companyLogoUrl?: string | null;
       name?: string | null;
       email?: string | null;
       image?: string | null;
@@ -28,8 +26,6 @@ declare module 'next-auth' {
     externalUserType?: 'maquilador' | null;
     allowedStoreIds?: number[];
     assignedStoreId?: number | null;
-    companyName?: string | null;
-    companyLogoUrl?: string | null;
     [key: string]: unknown;
   }
 }
@@ -42,8 +38,6 @@ declare module 'next-auth/jwt' {
     externalUserType?: 'maquilador' | null;
     allowedStoreIds?: number[];
     assignedStoreId?: number | null;
-    companyName?: string | null;
-    companyLogoUrl?: string | null;
     lastRefresh?: number;
     [key: string]: unknown;
   }
