@@ -1,6 +1,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSession } from 'next-auth/react';
 import { updateCurrentUser, type UpdateMePayload } from '@/services/authService';
 import { notify } from '@/lib/notifications';
 import { getErrorMessage } from '@/lib/api/apiHelpers';
@@ -10,10 +11,14 @@ import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
 
 export function useUpdateMe(setError?: UseFormSetError<FieldValues>) {
   const queryClient = useQueryClient();
+  const { update: updateSession } = useSession();
 
   return useMutation({
     mutationFn: (payload: UpdateMePayload) => updateCurrentUser(payload),
-    onSuccess: () => {
+    onSuccess: async () => {
+      // Refrescar el JWT de NextAuth para que session.user.name y session.user.email
+      // se actualicen en el sidebar y cualquier otro consumidor de useSession.
+      await updateSession();
       queryClient.invalidateQueries({ queryKey: ['me'] });
       notify.success('Perfil actualizado correctamente.');
     },
