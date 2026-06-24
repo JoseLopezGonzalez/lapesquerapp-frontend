@@ -60,13 +60,13 @@ export default function LoginForm() {
     cooldownRef.current = setInterval(() => {
       setCooldown((prev) => {
         if (prev <= 1) {
-          clearInterval(cooldownRef.current);
+          clearInterval(cooldownRef.current ?? undefined);
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
-    return () => clearInterval(cooldownRef.current);
+    return () => clearInterval(cooldownRef.current ?? undefined);
   }, [cooldown]);
 
   const handleRequestAccess = useCallback(

@@ -100,7 +100,7 @@ export default function OnboardingProgress({ tenant, onRefresh }: { tenant: Tena
         setCurrent(data);
 
         if (data.status === 'completed' || data.step >= totalSteps) {
-          clearInterval(pollRef.current);
+          clearInterval(pollRef.current ?? undefined);
           pollRef.current = null;
           notify.success(
             {
@@ -117,7 +117,7 @@ export default function OnboardingProgress({ tenant, onRefresh }: { tenant: Tena
         }
 
         if (data.status === 'failed') {
-          clearInterval(pollRef.current);
+          clearInterval(pollRef.current ?? undefined);
           pollRef.current = null;
           notify.error(
             {
@@ -151,7 +151,7 @@ export default function OnboardingProgress({ tenant, onRefresh }: { tenant: Tena
     };
 
     pollRef.current = setInterval(poll, POLL_INTERVAL);
-    return () => clearInterval(pollRef.current);
+    return () => clearInterval(pollRef.current ?? undefined);
   }, [visible, tenant.id, totalSteps, onRefresh]);
 
   const handleRetry = useCallback(async () => {
@@ -194,7 +194,7 @@ export default function OnboardingProgress({ tenant, onRefresh }: { tenant: Tena
             }
             setCurrent(d);
             if (d.status === 'completed' || d.step >= totalSteps) {
-              clearInterval(pollRef.current);
+              clearInterval(pollRef.current ?? undefined);
               pollRef.current = null;
               notify.success(
                 {
@@ -209,7 +209,7 @@ export default function OnboardingProgress({ tenant, onRefresh }: { tenant: Tena
               onRefresh();
             }
             if (d.status === 'failed') {
-              clearInterval(pollRef.current);
+              clearInterval(pollRef.current ?? undefined);
               pollRef.current = null;
               notify.error(
                 {

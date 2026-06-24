@@ -226,12 +226,12 @@ function HistoryTable() {
   }, [page, fetchLogs]);
 
   useEffect(() => {
-    clearTimeout(debounceRef.current);
+    clearTimeout(debounceRef.current ?? undefined);
     debounceRef.current = setTimeout(() => {
       setPage(1);
       fetchLogs({ page: 1, tenant_id: tenantFilter, from: fromFilter });
     }, 400);
-    return () => clearTimeout(debounceRef.current);
+    return () => clearTimeout(debounceRef.current ?? undefined);
   }, [tenantFilter, fromFilter]);
 
   return (

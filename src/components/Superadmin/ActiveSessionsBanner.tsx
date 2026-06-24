@@ -24,7 +24,7 @@ export default function ActiveSessionsBanner() {
   useEffect(() => {
     fetchActive();
     intervalRef.current = setInterval(fetchActive, 30000);
-    return () => clearInterval(intervalRef.current);
+    return () => clearInterval(intervalRef.current ?? undefined);
   }, [fetchActive]);
 
   if (total === 0) return null;

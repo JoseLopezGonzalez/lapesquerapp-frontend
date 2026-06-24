@@ -142,7 +142,7 @@ function useAlertCounts() {
     };
     fetch();
     intervalRef.current = setInterval(fetch, 60000);
-    return () => clearInterval(intervalRef.current);
+    return () => clearInterval(intervalRef.current ?? undefined);
   }, []);
 
   return counts;

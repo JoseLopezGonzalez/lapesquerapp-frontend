@@ -107,12 +107,12 @@ export default function TenantsTable() {
   }, [status, page, fetchTenants]);
 
   useEffect(() => {
-    clearTimeout(debounceRef.current);
+    clearTimeout(debounceRef.current ?? undefined);
     debounceRef.current = setTimeout(() => {
       setPage(1);
       fetchTenants({ status, search, page: 1 });
     }, 300);
-    return () => clearTimeout(debounceRef.current);
+    return () => clearTimeout(debounceRef.current ?? undefined);
   }, [search]);
 
   const handleStatusChange = (newStatus: string) => {

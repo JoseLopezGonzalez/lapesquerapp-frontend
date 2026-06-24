@@ -190,7 +190,7 @@ export default function MigrationsTab({ tenantId }: { tenantId: number | string 
             (r) => r.id === pendingRunId.current && r.finished_at
           );
           if (found) {
-            clearInterval(pollRef.current);
+            clearInterval(pollRef.current ?? undefined);
             pollRef.current = null;
             pendingRunId.current = null;
             setRunning(false);

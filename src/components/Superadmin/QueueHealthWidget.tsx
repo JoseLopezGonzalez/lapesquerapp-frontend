@@ -40,7 +40,7 @@ export default function QueueHealthWidget({ showRefresh = false }: { showRefresh
   useEffect(() => {
     fetchHealth();
     intervalRef.current = setInterval(() => fetchHealth(), 60000);
-    return () => clearInterval(intervalRef.current);
+    return () => clearInterval(intervalRef.current ?? undefined);
   }, [fetchHealth]);
 
   if (loading) return <Skeleton className="h-20 rounded-lg" />;

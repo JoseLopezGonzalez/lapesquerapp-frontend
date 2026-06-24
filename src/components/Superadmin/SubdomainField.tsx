@@ -43,7 +43,7 @@ export default function SubdomainField({ value, onChange, error: externalError }
   };
 
   useEffect(() => {
-    clearTimeout(debounceRef.current);
+    clearTimeout(debounceRef.current ?? undefined);
     setAvailable(null);
 
     if (!value || !SUBDOMAIN_RE.test(value) || value.length > 63) return;
@@ -66,7 +66,7 @@ export default function SubdomainField({ value, onChange, error: externalError }
       }
     }, DEBOUNCE_MS);
 
-    return () => clearTimeout(debounceRef.current);
+    return () => clearTimeout(debounceRef.current ?? undefined);
   }, [value]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
