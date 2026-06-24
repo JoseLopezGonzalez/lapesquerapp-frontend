@@ -1,35 +1,45 @@
 "use client";
 
-import { useCallback } from "react";
+import { useEffect, useRef } from "react";
 import { toast, useSonner, type ToasterProps } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 
-function ToasterWithDismiss(props: ToasterProps) {
-  const { toasts } = useSonner();
-
-  const handleClick = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      if ((e.target as HTMLElement).closest("button")) return;
-      const toastEl = (e.target as HTMLElement).closest("[data-sonner-toast]");
-      if (!toastEl) return;
-      const index = parseInt((toastEl as HTMLElement).dataset.index ?? "", 10);
-      if (!isNaN(index) && toasts[index]) {
-        toast.dismiss(toasts[index].id);
-      }
-    },
-    [toasts]
-  );
-
-  return (
-    <div onClick={handleClick}>
-      <Toaster {...props} />
-    </div>
-  );
-}
-
 export function AppToaster(props: ToasterProps) {
+  const { toasts } = useSonner();
+  const toastsRef = useRef(toasts);
+
+  // Keep ref always current so the document listener never captures stale state
+  useEffect(() => {
+    toastsRef.current = toasts;
+  });
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.closest("button")) return;
+
+      const toastEl = target.closest<HTMLElement>("[data-sonner-toast]");
+      if (!toastEl || toastEl.dataset.removed === "true") return;
+
+      // Match only active (non-removed) toast elements — same order as useSonner().toasts
+      const activeEls = [
+        ...document.querySelectorAll<HTMLElement>(
+          "[data-sonner-toast]:not([data-removed='true'])"
+        ),
+      ];
+      const domIndex = activeEls.indexOf(toastEl);
+      const current = toastsRef.current;
+      if (domIndex !== -1 && current[domIndex]) {
+        toast.dismiss(current[domIndex].id);
+      }
+    };
+
+    document.addEventListener("click", handler);
+    return () => document.removeEventListener("click", handler);
+  }, []);
+
   return (
-    <ToasterWithDismiss
+    <Toaster
       position="top-center"
       swipeDirections={["top", "left", "right"]}
       {...props}
