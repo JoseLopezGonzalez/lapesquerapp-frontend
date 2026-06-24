@@ -27,11 +27,21 @@ import { Loader2, Trash2, Key } from 'lucide-react';
 import { formatDateTime } from '@/utils/superadminDateUtils';
 import EmptyState from '../EmptyState';
 
-export default function TokensTab({ tenantId }) {
-  const [tokens, setTokens] = useState([]);
+interface Token {
+  id: number | string;
+  name?: string;
+  abilities?: string[];
+  last_used_at?: string | null;
+  expires_at?: string | null;
+  user?: string;
+  [key: string]: unknown;
+}
+
+export default function TokensTab({ tenantId }: { tenantId: number | string }) {
+  const [tokens, setTokens] = useState<Token[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [revokingId, setRevokingId] = useState(null);
+  const [revokingId, setRevokingId] = useState<number | string | null>(null);
   const [revokeAllOpen, setRevokeAllOpen] = useState(false);
   const [revokingAll, setRevokingAll] = useState(false);
 
@@ -53,14 +63,14 @@ export default function TokensTab({ tenantId }) {
     fetchTokens();
   }, [fetchTokens]);
 
-  const handleRevoke = async (tokenId) => {
+  const handleRevoke = async (tokenId: number | string) => {
     setRevokingId(tokenId);
     try {
       await fetchSuperadmin(`/tenants/${tenantId}/tokens/${tokenId}`, { method: 'DELETE' });
       notify.success({ title: 'Token revocado' });
       fetchTokens();
     } catch (err) {
-      notify.error({ title: err.message || 'Error al revocar el token' });
+      notify.error({ title: (err as Error).message || 'Error al revocar el token' });
     } finally {
       setRevokingId(null);
     }
@@ -78,7 +88,7 @@ export default function TokensTab({ tenantId }) {
       setRevokeAllOpen(false);
       fetchTokens();
     } catch (err) {
-      notify.error({ title: err.message || 'Error al revocar tokens' });
+      notify.error({ title: (err as Error).message || 'Error al revocar tokens' });
     } finally {
       setRevokingAll(false);
     }
@@ -102,9 +112,9 @@ export default function TokensTab({ tenantId }) {
               <TableHead>ID</TableHead>
               <TableHead>Usuario</TableHead>
               <TableHead>Nombre</TableHead>
-              <TableHead className="hidden md:table-cell">Ultimo uso</TableHead>
+              <TableHead className="hidden md:table-cell">Último uso</TableHead>
               <TableHead className="hidden lg:table-cell">Creado</TableHead>
-              <TableHead className="text-right">Accion</TableHead>
+              <TableHead className="text-right">Acción</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -179,8 +189,8 @@ export default function TokensTab({ tenantId }) {
           <DialogHeader>
             <DialogTitle>Revocar todos los tokens</DialogTitle>
             <DialogDescription>
-              Todos los usuarios del tenant perderan su sesion activa y tendran que volver a iniciar
-              sesion. Esta accion no se puede deshacer.
+              Todos los usuarios del tenant perderán su sesión activa y tendrán que volver a iniciar
+              sesión. Esta acción no se puede deshacer.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

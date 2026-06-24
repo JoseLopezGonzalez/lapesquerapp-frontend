@@ -42,6 +42,8 @@
 
 ## Subcarpetas
 
+- **brand/** — Identidad visual
+  - [identidad-visual.md](./brand/identidad-visual.md) — Logo, tipografía, paleta de colores, assets y normas de uso
 - **analisis/** — Análisis técnicos, optimizaciones (01-09-\*)
 - **API-references/** — Referencias de endpoints
   - [inventario/pallets-attachments.md](./API-references/inventario/pallets-attachments.md) — API adjuntos de palets: upload, descarga autenticada, notas, permisos por rol

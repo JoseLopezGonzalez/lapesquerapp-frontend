@@ -11,21 +11,39 @@ const STEP_LABELS = [
   'Registro creado',
   'Base de datos creada',
   'Migraciones ejecutadas',
-  'Catalogos iniciales',
+  'Catálogos iniciales',
   'Usuario administrador',
-  'Configuracion empresa',
-  'Activacion',
+  'Configuración empresa',
+  'Activación',
   'Email de bienvenida',
 ];
 
 const POLL_INTERVAL = 4000;
 const STALLED_THRESHOLD = 30000;
 
-function getOnboardingStepLabel(data) {
+interface OnboardingData {
+  step: number;
+  total_steps: number;
+  step_label?: string | null;
+  status: string;
+  error?: string | null;
+  failed_at?: string | null;
+  [key: string]: unknown;
+}
+
+interface Tenant {
+  id: number | string;
+  status: string;
+  onboarding?: OnboardingData;
+  onboarding_step?: number;
+  [key: string]: unknown;
+}
+
+function getOnboardingStepLabel(data: OnboardingData): string {
   return data.step_label || STEP_LABELS[Math.max(0, (data.step || 1) - 1)] || 'Procesando';
 }
 
-function getOnboarding(tenant) {
+function getOnboarding(tenant: Tenant): OnboardingData {
   if (tenant.onboarding) return tenant.onboarding;
   return {
     step: tenant.onboarding_step ?? 0,
@@ -37,18 +55,18 @@ function getOnboarding(tenant) {
   };
 }
 
-export default function OnboardingProgress({ tenant, onRefresh }) {
+export default function OnboardingProgress({ tenant, onRefresh }: { tenant: Tenant; onRefresh: () => void }) {
   const ob = getOnboarding(tenant);
   const totalSteps = ob.total_steps || 8;
   const toastId = `tenant-onboarding-${tenant.id}`;
 
-  const [current, setCurrent] = useState(ob);
+  const [current, setCurrent] = useState<OnboardingData>(ob);
   const [retrying, setRetrying] = useState(false);
   const [stalled, setStalled] = useState(false);
 
   const stepStartTime = useRef(Date.now());
   const prevStep = useRef(ob.step);
-  const pollRef = useRef(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const visible = tenant.status === 'pending' && ob.status !== 'completed' && ob.step < totalSteps;
 
@@ -212,7 +230,7 @@ export default function OnboardingProgress({ tenant, onRefresh }) {
     } catch (err) {
       notify.error(
         {
-          title: err.message || 'Error al reintentar',
+          title: (err as Error).message || 'Error al reintentar',
           description: 'No se pudo volver a lanzar el onboarding.',
         },
         {

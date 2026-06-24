@@ -1,9 +1,4 @@
-/**
- * Utilidades de fecha para el panel superadmin.
- * formatDate y formatDateTime usan Intl; formatRelative y formatDurationSeconds para UX.
- */
-
-export function formatDate(dateStr) {
+export function formatDate(dateStr: string | null | undefined): string {
   if (!dateStr) return '-';
   try {
     return new Intl.DateTimeFormat('es-ES', {
@@ -16,7 +11,7 @@ export function formatDate(dateStr) {
   }
 }
 
-export function formatDateTime(dateStr) {
+export function formatDateTime(dateStr: string | null | undefined): string {
   if (!dateStr) return '-';
   try {
     return new Intl.DateTimeFormat('es-ES', {
@@ -31,7 +26,7 @@ export function formatDateTime(dateStr) {
   }
 }
 
-export function formatDateTimeFull(dateStr) {
+export function formatDateTimeFull(dateStr: string | null | undefined): string {
   if (!dateStr) return '-';
   try {
     return new Intl.DateTimeFormat('es-ES', {
@@ -47,11 +42,11 @@ export function formatDateTimeFull(dateStr) {
   }
 }
 
-export function formatRelative(dateStr) {
+export function formatRelative(dateStr: string | null | undefined): string {
   if (!dateStr) return '';
   try {
     const date = new Date(dateStr);
-    const diff = Date.now() - date;
+    const diff = Date.now() - date.getTime();
     const mins = Math.floor(diff / 60000);
     if (mins < 1) return 'ahora';
     if (mins < 60) return `hace ${mins}m`;
@@ -65,10 +60,8 @@ export function formatRelative(dateStr) {
   }
 }
 
-/**
- * Formato legible de duración en segundos: "Xs", "Xm Ys", "Xh Ym Zs"
- */
-export function formatDurationSeconds(seconds) {
+/** Formato legible de duración en segundos: "Xs", "Xm Ys", "Xh Ym Zs" */
+export function formatDurationSeconds(seconds: number | null | undefined): string {
   if (seconds == null || seconds < 0) return '-';
   if (seconds < 60) return `${Math.round(seconds)}s`;
   const m = Math.floor(seconds / 60);

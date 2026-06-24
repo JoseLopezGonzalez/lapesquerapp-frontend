@@ -43,7 +43,27 @@ const SEVERITY_COLORS = {
   info: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400',
 };
 
-function SeverityBadge({ severity }) {
+interface Alert {
+  id: number | string;
+  severity: string;
+  message?: string;
+  title?: string;
+  tenant?: string;
+  tenant_id?: number | string;
+  occurred_at?: string;
+  created_at?: string;
+  resolved_at?: string | null;
+  details?: string;
+  [key: string]: unknown;
+}
+
+interface AlertMeta {
+  current_page: number;
+  last_page: number;
+  total: number;
+}
+
+function SeverityBadge({ severity }: { severity: string }) {
   return (
     <Badge variant="outline" className={SEVERITY_COLORS[severity] || ''}>
       {severity}
@@ -52,15 +72,15 @@ function SeverityBadge({ severity }) {
 }
 
 export default function AlertsPage() {
-  const [alerts, setAlerts] = useState([]);
-  const [meta, setMeta] = useState(null);
+  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [meta, setMeta] = useState<AlertMeta | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('');
   const [page, setPage] = useState(1);
-  const [resolvingId, setResolvingId] = useState(null);
-  const [expandedId, setExpandedId] = useState(null);
+  const [resolvingId, setResolvingId] = useState<number | string | null>(null);
+  const [expandedId, setExpandedId] = useState<number | string | null>(null);
 
-  const fetchAlerts = useCallback(async (params = {}) => {
+  const fetchAlerts = useCallback(async (params: { tab?: string; page?: number } = {}) => {
     setLoading(true);
     try {
       const qp = new URLSearchParams();
@@ -87,12 +107,12 @@ export default function AlertsPage() {
     fetchAlerts({ tab: activeTab, page });
   }, [activeTab, page, fetchAlerts]);
 
-  const handleTabChange = (tab) => {
+  const handleTabChange = (tab: string) => {
     setActiveTab(tab);
     setPage(1);
   };
 
-  const handleResolve = async (alertId) => {
+  const handleResolve = async (alertId: number | string) => {
     setResolvingId(alertId);
     try {
       await fetchSuperadmin(`/alerts/${alertId}/resolve`, { method: 'POST' });
@@ -103,7 +123,7 @@ export default function AlertsPage() {
         notify.info({ title: 'Ya estaba resuelta' });
         fetchAlerts({ tab: activeTab, page });
       } else {
-        notify.error({ title: err.message || 'Error al resolver la alerta' });
+        notify.error({ title: (err as Error).message || 'Error al resolver la alerta' });
       }
     } finally {
       setResolvingId(null);
@@ -112,7 +132,7 @@ export default function AlertsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-lg font-semibold">
+      <h1 className="text-2xl font-semibold">
         Alertas del sistema
         {meta != null && activeTab !== 'resolved' && (
           <span className="text-muted-foreground ml-2 font-normal">({meta.total} activas)</span>

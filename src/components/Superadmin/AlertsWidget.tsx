@@ -66,7 +66,7 @@ export default function AlertsWidget() {
             <div className="flex items-center gap-1.5">
               <span className="bg-destructive inline-flex h-2.5 w-2.5 rounded-full" />
               <span className="text-destructive text-sm font-medium">
-                {counts.critical} critica{counts.critical !== 1 ? 's' : ''}
+                {counts.critical} crítica{counts.critical !== 1 ? 's' : ''}
               </span>
             </div>
           )}

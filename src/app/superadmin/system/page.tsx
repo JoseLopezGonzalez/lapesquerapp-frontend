@@ -33,11 +33,21 @@ const LEVEL_COLORS = {
   info: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400',
 };
 
+interface SystemLog {
+  id?: number | string;
+  occurred_at?: string;
+  created_at?: string;
+  level?: string;
+  message?: string;
+  trace?: string;
+  [key: string]: unknown;
+}
+
 function GlobalErrorLogs() {
-  const [logs, setLogs] = useState([]);
+  const [logs, setLogs] = useState<SystemLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [date, setDate] = useState('');
-  const [expanded, setExpanded] = useState(null);
+  const [expanded, setExpanded] = useState<string | null>(null);
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
@@ -112,41 +122,45 @@ function GlobalErrorLogs() {
                 </TableCell>
               </TableRow>
             ) : (
-              logs.map((log, i) => (
-                <React.Fragment key={i}>
-                  <TableRow
-                    className="cursor-pointer"
-                    onClick={() => setExpanded(expanded === i ? null : i)}
-                  >
-                    <TableCell className="w-6 pr-0">
-                      {expanded === i ? (
-                        <ChevronDown className="text-muted-foreground h-3.5 w-3.5" />
-                      ) : (
-                        <ChevronRight className="text-muted-foreground h-3.5 w-3.5" />
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className={LEVEL_COLORS[log.level] || ''}>
-                        {log.level || 'error'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="max-w-[240px] truncate text-sm">{log.message}</TableCell>
-                    <TableCell className="text-muted-foreground hidden text-xs sm:table-cell">
-                      {log.occurred_at ?? log.created_at ?? '-'}
-                    </TableCell>
-                  </TableRow>
-                  {expanded === i && (
-                    <TableRow>
-                      <TableCell />
-                      <TableCell colSpan={3} className="pb-3 pt-0">
-                        <pre className="bg-muted max-h-40 overflow-auto rounded p-2 text-[11px] whitespace-pre-wrap">
-                          {log.context ? JSON.stringify(log.context, null, 2) : log.message}
-                        </pre>
+              logs.map((log, i) => {
+                const key = String(log.id ?? log.occurred_at ?? log.created_at ?? i);
+                return (
+                  <React.Fragment key={key}>
+                    <TableRow
+                      className="cursor-pointer"
+                      onClick={() => setExpanded(expanded === key ? null : key)}
+                      aria-label={`Log: ${log.message}`}
+                    >
+                      <TableCell className="w-6 pr-0">
+                        {expanded === key ? (
+                          <ChevronDown className="text-muted-foreground h-3.5 w-3.5" />
+                        ) : (
+                          <ChevronRight className="text-muted-foreground h-3.5 w-3.5" />
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={LEVEL_COLORS[log.level] || ''}>
+                          {log.level || 'error'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="max-w-[240px] truncate text-sm">{log.message}</TableCell>
+                      <TableCell className="text-muted-foreground hidden text-xs sm:table-cell">
+                        {log.occurred_at ?? log.created_at ?? '-'}
                       </TableCell>
                     </TableRow>
-                  )}
-                </React.Fragment>
-              ))
+                    {expanded === key && (
+                      <TableRow>
+                        <TableCell />
+                        <TableCell colSpan={3} className="pb-3 pt-0">
+                          <pre className="bg-muted max-h-40 overflow-auto rounded p-2 text-[11px] whitespace-pre-wrap">
+                            {log.context ? JSON.stringify(log.context, null, 2) : log.message}
+                          </pre>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </React.Fragment>
+                );
+              })
             )}
           </TableBody>
         </Table>
@@ -158,7 +172,7 @@ function GlobalErrorLogs() {
 export default function SystemPage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [running, setRunning] = useState(false);
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<Record<string, unknown> | null>(null);
 
   const handleRunAll = async () => {
     setRunning(true);
@@ -173,7 +187,7 @@ export default function SystemPage() {
       });
       setConfirmOpen(false);
     } catch (err) {
-      notify.error({ title: err.message || 'Error al encolar migraciones' });
+      notify.error({ title: (err as Error).message || 'Error al encolar migraciones' });
     } finally {
       setRunning(false);
     }
@@ -181,7 +195,7 @@ export default function SystemPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-lg font-semibold">Sistema</h1>
+      <h1 className="text-2xl font-semibold">Sistema</h1>
 
       <QueueHealthWidget showRefresh />
 

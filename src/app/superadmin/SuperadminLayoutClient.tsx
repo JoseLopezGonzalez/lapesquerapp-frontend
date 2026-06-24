@@ -125,7 +125,7 @@ const NAV_SISTEMA = [
 
 function useAlertCounts() {
   const [counts, setCounts] = useState({ total: 0, hasCritical: false });
-  const intervalRef = useRef(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     const fetch = async () => {
@@ -148,7 +148,19 @@ function useAlertCounts() {
   return counts;
 }
 
-function NavGroup({ items, pathname, alertCounts }) {
+interface NavItem {
+  href: string;
+  label: string;
+  icon: React.ComponentType;
+  alertBadge?: boolean;
+}
+
+interface AlertCounts {
+  total: number;
+  hasCritical: boolean;
+}
+
+function NavGroup({ items, pathname, alertCounts }: { items: NavItem[]; pathname: string; alertCounts: AlertCounts }) {
   return (
     <SidebarMenu>
       {items.map((item) => {
@@ -289,7 +301,7 @@ function SuperadminSidebar() {
   );
 }
 
-function AuthenticatedLayout({ children }) {
+function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { loading, token } = useSuperadminAuth();
@@ -334,7 +346,7 @@ function AuthenticatedLayout({ children }) {
   );
 }
 
-export default function SuperadminLayoutClient({ children }) {
+export default function SuperadminLayoutClient({ children }: { children: React.ReactNode }) {
   return (
     <SuperadminAuthProvider>
       <AuthenticatedLayout>{children}</AuthenticatedLayout>

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { fetchSuperadmin, SuperadminApiError } from '@/lib/superadminApi';
 import { notify } from '@/lib/notifications';
 import { Button } from '@/components/ui/button';
@@ -13,10 +13,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -29,7 +37,17 @@ import { Loader2, Plus, Trash2, ShieldCheck } from 'lucide-react';
 import { formatDateTime } from '@/utils/superadminDateUtils';
 import EmptyState from '../EmptyState';
 
-function isBlockExpired(block) {
+interface BlockEntry {
+  id: number | string;
+  type: 'ip' | 'email' | string;
+  value: string;
+  reason?: string | null;
+  expires_at?: string | null;
+  created_at?: string;
+  [key: string]: unknown;
+}
+
+function isBlockExpired(block: BlockEntry): boolean {
   if (!block.expires_at) return false;
   return new Date(block.expires_at) < new Date();
 }
@@ -39,17 +57,18 @@ const TYPE_COLORS = {
   email: 'border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-400',
 };
 
-export default function BlocklistTab({ tenantId }) {
-  const [blocks, setBlocks] = useState([]);
+export default function BlocklistTab({ tenantId }: { tenantId: number | string }) {
+  const [blocks, setBlocks] = useState<BlockEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
-  const [removingId, setRemovingId] = useState(null);
+  const [removingId, setRemovingId] = useState<number | string | null>(null);
   const [saving, setSaving] = useState(false);
 
   const {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors },
   } = useForm({
     defaultValues: { type: 'ip', value: '', reason: '', expires_at: '' },
@@ -72,7 +91,7 @@ export default function BlocklistTab({ tenantId }) {
     fetchBlocks();
   }, [fetchBlocks]);
 
-  const handleAdd = async (values) => {
+  const handleAdd = async (values: { type: string; value: string; reason: string; expires_at: string }) => {
     setSaving(true);
     try {
       await fetchSuperadmin(`/tenants/${tenantId}/block`, {
@@ -89,24 +108,24 @@ export default function BlocklistTab({ tenantId }) {
       reset();
       fetchBlocks();
     } catch (err) {
-      if (err instanceof SuperadminApiError && err.status === 422 && err.data?.errors) {
-        notify.error({ title: Object.values(err.data.errors).flat().join(', ') });
+      if (err instanceof SuperadminApiError && err.status === 422 && (err.data as { errors?: Record<string, string[]> })?.errors) {
+        notify.error({ title: Object.values((err.data as { errors: Record<string, string[]> }).errors).flat().join(', ') });
       } else {
-        notify.error({ title: err.message || 'Error al crear el bloqueo' });
+        notify.error({ title: (err as Error).message || 'Error al crear el bloqueo' });
       }
     } finally {
       setSaving(false);
     }
   };
 
-  const handleRemove = async (blockId) => {
+  const handleRemove = async (blockId: number | string) => {
     setRemovingId(blockId);
     try {
       await fetchSuperadmin(`/tenants/${tenantId}/blocks/${blockId}`, { method: 'DELETE' });
       notify.success({ title: 'Bloqueo eliminado' });
       fetchBlocks();
     } catch (err) {
-      notify.error({ title: err.message || 'Error al eliminar el bloqueo' });
+      notify.error({ title: (err as Error).message || 'Error al eliminar el bloqueo' });
     } finally {
       setRemovingId(null);
     }
@@ -139,7 +158,7 @@ export default function BlocklistTab({ tenantId }) {
                 <TableHead className="hidden sm:table-cell">Motivo</TableHead>
                 <TableHead className="hidden md:table-cell">Bloqueado por</TableHead>
                 <TableHead className="hidden lg:table-cell">Expira</TableHead>
-                <TableHead className="text-right">Accion</TableHead>
+                <TableHead className="text-right">Acción</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -228,18 +247,30 @@ export default function BlocklistTab({ tenantId }) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Agregar bloqueo</DialogTitle>
+            <DialogDescription>
+              Bloquea una dirección IP o un email para este tenant. El bloqueo puede ser temporal o
+              indefinido.
+            </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit(handleAdd)} className="space-y-4">
             <div className="grid gap-1.5">
               <Label htmlFor="bl-type">Tipo</Label>
-              <select
-                id="bl-type"
-                {...register('type', { required: true })}
-                className="border-input focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
-              >
-                <option value="ip">IP</option>
-                <option value="email">Email</option>
-              </select>
+              <Controller
+                name="type"
+                control={control}
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger id="bl-type">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ip">IP</SelectItem>
+                      <SelectItem value="email">Email</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
             <div className="grid gap-1.5">
               <Label htmlFor="bl-value">
@@ -263,7 +294,7 @@ export default function BlocklistTab({ tenantId }) {
             <div className="grid gap-1.5">
               <Label htmlFor="bl-expires">Expira (opcional)</Label>
               <Input id="bl-expires" type="datetime-local" {...register('expires_at')} />
-              <p className="text-muted-foreground text-xs">Dejar vacio para bloqueo indefinido.</p>
+              <p className="text-muted-foreground text-xs">Dejar vacío para bloqueo indefinido.</p>
             </div>
             <DialogFooter>
               <Button

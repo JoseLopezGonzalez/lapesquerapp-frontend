@@ -30,7 +30,32 @@ import {
 import EmptyState from '../EmptyState';
 import { formatDateTimeFull, formatDurationSeconds } from '@/utils/superadminDateUtils';
 
-function MigrationSummary({ summary, onRun, running }) {
+interface MigrationSummaryData {
+  ran: number;
+  total: number;
+  pending: number;
+  [key: string]: unknown;
+}
+
+interface MigrationRun {
+  id: number | string;
+  status: string;
+  ran_at?: string;
+  duration_seconds?: number;
+  pending_count?: number;
+  ran_count?: number;
+  failed_count?: number;
+  output?: string;
+  [key: string]: unknown;
+}
+
+interface HistMeta {
+  current_page: number;
+  last_page: number;
+  total: number;
+}
+
+function MigrationSummary({ summary, onRun, running }: { summary: MigrationSummaryData | null; onRun: () => void; running: boolean }) {
   if (!summary) return <Skeleton className="h-20 rounded" />;
 
   const runDisabled = running || summary.pending === 0;
@@ -95,17 +120,17 @@ function MigrationSummary({ summary, onRun, running }) {
   );
 }
 
-export default function MigrationsTab({ tenantId }) {
+export default function MigrationsTab({ tenantId }: { tenantId: number | string }) {
   const toastId = `tenant-migrations-${tenantId}`;
-  const [summary, setSummary] = useState(null);
-  const [history, setHistory] = useState([]);
-  const [histMeta, setHistMeta] = useState(null);
+  const [summary, setSummary] = useState<MigrationSummaryData | null>(null);
+  const [history, setHistory] = useState<MigrationRun[]>([]);
+  const [histMeta, setHistMeta] = useState<HistMeta | null>(null);
   const [histPage, setHistPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [running, setRunning] = useState(false);
-  const [expandedId, setExpandedId] = useState(null);
-  const pollRef = useRef(null);
-  const pendingRunId = useRef(null);
+  const [expandedId, setExpandedId] = useState<number | string | null>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pendingRunId = useRef<number | string | null>(null);
 
   const fetchSummary = useCallback(async () => {
     try {
@@ -204,7 +229,7 @@ export default function MigrationsTab({ tenantId }) {
     } catch (err) {
       notify.error(
         {
-          title: err.message || 'Error al ejecutar migraciones',
+          title: (err as Error).message || 'Error al ejecutar migraciones',
           description: 'No se pudo iniciar la ejecución de migraciones del tenant.',
         },
         {
@@ -315,6 +340,7 @@ export default function MigrationsTab({ tenantId }) {
                             <Button
                               variant="ghost"
                               size="sm"
+                              aria-label={expandedId === run.id ? 'Ocultar output' : 'Ver output'}
                               onClick={() => setExpandedId(expandedId === run.id ? null : run.id)}
                             >
                               {expandedId === run.id ? (

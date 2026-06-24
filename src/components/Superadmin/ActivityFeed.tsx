@@ -23,8 +23,20 @@ const SEVERITY_COLORS = {
   info: 'text-blue-500',
 };
 
+interface ActivityItem {
+  type?: string;
+  severity?: string;
+  description?: string;
+  message?: string;
+  tenant_id?: number | string;
+  tenant?: string;
+  timestamp?: string;
+  at?: string;
+  [key: string]: unknown;
+}
+
 export default function ActivityFeed() {
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchFeed = useCallback(async () => {

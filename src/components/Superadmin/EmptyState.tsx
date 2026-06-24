@@ -1,14 +1,18 @@
 'use client';
 
 import React from 'react';
+import { type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-/**
- * Empty state reutilizable para el panel superadmin.
- * Uso en tabla: <TableRow><TableCell colSpan={n} className="p-0"><EmptyState ... /></TableCell></TableRow>
- * Uso en card: <EmptyState ... /> dentro de un contenedor con padding.
- */
-export default function EmptyState({ icon: Icon, title, description, compact = false, className }) {
+interface EmptyStateProps {
+  icon?: LucideIcon;
+  title: string;
+  description?: string;
+  compact?: boolean;
+  className?: string;
+}
+
+export default function EmptyState({ icon: Icon, title, description, compact = false, className }: EmptyStateProps) {
   return (
     <div
       className={cn(

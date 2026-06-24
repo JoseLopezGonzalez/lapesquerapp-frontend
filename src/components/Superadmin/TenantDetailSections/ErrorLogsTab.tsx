@@ -33,7 +33,24 @@ const DAYS_TABS = [
   { key: '90', label: '90d' },
 ];
 
-function shortUrl(url) {
+interface ErrorLog {
+  id: number | string;
+  method?: string;
+  url?: string;
+  status_code?: number;
+  occurred_at?: string;
+  message?: string;
+  trace?: string;
+  [key: string]: unknown;
+}
+
+interface LogMeta {
+  current_page: number;
+  last_page: number;
+  total: number;
+}
+
+function shortUrl(url: string): string {
   try {
     const u = new URL(url);
     return u.pathname;
@@ -42,16 +59,16 @@ function shortUrl(url) {
   }
 }
 
-export default function ErrorLogsTab({ tenantId }) {
-  const [logs, setLogs] = useState([]);
-  const [meta, setMeta] = useState(null);
+export default function ErrorLogsTab({ tenantId }: { tenantId: number | string }) {
+  const [logs, setLogs] = useState<ErrorLog[]>([]);
+  const [meta, setMeta] = useState<LogMeta | null>(null);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [days, setDays] = useState(30);
-  const [expandedId, setExpandedId] = useState(null);
+  const [expandedId, setExpandedId] = useState<number | string | null>(null);
 
   const fetchLogs = useCallback(
-    async (params = {}) => {
+    async (params: { page?: number; days?: number } = {}) => {
       setLoading(true);
       try {
         const qp = new URLSearchParams();
@@ -93,7 +110,7 @@ export default function ErrorLogsTab({ tenantId }) {
           <TableHeader>
             <TableRow>
               <TableHead>Fecha</TableHead>
-              <TableHead className="hidden sm:table-cell">Metodo</TableHead>
+              <TableHead className="hidden sm:table-cell">Método</TableHead>
               <TableHead>URL</TableHead>
               <TableHead className="hidden md:table-cell">Clase</TableHead>
               <TableHead className="text-right">Detalle</TableHead>
@@ -123,8 +140,8 @@ export default function ErrorLogsTab({ tenantId }) {
               </TableRow>
             ) : (
               logs.map((log) => (
-                <>
-                  <TableRow key={log.id}>
+                <React.Fragment key={log.id}>
+                  <TableRow>
                     <TableCell className="text-sm whitespace-nowrap">
                       {formatDateTime(log.occurred_at)}
                     </TableCell>
@@ -149,6 +166,7 @@ export default function ErrorLogsTab({ tenantId }) {
                       <Button
                         variant="ghost"
                         size="sm"
+                        aria-label={expandedId === log.id ? 'Ocultar detalle' : 'Ver detalle'}
                         onClick={() => setExpandedId(expandedId === log.id ? null : log.id)}
                       >
                         {expandedId === log.id ? (
@@ -160,7 +178,7 @@ export default function ErrorLogsTab({ tenantId }) {
                     </TableCell>
                   </TableRow>
                   {expandedId === log.id && (
-                    <TableRow key={`${log.id}-detail`}>
+                    <TableRow>
                       <TableCell colSpan={5} className="bg-muted/50 p-0">
                         <div className="space-y-2 p-4">
                           <p className="font-mono text-xs break-all">
@@ -178,7 +196,7 @@ export default function ErrorLogsTab({ tenantId }) {
                       </TableCell>
                     </TableRow>
                   )}
-                </>
+                </React.Fragment>
               ))
             )}
           </TableBody>

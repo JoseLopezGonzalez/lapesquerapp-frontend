@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -31,18 +32,27 @@ const FLAG_DESCRIPTIONS = {
   // Mapeo opcional key → descripción corta si la API no devuelve description
 };
 
-function flagDescription(flag) {
+interface FeatureFlag {
+  flag_key: string;
+  enabled: boolean;
+  description?: string | null;
+  override?: boolean | null;
+  override_reason?: string | null;
+  [key: string]: unknown;
+}
+
+function flagDescription(flag: FeatureFlag): string | null {
   return flag.description ?? FLAG_DESCRIPTIONS[flag.flag_key] ?? null;
 }
 
-export default function FeatureFlagsTab({ tenantId }) {
-  const [flags, setFlags] = useState([]);
+export default function FeatureFlagsTab({ tenantId }: { tenantId: number | string }) {
+  const [flags, setFlags] = useState<FeatureFlag[]>([]);
   const [plan, setPlan] = useState('');
   const [loading, setLoading] = useState(true);
-  const [overrideDialog, setOverrideDialog] = useState(null);
+  const [overrideDialog, setOverrideDialog] = useState<FeatureFlag | null>(null);
   const [overrideReason, setOverrideReason] = useState('');
   const [saving, setSaving] = useState(false);
-  const [deletingKey, setDeletingKey] = useState(null);
+  const [deletingKey, setDeletingKey] = useState<string | null>(null);
 
   const fetchFlags = useCallback(async () => {
     setLoading(true);
@@ -62,7 +72,7 @@ export default function FeatureFlagsTab({ tenantId }) {
     fetchFlags();
   }, [fetchFlags]);
 
-  const handleToggle = (flag) => {
+  const handleToggle = (flag: FeatureFlag) => {
     setOverrideReason('');
     setOverrideDialog({ ...flag, newEnabled: !flag.enabled });
   };
@@ -82,13 +92,13 @@ export default function FeatureFlagsTab({ tenantId }) {
       setOverrideDialog(null);
       fetchFlags();
     } catch (err) {
-      notify.error({ title: err.message || 'Error al guardar override' });
+      notify.error({ title: (err as Error).message || 'Error al guardar override' });
     } finally {
       setSaving(false);
     }
   };
 
-  const handleDeleteOverride = async (flagKey) => {
+  const handleDeleteOverride = async (flagKey: string) => {
     setDeletingKey(flagKey);
     try {
       await fetchSuperadmin(`/tenants/${tenantId}/feature-flags/${flagKey}`, { method: 'DELETE' });
@@ -98,7 +108,7 @@ export default function FeatureFlagsTab({ tenantId }) {
       if (err instanceof SuperadminApiError && err.status === 404) {
         notify.info({ title: 'No habia override para este flag.' });
       } else {
-        notify.error({ title: err.message || 'Error al eliminar override' });
+        notify.error({ title: (err as Error).message || 'Error al eliminar override' });
       }
     } finally {
       setDeletingKey(null);
@@ -232,11 +242,12 @@ export default function FeatureFlagsTab({ tenantId }) {
             <DialogTitle>
               {overrideDialog?.newEnabled ? 'Habilitar' : 'Deshabilitar'} {overrideDialog?.flag_key}
             </DialogTitle>
+            <DialogDescription>
+              Se guardará un override para este tenant. El cambio se aplicará de inmediato y
+              sobreescribirá el valor por defecto del plan.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
-            <p className="text-muted-foreground text-sm">
-              Se guardará un override para este tenant. El cambio se aplicará de inmediato.
-            </p>
             <div className="grid gap-1.5">
               <Label htmlFor="ff-reason">Motivo (opcional)</Label>
               <Input

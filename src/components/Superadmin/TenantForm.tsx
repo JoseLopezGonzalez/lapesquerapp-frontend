@@ -9,6 +9,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import SubdomainField from './SubdomainField';
 import { Loader2, ArrowLeft } from 'lucide-react';
 
@@ -85,7 +92,7 @@ export default function TenantForm() {
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="text-lg font-semibold">Crear tenant</h1>
+        <h1 className="text-2xl font-semibold">Crear tenant</h1>
       </div>
 
       <Card className="max-w-lg">
@@ -133,33 +140,47 @@ export default function TenantForm() {
 
             <div className="grid w-full items-center gap-1.5">
               <Label htmlFor="tf-plan">Plan</Label>
-              <select
-                id="tf-plan"
-                {...register('plan')}
-                className="border-input focus-visible:ring-ring flex h-12 w-full rounded-md border bg-transparent px-3 py-2 text-base shadow-sm transition-colors focus-visible:ring-1 focus-visible:outline-none md:h-9 md:text-sm"
-              >
-                {PLAN_OPTIONS.map((p) => (
-                  <option key={p} value={p}>
-                    {p.charAt(0).toUpperCase() + p.slice(1)}
-                  </option>
-                ))}
-              </select>
+              <Controller
+                name="plan"
+                control={control}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger id="tf-plan">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PLAN_OPTIONS.map((p) => (
+                        <SelectItem key={p} value={p}>
+                          {p.charAt(0).toUpperCase() + p.slice(1)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
               {errors.plan && <p className="text-destructive text-xs">{errors.plan.message}</p>}
             </div>
 
             <div className="grid w-full items-center gap-1.5">
               <Label htmlFor="tf-tz">Zona horaria</Label>
-              <select
-                id="tf-tz"
-                {...register('timezone')}
-                className="border-input focus-visible:ring-ring flex h-12 w-full rounded-md border bg-transparent px-3 py-2 text-base shadow-sm transition-colors focus-visible:ring-1 focus-visible:outline-none md:h-9 md:text-sm"
-              >
-                {TIMEZONE_OPTIONS.map((tz) => (
-                  <option key={tz} value={tz}>
-                    {tz}
-                  </option>
-                ))}
-              </select>
+              <Controller
+                name="timezone"
+                control={control}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger id="tf-tz">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TIMEZONE_OPTIONS.map((tz) => (
+                        <SelectItem key={tz} value={tz}>
+                          {tz}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
 
             <div className="grid w-full items-center gap-1.5">

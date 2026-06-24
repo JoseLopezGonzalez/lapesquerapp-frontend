@@ -1,30 +1,28 @@
 'use client';
 
-import React from 'react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-/**
- * Tabs de filtro reutilizables para listas superadmin.
- * @param {Array<{ key: string, label: string }>} tabs
- * @param {string} activeKey
- * @param {(key: string) => void} onChange
- */
-export default function FilterTabs({ tabs, activeKey, onChange }) {
+interface FilterTab {
+  key: string;
+  label: string;
+}
+
+interface FilterTabsProps {
+  tabs: FilterTab[];
+  activeKey: string;
+  onChange: (key: string) => void;
+}
+
+export default function FilterTabs({ tabs, activeKey, onChange }: FilterTabsProps) {
   return (
-    <div className="flex flex-wrap gap-1">
-      {tabs.map((tab) => (
-        <button
-          key={tab.key}
-          type="button"
-          onClick={() => onChange(tab.key)}
-          className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-            activeKey === tab.key
-              ? 'bg-primary text-primary-foreground'
-              : 'text-muted-foreground hover:bg-muted'
-          }`}
-        >
-          {tab.label}
-        </button>
-      ))}
-    </div>
+    <Tabs value={activeKey} onValueChange={onChange}>
+      <TabsList className="h-auto flex-wrap gap-0.5">
+        {tabs.map((tab) => (
+          <TabsTrigger key={tab.key} value={tab.key}>
+            {tab.label}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+    </Tabs>
   );
 }

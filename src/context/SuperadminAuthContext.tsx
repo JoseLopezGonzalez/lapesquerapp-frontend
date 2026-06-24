@@ -4,17 +4,33 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { useRouter, usePathname } from 'next/navigation';
 import { fetchSuperadmin, getSuperadminToken, setSuperadminToken } from '@/lib/superadminApi';
 
-const SuperadminAuthContext = createContext(null);
+interface SuperadminUser {
+  id: number;
+  name: string;
+  email: string;
+  [key: string]: unknown;
+}
 
-export function SuperadminAuthProvider({ children }) {
+interface SuperadminAuthContextValue {
+  token: string | null;
+  user: SuperadminUser | null;
+  loading: boolean;
+  login: (accessToken: string, userData: SuperadminUser) => void;
+  logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
+}
+
+const SuperadminAuthContext = createContext<SuperadminAuthContextValue | null>(null);
+
+export function SuperadminAuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [token, setTokenState] = useState(() => getSuperadminToken());
-  const [user, setUser] = useState(null);
+  const [token, setTokenState] = useState<string | null>(() => getSuperadminToken());
+  const [user, setUser] = useState<SuperadminUser | null>(null);
   const [loading, setLoading] = useState(true);
   const didMount = useRef(false);
 
-  const login = useCallback((accessToken, userData) => {
+  const login = useCallback((accessToken: string, userData: SuperadminUser) => {
     setSuperadminToken(accessToken);
     setTokenState(accessToken);
     setUser(userData);
@@ -70,12 +86,12 @@ export function SuperadminAuthProvider({ children }) {
     return () => window.removeEventListener('superadmin:unauthorized', handler);
   }, [router, pathname]);
 
-  const value = { token, user, loading, login, logout, refreshUser };
+  const value: SuperadminAuthContextValue = { token, user, loading, login, logout, refreshUser };
 
   return <SuperadminAuthContext.Provider value={value}>{children}</SuperadminAuthContext.Provider>;
 }
 
-export function useSuperadminAuth() {
+export function useSuperadminAuth(): SuperadminAuthContextValue {
   const ctx = useContext(SuperadminAuthContext);
   if (!ctx) throw new Error('useSuperadminAuth must be used within SuperadminAuthProvider');
   return ctx;

@@ -28,7 +28,7 @@ export default function LoginForm() {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [cooldown, setCooldown] = useState(0);
-  const cooldownRef = useRef(null);
+  const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (token) router.replace('/superadmin');
@@ -70,7 +70,7 @@ export default function LoginForm() {
   }, [cooldown]);
 
   const handleRequestAccess = useCallback(
-    async (e) => {
+    async (e: React.FormEvent) => {
       e.preventDefault();
       setError('');
       setSubmitting(true);
@@ -91,7 +91,7 @@ export default function LoginForm() {
   );
 
   const handleVerifyOtp = useCallback(
-    async (codeOverride) => {
+    async (codeOverride?: string) => {
       const code = codeOverride ?? otp;
       if (code.length < 6) return;
       setError('');
@@ -128,7 +128,7 @@ export default function LoginForm() {
   }, [cooldown, email]);
 
   const handleOtpChange = useCallback(
-    (value) => {
+    (value: string) => {
       setOtp(value);
       if (value.length === 6) handleVerifyOtp(value);
     },

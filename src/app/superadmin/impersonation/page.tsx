@@ -29,7 +29,36 @@ import EmptyState from '@/components/Superadmin/EmptyState';
 import Link from 'next/link';
 import { formatDateTime } from '@/utils/superadminDateUtils';
 
-function ModeBadge({ mode }) {
+interface ImpersonationSession {
+  id: number | string;
+  superadmin: string;
+  tenant_id: number | string;
+  tenant: string;
+  target_user_id: number | string;
+  reason?: string;
+  [key: string]: unknown;
+}
+
+interface ImpersonationLog {
+  id: number | string;
+  superadmin: string;
+  tenant: string;
+  tenant_id?: number | string;
+  target_user: string;
+  mode?: string;
+  reason?: string;
+  started_at?: string;
+  ended_at?: string;
+  [key: string]: unknown;
+}
+
+interface LogMeta {
+  current_page: number;
+  last_page: number;
+  total: number;
+}
+
+function ModeBadge({ mode }: { mode?: string }) {
   if (mode === 'silent')
     return (
       <Badge
@@ -50,9 +79,9 @@ function ModeBadge({ mode }) {
 }
 
 function ActiveSessions() {
-  const [sessions, setSessions] = useState([]);
+  const [sessions, setSessions] = useState<ImpersonationSession[]>([]);
   const [loading, setLoading] = useState(true);
-  const [endingId, setEndingId] = useState(null);
+  const [endingId, setEndingId] = useState<number | string | null>(null);
 
   const fetchActive = useCallback(async () => {
     try {
@@ -70,14 +99,14 @@ function ActiveSessions() {
     fetchActive();
   }, [fetchActive]);
 
-  const handleEnd = async (logId) => {
+  const handleEnd = async (logId: number | string) => {
     setEndingId(logId);
     try {
       await fetchSuperadmin(`/impersonation/logs/${logId}/end`, { method: 'POST' });
       notify.success({ title: 'Sesión terminada' });
       fetchActive();
     } catch (err) {
-      notify.error({ title: err.message || 'Error al terminar la sesión' });
+      notify.error({ title: (err as Error).message || 'Error al terminar la sesión' });
     } finally {
       setEndingId(null);
     }
@@ -143,15 +172,15 @@ function ActiveSessions() {
 }
 
 function HistoryTable() {
-  const [logs, setLogs] = useState([]);
-  const [meta, setMeta] = useState(null);
+  const [logs, setLogs] = useState<ImpersonationLog[]>([]);
+  const [meta, setMeta] = useState<LogMeta | null>(null);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [tenantFilter, setTenantFilter] = useState('');
   const [fromFilter, setFromFilter] = useState('');
-  const [tenantOptions, setTenantOptions] = useState([]);
+  const [tenantOptions, setTenantOptions] = useState<{ value: string; label: string }[]>([]);
   const [tenantsLoading, setTenantsLoading] = useState(true);
-  const debounceRef = useRef(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchTenants = useCallback(async () => {
     setTenantsLoading(true);
@@ -173,7 +202,7 @@ function HistoryTable() {
     fetchTenants();
   }, [fetchTenants]);
 
-  const fetchLogs = useCallback(async (params = {}) => {
+  const fetchLogs = useCallback(async (params: { page?: number; tenant_id?: string; from?: string } = {}) => {
     setLoading(true);
     try {
       const qp = new URLSearchParams();
@@ -357,7 +386,7 @@ function HistoryTable() {
 export default function ImpersonationPage() {
   return (
     <div className="space-y-6">
-      <h1 className="text-lg font-semibold">Impersonaciones</h1>
+      <h1 className="text-2xl font-semibold">Impersonaciones</h1>
       <ActiveSessions />
       <HistoryTable />
     </div>

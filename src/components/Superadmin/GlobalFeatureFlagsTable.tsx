@@ -25,10 +25,18 @@ const PLAN_COLORS = {
   enterprise: 'border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-400',
 };
 
+interface GlobalFlag {
+  key: string;
+  enabled: boolean;
+  description?: string | null;
+  plans?: string[];
+  [key: string]: unknown;
+}
+
 export default function GlobalFeatureFlagsTable() {
-  const [flags, setFlags] = useState([]);
+  const [flags, setFlags] = useState<GlobalFlag[]>([]);
   const [loading, setLoading] = useState(true);
-  const [togglingKey, setTogglingKey] = useState(null);
+  const [togglingKey, setTogglingKey] = useState<string | null>(null);
 
   const fetchFlags = useCallback(async () => {
     setLoading(true);
@@ -47,7 +55,7 @@ export default function GlobalFeatureFlagsTable() {
     fetchFlags();
   }, [fetchFlags]);
 
-  const handleToggle = async (flag) => {
+  const handleToggle = async (flag: GlobalFlag) => {
     setTogglingKey(flag.key);
     const newValue = !flag.enabled;
     try {
@@ -63,7 +71,7 @@ export default function GlobalFeatureFlagsTable() {
         description: flag.key,
       });
     } catch (err) {
-      notify.error({ title: err.message || 'Error al cambiar la flag' });
+      notify.error({ title: (err as Error).message || 'Error al cambiar la flag' });
     } finally {
       setTogglingKey(null);
     }
@@ -73,7 +81,7 @@ export default function GlobalFeatureFlagsTable() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold">Feature Flags globales</h1>
+          <h1 className="text-2xl font-semibold">Feature Flags globales</h1>
           <p className="text-muted-foreground text-sm">
             Controla qué funcionalidades están disponibles por defecto para cada plan.
           </p>

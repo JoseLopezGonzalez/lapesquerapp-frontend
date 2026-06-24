@@ -7,12 +7,19 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RefreshCw, Server } from 'lucide-react';
 
-export default function QueueHealthWidget({ showRefresh = false }) {
-  const [health, setHealth] = useState(null);
+interface QueueHealth {
+  failed_jobs?: number;
+  pending_jobs?: number;
+  driver?: string;
+  [key: string]: unknown;
+}
+
+export default function QueueHealthWidget({ showRefresh = false }: { showRefresh?: boolean }) {
+  const [health, setHealth] = useState<QueueHealth | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(false);
-  const intervalRef = useRef(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchHealth = useCallback(async (manual = false) => {
     if (manual) setRefreshing(true);

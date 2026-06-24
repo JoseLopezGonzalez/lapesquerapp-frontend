@@ -9,13 +9,19 @@ import { fetchSuperadmin } from '@/lib/superadminApi';
 const SUBDOMAIN_RE = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/;
 const DEBOUNCE_MS = 300;
 
-export default function SubdomainField({ value, onChange, error: externalError }) {
-  const [checking, setChecking] = useState(false);
-  const [available, setAvailable] = useState(null);
-  const [formatError, setFormatError] = useState('');
-  const debounceRef = useRef(null);
+interface SubdomainFieldProps {
+  value: string;
+  onChange: (value: string) => void;
+  error?: string;
+}
 
-  const validate = (v) => {
+export default function SubdomainField({ value, onChange, error: externalError }: SubdomainFieldProps) {
+  const [checking, setChecking] = useState(false);
+  const [available, setAvailable] = useState<boolean | null>(null);
+  const [formatError, setFormatError] = useState('');
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const validate = (v: string) => {
     if (!v) {
       setFormatError('');
       setAvailable(null);
@@ -23,13 +29,13 @@ export default function SubdomainField({ value, onChange, error: externalError }
     }
     if (!SUBDOMAIN_RE.test(v)) {
       setFormatError(
-        'Solo letras minusculas, numeros y guiones. No puede empezar/terminar con guion.'
+        'Solo letras minúsculas, números y guiones. No puede empezar/terminar con guion.'
       );
       setAvailable(null);
       return;
     }
     if (v.length > 63) {
-      setFormatError('Maximo 63 caracteres.');
+      setFormatError('Máximo 63 caracteres.');
       setAvailable(null);
       return;
     }
@@ -63,7 +69,7 @@ export default function SubdomainField({ value, onChange, error: externalError }
     return () => clearTimeout(debounceRef.current);
   }, [value]);
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const v = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
     validate(v);
     onChange(v);
@@ -94,7 +100,7 @@ export default function SubdomainField({ value, onChange, error: externalError }
       )}
       {displayError && <p className="text-destructive text-xs">{displayError}</p>}
       {!checking && available === false && !displayError && (
-        <p className="text-destructive text-xs">Este subdominio ya esta en uso.</p>
+        <p className="text-destructive text-xs">Este subdominio ya está en uso.</p>
       )}
     </div>
   );

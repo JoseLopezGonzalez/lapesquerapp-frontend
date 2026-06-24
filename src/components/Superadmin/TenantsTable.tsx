@@ -100,7 +100,7 @@ export default function TenantsTable() {
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-lg font-semibold">Tenants</h1>
+        <h1 className="text-2xl font-semibold">Tenants</h1>
         <div className="flex gap-2">
           <Button
             variant="outline"
@@ -140,7 +140,7 @@ export default function TenantsTable() {
                 <TableHead>Nombre</TableHead>
                 <TableHead className="hidden sm:table-cell">Subdominio</TableHead>
                 <TableHead className="hidden md:table-cell">Plan</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>Estado</TableHead>
                 <TableHead className="hidden lg:table-cell">Última actividad</TableHead>
                 <TableHead className="w-8" aria-hidden />
               </TableRow>

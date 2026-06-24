@@ -133,6 +133,37 @@ Todo código nuevo es `.ts` o `.tsx`. Si tocas un `.js` legacy por cualquier mot
 
 ---
 
+## Excepción documentada — Panel Superadmin
+
+El panel en `src/app/superadmin/` tiene su propia capa HTTP independiente:
+
+```
+src/lib/superadminApi.js   ← fetch directo al backend de superadmin (SIN tenant)
+src/context/SuperadminAuthContext.jsx
+```
+
+**Por qué es una excepción válida:**
+- El superadmin no pertenece a ningún tenant: no existe `X-Tenant` que inyectar.
+- Usa autenticación propia (JWT de superadmin, distinto al JWT de NextAuth).
+- `fetchWithTenant` asumiría un contexto multi-tenant que aquí no aplica.
+
+**Reglas específicas del panel Superadmin:**
+
+```typescript
+// ✅ CORRECTO dentro de src/app/superadmin/ y src/components/Superadmin/
+import { fetchSuperadmin, SuperadminApiError } from '@/lib/superadminApi';
+const res = await fetchSuperadmin('/tenants', { method: 'POST', body: JSON.stringify(data) });
+
+// ❌ NUNCA mezclar fetchWithTenant con rutas de superadmin
+import { fetchWithTenant } from '@/lib/fetchWithTenant'; // ← prohibido aquí
+
+// ❌ NUNCA usar fetchSuperadmin fuera del panel superadmin
+// Solo válido en: src/app/superadmin/**, src/components/Superadmin/**,
+//                src/lib/superadminApi.js, src/context/SuperadminAuthContext.jsx
+```
+
+---
+
 ## Módulos del dominio
 
 | Módulo                    | Entidades principales                                              | Estado                               |

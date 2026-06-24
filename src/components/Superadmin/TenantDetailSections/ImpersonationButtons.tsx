@@ -16,7 +16,13 @@ import {
 } from '@/components/ui/dialog';
 import { Loader2, UserCheck, Zap, Key } from 'lucide-react';
 
-function openTenantWithToken(subdomain, accessToken) {
+interface ImpersonationButtonsProps {
+  tenantId: number | string;
+  tenantSubdomain: string;
+  user: { id: number | string; name: string; email: string };
+}
+
+function openTenantWithToken(subdomain: string, accessToken: string) {
   const url = `https://${subdomain}.lapesquerapp.es`;
   window.open(url, '_blank');
   navigator.clipboard?.writeText(accessToken).catch(() => {});
@@ -26,7 +32,7 @@ function openTenantWithToken(subdomain, accessToken) {
   });
 }
 
-export default function ImpersonationButtons({ tenantId, tenantSubdomain, user }) {
+export default function ImpersonationButtons({ tenantId, tenantSubdomain, user }: ImpersonationButtonsProps) {
   // Silent flow
   const [silentOpen, setSilentOpen] = useState(false);
   const [silentReason, setSilentReason] = useState('');
@@ -57,7 +63,7 @@ export default function ImpersonationButtons({ tenantId, tenantSubdomain, user }
         notify.success({ title: 'Sesión iniciada', description: 'No se pudo construir la URL del tenant.' });
       }
     } catch (err) {
-      notify.error({ title: err.message || 'Error al acceder' });
+      notify.error({ title: (err as Error).message || 'Error al acceder' });
     } finally {
       setLoading(false);
     }
@@ -80,7 +86,7 @@ export default function ImpersonationButtons({ tenantId, tenantSubdomain, user }
         description: 'El administrador recibirá un correo. Cuando apruebe, usa "Usar token".',
       });
     } catch (err) {
-      notify.error({ title: err.message || 'Error al solicitar acceso' });
+      notify.error({ title: (err as Error).message || 'Error al solicitar acceso' });
     } finally {
       setLoading(false);
     }
@@ -102,7 +108,7 @@ export default function ImpersonationButtons({ tenantId, tenantSubdomain, user }
         notify.success({ title: 'Token generado', description: 'No se pudo construir la URL del tenant.' });
       }
     } catch (err) {
-      notify.error({ title: err.message || 'El acceso aún no fue aprobado o la solicitud expiró.' });
+      notify.error({ title: (err as Error).message || 'El acceso aún no fue aprobado o la solicitud expiró.' });
     } finally {
       setLoading(false);
     }

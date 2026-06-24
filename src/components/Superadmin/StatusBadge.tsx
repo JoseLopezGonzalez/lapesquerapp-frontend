@@ -22,7 +22,7 @@ const STATUS_CONFIG = {
   },
 };
 
-export default function StatusBadge({ status }) {
+export default function StatusBadge({ status }: { status: string }) {
   const config = STATUS_CONFIG[status] || { label: status, className: '' };
   return (
     <Badge variant="outline" className={cn('text-xs font-medium', config.className)}>

@@ -36,8 +36,24 @@ const STAT_CARDS = [
   { key: 'cancelled', label: 'Cancelados', icon: XCircle, color: 'text-red-600 dark:text-red-400' },
 ];
 
+interface DashboardData {
+  total?: number;
+  active?: number;
+  suspended?: number;
+  pending?: number;
+  cancelled?: number;
+  last_onboarding?: {
+    name: string;
+    subdomain: string;
+    created_at: string;
+    onboarding?: { step: number; total_steps: number };
+    onboarding_step?: number;
+  };
+  [key: string]: unknown;
+}
+
 export default function DashboardCards() {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -47,7 +63,7 @@ export default function DashboardCards() {
       const json = await res.json();
       setData(json);
     } catch (err) {
-      setError(err.message || 'Error al cargar el dashboard');
+      setError((err as Error).message || 'Error al cargar el dashboard');
     } finally {
       setLoading(false);
     }

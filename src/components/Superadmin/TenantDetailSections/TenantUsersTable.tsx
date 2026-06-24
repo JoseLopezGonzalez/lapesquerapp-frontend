@@ -24,7 +24,26 @@ const ROLE_COLORS = {
   comercial: 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400',
 };
 
-function isOnboardingIncomplete(tenant) {
+interface TenantUser {
+  id: number | string;
+  name: string;
+  email: string;
+  role: string;
+  active: boolean;
+  created_at: string;
+  [key: string]: unknown;
+}
+
+interface Tenant {
+  id: number | string;
+  subdomain: string;
+  status: string;
+  onboarding?: { status: string; step: number; total_steps: number };
+  onboarding_step?: number;
+  [key: string]: unknown;
+}
+
+function isOnboardingIncomplete(tenant: Tenant): boolean {
   if (tenant.onboarding) {
     return (
       tenant.onboarding.status !== 'completed' &&
@@ -34,8 +53,8 @@ function isOnboardingIncomplete(tenant) {
   return (tenant.onboarding_step ?? 0) < 8;
 }
 
-export default function TenantUsersTable({ tenant }) {
-  const [users, setUsers] = useState([]);
+export default function TenantUsersTable({ tenant }: { tenant: Tenant }) {
+  const [users, setUsers] = useState<TenantUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [unavailable, setUnavailable] = useState(false);
 
@@ -74,7 +93,7 @@ export default function TenantUsersTable({ tenant }) {
         <CardContent>
           <div className="text-muted-foreground flex items-center gap-2 text-sm">
             <Clock className="h-4 w-4" />
-            La base de datos del tenant aun no esta disponible. Los usuarios se mostraran cuando el
+            La base de datos del tenant aún no está disponible. Los usuarios se mostrarán cuando el
             onboarding se complete.
           </div>
         </CardContent>

@@ -18,12 +18,38 @@ import { Checkbox } from '@/components/ui/checkbox';
 import StatusBadge from '../StatusBadge';
 import { Loader2, Play, Pause, XCircle, RotateCw, Trash2, AlertTriangle } from 'lucide-react';
 
-function getOnboarding(tenant) {
+interface TenantOnboarding {
+  step: number;
+  total_steps: number;
+  status: string | null;
+  [key: string]: unknown;
+}
+
+interface Tenant {
+  id: number | string;
+  name: string;
+  subdomain: string;
+  status: string;
+  database?: string;
+  onboarding?: TenantOnboarding;
+  onboarding_step?: number;
+  [key: string]: unknown;
+}
+
+interface TenantAction {
+  action: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  variant: string;
+  hint?: string | null;
+}
+
+function getOnboarding(tenant: Tenant): TenantOnboarding {
   if (tenant.onboarding) return tenant.onboarding;
   return { step: tenant.onboarding_step ?? 0, total_steps: 8, status: null };
 }
 
-function getActions(tenant) {
+function getActions(tenant: Tenant): TenantAction[] {
   const ob = getOnboarding(tenant);
 
   switch (tenant.status) {
@@ -84,11 +110,11 @@ const CONFIRM_MESSAGES = {
   'retry-onboarding': '¿Reintentar el proceso de onboarding desde el paso actual?',
 };
 
-export default function StatusActions({ tenant, onRefresh }) {
+export default function StatusActions({ tenant, onRefresh }: { tenant: Tenant; onRefresh: () => void }) {
   const router = useRouter();
-  const [confirmAction, setConfirmAction] = useState(null);
+  const [confirmAction, setConfirmAction] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [actionError, setActionError] = useState(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [dropDatabase, setDropDatabase] = useState(false);
@@ -103,14 +129,14 @@ export default function StatusActions({ tenant, onRefresh }) {
       await fetchSuperadmin(`/tenants/${tenant.id}/${confirmAction}`, {
         method: 'POST',
       });
-      notify.success({ title: 'Accion ejecutada correctamente' });
+      notify.success({ title: 'Acción ejecutada correctamente' });
       setConfirmAction(null);
       onRefresh();
     } catch (err) {
       if (err instanceof SuperadminApiError && err.status === 422) {
-        setActionError(err.data?.message || err.message);
+        setActionError((err.data as { message?: string })?.message || err.message);
       } else {
-        notify.error({ title: err.message || 'Error al ejecutar la accion' });
+        notify.error({ title: (err as Error).message || 'Error al ejecutar la acción' });
         setConfirmAction(null);
       }
     } finally {
@@ -139,16 +165,16 @@ export default function StatusActions({ tenant, onRefresh }) {
       router.push('/superadmin/tenants');
     } catch (err) {
       if (err instanceof SuperadminApiError && err.status === 422) {
-        setActionError(err.data?.message || err.message);
+        setActionError((err.data as { message?: string })?.message || err.message);
       } else {
-        notify.error({ title: err.message || 'Error al eliminar' });
+        notify.error({ title: (err as Error).message || 'Error al eliminar' });
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const openAction = (action) => {
+  const openAction = (action: string) => {
     setActionError(null);
     if (action === 'delete') {
       setDropDatabase(false);
