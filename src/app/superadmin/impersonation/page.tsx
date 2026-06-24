@@ -187,7 +187,7 @@ function HistoryTable() {
     try {
       const res = await fetchSuperadmin('/tenants?per_page=500');
       const json = await res.json();
-      const list = json.data || [];
+      const list: { id: number | string; name: string; subdomain: string }[] = json.data || [];
       setTenantOptions(
         list.map((t) => ({ value: String(t.id), label: `${t.name} (${t.subdomain})` }))
       );

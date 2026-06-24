@@ -18,7 +18,7 @@ export default function AlertsWidget() {
     try {
       const res = await fetchSuperadmin('/alerts?resolved=false&per_page=100');
       const json = await res.json();
-      const data = json.data || [];
+      const data: { severity?: string }[] = json.data || [];
       const critical = data.filter((a) => a.severity === 'critical').length;
       const warning = data.filter((a) => a.severity === 'warning').length;
       const info = data.filter((a) => a.severity === 'info').length;

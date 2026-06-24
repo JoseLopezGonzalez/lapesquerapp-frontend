@@ -55,7 +55,7 @@ export default function SubdomainField({ value, onChange, error: externalError }
           `/tenants?search=${encodeURIComponent(value)}&per_page=1`
         );
         const json = await res.json();
-        const taken = (json.data || []).some(
+        const taken = (json.data as { subdomain: string }[] || []).some(
           (t) => t.subdomain.toLowerCase() === value.toLowerCase()
         );
         setAvailable(!taken);

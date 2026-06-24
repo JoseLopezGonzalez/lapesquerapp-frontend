@@ -132,7 +132,7 @@ function useAlertCounts() {
       try {
         const res = await fetchSuperadmin('/alerts?resolved=false&per_page=100');
         const json = await res.json();
-        const data = json.data || [];
+        const data: { severity?: string }[] = json.data || [];
         const total = json.meta?.total ?? data.length;
         const hasCritical = data.some((a) => a.severity === 'critical');
         setCounts({ total, hasCritical });
