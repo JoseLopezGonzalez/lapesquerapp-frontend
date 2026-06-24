@@ -328,7 +328,7 @@ function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
   const styleSidebar = {
     '--sidebar-width': '16rem',
     '--sidebar-width-mobile': '16rem',
-  };
+  } as React.CSSProperties;
 
   return (
     <div className="h-screen overflow-hidden">
