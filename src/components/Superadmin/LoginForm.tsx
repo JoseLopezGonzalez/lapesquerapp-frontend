@@ -221,7 +221,7 @@ export default function LoginForm() {
                   className="w-full"
                   type="button"
                   disabled={submitting || otp.length < 6}
-                  onClick={handleVerifyOtp}
+                  onClick={() => handleVerifyOtp()}
                 >
                   {submitting ? 'Verificando...' : 'Verificar código'}
                 </Button>

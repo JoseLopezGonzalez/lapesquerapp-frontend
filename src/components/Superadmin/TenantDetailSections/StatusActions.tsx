@@ -40,7 +40,7 @@ interface TenantAction {
   action: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
-  variant: string;
+  variant: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
   hint?: string | null;
 }
 
@@ -66,7 +66,7 @@ function getActions(tenant: Tenant): TenantAction[] {
       ];
 
     case 'pending': {
-      const actions = [];
+      const actions: TenantAction[] = [];
       if (ob.status === 'failed') {
         actions.push({
           action: 'retry-onboarding',

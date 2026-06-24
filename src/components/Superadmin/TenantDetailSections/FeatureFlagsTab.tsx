@@ -38,6 +38,7 @@ interface FeatureFlag {
   description?: string | null;
   override?: boolean | null;
   override_reason?: string | null;
+  has_override?: boolean | null;
   [key: string]: unknown;
 }
 

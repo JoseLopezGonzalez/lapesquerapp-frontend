@@ -49,7 +49,7 @@ function getOnboarding(tenant: Tenant): OnboardingData {
     step: tenant.onboarding_step ?? 0,
     total_steps: 8,
     step_label: null,
-    status: tenant.onboarding_step >= 8 ? 'completed' : 'in_progress',
+    status: (tenant.onboarding_step ?? 0) >= 8 ? 'completed' : 'in_progress',
     error: null,
     failed_at: null,
   };

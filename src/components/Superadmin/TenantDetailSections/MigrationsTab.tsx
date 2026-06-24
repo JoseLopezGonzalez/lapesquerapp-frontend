@@ -46,6 +46,10 @@ interface MigrationRun {
   ran_count?: number;
   failed_count?: number;
   output?: string;
+  started_at?: string | null;
+  finished_at?: string | null;
+  success?: boolean | null;
+  migrations_applied?: number | null;
   [key: string]: unknown;
 }
 
@@ -187,7 +191,7 @@ export default function MigrationsTab({ tenantId }: { tenantId: number | string 
           const hRes = await fetchSuperadmin(`/tenants/${tenantId}/migrations/history?per_page=10`);
           const hJson = await hRes.json();
           const found = (hJson.data || []).find(
-            (r) => r.id === pendingRunId.current && r.finished_at
+            (r: MigrationRun) => r.id === pendingRunId.current && r.finished_at
           );
           if (found) {
             clearInterval(pollRef.current ?? undefined);
@@ -293,7 +297,7 @@ export default function MigrationsTab({ tenantId }: { tenantId: number | string 
                 history.map((run) => {
                   const durationSeconds =
                     run.started_at && run.finished_at
-                      ? (new Date(run.finished_at) - new Date(run.started_at)) / 1000
+                      ? (new Date(run.finished_at).getTime() - new Date(run.started_at).getTime()) / 1000
                       : null;
                   const durationDisplay =
                     durationSeconds != null ? (

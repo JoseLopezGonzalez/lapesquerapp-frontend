@@ -33,6 +33,8 @@ interface Token {
   abilities?: string[];
   last_used_at?: string | null;
   expires_at?: string | null;
+  created_at?: string | null;
+  tokenable_id?: number | string | null;
   user?: string;
   [key: string]: unknown;
 }
