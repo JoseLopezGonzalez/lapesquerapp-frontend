@@ -52,6 +52,7 @@ interface MobilePalletViewProps {
   readOnly?: boolean;
   initialTab?: string | null;
   onActiveScreenChange?: (screen: PalletScreen) => void;
+  onHasPalletChangesChange?: (hasChanges: boolean) => void;
 }
 
 // Outer wrapper holds retry key so re-mounting the inner component re-initialises usePallet
@@ -75,6 +76,7 @@ function MobilePalletViewInner({
   initialPallet = null,
   readOnly: readOnlyProp = false,
   onActiveScreenChange,
+  onHasPalletChangesChange,
   onRetry,
 }: MobilePalletViewProps & { onRetry: () => void }) {
   const { data: session } = useSession();
@@ -129,6 +131,10 @@ function MobilePalletViewInner({
   const receptionId = temporalPallet?.receptionId as string | number | null | undefined;
   const isReadOnly = (receptionId !== null && receptionId !== undefined) || readOnlyProp;
   const orderIdBlocked = initialOrderId !== null;
+
+  useEffect(() => {
+    onHasPalletChangesChange?.(hasPalletChanges && !isReadOnly);
+  }, [hasPalletChanges, isReadOnly, onHasPalletChangesChange]);
 
   const handleSave = () => {
     if (isReadOnly) return;

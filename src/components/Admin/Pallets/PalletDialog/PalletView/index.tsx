@@ -112,6 +112,7 @@ interface PalletViewProps {
   initialPallet?: unknown;
   readOnly?: boolean;
   initialTab?: string | null;
+  onHasPalletChangesChange?: (hasChanges: boolean) => void;
 }
 
 export default function PalletView({
@@ -124,6 +125,7 @@ export default function PalletView({
   initialPallet = null,
   readOnly: readOnlyProp = false,
   initialTab = null,
+  onHasPalletChangesChange,
 }: PalletViewProps) {
   const {
     productsOptions,
@@ -203,6 +205,10 @@ export default function PalletView({
   const receptionId = temporalPallet?.receptionId;
   const belongsToReception = receptionId !== null && receptionId !== undefined;
   const isReadOnly = belongsToReception || readOnlyProp;
+
+  useEffect(() => {
+    onHasPalletChangesChange?.(hasPalletChanges && !isReadOnly);
+  }, [hasPalletChanges, isReadOnly, onHasPalletChangesChange]);
 
   const { onPrint } = usePrintElement({
     id: 'print-area-id',

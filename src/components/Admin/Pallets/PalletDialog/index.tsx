@@ -2,6 +2,16 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { ExternalLink, Package, X } from 'lucide-react';
@@ -50,10 +60,13 @@ export default function PalletDialog({
   const externalActor = isExternalActor(session?.user);
   const { isMobile, mounted } = useIsMobileSafe();
   const [mobileActiveScreen, setMobileActiveScreen] = useState<PalletScreen>('hub');
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [confirmCloseOpen, setConfirmCloseOpen] = useState(false);
 
   useEffect(() => {
     if (!isOpen) {
       setMobileActiveScreen('hub');
+      setHasUnsavedChanges(false);
     }
   }, [isOpen]);
 
@@ -76,7 +89,21 @@ export default function PalletDialog({
   const receptionId = temporalPallet?.receptionId as string | number | null | undefined;
   const belongsToReception = receptionId !== null && receptionId !== undefined;
 
+  const handleHasPalletChangesChange = useCallback((hasChanges: boolean) => {
+    setHasUnsavedChanges(hasChanges);
+  }, []);
+
   const handleOnClickClose = () => {
+    if (hasUnsavedChanges) {
+      setConfirmCloseOpen(true);
+    } else {
+      onCloseDialog();
+    }
+  };
+
+  const handleConfirmedClose = () => {
+    setConfirmCloseOpen(false);
+    setHasUnsavedChanges(false);
     onCloseDialog();
   };
 
@@ -219,6 +246,7 @@ export default function PalletDialog({
                 readOnly={readOnly}
                 initialTab={initialTab}
                 onActiveScreenChange={handleMobileActiveScreenChange}
+                onHasPalletChangesChange={handleHasPalletChangesChange}
               />
             ) : (
               <PalletView
@@ -231,11 +259,32 @@ export default function PalletDialog({
                 initialPallet={initialPallet as null | undefined}
                 readOnly={readOnly}
                 initialTab={initialTab}
+                onHasPalletChangesChange={handleHasPalletChangesChange}
               />
             )}
           </div>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={confirmCloseOpen} onOpenChange={setConfirmCloseOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Salir sin guardar?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tienes cambios sin guardar en este palet. Si sales ahora, se perderán.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Seguir editando</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmedClose}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Descartar cambios
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
