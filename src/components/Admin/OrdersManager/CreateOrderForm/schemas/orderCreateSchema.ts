@@ -35,7 +35,7 @@ export const orderCreateSchema = z.object({
   productionNotes: z.string().max(500, 'Máximo 500 caracteres').optional(),
   accountingNotes: z.string().max(500, 'Máximo 500 caracteres').optional(),
   emails: z.array(z.string().email('Correo inválido')).min(1, 'Debe ingresar al menos un correo'),
-  ccEmails: z.array(z.string().email('Correo inválido')).optional().default([]),
+  ccEmails: z.array(z.string().email('Correo inválido')).default([]),
   plannedProducts: z.array(plannedProductSchema).min(1, 'Al menos un producto'),
 });
 
