@@ -14,7 +14,7 @@ export function isReadOnlyOrderInProgress({ readOnly = false, status }: OrderPer
   return Boolean(readOnly && status && status !== 'finished');
 }
 
-export function getBlockedOrderSectionsForReadOnly(state: OrderPermissionState) {
+export function getBlockedOrderSectionsForReadOnly(state: OrderPermissionState): string[] {
   return isReadOnlyOrderInProgress(state) ? COMMERCIAL_IN_PROGRESS_BLOCKED_ORDER_SECTIONS : [];
 }
 
