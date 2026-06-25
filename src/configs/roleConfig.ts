@@ -16,6 +16,7 @@ export const roleConfig: Record<string, RoleKey[]> = {
   '/comercial': ['comercial'],
   '/field': ['repartidor_autoventa'],
   '/admin': ['administrador', 'direccion', 'tecnico'],
+  '/admin/external-processors': ['administrador', 'direccion', 'tecnico', 'administracion'],
   '/admin/home': ['administrador', 'direccion', 'tecnico', 'supervisor'],
   '/admin/raw-material-receptions': ['administrador', 'direccion', 'tecnico'],
   '/admin/cebo-dispatches': ['administrador', 'direccion', 'tecnico'],

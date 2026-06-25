@@ -54,12 +54,8 @@ export interface ExternalProcessor {
 }
 
 export interface ExternalProcessorOption {
-  id: number | string;
-  name: string;
-  vatNumber?: string;
-  isActive?: boolean;
-  value?: number | string;
-  label?: string;
+  value: number | string;
+  label: string;
 }
 
 export const externalProcessorService = {

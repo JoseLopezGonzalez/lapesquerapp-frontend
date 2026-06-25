@@ -291,7 +291,7 @@ export const navigationConfig = [
       {
         name: 'Transformadores externos',
         href: '/admin/external-processors',
-        allowedRoles: ['administrador', 'direccion', 'tecnico'],
+        allowedRoles: ['administrador', 'direccion', 'tecnico', 'administracion'],
       },
       {
         name: 'Liquidación de Proveedores',

@@ -290,3 +290,29 @@ export const orderAttachmentKeys = {
       normalizeQueryParams(params),
     ] as const,
 };
+
+export const externalProcessorListKeys = {
+  listPrefix: (tenantId: string | null | undefined) =>
+    ['external-processors', 'list', tenantId ?? 'unknown'] as const,
+  list: (
+    tenantId: string | null | undefined,
+    filters: Record<string, unknown> = {},
+    page = 1,
+    perPage = 12
+  ) =>
+    [
+      'external-processors',
+      'list',
+      tenantId ?? 'unknown',
+      normalizeQueryParams(filters),
+      page,
+      perPage,
+    ] as const,
+  detail: (tenantId: string | null | undefined, id: number | string | null | undefined) =>
+    ['external-processors', 'detail', tenantId ?? 'unknown', id] as const,
+};
+
+export const externalProcessorOptionKeys = {
+  list: (tenantId: string | null | undefined) =>
+    ['external-processors', 'options', tenantId ?? 'unknown'] as const,
+};
