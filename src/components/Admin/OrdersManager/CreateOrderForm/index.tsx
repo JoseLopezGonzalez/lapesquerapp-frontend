@@ -175,7 +175,8 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
   const selectedCustomerId = watch('customer');
 
   useEffect(() => {
-    if (!selectedCustomerId || selectedCustomerId === lastCustomerIdRef.current) return;
+    if (!selectedCustomerId) return;
+    if (selectedCustomerId === lastCustomerIdRef.current) return;
 
     lastCustomerIdRef.current = selectedCustomerId;
 
