@@ -1,16 +1,107 @@
-// /src/hooks/useOrderFormConfig.js
+'use client';
+
 import { useOrderFormOptions } from './useOrderFormOptions';
 import { useEffect, useState, useMemo } from 'react';
 
-const initialDefaultValues = {
+interface FormFieldOption {
+  value: string;
+  label: string;
+}
+
+interface FormFieldProps {
+  placeholder?: string;
+  searchPlaceholder?: string;
+  notFoundMessage?: string;
+  className?: string;
+  rows?: number;
+}
+
+interface FormField {
+  name: string;
+  label: string;
+  component: string;
+  rules?: Record<string, unknown>;
+  options?: FormFieldOption[];
+  colSpan?: string;
+  props?: FormFieldProps;
+  description?: string;
+}
+
+interface FormGroup {
+  group: string;
+  description?: string;
+  grid: string;
+  fields: FormField[];
+}
+
+interface OrderData {
+  orderType?: string;
+  order_type?: string;
+  entryDate?: string | Date | null;
+  loadDate?: string | Date | null;
+  salesperson?: { id?: number | string } | null;
+  fieldOperator?: { id?: number | string } | null;
+  fieldOperatorId?: number | string | null;
+  externalProcessor?: { id?: number | string } | null;
+  externalProcessorId?: number | string | null;
+  paymentTerm?: { id?: number | string } | null;
+  incoterm?: { id?: number | string } | null;
+  buyerReference?: string | null;
+  transport?: { id?: number | string } | null;
+  truckPlate?: string | null;
+  trailerPlate?: string | null;
+  transportationNotes?: string | null;
+  billingAddress?: string | null;
+  shippingAddress?: string | null;
+  productionNotes?: string | null;
+  accountingNotes?: string | null;
+  transportNotes?: string | null;
+  emails?: string[];
+  ccEmails?: string[];
+}
+
+interface DefaultValues {
+  orderType: string;
+  entryDate: Date | null;
+  loadDate: Date | null;
+  salesperson: string;
+  fieldOperator: string;
+  externalProcessor: string;
+  payment: string;
+  incoterm: string;
+  buyerReference: string;
+  transport: string;
+  truckPlate: string;
+  trailerPlate: string;
+  transportationNotes: string;
+  billingAddress: string;
+  shippingAddress: string;
+  productionNotes: string;
+  accountingNotes: string;
+  transportNotes: string;
+  emails: string[];
+  ccEmails: string[];
+}
+
+const ORDER_TYPE_OPTIONS: FormFieldOption[] = [
+  { value: 'standard', label: 'Pedido estándar' },
+  { value: 'autoventa', label: 'Autoventa' },
+];
+
+const initialDefaultValues: DefaultValues = {
   orderType: 'standard',
-  entryDate: null, // Cambiado de '' a objeto Date
-  loadDate: null, // Cambiado de '' a null
+  entryDate: null,
+  loadDate: null,
   salesperson: '',
   fieldOperator: '',
+  externalProcessor: '',
   payment: '',
   incoterm: '',
+  buyerReference: '',
   transport: '',
+  truckPlate: '',
+  trailerPlate: '',
+  transportationNotes: '',
   billingAddress: '',
   shippingAddress: '',
   productionNotes: '',
@@ -20,12 +111,7 @@ const initialDefaultValues = {
   ccEmails: [],
 };
 
-const ORDER_TYPE_OPTIONS = [
-  { value: 'standard', label: 'Pedido estándar' },
-  { value: 'autoventa', label: 'Autoventa' },
-];
-
-const initialFormGroups = [
+const initialFormGroups: FormGroup[] = [
   {
     group: 'Tipo de pedido',
     description: 'Estándar o autoventa según el tipo de operación.',
@@ -97,13 +183,19 @@ const initialFormGroups = [
         options: [],
         props: { placeholder: 'Seleccionar Incoterm' },
       },
-      /* buyerReference */
       {
         name: 'buyerReference',
         label: 'Referencia del comprador',
         component: 'Input',
         rules: { required: 'La referencia del comprador es obligatoria' },
         props: { placeholder: 'Referencia del comprador' },
+      },
+      {
+        name: 'externalProcessor',
+        label: 'Maquilador / Transformador externo',
+        component: 'Select',
+        options: [],
+        props: { placeholder: 'Sin maquilador' },
       },
     ],
   },
@@ -125,7 +217,6 @@ const initialFormGroups = [
           notFoundMessage: 'No se encontraron resultados',
         },
       },
-      /* truckPlate y trailerPlate */
       {
         name: 'truckPlate',
         label: 'Matrícula camión',
@@ -138,7 +229,6 @@ const initialFormGroups = [
         component: 'Input',
         props: { placeholder: 'R-0000 AAA' },
       },
-      /* transportationNotes */
       {
         name: 'transportationNotes',
         label: 'Observaciones',
@@ -221,7 +311,7 @@ const initialFormGroups = [
         label: 'Para',
         component: 'emailList',
         rules: {
-          validate: (emails) =>
+          validate: (emails: unknown) =>
             Array.isArray(emails) && emails.length > 0 ? true : 'Debe ingresar al menos un correo',
         },
         props: {
@@ -233,7 +323,7 @@ const initialFormGroups = [
         label: 'CC',
         component: 'emailList',
         rules: {
-          validate: (emails) => (Array.isArray(emails) ? true : 'Formato inválido en CC'),
+          validate: (emails: unknown) => (Array.isArray(emails) ? true : 'Formato inválido en CC'),
         },
         props: {
           placeholder: 'Introduce correos en copia (opcional)',
@@ -243,23 +333,21 @@ const initialFormGroups = [
   },
 ];
 
-export function useOrderFormConfig({ orderData }) {
-  const [defaultValues, setDefaultValues] = useState(initialDefaultValues);
-  const [formGroups, setFormGroups] = useState(initialFormGroups);
+function parseDate(dateValue: string | Date | null | undefined): Date | null {
+  if (!dateValue) return null;
+  if (dateValue instanceof Date) return dateValue;
+  if (typeof dateValue === 'string') {
+    const parsed = new Date(dateValue);
+    return isNaN(parsed.getTime()) ? null : parsed;
+  }
+  return null;
+}
+
+export function useOrderFormConfig({ orderData }: { orderData?: OrderData | null }) {
+  const [defaultValues, setDefaultValues] = useState<DefaultValues>(initialDefaultValues);
+  const [formGroups, setFormGroups] = useState<FormGroup[]>(initialFormGroups);
   const { options, loading: optionsLoading } = useOrderFormOptions();
 
-  // Función helper para convertir fechas de forma segura
-  const parseDate = (dateValue) => {
-    if (!dateValue) return null;
-    if (dateValue instanceof Date) return dateValue;
-    if (typeof dateValue === 'string') {
-      const parsed = new Date(dateValue);
-      return isNaN(parsed.getTime()) ? null : parsed;
-    }
-    return null;
-  };
-
-  // Actualizar defaultValues cuando cambie orderData
   useEffect(() => {
     if (orderData) {
       setDefaultValues({
@@ -269,6 +357,7 @@ export function useOrderFormConfig({ orderData }) {
         loadDate: parseDate(orderData.loadDate),
         salesperson: `${orderData.salesperson?.id || ''}`,
         fieldOperator: `${orderData.fieldOperator?.id || orderData.fieldOperatorId || ''}`,
+        externalProcessor: `${orderData.externalProcessorId || orderData.externalProcessor?.id || ''}`,
         payment: `${orderData.paymentTerm?.id || ''}`,
         incoterm: `${orderData.incoterm?.id || ''}`,
         buyerReference: orderData.buyerReference || '',
@@ -287,11 +376,7 @@ export function useOrderFormConfig({ orderData }) {
     }
   }, [orderData]);
 
-  // Actualizar formGroups cuando se carguen las opciones
-  // Usar useMemo para evitar recrear formGroups innecesariamente
   const formGroupsWithOptions = useMemo(() => {
-    // Si está cargando y no tenemos opciones aún, retornar initialFormGroups
-    // Pero si ya tenemos opciones cargadas (aunque esté recargando), mantenerlas
     if (
       optionsLoading &&
       !options.salespeople?.length &&
@@ -320,9 +405,9 @@ export function useOrderFormConfig({ orderData }) {
             if (field.name === 'fieldOperator') {
               return {
                 ...field,
-                options: options.fieldOperators.map((operator) => ({
-                  value: `${operator.id}`,
-                  label: `${operator.name}`,
+                options: options.fieldOperators.map((op) => ({
+                  value: `${op.id}`,
+                  label: `${op.name}`,
                 })),
               };
             }
@@ -341,6 +426,15 @@ export function useOrderFormConfig({ orderData }) {
                 options: options.incoterms.map((inc) => ({
                   value: `${inc.id}`,
                   label: `${inc.name}`,
+                })),
+              };
+            }
+            if (field.name === 'externalProcessor') {
+              return {
+                ...field,
+                options: options.externalProcessors.map((ep) => ({
+                  value: `${ep.value}`,
+                  label: ep.label,
                 })),
               };
             }
@@ -373,11 +467,10 @@ export function useOrderFormConfig({ orderData }) {
     options.paymentTerms,
     options.incoterms,
     options.transports,
+    options.externalProcessors,
     optionsLoading,
   ]);
 
-  // Asegurarse de que loading se actualice correctamente cuando optionsLoading cambia
-  // Usar useMemo para calcular loading basándose en si realmente hay opciones
   const actualLoading = useMemo(() => {
     const hasOptions =
       options.salespeople.length > 0 ||
@@ -385,10 +478,7 @@ export function useOrderFormConfig({ orderData }) {
       options.incoterms.length > 0 ||
       options.paymentTerms.length > 0 ||
       options.transports.length > 0;
-
-    const calculatedLoading = hasOptions ? false : optionsLoading && !hasOptions;
-
-    return calculatedLoading;
+    return hasOptions ? false : optionsLoading && !hasOptions;
   }, [
     optionsLoading,
     options.salespeople.length,
@@ -399,14 +489,10 @@ export function useOrderFormConfig({ orderData }) {
   ]);
 
   useEffect(() => {
-    // Actualizar formGroups cuando las opciones cambien
-    // Si está cargando pero ya tenemos opciones, actualizarlas igualmente
-    // para mantener los valores visibles durante recargas
     setFormGroups(formGroupsWithOptions);
   }, [formGroupsWithOptions]);
 
-  const loading = actualLoading;
   const loadingProgress = { current: actualLoading ? 0 : 4, total: 4 };
 
-  return { defaultValues, formGroups, loading, loadingProgress };
+  return { defaultValues, formGroups, loading: actualLoading, loadingProgress };
 }

@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useMemo } from 'react';
 import { FileText, Package, Truck, Wallet } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,24 +16,70 @@ import Image from 'next/image';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-const getNullableCurrency = (value) => (value == null ? '—' : formatDecimalCurrency(value));
-const getNullablePercentage = (value) => (value == null ? '—' : `${formatDecimal(value)}%`);
-const getNullableCurrencyPerKg = (value) => (value == null ? '—' : `${formatDecimal(value)} €/kg`);
+interface ExternalProcessor {
+  id?: number | string;
+  name?: string;
+  vatNumber?: string;
+  contactPerson?: string;
+  phone?: string;
+  [key: string]: unknown;
+}
 
-// Mover API key a constante fuera del componente
+interface OrderIncoterm {
+  code?: string;
+  description?: string;
+  [key: string]: unknown;
+}
+
+interface OrderTransport {
+  name?: string;
+  emails?: string[];
+  ccEmails?: string[];
+  [key: string]: unknown;
+}
+
+interface Order {
+  salesperson?: { name?: string } | null;
+  fieldOperator?: { name?: string } | null;
+  paymentTerm?: { name?: string } | null;
+  incoterm?: OrderIncoterm | null;
+  externalProcessor?: ExternalProcessor | null;
+  totalCost?: number | null;
+  costPerKg?: number | null;
+  grossMargin?: number | null;
+  marginPerKg?: number | null;
+  marginPercentage?: number | null;
+  totalNetWeight?: number | null;
+  totalBoxes?: number | null;
+  numberOfPallets?: number | null;
+  totalAmount?: number | null;
+  revenuePerKg?: number | null;
+  shippingAddress?: string | null;
+  transport?: OrderTransport | null;
+  transportationNotes?: string | null;
+  truckPlate?: string | null;
+  trailerPlate?: string | null;
+  [key: string]: unknown;
+}
+
+const getNullableCurrency = (value: number | null | undefined) =>
+  value == null ? '—' : formatDecimalCurrency(value);
+const getNullablePercentage = (value: number | null | undefined) =>
+  value == null ? '—' : `${formatDecimal(value)}%`;
+const getNullableCurrencyPerKg = (value: number | null | undefined) =>
+  value == null ? '—' : `${formatDecimal(value)} €/kg`;
+
 const GOOGLE_API_KEY =
   process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyBh1lKDP8noxYHU6dXDs3Yjqyg_PpC5Ks4';
 
 const OrderDetails = () => {
-  const { order } = useOrderContext();
+  const { order } = useOrderContext() as { order: Order };
   const isMobile = useIsMobile();
 
-  // Memoizar encodedAddress para evitar recálculos innecesarios
   const encodedAddress = useMemo(() => {
     return order?.shippingAddress ? encodeURIComponent(order.shippingAddress) : '';
   }, [order?.shippingAddress]);
 
-  // Memoizar URL del mapa
   const mapUrl = useMemo(() => {
     if (!encodedAddress) return '';
     return `https://www.google.com/maps/embed/v1/place?key=${GOOGLE_API_KEY}&q=${encodedAddress}`;
@@ -68,6 +116,29 @@ const OrderDetails = () => {
                       ? `${order.incoterm.code} - ${order.incoterm.description}`
                       : '—'}
                   </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-muted-foreground text-sm font-medium">Maquilador</div>
+                  {order.externalProcessor ? (
+                    <div className="font-medium">
+                      <div>{order.externalProcessor.name}</div>
+                      {order.externalProcessor.vatNumber && (
+                        <div className="text-muted-foreground text-xs">
+                          {order.externalProcessor.vatNumber}
+                        </div>
+                      )}
+                      {order.externalProcessor.contactPerson && (
+                        <div className="text-muted-foreground text-xs">
+                          {order.externalProcessor.contactPerson}
+                          {order.externalProcessor.phone
+                            ? ` · ${order.externalProcessor.phone}`
+                            : ''}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-muted-foreground font-medium">Sin maquilador</div>
+                  )}
                 </div>
               </div>
             </div>
@@ -263,6 +334,27 @@ const OrderDetails = () => {
               {order.incoterm ? `${order.incoterm.code} - ${order.incoterm.description}` : '—'}
             </div>
           </div>
+          <div>
+            <div className="text-muted-foreground text-sm">Maquilador</div>
+            {order.externalProcessor ? (
+              <div className="text-sm font-medium">
+                <div>{order.externalProcessor.name}</div>
+                {order.externalProcessor.vatNumber && (
+                  <div className="text-muted-foreground text-xs">
+                    {order.externalProcessor.vatNumber}
+                  </div>
+                )}
+                {order.externalProcessor.contactPerson && (
+                  <div className="text-muted-foreground text-xs">
+                    {order.externalProcessor.contactPerson}
+                    {order.externalProcessor.phone ? ` · ${order.externalProcessor.phone}` : ''}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-muted-foreground text-sm">Sin maquilador</div>
+            )}
+          </div>
         </CardContent>
       </Card>
       <Card>
@@ -329,53 +421,6 @@ const OrderDetails = () => {
           </div>
         </CardContent>
       </Card>
-      {/* <Card className="md:col-span-2 bg-transparent">
-                <CardHeader className="pb-2">
-                    <CardTitle className="text-base font-medium flex items-center gap-2">
-                        <Truck className="h-4 w-4" />
-                        Envío
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="grid gap-4 ">
-                    <div className="grid md:grid-cols-2 gap-4">
-                        <div>
-                            <div className="text-sm font-medium mb-1.5">Dirección de entrega</div>
-                            <p className="text-sm font-light whitespace-pre-line">{order.shippingAddress}</p>
-                        </div>
-                        <div>
-                            <div className="text-sm font-medium mb-1.5">Transporte</div>
-                            <div className="text-sm">{order.transport.name}</div>
-                            <div className="text-sm text-muted-foreground whitespace-pre-line">
-                                <ul className="list-disc px-5 pl-8">
-                                    {order.transport.emailsArray.map((email) => (
-                                        <li key={email} className="text-xs font-medium">
-                                            <a href={`mailto:${email}`} className=" hover:underline">
-                                                {email}
-                                            </a>
-                                        </li>
-                                    ))}
-                                    {order.transport.ccEmailsArray.map((copyEmail) => (
-                                        <li key={copyEmail} className="text-xs font-medium">
-                                            <div className="flex gap-1 items-center">
-                                                <Badge variant="outline" className="px-1">CC</Badge>
-                                                <a href={`mailto:${copyEmail}`} className=" hover:underline">
-                                                    {copyEmail}
-                                                </a>
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <div className="text-sm font-medium mb-1.5">Observaciones</div>
-                        <div className="text-sm text-muted-foreground">
-                            Temperatura controlada requerida durante el transporte
-                        </div>
-                    </div>
-                </CardContent>
-            </Card> */}
       <Card className="md:col-span-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -427,14 +472,11 @@ const OrderDetails = () => {
             <div>
               <div className="text-muted-foreground text-sm">Matrículas</div>
               <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-2">
-                {/* Matrícula del Camión */}
-
                 <div>
-                  {/* <div className="text-xs font-medium text-muted-foreground mb-1">Camión</div> */}
                   <div className="flex h-[32px] w-full items-center overflow-hidden rounded border border-black bg-blue-700 shadow-md dark:border-white">
                     <div className="flex h-full items-center justify-center px-1 text-white">
                       <div className="flex flex-col items-center gap-0.5 text-xs leading-none">
-                        <span className=" ">
+                        <span>
                           <Image
                             src="/images/transports/eu-stars.svg"
                             width={13}
@@ -458,9 +500,7 @@ const OrderDetails = () => {
                   </div>
                 </div>
 
-                {/* Matrícula del Remolque */}
                 <div>
-                  {/* <div className="text-xs font-medium text-muted-foreground mb-1">Remolque</div> */}
                   <div className="flex h-[34px] w-full items-center overflow-hidden rounded border-2 border-red-800 bg-red-600 shadow-md">
                     <div
                       style={{ fontFamily: 'OCR A Std, monospace', fontWeight: 600 }}

@@ -22,6 +22,7 @@ export const orderCreateSchema = z.object({
   loadDate: z.date({ required_error: 'La fecha de carga es obligatoria' }),
   salesperson: z.string().min(1, 'Seleccione un comercial'),
   fieldOperator: z.string().optional(),
+  externalProcessor: z.string().optional(),
   payment: z.string().min(1, 'Seleccione la forma de pago'),
   incoterm: z.string().min(1, 'Seleccione un incoterm'),
   buyerReference: z.string().min(1, 'La referencia del comprador es obligatoria'),
@@ -37,3 +38,5 @@ export const orderCreateSchema = z.object({
   ccEmails: z.array(z.string().email('Correo inválido')).optional().default([]),
   plannedProducts: z.array(plannedProductSchema).min(1, 'Al menos un producto'),
 });
+
+export type OrderCreateFormData = z.infer<typeof orderCreateSchema>;

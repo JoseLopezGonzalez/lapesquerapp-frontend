@@ -1,42 +1,54 @@
-// /src/hooks/useOrderFormOptions.js
-// Hook compartido para cargar opciones del formulario de pedidos
+'use client';
+
 import { getIncotermsOptions } from '@/services/incotermService';
 import { getPaymentTermsOptions } from '@/services/paymentTernService';
 import { getSalespeopleOptions } from '@/services/salespersonService';
 import { getTransportsOptions } from '@/services/transportService';
 import { getFieldOperatorsOptions } from '@/services/fieldOperatorService';
+import { externalProcessorService } from '@/services/domain/external-processors/externalProcessorService';
+import type { ExternalProcessorOption } from '@/services/domain/external-processors/externalProcessorService';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState, useRef } from 'react';
 
-/**
- * Hook para cargar opciones del formulario de pedidos
- * Carga todas las opciones en paralelo para mejor rendimiento
- *
- * @returns {Object} { options, loading, error }
- *   - options: { salespeople, fieldOperators, incoterms, paymentTerms, transports }
- *   - loading: boolean
- *   - error: Error | null
- */
-export function useOrderFormOptions(params = {}) {
+interface OptionItem {
+  id: number | string;
+  name: string;
+  [key: string]: unknown;
+}
+
+interface OrderFormOptionsState {
+  salespeople: OptionItem[];
+  fieldOperators: OptionItem[];
+  incoterms: OptionItem[];
+  paymentTerms: OptionItem[];
+  transports: OptionItem[];
+  externalProcessors: ExternalProcessorOption[];
+}
+
+interface UseOrderFormOptionsParams {
+  enabled?: boolean;
+}
+
+export function useOrderFormOptions(params: UseOrderFormOptionsParams = {}) {
   const { enabled = true } = params;
   const { data: session } = useSession();
-  const [options, setOptions] = useState({
+  const [options, setOptions] = useState<OrderFormOptionsState>({
     salespeople: [],
     fieldOperators: [],
     incoterms: [],
     paymentTerms: [],
     transports: [],
+    externalProcessors: [],
   });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<Error | null>(null);
   const isMountedRef = useRef(true);
   const hasLoadedRef = useRef(false);
 
   useEffect(() => {
     isMountedRef.current = true;
-    const token = session?.user?.accessToken;
+    const token = session?.user?.accessToken as string | undefined;
 
-    // Si ya se cargaron las opciones, asegurarse de que loading sea false y no volver a cargar
     if (hasLoadedRef.current && token) {
       setLoading(false);
       return;
@@ -49,72 +61,68 @@ export function useOrderFormOptions(params = {}) {
 
     if (!token) {
       setLoading(false);
-      hasLoadedRef.current = false; // Resetear para permitir recarga cuando haya token
+      hasLoadedRef.current = false;
       return;
     }
 
-    // Marcar que se está cargando
     hasLoadedRef.current = false;
     setLoading(true);
 
-    // Cargar todas las opciones en paralelo
     Promise.all([
-      getSalespeopleOptions(token).catch((err) => {
+      getSalespeopleOptions(token).catch((err: unknown) => {
         console.error('Error loading salespeople:', err);
-        return [];
+        return [] as OptionItem[];
       }),
-      getFieldOperatorsOptions(token).catch((err) => {
+      getFieldOperatorsOptions(token).catch((err: unknown) => {
         console.error('Error loading field operators:', err);
-        return [];
+        return [] as OptionItem[];
       }),
-      getIncotermsOptions(token).catch((err) => {
+      getIncotermsOptions(token).catch((err: unknown) => {
         console.error('Error loading incoterms:', err);
-        return [];
+        return [] as OptionItem[];
       }),
-      getPaymentTermsOptions(token).catch((err) => {
+      getPaymentTermsOptions(token).catch((err: unknown) => {
         console.error('Error loading payment terms:', err);
-        return [];
+        return [] as OptionItem[];
       }),
-      getTransportsOptions(token).catch((err) => {
+      getTransportsOptions(token).catch((err: unknown) => {
         console.error('Error loading transports:', err);
-        return [];
+        return [] as OptionItem[];
+      }),
+      externalProcessorService.getOptions().catch((err: unknown) => {
+        console.error('Error loading external processors:', err);
+        return [] as ExternalProcessorOption[];
       }),
     ])
-      .then(([salespeople, fieldOperators, incoterms, paymentTerms, transports]) => {
-        // Verificar que el componente sigue montado antes de actualizar estado
-        if (!isMountedRef.current) {
-          return;
-        }
+      .then(([salespeople, fieldOperators, incoterms, paymentTerms, transports, externalProcessors]) => {
+        if (!isMountedRef.current) return;
 
         setOptions({
-          salespeople: salespeople || [],
-          fieldOperators: fieldOperators || [],
-          incoterms: incoterms || [],
-          paymentTerms: paymentTerms || [],
-          transports: transports || [],
+          salespeople: (salespeople as OptionItem[]) || [],
+          fieldOperators: (fieldOperators as OptionItem[]) || [],
+          incoterms: (incoterms as OptionItem[]) || [],
+          paymentTerms: (paymentTerms as OptionItem[]) || [],
+          transports: (transports as OptionItem[]) || [],
+          externalProcessors: (externalProcessors as ExternalProcessorOption[]) || [],
         });
         setLoading(false);
         setError(null);
         hasLoadedRef.current = true;
       })
-      .catch((err) => {
+      .catch((err: unknown) => {
         console.error('Error loading form options:', err);
         if (isMountedRef.current) {
-          setError(err);
+          setError(err instanceof Error ? err : new Error(String(err)));
           setLoading(false);
         }
       });
 
-    // Cleanup: marcar como desmontado cuando el componente se desmonte
     return () => {
       isMountedRef.current = false;
     };
   }, [session?.user?.accessToken, enabled]);
 
-  // Efecto separado para corregir el estado de loading si las opciones ya están cargadas
-  // Esto evita que el loading se quede en true cuando las opciones ya están disponibles
   useEffect(() => {
-    // Si tenemos opciones cargadas y loading está en true, corregirlo inmediatamente
     const hasAnyOptions =
       options.salespeople.length > 0 ||
       options.fieldOperators.length > 0 ||
@@ -122,10 +130,8 @@ export function useOrderFormOptions(params = {}) {
       options.paymentTerms.length > 0 ||
       options.transports.length > 0;
 
-    // Si tenemos opciones pero loading está en true, corregirlo
     if (hasAnyOptions && loading) {
       setLoading(false);
-      // Si no se había marcado como cargado, marcarlo ahora
       if (!hasLoadedRef.current) {
         hasLoadedRef.current = true;
       }
@@ -139,7 +145,6 @@ export function useOrderFormOptions(params = {}) {
     options.transports.length,
   ]);
 
-  // Calcular loading final: si tenemos opciones, no deberíamos estar en loading
   const hasAnyOptions =
     options.salespeople.length > 0 ||
     options.fieldOperators.length > 0 ||

@@ -1,21 +1,76 @@
-import { fetchWithTenant } from '@lib/fetchWithTenant';
+'use client';
+
 import { getIncotermsOptions } from '@/services/incotermService';
 import { getPaymentTermsOptions } from '@/services/paymentTernService';
 import { getSalespeopleOptions } from '@/services/salespersonService';
 import { getTransportsOptions } from '@/services/transportService';
-import { getCustomer, getCustomersOptions } from '@/services/customerService';
+import { getCustomersOptions } from '@/services/customerService';
 import { getFieldOperatorsOptions } from '@/services/fieldOperatorService';
+import { externalProcessorService } from '@/services/domain/external-processors/externalProcessorService';
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 
+interface FormFieldOption {
+  value: string;
+  label: string;
+}
+
+interface FormFieldProps {
+  placeholder?: string;
+  searchPlaceholder?: string;
+  notFoundMessage?: string;
+  className?: string;
+  rows?: number;
+}
+
+interface FormField {
+  name: string;
+  label: string;
+  component: string;
+  rules?: Record<string, unknown>;
+  options?: FormFieldOption[];
+  colSpan?: string;
+  props?: FormFieldProps;
+}
+
+interface FormGroup {
+  group: string;
+  grid: string;
+  fields: FormField[];
+}
+
+interface DefaultValues {
+  customer: string;
+  entryDate: Date;
+  loadDate: Date;
+  salesperson: string;
+  fieldOperator: string;
+  externalProcessor: string;
+  payment: string;
+  incoterm: string;
+  buyerReference: string;
+  transport: string;
+  truckPlate: string;
+  trailerPlate: string;
+  transportationNotes: string;
+  billingAddress: string;
+  shippingAddress: string;
+  productionNotes: string;
+  accountingNotes: string;
+  emails: string[];
+  ccEmails: string[];
+  plannedProducts: unknown[];
+}
+
 const today = new Date();
 
-const initialDefaultValues = {
+const initialDefaultValues: DefaultValues = {
   customer: '',
-  entryDate: today, // Cambiado de string a objeto Date
-  loadDate: today, // Fecha de carga por defecto: fecha actual
+  entryDate: today,
+  loadDate: today,
   salesperson: '',
   fieldOperator: '',
+  externalProcessor: '',
   payment: '',
   incoterm: '',
   buyerReference: '',
@@ -32,7 +87,7 @@ const initialDefaultValues = {
   plannedProducts: [],
 };
 
-const initialFormGroups = [
+const initialFormGroups: FormGroup[] = [
   {
     group: 'Cliente',
     grid: 'grid-cols-1 gap-4',
@@ -107,13 +162,19 @@ const initialFormGroups = [
         options: [],
         props: { placeholder: 'Seleccionar Incoterm' },
       },
-      /* buyerReference */
       {
         name: 'buyerReference',
         label: 'Referencia del comprador',
         component: 'Input',
         rules: { required: 'La referencia del comprador es obligatoria' },
         props: { placeholder: 'Referencia del comprador' },
+      },
+      {
+        name: 'externalProcessor',
+        label: 'Maquilador / Transformador externo',
+        component: 'Select',
+        options: [],
+        props: { placeholder: 'Sin maquilador' },
       },
     ],
   },
@@ -225,7 +286,7 @@ const initialFormGroups = [
         label: 'Para',
         component: 'emailList',
         rules: {
-          validate: (emails) =>
+          validate: (emails: unknown) =>
             Array.isArray(emails) && emails.length > 0 ? true : 'Debe ingresar al menos un correo',
         },
         props: {
@@ -237,7 +298,7 @@ const initialFormGroups = [
         label: 'CC',
         component: 'emailList',
         rules: {
-          validate: (emails) => (Array.isArray(emails) ? true : 'Formato inválido en CC'),
+          validate: (emails: unknown) => (Array.isArray(emails) ? true : 'Formato inválido en CC'),
         },
         props: {
           placeholder: 'Introduce correos en copia (opcional)',
@@ -249,19 +310,19 @@ const initialFormGroups = [
 
 export function useOrderCreateFormConfig() {
   const { data: session } = useSession();
-  const [defaultValues, setDefaultValues] = useState(initialDefaultValues);
-  const [formGroups, setFormGroups] = useState(initialFormGroups);
+  const [defaultValues] = useState<DefaultValues>(initialDefaultValues);
+  const [formGroups, setFormGroups] = useState<FormGroup[]>(initialFormGroups);
   const [loading, setLoading] = useState(true);
-  const token = session?.user?.accessToken;
+  const token = (session?.user as { accessToken?: string })?.accessToken;
 
   useEffect(() => {
-    const fetchWithTenantOptions = async () => {
+    const fetchOptions = async () => {
       try {
         if (!token) {
           setLoading(false);
           return;
         }
-        const [salespeople, paymentTerms, incoterms, transports, customers, fieldOperators] =
+        const [salespeople, paymentTerms, incoterms, transports, customers, fieldOperators, externalProcessors] =
           await Promise.all([
             getSalespeopleOptions(token),
             getPaymentTermsOptions(token),
@@ -269,6 +330,7 @@ export function useOrderCreateFormConfig() {
             getTransportsOptions(token),
             getCustomersOptions(token),
             getFieldOperatorsOptions(token),
+            externalProcessorService.getOptions().catch(() => []),
           ]);
 
         setFormGroups((prev) =>
@@ -281,7 +343,9 @@ export function useOrderCreateFormConfig() {
                     field.name === 'customer'
                       ? {
                           ...field,
-                          options: customers.map((c) => ({ value: `${c.id}`, label: `${c.name}` })),
+                          options: (customers as Array<{ id: number | string; name: string }>).map(
+                            (c) => ({ value: `${c.id}`, label: `${c.name}` })
+                          ),
                         }
                       : field
                   ),
@@ -293,28 +357,41 @@ export function useOrderCreateFormConfig() {
                     if (field.name === 'salesperson') {
                       return {
                         ...field,
-                        options: salespeople.map((sp) => ({ value: `${sp.id}`, label: sp.name })),
+                        options: (salespeople as Array<{ id: number | string; name: string }>).map(
+                          (sp) => ({ value: `${sp.id}`, label: sp.name })
+                        ),
                       };
                     }
                     if (field.name === 'fieldOperator') {
                       return {
                         ...field,
-                        options: fieldOperators.map((operator) => ({
-                          value: `${operator.id}`,
-                          label: operator.name,
-                        })),
+                        options: (fieldOperators as Array<{ id: number | string; name: string }>).map(
+                          (op) => ({ value: `${op.id}`, label: op.name })
+                        ),
                       };
                     }
                     if (field.name === 'payment') {
                       return {
                         ...field,
-                        options: paymentTerms.map((pt) => ({ value: `${pt.id}`, label: pt.name })),
+                        options: (paymentTerms as Array<{ id: number | string; name: string }>).map(
+                          (pt) => ({ value: `${pt.id}`, label: pt.name })
+                        ),
                       };
                     }
                     if (field.name === 'incoterm') {
                       return {
                         ...field,
-                        options: incoterms.map((inc) => ({ value: `${inc.id}`, label: inc.name })),
+                        options: (incoterms as Array<{ id: number | string; name: string }>).map(
+                          (inc) => ({ value: `${inc.id}`, label: inc.name })
+                        ),
+                      };
+                    }
+                    if (field.name === 'externalProcessor') {
+                      return {
+                        ...field,
+                        options: (externalProcessors as Array<{ value: number | string; label: string }>).map(
+                          (ep) => ({ value: `${ep.value}`, label: ep.label })
+                        ),
                       };
                     }
                     return field;
@@ -327,7 +404,9 @@ export function useOrderCreateFormConfig() {
                     field.name === 'transport'
                       ? {
                           ...field,
-                          options: transports.map((tr) => ({ value: `${tr.id}`, label: tr.name })),
+                          options: (transports as Array<{ id: number | string; name: string }>).map(
+                            (tr) => ({ value: `${tr.id}`, label: tr.name })
+                          ),
                         }
                       : field
                   ),
@@ -344,7 +423,7 @@ export function useOrderCreateFormConfig() {
       }
     };
 
-    fetchWithTenantOptions();
+    fetchOptions();
   }, [token]);
 
   return { defaultValues, formGroups, loading };

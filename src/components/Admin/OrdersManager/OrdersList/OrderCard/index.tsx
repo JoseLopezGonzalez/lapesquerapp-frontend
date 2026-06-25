@@ -1,3 +1,5 @@
+'use client';
+
 import { formatDate } from '@/helpers/formats/dates/formatDates';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ChevronRight } from 'lucide-react';
@@ -5,7 +7,26 @@ import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import StatusBadge from '../../StatusBadge';
 
-const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
+interface OrderCardOrder {
+  id: number | string;
+  status?: string;
+  orderType?: string;
+  offerId?: number | string | null;
+  loadDate?: string | null;
+  customer?: { name?: string } | null;
+  numberOfBoxes?: number | null;
+  externalProcessor?: { id?: number | string; name?: string } | null;
+  [key: string]: unknown;
+}
+
+interface OrderCardProps {
+  order: OrderCardOrder;
+  onClick: () => void;
+  disabled?: boolean;
+  isSelected?: boolean;
+}
+
+const OrderCard = ({ order, onClick, disabled, isSelected = false }: OrderCardProps) => {
   const isMobile = useIsMobile();
 
   const orderId = order.id.toString().padStart(5, '0');
@@ -118,6 +139,11 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
                     Desde oferta
                   </span>
                 )}
+                {order?.externalProcessor && (
+                  <span className="inline-flex items-center rounded-full border border-amber-400/50 bg-amber-500/15 px-2 py-0.5 text-[11px] font-medium text-amber-700 dark:border-amber-500/50 dark:text-amber-300">
+                    {order.externalProcessor.name ?? 'Maquilador'}
+                  </span>
+                )}
               </div>
             </div>
             <ChevronRight className="text-muted-foreground h-5 w-5 flex-shrink-0" aria-hidden />
@@ -156,6 +182,11 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }) => {
               {order?.offerId && (
                 <span className="inline-flex items-center rounded-full border border-blue-400/50 bg-blue-500/15 px-2 py-0.5 text-[11px] font-medium text-blue-700 dark:border-blue-500/50 dark:text-blue-300">
                   Desde oferta
+                </span>
+              )}
+              {order?.externalProcessor && (
+                <span className="inline-flex items-center rounded-full border border-amber-400/50 bg-amber-500/15 px-2 py-0.5 text-[11px] font-medium text-amber-700 dark:border-amber-500/50 dark:text-amber-300">
+                  {order.externalProcessor.name ?? 'Maquilador'}
                 </span>
               )}
             </div>
