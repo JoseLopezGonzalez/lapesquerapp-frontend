@@ -175,7 +175,7 @@ export const GenericFilters = ({ data }) => {
         <DialogTrigger asChild>
           <Button variant="secondary" size="sm">
             <IoFilter className="h-4 w-4" />
-            <span className="hidden xl:flex">Filtros</span>
+            <span className="hidden sm:inline">Filtros</span>
             {numberOfActiveFilters > 0 && (
               <span className="border-foreground-200 text-muted-foreground inline-flex items-center gap-1.5 rounded-full border px-1.5 py-0.5 text-xs font-medium">
                 {numberOfActiveFilters}
@@ -183,7 +183,7 @@ export const GenericFilters = ({ data }) => {
             )}
           </Button>
         </DialogTrigger>
-        <DialogContent size="2xl">
+        <DialogContent size="2xl" className="max-h-[90dvh] overflow-hidden">
           <DialogHeader>
             <DialogTitle>Filtros</DialogTitle>
             <GenericFiltersModal

@@ -72,7 +72,7 @@ export const AccordionBody = ({
   // Empty state
   if (!data.rows.length) {
     return (
-      <div className="mb-4 flex h-full flex-col items-center justify-center py-24">
+      <div className="mb-4 flex h-full flex-col items-center justify-center py-12 md:py-24">
         <EmptyState title={emptyState.title} description={emptyState.description} />
       </div>
     );
@@ -188,11 +188,11 @@ export const AccordionBody = ({
                   {/* Acciones */}
                   {(showActions || customRowActions.length > 0) && (
                     <div
-                      className={`col-span-full flex justify-end gap-2 pt-2 ${secondaryFields.length > 0 ? 'border-t' : ''}`}
+                      className={`col-span-full flex flex-wrap gap-2 pt-2 ${secondaryFields.length > 0 ? 'border-t' : ''}`}
                     >
                       {onEdit && !hideEditButton && (
                         <Button
-                          size="sm"
+                          className="flex-1 sm:flex-none"
                           onClick={(e) => {
                             e.stopPropagation();
                             onEdit(row.id);
@@ -206,7 +206,7 @@ export const AccordionBody = ({
                       {onView && !hideViewButton && (
                         <Button
                           variant="outline"
-                          size="sm"
+                          className="flex-1 sm:flex-none"
                           onClick={(e) => {
                             e.stopPropagation();
                             onView(row.id);
@@ -229,7 +229,7 @@ export const AccordionBody = ({
                           <Button
                             key={action.key}
                             variant={action.variant || 'outline'}
-                            size="sm"
+                            className="flex-1 sm:flex-none"
                             onClick={(e) => {
                               e.stopPropagation();
                               onCustomAction?.(action, row.id, row);

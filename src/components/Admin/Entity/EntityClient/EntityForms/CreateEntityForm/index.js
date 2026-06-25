@@ -23,6 +23,23 @@ import { notify } from '@/lib/notifications';
 import { format } from 'date-fns';
 import { Loader2 } from 'lucide-react';
 
+// Lookup estático para que Tailwind JIT incluya las clases de col-span (template dinámico no funciona con JIT)
+const COL_SPAN = {
+  sm: ['', 'sm:col-span-1', 'sm:col-span-2', 'sm:col-span-3', 'sm:col-span-4', 'sm:col-span-5', 'sm:col-span-6'],
+  md: ['', 'md:col-span-1', 'md:col-span-2', 'md:col-span-3', 'md:col-span-4', 'md:col-span-5', 'md:col-span-6'],
+  lg: ['', 'lg:col-span-1', 'lg:col-span-2', 'lg:col-span-3', 'lg:col-span-4', 'lg:col-span-5', 'lg:col-span-6'],
+  xl: ['', 'xl:col-span-1', 'xl:col-span-2', 'xl:col-span-3', 'xl:col-span-4', 'xl:col-span-5', 'xl:col-span-6'],
+};
+const getFieldColClass = (cols) => {
+  const clamp = (v) => Math.min(6, Math.max(1, v || 6));
+  return [
+    COL_SPAN.sm[clamp(cols?.sm)],
+    COL_SPAN.md[clamp(cols?.md)],
+    COL_SPAN.lg[clamp(cols?.lg)],
+    COL_SPAN.xl[clamp(cols?.xl)],
+  ].join(' ');
+};
+
 // Import domain services and mapper
 import { getEntityService } from '@/services/domain/entityServiceMapper';
 import { getErrorMessage } from '@/lib/api/apiHelpers';
@@ -401,7 +418,7 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
           {preparedFields.map((field, index) => (
             <div
               key={`${field.name}-${index}`}
-              className={`p-2 sm:col-span-${field.cols?.sm || 6} md:col-span-${field.cols?.md || 6} lg:col-span-${field.cols?.lg || 6} xl:col-span-${field.cols?.xl || 6}`}
+              className={`p-2 ${getFieldColClass(field.cols)}`}
             >
               <Label htmlFor={field.name} className="mb-1 text-sm">
                 {field.label}
@@ -414,11 +431,11 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
           ))}
         </form>
       </ScrollArea>
-      <div className="bg-background flex justify-end gap-2 border-t p-4 sm:col-span-6">
+      <div className="bg-background flex flex-col-reverse gap-2 border-t p-4 sm:flex-row sm:justify-end sm:col-span-6">
         <Button
           type="button"
           variant="outline"
-          className="ml-2"
+          className="w-full sm:w-auto"
           onClick={onCancel ? onCancel : () => reset()}
         >
           Cancelar
@@ -426,6 +443,7 @@ export default function CreateEntityForm({ config, onSuccess, onCancel }) {
         <Button
           type="submit"
           form="entity-form"
+          className="w-full sm:w-auto"
           disabled={isSubmitting}
           title={
             Object.keys(errors).length > 0

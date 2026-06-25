@@ -25,7 +25,7 @@ export const GenericFiltersModalContent = ({ filtersGroup, onFilterChange }) => 
   const { search, groups } = filtersGroup;
 
   return (
-    <div className="flex max-h-[70vh] flex-col gap-4 overflow-y-auto px-2 sm:px-4 lg:px-6">
+    <div className="flex max-h-[65dvh] flex-col gap-4 overflow-y-auto px-2 sm:px-4 lg:px-6">
       {search?.filters && search.filters.length > 0 && (
         <div className="mb-4 pt-1">
           {search.filters.map((filter) => (

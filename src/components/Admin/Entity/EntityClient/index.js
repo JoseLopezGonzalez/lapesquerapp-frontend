@@ -25,6 +25,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+} from '@/components/ui/drawer';
+import { useIsMobileSafe } from '@/hooks/use-mobile';
 // Utilidades genéricas para acciones y descargas (no específicas de entidades)
 import { performAction, downloadFile } from '@/lib/api/apiActions';
 import { getEntityService } from '@/services/domain/entityServiceMapper';
@@ -125,6 +133,7 @@ export default function EntityClient({ config }) {
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const usesSameTabNavigation = config?.sameTabNavigation === true;
+  const { isMobile } = useIsMobileSafe();
 
   const perPage = config?.perPage || 12;
   const filtersObject = useMemo(() => {
@@ -868,38 +877,72 @@ export default function EntityClient({ config }) {
           </div>
         </EntityFooter>
       </EntityTable>
-      {/* Modal de creación/edición */}
-      <Dialog open={modal.open} onOpenChange={(open) => !open && handleCloseModal(false)}>
-        <DialogContent size="6xl">
-          <DialogHeader>
-            <DialogTitle>
-              {modal.mode === 'create' ? `Crear ${config.title}` : `Editar ${config.title}`}
-            </DialogTitle>
-            <DialogDescription>
-              {modal.mode === 'create'
-                ? 'Completa el formulario para crear un nuevo elemento.'
-                : 'Modifica los campos necesarios y guarda los cambios.'}
-            </DialogDescription>
-          </DialogHeader>
-          {modal.mode === 'create' && (
-            <CreateEntityForm
-              title="Crear"
-              config={config}
-              onSuccess={() => handleCloseModal(true)}
-              onCancel={() => handleCloseModal(false)}
-            />
-          )}
-          {modal.mode === 'edit' && modal.editId && (
-            <EditEntityForm
-              title="Editar"
-              config={config}
-              id={modal.editId}
-              onSuccess={() => handleCloseModal(true)}
-              onCancel={() => handleCloseModal(false)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Modal de creación/edición — Drawer en mobile, Dialog en desktop */}
+      {isMobile ? (
+        <Drawer open={modal.open} onOpenChange={(open) => !open && handleCloseModal(false)}>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle>
+                {modal.mode === 'create' ? `Crear ${config.title}` : `Editar ${config.title}`}
+              </DrawerTitle>
+              <DrawerDescription>
+                {modal.mode === 'create'
+                  ? 'Completa el formulario para crear un nuevo elemento.'
+                  : 'Modifica los campos necesarios y guarda los cambios.'}
+              </DrawerDescription>
+            </DrawerHeader>
+            {modal.mode === 'create' && (
+              <CreateEntityForm
+                title="Crear"
+                config={config}
+                onSuccess={() => handleCloseModal(true)}
+                onCancel={() => handleCloseModal(false)}
+              />
+            )}
+            {modal.mode === 'edit' && modal.editId && (
+              <EditEntityForm
+                title="Editar"
+                config={config}
+                id={modal.editId}
+                onSuccess={() => handleCloseModal(true)}
+                onCancel={() => handleCloseModal(false)}
+              />
+            )}
+          </DrawerContent>
+        </Drawer>
+      ) : (
+        <Dialog open={modal.open} onOpenChange={(open) => !open && handleCloseModal(false)}>
+          <DialogContent size="6xl">
+            <DialogHeader>
+              <DialogTitle>
+                {modal.mode === 'create' ? `Crear ${config.title}` : `Editar ${config.title}`}
+              </DialogTitle>
+              <DialogDescription>
+                {modal.mode === 'create'
+                  ? 'Completa el formulario para crear un nuevo elemento.'
+                  : 'Modifica los campos necesarios y guarda los cambios.'}
+              </DialogDescription>
+            </DialogHeader>
+            {modal.mode === 'create' && (
+              <CreateEntityForm
+                title="Crear"
+                config={config}
+                onSuccess={() => handleCloseModal(true)}
+                onCancel={() => handleCloseModal(false)}
+              />
+            )}
+            {modal.mode === 'edit' && modal.editId && (
+              <EditEntityForm
+                title="Editar"
+                config={config}
+                id={modal.editId}
+                onSuccess={() => handleCloseModal(true)}
+                onCancel={() => handleCloseModal(false)}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

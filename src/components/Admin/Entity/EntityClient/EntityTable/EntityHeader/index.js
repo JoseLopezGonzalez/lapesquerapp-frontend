@@ -46,14 +46,14 @@ export const EntityTableHeader = ({
     exportOptions.length > 0 || reportOptions.length > 0 || actions.length > 0;
 
   return (
-    <div className="grid gap-3 px-6 py-4 pt-6 md:flex md:items-center md:justify-between">
+    <div className="grid gap-3 px-4 py-4 pt-6 sm:px-6 md:flex md:items-center md:justify-between">
       <div>
         {title && <h2 className="text-xl font-medium">{title}</h2>}
         {description && <p className="text-muted-foreground text-sm">{description}</p>}
       </div>
 
       <div>
-        <div className="inline-flex gap-x-2">
+        <div className="flex flex-wrap justify-end gap-2">
           {onRefresh && (
             <Button
               onClick={onRefresh}
@@ -172,16 +172,11 @@ export const EntityTableHeader = ({
           {onCreate && (
             <Button
               onClick={() => {
-                // Si es una string (URL), abrir en nueva pestaña
                 if (typeof onCreate === 'string') {
                   window.open(onCreate, '_blank');
-                }
-                // Si es un objeto con href, abrir en nueva pestaña
-                else if (onCreate && typeof onCreate === 'object' && onCreate.href) {
+                } else if (onCreate && typeof onCreate === 'object' && onCreate.href) {
                   window.open(onCreate.href, '_blank');
-                }
-                // Si es una función, ejecutarla normalmente
-                else if (typeof onCreate === 'function') {
+                } else if (typeof onCreate === 'function') {
                   onCreate();
                 }
               }}
@@ -189,7 +184,7 @@ export const EntityTableHeader = ({
               disabled={isRefreshing || isDeleting || isGeneratingReport || isExporting}
             >
               <PlusIcon className="h-5 w-5" aria-hidden="true" />
-              Nuevo
+              <span className="hidden sm:inline">Nuevo</span>
             </Button>
           )}
         </div>

@@ -421,132 +421,161 @@ export function Lightbox({
   );
 }
 
+type PendingFile = { file: File; previewUrl: string };
+
 export interface UploadZoneProps {
-  onFile: (file: File, notes: string) => void;
+  onFiles: (files: Array<{ file: File; notes: string }>) => void;
   isUploading: boolean;
+  uploadProgress?: { current: number; total: number } | null;
 }
 
-export function UploadZone({ onFile, isUploading }: UploadZoneProps) {
+export function UploadZone({ onFiles, isUploading, uploadProgress }: UploadZoneProps) {
   const [dragging, setDragging] = useState(false);
   const [notes, setNotes] = useState('');
-  const [pendingFile, setPendingFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Revoke all preview URLs on unmount
+  const pendingFilesRef = useRef<PendingFile[]>([]);
+  useEffect(() => { pendingFilesRef.current = pendingFiles; }, [pendingFiles]);
   useEffect(() => {
-    if (!pendingFile) {
-      setPreviewUrl(null);
-      return;
-    }
-    const url = URL.createObjectURL(pendingFile);
-    setPreviewUrl(url);
-    return () => URL.revokeObjectURL(url);
-  }, [pendingFile]);
+    return () => { pendingFilesRef.current.forEach((pf) => URL.revokeObjectURL(pf.previewUrl)); };
+  }, []);
 
-  const handleFiles = (files: FileList | null) => {
-    if (!files?.length) return;
-    const file = files[0];
-    if (!notifyIfInvalidPalletImageFile(file)) return;
-    setPendingFile(file);
+  const addFiles = (fileList: FileList | null) => {
+    if (!fileList?.length) return;
+    const valid = Array.from(fileList).filter((f) => notifyIfInvalidPalletImageFile(f));
+    if (!valid.length) return;
+    setPendingFiles((prev) => [
+      ...prev,
+      ...valid.map((f) => ({ file: f, previewUrl: URL.createObjectURL(f) })),
+    ]);
+  };
+
+  const removeFile = (index: number) => {
+    setPendingFiles((prev) => {
+      URL.revokeObjectURL(prev[index].previewUrl);
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
+  const clearQueue = () => {
+    setPendingFiles((prev) => {
+      prev.forEach((pf) => URL.revokeObjectURL(pf.previewUrl));
+      return [];
+    });
+    setNotes('');
+    if (inputRef.current) inputRef.current.value = '';
   };
 
   const handleSubmit = () => {
-    if (!pendingFile) return;
-    onFile(pendingFile, notes);
-    setPendingFile(null);
-    setNotes('');
-    if (inputRef.current) inputRef.current.value = '';
+    if (!pendingFiles.length) return;
+    onFiles(pendingFiles.map(({ file }) => ({ file, notes })));
+    clearQueue();
   };
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setDragging(false);
-    handleFiles(e.dataTransfer.files);
+    addFiles(e.dataTransfer.files);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const hasPending = pendingFiles.length > 0;
 
   return (
     <div className="space-y-3">
       <div
         className={cn(
-          'flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-6 transition-colors',
+          'rounded-xl border-2 border-dashed transition-colors',
           dragging
             ? 'border-primary bg-primary/5'
             : 'border-border hover:border-primary/50 hover:bg-muted/30',
-          pendingFile && 'border-primary/40 bg-primary/5'
+          hasPending && !isUploading && 'border-primary/30 bg-muted/20',
+          !hasPending && !isUploading && 'cursor-pointer'
         )}
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDragging(true);
-        }}
+        onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
         onDragLeave={() => setDragging(false)}
         onDrop={handleDrop}
-        onClick={() => !pendingFile && inputRef.current?.click()}
+        onClick={() => !hasPending && !isUploading && inputRef.current?.click()}
       >
         <input
           ref={inputRef}
           type="file"
           accept="image/jpeg,image/png,image/webp"
+          multiple
           className="hidden"
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFiles(e.target.files)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => addFiles(e.target.files)}
         />
+
         {isUploading ? (
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        ) : pendingFile ? (
-          <>
-            {previewUrl && (
-              <div className="w-full overflow-hidden rounded-lg border bg-muted/30">
+          <div className="flex flex-col items-center justify-center gap-2 p-6">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            {uploadProgress && uploadProgress.total > 1 && (
+              <p className="text-xs text-muted-foreground">
+                Subiendo {uploadProgress.current + 1} de {uploadProgress.total}…
+              </p>
+            )}
+          </div>
+        ) : hasPending ? (
+          <div className="space-y-1.5 p-3">
+            {pendingFiles.map(({ file, previewUrl }, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-2 rounded-lg bg-background/80 p-1.5 shadow-sm"
+              >
                 <img
                   src={previewUrl}
-                  alt={`Vista previa de ${pendingFile.name}`}
-                  className="aspect-video w-full object-cover"
+                  alt=""
+                  className="h-9 w-9 flex-shrink-0 rounded object-cover"
                 />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs font-medium">{file.name}</p>
+                  <p className="text-[10px] text-muted-foreground">{formatBytes(file.size)}</p>
+                </div>
+                <button
+                  type="button"
+                  className="flex-shrink-0 rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground"
+                  onClick={(e) => { e.stopPropagation(); removeFile(i); }}
+                  aria-label="Quitar imagen"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
               </div>
-            )}
-            <p className="max-w-full truncate text-center text-sm font-medium text-foreground">
-              {pendingFile.name}
-            </p>
-            <p className="text-xs text-muted-foreground">{formatBytes(pendingFile.size)}</p>
+            ))}
             <button
               type="button"
-              className="text-xs text-muted-foreground underline"
-              onClick={(e) => {
-                e.stopPropagation();
-                setPendingFile(null);
-                if (inputRef.current) inputRef.current.value = '';
-              }}
+              className="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-dashed py-1.5 text-xs text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
+              onClick={() => inputRef.current?.click()}
             >
-              Cambiar
+              <Upload className="h-3 w-3" />
+              Añadir más
             </button>
-          </>
+          </div>
         ) : (
-          <>
+          <div className="flex flex-col items-center justify-center gap-2 p-6">
             <Upload className="h-6 w-6 text-muted-foreground" />
             <p className="text-center text-sm text-muted-foreground">
-              Arrastra una imagen o{' '}
+              Arrastra imágenes o{' '}
               <span className="font-medium text-foreground">haz click</span>
             </p>
-            <p className="text-xs text-muted-foreground">JPG, PNG o WebP · máx. 10 MB</p>
-          </>
+            <p className="text-xs text-muted-foreground">JPG, PNG o WebP · máx. 10 MB · varias a la vez</p>
+          </div>
         )}
       </div>
 
-      {pendingFile && (
+      {hasPending && !isUploading && (
         <>
           <Textarea
-            placeholder="Nota opcional (máx. 500 caracteres)"
+            placeholder="Nota para todas las imágenes (opcional · máx. 500 car.)"
             value={notes}
             onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNotes(e.target.value)}
             className="min-h-[60px] resize-none text-sm"
             maxLength={500}
           />
-          <Button className="w-full gap-2" onClick={handleSubmit} disabled={isUploading}>
-            {isUploading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Upload className="h-4 w-4" />
-            )}
-            Subir imagen
+          <Button className="w-full gap-2" onClick={handleSubmit}>
+            <Upload className="h-4 w-4" />
+            {pendingFiles.length === 1 ? 'Subir 1 imagen' : `Subir ${pendingFiles.length} imágenes`}
           </Button>
         </>
       )}
@@ -571,6 +600,9 @@ export default function PalletImagesTab({ palletId, initialLightboxIndex }: Pall
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [notesOverrides, setNotesOverrides] = useState<Map<number, string | null>>(new Map());
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number } | null>(null);
+  const [isDownloadingAll, setIsDownloadingAll] = useState(false);
 
   const initialIndexApplied = useRef(false);
 
@@ -609,6 +641,46 @@ export default function PalletImagesTab({ palletId, initialLightboxIndex }: Pall
     setNotesOverrides((prev) => new Map(prev).set(id, notes));
   };
 
+  const handleFiles = async (files: Array<{ file: File; notes: string }>) => {
+    if (!files.length) return;
+    setIsUploading(true);
+    setUploadProgress({ current: 0, total: files.length });
+    for (let i = 0; i < files.length; i++) {
+      try {
+        await uploadMutation.mutateAsync(files[i]);
+      } catch {
+        // error already handled by mutation's onError
+      }
+      setUploadProgress({ current: i + 1, total: files.length });
+    }
+    setIsUploading(false);
+    setUploadProgress(null);
+  };
+
+  const handleDownloadAll = async () => {
+    if (!attachments.length) return;
+    setIsDownloadingAll(true);
+    try {
+      const results = await Promise.allSettled(
+        attachments.map((att) =>
+          getBlobUrlCached(palletId, att.id).then((url) => ({ url, name: att.originalName }))
+        )
+      );
+      for (const result of results) {
+        if (result.status === 'fulfilled') {
+          const a = document.createElement('a');
+          a.href = result.value.url;
+          a.download = result.value.name;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        }
+      }
+    } finally {
+      setIsDownloadingAll(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-3 gap-4 p-4 xl:grid-cols-4">
@@ -633,20 +705,37 @@ export default function PalletImagesTab({ palletId, initialLightboxIndex }: Pall
       <div className="w-64 flex-shrink-0 space-y-4 overflow-y-auto py-4 pl-1 pr-2">
         <div>
           <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Subir imagen
+            Subir imágenes
           </p>
           <UploadZone
-            onFile={(file, notes) => uploadMutation.mutate({ file, notes })}
-            isUploading={uploadMutation.isPending}
+            onFiles={handleFiles}
+            isUploading={isUploading}
+            uploadProgress={uploadProgress}
           />
         </div>
 
         {attachments.length > 0 && (
-          <div className="rounded-lg border bg-muted/30 px-3 py-2.5 text-xs text-muted-foreground">
-            <span className="font-medium text-foreground">{attachments.length}</span>{' '}
-            {attachments.length === 1 ? 'imagen' : 'imágenes'}
-            {' · '}
-            {formatBytes(attachments.reduce((s, a) => s + a.size, 0))} total
+          <div className="space-y-2">
+            <div className="rounded-lg border bg-muted/30 px-3 py-2.5 text-xs text-muted-foreground">
+              <span className="font-medium text-foreground">{attachments.length}</span>{' '}
+              {attachments.length === 1 ? 'imagen' : 'imágenes'}
+              {' · '}
+              {formatBytes(attachments.reduce((s, a) => s + a.size, 0))} total
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full gap-1.5 text-xs"
+              onClick={handleDownloadAll}
+              disabled={isDownloadingAll}
+            >
+              {isDownloadingAll ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Download className="h-3.5 w-3.5" />
+              )}
+              Descargar todas
+            </Button>
           </div>
         )}
       </div>
