@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
-import { Upload, X, Loader2, FileText, ImageIcon } from 'lucide-react';
+import { Upload, X, Loader2, FileText, ImageIcon, Sparkles } from 'lucide-react';
 import type { UseMutationResult } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -36,12 +36,14 @@ export function OrderAttachmentUploadDialog({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [collection, setCollection] = useState<OrderAttachmentCollection>('order_document');
+  const [autoDetected, setAutoDetected] = useState(false);
   const [notes, setNotes] = useState('');
   const [isDragging, setIsDragging] = useState(false);
 
   const reset = () => {
     setSelectedFile(null);
     setCollection('order_document');
+    setAutoDetected(false);
     setNotes('');
   };
 
@@ -51,8 +53,10 @@ export function OrderAttachmentUploadDialog({
   };
 
   const applyFile = (file: File) => {
+    const detected = inferCollection(file);
     setSelectedFile(file);
-    setCollection(inferCollection(file));
+    setCollection(detected);
+    setAutoDetected(true);
   };
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,8 +70,10 @@ export function OrderAttachmentUploadDialog({
     setIsDragging(false);
     const file = e.dataTransfer.files?.[0];
     if (!file) return;
+    const detected = inferCollection(file);
     setSelectedFile(file);
-    setCollection(inferCollection(file));
+    setCollection(detected);
+    setAutoDetected(true);
   }, []);
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -98,7 +104,7 @@ export function OrderAttachmentUploadDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent size="md" aria-describedby={undefined}>
+      <DialogContent size="lg" className="overflow-x-hidden" aria-describedby={undefined}>
         <DialogTitle>Adjuntar archivo al pedido</DialogTitle>
 
         <div className="space-y-4">
@@ -125,7 +131,7 @@ export function OrderAttachmentUploadDialog({
               </div>
             </div>
           ) : (
-            <div className="flex items-center gap-3 rounded-lg border p-3">
+            <div className="flex min-w-0 items-center gap-3 rounded-lg border p-3">
               <div className="bg-muted flex h-10 w-10 shrink-0 items-center justify-center rounded">
                 <FilePreviewIcon className="text-muted-foreground h-5 w-5" />
               </div>
@@ -139,7 +145,7 @@ export function OrderAttachmentUploadDialog({
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 shrink-0"
-                onClick={() => setSelectedFile(null)}
+                onClick={() => { setSelectedFile(null); setAutoDetected(false); }}
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -156,7 +162,15 @@ export function OrderAttachmentUploadDialog({
 
           {/* Tipo de adjunto */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Tipo de adjunto</Label>
+            <div className="flex items-center gap-2">
+              <Label className="text-sm font-medium">Tipo de adjunto</Label>
+              {autoDetected && (
+                <span className="text-primary flex items-center gap-1 text-[11px] font-medium">
+                  <Sparkles className="h-3 w-3" />
+                  Auto-detectado
+                </span>
+              )}
+            </div>
             <div className="grid grid-cols-2 gap-2">
               {(
                 [
@@ -169,10 +183,10 @@ export function OrderAttachmentUploadDialog({
                   role="radio"
                   aria-checked={collection === value}
                   tabIndex={0}
-                  onClick={() => setCollection(value)}
+                  onClick={() => { setCollection(value); setAutoDetected(false); }}
                   onKeyDown={(e) => e.key === 'Enter' && setCollection(value)}
                   className={cn(
-                    'flex cursor-pointer items-center gap-2.5 rounded-md border p-2.5 transition-colors select-none',
+                    'flex min-w-0 cursor-pointer items-center gap-2 rounded-md border p-2.5 transition-colors select-none',
                     collection === value
                       ? 'border-primary bg-primary/10'
                       : 'hover:border-primary/40 hover:bg-muted/40'
@@ -181,9 +195,9 @@ export function OrderAttachmentUploadDialog({
                   <div className="bg-muted flex h-7 w-7 shrink-0 items-center justify-center rounded">
                     <Icon className="h-4 w-4" />
                   </div>
-                  <div>
-                    <p className="text-sm font-medium leading-tight">{label}</p>
-                    <p className="text-muted-foreground text-xs">{sub}</p>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium leading-tight">{label}</p>
+                    <p className="text-muted-foreground truncate text-xs">{sub}</p>
                   </div>
                 </div>
               ))}
