@@ -309,7 +309,7 @@ function AttachmentViewer({
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent
         size="4xl"
-        className="flex max-h-[90vh] flex-col gap-0 overflow-hidden p-0"
+        className="flex h-[90vh] flex-col gap-0 overflow-hidden p-0"
         aria-describedby={undefined}
       >
         <DialogTitle className="sr-only">{attachment.originalName}</DialogTitle>

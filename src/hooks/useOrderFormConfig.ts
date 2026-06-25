@@ -203,20 +203,6 @@ const initialFormGroups: FormGroup[] = [
         options: [],
         props: { placeholder: 'Sin maquilador' },
       },
-      {
-        name: 'maquiladorDestination',
-        label: 'Destino para docs del maquilador',
-        component: 'Input',
-        colSpan: 'col-span-2',
-        props: { placeholder: 'ej. Cliente Nº1, Olano Italia — aparecerá en CMR y letreros del maquilador' },
-      },
-      {
-        name: 'loadingAddress',
-        label: 'Lugar de carga',
-        component: 'Input',
-        colSpan: 'col-span-2',
-        props: { placeholder: 'ej. Polígono Industrial, nave 4. Vigo (Pontevedra) — dirección desde donde carga el maquilador' },
-      },
     ],
   },
   {
@@ -265,7 +251,7 @@ const initialFormGroups: FormGroup[] = [
   },
   {
     group: 'Direcciones',
-    description: 'Dirección de facturación y dirección de entrega.',
+    description: 'Dirección de facturación, dirección de entrega y datos de carga del maquilador.',
     grid: 'grid-cols-2 gap-4',
     fields: [
       {
@@ -288,6 +274,28 @@ const initialFormGroups: FormGroup[] = [
           placeholder: 'Nombre / Empresa, Calle, Ciudad, etc.',
           className: 'min-h-[100px]',
           rows: 5,
+        },
+      },
+      {
+        name: 'maquiladorDestination',
+        label: 'Destino para docs del maquilador',
+        component: 'Textarea',
+        colSpan: 'col-span-1',
+        props: {
+          placeholder: 'ej. Cliente Nº1, Olano Italia — aparecerá como destinatario en CMR y letreros del maquilador',
+          className: 'min-h-[60px]',
+          rows: 2,
+        },
+      },
+      {
+        name: 'loadingAddress',
+        label: 'Lugar de carga (maquilador)',
+        component: 'Textarea',
+        colSpan: 'col-span-1',
+        props: {
+          placeholder: 'ej. Polígono Industrial, nave 4. Vigo (Pontevedra)',
+          className: 'min-h-[60px]',
+          rows: 2,
         },
       },
     ],
