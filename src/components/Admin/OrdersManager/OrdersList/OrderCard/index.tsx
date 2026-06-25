@@ -162,6 +162,7 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }: OrderCardPr
                       : 'red'
                 }
                 label={statusLabel}
+                className=""
               />
               {dateLabel && (
                 <span

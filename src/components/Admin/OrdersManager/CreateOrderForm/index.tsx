@@ -184,7 +184,8 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
     lastCustomerIdRef.current = selectedCustomerId;
 
     getCustomer(selectedCustomerId, token)
-      .then((customer: CustomerData) => {
+      .then((data) => {
+        const customer = data as CustomerData;
         setValue('salesperson', getRelatedId(customer, customer.salesperson, customer.salespersonId, customer.salesperson_id));
         setValue('fieldOperator', getRelatedId(customer, customer.fieldOperator, customer.fieldOperatorId, customer.field_operator_id));
         setValue('payment', getRelatedId(customer, customer.paymentTerm, customer.paymentTermId, customer.payment_term_id));
@@ -296,9 +297,9 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
         },
         error: (error: unknown) => {
           const err = error as { message?: string; data?: unknown };
-          const description =
+          const description: string =
             err?.message ||
-            (err?.data && getErrorMessage(err.data)) ||
+            (err?.data ? getErrorMessage(err.data) : '') ||
             'Error desconocido al crear el pedido';
           return {
             title: 'Error al crear el pedido',
@@ -335,13 +336,12 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
             <Controller
               name={field.name as keyof OrderCreateFormData}
               control={control}
-              render={({ field: { onChange, value, onBlur } }) => (
+              render={({ field: { onChange, value } }) => (
                 <DatePicker
+                  id={field.name}
                   date={value as Date | undefined}
                   onChange={onChange}
-                  onBlur={onBlur}
                   formatStyle="short"
-                  {...field.props}
                 />
               )}
             />
@@ -381,7 +381,7 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
               control={control}
               render={({ field: { onChange, value, onBlur } }) => (
                 <Combobox
-                  options={field.options}
+                  options={field.options ?? []}
                   placeholder={field.props?.placeholder}
                   searchPlaceholder={field.props?.searchPlaceholder}
                   notFoundMessage={field.props?.notFoundMessage}
@@ -407,10 +407,9 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
             <Controller
               name={field.name as keyof OrderCreateFormData}
               control={control}
-              defaultValue={[] as string[]}
               render={({ field: { value, onChange } }) => (
                 <EmailListInput
-                  value={Array.isArray(value) ? (value as string[]) : []}
+                  value={Array.isArray(value) ? (value as unknown as string[]) : ([] as string[])}
                   onChange={onChange}
                   placeholder={field.props?.placeholder}
                 />
@@ -418,13 +417,12 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
             />
           );
         case 'Input':
+
         default:
           return (
             <Input
               {...commonProps}
-              className={
-                isMobile ? `h-12 text-base ${commonProps.className || ''}` : commonProps.className
-              }
+              className={isMobile ? 'h-12 text-base' : undefined}
             />
           );
       }
