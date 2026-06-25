@@ -105,6 +105,32 @@ export function useOrderAttachments(
     },
   });
 
+  const deleteAllMutation = useMutation({
+    mutationFn: async (attachmentsToDelete: OrderAttachment[]) => {
+      for (const att of attachmentsToDelete) {
+        await orderAttachmentService.delete(orderId!, att.id);
+        invalidateBlobUrlCache(orderId!, att.id);
+        invalidateThumbnailCache(orderId!, att.id);
+      }
+    },
+    onSuccess: (_data, attachmentsToDelete) => {
+      queryClient.invalidateQueries({ queryKey: prefixKey });
+      notify.success(
+        attachmentsToDelete.length === 1
+          ? 'Adjunto eliminado'
+          : `${attachmentsToDelete.length} adjuntos eliminados`
+      );
+    },
+    onError: (err: unknown) => {
+      queryClient.invalidateQueries({ queryKey: prefixKey });
+      const msg =
+        err instanceof ApiError
+          ? getErrorMessage(err.data ?? { message: (err as Error).message })
+          : 'Error al eliminar los adjuntos';
+      notify.error(msg);
+    },
+  });
+
   const downloadAttachment = async (attachment: OrderAttachment) => {
     try {
       await orderAttachmentService.download(orderId!, attachment);
@@ -126,6 +152,7 @@ export function useOrderAttachments(
     uploadMutation,
     updateMutation,
     deleteMutation,
+    deleteAllMutation,
     downloadAttachment,
   };
 }

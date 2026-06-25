@@ -104,7 +104,7 @@ function useAttachmentThumbnail(
   return { src, loading };
 }
 
-function useAttachmentFullImage(
+function useAttachmentBlob(
   orderId: number | string,
   attachmentId: number,
   enabled = false
@@ -115,6 +115,7 @@ function useAttachmentFullImage(
   useEffect(() => {
     if (!enabled) return;
     let cancelled = false;
+    setSrc(null);
     setLoading(true);
     getBlobUrlCached(orderId, attachmentId)
       .then((url) => { if (!cancelled) { setSrc(url); setLoading(false); } })
@@ -143,7 +144,7 @@ function ImageCardFace({
         <img src={src} alt={attachment.originalName} className="h-full w-full object-cover" />
       ) : (
         <div className="flex h-full items-center justify-center">
-          <ImageOff className="h-8 w-8 text-muted-foreground/40" />
+          <ImageOff className="h-5 w-5 text-muted-foreground/40" />
         </div>
       )}
     </div>
@@ -155,9 +156,9 @@ function DocumentCardFace({ attachment }: { attachment: OrderAttachment }) {
   const { bg, icon } = getDocumentColors(attachment.mimeType);
   const ext = attachment.extension.toUpperCase();
   return (
-    <div className={cn('flex aspect-square w-full flex-col items-center justify-center gap-2', bg)}>
-      <Icon className={cn('h-10 w-10', icon)} strokeWidth={1.5} />
-      <span className={cn('rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider', icon)}>
+    <div className={cn('flex aspect-square w-full flex-col items-center justify-center gap-1', bg)}>
+      <Icon className={cn('h-7 w-7', icon)} strokeWidth={1.5} />
+      <span className={cn('rounded px-1 py-0.5 text-[9px] font-bold uppercase tracking-wider', icon)}>
         {ext}
       </span>
     </div>
@@ -174,7 +175,7 @@ interface AttachmentCardProps {
   onDownload: () => void;
   onEdit: () => void;
   onDelete: () => void;
-  onImageClick: () => void;
+  onPreviewClick: () => void;
 }
 
 function AttachmentCard({
@@ -185,17 +186,13 @@ function AttachmentCard({
   onDownload,
   onEdit,
   onDelete,
-  onImageClick,
+  onPreviewClick,
 }: AttachmentCardProps) {
   const isImage = attachment.collection === 'order_image';
 
   return (
-    <div className="group relative overflow-hidden rounded-xl border bg-card shadow-sm transition-all hover:shadow-md hover:scale-[1.02]">
-      {/* Cara visual — clickeable para imágenes, descarga directa para docs */}
-      <div
-        className={cn('relative', isImage && 'cursor-pointer')}
-        onClick={isImage ? onImageClick : undefined}
-      >
+    <div className="group relative overflow-hidden rounded-lg border bg-card shadow-sm transition-all hover:shadow-md hover:scale-[1.02]">
+      <div className="relative cursor-pointer" onClick={onPreviewClick}>
         {isImage ? (
           <ImageCardFace orderId={orderId} attachment={attachment} />
         ) : (
@@ -203,47 +200,44 @@ function AttachmentCard({
         )}
 
         {/* Overlay de acciones en hover */}
-        <div className="absolute inset-0 flex items-end justify-end gap-1 bg-black/0 p-1.5 opacity-0 transition-all group-hover:bg-black/20 group-hover:opacity-100">
+        <div className="absolute inset-0 flex items-end justify-end gap-0.5 bg-black/0 p-1 opacity-0 transition-all group-hover:bg-black/20 group-hover:opacity-100">
           <button
-            className="rounded-md bg-black/60 p-1.5 text-white backdrop-blur-sm transition-colors hover:bg-black/80"
+            className="rounded bg-black/60 p-1 text-white backdrop-blur-sm transition-colors hover:bg-black/80"
             onClick={(e) => { e.stopPropagation(); onDownload(); }}
             title="Descargar"
           >
             {isDownloading ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              <Loader2 className="h-3 w-3 animate-spin" />
             ) : (
-              <Download className="h-3.5 w-3.5" />
+              <Download className="h-3 w-3" />
             )}
           </button>
           <button
-            className="rounded-md bg-black/60 p-1.5 text-white backdrop-blur-sm transition-colors hover:bg-black/80"
+            className="rounded bg-black/60 p-1 text-white backdrop-blur-sm transition-colors hover:bg-black/80"
             onClick={(e) => { e.stopPropagation(); onEdit(); }}
             title="Editar notas"
           >
-            <Pencil className="h-3.5 w-3.5" />
+            <Pencil className="h-3 w-3" />
           </button>
           {canDelete && (
             <button
-              className="rounded-md bg-red-600/80 p-1.5 text-white backdrop-blur-sm transition-colors hover:bg-red-700"
+              className="rounded bg-red-600/80 p-1 text-white backdrop-blur-sm transition-colors hover:bg-red-700"
               onClick={(e) => { e.stopPropagation(); onDelete(); }}
               title="Eliminar"
             >
-              <Trash2 className="h-3.5 w-3.5" />
+              <Trash2 className="h-3 w-3" />
             </button>
           )}
         </div>
       </div>
 
       {/* Metadata */}
-      <div className="px-2.5 py-2">
-        <p className="truncate text-xs font-medium text-foreground" title={attachment.originalName}>
+      <div className="px-2 py-1.5">
+        <p className="truncate text-[11px] font-medium text-foreground" title={attachment.originalName}>
           {attachment.originalName}
         </p>
-        <p className="text-[10px] text-muted-foreground">
-          {formatBytes(attachment.size)} · {formatDateHour(attachment.createdAt)}
-        </p>
         {attachment.notes && (
-          <p className="mt-0.5 line-clamp-1 text-[10px] text-muted-foreground italic">
+          <p className="mt-0.5 line-clamp-1 text-[9px] text-muted-foreground italic">
             {attachment.notes}
           </p>
         )}
@@ -256,41 +250,52 @@ function AttachmentCard({
 
 function AttachmentGridSkeleton() {
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="space-y-2">
-          <Skeleton className="aspect-square w-full rounded-xl" />
-          <Skeleton className="h-3 w-3/4" />
-          <Skeleton className="h-3 w-1/2" />
+    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 xl:grid-cols-5">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div key={i} className="space-y-1.5">
+          <Skeleton className="aspect-square w-full rounded-lg" />
+          <Skeleton className="h-2.5 w-3/4" />
         </div>
       ))}
     </div>
   );
 }
 
-// ─── Lightbox simple para imágenes ───────────────────────────────────────────
+// ─── Visor unificado (imágenes + PDFs + otros) ───────────────────────────────
 
-interface ImageLightboxProps {
-  images: OrderAttachment[];
+interface AttachmentViewerProps {
+  attachments: OrderAttachment[];
   initialIndex: number;
   orderId: number | string;
   onClose: () => void;
+  onDownload: (attachment: OrderAttachment) => void;
 }
 
-function ImageLightbox({ images, initialIndex, orderId, onClose }: ImageLightboxProps) {
+function AttachmentViewer({
+  attachments,
+  initialIndex,
+  orderId,
+  onClose,
+  onDownload,
+}: AttachmentViewerProps) {
   const [index, setIndex] = useState(initialIndex);
-  const attachment = images[index];
-  const { src, loading } = useAttachmentFullImage(orderId, attachment.id, true);
+  const attachment = attachments[index];
+
+  const isImage = attachment.collection === 'order_image';
+  const isPdf = attachment.mimeType === 'application/pdf';
+  const needsBlob = isImage || isPdf;
+
+  const { src, loading } = useAttachmentBlob(orderId, attachment.id, needsBlob);
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft') setIndex((i) => Math.max(0, i - 1));
-      else if (e.key === 'ArrowRight') setIndex((i) => Math.min(images.length - 1, i + 1));
+      else if (e.key === 'ArrowRight') setIndex((i) => Math.min(attachments.length - 1, i + 1));
       else if (e.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [images.length, onClose]);
+  }, [attachments.length, onClose]);
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
@@ -304,48 +309,89 @@ function ImageLightbox({ images, initialIndex, orderId, onClose }: ImageLightbox
         {/* Toolbar */}
         <div className="flex items-center justify-between border-b px-4 py-2">
           <p className="truncate text-sm font-medium">{attachment.originalName}</p>
-          <div className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
-            {images.length > 1 && (
-              <span>{index + 1} / {images.length}</span>
+          <div className="flex shrink-0 items-center gap-1.5">
+            {attachments.length > 1 && (
+              <span className="text-xs text-muted-foreground">{index + 1} / {attachments.length}</span>
             )}
             <button
-              className="ml-1 rounded p-1 hover:bg-muted"
-              onClick={onClose}
+              className="rounded p-1.5 hover:bg-muted"
+              onClick={() => onDownload(attachment)}
+              title="Descargar"
             >
+              <Download className="h-4 w-4" />
+            </button>
+            <button className="rounded p-1.5 hover:bg-muted" onClick={onClose}>
               <X className="h-4 w-4" />
             </button>
           </div>
         </div>
 
-        {/* Imagen */}
-        <div className="relative flex min-h-0 flex-1 items-center justify-center bg-black/80">
-          {loading ? (
-            <Loader2 className="h-8 w-8 animate-spin text-white/50" />
-          ) : src ? (
-            <img
-              src={src}
-              alt={attachment.originalName}
-              className="max-h-full max-w-full object-contain"
-            />
-          ) : (
-            <div className="flex flex-col items-center gap-2 text-white/50">
-              <ImageOff className="h-10 w-10" />
-              <p className="text-sm">No se pudo cargar la imagen</p>
+        {/* Content */}
+        <div className="relative min-h-0 flex-1">
+          {/* Imagen */}
+          {isImage && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/80">
+              {loading ? (
+                <Loader2 className="h-8 w-8 animate-spin text-white/50" />
+              ) : src ? (
+                <img
+                  src={src}
+                  alt={attachment.originalName}
+                  className="max-h-full max-w-full object-contain"
+                />
+              ) : (
+                <div className="flex flex-col items-center gap-2 text-white/50">
+                  <ImageOff className="h-10 w-10" />
+                  <p className="text-sm">No se pudo cargar la imagen</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* PDF — visor nativo del navegador */}
+          {isPdf && (
+            <div className="absolute inset-0 flex items-center justify-center bg-muted">
+              {loading ? (
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              ) : src ? (
+                <iframe
+                  src={src}
+                  className="h-full w-full border-0"
+                  title={attachment.originalName}
+                />
+              ) : (
+                <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                  <FileText className="h-10 w-10" />
+                  <p className="text-sm">No se pudo cargar el documento</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Word / Excel / otros — sin vista previa */}
+          {!isImage && !isPdf && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/80 text-white/70">
+              {(() => { const Icon = getFileIcon(attachment.mimeType); return <Icon className="h-14 w-14" strokeWidth={1} />; })()}
+              <p className="text-sm">Vista previa no disponible para este formato</p>
+              <Button variant="secondary" size="sm" onClick={() => onDownload(attachment)}>
+                <Download className="mr-1.5 h-4 w-4" />
+                Descargar para abrir
+              </Button>
             </div>
           )}
 
           {/* Navegación */}
           {index > 0 && (
             <button
-              className="absolute left-2 rounded-full bg-black/50 p-1.5 text-white backdrop-blur-sm hover:bg-black/70"
+              className="absolute left-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/50 p-1.5 text-white backdrop-blur-sm hover:bg-black/70"
               onClick={() => setIndex((i) => i - 1)}
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
           )}
-          {index < images.length - 1 && (
+          {index < attachments.length - 1 && (
             <button
-              className="absolute right-2 rounded-full bg-black/50 p-1.5 text-white backdrop-blur-sm hover:bg-black/70"
+              className="absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/50 p-1.5 text-white backdrop-blur-sm hover:bg-black/70"
               onClick={() => setIndex((i) => i + 1)}
             >
               <ChevronRight className="h-5 w-5" />
@@ -353,10 +399,10 @@ function ImageLightbox({ images, initialIndex, orderId, onClose }: ImageLightbox
           )}
         </div>
 
-        {/* Info */}
+        {/* Footer */}
         <div className="border-t px-4 py-2 text-xs text-muted-foreground">
           {formatBytes(attachment.size)} · {attachment.uploadedBy?.name} · {formatDateHour(attachment.createdAt)}
-          {attachment.notes && <span className="ml-2 italic">"{attachment.notes}"</span>}
+          {attachment.notes && <span className="ml-2 italic">&ldquo;{attachment.notes}&rdquo;</span>}
         </div>
       </DialogContent>
     </Dialog>
@@ -384,21 +430,33 @@ const OrderAttachments = () => {
     uploadMutation,
     updateMutation,
     deleteMutation,
+    deleteAllMutation,
     downloadAttachment,
   } = useOrderAttachments(orderId);
-
-  const imageAttachments = attachments.filter((a) => a.collection === 'order_image');
 
   const [uploadOpen, setUploadOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<OrderAttachment | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
+  const [deleteAllOpen, setDeleteAllOpen] = useState(false);
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
-  const [lightboxImageId, setLightboxImageId] = useState<number | null>(null);
+  const [isDownloadingAll, setIsDownloadingAll] = useState(false);
+  const [previewAttachmentId, setPreviewAttachmentId] = useState<number | null>(null);
 
   const handleDownload = async (attachment: OrderAttachment) => {
     setDownloadingId(attachment.id);
     await downloadAttachment(attachment);
     setDownloadingId(null);
+  };
+
+  const handleDownloadAll = async () => {
+    setIsDownloadingAll(true);
+    try {
+      for (const att of attachments) {
+        await downloadAttachment(att);
+      }
+    } finally {
+      setIsDownloadingAll(false);
+    }
   };
 
   const handleConfirmDelete = () => {
@@ -408,9 +466,16 @@ const OrderAttachments = () => {
     });
   };
 
-  const lightboxIndex = lightboxImageId !== null
-    ? imageAttachments.findIndex((a) => a.id === lightboxImageId)
-    : -1;
+  const handleConfirmDeleteAll = () => {
+    deleteAllMutation.mutate(attachments, {
+      onSettled: () => setDeleteAllOpen(false),
+    });
+  };
+
+  const previewIndex =
+    previewAttachmentId !== null
+      ? attachments.findIndex((a) => a.id === previewAttachmentId)
+      : -1;
 
   const content = (
     <div className="space-y-4">
@@ -423,10 +488,43 @@ const OrderAttachments = () => {
             `${total} ${total === 1 ? 'adjunto' : 'adjuntos'}`
           )}
         </p>
-        <Button size="sm" onClick={() => setUploadOpen(true)}>
-          <Plus className="mr-1.5 h-4 w-4" />
-          Adjuntar archivo
-        </Button>
+        <div className="flex items-center gap-1.5">
+          {attachments.length > 0 && (
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                onClick={handleDownloadAll}
+                disabled={isDownloadingAll}
+                title="Descargar todos"
+              >
+                {isDownloadingAll ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Download className="h-3.5 w-3.5" />
+                )}
+              </Button>
+              {canDelete && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-destructive hover:text-destructive"
+                  onClick={() => setDeleteAllOpen(true)}
+                  title="Eliminar todos"
+                  disabled={deleteAllMutation.isPending}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              )}
+              <div className="mx-0.5 h-4 w-px bg-border" />
+            </>
+          )}
+          <Button size="sm" onClick={() => setUploadOpen(true)}>
+            <Plus className="mr-1.5 h-4 w-4" />
+            Adjuntar archivo
+          </Button>
+        </div>
       </div>
 
       {/* Grid */}
@@ -443,7 +541,7 @@ const OrderAttachments = () => {
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 xl:grid-cols-5">
           {attachments.map((att) => (
             <AttachmentCard
               key={att.id}
@@ -454,7 +552,7 @@ const OrderAttachments = () => {
               onDownload={() => handleDownload(att)}
               onEdit={() => setEditTarget(att)}
               onDelete={() => setDeleteTargetId(att.id)}
-              onImageClick={() => setLightboxImageId(att.id)}
+              onPreviewClick={() => setPreviewAttachmentId(att.id)}
             />
           ))}
         </div>
@@ -501,6 +599,7 @@ const OrderAttachments = () => {
         />
       )}
 
+      {/* Confirmación eliminar uno */}
       <AlertDialog
         open={deleteTargetId !== null}
         onOpenChange={(open) => !open && setDeleteTargetId(null)}
@@ -519,21 +618,45 @@ const OrderAttachments = () => {
               disabled={deleteMutation.isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {deleteMutation.isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : null}
+              {deleteMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Eliminar
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      {lightboxIndex >= 0 && imageAttachments.length > 0 && (
-        <ImageLightbox
-          images={imageAttachments}
-          initialIndex={lightboxIndex}
+      {/* Confirmación eliminar todos */}
+      <AlertDialog open={deleteAllOpen} onOpenChange={setDeleteAllOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar todos los adjuntos?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Se eliminarán {total} {total === 1 ? 'adjunto' : 'adjuntos'} de forma permanente.
+              Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDeleteAll}
+              disabled={deleteAllMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteAllMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Eliminar todos
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Visor unificado */}
+      {previewIndex >= 0 && (
+        <AttachmentViewer
+          attachments={attachments}
+          initialIndex={previewIndex}
           orderId={orderId!}
-          onClose={() => setLightboxImageId(null)}
+          onClose={() => setPreviewAttachmentId(null)}
+          onDownload={handleDownload}
         />
       )}
     </div>
