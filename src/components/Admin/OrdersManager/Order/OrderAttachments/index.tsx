@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import {
   File,
   FileText,
@@ -318,7 +318,7 @@ const OrderAttachments = () => {
       {isMobile ? (
         <div className="flex min-h-0 flex-1 flex-col">
           <ScrollArea className="min-h-0 flex-1">
-            <div className="py-4">{content}</div>
+            <div className="py-6">{content}</div>
           </ScrollArea>
         </div>
       ) : (

@@ -14,17 +14,6 @@ import {
   type OrderAttachmentCollection,
 } from '@/services/domain/orders/orderAttachmentService';
 
-const ACCEPTED_MIME_TYPES = [
-  'application/pdf',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'application/vnd.ms-excel',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-];
-
 const ACCEPTED_EXTENSIONS = '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.webp';
 
 interface UploadPayload {
@@ -76,7 +65,9 @@ export function OrderAttachmentUploadDialog({
     e.preventDefault();
     setIsDragging(false);
     const file = e.dataTransfer.files?.[0];
-    if (file) applyFile(file);
+    if (!file) return;
+    setSelectedFile(file);
+    setCollection(inferCollection(file));
   }, []);
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -88,15 +79,19 @@ export function OrderAttachmentUploadDialog({
 
   const handleSubmit = async () => {
     if (!selectedFile) return;
-    await uploadMutation.mutateAsync(
-      { file: selectedFile, collection, notes: notes || undefined },
-      {
-        onSuccess: () => {
-          reset();
-          onOpenChange(false);
-        },
-      }
-    );
+    try {
+      await uploadMutation.mutateAsync(
+        { file: selectedFile, collection, notes: notes || undefined },
+        {
+          onSuccess: () => {
+            reset();
+            onOpenChange(false);
+          },
+        }
+      );
+    } catch {
+      // error handled by mutation's onError in useOrderAttachments
+    }
   };
 
   const FilePreviewIcon = selectedFile?.type.startsWith('image/') ? ImageIcon : FileText;
