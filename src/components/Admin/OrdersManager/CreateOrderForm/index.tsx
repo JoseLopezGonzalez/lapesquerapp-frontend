@@ -172,7 +172,7 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
   });
   const submitDisabled = isSubmitting || loading || !isValid;
 
-  const selectedCustomerId = watch('customer');
+  const selectedCustomerId = watch('customer') ?? '';
 
   useEffect(() => {
     if (!selectedCustomerId) return;
