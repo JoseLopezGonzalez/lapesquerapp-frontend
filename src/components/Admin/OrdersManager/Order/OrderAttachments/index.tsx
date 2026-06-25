@@ -39,6 +39,7 @@ import { useOrderAttachments } from '@/hooks/orders/useOrderAttachments';
 import {
   getThumbnailCached,
   getBlobUrlCached,
+  getDocumentThumbnailCached,
   formatBytes,
   type OrderAttachment,
 } from '@/services/domain/orders/orderAttachmentService';
@@ -127,6 +128,22 @@ function useAttachmentBlob(
   return { src, loading };
 }
 
+function useDocumentThumbnail(orderId: number | string, attachmentId: number) {
+  const [src, setSrc] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    getDocumentThumbnailCached(orderId, attachmentId)
+      .then((url) => { if (!cancelled) { setSrc(url); setLoading(false); } })
+      .catch(() => { if (!cancelled) { setSrc(null); setLoading(false); } });
+    return () => { cancelled = true; };
+  }, [orderId, attachmentId]);
+
+  return { src, loading };
+}
+
 // ─── Card faces ──────────────────────────────────────────────────────────────
 
 function ImageCardFace({
@@ -152,10 +169,40 @@ function ImageCardFace({
   );
 }
 
-function DocumentCardFace({ attachment }: { attachment: OrderAttachment }) {
+function DocumentCardFace({
+  orderId,
+  attachment,
+}: {
+  orderId: number | string;
+  attachment: OrderAttachment;
+}) {
   const Icon = getFileIcon(attachment.mimeType);
   const { bg, icon } = getDocumentColors(attachment.mimeType);
   const ext = attachment.extension.toUpperCase();
+  const { src, loading } = useDocumentThumbnail(orderId, attachment.id);
+  const [imgError, setImgError] = useState(false);
+
+  if (loading) {
+    return (
+      <div className={cn('flex aspect-square w-full items-center justify-center', bg)}>
+        <Skeleton className="h-full w-full rounded-none" />
+      </div>
+    );
+  }
+
+  if (src && !imgError) {
+    return (
+      <div className="relative aspect-square w-full overflow-hidden bg-muted">
+        <img
+          src={src}
+          alt={attachment.originalName}
+          className="h-full w-full object-cover"
+          onError={() => setImgError(true)}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className={cn('flex aspect-square w-full flex-col items-center justify-center gap-1', bg)}>
       <Icon className={cn('h-7 w-7', icon)} strokeWidth={1.5} />
@@ -197,7 +244,7 @@ function AttachmentCard({
         {isImage ? (
           <ImageCardFace orderId={orderId} attachment={attachment} />
         ) : (
-          <DocumentCardFace attachment={attachment} />
+          <DocumentCardFace orderId={orderId} attachment={attachment} />
         )}
 
         {/* Overlay de acciones en hover */}

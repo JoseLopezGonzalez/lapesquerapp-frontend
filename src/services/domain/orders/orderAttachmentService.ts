@@ -183,3 +183,25 @@ export function invalidateThumbnailCache(
 ): void {
   thumbnailCache.delete(`${orderId}:${attachmentId}`);
 }
+
+/**
+ * Caché de thumbnails para documentos: intenta /thumbnail únicamente.
+ * No cae a /download para evitar descargar el fichero completo cuando
+ * el backend no genera thumbnail del tipo de archivo.
+ */
+const documentThumbnailCache = new Map<string, Promise<string>>();
+
+export function getDocumentThumbnailCached(
+  orderId: number | string,
+  attachmentId: number
+): Promise<string> {
+  const key = `${orderId}:${attachmentId}`;
+  if (!documentThumbnailCache.has(key)) {
+    const promise = orderAttachmentService.getThumbnailBlobUrl(orderId, attachmentId).catch((err) => {
+      documentThumbnailCache.delete(key);
+      throw err;
+    });
+    documentThumbnailCache.set(key, promise);
+  }
+  return documentThumbnailCache.get(key)!;
+}
