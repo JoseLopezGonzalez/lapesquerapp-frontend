@@ -289,6 +289,11 @@ export const navigationConfig = [
         allowedRoles: ['administrador', 'direccion', 'tecnico'],
       },
       {
+        name: 'Transformadores externos',
+        href: '/admin/external-processors',
+        allowedRoles: ['administrador', 'direccion', 'tecnico'],
+      },
+      {
         name: 'Liquidación de Proveedores',
         href: '/admin/supplier-liquidations',
         allowedRoles: ['administrador', 'direccion', 'tecnico'],

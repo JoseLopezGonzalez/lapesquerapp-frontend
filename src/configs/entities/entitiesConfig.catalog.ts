@@ -1,5 +1,5 @@
 // src/configs/entities/entitiesConfig.catalog.ts
-// Módulo de configuración de entidades: products, product-categories, product-families, species, fishing-gears, capture-zones, countries
+// Módulo de configuración de entidades: products, product-categories, product-families, species, fishing-gears, capture-zones, countries, external-processors
 
 const catalogConfig: Record<string, any> = {
   products: {
@@ -892,6 +892,297 @@ const catalogConfig: Record<string, any> = {
       successMessage: 'País actualizado con éxito',
       errorMessage: 'Error al actualizar el país',
     },
+  },
+
+  /* external processors */
+  'external-processors': {
+    title: 'Transformadores externos',
+    description: 'Gestiona empresas externas que transforman producto del tenant.',
+    emptyState: {
+      title: 'No hay transformadores externos todavía',
+      description: 'Crea un transformador externo o ajusta los filtros aplicados.',
+    },
+    endpoint: 'external-processors',
+    viewRoute: '/admin/external-processors/:id',
+    deleteEndpoint: 'external-processors/:id',
+    perPage: 12,
+    filtersGroup: {
+      search: {
+        label: 'Buscar',
+        filters: [
+          {
+            name: 'name',
+            label: 'Nombre',
+            type: 'search',
+            placeholder: 'Buscar por nombre o razón social',
+          },
+        ],
+      },
+      groups: [
+        {
+          name: 'generals',
+          label: 'Generales',
+          filters: [
+            {
+              name: 'ids',
+              label: 'IDs',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por ID',
+            },
+            {
+              name: 'vatNumber',
+              label: 'CIF/NIF/VAT',
+              type: 'text',
+              placeholder: 'Buscar por CIF/NIF/VAT',
+            },
+            {
+              name: 'sanitaryRegistrationNumber',
+              label: 'Registro sanitario',
+              type: 'text',
+              placeholder: 'Buscar por registro sanitario',
+            },
+            {
+              name: 'isActive',
+              label: 'Estado',
+              type: 'text',
+              placeholder: '1 activo, 0 inactivo',
+            },
+            {
+              name: 'countryId',
+              label: 'País',
+              type: 'autocomplete',
+              placeholder: 'Buscar por país',
+              endpoint: 'countries/options',
+            },
+          ],
+        },
+      ],
+    },
+    table: {
+      headers: [
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
+        { name: 'name', label: 'Nombre', type: 'text', path: 'name' },
+        {
+          name: 'legalName',
+          label: 'Razón social',
+          type: 'text',
+          path: 'legalName',
+          hideOnMobile: true,
+        },
+        { name: 'vatNumber', label: 'CIF/NIF/VAT', type: 'text', path: 'vatNumber' },
+        {
+          name: 'sanitaryRegistrationNumber',
+          label: 'Registro sanitario',
+          type: 'text',
+          path: 'sanitaryRegistrationNumber',
+          hideOnMobile: true,
+        },
+        { name: 'contactPerson', label: 'Contacto', type: 'text', path: 'contactPerson' },
+        { name: 'phone', label: 'Teléfono', type: 'text', path: 'phone', hideOnMobile: true },
+        { name: 'email', label: 'Email', type: 'text', path: 'emails.0', hideOnMobile: true },
+        { name: 'city', label: 'Ciudad', type: 'text', path: 'city', hideOnMobile: true },
+        { name: 'province', label: 'Provincia', type: 'text', path: 'province', hideOnMobile: true },
+        { name: 'country', label: 'País', type: 'text', path: 'country.name', hideOnMobile: true },
+        {
+          name: 'isActive',
+          label: 'Estado',
+          type: 'badge',
+          path: 'isActive',
+          options: {
+            true: { label: 'Activo', color: 'success', outline: true },
+            false: { label: 'Inactivo', color: 'secondary', outline: true },
+          },
+        },
+      ],
+    },
+    rowActions: [
+      {
+        key: 'activate',
+        label: 'Activar',
+        shortLabel: 'A',
+        serviceMethod: 'activate',
+        successMessage: 'Transformador externo activado.',
+        confirmation: '¿Activar a {{name}}?',
+        hiddenWhen: { path: 'isActive', value: true },
+      },
+      {
+        key: 'deactivate',
+        label: 'Desactivar',
+        shortLabel: 'D',
+        serviceMethod: 'deactivate',
+        successMessage: 'Transformador externo desactivado.',
+        confirmation: '¿Desactivar a {{name}}?',
+        hiddenWhen: { path: 'isActive', value: false },
+      },
+    ],
+    createForm: {
+      title: 'Nuevo transformador externo',
+      endpoint: 'external-processors',
+      method: 'POST',
+      successMessage: 'Transformador externo creado con éxito',
+      errorMessage: 'Error al crear el transformador externo',
+    },
+    editForm: {
+      title: 'Editar transformador externo',
+      endpoint: 'external-processors',
+      method: 'PUT',
+      successMessage: 'Transformador externo actualizado con éxito',
+      errorMessage: 'Error al actualizar el transformador externo',
+    },
+    beforeSubmit: {
+      booleanFields: ['isActive'],
+    },
+    fields: [
+      {
+        name: 'name',
+        label: 'Nombre',
+        type: 'text',
+        placeholder: 'Nombre comercial',
+        validation: {
+          required: 'El nombre es obligatorio',
+          maxLength: { value: 255, message: 'Máximo 255 caracteres' },
+        },
+        cols: { sm: 6, md: 3, lg: 3, xl: 3 },
+      },
+      {
+        name: 'legalName',
+        label: 'Razón social',
+        type: 'text',
+        placeholder: 'Razón social completa',
+        validation: {
+          maxLength: { value: 255, message: 'Máximo 255 caracteres' },
+        },
+        cols: { sm: 6, md: 3, lg: 3, xl: 3 },
+      },
+      {
+        name: 'vatNumber',
+        label: 'CIF/NIF/VAT',
+        type: 'text',
+        placeholder: 'B12345678',
+        validation: {
+          required: 'El CIF/NIF/VAT es obligatorio',
+          maxLength: { value: 32, message: 'Máximo 32 caracteres' },
+        },
+        cols: { sm: 6, md: 3, lg: 3, xl: 3 },
+      },
+      {
+        name: 'sanitaryRegistrationNumber',
+        label: 'Registro sanitario',
+        type: 'text',
+        placeholder: '12.34567/PO',
+        validation: {
+          maxLength: { value: 64, message: 'Máximo 64 caracteres' },
+        },
+        cols: { sm: 6, md: 3, lg: 3, xl: 3 },
+      },
+      {
+        name: 'isActive',
+        label: 'Estado',
+        type: 'select',
+        placeholder: 'Estado',
+        defaultValue: '1',
+        options: [
+          { value: '1', label: 'Activo' },
+          { value: '0', label: 'Inactivo' },
+        ],
+        cols: { sm: 6, md: 3, lg: 3, xl: 3 },
+      },
+      {
+        name: 'contactPerson',
+        label: 'Persona de contacto',
+        type: 'text',
+        placeholder: 'Nombre de contacto',
+        validation: {
+          maxLength: { value: 255, message: 'Máximo 255 caracteres' },
+        },
+        cols: { sm: 6, md: 3, lg: 3, xl: 3 },
+      },
+      {
+        name: 'phone',
+        label: 'Teléfono',
+        type: 'text',
+        placeholder: '+34 986 000 000',
+        validation: {
+          maxLength: { value: 50, message: 'Máximo 50 caracteres' },
+        },
+        cols: { sm: 6, md: 3, lg: 3, xl: 3 },
+      },
+      {
+        name: 'emails',
+        label: 'Emails principales',
+        type: 'emailList',
+        placeholder: 'Introduce un correo electrónico y pulsa Enter',
+        cols: { sm: 6, md: 3, lg: 3, xl: 3 },
+      },
+      {
+        name: 'ccEmails',
+        label: 'Emails en copia',
+        type: 'emailList',
+        placeholder: 'Introduce un correo electrónico y pulsa Enter',
+        cols: { sm: 6, md: 3, lg: 3, xl: 3 },
+      },
+      {
+        name: 'address',
+        label: 'Dirección',
+        type: 'textarea',
+        placeholder: 'Dirección completa',
+        rows: 2,
+        validation: {
+          maxLength: { value: 1000, message: 'Máximo 1000 caracteres' },
+        },
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+      },
+      {
+        name: 'city',
+        label: 'Ciudad',
+        type: 'text',
+        placeholder: 'Ciudad',
+        validation: {
+          maxLength: { value: 255, message: 'Máximo 255 caracteres' },
+        },
+        cols: { sm: 6, md: 2, lg: 2, xl: 2 },
+      },
+      {
+        name: 'postalCode',
+        label: 'Código postal',
+        type: 'text',
+        placeholder: '36201',
+        validation: {
+          maxLength: { value: 20, message: 'Máximo 20 caracteres' },
+        },
+        cols: { sm: 6, md: 2, lg: 2, xl: 2 },
+      },
+      {
+        name: 'province',
+        label: 'Provincia',
+        type: 'text',
+        placeholder: 'Provincia',
+        validation: {
+          maxLength: { value: 255, message: 'Máximo 255 caracteres' },
+        },
+        cols: { sm: 6, md: 2, lg: 2, xl: 2 },
+      },
+      {
+        name: 'countryId',
+        path: 'country.id',
+        label: 'País',
+        type: 'Autocomplete',
+        endpoint: 'countries/options',
+        placeholder: 'Selecciona un país',
+        cols: { sm: 6, md: 3, lg: 3, xl: 3 },
+      },
+      {
+        name: 'notes',
+        label: 'Notas internas',
+        type: 'textarea',
+        placeholder: 'Notas visibles solo para gestión interna',
+        rows: 4,
+        validation: {
+          maxLength: { value: 2000, message: 'Máximo 2000 caracteres' },
+        },
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+      },
+    ],
   },
 
   /* paymentTerms */
