@@ -178,9 +178,12 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
     if (!selectedCustomerId) return;
     if (selectedCustomerId === lastCustomerIdRef.current) return;
 
+    const token = (session?.user as { accessToken?: string })?.accessToken;
+    if (!token) return;
+
     lastCustomerIdRef.current = selectedCustomerId;
 
-    getCustomer(selectedCustomerId, (session?.user as { accessToken?: string })?.accessToken)
+    getCustomer(selectedCustomerId, token)
       .then((customer: CustomerData) => {
         setValue('salesperson', getRelatedId(customer, customer.salesperson, customer.salespersonId, customer.salesperson_id));
         setValue('fieldOperator', getRelatedId(customer, customer.fieldOperator, customer.fieldOperatorId, customer.field_operator_id));
