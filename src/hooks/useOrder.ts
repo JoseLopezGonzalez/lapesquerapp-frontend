@@ -228,7 +228,7 @@ export function useOrder(
     onChange,
   });
 
-  const { exportDocument, exportDocuments, fastExportDocuments, sendDocuments } = useOrderDocuments(
+  const { exportDocument, exportDocuments, fastExportDocuments, sendDocuments, hasMaquilador } = useOrderDocuments(
     {
       order,
       session,
@@ -247,6 +247,7 @@ export function useOrder(
     plannedProductDetailActions,
     plannedProductDetails,
     sendDocuments,
+    hasMaquilador,
     updateOrderStatus,
     exportDocuments,
     fastExportDocuments,

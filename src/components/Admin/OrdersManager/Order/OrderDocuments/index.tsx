@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Truck, User, Users, Send, Ban } from 'lucide-react';
+import { Truck, User, Users, Send, Ban, Factory, AlertTriangle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import {
   Select,
@@ -14,10 +14,18 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useOrderContext } from '@/context/OrderContext';
@@ -25,26 +33,91 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { notify } from '@/lib/notifications';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
+interface OrderTransport {
+  name?: string;
+  emails?: string[];
+  ccEmails?: string[];
+  [key: string]: unknown;
+}
+
+interface OrderSalesperson {
+  name?: string;
+  emails?: string[];
+  ccEmails?: string[];
+  [key: string]: unknown;
+}
+
+interface OrderExternalProcessor {
+  id?: number | string;
+  name?: string;
+  emails?: string[];
+  ccEmails?: string[];
+  [key: string]: unknown;
+}
+
+interface Order {
+  emails?: string[];
+  ccEmails?: string[];
+  transport?: OrderTransport | null;
+  salesperson?: OrderSalesperson | null;
+  externalProcessor?: OrderExternalProcessor | null;
+  externalProcessorId?: number | string | null;
+  maquiladorDestination?: string | null;
+  id?: number | string;
+  [key: string]: unknown;
+}
+
+interface SendDocuments {
+  customDocuments: (json: unknown) => Promise<unknown>;
+  standardDocuments: () => Promise<unknown>;
+  maquiladorDocuments: () => Promise<unknown>;
+}
+
+interface OrderContextValue {
+  order: Order;
+  sendDocuments: SendDocuments;
+  hasMaquilador: boolean;
+}
+
+type SelectedDocs = {
+  customer: string[];
+  transport: string[];
+  salesperson: string[];
+  external_processor: string[];
+};
+
+type SelectedRecipients = {
+  customer: boolean;
+  transport: boolean;
+  salesperson: boolean;
+  external_processor: boolean;
+};
+
 const OrderDocuments = () => {
-  const { order, sendDocuments } = useOrderContext();
+  const { order, sendDocuments, hasMaquilador } = useOrderContext() as OrderContextValue;
   const isMobile = useIsMobile();
 
-  const [selectedDocs, setSelectedDocs] = useState({
+  const [selectedDocs, setSelectedDocs] = useState<SelectedDocs>({
     customer: [],
     transport: [],
     salesperson: [],
+    external_processor: [],
   });
 
   const [selectedDocument, setSelectedDocument] = useState('');
-  const [selectedRecipients, setSelectedRecipients] = useState({
+  const [selectedRecipients, setSelectedRecipients] = useState<SelectedRecipients>({
     customer: false,
     transport: false,
     salesperson: false,
+    external_processor: false,
   });
+
+  const [showMaquiladorWarning, setShowMaquiladorWarning] = useState(false);
+  const [pendingMaquiladorSend, setPendingMaquiladorSend] = useState(false);
 
   const recipients = [
     {
-      name: 'customer',
+      name: 'customer' as const,
       label: 'Cliente',
       icon: <User />,
       email: order.emails ?? [],
@@ -59,7 +132,7 @@ const OrderDocuments = () => {
     ...(order.transport != null
       ? [
           {
-            name: 'transport',
+            name: 'transport' as const,
             label: 'Transporte',
             icon: <Truck />,
             email: order.transport?.emails ?? [],
@@ -76,16 +149,31 @@ const OrderDocuments = () => {
     ...(order.salesperson != null
       ? [
           {
-            name: 'salesperson',
+            name: 'salesperson' as const,
             label: 'Comercial',
             icon: <Users />,
-            email: order.salesperson?.emails ?? [],
-            copyEmail: order.salesperson?.ccEmails ?? [],
+            email: (order.salesperson as OrderSalesperson)?.emails ?? [],
+            copyEmail: (order.salesperson as OrderSalesperson)?.ccEmails ?? [],
             documents: [
               { name: 'loading-note', label: 'Nota de carga' },
               { name: 'packing-list', label: 'Packing List' },
               { name: 'valued-loading-note', label: 'Nota de carga valorada' },
               { name: 'order-confirmation', label: 'Confirmación de pedido' },
+            ],
+          },
+        ]
+      : []),
+    ...(hasMaquilador && order.externalProcessor != null
+      ? [
+          {
+            name: 'external_processor' as const,
+            label: 'Maquilador',
+            icon: <Factory />,
+            email: order.externalProcessor?.emails ?? [],
+            copyEmail: order.externalProcessor?.ccEmails ?? [],
+            documents: [
+              { name: 'maquilador-cmr', label: 'CMR Maquilador' },
+              { name: 'maquilador-signs', label: 'Letreros Maquilador' },
             ],
           },
         ]
@@ -99,25 +187,25 @@ const OrderDocuments = () => {
     { id: 'valued-loading-note', name: 'Nota de Carga Valorada' },
     { id: 'order-confirmation', name: 'Confirmación de Pedido' },
     { id: 'transport-pickup-request', name: 'Solicitud de Recogida' },
+    ...(hasMaquilador
+      ? [
+          { id: 'maquilador-cmr', name: 'CMR Maquilador' },
+          { id: 'maquilador-signs', name: 'Letreros Maquilador' },
+        ]
+      : []),
   ];
 
-  const toggleDocumentSelection = (recipientName, documentName) => {
+  const toggleDocumentSelection = (recipientName: keyof SelectedDocs, documentName: string) => {
     const isSelected = selectedDocs[recipientName].includes(documentName);
-
-    if (isSelected) {
-      setSelectedDocs((prev) => ({
-        ...prev,
-        [recipientName]: prev[recipientName].filter((doc) => doc !== documentName),
-      }));
-    } else {
-      setSelectedDocs((prev) => ({
-        ...prev,
-        [recipientName]: [...prev[recipientName], documentName],
-      }));
-    }
+    setSelectedDocs((prev) => ({
+      ...prev,
+      [recipientName]: isSelected
+        ? prev[recipientName].filter((doc) => doc !== documentName)
+        : [...prev[recipientName], documentName],
+    }));
   };
 
-  const toggleRecipientSelection = (recipientName) => {
+  const toggleRecipientSelection = (recipientName: keyof SelectedRecipients) => {
     setSelectedRecipients((prev) => ({
       ...prev,
       [recipientName]: !prev[recipientName],
@@ -129,7 +217,9 @@ const OrderDocuments = () => {
       notify.error({ title: 'Por favor seleccione un documento' });
       return;
     }
-    const selectedRecipientsArray = Object.entries(selectedRecipients)
+    const selectedRecipientsArray = (
+      Object.entries(selectedRecipients) as [keyof SelectedRecipients, boolean][]
+    )
       .filter(([_, selected]) => selected)
       .map(([id]) => id);
 
@@ -139,48 +229,35 @@ const OrderDocuments = () => {
     }
 
     const json = {
-      documents: [
-        {
-          type: selectedDocument,
-          recipients: selectedRecipientsArray,
-        },
-      ],
+      documents: [{ type: selectedDocument, recipients: selectedRecipientsArray }],
     };
 
     notify.promise(sendDocuments.customDocuments(json), {
       loading: 'Enviando documentos a múltiples destinatarios...',
       success: 'Documentos enviados correctamente',
-      error: (error) => {
-        const desc =
-          error?.userMessage ||
-          error?.data?.userMessage ||
-          error?.response?.data?.userMessage ||
-          error?.message ||
-          'No se pudieron enviar los documentos. Intente de nuevo.';
+      error: (err: unknown) => {
+        const e = err as { userMessage?: string; data?: { userMessage?: string }; response?: { data?: { userMessage?: string } }; message?: string };
+        const desc = e?.userMessage || e?.data?.userMessage || e?.response?.data?.userMessage || e?.message || 'No se pudieron enviar los documentos. Intente de nuevo.';
         return { title: 'Error al enviar documentos', description: desc };
       },
     });
   };
 
   const handleOnClickSendSelectedDocuments = async () => {
-    /* Agrupar por recipients por documento */
-    const recipientsByDocuments = Object.entries(selectedDocs).reduce(
-      (acc, [recipient, documents]) => {
-        documents.forEach((doc) => {
-          if (!acc[doc]) {
-            acc[doc] = [];
-          }
-          acc[doc].push(recipient);
-        });
-        return acc;
-      },
-      {}
-    );
+    const recipientsByDocuments = (
+      Object.entries(selectedDocs) as [keyof SelectedDocs, string[]][]
+    ).reduce<Record<string, string[]>>((acc, [recipient, documents]) => {
+      documents.forEach((doc) => {
+        if (!acc[doc]) acc[doc] = [];
+        acc[doc].push(recipient);
+      });
+      return acc;
+    }, {});
 
     const json = {
-      documents: Object.entries(recipientsByDocuments).map(([doc, recipients]) => ({
+      documents: Object.entries(recipientsByDocuments).map(([doc, recips]) => ({
         type: doc,
-        recipients,
+        recipients: recips,
       })),
     };
 
@@ -188,13 +265,9 @@ const OrderDocuments = () => {
       .promise(sendDocuments.customDocuments(json), {
         loading: 'Enviando documentos...',
         success: 'Documentos enviados correctamente',
-        error: (error) => {
-          const desc =
-            error?.userMessage ||
-            error?.data?.userMessage ||
-            error?.response?.data?.userMessage ||
-            error?.message ||
-            'No se pudieron enviar los documentos. Intente de nuevo.';
+        error: (err: unknown) => {
+          const e = err as { userMessage?: string; data?: { userMessage?: string }; response?: { data?: { userMessage?: string } }; message?: string };
+          const desc = e?.userMessage || e?.data?.userMessage || e?.response?.data?.userMessage || e?.message || 'No se pudieron enviar los documentos. Intente de nuevo.';
           return { title: 'Error al enviar documentos', description: desc };
         },
       })
@@ -205,36 +278,50 @@ const OrderDocuments = () => {
     notify.promise(sendDocuments.standardDocuments(), {
       loading: 'Enviando documentos estándar...',
       success: 'Documentos enviados correctamente',
-      error: (error) => {
-        const desc =
-          error?.userMessage ||
-          error?.data?.userMessage ||
-          error?.response?.data?.userMessage ||
-          error?.message ||
-          'No se pudieron enviar los documentos. Intente de nuevo.';
+      error: (err: unknown) => {
+        const e = err as { userMessage?: string; data?: { userMessage?: string }; response?: { data?: { userMessage?: string } }; message?: string };
+        const desc = e?.userMessage || e?.data?.userMessage || e?.response?.data?.userMessage || e?.message || 'No se pudieron enviar los documentos. Intente de nuevo.';
         return { title: 'Error al enviar documentos', description: desc };
       },
     });
   };
 
+  const handleSendMaquiladorDocuments = () => {
+    if (!order.maquiladorDestination) {
+      setShowMaquiladorWarning(true);
+      return;
+    }
+    doSendMaquiladorDocuments();
+  };
+
+  const doSendMaquiladorDocuments = () => {
+    setPendingMaquiladorSend(false);
+    notify.promise(sendDocuments.maquiladorDocuments(), {
+      loading: 'Enviando documentación al maquilador...',
+      success: 'Documentación enviada al maquilador correctamente',
+      error: (err: unknown) => {
+        const e = err as { userMessage?: string; data?: { userMessage?: string }; response?: { data?: { userMessage?: string } }; message?: string };
+        const desc = e?.userMessage || e?.data?.userMessage || e?.response?.data?.userMessage || e?.message || 'No se pudo enviar la documentación. Intente de nuevo.';
+        return { title: 'Error al enviar al maquilador', description: desc };
+      },
+    });
+  };
+
   const numberOfSelectedDocuments = Object.values(selectedDocs).reduce(
-    (acc, curr) => acc + Object.values(curr).filter(Boolean).length,
+    (acc, curr) => acc + curr.length,
     0
   );
 
-  const getBadgeClass = (recipientName, docName) => {
+  const getBadgeClass = (recipientName: keyof SelectedDocs, docName: string) => {
     const isSelected = selectedDocs[recipientName]?.includes(docName);
     if (isSelected) {
       return 'bg-primary text-primary-foreground hover:bg-primary/90 border-primary';
     }
+    return '';
   };
 
   const handleOnClickResetSelectedDocs = () => {
-    setSelectedDocs({
-      customer: [],
-      transport: [],
-      salesperson: [],
-    });
+    setSelectedDocs({ customer: [], transport: [], salesperson: [], external_processor: [] });
   };
 
   // Sección: Envío Automático Estándar
@@ -278,6 +365,63 @@ const OrderDocuments = () => {
       </CardFooter>
     </Card>
   );
+
+  // Sección: Envío al Maquilador (condicional)
+  const maquiladorSection = hasMaquilador ? (
+    <Card className="flex h-full flex-col border-amber-200 dark:border-amber-800">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Factory className="size-4" />
+          Envío al Maquilador
+        </CardTitle>
+        <CardDescription>
+          Envía el CMR y los letreros anonimizados al transformador externo asignado.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-1 flex-col justify-center">
+        <ul className="mb-4 space-y-1 text-sm">
+          <li className="flex items-center">
+            <div className="mr-1.5 h-1 w-1 rounded-full bg-neutral-400"></div>
+            <span>CMR Maquilador ➜ Emails del maquilador</span>
+          </li>
+          <li className="flex items-center">
+            <div className="mr-1.5 h-1 w-1 rounded-full bg-neutral-400"></div>
+            <span>Letreros Maquilador ➜ Emails del maquilador</span>
+          </li>
+        </ul>
+        {order.externalProcessor?.emails && order.externalProcessor.emails.length > 0 && (
+          <div className="text-muted-foreground text-xs space-y-0.5">
+            {order.externalProcessor.emails.map((email) => (
+              <div key={email} className="flex items-center gap-1">
+                <Send className="size-3" />
+                <a href={`mailto:${email}`} className="hover:underline">{email}</a>
+              </div>
+            ))}
+            {(order.externalProcessor?.ccEmails ?? []).map((email) => (
+              <div key={email} className="flex items-center gap-1">
+                <Badge variant="outline" className="px-1 text-[10px]">CC</Badge>
+                <a href={`mailto:${email}`} className="hover:underline">{email}</a>
+              </div>
+            ))}
+          </div>
+        )}
+        {!order.maquiladorDestination && (
+          <div className="mt-3 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 p-2 text-xs text-amber-700 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-400">
+            <AlertTriangle className="mt-0.5 size-3 shrink-0" />
+            <span>
+              El campo &apos;Destino para docs&apos; está vacío. Los documentos mostrarán &apos;Cliente #{order.id}&apos;.
+            </span>
+          </div>
+        )}
+      </CardContent>
+      <CardFooter>
+        <Button onClick={handleSendMaquiladorDocuments} className="w-full" variant="secondary">
+          <Send />
+          Enviar al Maquilador
+        </Button>
+      </CardFooter>
+    </Card>
+  ) : null;
 
   // Sección: Envío Personalizado de Documentos
   const customSection = (
@@ -334,10 +478,15 @@ const OrderDocuments = () => {
                           key={doc.name}
                           variant="outline"
                           className={`flex cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium shadow-sm transition-all ${getBadgeClass(
-                            recipient.name,
+                            recipient.name as keyof SelectedDocs,
                             doc.name
-                          )} `}
-                          onClick={() => toggleDocumentSelection(recipient.name, doc.name)}
+                          )}`}
+                          onClick={() =>
+                            toggleDocumentSelection(
+                              recipient.name as keyof SelectedDocs,
+                              doc.name
+                            )
+                          }
                         >
                           {doc.label}
                         </Badge>
@@ -421,11 +570,11 @@ const OrderDocuments = () => {
                 <div
                   key={recipient.name}
                   className={`flex cursor-pointer items-center gap-2 rounded-md border p-2 transition-colors ${
-                    selectedRecipients[recipient.name]
+                    selectedRecipients[recipient.name as keyof SelectedRecipients]
                       ? 'bg-primary/20 border-primary'
                       : 'bg-background'
                   }`}
-                  onClick={() => toggleRecipientSelection(recipient.name)}
+                  onClick={() => toggleRecipientSelection(recipient.name as keyof SelectedRecipients)}
                 >
                   <div className="bg-muted rounded-full p-1 [&_svg]:size-4">{recipient.icon}</div>
                   <span className="text-sm font-medium">{recipient.label}</span>
@@ -447,22 +596,27 @@ const OrderDocuments = () => {
   const content = (
     <div className="space-y-6">
       {isMobile ? (
-        // Orden para mobile: Estándar primero
         <>
           {standardSection}
+          {hasMaquilador && (
+            <>
+              <Separator />
+              {maquiladorSection}
+            </>
+          )}
           <Separator />
           {customSection}
           <Separator />
           {multipleSection}
         </>
       ) : (
-        // Orden para desktop: Personalizado primero
         <>
           {customSection}
           <Separator />
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <div className="md:col-span-2">{multipleSection}</div>
+            <div className={hasMaquilador ? 'md:col-span-1' : 'md:col-span-2'}>{multipleSection}</div>
             <div className="md:col-span-1">{standardSection}</div>
+            {hasMaquilador && <div className="md:col-span-1">{maquiladorSection}</div>}
           </div>
         </>
       )}
@@ -470,25 +624,65 @@ const OrderDocuments = () => {
   );
 
   return (
-    <div
-      className={
-        isMobile
-          ? 'flex min-h-0 flex-1 flex-col'
-          : 'flex min-h-0 flex-1 flex-col overflow-hidden pb-2'
-      }
-    >
-      {isMobile ? (
-        <div className="flex min-h-0 flex-1 flex-col">
-          <ScrollArea className="min-h-0 flex-1">
-            <div className="py-6">{content}</div>
-          </ScrollArea>
-        </div>
-      ) : (
-        <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          <CardContent className="min-h-0 flex-1 overflow-y-auto py-6">{content}</CardContent>
-        </Card>
-      )}
-    </div>
+    <>
+      <div
+        className={
+          isMobile
+            ? 'flex min-h-0 flex-1 flex-col'
+            : 'flex min-h-0 flex-1 flex-col overflow-hidden pb-2'
+        }
+      >
+        {isMobile ? (
+          <div className="flex min-h-0 flex-1 flex-col">
+            <ScrollArea className="min-h-0 flex-1">
+              <div className="py-6">{content}</div>
+            </ScrollArea>
+          </div>
+        ) : (
+          <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <CardContent className="min-h-0 flex-1 overflow-y-auto py-6">{content}</CardContent>
+          </Card>
+        )}
+      </div>
+
+      {/* Diálogo de advertencia: destino maquilador vacío */}
+      <Dialog open={showMaquiladorWarning} onOpenChange={setShowMaquiladorWarning}>
+        <DialogContent size="md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-500" />
+              Destino del maquilador no configurado
+            </DialogTitle>
+            <DialogDescription>
+              El campo &quot;Destino para docs del maquilador&quot; está vacío. Los documentos
+              mostrarán <strong>&quot;Cliente #{order.id}&quot;</strong> como destinatario en el CMR
+              y los letreros. ¿Deseas continuar?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowMaquiladorWarning(false);
+                setPendingMaquiladorSend(false);
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => {
+                setShowMaquiladorWarning(false);
+                setPendingMaquiladorSend(true);
+                doSendMaquiladorDocuments();
+              }}
+            >
+              <Send />
+              Enviar igualmente
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 

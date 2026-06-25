@@ -110,7 +110,8 @@ function useAttachmentBlob(
   enabled = false
 ) {
   const [src, setSrc] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  // Empezar en loading=true cuando enabled=true para evitar el flash de "error"
+  const [loading, setLoading] = useState(enabled);
 
   useEffect(() => {
     if (!enabled) return;
@@ -282,7 +283,10 @@ function AttachmentViewer({
   const attachment = attachments[index];
 
   const isImage = attachment.collection === 'order_image';
-  const isPdf = attachment.mimeType === 'application/pdf';
+  // Comprueba MIME y también extensión por si el backend almacena application/octet-stream
+  const isPdf =
+    attachment.mimeType === 'application/pdf' ||
+    attachment.extension.toLowerCase() === 'pdf';
   const needsBlob = isImage || isPdf;
 
   const { src, loading } = useAttachmentBlob(orderId, attachment.id, needsBlob);
@@ -296,6 +300,10 @@ function AttachmentViewer({
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
   }, [attachments.length, onClose]);
+
+  const openInNewTab = () => {
+    if (src) window.open(src, '_blank');
+  };
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
@@ -312,6 +320,20 @@ function AttachmentViewer({
           <div className="flex shrink-0 items-center gap-1.5">
             {attachments.length > 1 && (
               <span className="text-xs text-muted-foreground">{index + 1} / {attachments.length}</span>
+            )}
+            {/* Abrir en nueva pestaña — útil como fallback para PDFs */}
+            {isPdf && src && (
+              <button
+                className="rounded p-1.5 hover:bg-muted"
+                onClick={openInNewTab}
+                title="Abrir en nueva pestaña"
+              >
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                  <polyline points="15 3 21 3 21 9" />
+                  <line x1="10" y1="14" x2="21" y2="3" />
+                </svg>
+              </button>
             )}
             <button
               className="rounded p-1.5 hover:bg-muted"
@@ -348,21 +370,42 @@ function AttachmentViewer({
             </div>
           )}
 
-          {/* PDF — visor nativo del navegador */}
+          {/* PDF — visor nativo del navegador via <object> */}
           {isPdf && (
-            <div className="absolute inset-0 flex items-center justify-center bg-muted">
-              {loading ? (
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-              ) : src ? (
-                <iframe
-                  src={src}
-                  className="h-full w-full border-0"
-                  title={attachment.originalName}
-                />
-              ) : (
-                <div className="flex flex-col items-center gap-2 text-muted-foreground">
+            <div className="absolute inset-0 bg-muted">
+              {loading && (
+                <div className="flex h-full items-center justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+              )}
+              {!loading && src && (
+                <object
+                  data={src}
+                  type="application/pdf"
+                  className="absolute inset-0 h-full w-full"
+                >
+                  {/* Fallback si el navegador no puede mostrar el PDF inline */}
+                  <div className="flex h-full flex-col items-center justify-center gap-3 text-muted-foreground">
+                    <FileText className="h-10 w-10" />
+                    <p className="text-sm">Este navegador no puede mostrar PDFs inline.</p>
+                    <Button variant="outline" size="sm" onClick={openInNewTab}>
+                      Abrir en nueva pestaña
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => onDownload(attachment)}>
+                      <Download className="mr-1.5 h-4 w-4" />
+                      Descargar
+                    </Button>
+                  </div>
+                </object>
+              )}
+              {!loading && !src && (
+                <div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
                   <FileText className="h-10 w-10" />
                   <p className="text-sm">No se pudo cargar el documento</p>
+                  <Button variant="outline" size="sm" onClick={() => onDownload(attachment)}>
+                    <Download className="mr-1.5 h-4 w-4" />
+                    Descargar
+                  </Button>
                 </div>
               )}
             </div>

@@ -13,6 +13,8 @@ export const orderEditSchema = z.object({
   salesperson: z.string().min(1, 'Seleccione un comercial'),
   fieldOperator: z.string().optional(),
   externalProcessor: z.string().optional(),
+  maquiladorDestination: z.string().max(500, 'Máximo 500 caracteres').optional(),
+  loadingAddress: z.string().max(500, 'Máximo 500 caracteres').optional(),
   payment: z.string().optional(),
   incoterm: z.string().optional(),
   buyerReference: z.string().optional(),

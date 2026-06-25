@@ -164,6 +164,18 @@ const exportDocuments: ExportDocumentConfig[] = [
     types: ['pdf'],
     fields: ['Datos básicos', 'Direcciones', 'Observaciones', 'Incidencias'],
   },
+  {
+    name: 'maquilador-cmr',
+    label: 'CMR Maquilador',
+    types: ['pdf'],
+    fields: ['Expedidor', 'Destinatario (anonimizado)', 'Transporte', 'Lugar de carga'],
+  },
+  {
+    name: 'maquilador-signs',
+    label: 'Letreros Maquilador',
+    types: ['pdf'],
+    fields: ['Expedidor', 'Consignatario (anonimizado)', 'Datos de palet', 'QR codes'],
+  },
 ];
 
 const fastExportDocuments: FastExportDocumentConfig[] = [
@@ -175,6 +187,8 @@ const fastExportDocuments: FastExportDocumentConfig[] = [
   { name: 'restricted-order-signs', label: 'Letreros de transporte (Restringidos)', type: 'pdf' },
   { name: 'pallet-expedition-labels', label: 'Etiquetas de expedición de palets', type: 'pdf' },
   { name: 'order-packing-list', label: 'Packing List', type: 'pdf' },
+  { name: 'maquilador-cmr', label: 'CMR Maquilador', type: 'pdf' },
+  { name: 'maquilador-signs', label: 'Letreros Maquilador', type: 'pdf' },
 ];
 
 interface UseOrderDocumentsParams {
@@ -189,7 +203,9 @@ export interface UseOrderDocumentsResult {
   sendDocuments: {
     customDocuments: (json: unknown) => Promise<unknown>;
     standardDocuments: () => Promise<unknown>;
+    maquiladorDocuments: () => Promise<unknown>;
   };
+  hasMaquilador: boolean;
 }
 
 export function useOrderDocuments({
@@ -283,6 +299,35 @@ export function useOrderDocuments({
     });
   };
 
+  const sendMaquiladorDocuments = async (): Promise<unknown> => {
+    if (!order) return;
+    if (isCommercial) {
+      notify.error({
+        title: 'Acción no disponible',
+        description: 'El envío de documentación al maquilador no está disponible para el rol Comercial.',
+      });
+      return;
+    }
+    const token = session?.user?.accessToken;
+    return fetchWithTenant(`${API_URL_V2}orders/${order.id}/send-maquilador-documents`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Authorization: `Bearer ${token}`,
+        'User-Agent': navigator.userAgent,
+      },
+    }).then((response: Response) => {
+      if (!response.ok) {
+        return response.json().then(async (errorData: unknown) => {
+          const { getErrorMessage } = await import('@/lib/api/apiHelpers');
+          throw new Error(getErrorMessage(errorData as object) || 'Error');
+        });
+      }
+      return response.json();
+    });
+  };
+
   const sendStandarDocuments = async (): Promise<unknown> => {
     if (!order) return;
     const token = session?.user?.accessToken;
@@ -315,6 +360,9 @@ export function useOrderDocuments({
     ? fastExportDocuments.filter((doc) => !isCommercialRestrictedDocument(doc.name))
     : fastExportDocuments;
 
+  const hasMaquilador = !!(order as { externalProcessorId?: number | string | null } | null)?.externalProcessorId ||
+    !!(order as { externalProcessor?: { id?: number | string } | null } | null)?.externalProcessor?.id;
+
   return {
     exportDocument,
     exportDocuments: visibleExportDocuments,
@@ -322,6 +370,8 @@ export function useOrderDocuments({
     sendDocuments: {
       customDocuments: sendCustomDocuments,
       standardDocuments: sendStandarDocuments,
+      maquiladorDocuments: sendMaquiladorDocuments,
     },
+    hasMaquilador,
   };
 }

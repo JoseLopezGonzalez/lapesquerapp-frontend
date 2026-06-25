@@ -20,8 +20,14 @@ interface ExternalProcessor {
   id?: number | string;
   name?: string;
   vatNumber?: string;
-  contactPerson?: string;
-  phone?: string;
+  sanitaryRegistrationNumber?: string | null;
+  contactPerson?: string | null;
+  phone?: string | null;
+  emails?: string[];
+  ccEmails?: string[];
+  address?: string | null;
+  city?: string | null;
+  province?: string | null;
   [key: string]: unknown;
 }
 
@@ -44,6 +50,8 @@ interface Order {
   paymentTerm?: { name?: string } | null;
   incoterm?: OrderIncoterm | null;
   externalProcessor?: ExternalProcessor | null;
+  maquiladorDestination?: string | null;
+  loadingAddress?: string | null;
   totalCost?: number | null;
   costPerKg?: number | null;
   grossMargin?: number | null;
@@ -127,6 +135,11 @@ const OrderDetails = () => {
                           {order.externalProcessor.vatNumber}
                         </div>
                       )}
+                      {order.externalProcessor.sanitaryRegistrationNumber && (
+                        <div className="text-muted-foreground text-xs">
+                          Reg. san.: {order.externalProcessor.sanitaryRegistrationNumber}
+                        </div>
+                      )}
                       {order.externalProcessor.contactPerson && (
                         <div className="text-muted-foreground text-xs">
                           {order.externalProcessor.contactPerson}
@@ -135,6 +148,24 @@ const OrderDetails = () => {
                             : ''}
                         </div>
                       )}
+                      <div className="border-t mt-2 pt-2 space-y-1 text-left">
+                        <div>
+                          <div className="text-muted-foreground text-xs font-medium">Destino en sus docs</div>
+                          <div className="text-xs">
+                            {order.maquiladorDestination ?? (
+                              <span className="text-muted-foreground italic">No configurado</span>
+                            )}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground text-xs font-medium">Lugar de carga</div>
+                          <div className="text-xs">
+                            {order.loadingAddress ?? (
+                              <span className="text-muted-foreground italic">No configurado</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   ) : (
                     <div className="text-muted-foreground font-medium">Sin maquilador</div>
@@ -344,12 +375,39 @@ const OrderDetails = () => {
                     {order.externalProcessor.vatNumber}
                   </div>
                 )}
+                {order.externalProcessor.sanitaryRegistrationNumber && (
+                  <div className="text-muted-foreground text-xs">
+                    Reg. san.: {order.externalProcessor.sanitaryRegistrationNumber}
+                  </div>
+                )}
                 {order.externalProcessor.contactPerson && (
                   <div className="text-muted-foreground text-xs">
                     {order.externalProcessor.contactPerson}
                     {order.externalProcessor.phone ? ` · ${order.externalProcessor.phone}` : ''}
                   </div>
                 )}
+                <div className="border-t mt-2 pt-2 space-y-1">
+                  <div>
+                    <div className="text-muted-foreground text-xs font-medium">Destino en sus docs</div>
+                    <div className="text-xs font-normal">
+                      {order.maquiladorDestination ?? (
+                        <span className="text-muted-foreground italic">
+                          No configurado — se usará &apos;Cliente #ID&apos;
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground text-xs font-medium">Lugar de carga</div>
+                    <div className="text-xs font-normal">
+                      {order.loadingAddress ?? (
+                        <span className="text-muted-foreground italic">
+                          No configurado — dirección del maquilador o empresa
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="text-muted-foreground text-sm">Sin maquilador</div>

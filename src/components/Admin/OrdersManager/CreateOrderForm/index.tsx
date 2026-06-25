@@ -18,6 +18,7 @@ import { Label } from '@/components/ui/label';
 import { useOrderCreateFormConfig } from '@/hooks/useOrderCreateFormConfig';
 import { useSession } from 'next-auth/react';
 import { getCustomer } from '@/services/customerService';
+import { externalProcessorService } from '@/services/domain/external-processors/externalProcessorService';
 import { useProductOptions } from '@/hooks/useProductOptions';
 import { useTaxOptions } from '@/hooks/useTaxOptions';
 import Loader from '@/components/Utilities/Loader';
@@ -152,6 +153,7 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
   const isInitializedRef = useRef(false);
   const appliedPrefillSignatureRef = useRef<string | null>(null);
   const lastCustomerIdRef = useRef<string | null>(null);
+  const lastEpIdRef = useRef<string | null>(null);
 
   const {
     register,
@@ -159,6 +161,7 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
     control,
     reset,
     setError,
+    getValues,
     formState: { errors, isSubmitting, isValid },
     watch,
     setValue,
@@ -173,6 +176,7 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
   const submitDisabled = isSubmitting || loading || !isValid;
 
   const selectedCustomerId = watch('customer') ?? '';
+  const selectedExternalProcessorId = watch('externalProcessor') ?? '';
 
   useEffect(() => {
     if (!selectedCustomerId) return;
@@ -207,6 +211,29 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
         });
       });
   }, [selectedCustomerId, setValue, session]);
+
+  useEffect(() => {
+    if (!selectedExternalProcessorId) {
+      lastEpIdRef.current = null;
+      return;
+    }
+    if (selectedExternalProcessorId === lastEpIdRef.current) return;
+    lastEpIdRef.current = selectedExternalProcessorId;
+
+    const currentAddress = getValues('loadingAddress');
+    if (currentAddress) return;
+
+    externalProcessorService.getById(selectedExternalProcessorId)
+      .then((ep) => {
+        const parts: string[] = [];
+        if (ep.address) parts.push(ep.address);
+        if (ep.city) parts.push(ep.province ? `${ep.city} (${ep.province})` : ep.city);
+        if (parts.length > 0) {
+          setValue('loadingAddress', parts.join(', '));
+        }
+      })
+      .catch(() => {});
+  }, [selectedExternalProcessorId, setValue, getValues]);
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -266,6 +293,8 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
       salesperson: formData.salesperson ? parseInt(formData.salesperson) : null,
       fieldOperator: formData.fieldOperator ? parseInt(formData.fieldOperator) : null,
       externalProcessor: formData.externalProcessor ? parseInt(formData.externalProcessor) : null,
+      maquiladorDestination: formData.maquiladorDestination || null,
+      loadingAddress: formData.loadingAddress || null,
       payment: formData.payment ? parseInt(formData.payment) : null,
       incoterm: formData.incoterm ? parseInt(formData.incoterm) : null,
       buyerReference: formData.buyerReference || null,

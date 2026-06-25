@@ -44,6 +44,8 @@ interface OrderData {
   fieldOperatorId?: number | string | null;
   externalProcessor?: { id?: number | string } | null;
   externalProcessorId?: number | string | null;
+  maquiladorDestination?: string | null;
+  loadingAddress?: string | null;
   paymentTerm?: { id?: number | string } | null;
   incoterm?: { id?: number | string } | null;
   buyerReference?: string | null;
@@ -67,6 +69,8 @@ interface DefaultValues {
   salesperson: string;
   fieldOperator: string;
   externalProcessor: string;
+  maquiladorDestination: string;
+  loadingAddress: string;
   payment: string;
   incoterm: string;
   buyerReference: string;
@@ -95,6 +99,8 @@ const initialDefaultValues: DefaultValues = {
   salesperson: '',
   fieldOperator: '',
   externalProcessor: '',
+  maquiladorDestination: '',
+  loadingAddress: '',
   payment: '',
   incoterm: '',
   buyerReference: '',
@@ -196,6 +202,20 @@ const initialFormGroups: FormGroup[] = [
         component: 'Select',
         options: [],
         props: { placeholder: 'Sin maquilador' },
+      },
+      {
+        name: 'maquiladorDestination',
+        label: 'Destino para docs del maquilador',
+        component: 'Input',
+        colSpan: 'col-span-2',
+        props: { placeholder: 'ej. Cliente Nº1, Olano Italia — aparecerá en CMR y letreros del maquilador' },
+      },
+      {
+        name: 'loadingAddress',
+        label: 'Lugar de carga',
+        component: 'Input',
+        colSpan: 'col-span-2',
+        props: { placeholder: 'ej. Polígono Industrial, nave 4. Vigo (Pontevedra) — dirección desde donde carga el maquilador' },
       },
     ],
   },
@@ -358,6 +378,8 @@ export function useOrderFormConfig({ orderData }: { orderData?: OrderData | null
         salesperson: `${orderData.salesperson?.id || ''}`,
         fieldOperator: `${orderData.fieldOperator?.id || orderData.fieldOperatorId || ''}`,
         externalProcessor: `${orderData.externalProcessorId || orderData.externalProcessor?.id || ''}`,
+        maquiladorDestination: orderData.maquiladorDestination || '',
+        loadingAddress: orderData.loadingAddress || '',
         payment: `${orderData.paymentTerm?.id || ''}`,
         incoterm: `${orderData.incoterm?.id || ''}`,
         buyerReference: orderData.buyerReference || '',
