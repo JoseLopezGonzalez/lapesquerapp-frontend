@@ -106,6 +106,16 @@ export const orderAttachmentService = {
     URL.revokeObjectURL(url);
   },
 
+  /** Devuelve un blob URL de la imagen completa (para lightbox). */
+  async getBlobUrl(orderId: number | string, attachmentId: number): Promise<string> {
+    const token = await getAuthToken();
+    const blob: Blob = await apiRequest(
+      `${endpoint(orderId)}/${attachmentId}/download`,
+      { method: 'GET', headers: { Authorization: `Bearer ${token}` } }
+    );
+    return URL.createObjectURL(blob);
+  },
+
   /** Devuelve un blob URL del thumbnail (solo para order_image). */
   async getThumbnailBlobUrl(orderId: number | string, attachmentId: number): Promise<string> {
     const token = await getAuthToken();
@@ -117,10 +127,34 @@ export const orderAttachmentService = {
   },
 };
 
+/** Caché de imágenes completas: key → Promise<blobUrl> */
+const blobUrlCache = new Map<string, Promise<string>>();
+
+export function getBlobUrlCached(
+  orderId: number | string,
+  attachmentId: number
+): Promise<string> {
+  const key = `${orderId}:${attachmentId}`;
+  if (!blobUrlCache.has(key)) {
+    const promise = orderAttachmentService.getBlobUrl(orderId, attachmentId).catch((err) => {
+      blobUrlCache.delete(key);
+      throw err;
+    });
+    blobUrlCache.set(key, promise);
+  }
+  return blobUrlCache.get(key)!;
+}
+
+export function invalidateBlobUrlCache(
+  orderId: number | string,
+  attachmentId: number
+): void {
+  blobUrlCache.delete(`${orderId}:${attachmentId}`);
+}
+
 /**
- * Caché de thumbnails por sesión: key → Promise<blobUrl>
- * Comparte la Promise para peticiones concurrentes del mismo adjunto.
- * Los fallos se eliminan para permitir reintento.
+ * Caché de thumbnails: intenta /thumbnail, cae a /download si falla.
+ * Mismo patrón que palletAttachmentService.getThumbnailBlobUrlCached.
  */
 const thumbnailCache = new Map<string, Promise<string>>();
 
@@ -132,10 +166,12 @@ export function getThumbnailCached(
   if (!thumbnailCache.has(key)) {
     const promise = orderAttachmentService
       .getThumbnailBlobUrl(orderId, attachmentId)
-      .catch((err) => {
-        thumbnailCache.delete(key);
-        throw err;
-      });
+      .catch(() =>
+        orderAttachmentService.getBlobUrl(orderId, attachmentId).catch((err) => {
+          thumbnailCache.delete(key);
+          throw err;
+        })
+      );
     thumbnailCache.set(key, promise);
   }
   return thumbnailCache.get(key)!;

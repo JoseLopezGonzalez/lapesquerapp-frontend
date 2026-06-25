@@ -5,6 +5,7 @@ import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 import { orderAttachmentKeys } from '@/lib/routes/queryKeys';
 import {
   orderAttachmentService,
+  invalidateBlobUrlCache,
   invalidateThumbnailCache,
   type OrderAttachment,
   type OrderAttachmentCollection,
@@ -90,6 +91,7 @@ export function useOrderAttachments(
     mutationFn: (attachmentId: number) =>
       orderAttachmentService.delete(orderId!, attachmentId),
     onSuccess: (_data, attachmentId) => {
+      invalidateBlobUrlCache(orderId!, attachmentId);
       invalidateThumbnailCache(orderId!, attachmentId);
       queryClient.invalidateQueries({ queryKey: prefixKey });
       notify.success('Adjunto eliminado');
