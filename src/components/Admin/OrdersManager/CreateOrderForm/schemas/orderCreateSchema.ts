@@ -39,4 +39,4 @@ export const orderCreateSchema = z.object({
   plannedProducts: z.array(plannedProductSchema).min(1, 'Al menos un producto'),
 });
 
-export type OrderCreateFormData = z.infer<typeof orderCreateSchema>;
+export type OrderCreateFormData = z.input<typeof orderCreateSchema>;
