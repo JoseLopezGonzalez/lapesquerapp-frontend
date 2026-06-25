@@ -273,3 +273,20 @@ export const palletAttachmentKeys = {
       normalizeQueryParams(params),
     ] as const,
 };
+
+export const orderAttachmentKeys = {
+  listPrefix: (tenantId: string | null | undefined, orderId: number | string | null | undefined) =>
+    ['orders', 'attachments', tenantId ?? 'unknown', orderId] as const,
+  list: (
+    tenantId: string | null | undefined,
+    orderId: number | string | null | undefined,
+    params: Record<string, unknown> = {}
+  ) =>
+    [
+      'orders',
+      'attachments',
+      tenantId ?? 'unknown',
+      orderId,
+      normalizeQueryParams(params),
+    ] as const,
+};

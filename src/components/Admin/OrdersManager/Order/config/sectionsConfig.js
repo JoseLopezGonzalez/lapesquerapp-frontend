@@ -15,6 +15,7 @@ import {
   Map,
   AlertTriangle,
   History,
+  Paperclip,
 } from 'lucide-react';
 import OrderDetails from '../OrderDetails';
 
@@ -29,6 +30,7 @@ const OrderProductDetails = lazy(() => import('../OrderProductDetails'));
 const OrderPlannedProductDetails = lazy(() => import('../OrderPlannedProductDetails'));
 const OrderIncident = lazy(() => import('../OrderIncident'));
 const OrderCustomerHistory = lazy(() => import('../OrderCustomerHistory'));
+const OrderAttachments = lazy(() => import('../OrderAttachments'));
 
 export const SECTIONS_CONFIG = [
   { id: 'details', title: 'Información', component: OrderDetails, icon: Info },
@@ -78,6 +80,13 @@ export const SECTIONS_CONFIG = [
     component: OrderCustomerHistory,
     lazy: true,
     icon: History,
+  },
+  {
+    id: 'attachments',
+    title: 'Adjuntos',
+    component: OrderAttachments,
+    lazy: true,
+    icon: Paperclip,
   },
 ];
 
