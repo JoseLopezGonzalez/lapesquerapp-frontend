@@ -110,7 +110,13 @@ const crmConfig: Record<string, any> = {
         { name: 'vatNumber', label: 'NIF', type: 'text', path: 'vatNumber' },
         { name: 'facilcom_code', label: 'Código Facilcom', type: 'text', path: 'facilcomCode' },
         { name: 'a3erp_code', label: 'Código A3ERP', type: 'text', path: 'a3erpCode' },
-        { name: 'paymentTerm', label: 'Plazo de pago', type: 'text', path: 'paymentTerm.name' },
+        {
+          name: 'paymentTerm',
+          label: 'Forma de pago',
+          type: 'text',
+          path: 'paymentTerm.name',
+          columnProps: { meta: { cellClass: 'whitespace-normal max-w-[180px]' } },
+        },
         { name: 'salesperson', label: 'Comercial', type: 'text', path: 'salesperson.name' },
         /* emails */
         { name: 'emails', label: 'Emails', type: 'list', path: 'emails' },
