@@ -325,7 +325,7 @@ const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenCh
                         return (
                           <div
                             key={field.name}
-                            className={`grid w-full gap-2 ${isMobile ? '' : field.colSpan}`}
+                            className={`grid w-full min-w-0 gap-2 ${isMobile ? '' : field.colSpan}`}
                           >
                             <Label htmlFor={field.name} className={isMobile ? 'text-sm' : ''}>
                               {field.label}
@@ -360,7 +360,7 @@ const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenCh
                         return (
                           <div
                             key={field.name}
-                            className={`grid w-full gap-2 ${field.colSpan || ''}`}
+                            className={`grid w-full min-w-0 gap-2 ${field.colSpan || ''}`}
                           >
                             <Label htmlFor={field.name}>{field.label}</Label>
                             <div className={hasError ? 'rounded-md border-red-300' : ''}>

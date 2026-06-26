@@ -517,7 +517,7 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
                 <Separator className="my-2" />
                 <div className={`grid w-full ${group.grid || 'grid-cols-1 gap-4'}`}>
                   {group.fields.map((field) => (
-                    <div key={field.name} className={`grid w-full gap-2 ${field.colSpan || ''}`}>
+                    <div key={field.name} className={`grid w-full min-w-0 gap-2 ${field.colSpan || ''}`}>
                       <Label htmlFor={field.name}>{field.label}</Label>
                       {renderField(field)}
                       {errors[field.name as keyof typeof errors] && (
