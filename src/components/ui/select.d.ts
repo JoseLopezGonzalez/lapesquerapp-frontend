@@ -18,7 +18,6 @@ declare const SelectGroup: React.FC<
 declare const SelectValue: React.FC<{
   placeholder?: string;
   loading?: boolean;
-  className?: string;
   [key: string]: unknown;
 }>;
 
