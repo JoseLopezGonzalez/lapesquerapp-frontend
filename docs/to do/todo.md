@@ -1,3 +1,1 @@
-- Agregar un dialog al cerrar el editor-creador de palets sin guardar los cambios con una alerta que nos advierta de que hay cambios sin guardar, tanto en mobile version (que es donde lo veo muy necesario por las mutiples subpantallas) como en desktop.
-- Mejorar la ui completa del login de superadmin y hacerla exactamente igual que el login de los tenants, auditar al completo para hacer que sea la misma ui exactamente.
-- Mejorar y optimizar la ux y ui del sistema crud completo para las entidades genericas en mobile version, desde las tablas, a filtros ... pasando por creaciones de instancias... todo. Primero auditar como seria la mejor forma de ux y ui para mobile version, luego aplicar bajo aprobación.
+

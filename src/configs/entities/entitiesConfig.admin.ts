@@ -393,6 +393,7 @@ const adminConfig: Record<string, any> = {
         { name: 'address', label: 'Dirección', type: 'text', path: 'address' },
         { name: 'emails', label: 'Emails', type: 'list', path: 'emails' },
         { name: 'ccEmails', label: 'Emails en copia (CC)', type: 'list', path: 'ccEmails' },
+        { name: 'contactos', label: 'Contactos', type: 'text', path: 'contactos', hideOnMobile: true },
       ],
     },
     createForm: {
@@ -464,6 +465,16 @@ const adminConfig: Record<string, any> = {
         type: 'emailList',
         placeholder: "Introduce cada email individualmente y pulsa 'Enter' para confirmarlo",
         cols: { sm: 6, md: 6, lg: 3, xl: 3 },
+      },
+      {
+        name: 'contactos',
+        label: 'Contactos',
+        type: 'textarea',
+        placeholder: 'Ej: Juan García - 612 345 678\nMaría López - pedidos@trans.es',
+        validation: {
+          maxLength: { value: 5000, message: 'Máximo 5000 caracteres' },
+        },
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
       },
     ],
   },

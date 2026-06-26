@@ -17,6 +17,7 @@ export interface Transport {
   id: number | string;
   name: string;
   address?: string;
+  contactos?: string | null;
   [key: string]: unknown;
 }
 

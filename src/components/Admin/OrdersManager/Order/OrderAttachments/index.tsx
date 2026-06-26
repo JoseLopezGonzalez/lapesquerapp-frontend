@@ -21,7 +21,8 @@ import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { EmptyState } from '@/components/Utilities/EmptyState';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import {
   AlertDialog,
@@ -317,6 +318,8 @@ interface AttachmentViewerProps {
   orderId: number | string;
   onClose: () => void;
   onDownload: (attachment: OrderAttachment) => void;
+  canDelete: boolean;
+  onDelete: (attachment: OrderAttachment) => void;
 }
 
 function AttachmentViewer({
@@ -325,6 +328,8 @@ function AttachmentViewer({
   orderId,
   onClose,
   onDownload,
+  canDelete,
+  onDelete,
 }: AttachmentViewerProps) {
   const [index, setIndex] = useState(initialIndex);
   const attachment = attachments[index];
@@ -356,6 +361,7 @@ function AttachmentViewer({
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent
         size="4xl"
+        showCloseButton={false}
         className="flex h-[90vh] flex-col gap-0 overflow-hidden p-0"
         aria-describedby={undefined}
       >
@@ -368,7 +374,6 @@ function AttachmentViewer({
             {attachments.length > 1 && (
               <span className="text-xs text-muted-foreground">{index + 1} / {attachments.length}</span>
             )}
-            {/* Abrir en nueva pestaña — útil como fallback para PDFs */}
             {isPdf && src && (
               <button
                 className="rounded p-1.5 hover:bg-muted"
@@ -389,6 +394,16 @@ function AttachmentViewer({
             >
               <Download className="h-4 w-4" />
             </button>
+            {canDelete && (
+              <button
+                className="rounded p-1.5 text-destructive hover:bg-destructive/10"
+                onClick={() => onDelete(attachment)}
+                title="Eliminar"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            )}
+            <div className="mx-0.5 h-4 w-px bg-border" />
             <button className="rounded p-1.5 hover:bg-muted" onClick={onClose}>
               <X className="h-4 w-4" />
             </button>
@@ -567,110 +582,113 @@ const OrderAttachments = () => {
       ? attachments.findIndex((a) => a.id === previewAttachmentId)
       : -1;
 
-  const content = (
-    <div className="space-y-4">
-      {/* Cabecera */}
-      <div className="flex items-center justify-between">
-        <p className="text-muted-foreground text-sm">
-          {isLoading ? (
-            <Skeleton className="h-4 w-24" />
-          ) : (
-            `${total} ${total === 1 ? 'adjunto' : 'adjuntos'}`
-          )}
-        </p>
-        <div className="flex items-center gap-1.5">
-          {attachments.length > 0 && (
-            <>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7"
-                onClick={handleDownloadAll}
-                disabled={isDownloadingAll}
-                title="Descargar todos"
-              >
-                {isDownloadingAll ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <Download className="h-3.5 w-3.5" />
-                )}
-              </Button>
-              {canDelete && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 text-destructive hover:text-destructive"
-                  onClick={() => setDeleteAllOpen(true)}
-                  title="Eliminar todos"
-                  disabled={deleteAllMutation.isPending}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
-              )}
-              <div className="mx-0.5 h-4 w-px bg-border" />
-            </>
-          )}
-          <Button size="sm" onClick={() => setUploadOpen(true)}>
-            <Plus className="mr-1.5 h-4 w-4" />
-            Adjuntar archivo
+  const actions = (
+    <div className="flex items-center gap-1.5">
+      {attachments.length > 0 && !isLoading && (
+        <>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={handleDownloadAll}
+            disabled={isDownloadingAll}
+            title="Descargar todos"
+          >
+            {isDownloadingAll ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Download className="h-3.5 w-3.5" />
+            )}
           </Button>
-        </div>
-      </div>
-
-      {/* Grid */}
-      {isLoading ? (
-        <AttachmentGridSkeleton />
-      ) : error ? (
-        <p className="text-destructive text-sm">{error}</p>
-      ) : attachments.length === 0 ? (
-        <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed py-12 text-center">
-          <Paperclip className="text-muted-foreground h-8 w-8" />
-          <p className="text-muted-foreground text-sm">Sin adjuntos todavía</p>
-          <Button variant="outline" size="sm" onClick={() => setUploadOpen(true)}>
-            Añadir el primero
-          </Button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 xl:grid-cols-5">
-          {attachments.map((att) => (
-            <AttachmentCard
-              key={att.id}
-              orderId={orderId!}
-              attachment={att}
-              canDelete={canDelete}
-              isDownloading={downloadingId === att.id}
-              onDownload={() => handleDownload(att)}
-              onEdit={() => setEditTarget(att)}
-              onDelete={() => setDeleteTargetId(att.id)}
-              onPreviewClick={() => setPreviewAttachmentId(att.id)}
-            />
-          ))}
-        </div>
+          {canDelete && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 text-destructive hover:text-destructive"
+              onClick={() => setDeleteAllOpen(true)}
+              title="Eliminar todos"
+              disabled={deleteAllMutation.isPending}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          )}
+          <div className="mx-0.5 h-4 w-px bg-border" />
+        </>
       )}
+      <Button size="sm" onClick={() => setUploadOpen(true)}>
+        <Plus className="mr-1.5 h-4 w-4" />
+        Adjuntar archivo
+      </Button>
+    </div>
+  );
+
+  const gridContent = isLoading ? (
+    <AttachmentGridSkeleton />
+  ) : error ? (
+    <p className="text-destructive text-sm">{error}</p>
+  ) : attachments.length === 0 ? (
+    <EmptyState
+      title="Sin adjuntos"
+      description="Este pedido no tiene archivos adjuntos todavía."
+      icon={<Paperclip />}
+      button={{ name: 'Adjuntar archivo', onClick: () => setUploadOpen(true) }}
+    />
+  ) : (
+    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 xl:grid-cols-5">
+      {attachments.map((att) => (
+        <AttachmentCard
+          key={att.id}
+          orderId={orderId!}
+          attachment={att}
+          canDelete={canDelete}
+          isDownloading={downloadingId === att.id}
+          onDownload={() => handleDownload(att)}
+          onEdit={() => setEditTarget(att)}
+          onDelete={() => setDeleteTargetId(att.id)}
+          onPreviewClick={() => setPreviewAttachmentId(att.id)}
+        />
+      ))}
     </div>
   );
 
   return (
     <div
       className={cn(
-        isMobile ? 'flex min-h-0 flex-1 flex-col' : 'flex min-h-0 flex-1 flex-col pb-2'
+        isMobile ? 'flex min-h-0 flex-1 flex-col' : 'flex h-full min-h-0 flex-col pb-2'
       )}
     >
       {isMobile ? (
         <div className="flex min-h-0 flex-1 flex-col">
           <ScrollArea className="min-h-0 flex-1">
-            <div className="py-6">{content}</div>
+            <div className="space-y-4 py-6">
+              <div className="flex items-center justify-between">
+                <p className="text-muted-foreground text-sm">
+                  {isLoading ? (
+                    <Skeleton className="h-4 w-24" />
+                  ) : (
+                    `${total} ${total === 1 ? 'adjunto' : 'adjuntos'}`
+                  )}
+                </p>
+                {actions}
+              </div>
+              {gridContent}
+            </div>
           </ScrollArea>
         </div>
       ) : (
-        <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Paperclip className="h-4 w-4" />
-              Adjuntos
-            </CardTitle>
+        <Card className="flex min-h-0 flex-1 flex-col bg-transparent">
+          <CardHeader className="shrink-0">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <CardTitle className="text-lg font-medium">Adjuntos</CardTitle>
+                <CardDescription>
+                  Archivos y documentos adjuntos a este pedido.
+                </CardDescription>
+              </div>
+              {actions}
+            </div>
           </CardHeader>
-          <CardContent className="min-h-0 flex-1 overflow-y-auto">{content}</CardContent>
+          <CardContent className="min-h-0 flex-1 overflow-y-auto">{gridContent}</CardContent>
         </Card>
       )}
 
@@ -747,6 +765,8 @@ const OrderAttachments = () => {
           orderId={orderId!}
           onClose={() => setPreviewAttachmentId(null)}
           onDownload={handleDownload}
+          canDelete={canDelete}
+          onDelete={(att) => setDeleteTargetId(att.id)}
         />
       )}
     </div>
