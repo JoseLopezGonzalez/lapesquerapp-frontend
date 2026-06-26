@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/select';
 import { Combobox } from '@/components/Shadcn/Combobox';
 import { Edit, Save, Loader2, AlertTriangle } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Label } from '@/components/ui/label';
 import { FieldSet, FieldLegend, FieldDescription, FieldGroup } from '@/components/ui/field';
 import { Separator } from '@/components/ui/separator';
@@ -310,7 +311,11 @@ const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenCh
           className="flex min-h-0 w-full flex-1 flex-col"
           noValidate
         >
-          {isMobile ? (
+          {loading ? (
+            <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
+              <OrderEditFormSkeleton />
+            </div>
+          ) : isMobile ? (
             <div className="min-h-0 flex-1 overflow-y-auto pr-2">
               <div className="grid gap-6 py-2 pb-4">
                 {formGroups.map((group) => (
@@ -390,7 +395,7 @@ const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenCh
           >
             <Button
               type="submit"
-              disabled={saving || !isDirty}
+              disabled={saving || !isDirty || loading}
               className={isMobile ? 'min-h-[44px] w-full' : ''}
             >
               {saving ? (
@@ -437,3 +442,30 @@ const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenCh
 };
 
 export default OrderEditSheet;
+
+function OrderEditFormSkeleton() {
+  return (
+    <div className="grid gap-6">
+      {[
+        { cols: 1, rows: 1 },
+        { cols: 2, rows: 2 },
+        { cols: 2, rows: 6 },
+        { cols: 2, rows: 4 },
+        { cols: 2, rows: 4 },
+        { cols: 1, rows: 2 },
+        { cols: 1, rows: 2 },
+      ].map((group, i) => (
+        <div key={i} className="space-y-3">
+          <Skeleton className="h-4 w-36 rounded" />
+          <div
+            className={`grid gap-4 pt-2 ${group.cols === 2 ? 'grid-cols-2' : 'grid-cols-1'}`}
+          >
+            {Array.from({ length: group.rows }).map((_, j) => (
+              <Skeleton key={j} className="h-10 w-full rounded-md" />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
