@@ -382,15 +382,13 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
               control={control}
               render={({ field: { onChange, value, onBlur } }) => (
                 <Select value={value as string} onValueChange={onChange} onBlur={onBlur}>
-                  <SelectTrigger className="w-full overflow-hidden" loading={loading}>
-                    <div className="min-w-0 flex-1 truncate text-start">
-                      <SelectValue
-                        placeholder={field.props?.placeholder}
-                        loading={loading}
-                        value={value as string}
-                        options={field.options}
-                      />
-                    </div>
+                  <SelectTrigger className="w-full" loading={loading}>
+                    <SelectValue
+                      placeholder={field.props?.placeholder}
+                      loading={loading}
+                      value={value as string}
+                      options={field.options}
+                    />
                   </SelectTrigger>
                   <SelectContent loading={loading}>
                     {field.options?.map((opt) => (

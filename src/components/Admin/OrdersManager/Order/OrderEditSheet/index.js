@@ -199,15 +199,13 @@ const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenCh
               render={({ field: { onChange, value, onBlur } }) => {
                 return (
                   <Select value={value} onValueChange={onChange} onBlur={onBlur}>
-                    <SelectTrigger className="w-full overflow-hidden" loading={loading}>
-                      <div className="min-w-0 flex-1 truncate text-start">
-                        <SelectValue
-                          placeholder={field.props?.placeholder}
-                          loading={loading}
-                          value={value}
-                          options={field.options}
-                        />
-                      </div>
+                    <SelectTrigger className="w-full" loading={loading}>
+                      <SelectValue
+                        placeholder={field.props?.placeholder}
+                        loading={loading}
+                        value={value}
+                        options={field.options}
+                      />
                     </SelectTrigger>
                     <SelectContent loading={loading}>
                       {field.options.map((opt) => (
