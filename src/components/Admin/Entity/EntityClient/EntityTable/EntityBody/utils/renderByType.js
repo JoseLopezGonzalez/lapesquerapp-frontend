@@ -36,6 +36,11 @@ export function renderByType(header, value, safeValue, cellCtx, onEdit, cellClas
       ) : (
         '-'
       );
+    case 'multiline':
+      if (safeValue === '-' || safeValue == null || safeValue === '') return '-';
+      return (
+        <span className="line-clamp-3 whitespace-pre-line">{safeValue}</span>
+      );
     case 'id':
       return <span className="font-bold">{safeValue}</span>;
     case 'boolean':

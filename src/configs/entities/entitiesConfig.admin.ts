@@ -393,7 +393,7 @@ const adminConfig: Record<string, any> = {
         { name: 'address', label: 'Dirección', type: 'text', path: 'address' },
         { name: 'emails', label: 'Emails', type: 'list', path: 'emails' },
         { name: 'ccEmails', label: 'Emails en copia (CC)', type: 'list', path: 'ccEmails' },
-        { name: 'contactos', label: 'Contactos', type: 'text', path: 'contactos', hideOnMobile: true },
+        { name: 'contactos', label: 'Contactos', type: 'multiline', path: 'contactos', hideOnMobile: true },
       ],
     },
     createForm: {

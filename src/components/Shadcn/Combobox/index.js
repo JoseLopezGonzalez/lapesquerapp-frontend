@@ -74,7 +74,7 @@ export function Combobox({
           disabled={isDisabled}
           className={cn('w-full justify-between overflow-hidden', className)}
         >
-          <div className="w-full truncate text-start text-base md:text-sm">
+          <div className="min-w-0 flex-1 truncate text-start text-base md:text-sm">
             {loading && !value ? (
               <span className="text-muted-foreground">Cargando opciones...</span>
             ) : selectedOption ? (

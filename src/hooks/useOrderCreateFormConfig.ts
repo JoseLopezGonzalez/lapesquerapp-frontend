@@ -176,9 +176,13 @@ const initialFormGroups: FormGroup[] = [
       {
         name: 'externalProcessor',
         label: 'Maquilador / Transformador externo',
-        component: 'Select',
+        component: 'Combobox',
         options: [],
-        props: { placeholder: 'Sin maquilador' },
+        props: {
+          placeholder: 'Sin maquilador',
+          searchPlaceholder: 'Buscar maquilador...',
+          notFoundMessage: 'No se encontraron maquiladores',
+        },
       },
       {
         name: 'maquiladorDestination',

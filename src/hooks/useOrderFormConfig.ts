@@ -42,7 +42,7 @@ interface OrderData {
   salesperson?: { id?: number | string } | null;
   fieldOperator?: { id?: number | string } | null;
   fieldOperatorId?: number | string | null;
-  externalProcessor?: { id?: number | string } | null;
+  externalProcessor?: { id?: number | string; name?: string; isActive?: boolean } | null;
   externalProcessorId?: number | string | null;
   maquiladorDestination?: string | null;
   loadingAddress?: string | null;
@@ -199,9 +199,13 @@ const initialFormGroups: FormGroup[] = [
       {
         name: 'externalProcessor',
         label: 'Maquilador / Transformador externo',
-        component: 'Select',
+        component: 'Combobox',
         options: [],
-        props: { placeholder: 'Sin maquilador' },
+        props: {
+          placeholder: 'Sin maquilador',
+          searchPlaceholder: 'Buscar maquilador...',
+          notFoundMessage: 'No se encontraron maquiladores',
+        },
       },
     ],
   },
@@ -460,13 +464,22 @@ export function useOrderFormConfig({ orderData }: { orderData?: OrderData | null
               };
             }
             if (field.name === 'externalProcessor') {
-              return {
-                ...field,
-                options: options.externalProcessors.map((ep) => ({
-                  value: `${ep.value}`,
-                  label: ep.label,
-                })),
-              };
+              const baseOptions = options.externalProcessors.map((ep) => ({
+                value: `${ep.value}`,
+                label: ep.label,
+              }));
+              // Inject current processor if not in list (e.g. inactive but already assigned)
+              const currentEp = orderData?.externalProcessor;
+              if (currentEp?.id) {
+                const currentId = `${currentEp.id}`;
+                if (!baseOptions.some((opt) => opt.value === currentId)) {
+                  baseOptions.unshift({
+                    value: currentId,
+                    label: `${currentEp.name}${currentEp.isActive === false ? ' (inactivo)' : ''}`,
+                  });
+                }
+              }
+              return { ...field, options: baseOptions };
             }
             return field;
           }),

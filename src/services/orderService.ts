@@ -377,6 +377,27 @@ export function updateOrder(
 }
 
 /**
+ * Normalizes a raw order from the list endpoint.
+ * The list endpoint (/orders/active) returns a lighter response than the detail endpoint:
+ * - `externalProcessor` may be null even when `externalProcessorId` is set (relation not eager-loaded)
+ * - `orderType` may come as `order_type` (snake_case) in some API versions
+ * This ensures the UI always has consistent field names for badge rendering.
+ */
+function normalizeActiveOrder(order: Record<string, unknown>): Order {
+  const normalized: Record<string, unknown> = { ...order };
+
+  if (!normalized.orderType && normalized.order_type) {
+    normalized.orderType = normalized.order_type;
+  }
+
+  if (!normalized.externalProcessor && normalized.externalProcessorId) {
+    normalized.externalProcessor = { id: normalized.externalProcessorId };
+  }
+
+  return normalized as Order;
+}
+
+/**
  * Fetches the active orders from the API.
  */
 export function getActiveOrders(token: AuthToken): Promise<Order[]> {
@@ -402,9 +423,12 @@ export function getActiveOrders(token: AuthToken): Promise<Order[]> {
       return response.json();
     })
     .then((data: Order[] | { data?: Order[] }) => {
-      if (Array.isArray(data)) return data;
-      if (data && Array.isArray(data.data)) return data.data;
-      return [];
+      const raw: Order[] = Array.isArray(data)
+        ? data
+        : Array.isArray((data as { data?: Order[] }).data)
+          ? (data as { data: Order[] }).data
+          : [];
+      return raw.map((order) => normalizeActiveOrder(order));
     })
     .catch((error) => {
       throw error;

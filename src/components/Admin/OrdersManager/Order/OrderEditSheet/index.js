@@ -200,7 +200,7 @@ const OrderEditSheet = ({ open: controlledOpen, onOpenChange: controlledOnOpenCh
                 return (
                   <Select value={value} onValueChange={onChange} onBlur={onBlur}>
                     <SelectTrigger className="w-full overflow-hidden" loading={loading}>
-                      <div className="w-full truncate overflow-hidden text-start">
+                      <div className="min-w-0 flex-1 truncate text-start">
                         <SelectValue
                           placeholder={field.props?.placeholder}
                           loading={loading}

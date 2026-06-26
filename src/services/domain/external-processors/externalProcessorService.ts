@@ -128,9 +128,19 @@ export const externalProcessorService = {
   },
 
   async getOptions(): Promise<ExternalProcessorOption[]> {
-    const token = await getAuthToken();
-    return fetchAutocompleteOptionsGeneric(`${API_URL_V2}${ENDPOINT}/options`, token) as Promise<
-      ExternalProcessorOption[]
-    >;
+    try {
+      const token = await getAuthToken();
+      return (await fetchAutocompleteOptionsGeneric(
+        `${API_URL_V2}${ENDPOINT}/options`,
+        token
+      )) as ExternalProcessorOption[];
+    } catch {
+      // Fallback: if /options endpoint doesn't exist or fails, build from list
+      const response = await this.list({}, { page: 1, perPage: 500 });
+      return response.data.map((ep) => ({
+        value: ep.id as number | string,
+        label: ep.name,
+      }));
+    }
   },
 };

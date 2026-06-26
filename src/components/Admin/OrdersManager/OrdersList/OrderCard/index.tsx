@@ -11,11 +11,13 @@ interface OrderCardOrder {
   id: number | string;
   status?: string;
   orderType?: string;
+  order_type?: string;
   offerId?: number | string | null;
   loadDate?: string | null;
   customer?: { name?: string } | null;
   numberOfBoxes?: number | null;
   externalProcessor?: { id?: number | string; name?: string } | null;
+  externalProcessorId?: number | string | null;
   [key: string]: unknown;
 }
 
@@ -129,7 +131,7 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }: OrderCardPr
                   />
                   {statusLabel}
                 </span>
-                {order?.orderType === 'autoventa' && (
+                {(order?.orderType === 'autoventa' || order?.order_type === 'autoventa') && (
                   <span className="inline-flex items-center rounded-full border border-neutral-400/50 bg-neutral-500/15 px-2 py-0.5 text-[11px] font-medium text-neutral-700 dark:border-neutral-500/50 dark:text-neutral-300">
                     Autoventa
                   </span>
@@ -139,9 +141,9 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }: OrderCardPr
                     Desde oferta
                   </span>
                 )}
-                {order?.externalProcessor && (
+                {(order?.externalProcessor || order?.externalProcessorId) && (
                   <span className="inline-flex items-center rounded-full border border-amber-400/50 bg-amber-500/15 px-2 py-0.5 text-[11px] font-medium text-amber-700 dark:border-amber-500/50 dark:text-amber-300">
-                    {order.externalProcessor.name ?? 'Maquilador'}
+                    {order.externalProcessor?.name ?? 'Maquilador'}
                   </span>
                 )}
               </div>
@@ -175,7 +177,7 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }: OrderCardPr
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <h3 className="text-base font-medium">#{orderId}</h3>
-              {order?.orderType === 'autoventa' && (
+              {(order?.orderType === 'autoventa' || order?.order_type === 'autoventa') && (
                 <span className="inline-flex items-center rounded-full border border-neutral-400/50 bg-neutral-500/15 px-2 py-0.5 text-[11px] font-medium text-neutral-700 dark:border-neutral-500/50 dark:text-neutral-300">
                   Autoventa
                 </span>
