@@ -4,8 +4,8 @@ import { useCallback, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/Utilities/EmptyState';
-import Loader from '@/components/Utilities/Loader';
 import { RouteMapSection } from '@/components/Field/RouteMapSection';
 import { StopDetailDrawer } from '@/components/Field/StopDetailDrawer';
 import { StopsListDrawer } from '@/components/Field/StopsListDrawer';
@@ -15,7 +15,7 @@ import { useFieldRouteExecutionState } from '@/hooks/useFieldRouteExecutionState
 import { useRouteGeometry } from '@/hooks/useRouteGeometry';
 import { useFieldRoute, useFieldRouteStopMutation } from '@/hooks/useFieldRoutes';
 import { notify } from '@/lib/notifications';
-import { ArrowLeft, MapPinned } from 'lucide-react';
+import { ArrowLeft, Loader2, MapPinned } from 'lucide-react';
 import { getFieldStatusLabel } from '@/components/Field/labels';
 
 function formatRouteDate(value) {
@@ -27,6 +27,29 @@ function formatRouteDate(value) {
     month: 'long',
     year: 'numeric',
   }).format(parsed);
+}
+
+function FieldRouteExecutionSkeleton() {
+  return (
+    <div className="bg-background relative flex h-full min-h-0 w-full min-w-0 flex-col">
+      <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col p-4 pb-4 md:pb-8">
+        <div className="mb-4 flex items-start justify-between gap-3 px-1">
+          <div className="min-w-0 space-y-2">
+            <div className="flex items-center gap-1">
+              <Skeleton className="h-8 w-8 shrink-0 rounded-full" />
+              <Skeleton className="h-6 w-40" />
+            </div>
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-4 w-28" />
+          </div>
+          <Skeleton className="h-6 w-20 rounded-full" />
+        </div>
+        <div className="flex flex-1 items-center justify-center rounded-xl bg-muted">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function FieldRouteExecutionPage({ routeId }) {
@@ -72,11 +95,7 @@ export default function FieldRouteExecutionPage({ routeId }) {
   );
 
   if (isLoading) {
-    return (
-      <div className="flex flex-1 items-center justify-center">
-        <Loader />
-      </div>
-    );
+    return <FieldRouteExecutionSkeleton />;
   }
 
   if (errorMessage || !route) {

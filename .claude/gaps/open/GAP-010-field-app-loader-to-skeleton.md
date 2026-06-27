@@ -108,15 +108,26 @@ Skeleton con header (nombre cliente, número pedido) + área de contenido del pa
 
 ## Implementación
 
-> Rellena el Agente Implementador
-
 ### Archivos creados
+
+Ninguno — los skeletons son sub-componentes locales en cada archivo.
 
 ### Archivos modificados
 
+- `src/components/Field/FieldDashboard.jsx` — `Loader` → `FieldDashboardSkeleton` (3 card skeletons con header + content)
+- `src/components/Field/FieldRoutesListPage.jsx` — `Loader` → `FieldRoutesListSkeleton` (3 route card skeletons)
+- `src/components/Field/FieldRouteExecutionPage.jsx` — `Loader` → `FieldRouteExecutionSkeleton` (header skeleton + mapa con Loader2 interno)
+- `src/components/Field/FieldOrdersPage.jsx` — `Loader` → `FieldOrdersListSkeleton` (4 order card skeletons); Dialog print: `Loader` → `Loader2` contenido
+- `src/components/Field/FieldOrderExecutionPage.jsx` — `Loader` → `FieldOrderExecutionSkeleton` (stepper + content + footer buttons skeleton)
+
 ### Decisiones tomadas durante la implementación
 
-### Desviaciones del plan (si las hay)
+- `FieldRouteExecutionPage`: el área del mapa usa `bg-muted + Loader2` en lugar de un Skeleton plano, ya que el mapa tiene su propio ciclo de carga interno (confirmado en Q1 respuesta b)
+- Los 5 archivos son `.jsx` legacy — no se han migrado a `.tsx` porque el GAP no lo requiere explícitamente; cada skeleton importa solo lo necesario
+
+### Desviaciones del plan
+
+Ninguna.
 
 ---
 

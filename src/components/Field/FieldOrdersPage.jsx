@@ -1,10 +1,10 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { MoreVertical, PackageOpen, Printer } from 'lucide-react';
+import { Loader2, MoreVertical, PackageOpen, Printer } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/Utilities/EmptyState';
-import Loader from '@/components/Utilities/Loader';
 import { useFieldOrder, useFieldOrders } from '@/hooks/useFieldOrders';
 import { getFieldStatusLabel } from '@/components/Field/labels';
 import { formatDate } from '@/helpers/formats/dates/formatDates';
@@ -72,6 +72,32 @@ function getStatusColor(status) {
   if (normalized === 'incident' || normalized === 'cancelled' || normalized === 'canceled')
     return 'red';
   return 'orange';
+}
+
+function FieldOrdersListSkeleton() {
+  return (
+    <div className="flex h-full min-h-0 flex-col gap-4">
+      <div className="space-y-1">
+        <Skeleton className="h-7 w-44" />
+        <Skeleton className="h-4 w-64" />
+      </div>
+      <div className="grid gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Card key={i}>
+            <CardContent className="py-0">
+              <div className="flex w-full min-w-0 grow items-center gap-3 pt-3 pb-3 pr-1">
+                <div className="min-w-0 flex-1 space-y-2">
+                  <Skeleton className="h-5 w-44" />
+                  <Skeleton className="h-4 w-56" />
+                  <Skeleton className="h-5 w-20 rounded-full" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function FieldOrderCard({ order, onClick, onQuickPrint }) {
@@ -262,11 +288,7 @@ export default function FieldOrdersPage() {
   }, [printOrder]);
 
   if (isLoading) {
-    return (
-      <div className="flex flex-1 items-center justify-center">
-        <Loader />
-      </div>
-    );
+    return <FieldOrdersListSkeleton />;
   }
 
   if (errorMessage) {
@@ -329,7 +351,7 @@ export default function FieldOrdersPage() {
 
           {printLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader />
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
           ) : printError ? (
             <EmptyState

@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import Loader from '@/components/Utilities/Loader';
+import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { useFieldOrders } from '@/hooks/useFieldOrders';
 import { useFieldRoutes } from '@/hooks/useFieldRoutes';
@@ -31,6 +31,37 @@ function getTodayDateString() {
   return local.toISOString().slice(0, 10);
 }
 
+function FieldDashboardSkeleton() {
+  return (
+    <div className="flex h-full min-h-0 flex-col gap-4 px-4 py-3">
+      <ScrollArea className="h-full w-full pr-4">
+        <div className="flex w-full flex-col gap-4 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-4">
+          <div className="mb-2 flex flex-col items-start justify-center gap-2">
+            <Skeleton className="h-5 w-32" />
+            <Skeleton className="h-8 w-48" />
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Card key={i} className="border-border/70">
+                <CardHeader className="space-y-3">
+                  <Skeleton className="h-12 w-12 rounded-2xl" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-5 w-28" />
+                    <Skeleton className="h-4 w-44" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-[120px] w-full rounded-xl" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </ScrollArea>
+    </div>
+  );
+}
+
 export default function FieldDashboard() {
   const [greeting] = useState(() => getGreeting());
   const { data: session } = useSession();
@@ -51,11 +82,7 @@ export default function FieldDashboard() {
   const skippedStops = routeStops.filter((stop) => stop.status === 'skipped').length;
 
   if (loadingRoutes || loadingOrders) {
-    return (
-      <div className="flex flex-1 items-center justify-center">
-        <Loader />
-      </div>
-    );
+    return <FieldDashboardSkeleton />;
   }
 
   return (

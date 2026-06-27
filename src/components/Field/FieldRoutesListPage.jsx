@@ -5,8 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/Utilities/EmptyState';
-import Loader from '@/components/Utilities/Loader';
 import { useFieldRoutes } from '@/hooks/useFieldRoutes';
 import { getFieldStatusLabel } from '@/components/Field/labels';
 import { MapPinned, ArrowRight } from 'lucide-react';
@@ -43,16 +43,45 @@ function formatRouteDate(value) {
   return routeDateFormatter.format(parsed);
 }
 
+function FieldRoutesListSkeleton() {
+  return (
+    <div className="flex h-full min-h-0 flex-col gap-4">
+      <div className="space-y-1">
+        <Skeleton className="h-7 w-28" />
+        <Skeleton className="h-4 w-56" />
+      </div>
+      <div className="grid gap-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Card key={i} className="border-border/70">
+            <CardHeader className="gap-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-2">
+                  <Skeleton className="h-5 w-40" />
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+                <Skeleton className="h-6 w-20 rounded-full" />
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Skeleton className="h-2 w-full rounded-full" />
+              <div className="flex justify-end">
+                <Skeleton className="h-9 w-28 rounded-md" />
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function FieldRoutesListPage() {
   const { data, isLoading, errorMessage } = useFieldRoutes({ perPage: 20 });
   const routes = data?.items ?? [];
 
   if (isLoading) {
-    return (
-      <div className="flex flex-1 items-center justify-center">
-        <Loader />
-      </div>
-    );
+    return <FieldRoutesListSkeleton />;
   }
 
   if (errorMessage) {
