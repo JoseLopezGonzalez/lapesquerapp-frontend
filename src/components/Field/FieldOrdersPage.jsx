@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { Loader2, MoreVertical, PackageOpen, Printer } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { useFieldOrder, useFieldOrders } from '@/hooks/useFieldOrders';
@@ -324,19 +325,21 @@ export default function FieldOrdersPage() {
         </p>
       </div>
 
-      <div className="grid gap-4">
-        {orders.map((order) => (
-          <FieldOrderCard
-            key={order.id}
-            order={order}
-            onClick={() => router.push(`/field/pedidos/${order.id}`)}
-            onQuickPrint={(id) => {
-              setPrintOrderId(id);
-              setPrintOpen(true);
-            }}
-          />
-        ))}
-      </div>
+      <ScrollArea className="h-full w-full">
+        <div className="grid gap-4 pb-[calc(5rem+env(safe-area-inset-bottom))]">
+          {orders.map((order) => (
+            <FieldOrderCard
+              key={order.id}
+              order={order}
+              onClick={() => router.push(`/field/pedidos/${order.id}`)}
+              onQuickPrint={(id) => {
+                setPrintOrderId(id);
+                setPrintOpen(true);
+              }}
+            />
+          ))}
+        </div>
+      </ScrollArea>
 
       <Dialog open={printOpen} onOpenChange={setPrintOpen}>
         <DialogContent size="md">

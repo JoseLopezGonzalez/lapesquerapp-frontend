@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { useFieldRoutes } from '@/hooks/useFieldRoutes';
@@ -117,7 +118,8 @@ export default function FieldRoutesListPage() {
         </p>
       </div>
 
-      <div className="grid gap-4">
+      <ScrollArea className="h-full w-full">
+        <div className="grid gap-4 pb-[calc(5rem+env(safe-area-inset-bottom))]">
         {routes.map((route) => {
           const progress = getProgress(route);
 
@@ -158,7 +160,8 @@ export default function FieldRoutesListPage() {
             </Card>
           );
         })}
-      </div>
+        </div>
+      </ScrollArea>
     </div>
   );
 }

@@ -82,15 +82,22 @@ Mismo patrón: `<ScrollArea className="h-full w-full">` envolviendo la lista de 
 
 ## Implementación
 
-> Rellena el Agente Implementador
-
 ### Archivos creados
+
+Ninguno.
 
 ### Archivos modificados
 
+- `src/components/Field/FieldRoutesListPage.jsx` — envuelto la lista de rutas en `ScrollArea` con `pb-[calc(5rem+env(safe-area-inset-bottom))]`
+- `src/components/Field/FieldOrdersPage.jsx` — envuelto la lista de pedidos en `ScrollArea` con `pb-[calc(5rem+env(safe-area-inset-bottom))]`
+
 ### Decisiones tomadas durante la implementación
 
-### Desviaciones del plan (si las hay)
+El header (h1 + p) permanece fuera del ScrollArea — solo el contenido de lista scrollea. El clearance del BottomNav se aplica al contenedor interior del ScrollArea.
+
+### Desviaciones del plan
+
+Ninguna.
 
 ---
 
