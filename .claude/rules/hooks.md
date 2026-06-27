@@ -99,9 +99,12 @@ Si necesitas un nuevo tipo de query, añadir la factory en `src/lib/routes/query
 
 ```typescript
 // staleTime por tipo de dato
-staleTime: 5 * 60 * 1000,   // 5 minutos — usuario actual (useMe), datos de sesión
-staleTime: 60 * 1000,        // 1 minuto — datos cambiantes (pedidos, palets)
-staleTime: undefined,         // default (0) — datos muy volátiles
+staleTime: 5 * 60 * 1000,    // 5 minutos — usuario actual (useMe), datos de sesión
+staleTime: 10 * 60 * 1000,   // 10 minutos — catálogos / datos de referencia que raramente cambian
+                               //              (especies, países, zonas de captura, artes de pesca,
+                               //               categorías, familias, roles, impuestos, transportes)
+staleTime: 60 * 1000,         // 1 minuto — datos cambiantes (pedidos, palets)
+staleTime: undefined,          // default (0) — datos muy volátiles
 
 // enabled: siempre condicionar al tenant y al token
 enabled: !!tenantId && enabled,

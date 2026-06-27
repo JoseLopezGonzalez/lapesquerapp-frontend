@@ -175,11 +175,10 @@ export interface MyEntityCreatePayload {
 Si el EntityClient necesita usar este service, añadirlo al mapper:
 
 ```javascript
-// src/services/domain/entityServiceMapper.js
-// ⚠️ Este archivo está en JS — añadir con TODO de migración
+// src/services/domain/entityServiceMapper.ts
+// Este archivo migró de .js a .ts — mantenerlo en TypeScript
 
 import { myEntityService } from './my-entities/myEntityService';
-// TODO: migrate to .ts
 
 const serviceMap = {
   // ... servicios existentes ...

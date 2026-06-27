@@ -17,9 +17,9 @@
 
 ## Qué hace este comando
 
-1. Carga el skill `mobile-ui` (patrones y restricciones del proyecto)
-2. Carga el skill `mobile-preview` (flujo de ramas)
-3. Si es CRUD simple, carga también `mobile-crud-generator`
+1. Carga el skill `mobile-ui` desde `.claude/skills/mobile-ui/SKILL.md` (patrones y restricciones del proyecto)
+2. Carga el skill `mobile-preview` desde `.claude/skills/mobile-preview/SKILL.md` (flujo de ramas)
+3. Si es CRUD simple, carga también `.claude/skills/mobile-crud-generator/SKILL.md`
 4. Ejecuta el **PASO A** (investigación de la vista actual)
 5. Presenta el **PASO B** (análisis y propuesta) — espera confirmación antes de codificar
 

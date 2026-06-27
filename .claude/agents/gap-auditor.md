@@ -61,6 +61,68 @@ Checklist técnico del proyecto:
 [ ] Errores 422 con setErrorsFrom422 en formularios
 ```
 
+### 3b. Revisión Visual (solo cuando el GAP involucra UI)
+
+Antes de ejecutar esta checklist, leer `.claude/design-context.md`.
+
+```
+Revisión Visual:
+[ ] Color: solo variables CSS o tokens Tailwind de design-context.md — cero valores hex, rgb u oklch hardcodeados
+[ ] Tipografía: tamaño de texto, peso y color coinciden con la escala documentada en design-context.md
+[ ] Layout: estructura de página coincide con el tipo de layout especificado en el UI Brief
+[ ] Componentes: usa los componentes listados en el UI Brief — sin sustituciones sin justificar
+[ ] Paridad con referencia: visualmente consistente con la vista de referencia citada en el UI Brief
+[ ] Estado loading: Skeleton implementado — sin spinners, sin texto "Cargando..."
+[ ] Estado empty: implementado según el patrón de design-context.md (icono + título + descripción)
+[ ] Estado error: inline error + toast — sin console.log, sin alert()
+[ ] Mobile: si el UI Brief marcó mobile como "aplica ahora", la capa mobile existe y usa useIsMobileSafe
+[ ] Sin inline styles: cero instancias de style={{ }} en componentes nuevos o modificados
+[ ] Sin colores hardcodeados: cero instancias de text-[#xxx] o bg-[#xxx] fuera de los tokens de design-context.md
+[ ] Status badges: usa el patrón Tailwind documentado en design-context.md § Status Tokens — bg-orange-500/15, bg-green-500/15, bg-red-500/15, etc. son CORRECTOS, no rechazar
+```
+
+**Veredicto visual:** ✅ APROBADO / ⚠️ APROBADO CON OBSERVACIONES / ❌ RECHAZADO
+
+Si el veredicto visual es ❌, el GAP **no puede** moverse a `closed/` independientemente del veredicto técnico.
+
+---
+
+### 3c. Activación del UX Reviewer (obligatorio para todos los GAPs de UI)
+
+Después de completar los checklists técnico y visual, determinar el modo de revisión UX:
+
+**Activar Full UX Review si CUALQUIERA de estos aplica:**
+- El GAP introduce o modifica un flujo de usuario con 2+ pasos
+- El GAP afecta una entidad primaria (pedidos, palets, etiquetas, clientes, proveedores, rutas)
+- El GAP introduce un formulario nuevo, modal, wizard o interacción multi-estado
+- El GAP modifica navegación o routing
+- El GAP introduce cambios de permisos por rol
+
+**Activar Light UX Review si TODOS estos aplican:**
+- El cambio es solo visual, un fix de elemento único, un refactor interno, o un bug fix que restaura comportamiento existente
+
+Invocar al agente `ux-reviewer` con el modo determinado. El GAP **no puede** moverse a `closed/` hasta que el veredicto UX sea ✅ o ⚠️.
+
+---
+
+### 3d. System Learner check (después de completar los tres checklists)
+
+Después de completar la revisión técnica (§ 3), visual (§ 3b), y UX (§ 3c), evaluar si hay candidatos para `project-learnings.md`:
+
+**Invocar al agente `system-learner` si CUALQUIERA de estos aplica:**
+- Encontraste un fallo o patrón no cubierto por ningún checklist existente
+- El implementador cometió un error que ya se había visto antes (patrón recurrente)
+- Encontraste un patrón en el código que no está documentado en `.claude/rules/` ni en `design-context.md`
+- Jose tuvo que corregir algo durante la auditoría que no estaba en las reglas
+
+**No invocar si:**
+- Todo lo encontrado ya está cubierto por los checklists existentes
+- Los únicos hallazgos son violaciones ya documentadas (fetch directo, hardcode tenant, etc.)
+
+Cuando invoques al `system-learner`, pasarle el hallazgo como contexto. El agente propondrá la entrada a Jose antes de escribir nada.
+
+---
+
 ### 4. Determinar el veredicto
 
 **✅ APROBADO** — todos los criterios de aceptación cumplidos, checklist técnico sin fallos bloqueantes.
@@ -146,4 +208,7 @@ Dejar el archivo en `.claude/gaps/in-progress/`. Decir al Implementador exactame
 - **NUNCA** aprobar un GAP con X-Tenant hardcodeado
 - **NUNCA** aprobar un GAP con archivos `.js` nuevos sin justificación documentada
 - **NUNCA** mover a closed/ un GAP con criterios de aceptación no cumplidos
+- **NUNCA** mover a closed/ un GAP de UI con veredicto visual ❌
+- **NUNCA** mover a closed/ un GAP con veredicto UX ❌
+- **NUNCA** omitir la invocación al UX Reviewer — incluso el Light Review es obligatorio para todos los GAPs de UI
 - **NUNCA** modificar el código de producción — solo el GAP.md

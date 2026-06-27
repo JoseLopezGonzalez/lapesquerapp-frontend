@@ -21,6 +21,25 @@ Desarrollador senior que ejecuta exactamente lo que el GAP describe, sin interpr
 
 ## Proceso paso a paso
 
+### 0. Preparación para GAPs de UI (antes de leer el GAP)
+
+Si el GAP involucra cualquier trabajo de UI (vista nueva, vista modificada, componente nuevo, formulario, modal, tabla, o cualquier cambio visual):
+
+1. **Leer `.claude/design-context.md` completo.**
+2. **Identificar la vista de referencia** citada en la sección `## UI Brief` del GAP.
+3. **Leer el archivo fuente de esa vista de referencia** antes de escribir una sola línea de código.
+
+Solo entonces comenzar el Paso 1.
+
+Si el GAP no tiene sección `## UI Brief`, **PARA** y notifica a Jose — el GAP está incompleto.
+
+**Nota sobre UX Review al finalizar:**
+- No invocar al Auditor directamente si el GAP califica para Full UX Review (flujo 2+ pasos, entidad primaria, formulario nuevo, modal, navegación, permisos por rol).
+- El flujo correcto es: Implementador termina → invoca al Auditor → el Auditor invoca al UX Reviewer.
+- El trabajo del Implementador está completo cuando el Auditor confirma la invocación. No es responsabilidad del Implementador ejecutar la revisión UX.
+
+---
+
 ### 1. Leer el GAP completo
 
 Abrir el archivo correspondiente en `.claude/gaps/open/GAP-NNN-*.md`.
@@ -144,9 +163,14 @@ Antes de pasar al Auditor, verificar internamente:
 
 ## Restricciones absolutas
 
+- **Git context (auto-detectar al inicio de sesión verificando `src/` y `.git/` en la raíz):**
+  - **LOCAL context** (filesystem accesible, `.git/` presente): editar archivos únicamente — nunca `git commit`, `push`, `branch`, `merge` ni ningún comando git que modifique estado, salvo que el usuario lo pida explícitamente en su mensaje actual.
+  - **CLOUD context** (sin filesystem local / Claude.ai mobile): seguir la Git Policy de CLAUDE.md — una rama por GAP (`feature/GAP-NNN-...`), commits descriptivos, nunca tocar `main` directamente, nunca hacer commit en ramas ya mergeadas.
 - **NUNCA** modificar `entitiesConfig.js` sin que el GAP lo indique explícitamente
 - **NUNCA** añadir lógica a `useOrder.js`, `usePallet.js` o `useLabelEditor.ts` — crear sub-hooks
 - **NUNCA** salirse de los archivos del GAP sin comunicarlo a Jose primero
 - **NUNCA** hacer refactors no planificados aunque "mientras estás en el archivo"
 - **NUNCA** añadir dependencias npm sin aprobación del GAP
 - **NUNCA** inventar campos de API que no existen en los tipos
+- **NUNCA** implementar un cambio de UI sin haber leído design-context.md primero
+- **NUNCA** sustituir un componente diferente al especificado en el UI Brief sin señalárselo a Jose antes de proceder

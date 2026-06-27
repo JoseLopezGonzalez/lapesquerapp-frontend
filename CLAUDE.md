@@ -4,6 +4,23 @@ SaaS multi-tenant ERP para el sector pesquero y de congelados. Cubre módulos de
 
 ---
 
+## Mandatory Context Files
+
+Read these before starting any work in the relevant area:
+
+| File | When to read |
+|---|---|
+| `.claude/design-context.md` | **Mandatory before implementing any UI.** Contains the visual and UX criteria extracted from the codebase. Kept current by the `/ui-feedback` skill. |
+| `.claude/project-learnings.md` | **Mandatory before any audit, GAP, or implementation.** Institutional memory — PesquerApp-specific rules, patterns, and corrections discovered over time. Maintained by `system-learner`. |
+| `.claude/rules/typescript.md` | All TypeScript work — interfaces, types, strict mode rules |
+| `.claude/rules/components.md` | All React component work — structure, patterns, naming |
+| `.claude/rules/hooks.md` | All hook work — TanStack Query, mutations, staleTime |
+| `.claude/rules/api-client.md` | All service / HTTP work — fetchWithTenant, helpers |
+| `.claude/rules/testing.md` | All test work — Vitest patterns, mocking |
+| `.claude/skills/mobile-ui/SKILL.md` | All mobile UI work — hooks, tokens, layout shell |
+
+---
+
 ## Stack
 
 | Tecnología           | Versión                           | Rol                                                      |
@@ -267,3 +284,86 @@ Este proyecto usa shadcn/ui para todos los componentes de UI.
 ## Contexto adicional
 
 Para documentación extendida, ver `docs/ai-context/`. Para reglas específicas por área, ver `.claude/rules/`. Para agentes especializados, ver `.claude/agents/`.
+
+### Agentes disponibles en `.claude/agents/`
+
+| Agente | Rol | Se activa cuando |
+|---|---|---|
+| `gap-discovery` | Tech lead — convierte ideas en GAPs verificables | Jose describe un problema, mejora o feature |
+| `gap-implementor` | Desarrollador senior — ejecuta exactamente lo que el GAP describe | Jose confirma un GAP para implementar |
+| `gap-auditor` | Senior engineer independiente — veredicto técnico + visual + invoca UX Reviewer | El Implementador termina |
+| `ux-reviewer` | UX specialist — simula flujos reales, identifica fricción, bloquea cierre por fallos UX | Invocado por el Auditor tras revisión técnica + visual. Full (flujos complejos) / Light (cambios menores) |
+| `frontend-developer` | Desarrollador frontend generalista | Tareas de desarrollo que no siguen el flujo GAP |
+| `mobile-ui-agent` | Especialista en UI mobile | Trabajo en vistas mobile con `/mobile` |
+| `ui-audit-agent` | Auditor autónomo de UI — recorre vistas, genera findings, convierte en GAPs | Invocado por `/audit-mobile` o `/audit-desktop` |
+| `system-learner` | Memoria institucional — traduce hallazgos y correcciones en reglas permanentes en `project-learnings.md` | Invocado por el Auditor, UX Reviewer, o Jose |
+| `code-audit-agent` | Auditor técnico autónomo — calidad de código, deuda de migración y arquitectura React/Next.js. Nunca evalúa UI/UX. | Invocado por `/audit-code [quality\|migrate\|arch]` |
+| `code-reviewer` | Revisor de código independiente | Revisión de PRs y diffs |
+| `db-architect` | Arquitecto de base de datos | Cambios de esquema o modelos |
+
+### Slash commands disponibles
+
+| Comando | Agente | Descripción |
+|---|---|---|
+| `/audit-mobile` | `ui-audit-agent` | Auditoría UI de vistas mobile |
+| `/audit-desktop` | `ui-audit-agent` | Auditoría UI de vistas desktop |
+| `/audit-code quality` | `code-audit-agent` | Violaciones de calidad de código y reglas |
+| `/audit-code migrate` | `code-audit-agent` | Candidatos JS→TS y patrones deprecated |
+| `/audit-code arch` | `code-audit-agent` | Problemas arquitectónicos React/Next.js |
+| `/audit-code [mode] [module]` | `code-audit-agent` | Scope reducido a un módulo específico |
+
+---
+
+## Git Policy
+
+### Context auto-detection
+
+Claude Code determines the working context automatically at the start of every session:
+
+**LOCAL context** — All of the following are true:
+- The project filesystem is accessible (`src/`, `.claude/`, `package.json` exist and are readable)
+- A `.git` directory is present at the project root
+- Claude Code is running via an editor extension (Cursor, VS Code, etc.)
+
+**CLOUD context** — Any of the following:
+- The project filesystem is NOT accessible
+- No `.git` directory is present
+- Claude Code is running in a sandboxed or remote environment (Claude.ai mobile, web)
+
+At session start, Claude Code MUST silently check for `src/` and `.git/` to determine
+context. No need to inform the user unless the context affects an action being requested.
+
+---
+
+### LOCAL context rules
+
+Claude Code NEVER runs git commands that modify repository state:
+- No: `git commit`, `git push`, `git branch`, `git checkout -b`, `git merge`, `git rebase`
+- Yes (read-only): `git status`, `git log`, `git diff` — only if needed for context
+
+Claude Code ONLY edits files. The user manages all git operations manually.
+
+**Exception:** If the user explicitly requests a specific git action in their message
+("haz commit", "crea una rama para esto"), Claude Code may execute that single
+requested action only. This does not unlock git for the rest of the session.
+
+**Why:** In local context the user has Cursor open, sees every file change in real time,
+and commits deliberately. Automatic git operations would pollute their commit history
+and potentially interfere with their branching strategy.
+
+---
+
+### CLOUD context rules
+
+Full git workflow is available and expected:
+
+- Branch per GAP: `feature/GAP-NNN-short-description`
+- Commit messages: `[GAP-NNN] Short description of what changed`
+- Never commit directly to `main` or `master` — always branch + merge
+- Never force-push without explicit user instruction
+- Before any commit to a branch, verify it has not already been merged:
+  run `git branch --merged` and abort if the branch appears in the output
+- Merge only when the user explicitly instructs it
+
+**Why:** In cloud context (Claude.ai mobile) the user is not watching file changes
+in real time. Git operations are the primary way to structure and deliver work.

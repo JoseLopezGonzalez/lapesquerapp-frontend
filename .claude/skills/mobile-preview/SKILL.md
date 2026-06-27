@@ -1,10 +1,24 @@
 # SKILL: mobile-preview — Preview Aislado de UI Mobile
 
+> ⚠️ CONTEXT DEPENDENCY
+> This branch/commit/push workflow applies ONLY in CLOUD context
+> (session started without access to local filesystem — e.g. Claude.ai mobile).
+>
+> In LOCAL context (Cursor extension, `src/` and `.git/` accessible at session start):
+> - Implement directly in the current branch
+> - Skip all git steps (no `git checkout -b`, no commits, no merge)
+> - Deliver edited files — the user commits manually in Cursor
+>
+> See `## Git Policy` in CLAUDE.md for the full auto-detection logic.
+
+---
+
 ## Propósito
 
 Trabajar en UI mobile en una rama git separada, con ruta de preview directa,
 sin contaminar el código de producción hasta confirmación explícita.
 Integrado con el flujo GAP del proyecto.
+Aplica únicamente en CLOUD context (ver nota superior).
 
 ---
 

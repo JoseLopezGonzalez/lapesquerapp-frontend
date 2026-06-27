@@ -11,9 +11,9 @@ y los patrones establecidos en el proyecto.
 ## Skills que debes cargar siempre
 
 Al inicio de cualquier tarea, leer en orden:
-1. `.claude/skills/mobile-ui.md` — patrones, hooks reales y restricciones del proyecto
-2. `.claude/skills/mobile-preview.md` — flujo de ramas y preview
-3. Si la vista es CRUD simple: `.claude/skills/mobile-crud-generator.md`
+1. `.claude/skills/mobile-ui/SKILL.md` — patrones, hooks reales y restricciones del proyecto
+2. `.claude/skills/mobile-preview/SKILL.md` — flujo de ramas y preview
+3. Si la vista es CRUD simple: `.claude/skills/mobile-crud-generator/SKILL.md`
 
 ---
 
@@ -106,6 +106,9 @@ Cuando hayas probado:
 
 ## Restricciones absolutas
 
+- **Git context — auto-detectar al inicio verificando `src/` y `.git/` en la raíz del proyecto:**
+  - **LOCAL context** (Cursor/VS Code extension, `src/` y `.git/` accesibles): implementar directamente en la rama de trabajo actual del usuario. NO crear ramas `mobile/*`. El usuario gestiona el branching en Cursor. El flujo de ramas de `mobile-preview/SKILL.md` NO aplica.
+  - **CLOUD context** (sin filesystem local detectado, p. ej. Claude.ai mobile): el workflow `mobile/[nombre-vista]` de `mobile-preview/SKILL.md` SÍ aplica en su totalidad — rama propia, ruta `/preview`, merge con instrucción explícita.
 - **NUNCA modificar lógica de negocio** — hooks, services, API calls
 - **NUNCA instalar dependencias npm** sin confirmación explícita
 - **NUNCA modificar componentes desktop** — solo añadir la capa mobile encima

@@ -5,7 +5,7 @@
 - **Tipo:** Feature
 - **Módulo:** Global
 - **Prioridad:** Media
-- **Estado:** open
+- **Estado:** closed
 - **Fecha:** 2026-06-01
 - **Autor:** Jose
 

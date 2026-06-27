@@ -5,7 +5,7 @@
 - **Tipo:** Refactor
 - **Módulo:** Global
 - **Prioridad:** Baja
-- **Estado:** open
+- **Estado:** closed
 - **Fecha:** 2026-05-31
 - **Autor:** Jose
 
