@@ -75,15 +75,22 @@ Si el título es parte de un header con subtítulo, el subtítulo debe usar `tex
 
 ## Implementación
 
-> Rellena el Agente Implementador
-
 ### Archivos creados
+
+Ninguno.
 
 ### Archivos modificados
 
+- `src/components/Field/FieldRoutesListPage.jsx` — `text-2xl font-semibold` → `text-xl font-medium` en `<h1>Mis rutas</h1>`
+- `src/components/Field/FieldOrdersPage.jsx` — `text-2xl font-semibold` → `text-xl font-medium` en `<h1>Pedidos operativos</h1>`
+
 ### Decisiones tomadas durante la implementación
 
-### Desviaciones del plan (si las hay)
+`FieldDashboard.jsx` no tocado — el `text-3xl font-light` del saludo es intencional (confirmado Q2 respuesta a).
+
+### Desviaciones del plan
+
+Ninguna.
 
 ---
 

@@ -120,7 +120,7 @@ export default function FieldRoutesListPage() {
   return (
     <div className="flex h-full min-h-0 flex-col gap-4">
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Mis rutas</h1>
+        <h1 className="text-xl font-medium tracking-tight">Mis rutas</h1>
         <p className="text-muted-foreground text-sm">
           Consulta y ejecuta las rutas que tienes asignadas.
         </p>
