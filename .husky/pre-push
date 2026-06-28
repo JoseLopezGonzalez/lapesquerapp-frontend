@@ -1,0 +1,22 @@
+#!/bin/sh
+set -e
+
+# Skip type/lint checks if node_modules is not installed.
+# This handles cloud/CI environments where dependencies are managed externally.
+if [ ! -d "node_modules" ]; then
+  echo "⚠  node_modules not found — skipping type-check and lint (cloud/CI context)"
+  exit 0
+fi
+
+# Require next-env.d.ts, which Next.js generates on dev/build.
+# Without it, tsc cannot resolve React/Next.js types.
+if [ ! -f "next-env.d.ts" ]; then
+  echo "⚠  next-env.d.ts missing — run 'next dev' or 'next build' first, then re-push"
+  exit 1
+fi
+
+echo "▶ TypeScript check (pre-push)…"
+npm run type-check
+echo "▶ ESLint check (pre-push)…"
+npm run lint
+echo "✓ Pre-push checks passed"
