@@ -209,6 +209,11 @@ export const productFamilyOptionKeys = {
     ['productFamilies', 'options', tenantId ?? 'unknown'] as const,
 };
 
+export const processOptionKeys = {
+  options: (tenantId: string | null | undefined) =>
+    ['processes', 'options', tenantId ?? 'unknown'] as const,
+};
+
 export const settingsQueryKeys = {
   detail: (tenantId: string | null | undefined) => ['settings', tenantId ?? 'unknown'] as const,
 };
