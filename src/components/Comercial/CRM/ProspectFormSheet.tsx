@@ -38,6 +38,7 @@ import {
   prospectFormValuesFromInitial,
 } from './schemas/prospectFormSchema';
 import { crmAiService, type CrmTextKind } from '@/services/crmAiService';
+import type { Prospect } from '@/types/crm';
 
 const CATEGORY_NONE_VALUE = '__none__';
 
@@ -58,7 +59,7 @@ function RequiredMark() {
 interface ProspectFormSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  initialData?: unknown | null;
+  initialData?: Prospect | null;
 }
 
 export default function ProspectFormSheet({ open, onOpenChange, initialData = null }: ProspectFormSheetProps) {
