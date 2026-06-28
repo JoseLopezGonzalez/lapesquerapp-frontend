@@ -316,3 +316,7 @@ export const externalProcessorOptionKeys = {
   list: (tenantId: string | null | undefined) =>
     ['external-processors', 'options', tenantId ?? 'unknown'] as const,
 };
+
+export const fuelQueryKeys = {
+  spainAverageDiesel: () => ['fuel', 'spain-average-diesel'] as const,
+};
