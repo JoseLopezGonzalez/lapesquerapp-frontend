@@ -160,14 +160,9 @@ export interface UpdateMeResponse {
  * Actualiza el perfil del usuario autenticado (solo usuarios internos).
  */
 export async function updateCurrentUser(payload: UpdateMePayload): Promise<UpdateMeResponse> {
-  const token = await getAuthToken();
-
   const response = await fetchWithTenant(`${API_URL_V2}me`, {
     method: 'PUT',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
 
@@ -190,14 +185,8 @@ export async function updateCurrentUser(payload: UpdateMePayload): Promise<Updat
  * Obtiene los datos actualizados del usuario desde el backend.
  */
 export async function getCurrentUser(): Promise<AuthUser> {
-  const token = await getAuthToken();
-
   const response = await fetchWithTenant(`${API_URL_V2}me`, {
     method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
   });
 
   if (!response.ok) {
