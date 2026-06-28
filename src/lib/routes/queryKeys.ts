@@ -136,6 +136,8 @@ export const customerListKeys = {
 
 // P10 — claves de cliente usadas en useCustomerAssignment
 export const crmCustomerKeys = {
+  detailPrefix: (tenantId: string | null | undefined) =>
+    ['crm', 'customers', 'detail', tenantId ?? 'unknown'] as const,
   detail: (tenantId: string | null | undefined, customerId: number | string | null | undefined) =>
     ['crm', 'customers', 'detail', tenantId ?? 'unknown', customerId] as const,
 };
@@ -385,6 +387,72 @@ export const orderStatKeys = {
     ] as const,
   profitabilityProducts: (tenantId: string | null | undefined, dateFrom: string, dateTo: string) =>
     ['orders', 'profitabilityProducts', tenantId ?? 'unknown', dateFrom, dateTo] as const,
+};
+
+export const agendaKeys = {
+  all: (tenantId: string | null | undefined) =>
+    ['crm', 'agenda', tenantId ?? 'unknown'] as const,
+  list: (tenantId: string | null | undefined, params: Record<string, unknown> = {}) =>
+    ['crm', 'agenda', tenantId ?? 'unknown', normalizeQueryParams(params)] as const,
+  summaryPrefix: (tenantId: string | null | undefined) =>
+    ['crm', 'agenda', 'summary', tenantId ?? 'unknown'] as const,
+  summary: (tenantId: string | null | undefined, params: Record<string, unknown> = {}) =>
+    ['crm', 'agenda', 'summary', tenantId ?? 'unknown', normalizeQueryParams(params)] as const,
+  pendingPrefix: (tenantId: string | null | undefined) =>
+    ['crm', 'agenda', 'pending', tenantId ?? 'unknown'] as const,
+  pending: (
+    tenantId: string | null | undefined,
+    targetType: string | null | undefined,
+    targetId: string | number | null | undefined
+  ) =>
+    [
+      'crm',
+      'agenda',
+      'pending',
+      tenantId ?? 'unknown',
+      targetType ?? 'none',
+      targetId != null ? String(targetId) : 'none',
+    ] as const,
+};
+
+export const crmDashboardKeys = {
+  all: (tenantId: string | null | undefined) =>
+    ['crm', 'dashboard', tenantId ?? 'unknown'] as const,
+  pendingActions: (tenantId: string | null | undefined) =>
+    ['crm', 'dashboard', tenantId ?? 'unknown', 'pending-actions'] as const,
+  customers: (tenantId: string | null | undefined) =>
+    ['crm', 'dashboard', tenantId ?? 'unknown', 'customers'] as const,
+  prospects: (tenantId: string | null | undefined) =>
+    ['crm', 'dashboard', tenantId ?? 'unknown', 'prospects'] as const,
+};
+
+export const prospectKeys = {
+  listPrefix: (tenantId: string | null | undefined) =>
+    ['crm', 'prospects', 'list', tenantId ?? 'unknown'] as const,
+  list: (tenantId: string | null | undefined, params: Record<string, unknown> = {}) =>
+    ['crm', 'prospects', 'list', tenantId ?? 'unknown', normalizeQueryParams(params)] as const,
+  detailPrefix: (tenantId: string | null | undefined) =>
+    ['crm', 'prospect', 'detail', tenantId ?? 'unknown'] as const,
+  detail: (tenantId: string | null | undefined, id: number | string | null | undefined) =>
+    ['crm', 'prospect', 'detail', tenantId ?? 'unknown', id] as const,
+  contacts: (tenantId: string | null | undefined, id: number | string | null | undefined) =>
+    ['crm', 'prospect', 'contacts', tenantId ?? 'unknown', id] as const,
+};
+
+export const interactionKeys = {
+  listPrefix: (tenantId: string | null | undefined) =>
+    ['crm', 'interactions', 'list', tenantId ?? 'unknown'] as const,
+  list: (tenantId: string | null | undefined, params: Record<string, unknown> = {}) =>
+    ['crm', 'interactions', 'list', tenantId ?? 'unknown', normalizeQueryParams(params)] as const,
+};
+
+export const offerKeys = {
+  listPrefix: (tenantId: string | null | undefined) =>
+    ['crm', 'offers', 'list', tenantId ?? 'unknown'] as const,
+  list: (tenantId: string | null | undefined, params: Record<string, unknown> = {}) =>
+    ['crm', 'offers', 'list', tenantId ?? 'unknown', normalizeQueryParams(params)] as const,
+  detail: (tenantId: string | null | undefined, id: number | string | null | undefined) =>
+    ['crm', 'offer', 'detail', tenantId ?? 'unknown', id] as const,
 };
 
 export const orderChartKeys = {

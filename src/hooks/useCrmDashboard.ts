@@ -2,6 +2,7 @@
 
 import { useQueries } from '@tanstack/react-query';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
+import { crmDashboardKeys } from '@/lib/routes/queryKeys';
 import { crmService } from '@/services/crmService';
 import type { CrmDashboardData } from '@/types/crm';
 
@@ -12,17 +13,17 @@ export function useCrmDashboard() {
   const [pendingActionsQuery, customersQuery, prospectsQuery] = useQueries({
     queries: [
       {
-        queryKey: ['crm', 'dashboard', tenantId ?? 'unknown', 'pending-actions'],
+        queryKey: crmDashboardKeys.pendingActions(tenantId),
         queryFn: () => crmService.getCrmPendingActions(),
         enabled,
       },
       {
-        queryKey: ['crm', 'dashboard', tenantId ?? 'unknown', 'customers'],
+        queryKey: crmDashboardKeys.customers(tenantId),
         queryFn: () => crmService.getCrmCustomersData(),
         enabled,
       },
       {
-        queryKey: ['crm', 'dashboard', tenantId ?? 'unknown', 'prospects'],
+        queryKey: crmDashboardKeys.prospects(tenantId),
         queryFn: () => crmService.getCrmProspectsData(),
         enabled,
       },
