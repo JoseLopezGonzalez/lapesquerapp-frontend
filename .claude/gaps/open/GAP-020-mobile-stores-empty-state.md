@@ -103,15 +103,21 @@ Los iconos `Warehouse` y `Search` ya están importados en el archivo.
 
 ## Implementación
 
-> Rellena el Agente Implementador
-
 ### Archivos creados
+
+Ninguno.
 
 ### Archivos modificados
 
+- `src/components/Admin/Stores/Mobile/MobileStoreListView.tsx` — añadido import de `EmptyState`; reemplazados los dos bloques de texto plano (`<div>...<p>...<p>`) por `<EmptyState>` con `icon`, `title` y `description`. Iconos: `Warehouse` (sin almacenes) y `Search` (sin resultados). Ambos ya importados de lucide-react.
+
 ### Decisiones tomadas durante la implementación
 
+Se envolvió cada `EmptyState` en `<div className="flex flex-1 items-center justify-center">` para mantener el centrado vertical, siguiendo el patrón de uso en `FieldOrdersPage.jsx` y `FieldRoutesListPage.jsx`.
+
 ### Desviaciones del plan (si las hay)
+
+Ninguna.
 
 ---
 

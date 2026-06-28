@@ -33,6 +33,7 @@ const QrScannerWidget = dynamic(
 import { notify } from '@/lib/notifications';
 import { REGISTERED_PALLETS_STORE_ID } from '@/hooks/useStores';
 import { cn } from '@/lib/utils';
+import { EmptyState } from '@/components/Utilities/EmptyState';
 
 interface Store {
   id: string | number;
@@ -295,18 +296,24 @@ export function MobileStoreListView({
 
         {/* Lista */}
         {isEmpty ? (
-          <div className="flex flex-col items-center justify-center gap-2 p-8 text-center">
-            <p className="text-sm font-medium">Sin almacenes</p>
-            <p className="text-muted-foreground text-xs">No hay almacenes disponibles.</p>
+          <div className="flex flex-1 items-center justify-center">
+            <EmptyState
+              icon={<Warehouse className="text-primary h-10 w-10" />}
+              title="Sin almacenes"
+              description="No hay almacenes disponibles."
+            />
           </div>
         ) : filteredByTab.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-2 p-8 text-center">
-            <p className="text-sm font-medium">Sin resultados</p>
-            <p className="text-muted-foreground text-xs">
-              {search.trim()
-                ? `No hay almacenes que coincidan con «${search}».`
-                : 'No hay almacenes con este estado.'}
-            </p>
+          <div className="flex flex-1 items-center justify-center">
+            <EmptyState
+              icon={<Search className="text-primary h-10 w-10" />}
+              title="Sin resultados"
+              description={
+                search.trim()
+                  ? `No hay almacenes que coincidan con «${search}».`
+                  : 'No hay almacenes con este estado.'
+              }
+            />
           </div>
         ) : (
           <div className="relative min-h-0 flex-1 overflow-hidden">
