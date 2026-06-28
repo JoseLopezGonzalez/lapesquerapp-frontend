@@ -5,7 +5,7 @@ import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 import { getSalesChartData, getTransportChartData } from '@/services/orderService';
 import { getReceptionChartData } from '@/services/rawMaterialReception/getReceptionChartData';
 import { getDispatchChartData } from '@/services/ceboDispatch/getDispatchChartData';
-import { orderChartKeys } from '@/lib/routes/queryKeys';
+import { dispatchQueryKeys, orderChartKeys, receptionChartKeys } from '@/lib/routes/queryKeys';
 
 interface ChartDataParams {
   range?: { from?: Date; to?: Date };
@@ -75,18 +75,7 @@ export function useReceptionChartData(params: ChartDataParams) {
   const to = range?.to?.toLocaleDateString?.('sv-SE') ?? null;
 
   return useChartData(
-    [
-      'receptions',
-      'chart',
-      tenantId ?? 'unknown',
-      from,
-      to,
-      speciesId,
-      categoryId,
-      familyId,
-      unit,
-      groupBy,
-    ],
+    receptionChartKeys.chart(tenantId, from, to, speciesId, categoryId, familyId, unit, groupBy),
     () =>
       getReceptionChartData({
         speciesId: speciesId ?? 'all',
@@ -111,18 +100,7 @@ export function useDispatchChartData(params: ChartDataParams) {
   const to = range?.to?.toLocaleDateString?.('sv-SE') ?? null;
 
   return useChartData(
-    [
-      'dispatches',
-      'chart',
-      tenantId ?? 'unknown',
-      from,
-      to,
-      speciesId,
-      categoryId,
-      familyId,
-      unit,
-      groupBy,
-    ],
+    dispatchQueryKeys.chart(tenantId, from, to, speciesId, categoryId, familyId, unit, groupBy),
     () =>
       getDispatchChartData({
         speciesId: speciesId ?? 'all',

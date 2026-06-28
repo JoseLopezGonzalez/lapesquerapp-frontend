@@ -1,6 +1,7 @@
 'use client';
 import { useQuery } from '@tanstack/react-query';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
+import { supplierListKeys } from '@/lib/routes/queryKeys';
 import { supplierService } from '@/services/domain/suppliers/supplierService';
 import type { CatalogListFilters, PaginationMeta } from '@/types/catalog';
 
@@ -15,9 +16,10 @@ export function useSuppliersList(
     error,
     refetch,
   } = useQuery({
-    queryKey: ['suppliers', 'list', tenantId ?? 'unknown', filters, page, perPage],
+    queryKey: supplierListKeys.list(tenantId, filters as Record<string, unknown>, page, perPage),
     queryFn: () => supplierService.list(filters, { page, perPage }),
     enabled: !!tenantId && enabled,
+    staleTime: 10 * 60 * 1000,
   });
   const data = response?.data ?? [];
   const meta = response?.meta ?? { current_page: 1, last_page: 1, per_page: perPage, total: 0 };

@@ -455,6 +455,125 @@ export const offerKeys = {
     ['crm', 'offer', 'detail', tenantId ?? 'unknown', id] as const,
 };
 
+export const incotermQueryKeys = {
+  listPrefix: (tenantId: string | null | undefined) =>
+    ['incoterms', 'list', tenantId ?? 'unknown'] as const,
+  list: (
+    tenantId: string | null | undefined,
+    filters: Record<string, unknown> = {},
+    page = 1,
+    perPage = 12
+  ) =>
+    [
+      'incoterms',
+      'list',
+      tenantId ?? 'unknown',
+      normalizeQueryParams(filters),
+      page,
+      perPage,
+    ] as const,
+};
+
+export const supplierListKeys = {
+  listPrefix: (tenantId: string | null | undefined) =>
+    ['suppliers', 'list', tenantId ?? 'unknown'] as const,
+  list: (
+    tenantId: string | null | undefined,
+    filters: Record<string, unknown> = {},
+    page = 1,
+    perPage = 12
+  ) =>
+    [
+      'suppliers',
+      'list',
+      tenantId ?? 'unknown',
+      normalizeQueryParams(filters),
+      page,
+      perPage,
+    ] as const,
+};
+
+export const userQueryKeys = {
+  me: (tenantId: string | null | undefined) => ['me', tenantId ?? 'unknown'] as const,
+};
+
+export const fieldOperatorQueryKeys = {
+  listPrefix: (tenantId: string | null | undefined) =>
+    ['field-operators', 'list', tenantId ?? 'unknown'] as const,
+  list: (
+    tenantId: string | null | undefined,
+    filters: Record<string, unknown> = {},
+    page = 1,
+    perPage = 12
+  ) =>
+    [
+      'field-operators',
+      'list',
+      tenantId ?? 'unknown',
+      normalizeQueryParams(filters),
+      page,
+      perPage,
+    ] as const,
+  detail: (tenantId: string | null | undefined, id: number | string | null | undefined) =>
+    ['field-operators', 'detail', tenantId ?? 'unknown', id] as const,
+  optionsPrefix: (tenantId: string | null | undefined) =>
+    ['field-operators', 'options', tenantId ?? 'unknown'] as const,
+};
+
+export const dispatchQueryKeys = {
+  listPrefix: (tenantId: string | null | undefined) =>
+    ['dispatches', 'list', tenantId ?? 'unknown'] as const,
+  list: (tenantId: string | null | undefined, page: number, today: string) =>
+    ['dispatches', 'list', tenantId ?? 'unknown', page, today] as const,
+  chart: (
+    tenantId: string | null | undefined,
+    from: string | null,
+    to: string | null,
+    speciesId: string | undefined,
+    categoryId: string | undefined,
+    familyId: string | undefined,
+    unit: string | undefined,
+    groupBy: string | undefined
+  ) =>
+    [
+      'dispatches',
+      'chart',
+      tenantId ?? 'unknown',
+      from,
+      to,
+      speciesId,
+      categoryId,
+      familyId,
+      unit,
+      groupBy,
+    ] as const,
+};
+
+export const receptionChartKeys = {
+  chart: (
+    tenantId: string | null | undefined,
+    from: string | null,
+    to: string | null,
+    speciesId: string | undefined,
+    categoryId: string | undefined,
+    familyId: string | undefined,
+    unit: string | undefined,
+    groupBy: string | undefined
+  ) =>
+    [
+      'receptions',
+      'chart',
+      tenantId ?? 'unknown',
+      from,
+      to,
+      speciesId,
+      categoryId,
+      familyId,
+      unit,
+      groupBy,
+    ] as const,
+};
+
 export const orderChartKeys = {
   sales: (
     tenantId: string | null | undefined,

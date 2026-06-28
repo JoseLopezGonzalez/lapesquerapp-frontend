@@ -1,6 +1,7 @@
 'use client';
 import { useQuery } from '@tanstack/react-query';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
+import { incotermQueryKeys } from '@/lib/routes/queryKeys';
 import { incotermService } from '@/services/domain/incoterms/incotermService';
 import type { CatalogListFilters, PaginationMeta } from '@/types/catalog';
 
@@ -15,9 +16,10 @@ export function useIncotermsList(
     error,
     refetch,
   } = useQuery({
-    queryKey: ['incoterms', 'list', tenantId ?? 'unknown', filters, page, perPage],
+    queryKey: incotermQueryKeys.list(tenantId, filters as Record<string, unknown>, page, perPage),
     queryFn: () => incotermService.list(filters, { page, perPage }),
     enabled: !!tenantId && enabled,
+    staleTime: 10 * 60 * 1000,
   });
   const data = response?.data ?? [];
   const meta = response?.meta ?? { current_page: 1, last_page: 1, per_page: perPage, total: 0 };
