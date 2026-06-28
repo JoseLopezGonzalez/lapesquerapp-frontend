@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, type FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2, Sparkles } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -69,7 +69,7 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
   const { data: categoryOptions = [], isLoading: categoriesLoading } =
     useProspectCategoryOptions(open);
   const { createProspect, updateProspect } = useProspectMutations();
-  const [warnings, setWarnings] = useState([]);
+  const [warnings, setWarnings] = useState<{ type: string; message: string }[]>([]);
   const [isImprovingCommercialInterest, setIsImprovingCommercialInterest] = useState(false);
   const [isImprovingNotes, setIsImprovingNotes] = useState(false);
 
@@ -129,15 +129,17 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
         .split(',')
         .map((value) => value.trim())
         .filter(Boolean),
+      ...(!isEditing && values.includePrimaryContact
+        ? {
+            primaryContact: {
+              name: values.primaryContactName.trim() || undefined,
+              role: values.primaryContactRole.trim() || null,
+              phone: values.primaryContactPhone.trim() || null,
+              email: values.primaryContactEmail.trim() || null,
+            },
+          }
+        : {}),
     };
-    if (!isEditing && values.includePrimaryContact) {
-      payload.primaryContact = {
-        name: values.primaryContactName.trim() || undefined,
-        role: values.primaryContactRole.trim() || null,
-        phone: values.primaryContactPhone.trim() || null,
-        email: values.primaryContactEmail.trim() || null,
-      };
-    }
 
     try {
       const response = await notify.promise(
@@ -162,7 +164,7 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
     }
   };
 
-  const onInvalidSubmit = (formErrors) => {
+  const onInvalidSubmit = (formErrors: FieldErrors<ProspectFormValues>) => {
     const n = Object.keys(formErrors).length;
     notify.error({
       title: 'Revisa el formulario',
