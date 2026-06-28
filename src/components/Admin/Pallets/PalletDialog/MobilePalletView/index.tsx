@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { usePallet, saveDiscountPreferences } from '@/hooks/usePallet';
 import { usePalletTimeline } from '@/hooks/usePalletTimeline';
 import { isExternalActor, canManagePalletCostFields } from '@/lib/auth/actor';
@@ -53,6 +54,16 @@ interface MobilePalletViewProps {
   initialTab?: string | null;
   onActiveScreenChange?: (screen: PalletScreen) => void;
   onHasPalletChangesChange?: (hasChanges: boolean) => void;
+}
+
+function MobilePalletSkeleton() {
+  return (
+    <div className="grid grid-cols-2 gap-3 px-3 py-4">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <Skeleton key={i} className="h-[112px] w-full rounded-2xl" />
+      ))}
+    </div>
+  );
 }
 
 // Outer wrapper holds retry key so re-mounting the inner component re-initialises usePallet
@@ -186,12 +197,7 @@ function MobilePalletViewInner({
   };
 
   if (loading || !temporalPallet) {
-    return (
-      <div className="flex h-full w-full flex-1 flex-col items-center justify-center gap-2">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">Cargando palet…</p>
-      </div>
-    );
+    return <MobilePalletSkeleton />;
   }
 
   if (error) {

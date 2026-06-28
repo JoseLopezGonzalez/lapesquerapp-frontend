@@ -101,15 +101,21 @@ Nota: el estado de **error** (CloudAlert) ya es correcto y no se toca.
 
 ## Implementación
 
-> Rellena el Agente Implementador
-
 ### Archivos creados
+
+Ninguno.
 
 ### Archivos modificados
 
+- `src/components/Admin/Pallets/PalletDialog/MobilePalletView/index.tsx` — añadido `Skeleton` import; añadido `MobilePalletSkeleton` sub-componente local (grid 2 columnas, 6 tarjetas de `h-[112px] rounded-2xl`); reemplazado el spinner full-screen por `return <MobilePalletSkeleton />`.
+
 ### Decisiones tomadas durante la implementación
 
+`Loader2` se mantiene en el import ya que sigue usándose en el botón "Guardar". El skeleton usa 6 tarjetas (no 8) ya que la vista hub puede mostrar entre 6 y 9 acciones dependiendo del estado del palet — 6 es el mínimo visible y suficiente para comunicar la estructura.
+
 ### Desviaciones del plan (si las hay)
+
+Ninguna.
 
 ---
 
