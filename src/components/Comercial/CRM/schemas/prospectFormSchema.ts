@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { prospectOriginOptions } from '../utils';
+import type { Prospect } from '@/types/crm';
 
 const originValues = prospectOriginOptions.map((o) => o.value);
 
@@ -115,44 +116,36 @@ export function getDefaultProspectFormValues(): ProspectFormValues {
 }
 
 export function prospectFormValuesFromInitial(
-  initialData: Record<string, unknown> | null | undefined
+  initialData: Prospect | null | undefined
 ): ProspectFormValues {
   if (!initialData) {
     return getDefaultProspectFormValues();
   }
-  const country = initialData.country as { id?: unknown } | null | undefined;
   const countryId =
-    country?.id != null
-      ? String(country.id)
+    initialData.country?.id != null
+      ? String(initialData.country.id)
       : initialData.countryId != null
         ? String(initialData.countryId)
         : '';
-  const species = initialData.speciesInterest;
-  const category = initialData.category as { id?: unknown } | null | undefined;
   const categoryId =
-    category?.id != null
-      ? String(category.id)
+    initialData.category?.id != null
+      ? String(initialData.category.id)
       : initialData.categoryId != null
         ? String(initialData.categoryId)
         : '';
-  const speciesStr = Array.isArray(species) ? species.join(', ') : '';
+  const speciesStr = initialData.speciesInterest?.join(', ') ?? '';
   return {
     companyName: String(initialData.companyName ?? ''),
-    address: typeof initialData.address === 'string' ? initialData.address : '',
-    website: typeof initialData.website === 'string' ? initialData.website : '',
+    address: initialData.address ?? '',
+    website: initialData.website ?? '',
     countryId,
     categoryId,
     origin: normalizeOrigin(initialData.origin),
-    status:
-      typeof initialData.status === 'string' &&
-      prospectStatusTuple.includes(initialData.status as (typeof prospectStatusTuple)[number])
-        ? (initialData.status as ProspectFormValues['status'])
-        : 'new',
-    notes: typeof initialData.notes === 'string' ? initialData.notes : '',
-    commercialInterestNotes:
-      typeof initialData.commercialInterestNotes === 'string'
-        ? initialData.commercialInterestNotes
-        : '',
+    status: prospectStatusTuple.includes(initialData.status as (typeof prospectStatusTuple)[number])
+      ? (initialData.status as ProspectFormValues['status'])
+      : 'new',
+    notes: initialData.notes ?? '',
+    commercialInterestNotes: initialData.commercialInterestNotes ?? '',
     speciesInterest: speciesStr,
     includePrimaryContact: false,
     primaryContactName: '',
