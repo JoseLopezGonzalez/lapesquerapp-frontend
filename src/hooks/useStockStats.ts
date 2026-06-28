@@ -1,7 +1,6 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { useSession } from 'next-auth/react';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 import {
   getTotalStockStats,
@@ -9,19 +8,15 @@ import {
   getStockByProducts,
   type StockByProductItem,
 } from '@/services/storeService';
+import { storeQueryKeys } from '@/lib/routes/queryKeys';
 
-/**
- * Hook para obtener el stock total usando React Query.
- */
 export function useTotalStockStats() {
-  const { data: session } = useSession();
-  const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['stock', 'total', tenantId ?? 'unknown'],
-    queryFn: () => getTotalStockStats(token as string),
-    enabled: !!token && !!tenantId,
+    queryKey: storeQueryKeys.totalStock(tenantId),
+    queryFn: () => getTotalStockStats(),
+    enabled: !!tenantId,
   });
 
   return {
@@ -31,18 +26,13 @@ export function useTotalStockStats() {
   };
 }
 
-/**
- * Hook para obtener el stock por especies usando React Query.
- */
 export function useStockBySpeciesStats() {
-  const { data: session } = useSession();
-  const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['stock', 'by-species', tenantId ?? 'unknown'],
-    queryFn: () => getStockBySpeciesStats(token as string),
-    enabled: !!token && !!tenantId,
+    queryKey: storeQueryKeys.stockBySpecies(tenantId),
+    queryFn: () => getStockBySpeciesStats(),
+    enabled: !!tenantId,
   });
 
   const stockData = Array.isArray(data) ? data : ((data as { data?: unknown[] })?.data ?? []);
@@ -53,18 +43,13 @@ export function useStockBySpeciesStats() {
   };
 }
 
-/**
- * Hook para obtener el stock por productos usando React Query.
- */
 export function useStockByProductsStats() {
-  const { data: session } = useSession();
-  const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['stock', 'by-products', tenantId ?? 'unknown'],
-    queryFn: () => getStockByProducts(token as string),
-    enabled: !!token && !!tenantId,
+    queryKey: storeQueryKeys.stockByProducts(tenantId),
+    queryFn: () => getStockByProducts(),
+    enabled: !!tenantId,
   });
 
   const stockData = Array.isArray(data)

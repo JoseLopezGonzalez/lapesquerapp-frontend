@@ -1,7 +1,6 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { useSession } from 'next-auth/react';
 import { useEffect } from 'react';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 import { getStore, getRegisteredPallets } from '@/services/storeService';
@@ -14,16 +13,14 @@ interface UseStoreDataParams {
 }
 
 export function useStoreData({ storeId, setIsStoreLoading }: UseStoreDataParams) {
-  const { data: session } = useSession();
-  const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['store', tenantId ?? 'unknown', storeId],
     queryFn: async () => {
       const result = await (storeId === REGISTERED_PALLETS_STORE_ID
-        ? getRegisteredPallets(token as string)
-        : getStore(storeId, token as string));
+        ? getRegisteredPallets()
+        : getStore(storeId));
 
       if (!result) {
         throw new Error('No se pudieron obtener los datos del almacén');
@@ -43,7 +40,7 @@ export function useStoreData({ storeId, setIsStoreLoading }: UseStoreDataParams)
 
       return result as StoreData;
     },
-    enabled: !!token && !!tenantId && !!storeId,
+    enabled: !!tenantId && !!storeId,
   });
 
   useEffect(() => {

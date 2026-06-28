@@ -320,3 +320,12 @@ export const externalProcessorOptionKeys = {
 export const fuelQueryKeys = {
   spainAverageDiesel: () => ['fuel', 'spain-average-diesel'] as const,
 };
+
+export const storeQueryKeys = {
+  totalStock: (tenantId: string | null | undefined) =>
+    ['stock', 'total', tenantId ?? 'unknown'] as const,
+  stockBySpecies: (tenantId: string | null | undefined) =>
+    ['stock', 'by-species', tenantId ?? 'unknown'] as const,
+  stockByProducts: (tenantId: string | null | undefined) =>
+    ['stock', 'by-products', tenantId ?? 'unknown'] as const,
+};
