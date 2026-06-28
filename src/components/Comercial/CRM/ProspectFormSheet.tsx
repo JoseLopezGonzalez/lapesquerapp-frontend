@@ -39,7 +39,7 @@ import {
   type ProspectFormValues,
 } from './schemas/prospectFormSchema';
 import { crmAiService, type CrmTextKind } from '@/services/crmAiService';
-import type { Prospect } from '@/types/crm';
+import type { Prospect, ProspectOrigin } from '@/types/crm';
 
 const CATEGORY_NONE_VALUE = '__none__';
 
@@ -121,7 +121,7 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
       website: values.website.trim() || null,
       countryId: values.countryId ? Number(values.countryId) : null,
       categoryId: values.categoryId ? Number(values.categoryId) : null,
-      origin: values.origin,
+      origin: values.origin as ProspectOrigin,
       status: values.status,
       notes: values.notes.trim() || null,
       commercialInterestNotes: values.commercialInterestNotes.trim() || null,
