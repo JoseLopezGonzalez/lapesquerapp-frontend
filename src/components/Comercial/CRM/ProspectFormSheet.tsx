@@ -149,7 +149,8 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
         {
           loading: initialData ? 'Actualizando prospecto...' : 'Creando prospecto...',
           success: initialData ? 'Prospecto actualizado' : 'Prospecto creado',
-          error: (error) => error?.message || 'No se pudo guardar el prospecto',
+          error: (error: unknown) =>
+            (error instanceof Error ? error.message : null) || 'No se pudo guardar el prospecto',
         }
       );
       setWarnings(response?.warnings ?? []);
@@ -157,9 +158,12 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
         onOpenChange(false);
       }
     } catch (err) {
-      if (err instanceof ApiError && err.status === 422 && err.data?.errors) {
-        setErrorsFrom422(setError, err.data.errors);
-        return;
+      if (err instanceof ApiError && err.status === 422) {
+        const errorData = err.data as { errors?: Record<string, string[]> };
+        if (errorData?.errors) {
+          setErrorsFrom422(setError, errorData.errors);
+          return;
+        }
       }
     }
   };
