@@ -28,7 +28,6 @@ export default function MobileStoresManager() {
   const [selectedStoreId, setSelectedStoreId] = useState<string | number | null>(null);
 
   const sessionReady = sessionStatus !== 'loading';
-  const showLoader = !sessionReady || isInitialLoading;
 
   const selectedStore = stores?.find((s) => s.id === selectedStoreId);
 
@@ -40,7 +39,7 @@ export default function MobileStoresManager() {
     setSelectedStoreId(null);
   };
 
-  if (showLoader) {
+  if (!sessionReady) {
     return (
       <div className="flex h-full w-full items-center justify-center">
         <Loader />

@@ -100,15 +100,21 @@ Verificar si `MobileStoreListView` ya maneja el prop `isStoreLoading` para mostr
 
 ## Implementación
 
-> Rellena el Agente Implementador
-
 ### Archivos creados
+
+Ninguno.
 
 ### Archivos modificados
 
+- `src/components/Admin/Stores/Mobile/MobileStoresManager.tsx` — eliminada variable `showLoader`; condición de early return cambiada de `if (showLoader)` a `if (!sessionReady)`. El código ya tenía `MobileStoreListSkeleton` implementado correctamente en la vista de lista (línea 74) pero era inalcanzable — ahora es alcanzable cuando `isInitialLoading` es true.
+
 ### Decisiones tomadas durante la implementación
 
+`MobileStoreListView.tsx` no requirió cambios: ya tenía la lógica `{isInitialLoading ? <MobileStoreListSkeleton /> : <MobileStoreListView .../>}` correctamente implementada. Solo había que desbloquear su acceso eliminando la condición compuesta del early return.
+
 ### Desviaciones del plan (si las hay)
+
+Ninguna.
 
 ---
 
