@@ -36,6 +36,7 @@ import {
   getProspectFormSchema,
   getDefaultProspectFormValues,
   prospectFormValuesFromInitial,
+  type ProspectFormValues,
 } from './schemas/prospectFormSchema';
 import { crmAiService, type CrmTextKind } from '@/services/crmAiService';
 import type { Prospect } from '@/types/crm';
@@ -113,7 +114,7 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
     return [{ value: currentCategory.id, label: currentCategory.name }, ...categoryOptions];
   }, [categoryOptions, initialData?.category]);
 
-  const onValidSubmit = async (values) => {
+  const onValidSubmit = async (values: ProspectFormValues) => {
     const payload = {
       companyName: values.companyName,
       address: values.address.trim() || null,
