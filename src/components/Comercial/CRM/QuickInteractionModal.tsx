@@ -28,8 +28,10 @@ import {
   getQuickInteractionDefaultValues,
   getQuickInteractionFormSchema,
 } from './schemas/quickInteractionFormSchema';
+import { crmAiService } from '@/services/crmAiService';
 
-function ToggleGroup({ value, onChange, options }) {
+interface ToggleOption { value: string; label: string }
+function ToggleGroup({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: ToggleOption[] }) {
   return (
     <div className="flex flex-wrap gap-2">
       {options.map((option) => (
@@ -47,9 +49,22 @@ function ToggleGroup({ value, onChange, options }) {
   );
 }
 
-function FieldError({ message }) {
+function FieldError({ message }: { message?: string }) {
   if (!message) return null;
   return <p className="text-sm text-red-500">{message}</p>;
+}
+
+interface QuickInteractionModalInnerProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  prospectId?: string | number | null;
+  customerId?: string | number | null;
+  agendaActionId?: string | number | null;
+  defaultNextActionDate?: string | Date | null;
+  defaultNextActionNote?: string;
+  title?: string;
+  mode?: string;
+  onInteractionCreated?: (data: unknown) => void;
 }
 
 function QuickInteractionModalInner({
@@ -63,7 +78,7 @@ function QuickInteractionModalInner({
   title = 'Registrar interacción',
   mode = 'create',
   onInteractionCreated,
-}) {
+}: QuickInteractionModalInnerProps) {
   const { createInteraction } = useCommercialInteractionMutations();
   const isCompleteMode = mode === 'complete';
   const [isImprovingSummary, setIsImprovingSummary] = useState(false);
@@ -109,12 +124,13 @@ function QuickInteractionModalInner({
     );
   }, [open, defaultNextActionDate, defaultNextActionNote, isCompleteMode, reset]);
 
-  const getErrorText = (error) => {
-    if (error?.status !== 422) {
-      return error?.message || 'No se pudo registrar la interacción';
+  const getErrorText = (error: unknown): string => {
+    const e = error as { status?: number; message?: string };
+    if (e?.status !== 422) {
+      return e?.message || 'No se pudo registrar la interacción';
     }
 
-    const baseMessage = String(error?.message || '').toLowerCase();
+    const baseMessage = String(e?.message || '').toLowerCase();
     if (baseMessage.includes('agendaactionid')) {
       return 'No se pudo cerrar la tarea porque falta la referencia de agenda. Recarga la agenda e inténtalo de nuevo.';
     }
@@ -200,27 +216,7 @@ function QuickInteractionModalInner({
 
     setIsImprovingSummary(true);
     try {
-      const response = await fetch('/api/crm/improve-text', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          kind: 'interaction_summary',
-          text: rawSummary,
-        }),
-      });
-
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(payload?.error || 'No se pudo mejorar el resumen con IA');
-      }
-
-      const improvedSummary = String(payload?.improvedText ?? '').trim();
-      if (!improvedSummary) {
-        throw new Error('La IA no devolvió un resumen válido');
-      }
-
+      const improvedSummary = await crmAiService.improveText('interaction_summary', rawSummary);
       setValue('summary', improvedSummary, {
         shouldValidate: true,
         shouldDirty: true,
@@ -229,7 +225,7 @@ function QuickInteractionModalInner({
     } catch (error) {
       notify.error({
         title: 'Error al mejorar el resumen',
-        description: error?.message || 'No se pudo procesar la mejora con IA',
+        description: error instanceof Error ? error.message : 'No se pudo procesar la mejora con IA',
       });
     } finally {
       setIsImprovingSummary(false);
@@ -356,7 +352,7 @@ function QuickInteractionModalInner({
   );
 }
 
-export default function QuickInteractionModal(props) {
+export default function QuickInteractionModal(props: QuickInteractionModalInnerProps) {
   const isCompleteMode = props?.mode === 'complete';
   return <QuickInteractionModalInner key={isCompleteMode ? 'complete' : 'create'} {...props} />;
 }

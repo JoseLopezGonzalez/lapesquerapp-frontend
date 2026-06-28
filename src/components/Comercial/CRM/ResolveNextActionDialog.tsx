@@ -28,6 +28,7 @@ import { useAgendaMutations, usePendingAgendaAction } from '@/hooks/useAgenda';
 import { extractAgendaErrorCode, getAgendaDomainErrorMessage } from './agendaErrorMessages';
 import { formatDateValue } from './utils';
 import { CRM_AGENDA_DESCRIPTION_MAX_LENGTH } from './schemas/crmTextLimits';
+import { crmAiService } from '@/services/crmAiService';
 
 const strategyOptions = [
   {
@@ -62,9 +63,18 @@ const strategyOptions = [
   },
 ];
 
-function getAllowedStrategies(hasPending) {
+function getAllowedStrategies(hasPending: boolean): string[] {
   if (hasPending) return ['keep', 'reschedule', 'reschedule_with_description', 'override'];
   return ['create_if_none'];
+}
+
+interface ResolveNextActionDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  targetType: string;
+  targetId: string | number;
+  sourceInteractionId?: string | number | null;
+  onViewAction?: ((action: unknown) => void) | null;
 }
 
 export default function ResolveNextActionDialog({
@@ -74,7 +84,7 @@ export default function ResolveNextActionDialog({
   targetId,
   sourceInteractionId = null,
   onViewAction = null,
-}) {
+}: ResolveNextActionDialogProps) {
   const { resolveNextAction } = useAgendaMutations();
   const {
     data: pendingData,
@@ -85,7 +95,7 @@ export default function ResolveNextActionDialog({
 
   const [strategy, setStrategy] = useState('create_if_none');
   const [step, setStep] = useState('strategy');
-  const [nextActionAt, setNextActionAt] = useState(null);
+  const [nextActionAt, setNextActionAt] = useState<Date | null>(null);
   const [description, setDescription] = useState('');
   const [reason, setReason] = useState('');
   const [isImprovingDescription, setIsImprovingDescription] = useState(false);
@@ -156,7 +166,7 @@ export default function ResolveNextActionDialog({
     }
 
     // Construir payload solo con los campos permitidos por cada estrategia
-    const payload = {
+    const payload: Record<string, unknown> = {
       targetType,
       targetId,
       strategy,
@@ -196,32 +206,15 @@ export default function ResolveNextActionDialog({
 
     setIsImprovingDescription(true);
     try {
-      const response = await fetch('/api/crm/improve-text', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          kind: 'next_action_description',
-          text: rawDescription,
-        }),
-      });
-
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(payload?.error || 'No se pudo mejorar la descripción con IA');
-      }
-
-      const improvedDescription = String(payload?.improvedText ?? '').trim();
-      if (!improvedDescription) {
-        throw new Error('La IA no devolvió una descripción válida');
-      }
-
+      const improvedDescription = await crmAiService.improveText(
+        'next_action_description',
+        rawDescription
+      );
       setDescription(improvedDescription);
     } catch (error) {
       notify.error({
         title: 'Error al mejorar la descripción',
-        description: error?.message || 'No se pudo procesar la mejora con IA',
+        description: error instanceof Error ? error.message : 'No se pudo procesar la mejora con IA',
       });
     } finally {
       setIsImprovingDescription(false);

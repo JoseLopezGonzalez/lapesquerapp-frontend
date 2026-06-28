@@ -37,10 +37,11 @@ import {
   getDefaultProspectFormValues,
   prospectFormValuesFromInitial,
 } from './schemas/prospectFormSchema';
+import { crmAiService, type CrmTextKind } from '@/services/crmAiService';
 
 const CATEGORY_NONE_VALUE = '__none__';
 
-function FieldError({ message }) {
+function FieldError({ message }: { message?: string }) {
   if (!message) return null;
   return <p className="text-sm text-red-500">{message}</p>;
 }
@@ -54,7 +55,13 @@ function RequiredMark() {
   );
 }
 
-export default function ProspectFormSheet({ open, onOpenChange, initialData = null }) {
+interface ProspectFormSheetProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  initialData?: unknown | null;
+}
+
+export default function ProspectFormSheet({ open, onOpenChange, initialData = null }: ProspectFormSheetProps) {
   const isEditing = Boolean(initialData);
   const { data: countries } = useCountriesList({ page: 1, perPage: 250, enabled: open });
   const { data: categoryOptions = [], isLoading: categoriesLoading } =
@@ -169,6 +176,13 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
     onSuccess,
     emptyTextErrorTitle,
     genericErrorTitle,
+  }: {
+    kind: CrmTextKind;
+    text: string | null | undefined;
+    setLoading: (loading: boolean) => void;
+    onSuccess: (text: string) => void;
+    emptyTextErrorTitle: string;
+    genericErrorTitle: string;
   }) => {
     const rawText = String(text ?? '').trim();
     if (!rawText) {
@@ -178,29 +192,12 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
 
     setLoading(true);
     try {
-      const response = await fetch('/api/crm/improve-text', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ kind, text: rawText }),
-      });
-
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(payload?.error || 'No se pudo mejorar el texto con IA');
-      }
-
-      const improvedText = String(payload?.improvedText ?? '').trim();
-      if (!improvedText) {
-        throw new Error('La IA no devolvió un texto válido');
-      }
-
+      const improvedText = await crmAiService.improveText(kind, rawText);
       onSuccess(improvedText);
     } catch (error) {
       notify.error({
         title: genericErrorTitle,
-        description: error?.message || 'No se pudo procesar la mejora con IA',
+        description: error instanceof Error ? error.message : 'No se pudo procesar la mejora con IA',
       });
     } finally {
       setLoading(false);
