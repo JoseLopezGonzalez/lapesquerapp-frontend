@@ -83,15 +83,22 @@ Verificar si el proyecto tiene definida una clase utilitaria para safe area padd
 
 ## Implementación
 
-> Rellena el Agente Implementador
-
 ### Archivos creados
+
+Ninguno.
 
 ### Archivos modificados
 
+- `src/components/Field/FieldOrderExecutionPage.jsx` — `pb-4` → `pb-[calc(1rem+env(safe-area-inset-bottom))]` en el footer de botones de acción
+- `src/components/Field/FieldAutoventaWizard.jsx` — `pb-4` → `pb-[calc(1rem+env(safe-area-inset-bottom))]` en el footer de botones de navegación
+
 ### Decisiones tomadas durante la implementación
 
+Se usó la clase Tailwind arbitraria `pb-[calc(1rem+env(safe-area-inset-bottom))]` directamente (equivalente a `pb-4` + safe area), sin crear variable CSS adicional. Patrón consistente con `FieldRoutesListPage.jsx` y `FieldOrdersPage.jsx` que ya usan `pb-[calc(5rem+env(safe-area-inset-bottom))]` en sus scroll areas.
+
 ### Desviaciones del plan (si las hay)
+
+Ninguna.
 
 ---
 

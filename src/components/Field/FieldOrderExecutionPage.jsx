@@ -379,7 +379,7 @@ export default function FieldOrderExecutionPage({ orderId }) {
       </div>
 
       {!showSuccess ? (
-        <div className="flex w-full shrink-0 justify-center gap-2 px-4 pt-4 pb-4">
+        <div className="flex w-full shrink-0 justify-center gap-2 px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
           <div className="flex w-full max-w-[420px] gap-2">
             {step > 1 ? (
               <Button
