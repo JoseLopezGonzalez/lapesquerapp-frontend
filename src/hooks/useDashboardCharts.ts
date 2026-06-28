@@ -1,12 +1,11 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { useSession } from 'next-auth/react';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
-import { getSalesChartData } from '@/services/orderService';
+import { getSalesChartData, getTransportChartData } from '@/services/orderService';
 import { getReceptionChartData } from '@/services/rawMaterialReception/getReceptionChartData';
 import { getDispatchChartData } from '@/services/ceboDispatch/getDispatchChartData';
-import { getTransportChartData } from '@/services/orderService';
+import { orderChartKeys } from '@/lib/routes/queryKeys';
 
 interface ChartDataParams {
   range?: { from?: Date; to?: Date };
@@ -46,28 +45,14 @@ function useChartData(
  */
 export function useSalesChartData(params: ChartDataParams) {
   const { range, speciesId, categoryId, familyId, unit, groupBy } = params;
-  const { data: session } = useSession();
-  const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
   const from = range?.from?.toLocaleDateString?.('sv-SE') ?? null;
   const to = range?.to?.toLocaleDateString?.('sv-SE') ?? null;
 
   return useChartData(
-    [
-      'sales',
-      'chart',
-      tenantId ?? 'unknown',
-      from,
-      to,
-      speciesId,
-      categoryId,
-      familyId,
-      unit,
-      groupBy,
-    ],
+    orderChartKeys.sales(tenantId, from, to, speciesId, categoryId, familyId, unit, groupBy),
     () =>
       getSalesChartData({
-        token: token as string,
         speciesId: speciesId ?? 'all',
         categoryId: categoryId ?? 'all',
         familyId: familyId ?? 'all',
@@ -76,7 +61,7 @@ export function useSalesChartData(params: ChartDataParams) {
         unit: unit ?? 'quantity',
         groupBy: groupBy ?? 'month',
       }),
-    !!token && !!tenantId && !!from && !!to
+    !!tenantId && !!from && !!to
   );
 }
 
@@ -188,22 +173,19 @@ function getYearToDateStrings(): { from: string; to: string } {
 
 export function useTransportChartData(params: { range?: { from?: Date; to?: Date } }) {
   const { range } = params ?? {};
-  const { data: session, status } = useSession();
-  const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
   const yearToDate = getYearToDateStrings();
   const from = range?.from?.toLocaleDateString?.('sv-SE') ?? yearToDate.from;
   const to = range?.to?.toLocaleDateString?.('sv-SE') ?? yearToDate.to;
-  const enabled = !!token && !!from && !!to && status !== 'loading';
 
   const {
     data: rawData,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['transport', 'chart', tenantId ?? 'unknown', from, to, status],
-    queryFn: () => getTransportChartData({ token: token as string, from, to }),
-    enabled,
+    queryKey: orderChartKeys.transport(tenantId, from, to),
+    queryFn: () => getTransportChartData({ from, to }),
+    enabled: !!tenantId,
   });
 
   const data = parseTransportChartResponse(rawData);

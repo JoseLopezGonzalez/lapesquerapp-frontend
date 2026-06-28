@@ -329,3 +329,85 @@ export const storeQueryKeys = {
   stockByProducts: (tenantId: string | null | undefined) =>
     ['stock', 'by-products', tenantId ?? 'unknown'] as const,
 };
+
+export const orderStatKeys = {
+  totalNetWeight: (tenantId: string | null | undefined, dateFrom: string, dateTo: string) =>
+    ['orders', 'totalNetWeight', tenantId ?? 'unknown', dateFrom, dateTo] as const,
+  totalAmount: (tenantId: string | null | undefined, dateFrom: string, dateTo: string) =>
+    ['orders', 'totalAmount', tenantId ?? 'unknown', dateFrom, dateTo] as const,
+  ranking: (
+    tenantId: string | null | undefined,
+    dateFrom: string,
+    dateTo: string,
+    groupBy: string,
+    valueType: string,
+    speciesId: string | undefined
+  ) =>
+    [
+      'orders',
+      'ranking',
+      tenantId ?? 'unknown',
+      dateFrom,
+      dateTo,
+      groupBy,
+      valueType,
+      speciesId,
+    ] as const,
+  salesBySalesperson: (tenantId: string | null | undefined, dateFrom: string, dateTo: string) =>
+    ['orders', 'salesBySalesperson', tenantId ?? 'unknown', dateFrom, dateTo] as const,
+  profitabilitySummary: (
+    tenantId: string | null | undefined,
+    dateFrom: string,
+    dateTo: string,
+    productId: string | undefined
+  ) =>
+    ['orders', 'profitabilitySummary', tenantId ?? 'unknown', dateFrom, dateTo, productId] as const,
+  profitabilityTimeline: (
+    tenantId: string | null | undefined,
+    dateFrom: string,
+    dateTo: string,
+    granularity: string | undefined,
+    productId: string | undefined
+  ) =>
+    [
+      'orders',
+      'profitabilityTimeline',
+      tenantId ?? 'unknown',
+      dateFrom,
+      dateTo,
+      granularity,
+      productId,
+    ] as const,
+  profitabilityProducts: (tenantId: string | null | undefined, dateFrom: string, dateTo: string) =>
+    ['orders', 'profitabilityProducts', tenantId ?? 'unknown', dateFrom, dateTo] as const,
+};
+
+export const orderChartKeys = {
+  sales: (
+    tenantId: string | null | undefined,
+    from: string | null,
+    to: string | null,
+    speciesId: string | undefined,
+    categoryId: string | undefined,
+    familyId: string | undefined,
+    unit: string | undefined,
+    groupBy: string | undefined
+  ) =>
+    [
+      'sales',
+      'chart',
+      tenantId ?? 'unknown',
+      from,
+      to,
+      speciesId,
+      categoryId,
+      familyId,
+      unit,
+      groupBy,
+    ] as const,
+  transport: (
+    tenantId: string | null | undefined,
+    from: string,
+    to: string
+  ) => ['transport', 'chart', tenantId ?? 'unknown', from, to] as const,
+};

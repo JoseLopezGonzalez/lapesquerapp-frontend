@@ -203,7 +203,6 @@ export interface OrderRankingStatsParams {
 
 /** Sales chart params */
 export interface SalesChartParams {
-  token: AuthToken;
   speciesId?: string;
   categoryId?: string;
   familyId?: string;
@@ -704,8 +703,7 @@ export function getProductionViewData(token: AuthToken): Promise<unknown[]> {
  * Fetches order ranking statistics.
  */
 export async function getOrderRankingStats(
-  params: OrderRankingStatsParams,
-  token: AuthToken
+  params: OrderRankingStatsParams
 ): Promise<unknown> {
   const query = new URLSearchParams({
     groupBy: params.groupBy,
@@ -725,7 +723,6 @@ export async function getOrderRankingStats(
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
         'User-Agent': getUserAgent(),
       },
     }
@@ -743,8 +740,7 @@ export async function getOrderRankingStats(
  * Fetches sales by salesperson.
  */
 export async function getSalesBySalesperson(
-  params: { dateFrom: string; dateTo: string },
-  token: AuthToken
+  params: { dateFrom: string; dateTo: string }
 ): Promise<unknown> {
   const query = new URLSearchParams(params);
   const response = await fetchWithTenant(
@@ -754,7 +750,6 @@ export async function getSalesBySalesperson(
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
         'User-Agent': getUserAgent(),
       },
     }
@@ -772,8 +767,7 @@ export async function getSalesBySalesperson(
  * Fetches total net weight stats for orders.
  */
 export async function getOrdersTotalNetWeightStats(
-  params: { dateFrom: string; dateTo: string },
-  token: AuthToken
+  params: { dateFrom: string; dateTo: string }
 ): Promise<unknown> {
   const query = new URLSearchParams(params);
   const response = await fetchWithTenant(
@@ -783,7 +777,6 @@ export async function getOrdersTotalNetWeightStats(
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
         'User-Agent': getUserAgent(),
       },
     }
@@ -801,8 +794,7 @@ export async function getOrdersTotalNetWeightStats(
  * Fetches total amount stats for orders.
  */
 export async function getOrdersTotalAmountStats(
-  params: { dateFrom: string; dateTo: string },
-  token: AuthToken
+  params: { dateFrom: string; dateTo: string }
 ): Promise<unknown> {
   const query = new URLSearchParams(params);
   const response = await fetchWithTenant(
@@ -812,7 +804,6 @@ export async function getOrdersTotalAmountStats(
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
         'User-Agent': getUserAgent(),
       },
     }
@@ -830,8 +821,7 @@ export async function getOrdersTotalAmountStats(
  * Fetches profitability summary stats for orders.
  */
 export async function getOrdersProfitabilitySummary(
-  params: OrdersProfitabilitySummaryParams,
-  token: AuthToken
+  params: OrdersProfitabilitySummaryParams
 ): Promise<ProfitabilitySummaryResponse> {
   const query = buildProfitabilityQuery(params);
   const response = await fetchWithTenant(
@@ -841,7 +831,6 @@ export async function getOrdersProfitabilitySummary(
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
         'User-Agent': getUserAgent(),
       },
     }
@@ -957,8 +946,7 @@ export async function downloadOrdersProfitabilityExportJob(
  * Fetches profitability timeline stats for orders.
  */
 export async function getOrdersProfitabilityTimeline(
-  params: OrdersProfitabilityTimelineParams,
-  token: AuthToken
+  params: OrdersProfitabilityTimelineParams
 ): Promise<ProfitabilityTimelineResponse> {
   const query = buildProfitabilityQuery(params);
   const response = await fetchWithTenant(
@@ -968,7 +956,6 @@ export async function getOrdersProfitabilityTimeline(
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
         'User-Agent': getUserAgent(),
       },
     }
@@ -988,8 +975,7 @@ export async function getOrdersProfitabilityTimeline(
  * Fetches profitability by products stats for orders.
  */
 export async function getOrdersProfitabilityProducts(
-  params: OrdersProfitabilityProductsParams,
-  token: AuthToken
+  params: OrdersProfitabilityProductsParams
 ): Promise<ProfitabilityProductsResponse> {
   const query = new URLSearchParams({
     dateFrom: params.dateFrom,
@@ -1003,7 +989,6 @@ export async function getOrdersProfitabilityProducts(
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
         'User-Agent': getUserAgent(),
       },
     }
@@ -1042,10 +1027,7 @@ export async function getSalesChartData(params: SalesChartParams): Promise<unkno
 
   const data = await fetchWithTenant(`${API_URL_V2}orders/sales-chart-data?${query.toString()}`, {
     method: 'GET',
-    headers: {
-      Authorization: `Bearer ${params.token}`,
-      'User-Agent': getUserAgent(),
-    },
+    headers: { 'User-Agent': getUserAgent() },
   }).then(async (response) => {
     const result = await handleServiceResponse(
       response,
@@ -1063,7 +1045,6 @@ export async function getSalesChartData(params: SalesChartParams): Promise<unkno
 export interface TransportChartParams {
   from: string;
   to: string;
-  token: AuthToken;
 }
 
 /**
@@ -1083,7 +1064,6 @@ export async function getTransportChartData(params: TransportChartParams): Promi
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
-        Authorization: `Bearer ${params.token}`,
         'User-Agent': getUserAgent(),
       },
     }
