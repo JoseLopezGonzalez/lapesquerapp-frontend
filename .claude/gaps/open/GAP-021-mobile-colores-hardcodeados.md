@@ -113,15 +113,25 @@ Reemplazar cada ocurrencia por el token semántico equivalente:
 
 ## Implementación
 
-> Rellena el Agente Implementador
-
 ### Archivos creados
+
+Ninguno.
 
 ### Archivos modificados
 
+- `src/components/Field/FieldDashboard.jsx` — `text-neutral-500 dark:text-neutral-400` → `text-muted-foreground`
+- `src/components/Admin/Stores/Mobile/MobileStoreListView.tsx` — `dark:text-white` eliminado del título "Almacenes" (`text-xl font-normal` queda limpio)
+- `src/components/Admin/Pallets/PalletDialog/MobilePalletView/index.tsx` — Alert de solo lectura: `border-orange-200 bg-orange-50 text-orange-600 text-orange-800` → `border-warning/20 bg-warning/10 text-warning-foreground`
+- `src/components/Admin/OrdersManager/Order/components/OrderHeaderMobile.jsx` — `dark:text-white` eliminado del título; badge autoventa: `border-slate-400 bg-slate-200 text-slate-800 dark:border-slate-500 dark:bg-slate-700 dark:text-slate-200` → `border-border bg-muted text-muted-foreground`
+- `src/components/LoginPage/LoginFormMobile.tsx` — badge DEMO: `bg-lime-100 text-lime-800` → `bg-accent text-accent-foreground`
+
 ### Decisiones tomadas durante la implementación
 
+El Alert de `MobilePalletView` usa `border-warning/20 bg-warning/10 text-warning-foreground` con el token `--warning` confirmado en `globals.css`. No existe variante `warning` en el componente Alert, por lo que se aplica via className. El badge DEMO usa `bg-accent text-accent-foreground` como token neutro semántico (no hay token de "demo/beta" en design-context.md).
+
 ### Desviaciones del plan (si las hay)
+
+Ninguna.
 
 ---
 

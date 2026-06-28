@@ -91,7 +91,7 @@ export default function FieldDashboard() {
         <div className="flex w-full flex-col gap-4 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-4">
           <div className="w-full">
             <div className="mb-2 flex flex-col items-start justify-center md:mb-4">
-              <p className="text-lg text-neutral-500 dark:text-neutral-400">{greeting}</p>
+              <p className="text-lg text-muted-foreground">{greeting}</p>
               <h1 className="text-3xl font-light md:text-4xl">{userName}</h1>
             </div>
           </div>

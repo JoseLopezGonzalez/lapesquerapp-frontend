@@ -52,10 +52,10 @@ export default function OrderHeaderMobile({
           <ArrowLeft className="h-6 w-6" />
         </Button>
         <div className="flex flex-col items-center gap-1">
-          <h2 className="text-center text-xl font-normal dark:text-white">#{order.id}</h2>
+          <h2 className="text-center text-xl font-normal">#{order.id}</h2>
           {(order?.orderType ?? order?.order_type) === 'autoventa' && (
             <span
-              className="inline-flex items-center gap-1 rounded-full border border-slate-400 bg-slate-200 px-2 py-0.5 text-[10px] font-medium text-slate-800 dark:border-slate-500 dark:bg-slate-700 dark:text-slate-200"
+              className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
               aria-label="Tipo de pedido: Autoventa"
             >
               <ShoppingBag className="h-3 w-3" aria-hidden />

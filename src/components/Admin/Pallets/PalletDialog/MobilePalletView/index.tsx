@@ -349,9 +349,9 @@ function MobilePalletViewInner({
   return (
     <div className="flex h-full min-h-0 w-full flex-col">
       {isReadOnly && (
-        <Alert className="mx-3 mt-2 shrink-0 border-orange-200 bg-orange-50">
-          <AlertCircle className="h-4 w-4 text-orange-600" />
-          <AlertDescription className="text-sm text-orange-800">
+        <Alert className="mx-3 mt-2 shrink-0 border-warning/20 bg-warning/10">
+          <AlertCircle className="h-4 w-4 text-warning-foreground" />
+          <AlertDescription className="text-sm text-warning-foreground">
             Pertenece a una recepción de materia prima. Solo lectura.
           </AlertDescription>
         </Alert>

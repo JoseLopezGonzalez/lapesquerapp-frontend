@@ -245,7 +245,7 @@ export function MobileStoreListView({
           >
             <ArrowLeft className="h-6 w-6" />
           </Button>
-          <h2 className="flex-1 truncate text-center text-xl font-normal dark:text-white">
+          <h2 className="flex-1 truncate text-center text-xl font-normal">
             Almacenes
           </h2>
           <Button

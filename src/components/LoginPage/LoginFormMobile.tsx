@@ -60,7 +60,7 @@ export default function LoginFormMobile({
       )}
 
       {isDemo && (
-        <div className="absolute top-4 right-4 z-10 rounded-lg bg-lime-100 px-3 py-1 text-xs font-semibold text-lime-800 shadow">
+        <div className="absolute top-4 right-4 z-10 rounded-lg bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground shadow">
           MODO DEMO
         </div>
       )}
