@@ -2,12 +2,13 @@
 
 import React, { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { notify } from '@/lib/notifications';
 import { ApiError } from '@/lib/api/apiHelpers';
+import { useHideBottomNav } from '@/context/BottomNavContext';
 import { getFieldProductsOptions } from '@/services/fieldOperatorService';
 import { useFieldOrderMutations } from '@/hooks/useFieldOrders';
 import { useFieldAutoventa } from '@/hooks/useFieldAutoventa';
@@ -29,6 +30,7 @@ const STEPS = [
 ];
 
 export default function FieldAutoventaWizard() {
+  useHideBottomNav(true);
   const router = useRouter();
   const searchParams = useSearchParams();
   const { createAutoventa } = useFieldOrderMutations();
@@ -156,35 +158,15 @@ export default function FieldAutoventaWizard() {
                           !canGo && 'cursor-not-allowed opacity-60'
                         )}
                         aria-label={`Paso ${stepNum}: ${s?.title}${!canGo ? ' (completa el paso anterior)' : ''}`}
-                        initial={false}
-                        animate={{
-                          scale: isCurrent ? 1.05 : 1,
-                          transition: { type: 'spring', stiffness: 400, damping: 25 },
-                        }}
                         whileTap={{ scale: 0.96 }}
                       >
-                        <AnimatePresence mode="wait">
-                          {isCompleted ? (
-                            <motion.span
-                              key="check"
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              exit={{ scale: 0 }}
-                              transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                            >
-                              <Check className="h-4 w-4" />
-                            </motion.span>
-                          ) : (
-                            <motion.span
-                              key="num"
-                              initial={{ scale: 0.8, opacity: 0.8 }}
-                              animate={{ scale: 1, opacity: 1 }}
-                              transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                            >
-                              {stepNum}
-                            </motion.span>
-                          )}
-                        </AnimatePresence>
+                        {isCompleted ? (
+                          <span>
+                            <Check className="h-4 w-4" />
+                          </span>
+                        ) : (
+                          <span>{stepNum}</span>
+                        )}
                       </motion.button>
                       {showBarAfter && (
                         <motion.div
@@ -285,7 +267,7 @@ export default function FieldAutoventaWizard() {
       </div>
 
       {step < 7 && (
-        <div className="flex w-full shrink-0 justify-center gap-2 px-4 pt-4 pb-4">
+        <div className="flex w-full shrink-0 justify-center gap-2 px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
           <div className="flex w-full max-w-[420px] gap-2">
             {step === 6 ? (
               <>

@@ -5,8 +5,9 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowRight, Check, Loader2, PackageOpen, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/Utilities/EmptyState';
-import Loader from '@/components/Utilities/Loader';
+import { useHideBottomNav } from '@/context/BottomNavContext';
 import Step2QRScan from '@/components/Comercial/Autoventa/Step2QRScan';
 import Step3Pricing from '@/components/Comercial/Autoventa/Step3Pricing';
 import { useFieldOrder, useFieldOrderMutations } from '@/hooks/useFieldOrders';
@@ -40,7 +41,39 @@ const STEPS = [
   { id: 6, title: 'Confirmar', description: 'Revisa y guarda el pedido operativo' },
 ];
 
+function FieldOrderExecutionSkeleton() {
+  return (
+    <div className="flex h-full min-h-0 w-full flex-col">
+      <div className="flex shrink-0 flex-col items-center gap-3 px-2 pt-2 pb-6 sm:pt-0 sm:pb-4">
+        <Skeleton className="h-6 w-40" />
+        <div className="flex w-full max-w-[280px] items-center gap-2">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <React.Fragment key={i}>
+              <Skeleton className="h-10 w-10 shrink-0 rounded-full" />
+              {i < 2 && <Skeleton className="h-1.5 flex-1 rounded-full" />}
+            </React.Fragment>
+          ))}
+        </div>
+        <Skeleton className="h-4 w-48" />
+      </div>
+      <div className="mx-auto flex min-h-0 w-full max-w-[420px] flex-1 flex-col overflow-y-auto px-4 pt-8 sm:pt-6">
+        <div className="space-y-4">
+          <Skeleton className="h-24 w-full rounded-xl" />
+          <Skeleton className="h-24 w-full rounded-xl" />
+        </div>
+      </div>
+      <div className="flex w-full shrink-0 justify-center gap-2 px-4 pt-4 pb-4">
+        <div className="flex w-full max-w-[420px] gap-2">
+          <Skeleton className="h-10 flex-1 rounded-md" />
+          <Skeleton className="h-10 flex-1 rounded-md" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function FieldOrderExecutionPage({ orderId }) {
+  useHideBottomNav(true);
   const router = useRouter();
   const { data: order, isLoading, errorMessage } = useFieldOrder(orderId);
   const { updateOrder, isUpdating } = useFieldOrderMutations();
@@ -132,11 +165,7 @@ export default function FieldOrderExecutionPage({ orderId }) {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex flex-1 items-center justify-center">
-        <Loader />
-      </div>
-    );
+    return <FieldOrderExecutionSkeleton />;
   }
 
   if (errorMessage || !order) {
@@ -350,7 +379,7 @@ export default function FieldOrderExecutionPage({ orderId }) {
       </div>
 
       {!showSuccess ? (
-        <div className="flex w-full shrink-0 justify-center gap-2 px-4 pt-4 pb-4">
+        <div className="flex w-full shrink-0 justify-center gap-2 px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
           <div className="flex w-full max-w-[420px] gap-2">
             {step > 1 ? (
               <Button

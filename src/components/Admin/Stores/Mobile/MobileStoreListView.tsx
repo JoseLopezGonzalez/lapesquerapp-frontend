@@ -17,7 +17,6 @@ import {
   Package,
   ScanLine,
   Search,
-  Sparkles,
   ThermometerSnowflake,
   Warehouse,
 } from 'lucide-react';
@@ -33,6 +32,7 @@ const QrScannerWidget = dynamic(
 import { notify } from '@/lib/notifications';
 import { REGISTERED_PALLETS_STORE_ID } from '@/hooks/useStores';
 import { cn } from '@/lib/utils';
+import { EmptyState } from '@/components/Utilities/EmptyState';
 
 interface Store {
   id: string | number;
@@ -65,22 +65,6 @@ function MobileStoreCard({
   const capacity = store.capacity || store.totalNetWeight || 1;
   const fillPercentage = capacity > 0 ? ((store.totalNetWeight ?? 0) / capacity) * 100 : 0;
   const occupancyStatus = fillPercentage <= 50 ? 'low' : fillPercentage <= 80 ? 'medium' : 'high';
-
-  const iconBg = isGhostStore
-    ? 'bg-slate-100 dark:bg-slate-800'
-    : occupancyStatus === 'low'
-      ? 'bg-green-50 dark:bg-green-950'
-      : occupancyStatus === 'medium'
-        ? 'bg-yellow-50 dark:bg-yellow-950'
-        : 'bg-red-50 dark:bg-red-950';
-
-  const iconColor = isGhostStore
-    ? 'text-slate-500'
-    : occupancyStatus === 'low'
-      ? 'text-green-600'
-      : occupancyStatus === 'medium'
-        ? 'text-yellow-600'
-        : 'text-red-600';
 
   const progressClass = isGhostStore
     ? '[&_[data-slot=progress-indicator]]:bg-slate-500/80'
@@ -244,7 +228,7 @@ export function MobileStoreListView({
           >
             <ArrowLeft className="h-6 w-6" />
           </Button>
-          <h2 className="flex-1 truncate text-center text-xl font-normal dark:text-white">
+          <h2 className="flex-1 truncate text-center text-xl font-normal">
             Almacenes
           </h2>
           <Button
@@ -295,18 +279,24 @@ export function MobileStoreListView({
 
         {/* Lista */}
         {isEmpty ? (
-          <div className="flex flex-col items-center justify-center gap-2 p-8 text-center">
-            <p className="text-sm font-medium">Sin almacenes</p>
-            <p className="text-muted-foreground text-xs">No hay almacenes disponibles.</p>
+          <div className="flex flex-1 items-center justify-center">
+            <EmptyState
+              icon={<Warehouse className="text-primary h-10 w-10" />}
+              title="Sin almacenes"
+              description="No hay almacenes disponibles."
+            />
           </div>
         ) : filteredByTab.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-2 p-8 text-center">
-            <p className="text-sm font-medium">Sin resultados</p>
-            <p className="text-muted-foreground text-xs">
-              {search.trim()
-                ? `No hay almacenes que coincidan con «${search}».`
-                : 'No hay almacenes con este estado.'}
-            </p>
+          <div className="flex flex-1 items-center justify-center">
+            <EmptyState
+              icon={<Search className="text-primary h-10 w-10" />}
+              title="Sin resultados"
+              description={
+                search.trim()
+                  ? `No hay almacenes que coincidan con «${search}».`
+                  : 'No hay almacenes con este estado.'
+              }
+            />
           </div>
         ) : (
           <div className="relative min-h-0 flex-1 overflow-hidden">

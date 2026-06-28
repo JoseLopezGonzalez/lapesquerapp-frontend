@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { usePallet, saveDiscountPreferences } from '@/hooks/usePallet';
 import { usePalletTimeline } from '@/hooks/usePalletTimeline';
 import { isExternalActor, canManagePalletCostFields } from '@/lib/auth/actor';
@@ -53,6 +54,16 @@ interface MobilePalletViewProps {
   initialTab?: string | null;
   onActiveScreenChange?: (screen: PalletScreen) => void;
   onHasPalletChangesChange?: (hasChanges: boolean) => void;
+}
+
+function MobilePalletSkeleton() {
+  return (
+    <div className="grid grid-cols-2 gap-3 px-3 py-4">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <Skeleton key={i} className="h-[112px] w-full rounded-2xl" />
+      ))}
+    </div>
+  );
 }
 
 // Outer wrapper holds retry key so re-mounting the inner component re-initialises usePallet
@@ -186,12 +197,7 @@ function MobilePalletViewInner({
   };
 
   if (loading || !temporalPallet) {
-    return (
-      <div className="flex h-full w-full flex-1 flex-col items-center justify-center gap-2">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">Cargando palet…</p>
-      </div>
-    );
+    return <MobilePalletSkeleton />;
   }
 
   if (error) {
@@ -343,9 +349,9 @@ function MobilePalletViewInner({
   return (
     <div className="flex h-full min-h-0 w-full flex-col">
       {isReadOnly && (
-        <Alert className="mx-3 mt-2 shrink-0 border-orange-200 bg-orange-50">
-          <AlertCircle className="h-4 w-4 text-orange-600" />
-          <AlertDescription className="text-sm text-orange-800">
+        <Alert className="mx-3 mt-2 shrink-0 border-warning/20 bg-warning/10">
+          <AlertCircle className="h-4 w-4 text-warning-foreground" />
+          <AlertDescription className="text-sm text-warning-foreground">
             Pertenece a una recepción de materia prima. Solo lectura.
           </AlertDescription>
         </Alert>
@@ -373,8 +379,7 @@ function MobilePalletViewInner({
       {/* Sticky save/discard bar */}
       {showSaveBar && (
         <div
-          className="shrink-0 bg-background/95 px-3 py-3 backdrop-blur-sm"
-          style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
+          className="shrink-0 bg-background/95 px-3 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-sm"
         >
           <div className="flex gap-3">
             <Button

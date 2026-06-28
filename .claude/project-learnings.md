@@ -110,4 +110,15 @@ Every entry has:
 > Things Jose corrected manually that the agents missed or got wrong.
 > Each entry is translated into a concrete rule to prevent recurrence.
 
-[No entries yet]
+### PL-007
+- **Date:** 2026-06-27
+- **Source:** Jose correction during /audit-mobile Phase 4 (GAP creation Q&A)
+- **Category:** CORRECTION
+- **Confidence:** HIGH
+- **Entry:** All questions presented by any agent (gap-discovery, gap-auditor, ux-reviewer,
+  ui-audit-agent, or any other) MUST mark which option the agent recommends. No question
+  block is valid without a recommendation marker. Format: append "(Recomendada)" to the
+  recommended option. This applies to: clarification questions, UI Brief confirmation
+  questions, AskUserQuestion calls, and any other structured Q&A format. A question block
+  without a recommended option is considered incomplete and must be rewritten before
+  Jose can answer.
