@@ -85,8 +85,6 @@ export function useSalesChartData(params: ChartDataParams) {
  */
 export function useReceptionChartData(params: ChartDataParams) {
   const { range, speciesId, categoryId, familyId, unit, groupBy } = params;
-  const { data: session } = useSession();
-  const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
   const from = range?.from?.toLocaleDateString?.('sv-SE') ?? null;
   const to = range?.to?.toLocaleDateString?.('sv-SE') ?? null;
@@ -106,7 +104,6 @@ export function useReceptionChartData(params: ChartDataParams) {
     ],
     () =>
       getReceptionChartData({
-        token: token as string,
         speciesId: speciesId ?? 'all',
         categoryId: categoryId ?? 'all',
         familyId: familyId ?? 'all',
@@ -115,7 +112,7 @@ export function useReceptionChartData(params: ChartDataParams) {
         unit: unit ?? 'quantity',
         groupBy: groupBy ?? 'month',
       }),
-    !!token && !!tenantId && !!from && !!to
+    !!tenantId && !!from && !!to
   );
 }
 
@@ -124,8 +121,6 @@ export function useReceptionChartData(params: ChartDataParams) {
  */
 export function useDispatchChartData(params: ChartDataParams) {
   const { range, speciesId, categoryId, familyId, unit, groupBy } = params;
-  const { data: session } = useSession();
-  const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
   const from = range?.from?.toLocaleDateString?.('sv-SE') ?? null;
   const to = range?.to?.toLocaleDateString?.('sv-SE') ?? null;
@@ -145,7 +140,6 @@ export function useDispatchChartData(params: ChartDataParams) {
     ],
     () =>
       getDispatchChartData({
-        token: token as string,
         speciesId: speciesId ?? 'all',
         categoryId: categoryId ?? 'all',
         familyId: familyId ?? 'all',
@@ -154,7 +148,7 @@ export function useDispatchChartData(params: ChartDataParams) {
         unit: unit ?? 'quantity',
         groupBy: groupBy ?? 'month',
       }),
-    !!token && !!tenantId && !!from && !!to
+    !!tenantId && !!from && !!to
   );
 }
 
