@@ -1,8 +1,8 @@
 # PesquerApp — Project Learnings
 > This file is maintained exclusively by the system-learner agent.
 > Do not edit manually unless correcting an error.
-> Last updated: 2026-06-27
-> Total entries: 6
+> Last updated: 2026-06-28
+> Total entries: 11
 
 ## How this file works
 
@@ -72,7 +72,7 @@ Every entry has:
   bypassing the service layer. Binary file downloads must go through a dedicated
   service method (e.g. `downloadOrderDocument()` in `orderService.ts`), not called
   directly from hooks. No follow-up GAP exists yet.
-- **Status:** Still live in production. No follow-up GAP exists.
+- **Status:** Still live in production. Follow-up: GAP-029.
 
 ### PL-002
 - **Date:** 2026-06-27
@@ -83,7 +83,7 @@ Every entry has:
   violation instead of extracting an `OtpCodeWatcher` sub-component. `eslint-disable`
   is never acceptable as a permanent fix for rules-of-hooks violations.
   The correct fix is extracting the offending logic into a separate component.
-- **Status:** Still live in production. No follow-up GAP exists.
+- **Status:** Still live in production. Follow-up: GAP-024.
 
 ### PL-003
 - **Date:** 2026-06-27
@@ -103,6 +103,70 @@ Every entry has:
 - **Entry:** `React.Dispatch` used without explicit import in `usePalletBoxOperations`
   and `usePalletBoxCreation`. Always import `Dispatch` explicitly:
   `import { Dispatch } from 'react'` — never rely on global React namespace.
+
+### PL-008
+- **Date:** 2026-06-28
+- **Source:** Code quality audit (audit-code quality) — CRM components
+- **Category:** ANTI_PATTERN
+- **Confidence:** HIGH
+- **Entry (PL-NEW-A):** `fetch()` calls to internal Next.js `/api/*` routes made
+  directly from React components violate the service layer rule. These calls must
+  live in a dedicated service file (e.g. `crmAiService.ts`) and be called via the
+  service from the component/hook. Unlike calls to Laravel endpoints (which use
+  `fetchWithTenant`), calls to internal Next.js API routes use plain `fetch()` —
+  that is architecturally correct — but the function must be in a service file, not
+  inline in the component.
+- **Found in:** `ResolveNextActionDialog.jsx:199`, `ProspectFormSheet.jsx:181`,
+  `QuickInteractionModal.jsx:203`
+- **Status:** Follow-up: GAP-023.
+
+### PL-009
+- **Date:** 2026-06-28
+- **Source:** Code quality audit (audit-code quality) — useSpainAverageDieselPrice, useProcessOptions
+- **Category:** ANTI_PATTERN
+- **Confidence:** HIGH
+- **Entry (PL-NEW-B):** `fetch()` calls to external public APIs (no auth, no X-Tenant)
+  made directly inside a hook file violate the service layer separation. The function
+  must move to a service file (e.g. `fuelService.ts`). The use of plain `fetch()` is
+  architecturally correct for external public APIs — it must NOT use `fetchWithTenant`.
+  Only the location (hook file vs. service file) is the problem.
+- **Found in:** `useSpainAverageDieselPrice.ts:31-62` (government fuel price API),
+  `useProcessOptions.ts:7` (wrong layer for HTTP call)
+- **Status:** Follow-up: GAP-026 (fuel), GAP-025 (processes).
+
+### PL-010
+- **Date:** 2026-06-28
+- **Source:** Code quality audit (audit-code quality) — storeService, orderService, useOrdersStats
+- **Category:** ANTI_PATTERN
+- **Confidence:** HIGH
+- **Entry (PL-NEW-C):** Token-as-parameter anti-pattern: hooks extract
+  `session?.user?.accessToken` via `useSession()` and pass the token as a parameter
+  to service functions (`service.list(filters, token)`). The token must be obtained
+  internally by the service via `getAuthToken()`. Hooks must never extract or forward
+  the auth token. Side effect: `status` (session loading state string) must never
+  appear in TanStack Query `queryKey` arrays — it belongs only in `enabled`, causing
+  extra refetches if included in the key.
+- **Found in:** `storeService.ts` (7 functions), `orderService.ts` (9 functions),
+  `useStockStats.ts`, `useOrdersStats.ts`, `useDashboardCharts.ts`,
+  `useProcessOptions.ts`
+- **Status:** Follow-up: GAP-027 (store), GAP-028 (order), GAP-025 (processes).
+
+### PL-011
+- **Date:** 2026-06-28
+- **Source:** Code quality audit (audit-code quality) — useProspects, useCommercialInteractions
+- **Category:** ANTI_PATTERN
+- **Confidence:** HIGH
+- **Entry (PL-NEW-D):** Local queryKey helper functions or variables defined inside a
+  hook file do NOT satisfy the ESLint `no-inline-query-keys` rule. This includes:
+  `useTenantQueryKey()` local hooks that build arrays, `normalizeQueryParams` functions
+  duplicated locally, and any helper that returns `unknown[]`. All queryKey factories
+  must live exclusively in `src/lib/routes/queryKeys.ts` and be imported by name.
+  A helper that wraps an array is still an inline array from the ESLint rule's
+  perspective.
+- **Found in:** `useProspects.ts` (local `useTenantQueryKey()`),
+  `useCommercialInteractions.ts` (local `normalizeQueryParams` duplicate),
+  `useDashboardCharts.ts` (`useChartData` helper accepting `queryKey: unknown[]`)
+- **Status:** Follow-up: GAP-030.
 
 ---
 
