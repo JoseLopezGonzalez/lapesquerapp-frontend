@@ -91,15 +91,21 @@ En `FieldAutoventaWizard.jsx`, el stepper tiene dos animaciones decorativas proh
 
 ## Implementación
 
-> Rellena el Agente Implementador
-
 ### Archivos creados
+
+Ninguno.
 
 ### Archivos modificados
 
+- `src/components/Field/FieldAutoventaWizard.jsx` — eliminado `animate={{ scale: isCurrent ? 1.05 : 1 }}` e `initial={false}` del `motion.button`; eliminado `AnimatePresence` y `motion.span` del check mark/número, reemplazados por `<span>` planos; eliminado `AnimatePresence` del import de framer-motion.
+
 ### Decisiones tomadas durante la implementación
 
+El check mark y el número del stepper se reemplazan por spans planos sin animación CSS adicional. El estado activo/completado ya se comunica visualmente mediante las clases Tailwind existentes (`bg-primary`, `ring-2`, `bg-primary/20`). Se mantienen `whileTap={{ scale: 0.96 }}` (feedback táctil correcto) y la transición de width de la barra de progreso (`motion.div` con `animate={{ width }}`).
+
 ### Desviaciones del plan (si las hay)
+
+Ninguna.
 
 ---
 
