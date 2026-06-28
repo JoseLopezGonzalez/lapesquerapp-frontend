@@ -69,7 +69,7 @@ export default function LoginFormMobile({
         variant="ghost"
         size="icon"
         onClick={onBackToWelcome}
-        className="absolute top-4 left-4 z-10"
+        className="absolute top-4 left-4 z-10 h-11 w-11"
       >
         <ArrowLeft className="h-5 w-5" />
       </Button>

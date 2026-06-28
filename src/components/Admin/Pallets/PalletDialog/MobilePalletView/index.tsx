@@ -379,8 +379,7 @@ function MobilePalletViewInner({
       {/* Sticky save/discard bar */}
       {showSaveBar && (
         <div
-          className="shrink-0 bg-background/95 px-3 py-3 backdrop-blur-sm"
-          style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
+          className="shrink-0 bg-background/95 px-3 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-sm"
         >
           <div className="flex gap-3">
             <Button

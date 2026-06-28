@@ -17,7 +17,6 @@ import {
   Package,
   ScanLine,
   Search,
-  Sparkles,
   ThermometerSnowflake,
   Warehouse,
 } from 'lucide-react';
@@ -66,22 +65,6 @@ function MobileStoreCard({
   const capacity = store.capacity || store.totalNetWeight || 1;
   const fillPercentage = capacity > 0 ? ((store.totalNetWeight ?? 0) / capacity) * 100 : 0;
   const occupancyStatus = fillPercentage <= 50 ? 'low' : fillPercentage <= 80 ? 'medium' : 'high';
-
-  const iconBg = isGhostStore
-    ? 'bg-slate-100 dark:bg-slate-800'
-    : occupancyStatus === 'low'
-      ? 'bg-green-50 dark:bg-green-950'
-      : occupancyStatus === 'medium'
-        ? 'bg-yellow-50 dark:bg-yellow-950'
-        : 'bg-red-50 dark:bg-red-950';
-
-  const iconColor = isGhostStore
-    ? 'text-slate-500'
-    : occupancyStatus === 'low'
-      ? 'text-green-600'
-      : occupancyStatus === 'medium'
-        ? 'text-yellow-600'
-        : 'text-red-600';
 
   const progressClass = isGhostStore
     ? '[&_[data-slot=progress-indicator]]:bg-slate-500/80'

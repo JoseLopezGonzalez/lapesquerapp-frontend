@@ -119,15 +119,23 @@ Añadir `className="h-11 w-11"` al `<Button size="icon">` del botón de volver e
 
 ## Implementación
 
-> Rellena el Agente Implementador
-
 ### Archivos creados
+
+Ninguno.
 
 ### Archivos modificados
 
+- `src/components/Admin/Stores/Mobile/MobileStoreListView.tsx` — eliminadas variables `iconBg` e `iconColor` de `MobileStoreCard`; eliminado import `Sparkles` (nunca usado en JSX).
+- `src/components/Admin/Pallets/PalletDialog/MobilePalletView/index.tsx` — `style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}` eliminado; clase dividida: `py-3` → `pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]`.
+- `src/components/LoginPage/LoginFormMobile.tsx` — añadido `h-11 w-11` al botón de volver (44px × 44px touch target mínimo).
+
 ### Decisiones tomadas durante la implementación
 
+`Sparkles` también se elimina del import ya que era la única razón por la que se importaba (referenciada solo en `iconColor`, que ahora se elimina). `Warehouse` se mantiene porque se usa en el `EmptyState` añadido en GAP-020.
+
 ### Desviaciones del plan (si las hay)
+
+Ninguna.
 
 ---
 
