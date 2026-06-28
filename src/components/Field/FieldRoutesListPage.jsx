@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -10,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { useFieldRoutes } from '@/hooks/useFieldRoutes';
 import { getFieldStatusLabel } from '@/components/Field/labels';
+import { cn } from '@/lib/utils';
 import { MapPinned, ArrowRight } from 'lucide-react';
 
 const routeDateFormatter = new Intl.DateTimeFormat('es-ES', {
@@ -31,6 +31,14 @@ function getProgress(route) {
     total,
     percentage,
   };
+}
+
+function getRouteStatusColor(status) {
+  const normalized = typeof status === 'string' ? status.trim().toLowerCase() : status;
+  if (normalized === 'finished' || normalized === 'completed') return 'green';
+  if (normalized === 'incident' || normalized === 'cancelled' || normalized === 'canceled')
+    return 'red';
+  return 'orange';
 }
 
 function formatRouteDate(value) {
@@ -123,6 +131,7 @@ export default function FieldRoutesListPage() {
         {routes.map((route) => {
           const progress = getProgress(route);
 
+          const routeStatusColor = getRouteStatusColor(route.status);
           return (
             <Card key={route.id} className="border-border/70">
               <CardHeader className="gap-3">
@@ -132,9 +141,26 @@ export default function FieldRoutesListPage() {
                     <CardDescription>{formatRouteDate(route.routeDate)}</CardDescription>
                     <CardDescription>{route.description || 'Ruta operativa'}</CardDescription>
                   </div>
-                  <Badge variant="secondary">
+                  <span
+                    className={cn(
+                      'inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium',
+                      routeStatusColor === 'orange' &&
+                        'bg-orange-500/15 text-orange-700 dark:text-orange-300',
+                      routeStatusColor === 'green' &&
+                        'bg-green-500/15 text-green-700 dark:text-green-300',
+                      routeStatusColor === 'red' && 'bg-red-500/15 text-red-700 dark:text-red-300'
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        'h-1.5 w-1.5 rounded-full',
+                        routeStatusColor === 'orange' && 'bg-orange-500',
+                        routeStatusColor === 'green' && 'bg-green-500',
+                        routeStatusColor === 'red' && 'bg-red-500'
+                      )}
+                    />
                     {getFieldStatusLabel(route.status || 'pending')}
-                  </Badge>
+                  </span>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">

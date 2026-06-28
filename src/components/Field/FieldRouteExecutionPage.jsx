@@ -2,11 +2,11 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { useHideBottomNav } from '@/context/BottomNavContext';
+import { cn } from '@/lib/utils';
 import { RouteMapSection } from '@/components/Field/RouteMapSection';
 import { StopDetailDrawer } from '@/components/Field/StopDetailDrawer';
 import { StopsListDrawer } from '@/components/Field/StopsListDrawer';
@@ -18,6 +18,14 @@ import { useFieldRoute, useFieldRouteStopMutation } from '@/hooks/useFieldRoutes
 import { notify } from '@/lib/notifications';
 import { ArrowLeft, Loader2, MapPinned } from 'lucide-react';
 import { getFieldStatusLabel } from '@/components/Field/labels';
+
+function getRouteStatusColor(status) {
+  const normalized = typeof status === 'string' ? status.trim().toLowerCase() : status;
+  if (normalized === 'finished' || normalized === 'completed') return 'green';
+  if (normalized === 'incident' || normalized === 'cancelled' || normalized === 'canceled')
+    return 'red';
+  return 'orange';
+}
 
 function formatRouteDate(value) {
   if (!value) return 'Sin fecha';
@@ -199,7 +207,31 @@ export default function FieldRouteExecutionPage({ routeId }) {
             <p className="text-muted-foreground text-sm">{routeDateLabel}</p>
             <p className="text-muted-foreground text-sm">{route.description || 'Ruta operativa'}</p>
           </div>
-          <Badge variant="secondary">{getFieldStatusLabel(route.status || 'pending')}</Badge>
+          {(() => {
+            const routeStatusColor = getRouteStatusColor(route.status);
+            return (
+              <span
+                className={cn(
+                  'inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium',
+                  routeStatusColor === 'orange' &&
+                    'bg-orange-500/15 text-orange-700 dark:text-orange-300',
+                  routeStatusColor === 'green' &&
+                    'bg-green-500/15 text-green-700 dark:text-green-300',
+                  routeStatusColor === 'red' && 'bg-red-500/15 text-red-700 dark:text-red-300'
+                )}
+              >
+                <span
+                  className={cn(
+                    'h-1.5 w-1.5 rounded-full',
+                    routeStatusColor === 'orange' && 'bg-orange-500',
+                    routeStatusColor === 'green' && 'bg-green-500',
+                    routeStatusColor === 'red' && 'bg-red-500'
+                  )}
+                />
+                {getFieldStatusLabel(route.status || 'pending')}
+              </span>
+            );
+          })()}
         </div>
         <RouteMapSection
           routeGeometryError={routeGeometryError}

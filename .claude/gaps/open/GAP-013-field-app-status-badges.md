@@ -96,15 +96,22 @@ Verificar qué estados tienen cada entidad (ruta, parada) para asignar el color 
 
 ## Implementación
 
-> Rellena el Agente Implementador
-
 ### Archivos creados
+
+Ninguno.
 
 ### Archivos modificados
 
+- `src/components/Field/FieldRoutesListPage.jsx` — eliminado `Badge`, añadido `cn` + helper `getRouteStatusColor` + patrón inline con dot indicator
+- `src/components/Field/FieldRouteExecutionPage.jsx` — eliminado `Badge`, añadido `cn` + helper `getRouteStatusColor` + patrón inline con dot indicator
+
 ### Decisiones tomadas durante la implementación
 
-### Desviaciones del plan (si las hay)
+Color mapping para estados de ruta: finished/completed → verde, incident/cancelled/canceled → rojo, resto → naranja. Consistente con `getStatusColor` ya existente en `FieldOrdersPage.jsx`. En `FieldRouteExecutionPage` se usa IIFE para calcular el color dentro del JSX sin declarar variable antes del return.
+
+### Desviaciones del plan
+
+Ninguna.
 
 ---
 
