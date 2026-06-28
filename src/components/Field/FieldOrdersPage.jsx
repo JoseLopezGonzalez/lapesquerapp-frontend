@@ -9,9 +9,7 @@ import { EmptyState } from '@/components/Utilities/EmptyState';
 import { useFieldOrder, useFieldOrders } from '@/hooks/useFieldOrders';
 import { getFieldStatusLabel } from '@/components/Field/labels';
 import { formatDate } from '@/helpers/formats/dates/formatDates';
-import StatusBadge from '@/components/Admin/OrdersManager/StatusBadge';
 import { cn } from '@/lib/utils';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import { usePrintElement } from '@/hooks/usePrintElement';
 import AutoventaTicketPrint from '@/components/Comercial/Autoventa/AutoventaTicketPrint';
@@ -102,7 +100,6 @@ function FieldOrdersListSkeleton() {
 }
 
 function FieldOrderCard({ order, onClick, onQuickPrint }) {
-  const isMobile = useIsMobile();
   const orderId = String(order.id ?? '').padStart(5, '0');
   const customerName = order.customer?.name || 'Sin cliente';
   const { formattedDate, relativeLabel } = getDateMeta(order.loadDate);
@@ -169,91 +166,43 @@ function FieldOrderCard({ order, onClick, onQuickPrint }) {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        {isMobile ? (
-          <div className="flex w-full min-w-0 grow items-center gap-3 pt-2 pr-1">
-            <div className="min-w-0 flex-1 space-y-1">
-              <p className="truncate text-base leading-tight font-medium" title={customerName}>
-                {customerName}
-              </p>
-              <p className="text-muted-foreground text-sm tabular-nums">
-                #{orderId} · {formattedDate} · {totalBoxes} cajas · {totalNetWeight} kg
-              </p>
-              <div className="flex flex-wrap items-center gap-1.5">
+        <div className="flex w-full min-w-0 grow items-center gap-3 pt-2 pr-1">
+          <div className="min-w-0 flex-1 space-y-1">
+            <p className="truncate text-base leading-tight font-medium" title={customerName}>
+              {customerName}
+            </p>
+            <p className="text-muted-foreground text-sm tabular-nums">
+              #{orderId} · {formattedDate} · {totalBoxes} cajas · {totalNetWeight} kg
+            </p>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span
+                className={cn(
+                  'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium',
+                  statusColor === 'orange' &&
+                    'bg-orange-500/15 text-orange-700 dark:text-orange-300',
+                  statusColor === 'green' && 'bg-green-500/15 text-green-700 dark:text-green-300',
+                  statusColor === 'red' && 'bg-red-500/15 text-red-700 dark:text-red-300'
+                )}
+              >
                 <span
                   className={cn(
-                    'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium',
-                    statusColor === 'orange' &&
-                      'bg-orange-500/15 text-orange-700 dark:text-orange-300',
-                    statusColor === 'green' && 'bg-green-500/15 text-green-700 dark:text-green-300',
-                    statusColor === 'red' && 'bg-red-500/15 text-red-700 dark:text-red-300'
+                    'h-1.5 w-1.5 rounded-full',
+                    statusColor === 'orange' && 'bg-orange-500',
+                    statusColor === 'green' && 'bg-green-500',
+                    statusColor === 'red' && 'bg-red-500'
                   )}
-                >
-                  <span
-                    className={cn(
-                      'h-1.5 w-1.5 rounded-full',
-                      statusColor === 'orange' && 'bg-orange-500',
-                      statusColor === 'green' && 'bg-green-500',
-                      statusColor === 'red' && 'bg-red-500'
-                    )}
-                  />
-                  {statusLabel}
-                </span>
-                {order?.orderType === 'autoventa' ? (
-                  <span className="inline-flex items-center rounded-full border border-neutral-400/50 bg-neutral-500/15 px-2 py-0.5 text-[11px] font-medium text-neutral-700 dark:border-neutral-500/50 dark:text-neutral-300">
-                    Autoventa
-                  </span>
-                ) : null}
-              </div>
-            </div>
-            <div className="flex shrink-0 items-center gap-1 pt-2" />
-          </div>
-        ) : (
-          <div className="w-full max-w-xs grow space-y-2 sm:space-y-2 xl:max-w-none">
-            <div
-              className={cn(
-                'flex flex-wrap items-center gap-2',
-                relativeLabel && 'justify-between'
-              )}
-            >
-              <StatusBadge color={statusColor} label={statusLabel} />
-              {relativeLabel ? (
-                <span
-                  className="text-muted-foreground text-xs font-medium tabular-nums"
-                  title={formattedDate}
-                >
-                  {relativeLabel}
-                </span>
-              ) : null}
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-base font-medium">#{orderId}</h3>
+                />
+                {statusLabel}
+              </span>
               {order?.orderType === 'autoventa' ? (
                 <span className="inline-flex items-center rounded-full border border-neutral-400/50 bg-neutral-500/15 px-2 py-0.5 text-[11px] font-medium text-neutral-700 dark:border-neutral-500/50 dark:text-neutral-300">
                   Autoventa
                 </span>
               ) : null}
             </div>
-            <div>
-              <p className="truncate text-base font-medium" title={customerName}>
-                {customerName}
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-4">
-              <div>
-                <p className="text-muted-foreground mb-1 text-xs">Fecha de Carga</p>
-                <p className="text-sm font-medium">{formattedDate}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground mb-1 text-xs">Cajas</p>
-                <p className="text-sm font-medium">{totalBoxes}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground mb-1 text-xs">Peso neto</p>
-                <p className="text-sm font-medium">{totalNetWeight} kg</p>
-              </div>
-            </div>
           </div>
-        )}
+          <div className="flex shrink-0 items-center gap-1 pt-2" />
+        </div>
       </CardContent>
     </Card>
   );

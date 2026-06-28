@@ -82,15 +82,21 @@ Si `FieldOrderCard` es un componente exclusivamente mobile (por su ubicación y 
 
 ## Implementación
 
-> Rellena el Agente Implementador
-
 ### Archivos creados
+
+Ninguno.
 
 ### Archivos modificados
 
+- `src/components/Field/FieldOrdersPage.jsx` — eliminado `useIsMobile` y el condicional de render mobile/desktop; `FieldOrderCard` renderiza siempre la variante mobile. Eliminados imports de `useIsMobile` y `StatusBadge` (solo usada en la rama desktop eliminada).
+
 ### Decisiones tomadas durante la implementación
 
+`FieldOrderCard` se usa exclusivamente en el Field App (módulo mobile-first para repartidores). La rama desktop nunca se alcanza en uso real. Se eliminó el condicional completo en lugar de añadir `useIsMobileSafe`, que es la solución más limpia y sin overhead de hook.
+
 ### Desviaciones del plan (si las hay)
+
+En lugar de reemplazar `useIsMobile` por `useIsMobileSafe`, se eliminó el condicional de render completo (opción más limpia mencionada en la solución acordada del GAP).
 
 ---
 
