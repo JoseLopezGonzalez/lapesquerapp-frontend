@@ -7,6 +7,7 @@ import { ArrowLeft, ArrowRight, Check, Loader2, PackageOpen, Save } from 'lucide
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/Utilities/EmptyState';
+import { useHideBottomNav } from '@/context/BottomNavContext';
 import Step2QRScan from '@/components/Comercial/Autoventa/Step2QRScan';
 import Step3Pricing from '@/components/Comercial/Autoventa/Step3Pricing';
 import { useFieldOrder, useFieldOrderMutations } from '@/hooks/useFieldOrders';
@@ -72,6 +73,7 @@ function FieldOrderExecutionSkeleton() {
 }
 
 export default function FieldOrderExecutionPage({ orderId }) {
+  useHideBottomNav(true);
   const router = useRouter();
   const { data: order, isLoading, errorMessage } = useFieldOrder(orderId);
   const { updateOrder, isUpdating } = useFieldOrderMutations();

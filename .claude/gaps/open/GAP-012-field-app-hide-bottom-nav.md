@@ -84,15 +84,23 @@ El hook ya existe en `@/hooks/useHideBottomNav` (o similar — verificar path ex
 
 ## Implementación
 
-> Rellena el Agente Implementador
-
 ### Archivos creados
+
+Ninguno.
 
 ### Archivos modificados
 
+- `src/components/Field/FieldRouteExecutionPage.jsx` — añadido `useHideBottomNav(true)` + import desde `@/context/BottomNavContext`
+- `src/components/Field/FieldOrderExecutionPage.jsx` — añadido `useHideBottomNav(true)` + import
+- `src/components/Field/FieldAutoventaWizard.jsx` — añadido `useHideBottomNav(true)` + import
+
 ### Decisiones tomadas durante la implementación
 
-### Desviaciones del plan (si las hay)
+Hook ubicado como primera llamada del componente, antes de cualquier otro hook o lógica.
+
+### Desviaciones del plan
+
+Ninguna.
 
 ---
 

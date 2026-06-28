@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/Utilities/EmptyState';
+import { useHideBottomNav } from '@/context/BottomNavContext';
 import { RouteMapSection } from '@/components/Field/RouteMapSection';
 import { StopDetailDrawer } from '@/components/Field/StopDetailDrawer';
 import { StopsListDrawer } from '@/components/Field/StopsListDrawer';
@@ -53,6 +54,7 @@ function FieldRouteExecutionSkeleton() {
 }
 
 export default function FieldRouteExecutionPage({ routeId }) {
+  useHideBottomNav(true);
   const router = useRouter();
   const [selectedStop, setSelectedStop] = useState(null);
   const [resultType, setResultType] = useState('delivery');

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { notify } from '@/lib/notifications';
 import { ApiError } from '@/lib/api/apiHelpers';
+import { useHideBottomNav } from '@/context/BottomNavContext';
 import { getFieldProductsOptions } from '@/services/fieldOperatorService';
 import { useFieldOrderMutations } from '@/hooks/useFieldOrders';
 import { useFieldAutoventa } from '@/hooks/useFieldAutoventa';
@@ -29,6 +30,7 @@ const STEPS = [
 ];
 
 export default function FieldAutoventaWizard() {
+  useHideBottomNav(true);
   const router = useRouter();
   const searchParams = useSearchParams();
   const { createAutoventa } = useFieldOrderMutations();
