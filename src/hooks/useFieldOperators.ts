@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 import { fieldOperatorAdminService } from '@/services/domain/field-operators/fieldOperatorService';
+import type { CatalogListResponse } from '@/types/catalog';
 
 type UseFieldOperatorsParams = {
   filters?: Record<string, unknown>;
@@ -16,9 +17,9 @@ type MutationPayload = Record<string, unknown>;
 export function useFieldOperators(params: UseFieldOperatorsParams = {}) {
   const { filters = {}, page = 1, perPage = 12, enabled = true } = params;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
-  const query = useQuery<any>({
+  const query = useQuery<CatalogListResponse<Record<string, unknown>>>({
     queryKey: ['field-operators', 'list', tenantId ?? 'unknown', filters, page, perPage],
-    queryFn: () => fieldOperatorAdminService.list(filters, { page, perPage }),
+    queryFn: () => fieldOperatorAdminService.list(filters, { page, perPage }) as Promise<CatalogListResponse<Record<string, unknown>>>,
     enabled: Boolean(tenantId) && enabled,
   });
 
