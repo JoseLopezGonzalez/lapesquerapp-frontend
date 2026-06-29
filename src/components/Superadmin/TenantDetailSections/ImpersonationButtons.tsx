@@ -32,7 +32,11 @@ function openTenantWithToken(subdomain: string, accessToken: string) {
   });
 }
 
-export default function ImpersonationButtons({ tenantId, tenantSubdomain, user }: ImpersonationButtonsProps) {
+export default function ImpersonationButtons({
+  tenantId,
+  tenantSubdomain,
+  user,
+}: ImpersonationButtonsProps) {
   // Silent flow
   const [silentOpen, setSilentOpen] = useState(false);
   const [silentReason, setSilentReason] = useState('');
@@ -60,7 +64,10 @@ export default function ImpersonationButtons({ tenantId, tenantSubdomain, user }
       if (subdomain && data.access_token) {
         openTenantWithToken(subdomain, data.access_token);
       } else {
-        notify.success({ title: 'Sesión iniciada', description: 'No se pudo construir la URL del tenant.' });
+        notify.success({
+          title: 'Sesión iniciada',
+          description: 'No se pudo construir la URL del tenant.',
+        });
       }
     } catch (err) {
       notify.error({ title: (err as Error).message || 'Error al acceder' });
@@ -105,10 +112,15 @@ export default function ImpersonationButtons({ tenantId, tenantSubdomain, user }
       if (subdomain && data.access_token) {
         openTenantWithToken(subdomain, data.access_token);
       } else {
-        notify.success({ title: 'Token generado', description: 'No se pudo construir la URL del tenant.' });
+        notify.success({
+          title: 'Token generado',
+          description: 'No se pudo construir la URL del tenant.',
+        });
       }
     } catch (err) {
-      notify.error({ title: (err as Error).message || 'El acceso aún no fue aprobado o la solicitud expiró.' });
+      notify.error({
+        title: (err as Error).message || 'El acceso aún no fue aprobado o la solicitud expiró.',
+      });
     } finally {
       setLoading(false);
     }
@@ -120,7 +132,10 @@ export default function ImpersonationButtons({ tenantId, tenantSubdomain, user }
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => { setConsentReason(''); setConsentOpen(true); }}
+        onClick={() => {
+          setConsentReason('');
+          setConsentOpen(true);
+        }}
         disabled={loading}
         title="Solicitar acceso con consentimiento del administrador"
       >
@@ -132,7 +147,10 @@ export default function ImpersonationButtons({ tenantId, tenantSubdomain, user }
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => { setSilentReason(''); setSilentOpen(true); }}
+        onClick={() => {
+          setSilentReason('');
+          setSilentOpen(true);
+        }}
         disabled={loading}
         title="Acceso directo (silencioso, queda auditado)"
       >
@@ -163,7 +181,10 @@ export default function ImpersonationButtons({ tenantId, tenantSubdomain, user }
       <Dialog
         open={silentOpen}
         onOpenChange={(open) => {
-          if (!open) { setSilentOpen(false); setSilentReason(''); }
+          if (!open) {
+            setSilentOpen(false);
+            setSilentReason('');
+          }
         }}
       >
         <DialogContent>
@@ -193,7 +214,10 @@ export default function ImpersonationButtons({ tenantId, tenantSubdomain, user }
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => { setSilentOpen(false); setSilentReason(''); }}
+              onClick={() => {
+                setSilentOpen(false);
+                setSilentReason('');
+              }}
               disabled={loading}
             >
               Cancelar
@@ -209,7 +233,10 @@ export default function ImpersonationButtons({ tenantId, tenantSubdomain, user }
       <Dialog
         open={consentOpen}
         onOpenChange={(open) => {
-          if (!open) { setConsentOpen(false); setConsentReason(''); }
+          if (!open) {
+            setConsentOpen(false);
+            setConsentReason('');
+          }
         }}
       >
         <DialogContent>
@@ -217,7 +244,7 @@ export default function ImpersonationButtons({ tenantId, tenantSubdomain, user }
             <DialogTitle>Solicitar acceso con consentimiento</DialogTitle>
             <DialogDescription>
               Se enviará un correo a <strong>{user.name}</strong> ({user.email}) para que apruebe o
-              rechace el acceso. Cuando lo apruebe, aparecerá el botón "Usar token".
+              rechace el acceso. Cuando lo apruebe, aparecerá el botón &quot;Usar token&quot;.
             </DialogDescription>
           </DialogHeader>
           <div className="grid w-full gap-1.5">
@@ -236,7 +263,10 @@ export default function ImpersonationButtons({ tenantId, tenantSubdomain, user }
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => { setConsentOpen(false); setConsentReason(''); }}
+              onClick={() => {
+                setConsentOpen(false);
+                setConsentReason('');
+              }}
               disabled={loading}
             >
               Cancelar
