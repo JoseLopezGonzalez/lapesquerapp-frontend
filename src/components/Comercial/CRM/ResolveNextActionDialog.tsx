@@ -122,7 +122,7 @@ export default function ResolveNextActionDialog({
 
   const visibleStrategyOptions = useMemo(() => {
     const allowed = getAllowedStrategies(Boolean(pending));
-    return strategyOptions.filter((item) => allowed.includes(item.value));
+    return strategyOptions.filter((item) => allowed.includes(item.value as ResolveNextActionStrategy));
   }, [pending]);
 
   // Reglas por estrategia alineadas con el backend
