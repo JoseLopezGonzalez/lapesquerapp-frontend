@@ -54,7 +54,7 @@ export async function getReceptionChartData(
     `${API_URL_V2}raw-material-receptions/reception-chart-data?${query.toString()}`,
     {
       method: 'GET',
-      headers: { 'User-Agent': getUserAgent() },
+      headers: { Authorization: `Bearer ${token}`, 'User-Agent': getUserAgent() },
     }
   );
 
