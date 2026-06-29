@@ -4,9 +4,19 @@
  */
 
 import { fetchWithTenant } from '@/lib/fetchWithTenant';
+import { getAuthToken } from '@/lib/auth/getAuthToken';
 import { API_URL_V2 } from '@/configs/config';
 import { getErrorMessage } from '@/lib/api/apiHelpers';
 import { getUserAgent } from '@/lib/utils/getUserAgent';
+
+async function authHeaders(): Promise<Record<string, string>> {
+  const token = await getAuthToken();
+  return {
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+    'User-Agent': getUserAgent(),
+  };
+}
 
 export interface StockByProductItem {
   id: number;
@@ -28,7 +38,7 @@ export interface GetStoresResponse {
 export async function getStore(id: number | string): Promise<unknown> {
   const response = await fetchWithTenant(`${API_URL_V2}stores/${id}`, {
     method: 'GET',
-    headers: { 'User-Agent': getUserAgent() },
+    headers: await authHeaders(),
   });
 
   if (!response.ok) {
@@ -44,7 +54,7 @@ export async function getStores(page = 1): Promise<GetStoresResponse> {
   const url = `${API_URL_V2}stores?page=${page}&perPage=6`;
   const response = await fetchWithTenant(url, {
     method: 'GET',
-    headers: { 'User-Agent': getUserAgent() },
+    headers: await authHeaders(),
   });
 
   if (!response.ok) {
@@ -63,10 +73,7 @@ export async function getStores(page = 1): Promise<GetStoresResponse> {
 export async function getStoreOptions(): Promise<unknown> {
   const response = await fetchWithTenant(`${API_URL_V2}stores/options`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'User-Agent': getUserAgent(),
-    },
+    headers: await authHeaders(),
   });
 
   if (!response.ok) {
@@ -80,7 +87,7 @@ export async function getStoreOptions(): Promise<unknown> {
 export async function getTotalStockStats(): Promise<unknown> {
   const response = await fetchWithTenant(`${API_URL_V2}statistics/stock/total`, {
     method: 'GET',
-    headers: { 'User-Agent': getUserAgent() },
+    headers: await authHeaders(),
   });
 
   if (!response.ok) {
@@ -94,7 +101,7 @@ export async function getTotalStockStats(): Promise<unknown> {
 export async function getStockBySpeciesStats(): Promise<unknown> {
   const response = await fetchWithTenant(`${API_URL_V2}statistics/stock/total-by-species`, {
     method: 'GET',
-    headers: { 'User-Agent': getUserAgent() },
+    headers: await authHeaders(),
   });
 
   if (!response.ok) {
@@ -108,7 +115,7 @@ export async function getStockBySpeciesStats(): Promise<unknown> {
 export async function getStockByProducts(): Promise<ApiListResponse<StockByProductItem>> {
   const response = await fetchWithTenant(`${API_URL_V2}stores/total-stock-by-products`, {
     method: 'GET',
-    headers: { 'User-Agent': getUserAgent() },
+    headers: await authHeaders(),
   });
 
   if (!response.ok) {
@@ -122,7 +129,7 @@ export async function getStockByProducts(): Promise<ApiListResponse<StockByProdu
 export async function getRegisteredPallets(): Promise<unknown> {
   const response = await fetchWithTenant(`${API_URL_V2}pallets/registered`, {
     method: 'GET',
-    headers: { 'User-Agent': getUserAgent() },
+    headers: await authHeaders(),
   });
 
   if (!response.ok) {
