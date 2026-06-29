@@ -8,16 +8,16 @@ SaaS multi-tenant ERP para el sector pesquero y de congelados. Cubre módulos de
 
 Read these before starting any work in the relevant area:
 
-| File | When to read |
-|---|---|
-| `.claude/design-context.md` | **Mandatory before implementing any UI.** Contains the visual and UX criteria extracted from the codebase. Kept current by the `/ui-feedback` skill. |
-| `.claude/project-learnings.md` | **Mandatory before any audit, GAP, or implementation.** Institutional memory — PesquerApp-specific rules, patterns, and corrections discovered over time. Maintained by `system-learner`. |
-| `.claude/rules/typescript.md` | All TypeScript work — interfaces, types, strict mode rules |
-| `.claude/rules/components.md` | All React component work — structure, patterns, naming |
-| `.claude/rules/hooks.md` | All hook work — TanStack Query, mutations, staleTime |
-| `.claude/rules/api-client.md` | All service / HTTP work — fetchWithTenant, helpers |
-| `.claude/rules/testing.md` | All test work — Vitest patterns, mocking |
-| `.claude/skills/mobile-ui/SKILL.md` | All mobile UI work — hooks, tokens, layout shell |
+| File                                | When to read                                                                                                                                                                              |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.claude/design-context.md`         | **Mandatory before implementing any UI.** Contains the visual and UX criteria extracted from the codebase. Kept current by the `/ui-feedback` skill.                                      |
+| `.claude/project-learnings.md`      | **Mandatory before any audit, GAP, or implementation.** Institutional memory — PesquerApp-specific rules, patterns, and corrections discovered over time. Maintained by `system-learner`. |
+| `.claude/rules/typescript.md`       | All TypeScript work — interfaces, types, strict mode rules                                                                                                                                |
+| `.claude/rules/components.md`       | All React component work — structure, patterns, naming                                                                                                                                    |
+| `.claude/rules/hooks.md`            | All hook work — TanStack Query, mutations, staleTime                                                                                                                                      |
+| `.claude/rules/api-client.md`       | All service / HTTP work — fetchWithTenant, helpers                                                                                                                                        |
+| `.claude/rules/testing.md`          | All test work — Vitest patterns, mocking                                                                                                                                                  |
+| `.claude/skills/mobile-ui/SKILL.md` | All mobile UI work — hooks, tokens, layout shell                                                                                                                                          |
 
 ---
 
@@ -160,6 +160,7 @@ src/context/SuperadminAuthContext.jsx
 ```
 
 **Por qué es una excepción válida:**
+
 - El superadmin no pertenece a ningún tenant: no existe `X-Tenant` que inyectar.
 - Usa autenticación propia (JWT de superadmin, distinto al JWT de NextAuth).
 - `fetchWithTenant` asumiría un contexto multi-tenant que aquí no aplica.
@@ -333,30 +334,30 @@ Para documentación extendida, ver `docs/ai-context/`. Para reglas específicas 
 
 ### Agentes disponibles en `.claude/agents/`
 
-| Agente | Rol | Se activa cuando |
-|---|---|---|
-| `gap-discovery` | Tech lead — convierte ideas en GAPs verificables | Jose describe un problema, mejora o feature |
-| `gap-implementor` | Desarrollador senior — ejecuta exactamente lo que el GAP describe | Jose confirma un GAP para implementar |
-| `gap-auditor` | Senior engineer independiente — veredicto técnico + visual + invoca UX Reviewer | El Implementador termina |
-| `ux-reviewer` | UX specialist — simula flujos reales, identifica fricción, bloquea cierre por fallos UX | Invocado por el Auditor tras revisión técnica + visual. Full (flujos complejos) / Light (cambios menores) |
-| `frontend-developer` | Desarrollador frontend generalista | Tareas de desarrollo que no siguen el flujo GAP |
-| `mobile-ui-agent` | Especialista en UI mobile | Trabajo en vistas mobile con `/mobile` |
-| `ui-audit-agent` | Auditor autónomo de UI — recorre vistas, genera findings, convierte en GAPs | Invocado por `/audit-mobile` o `/audit-desktop` |
-| `system-learner` | Memoria institucional — traduce hallazgos y correcciones en reglas permanentes en `project-learnings.md` | Invocado por el Auditor, UX Reviewer, o Jose |
-| `code-audit-agent` | Auditor técnico autónomo — calidad de código, deuda de migración y arquitectura React/Next.js. Nunca evalúa UI/UX. | Invocado por `/audit-code [quality\|migrate\|arch]` |
-| `code-reviewer` | Revisor de código independiente | Revisión de PRs y diffs |
-| `db-architect` | Arquitecto de base de datos | Cambios de esquema o modelos |
+| Agente               | Rol                                                                                                                | Se activa cuando                                                                                          |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| `gap-discovery`      | Tech lead — convierte ideas en GAPs verificables                                                                   | Jose describe un problema, mejora o feature                                                               |
+| `gap-implementor`    | Desarrollador senior — ejecuta exactamente lo que el GAP describe                                                  | Jose confirma un GAP para implementar                                                                     |
+| `gap-auditor`        | Senior engineer independiente — veredicto técnico + visual + invoca UX Reviewer                                    | El Implementador termina                                                                                  |
+| `ux-reviewer`        | UX specialist — simula flujos reales, identifica fricción, bloquea cierre por fallos UX                            | Invocado por el Auditor tras revisión técnica + visual. Full (flujos complejos) / Light (cambios menores) |
+| `frontend-developer` | Desarrollador frontend generalista                                                                                 | Tareas de desarrollo que no siguen el flujo GAP                                                           |
+| `mobile-ui-agent`    | Especialista en UI mobile                                                                                          | Trabajo en vistas mobile con `/mobile`                                                                    |
+| `ui-audit-agent`     | Auditor autónomo de UI — recorre vistas, genera findings, convierte en GAPs                                        | Invocado por `/audit-mobile` o `/audit-desktop`                                                           |
+| `system-learner`     | Memoria institucional — traduce hallazgos y correcciones en reglas permanentes en `project-learnings.md`           | Invocado por el Auditor, UX Reviewer, o Jose                                                              |
+| `code-audit-agent`   | Auditor técnico autónomo — calidad de código, deuda de migración y arquitectura React/Next.js. Nunca evalúa UI/UX. | Invocado por `/audit-code [quality\|migrate\|arch]`                                                       |
+| `code-reviewer`      | Revisor de código independiente                                                                                    | Revisión de PRs y diffs                                                                                   |
+| `db-architect`       | Arquitecto de base de datos                                                                                        | Cambios de esquema o modelos                                                                              |
 
 ### Slash commands disponibles
 
-| Comando | Agente | Descripción |
-|---|---|---|
-| `/audit-mobile` | `ui-audit-agent` | Auditoría UI de vistas mobile |
-| `/audit-desktop` | `ui-audit-agent` | Auditoría UI de vistas desktop |
-| `/audit-code quality` | `code-audit-agent` | Violaciones de calidad de código y reglas |
-| `/audit-code migrate` | `code-audit-agent` | Candidatos JS→TS y patrones deprecated |
-| `/audit-code arch` | `code-audit-agent` | Problemas arquitectónicos React/Next.js |
-| `/audit-code [mode] [module]` | `code-audit-agent` | Scope reducido a un módulo específico |
+| Comando                       | Agente             | Descripción                               |
+| ----------------------------- | ------------------ | ----------------------------------------- |
+| `/audit-mobile`               | `ui-audit-agent`   | Auditoría UI de vistas mobile             |
+| `/audit-desktop`              | `ui-audit-agent`   | Auditoría UI de vistas desktop            |
+| `/audit-code quality`         | `code-audit-agent` | Violaciones de calidad de código y reglas |
+| `/audit-code migrate`         | `code-audit-agent` | Candidatos JS→TS y patrones deprecated    |
+| `/audit-code arch`            | `code-audit-agent` | Problemas arquitectónicos React/Next.js   |
+| `/audit-code [mode] [module]` | `code-audit-agent` | Scope reducido a un módulo específico     |
 
 ---
 
@@ -367,11 +368,13 @@ Para documentación extendida, ver `docs/ai-context/`. Para reglas específicas 
 Claude Code determines the working context automatically at the start of every session:
 
 **LOCAL context** — All of the following are true:
+
 - The project filesystem is accessible (`src/`, `.claude/`, `package.json` exist and are readable)
 - A `.git` directory is present at the project root
 - Claude Code is running via an editor extension (Cursor, VS Code, etc.)
 
 **CLOUD context** — Any of the following:
+
 - The project filesystem is NOT accessible
 - No `.git` directory is present
 - Claude Code is running in a sandboxed or remote environment (Claude.ai mobile, web)
@@ -384,6 +387,7 @@ context. No need to inform the user unless the context affects an action being r
 ### LOCAL context rules
 
 Claude Code NEVER runs git commands that modify repository state:
+
 - No: `git commit`, `git push`, `git branch`, `git checkout -b`, `git merge`, `git rebase`
 - Yes (read-only): `git status`, `git log`, `git diff` — only if needed for context
 
@@ -413,3 +417,83 @@ Full git workflow is available and expected:
 
 **Why:** In cloud context (Claude.ai mobile) the user is not watching file changes
 in real time. Git operations are the primary way to structure and deliver work.
+
+---
+
+## GIT POLICY — PROTOCOLO OBLIGATORIO PRE-PUSH
+
+### Regla absoluta antes de cualquier `git push`
+
+**PASO 1** — Verificar que node_modules existe:
+
+```bash
+ls node_modules/.bin/next 2>/dev/null && echo "OK" || echo "INSTALAR"
+```
+
+Si no existe:
+
+```bash
+npm ci
+```
+
+**PASO 2** — Ejecutar type-check completo y leer TODO el output:
+
+```bash
+npm run type-check 2>&1
+```
+
+- Si hay errores → **NO hacer push**. Leer TODOS los errores de golpe, agruparlos por fichero, corregirlos TODOS en el mismo turno, y volver al Paso 2.
+- Si el output es limpio (exit 0) → continuar al Paso 3.
+
+**PASO 3** — Solo entonces hacer `git push`.
+
+### Regla: NUNCA corregir un error de TypeScript en commit individual
+
+Cuando hay múltiples errores de tipos en un fichero, el agente DEBE:
+
+1. Leer el output completo de `npm run type-check 2>&1` (no solo el primer error)
+2. Identificar TODOS los errores del fichero afectado
+3. Corregirlos TODOS en un único commit
+4. Volver a ejecutar type-check hasta que sea limpio
+5. Entonces hacer push
+
+**Nunca**: un commit por error. Eso genera la cascada de deploys fallidos.
+
+### Regla: alias de paths
+
+El alias correcto en este proyecto es siempre `@/` (con barra).
+
+- ✅ `import { X } from '@/lib/utils'`
+- ❌ `import { X } from '@lib/utils'`
+- ❌ `import { X } from '@lib/'`
+
+Antes de cualquier import nuevo, verificar `tsconfig.json paths`.
+
+### Regla: commits de documentación
+
+Los commits de documentación (`.claude/gaps/`, `project-learnings.md`, etc.) van **siempre en el mismo commit** que el código al que corresponden. Nunca en commits separados.
+
+**Mal**: commit de código → commit de doc → dos deploys fallidos o superfluos.
+**Bien**: un único commit con código + doc juntos.
+
+### Protocolo cuando Vercel reporta un error de build
+
+Si el usuario pega un error de Vercel build log:
+
+1. Pedir el **log completo** (desde el principio, no solo el último error visible)
+2. Extraer TODOS los errores del log de una vez
+3. Agrupar por fichero
+4. Corregir todos en el mismo turno
+5. Ejecutar `npm run type-check` localmente para confirmar
+6. Un único commit con todos los fixes
+
+### Regla: migraciones .jsx → .tsx
+
+Las migraciones de JavaScript a TypeScript son operaciones de alto riesgo.
+Antes de migrar CUALQUIER fichero `.jsx` a `.tsx`:
+
+1. Ejecutar `npm run type-check 2>&1` para tener el baseline actual
+2. Migrar el fichero
+3. Ejecutar `npm run type-check 2>&1` inmediatamente
+4. Resolver TODOS los errores nuevos antes de pasar al siguiente fichero
+5. NUNCA migrar múltiples ficheros .jsx→.tsx en el mismo commit si generan errores
