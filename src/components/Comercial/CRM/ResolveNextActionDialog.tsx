@@ -256,10 +256,10 @@ export default function ResolveNextActionDialog({
                 </div>
                 <div className="min-w-0 space-y-0.5">
                   <p className="text-xs font-medium text-amber-700 dark:text-amber-400">
-                    {formatDateValue(pending.scheduledAt)}
+                    {formatDateValue(pending?.scheduledAt)}
                   </p>
-                  {pending.description && (
-                    <p className="text-foreground text-sm leading-snug">{pending.description}</p>
+                  {pending?.description && (
+                    <p className="text-foreground text-sm leading-snug">{pending?.description}</p>
                   )}
                 </div>
               </button>
