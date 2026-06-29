@@ -64,9 +64,7 @@ export default function GlobalFeatureFlagsTable() {
         method: 'PUT',
         body: JSON.stringify({ enabled: newValue }),
       });
-      setFlags((prev) =>
-        prev.map((f) => (f.key === flag.key ? { ...f, enabled: newValue } : f))
-      );
+      setFlags((prev) => prev.map((f) => (f.key === flag.key ? { ...f, enabled: newValue } : f)));
       notify.success({
         title: `Flag ${newValue ? 'activada' : 'desactivada'}`,
         description: flag.key,
@@ -97,8 +95,8 @@ export default function GlobalFeatureFlagsTable() {
         <CardHeader>
           <CardTitle className="text-sm">Flags del sistema</CardTitle>
           <CardDescription>
-            Los cambios aquí afectan a los valores por defecto de nuevos tenants. Los overrides
-            por tenant se gestionan desde la pestaña "Feature Flags" del detalle del tenant.
+            Los cambios aquí afectan a los valores por defecto de nuevos tenants. Los overrides por
+            tenant se gestionan desde la pestaña &quot;Feature Flags&quot; del detalle del tenant.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0">
@@ -149,10 +147,7 @@ export default function GlobalFeatureFlagsTable() {
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
                       {flag.plan ? (
-                        <Badge
-                          variant="outline"
-                          className={PLAN_COLORS[flag.plan] || ''}
-                        >
+                        <Badge variant="outline" className={PLAN_COLORS[flag.plan] || ''}>
                           {flag.plan}
                         </Badge>
                       ) : (
