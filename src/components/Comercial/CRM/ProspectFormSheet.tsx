@@ -84,7 +84,7 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
     setValue,
     watch,
     formState: { errors },
-  } = useForm({
+  } = useForm<ProspectFormValues>({
     resolver: zodResolver(prospectSchema),
     defaultValues: getDefaultProspectFormValues(),
     mode: 'onTouched',
