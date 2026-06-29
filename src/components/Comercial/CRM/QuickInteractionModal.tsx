@@ -30,6 +30,7 @@ import {
   type QuickInteractionFormValues,
 } from './schemas/quickInteractionFormSchema';
 import { crmAiService } from '@/services/crmAiService';
+import type { CommercialInteractionType, CommercialInteractionResult } from '@/types/crm';
 
 interface ToggleOption { value: string; label: string }
 function ToggleGroup({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: ToggleOption[] }) {
@@ -170,10 +171,10 @@ function QuickInteractionModalInner({
       ...(prospectId ? { prospectId } : {}),
       ...(customerId ? { customerId } : {}),
       ...(agendaActionId ? { agendaActionId } : {}),
-      type: values.type,
+      type: values.type as CommercialInteractionType,
       occurredAt: values.occurredAt.toISOString(),
       summary: values.summary.trim().slice(0, CRM_INTERACTION_SUMMARY_MAX_LENGTH),
-      result: values.result,
+      result: values.result as CommercialInteractionResult,
       nextActionNote: null,
       nextActionAt: null,
     };
