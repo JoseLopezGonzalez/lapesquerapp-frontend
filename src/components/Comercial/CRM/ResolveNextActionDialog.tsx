@@ -71,7 +71,7 @@ function getAllowedStrategies(hasPending: boolean): string[] {
 interface ResolveNextActionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  targetType: string;
+  targetType: 'customer' | 'prospect';
   targetId: string | number;
   sourceInteractionId?: string | number | null;
   onViewAction?: ((action: unknown) => void) | null;
