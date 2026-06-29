@@ -32,7 +32,7 @@ export function getProspectFormSchema(isEditing: boolean) {
       address: z.string().max(10000, 'Máximo 10.000 caracteres'),
       website: z.string().max(512, 'Máximo 512 caracteres'),
       countryId: z.string().min(1, 'Selecciona un país'),
-      categoryId: z.string().trim().optional().catch(''),
+      categoryId: z.string().trim().optional(),
       origin: z
         .string()
         .min(1, 'Selecciona un origen')
