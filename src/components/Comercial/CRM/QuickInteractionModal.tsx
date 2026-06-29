@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, type FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CalendarCheck2, Loader2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -27,6 +27,7 @@ import { CRM_INTERACTION_SUMMARY_MAX_LENGTH } from './schemas/crmTextLimits';
 import {
   getQuickInteractionDefaultValues,
   getQuickInteractionFormSchema,
+  type QuickInteractionFormValues,
 } from './schemas/quickInteractionFormSchema';
 import { crmAiService } from '@/services/crmAiService';
 
@@ -94,7 +95,7 @@ function QuickInteractionModalInner({
     setValue,
     watch,
     formState: { errors },
-  } = useForm({
+  } = useForm<QuickInteractionFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: getQuickInteractionDefaultValues({
       isCompleteMode,
@@ -154,7 +155,7 @@ function QuickInteractionModalInner({
     return getAgendaDomainErrorMessage(error, 'La agenda no aceptó la operación solicitada.');
   };
 
-  const onValidSubmit = async (values) => {
+  const onValidSubmit = async (values: QuickInteractionFormValues) => {
     if (!prospectId && !customerId) {
       notify.error({ title: 'No se ha encontrado el destino de la interacción' });
       return;
@@ -192,13 +193,16 @@ function QuickInteractionModalInner({
       }
       onOpenChange(false);
     } catch (err) {
-      if (err instanceof ApiError && err.status === 422 && err.data?.errors) {
-        setErrorsFrom422(setError, err.data.errors);
+      if (err instanceof ApiError && err.status === 422) {
+        const errorData = err.data as { errors?: Record<string, string[]> };
+        if (errorData?.errors) {
+          setErrorsFrom422(setError, errorData.errors);
+        }
       }
     }
   };
 
-  const onInvalidSubmit = (formErrors) => {
+  const onInvalidSubmit = (formErrors: FieldErrors<QuickInteractionFormValues>) => {
     const n = Object.keys(formErrors).length;
     notify.error({
       title: 'Revisa el formulario',
