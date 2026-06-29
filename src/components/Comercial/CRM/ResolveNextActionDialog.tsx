@@ -310,7 +310,7 @@ export default function ResolveNextActionDialog({
               {requiresDate && (
                 <div className="grid gap-2">
                   <Label>Fecha</Label>
-                  <DatePicker date={nextActionAt} onChange={setNextActionAt} formatStyle="short" />
+                  <DatePicker id="next-action-at" date={nextActionAt} onChange={setNextActionAt} formatStyle="short" />
                 </div>
               )}
 

@@ -288,6 +288,7 @@ function QuickInteractionModalInner({
               control={control}
               render={({ field }) => (
                 <DatePicker
+                  id="occurred-at"
                   date={field.value ?? null}
                   onChange={field.onChange}
                   formatStyle="short"
