@@ -13,7 +13,8 @@
     "generate-generic-icons": "node scripts/generate-generic-icons.js",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "type-check": "tsc --noEmit 2>&1"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [

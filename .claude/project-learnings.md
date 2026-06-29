@@ -1,4 +1,5 @@
 # PesquerApp — Project Learnings
+
 > This file is maintained exclusively by the system-learner agent.
 > Do not edit manually unless correcting an error.
 > Last updated: 2026-06-27
@@ -7,6 +8,7 @@
 ## How this file works
 
 Every entry has:
+
 - **ID:** PL-NNN (sequential, never reused)
 - **Date discovered**
 - **Source:** which agent or correction triggered this
@@ -15,6 +17,7 @@ Every entry has:
 - **Entry:** the actual rule, pattern, or finding
 
 **Agents that must read this file before working:**
+
 - `gap-discovery` (before writing any GAP)
 - `gap-auditor` (before running any checklist)
 - `ux-reviewer` (before simulating any flow)
@@ -25,6 +28,7 @@ Every entry has:
 ---
 
 ## AUDIT_RULES
+
 > Rules the auditor must actively check for — discovered through experience, not preset.
 > These extend the checklists in gap-auditor.md and design-context.md.
 
@@ -33,10 +37,12 @@ Every entry has:
 ---
 
 ## CODEBASE_PATTERNS
+
 > How this specific project does things. Discovered by reading the actual codebase.
 > These are facts about PesquerApp, not general best practices.
 
 ### PL-005
+
 - **Date:** 2026-06-27
 - **Source:** Codebase audit Phase 1 (v2.0 upgrade)
 - **Category:** CODEBASE_PATTERN
@@ -47,6 +53,7 @@ Every entry has:
   backdrop-blur-sm processing overlay, and standardized empty/error states.
 
 ### PL-006
+
 - **Date:** 2026-06-27
 - **Source:** Codebase audit Phase 1 (v2.0 upgrade)
 - **Category:** CODEBASE_PATTERN
@@ -60,10 +67,12 @@ Every entry has:
 ---
 
 ## ANTI_PATTERNS
+
 > Mistakes found in the codebase, recurring errors, things that must not be repeated.
 > Each entry includes the files where the anti-pattern was found.
 
 ### PL-001
+
 - **Date:** 2026-06-27
 - **Source:** GAP-004 audit (useOrderDocuments)
 - **Category:** ANTI_PATTERN
@@ -75,6 +84,7 @@ Every entry has:
 - **Status:** Still live in production. No follow-up GAP exists.
 
 ### PL-002
+
 - **Date:** 2026-06-27
 - **Source:** GAP-008 audit (LoginFormContent.tsx)
 - **Category:** ANTI_PATTERN
@@ -86,6 +96,7 @@ Every entry has:
 - **Status:** Still live in production. No follow-up GAP exists.
 
 ### PL-003
+
 - **Date:** 2026-06-27
 - **Source:** GAP-007 audit (entitiesConfig split)
 - **Category:** ANTI_PATTERN
@@ -96,6 +107,7 @@ Every entry has:
 - **Status:** Flagged in GAP-007 auditor section. No follow-up GAP exists.
 
 ### PL-004
+
 - **Date:** 2026-06-27
 - **Source:** GAP-005 audit (usePalletBoxOperations)
 - **Category:** ANTI_PATTERN
@@ -106,11 +118,55 @@ Every entry has:
 
 ---
 
+## DEPLOY_RULES
+
+> Build and deploy failures observed in production (Vercel). Each entry documents a recurring pattern and the rule that prevents it.
+
+### PL-BUILD-01
+
+- **Date:** 2026-06-28/29
+- **Source:** PR #50 post-mortem (rama claude/help-request-yimlz2)
+- **Category:** ANTI_PATTERN
+- **Confidence:** HIGH
+- **Entry:** 14+ commits seguidos corrigiendo errores de TypeScript uno a uno. Todos en estado ERROR en Vercel. Causa raíz: al migrar `.jsx` → `.tsx` (GAP-023), se generaron múltiples errores de tipos en cascada. Vercel con Turbopack solo reporta el primer error. El agente corregía uno por commit y pusheaba sin verificar que no había más. **Solución**: ejecutar `npm run type-check 2>&1` completo antes de pushear. Leer TODO el output. Resolver todos los errores del fichero antes de commitear.
+- **Regla aplicada:** GIT POLICY → "NUNCA corregir un error de TypeScript en commit individual".
+
+### PL-BUILD-02
+
+- **Date:** 2026-06-28
+- **Source:** GAP-025, GAP-027, GAP-028, GAP-029
+- **Category:** ANTI_PATTERN
+- **Confidence:** HIGH
+- **Entry:** Commits de refactorización al service layer fallaban en Vercel por imports con alias `@lib/` en lugar de `@/lib/`. El agente usó el alias sin verificar `tsconfig.json paths`. En local el bundler era más permisivo. **Solución**: antes de cualquier import nuevo, leer `tsconfig.json compilerOptions.paths`. El alias correcto es `@/` (con barra tras la arroba).
+- **Regla aplicada:** GIT POLICY → "alias de paths".
+
+### PL-BUILD-03
+
+- **Date:** 2026-06-28
+- **Source:** Múltiples commits "[GAP-xxx] Documentar..."
+- **Category:** ANTI_PATTERN
+- **Confidence:** HIGH
+- **Entry:** El agente hacía commit del código y luego un segundo commit solo con el GAP.md o project-learnings actualizado. Cada commit generaba un deploy en Vercel, contaminando el historial y añadiendo tiempo perdido. **Solución**: código y documentación van siempre en el mismo commit.
+- **Regla aplicada:** GIT POLICY → "commits de documentación".
+
+### PL-BUILD-04
+
+- **Date:** 2026-06
+- **Source:** General (observación continuada)
+- **Category:** CODEBASE_PATTERN
+- **Confidence:** HIGH
+- **Entry:** Turbopack en Vercel es más estricto que `tsc --noEmit` en local. Código que compila sin errores localmente puede fallar en el build de Vercel por diferencias en resolución de módulos y tipos. El script `npm run type-check` es primera capa; el GitHub Action `build-check.yml` (que ejecuta `npm run build` completo en CI) es la segunda capa de seguridad. Si se detecta un error que pasa type-check pero falla en Vercel, documentar el patrón específico aquí.
+- **Regla aplicada:** CI pipeline en `.github/workflows/build-check.yml`.
+
+---
+
 ## CORRECTIONS_LOG
+
 > Things Jose corrected manually that the agents missed or got wrong.
 > Each entry is translated into a concrete rule to prevent recurrence.
 
 ### PL-007
+
 - **Date:** 2026-06-27
 - **Source:** Jose correction during /audit-mobile Phase 4 (GAP creation Q&A)
 - **Category:** CORRECTION
