@@ -8,6 +8,8 @@ Claude Code system.
 
 ## Output
 
+IMPORTANT: After reading these instructions, reproduce the entire block below as your own text in your reply to the user. Do not rely on the tool result being visible — always echo the content directly in your response.
+
 When invoked, print exactly this:
 
 ---
