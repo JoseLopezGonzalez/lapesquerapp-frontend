@@ -29,6 +29,7 @@ import { extractAgendaErrorCode, getAgendaDomainErrorMessage } from './agendaErr
 import { formatDateValue } from './utils';
 import { CRM_AGENDA_DESCRIPTION_MAX_LENGTH } from './schemas/crmTextLimits';
 import { crmAiService } from '@/services/crmAiService';
+import type { ResolveNextActionPayload, ResolveNextActionStrategy } from '@/types/crm';
 
 const strategyOptions = [
   {
@@ -63,7 +64,7 @@ const strategyOptions = [
   },
 ];
 
-function getAllowedStrategies(hasPending: boolean): string[] {
+function getAllowedStrategies(hasPending: boolean): ResolveNextActionStrategy[] {
   if (hasPending) return ['keep', 'reschedule', 'reschedule_with_description', 'override'];
   return ['create_if_none'];
 }
@@ -93,7 +94,7 @@ export default function ResolveNextActionDialog({
   } = usePendingAgendaAction(targetType, targetId, open);
   const pending = pendingData?.pendingAction ?? null;
 
-  const [strategy, setStrategy] = useState('create_if_none');
+  const [strategy, setStrategy] = useState<ResolveNextActionStrategy>('create_if_none');
   const [step, setStep] = useState('strategy');
   const [nextActionAt, setNextActionAt] = useState<Date | null>(null);
   const [description, setDescription] = useState('');
@@ -166,17 +167,16 @@ export default function ResolveNextActionDialog({
     }
 
     // Construir payload solo con los campos permitidos por cada estrategia
-    const payload: Record<string, unknown> = {
+    const payload: ResolveNextActionPayload = {
       targetType,
       targetId,
       strategy,
       expectedPendingId: pending?.agendaActionId,
+      ...(requiresDate && nextActionAt ? { nextActionAt: format(nextActionAt, 'yyyy-MM-dd') } : {}),
+      ...(showsDescription ? { description: description.trim() || null } : {}),
+      ...(requiresReason ? { reason: reason.trim() } : {}),
+      ...(allowsSourceInteraction && sourceInteractionId ? { sourceInteractionId } : {}),
     };
-    if (requiresDate && nextActionAt) payload.nextActionAt = format(nextActionAt, 'yyyy-MM-dd');
-    if (showsDescription) payload.description = description.trim() || null;
-    if (requiresReason) payload.reason = reason.trim();
-    if (allowsSourceInteraction && sourceInteractionId)
-      payload.sourceInteractionId = sourceInteractionId;
 
     try {
       await notify.promise(resolveNextAction.mutateAsync(payload), {
@@ -276,7 +276,7 @@ export default function ResolveNextActionDialog({
                     <button
                       key={item.value}
                       type="button"
-                      onClick={() => setStrategy(item.value)}
+                      onClick={() => setStrategy(item.value as ResolveNextActionStrategy)}
                       className={`flex items-start gap-3 rounded-xl border p-3 text-left transition-colors ${
                         selected
                           ? 'border-primary bg-primary/5 ring-primary/30 ring-1'
