@@ -2,7 +2,9 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
+import { fieldOperatorQueryKeys } from '@/lib/routes/queryKeys';
 import { fieldOperatorAdminService } from '@/services/domain/field-operators/fieldOperatorService';
+import type { CatalogListResponse } from '@/types/catalog';
 
 type UseFieldOperatorsParams = {
   filters?: Record<string, unknown>;
@@ -16,9 +18,9 @@ type MutationPayload = Record<string, unknown>;
 export function useFieldOperators(params: UseFieldOperatorsParams = {}) {
   const { filters = {}, page = 1, perPage = 12, enabled = true } = params;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
-  const query = useQuery<any>({
-    queryKey: ['field-operators', 'list', tenantId ?? 'unknown', filters, page, perPage],
-    queryFn: () => fieldOperatorAdminService.list(filters, { page, perPage }),
+  const query = useQuery<CatalogListResponse<Record<string, unknown>>>({
+    queryKey: fieldOperatorQueryKeys.list(tenantId, filters, page, perPage),
+    queryFn: () => fieldOperatorAdminService.list(filters, { page, perPage }) as Promise<CatalogListResponse<Record<string, unknown>>>,
     enabled: Boolean(tenantId) && enabled,
   });
 
@@ -34,7 +36,7 @@ export function useFieldOperators(params: UseFieldOperatorsParams = {}) {
 export function useFieldOperatorDetail(id: number | string | null | undefined, enabled = true) {
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
   return useQuery({
-    queryKey: ['field-operators', 'detail', tenantId ?? 'unknown', id],
+    queryKey: fieldOperatorQueryKeys.detail(tenantId, id),
     queryFn: () => fieldOperatorAdminService.getById(id as number | string),
     enabled: Boolean(tenantId) && Boolean(id) && enabled,
   });
@@ -45,13 +47,11 @@ export function useFieldOperatorMutations() {
   const queryClient = useQueryClient();
 
   const invalidate = async (id?: number | string | null) => {
-    await queryClient.invalidateQueries({ queryKey: ['field-operators', 'list', tenantId] });
+    await queryClient.invalidateQueries({ queryKey: fieldOperatorQueryKeys.listPrefix(tenantId) });
     if (id != null) {
-      await queryClient.invalidateQueries({
-        queryKey: ['field-operators', 'detail', tenantId, id],
-      });
+      await queryClient.invalidateQueries({ queryKey: fieldOperatorQueryKeys.detail(tenantId, id) });
     }
-    await queryClient.invalidateQueries({ queryKey: ['field-operators', 'options', tenantId] });
+    await queryClient.invalidateQueries({ queryKey: fieldOperatorQueryKeys.optionsPrefix(tenantId) });
   };
 
   const createMutation = useMutation<unknown, Error, MutationPayload>({

@@ -2,6 +2,13 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
+import {
+  agendaKeys,
+  crmDashboardKeys,
+  crmCustomerKeys,
+  interactionKeys,
+  prospectKeys,
+} from '@/lib/routes/queryKeys';
 import { crmService } from '@/services/crmService';
 import type {
   CommercialInteraction,
@@ -36,10 +43,9 @@ export function useCommercialInteractions(params = {}) {
   const { enabled = true, ...queryParams } = typedParams;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
   const normalizedParams = normalizeQueryParams(queryParams);
-  const queryKey = ['crm', 'interactions', 'list', tenantId ?? 'unknown', normalizedParams];
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey,
+    queryKey: interactionKeys.list(tenantId, normalizedParams),
     queryFn: () => crmService.listCommercialInteractions(normalizedParams),
     enabled: !!tenantId && enabled,
   });
@@ -119,7 +125,7 @@ export function useCommercialInteractionMutations() {
     updater: (current: CommercialInteraction[]) => CommercialInteraction[]
   ) => {
     const listEntries = queryClient.getQueriesData<InteractionsCache>({
-      queryKey: ['crm', 'interactions', 'list', tenantId],
+      queryKey: interactionKeys.listPrefix(tenantId),
     });
 
     const matchedEntries = listEntries.filter(([queryKey]) =>
@@ -150,25 +156,25 @@ export function useCommercialInteractionMutations() {
     const impactsAgenda = Boolean(payload.agendaActionId);
     await Promise.all([
       impactsAgenda
-        ? queryClient.invalidateQueries({ queryKey: ['crm', 'dashboard', tenantId] })
+        ? queryClient.invalidateQueries({ queryKey: crmDashboardKeys.all(tenantId) })
         : Promise.resolve(),
       impactsAgenda
-        ? queryClient.invalidateQueries({ queryKey: ['crm', 'agenda', tenantId] })
+        ? queryClient.invalidateQueries({ queryKey: agendaKeys.all(tenantId) })
         : Promise.resolve(),
       impactsAgenda
-        ? queryClient.invalidateQueries({ queryKey: ['crm', 'agenda', 'summary', tenantId] })
+        ? queryClient.invalidateQueries({ queryKey: agendaKeys.summaryPrefix(tenantId) })
         : Promise.resolve(),
       payload.prospectId
-        ? queryClient.invalidateQueries({ queryKey: ['crm', 'prospects', 'list', tenantId] })
+        ? queryClient.invalidateQueries({ queryKey: prospectKeys.listPrefix(tenantId) })
         : Promise.resolve(),
       payload.prospectId
         ? queryClient.invalidateQueries({
-            queryKey: ['crm', 'prospect', 'detail', tenantId, payload.prospectId],
+            queryKey: prospectKeys.detail(tenantId, payload.prospectId),
           })
         : Promise.resolve(),
       payload.customerId
         ? queryClient.invalidateQueries({
-            queryKey: ['crm', 'customers', 'detail', tenantId, payload.customerId],
+            queryKey: crmCustomerKeys.detail(tenantId, payload.customerId),
           })
         : Promise.resolve(),
     ]);
@@ -180,7 +186,7 @@ export function useCommercialInteractionMutations() {
         crmService.createCommercialInteraction(payload),
       onMutate: async (payload) => {
         const tempInteraction = buildTempInteraction(payload);
-        await queryClient.cancelQueries({ queryKey: ['crm', 'interactions', 'list', tenantId] });
+        await queryClient.cancelQueries({ queryKey: interactionKeys.listPrefix(tenantId) });
 
         const previousLists = patchInteractionLists(payload, (current) => [
           tempInteraction,

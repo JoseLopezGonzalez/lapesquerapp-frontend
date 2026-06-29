@@ -202,13 +202,59 @@ import { fetchWithTenant } from '@/lib/fetchWithTenant'; // ← prohibido aquí
 ## Comandos esenciales
 
 ```bash
-npm run dev          # Servidor de desarrollo (puerto 3000, proxy → localhost:8000)
-npm run build        # Build de producción
-npm run lint         # ESLint (next/core-web-vitals + regla custom de queryKeys)
-npm run format       # Prettier --write . (con prettier-plugin-tailwindcss)
-npm run test         # Vitest en modo watch
-npm run test:run     # Vitest una ejecución (para CI)
+npm run dev              # Servidor de desarrollo (puerto 3000, proxy → localhost:8000)
+npm run build            # Build de producción
+npm run lint             # ESLint (next/core-web-vitals + regla custom de queryKeys)
+npm run format           # Prettier --write . (con prettier-plugin-tailwindcss)
+npm run test             # Vitest en modo watch
+npm run test:run         # Vitest una ejecución (para CI)
+npm run type-check       # TypeScript check (requiere node_modules + next-env.d.ts)
 ```
+
+## Workflow pre-push — protección contra errores de deploy
+
+### Contexto LOCAL (node_modules instalado, `next dev` ha corrido al menos una vez)
+
+El Husky `pre-push` hook ejecuta automáticamente en cada `git push`:
+```
+TypeScript check (npm run type-check) + ESLint (npm run lint)
+```
+Si cualquiera falla, el push queda bloqueado. Corregir el error y volver a empujar.
+
+Para ejecutarlo manualmente antes de push:
+```bash
+npm run type-check   # TypeScript check (requiere next-env.d.ts y node_modules)
+npm run lint         # ESLint
+```
+
+### Contexto CLOUD — Claude Code en sesión remota (sin node_modules)
+
+En sesiones cloud, el hook detecta la ausencia de `node_modules` y pasa silenciosamente.
+**Claude Code debe aplicar el protocolo manual antes de cada push:**
+
+#### 1. Revisar tipos en archivos JSX→TSX migrados
+Tras una migración `.jsx` → `.tsx`, revisar el archivo COMPLETO de una vez:
+- Todos los parámetros de función/callback (sin `any` implícito)
+- Estado con `useState` (tipar el genérico: `useState<Tipo[]>([])`)
+- Props de componentes (interfaz explícita)
+- Tipos de retorno de mutaciones contra las interfaces del backend (`src/types/`)
+
+#### 2. Protocolo de errores TypeScript en cascada
+TypeScript revela errores en cascada: corregir Error X puede revelar Error Y (que estaba
+"tapado" porque TypeScript dejó de evaluar la expresión al toparse con X).
+
+**Regla:** al corregir cualquier error TypeScript en un archivo, revisar el archivo completo
+antes de hacer push. No asumir que porque el error anterior ya no existe, el archivo está limpio.
+
+**Señales de que habrá más errores:**
+- Un parámetro se tipó como `string` cuando la interfaz del backend espera una unión (`ProspectOrigin`)
+- Se pasó un objeto a una función que espera `Record<string, unknown>` con una interfaz concreta
+- Una función callback no tiene tipos en sus parámetros
+
+#### 3. Verificar contra interfaces del backend
+Antes de hacer push con payload de formulario, comparar el objeto construido contra
+`src/types/` para confirmar que todos los campos son del tipo correcto (especialmente
+uniones como `ProspectOrigin`, `ProspectStatus`, etc.).
 
 ---
 
@@ -229,7 +275,7 @@ npm run test:run     # Vitest una ejecución (para CI)
 
 1. **React 19-rc canary** — versión no estable en producción. Riesgo de breaking changes en cada rc update.
 2. **Codebase mixto JS/TS** — servicios legacy en `.js`. Migrar al tocar cualquier archivo legacy.
-3. **Sin pre-commit hooks** — Husky/lint-staged pendiente de configurar en fase posterior.
+3. ✅ **Husky hooks configurados** — `pre-commit` (lint-staged: Prettier + ESLint en archivos staged) · `pre-push` (TypeScript check limpio + ESLint completo).
 4. **Sin tests de UI** — Vitest solo cubre lógica (hooks, services, utils), no componentes React.
 5. **`entitiesConfig.js`** — ✅ partido en módulos por dominio en `src/configs/entities/` (GAP-007).
 6. **Hooks gigantes** — `useOrder` 40 KB · `usePallet` 48 KB · `useLabelEditor` 52 KB. Pendiente refactor en sub-hooks.

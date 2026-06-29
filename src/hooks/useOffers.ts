@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
-import { normalizeQueryParams } from '@/lib/routes/queryKeys';
+import { crmDashboardKeys, offerKeys, prospectKeys } from '@/lib/routes/queryKeys';
 import { crmService } from '@/services/crmService';
 import type { OfferPayload } from '@/types/crm';
 
@@ -13,16 +13,9 @@ type UseOffersListParams = Record<string, unknown> & {
 export function useOffersList(params: UseOffersListParams = {}) {
   const { enabled = true, ...queryParams } = params;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
-  const queryKey = [
-    'crm',
-    'offers',
-    'list',
-    tenantId ?? 'unknown',
-    normalizeQueryParams(queryParams),
-  ];
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey,
+    queryKey: offerKeys.list(tenantId, queryParams as Record<string, unknown>),
     queryFn: () => crmService.listOffers(queryParams),
     enabled: !!tenantId && enabled,
   });
@@ -38,10 +31,9 @@ export function useOffersList(params: UseOffersListParams = {}) {
 
 export function useOffer(id: number | string | null | undefined) {
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
-  const queryKey = ['crm', 'offer', 'detail', tenantId ?? 'unknown', id];
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey,
+    queryKey: offerKeys.detail(tenantId, id),
     queryFn: () => {
       if (id == null) throw new Error('Missing offer id');
       return crmService.getOffer(id);
@@ -71,15 +63,15 @@ export function useOfferMutations() {
     includeProspectsList?: boolean;
   } = {}) => {
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['crm', 'offers', 'list', tenantId] }),
+      queryClient.invalidateQueries({ queryKey: offerKeys.listPrefix(tenantId) }),
       includeDashboard
-        ? queryClient.invalidateQueries({ queryKey: ['crm', 'dashboard', tenantId] })
+        ? queryClient.invalidateQueries({ queryKey: crmDashboardKeys.all(tenantId) })
         : Promise.resolve(),
       includeProspectsList
-        ? queryClient.invalidateQueries({ queryKey: ['crm', 'prospects', 'list', tenantId] })
+        ? queryClient.invalidateQueries({ queryKey: prospectKeys.listPrefix(tenantId) })
         : Promise.resolve(),
       id
-        ? queryClient.invalidateQueries({ queryKey: ['crm', 'offer', 'detail', tenantId, id] })
+        ? queryClient.invalidateQueries({ queryKey: offerKeys.detail(tenantId, id) })
         : Promise.resolve(),
     ]);
   };

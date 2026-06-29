@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, type FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2, Sparkles } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -36,11 +36,14 @@ import {
   getProspectFormSchema,
   getDefaultProspectFormValues,
   prospectFormValuesFromInitial,
+  type ProspectFormValues,
 } from './schemas/prospectFormSchema';
+import { crmAiService, type CrmTextKind } from '@/services/crmAiService';
+import type { Prospect, ProspectOrigin } from '@/types/crm';
 
 const CATEGORY_NONE_VALUE = '__none__';
 
-function FieldError({ message }) {
+function FieldError({ message }: { message?: string }) {
   if (!message) return null;
   return <p className="text-sm text-red-500">{message}</p>;
 }
@@ -54,13 +57,19 @@ function RequiredMark() {
   );
 }
 
-export default function ProspectFormSheet({ open, onOpenChange, initialData = null }) {
+interface ProspectFormSheetProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  initialData?: Prospect | null;
+}
+
+export default function ProspectFormSheet({ open, onOpenChange, initialData = null }: ProspectFormSheetProps) {
   const isEditing = Boolean(initialData);
   const { data: countries } = useCountriesList({ page: 1, perPage: 250, enabled: open });
   const { data: categoryOptions = [], isLoading: categoriesLoading } =
     useProspectCategoryOptions(open);
   const { createProspect, updateProspect } = useProspectMutations();
-  const [warnings, setWarnings] = useState([]);
+  const [warnings, setWarnings] = useState<{ type: string; message: string }[]>([]);
   const [isImprovingCommercialInterest, setIsImprovingCommercialInterest] = useState(false);
   const [isImprovingNotes, setIsImprovingNotes] = useState(false);
 
@@ -75,7 +84,7 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
     setValue,
     watch,
     formState: { errors },
-  } = useForm({
+  } = useForm<ProspectFormValues>({
     resolver: zodResolver(prospectSchema),
     defaultValues: getDefaultProspectFormValues(),
     mode: 'onTouched',
@@ -105,14 +114,14 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
     return [{ value: currentCategory.id, label: currentCategory.name }, ...categoryOptions];
   }, [categoryOptions, initialData?.category]);
 
-  const onValidSubmit = async (values) => {
+  const onValidSubmit = async (values: ProspectFormValues) => {
     const payload = {
       companyName: values.companyName,
       address: values.address.trim() || null,
       website: values.website.trim() || null,
       countryId: values.countryId ? Number(values.countryId) : null,
       categoryId: values.categoryId ? Number(values.categoryId) : null,
-      origin: values.origin,
+      origin: values.origin as ProspectOrigin,
       status: values.status,
       notes: values.notes.trim() || null,
       commercialInterestNotes: values.commercialInterestNotes.trim() || null,
@@ -120,15 +129,17 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
         .split(',')
         .map((value) => value.trim())
         .filter(Boolean),
+      ...(!isEditing && values.includePrimaryContact
+        ? {
+            primaryContact: {
+              name: values.primaryContactName.trim() || undefined,
+              role: values.primaryContactRole.trim() || null,
+              phone: values.primaryContactPhone.trim() || null,
+              email: values.primaryContactEmail.trim() || null,
+            },
+          }
+        : {}),
     };
-    if (!isEditing && values.includePrimaryContact) {
-      payload.primaryContact = {
-        name: values.primaryContactName.trim() || undefined,
-        role: values.primaryContactRole.trim() || null,
-        phone: values.primaryContactPhone.trim() || null,
-        email: values.primaryContactEmail.trim() || null,
-      };
-    }
 
     try {
       const response = await notify.promise(
@@ -138,7 +149,8 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
         {
           loading: initialData ? 'Actualizando prospecto...' : 'Creando prospecto...',
           success: initialData ? 'Prospecto actualizado' : 'Prospecto creado',
-          error: (error) => error?.message || 'No se pudo guardar el prospecto',
+          error: (error: unknown) =>
+            (error instanceof Error ? error.message : null) || 'No se pudo guardar el prospecto',
         }
       );
       setWarnings(response?.warnings ?? []);
@@ -146,14 +158,17 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
         onOpenChange(false);
       }
     } catch (err) {
-      if (err instanceof ApiError && err.status === 422 && err.data?.errors) {
-        setErrorsFrom422(setError, err.data.errors);
-        return;
+      if (err instanceof ApiError && err.status === 422) {
+        const errorData = err.data as { errors?: Record<string, string[]> };
+        if (errorData?.errors) {
+          setErrorsFrom422(setError, errorData.errors);
+          return;
+        }
       }
     }
   };
 
-  const onInvalidSubmit = (formErrors) => {
+  const onInvalidSubmit = (formErrors: FieldErrors<ProspectFormValues>) => {
     const n = Object.keys(formErrors).length;
     notify.error({
       title: 'Revisa el formulario',
@@ -169,6 +184,13 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
     onSuccess,
     emptyTextErrorTitle,
     genericErrorTitle,
+  }: {
+    kind: CrmTextKind;
+    text: string | null | undefined;
+    setLoading: (loading: boolean) => void;
+    onSuccess: (text: string) => void;
+    emptyTextErrorTitle: string;
+    genericErrorTitle: string;
   }) => {
     const rawText = String(text ?? '').trim();
     if (!rawText) {
@@ -178,29 +200,12 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
 
     setLoading(true);
     try {
-      const response = await fetch('/api/crm/improve-text', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ kind, text: rawText }),
-      });
-
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(payload?.error || 'No se pudo mejorar el texto con IA');
-      }
-
-      const improvedText = String(payload?.improvedText ?? '').trim();
-      if (!improvedText) {
-        throw new Error('La IA no devolvió un texto válido');
-      }
-
+      const improvedText = await crmAiService.improveText(kind, rawText);
       onSuccess(improvedText);
     } catch (error) {
       notify.error({
         title: genericErrorTitle,
-        description: error?.message || 'No se pudo procesar la mejora con IA',
+        description: error instanceof Error ? error.message : 'No se pudo procesar la mejora con IA',
       });
     } finally {
       setLoading(false);

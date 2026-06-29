@@ -1,6 +1,7 @@
 'use client';
 
 import type React from 'react';
+import { useEffect, useState } from 'react';
 import {
   Controller,
   useWatch,
@@ -43,6 +44,20 @@ import { Mail, KeyRound } from 'lucide-react';
 import type { LoginEmailForm, LoginOtpForm } from '@/schemas/loginSchema';
 import { exampleEmail } from '@/configs/branding';
 
+function OtpWatcher({
+  control,
+  onIsComplete,
+}: {
+  control: Control<LoginOtpForm>;
+  onIsComplete: (v: boolean) => void;
+}) {
+  const code = useWatch({ control, name: 'code', defaultValue: '' });
+  useEffect(() => {
+    onIsComplete((code?.length ?? 0) === 6);
+  }, [code, onIsComplete]);
+  return null;
+}
+
 interface LoginFormContentProps {
   accessRequested: boolean;
   loading: boolean;
@@ -73,12 +88,7 @@ export default function LoginFormContent({
   onOtpPaste,
 }: LoginFormContentProps) {
   const isMobile = variant === 'mobile';
-  /* eslint-disable react-hooks/rules-of-hooks -- otpControl is stable at mount; proper fix requires extracting an OtpWatcher sub-component */
-  const otpCode = otpControl
-    ? useWatch({ control: otpControl, name: 'code', defaultValue: '' })
-    : '';
-  /* eslint-enable react-hooks/rules-of-hooks */
-  const isOtpComplete = (otpCode?.length ?? 0) === 6;
+  const [isOtpComplete, setIsOtpComplete] = useState(false);
   const inputId = isMobile ? 'email-mobile' : 'email';
   const labelClass = isMobile ? 'text-base' : '';
   const inputClass = isMobile ? 'h-12 text-base' : '';
@@ -126,6 +136,7 @@ export default function LoginFormContent({
 
   return (
     <>
+      {otpControl && <OtpWatcher control={otpControl} onIsComplete={setIsOtpComplete} />}
       <div className="flex flex-col gap-1">
         <Alert className="max-w-sm">
           <Mail className="h-4 w-4" />

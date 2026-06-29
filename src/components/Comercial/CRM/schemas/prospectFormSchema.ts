@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { prospectOriginOptions } from '../utils';
+import type { Prospect } from '@/types/crm';
 
 const originValues = prospectOriginOptions.map((o) => o.value);
 
@@ -28,26 +29,26 @@ export function getProspectFormSchema(isEditing: boolean) {
         .trim()
         .min(1, 'El nombre de empresa es obligatorio')
         .max(255, 'Máximo 255 caracteres'),
-      address: z.string().max(10000, 'Máximo 10.000 caracteres').default(''),
-      website: z.string().max(512, 'Máximo 512 caracteres').default(''),
+      address: z.string().max(10000, 'Máximo 10.000 caracteres'),
+      website: z.string().max(512, 'Máximo 512 caracteres'),
       countryId: z.string().min(1, 'Selecciona un país'),
-      categoryId: z.string().trim().optional().catch(''),
+      categoryId: z.string().trim().optional(),
       origin: z
         .string()
         .min(1, 'Selecciona un origen')
         .refine((v) => originValues.includes(v), { message: 'Selecciona un origen válido' }),
       status: z.enum(prospectStatusTuple),
-      notes: z.string().max(5000, 'Máximo 5.000 caracteres').default(''),
+      notes: z.string().max(5000, 'Máximo 5.000 caracteres'),
       commercialInterestNotes: z
         .string()
         .max(5000, 'Máximo 5.000 caracteres')
         .refine((s) => s.trim().length > 0, 'El interés comercial es obligatorio'),
-      speciesInterest: z.string().max(5000, 'Máximo 5.000 caracteres').default(''),
-      includePrimaryContact: z.boolean().default(false),
-      primaryContactName: z.string().max(255, 'Máximo 255 caracteres').default(''),
-      primaryContactRole: z.string().max(120, 'Máximo 120 caracteres').default(''),
-      primaryContactPhone: z.string().max(40, 'Máximo 40 caracteres').default(''),
-      primaryContactEmail: emailOptional.default(''),
+      speciesInterest: z.string().max(5000, 'Máximo 5.000 caracteres'),
+      includePrimaryContact: z.boolean(),
+      primaryContactName: z.string().max(255, 'Máximo 255 caracteres'),
+      primaryContactRole: z.string().max(120, 'Máximo 120 caracteres'),
+      primaryContactPhone: z.string().max(40, 'Máximo 40 caracteres'),
+      primaryContactEmail: emailOptional,
     })
     .superRefine((data, ctx) => {
       const parts = data.speciesInterest
@@ -115,44 +116,36 @@ export function getDefaultProspectFormValues(): ProspectFormValues {
 }
 
 export function prospectFormValuesFromInitial(
-  initialData: Record<string, unknown> | null | undefined
+  initialData: Prospect | null | undefined
 ): ProspectFormValues {
   if (!initialData) {
     return getDefaultProspectFormValues();
   }
-  const country = initialData.country as { id?: unknown } | null | undefined;
   const countryId =
-    country?.id != null
-      ? String(country.id)
+    initialData.country?.id != null
+      ? String(initialData.country.id)
       : initialData.countryId != null
         ? String(initialData.countryId)
         : '';
-  const species = initialData.speciesInterest;
-  const category = initialData.category as { id?: unknown } | null | undefined;
   const categoryId =
-    category?.id != null
-      ? String(category.id)
+    initialData.category?.id != null
+      ? String(initialData.category.id)
       : initialData.categoryId != null
         ? String(initialData.categoryId)
         : '';
-  const speciesStr = Array.isArray(species) ? species.join(', ') : '';
+  const speciesStr = initialData.speciesInterest?.join(', ') ?? '';
   return {
     companyName: String(initialData.companyName ?? ''),
-    address: typeof initialData.address === 'string' ? initialData.address : '',
-    website: typeof initialData.website === 'string' ? initialData.website : '',
+    address: initialData.address ?? '',
+    website: initialData.website ?? '',
     countryId,
     categoryId,
     origin: normalizeOrigin(initialData.origin),
-    status:
-      typeof initialData.status === 'string' &&
-      prospectStatusTuple.includes(initialData.status as (typeof prospectStatusTuple)[number])
-        ? (initialData.status as ProspectFormValues['status'])
-        : 'new',
-    notes: typeof initialData.notes === 'string' ? initialData.notes : '',
-    commercialInterestNotes:
-      typeof initialData.commercialInterestNotes === 'string'
-        ? initialData.commercialInterestNotes
-        : '',
+    status: prospectStatusTuple.includes(initialData.status as (typeof prospectStatusTuple)[number])
+      ? (initialData.status as ProspectFormValues['status'])
+      : 'new',
+    notes: initialData.notes ?? '',
+    commercialInterestNotes: initialData.commercialInterestNotes ?? '',
     speciesInterest: speciesStr,
     includePrimaryContact: false,
     primaryContactName: '',

@@ -1,14 +1,9 @@
 'use client';
 
-import { fetchWithTenant } from '@lib/fetchWithTenant';
 import { notify } from '@/lib/notifications';
-import { API_URL_V2 } from '@/configs/config';
 import type { Order } from '@/services/orderService';
 import type { Session } from 'next-auth';
-
-// Nota técnica: fetchWithTenant se usa directamente aquí porque exportDocument
-// necesita acceso al blob binario de respuesta, no al JSON parseado.
-// Candidato a refactorizar a downloadFileGeneric en un GAP futuro.
+import { orderDocumentService } from '@/services/domain/orders/orderDocumentService';
 
 interface ExportDocumentConfig {
   name: string;
@@ -41,21 +36,6 @@ function isCommercialSession(session: Session | null): boolean {
 
 function isCommercialRestrictedDocument(documentName: string): boolean {
   return COMMERCIAL_RESTRICTED_DOCUMENT_NAMES.has(documentName);
-}
-
-function getOrderExportUrl({
-  orderId,
-  documentName,
-  type,
-}: {
-  orderId: number | string;
-  documentName: string;
-  type: string;
-}): string {
-  if (documentName === 'restricted-order-signs' && type === 'pdf') {
-    return `${API_URL_V2}orders/${orderId}/pdf/restricted-order-signs`;
-  }
-  return `${API_URL_V2}orders/${orderId}/${type}/${documentName}`;
 }
 
 const exportDocuments: ExportDocumentConfig[] = [
@@ -225,28 +205,13 @@ export function useOrderDocuments({
     }
 
     const toastId = `order-export-${order.id}-${documentName}-${type}`;
-    const doExport = async () => {
-      const response = await fetchWithTenant(
-        getOrderExportUrl({ orderId: order.id, documentName, type }),
-        {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${session?.user?.accessToken}`,
-            'User-Agent': navigator.userAgent,
-          },
-        }
+    const doExport = () =>
+      orderDocumentService.downloadDocument(
+        order.id,
+        documentName,
+        type,
+        `${documentLabel}_${order.id}`
       );
-      if (!response.ok) throw new Error('Error al exportar');
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${documentLabel}_${order.id}.${type}`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-    };
     await notify.promise(
       doExport(),
       {
@@ -278,25 +243,7 @@ export function useOrderDocuments({
 
   const sendCustomDocuments = async (json: unknown): Promise<unknown> => {
     if (!order) return;
-    const token = session?.user?.accessToken;
-    return fetchWithTenant(`${API_URL_V2}orders/${order.id}/send-custom-documents`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
-        'User-Agent': navigator.userAgent,
-      },
-      body: JSON.stringify(json),
-    }).then((response: Response) => {
-      if (!response.ok) {
-        return response.json().then(async (errorData: unknown) => {
-          const { getErrorMessage } = await import('@/lib/api/apiHelpers');
-          throw new Error(getErrorMessage(errorData as object) || 'Error ');
-        });
-      }
-      return response.json();
-    });
+    return orderDocumentService.sendCustomDocuments(order.id, json);
   };
 
   const sendMaquiladorDocuments = async (): Promise<unknown> => {
@@ -308,48 +255,12 @@ export function useOrderDocuments({
       });
       return;
     }
-    const token = session?.user?.accessToken;
-    return fetchWithTenant(`${API_URL_V2}orders/${order.id}/send-maquilador-documents`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
-        'User-Agent': navigator.userAgent,
-      },
-    }).then((response: Response) => {
-      if (!response.ok) {
-        return response.json().then(async (errorData: unknown) => {
-          const { getErrorMessage } = await import('@/lib/api/apiHelpers');
-          throw new Error(getErrorMessage(errorData as object) || 'Error');
-        });
-      }
-      return response.json();
-    });
+    return orderDocumentService.sendMaquiladorDocuments(order.id);
   };
 
   const sendStandarDocuments = async (): Promise<unknown> => {
     if (!order) return;
-    const token = session?.user?.accessToken;
-    return fetchWithTenant(`${API_URL_V2}orders/${order.id}/send-standard-documents`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
-        'User-Agent': navigator.userAgent,
-      },
-    })
-      .then((response: Response) => {
-        if (!response.ok) {
-          return response.json().then(async (errorData: unknown) => {
-            const { getErrorMessage } = await import('@/lib/api/apiHelpers');
-            throw new Error(getErrorMessage(errorData as object) || 'Error ');
-          });
-        }
-        return response.json();
-      })
-      .then((data: { data: unknown }) => data.data);
+    return orderDocumentService.sendStandardDocuments(order.id);
   };
 
   const visibleExportDocuments = isCommercial

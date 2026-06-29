@@ -1,7 +1,6 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { useSession } from 'next-auth/react';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 import {
   getOrdersTotalNetWeightStats,
@@ -12,6 +11,7 @@ import {
   getOrdersProfitabilityTimeline,
   getOrdersProfitabilityProducts,
 } from '@/services/orderService';
+import { orderStatKeys } from '@/lib/routes/queryKeys';
 
 interface OrderRankingItem {
   name: string;
@@ -34,20 +34,14 @@ function getYearToDateRange(): { dateFrom: string; dateTo: string } {
   return { dateFrom, dateTo };
 }
 
-/**
- * Hook para obtener la cantidad total vendida (kg) usando React Query.
- * Rango: 1 enero - hoy (año en curso).
- */
 export function useOrdersTotalNetWeightStats() {
-  const { data: session } = useSession();
-  const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
   const { dateFrom, dateTo } = getYearToDateRange();
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['orders', 'totalNetWeight', tenantId ?? 'unknown', dateFrom, dateTo],
-    queryFn: () => getOrdersTotalNetWeightStats({ dateFrom, dateTo }, token as string),
-    enabled: !!token && !!tenantId,
+    queryKey: orderStatKeys.totalNetWeight(tenantId, dateFrom, dateTo),
+    queryFn: () => getOrdersTotalNetWeightStats({ dateFrom, dateTo }),
+    enabled: !!tenantId,
   });
 
   return {
@@ -57,20 +51,14 @@ export function useOrdersTotalNetWeightStats() {
   };
 }
 
-/**
- * Hook para obtener el importe total vendido usando React Query.
- * Rango: 1 enero - hoy (año en curso).
- */
 export function useOrdersTotalAmountStats() {
-  const { data: session } = useSession();
-  const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
   const { dateFrom, dateTo } = getYearToDateRange();
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['orders', 'totalAmount', tenantId ?? 'unknown', dateFrom, dateTo],
-    queryFn: () => getOrdersTotalAmountStats({ dateFrom, dateTo }, token as string),
-    enabled: !!token && !!tenantId,
+    queryKey: orderStatKeys.totalAmount(tenantId, dateFrom, dateTo),
+    queryFn: () => getOrdersTotalAmountStats({ dateFrom, dateTo }),
+    enabled: !!tenantId,
   });
 
   return {
@@ -97,13 +85,8 @@ interface OrderRankingParams {
   speciesId?: string;
 }
 
-/**
- * Hook para obtener el ranking de pedidos usando React Query.
- */
 export function useOrderRankingStats(params: OrderRankingParams) {
   const { range, groupBy, valueType, speciesId } = params;
-  const { data: session } = useSession();
-  const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
   const dateFrom = range?.from?.toLocaleDateString?.('sv-SE') ?? null;
   const dateTo = range?.to?.toLocaleDateString?.('sv-SE') ?? null;
@@ -113,28 +96,23 @@ export function useOrderRankingStats(params: OrderRankingParams) {
     isLoading,
     error,
   } = useQuery({
-    queryKey: [
-      'orders',
-      'ranking',
-      tenantId ?? 'unknown',
-      dateFrom,
-      dateTo,
-      groupBy,
-      valueType,
-      speciesId,
-    ],
+    queryKey: orderStatKeys.ranking(
+      tenantId,
+      dateFrom ?? '',
+      dateTo ?? '',
+      groupBy ?? 'client',
+      valueType ?? 'totalAmount',
+      speciesId
+    ),
     queryFn: () =>
-      getOrderRankingStats(
-        {
-          groupBy: groupBy ?? 'client',
-          valueType: valueType ?? 'totalAmount',
-          dateFrom: dateFrom!,
-          dateTo: dateTo!,
-          speciesId: speciesId ?? 'all',
-        },
-        token as string
-      ),
-    enabled: !!token && !!tenantId && !!dateFrom && !!dateTo && !!groupBy && !!valueType,
+      getOrderRankingStats({
+        groupBy: groupBy ?? 'client',
+        valueType: valueType ?? 'totalAmount',
+        dateFrom: dateFrom!,
+        dateTo: dateTo!,
+        speciesId: speciesId ?? 'all',
+      }),
+    enabled: !!tenantId && !!dateFrom && !!dateTo && !!groupBy && !!valueType,
   });
 
   const fullData = parseOrderRankingData(rawData);
@@ -200,27 +178,21 @@ function parseSalesBySalespersonResponse(raw: unknown): SalesBySalespersonItem[]
   }));
 }
 
-/**
- * Hook para obtener ventas por comercial usando React Query.
- */
 export function useSalesBySalesperson(params: SalesBySalespersonParams) {
   const { range } = params ?? {};
-  const { data: session, status } = useSession();
-  const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
   const yearToDate = getYearToDateRange();
   const dateFrom = range?.from?.toLocaleDateString?.('sv-SE') ?? yearToDate.dateFrom;
   const dateTo = range?.to?.toLocaleDateString?.('sv-SE') ?? yearToDate.dateTo;
-  const enabled = !!token && !!dateFrom && !!dateTo && status !== 'loading';
 
   const {
     data: rawData,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['orders', 'salesBySalesperson', tenantId ?? 'unknown', dateFrom, dateTo, status],
-    queryFn: () => getSalesBySalesperson({ dateFrom, dateTo }, token as string),
-    enabled,
+    queryKey: orderStatKeys.salesBySalesperson(tenantId, dateFrom, dateTo),
+    queryFn: () => getSalesBySalesperson({ dateFrom, dateTo }),
+    enabled: !!tenantId && !!dateFrom && !!dateTo,
   });
 
   const data = parseSalesBySalespersonResponse(rawData);
@@ -232,40 +204,23 @@ export function useSalesBySalesperson(params: SalesBySalespersonParams) {
   };
 }
 
-/**
- * Hook para obtener el resumen global de rentabilidad de pedidos.
- */
 export function useOrdersProfitabilitySummary(params: ProfitabilitySummaryParams) {
   const { range } = params ?? {};
   const productId = params?.productId ?? 'all';
-  const { data: session, status } = useSession();
-  const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
   const yearToDate = getYearToDateRange();
   const dateFrom = range?.from?.toLocaleDateString?.('sv-SE') ?? yearToDate.dateFrom;
   const dateTo = range?.to?.toLocaleDateString?.('sv-SE') ?? yearToDate.dateTo;
-  const enabled = !!token && !!tenantId && !!dateFrom && !!dateTo && status !== 'loading';
 
   const { data, isLoading, error } = useQuery({
-    queryKey: [
-      'orders',
-      'profitabilitySummary',
-      tenantId ?? 'unknown',
-      dateFrom,
-      dateTo,
-      productId,
-      status,
-    ],
+    queryKey: orderStatKeys.profitabilitySummary(tenantId, dateFrom, dateTo, productId),
     queryFn: () =>
-      getOrdersProfitabilitySummary(
-        {
-          dateFrom,
-          dateTo,
-          productIds: productId && productId !== 'all' ? [productId] : undefined,
-        },
-        token as string
-      ),
-    enabled,
+      getOrdersProfitabilitySummary({
+        dateFrom,
+        dateTo,
+        productIds: productId && productId !== 'all' ? [productId] : undefined,
+      }),
+    enabled: !!tenantId && !!dateFrom && !!dateTo,
   });
 
   return {
@@ -275,43 +230,25 @@ export function useOrdersProfitabilitySummary(params: ProfitabilitySummaryParams
   };
 }
 
-/**
- * Hook para obtener la evolución temporal de rentabilidad de pedidos.
- */
 export function useOrdersProfitabilityTimeline(params: ProfitabilityTimelineParams) {
   const { range } = params ?? {};
   const productId = params?.productId ?? 'all';
   const granularity = params?.granularity ?? 'month';
-  const { data: session, status } = useSession();
-  const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
   const yearToDate = getYearToDateRange();
   const dateFrom = range?.from?.toLocaleDateString?.('sv-SE') ?? yearToDate.dateFrom;
   const dateTo = range?.to?.toLocaleDateString?.('sv-SE') ?? yearToDate.dateTo;
-  const enabled = !!token && !!tenantId && !!dateFrom && !!dateTo && status !== 'loading';
 
   const { data, isLoading, error } = useQuery({
-    queryKey: [
-      'orders',
-      'profitabilityTimeline',
-      tenantId ?? 'unknown',
-      dateFrom,
-      dateTo,
-      granularity,
-      productId,
-      status,
-    ],
+    queryKey: orderStatKeys.profitabilityTimeline(tenantId, dateFrom, dateTo, granularity, productId),
     queryFn: () =>
-      getOrdersProfitabilityTimeline(
-        {
-          dateFrom,
-          dateTo,
-          granularity,
-          productIds: productId && productId !== 'all' ? [productId] : undefined,
-        },
-        token as string
-      ),
-    enabled,
+      getOrdersProfitabilityTimeline({
+        dateFrom,
+        dateTo,
+        granularity,
+        productIds: productId && productId !== 'all' ? [productId] : undefined,
+      }),
+    enabled: !!tenantId && !!dateFrom && !!dateTo,
   });
 
   return {
@@ -321,30 +258,21 @@ export function useOrdersProfitabilityTimeline(params: ProfitabilityTimelinePara
   };
 }
 
-/**
- * Hook para obtener la rentabilidad por producto.
- */
 export function useOrdersProfitabilityProducts(params: ProfitabilityRangeParams) {
   const { range } = params ?? {};
-  const { data: session, status } = useSession();
-  const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
   const yearToDate = getYearToDateRange();
   const dateFrom = range?.from?.toLocaleDateString?.('sv-SE') ?? yearToDate.dateFrom;
   const dateTo = range?.to?.toLocaleDateString?.('sv-SE') ?? yearToDate.dateTo;
-  const enabled = !!token && !!tenantId && !!dateFrom && !!dateTo && status !== 'loading';
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['orders', 'profitabilityProducts', tenantId ?? 'unknown', dateFrom, dateTo, status],
+    queryKey: orderStatKeys.profitabilityProducts(tenantId, dateFrom, dateTo),
     queryFn: () =>
-      getOrdersProfitabilityProducts(
-        {
-          dateFrom,
-          dateTo,
-        },
-        token as string
-      ),
-    enabled,
+      getOrdersProfitabilityProducts({
+        dateFrom,
+        dateTo,
+      }),
+    enabled: !!tenantId && !!dateFrom && !!dateTo,
   });
 
   return {

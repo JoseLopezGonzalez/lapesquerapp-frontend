@@ -38,7 +38,7 @@ export function getQuickInteractionDefaultValues({
   defaultNextActionNote: _defaultNextActionNote,
 }: {
   isCompleteMode: boolean;
-  defaultNextActionDate: string | null;
+  defaultNextActionDate: string | Date | null;
   defaultNextActionNote: string;
 }) {
   return {

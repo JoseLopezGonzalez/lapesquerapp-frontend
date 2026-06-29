@@ -3,13 +3,13 @@
  * @module services/ceboDispatch/getDispatchChartData
  */
 
-import { fetchWithTenant } from '@lib/fetchWithTenant';
+import { fetchWithTenant } from '@/lib/fetchWithTenant';
 import { API_URL_V2 } from '@/configs/config';
+import { getAuthToken } from '@/lib/auth/getAuthToken';
 import { getErrorMessage } from '@/lib/api/apiHelpers';
 import { getUserAgent } from '@/lib/utils/getUserAgent';
 
 export interface DispatchChartDataParams {
-  token: string;
   speciesId?: string;
   categoryId?: string;
   familyId?: string;
@@ -28,7 +28,8 @@ export interface ChartDataPoint {
 export async function getDispatchChartData(
   params: DispatchChartDataParams
 ): Promise<ChartDataPoint[]> {
-  const { token, speciesId, categoryId, familyId, from, to, unit, groupBy } = params;
+  const token = await getAuthToken();
+  const { speciesId, categoryId, familyId, from, to, unit, groupBy } = params;
 
   const query = new URLSearchParams({
     dateFrom: from ?? '',
@@ -53,10 +54,7 @@ export async function getDispatchChartData(
     `${API_URL_V2}cebo-dispatches/dispatch-chart-data?${query.toString()}`,
     {
       method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'User-Agent': getUserAgent(),
-      },
+      headers: { 'User-Agent': getUserAgent() },
     }
   );
 

@@ -3,13 +3,10 @@
  * @module services/storeService
  */
 
-import { fetchWithTenant } from '@lib/fetchWithTenant';
+import { fetchWithTenant } from '@/lib/fetchWithTenant';
 import { API_URL_V2 } from '@/configs/config';
 import { getErrorMessage } from '@/lib/api/apiHelpers';
 import { getUserAgent } from '@/lib/utils/getUserAgent';
-
-/** Auth token for API requests */
-type AuthToken = string;
 
 export interface StockByProductItem {
   id: number;
@@ -28,13 +25,10 @@ export interface GetStoresResponse {
   meta: unknown;
 }
 
-export async function getStore(id: number | string, token: AuthToken): Promise<unknown> {
+export async function getStore(id: number | string): Promise<unknown> {
   const response = await fetchWithTenant(`${API_URL_V2}stores/${id}`, {
     method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'User-Agent': getUserAgent(),
-    },
+    headers: { 'User-Agent': getUserAgent() },
   });
 
   if (!response.ok) {
@@ -46,14 +40,11 @@ export async function getStore(id: number | string, token: AuthToken): Promise<u
   return data.data;
 }
 
-export async function getStores(token: AuthToken, page = 1): Promise<GetStoresResponse> {
+export async function getStores(page = 1): Promise<GetStoresResponse> {
   const url = `${API_URL_V2}stores?page=${page}&perPage=6`;
   const response = await fetchWithTenant(url, {
     method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'User-Agent': getUserAgent(),
-    },
+    headers: { 'User-Agent': getUserAgent() },
   });
 
   if (!response.ok) {
@@ -69,35 +60,27 @@ export async function getStores(token: AuthToken, page = 1): Promise<GetStoresRe
   };
 }
 
-export function getStoreOptions(token: AuthToken): Promise<unknown> {
-  return fetchWithTenant(`${API_URL_V2}stores/options`, {
+export async function getStoreOptions(): Promise<unknown> {
+  const response = await fetchWithTenant(`${API_URL_V2}stores/options`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
       'User-Agent': getUserAgent(),
     },
-  })
-    .then((response) => {
-      if (!response.ok) {
-        return response.json().then((errorData: { message?: string }) => {
-          throw new Error(getErrorMessage(errorData) || 'Error al obtener los almacenes');
-        });
-      }
-      return response.json();
-    })
-    .catch((error) => {
-      throw error;
-    });
+  });
+
+  if (!response.ok) {
+    const errorData = (await response.json().catch(() => ({}))) as { message?: string };
+    throw new Error(getErrorMessage(errorData) || 'Error al obtener los almacenes');
+  }
+
+  return response.json();
 }
 
-export async function getTotalStockStats(token: AuthToken): Promise<unknown> {
+export async function getTotalStockStats(): Promise<unknown> {
   const response = await fetchWithTenant(`${API_URL_V2}statistics/stock/total`, {
     method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'User-Agent': getUserAgent(),
-    },
+    headers: { 'User-Agent': getUserAgent() },
   });
 
   if (!response.ok) {
@@ -108,13 +91,10 @@ export async function getTotalStockStats(token: AuthToken): Promise<unknown> {
   return response.json();
 }
 
-export async function getStockBySpeciesStats(token: AuthToken): Promise<unknown> {
+export async function getStockBySpeciesStats(): Promise<unknown> {
   const response = await fetchWithTenant(`${API_URL_V2}statistics/stock/total-by-species`, {
     method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'User-Agent': getUserAgent(),
-    },
+    headers: { 'User-Agent': getUserAgent() },
   });
 
   if (!response.ok) {
@@ -125,15 +105,10 @@ export async function getStockBySpeciesStats(token: AuthToken): Promise<unknown>
   return response.json();
 }
 
-export async function getStockByProducts(
-  token: AuthToken
-): Promise<ApiListResponse<StockByProductItem>> {
+export async function getStockByProducts(): Promise<ApiListResponse<StockByProductItem>> {
   const response = await fetchWithTenant(`${API_URL_V2}stores/total-stock-by-products`, {
     method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'User-Agent': getUserAgent(),
-    },
+    headers: { 'User-Agent': getUserAgent() },
   });
 
   if (!response.ok) {
@@ -144,13 +119,10 @@ export async function getStockByProducts(
   return response.json();
 }
 
-export async function getRegisteredPallets(token: AuthToken): Promise<unknown> {
+export async function getRegisteredPallets(): Promise<unknown> {
   const response = await fetchWithTenant(`${API_URL_V2}pallets/registered`, {
     method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'User-Agent': getUserAgent(),
-    },
+    headers: { 'User-Agent': getUserAgent() },
   });
 
   if (!response.ok) {

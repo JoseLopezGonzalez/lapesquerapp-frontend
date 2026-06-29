@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, type FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CalendarCheck2, Loader2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -27,9 +27,13 @@ import { CRM_INTERACTION_SUMMARY_MAX_LENGTH } from './schemas/crmTextLimits';
 import {
   getQuickInteractionDefaultValues,
   getQuickInteractionFormSchema,
+  type QuickInteractionFormValues,
 } from './schemas/quickInteractionFormSchema';
+import { crmAiService } from '@/services/crmAiService';
+import type { CommercialInteractionType, CommercialInteractionResult } from '@/types/crm';
 
-function ToggleGroup({ value, onChange, options }) {
+interface ToggleOption { value: string; label: string }
+function ToggleGroup({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: ToggleOption[] }) {
   return (
     <div className="flex flex-wrap gap-2">
       {options.map((option) => (
@@ -47,9 +51,22 @@ function ToggleGroup({ value, onChange, options }) {
   );
 }
 
-function FieldError({ message }) {
+function FieldError({ message }: { message?: string }) {
   if (!message) return null;
   return <p className="text-sm text-red-500">{message}</p>;
+}
+
+interface QuickInteractionModalInnerProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  prospectId?: string | number | null;
+  customerId?: string | number | null;
+  agendaActionId?: string | number | null;
+  defaultNextActionDate?: string | Date | null;
+  defaultNextActionNote?: string;
+  title?: string;
+  mode?: string;
+  onInteractionCreated?: (data: unknown) => void;
 }
 
 function QuickInteractionModalInner({
@@ -63,7 +80,7 @@ function QuickInteractionModalInner({
   title = 'Registrar interacción',
   mode = 'create',
   onInteractionCreated,
-}) {
+}: QuickInteractionModalInnerProps) {
   const { createInteraction } = useCommercialInteractionMutations();
   const isCompleteMode = mode === 'complete';
   const [isImprovingSummary, setIsImprovingSummary] = useState(false);
@@ -79,7 +96,7 @@ function QuickInteractionModalInner({
     setValue,
     watch,
     formState: { errors },
-  } = useForm({
+  } = useForm<QuickInteractionFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: getQuickInteractionDefaultValues({
       isCompleteMode,
@@ -109,12 +126,13 @@ function QuickInteractionModalInner({
     );
   }, [open, defaultNextActionDate, defaultNextActionNote, isCompleteMode, reset]);
 
-  const getErrorText = (error) => {
-    if (error?.status !== 422) {
-      return error?.message || 'No se pudo registrar la interacción';
+  const getErrorText = (error: unknown): string => {
+    const e = error as { status?: number; message?: string };
+    if (e?.status !== 422) {
+      return e?.message || 'No se pudo registrar la interacción';
     }
 
-    const baseMessage = String(error?.message || '').toLowerCase();
+    const baseMessage = String(e?.message || '').toLowerCase();
     if (baseMessage.includes('agendaactionid')) {
       return 'No se pudo cerrar la tarea porque falta la referencia de agenda. Recarga la agenda e inténtalo de nuevo.';
     }
@@ -138,7 +156,7 @@ function QuickInteractionModalInner({
     return getAgendaDomainErrorMessage(error, 'La agenda no aceptó la operación solicitada.');
   };
 
-  const onValidSubmit = async (values) => {
+  const onValidSubmit = async (values: QuickInteractionFormValues) => {
     if (!prospectId && !customerId) {
       notify.error({ title: 'No se ha encontrado el destino de la interacción' });
       return;
@@ -153,10 +171,10 @@ function QuickInteractionModalInner({
       ...(prospectId ? { prospectId } : {}),
       ...(customerId ? { customerId } : {}),
       ...(agendaActionId ? { agendaActionId } : {}),
-      type: values.type,
+      type: values.type as CommercialInteractionType,
       occurredAt: values.occurredAt.toISOString(),
       summary: values.summary.trim().slice(0, CRM_INTERACTION_SUMMARY_MAX_LENGTH),
-      result: values.result,
+      result: values.result as CommercialInteractionResult,
       nextActionNote: null,
       nextActionAt: null,
     };
@@ -176,13 +194,16 @@ function QuickInteractionModalInner({
       }
       onOpenChange(false);
     } catch (err) {
-      if (err instanceof ApiError && err.status === 422 && err.data?.errors) {
-        setErrorsFrom422(setError, err.data.errors);
+      if (err instanceof ApiError && err.status === 422) {
+        const errorData = err.data as { errors?: Record<string, string[]> };
+        if (errorData?.errors) {
+          setErrorsFrom422(setError, errorData.errors);
+        }
       }
     }
   };
 
-  const onInvalidSubmit = (formErrors) => {
+  const onInvalidSubmit = (formErrors: FieldErrors<QuickInteractionFormValues>) => {
     const n = Object.keys(formErrors).length;
     notify.error({
       title: 'Revisa el formulario',
@@ -200,27 +221,7 @@ function QuickInteractionModalInner({
 
     setIsImprovingSummary(true);
     try {
-      const response = await fetch('/api/crm/improve-text', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          kind: 'interaction_summary',
-          text: rawSummary,
-        }),
-      });
-
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(payload?.error || 'No se pudo mejorar el resumen con IA');
-      }
-
-      const improvedSummary = String(payload?.improvedText ?? '').trim();
-      if (!improvedSummary) {
-        throw new Error('La IA no devolvió un resumen válido');
-      }
-
+      const improvedSummary = await crmAiService.improveText('interaction_summary', rawSummary);
       setValue('summary', improvedSummary, {
         shouldValidate: true,
         shouldDirty: true,
@@ -229,7 +230,7 @@ function QuickInteractionModalInner({
     } catch (error) {
       notify.error({
         title: 'Error al mejorar el resumen',
-        description: error?.message || 'No se pudo procesar la mejora con IA',
+        description: error instanceof Error ? error.message : 'No se pudo procesar la mejora con IA',
       });
     } finally {
       setIsImprovingSummary(false);
@@ -287,6 +288,7 @@ function QuickInteractionModalInner({
               control={control}
               render={({ field }) => (
                 <DatePicker
+                  id="occurred-at"
                   date={field.value ?? null}
                   onChange={field.onChange}
                   formatStyle="short"
@@ -356,7 +358,7 @@ function QuickInteractionModalInner({
   );
 }
 
-export default function QuickInteractionModal(props) {
+export default function QuickInteractionModal(props: QuickInteractionModalInnerProps) {
   const isCompleteMode = props?.mode === 'complete';
   return <QuickInteractionModalInner key={isCompleteMode ? 'complete' : 'create'} {...props} />;
 }

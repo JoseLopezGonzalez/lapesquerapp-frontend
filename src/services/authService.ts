@@ -1,4 +1,4 @@
-import { fetchWithTenant } from '@lib/fetchWithTenant';
+import { fetchWithTenant } from '@/lib/fetchWithTenant';
 import { getAuthToken, clearAuthTokenCache } from '@/lib/auth/getAuthToken';
 import { API_URL_V2 } from '@/configs/config';
 import type {
@@ -123,9 +123,8 @@ export async function verifyOtp(email: string, code: string): Promise<VerifyAuth
  */
 export async function logout(): Promise<Response | { ok: boolean }> {
   try {
-    let token: string;
     try {
-      token = await getAuthToken();
+      await getAuthToken();
     } catch {
       return { ok: true };
     }
@@ -133,19 +132,11 @@ export async function logout(): Promise<Response | { ok: boolean }> {
 
     const response = await fetchWithTenant(`${API_URL_V2}logout`, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
     });
 
-    if (!response.ok) {
-      console.warn('Error al revocar token en backend:', response.status);
-    }
-
     return response;
-  } catch (error) {
-    console.error('Error en logout del backend:', error);
+  } catch {
     return { ok: false };
   }
 }
@@ -169,14 +160,9 @@ export interface UpdateMeResponse {
  * Actualiza el perfil del usuario autenticado (solo usuarios internos).
  */
 export async function updateCurrentUser(payload: UpdateMePayload): Promise<UpdateMeResponse> {
-  const token = await getAuthToken();
-
   const response = await fetchWithTenant(`${API_URL_V2}me`, {
     method: 'PUT',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
 
@@ -199,14 +185,8 @@ export async function updateCurrentUser(payload: UpdateMePayload): Promise<Updat
  * Obtiene los datos actualizados del usuario desde el backend.
  */
 export async function getCurrentUser(): Promise<AuthUser> {
-  const token = await getAuthToken();
-
   const response = await fetchWithTenant(`${API_URL_V2}me`, {
     method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
   });
 
   if (!response.ok) {

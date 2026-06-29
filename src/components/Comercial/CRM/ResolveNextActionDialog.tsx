@@ -28,6 +28,8 @@ import { useAgendaMutations, usePendingAgendaAction } from '@/hooks/useAgenda';
 import { extractAgendaErrorCode, getAgendaDomainErrorMessage } from './agendaErrorMessages';
 import { formatDateValue } from './utils';
 import { CRM_AGENDA_DESCRIPTION_MAX_LENGTH } from './schemas/crmTextLimits';
+import { crmAiService } from '@/services/crmAiService';
+import type { ResolveNextActionPayload, ResolveNextActionStrategy } from '@/types/crm';
 
 const strategyOptions = [
   {
@@ -62,9 +64,18 @@ const strategyOptions = [
   },
 ];
 
-function getAllowedStrategies(hasPending) {
+function getAllowedStrategies(hasPending: boolean): ResolveNextActionStrategy[] {
   if (hasPending) return ['keep', 'reschedule', 'reschedule_with_description', 'override'];
   return ['create_if_none'];
+}
+
+interface ResolveNextActionDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  targetType: 'customer' | 'prospect';
+  targetId: string | number;
+  sourceInteractionId?: string | number | null;
+  onViewAction?: ((action: unknown) => void) | null;
 }
 
 export default function ResolveNextActionDialog({
@@ -74,7 +85,7 @@ export default function ResolveNextActionDialog({
   targetId,
   sourceInteractionId = null,
   onViewAction = null,
-}) {
+}: ResolveNextActionDialogProps) {
   const { resolveNextAction } = useAgendaMutations();
   const {
     data: pendingData,
@@ -83,9 +94,9 @@ export default function ResolveNextActionDialog({
   } = usePendingAgendaAction(targetType, targetId, open);
   const pending = pendingData?.pendingAction ?? null;
 
-  const [strategy, setStrategy] = useState('create_if_none');
+  const [strategy, setStrategy] = useState<ResolveNextActionStrategy>('create_if_none');
   const [step, setStep] = useState('strategy');
-  const [nextActionAt, setNextActionAt] = useState(null);
+  const [nextActionAt, setNextActionAt] = useState<Date | null>(null);
   const [description, setDescription] = useState('');
   const [reason, setReason] = useState('');
   const [isImprovingDescription, setIsImprovingDescription] = useState(false);
@@ -111,7 +122,7 @@ export default function ResolveNextActionDialog({
 
   const visibleStrategyOptions = useMemo(() => {
     const allowed = getAllowedStrategies(Boolean(pending));
-    return strategyOptions.filter((item) => allowed.includes(item.value));
+    return strategyOptions.filter((item) => allowed.includes(item.value as ResolveNextActionStrategy));
   }, [pending]);
 
   // Reglas por estrategia alineadas con el backend
@@ -156,17 +167,16 @@ export default function ResolveNextActionDialog({
     }
 
     // Construir payload solo con los campos permitidos por cada estrategia
-    const payload = {
+    const payload: ResolveNextActionPayload = {
       targetType,
       targetId,
       strategy,
       expectedPendingId: pending?.agendaActionId,
+      ...(requiresDate && nextActionAt ? { nextActionAt: format(nextActionAt, 'yyyy-MM-dd') } : {}),
+      ...(showsDescription ? { description: description.trim() || null } : {}),
+      ...(requiresReason ? { reason: reason.trim() } : {}),
+      ...(allowsSourceInteraction && sourceInteractionId ? { sourceInteractionId } : {}),
     };
-    if (requiresDate && nextActionAt) payload.nextActionAt = format(nextActionAt, 'yyyy-MM-dd');
-    if (showsDescription) payload.description = description.trim() || null;
-    if (requiresReason) payload.reason = reason.trim();
-    if (allowsSourceInteraction && sourceInteractionId)
-      payload.sourceInteractionId = sourceInteractionId;
 
     try {
       await notify.promise(resolveNextAction.mutateAsync(payload), {
@@ -196,32 +206,15 @@ export default function ResolveNextActionDialog({
 
     setIsImprovingDescription(true);
     try {
-      const response = await fetch('/api/crm/improve-text', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          kind: 'next_action_description',
-          text: rawDescription,
-        }),
-      });
-
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(payload?.error || 'No se pudo mejorar la descripción con IA');
-      }
-
-      const improvedDescription = String(payload?.improvedText ?? '').trim();
-      if (!improvedDescription) {
-        throw new Error('La IA no devolvió una descripción válida');
-      }
-
+      const improvedDescription = await crmAiService.improveText(
+        'next_action_description',
+        rawDescription
+      );
       setDescription(improvedDescription);
     } catch (error) {
       notify.error({
         title: 'Error al mejorar la descripción',
-        description: error?.message || 'No se pudo procesar la mejora con IA',
+        description: error instanceof Error ? error.message : 'No se pudo procesar la mejora con IA',
       });
     } finally {
       setIsImprovingDescription(false);
@@ -263,10 +256,10 @@ export default function ResolveNextActionDialog({
                 </div>
                 <div className="min-w-0 space-y-0.5">
                   <p className="text-xs font-medium text-amber-700 dark:text-amber-400">
-                    {formatDateValue(pending.scheduledAt)}
+                    {formatDateValue(pending?.scheduledAt)}
                   </p>
-                  {pending.description && (
-                    <p className="text-foreground text-sm leading-snug">{pending.description}</p>
+                  {pending?.description && (
+                    <p className="text-foreground text-sm leading-snug">{pending?.description}</p>
                   )}
                 </div>
               </button>
@@ -283,7 +276,7 @@ export default function ResolveNextActionDialog({
                     <button
                       key={item.value}
                       type="button"
-                      onClick={() => setStrategy(item.value)}
+                      onClick={() => setStrategy(item.value as ResolveNextActionStrategy)}
                       className={`flex items-start gap-3 rounded-xl border p-3 text-left transition-colors ${
                         selected
                           ? 'border-primary bg-primary/5 ring-primary/30 ring-1'
@@ -317,7 +310,7 @@ export default function ResolveNextActionDialog({
               {requiresDate && (
                 <div className="grid gap-2">
                   <Label>Fecha</Label>
-                  <DatePicker date={nextActionAt} onChange={setNextActionAt} formatStyle="short" />
+                  <DatePicker id="next-action-at" date={nextActionAt} onChange={setNextActionAt} formatStyle="short" />
                 </div>
               )}
 

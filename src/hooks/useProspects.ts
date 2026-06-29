@@ -2,6 +2,11 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
+import {
+  agendaKeys,
+  crmDashboardKeys,
+  prospectKeys,
+} from '@/lib/routes/queryKeys';
 import { crmService } from '@/services/crmService';
 import type {
   ConvertToCustomerPayload,
@@ -15,7 +20,6 @@ type UseProspectsListParams = Record<string, unknown> & {
   enabled?: boolean;
 };
 
-type QueryKey = readonly unknown[];
 type ProspectListCache = { data?: Prospect[] } | undefined;
 type ProspectDetailCache = { data?: Prospect } | undefined;
 type ProspectContactsCache = { data?: ProspectContact[] } | undefined;
@@ -77,16 +81,15 @@ function patchProspectFromPayload(
   };
 }
 
-function useTenantQueryKey(prefix: unknown[], ...parts: unknown[]): [QueryKey, string | null] {
-  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
-  return [[...prefix, tenantId ?? 'unknown', ...parts], tenantId];
+function getTenantId() {
+  return typeof window !== 'undefined' ? getCurrentTenant() : null;
 }
 
 export function useProspectsList(params: UseProspectsListParams = {}) {
   const { enabled = true, ...queryParams } = params;
-  const [queryKey, tenantId] = useTenantQueryKey(['crm', 'prospects', 'list'], queryParams);
+  const tenantId = getTenantId();
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey,
+    queryKey: prospectKeys.list(tenantId, queryParams as Record<string, unknown>),
     queryFn: () => crmService.listProspects(queryParams),
     enabled: !!tenantId && enabled,
   });
@@ -101,9 +104,9 @@ export function useProspectsList(params: UseProspectsListParams = {}) {
 }
 
 export function useProspect(id: number | string | null | undefined) {
-  const [queryKey, tenantId] = useTenantQueryKey(['crm', 'prospect', 'detail'], id);
+  const tenantId = getTenantId();
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey,
+    queryKey: prospectKeys.detail(tenantId, id),
     queryFn: () => {
       if (id == null) throw new Error('Missing prospect id');
       return crmService.getProspect(id);
@@ -124,9 +127,9 @@ export function useProspectContacts(
   options: { enabled?: boolean } = {}
 ) {
   const { enabled = true } = options;
-  const [queryKey, tenantId] = useTenantQueryKey(['crm', 'prospect', 'contacts'], id);
+  const tenantId = getTenantId();
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey,
+    queryKey: prospectKeys.contacts(tenantId, id),
     queryFn: () => {
       if (id == null) throw new Error('Missing prospect id');
       return crmService.listProspectContacts(id);
@@ -161,22 +164,22 @@ export function useProspectMutations() {
   } = {}) => {
     await Promise.all([
       includeProspectsList
-        ? queryClient.invalidateQueries({ queryKey: ['crm', 'prospects', 'list', tenantId] })
+        ? queryClient.invalidateQueries({ queryKey: prospectKeys.listPrefix(tenantId) })
         : Promise.resolve(),
       includeDashboard
-        ? queryClient.invalidateQueries({ queryKey: ['crm', 'dashboard', tenantId] })
+        ? queryClient.invalidateQueries({ queryKey: crmDashboardKeys.all(tenantId) })
         : Promise.resolve(),
       includeAgenda
-        ? queryClient.invalidateQueries({ queryKey: ['crm', 'agenda', tenantId] })
+        ? queryClient.invalidateQueries({ queryKey: agendaKeys.all(tenantId) })
         : Promise.resolve(),
       includeAgendaSummary
-        ? queryClient.invalidateQueries({ queryKey: ['crm', 'agenda', 'summary', tenantId] })
+        ? queryClient.invalidateQueries({ queryKey: agendaKeys.summaryPrefix(tenantId) })
         : Promise.resolve(),
       id
-        ? queryClient.invalidateQueries({ queryKey: ['crm', 'prospect', 'detail', tenantId, id] })
+        ? queryClient.invalidateQueries({ queryKey: prospectKeys.detail(tenantId, id) })
         : Promise.resolve(),
       id
-        ? queryClient.invalidateQueries({ queryKey: ['crm', 'prospect', 'contacts', tenantId, id] })
+        ? queryClient.invalidateQueries({ queryKey: prospectKeys.contacts(tenantId, id) })
         : Promise.resolve(),
     ]);
   };
@@ -187,7 +190,7 @@ export function useProspectMutations() {
   ) => {
     const nextPrimary = getPrimaryContact(contacts);
     const listEntries = queryClient.getQueriesData<ProspectListCache>({
-      queryKey: ['crm', 'prospects', 'list', tenantId],
+      queryKey: prospectKeys.listPrefix(tenantId),
     });
 
     listEntries.forEach(([queryKey, cache]) => {
@@ -208,7 +211,7 @@ export function useProspectMutations() {
     updater: (prospect: Prospect) => Prospect
   ) => {
     const listEntries = queryClient.getQueriesData<ProspectListCache>({
-      queryKey: ['crm', 'prospects', 'list', tenantId],
+      queryKey: prospectKeys.listPrefix(tenantId),
     });
 
     listEntries.forEach(([queryKey, cache]) => {
@@ -237,16 +240,16 @@ export function useProspectMutations() {
         crmService.updateProspect(id, payload),
       onMutate: async (variables) => {
         const { id, payload } = variables;
-        const detailKey = ['crm', 'prospect', 'detail', tenantId, id] as const;
+        const detailKey = prospectKeys.detail(tenantId, id);
 
         await Promise.all([
           queryClient.cancelQueries({ queryKey: detailKey }),
-          queryClient.cancelQueries({ queryKey: ['crm', 'prospects', 'list', tenantId] }),
+          queryClient.cancelQueries({ queryKey: prospectKeys.listPrefix(tenantId) }),
         ]);
 
         const previousDetail = queryClient.getQueryData<ProspectDetailCache>(detailKey);
         const previousLists = queryClient.getQueriesData<ProspectListCache>({
-          queryKey: ['crm', 'prospects', 'list', tenantId],
+          queryKey: prospectKeys.listPrefix(tenantId),
         });
 
         queryClient.setQueryData<ProspectDetailCache>(detailKey, {
@@ -268,7 +271,7 @@ export function useProspectMutations() {
       },
       onSuccess: (response, variables) => {
         const { id } = variables;
-        const detailKey = ['crm', 'prospect', 'detail', tenantId, id] as const;
+        const detailKey = prospectKeys.detail(tenantId, id);
         const updatedProspect = response?.data;
         if (!updatedProspect) return;
 
@@ -334,8 +337,8 @@ export function useProspectMutations() {
       }) => crmService.createProspectContact(prospectId, payload),
       onMutate: async (variables) => {
         const { prospectId, payload } = variables;
-        const detailKey = ['crm', 'prospect', 'detail', tenantId, prospectId] as const;
-        const contactsKey = ['crm', 'prospect', 'contacts', tenantId, prospectId] as const;
+        const detailKey = prospectKeys.detail(tenantId, prospectId);
+        const contactsKey = prospectKeys.contacts(tenantId, prospectId);
 
         await Promise.all([
           queryClient.cancelQueries({ queryKey: detailKey }),
@@ -345,7 +348,7 @@ export function useProspectMutations() {
         const previousDetail = queryClient.getQueryData<ProspectDetailCache>(detailKey);
         const previousContacts = queryClient.getQueryData<ProspectContactsCache>(contactsKey);
         const previousLists = queryClient.getQueriesData<ProspectListCache>({
-          queryKey: ['crm', 'prospects', 'list', tenantId],
+          queryKey: prospectKeys.listPrefix(tenantId),
         });
 
         const tempContact: ProspectContact = {
@@ -381,8 +384,8 @@ export function useProspectMutations() {
       },
       onSuccess: (response, variables) => {
         const { prospectId } = variables;
-        const detailKey = ['crm', 'prospect', 'detail', tenantId, prospectId] as const;
-        const contactsKey = ['crm', 'prospect', 'contacts', tenantId, prospectId] as const;
+        const detailKey = prospectKeys.detail(tenantId, prospectId);
+        const contactsKey = prospectKeys.contacts(tenantId, prospectId);
 
         const createdContact = response?.data;
         if (!createdContact) return;
@@ -419,8 +422,8 @@ export function useProspectMutations() {
       }) => crmService.updateProspectContact(prospectId, contactId, payload),
       onMutate: async (variables) => {
         const { prospectId, contactId, payload } = variables;
-        const detailKey = ['crm', 'prospect', 'detail', tenantId, prospectId] as const;
-        const contactsKey = ['crm', 'prospect', 'contacts', tenantId, prospectId] as const;
+        const detailKey = prospectKeys.detail(tenantId, prospectId);
+        const contactsKey = prospectKeys.contacts(tenantId, prospectId);
 
         await Promise.all([
           queryClient.cancelQueries({ queryKey: detailKey }),
@@ -430,7 +433,7 @@ export function useProspectMutations() {
         const previousDetail = queryClient.getQueryData<ProspectDetailCache>(detailKey);
         const previousContacts = queryClient.getQueryData<ProspectContactsCache>(contactsKey);
         const previousLists = queryClient.getQueriesData<ProspectListCache>({
-          queryKey: ['crm', 'prospects', 'list', tenantId],
+          queryKey: prospectKeys.listPrefix(tenantId),
         });
 
         const currentContacts = previousContacts?.data ?? [];
@@ -471,8 +474,8 @@ export function useProspectMutations() {
       },
       onSuccess: (response, variables) => {
         const { prospectId, contactId } = variables;
-        const detailKey = ['crm', 'prospect', 'detail', tenantId, prospectId] as const;
-        const contactsKey = ['crm', 'prospect', 'contacts', tenantId, prospectId] as const;
+        const detailKey = prospectKeys.detail(tenantId, prospectId);
+        const contactsKey = prospectKeys.contacts(tenantId, prospectId);
 
         const updatedContact = response?.data;
         if (!updatedContact) return;
@@ -507,8 +510,8 @@ export function useProspectMutations() {
       }) => crmService.deleteProspectContact(prospectId, contactId),
       onMutate: async (variables) => {
         const { prospectId, contactId } = variables;
-        const detailKey = ['crm', 'prospect', 'detail', tenantId, prospectId] as const;
-        const contactsKey = ['crm', 'prospect', 'contacts', tenantId, prospectId] as const;
+        const detailKey = prospectKeys.detail(tenantId, prospectId);
+        const contactsKey = prospectKeys.contacts(tenantId, prospectId);
 
         await Promise.all([
           queryClient.cancelQueries({ queryKey: detailKey }),
@@ -518,7 +521,7 @@ export function useProspectMutations() {
         const previousDetail = queryClient.getQueryData<ProspectDetailCache>(detailKey);
         const previousContacts = queryClient.getQueryData<ProspectContactsCache>(contactsKey);
         const previousLists = queryClient.getQueriesData<ProspectListCache>({
-          queryKey: ['crm', 'prospects', 'list', tenantId],
+          queryKey: prospectKeys.listPrefix(tenantId),
         });
 
         const currentContacts = previousContacts?.data ?? [];

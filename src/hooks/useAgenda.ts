@@ -2,7 +2,12 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
-import { normalizeQueryParams } from '@/lib/routes/queryKeys';
+import {
+  agendaKeys,
+  crmDashboardKeys,
+  crmCustomerKeys,
+  prospectKeys,
+} from '@/lib/routes/queryKeys';
 import { crmService } from '@/services/crmService';
 import type { AgendaAction, ResolveNextActionPayload } from '@/types/crm';
 
@@ -33,18 +38,17 @@ async function invalidateAgendaQueries(
   tenantId: string
 ) {
   await Promise.all([
-    queryClient.invalidateQueries({ queryKey: ['crm', 'agenda', tenantId] }),
-    queryClient.invalidateQueries({ queryKey: ['crm', 'agenda', 'summary', tenantId] }),
+    queryClient.invalidateQueries({ queryKey: agendaKeys.all(tenantId) }),
+    queryClient.invalidateQueries({ queryKey: agendaKeys.summaryPrefix(tenantId) }),
   ]);
 }
 
 export function useAgenda(params: AgendaQueryParams = {}) {
   const { enabled = true, ...queryParams } = params;
   const tenantId = getTenantId();
-  const queryKey = ['crm', 'agenda', tenantId ?? 'unknown', normalizeQueryParams(queryParams)];
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey,
+    queryKey: agendaKeys.list(tenantId, queryParams as Record<string, unknown>),
     queryFn: () => crmService.listAgenda(queryParams),
     enabled: !!tenantId && enabled,
   });
@@ -60,16 +64,9 @@ export function useAgenda(params: AgendaQueryParams = {}) {
 export function useAgendaSummary(params: AgendaQueryParams = {}) {
   const { enabled = true, ...queryParams } = params;
   const tenantId = getTenantId();
-  const queryKey = [
-    'crm',
-    'agenda',
-    'summary',
-    tenantId ?? 'unknown',
-    normalizeQueryParams(queryParams),
-  ];
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey,
+    queryKey: agendaKeys.summary(tenantId, queryParams as Record<string, unknown>),
     queryFn: () => crmService.getAgendaSummary(queryParams),
     enabled: !!tenantId && enabled,
   });
@@ -88,18 +85,9 @@ export function usePendingAgendaAction(
   enabled = true
 ) {
   const tenantId = getTenantId();
-  const safeTargetId = targetId != null ? String(targetId) : null;
-  const queryKey = [
-    'crm',
-    'agenda',
-    'pending',
-    tenantId ?? 'unknown',
-    targetType ?? 'none',
-    safeTargetId ?? 'none',
-  ];
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey,
+    queryKey: agendaKeys.pending(tenantId, targetType, targetId),
     queryFn: () =>
       crmService.getPendingAgendaAction({
         targetType: targetType as 'prospect' | 'customer',
@@ -148,7 +136,7 @@ export function useAgendaMutations() {
       onSuccess: async () => {
         await Promise.all([
           invalidateAgendaQueries(queryClient, tenantId),
-          queryClient.invalidateQueries({ queryKey: ['crm', 'agenda', 'pending', tenantId] }),
+          queryClient.invalidateQueries({ queryKey: agendaKeys.pendingPrefix(tenantId) }),
         ]);
       },
     }),
@@ -157,12 +145,12 @@ export function useAgendaMutations() {
       onSuccess: async (_data, payload) => {
         await Promise.all([
           invalidateAgendaQueries(queryClient, tenantId),
-          queryClient.invalidateQueries({ queryKey: ['crm', 'agenda', 'pending', tenantId] }),
-          queryClient.invalidateQueries({ queryKey: ['crm', 'dashboard', tenantId] }),
-          queryClient.invalidateQueries({ queryKey: ['crm', 'prospects', 'list', tenantId] }),
+          queryClient.invalidateQueries({ queryKey: agendaKeys.pendingPrefix(tenantId) }),
+          queryClient.invalidateQueries({ queryKey: crmDashboardKeys.all(tenantId) }),
+          queryClient.invalidateQueries({ queryKey: prospectKeys.listPrefix(tenantId) }),
           payload.targetType === 'prospect'
-            ? queryClient.invalidateQueries({ queryKey: ['crm', 'prospect', 'detail', tenantId] })
-            : queryClient.invalidateQueries({ queryKey: ['crm', 'customer', 'detail', tenantId] }),
+            ? queryClient.invalidateQueries({ queryKey: prospectKeys.detailPrefix(tenantId) })
+            : queryClient.invalidateQueries({ queryKey: crmCustomerKeys.detailPrefix(tenantId) }),
         ]);
       },
     }),

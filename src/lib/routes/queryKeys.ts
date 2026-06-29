@@ -136,6 +136,8 @@ export const customerListKeys = {
 
 // P10 — claves de cliente usadas en useCustomerAssignment
 export const crmCustomerKeys = {
+  detailPrefix: (tenantId: string | null | undefined) =>
+    ['crm', 'customers', 'detail', tenantId ?? 'unknown'] as const,
   detail: (tenantId: string | null | undefined, customerId: number | string | null | undefined) =>
     ['crm', 'customers', 'detail', tenantId ?? 'unknown', customerId] as const,
 };
@@ -207,6 +209,11 @@ export const productCategoryOptionKeys = {
 export const productFamilyOptionKeys = {
   list: (tenantId: string | null | undefined) =>
     ['productFamilies', 'options', tenantId ?? 'unknown'] as const,
+};
+
+export const processOptionKeys = {
+  options: (tenantId: string | null | undefined) =>
+    ['processes', 'options', tenantId ?? 'unknown'] as const,
 };
 
 export const settingsQueryKeys = {
@@ -315,4 +322,284 @@ export const externalProcessorListKeys = {
 export const externalProcessorOptionKeys = {
   list: (tenantId: string | null | undefined) =>
     ['external-processors', 'options', tenantId ?? 'unknown'] as const,
+};
+
+export const fuelQueryKeys = {
+  spainAverageDiesel: () => ['fuel', 'spain-average-diesel'] as const,
+};
+
+export const storeQueryKeys = {
+  totalStock: (tenantId: string | null | undefined) =>
+    ['stock', 'total', tenantId ?? 'unknown'] as const,
+  stockBySpecies: (tenantId: string | null | undefined) =>
+    ['stock', 'by-species', tenantId ?? 'unknown'] as const,
+  stockByProducts: (tenantId: string | null | undefined) =>
+    ['stock', 'by-products', tenantId ?? 'unknown'] as const,
+};
+
+export const orderStatKeys = {
+  totalNetWeight: (tenantId: string | null | undefined, dateFrom: string, dateTo: string) =>
+    ['orders', 'totalNetWeight', tenantId ?? 'unknown', dateFrom, dateTo] as const,
+  totalAmount: (tenantId: string | null | undefined, dateFrom: string, dateTo: string) =>
+    ['orders', 'totalAmount', tenantId ?? 'unknown', dateFrom, dateTo] as const,
+  ranking: (
+    tenantId: string | null | undefined,
+    dateFrom: string,
+    dateTo: string,
+    groupBy: string,
+    valueType: string,
+    speciesId: string | undefined
+  ) =>
+    [
+      'orders',
+      'ranking',
+      tenantId ?? 'unknown',
+      dateFrom,
+      dateTo,
+      groupBy,
+      valueType,
+      speciesId,
+    ] as const,
+  salesBySalesperson: (tenantId: string | null | undefined, dateFrom: string, dateTo: string) =>
+    ['orders', 'salesBySalesperson', tenantId ?? 'unknown', dateFrom, dateTo] as const,
+  profitabilitySummary: (
+    tenantId: string | null | undefined,
+    dateFrom: string,
+    dateTo: string,
+    productId: string | undefined
+  ) =>
+    ['orders', 'profitabilitySummary', tenantId ?? 'unknown', dateFrom, dateTo, productId] as const,
+  profitabilityTimeline: (
+    tenantId: string | null | undefined,
+    dateFrom: string,
+    dateTo: string,
+    granularity: string | undefined,
+    productId: string | undefined
+  ) =>
+    [
+      'orders',
+      'profitabilityTimeline',
+      tenantId ?? 'unknown',
+      dateFrom,
+      dateTo,
+      granularity,
+      productId,
+    ] as const,
+  profitabilityProducts: (tenantId: string | null | undefined, dateFrom: string, dateTo: string) =>
+    ['orders', 'profitabilityProducts', tenantId ?? 'unknown', dateFrom, dateTo] as const,
+};
+
+export const agendaKeys = {
+  all: (tenantId: string | null | undefined) =>
+    ['crm', 'agenda', tenantId ?? 'unknown'] as const,
+  list: (tenantId: string | null | undefined, params: Record<string, unknown> = {}) =>
+    ['crm', 'agenda', tenantId ?? 'unknown', normalizeQueryParams(params)] as const,
+  summaryPrefix: (tenantId: string | null | undefined) =>
+    ['crm', 'agenda', 'summary', tenantId ?? 'unknown'] as const,
+  summary: (tenantId: string | null | undefined, params: Record<string, unknown> = {}) =>
+    ['crm', 'agenda', 'summary', tenantId ?? 'unknown', normalizeQueryParams(params)] as const,
+  pendingPrefix: (tenantId: string | null | undefined) =>
+    ['crm', 'agenda', 'pending', tenantId ?? 'unknown'] as const,
+  pending: (
+    tenantId: string | null | undefined,
+    targetType: string | null | undefined,
+    targetId: string | number | null | undefined
+  ) =>
+    [
+      'crm',
+      'agenda',
+      'pending',
+      tenantId ?? 'unknown',
+      targetType ?? 'none',
+      targetId != null ? String(targetId) : 'none',
+    ] as const,
+};
+
+export const crmDashboardKeys = {
+  all: (tenantId: string | null | undefined) =>
+    ['crm', 'dashboard', tenantId ?? 'unknown'] as const,
+  pendingActions: (tenantId: string | null | undefined) =>
+    ['crm', 'dashboard', tenantId ?? 'unknown', 'pending-actions'] as const,
+  customers: (tenantId: string | null | undefined) =>
+    ['crm', 'dashboard', tenantId ?? 'unknown', 'customers'] as const,
+  prospects: (tenantId: string | null | undefined) =>
+    ['crm', 'dashboard', tenantId ?? 'unknown', 'prospects'] as const,
+};
+
+export const prospectKeys = {
+  listPrefix: (tenantId: string | null | undefined) =>
+    ['crm', 'prospects', 'list', tenantId ?? 'unknown'] as const,
+  list: (tenantId: string | null | undefined, params: Record<string, unknown> = {}) =>
+    ['crm', 'prospects', 'list', tenantId ?? 'unknown', normalizeQueryParams(params)] as const,
+  detailPrefix: (tenantId: string | null | undefined) =>
+    ['crm', 'prospect', 'detail', tenantId ?? 'unknown'] as const,
+  detail: (tenantId: string | null | undefined, id: number | string | null | undefined) =>
+    ['crm', 'prospect', 'detail', tenantId ?? 'unknown', id] as const,
+  contacts: (tenantId: string | null | undefined, id: number | string | null | undefined) =>
+    ['crm', 'prospect', 'contacts', tenantId ?? 'unknown', id] as const,
+};
+
+export const interactionKeys = {
+  listPrefix: (tenantId: string | null | undefined) =>
+    ['crm', 'interactions', 'list', tenantId ?? 'unknown'] as const,
+  list: (tenantId: string | null | undefined, params: Record<string, unknown> = {}) =>
+    ['crm', 'interactions', 'list', tenantId ?? 'unknown', normalizeQueryParams(params)] as const,
+};
+
+export const offerKeys = {
+  listPrefix: (tenantId: string | null | undefined) =>
+    ['crm', 'offers', 'list', tenantId ?? 'unknown'] as const,
+  list: (tenantId: string | null | undefined, params: Record<string, unknown> = {}) =>
+    ['crm', 'offers', 'list', tenantId ?? 'unknown', normalizeQueryParams(params)] as const,
+  detail: (tenantId: string | null | undefined, id: number | string | null | undefined) =>
+    ['crm', 'offer', 'detail', tenantId ?? 'unknown', id] as const,
+};
+
+export const incotermQueryKeys = {
+  listPrefix: (tenantId: string | null | undefined) =>
+    ['incoterms', 'list', tenantId ?? 'unknown'] as const,
+  list: (
+    tenantId: string | null | undefined,
+    filters: Record<string, unknown> = {},
+    page = 1,
+    perPage = 12
+  ) =>
+    [
+      'incoterms',
+      'list',
+      tenantId ?? 'unknown',
+      normalizeQueryParams(filters),
+      page,
+      perPage,
+    ] as const,
+};
+
+export const supplierListKeys = {
+  listPrefix: (tenantId: string | null | undefined) =>
+    ['suppliers', 'list', tenantId ?? 'unknown'] as const,
+  list: (
+    tenantId: string | null | undefined,
+    filters: Record<string, unknown> = {},
+    page = 1,
+    perPage = 12
+  ) =>
+    [
+      'suppliers',
+      'list',
+      tenantId ?? 'unknown',
+      normalizeQueryParams(filters),
+      page,
+      perPage,
+    ] as const,
+};
+
+export const userQueryKeys = {
+  me: (tenantId: string | null | undefined) => ['me', tenantId ?? 'unknown'] as const,
+};
+
+export const fieldOperatorQueryKeys = {
+  listPrefix: (tenantId: string | null | undefined) =>
+    ['field-operators', 'list', tenantId ?? 'unknown'] as const,
+  list: (
+    tenantId: string | null | undefined,
+    filters: Record<string, unknown> = {},
+    page = 1,
+    perPage = 12
+  ) =>
+    [
+      'field-operators',
+      'list',
+      tenantId ?? 'unknown',
+      normalizeQueryParams(filters),
+      page,
+      perPage,
+    ] as const,
+  detail: (tenantId: string | null | undefined, id: number | string | null | undefined) =>
+    ['field-operators', 'detail', tenantId ?? 'unknown', id] as const,
+  optionsPrefix: (tenantId: string | null | undefined) =>
+    ['field-operators', 'options', tenantId ?? 'unknown'] as const,
+};
+
+export const dispatchQueryKeys = {
+  listPrefix: (tenantId: string | null | undefined) =>
+    ['dispatches', 'list', tenantId ?? 'unknown'] as const,
+  list: (tenantId: string | null | undefined, page: number, today: string) =>
+    ['dispatches', 'list', tenantId ?? 'unknown', page, today] as const,
+  chart: (
+    tenantId: string | null | undefined,
+    from: string | null,
+    to: string | null,
+    speciesId: string | undefined,
+    categoryId: string | undefined,
+    familyId: string | undefined,
+    unit: string | undefined,
+    groupBy: string | undefined
+  ) =>
+    [
+      'dispatches',
+      'chart',
+      tenantId ?? 'unknown',
+      from,
+      to,
+      speciesId,
+      categoryId,
+      familyId,
+      unit,
+      groupBy,
+    ] as const,
+};
+
+export const receptionChartKeys = {
+  chart: (
+    tenantId: string | null | undefined,
+    from: string | null,
+    to: string | null,
+    speciesId: string | undefined,
+    categoryId: string | undefined,
+    familyId: string | undefined,
+    unit: string | undefined,
+    groupBy: string | undefined
+  ) =>
+    [
+      'receptions',
+      'chart',
+      tenantId ?? 'unknown',
+      from,
+      to,
+      speciesId,
+      categoryId,
+      familyId,
+      unit,
+      groupBy,
+    ] as const,
+};
+
+export const orderChartKeys = {
+  sales: (
+    tenantId: string | null | undefined,
+    from: string | null,
+    to: string | null,
+    speciesId: string | undefined,
+    categoryId: string | undefined,
+    familyId: string | undefined,
+    unit: string | undefined,
+    groupBy: string | undefined
+  ) =>
+    [
+      'sales',
+      'chart',
+      tenantId ?? 'unknown',
+      from,
+      to,
+      speciesId,
+      categoryId,
+      familyId,
+      unit,
+      groupBy,
+    ] as const,
+  transport: (
+    tenantId: string | null | undefined,
+    from: string,
+    to: string
+  ) => ['transport', 'chart', tenantId ?? 'unknown', from, to] as const,
 };
