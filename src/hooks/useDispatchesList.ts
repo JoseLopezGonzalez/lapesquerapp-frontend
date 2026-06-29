@@ -12,15 +12,17 @@ export function useDispatchesList(page = 1) {
   const today = new Date().toISOString().split('T')[0];
   const filters = { dates: { start: today, end: today } };
 
-  const { data, isLoading, error } = useQuery({
+  const { data: rawData, isLoading, error } = useQuery({
     queryKey: dispatchQueryKeys.list(tenantId, page, today as string),
     queryFn: () => ceboDispatchService.list(filters, { page, perPage: PER_PAGE }),
     enabled: !!tenantId,
   });
 
+  const data = rawData as { data?: unknown[]; meta?: { total?: number } } | undefined;
+
   return {
     data: data?.data ?? [],
-    total: data?.meta?.total ?? (data as Record<string, unknown> | undefined)?.total ?? 0,
+    total: data?.meta?.total ?? 0,
     isLoading,
     error: error instanceof Error ? error.message : null,
   };

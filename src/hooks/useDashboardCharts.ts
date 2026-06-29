@@ -23,7 +23,7 @@ interface UseChartDataReturn {
 }
 
 function useChartData(
-  queryKey: unknown[],
+  queryKey: readonly unknown[],
   queryFn: () => Promise<unknown>,
   enabled: boolean
 ): UseChartDataReturn {
