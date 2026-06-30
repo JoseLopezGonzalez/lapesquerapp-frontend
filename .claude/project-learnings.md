@@ -2,8 +2,8 @@
 
 > This file is maintained exclusively by the system-learner agent.
 > Do not edit manually unless correcting an error.
-> Last updated: 2026-06-29
-> Total entries: 17
+> Last updated: 2026-06-30
+> Total entries: 20
 
 ## How this file works
 
@@ -32,7 +32,18 @@ Every entry has:
 > Rules the auditor must actively check for — discovered through experience, not preset.
 > These extend the checklists in gap-auditor.md and design-context.md.
 
-[No entries yet — first entries will be added by system-learner as audits run]
+### PL-016
+- **Date:** 2026-06-30
+- **Source:** /audit-desktop Phase 5 (system-learner)
+- **Category:** AUDIT_RULE
+- **Confidence:** HIGH
+- **Entry:** `// @ts-nocheck` a nivel de fichero nunca es aceptable como solución permanente.
+  Suprimir TypeScript para el archivo completo oculta errores reales y viola strict mode.
+  Si un `.tsx` tiene errores en cascada tras una migración, aplicar el protocolo PL-012:
+  leer todo el output de `npm run type-check`, corregir TODOS los errores del fichero antes de pushear.
+  Nunca resolver errores de migración con `@ts-nocheck`.
+- **Found in:** `src/components/Admin/Pallets/PalletDialog/PalletView/index.tsx:1`
+- **Status:** Follow-up: GAP-039.
 
 ---
 
@@ -211,6 +222,32 @@ Every entry has:
   with incremental cache (`tsconfig.tsbuildinfo`, also gitignored). Do NOT run
   `tsc --noEmit --incremental false` in cloud context — without node_modules and
   next-env.d.ts it produces hundreds of false-positive errors.
+
+### PL-014
+- **Date:** 2026-06-30
+- **Source:** /audit-desktop Phase 5 (system-learner)
+- **Category:** ANTI_PATTERN
+- **Confidence:** HIGH
+- **Entry:** `'use client'` en archivos `page.js/tsx` del App Router es un anti-patrón.
+  Los pages de Next.js App Router deben ser **Server Components** (sin directiva) que importan
+  el `XxxPageClient`. Añadir `'use client'` al page convierte toda la ruta en Client Component,
+  impide optimizaciones RSC y no es el patrón canónico del proyecto. La directiva `'use client'`
+  pertenece exclusivamente al componente `XxxPageClient`, nunca al `page.tsx`.
+- **Found in:** `src/app/comercial/ofertas/page.js:1`, `src/app/comercial/orders-manager/page.js:1`
+- **Status:** Follow-up: GAP-046.
+
+### PL-015
+- **Date:** 2026-06-30
+- **Source:** /audit-desktop Phase 5 (system-learner)
+- **Category:** ANTI_PATTERN
+- **Confidence:** HIGH
+- **Entry:** La librería de iconos estándar de PesquerApp es **Lucide React** (ya instalada).
+  Nunca importar de `@heroicons/react` — buscar el equivalente en Lucide o usar el más cercano.
+  Si un import de Heroicons aparece en una PR o en un archivo legacy, reemplazarlo en el mismo commit.
+  Los imports muertos de cualquier librería de iconos también deben eliminarse inmediatamente.
+- **Found in:** `src/components/Admin/LabelEditor/index.js:74` (BoldIcon de @heroicons/react/20/solid),
+  `src/components/Admin/OrdersManager/OrdersList/index.js:2` (InboxIcon muerto de @heroicons/react/24/outline)
+- **Status:** Follow-up: GAP-041.
 
 ---
 
