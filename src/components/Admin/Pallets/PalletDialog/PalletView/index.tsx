@@ -153,6 +153,9 @@ export default function PalletView({
     hasPalletChanges = false,
   } = usePallet({ id: palletId ?? null, onChange, initialStoreId: initialStoreId ?? null, initialOrderId: initialOrderId ?? null, initialPallet: initialPallet as PalletState | null | undefined });
 
+  type ActiveOrderOption = { id: string; name: string; load_date: string };
+  const typedActiveOrdersOptions = activeOrdersOptions as ActiveOrderOption[] | undefined;
+
   const {
     timeline,
     loading: timelineLoading,
@@ -1102,13 +1105,13 @@ export default function PalletView({
                                   />
                                 </SelectTrigger>
                                 <SelectContent loading={activeOrdersLoading}>
-                                  {activeOrdersOptions?.map((order) => (
+                                  {typedActiveOrdersOptions?.map((order) => (
                                     <SelectItem key={order.id} value={order.id}>
                                       #{order.name} - {formatDateShort(order.load_date)}
                                     </SelectItem>
                                   ))}
                                   {temporalPallet.orderId &&
-                                    !activeOrdersOptions?.some(
+                                    !typedActiveOrdersOptions?.some(
                                       (order) => order.id === temporalPallet.orderId
                                     ) && (
                                       <SelectItem value={String(temporalPallet.orderId)}>
