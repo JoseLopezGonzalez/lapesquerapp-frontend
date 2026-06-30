@@ -21,11 +21,14 @@ import {
 import { INITIAL_ORDER_CATEGORIES } from '@/lib/orders/orderListFilters';
 import { notify } from '@/lib/notifications';
 import { Package } from 'lucide-react';
+import { offerKeys } from '@/lib/routes/queryKeys';
+import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 
 export default function ComercialOrdersManager() {
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const isMobile = useIsMobile();
+  const tenantId = getCurrentTenant();
 
   const [onCreatingNewOrder, setOnCreatingNewOrder] = useState(false);
   const [isOrderLoading, setIsOrderLoading] = useState(false);
@@ -100,7 +103,7 @@ export default function ComercialOrdersManager() {
 
   const reloadOrders = useCallback(() => {
     refetch();
-    queryClient.invalidateQueries({ queryKey: ['crm', 'offers', 'list'] });
+    queryClient.invalidateQueries({ queryKey: offerKeys.listPrefix(tenantId) });
   }, [refetch, queryClient]);
 
   const handleOnChange = useCallback(

@@ -1,5 +1,4 @@
 import React, { memo } from 'react';
-import { InboxIcon } from '@heroicons/react/24/outline';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   PackageSearch,

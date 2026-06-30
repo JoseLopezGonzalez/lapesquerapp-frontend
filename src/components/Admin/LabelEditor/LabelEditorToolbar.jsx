@@ -106,7 +106,7 @@ export default function LabelEditorToolbar({
           variant=""
           onClick={handleOnClickSave}
           disabled={isSaving}
-          className="bg-lime-500 hover:bg-lime-400 disabled:cursor-not-allowed disabled:opacity-50"
+          className="bg-primary hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSaving ? (
             <>

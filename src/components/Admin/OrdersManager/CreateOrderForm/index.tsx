@@ -190,21 +190,62 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
     getCustomer(selectedCustomerId, token)
       .then((data) => {
         const customer = data as CustomerData;
-        setValue('salesperson', getRelatedId(customer, customer.salesperson, customer.salespersonId, customer.salesperson_id));
-        setValue('fieldOperator', getRelatedId(customer, customer.fieldOperator, customer.fieldOperatorId, customer.field_operator_id));
-        setValue('payment', getRelatedId(customer, customer.paymentTerm, customer.paymentTermId, customer.payment_term_id));
-        setValue('incoterm', getRelatedId(customer, customer.incoterm, customer.incotermId, customer.incoterm_id));
+        setValue(
+          'salesperson',
+          getRelatedId(
+            customer,
+            customer.salesperson,
+            customer.salespersonId,
+            customer.salesperson_id
+          )
+        );
+        setValue(
+          'fieldOperator',
+          getRelatedId(
+            customer,
+            customer.fieldOperator,
+            customer.fieldOperatorId,
+            customer.field_operator_id
+          )
+        );
+        setValue(
+          'payment',
+          getRelatedId(
+            customer,
+            customer.paymentTerm,
+            customer.paymentTermId,
+            customer.payment_term_id
+          )
+        );
+        setValue(
+          'incoterm',
+          getRelatedId(customer, customer.incoterm, customer.incotermId, customer.incoterm_id)
+        );
         setValue('billingAddress', getTextValue(customer.billingAddress, customer.billing_address));
-        setValue('shippingAddress', getTextValue(customer.shippingAddress, customer.shipping_address));
-        setValue('transportationNotes', getTextValue(customer.transportationNotes, customer.transportation_notes));
-        setValue('productionNotes', getTextValue(customer.productionNotes, customer.production_notes));
-        setValue('accountingNotes', getTextValue(customer.accountingNotes, customer.accounting_notes));
-        setValue('transport', getRelatedId(customer, customer.transport, customer.transportId, customer.transport_id));
+        setValue(
+          'shippingAddress',
+          getTextValue(customer.shippingAddress, customer.shipping_address)
+        );
+        setValue(
+          'transportationNotes',
+          getTextValue(customer.transportationNotes, customer.transportation_notes)
+        );
+        setValue(
+          'productionNotes',
+          getTextValue(customer.productionNotes, customer.production_notes)
+        );
+        setValue(
+          'accountingNotes',
+          getTextValue(customer.accountingNotes, customer.accounting_notes)
+        );
+        setValue(
+          'transport',
+          getRelatedId(customer, customer.transport, customer.transportId, customer.transport_id)
+        );
         setValue('emails', customer.emails || []);
         setValue('ccEmails', customer.ccEmails || customer.cc_emails || []);
       })
       .catch((err: unknown) => {
-        console.error('Error al cargar datos del cliente:', err);
         notify.error({
           title: 'Error al cargar datos del cliente',
           description: 'No se pudieron cargar los datos. Intente de nuevo.',
@@ -223,7 +264,8 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
     const currentAddress = getValues('loadingAddress');
     if (currentAddress) return;
 
-    externalProcessorService.getById(selectedExternalProcessorId)
+    externalProcessorService
+      .getById(selectedExternalProcessorId)
       .then((ep) => {
         const parts: string[] = [];
         if (ep.address) parts.push(ep.address);
@@ -343,7 +385,6 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
       lastCustomerIdRef.current = null;
       onCreate(newOrderData.id, newOrderData);
     } catch (error) {
-      console.error('Error al crear el pedido:', error);
       const err = error as { status?: number; data?: { errors?: Record<string, string[]> } };
       if (err?.status === 422 && err?.data?.errors) {
         setErrorsFrom422(setError, err.data.errors);
@@ -446,12 +487,7 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
         case 'Input':
 
         default:
-          return (
-            <Input
-              {...commonProps}
-              className={isMobile ? 'h-12 text-base' : undefined}
-            />
-          );
+          return <Input {...commonProps} className={isMobile ? 'h-12 text-base' : undefined} />;
       }
     },
     [control, isMobile, loading, register]
@@ -517,12 +553,18 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
                 <Separator className="my-2" />
                 <div className={`grid w-full ${group.grid || 'grid-cols-1 gap-4'}`}>
                   {group.fields.map((field) => (
-                    <div key={field.name} className={`grid w-full min-w-0 gap-2 ${field.colSpan || ''}`}>
+                    <div
+                      key={field.name}
+                      className={`grid w-full min-w-0 gap-2 ${field.colSpan || ''}`}
+                    >
                       <Label htmlFor={field.name}>{field.label}</Label>
                       {renderField(field)}
                       {errors[field.name as keyof typeof errors] && (
                         <p className="text-sm text-red-500">
-                          {(errors[field.name as keyof typeof errors] as { message?: string })?.message}
+                          {
+                            (errors[field.name as keyof typeof errors] as { message?: string })
+                              ?.message
+                          }
                         </p>
                       )}
                     </div>
@@ -532,7 +574,9 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
             ))}
 
             <div className="w-full">
-              <h3 className="text-muted-foreground my-2 text-sm font-medium">Productos previstos</h3>
+              <h3 className="text-muted-foreground my-2 text-sm font-medium">
+                Productos previstos
+              </h3>
               <Separator className="my-2" />
               <div className="flex flex-col gap-4">
                 {fields.map((item, index) => (
@@ -590,21 +634,19 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
                               <SelectValue placeholder="IVA" loading={taxLoading} />
                             </SelectTrigger>
                             <SelectContent loading={taxLoading}>
-                              {(taxOptions as Array<{ value: unknown; label: string }>).map((tax) => (
-                                <SelectItem key={String(tax.value)} value={String(tax.value)}>
-                                  {tax.label}
-                                </SelectItem>
-                              ))}
+                              {(taxOptions as Array<{ value: unknown; label: string }>).map(
+                                (tax) => (
+                                  <SelectItem key={String(tax.value)} value={String(tax.value)}>
+                                    {tax.label}
+                                  </SelectItem>
+                                )
+                              )}
                             </SelectContent>
                           </Select>
                         );
                       }}
                     />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => remove(index)}
-                    >
+                    <Button type="button" variant="outline" onClick={() => remove(index)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                     {errors.plannedProducts?.[index]?.product && (

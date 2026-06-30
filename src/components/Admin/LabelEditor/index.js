@@ -71,7 +71,6 @@ import {
   Calendar,
   AlertTriangle,
 } from 'lucide-react';
-import { BoldIcon } from '@heroicons/react/20/solid';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useLabelEditor } from '@/hooks/useLabelEditor';
