@@ -252,15 +252,20 @@ export default function PalletView({
           title: 'Etiqueta generada',
           description: 'El PDF ya está listo para descarga.',
         },
-        error: (error) => ({
-          title: 'Error al generar la etiqueta',
-          description:
-            error?.userMessage ||
-            error?.data?.userMessage ||
-            error?.response?.data?.userMessage ||
-            error?.message ||
-            'No se pudo generar la etiqueta de expedición.',
-        }),
+        error: (err: unknown) => {
+          const e = err as Record<string, unknown>;
+          const data = e?.data as Record<string, unknown> | undefined;
+          const responseData = (e?.response as Record<string, unknown> | undefined)?.data as Record<string, unknown> | undefined;
+          return {
+            title: 'Error al generar la etiqueta',
+            description:
+              (e?.userMessage as string) ||
+              (data?.userMessage as string) ||
+              (responseData?.userMessage as string) ||
+              (e?.message as string) ||
+              'No se pudo generar la etiqueta de expedición.',
+          };
+        },
       });
     } finally {
       setIsDownloadingExpeditionLabel(false);
