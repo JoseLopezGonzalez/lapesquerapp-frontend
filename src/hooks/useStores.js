@@ -51,9 +51,9 @@ export function useStores() {
       queryKey: storesQueryKey,
       queryFn: async ({ pageParam = 1 }) => {
         const [storesResponse, registeredPalletsData] = await Promise.all([
-          getStores(token, pageParam),
+          getStores(pageParam),
           pageParam === 1 && !externalActor
-            ? getRegisteredPallets(token).catch(() => ({
+            ? getRegisteredPallets().catch(() => ({
                 id: null,
                 name: 'En espera',
                 temperature: null,
