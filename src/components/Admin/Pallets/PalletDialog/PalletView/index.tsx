@@ -338,7 +338,7 @@ export default function PalletView({
   // Obtener productos únicos disponibles en el palet
   const availableProductsInPallet = useMemo(() => {
     if (!temporalPallet?.boxes) return [];
-    const productMap = new Map();
+    const productMap = new Map<number | string, { value: number | string; label: string }>();
     temporalPallet.boxes
       .filter((box) => box.isAvailable !== false && box.product?.id)
       .forEach((box) => {
@@ -479,8 +479,8 @@ export default function PalletView({
 
   // Agrupar cajas por producción
   const groupBoxesByProduction = () => {
-    const productionGroups = new Map();
-    const availableBoxes = [];
+    const productionGroups = new Map<string | number, { production: { id: number | null; lot: string | null } | null; boxes: PalletBox[] }>();
+    const availableBoxes: PalletBox[] = [];
 
     temporalPallet.boxes.forEach((box) => {
       if (isBoxAvailable(box)) {
@@ -1137,7 +1137,7 @@ export default function PalletView({
 
                         // Calcular datos resumen según el tab activo
                         const getSummaryData = () => {
-                          let boxesToShow = [];
+                          let boxesToShow: PalletBox[] = [];
 
                           if (activeTab === 'disponibles') {
                             boxesToShow = available;
@@ -1149,7 +1149,7 @@ export default function PalletView({
 
                           const numberOfBoxes = boxesToShow.length;
                           const netWeight = boxesToShow.reduce(
-                            (sum, box) => sum + parseFloat(box.netWeight || 0),
+                            (sum, box) => sum + parseFloat(String(box.netWeight ?? 0)),
                             0
                           );
 
@@ -1230,7 +1230,7 @@ export default function PalletView({
                                           <TooltipTrigger asChild>
                                             <div className="cursor-help text-right">
                                               <span className="text-sm font-medium text-green-700">
-                                                {parseFloat(box.traceableCostPerKg).toFixed(2)} €/kg
+                                                {parseFloat(String(box.traceableCostPerKg ?? 0)).toFixed(2)} €/kg
                                               </span>
                                               <p className="text-muted-foreground text-xs">
                                                 Trazable
@@ -1333,7 +1333,7 @@ export default function PalletView({
                                       <Tooltip>
                                         <TooltipTrigger asChild>
                                           <span className="cursor-help text-green-700">
-                                            {parseFloat(box.traceableCostPerKg).toFixed(2)} €/kg
+                                            {parseFloat(String(box.traceableCostPerKg ?? 0)).toFixed(2)} €/kg
                                           </span>
                                         </TooltipTrigger>
                                         <TooltipContent>
@@ -1346,7 +1346,7 @@ export default function PalletView({
                                       <Tooltip>
                                         <TooltipTrigger asChild>
                                           <span className="cursor-help text-blue-600">
-                                            {parseFloat(box.manualCostPerKg).toFixed(2)} €/kg
+                                            {parseFloat(String(box.manualCostPerKg ?? 0)).toFixed(2)} €/kg
                                           </span>
                                         </TooltipTrigger>
                                         <TooltipContent>
@@ -1527,14 +1527,14 @@ export default function PalletView({
                                                   <TableCell className="text-right text-sm">
                                                     {box.traceableCostPerKg != null ? (
                                                       <span className="text-green-700">
-                                                        {parseFloat(box.traceableCostPerKg).toFixed(
+                                                        {parseFloat(String(box.traceableCostPerKg ?? 0)).toFixed(
                                                           2
                                                         )}{' '}
                                                         €/kg
                                                       </span>
                                                     ) : box.manualCostPerKg != null ? (
                                                       <span className="text-blue-600">
-                                                        {parseFloat(box.manualCostPerKg).toFixed(2)}{' '}
+                                                        {parseFloat(String(box.manualCostPerKg ?? 0)).toFixed(2)}{' '}
                                                         €/kg
                                                       </span>
                                                     ) : (
@@ -1697,7 +1697,7 @@ export default function PalletView({
                                               {(() => {
                                                 const totalWeight = group.boxes.reduce(
                                                   (sum, box) =>
-                                                    sum + parseFloat(box.netWeight || 0),
+                                                    sum + parseFloat(String(box.netWeight ?? 0)),
                                                   0
                                                 );
                                                 return (
@@ -2184,7 +2184,7 @@ export default function PalletView({
                                               <Tooltip>
                                                 <TooltipTrigger asChild>
                                                   <span className="cursor-help text-green-700">
-                                                    {parseFloat(box.traceableCostPerKg).toFixed(2)}{' '}
+                                                    {parseFloat(String(box.traceableCostPerKg ?? 0)).toFixed(2)}{' '}
                                                     €/kg
                                                   </span>
                                                 </TooltipTrigger>
@@ -2198,7 +2198,7 @@ export default function PalletView({
                                               <Tooltip>
                                                 <TooltipTrigger asChild>
                                                   <span className="cursor-help text-blue-600">
-                                                    {parseFloat(box.manualCostPerKg).toFixed(2)}{' '}
+                                                    {parseFloat(String(box.manualCostPerKg ?? 0)).toFixed(2)}{' '}
                                                     €/kg
                                                   </span>
                                                 </TooltipTrigger>
