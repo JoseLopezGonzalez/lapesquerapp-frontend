@@ -29,10 +29,42 @@ import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
 
 // Lookup estático para que Tailwind JIT incluya las clases de col-span (template dinámico no funciona con JIT)
 const COL_SPAN = {
-  sm: ['', 'sm:col-span-1', 'sm:col-span-2', 'sm:col-span-3', 'sm:col-span-4', 'sm:col-span-5', 'sm:col-span-6'],
-  md: ['', 'md:col-span-1', 'md:col-span-2', 'md:col-span-3', 'md:col-span-4', 'md:col-span-5', 'md:col-span-6'],
-  lg: ['', 'lg:col-span-1', 'lg:col-span-2', 'lg:col-span-3', 'lg:col-span-4', 'lg:col-span-5', 'lg:col-span-6'],
-  xl: ['', 'xl:col-span-1', 'xl:col-span-2', 'xl:col-span-3', 'xl:col-span-4', 'xl:col-span-5', 'xl:col-span-6'],
+  sm: [
+    '',
+    'sm:col-span-1',
+    'sm:col-span-2',
+    'sm:col-span-3',
+    'sm:col-span-4',
+    'sm:col-span-5',
+    'sm:col-span-6',
+  ],
+  md: [
+    '',
+    'md:col-span-1',
+    'md:col-span-2',
+    'md:col-span-3',
+    'md:col-span-4',
+    'md:col-span-5',
+    'md:col-span-6',
+  ],
+  lg: [
+    '',
+    'lg:col-span-1',
+    'lg:col-span-2',
+    'lg:col-span-3',
+    'lg:col-span-4',
+    'lg:col-span-5',
+    'lg:col-span-6',
+  ],
+  xl: [
+    '',
+    'xl:col-span-1',
+    'xl:col-span-2',
+    'xl:col-span-3',
+    'xl:col-span-4',
+    'xl:col-span-5',
+    'xl:col-span-6',
+  ],
 };
 const getFieldColClass = (cols) => {
   const clamp = (v) => Math.min(6, Math.max(1, v || 6));
@@ -170,7 +202,6 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
           userMessage;
       }
       notify.error({ title: 'Error al cargar entidad', description: userMessage });
-      console.error('Error loading entity data:', err);
     } finally {
       setLoading(false);
     }
@@ -205,7 +236,6 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
               result[field.name] = [];
             }
           } catch (err) {
-            console.error(`Error cargando opciones de ${field.name}:`, err);
             result[field.name] = [];
           } finally {
             setLoadingOptions((prev) => ({
@@ -345,7 +375,6 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
           'No se pudieron completar todos los cambios del cliente o su asignación operativa.';
       }
       notify.error({ title: 'Error al guardar', description: userMessage });
-      console.error('Submission error:', err);
     }
   };
 
@@ -466,10 +495,7 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
           className="grid grid-cols-1 gap-x-0 gap-y-3 sm:grid-cols-6"
         >
           {preparedFields.map((field, index) => (
-            <div
-              key={`${field.name}-${index}`}
-              className={`p-2 ${getFieldColClass(field.cols)}`}
-            >
+            <div key={`${field.name}-${index}`} className={`p-2 ${getFieldColClass(field.cols)}`}>
               <Label htmlFor={field.name} className="mb-1 text-sm">
                 {field.label}
               </Label>
@@ -481,7 +507,7 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
           ))}
         </form>
       </ScrollArea>
-      <div className="bg-background flex flex-col-reverse gap-2 border-t p-4 sm:flex-row sm:justify-end sm:col-span-6">
+      <div className="bg-background flex flex-col-reverse gap-2 border-t p-4 sm:col-span-6 sm:flex-row sm:justify-end">
         <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={onCancel}>
           Cancelar
         </Button>
