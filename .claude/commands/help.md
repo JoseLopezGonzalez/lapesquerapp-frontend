@@ -8,7 +8,7 @@ Claude Code system.
 
 ## Output
 
-When invoked, print exactly this:
+When invoked, output the following block **directly in your text response** to the user — not as a side panel or summary. Copy it verbatim, formatted as a markdown code block or plain text, so it is always visible inline in the chat:
 
 ---
 
@@ -84,6 +84,7 @@ Git policy: AUTO-DETECTED
 ---
 
 ## Notes
-- This command only prints the reference above — it takes no other action
+- This command outputs the reference inline in the chat — never delegate to a side panel
+- Do not say "the reference is displayed above" — output it yourself in your response text
 - For detailed documentation of any command, read .claude/commands/[command].md
 - For detailed documentation of any agent, read .claude/agents/[agent].md
