@@ -482,6 +482,8 @@ export default function PalletView({
     const productionGroups = new Map<string | number, { production: { id: number | null; lot: string | null } | null; boxes: PalletBox[] }>();
     const availableBoxes: PalletBox[] = [];
 
+    if (!temporalPallet) return { available: availableBoxes, inProduction: [] };
+
     temporalPallet.boxes.forEach((box) => {
       if (isBoxAvailable(box)) {
         availableBoxes.push(box);
@@ -495,7 +497,7 @@ export default function PalletView({
               boxes: [],
             });
           }
-          productionGroups.get(productionKey).boxes.push(box);
+          productionGroups.get(productionKey)!.boxes.push(box);
         } else {
           // Si no tiene información de producción pero no está disponible, la agregamos a un grupo "sin producción"
           const unknownKey = 'unknown';
@@ -505,7 +507,7 @@ export default function PalletView({
               boxes: [],
             });
           }
-          productionGroups.get(unknownKey).boxes.push(box);
+          productionGroups.get(unknownKey)!.boxes.push(box);
         }
       }
     });
