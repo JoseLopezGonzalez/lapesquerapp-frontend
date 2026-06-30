@@ -202,7 +202,7 @@ export default function PalletView({
   const orderIdBlocked = initialOrderId !== null;
 
   // Check if pallet belongs to a reception or is locked (e.g. linked to order)
-  const receptionId = temporalPallet?.receptionId;
+  const receptionId = temporalPallet?.receptionId as string | number | null | undefined;
   const belongsToReception = receptionId !== null && receptionId !== undefined;
   const isReadOnly = belongsToReception || readOnlyProp;
 
