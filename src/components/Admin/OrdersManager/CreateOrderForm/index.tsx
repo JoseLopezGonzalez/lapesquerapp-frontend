@@ -246,7 +246,7 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
           description: 'No se pudieron cargar los datos. Intente de nuevo.',
         });
       });
-  }, [selectedCustomerId, setValue, session]);
+  }, [selectedCustomerId, setValue]);
 
   useEffect(() => {
     if (!selectedExternalProcessorId) {
