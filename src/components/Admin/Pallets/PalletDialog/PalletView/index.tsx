@@ -90,7 +90,7 @@ import { formatDateShort, formatDateHour } from '@/helpers/formats/dates/formatD
 
 import { usePallet, saveDiscountPreferences } from '@/hooks/usePallet';
 import { usePalletTimeline } from '@/hooks/usePalletTimeline';
-import type { PalletBox } from '@/hooks/pallets/palletHelpers';
+import type { PalletBox, PalletState } from '@/hooks/pallets/palletHelpers';
 import { usePrintElement } from '@/hooks/usePrintElement';
 import PalletLabel from '@/components/Admin/Pallets/PalletLabel';
 import SummaryPieChart from './SummaryPieChart';
@@ -151,7 +151,7 @@ export default function PalletView({
     onClose,
     setBoxPrinted,
     hasPalletChanges = false,
-  } = usePallet({ id: palletId ?? null, onChange, initialStoreId: initialStoreId ?? null, initialOrderId: initialOrderId ?? null, initialPallet });
+  } = usePallet({ id: palletId ?? null, onChange, initialStoreId: initialStoreId ?? null, initialOrderId: initialOrderId ?? null, initialPallet: initialPallet as PalletState | null | undefined });
 
   const {
     timeline,
