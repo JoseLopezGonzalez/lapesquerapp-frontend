@@ -151,7 +151,7 @@ export default function PalletView({
     onClose,
     setBoxPrinted,
     hasPalletChanges = false,
-  } = usePallet({ id: palletId, onChange, initialStoreId, initialOrderId, initialPallet });
+  } = usePallet({ id: palletId ?? null, onChange, initialStoreId: initialStoreId ?? null, initialOrderId: initialOrderId ?? null, initialPallet });
 
   const {
     timeline,
@@ -286,7 +286,7 @@ export default function PalletView({
     } catch (err) {
       notify.error({
         title: 'Producción no encontrada',
-        description: err?.message || 'No existe ninguna producción con ese lote.',
+        description: (err as { message?: string })?.message || 'No existe ninguna producción con ese lote.',
       });
     } finally {
       setResolvingProductionLot(null);
@@ -306,7 +306,7 @@ export default function PalletView({
       notify.success({ title: res?.message || 'Historial borrado correctamente' });
       refetchTimeline();
     } catch (err) {
-      notify.error({ title: err?.message || 'Error al borrar el historial' });
+      notify.error({ title: (err as { message?: string })?.message || 'Error al borrar el historial' });
     } finally {
       setDeletingTimeline(false);
     }
