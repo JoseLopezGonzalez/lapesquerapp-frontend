@@ -1092,7 +1092,7 @@ export default function PalletView({
                               <Label>Pedido vinculado (opcional)</Label>
                               <Select
                                 disabled={orderIdBlocked}
-                                value={temporalPallet.orderId}
+                                value={temporalPallet.orderId != null ? String(temporalPallet.orderId) : undefined}
                                 onValueChange={(value) => editPallet.orderId(value)}
                               >
                                 <SelectTrigger loading={activeOrdersLoading}>
@@ -1111,7 +1111,7 @@ export default function PalletView({
                                     !activeOrdersOptions?.some(
                                       (order) => order.id === temporalPallet.orderId
                                     ) && (
-                                      <SelectItem value={temporalPallet.orderId}>
+                                      <SelectItem value={String(temporalPallet.orderId)}>
                                         #{temporalPallet.orderId} - Pedido Actual
                                       </SelectItem>
                                     )}
