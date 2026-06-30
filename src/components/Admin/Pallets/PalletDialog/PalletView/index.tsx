@@ -613,7 +613,7 @@ export default function PalletView({
             <div className="flex min-h-0 w-full flex-1 flex-col">
               <Tabs
                 value={mainTab}
-                onValueChange={(v) => {
+                onValueChange={(v: string) => {
                   setMainTab(v);
                   if (v === 'historial') refetchTimeline();
                 }}
