@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import Loader from '@/components/Utilities/Loader';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useFieldOperators } from '@/hooks/useFieldOperators';
 import FieldOperatorForm from './FieldOperatorForm';
 import { ArrowRight, MapPinned, Plus } from 'lucide-react';
@@ -41,8 +42,13 @@ export default function FieldOperatorsPageClient() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <Loader />
+      <div className="flex min-h-[50vh] flex-col gap-4 p-4 sm:p-6">
+        <Skeleton className="h-8 w-56" />
+        <div className="grid gap-4 lg:grid-cols-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-36 rounded-lg" />
+          ))}
+        </div>
       </div>
     );
   }

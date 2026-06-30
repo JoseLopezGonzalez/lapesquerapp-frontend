@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import OrderEditSheet from './OrderEditSheet';
 import { OrderProvider, useOrderContext } from '@/context/OrderContext';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import Loader from '@/components/Utilities/Loader';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useHideBottomNav } from '@/context/BottomNavContext';
@@ -147,8 +147,20 @@ const OrderContent = ({ onLoading, onClose, readOnly = false }: OrderContentProp
 
   if (loading) {
     return (
-      <div className="flex h-full w-full items-center justify-center">
-        <Loader />
+      <div className="flex h-full w-full flex-col gap-4 p-4">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-8 w-32" />
+          <Skeleton className="h-6 w-20 rounded-full" />
+        </div>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-16 rounded-lg" />
+          ))}
+        </div>
+        <Skeleton className="h-8 w-full max-w-xs" />
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Skeleton key={i} className="h-12 w-full rounded-lg" />
+        ))}
       </div>
     );
   }

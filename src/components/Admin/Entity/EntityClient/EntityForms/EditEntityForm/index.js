@@ -22,7 +22,7 @@ import { Loader2 } from 'lucide-react';
 import EmailListInput from '@/components/ui/emailListInput';
 
 import get from 'lodash.get';
-import Loader from '@/components/Utilities/Loader';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { notify } from '@/lib/notifications';
 import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
@@ -481,8 +481,13 @@ export default function EditEntityForm({ config, id: propId, onSuccess, onCancel
 
   if (loading)
     return (
-      <div className="flex h-full w-full items-center justify-center">
-        <Loader className="h-10 w-10" />
+      <div className="flex h-full w-full flex-col gap-4 p-4">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="flex flex-col gap-1.5">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-10 w-full rounded-md" />
+          </div>
+        ))}
       </div>
     );
 

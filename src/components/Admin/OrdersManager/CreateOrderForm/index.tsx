@@ -21,7 +21,7 @@ import { getCustomer } from '@/services/customerService';
 import { externalProcessorService } from '@/services/domain/external-processors/externalProcessorService';
 import { useProductOptions } from '@/hooks/useProductOptions';
 import { useTaxOptions } from '@/hooks/useTaxOptions';
-import Loader from '@/components/Utilities/Loader';
+import { Skeleton } from '@/components/ui/skeleton';
 import EmailListInput from '@/components/ui/emailListInput';
 import { createOrder } from '@/services/orderService';
 import { Textarea } from '@/components/ui/textarea';
@@ -530,8 +530,13 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
       </div>
       <div className="flex-1 overflow-y-auto px-4 pt-4 sm:px-7">
         {loading ? (
-          <div className="flex h-full w-full items-center justify-center">
-            <Loader />
+          <div className="flex h-full w-full flex-col gap-4 py-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="flex flex-col gap-1.5">
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-10 w-full rounded-md" />
+              </div>
+            ))}
           </div>
         ) : (
           <form

@@ -1,6 +1,6 @@
 import { Card } from '@/components/ui/card';
 import { Plus } from 'lucide-react';
-import Loader from '@/components/Utilities/Loader';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const LoadMoreStoreCard = ({ onClick, loading }) => {
   const handleClick = () => {
@@ -17,13 +17,13 @@ const LoadMoreStoreCard = ({ onClick, loading }) => {
           : 'bg-foreground-100 hover:bg-foreground-200 cursor-pointer'
       }`}
     >
-      <div
-        onClick={handleClick}
-        className="flex min-h-0 w-full flex-1 items-center justify-center"
-      >
+      <div onClick={handleClick} className="flex min-h-0 w-full flex-1 items-center justify-center">
         <span className="flex flex-col items-center justify-center gap-1">
           {loading ? (
-            <Loader />
+            <div className="flex flex-col items-center gap-2">
+              <Skeleton className="h-6 w-6 rounded-full" />
+              <Skeleton className="h-4 w-20" />
+            </div>
           ) : (
             <>
               <Plus className="text-muted-foreground h-6 w-6" />

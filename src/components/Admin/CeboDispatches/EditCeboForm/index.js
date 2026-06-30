@@ -35,7 +35,7 @@ import {
 } from '@/helpers/formats/numbers/formatNumbers';
 import { normalizeDate } from '@/helpers/receptionCalculations';
 import { useAdminCeboFormEdit } from '@/hooks/useAdminCeboFormEdit';
-import Loader from '@/components/Utilities/Loader';
+import { Skeleton } from '@/components/ui/skeleton';
 import { CEBO_EXPORT_TYPE_OPTIONS, CEBO_EXPORT_TYPE_SENTINEL } from '@/constants/ceboExportTypes';
 
 const TARE_OPTIONS = [
@@ -71,18 +71,16 @@ export default function EditCeboForm({ dispatchId, onSuccess }) {
     supplierLiquidationId,
   } = form;
 
-  if (loading) {
+  if (loading || suppliersLoading) {
     return (
-      <div className="flex h-full w-full items-center justify-center">
-        <Loader />
-      </div>
-    );
-  }
-
-  if (suppliersLoading) {
-    return (
-      <div className="flex h-full w-full items-center justify-center">
-        <Loader />
+      <div className="flex h-full w-full flex-col gap-4 p-6">
+        <Skeleton className="h-8 w-52" />
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="flex flex-col gap-1.5">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-10 w-full rounded-md" />
+          </div>
+        ))}
       </div>
     );
   }
@@ -92,10 +90,14 @@ export default function EditCeboForm({ dispatchId, onSuccess }) {
       <Announcer />
 
       {supplierLiquidationId != null && (
-        <div className="mb-4 flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-4 py-2.5">
-          <Lock className="h-4 w-4 text-muted-foreground shrink-0" />
-          <span className="text-sm text-muted-foreground">Esta salida de cebo pertenece a una liquidación cerrada</span>
-          <Badge variant="secondary" className="ml-auto">Liquidada</Badge>
+        <div className="border-border bg-muted/50 mb-4 flex items-center gap-2 rounded-lg border px-4 py-2.5">
+          <Lock className="text-muted-foreground h-4 w-4 shrink-0" />
+          <span className="text-muted-foreground text-sm">
+            Esta salida de cebo pertenece a una liquidación cerrada
+          </span>
+          <Badge variant="secondary" className="ml-auto">
+            Liquidada
+          </Badge>
         </div>
       )}
 

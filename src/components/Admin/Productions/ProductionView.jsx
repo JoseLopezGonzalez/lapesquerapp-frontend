@@ -44,7 +44,6 @@ import {
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Combobox } from '@/components/Shadcn/Combobox';
-import Loader from '@/components/Utilities/Loader';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   ArrowLeft,
@@ -73,8 +72,8 @@ import { orderService } from '@/services/domain/orders/orderService';
 const ProductionDiagram = dynamic(() => import('./ProductionDiagram'), {
   ssr: false,
   loading: () => (
-    <div className="flex h-[600px] items-center justify-center">
-      <Loader text="Cargando diagrama..." />
+    <div className="flex h-[600px] flex-col gap-4 p-4">
+      <Skeleton className="h-full w-full rounded-lg" />
     </div>
   ),
 });
@@ -127,8 +126,20 @@ const ProductionView = ({ productionId }) => {
 
   if (loading) {
     return (
-      <div className="flex h-full w-full items-center justify-center overflow-y-auto">
-        <Loader text="Cargando producción..." />
+      <div className="flex h-full w-full flex-col gap-4 overflow-y-auto p-4">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-8 w-40" />
+          <Skeleton className="h-6 w-24 rounded-full" />
+        </div>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-16 rounded-lg" />
+          ))}
+        </div>
+        <Skeleton className="h-8 w-full max-w-sm" />
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Skeleton key={i} className="h-12 w-full rounded-md" />
+        ))}
       </div>
     );
   }

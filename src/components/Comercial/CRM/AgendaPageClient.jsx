@@ -55,7 +55,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import Loader from '@/components/Utilities/Loader';
+import { Skeleton } from '@/components/ui/skeleton';
 import { notify } from '@/lib/notifications';
 import { cn } from '@/lib/utils';
 import { useAgenda, useAgendaMutations, useAgendaSummary } from '@/hooks/useAgenda';
@@ -879,8 +879,10 @@ function AgendaDayDialog({
         <ScrollArea className="max-h-[65vh] pr-4">
           <div className="space-y-3 pb-2">
             {loading ? (
-              <div className="flex min-h-[220px] items-center justify-center">
-                <Loader />
+              <div className="flex min-h-[220px] flex-col gap-3 py-2">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton key={i} className="h-16 w-full rounded-lg" />
+                ))}
               </div>
             ) : items.length === 0 ? (
               <EmptyState
@@ -1193,8 +1195,10 @@ export default function AgendaPageClient() {
           </CardHeader>
           <CardContent className="min-h-0 flex-1 space-y-3 overflow-y-auto pt-0">
             {isLoading ? (
-              <div className="flex min-h-[620px] items-center justify-center rounded-2xl border">
-                <Loader />
+              <div className="grid min-h-[620px] grid-cols-7 gap-1 rounded-2xl border p-2">
+                {Array.from({ length: 35 }).map((_, i) => (
+                  <Skeleton key={i} className="h-20 rounded-md" />
+                ))}
               </div>
             ) : (
               <AgendaMonthCalendar

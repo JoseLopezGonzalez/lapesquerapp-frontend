@@ -43,7 +43,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { AlertTriangle } from 'lucide-react';
-import Loader from '@/components/Utilities/Loader';
+import { Skeleton } from '@/components/ui/skeleton';
 import dynamic from 'next/dynamic';
 import { normalizeDate } from '@/helpers/receptionCalculations';
 import { useAdminReceptionForm } from '@/hooks/useAdminReceptionForm';
@@ -111,8 +111,14 @@ export default function CreateReceptionForm({ onSuccess }) {
 
   if (suppliersLoading) {
     return (
-      <div className="flex h-full w-full items-center justify-center">
-        <Loader />
+      <div className="flex h-full w-full flex-col gap-4 p-6">
+        <Skeleton className="h-8 w-64" />
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="flex flex-col gap-1.5">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-10 w-full rounded-md" />
+          </div>
+        ))}
       </div>
     );
   }

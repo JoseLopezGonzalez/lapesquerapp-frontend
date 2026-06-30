@@ -83,7 +83,7 @@ import {
 } from '@/components/ui/alert-dialog';
 
 import { Combobox } from '@/components/Shadcn/Combobox';
-import Loader from '@/components/Utilities/Loader';
+import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
@@ -532,8 +532,20 @@ export default function PalletView({
         className={` ${!wrappedInDialog && 'bg-card text-card-foreground mb-4 overflow-auto rounded-2xl border px-5 pt-5 pb-3 shadow'} h-full w-full`}
       >
         {loading || !temporalPallet ? (
-          <div className="flex h-full w-full flex-1 items-center justify-center">
-            <Loader />
+          <div className="flex h-full w-full flex-1 flex-col gap-4 p-2">
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-7 w-32" />
+              <Skeleton className="h-6 w-20 rounded-full" />
+              <Skeleton className="ml-auto h-6 w-24 rounded-full" />
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-14 rounded-lg" />
+              ))}
+            </div>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full rounded-md" />
+            ))}
           </div>
         ) : error ? (
           <div className="flex h-full w-full flex-col items-center justify-center gap-2 py-10">
@@ -649,7 +661,7 @@ export default function PalletView({
                   {canDeletePalletData && (
                     <TabsTrigger
                       value="eliminar"
-                      className="flex items-center gap-2 text-destructive data-[state=active]:text-destructive"
+                      className="text-destructive data-[state=active]:text-destructive flex items-center gap-2"
                       disabled={isReadOnly}
                     >
                       <Trash2 className="h-4 w-4" /> Eliminar
@@ -1525,14 +1537,20 @@ export default function PalletView({
                                                   <TableCell className="text-right text-sm">
                                                     {box.traceableCostPerKg != null ? (
                                                       <span className="text-green-700">
-                                                        {parseFloat(box.traceableCostPerKg).toFixed(2)} €/kg
+                                                        {parseFloat(box.traceableCostPerKg).toFixed(
+                                                          2
+                                                        )}{' '}
+                                                        €/kg
                                                       </span>
                                                     ) : box.manualCostPerKg != null ? (
                                                       <span className="text-blue-600">
-                                                        {parseFloat(box.manualCostPerKg).toFixed(2)} €/kg
+                                                        {parseFloat(box.manualCostPerKg).toFixed(2)}{' '}
+                                                        €/kg
                                                       </span>
                                                     ) : (
-                                                      <span className="text-muted-foreground">—</span>
+                                                      <span className="text-muted-foreground">
+                                                        —
+                                                      </span>
                                                     )}
                                                   </TableCell>
                                                 )}
@@ -2477,7 +2495,10 @@ export default function PalletView({
                 </TabsContent>
 
                 {showHistorialTab && (
-                  <TabsContent value="imagenes" className="mt-0 flex min-h-0 flex-1 flex-col data-[state=inactive]:hidden">
+                  <TabsContent
+                    value="imagenes"
+                    className="mt-0 flex min-h-0 flex-1 flex-col data-[state=inactive]:hidden"
+                  >
                     <PalletImagesTab palletId={palletId} />
                   </TabsContent>
                 )}
@@ -2764,7 +2785,9 @@ export default function PalletView({
       {/* Confirmación: eliminar caja */}
       <AlertDialog
         open={deleteBoxConfirmId !== null}
-        onOpenChange={(open) => { if (!open) setDeleteBoxConfirmId(null); }}
+        onOpenChange={(open) => {
+          if (!open) setDeleteBoxConfirmId(null);
+        }}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -2786,10 +2809,7 @@ export default function PalletView({
       </AlertDialog>
 
       {/* Confirmación: borrar historial completo */}
-      <AlertDialog
-        open={deleteTimelineConfirmOpen}
-        onOpenChange={setDeleteTimelineConfirmOpen}
-      >
+      <AlertDialog open={deleteTimelineConfirmOpen} onOpenChange={setDeleteTimelineConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>¿Borrar todo el historial?</AlertDialogTitle>
