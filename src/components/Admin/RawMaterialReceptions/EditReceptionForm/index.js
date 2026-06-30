@@ -41,7 +41,7 @@ import { useSession } from 'next-auth/react';
 import { useProductOptions } from '@/hooks/useProductOptions';
 import { useSupplierOptions } from '@/hooks/useSupplierOptions';
 import { usePriceSynchronization } from '@/hooks/usePriceSynchronization';
-import Loader from '@/components/Utilities/Loader';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { DatePicker } from '@/components/ui/datePicker';
 import { format } from 'date-fns';
@@ -1175,8 +1175,14 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
 
   if (suppliersLoading || loading) {
     return (
-      <div className="flex h-full w-full items-center justify-center">
-        <Loader />
+      <div className="flex h-full w-full flex-col gap-4 p-6">
+        <Skeleton className="h-8 w-64" />
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="flex flex-col gap-1.5">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-10 w-full rounded-md" />
+          </div>
+        ))}
       </div>
     );
   }
@@ -1231,10 +1237,14 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
         </Alert>
 
         {supplierLiquidationId != null && (
-          <div className="mb-4 flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-4 py-2.5">
-            <Lock className="h-4 w-4 text-muted-foreground shrink-0" />
-            <span className="text-sm text-muted-foreground">Esta recepción pertenece a una liquidación cerrada</span>
-            <Badge variant="secondary" className="ml-auto">Liquidada</Badge>
+          <div className="border-border bg-muted/50 mb-4 flex items-center gap-2 rounded-lg border px-4 py-2.5">
+            <Lock className="text-muted-foreground h-4 w-4 shrink-0" />
+            <span className="text-muted-foreground text-sm">
+              Esta recepción pertenece a una liquidación cerrada
+            </span>
+            <Badge variant="secondary" className="ml-auto">
+              Liquidada
+            </Badge>
           </div>
         )}
 
@@ -1567,10 +1577,14 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
       </div>
 
       {supplierLiquidationId != null && (
-        <div className="mb-2 flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-4 py-2.5">
-          <Lock className="h-4 w-4 text-muted-foreground shrink-0" />
-          <span className="text-sm text-muted-foreground">Esta recepción pertenece a una liquidación cerrada</span>
-          <Badge variant="secondary" className="ml-auto">Liquidada</Badge>
+        <div className="border-border bg-muted/50 mb-2 flex items-center gap-2 rounded-lg border px-4 py-2.5">
+          <Lock className="text-muted-foreground h-4 w-4 shrink-0" />
+          <span className="text-muted-foreground text-sm">
+            Esta recepción pertenece a una liquidación cerrada
+          </span>
+          <Badge variant="secondary" className="ml-auto">
+            Liquidada
+          </Badge>
         </div>
       )}
 

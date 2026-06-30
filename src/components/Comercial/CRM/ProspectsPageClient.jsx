@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/input-group';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EmptyState } from '@/components/Utilities/EmptyState';
-import Loader from '@/components/Utilities/Loader';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useProspectCategoryOptions } from '@/hooks/useProspectCategories';
 import { useProspectsList } from '@/hooks/useProspects';
@@ -37,8 +37,14 @@ const ProspectFormSheet = dynamic(() => import('./ProspectFormSheet'), {
 
 const ProspectDetail = dynamic(() => import('./ProspectDetail'), {
   loading: () => (
-    <div className="bg-muted/20 flex min-h-[360px] w-full items-center justify-center rounded-xl border">
-      <Loader />
+    <div className="bg-muted/20 flex min-h-[360px] w-full flex-col gap-4 rounded-xl border p-4">
+      <div className="flex items-center gap-3">
+        <Skeleton className="h-7 w-36" />
+        <Skeleton className="h-5 w-20 rounded-full" />
+      </div>
+      {Array.from({ length: 4 }).map((_, i) => (
+        <Skeleton key={i} className="h-10 w-full rounded-md" />
+      ))}
     </div>
   ),
   ssr: false,
@@ -352,8 +358,10 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
         <div className="grid min-h-0 flex-1 gap-4 overflow-hidden md:grid-cols-[360px_minmax(0,1fr)]">
           <div className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden">
             {isInitialLoading ? (
-              <div className="flex h-full min-h-0 w-full items-center justify-center p-4">
-                <Loader />
+              <div className="flex h-full min-h-0 w-full flex-col gap-3 p-4">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <Skeleton key={i} className="h-20 w-full rounded-lg" />
+                ))}
               </div>
             ) : orderedProspects.length === 0 ? (
               <div className="flex h-full min-h-0 w-full overflow-y-auto p-4">

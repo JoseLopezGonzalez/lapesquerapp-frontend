@@ -2,6 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import Loader from '@/components/Utilities/Loader';
+import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { useFieldOperatorDetail } from '@/hooks/useFieldOperators';
 import FieldOperatorForm from './FieldOperatorForm';
@@ -35,8 +36,14 @@ export default function FieldOperatorDetailPageClient({ id }) {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <Loader />
+      <div className="flex min-h-[50vh] flex-col gap-4 p-4 sm:p-6">
+        <Skeleton className="h-8 w-48" />
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="flex flex-col gap-1.5">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-10 w-full rounded-md" />
+          </div>
+        ))}
       </div>
     );
   }

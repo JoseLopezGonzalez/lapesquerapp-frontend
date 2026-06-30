@@ -33,7 +33,7 @@ import {
 } from '@/helpers/formats/numbers/formatNumbers';
 import { normalizeDate } from '@/helpers/receptionCalculations';
 import { useAdminCeboForm } from '@/hooks/useAdminCeboForm';
-import Loader from '@/components/Utilities/Loader';
+import { Skeleton } from '@/components/ui/skeleton';
 import { CEBO_EXPORT_TYPE_OPTIONS, CEBO_EXPORT_TYPE_SENTINEL } from '@/constants/ceboExportTypes';
 
 const TARE_OPTIONS = [
@@ -71,8 +71,14 @@ export default function CreateCeboForm({ onSuccess }) {
 
   if (suppliersLoading) {
     return (
-      <div className="flex h-full w-full items-center justify-center">
-        <Loader />
+      <div className="flex h-full w-full flex-col gap-4 p-6">
+        <Skeleton className="h-8 w-52" />
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="flex flex-col gap-1.5">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-10 w-full rounded-md" />
+          </div>
+        ))}
       </div>
     );
   }

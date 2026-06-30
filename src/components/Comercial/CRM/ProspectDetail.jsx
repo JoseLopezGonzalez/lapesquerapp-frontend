@@ -72,7 +72,7 @@ import {
   prospectWebsiteToHref,
 } from './utils';
 import { notify } from '@/lib/notifications';
-import Loader from '@/components/Utilities/Loader';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -281,8 +281,19 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
   const body = useMemo(() => {
     if (isLoading) {
       return (
-        <div className="flex min-h-0 flex-1 items-center justify-center">
-          <Loader />
+        <div className="flex min-h-0 flex-1 flex-col gap-4 p-4">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-7 w-40" />
+            <Skeleton className="h-5 w-20 rounded-full" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-12 rounded-lg" />
+            ))}
+          </div>
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-10 w-full rounded-md" />
+          ))}
         </div>
       );
     }
@@ -682,8 +693,10 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
             >
               <section className="bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border">
                 {contactsLoading ? (
-                  <div className="flex min-h-0 flex-1 items-center justify-center">
-                    <Loader />
+                  <div className="flex min-h-0 flex-1 flex-col gap-3 p-4">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <Skeleton key={i} className="h-10 w-full rounded-md" />
+                    ))}
                   </div>
                 ) : (
                   <div className="min-h-0 flex-1 overflow-y-auto p-4">
@@ -787,8 +800,10 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
             >
               <section className="bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border">
                 {interactionsLoading && interactionsPage === 1 ? (
-                  <div className="flex min-h-0 flex-1 items-center justify-center">
-                    <Loader />
+                  <div className="flex min-h-0 flex-1 flex-col gap-3 p-4">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <Skeleton key={i} className="h-16 w-full rounded-lg" />
+                    ))}
                   </div>
                 ) : loadedInteractions.length === 0 ? (
                   <div className="min-h-0 flex-1 p-4">
@@ -882,8 +897,10 @@ export default function ProspectDetail({ prospectId, embedded = false }) {
             >
               <section className="bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border">
                 {offersLoading ? (
-                  <div className="flex min-h-0 flex-1 items-center justify-center">
-                    <Loader />
+                  <div className="flex min-h-0 flex-1 flex-col gap-3 p-4">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <Skeleton key={i} className="h-14 w-full rounded-lg" />
+                    ))}
                   </div>
                 ) : offers.length === 0 ? (
                   <div className="min-h-0 flex-1 p-4">

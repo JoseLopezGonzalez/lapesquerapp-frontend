@@ -4,7 +4,20 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { Loader2, ArrowLeft, Trash2, Download, Calendar, Lock, ChevronDown, ChevronRight, ChevronsDownUp, LayoutList, CalendarDays } from 'lucide-react';
+import {
+  Loader2,
+  ArrowLeft,
+  Trash2,
+  Download,
+  Calendar,
+  Lock,
+  ChevronDown,
+  ChevronRight,
+  ChevronsDownUp,
+  LayoutList,
+  CalendarDays,
+} from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { notify } from '@/lib/notifications';
 import { Button } from '@/components/ui/button';
 import {
@@ -150,8 +163,19 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
 
   if (isLoading) {
     return (
-      <div className="flex h-full min-h-0 w-full items-center justify-center">
-        <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
+      <div className="flex h-full min-h-0 w-full flex-col gap-4 p-6">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-6 w-24 rounded-full" />
+        </div>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-16 rounded-lg" />
+          ))}
+        </div>
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Skeleton key={i} className="h-10 w-full rounded-md" />
+        ))}
       </div>
     );
   }
@@ -164,10 +188,7 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
             <p className="text-destructive mb-4">
               {(error as Error)?.message ?? 'No se pudo cargar la liquidación'}
             </p>
-            <Button
-              variant="outline"
-              onClick={() => router.push('/admin/supplier-liquidations')}
-            >
+            <Button variant="outline" onClick={() => router.push('/admin/supplier-liquidations')}>
               <ArrowLeft data-icon="inline-start" />
               Volver
             </Button>
@@ -178,8 +199,7 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
   }
 
   const { liquidation, supplier, receptions, dispatches, summary } = data;
-  const allRelatedDispatches =
-    receptions?.flatMap((r) => r.related_dispatches ?? []) ?? [];
+  const allRelatedDispatches = receptions?.flatMap((r) => r.related_dispatches ?? []) ?? [];
   const allDispatches = [...allRelatedDispatches, ...(dispatches ?? [])];
 
   const allReceptionIds = receptions?.map((r) => r.id) ?? [];
@@ -304,9 +324,7 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
             {supplier?.contact_person && (
               <p className="text-muted-foreground text-xs">{supplier.contact_person}</p>
             )}
-            {supplier?.phone && (
-              <p className="text-muted-foreground text-xs">{supplier.phone}</p>
-            )}
+            {supplier?.phone && <p className="text-muted-foreground text-xs">{supplier.phone}</p>}
           </div>
           <Separator orientation="vertical" className="hidden h-10 sm:block" />
           <div className="flex items-center gap-1.5">
@@ -341,12 +359,14 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
             {/* Declarado */}
             <Separator orientation="vertical" className="mx-2 h-4 shrink-0" />
             <span className="text-muted-foreground text-xs font-medium">Declarado</span>
-            <span className={cn(
-              'font-semibold',
-              summary.weight_difference != null && Math.abs(summary.weight_difference) > 0.01
-                ? 'text-amber-600 dark:text-amber-400'
-                : ''
-            )}>
+            <span
+              className={cn(
+                'font-semibold',
+                summary.weight_difference != null && Math.abs(summary.weight_difference) > 0.01
+                  ? 'text-amber-600 dark:text-amber-400'
+                  : ''
+              )}
+            >
               {formatWeight(summary.total_declared_weight)}
             </span>
             <span className="text-muted-foreground">·</span>
@@ -357,18 +377,26 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
               <>
                 <Separator orientation="vertical" className="mx-2 h-4 shrink-0" />
                 <span className="text-muted-foreground text-xs font-medium">Salidas cebo</span>
-                <span className="font-semibold">{formatWeight(summary.total_dispatches_weight)}</span>
+                <span className="font-semibold">
+                  {formatWeight(summary.total_dispatches_weight)}
+                </span>
                 <span className="text-muted-foreground">·</span>
                 {summary.has_iva_in_dispatches ? (
                   <>
                     <span className="text-muted-foreground text-xs">Base</span>
-                    <span className="font-semibold">{formatCurrency(summary.total_dispatches_base_amount)}</span>
+                    <span className="font-semibold">
+                      {formatCurrency(summary.total_dispatches_base_amount)}
+                    </span>
                     <span className="text-muted-foreground text-xs">IVA</span>
-                    <span className="font-semibold">{formatCurrency(summary.total_dispatches_iva_amount)}</span>
+                    <span className="font-semibold">
+                      {formatCurrency(summary.total_dispatches_iva_amount)}
+                    </span>
                     <span className="text-muted-foreground">·</span>
                   </>
                 ) : null}
-                <span className="font-semibold">{formatCurrency(summary.total_dispatches_amount)}</span>
+                <span className="font-semibold">
+                  {formatCurrency(summary.total_dispatches_amount)}
+                </span>
               </>
             )}
 
@@ -377,10 +405,14 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
               <>
                 <Separator orientation="vertical" className="mx-2 h-4 shrink-0" />
                 <span className="text-muted-foreground text-xs font-medium">Resultado neto</span>
-                <span className={cn(
-                  'font-bold',
-                  summary.net_amount >= 0 ? 'text-green-700 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                )}>
+                <span
+                  className={cn(
+                    'font-bold',
+                    summary.net_amount >= 0
+                      ? 'text-green-700 dark:text-green-400'
+                      : 'text-red-600 dark:text-red-400'
+                  )}
+                >
                   {formatCurrency(summary.net_amount)}
                 </span>
               </>
@@ -415,7 +447,12 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
                 </CardDescription>
               </div>
               {allReceptionIds.length > 0 && (
-                <Button variant="outline" size="sm" className="shrink-0" onClick={toggleExpandAllReceptions}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0"
+                  onClick={toggleExpandAllReceptions}
+                >
                   <ChevronsDownUp data-icon="inline-start" />
                   {allReceptionsExpanded ? 'Contraer todo' : 'Expandir todo'}
                 </Button>
@@ -438,81 +475,84 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
                       receptions.map((reception: LiquidationReception) => {
                         const isReceptionExpanded = expandedReceptions.has(reception.id);
                         return (
-                        <React.Fragment key={`reception-${reception.id}`}>
-                          <TableRow
-                            className="bg-blue-200/50 cursor-pointer font-bold dark:bg-blue-800/30"
-                            aria-expanded={isReceptionExpanded}
-                            onClick={() => toggleReceptionExpanded(reception.id)}
-                          >
-                            <TableCell>
-                              <Lock className="text-muted-foreground h-3.5 w-3.5" />
-                            </TableCell>
-                            <TableCell colSpan={4}>
-                              <span className="flex items-center gap-2">
-                                {isReceptionExpanded ? (
-                                  <ChevronDown className="text-muted-foreground h-4 w-4 shrink-0" />
-                                ) : (
-                                  <ChevronRight className="text-muted-foreground h-4 w-4 shrink-0" />
-                                )}
-                                Recepción #{reception.id} — {formatDate(reception.date)}
-                              </span>
-                            </TableCell>
-                          </TableRow>
-                          {isReceptionExpanded && reception.products?.map((product, i) => (
+                          <React.Fragment key={`reception-${reception.id}`}>
                             <TableRow
-                              key={`rec-${reception.id}-p-${product.id ?? i}`}
-                              className="bg-blue-50/50 dark:bg-blue-950/20"
+                              className="cursor-pointer bg-blue-200/50 font-bold dark:bg-blue-800/30"
+                              aria-expanded={isReceptionExpanded}
+                              onClick={() => toggleReceptionExpanded(reception.id)}
                             >
-                              <TableCell />
-                              <TableCell className="pl-8">
-                                <span className="text-muted-foreground mr-2">└─</span>
-                                {product.product?.name ?? '—'}
+                              <TableCell>
+                                <Lock className="text-muted-foreground h-3.5 w-3.5" />
                               </TableCell>
-                              <TableCell className="text-right">
-                                {formatWeight(product.net_weight)}
-                              </TableCell>
-                              <TableCell className="text-right">
-                                {formatPricePerKg(product.price)}
-                              </TableCell>
-                              <TableCell className="text-right">
-                                {formatCurrency(product.amount)}
+                              <TableCell colSpan={4}>
+                                <span className="flex items-center gap-2">
+                                  {isReceptionExpanded ? (
+                                    <ChevronDown className="text-muted-foreground h-4 w-4 shrink-0" />
+                                  ) : (
+                                    <ChevronRight className="text-muted-foreground h-4 w-4 shrink-0" />
+                                  )}
+                                  Recepción #{reception.id} — {formatDate(reception.date)}
+                                </span>
                               </TableCell>
                             </TableRow>
-                          ))}
-                          {isReceptionExpanded && reception.products && reception.products.length > 0 && (
-                            <>
-                              <TableRow className="bg-blue-100/50 font-semibold dark:bg-blue-900/30">
-                                <TableCell />
-                                <TableCell>Total</TableCell>
-                                <TableCell className="text-right">
-                                  {formatWeight(reception.calculated_total_net_weight)}
-                                </TableCell>
-                                <TableCell className="text-right">
-                                  {reception.average_price
-                                    ? formatPricePerKg(reception.average_price)
-                                    : '—'}
-                                </TableCell>
-                                <TableCell className="text-right">
-                                  {formatCurrency(reception.calculated_total_amount)}
-                                </TableCell>
-                              </TableRow>
-                              {reception.declared_total_net_weight != null && (
-                                <TableRow className="bg-blue-50/50 text-sm dark:bg-blue-950/20">
+                            {isReceptionExpanded &&
+                              reception.products?.map((product, i) => (
+                                <TableRow
+                                  key={`rec-${reception.id}-p-${product.id ?? i}`}
+                                  className="bg-blue-50/50 dark:bg-blue-950/20"
+                                >
                                   <TableCell />
-                                  <TableCell>Total Declarado</TableCell>
-                                  <TableCell className="text-right">
-                                    {formatWeight(reception.declared_total_net_weight)}
+                                  <TableCell className="pl-8">
+                                    <span className="text-muted-foreground mr-2">└─</span>
+                                    {product.product?.name ?? '—'}
                                   </TableCell>
-                                  <TableCell />
                                   <TableCell className="text-right">
-                                    {formatCurrency(reception.declared_total_amount)}
+                                    {formatWeight(product.net_weight)}
+                                  </TableCell>
+                                  <TableCell className="text-right">
+                                    {formatPricePerKg(product.price)}
+                                  </TableCell>
+                                  <TableCell className="text-right">
+                                    {formatCurrency(product.amount)}
                                   </TableCell>
                                 </TableRow>
+                              ))}
+                            {isReceptionExpanded &&
+                              reception.products &&
+                              reception.products.length > 0 && (
+                                <>
+                                  <TableRow className="bg-blue-100/50 font-semibold dark:bg-blue-900/30">
+                                    <TableCell />
+                                    <TableCell>Total</TableCell>
+                                    <TableCell className="text-right">
+                                      {formatWeight(reception.calculated_total_net_weight)}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                      {reception.average_price
+                                        ? formatPricePerKg(reception.average_price)
+                                        : '—'}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                      {formatCurrency(reception.calculated_total_amount)}
+                                    </TableCell>
+                                  </TableRow>
+                                  {reception.declared_total_net_weight != null && (
+                                    <TableRow className="bg-blue-50/50 text-sm dark:bg-blue-950/20">
+                                      <TableCell />
+                                      <TableCell>Total Declarado</TableCell>
+                                      <TableCell className="text-right">
+                                        {formatWeight(reception.declared_total_net_weight)}
+                                      </TableCell>
+                                      <TableCell />
+                                      <TableCell className="text-right">
+                                        {formatCurrency(reception.declared_total_amount)}
+                                      </TableCell>
+                                    </TableRow>
+                                  )}
+                                </>
                               )}
-                            </>
-                          )}
-                        </React.Fragment>
-                      );
+                          </React.Fragment>
+                        );
                       })
                     ) : (
                       <TableRow>
@@ -564,7 +604,12 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
                   </CardTitle>
                   <CardDescription>Salidas de cebo incluidas en esta liquidación</CardDescription>
                 </div>
-                <Button variant="outline" size="sm" className="shrink-0" onClick={toggleExpandAllDispatches}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0"
+                  onClick={toggleExpandAllDispatches}
+                >
                   <ChevronsDownUp data-icon="inline-start" />
                   {allDispatchesExpanded ? 'Contraer todo' : 'Expandir todo'}
                 </Button>
@@ -586,90 +631,93 @@ export function SupplierLiquidationShowDetail({ liquidationId }: { liquidationId
                       {allDispatches.map((dispatch: LiquidationDispatch) => {
                         const isDispatchExpanded = expandedDispatches.has(dispatch.id);
                         return (
-                        <React.Fragment key={`dispatch-${dispatch.id}`}>
-                          <TableRow
-                            className="bg-orange-200/50 cursor-pointer font-bold dark:bg-orange-800/30"
-                            aria-expanded={isDispatchExpanded}
-                            onClick={() => toggleDispatchExpanded(dispatch.id)}
-                          >
-                            <TableCell>
-                              <Lock className="text-muted-foreground h-3.5 w-3.5" />
-                            </TableCell>
-                            <TableCell colSpan={5}>
-                              <div className="flex items-center gap-2">
-                                {isDispatchExpanded ? (
-                                  <ChevronDown className="text-muted-foreground h-4 w-4 shrink-0" />
-                                ) : (
-                                  <ChevronRight className="text-muted-foreground h-4 w-4 shrink-0" />
-                                )}
-                                <span>
-                                  Salida #{dispatch.id} — {formatDate(dispatch.date)}
-                                </span>
-                                {dispatch.export_type && (
-                                  <Badge
-                                    variant={
-                                      dispatch.export_type === 'a3erp' ? 'default' : 'secondary'
-                                    }
-                                    className="text-xs"
-                                  >
-                                    {dispatch.export_type === 'a3erp' ? 'A3ERP' : 'FACILCOM'}
-                                  </Badge>
-                                )}
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                          {isDispatchExpanded && dispatch.products?.map((product, i) => {
-                            let amountWithIva = product.amount;
-                            if (
-                              (dispatch.iva_amount ?? 0) > 0 &&
-                              (dispatch.base_amount ?? 0) > 0
-                            ) {
-                              amountWithIva +=
-                                (product.amount / dispatch.base_amount) * dispatch.iva_amount;
-                            }
-                            return (
-                              <TableRow
-                                key={`dispatch-${dispatch.id}-p-${product.id ?? i}`}
-                                className="bg-orange-50/50 dark:bg-orange-950/20"
-                              >
-                                <TableCell />
-                                <TableCell className="pl-8">
-                                  <span className="text-muted-foreground mr-2">└─</span>
-                                  {product.product?.name ?? '—'}
-                                </TableCell>
-                                <TableCell className="text-right">
-                                  {formatWeight(product.net_weight)}
-                                </TableCell>
-                                <TableCell className="text-right">
-                                  {formatPricePerKg(product.price)}
-                                </TableCell>
-                                <TableCell className="text-right">
-                                  {formatCurrency(product.amount)}
-                                </TableCell>
-                                <TableCell className="text-right">
-                                  {formatCurrency(amountWithIva)}
-                                </TableCell>
-                              </TableRow>
-                            );
-                          })}
-                          {isDispatchExpanded && dispatch.products && dispatch.products.length > 0 && (
-                            <TableRow className="bg-orange-100/50 font-semibold dark:bg-orange-900/30">
-                              <TableCell />
-                              <TableCell>Total</TableCell>
-                              <TableCell className="text-right">
-                                {formatWeight(dispatch.total_net_weight)}
+                          <React.Fragment key={`dispatch-${dispatch.id}`}>
+                            <TableRow
+                              className="cursor-pointer bg-orange-200/50 font-bold dark:bg-orange-800/30"
+                              aria-expanded={isDispatchExpanded}
+                              onClick={() => toggleDispatchExpanded(dispatch.id)}
+                            >
+                              <TableCell>
+                                <Lock className="text-muted-foreground h-3.5 w-3.5" />
                               </TableCell>
-                              <TableCell />
-                              <TableCell className="text-right">
-                                {formatCurrency(dispatch.base_amount ?? dispatch.total_amount)}
-                              </TableCell>
-                              <TableCell className="text-right">
-                                {formatCurrency(dispatch.total_amount)}
+                              <TableCell colSpan={5}>
+                                <div className="flex items-center gap-2">
+                                  {isDispatchExpanded ? (
+                                    <ChevronDown className="text-muted-foreground h-4 w-4 shrink-0" />
+                                  ) : (
+                                    <ChevronRight className="text-muted-foreground h-4 w-4 shrink-0" />
+                                  )}
+                                  <span>
+                                    Salida #{dispatch.id} — {formatDate(dispatch.date)}
+                                  </span>
+                                  {dispatch.export_type && (
+                                    <Badge
+                                      variant={
+                                        dispatch.export_type === 'a3erp' ? 'default' : 'secondary'
+                                      }
+                                      className="text-xs"
+                                    >
+                                      {dispatch.export_type === 'a3erp' ? 'A3ERP' : 'FACILCOM'}
+                                    </Badge>
+                                  )}
+                                </div>
                               </TableCell>
                             </TableRow>
-                          )}
-                        </React.Fragment>
-                      );
+                            {isDispatchExpanded &&
+                              dispatch.products?.map((product, i) => {
+                                let amountWithIva = product.amount;
+                                if (
+                                  (dispatch.iva_amount ?? 0) > 0 &&
+                                  (dispatch.base_amount ?? 0) > 0
+                                ) {
+                                  amountWithIva +=
+                                    (product.amount / dispatch.base_amount) * dispatch.iva_amount;
+                                }
+                                return (
+                                  <TableRow
+                                    key={`dispatch-${dispatch.id}-p-${product.id ?? i}`}
+                                    className="bg-orange-50/50 dark:bg-orange-950/20"
+                                  >
+                                    <TableCell />
+                                    <TableCell className="pl-8">
+                                      <span className="text-muted-foreground mr-2">└─</span>
+                                      {product.product?.name ?? '—'}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                      {formatWeight(product.net_weight)}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                      {formatPricePerKg(product.price)}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                      {formatCurrency(product.amount)}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                      {formatCurrency(amountWithIva)}
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              })}
+                            {isDispatchExpanded &&
+                              dispatch.products &&
+                              dispatch.products.length > 0 && (
+                                <TableRow className="bg-orange-100/50 font-semibold dark:bg-orange-900/30">
+                                  <TableCell />
+                                  <TableCell>Total</TableCell>
+                                  <TableCell className="text-right">
+                                    {formatWeight(dispatch.total_net_weight)}
+                                  </TableCell>
+                                  <TableCell />
+                                  <TableCell className="text-right">
+                                    {formatCurrency(dispatch.base_amount ?? dispatch.total_amount)}
+                                  </TableCell>
+                                  <TableCell className="text-right">
+                                    {formatCurrency(dispatch.total_amount)}
+                                  </TableCell>
+                                </TableRow>
+                              )}
+                          </React.Fragment>
+                        );
                       })}
                     </TableBody>
                     {summary && (summary.total_dispatches ?? 0) > 0 && (

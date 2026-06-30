@@ -15,7 +15,7 @@ import OfferFormSheet from './OfferFormSheet';
 import OfferDetail from './OfferDetail';
 import StatusPill from './StatusPill';
 import { formatCurrency, formatDateValue, offerStatusLabels } from './utils';
-import Loader from '@/components/Utilities/Loader';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const FILTER_TABS = [
   { label: 'Todos', value: 'all' },
@@ -162,8 +162,10 @@ export default function OffersPageClient({ initialOfferId = null, forceCreate = 
           <Card className="min-h-0 overflow-hidden">
             <div className="h-full overflow-y-auto">
               {isLoading ? (
-                <div className="flex h-full min-h-0 w-full items-center justify-center p-4">
-                  <Loader />
+                <div className="flex h-full min-h-0 w-full flex-col gap-3 p-4">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <Skeleton key={i} className="h-16 w-full rounded-lg" />
+                  ))}
                 </div>
               ) : orderedOffers.length === 0 ? (
                 <div className="flex h-full min-h-0 w-full p-4">

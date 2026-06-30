@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { Loader2, Search, ChevronRight } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { notify } from '@/lib/notifications';
 import { DateRangePicker } from '@/components/ui/dateRangePicker';
 import { Button } from '@/components/ui/button';
@@ -99,10 +100,7 @@ export function SupplierLiquidationList() {
     if (applied?.startDate) params.set('start', applied.startDate);
     if (applied?.endDate) params.set('end', applied.endDate);
     const qs = params.toString();
-    window.open(
-      `/admin/supplier-liquidations/${supplierId}${qs ? `?${qs}` : ''}`,
-      '_blank'
-    );
+    window.open(`/admin/supplier-liquidations/${supplierId}${qs ? `?${qs}` : ''}`, '_blank');
     ev?.stopPropagation();
   };
 
@@ -162,8 +160,15 @@ export function SupplierLiquidationList() {
 
       <div className="flex-1 overflow-hidden px-6 pb-6">
         {isLoading && (
-          <div className="flex h-full items-center justify-center">
-            <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
+          <div className="flex h-full flex-col gap-3 pt-2">
+            <div className="flex gap-2">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <Skeleton key={i} className="h-8 flex-1" />
+              ))}
+            </div>
+            {Array.from({ length: 8 }).map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full rounded-md" />
+            ))}
           </div>
         )}
 
