@@ -1696,7 +1696,7 @@ export default function PalletView({
                                         <TableBody>
                                           {inProduction.map((group, groupIndex) => (
                                             <React.Fragment
-                                              key={group.production.id || `unknown-${groupIndex}`}
+                                              key={group.production?.id || `unknown-${groupIndex}`}
                                             >
                                               {/* Fila de encabezado del grupo */}
                                               {(() => {
@@ -1711,16 +1711,16 @@ export default function PalletView({
                                                       <div className="flex items-center gap-2 font-semibold text-orange-900">
                                                         <Factory className="h-4 w-4" />
                                                         <span>
-                                                          Producción #{group.production.id || 'N/A'}
+                                                          Producción #{group.production?.id || 'N/A'}
                                                         </span>
-                                                        {group.production.lot && (
+                                                        {group.production?.lot && (
                                                           <>
                                                             <Separator
                                                               orientation="vertical"
                                                               className="h-4"
                                                             />
                                                             <span className="text-sm font-normal text-orange-700">
-                                                              Lote: {group.production.lot}
+                                                              Lote: {group.production?.lot}
                                                             </span>
                                                           </>
                                                         )}
