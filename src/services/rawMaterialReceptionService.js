@@ -82,7 +82,8 @@ export const updateRawMaterialReception = async (receptionId, receptionPayload) 
  * @returns {Promise<Object>} A promise that resolves to the reception data.
  * @throws {Error} Throws an error if the request fails or the response is not OK.
  */
-export function getRawMaterialReception(receptionId, token) {
+export async function getRawMaterialReception(receptionId) {
+  const token = await getAuthToken();
   return fetchWithTenant(`${API_URL_V2}raw-material-receptions/${receptionId}`, {
     method: 'GET',
     headers: {

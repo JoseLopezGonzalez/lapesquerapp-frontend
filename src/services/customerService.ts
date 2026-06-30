@@ -5,6 +5,7 @@
 
 import { fetchWithTenant } from '@lib/fetchWithTenant';
 import { API_URL_V2 } from '@/configs/config';
+import { getAuthToken } from '@/lib/auth/getAuthToken';
 import { getErrorMessage } from '@/lib/api/apiHelpers';
 import { getUserAgent } from '@/lib/utils/getUserAgent';
 
@@ -63,7 +64,8 @@ export function getCustomersOptions(token: AuthToken): Promise<unknown> {
 /**
  * Obtiene los detalles de un cliente por ID.
  */
-export async function getCustomer(id: string | number, token: AuthToken): Promise<unknown> {
+export async function getCustomer(id: string | number): Promise<unknown> {
+  const token = await getAuthToken();
   const response = await fetchWithTenant(`${API_URL_V2}customers/${id}`, {
     method: 'GET',
     headers: {

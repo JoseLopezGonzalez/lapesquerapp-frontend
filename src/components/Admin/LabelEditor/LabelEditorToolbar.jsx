@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
@@ -15,6 +15,16 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import {
   RotateCcw,
   ZoomIn,
@@ -51,6 +61,8 @@ export default function LabelEditorToolbar({
   setLabelName,
   children,
 }) {
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
   return (
     <>
       <div className="flex w-full items-center justify-center gap-2 p-2">
@@ -151,7 +163,7 @@ export default function LabelEditorToolbar({
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="text-destructive focus:text-destructive cursor-pointer"
-              onClick={handleOnClickDeleteLabel}
+              onClick={() => setDeleteDialogOpen(true)}
             >
               <Trash2 className="h-4 w-4" />
               Eliminar
@@ -160,6 +172,28 @@ export default function LabelEditorToolbar({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminar etiqueta</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción es irreversible. La etiqueta &quot;{labelName}&quot; se eliminará
+              permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleOnClickDeleteLabel}
+              disabled={isSaving}
+              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {children}
 

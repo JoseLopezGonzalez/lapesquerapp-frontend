@@ -10,7 +10,7 @@ import OrdersManagerLayout from '@/components/Admin/OrdersManager/shared/OrdersM
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { useDebounce } from '@/hooks/useDebounce';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { useComercialOrders } from '@/hooks/useComercialOrders';
 import { useOffersList } from '@/hooks/useOffers';
 import {
@@ -27,7 +27,7 @@ import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 export default function ComercialOrdersManager() {
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
-  const isMobile = useIsMobile();
+  const { isMobile, mounted } = useIsMobileSafe();
   const tenantId = getCurrentTenant();
 
   const [onCreatingNewOrder, setOnCreatingNewOrder] = useState(false);
@@ -253,6 +253,8 @@ export default function ComercialOrdersManager() {
     handleOnCreatedOrder,
     handleOnClickAddNewOrder,
   ]);
+
+  if (!mounted) return null;
 
   return (
     <OrdersManagerLayout

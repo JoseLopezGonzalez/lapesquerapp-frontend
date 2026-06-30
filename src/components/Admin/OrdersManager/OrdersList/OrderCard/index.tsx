@@ -1,7 +1,7 @@
 'use client';
 
 import { formatDate } from '@/helpers/formats/dates/formatDates';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -29,7 +29,8 @@ interface OrderCardProps {
 }
 
 const OrderCard = ({ order, onClick, disabled, isSelected = false }: OrderCardProps) => {
-  const isMobile = useIsMobile();
+  const { isMobile, mounted } = useIsMobileSafe();
+  if (!mounted) return null;
 
   const orderId = order.id.toString().padStart(5, '0');
   const loadDate = order.loadDate ? formatDate(order.loadDate) : 'N/A';

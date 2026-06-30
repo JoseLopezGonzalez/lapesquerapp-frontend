@@ -1,4 +1,3 @@
-// @ts-nocheck — legacy component pending full TypeScript migration
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
@@ -91,6 +90,7 @@ import { formatDateShort, formatDateHour } from '@/helpers/formats/dates/formatD
 
 import { usePallet, saveDiscountPreferences } from '@/hooks/usePallet';
 import { usePalletTimeline } from '@/hooks/usePalletTimeline';
+import type { PalletBox } from '@/hooks/pallets/palletHelpers';
 import { usePrintElement } from '@/hooks/usePrintElement';
 import PalletLabel from '@/components/Admin/Pallets/PalletLabel';
 import SummaryPieChart from './SummaryPieChart';
@@ -162,7 +162,7 @@ export default function PalletView({
   const showHistorialTab = palletId && palletId !== 'new' && !String(palletId).startsWith('temp-');
   const [mainTab, setMainTab] = useState(initialTab ?? 'edicion');
   const [deletingTimeline, setDeletingTimeline] = useState(false);
-  const [resolvingProductionLot, setResolvingProductionLot] = useState(null);
+  const [resolvingProductionLot, setResolvingProductionLot] = useState<string | null>(null);
   const [isDownloadingExpeditionLabel, setIsDownloadingExpeditionLabel] = useState(false);
 
   // Estado de expansión de los eventos del historial
@@ -228,15 +228,7 @@ export default function PalletView({
       });
       return;
     }
-    const token = session?.user?.accessToken;
     const effectivePalletId = temporalPallet?.id ?? palletId;
-    if (!token) {
-      notify.error({
-        title: 'Sesión no disponible',
-        description: 'No se pudo obtener el token de autenticación. Inicia sesión de nuevo.',
-      });
-      return;
-    }
     if (
       !effectivePalletId ||
       effectivePalletId === 'new' ||
@@ -251,7 +243,7 @@ export default function PalletView({
 
     setIsDownloadingExpeditionLabel(true);
     try {
-      await notify.promise(downloadPalletExpeditionLabel(effectivePalletId, token), {
+      await notify.promise(downloadPalletExpeditionLabel(effectivePalletId), {
         loading: {
           title: 'Generando etiqueta',
           description: `Preparando la etiqueta de expedición del palet #${effectivePalletId}.`,
@@ -275,21 +267,13 @@ export default function PalletView({
     }
   };
 
-  const handleOpenProductionByLot = async (lot) => {
-    const token = session?.user?.accessToken;
-    if (!token) {
-      notify.error({
-        title: 'Sesión no disponible',
-        description: 'No se pudo abrir la producción.',
-      });
-      return;
-    }
+  const handleOpenProductionByLot = async (lot: string) => {
     const trimmedLot = typeof lot === 'string' ? lot.trim() : '';
     if (!trimmedLot || resolvingProductionLot) return;
 
     setResolvingProductionLot(trimmedLot);
     try {
-      const res = await getProductionByLot(trimmedLot, token);
+      const res = await getProductionByLot(trimmedLot);
       const productionId = res?.data?.id;
       if (productionId) {
         window.open(`/admin/productions/${productionId}`, '_blank', 'noopener,noreferrer');
@@ -310,15 +294,15 @@ export default function PalletView({
   };
 
   const handleDeleteTimeline = () => {
-    if (!palletId || deletingTimeline || !session?.user?.accessToken) return;
+    if (!palletId || deletingTimeline) return;
     setDeleteTimelineConfirmOpen(true);
   };
 
   const handleConfirmDeleteTimeline = async () => {
-    if (!palletId || !session?.user?.accessToken) return;
+    if (!palletId) return;
     setDeletingTimeline(true);
     try {
-      const res = await deletePalletTimeline(palletId, session.user.accessToken);
+      const res = await deletePalletTimeline(palletId);
       notify.success({ title: res?.message || 'Historial borrado correctamente' });
       refetchTimeline();
     } catch (err) {
@@ -328,13 +312,13 @@ export default function PalletView({
     }
   };
 
-  const [selectedBox, setSelectedBox] = useState(null);
+  const [selectedBox, setSelectedBox] = useState<number | string | null>(null);
   const [activeTab, setActiveTab] = useState('disponibles');
   const [addBoxesTab, setAddBoxesTab] = useState('lector');
-  const [deleteBoxConfirmId, setDeleteBoxConfirmId] = useState(null);
+  const [deleteBoxConfirmId, setDeleteBoxConfirmId] = useState<number | string | null>(null);
   const [deleteTimelineConfirmOpen, setDeleteTimelineConfirmOpen] = useState(false);
-  const scannerInputRef = useRef(null);
-  const [bulkActionType, setBulkActionType] = useState(null); // 'lot', 'weight', 'weightAdd' o 'product'
+  const scannerInputRef = useRef<HTMLInputElement>(null);
+  const [bulkActionType, setBulkActionType] = useState<string | null>(null); // 'lot', 'weight', 'weightAdd' o 'product'
   const [bulkActionValue, setBulkActionValue] = useState('');
   const [weightOperation, setWeightOperation] = useState('add'); // 'add' o 'subtract'
   const [oldProductId, setOldProductId] = useState('');
@@ -353,17 +337,18 @@ export default function PalletView({
     temporalPallet.boxes
       .filter((box) => box.isAvailable !== false && box.product?.id)
       .forEach((box) => {
-        if (!productMap.has(box.product.id)) {
-          productMap.set(box.product.id, {
-            value: box.product.id,
-            label: box.product.name || box.product.alias || 'Producto sin nombre',
+        const product = box.product as { id: number | string; name: string; alias?: string } | null;
+        if (product && !productMap.has(product.id)) {
+          productMap.set(product.id, {
+            value: product.id,
+            label: product.name || product.alias || 'Producto sin nombre',
           });
         }
       });
     return Array.from(productMap.values());
   }, [temporalPallet?.boxes]);
 
-  const handleOnClickBoxRow = (boxId) => {
+  const handleOnClickBoxRow = (boxId: number | string) => {
     if (selectedBox === boxId) {
       setSelectedBox(null);
     } else {
@@ -371,7 +356,7 @@ export default function PalletView({
     }
   };
 
-  const handleOnChangeBoxLot = (boxId, lot) => {
+  const handleOnChangeBoxLot = (boxId: number | string, lot: string) => {
     if (isReadOnly) return;
     // Check if box is available before allowing edit
     const box = temporalPallet?.boxes?.find((b) => b.id === boxId);
@@ -385,7 +370,7 @@ export default function PalletView({
     editPallet.box.edit.lot(boxId, lot);
   };
 
-  const handleOnChangeBoxNetWeight = (boxId, netWeight) => {
+  const handleOnChangeBoxNetWeight = (boxId: number | string, netWeight: number | string) => {
     if (isReadOnly) return;
     // Check if box is available before allowing edit
     const box = temporalPallet?.boxes?.find((b) => b.id === boxId);
@@ -399,12 +384,12 @@ export default function PalletView({
     editPallet.box.edit.netWeight(boxId, netWeight);
   };
 
-  const handleOnChangeBoxManualCost = (boxId, value) => {
+  const handleOnChangeBoxManualCost = (boxId: number | string, value: number | string) => {
     if (isReadOnly) return;
     editPallet.box.edit.manualCostPerKg(boxId, value);
   };
 
-  const handleOnClickDuplicateBox = (boxId) => {
+  const handleOnClickDuplicateBox = (boxId: number | string) => {
     if (isReadOnly) return;
     // Check if box is available before allowing duplicate
     const box = temporalPallet?.boxes?.find((b) => b.id === boxId);
@@ -418,7 +403,7 @@ export default function PalletView({
     editPallet.box.duplicate(boxId);
   };
 
-  const handleOnClickDeleteBox = (boxId) => {
+  const handleOnClickDeleteBox = (boxId: number | string) => {
     if (isReadOnly) return;
     const box = temporalPallet?.boxes?.find((b) => b.id === boxId);
     if (box && !isBoxAvailable(box)) {
@@ -477,14 +462,14 @@ export default function PalletView({
   };
 
   // Helper function to check if box is available
-  const isBoxAvailable = (box) => {
+  const isBoxAvailable = (box: PalletBox) => {
     return box.isAvailable !== false;
   };
 
   // Helper function to get production information from box
-  const getBoxProductionInfo = (box) => {
+  const getBoxProductionInfo = (box: PalletBox) => {
     // El campo production contiene { id, lot }
-    return box.production || null;
+    return (box as { production?: { id: number | null; lot: string | null } | null }).production || null;
   };
 
   // Agrupar cajas por producción
@@ -1192,7 +1177,7 @@ export default function PalletView({
                         const summaryData = getSummaryData();
 
                         // Función para renderizar una fila de caja (reutilizable)
-                        const renderBoxRow = (box, isEditable = true) => {
+                        const renderBoxRow = (box: PalletBox, isEditable = true) => {
                           const isSelected = box.id === selectedBox;
                           const boxAvailable = isBoxAvailable(box);
                           const canEditBox = isEditable && !isReadOnly && boxAvailable;

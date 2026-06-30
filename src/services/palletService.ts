@@ -5,6 +5,7 @@
 
 import { fetchWithTenant } from '@lib/fetchWithTenant';
 import { API_URL_V2 } from '@/configs/config';
+import { getAuthToken } from '@/lib/auth/getAuthToken';
 import { getErrorMessage } from '@/lib/api/apiHelpers';
 import { getUserAgent } from '@/lib/utils/getUserAgent';
 
@@ -92,33 +93,26 @@ export interface PalletTimelineResponse {
   timeline: PalletTimelineEntry[];
 }
 
-export function getPallet(palletId: number | string, token: AuthToken): Promise<unknown> {
-  return fetchWithTenant(`${API_URL_V2}pallets/${palletId}`, {
+export async function getPallet(palletId: number | string, token?: AuthToken): Promise<unknown> {
+  const authToken = token ?? (await getAuthToken());
+  const response = await fetchWithTenant(`${API_URL_V2}pallets/${palletId}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${authToken}`,
       'User-Agent': getUserAgent(),
     },
-  })
-    .then((response) => {
-      if (!response.ok) {
-        return response.json().then((errorData: { message?: string }) => {
-          throw new Error(getErrorMessage(errorData) || 'Error al obtener el palet');
-        });
-      }
-      return response.json();
-    })
-    .then((data: { data?: unknown }) => data.data)
-    .catch((error) => {
-      throw error;
-    });
+  });
+  if (!response.ok) {
+    const errorData: { message?: string } = await response.json();
+    throw new Error(getErrorMessage(errorData) || 'Error al obtener el palet');
+  }
+  const data: { data?: unknown } = await response.json();
+  return data.data;
 }
 
-export async function downloadPalletExpeditionLabel(
-  palletId: number | string,
-  token: AuthToken
-): Promise<boolean> {
+export async function downloadPalletExpeditionLabel(palletId: number | string): Promise<boolean> {
+  const token = await getAuthToken();
   const response = await fetchWithTenant(`${API_URL_V2}pallets/${palletId}/pdf/expedition-label`, {
     method: 'GET',
     headers: {
@@ -136,9 +130,9 @@ export async function downloadPalletExpeditionLabel(
 }
 
 export async function downloadPalletExpeditionLabels(
-  palletIds: Array<number | string>,
-  token: AuthToken
+  palletIds: Array<number | string>
 ): Promise<boolean> {
+  const token = await getAuthToken();
   const normalizedPalletIds = palletIds
     .map((id) => Number(id))
     .filter((id) => Number.isFinite(id));
@@ -196,9 +190,9 @@ export interface DeletePalletTimelineResponse {
 }
 
 export async function deletePalletTimeline(
-  palletId: number | string,
-  token: AuthToken
+  palletId: number | string
 ): Promise<DeletePalletTimelineResponse> {
+  const token = await getAuthToken();
   const response = await fetchWithTenant(`${API_URL_V2}pallets/${palletId}/timeline`, {
     method: 'DELETE',
     headers: {
@@ -333,12 +327,12 @@ export function movePalletToStore(
     });
 }
 
-export function moveMultiplePalletsToStore(
+export async function moveMultiplePalletsToStore(
   palletIds: (number | string)[],
-  storeId: number | string,
-  token: AuthToken
+  storeId: number | string
 ): Promise<unknown> {
-  return fetchWithTenant(`${API_URL_V2}pallets/move-multiple-to-store`, {
+  const token = await getAuthToken();
+  const response = await fetchWithTenant(`${API_URL_V2}pallets/move-multiple-to-store`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -350,18 +344,12 @@ export function moveMultiplePalletsToStore(
       pallet_ids: palletIds,
       store_id: storeId,
     }),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        return response.json().then((errorData: { message?: string }) => {
-          throw new Error(getErrorMessage(errorData) || 'Error al mover los palets');
-        });
-      }
-      return response.json();
-    })
-    .catch((error) => {
-      throw error;
-    });
+  });
+  if (!response.ok) {
+    const errorData: { message?: string } = await response.json();
+    throw new Error(getErrorMessage(errorData) || 'Error al mover los palets');
+  }
+  return response.json();
 }
 
 export function removePalletPosition(

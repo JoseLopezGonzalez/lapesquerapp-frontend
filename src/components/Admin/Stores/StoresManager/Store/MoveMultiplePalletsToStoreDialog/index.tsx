@@ -15,7 +15,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { useSession } from 'next-auth/react';
 import {
   Warehouse,
   Check,
@@ -51,8 +50,6 @@ export default function MoveMultiplePalletsToStoreDialog() {
     updateStoreWhenOnMoveMultiplePalletsToStore,
   } = useStoreContext();
 
-  const { data: session } = useSession();
-  const token = session?.user?.accessToken;
   const isMobile = useIsMobile();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -150,8 +147,7 @@ export default function MoveMultiplePalletsToStoreDialog() {
     try {
       const response = await moveMultiplePalletsToStore(
         palletIdsArray,
-        Number(selectedStoreValue),
-        token ?? ''
+        Number(selectedStoreValue)
       );
 
       const { moved_count, total_count, errors } = response as {
