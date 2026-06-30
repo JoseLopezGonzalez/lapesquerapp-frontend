@@ -1162,7 +1162,7 @@ export default function PalletView({
                           const productsSet = new Set();
                           boxesToShow.forEach((box) => {
                             if (box.product?.name) {
-                              productsSet.add(box.product.name);
+                              productsSet.add(box.product!.name);
                             }
                           });
                           const totalProducts = productsSet.size;
@@ -1199,7 +1199,7 @@ export default function PalletView({
                                 onClick={() => handleOnClickBoxRow(box.id)}
                                 className="hover:bg-muted"
                               >
-                                <TableCell>{box.product.name}</TableCell>
+                                <TableCell>{box.product?.name}</TableCell>
                                 <TableCell>
                                   <Input
                                     defaultValue={box.lot}
@@ -1306,7 +1306,7 @@ export default function PalletView({
                             >
                               <TableCell>
                                 <div className="flex items-center gap-2">
-                                  {box.product.name}
+                                  {box.product?.name}
                                   {!boxAvailable && (
                                     <TooltipProvider>
                                       <Tooltip>
@@ -1519,7 +1519,7 @@ export default function PalletView({
                                               >
                                                 <TableCell>
                                                   <div className="flex items-center gap-2">
-                                                    {box.product.name}
+                                                    {box.product?.name}
                                                     {!boxAvailable && (
                                                       <AlertCircle className="h-4 w-4 text-orange-600" />
                                                     )}
@@ -1755,7 +1755,7 @@ export default function PalletView({
                                                   >
                                                     <TableCell>
                                                       <div className="flex items-center gap-2">
-                                                        {box.product.name}
+                                                        {box.product?.name}
                                                         <AlertCircle className="h-4 w-4 text-orange-600" />
                                                       </div>
                                                     </TableCell>
@@ -2173,7 +2173,7 @@ export default function PalletView({
                                     >
                                       <TableCell>
                                         <div className="flex items-center gap-2">
-                                          {box.product.name}
+                                          {box.product?.name}
                                           {!boxAvailable && (
                                             <AlertCircle className="h-4 w-4 text-orange-600" />
                                           )}
@@ -2651,7 +2651,7 @@ export default function PalletView({
                                     >
                                       <TableCell>
                                         <div className="flex items-center gap-2">
-                                          {box.product.name}
+                                          {box.product?.name}
                                           {!boxAvailable && (
                                             <AlertCircle className="h-4 w-4 text-orange-600" />
                                           )}
