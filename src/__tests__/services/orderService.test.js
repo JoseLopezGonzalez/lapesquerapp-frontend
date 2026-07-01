@@ -29,6 +29,11 @@ vi.mock('@/lib/utils/getUserAgent', () => ({
   getUserAgent: () => 'Vitest-Test-User-Agent',
 }));
 
+// Mock getAuthToken (now used internally by migrated functions)
+vi.mock('@/lib/auth/getAuthToken', () => ({
+  getAuthToken: vi.fn().mockResolvedValue('test-token-123'),
+}));
+
 // Mock next-auth getSession (used by createOrder)
 vi.mock('next-auth/react', () => ({
   getSession: vi.fn(),
@@ -63,7 +68,7 @@ describe('orderService', () => {
       const orderId = 1;
       fetchWithTenant.mockResolvedValueOnce(mockJsonResponse({ data: mockOrder }));
 
-      const result = await getOrder(orderId, token);
+      const result = await getOrder(orderId);
 
       expect(fetchWithTenant).toHaveBeenCalledWith(
         expect.stringContaining(`/orders/${orderId}`),
@@ -80,14 +85,14 @@ describe('orderService', () => {
     it('returns data.data when response has data wrapper', async () => {
       fetchWithTenant.mockResolvedValueOnce(mockJsonResponse({ data: mockOrder }));
 
-      const result = await getOrder(1, token);
+      const result = await getOrder(1);
       expect(result).toEqual(mockOrder);
     });
 
     it('returns data directly when response has no data wrapper', async () => {
       fetchWithTenant.mockResolvedValueOnce(mockJsonResponse(mockOrder));
 
-      const result = await getOrder(1, token);
+      const result = await getOrder(1);
       expect(result).toEqual(mockOrder);
     });
 
@@ -98,7 +103,7 @@ describe('orderService', () => {
         json: async () => ({ message: 'Pedido no encontrado' }),
       });
 
-      await expect(getOrder(999, token)).rejects.toThrow();
+      await expect(getOrder(999)).rejects.toThrow();
     });
   });
 
@@ -110,7 +115,7 @@ describe('orderService', () => {
         json: async () => mockOrders,
       });
 
-      const result = await getActiveOrders(token);
+      const result = await getActiveOrders();
 
       expect(fetchWithTenant).toHaveBeenCalledWith(
         expect.stringContaining('/orders/active'),
@@ -131,7 +136,7 @@ describe('orderService', () => {
         json: async () => ({ data: mockOrders }),
       });
 
-      const result = await getActiveOrders(token);
+      const result = await getActiveOrders();
       expect(result).toEqual(mockOrders);
     });
 
@@ -141,13 +146,8 @@ describe('orderService', () => {
         json: async () => ({ data: null }),
       });
 
-      const result = await getActiveOrders(token);
+      const result = await getActiveOrders();
       expect(result).toEqual([]);
-    });
-
-    it('rejects when token is not provided', async () => {
-      await expect(getActiveOrders()).rejects.toThrow('No se proporcionó token de autenticación');
-      expect(fetchWithTenant).not.toHaveBeenCalled();
     });
 
     it('throws error when request fails', async () => {
@@ -156,7 +156,7 @@ describe('orderService', () => {
         json: async () => ({ message: 'Error de servidor' }),
       });
 
-      await expect(getActiveOrders(token)).rejects.toThrow();
+      await expect(getActiveOrders()).rejects.toThrow();
     });
   });
 
@@ -175,7 +175,7 @@ describe('orderService', () => {
 
       fetchWithTenant.mockResolvedValueOnce(mockJsonResponse({ data: analysis }));
 
-      const result = await getOrderCostAnalysis(1, token);
+      const result = await getOrderCostAnalysis(1);
 
       expect(fetchWithTenant).toHaveBeenCalledWith(
         expect.stringContaining('/orders/1/cost-analysis'),
@@ -410,7 +410,7 @@ describe('orderService', () => {
         json: async () => ({ data: updatedOrder }),
       });
 
-      const result = await updateOrder(1, updateData, token);
+      const result = await updateOrder(1, updateData);
 
       expect(fetchWithTenant).toHaveBeenCalledWith(
         expect.stringContaining('/orders/1'),
@@ -432,7 +432,7 @@ describe('orderService', () => {
         json: async () => ({ message: 'Error de validación' }),
       });
 
-      await expect(updateOrder(1, { status: 'invalid' }, token)).rejects.toThrow();
+      await expect(updateOrder(1, { status: 'invalid' })).rejects.toThrow();
     });
   });
 
@@ -445,7 +445,7 @@ describe('orderService', () => {
         json: async () => ({ data: updatedOrder }),
       });
 
-      const result = await setOrderStatus(1, status, token);
+      const result = await setOrderStatus(1, status);
 
       expect(fetchWithTenant).toHaveBeenCalledWith(
         expect.stringContaining('/orders/1/status'),
@@ -489,8 +489,8 @@ describe('orderService', () => {
     });
 
     it('throws when no session', async () => {
-      const { getSession } = await import('next-auth/react');
-      vi.mocked(getSession).mockResolvedValueOnce(null);
+      const { getAuthToken } = await import('@/lib/auth/getAuthToken');
+      vi.mocked(getAuthToken).mockRejectedValueOnce(new Error('No hay sesión autenticada'));
 
       await expect(createOrder({})).rejects.toThrow('No hay sesión autenticada');
       expect(fetchWithTenant).not.toHaveBeenCalled();

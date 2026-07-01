@@ -15,6 +15,7 @@ vi.mock('next-auth/react', () => ({
     data: { user: { accessToken: 'test-token' } },
     status: 'authenticated',
   })),
+  getSession: vi.fn().mockResolvedValue({ user: { accessToken: 'test-token' } }),
 }));
 
 // Mock orderService
@@ -170,7 +171,7 @@ describe('useOrder', () => {
       await result.current.updateOrderStatus('in_production');
     });
 
-    expect(setOrderStatus).toHaveBeenCalledWith(1, 'in_production', 'test-token');
+    expect(setOrderStatus).toHaveBeenCalledWith(1, 'in_production');
     expect(onChange).toHaveBeenCalledWith(updatedOrder);
   });
 
@@ -462,7 +463,7 @@ describe('useOrder', () => {
     });
 
     await waitFor(() => {
-      expect(getOrderCostAnalysis).toHaveBeenCalledWith(1, 'test-token');
+      expect(getOrderCostAnalysis).toHaveBeenCalledWith(1);
     });
 
     expect(result.current.costAnalysis).toEqual(

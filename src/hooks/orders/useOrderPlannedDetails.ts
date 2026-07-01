@@ -52,7 +52,6 @@ function normalizePlannedProductDetail(
 
 interface UseOrderPlannedDetailsParams {
   order: Order | null;
-  accessToken: string | null | undefined;
   productOptions: OrderSelectOption[];
   taxOptions: OrderSelectOption[];
   onOrderUpdate: (updatedOrder: Order) => void;
@@ -70,7 +69,6 @@ export interface UseOrderPlannedDetailsResult {
 
 export function useOrderPlannedDetails({
   order,
-  accessToken,
   productOptions,
   taxOptions,
   onOrderUpdate,
@@ -83,7 +81,7 @@ export function useOrderPlannedDetails({
 
   const updatePlannedProductDetail = useCallback(
     async (id: number | string, updateData: Record<string, unknown>) => {
-      return updateOrderPlannedProductDetail(String(id), updateData, accessToken ?? '')
+      return updateOrderPlannedProductDetail(String(id), updateData)
         .then((updated) => {
           if (!order) return;
           const normalizedUpdated = normalizePlannedProductDetail(
@@ -106,12 +104,12 @@ export function useOrderPlannedDetails({
           throw err;
         });
     },
-    [order, accessToken, productOptions, taxOptions, onOrderUpdate, onError]
+    [order, productOptions, taxOptions, onOrderUpdate, onError]
   );
 
   const deletePlannedProductDetail = useCallback(
     async (id: number | string) => {
-      return deleteOrderPlannedProductDetail(String(id), accessToken ?? '')
+      return deleteOrderPlannedProductDetail(String(id))
         .then(() => {
           if (!order) return;
           const filteredDetails = (
@@ -124,12 +122,12 @@ export function useOrderPlannedDetails({
           throw err;
         });
     },
-    [order, accessToken, onOrderUpdate, onError]
+    [order, onOrderUpdate, onError]
   );
 
   const createPlannedProductDetail = useCallback(
     async (detailData: Record<string, unknown>) => {
-      return createOrderPlannedProductDetail(detailData, accessToken ?? '')
+      return createOrderPlannedProductDetail(detailData)
         .then((created) => {
           if (!order) return;
           const normalizedCreated = normalizePlannedProductDetail(
@@ -151,7 +149,7 @@ export function useOrderPlannedDetails({
           throw err;
         });
     },
-    [order, accessToken, productOptions, taxOptions, onOrderUpdate, onError]
+    [order, productOptions, taxOptions, onOrderUpdate, onError]
   );
 
   return {

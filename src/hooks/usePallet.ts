@@ -102,9 +102,9 @@ export function usePallet({
       setActiveOrdersLoading(false);
     } else {
       setActiveOrdersLoading(true);
-      (getActiveOrdersOptions as (token: string) => Promise<unknown[]>)(token)
+      getActiveOrdersOptions()
         .then((data) => {
-          setActiveOrdersOptions(data);
+          setActiveOrdersOptions(data as unknown[]);
         })
         .catch((err: unknown) => {
           console.error('Error al cargar las opciones de pedidos:', err);

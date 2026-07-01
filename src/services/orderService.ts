@@ -9,7 +9,7 @@ import { getAuthToken } from '@/lib/auth/getAuthToken';
 import { getErrorMessage, handleServiceResponse, ApiError } from '@/lib/api/apiHelpers';
 import { getUserAgent } from '@/lib/utils/getUserAgent';
 
-/** Auth token for API requests */
+/** Auth token for API requests — used by profitability export functions still pending migration */
 type AuthToken = string;
 
 /** Order payload for create/update */
@@ -289,63 +289,50 @@ function getFilenameFromContentDisposition(contentDisposition: string | null): s
 /**
  * Fetches the details of an order by its ID.
  */
-export function getOrder(orderId: string, token: AuthToken): Promise<Order | null> {
-  return fetchWithTenant(`${API_URL_V2}orders/${orderId}`, {
+export async function getOrder(orderId: string): Promise<Order | null> {
+  const token = await getAuthToken();
+  const response = await fetchWithTenant(`${API_URL_V2}orders/${orderId}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
       'User-Agent': getUserAgent(),
     },
-  })
-    .then(async (response) => {
-      const data = await handleServiceResponse(response, null, 'Error al obtener el pedido');
-      if (!data) return null;
-      return (data.data || data) as Order;
-    })
-    .catch((error) => {
-      throw error;
-    });
+  });
+  const data = await handleServiceResponse(response, null, 'Error al obtener el pedido');
+  if (!data) return null;
+  return (data.data || data) as Order;
 }
 
 /**
  * Fetches detailed cost analysis for an order.
  */
-export function getOrderCostAnalysis(
-  orderId: string | number,
-  token: AuthToken
+export async function getOrderCostAnalysis(
+  orderId: string | number
 ): Promise<OrderCostAnalysisResponse | null> {
-  return fetchWithTenant(`${API_URL_V2}orders/${orderId}/cost-analysis`, {
+  const token = await getAuthToken();
+  const response = await fetchWithTenant(`${API_URL_V2}orders/${orderId}/cost-analysis`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
       'User-Agent': getUserAgent(),
     },
-  })
-    .then(async (response) => {
-      const data = await handleServiceResponse(
-        response,
-        null,
-        'Error al obtener el análisis económico'
-      );
-      if (!data) return null;
-      return (data.data || data) as OrderCostAnalysisResponse;
-    })
-    .catch((error) => {
-      throw error;
-    });
+  });
+  const data = await handleServiceResponse(response, null, 'Error al obtener el análisis económico');
+  if (!data) return null;
+  return (data.data || data) as OrderCostAnalysisResponse;
 }
 
 /**
  * Updates an order with the given data.
  */
-export function updateOrder(
+export async function updateOrder(
   orderId: string,
-  orderData: OrderPayload,
-  token: AuthToken
+  orderData: OrderPayload
 ): Promise<Order | undefined> {
-  return fetchWithTenant(`${API_URL_V2}orders/${orderId}`, {
+  const token = await getAuthToken();
+  const response = await fetchWithTenant(`${API_URL_V2}orders/${orderId}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -354,25 +341,17 @@ export function updateOrder(
       'User-Agent': getUserAgent(),
     },
     body: JSON.stringify(orderData),
-  })
-    .then(async (response) => {
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new ApiError(
-          getErrorMessage(errorData) || 'Error al actualizar el pedido',
-          response.status,
-          errorData
-        );
-      }
-      return response.json();
-    })
-    .then(
-      (data: { data?: Order } | Order) =>
-        (data && typeof data === 'object' && 'data' in data ? data.data : data) as Order | undefined
-    )
-    .catch((error) => {
-      throw error;
-    });
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new ApiError(
+      getErrorMessage(errorData) || 'Error al actualizar el pedido',
+      response.status,
+      errorData
+    );
+  }
+  const data: { data?: Order } | Order = await response.json();
+  return (data && typeof data === 'object' && 'data' in data ? data.data : data) as Order | undefined;
 }
 
 /**
@@ -399,39 +378,27 @@ function normalizeActiveOrder(order: Record<string, unknown>): Order {
 /**
  * Fetches the active orders from the API.
  */
-export function getActiveOrders(token: AuthToken): Promise<Order[]> {
-  if (!token) {
-    console.error('getActiveOrders: No se proporcionó token');
-    return Promise.reject(new Error('No se proporcionó token de autenticación'));
-  }
-
-  return fetchWithTenant(`${API_URL_V2}orders/active`, {
+export async function getActiveOrders(): Promise<Order[]> {
+  const token = await getAuthToken();
+  const response = await fetchWithTenant(`${API_URL_V2}orders/active`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
       'User-Agent': getUserAgent(),
     },
-  })
-    .then((response) => {
-      if (!response.ok) {
-        return response.json().then((errorData: { message?: string }) => {
-          throw new Error(getErrorMessage(errorData) || 'Error al obtener los pedidos activos');
-        });
-      }
-      return response.json();
-    })
-    .then((data: Order[] | { data?: Order[] }) => {
-      const raw: Order[] = Array.isArray(data)
-        ? data
-        : Array.isArray((data as { data?: Order[] }).data)
-          ? (data as { data: Order[] }).data
-          : [];
-      return raw.map((order) => normalizeActiveOrder(order));
-    })
-    .catch((error) => {
-      throw error;
-    });
+  });
+  if (!response.ok) {
+    const errorData: { message?: string } = await response.json();
+    throw new Error(getErrorMessage(errorData) || 'Error al obtener los pedidos activos');
+  }
+  const data: Order[] | { data?: Order[] } = await response.json();
+  const raw: Order[] = Array.isArray(data)
+    ? data
+    : Array.isArray((data as { data?: Order[] }).data)
+      ? (data as { data: Order[] }).data
+      : [];
+  return raw.map((order) => normalizeActiveOrder(order));
 }
 
 /**
@@ -455,9 +422,9 @@ export async function downloadActivePlannedProductsXls(): Promise<Blob> {
  */
 export async function updateOrderPlannedProductDetail(
   detailId: string,
-  detailData: OrderPlannedProductDetailPayload,
-  token: AuthToken
+  detailData: OrderPlannedProductDetailPayload
 ): Promise<unknown> {
+  const token = await getAuthToken();
   const response = await fetchWithTenant(`${API_URL_V2}order-planned-product-details/${detailId}`, {
     method: 'PUT',
     headers: {
@@ -481,10 +448,8 @@ export async function updateOrderPlannedProductDetail(
 /**
  * Deletes the planned product detail of an order.
  */
-export async function deleteOrderPlannedProductDetail(
-  detailId: string,
-  token: AuthToken
-): Promise<unknown> {
+export async function deleteOrderPlannedProductDetail(detailId: string): Promise<unknown> {
+  const token = await getAuthToken();
   const response = await fetchWithTenant(`${API_URL_V2}order-planned-product-details/${detailId}`, {
     method: 'DELETE',
     headers: {
@@ -508,9 +473,9 @@ export async function deleteOrderPlannedProductDetail(
  * Creates a planned product detail for an order.
  */
 export async function createOrderPlannedProductDetail(
-  detailData: OrderPlannedProductDetailPayload,
-  token: AuthToken
+  detailData: OrderPlannedProductDetailPayload
 ): Promise<unknown> {
+  const token = await getAuthToken();
   const response = await fetchWithTenant(`${API_URL_V2}order-planned-product-details`, {
     method: 'POST',
     headers: {
@@ -534,11 +499,8 @@ export async function createOrderPlannedProductDetail(
 /**
  * Updates the status of an order.
  */
-export async function setOrderStatus(
-  orderId: string,
-  status: number,
-  token: AuthToken
-): Promise<unknown> {
+export async function setOrderStatus(orderId: string, status: number): Promise<unknown> {
+  const token = await getAuthToken();
   const response = await fetchWithTenant(`${API_URL_V2}orders/${orderId}/status`, {
     method: 'PUT',
     headers: {
@@ -562,11 +524,8 @@ export async function setOrderStatus(
 /**
  * Creates an incident for an order.
  */
-export async function createOrderIncident(
-  orderId: string,
-  description: string,
-  token: AuthToken
-): Promise<unknown> {
+export async function createOrderIncident(orderId: string, description: string): Promise<unknown> {
+  const token = await getAuthToken();
   const response = await fetchWithTenant(`${API_URL_V2}orders/${orderId}/incident`, {
     method: 'POST',
     headers: {
@@ -592,9 +551,9 @@ export async function createOrderIncident(
 export async function updateOrderIncident(
   orderId: string,
   resolutionType: string,
-  resolutionNotes: string,
-  token: AuthToken
+  resolutionNotes: string
 ): Promise<unknown> {
+  const token = await getAuthToken();
   const response = await fetchWithTenant(`${API_URL_V2}orders/${orderId}/incident`, {
     method: 'PUT',
     headers: {
@@ -620,7 +579,8 @@ export async function updateOrderIncident(
 /**
  * Deletes an order incident.
  */
-export async function destroyOrderIncident(orderId: string, token: AuthToken): Promise<unknown> {
+export async function destroyOrderIncident(orderId: string): Promise<unknown> {
+  const token = await getAuthToken();
   const response = await fetchWithTenant(`${API_URL_V2}orders/${orderId}/incident`, {
     method: 'DELETE',
     headers: {
@@ -642,62 +602,46 @@ export async function destroyOrderIncident(orderId: string, token: AuthToken): P
 /**
  * Fetches active orders options.
  */
-export function getActiveOrdersOptions(token: AuthToken): Promise<unknown> {
-  return fetchWithTenant(`${API_URL_V2}active-orders/options`, {
+export async function getActiveOrdersOptions(): Promise<unknown> {
+  const token = await getAuthToken();
+  const response = await fetchWithTenant(`${API_URL_V2}active-orders/options`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
       'User-Agent': getUserAgent(),
     },
-  })
-    .then((response) => {
-      if (!response.ok) {
-        return response.json().then((errorData: { message?: string }) => {
-          throw new Error(getErrorMessage(errorData) || 'Error al obtener los pedidos activos');
-        });
-      }
-      return response.json();
-    })
-    .catch((error) => {
-      throw error;
-    });
+  });
+  if (!response.ok) {
+    const errorData: { message?: string } = await response.json();
+    throw new Error(getErrorMessage(errorData) || 'Error al obtener los pedidos activos');
+  }
+  return response.json();
 }
 
 /**
  * Fetches production view data.
  */
-export function getProductionViewData(token: AuthToken): Promise<unknown[]> {
-  if (!token) {
-    return Promise.reject(new Error('No se proporcionó token de autenticación'));
-  }
-
-  return fetchWithTenant(`${API_URL_V2}orders/production-view`, {
+export async function getProductionViewData(): Promise<unknown[]> {
+  const token = await getAuthToken();
+  const response = await fetchWithTenant(`${API_URL_V2}orders/production-view`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
       'User-Agent': getUserAgent(),
     },
-  })
-    .then((response) => {
-      if (!response.ok) {
-        return response.json().then((errorData: { message?: string }) => {
-          throw new Error(getErrorMessage(errorData) || 'Error al obtener los datos de producción');
-        });
-      }
-      return response.json();
-    })
-    .then((data: unknown[] | { data?: unknown[] }) => {
-      if (data && typeof data === 'object' && 'data' in data && Array.isArray(data.data)) {
-        return data.data;
-      }
-      if (Array.isArray(data)) return data;
-      return [];
-    })
-    .catch((error) => {
-      throw error;
-    });
+  });
+  if (!response.ok) {
+    const errorData: { message?: string } = await response.json();
+    throw new Error(getErrorMessage(errorData) || 'Error al obtener los datos de producción');
+  }
+  const data: unknown[] | { data?: unknown[] } = await response.json();
+  if (data && typeof data === 'object' && 'data' in data && Array.isArray((data as { data?: unknown[] }).data)) {
+    return (data as { data: unknown[] }).data;
+  }
+  if (Array.isArray(data)) return data;
+  return [];
 }
 
 /**

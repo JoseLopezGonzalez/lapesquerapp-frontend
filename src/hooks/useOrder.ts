@@ -81,7 +81,7 @@ export function useOrder(
   orderId: number | string | null | undefined,
   onChange?: (order: Order) => void
 ) {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const queryClient = useQueryClient();
   const accessToken = session?.user?.accessToken;
   const [mutationError, setMutationError] = useState<unknown>(null);
@@ -97,8 +97,8 @@ export function useOrder(
     refetch: queryRefetch,
   } = useQuery({
     queryKey,
-    queryFn: () => getOrder(orderId as unknown as string, accessToken ?? ''),
-    enabled: !!orderId && !!accessToken && status !== 'loading',
+    queryFn: () => getOrder(orderId as unknown as string),
+    enabled: !!orderId,
   });
 
   const error = queryError ?? mutationError;
@@ -126,7 +126,7 @@ export function useOrder(
     costAnalysisError,
     loadCostAnalysis,
     resetCostAnalysis,
-  } = useOrderCostAnalysis({ orderId, accessToken, activeTab });
+  } = useOrderCostAnalysis({ orderId, activeTab });
 
   const reload = useCallback(async (): Promise<Order | null> => {
     try {
@@ -140,7 +140,6 @@ export function useOrder(
   }, [queryRefetch, resetCostAnalysis]);
 
   const { productOptions, taxOptions, optionsLoading, loadOptions } = useOrderOptions({
-    accessToken,
     activeTab,
     onError: setMutationError,
   });
@@ -162,7 +161,7 @@ export function useOrder(
   );
 
   const updateOrderData = async (updateData: Record<string, unknown>) => {
-    return updateOrder(orderId as unknown as string, updateData, accessToken ?? '')
+    return updateOrder(orderId as unknown as string, updateData)
       .then((updated) => {
         if (updated) {
           updateOrderCache(updated);
@@ -177,7 +176,7 @@ export function useOrder(
   };
 
   const updateOrderStatus = async (statusValue: number) => {
-    return setOrderStatus(orderId as unknown as string, statusValue, accessToken ?? '')
+    return setOrderStatus(orderId as unknown as string, statusValue)
       .then((updated) => {
         updateOrderCache(updated as Order);
         return updated;
@@ -191,8 +190,7 @@ export function useOrder(
   const updateTemperatureOrder = async (updatedTemperature: unknown) => {
     return updateOrder(
       orderId as unknown as string,
-      { temperature: updatedTemperature },
-      accessToken ?? ''
+      { temperature: updatedTemperature }
     )
       .then((updated) => {
         if (updated) updateOrderCache(updated);
@@ -206,14 +204,12 @@ export function useOrder(
 
   const incidents = useOrderIncidents({
     order,
-    accessToken,
     onOrderUpdate: updateOrderCache,
     onError: setMutationError,
   });
 
   const { plannedProductDetails, plannedProductDetailActions } = useOrderPlannedDetails({
     order,
-    accessToken,
     productOptions,
     taxOptions,
     onOrderUpdate: updateOrderCache,

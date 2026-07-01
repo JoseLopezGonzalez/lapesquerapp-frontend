@@ -1,7 +1,6 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { useSession } from 'next-auth/react';
 import { getActiveOrders } from '@/services/orderService';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 
@@ -12,8 +11,6 @@ import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
  * @returns {Object} { orders, isLoading, error, refetch, queryKey }
  */
 export function useOrders() {
-  const { data: session } = useSession();
-  const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
   const queryKey = ['orders', tenantId ?? 'unknown'];
 
@@ -24,8 +21,8 @@ export function useOrders() {
     refetch,
   } = useQuery({
     queryKey,
-    queryFn: () => getActiveOrders(token),
-    enabled: !!token && !!tenantId,
+    queryFn: () => getActiveOrders(),
+    enabled: !!tenantId,
   });
 
   // Asegurar que orders sea siempre un array

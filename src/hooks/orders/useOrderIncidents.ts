@@ -10,7 +10,6 @@ import type { Order } from '@/services/orderService';
 
 interface UseOrderIncidentsParams {
   order: Order | null;
-  accessToken: string | null | undefined;
   onOrderUpdate: (updatedOrder: Order) => void;
   onError?: (err: unknown) => void;
 }
@@ -23,14 +22,13 @@ export interface UseOrderIncidentsResult {
 
 export function useOrderIncidents({
   order,
-  accessToken,
   onOrderUpdate,
   onError,
 }: UseOrderIncidentsParams): UseOrderIncidentsResult {
   const openOrderIncident = useCallback(
     async (description: string) => {
       if (!order) return;
-      return createOrderIncident(String(order.id), description, accessToken ?? '')
+      return createOrderIncident(String(order.id), description)
         .then((updated) => {
           if (!order) return;
           onOrderUpdate({ ...order, status: 'incident', incident: updated });
@@ -40,18 +38,13 @@ export function useOrderIncidents({
           throw err;
         });
     },
-    [order, accessToken, onOrderUpdate, onError]
+    [order, onOrderUpdate, onError]
   );
 
   const resolveOrderIncident = useCallback(
     async (resolutionType: string, resolutionNotes: string) => {
       if (!order) return;
-      return updateOrderIncident(
-        String(order.id),
-        resolutionType,
-        resolutionNotes,
-        accessToken ?? ''
-      )
+      return updateOrderIncident(String(order.id), resolutionType, resolutionNotes)
         .then((updatedIncident) => {
           if (!order) return updatedIncident;
           onOrderUpdate({ ...order, incident: updatedIncident });
@@ -62,12 +55,12 @@ export function useOrderIncidents({
           throw err;
         });
     },
-    [order, accessToken, onOrderUpdate, onError]
+    [order, onOrderUpdate, onError]
   );
 
   const deleteOrderIncident = useCallback(async () => {
     if (!order) return;
-    return destroyOrderIncident(String(order.id), accessToken ?? '')
+    return destroyOrderIncident(String(order.id))
       .then(() => {
         if (!order) return;
         onOrderUpdate({ ...order, status: 'finished', incident: null });
@@ -76,7 +69,7 @@ export function useOrderIncidents({
         onError?.(err);
         throw err;
       });
-  }, [order, accessToken, onOrderUpdate, onError]);
+  }, [order, onOrderUpdate, onError]);
 
   return { openOrderIncident, resolveOrderIncident, deleteOrderIncident };
 }

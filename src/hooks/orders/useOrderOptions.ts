@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useSession } from 'next-auth/react';
 import { getProductOptions } from '@/services/productService';
 import { getTaxOptions } from '@/services/taxService';
 import { useOrdersManagerOptions } from '@/context/gestor-options/OrdersManagerOptionsContext';
@@ -18,7 +19,6 @@ export interface OrderSelectOption {
 }
 
 interface UseOrderOptionsParams {
-  accessToken: string | null | undefined;
   activeTab: string;
   onError?: (err: unknown) => void;
 }
@@ -31,10 +31,11 @@ export interface UseOrderOptionsResult {
 }
 
 export function useOrderOptions({
-  accessToken,
   activeTab,
   onError,
 }: UseOrderOptionsParams): UseOrderOptionsResult {
+  const { data: session } = useSession();
+  const accessToken = session?.user?.accessToken;
   const [productOptions, setProductOptions] = useState<OrderSelectOption[]>([]);
   const [taxOptions, setTaxOptions] = useState<OrderSelectOption[]>([]);
   const [optionsLoaded, setOptionsLoaded] = useState(false);
