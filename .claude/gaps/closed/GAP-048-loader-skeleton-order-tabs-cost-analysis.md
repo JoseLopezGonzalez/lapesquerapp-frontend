@@ -5,7 +5,7 @@
 - **Tipo:** Bug
 - **Módulo:** Ventas
 - **Prioridad:** Alta
-- **Estado:** open
+- **Estado:** closed
 - **Fecha:** 2026-07-01
 - **Autor:** Jose
 
@@ -58,15 +58,22 @@ Detectado en auditoría desktop `/audit-desktop orders manager` 2026-07-01.
 
 ## Implementación
 
-> Rellena el Agente Implementador
-
 ### Archivos creados
+
+Ninguno.
 
 ### Archivos modificados
 
+- `src/components/Admin/OrdersManager/Order/components/OrderTabsDesktop.jsx` — `import Loader` eliminado; `import Skeleton` añadido; fallback de `Suspense` reemplazado por `<Skeleton className="h-64 w-full rounded-lg" />`
+- `src/components/Admin/OrdersManager/Order/OrderCostAnalysis/index.jsx` — `import Loader` eliminado; `import Skeleton` añadido; early return de carga reemplazado por skeleton estructurado: 4 cards `h-24` en grid `grid-cols-2 xl:grid-cols-4` + skeleton de tabs `h-8 w-48` + 5 filas de tabla `h-10`
+
 ### Decisiones tomadas durante la implementación
 
+El skeleton de `OrderCostAnalysis` replica la estructura real del componente: 4 metric cards en grid responsive (2 columnas en móvil, 4 en xl) + placeholder de tabs + filas de tabla. El skeleton de `OrderTabsDesktop` es genérico (`h-64`) ya que el contenido lazy varía según la tab activa.
+
 ### Desviaciones del plan (si las hay)
+
+Ninguna.
 
 ---
 

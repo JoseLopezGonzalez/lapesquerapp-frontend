@@ -1,14 +1,16 @@
 'use client';
 
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Trash2, Unlink, Loader2 } from 'lucide-react';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Loader2, Trash2, Unlink } from 'lucide-react';
 
 export default function ConfirmActionDialog({
   open,
@@ -39,26 +41,22 @@ export default function ConfirmActionDialog({
   const confirmLabel = isDelete ? 'Eliminar' : isUnlinkAll ? 'Desvincular todos' : 'Desvincular';
 
   return (
-    <Dialog open={open} onOpenChange={onCancel}>
-      <DialogContent size="md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+    <AlertDialog open={open} onOpenChange={onCancel}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle className="flex items-center gap-2">
             {isDelete ? (
               <Trash2 className="h-5 w-5 text-red-600" />
             ) : (
               <Unlink className="h-5 w-5 text-orange-600" />
             )}
             {title}
-          </DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <p className="text-muted-foreground text-sm">{description}</p>
-        </div>
-        <DialogFooter className="flex gap-2">
-          <Button variant="outline" onClick={onCancel} disabled={isUnlinking}>
-            Cancelar
-          </Button>
-          <Button
+          </AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isUnlinking}>Cancelar</AlertDialogCancel>
+          <AlertDialogAction
             variant={isDelete ? 'destructive' : 'default'}
             onClick={onConfirm}
             disabled={isUnlinking}
@@ -71,9 +69,9 @@ export default function ConfirmActionDialog({
             ) : (
               confirmLabel
             )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

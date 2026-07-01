@@ -562,7 +562,7 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
                       <Label htmlFor={field.name}>{field.label}</Label>
                       {renderField(field)}
                       {errors[field.name as keyof typeof errors] && (
-                        <p className="text-sm text-red-500">
+                        <p className="text-sm text-destructive">
                           {
                             (errors[field.name as keyof typeof errors] as { message?: string })
                               ?.message
@@ -652,27 +652,27 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
                       <Trash2 className="h-4 w-4" />
                     </Button>
                     {errors.plannedProducts?.[index]?.product && (
-                      <p className="col-span-full text-sm text-red-500">
+                      <p className="col-span-full text-sm text-destructive">
                         {errors.plannedProducts[index]?.product?.message}
                       </p>
                     )}
                     {errors.plannedProducts?.[index]?.quantity && (
-                      <p className="col-span-full text-sm text-red-500">
+                      <p className="col-span-full text-sm text-destructive">
                         {errors.plannedProducts[index]?.quantity?.message}
                       </p>
                     )}
                     {errors.plannedProducts?.[index]?.boxes && (
-                      <p className="col-span-full text-sm text-red-500">
+                      <p className="col-span-full text-sm text-destructive">
                         {errors.plannedProducts[index]?.boxes?.message}
                       </p>
                     )}
                     {errors.plannedProducts?.[index]?.unitPrice && (
-                      <p className="col-span-full text-sm text-red-500">
+                      <p className="col-span-full text-sm text-destructive">
                         {errors.plannedProducts[index]?.unitPrice?.message}
                       </p>
                     )}
                     {errors.plannedProducts?.[index]?.tax && (
-                      <p className="col-span-full text-sm text-red-500">
+                      <p className="col-span-full text-sm text-destructive">
                         {errors.plannedProducts[index]?.tax?.message}
                       </p>
                     )}

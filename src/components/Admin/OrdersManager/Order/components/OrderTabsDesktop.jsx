@@ -2,7 +2,7 @@
 
 import { Suspense } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import Loader from '@/components/Utilities/Loader';
+import { Skeleton } from '@/components/ui/skeleton';
 import { SECTIONS_CONFIG } from '../config/sectionsConfig';
 
 const TAB_LABELS = {
@@ -78,11 +78,7 @@ export default function OrderTabsDesktop({
                 <TabsContent key={section.id} value={section.id} className={tabClass}>
                   {isLazy ? (
                     <Suspense
-                      fallback={
-                        <div className="flex h-full items-center justify-center">
-                          <Loader />
-                        </div>
-                      }
+                      fallback={<Skeleton className="h-64 w-full rounded-lg" />}
                     >
                       <Component {...componentProps} />
                     </Suspense>

@@ -3,7 +3,7 @@
  * @module services/palletService
  */
 
-import { fetchWithTenant } from '@lib/fetchWithTenant';
+import { fetchWithTenant } from '@/lib/fetchWithTenant';
 import { API_URL_V2 } from '@/configs/config';
 import { getAuthToken } from '@/lib/auth/getAuthToken';
 import { getErrorMessage } from '@/lib/api/apiHelpers';

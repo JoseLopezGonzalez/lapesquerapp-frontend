@@ -77,8 +77,7 @@ const getNullablePercentage = (value: number | null | undefined) =>
 const getNullableCurrencyPerKg = (value: number | null | undefined) =>
   value == null ? '—' : `${formatDecimal(value)} €/kg`;
 
-const GOOGLE_API_KEY =
-  process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyBh1lKDP8noxYHU6dXDs3Yjqyg_PpC5Ks4';
+const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
 const OrderDetails = () => {
   const { order } = useOrderContext() as { order: Order };
@@ -89,7 +88,7 @@ const OrderDetails = () => {
   }, [order?.shippingAddress]);
 
   const mapUrl = useMemo(() => {
-    if (!encodedAddress) return '';
+    if (!encodedAddress || !GOOGLE_API_KEY) return '';
     return `https://www.google.com/maps/embed/v1/place?key=${GOOGLE_API_KEY}&q=${encodedAddress}`;
   }, [encodedAddress]);
 

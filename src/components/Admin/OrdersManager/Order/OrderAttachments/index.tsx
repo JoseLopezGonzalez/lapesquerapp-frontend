@@ -17,7 +17,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
-import { useSession } from 'next-auth/react';
+import { useMe } from '@/hooks/useMe';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -519,11 +519,8 @@ function AttachmentViewer({
 const OrderAttachments = () => {
   const { order } = useOrderContext();
   const isMobile = useIsMobile();
-  const { data: session } = useSession();
-
-  const rawRole = session?.user?.role;
-  const roles: string[] = Array.isArray(rawRole) ? rawRole : rawRole ? [rawRole] : [];
-  const canDelete = roles.some((r) => r === 'administrador' || r === 'tecnico');
+  const { data: me } = useMe();
+  const canDelete = me?.role === 'administrador' || me?.role === 'tecnico';
 
   const orderId = order?.id;
 

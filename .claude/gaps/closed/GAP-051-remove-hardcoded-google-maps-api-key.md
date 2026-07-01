@@ -5,7 +5,7 @@
 - **Tipo:** Bug
 - **Módulo:** Ventas
 - **Prioridad:** Alta
-- **Estado:** open
+- **Estado:** closed
 - **Fecha:** 2026-07-01
 - **Autor:** Jose
 
@@ -56,15 +56,22 @@ Aprovechar el toque de `OrderMap/index.js` para migrarlo a `OrderMap/index.tsx`.
 
 ## Implementación
 
-> Rellena el Agente Implementador
-
 ### Archivos creados
+
+- `src/components/Admin/OrdersManager/Order/OrderMap/index.tsx` — migrado desde .js, sin API key hardcodeada
 
 ### Archivos modificados
 
+- `src/components/Admin/OrdersManager/Order/OrderDetails/index.tsx` — `GOOGLE_API_KEY` usa solo env var; `mapUrl` también guarda para cuando la key no está definida
+- `src/components/Admin/OrdersManager/Order/OrderMap/index.js` — eliminado
+
 ### Decisiones tomadas durante la implementación
 
+En `OrderMap`, el `mapContent` ahora evalúa `hasShippingAddress && GOOGLE_API_KEY` antes de renderizar el iframe. El fallback existente "Sin dirección de envío" se reutiliza para ambos casos (sin dirección y sin key). En `OrderDetails`, `mapUrl` retorna `''` si no hay key, activando el placeholder ya existente "No hay dirección de envío".
+
 ### Desviaciones del plan (si las hay)
+
+Ninguna.
 
 ---
 

@@ -50,7 +50,6 @@ const ProductionView = ({ onClickOrder, autoPlayInterval = 30000, onToggleViewMo
         .then((data) => {
           setProductionData(Array.isArray(data) ? data : []);
           if (!silent) {
-            console.log('ProductionView: Datos obtenidos:', data);
             setLoading(false);
             setError(null);
           }

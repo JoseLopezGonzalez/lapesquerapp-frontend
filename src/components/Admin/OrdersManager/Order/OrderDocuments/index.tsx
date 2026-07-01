@@ -567,18 +567,20 @@ const OrderDocuments = () => {
             <label className="mb-2 block text-sm font-medium">Destinatarios:</label>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
               {recipients.map((recipient) => (
-                <div
+                <Button
                   key={recipient.name}
-                  className={`flex cursor-pointer items-center gap-2 rounded-md border p-2 transition-colors ${
+                  type="button"
+                  variant="outline"
+                  className={`h-auto w-full justify-start gap-2 rounded-md p-2 transition-colors ${
                     selectedRecipients[recipient.name as keyof SelectedRecipients]
-                      ? 'bg-primary/20 border-primary'
-                      : 'bg-background'
+                      ? 'border-primary bg-primary/20'
+                      : ''
                   }`}
                   onClick={() => toggleRecipientSelection(recipient.name as keyof SelectedRecipients)}
                 >
                   <div className="bg-muted rounded-full p-1 [&_svg]:size-4">{recipient.icon}</div>
                   <span className="text-sm font-medium">{recipient.label}</span>
-                </div>
+                </Button>
               ))}
             </div>
           </div>

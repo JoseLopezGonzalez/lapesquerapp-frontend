@@ -5,7 +5,7 @@
 - **Tipo:** Bug
 - **Módulo:** Ventas
 - **Prioridad:** Alta
-- **Estado:** open
+- **Estado:** closed
 - **Fecha:** 2026-07-01
 - **Autor:** Jose
 
@@ -70,15 +70,21 @@ Seguir exactamente el patrón documentado en `design-context.md §4`:
 
 ## Implementación
 
-> Rellena el Agente Implementador
-
 ### Archivos creados
+
+Ninguno.
 
 ### Archivos modificados
 
+- `src/components/Admin/OrdersManager/Order/OrderPallets/dialogs/ConfirmActionDialog.jsx` — reemplazado scaffolding `Dialog` por `AlertDialog`; `description` movida a `AlertDialogDescription`; botón cancelar usa `AlertDialogCancel`; botón confirmar usa `AlertDialogAction` con prop `variant` (destructive/default); se mantiene el estado de carga `isUnlinking` con `Loader2` dentro del `AlertDialogAction`.
+
 ### Decisiones tomadas durante la implementación
 
+`AlertDialogContent` del proyecto ya soporta `size` prop. Se usa la talla por defecto (sin `size="md"`) ya que "md" no es un valor documentado en el componente. `AlertDialogAction` acepta `variant` en este proyecto (renderiza internamente un `Button asChild`), lo que permite aplicar `variant="destructive"` directamente sin clases manuales. `onOpenChange={onCancel}` preserva el comportamiento existente del padre (`if (!open) handleCancelAction()`).
+
 ### Desviaciones del plan (si las hay)
+
+Ninguna.
 
 ---
 

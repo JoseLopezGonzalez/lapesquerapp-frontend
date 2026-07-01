@@ -5,7 +5,7 @@
 - **Tipo:** Mejora
 - **Módulo:** Ventas
 - **Prioridad:** Media
-- **Estado:** open
+- **Estado:** closed
 - **Fecha:** 2026-07-01
 - **Autor:** Jose
 
@@ -51,15 +51,21 @@ Si el estilo visual actual requiere un contenedor externo que no sea un botón, 
 
 ## Implementación
 
-> Rellena el Agente Implementador
-
 ### Archivos creados
+
+Ninguno.
 
 ### Archivos modificados
 
+- `src/components/Admin/OrdersManager/Order/OrderDocuments/index.tsx` — los `<div onClick>` de selección de destinatarios reemplazados por `<Button variant="outline">` con `type="button"`, `h-auto w-full justify-start` para mantener layout, y clases condicionales `border-primary bg-primary/20` para el estado seleccionado.
+
 ### Decisiones tomadas durante la implementación
 
+Se usó `variant="outline"` por ser el más cercano al aspecto actual (borde + fondo blanco). El contenido interno (icono + label) permanece idéntico. `h-auto` sobreescribe la altura fija del Button; `w-full` y `justify-start` mantienen el layout de grid.
+
 ### Desviaciones del plan (si las hay)
+
+Ninguna.
 
 ---
 

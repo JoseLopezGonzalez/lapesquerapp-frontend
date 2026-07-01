@@ -13,6 +13,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { formatDate } from '@/helpers/formats/dates/formatDates';
 import OrderEditSheet from '../OrderEditSheet';
 import OrderStatusDropdown from './OrderStatusDropdown';
@@ -115,25 +121,48 @@ export default function OrderHeaderDesktop({
                     <MoreVertical />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuGroup>
-                    <DropdownMenuItem>
-                      <Copy />
-                      Duplicar pedido
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Ban />
-                      Cancelar pedido
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuGroup>
-                    <DropdownMenuItem variant="destructive">
-                      <Trash2 />
-                      Eliminar pedido
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                </DropdownMenuContent>
+                <TooltipProvider>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuGroup>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="block w-full cursor-not-allowed">
+                            <DropdownMenuItem disabled className="pointer-events-none">
+                              <Copy />
+                              Duplicar pedido
+                            </DropdownMenuItem>
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="left">Próximamente</TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="block w-full cursor-not-allowed">
+                            <DropdownMenuItem disabled className="pointer-events-none">
+                              <Ban />
+                              Cancelar pedido
+                            </DropdownMenuItem>
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="left">Próximamente</TooltipContent>
+                      </Tooltip>
+                    </DropdownMenuGroup>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuGroup>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="block w-full cursor-not-allowed">
+                            <DropdownMenuItem disabled variant="destructive" className="pointer-events-none">
+                              <Trash2 />
+                              Eliminar pedido
+                            </DropdownMenuItem>
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="left">Próximamente</TooltipContent>
+                      </Tooltip>
+                    </DropdownMenuGroup>
+                  </DropdownMenuContent>
+                </TooltipProvider>
               </DropdownMenu>
             )}
           </div>

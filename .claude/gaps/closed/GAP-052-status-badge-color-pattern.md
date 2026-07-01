@@ -5,7 +5,7 @@
 - **Tipo:** Mejora
 - **Módulo:** Ventas
 - **Prioridad:** Media
-- **Estado:** open
+- **Estado:** closed
 - **Fecha:** 2026-07-01
 - **Autor:** Jose
 
@@ -62,15 +62,21 @@ Renombrar `StatusBadge.jsx` → `StatusBadge.tsx` en el mismo commit.
 
 ## Implementación
 
-> Rellena el Agente Implementador
-
 ### Archivos creados
+
+- `src/components/Admin/OrdersManager/StatusBadge.tsx` — migrado desde .jsx con tipos explícitos y patrón `/15`
 
 ### Archivos modificados
 
+- `src/components/Admin/OrdersManager/StatusBadge.jsx` — eliminado
+
 ### Decisiones tomadas durante la implementación
 
+Se añadió interface `StatusBadgeProps` con tipos explícitos en la migración a .tsx. El mapa `colorClasses` actualizado a `bg-*-500/15` eliminando todas las clases `dark:bg-*-950` redundantes.
+
 ### Desviaciones del plan (si las hay)
+
+Ninguna.
 
 ---
 

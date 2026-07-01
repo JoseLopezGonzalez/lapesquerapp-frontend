@@ -4,10 +4,10 @@ import { useRouter } from 'next/navigation';
 import CreateOrderForm from '@/components/Admin/OrdersManager/CreateOrderForm';
 import { Card, CardContent } from '@/components/ui/card';
 
-export default function CreatePage() {
+export default function CreateOrderPageClient() {
   const router = useRouter();
 
-  const handleOnCreate = (orderId) => {
+  const handleOnCreate = (orderId: number | string) => {
     router.push(`/admin/orders/${orderId}`);
   };
 

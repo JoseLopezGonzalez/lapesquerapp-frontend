@@ -5,7 +5,7 @@
 - **Tipo:** Bug
 - **Módulo:** Ventas
 - **Prioridad:** Alta
-- **Estado:** open
+- **Estado:** closed
 - **Fecha:** 2026-07-01
 - **Autor:** Jose
 
@@ -51,15 +51,21 @@ No implementar la lógica real de duplicar, cancelar ni eliminar en este GAP —
 
 ## Implementación
 
-> Rellena el Agente Implementador
-
 ### Archivos creados
+
+Ninguno.
 
 ### Archivos modificados
 
+- `src/components/Admin/OrdersManager/Order/components/OrderHeaderDesktop.jsx` — añadidos imports de Tooltip; los tres `DropdownMenuItem` tienen `disabled` + `pointer-events-none`; cada uno envuelto en `span.cursor-not-allowed` → `TooltipTrigger asChild` con `TooltipContent side="left"` "Próximamente"; un único `TooltipProvider` envuelve el `DropdownMenuContent`.
+
 ### Decisiones tomadas durante la implementación
 
+`DropdownMenuItem[disabled]` tiene `data-[disabled]:pointer-events-none` en shadcn, por lo que el tooltip trigger no recibe eventos de puntero si se aplica directamente. Se resuelve con un `span` wrapper que capta los eventos del ratón y activa el tooltip. `TooltipProvider` se coloca entre `DropdownMenu` y `DropdownMenuContent` (no rompe el contexto de Radix).
+
 ### Desviaciones del plan (si las hay)
+
+Ninguna.
 
 ---
 

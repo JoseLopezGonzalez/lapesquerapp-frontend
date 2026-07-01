@@ -5,7 +5,7 @@
 - **Tipo:** Refactor
 - **Módulo:** Ventas
 - **Prioridad:** Alta
-- **Estado:** open
+- **Estado:** closed
 - **Fecha:** 2026-07-01
 - **Autor:** Jose
 
@@ -62,15 +62,24 @@ No hay cambio en la lógica de renderizado — los page files solo importan y re
 
 ## Implementación
 
-> Rellena el Agente Implementador
-
 ### Archivos creados
+
+- `src/app/admin/orders-manager/page.tsx` — server component sin `'use client'`
+- `src/app/admin/orders/create/page.tsx` — server component, importa `CreateOrderPageClient`
+- `src/app/admin/orders/create/CreateOrderPageClient.tsx` — extrae `useRouter` + lógica de redirect del page original
 
 ### Archivos modificados
 
+- `src/app/admin/orders-manager/page.js` — eliminado
+- `src/app/admin/orders/create/page.js` — eliminado
+
 ### Decisiones tomadas durante la implementación
 
+El `create/page.js` original tenía `useRouter` directamente en el page (no solo delegaba a un componente). Se extrajo la lógica a `CreateOrderPageClient.tsx` siguiendo el patrón canónico del proyecto (Server page → `XxxPageClient`). El `orders/[id]/page.js` verificado: ya era server component sin `'use client'`, no requirió cambio.
+
 ### Desviaciones del plan (si las hay)
+
+El GAP asumía que el create page solo delegaba a un cliente ya existente. En realidad contenía `useRouter` inline, por lo que se creó `CreateOrderPageClient.tsx` como wrapper client.
 
 ---
 

@@ -24,7 +24,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/Utilities/EmptyState/index';
-import Loader from '@/components/Utilities/Loader';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   formatDecimal,
   formatDecimalCurrency,
@@ -205,8 +205,18 @@ export default function OrderCostAnalysis() {
 
   if (costAnalysisLoading && !costAnalysis) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <Loader />
+      <div className="flex flex-col gap-4 p-4">
+        <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-24 w-full rounded-lg" />
+          ))}
+        </div>
+        <Skeleton className="h-8 w-48 rounded-md" />
+        <div className="space-y-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-10 w-full rounded-md" />
+          ))}
+        </div>
       </div>
     );
   }

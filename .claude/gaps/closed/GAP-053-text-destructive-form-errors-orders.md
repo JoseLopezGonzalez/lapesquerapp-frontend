@@ -5,7 +5,7 @@
 - **Tipo:** Mejora
 - **Módulo:** Ventas
 - **Prioridad:** Media
-- **Estado:** open
+- **Estado:** closed
 - **Fecha:** 2026-07-01
 - **Autor:** Jose
 
@@ -53,15 +53,21 @@ Reemplazar todas las ocurrencias de `text-red-500` en mensajes de error de campo
 
 ## Implementación
 
-> Rellena el Agente Implementador
-
 ### Archivos creados
+
+Ninguno.
 
 ### Archivos modificados
 
+- `src/components/Admin/OrdersManager/CreateOrderForm/index.tsx` — 6 ocurrencias de `text-red-500` → `text-destructive` (líneas 565, 655, 660, 665, 670, 675)
+
 ### Decisiones tomadas durante la implementación
 
+Replace-all limpio, todas las ocurrencias eran exclusivamente en `<p>` de error de campo. No hay otras instancias de `text-red-500` en el archivo.
+
 ### Desviaciones del plan (si las hay)
+
+Ninguna.
 
 ---
 

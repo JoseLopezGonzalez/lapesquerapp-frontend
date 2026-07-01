@@ -12,8 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Link2, Search, Loader2 } from 'lucide-react';
-import { XMarkIcon } from '@heroicons/react/20/solid';
+import { Link2, Search, Loader2, X } from 'lucide-react';
 import { Combobox } from '@/components/Shadcn/Combobox';
 import {
   Pagination,
@@ -142,7 +141,7 @@ export default function LinkPalletsDialog({
                         className="group bg-foreground-700 text-md text-black-500 rounded-full p-0.5 font-bold shadow-sm hover:bg-white/95"
                         disabled={isSearching || isInitialLoading}
                       >
-                        <XMarkIcon
+                        <X
                           className="group-hover:text-primary h-3 w-3"
                           aria-hidden="true"
                         />
