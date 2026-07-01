@@ -2,8 +2,8 @@
 
 > This file is maintained exclusively by the system-learner agent.
 > Do not edit manually unless correcting an error.
-> Last updated: 2026-06-30
-> Total entries: 20
+> Last updated: 2026-07-01
+> Total entries: 23
 
 ## How this file works
 
@@ -249,6 +249,41 @@ Every entry has:
   `src/components/Admin/OrdersManager/OrdersList/index.js:2` (InboxIcon muerto de @heroicons/react/24/outline)
 - **Status:** Follow-up: GAP-041.
 
+### PL-017
+
+- **Date:** 2026-07-01
+- **Source:** PR #58 post-mortem (GAP-039/040/042/043)
+- **Category:** ANTI_PATTERN
+- **Confidence:** HIGH
+- **Entry:** Al eliminar una variable de un componente durante un refactor (p.ej. `session`
+  al aplicar el patrón token-as-parameter, PL-010), no basta con quitar su declaración y
+  usos directos — hay que buscar TODAS las referencias en el archivo, incluyendo arrays de
+  dependencias de `useEffect`/`useCallback`/`useMemo`. Una referencia huérfana en un
+  dependency array puede pasar desapercibida en una revisión rápida y falla en el build de
+  Vercel. **Regla:** tras eliminar cualquier variable, ejecutar grep del nombre en el
+  archivo completo antes de dar el refactor por terminado.
+- **Found in:** `src/components/Admin/OrdersManager/CreateOrderForm/index.tsx:249`
+  (`session` huérfano en deps de `useEffect`, tras GAP-043)
+- **Status:** Corregido en el mismo PR (commit `0303cd6`).
+
+### PL-018
+
+- **Date:** 2026-07-01
+- **Source:** PR #58 post-mortem (GAP-039, PalletView)
+- **Category:** CODEBASE_PATTERN
+- **Confidence:** HIGH
+- **Entry:** Los componentes `Select`/`SelectItem`/`Combobox` de shadcn son controlados y
+  esperan `value: string | undefined` — nunca `null` ni `number`. Cuando el valor de dominio
+  es `number | string | null | undefined` (patrón común en IDs de entidades: `orderId`,
+  `productId`), convertir siempre en el punto de render: `value={id != null ? String(id) : undefined}`.
+  Aplicar la conversión inversa en `onValueChange`/`onChange` si el estado interno espera
+  `number`. Este mismo error de tipos apareció 3 veces en un solo archivo
+  (`PalletView/index.tsx`) en el PR #58 porque no se aplicó de forma sistemática la primera vez.
+- **Found in:** `src/components/Admin/Pallets/PalletDialog/PalletView/index.tsx`
+  (`orderId` en `Select`, `oldProductId`/`newProductId` en `Combobox`)
+- **Status:** Corregido en PR #58. Aplicar preventivamente en cualquier `Select`/`Combobox`
+  controlado por un ID de entidad.
+
 ---
 
 ## DEPLOY_RULES
@@ -290,6 +325,41 @@ Every entry has:
 - **Confidence:** HIGH
 - **Entry:** Turbopack en Vercel es más estricto que `tsc --noEmit` en local. Código que compila sin errores localmente puede fallar en el build de Vercel por diferencias en resolución de módulos y tipos. El script `npm run type-check` es primera capa; el GitHub Action `build-check.yml` (que ejecuta `npm run build` completo en CI) es la segunda capa de seguridad. Si se detecta un error que pasa type-check pero falla en Vercel, documentar el patrón específico aquí.
 - **Regla aplicada:** CI pipeline en `.github/workflows/build-check.yml`.
+
+### PL-BUILD-05
+
+- **Date:** 2026-07-01
+- **Source:** PR #58 post-mortem (rama `claude/gaps-039-040-042-043-gsbxkf`) — GAP-039 eliminar `@ts-nocheck` de PalletView
+- **Category:** ANTI_PATTERN
+- **Confidence:** HIGH
+- **Entry:** **Recurrencia de PL-BUILD-01 / PL-012 / PL-016.** 15 deployments consecutivos
+  en ERROR en Vercel antes de un READY, cada uno corrigiendo un único error de TypeScript
+  revelado al quitar `@ts-nocheck` de `PalletView/index.tsx` (~1100 líneas). El propio
+  archivo ya estaba señalado en PL-016 como candidato exacto a este problema y aun así se
+  repitió el patrón commit-por-error. Dos síntomas nuevos detectados en esta recurrencia,
+  no cubiertos hasta ahora:
+  1. **Commit "Trigger Vercel redeploy" sin cambio de código real** (commit `480cbb5`):
+     en vez de diagnosticar el error, se reintentó el deploy sin tocar el archivo afectado.
+     Esto desperdicia un ciclo de build completo (~2-3 min) sin ninguna posibilidad de
+     éxito, porque el código no cambió.
+  2. **Errores en archivos distintos al que se está migrando** aparecen en la misma tanda
+     de commits cuando el PR mezcla varios GAPs (aquí GAP-043 tocó `CreateOrderForm` a la
+     vez que GAP-039 tocaba `PalletView` — ver PL-017). Un error en un archivo no
+     relacionado con la migración principal puede pasar desapercibido si la revisión se
+     centra solo en el archivo "grande".
+  **Regla reforzada:** cuando un GAP implica quitar `@ts-nocheck` o migrar un archivo
+  grande (>500 líneas), tratarlo como PR aislado (no mezclado con otros GAPs) y dedicar un
+  paso explícito de lectura completa del archivo símbolo por símbolo (tipos de estado,
+  props, callbacks, valores controlados de Select/Combobox — ver PL-018) ANTES del primer
+  push, no de forma reactiva tras cada fallo de Vercel. Nunca pushear un commit de
+  "reintento": si Vercel falla, el siguiente commit debe contener un fix verificable, nunca
+  un push vacío o sin relación con el error reportado.
+- **Found in:** PR #58, commits `eadd7d3` → `2d9b705` (15 deployments ERROR en el proyecto
+  Vercel `lapesquerapp-frontend`)
+- **Regla aplicada:** GIT POLICY → reforzada la prohibición de "commit por error de
+  TypeScript" con la prohibición explícita de commits de reintento sin fix, y la
+  recomendación de aislar GAPs de eliminación de `@ts-nocheck`/migración TS grande en PRs
+  propios.
 
 ---
 
