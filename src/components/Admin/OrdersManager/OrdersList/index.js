@@ -17,8 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Download, Plus, LayoutGrid, Search } from 'lucide-react';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { downloadActivePlannedProductsXls } from '@/services/orderService';
-import { useSession } from 'next-auth/react';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { useBackButton } from '@/hooks/use-back-button';
 
 import { notify } from '@/lib/notifications';
@@ -49,8 +48,7 @@ const OrdersList = ({
   const visibleCategories = visibleCategoriesProp ?? categories;
   const activeCount = totalActiveOrders ?? orders?.length ?? 0;
 
-  const { data: session } = useSession();
-  const isMobile = useIsMobile();
+  const { isMobile, mounted } = useIsMobileSafe();
   const router = useRouter();
   const scrollAreaRef = React.useRef(null);
   const scrollPositionRef = React.useRef(0);
@@ -98,7 +96,7 @@ const OrdersList = ({
 
   const exportDocument = async () => {
     const doExport = async () => {
-      const blob = await downloadActivePlannedProductsXls(session.user.accessToken);
+      const blob = await downloadActivePlannedProductsXls();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -122,6 +120,8 @@ const OrdersList = ({
       },
     });
   };
+
+  if (!mounted) return null;
 
   return (
     <div className={`relative flex h-full flex-col overflow-hidden`}>

@@ -37,7 +37,6 @@ import {
   TableRow,
   TableFooter,
 } from '@/components/ui/table';
-import { useSession } from 'next-auth/react';
 import { useProductOptions } from '@/hooks/useProductOptions';
 import { useSupplierOptions } from '@/hooks/useSupplierOptions';
 import { usePriceSynchronization } from '@/hooks/usePriceSynchronization';
@@ -134,7 +133,6 @@ const TARE_OPTIONS = [
 const EditReceptionForm = ({ receptionId, onSuccess }) => {
   const { productOptions, loading: productsLoading } = useProductOptions();
   const { supplierOptions, loading: suppliersLoading } = useSupplierOptions();
-  const { data: session } = useSession();
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
@@ -370,7 +368,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
   // Load reception data
   useEffect(() => {
     const loadReception = async () => {
-      if (!receptionId || !session?.user?.accessToken) return;
+      if (!receptionId) return;
 
       // Evitar recargar si ya se cargó esta recepción y no ha cambiado el ID
       if (hasLoadedRef.current && lastReceptionIdRef.current === receptionId) {
@@ -385,7 +383,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
       try {
         isLoadingRef.current = true;
         setLoading(true);
-        const reception = await getRawMaterialReception(receptionId, session.user.accessToken);
+        const reception = await getRawMaterialReception(receptionId);
 
         // Marcar como cargado y guardar el ID
         hasLoadedRef.current = true;
@@ -663,7 +661,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
     };
 
     loadReception();
-  }, [receptionId, session?.user?.accessToken]);
+  }, [receptionId]);
 
   // Resetear el flag cuando cambia el receptionId
   useEffect(() => {
@@ -2143,18 +2141,7 @@ const EditReceptionForm = ({ receptionId, onSuccess }) => {
                               className="h-8 w-8"
                               onClick={async () => {
                                 try {
-                                  if (!session?.user?.accessToken) {
-                                    notify.error({
-                                      title: 'Sesión no disponible',
-                                      description:
-                                        'No hay sesión autenticada. Inicia sesión e inténtalo de nuevo.',
-                                    });
-                                    return;
-                                  }
-                                  const fullPallet = await getPallet(
-                                    pallet.id,
-                                    session.user.accessToken
-                                  );
+                                  const fullPallet = await getPallet(pallet.id);
                                   setSelectedPalletForLabel(fullPallet);
                                   setIsPalletLabelDialogOpen(true);
                                 } catch (error) {

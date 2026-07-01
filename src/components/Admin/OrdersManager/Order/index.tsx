@@ -7,7 +7,7 @@ import OrderEditSheet from './OrderEditSheet';
 import { OrderProvider, useOrderContext } from '@/context/OrderContext';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useHideBottomNav } from '@/context/BottomNavContext';
 import { useBackButton } from '@/hooks/use-back-button';
@@ -33,7 +33,7 @@ interface OrderContentProps {
 }
 
 const OrderContent = ({ onLoading, onClose, readOnly = false }: OrderContentProps) => {
-  const isMobile = useIsMobile();
+  const { isMobile, mounted } = useIsMobileSafe();
   const {
     order,
     loading,
@@ -177,6 +177,8 @@ const OrderContent = ({ onLoading, onClose, readOnly = false }: OrderContentProp
       </div>
     );
   }
+
+  if (!mounted) return null;
 
   return (
     <div className="relative flex h-full w-full flex-col">

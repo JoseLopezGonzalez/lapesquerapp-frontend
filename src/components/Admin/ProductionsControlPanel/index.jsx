@@ -3,7 +3,6 @@
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSession } from 'next-auth/react';
 import {
   AlertCircle,
   ArrowDownUp,
@@ -1476,8 +1475,6 @@ const initialFilters = {
 };
 
 export default function ProductionsControlPanel() {
-  const { data: session } = useSession();
-  const token = session?.user?.accessToken;
   const queryClient = useQueryClient();
   const [filters, setFilters] = useState(initialFilters);
   const [appliedFilters, setAppliedFilters] = useState(initialFilters);
@@ -1598,8 +1595,7 @@ export default function ProductionsControlPanel() {
 
   const closeMutation = useMutation({
     mutationFn: async ({ productionId, reason }) => {
-      if (!token) throw new Error('No se pudo autenticar el cierre');
-      return closeProduction(productionId, { reason }, token);
+      return closeProduction(productionId, { reason });
     },
     onSuccess: async (response) => {
       notify.success(response?.message || 'Producción cerrada definitivamente');

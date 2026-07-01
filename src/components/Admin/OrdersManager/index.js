@@ -11,7 +11,7 @@ import { Card } from '@/components/ui/card';
 import CreateOrderForm from './CreateOrderForm';
 import OrdersManagerLayout from './shared/OrdersManagerLayout';
 import { useDebounce } from '@/hooks/useDebounce';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { notify } from '@/lib/notifications';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -22,7 +22,7 @@ import {
 
 export default function OrdersManager() {
   const queryClient = useQueryClient();
-  const isMobile = useIsMobile();
+  const { isMobile, mounted } = useIsMobileSafe();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -348,6 +348,8 @@ export default function OrdersManager() {
     handleOnClickAddNewOrder,
     createOrderPrefill,
   ]);
+
+  if (!mounted) return null;
 
   return (
     <OrdersManagerLayout

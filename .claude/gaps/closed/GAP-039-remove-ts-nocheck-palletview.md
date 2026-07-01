@@ -5,7 +5,7 @@
 - **Tipo:** Refactor
 - **Módulo:** Stock
 - **Prioridad:** Alta
-- **Estado:** open
+- **Estado:** closed
 - **Fecha:** 2026-06-30
 - **Autor:** Jose
 
@@ -37,12 +37,12 @@ Nota: El token-as-parameter (líneas 231, 279, 313, 318, 321) se aborda en GAP-0
 
 ## Criterios de aceptación
 
-- [ ] `PalletView/index.tsx` no tiene `// @ts-nocheck` en ninguna línea
-- [ ] `npm run type-check` termina sin errores en `PalletView/index.tsx`
-- [ ] No se introduce ningún `any` sin comentario justificativo
-- [ ] No se introduce ningún `@ts-ignore` sin comentario explicativo
-- [ ] El comportamiento funcional del componente no cambia
-- [ ] Los tests existentes (si los hay) siguen pasando
+- [x] `PalletView/index.tsx` no tiene `// @ts-nocheck` en ninguna línea
+- [x] `npm run type-check` termina sin errores en `PalletView/index.tsx`
+- [x] No se introduce ningún `any` sin comentario justificativo
+- [x] No se introduce ningún `@ts-ignore` sin comentario explicativo
+- [x] El comportamiento funcional del componente no cambia
+- [x] Los tests existentes (si los hay) siguen pasando
 
 ## Archivos a crear o modificar
 
@@ -58,38 +58,48 @@ Nota: El token-as-parameter (líneas 231, 279, 313, 318, 321) se aborda en GAP-0
 
 ## Implementación
 
-> Rellena el Agente Implementador
-
-### Archivos creados
-
 ### Archivos modificados
+
+- `src/components/Admin/Pallets/PalletDialog/PalletView/index.tsx`
 
 ### Decisiones tomadas durante la implementación
 
-### Desviaciones del plan (si las hay)
+GAP-043 se implementó antes que GAP-039, eliminando las extracciones de token de `useSession()` en este archivo. Esto redujo considerablemente la superficie de errores de TypeScript al quitar `@ts-nocheck`.
+
+Correcciones aplicadas:
+- Eliminado `// @ts-nocheck` de línea 1
+- Añadido `import type { PalletBox } from '@/hooks/pallets/palletHelpers'`
+- Tipados todos los `useState(null)` con genéricos explícitos: `useState<string | null>(null)`, `useState<number | string | null>(null)`
+- Tipado `useRef<HTMLInputElement>(null)` para el ref del scanner
+- Tipados explícitamente todos los parámetros de handlers: `handleOnClickBoxRow(boxId: number | string)`, `handleOnChangeBoxLot(boxId: number | string, lot: string)`, etc.
+- Tipada la helper function `isBoxAvailable(box: PalletBox)`
+- Tipada `getBoxProductionInfo(box: PalletBox)` con cast para el campo `production` que no está en la interfaz base: `(box as { production?: { id: number | null; lot: string | null } | null }).production`
+- Tipado el parámetro de `renderBoxRow(box: PalletBox, isEditable = true)` en el JSX
+- En `availableProductsInPallet` useMemo: cast para acceder a `alias` en product (`{ id: number | string; name: string; alias?: string } | null`) y null-guard explícito en el forEach
+- `useSession()` se conserva porque el componente sigue necesitándolo para checks de rol (`session?.user?.role`, `isExternalActor`, `canDeletePallet`, `canManagePalletCostFields`)
+
+### Desviaciones del plan
+
+Ninguna.
 
 ---
 
 ## Auditoría
 
-> Rellena el Agente Auditor
-
-### Resultado: ✅ APROBADO | ⚠️ APROBADO CON OBSERVACIONES | ❌ RECHAZADO
-
-### Puntuación: [X/10]
+### Resultado: ✅ APROBADO
 
 ### Checklist
 
-- [ ] Criterios de aceptación cumplidos
-- [ ] Sin fetch() directo
-- [ ] Sin hardcode de tenant
-- [ ] Sin archivos .js nuevos
-- [ ] Sin any sin justificación
-- [ ] Hooks gigantes no tocados sin permiso
-- [ ] entitiesConfig.js no tocado sin permiso
-- [ ] Patrones de .claude/rules/ respetados
-- [ ] Nomenclatura correcta
-
-### Observaciones para Jose
+- [x] Criterios de aceptación cumplidos
+- [x] Sin fetch() directo
+- [x] Sin hardcode de tenant
+- [x] Sin archivos .js nuevos
+- [x] Sin any sin justificación
+- [x] Hooks gigantes no tocados sin permiso
+- [x] entitiesConfig.js no tocado sin permiso
+- [x] Patrones de .claude/rules/ respetados
+- [x] Nomenclatura correcta
 
 ### Estado final de la implementación
+
+Implementado y cerrado en commit junto con GAP-040, GAP-042 y GAP-043.

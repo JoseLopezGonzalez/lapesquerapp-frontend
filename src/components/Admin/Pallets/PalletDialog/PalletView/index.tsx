@@ -1,4 +1,3 @@
-// @ts-nocheck — legacy component pending full TypeScript migration
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
@@ -91,6 +90,7 @@ import { formatDateShort, formatDateHour } from '@/helpers/formats/dates/formatD
 
 import { usePallet, saveDiscountPreferences } from '@/hooks/usePallet';
 import { usePalletTimeline } from '@/hooks/usePalletTimeline';
+import type { PalletBox, PalletState } from '@/hooks/pallets/palletHelpers';
 import { usePrintElement } from '@/hooks/usePrintElement';
 import PalletLabel from '@/components/Admin/Pallets/PalletLabel';
 import SummaryPieChart from './SummaryPieChart';
@@ -151,7 +151,10 @@ export default function PalletView({
     onClose,
     setBoxPrinted,
     hasPalletChanges = false,
-  } = usePallet({ id: palletId, onChange, initialStoreId, initialOrderId, initialPallet });
+  } = usePallet({ id: palletId ?? null, onChange, initialStoreId: initialStoreId ?? null, initialOrderId: initialOrderId ?? null, initialPallet: initialPallet as PalletState | null | undefined });
+
+  type ActiveOrderOption = { id: string; name: string; load_date: string };
+  const typedActiveOrdersOptions = activeOrdersOptions as ActiveOrderOption[] | undefined;
 
   const {
     timeline,
@@ -162,7 +165,7 @@ export default function PalletView({
   const showHistorialTab = palletId && palletId !== 'new' && !String(palletId).startsWith('temp-');
   const [mainTab, setMainTab] = useState(initialTab ?? 'edicion');
   const [deletingTimeline, setDeletingTimeline] = useState(false);
-  const [resolvingProductionLot, setResolvingProductionLot] = useState(null);
+  const [resolvingProductionLot, setResolvingProductionLot] = useState<string | null>(null);
   const [isDownloadingExpeditionLabel, setIsDownloadingExpeditionLabel] = useState(false);
 
   // Estado de expansión de los eventos del historial
@@ -202,7 +205,7 @@ export default function PalletView({
   const orderIdBlocked = initialOrderId !== null;
 
   // Check if pallet belongs to a reception or is locked (e.g. linked to order)
-  const receptionId = temporalPallet?.receptionId;
+  const receptionId = temporalPallet?.receptionId as string | number | null | undefined;
   const belongsToReception = receptionId !== null && receptionId !== undefined;
   const isReadOnly = belongsToReception || readOnlyProp;
 
@@ -212,8 +215,8 @@ export default function PalletView({
 
   const { onPrint } = usePrintElement({
     id: 'print-area-id',
-    width: PALLET_LABEL_SIZE.width,
-    height: PALLET_LABEL_SIZE.height,
+    width: parseInt(PALLET_LABEL_SIZE.width) || 110,
+    height: parseInt(PALLET_LABEL_SIZE.height) || 150,
   });
 
   const handleOnClickPrintLabel = () => {
@@ -228,15 +231,7 @@ export default function PalletView({
       });
       return;
     }
-    const token = session?.user?.accessToken;
     const effectivePalletId = temporalPallet?.id ?? palletId;
-    if (!token) {
-      notify.error({
-        title: 'Sesión no disponible',
-        description: 'No se pudo obtener el token de autenticación. Inicia sesión de nuevo.',
-      });
-      return;
-    }
     if (
       !effectivePalletId ||
       effectivePalletId === 'new' ||
@@ -251,7 +246,7 @@ export default function PalletView({
 
     setIsDownloadingExpeditionLabel(true);
     try {
-      await notify.promise(downloadPalletExpeditionLabel(effectivePalletId, token), {
+      await notify.promise(downloadPalletExpeditionLabel(effectivePalletId), {
         loading: {
           title: 'Generando etiqueta',
           description: `Preparando la etiqueta de expedición del palet #${effectivePalletId}.`,
@@ -260,36 +255,33 @@ export default function PalletView({
           title: 'Etiqueta generada',
           description: 'El PDF ya está listo para descarga.',
         },
-        error: (error) => ({
-          title: 'Error al generar la etiqueta',
-          description:
-            error?.userMessage ||
-            error?.data?.userMessage ||
-            error?.response?.data?.userMessage ||
-            error?.message ||
-            'No se pudo generar la etiqueta de expedición.',
-        }),
+        error: (err: unknown) => {
+          const e = err as Record<string, unknown>;
+          const data = e?.data as Record<string, unknown> | undefined;
+          const responseData = (e?.response as Record<string, unknown> | undefined)?.data as Record<string, unknown> | undefined;
+          return {
+            title: 'Error al generar la etiqueta',
+            description:
+              (e?.userMessage as string) ||
+              (data?.userMessage as string) ||
+              (responseData?.userMessage as string) ||
+              (e?.message as string) ||
+              'No se pudo generar la etiqueta de expedición.',
+          };
+        },
       });
     } finally {
       setIsDownloadingExpeditionLabel(false);
     }
   };
 
-  const handleOpenProductionByLot = async (lot) => {
-    const token = session?.user?.accessToken;
-    if (!token) {
-      notify.error({
-        title: 'Sesión no disponible',
-        description: 'No se pudo abrir la producción.',
-      });
-      return;
-    }
+  const handleOpenProductionByLot = async (lot: string) => {
     const trimmedLot = typeof lot === 'string' ? lot.trim() : '';
     if (!trimmedLot || resolvingProductionLot) return;
 
     setResolvingProductionLot(trimmedLot);
     try {
-      const res = await getProductionByLot(trimmedLot, token);
+      const res = await getProductionByLot(trimmedLot);
       const productionId = res?.data?.id;
       if (productionId) {
         window.open(`/admin/productions/${productionId}`, '_blank', 'noopener,noreferrer');
@@ -302,7 +294,7 @@ export default function PalletView({
     } catch (err) {
       notify.error({
         title: 'Producción no encontrada',
-        description: err?.message || 'No existe ninguna producción con ese lote.',
+        description: (err as { message?: string })?.message || 'No existe ninguna producción con ese lote.',
       });
     } finally {
       setResolvingProductionLot(null);
@@ -310,31 +302,31 @@ export default function PalletView({
   };
 
   const handleDeleteTimeline = () => {
-    if (!palletId || deletingTimeline || !session?.user?.accessToken) return;
+    if (!palletId || deletingTimeline) return;
     setDeleteTimelineConfirmOpen(true);
   };
 
   const handleConfirmDeleteTimeline = async () => {
-    if (!palletId || !session?.user?.accessToken) return;
+    if (!palletId) return;
     setDeletingTimeline(true);
     try {
-      const res = await deletePalletTimeline(palletId, session.user.accessToken);
+      const res = await deletePalletTimeline(palletId);
       notify.success({ title: res?.message || 'Historial borrado correctamente' });
       refetchTimeline();
     } catch (err) {
-      notify.error({ title: err?.message || 'Error al borrar el historial' });
+      notify.error({ title: (err as { message?: string })?.message || 'Error al borrar el historial' });
     } finally {
       setDeletingTimeline(false);
     }
   };
 
-  const [selectedBox, setSelectedBox] = useState(null);
+  const [selectedBox, setSelectedBox] = useState<number | string | null>(null);
   const [activeTab, setActiveTab] = useState('disponibles');
   const [addBoxesTab, setAddBoxesTab] = useState('lector');
-  const [deleteBoxConfirmId, setDeleteBoxConfirmId] = useState(null);
+  const [deleteBoxConfirmId, setDeleteBoxConfirmId] = useState<number | string | null>(null);
   const [deleteTimelineConfirmOpen, setDeleteTimelineConfirmOpen] = useState(false);
-  const scannerInputRef = useRef(null);
-  const [bulkActionType, setBulkActionType] = useState(null); // 'lot', 'weight', 'weightAdd' o 'product'
+  const scannerInputRef = useRef<HTMLInputElement>(null);
+  const [bulkActionType, setBulkActionType] = useState<string | null>(null); // 'lot', 'weight', 'weightAdd' o 'product'
   const [bulkActionValue, setBulkActionValue] = useState('');
   const [weightOperation, setWeightOperation] = useState('add'); // 'add' o 'subtract'
   const [oldProductId, setOldProductId] = useState('');
@@ -349,21 +341,22 @@ export default function PalletView({
   // Obtener productos únicos disponibles en el palet
   const availableProductsInPallet = useMemo(() => {
     if (!temporalPallet?.boxes) return [];
-    const productMap = new Map();
+    const productMap = new Map<number | string, { value: number | string; label: string }>();
     temporalPallet.boxes
       .filter((box) => box.isAvailable !== false && box.product?.id)
       .forEach((box) => {
-        if (!productMap.has(box.product.id)) {
-          productMap.set(box.product.id, {
-            value: box.product.id,
-            label: box.product.name || box.product.alias || 'Producto sin nombre',
+        const product = box.product as { id: number | string; name: string; alias?: string } | null;
+        if (product && !productMap.has(product.id)) {
+          productMap.set(product.id, {
+            value: product.id,
+            label: product.name || product.alias || 'Producto sin nombre',
           });
         }
       });
     return Array.from(productMap.values());
   }, [temporalPallet?.boxes]);
 
-  const handleOnClickBoxRow = (boxId) => {
+  const handleOnClickBoxRow = (boxId: number | string) => {
     if (selectedBox === boxId) {
       setSelectedBox(null);
     } else {
@@ -371,7 +364,7 @@ export default function PalletView({
     }
   };
 
-  const handleOnChangeBoxLot = (boxId, lot) => {
+  const handleOnChangeBoxLot = (boxId: number | string, lot: string) => {
     if (isReadOnly) return;
     // Check if box is available before allowing edit
     const box = temporalPallet?.boxes?.find((b) => b.id === boxId);
@@ -385,7 +378,7 @@ export default function PalletView({
     editPallet.box.edit.lot(boxId, lot);
   };
 
-  const handleOnChangeBoxNetWeight = (boxId, netWeight) => {
+  const handleOnChangeBoxNetWeight = (boxId: number | string, netWeight: number | string) => {
     if (isReadOnly) return;
     // Check if box is available before allowing edit
     const box = temporalPallet?.boxes?.find((b) => b.id === boxId);
@@ -399,12 +392,12 @@ export default function PalletView({
     editPallet.box.edit.netWeight(boxId, netWeight);
   };
 
-  const handleOnChangeBoxManualCost = (boxId, value) => {
+  const handleOnChangeBoxManualCost = (boxId: number | string, value: number | string) => {
     if (isReadOnly) return;
     editPallet.box.edit.manualCostPerKg(boxId, value);
   };
 
-  const handleOnClickDuplicateBox = (boxId) => {
+  const handleOnClickDuplicateBox = (boxId: number | string) => {
     if (isReadOnly) return;
     // Check if box is available before allowing duplicate
     const box = temporalPallet?.boxes?.find((b) => b.id === boxId);
@@ -418,7 +411,7 @@ export default function PalletView({
     editPallet.box.duplicate(boxId);
   };
 
-  const handleOnClickDeleteBox = (boxId) => {
+  const handleOnClickDeleteBox = (boxId: number | string) => {
     if (isReadOnly) return;
     const box = temporalPallet?.boxes?.find((b) => b.id === boxId);
     if (box && !isBoxAvailable(box)) {
@@ -477,20 +470,22 @@ export default function PalletView({
   };
 
   // Helper function to check if box is available
-  const isBoxAvailable = (box) => {
+  const isBoxAvailable = (box: PalletBox) => {
     return box.isAvailable !== false;
   };
 
   // Helper function to get production information from box
-  const getBoxProductionInfo = (box) => {
+  const getBoxProductionInfo = (box: PalletBox) => {
     // El campo production contiene { id, lot }
-    return box.production || null;
+    return (box as { production?: { id: number | null; lot: string | null } | null }).production || null;
   };
 
   // Agrupar cajas por producción
   const groupBoxesByProduction = () => {
-    const productionGroups = new Map();
-    const availableBoxes = [];
+    const productionGroups = new Map<string | number, { production: { id: number | null; lot: string | null } | null; boxes: PalletBox[] }>();
+    const availableBoxes: PalletBox[] = [];
+
+    if (!temporalPallet) return { available: availableBoxes, inProduction: [] };
 
     temporalPallet.boxes.forEach((box) => {
       if (isBoxAvailable(box)) {
@@ -505,7 +500,7 @@ export default function PalletView({
               boxes: [],
             });
           }
-          productionGroups.get(productionKey).boxes.push(box);
+          productionGroups.get(productionKey)!.boxes.push(box);
         } else {
           // Si no tiene información de producción pero no está disponible, la agregamos a un grupo "sin producción"
           const unknownKey = 'unknown';
@@ -515,7 +510,7 @@ export default function PalletView({
               boxes: [],
             });
           }
-          productionGroups.get(unknownKey).boxes.push(box);
+          productionGroups.get(unknownKey)!.boxes.push(box);
         }
       }
     });
@@ -621,7 +616,7 @@ export default function PalletView({
             <div className="flex min-h-0 w-full flex-1 flex-col">
               <Tabs
                 value={mainTab}
-                onValueChange={(v) => {
+                onValueChange={(v: string) => {
                   setMainTab(v);
                   if (v === 'historial') refetchTimeline();
                 }}
@@ -1100,7 +1095,7 @@ export default function PalletView({
                               <Label>Pedido vinculado (opcional)</Label>
                               <Select
                                 disabled={orderIdBlocked}
-                                value={temporalPallet.orderId}
+                                value={temporalPallet.orderId != null ? String(temporalPallet.orderId) : undefined}
                                 onValueChange={(value) => editPallet.orderId(value)}
                               >
                                 <SelectTrigger loading={activeOrdersLoading}>
@@ -1110,16 +1105,16 @@ export default function PalletView({
                                   />
                                 </SelectTrigger>
                                 <SelectContent loading={activeOrdersLoading}>
-                                  {activeOrdersOptions?.map((order) => (
+                                  {typedActiveOrdersOptions?.map((order) => (
                                     <SelectItem key={order.id} value={order.id}>
                                       #{order.name} - {formatDateShort(order.load_date)}
                                     </SelectItem>
                                   ))}
                                   {temporalPallet.orderId &&
-                                    !activeOrdersOptions?.some(
+                                    !typedActiveOrdersOptions?.some(
                                       (order) => order.id === temporalPallet.orderId
                                     ) && (
-                                      <SelectItem value={temporalPallet.orderId}>
+                                      <SelectItem value={String(temporalPallet.orderId)}>
                                         #{temporalPallet.orderId} - Pedido Actual
                                       </SelectItem>
                                     )}
@@ -1147,7 +1142,7 @@ export default function PalletView({
 
                         // Calcular datos resumen según el tab activo
                         const getSummaryData = () => {
-                          let boxesToShow = [];
+                          let boxesToShow: PalletBox[] = [];
 
                           if (activeTab === 'disponibles') {
                             boxesToShow = available;
@@ -1159,7 +1154,7 @@ export default function PalletView({
 
                           const numberOfBoxes = boxesToShow.length;
                           const netWeight = boxesToShow.reduce(
-                            (sum, box) => sum + parseFloat(box.netWeight || 0),
+                            (sum, box) => sum + parseFloat(String(box.netWeight ?? 0)),
                             0
                           );
 
@@ -1167,7 +1162,7 @@ export default function PalletView({
                           const productsSet = new Set();
                           boxesToShow.forEach((box) => {
                             if (box.product?.name) {
-                              productsSet.add(box.product.name);
+                              productsSet.add(box.product!.name);
                             }
                           });
                           const totalProducts = productsSet.size;
@@ -1192,7 +1187,7 @@ export default function PalletView({
                         const summaryData = getSummaryData();
 
                         // Función para renderizar una fila de caja (reutilizable)
-                        const renderBoxRow = (box, isEditable = true) => {
+                        const renderBoxRow = (box: PalletBox, isEditable = true) => {
                           const isSelected = box.id === selectedBox;
                           const boxAvailable = isBoxAvailable(box);
                           const canEditBox = isEditable && !isReadOnly && boxAvailable;
@@ -1204,7 +1199,7 @@ export default function PalletView({
                                 onClick={() => handleOnClickBoxRow(box.id)}
                                 className="hover:bg-muted"
                               >
-                                <TableCell>{box.product.name}</TableCell>
+                                <TableCell>{box.product?.name}</TableCell>
                                 <TableCell>
                                   <Input
                                     defaultValue={box.lot}
@@ -1240,7 +1235,7 @@ export default function PalletView({
                                           <TooltipTrigger asChild>
                                             <div className="cursor-help text-right">
                                               <span className="text-sm font-medium text-green-700">
-                                                {parseFloat(box.traceableCostPerKg).toFixed(2)} €/kg
+                                                {parseFloat(String(box.traceableCostPerKg ?? 0)).toFixed(2)} €/kg
                                               </span>
                                               <p className="text-muted-foreground text-xs">
                                                 Trazable
@@ -1311,7 +1306,7 @@ export default function PalletView({
                             >
                               <TableCell>
                                 <div className="flex items-center gap-2">
-                                  {box.product.name}
+                                  {box.product?.name}
                                   {!boxAvailable && (
                                     <TooltipProvider>
                                       <Tooltip>
@@ -1343,7 +1338,7 @@ export default function PalletView({
                                       <Tooltip>
                                         <TooltipTrigger asChild>
                                           <span className="cursor-help text-green-700">
-                                            {parseFloat(box.traceableCostPerKg).toFixed(2)} €/kg
+                                            {parseFloat(String(box.traceableCostPerKg ?? 0)).toFixed(2)} €/kg
                                           </span>
                                         </TooltipTrigger>
                                         <TooltipContent>
@@ -1356,7 +1351,7 @@ export default function PalletView({
                                       <Tooltip>
                                         <TooltipTrigger asChild>
                                           <span className="cursor-help text-blue-600">
-                                            {parseFloat(box.manualCostPerKg).toFixed(2)} €/kg
+                                            {parseFloat(String(box.manualCostPerKg ?? 0)).toFixed(2)} €/kg
                                           </span>
                                         </TooltipTrigger>
                                         <TooltipContent>
@@ -1524,7 +1519,7 @@ export default function PalletView({
                                               >
                                                 <TableCell>
                                                   <div className="flex items-center gap-2">
-                                                    {box.product.name}
+                                                    {box.product?.name}
                                                     {!boxAvailable && (
                                                       <AlertCircle className="h-4 w-4 text-orange-600" />
                                                     )}
@@ -1537,14 +1532,14 @@ export default function PalletView({
                                                   <TableCell className="text-right text-sm">
                                                     {box.traceableCostPerKg != null ? (
                                                       <span className="text-green-700">
-                                                        {parseFloat(box.traceableCostPerKg).toFixed(
+                                                        {parseFloat(String(box.traceableCostPerKg ?? 0)).toFixed(
                                                           2
                                                         )}{' '}
                                                         €/kg
                                                       </span>
                                                     ) : box.manualCostPerKg != null ? (
                                                       <span className="text-blue-600">
-                                                        {parseFloat(box.manualCostPerKg).toFixed(2)}{' '}
+                                                        {parseFloat(String(box.manualCostPerKg ?? 0)).toFixed(2)}{' '}
                                                         €/kg
                                                       </span>
                                                     ) : (
@@ -1701,13 +1696,13 @@ export default function PalletView({
                                         <TableBody>
                                           {inProduction.map((group, groupIndex) => (
                                             <React.Fragment
-                                              key={group.production.id || `unknown-${groupIndex}`}
+                                              key={group.production?.id || `unknown-${groupIndex}`}
                                             >
                                               {/* Fila de encabezado del grupo */}
                                               {(() => {
                                                 const totalWeight = group.boxes.reduce(
                                                   (sum, box) =>
-                                                    sum + parseFloat(box.netWeight || 0),
+                                                    sum + parseFloat(String(box.netWeight ?? 0)),
                                                   0
                                                 );
                                                 return (
@@ -1716,16 +1711,16 @@ export default function PalletView({
                                                       <div className="flex items-center gap-2 font-semibold text-orange-900">
                                                         <Factory className="h-4 w-4" />
                                                         <span>
-                                                          Producción #{group.production.id || 'N/A'}
+                                                          Producción #{group.production?.id || 'N/A'}
                                                         </span>
-                                                        {group.production.lot && (
+                                                        {group.production?.lot && (
                                                           <>
                                                             <Separator
                                                               orientation="vertical"
                                                               className="h-4"
                                                             />
                                                             <span className="text-sm font-normal text-orange-700">
-                                                              Lote: {group.production.lot}
+                                                              Lote: {group.production?.lot}
                                                             </span>
                                                           </>
                                                         )}
@@ -1760,7 +1755,7 @@ export default function PalletView({
                                                   >
                                                     <TableCell>
                                                       <div className="flex items-center gap-2">
-                                                        {box.product.name}
+                                                        {box.product?.name}
                                                         <AlertCircle className="h-4 w-4 text-orange-600" />
                                                       </div>
                                                     </TableCell>
@@ -1948,7 +1943,7 @@ export default function PalletView({
                                       notFoundMessage="No se encontraron productos"
                                       value={oldProductId}
                                       onChange={(value) => {
-                                        setOldProductId(value);
+                                        setOldProductId(String(value));
                                       }}
                                       disabled={isReadOnly}
                                       loading={loading}
@@ -1963,7 +1958,7 @@ export default function PalletView({
                                       notFoundMessage="No se encontraron productos"
                                       value={newProductId}
                                       onChange={(value) => {
-                                        setNewProductId(value);
+                                        setNewProductId(String(value));
                                       }}
                                       disabled={isReadOnly}
                                       loading={productsLoading}
@@ -2178,7 +2173,7 @@ export default function PalletView({
                                     >
                                       <TableCell>
                                         <div className="flex items-center gap-2">
-                                          {box.product.name}
+                                          {box.product?.name}
                                           {!boxAvailable && (
                                             <AlertCircle className="h-4 w-4 text-orange-600" />
                                           )}
@@ -2194,7 +2189,7 @@ export default function PalletView({
                                               <Tooltip>
                                                 <TooltipTrigger asChild>
                                                   <span className="cursor-help text-green-700">
-                                                    {parseFloat(box.traceableCostPerKg).toFixed(2)}{' '}
+                                                    {parseFloat(String(box.traceableCostPerKg ?? 0)).toFixed(2)}{' '}
                                                     €/kg
                                                   </span>
                                                 </TooltipTrigger>
@@ -2208,7 +2203,7 @@ export default function PalletView({
                                               <Tooltip>
                                                 <TooltipTrigger asChild>
                                                   <span className="cursor-help text-blue-600">
-                                                    {parseFloat(box.manualCostPerKg).toFixed(2)}{' '}
+                                                    {parseFloat(String(box.manualCostPerKg ?? 0)).toFixed(2)}{' '}
                                                     €/kg
                                                   </span>
                                                 </TooltipTrigger>
@@ -2656,7 +2651,7 @@ export default function PalletView({
                                     >
                                       <TableCell>
                                         <div className="flex items-center gap-2">
-                                          {box.product.name}
+                                          {box.product?.name}
                                           {!boxAvailable && (
                                             <AlertCircle className="h-4 w-4 text-orange-600" />
                                           )}

@@ -16,7 +16,6 @@ import { PlusCircle, Trash2, Plus } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
 import { useOrderCreateFormConfig } from '@/hooks/useOrderCreateFormConfig';
-import { useSession } from 'next-auth/react';
 import { getCustomer } from '@/services/customerService';
 import { externalProcessorService } from '@/services/domain/external-processors/externalProcessorService';
 import { useProductOptions } from '@/hooks/useProductOptions';
@@ -27,7 +26,7 @@ import { createOrder } from '@/services/orderService';
 import { Textarea } from '@/components/ui/textarea';
 import { DatePicker } from '@/components/ui/datePicker';
 import { format } from 'date-fns';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobileSafe } from '@/hooks/use-mobile';
 import CreateOrderFormMobile from './CreateOrderFormMobile';
 import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -144,8 +143,7 @@ function getTextValue(...candidates: unknown[]): string {
 const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrderFormProps) => {
   const { productOptions, loading: productsLoading } = useProductOptions();
   const { taxOptions, loading: taxLoading } = useTaxOptions();
-  const isMobile = useIsMobile();
-  const { data: session } = useSession();
+  const { isMobile, mounted } = useIsMobileSafe();
 
   const { defaultValues, formGroups, loading: formConfigLoading } = useOrderCreateFormConfig();
   const loading = formConfigLoading || productsLoading || taxLoading;
@@ -182,12 +180,9 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
     if (!selectedCustomerId) return;
     if (selectedCustomerId === lastCustomerIdRef.current) return;
 
-    const token = (session?.user as { accessToken?: string })?.accessToken;
-    if (!token) return;
-
     lastCustomerIdRef.current = selectedCustomerId;
 
-    getCustomer(selectedCustomerId, token)
+    getCustomer(selectedCustomerId)
       .then((data) => {
         const customer = data as CustomerData;
         setValue(
@@ -251,7 +246,7 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
           description: 'No se pudieron cargar los datos. Intente de nuevo.',
         });
       });
-  }, [selectedCustomerId, setValue, session]);
+  }, [selectedCustomerId, setValue]);
 
   useEffect(() => {
     if (!selectedExternalProcessorId) {
@@ -492,6 +487,8 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
     },
     [control, isMobile, loading, register]
   );
+
+  if (!mounted) return null;
 
   if (isMobile) {
     return (

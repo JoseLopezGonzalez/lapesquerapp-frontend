@@ -24,7 +24,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { useProspectCategoryOptions } from '@/hooks/useProspectCategories';
 import { useProspectsList } from '@/hooks/useProspects';
 import StatusPill from './StatusPill';
@@ -111,7 +111,7 @@ function ProspectCard({ prospect, selected, onClick }) {
 }
 
 export default function ProspectsPageClient({ initialProspectId = null, forceCreate = false }) {
-  const isMobile = useIsMobile();
+  const { isMobile, mounted } = useIsMobileSafe();
   const router = useRouter();
   const [nameFilterDraft, setNameFilterDraft] = useState('');
   const [appliedNameFilter, setAppliedNameFilter] = useState('');
@@ -224,6 +224,8 @@ export default function ProspectsPageClient({ initialProspectId = null, forceCre
       setPage((prev) => prev + 1);
     }
   };
+
+  if (!mounted) return null;
 
   return (
     <>

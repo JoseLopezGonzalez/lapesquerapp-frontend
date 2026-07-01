@@ -5,10 +5,11 @@ import { ThermometerSnowflake, Package, Sparkles } from 'lucide-react';
 import { TbTruckLoading } from 'react-icons/tb';
 import { REGISTERED_PALLETS_STORE_ID } from '@/hooks/useStores';
 import { cn } from '@/lib/utils';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobileSafe } from '@/hooks/use-mobile';
 
 const StoreCard = ({ store, isSelected, onClick, disabled }) => {
-  const isMobile = useIsMobile();
+  const { isMobile, mounted } = useIsMobileSafe();
+  if (!mounted) return null;
   const isGhostStore = store?.id === REGISTERED_PALLETS_STORE_ID;
 
   // Calcular porcentaje de llenado, manejando casos donde capacity puede ser null o 0

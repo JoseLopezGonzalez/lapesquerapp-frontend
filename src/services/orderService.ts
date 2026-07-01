@@ -437,7 +437,8 @@ export function getActiveOrders(token: AuthToken): Promise<Order[]> {
 /**
  * Downloads the XLS report of active planned products.
  */
-export async function downloadActivePlannedProductsXls(token: AuthToken): Promise<Blob> {
+export async function downloadActivePlannedProductsXls(): Promise<Blob> {
+  const token = await getAuthToken();
   const response = await fetchWithTenant(`${API_URL_V2}orders/xlsx/active-planned-products`, {
     method: 'GET',
     headers: {

@@ -1,5 +1,6 @@
 import { apiGet, apiPost, apiPut, apiDelete } from '@/lib/api/apiHelpers';
 import { API_URL_V2 } from '@/configs/config';
+import { getAuthToken } from '@/lib/auth/getAuthToken';
 import { normalizeProduction } from '@/helpers/production/normalizers';
 
 /** @param {string} token @param {object} [params] @returns {Promise<Object>} */
@@ -66,7 +67,8 @@ export function getProduction(productionId, token) {
  * @param {string} token
  * @returns {Promise<{ message?: string, data: { id: number, lot: string } }>}
  */
-export function getProductionByLot(lot, token) {
+export async function getProductionByLot(lot) {
+  const token = await getAuthToken();
   const trimmedLot = typeof lot === 'string' ? lot.trim() : String(lot ?? '').trim();
   return apiGet(
     `${API_URL_V2}productions/by-lot/${encodeURIComponent(trimmedLot)}`,
@@ -107,7 +109,8 @@ export function updateProduction(productionId, productionData, token) {
 }
 
 /** @param {string|number} productionId @param {{ reason: string }} data @param {string} token @returns {Promise<Object>} */
-export function closeProduction(productionId, data, token) {
+export async function closeProduction(productionId, data) {
+  const token = await getAuthToken();
   return apiPost(`${API_URL_V2}productions/${productionId}/close`, token, data, {
     transform: (response) => {
       const production = response.data || response;

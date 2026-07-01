@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/card';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EmptyState } from '@/components/Utilities/EmptyState';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useOffersList } from '@/hooks/useOffers';
 import OfferFormSheet from './OfferFormSheet';
@@ -61,7 +61,7 @@ function OfferCard({ offer, selected, onClick }) {
 }
 
 export default function OffersPageClient({ initialOfferId = null, forceCreate = false }) {
-  const isMobile = useIsMobile();
+  const { isMobile, mounted } = useIsMobileSafe();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [search, setSearch] = useState('');
@@ -112,6 +112,8 @@ export default function OffersPageClient({ initialOfferId = null, forceCreate = 
       setSelectedId(savedOfferId);
     }
   };
+
+  if (!mounted) return null;
 
   return (
     <>
