@@ -3,7 +3,7 @@
 > This file is maintained exclusively by the system-learner agent.
 > Do not edit manually unless correcting an error.
 > Last updated: 2026-07-01
-> Total entries: 27
+> Total entries: 31
 
 ## How this file works
 
@@ -63,6 +63,41 @@ Every entry has:
 - **Found in:** `src/app/admin/orders/[id]/OrderClient.js` y 14 archivos más bajo
   `src/components/Admin/OrdersManager/Order/` (ver GAP-067 para el listado completo)
 - **Status:** Follow-up: GAP-067.
+
+### PL-023
+- **Date:** 2026-07-01
+- **Source:** /audit-design visual order editor (system-learner)
+- **Category:** AUDIT_RULE
+- **Confidence:** HIGH
+- **Entry:** El componente `<Loader>` (spinner de sesión/auth) se usa como estado de carga de
+  datos en 2 archivos / 3 sitios del editor de pedidos, pese a estar documentado en
+  `design-context.md` § Loading States como exclusivo para gates de sesión/auth de página
+  completa — nunca como reemplazo de `Skeleton` para carga de datos. **Regla:** cualquier
+  auditoría de UI debe ejecutar `grep -rn "<Loader\b"` sobre componentes de tab/sección y
+  verificar en cada resultado que no está sustituyendo un `Skeleton` de carga de datos.
+- **Found in:** `src/components/Admin/OrdersManager/Order/components/OrderSectionContentMobile.jsx:10-30`
+  (fallback de Suspense para secciones lazy en móvil, mientras el equivalente desktop en
+  `OrderTabsDesktop.jsx:79-84` sí usa `Skeleton` correctamente) y
+  `src/components/Admin/OrdersManager/Order/OrderCustomerHistory/components/CustomerOrderHistoryView/index.jsx:51,62,196-198,241-242`
+  (carga inicial y recarga al filtrar).
+- **Status:** Follow-up: GAP-078.
+
+### PL-026
+- **Date:** 2026-07-01
+- **Source:** /audit-design visual order editor (system-learner)
+- **Category:** AUDIT_RULE
+- **Confidence:** HIGH
+- **Entry:** Antes de marcar "falta skeleton de carga inicial" como hallazgo, verificar si el
+  componente lee datos ya cargados desde el contexto padre (p.ej. `useOrderContext()`) que ya
+  gatea el render completo detrás de su propio `Skeleton` de página completa antes de montar
+  cualquier tab/sección hija. Un componente hijo sin su propia rama `isLoading` no es un bug si
+  el padre ya garantiza que los datos existen antes de renderizarlo. **Regla:** verificar la
+  fuente de datos (contexto vs query propia) antes de reportar un hallazgo de "falta skeleton".
+- **Found in:** Dos hallazgos descartados en esta sesión tras verificación —
+  `OrderPlannedProductDetails/index.js` y `OrderProductDetails/index.js` ambos leen `order` de
+  `useOrderContext()`, ya gateado por `Order/index.tsx:148-166`.
+- **Status:** Corregido en el mismo audit antes de generar GAPs (no se creó GAP para el falso
+  positivo).
 
 ---
 
@@ -336,6 +371,38 @@ Every entry has:
 - **Found in:** `src/components/Admin/OrdersManager/Order/OrderPallets/hooks/useOrderPallets.js`
   (4 catches silenciosos de 8 revisados: líneas 120, 338, 543, 626)
 - **Status:** Follow-up: GAP-065.
+
+### PL-024
+- **Date:** 2026-07-01
+- **Source:** /audit-design visual order editor (system-learner)
+- **Category:** ANTI_PATTERN
+- **Confidence:** HIGH
+- **Entry:** El peso `font-semibold` se usa de forma recurrente en 5 archivos del editor de
+  pedidos, tanto para identificadores primarios como para metadatos secundarios, pese a que
+  `design-context.md` § Typography documenta una escala cerrada donde `font-semibold` no
+  aparece en ningún punto (solo `font-medium` en sus distintos tamaños). Esto además debilita
+  la jerarquía visual, ya que el identificador primario y sus metadatos secundarios terminan
+  casi al mismo peso. Normalizado a `font-medium` vía GAP-096.
+- **Found in:** `OrderSummaryMobile.jsx:46,105,110,117,141,147`, `OrderDetails/index.tsx:106,283,289,316`,
+  `OrderProductDetails/index.js:84,95,101,109,117,123,131`, `OrderCostAnalysis/index.jsx:52-54,71,76,127,132`,
+  `OrderLabels/index.js:243,297,316,324,424`.
+- **Status:** Follow-up: GAP-096.
+
+### PL-025
+- **Date:** 2026-07-01
+- **Source:** /audit-design visual order editor (system-learner)
+- **Category:** ANTI_PATTERN
+- **Confidence:** HIGH
+- **Entry:** El patrón documentado de badges de estado (`bg-{color}-500/15 text-{color}-700
+  dark:text-{color}-300`, ver `design-context.md` § Status Colors) no se propagó al módulo
+  Order — 3 archivos usan 3 tratamientos ad-hoc distintos entre sí y respecto al patrón
+  documentado: `OrderProduction` usa fondo sólido `bg-green-500`/`bg-orange-500` (además
+  duplicado entre tarjeta móvil y celda desktop), `OrderCostAnalysis` usa `variant="outline"`
+  con solo el color de texto sobreescrito, `OrderIncident` usa el par `/50`+`bg-{color}-50`
+  (también duplicado entre vista móvil y cabecera desktop). Normalizado vía GAP-088.
+- **Found in:** `OrderProduction/index.js:97,101,314,318`, `OrderCostAnalysis/index.jsx:441-445`,
+  `OrderIncident/index.js:117-131,290-304`.
+- **Status:** Follow-up: GAP-088.
 
 ---
 
