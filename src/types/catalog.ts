@@ -91,3 +91,26 @@ export interface Supplier {
   name: string;
   [key: string]: unknown;
 }
+
+/** Auxiliary product (nieve, envases, palets, servicios puntuales) — catálogo de líneas auxiliares */
+export interface AuxiliaryProduct {
+  id: number | string;
+  name: string;
+  reference?: string | null;
+  unit: string;
+  defaultPrice?: number | string | null;
+  notes?: string | null;
+  active: boolean;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+  [key: string]: unknown;
+}
+
+/** Auxiliary product option — shape returned by /auxiliary-products/options (array plano, sin envolver en value/label) */
+export interface AuxiliaryProductOption {
+  id: number | string;
+  name: string;
+  reference?: string | null;
+  unit: string;
+  defaultPrice?: number | string | null;
+}

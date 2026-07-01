@@ -9,8 +9,10 @@ import { useOrderCostAnalysis } from './orders/useOrderCostAnalysis';
 import { useOrderOptions } from './orders/useOrderOptions';
 import { useOrderIncidents } from './orders/useOrderIncidents';
 import { useOrderPlannedDetails } from './orders/useOrderPlannedDetails';
+import { useOrderAuxiliaryLines } from './orders/useOrderAuxiliaryLines';
 import { useOrderPallets } from './orders/useOrderPallets';
 import { useOrderDocuments } from './orders/useOrderDocuments';
+import { useAuxiliaryProductOptions } from './useAuxiliaryProductOptions';
 
 const normalizeOrderPallet = (pallet: Record<string, unknown>) => {
   if (!pallet) return pallet;
@@ -216,6 +218,16 @@ export function useOrder(
     onError: setMutationError,
   });
 
+  const { auxiliaryLines, auxiliaryLineActions } = useOrderAuxiliaryLines({
+    order,
+    onOrderUpdate: updateOrderCache,
+    onError: setMutationError,
+  });
+
+  const { options: auxiliaryProductOptions } = useAuxiliaryProductOptions({
+    enabled: activeTab === 'auxiliary',
+  });
+
   const palletHandlers = useOrderPallets({
     order,
     accessToken,
@@ -242,6 +254,9 @@ export function useOrder(
     options: { taxOptions, productOptions, loading: optionsLoading },
     plannedProductDetailActions,
     plannedProductDetails,
+    auxiliaryLines,
+    auxiliaryLineActions,
+    auxiliaryProductOptions,
     sendDocuments,
     hasMaquilador,
     updateOrderStatus,

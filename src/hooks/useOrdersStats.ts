@@ -10,8 +10,12 @@ import {
   getOrdersProfitabilitySummary,
   getOrdersProfitabilityTimeline,
   getOrdersProfitabilityProducts,
+  getAuxiliaryLinesTotalAmountStats,
+  getAuxiliaryLinesByProductStats,
+  getAuxiliaryLinesByCustomerStats,
+  getAuxiliaryLinesChartData,
 } from '@/services/orderService';
-import { orderStatKeys } from '@/lib/routes/queryKeys';
+import { orderStatKeys, auxiliaryLineStatKeys } from '@/lib/routes/queryKeys';
 
 interface OrderRankingItem {
   name: string;
@@ -51,18 +55,104 @@ export function useOrdersTotalNetWeightStats() {
   };
 }
 
-export function useOrdersTotalAmountStats() {
+export function useOrdersTotalAmountStats(params: { includeAuxiliary?: boolean } = {}) {
+  const { includeAuxiliary = false } = params;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
   const { dateFrom, dateTo } = getYearToDateRange();
 
   const { data, isLoading, error } = useQuery({
-    queryKey: orderStatKeys.totalAmount(tenantId, dateFrom, dateTo),
-    queryFn: () => getOrdersTotalAmountStats({ dateFrom, dateTo }),
+    queryKey: orderStatKeys.totalAmount(tenantId, dateFrom, dateTo, includeAuxiliary),
+    queryFn: () => getOrdersTotalAmountStats({ dateFrom, dateTo, includeAuxiliary }),
     enabled: !!tenantId,
   });
 
   return {
     data: data ?? null,
+    isLoading,
+    error: error?.message ?? null,
+  };
+}
+
+export function useAuxiliaryLinesTotalAmountStats() {
+  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
+  const { dateFrom, dateTo } = getYearToDateRange();
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: auxiliaryLineStatKeys.totalAmount(tenantId, dateFrom, dateTo),
+    queryFn: () => getAuxiliaryLinesTotalAmountStats({ dateFrom, dateTo }),
+    enabled: !!tenantId,
+  });
+
+  return {
+    data: data ?? null,
+    isLoading,
+    error: error?.message ?? null,
+  };
+}
+
+interface AuxiliaryLinesRangeParams {
+  range?: { from?: Date; to?: Date };
+}
+
+export function useAuxiliaryLinesByProductStats(params: AuxiliaryLinesRangeParams = {}) {
+  const { range } = params;
+  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
+  const yearToDate = getYearToDateRange();
+  const dateFrom = range?.from?.toLocaleDateString?.('sv-SE') ?? yearToDate.dateFrom;
+  const dateTo = range?.to?.toLocaleDateString?.('sv-SE') ?? yearToDate.dateTo;
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: auxiliaryLineStatKeys.byProduct(tenantId, dateFrom, dateTo),
+    queryFn: () => getAuxiliaryLinesByProductStats({ dateFrom, dateTo }),
+    enabled: !!tenantId && !!dateFrom && !!dateTo,
+  });
+
+  return {
+    data: data ?? [],
+    isLoading,
+    error: error?.message ?? null,
+  };
+}
+
+export function useAuxiliaryLinesByCustomerStats(params: AuxiliaryLinesRangeParams = {}) {
+  const { range } = params;
+  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
+  const yearToDate = getYearToDateRange();
+  const dateFrom = range?.from?.toLocaleDateString?.('sv-SE') ?? yearToDate.dateFrom;
+  const dateTo = range?.to?.toLocaleDateString?.('sv-SE') ?? yearToDate.dateTo;
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: auxiliaryLineStatKeys.byCustomer(tenantId, dateFrom, dateTo),
+    queryFn: () => getAuxiliaryLinesByCustomerStats({ dateFrom, dateTo }),
+    enabled: !!tenantId && !!dateFrom && !!dateTo,
+  });
+
+  return {
+    data: data ?? [],
+    isLoading,
+    error: error?.message ?? null,
+  };
+}
+
+interface AuxiliaryLinesChartParams extends AuxiliaryLinesRangeParams {
+  groupBy?: 'day' | 'week' | 'month';
+}
+
+export function useAuxiliaryLinesChartData(params: AuxiliaryLinesChartParams = {}) {
+  const { range, groupBy = 'day' } = params;
+  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
+  const yearToDate = getYearToDateRange();
+  const dateFrom = range?.from?.toLocaleDateString?.('sv-SE') ?? yearToDate.dateFrom;
+  const dateTo = range?.to?.toLocaleDateString?.('sv-SE') ?? yearToDate.dateTo;
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: auxiliaryLineStatKeys.chartData(tenantId, dateFrom, dateTo, groupBy),
+    queryFn: () => getAuxiliaryLinesChartData({ dateFrom, dateTo, groupBy }),
+    enabled: !!tenantId && !!dateFrom && !!dateTo,
+  });
+
+  return {
+    data: data ?? [],
     isLoading,
     error: error?.message ?? null,
   };

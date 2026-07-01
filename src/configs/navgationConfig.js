@@ -240,6 +240,12 @@ export const navigationConfig = [
     href: '/admin/incoterms',
   },
   {
+    name: 'Productos Auxiliares',
+    icon: PackageOpen,
+    allowedRoles: ['administrador', 'direccion', 'tecnico'],
+    href: '/admin/auxiliary-products',
+  },
+  {
     name: 'Comerciales',
     icon: RiMapPinUserLine,
     allowedRoles: ['administrador', 'direccion', 'tecnico'],

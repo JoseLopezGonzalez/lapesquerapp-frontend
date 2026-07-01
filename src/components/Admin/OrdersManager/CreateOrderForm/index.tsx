@@ -20,9 +20,10 @@ import { getCustomer } from '@/services/customerService';
 import { externalProcessorService } from '@/services/domain/external-processors/externalProcessorService';
 import { useProductOptions } from '@/hooks/useProductOptions';
 import { useTaxOptions } from '@/hooks/useTaxOptions';
+import { useAuxiliaryProductOptions } from '@/hooks/useAuxiliaryProductOptions';
 import { Skeleton } from '@/components/ui/skeleton';
 import EmailListInput from '@/components/ui/emailListInput';
-import { createOrder } from '@/services/orderService';
+import { createOrder, createOrderAuxiliaryLine } from '@/services/orderService';
 import { Textarea } from '@/components/ui/textarea';
 import { DatePicker } from '@/components/ui/datePicker';
 import { format } from 'date-fns';
@@ -143,6 +144,17 @@ function getTextValue(...candidates: unknown[]): string {
 const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrderFormProps) => {
   const { productOptions, loading: productsLoading } = useProductOptions();
   const { taxOptions, loading: taxLoading } = useTaxOptions();
+  const { options: auxiliaryProductOptionsRaw, isLoading: auxiliaryProductsLoading } =
+    useAuxiliaryProductOptions();
+  const auxiliaryProductOptions = useMemo(
+    () => auxiliaryProductOptionsRaw.map((opt) => ({ value: String(opt.id), label: opt.name })),
+    [auxiliaryProductOptionsRaw]
+  );
+  const auxiliaryProductOptionsMap = useMemo(() => {
+    const map = new Map<string, (typeof auxiliaryProductOptionsRaw)[number]>();
+    auxiliaryProductOptionsRaw.forEach((opt) => map.set(String(opt.id), opt));
+    return map;
+  }, [auxiliaryProductOptionsRaw]);
   const { isMobile, mounted } = useIsMobileSafe();
 
   const { defaultValues, formGroups, loading: formConfigLoading } = useOrderCreateFormConfig();
@@ -168,6 +180,7 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
     defaultValues: {
       ...defaultValues,
       plannedProducts: [],
+      auxiliaryLines: [],
     } as OrderCreateFormData,
     mode: 'onChange',
   });
@@ -277,6 +290,15 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
     name: 'plannedProducts',
   });
 
+  const {
+    fields: auxiliaryFields,
+    append: appendAuxiliary,
+    remove: removeAuxiliary,
+  } = useFieldArray({
+    control,
+    name: 'auxiliaryLines',
+  });
+
   const prefilledPlannedProducts = useMemo(() => {
     if (!initialPrefill || !Array.isArray(initialPrefill.plannedProducts)) {
       return [];
@@ -304,6 +326,7 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
       reset({
         ...defaultValues,
         plannedProducts: prefilledPlannedProducts,
+        auxiliaryLines: [],
       } as OrderCreateFormData);
       appliedPrefillSignatureRef.current = prefillSignature;
       isInitializedRef.current = true;
@@ -317,6 +340,7 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
     reset({
       ...defaultValues,
       plannedProducts: prefilledPlannedProducts,
+      auxiliaryLines: [],
     } as OrderCreateFormData);
     appliedPrefillSignatureRef.current = prefillSignature;
     lastCustomerIdRef.current = null;
@@ -373,9 +397,35 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
           };
         },
       });
+
+      if (formData.auxiliaryLines.length > 0) {
+        for (const line of formData.auxiliaryLines) {
+          try {
+            await createOrderAuxiliaryLine(String(newOrderData.id), {
+              auxiliaryProductId: line.auxiliaryProduct ? parseInt(line.auxiliaryProduct) : null,
+              description: line.description || null,
+              quantity: parseFloat(String(line.quantity)),
+              unit: line.unit,
+              unitPrice: parseFloat(String(line.unitPrice)),
+              taxId: line.tax ? parseInt(String(line.tax)) : null,
+            });
+          } catch (auxError) {
+            const description =
+              auxError && typeof auxError === 'object'
+                ? getErrorMessage(auxError as Record<string, unknown>)
+                : '';
+            notify.error({
+              title: 'Error al añadir un artículo auxiliar',
+              description: description || 'El pedido se creó, pero revisa las líneas auxiliares.',
+            });
+          }
+        }
+      }
+
       reset({
         ...defaultValues,
         plannedProducts: [],
+        auxiliaryLines: [],
       } as OrderCreateFormData);
       lastCustomerIdRef.current = null;
       onCreate(newOrderData.id, newOrderData);
@@ -510,6 +560,13 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
         taxLoading={taxLoading}
         append={append}
         remove={remove}
+        auxiliaryFields={auxiliaryFields}
+        appendAuxiliary={appendAuxiliary}
+        removeAuxiliary={removeAuxiliary}
+        auxiliaryProductOptions={auxiliaryProductOptions}
+        auxiliaryProductOptionsMap={auxiliaryProductOptionsMap}
+        auxiliaryProductsLoading={auxiliaryProductsLoading}
+        setValue={setValue}
         onClose={onClose}
         loading={loading}
       />
@@ -574,6 +631,14 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
                 </div>
               </div>
             ))}
+
+            {(() => {
+              const arrayError = errors.plannedProducts as unknown as
+                | { message?: string; root?: { message?: string } }
+                | undefined;
+              const message = arrayError?.root?.message ?? arrayError?.message;
+              return message ? <p className="text-sm text-destructive">{message}</p> : null;
+            })()}
 
             <div className="w-full">
               <h3 className="text-muted-foreground my-2 text-sm font-medium">
@@ -686,6 +751,137 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
                   }
                 >
                   <PlusCircle className="mr-2 h-4 w-4" /> Añadir producto
+                </Button>
+              </div>
+            </div>
+
+            <div className="w-full">
+              <h3 className="text-muted-foreground my-2 text-sm font-medium">Otros artículos</h3>
+              <Separator className="my-2" />
+              <div className="flex flex-col gap-4">
+                {auxiliaryFields.map((item, index) => (
+                  <div key={item.id} className="flex items-center justify-center gap-2">
+                    <div className="min-w-[260px] flex-1 shrink-0">
+                      <Controller
+                        control={control}
+                        name={`auxiliaryLines.${index}.auxiliaryProduct`}
+                        render={({ field: { onChange, value } }) => (
+                          <Combobox
+                            options={auxiliaryProductOptions}
+                            value={String(value || '')}
+                            onChange={(newValue) => {
+                              onChange(newValue);
+                              const matched = auxiliaryProductOptionsMap.get(String(newValue));
+                              if (matched?.unit) {
+                                setValue(`auxiliaryLines.${index}.unit`, matched.unit);
+                              }
+                              if (matched?.defaultPrice != null) {
+                                setValue(
+                                  `auxiliaryLines.${index}.unitPrice`,
+                                  String(matched.defaultPrice)
+                                );
+                              }
+                            }}
+                            placeholder="Artículo del catálogo (opcional)"
+                            searchPlaceholder="Buscar artículo..."
+                            notFoundMessage="No se encontraron artículos"
+                            loading={auxiliaryProductsLoading}
+                          />
+                        )}
+                      />
+                    </div>
+                    <Input
+                      {...register(`auxiliaryLines.${index}.description`)}
+                      placeholder="Descripción libre"
+                      className="min-w-[180px] flex-1"
+                    />
+                    <Input
+                      type="number"
+                      step="any"
+                      {...register(`auxiliaryLines.${index}.quantity`, { valueAsNumber: true })}
+                      placeholder="Cantidad"
+                    />
+                    <Input
+                      {...register(`auxiliaryLines.${index}.unit`)}
+                      placeholder="Unidad"
+                      className="max-w-[100px]"
+                    />
+                    <Input
+                      type="number"
+                      step="any"
+                      {...register(`auxiliaryLines.${index}.unitPrice`, { valueAsNumber: true })}
+                      placeholder="Precio"
+                    />
+                    <Controller
+                      control={control}
+                      name={`auxiliaryLines.${index}.tax`}
+                      render={({ field }) => {
+                        const currentValue = field.value ? String(field.value) : '';
+                        const handleValueChange = (newValue: string) => {
+                          const taxOption = (taxOptions as Array<{ value: unknown }>).find(
+                            (t) => String(t.value) === String(newValue)
+                          );
+                          const finalValue = taxOption ? taxOption.value : newValue;
+                          field.onChange(finalValue);
+                        };
+                        return (
+                          <Select value={currentValue} onValueChange={handleValueChange}>
+                            <SelectTrigger loading={taxLoading}>
+                              <SelectValue placeholder="IVA" loading={taxLoading} />
+                            </SelectTrigger>
+                            <SelectContent loading={taxLoading}>
+                              {(taxOptions as Array<{ value: unknown; label: string }>).map(
+                                (tax) => (
+                                  <SelectItem key={String(tax.value)} value={String(tax.value)}>
+                                    {tax.label}
+                                  </SelectItem>
+                                )
+                              )}
+                            </SelectContent>
+                          </Select>
+                        );
+                      }}
+                    />
+                    <Button type="button" variant="outline" onClick={() => removeAuxiliary(index)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                    {errors.auxiliaryLines?.[index]?.description && (
+                      <p className="col-span-full text-sm text-destructive">
+                        {errors.auxiliaryLines[index]?.description?.message}
+                      </p>
+                    )}
+                    {errors.auxiliaryLines?.[index]?.quantity && (
+                      <p className="col-span-full text-sm text-destructive">
+                        {errors.auxiliaryLines[index]?.quantity?.message}
+                      </p>
+                    )}
+                    {errors.auxiliaryLines?.[index]?.unit && (
+                      <p className="col-span-full text-sm text-destructive">
+                        {errors.auxiliaryLines[index]?.unit?.message}
+                      </p>
+                    )}
+                    {errors.auxiliaryLines?.[index]?.unitPrice && (
+                      <p className="col-span-full text-sm text-destructive">
+                        {errors.auxiliaryLines[index]?.unitPrice?.message}
+                      </p>
+                    )}
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() =>
+                    appendAuxiliary({
+                      auxiliaryProduct: '',
+                      description: '',
+                      quantity: '',
+                      unit: '',
+                      unitPrice: '',
+                      tax: '',
+                    })
+                  }
+                >
+                  <PlusCircle className="mr-2 h-4 w-4" /> Añadir artículo
                 </Button>
               </div>
             </div>

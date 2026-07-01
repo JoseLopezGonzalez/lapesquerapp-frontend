@@ -62,6 +62,8 @@ interface Order {
   numberOfPallets?: number | null;
   totalAmount?: number | null;
   revenuePerKg?: number | null;
+  auxiliarySubtotal?: number | null;
+  auxiliaryTotal?: number | null;
   shippingAddress?: string | null;
   transport?: OrderTransport | null;
   transportationNotes?: string | null;
@@ -252,6 +254,18 @@ const OrderDetails = () => {
                 <div className="text-center">
                   <div className="text-muted-foreground text-sm font-medium">Margen %</div>
                   <div className="font-medium">{getNullablePercentage(order.marginPercentage)}</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-muted-foreground text-sm font-medium">
+                    Otros artículos (subtotal)
+                  </div>
+                  <div className="font-medium">{getNullableCurrency(order.auxiliarySubtotal)}</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-muted-foreground text-sm font-medium">
+                    Otros artículos (total)
+                  </div>
+                  <div className="font-medium">{getNullableCurrency(order.auxiliaryTotal)}</div>
                 </div>
               </div>
             </div>
@@ -475,6 +489,16 @@ const OrderDetails = () => {
             <div className="text-muted-foreground mt-1 text-xs">
               {getNullableCurrencyPerKg(order.revenuePerKg)}
             </div>
+          </div>
+          <div>
+            <div className="text-muted-foreground text-sm">Otros artículos (subtotal)</div>
+            <div className="text-sm font-medium">
+              {getNullableCurrency(order.auxiliarySubtotal)}
+            </div>
+          </div>
+          <div>
+            <div className="text-muted-foreground text-sm">Otros artículos (total)</div>
+            <div className="text-sm font-medium">{getNullableCurrency(order.auxiliaryTotal)}</div>
           </div>
         </CardContent>
       </Card>

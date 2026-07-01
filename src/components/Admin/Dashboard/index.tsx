@@ -20,6 +20,10 @@ import { DailyCalibersBySpeciesCard } from './DailyCalibersBySpeciesCard';
 import { OrdersProfitabilitySummaryCard } from './OrdersProfitabilitySummaryCard';
 import { OrdersProfitabilityProductsCard } from './OrdersProfitabilityProductsCard';
 import { CompanySetupAlert } from './CompanySetupAlert';
+import { AuxiliaryLinesTotalCard } from './AuxiliaryLinesTotalCard';
+import { AuxiliaryLinesByProductCard } from './AuxiliaryLinesByProductCard';
+import { AuxiliaryLinesByCustomerCard } from './AuxiliaryLinesByCustomerCard';
+import { AuxiliaryLinesChartCard } from './AuxiliaryLinesChartCard';
 import Masonry from 'react-masonry-css';
 
 const breakpointColumnsObj = {
@@ -77,6 +81,9 @@ export default function Dashboard() {
             <div className="w-full overflow-hidden">
               <OrdersProfitabilitySummaryCard />
             </div>
+            <div className="h-full w-full overflow-hidden">
+              <AuxiliaryLinesTotalCard />
+            </div>
           </div>
 
           <Masonry
@@ -106,6 +113,15 @@ export default function Dashboard() {
             </div>
             <div className="box-border w-full max-w-full min-w-0 overflow-hidden">
               <SalesChart />
+            </div>
+            <div className="box-border w-full max-w-full min-w-0 overflow-hidden">
+              <AuxiliaryLinesChartCard />
+            </div>
+            <div className="box-border w-full max-w-full min-w-0 overflow-hidden">
+              <AuxiliaryLinesByProductCard />
+            </div>
+            <div className="box-border w-full max-w-full min-w-0 overflow-hidden">
+              <AuxiliaryLinesByCustomerCard />
             </div>
             <div>
               <ReceptionChart />

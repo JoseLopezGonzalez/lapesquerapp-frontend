@@ -47,11 +47,21 @@ declare const AlertDialogDescription: React.FC<
 >;
 
 declare const AlertDialogAction: React.FC<
-  ButtonHTMLAttributes<HTMLButtonElement> & { className?: string; asChild?: boolean }
+  ButtonHTMLAttributes<HTMLButtonElement> & {
+    className?: string;
+    asChild?: boolean;
+    variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+    size?: 'default' | 'xs' | 'sm' | 'lg' | 'icon' | 'icon-xs' | 'icon-sm' | 'icon-lg';
+  }
 >;
 
 declare const AlertDialogCancel: React.FC<
-  ButtonHTMLAttributes<HTMLButtonElement> & { className?: string; asChild?: boolean }
+  ButtonHTMLAttributes<HTMLButtonElement> & {
+    className?: string;
+    asChild?: boolean;
+    variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+    size?: 'default' | 'xs' | 'sm' | 'lg' | 'icon' | 'icon-xs' | 'icon-sm' | 'icon-lg';
+  }
 >;
 
 declare const AlertDialogMedia: React.FC<

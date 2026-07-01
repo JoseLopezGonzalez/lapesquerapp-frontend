@@ -27,11 +27,41 @@ export interface Order {
   grossMargin?: number | null;
   marginPercentage?: number | null;
   marginPerKg?: number | null;
+  auxiliaryLines?: AuxiliaryOrderLine[];
+  auxiliarySubtotal?: number | null;
+  auxiliaryTotal?: number | null;
   [key: string]: unknown;
 }
 
 /** Order planned product detail payload */
 export interface OrderPlannedProductDetailPayload {
+  [key: string]: unknown;
+}
+
+/** Auxiliary order line — línea de venta directa (nieve, envases, palets, servicios) */
+export interface AuxiliaryOrderLine {
+  id: number | string;
+  orderId?: number | string;
+  auxiliaryProduct?: { id: number | string; name: string } | null;
+  description?: string | null;
+  effectiveDescription?: string;
+  quantity?: string | number;
+  unit?: string;
+  unitPrice?: string | number;
+  tax?: { id: number | string; name?: string; rate?: number } | null;
+  subtotal?: number;
+  total?: number;
+  [key: string]: unknown;
+}
+
+/** Auxiliary order line payload for create/update */
+export interface AuxiliaryOrderLinePayload {
+  auxiliaryProductId?: number | string | null;
+  description?: string | null;
+  quantity?: number | string;
+  unit?: string;
+  unitPrice?: number | string;
+  taxId?: number | string | null;
   [key: string]: unknown;
 }
 
@@ -497,6 +527,114 @@ export async function createOrderPlannedProductDetail(
 }
 
 /**
+ * Fetches the auxiliary lines of an order.
+ */
+export async function getOrderAuxiliaryLines(orderId: string): Promise<AuxiliaryOrderLine[]> {
+  const token = await getAuthToken();
+  const response = await fetchWithTenant(`${API_URL_V2}orders/${orderId}/auxiliary-lines`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      Authorization: `Bearer ${token}`,
+      'User-Agent': getUserAgent(),
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(getErrorMessage(errorData) || 'Error al obtener las líneas auxiliares');
+  }
+
+  const data = await response.json();
+  return data.data;
+}
+
+/**
+ * Creates an auxiliary line for an order.
+ */
+export async function createOrderAuxiliaryLine(
+  orderId: string,
+  lineData: AuxiliaryOrderLinePayload
+): Promise<AuxiliaryOrderLine> {
+  const token = await getAuthToken();
+  const response = await fetchWithTenant(`${API_URL_V2}orders/${orderId}/auxiliary-lines`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      Authorization: `Bearer ${token}`,
+      'User-Agent': getUserAgent(),
+    },
+    body: JSON.stringify(lineData),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(getErrorMessage(errorData) || 'Error al crear la línea auxiliar');
+  }
+
+  const data = await response.json();
+  return data.data;
+}
+
+/**
+ * Updates an auxiliary line of an order.
+ */
+export async function updateOrderAuxiliaryLine(
+  orderId: string,
+  lineId: string,
+  lineData: AuxiliaryOrderLinePayload
+): Promise<AuxiliaryOrderLine> {
+  const token = await getAuthToken();
+  const response = await fetchWithTenant(
+    `${API_URL_V2}orders/${orderId}/auxiliary-lines/${lineId}`,
+    {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Authorization: `Bearer ${token}`,
+        'User-Agent': getUserAgent(),
+      },
+      body: JSON.stringify(lineData),
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(getErrorMessage(errorData) || 'Error al actualizar la línea auxiliar');
+  }
+
+  const data = await response.json();
+  return data.data;
+}
+
+/**
+ * Deletes an auxiliary line of an order.
+ */
+export async function deleteOrderAuxiliaryLine(orderId: string, lineId: string): Promise<void> {
+  const token = await getAuthToken();
+  const response = await fetchWithTenant(
+    `${API_URL_V2}orders/${orderId}/auxiliary-lines/${lineId}`,
+    {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Authorization: `Bearer ${token}`,
+        'User-Agent': getUserAgent(),
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(getErrorMessage(errorData) || 'Error al eliminar la línea auxiliar');
+  }
+}
+
+/**
  * Updates the status of an order.
  */
 export async function setOrderStatus(orderId: string, status: number): Promise<unknown> {
@@ -747,9 +885,14 @@ export async function getOrdersTotalNetWeightStats(params: {
 export async function getOrdersTotalAmountStats(params: {
   dateFrom: string;
   dateTo: string;
+  includeAuxiliary?: boolean;
 }): Promise<unknown> {
   const token = await getAuthToken();
-  const query = new URLSearchParams(params);
+  const { includeAuxiliary, ...rest } = params;
+  const query = new URLSearchParams(rest);
+  if (includeAuxiliary) {
+    query.set('includeAuxiliary', 'true');
+  }
   const response = await fetchWithTenant(
     `${API_URL_V2}statistics/orders/total-amount?${query.toString()}`,
     {
@@ -766,6 +909,173 @@ export async function getOrdersTotalAmountStats(params: {
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(getErrorMessage(errorData) || 'Error al obtener el importe total vendido');
+  }
+
+  return response.json();
+}
+
+/** Auxiliary lines statistics response — total amount with previous-year comparison */
+export interface AuxiliaryLinesTotalAmountStats {
+  value: number;
+  subtotal: number;
+  tax: number;
+  comparisonValue: number | null;
+  comparisonSubtotal: number | null;
+  comparisonTax: number | null;
+  percentageChange: number | null;
+  range: { from: string; to: string; fromPrev: string; toPrev: string };
+}
+
+/** Auxiliary lines statistics response — ranking by product */
+export interface AuxiliaryLinesByProductStat {
+  name: string;
+  quantity: number;
+  unit: string;
+  subtotal: number;
+}
+
+/** Auxiliary lines statistics response — ranking by customer */
+export interface AuxiliaryLinesByCustomerStat {
+  customerName: string;
+  subtotal: number;
+  total: number;
+}
+
+/** Auxiliary lines statistics response — time series point */
+export interface AuxiliaryLinesChartPoint {
+  date: string;
+  subtotal: number;
+  total: number;
+}
+
+/**
+ * Fetches total amount stats for auxiliary lines, with previous-year comparison.
+ */
+export async function getAuxiliaryLinesTotalAmountStats(params: {
+  dateFrom: string;
+  dateTo: string;
+}): Promise<AuxiliaryLinesTotalAmountStats> {
+  const token = await getAuthToken();
+  const query = new URLSearchParams(params);
+  const response = await fetchWithTenant(
+    `${API_URL_V2}statistics/auxiliary-lines/total-amount?${query.toString()}`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Authorization: `Bearer ${token}`,
+        'User-Agent': getUserAgent(),
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      getErrorMessage(errorData) || 'Error al obtener el importe total de líneas auxiliares'
+    );
+  }
+
+  return response.json();
+}
+
+/**
+ * Fetches auxiliary lines ranking by product.
+ */
+export async function getAuxiliaryLinesByProductStats(params: {
+  dateFrom: string;
+  dateTo: string;
+}): Promise<AuxiliaryLinesByProductStat[]> {
+  const token = await getAuthToken();
+  const query = new URLSearchParams(params);
+  const response = await fetchWithTenant(
+    `${API_URL_V2}statistics/auxiliary-lines/by-product?${query.toString()}`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Authorization: `Bearer ${token}`,
+        'User-Agent': getUserAgent(),
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      getErrorMessage(errorData) || 'Error al obtener el ranking de líneas auxiliares por artículo'
+    );
+  }
+
+  return response.json();
+}
+
+/**
+ * Fetches auxiliary lines ranking by customer.
+ */
+export async function getAuxiliaryLinesByCustomerStats(params: {
+  dateFrom: string;
+  dateTo: string;
+}): Promise<AuxiliaryLinesByCustomerStat[]> {
+  const token = await getAuthToken();
+  const query = new URLSearchParams(params);
+  const response = await fetchWithTenant(
+    `${API_URL_V2}statistics/auxiliary-lines/by-customer?${query.toString()}`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Authorization: `Bearer ${token}`,
+        'User-Agent': getUserAgent(),
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      getErrorMessage(errorData) || 'Error al obtener el ranking de líneas auxiliares por cliente'
+    );
+  }
+
+  return response.json();
+}
+
+/**
+ * Fetches auxiliary lines time series (chart data).
+ */
+export async function getAuxiliaryLinesChartData(params: {
+  dateFrom: string;
+  dateTo: string;
+  groupBy?: 'day' | 'week' | 'month';
+}): Promise<AuxiliaryLinesChartPoint[]> {
+  const token = await getAuthToken();
+  const query = new URLSearchParams({
+    dateFrom: params.dateFrom,
+    dateTo: params.dateTo,
+    groupBy: params.groupBy ?? 'day',
+  });
+  const response = await fetchWithTenant(
+    `${API_URL_V2}statistics/auxiliary-lines/chart-data?${query.toString()}`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Authorization: `Bearer ${token}`,
+        'User-Agent': getUserAgent(),
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      getErrorMessage(errorData) || 'Error al obtener la serie temporal de líneas auxiliares'
+    );
   }
 
   return response.json();

@@ -16,6 +16,24 @@ const plannedProductSchema = z.object({
     .refine((val) => val != null && val !== '', 'IVA es requerido'),
 });
 
+const auxiliaryLineSchema = z
+  .object({
+    auxiliaryProduct: z.string().optional(),
+    description: z.string().optional(),
+    quantity: z
+      .union([z.number().min(0.01, 'Cantidad debe ser mayor que 0'), z.string()])
+      .pipe(z.coerce.number().min(0.01, 'Cantidad debe ser mayor que 0')),
+    unit: z.string().min(1, 'Unidad es requerida'),
+    unitPrice: z
+      .union([z.number().min(0, 'Precio no puede ser negativo'), z.string()])
+      .pipe(z.coerce.number().min(0, 'Precio no puede ser negativo')),
+    tax: z.union([z.string(), z.number()]).optional(),
+  })
+  .refine((line) => Boolean(line.auxiliaryProduct) || Boolean(line.description), {
+    message: 'Selecciona un artículo del catálogo o escribe una descripción',
+    path: ['description'],
+  });
+
 export const orderCreateSchema = z.object({
   customer: z.string().min(1, 'El cliente es obligatorio'),
   entryDate: z.date({ required_error: 'La fecha de entrada es obligatoria' }),
@@ -38,7 +56,11 @@ export const orderCreateSchema = z.object({
   accountingNotes: z.string().max(500, 'Máximo 500 caracteres').optional(),
   emails: z.array(z.string().email('Correo inválido')).min(1, 'Debe ingresar al menos un correo'),
   ccEmails: z.array(z.string().email('Correo inválido')),
-  plannedProducts: z.array(plannedProductSchema).min(1, 'Al menos un producto'),
+  plannedProducts: z.array(plannedProductSchema),
+  auxiliaryLines: z.array(auxiliaryLineSchema),
+}).refine((data) => data.plannedProducts.length > 0 || data.auxiliaryLines.length > 0, {
+  message: 'Añade al menos un producto previsto o un artículo auxiliar',
+  path: ['plannedProducts'],
 });
 
 export type OrderCreateFormData = z.input<typeof orderCreateSchema>;

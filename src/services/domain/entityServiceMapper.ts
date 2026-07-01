@@ -30,6 +30,7 @@ import { customerService } from './customers/customerService';
 import { incotermService } from './incoterms/incotermService';
 import { salespersonService } from './salespeople/salespersonService';
 import { transportService } from './transports/transportService';
+import { auxiliaryProductService } from './auxiliary-products/auxiliaryProductService';
 import { fieldOperatorAdminService } from './field-operators/fieldOperatorService';
 // TODO: migrate to .ts
 import { captureZoneService } from './capture-zones/captureZoneService';
@@ -88,6 +89,7 @@ const entityServiceMap: Record<string, DomainService> = {
   'prospect-categories': prospectCategoryService,
   species: speciesService,
   transports: transportService,
+  'auxiliary-products': auxiliaryProductService,
   taxes: taxService,
   incoterms: incotermService,
   salespeople: salespersonService,

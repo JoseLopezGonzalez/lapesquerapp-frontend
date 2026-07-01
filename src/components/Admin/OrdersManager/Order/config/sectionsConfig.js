@@ -6,6 +6,7 @@ import { lazy } from 'react';
 import {
   Info,
   Package,
+  PackagePlus,
   ListCollapse,
   Factory,
   ChartColumn,
@@ -28,6 +29,7 @@ const OrderProduction = lazy(() => import('../OrderProduction'));
 const OrderCostAnalysis = lazy(() => import('../OrderCostAnalysis'));
 const OrderProductDetails = lazy(() => import('../OrderProductDetails'));
 const OrderPlannedProductDetails = lazy(() => import('../OrderPlannedProductDetails'));
+const OrderAuxiliaryLines = lazy(() => import('../OrderAuxiliaryLines'));
 const OrderIncident = lazy(() => import('../OrderIncident'));
 const OrderCustomerHistory = lazy(() => import('../OrderCustomerHistory'));
 const OrderAttachments = lazy(() => import('../OrderAttachments'));
@@ -47,6 +49,13 @@ export const SECTIONS_CONFIG = [
     component: OrderProductDetails,
     lazy: true,
     icon: ListCollapse,
+  },
+  {
+    id: 'auxiliary',
+    title: 'Otros artículos',
+    component: OrderAuxiliaryLines,
+    lazy: true,
+    icon: PackagePlus,
   },
   {
     id: 'analysis',

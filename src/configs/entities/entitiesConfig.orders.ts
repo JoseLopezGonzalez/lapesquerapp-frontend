@@ -653,6 +653,167 @@ const ordersConfig: Record<string, any> = {
       errorMessage: 'Error al actualizar el incoterm',
     },
   },
+  /* auxiliaryProducts */
+  'auxiliary-products': {
+    title: 'Productos Auxiliares',
+    description: 'Gestiona el catálogo de artículos no pesqueros (nieve, envases, palets, servicios).',
+    emptyState: {
+      title: 'No existen productos auxiliares según los filtros',
+      description: 'Ajusta los filtros o crea un nuevo producto auxiliar.',
+    },
+    endpoint: 'auxiliary-products',
+    viewRoute: '/admin/auxiliary-products/:id',
+    deleteEndpoint: 'auxiliary-products/:id',
+    filtersGroup: {
+      search: {
+        label: 'Buscar',
+        filters: [
+          {
+            name: 'name',
+            label: 'Nombre',
+            type: 'search',
+            placeholder: 'Buscar por nombre',
+          },
+        ],
+      },
+      groups: [
+        {
+          name: 'generals',
+          label: 'Generales',
+          filters: [
+            {
+              name: 'ids',
+              label: 'IDs',
+              type: 'textAccumulator',
+              placeholder: 'Buscar por ID',
+            },
+            {
+              name: 'name',
+              label: 'Nombre',
+              type: 'text',
+              placeholder: 'Buscar por nombre',
+            },
+            {
+              name: 'reference',
+              label: 'Referencia',
+              type: 'text',
+              placeholder: 'Buscar por referencia',
+            },
+            {
+              name: 'active',
+              label: 'Estado',
+              type: 'pairSelectBoxes',
+              options: [
+                { name: '1', label: 'Activos' },
+                { name: '0', label: 'Inactivos' },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    table: {
+      headers: [
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
+        { name: 'name', label: 'Nombre', type: 'text', path: 'name' },
+        { name: 'reference', label: 'Referencia', type: 'text', path: 'reference', hideOnMobile: true },
+        { name: 'unit', label: 'Unidad', type: 'text', path: 'unit' },
+        { name: 'defaultPrice', label: 'Precio orientativo', type: 'text', path: 'defaultPrice' },
+        {
+          name: 'active',
+          label: 'Activo',
+          type: 'badge',
+          path: 'active',
+          options: {
+            true: { label: 'Activo', color: 'success', outline: true },
+            false: { label: 'Inactivo', color: 'secondary', outline: true },
+          },
+        },
+        {
+          name: 'created_at',
+          label: 'Fecha de creación',
+          type: 'date',
+          path: 'createdAt',
+          hideOnMobile: true,
+        },
+      ],
+    },
+    createForm: {
+      title: 'Nuevo Producto Auxiliar',
+      endpoint: 'auxiliary-products',
+      method: 'POST',
+      successMessage: 'Producto auxiliar creado con éxito',
+      errorMessage: 'Error al crear el producto auxiliar',
+    },
+    beforeSubmit: {
+      booleanFields: ['active'],
+    },
+    fields: [
+      {
+        name: 'name',
+        label: 'Nombre',
+        type: 'text',
+        placeholder: 'Nieve granulada, Tarrina 500g, Palet europeo...',
+        validation: {
+          required: 'El nombre es obligatorio',
+          maxLength: { value: 255, message: 'Máximo 255 caracteres' },
+        },
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+      },
+      {
+        name: 'reference',
+        label: 'Referencia',
+        type: 'text',
+        placeholder: 'Código interno o comercial',
+        cols: { sm: 6, md: 3, lg: 3, xl: 3 },
+      },
+      {
+        name: 'unit',
+        label: 'Unidad',
+        type: 'text',
+        placeholder: 'kg, ud, saco, palet, servicio...',
+        defaultValue: 'ud',
+        validation: {
+          required: 'La unidad es obligatoria',
+          maxLength: { value: 50, message: 'Máximo 50 caracteres' },
+        },
+        cols: { sm: 6, md: 3, lg: 3, xl: 3 },
+      },
+      {
+        name: 'defaultPrice',
+        label: 'Precio orientativo',
+        type: 'text',
+        placeholder: '0.00',
+        cols: { sm: 6, md: 3, lg: 3, xl: 3 },
+      },
+      {
+        name: 'active',
+        label: 'Activo',
+        type: 'select',
+        placeholder: 'Estado',
+        defaultValue: '1',
+        options: [
+          { value: '1', label: 'Activo' },
+          { value: '0', label: 'Inactivo' },
+        ],
+        cols: { sm: 6, md: 3, lg: 3, xl: 3 },
+      },
+      {
+        name: 'notes',
+        label: 'Notas',
+        type: 'textarea',
+        placeholder: 'Notas internas opcionales',
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+      },
+    ],
+    editForm: {
+      title: 'Editar Producto Auxiliar',
+      endpoint: 'auxiliary-products',
+      method: 'PUT',
+      successMessage: 'Producto auxiliar actualizado con éxito',
+      errorMessage: 'Error al actualizar el producto auxiliar',
+    },
+  },
   /* salespeople */
   'payment-terms': {
     title: 'Métodos de pago',

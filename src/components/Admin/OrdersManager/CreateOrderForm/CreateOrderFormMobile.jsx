@@ -139,6 +139,13 @@ const CreateOrderFormMobile = ({
   taxLoading,
   append,
   remove,
+  auxiliaryFields,
+  appendAuxiliary,
+  removeAuxiliary,
+  auxiliaryProductOptions,
+  auxiliaryProductOptionsMap,
+  auxiliaryProductsLoading,
+  setValue,
   onClose,
   loading,
 }) => {
@@ -169,12 +176,14 @@ const CreateOrderFormMobile = ({
     Observaciones: 'Notas para producción y contabilidad',
     Emails: 'Direcciones de correo para notificaciones',
     'Productos previstos': 'Añade los productos del pedido',
+    'Otros artículos': 'Nieve, envases, palets u otros artículos (opcional)',
   };
 
-  // Crear pasos: cada formGroup + paso final de productos
+  // Crear pasos: cada formGroup + paso de productos + paso final de otros artículos
   const steps = [
     ...formGroups.map((group) => ({ type: 'formGroup', data: group })),
     { type: 'products', label: 'Productos previstos' },
+    { type: 'auxiliaryLines', label: 'Otros artículos' },
   ];
 
   const totalSteps = steps.length;
@@ -326,6 +335,9 @@ const CreateOrderFormMobile = ({
                 if (step.type === 'products' && formErrors.plannedProducts) {
                   return true;
                 }
+                if (step.type === 'auxiliaryLines' && formErrors.auxiliaryLines) {
+                  return true;
+                }
                 return false;
               });
               if (firstErrorStep !== -1) {
@@ -398,7 +410,7 @@ const CreateOrderFormMobile = ({
                         })}
                       </div>
                     </div>
-                  ) : (
+                  ) : currentStepData.type === 'products' ? (
                     <div className="w-full">
                       <div className="flex flex-col gap-5">
                         {fields.map((item, index) => (
@@ -579,6 +591,212 @@ const CreateOrderFormMobile = ({
                         >
                           <PlusCircle className="mr-2 h-5 w-5" />
                           Añadir producto
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="w-full">
+                      <div className="flex flex-col gap-5">
+                        {auxiliaryFields.map((item, index) => (
+                          <motion.div
+                            key={item.id}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                            className="border-border/50 bg-card/50 flex flex-col gap-4 rounded-xl border p-4"
+                          >
+                            <div className="mb-1 flex items-center justify-between">
+                              <h4 className="text-foreground text-sm font-semibold">
+                                Artículo #{index + 1}
+                              </h4>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeAuxiliary(index)}
+                                className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 px-2"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+
+                            <div className="grid gap-4">
+                              <div className="grid gap-2.5">
+                                <Label className="text-foreground text-sm font-semibold">
+                                  Artículo del catálogo (opcional)
+                                </Label>
+                                <div className="[&_button]:!h-12">
+                                  <Controller
+                                    control={control}
+                                    name={`auxiliaryLines.${index}.auxiliaryProduct`}
+                                    render={({ field: { onChange, value } }) => (
+                                      <Combobox
+                                        options={auxiliaryProductOptions}
+                                        value={value}
+                                        onChange={(newValue) => {
+                                          onChange(newValue);
+                                          const matched = auxiliaryProductOptionsMap.get(
+                                            String(newValue)
+                                          );
+                                          if (matched?.unit) {
+                                            setValue(`auxiliaryLines.${index}.unit`, matched.unit);
+                                          }
+                                          if (matched?.defaultPrice != null) {
+                                            setValue(
+                                              `auxiliaryLines.${index}.unitPrice`,
+                                              String(matched.defaultPrice)
+                                            );
+                                          }
+                                        }}
+                                        placeholder="Selecciona un artículo"
+                                        searchPlaceholder="Buscar artículo..."
+                                        notFoundMessage="No se encontraron artículos"
+                                        loading={auxiliaryProductsLoading}
+                                        onOpenChange={setIsComboboxOpen}
+                                      />
+                                    )}
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="grid gap-2.5">
+                                <Label className="text-foreground text-sm font-semibold">
+                                  Descripción libre
+                                </Label>
+                                <Input
+                                  {...register(`auxiliaryLines.${index}.description`)}
+                                  placeholder="Nieve, tarrina 500g, palet..."
+                                  className="h-12 text-base"
+                                />
+                                {errors.auxiliaryLines?.[index]?.description && (
+                                  <p className="text-sm font-medium text-red-500">
+                                    {errors.auxiliaryLines[index].description.message}
+                                  </p>
+                                )}
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-3">
+                                <div className="grid gap-2.5">
+                                  <Label className="text-foreground text-sm font-semibold">
+                                    Cantidad
+                                  </Label>
+                                  <Input
+                                    type="number"
+                                    step="any"
+                                    {...register(`auxiliaryLines.${index}.quantity`, {
+                                      valueAsNumber: true,
+                                    })}
+                                    placeholder="0.00"
+                                    className="h-12 text-base"
+                                  />
+                                  {errors.auxiliaryLines?.[index]?.quantity && (
+                                    <p className="text-sm font-medium text-red-500">
+                                      {errors.auxiliaryLines[index].quantity.message}
+                                    </p>
+                                  )}
+                                </div>
+
+                                <div className="grid gap-2.5">
+                                  <Label className="text-foreground text-sm font-semibold">
+                                    Unidad
+                                  </Label>
+                                  <Input
+                                    {...register(`auxiliaryLines.${index}.unit`)}
+                                    placeholder="kg, ud, palet..."
+                                    className="h-12 text-base"
+                                  />
+                                  {errors.auxiliaryLines?.[index]?.unit && (
+                                    <p className="text-sm font-medium text-red-500">
+                                      {errors.auxiliaryLines[index].unit.message}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-3">
+                                <div className="grid gap-2.5">
+                                  <Label className="text-foreground text-sm font-semibold">
+                                    Precio unitario
+                                  </Label>
+                                  <Input
+                                    type="number"
+                                    step="any"
+                                    {...register(`auxiliaryLines.${index}.unitPrice`, {
+                                      valueAsNumber: true,
+                                    })}
+                                    placeholder="0.00"
+                                    className="h-12 text-base"
+                                  />
+                                  {errors.auxiliaryLines?.[index]?.unitPrice && (
+                                    <p className="text-sm font-medium text-red-500">
+                                      {errors.auxiliaryLines[index].unitPrice.message}
+                                    </p>
+                                  )}
+                                </div>
+
+                                <div className="grid gap-2.5">
+                                  <Label className="text-foreground text-sm font-semibold">
+                                    IVA
+                                  </Label>
+                                  <Controller
+                                    control={control}
+                                    name={`auxiliaryLines.${index}.tax`}
+                                    render={({ field }) => {
+                                      const currentValue = field.value ? String(field.value) : '';
+
+                                      const handleValueChange = (newValue) => {
+                                        const taxOption = taxOptions.find(
+                                          (t) => String(t.value) === String(newValue)
+                                        );
+                                        const finalValue = taxOption ? taxOption.value : newValue;
+                                        field.onChange(finalValue);
+                                      };
+
+                                      return (
+                                        <Select
+                                          value={currentValue}
+                                          onValueChange={handleValueChange}
+                                        >
+                                          <SelectTrigger
+                                            loading={taxLoading}
+                                            className="h-12 text-base"
+                                          >
+                                            <SelectValue placeholder="IVA" loading={taxLoading} />
+                                          </SelectTrigger>
+                                          <SelectContent loading={taxLoading} className="z-[9999]">
+                                            {taxOptions.map((tax) => (
+                                              <SelectItem key={tax.value} value={String(tax.value)}>
+                                                {tax.label}
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                      );
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </motion.div>
+                        ))}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() =>
+                            appendAuxiliary({
+                              auxiliaryProduct: '',
+                              description: '',
+                              quantity: '',
+                              unit: '',
+                              unitPrice: '',
+                              tax: '',
+                            })
+                          }
+                          className="h-12 w-full border-dashed text-base hover:border-solid"
+                          style={{ pointerEvents: isComboboxOpen ? 'none' : 'auto' }}
+                        >
+                          <PlusCircle className="mr-2 h-5 w-5" />
+                          Añadir artículo
                         </Button>
                       </div>
                     </div>

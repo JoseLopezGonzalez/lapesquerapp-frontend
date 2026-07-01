@@ -340,8 +340,12 @@ export const storeQueryKeys = {
 export const orderStatKeys = {
   totalNetWeight: (tenantId: string | null | undefined, dateFrom: string, dateTo: string) =>
     ['orders', 'totalNetWeight', tenantId ?? 'unknown', dateFrom, dateTo] as const,
-  totalAmount: (tenantId: string | null | undefined, dateFrom: string, dateTo: string) =>
-    ['orders', 'totalAmount', tenantId ?? 'unknown', dateFrom, dateTo] as const,
+  totalAmount: (
+    tenantId: string | null | undefined,
+    dateFrom: string,
+    dateTo: string,
+    includeAuxiliary = false
+  ) => ['orders', 'totalAmount', tenantId ?? 'unknown', dateFrom, dateTo, includeAuxiliary] as const,
   ranking: (
     tenantId: string | null | undefined,
     dateFrom: string,
@@ -387,6 +391,21 @@ export const orderStatKeys = {
     ] as const,
   profitabilityProducts: (tenantId: string | null | undefined, dateFrom: string, dateTo: string) =>
     ['orders', 'profitabilityProducts', tenantId ?? 'unknown', dateFrom, dateTo] as const,
+};
+
+export const auxiliaryLineStatKeys = {
+  totalAmount: (tenantId: string | null | undefined, dateFrom: string, dateTo: string) =>
+    ['auxiliary-lines', 'totalAmount', tenantId ?? 'unknown', dateFrom, dateTo] as const,
+  byProduct: (tenantId: string | null | undefined, dateFrom: string, dateTo: string) =>
+    ['auxiliary-lines', 'byProduct', tenantId ?? 'unknown', dateFrom, dateTo] as const,
+  byCustomer: (tenantId: string | null | undefined, dateFrom: string, dateTo: string) =>
+    ['auxiliary-lines', 'byCustomer', tenantId ?? 'unknown', dateFrom, dateTo] as const,
+  chartData: (
+    tenantId: string | null | undefined,
+    dateFrom: string,
+    dateTo: string,
+    groupBy: string
+  ) => ['auxiliary-lines', 'chartData', tenantId ?? 'unknown', dateFrom, dateTo, groupBy] as const,
 };
 
 export const agendaKeys = {
@@ -453,6 +472,11 @@ export const offerKeys = {
     ['crm', 'offers', 'list', tenantId ?? 'unknown', normalizeQueryParams(params)] as const,
   detail: (tenantId: string | null | undefined, id: number | string | null | undefined) =>
     ['crm', 'offer', 'detail', tenantId ?? 'unknown', id] as const,
+};
+
+export const auxiliaryProductKeys = {
+  options: (tenantId: string | null | undefined) =>
+    ['auxiliary-products', 'options', tenantId ?? 'unknown'] as const,
 };
 
 export const incotermQueryKeys = {

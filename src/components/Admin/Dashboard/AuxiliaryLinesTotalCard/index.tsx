@@ -6,22 +6,22 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
 import { TrendingUp, TrendingDown, Info, Calendar } from 'lucide-react';
-import { useOrdersTotalAmountStats } from '@/hooks/useOrdersStats';
+import { useAuxiliaryLinesTotalAmountStats } from '@/hooks/useOrdersStats';
 import { formatDecimalCurrency } from '@/helpers/formats/numbers/formatNumbers';
 
-const formatDateRange = (from, to) => {
+const formatDateRange = (from: string, to: string) => {
   const f = new Date(from).toLocaleDateString('es-ES');
   const t = new Date(to).toLocaleDateString('es-ES');
   return `${f} → ${t}`;
 };
 
-export function TotalAmountSoldCard() {
-  const { data, isLoading } = useOrdersTotalAmountStats();
+export function AuxiliaryLinesTotalCard() {
+  const { data, isLoading } = useAuxiliaryLinesTotalAmountStats();
 
   const percentage = data?.percentageChange;
   const hasValidPercentage = typeof percentage === 'number' && !isNaN(percentage);
-  const isUp = hasValidPercentage && percentage > 0;
-  const isDown = hasValidPercentage && percentage < 0;
+  const isUp = hasValidPercentage && (percentage as number) > 0;
+  const isDown = hasValidPercentage && (percentage as number) < 0;
   const TrendIcon = isUp ? TrendingUp : isDown ? TrendingDown : null;
   const trendColor = isUp ? 'text-green-600' : isDown ? 'text-red-600' : '';
 
@@ -48,22 +48,22 @@ export function TotalAmountSoldCard() {
     <Card className="h-full rounded-2xl border bg-gradient-to-t from-neutral-100 to-white p-4 shadow-sm dark:from-neutral-800 dark:to-neutral-900">
       <CardHeader className="p-0 pb-2">
         <div className="flex items-center justify-between">
-          <CardDescription>Importe Total de Ventas</CardDescription>
-          {hasValidPercentage && (
+          <CardDescription>Importe Total de Otros Artículos</CardDescription>
+          {hasValidPercentage && TrendIcon && (
             <Badge
               variant="outline"
               className={`flex items-center gap-1 px-2 py-1 text-xs ${trendColor}`}
             >
               <TrendIcon className="h-3 w-3" />
-              {percentage > 0 ? '+' : ''}
-              {percentage.toFixed(1)}%
+              {(percentage as number) > 0 ? '+' : ''}
+              {(percentage as number).toFixed(1)}%
             </Badge>
           )}
         </div>
 
         <div className="flex items-start gap-2">
           <CardTitle>
-            {data?.value !== null ? (
+            {data ? (
               <div>
                 <h1 className="text-3xl font-medium tracking-tight">
                   {formatDecimalCurrency(data.subtotal)}
@@ -76,7 +76,7 @@ export function TotalAmountSoldCard() {
               <span className="text-muted-foreground text-base">Sin datos</span>
             )}
           </CardTitle>
-          {data?.value !== null && (
+          {data && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <span className="mt-1.5 shrink-0 cursor-pointer">
@@ -128,13 +128,13 @@ export function TotalAmountSoldCard() {
                       <div className="flex justify-between text-sm">
                         <span>Subtotal</span>
                         <span className="font-medium">
-                          {formatDecimalCurrency(data.comparisonSubtotal)}
+                          {formatDecimalCurrency(data.comparisonSubtotal ?? 0)}
                         </span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span>IVA</span>
                         <span className="font-medium">
-                          {formatDecimalCurrency(data.comparisonTax)}
+                          {formatDecimalCurrency(data.comparisonTax ?? 0)}
                         </span>
                       </div>
                     </div>
