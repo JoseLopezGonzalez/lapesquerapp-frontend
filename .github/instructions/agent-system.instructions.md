@@ -11,6 +11,7 @@ Use it when working on:
 - GAP Discovery, Implementation or Audit
 - Code audits
 - UI/mobile audits
+- Design-quality audits
 - Mobile UI workflows
 - Idea parking or promotion
 - Project memory / system learner updates

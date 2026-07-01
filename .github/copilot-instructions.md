@@ -40,8 +40,8 @@ Check relevant documentation in:
 
 ## Agent workflows
 
-Use `docs/agent-system/` for GAP workflows, audits, mobile UI, idea parking and
-project memory. Command mapping is documented in
+Use `docs/agent-system/` for GAP workflows, code/UI/design audits, mobile UI,
+idea parking and project memory. Command mapping is documented in
 `docs/agent-system/commands/README.md`.
 
 Do not modify `.claude/**` by default. The only allowed exceptions are explicit

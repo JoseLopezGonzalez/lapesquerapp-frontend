@@ -10,6 +10,7 @@ Use these workflows when the user requests audits or review passes:
 
 - Code audit: `docs/agent-system/workflows/code-audit.md`
 - UI audit: `docs/agent-system/workflows/ui-audit.md`
+- Design audit: `docs/agent-system/workflows/design-audit.md`
 - Mobile UI: `docs/agent-system/workflows/mobile-ui.md`
 
 ## Rules

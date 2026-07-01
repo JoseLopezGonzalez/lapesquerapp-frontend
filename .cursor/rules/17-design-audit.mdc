@@ -1,0 +1,30 @@
+---
+description: Design-quality audit modes: visual craft, copy quality and cross-view consistency
+globs: "src/**/*.{js,jsx,ts,tsx},docs/agent-system/**/*.md"
+alwaysApply: false
+---
+
+# Design Audit — La PesquerApp
+
+Use this when the user invokes:
+
+- `/audit-design visual [module|route]`
+- `/audit-design copy [module]`
+- `/audit-design consistency [family]`
+
+Follow:
+
+- `docs/agent-system/workflows/design-audit.md`
+- `docs/agent-system/rules/design.md`
+- `docs/ai-context/02-ui-conventions.md`
+- `docs/ai-context/06-design-system.md`
+
+## Rules
+
+- Audit only; do not implement fixes unless Jose explicitly asks.
+- Visual mode prefers screenshots, but heuristic findings must be tagged as
+  heuristic.
+- Do not download Playwright browser binaries without Jose's approval.
+- Copy mode reviews terminology, tone, capitalization and message clarity.
+- Consistency mode compares similar UI families and defends the majority pattern.
+- Offer GAP creation only after Jose approves findings.

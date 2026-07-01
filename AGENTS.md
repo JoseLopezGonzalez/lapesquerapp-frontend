@@ -106,6 +106,7 @@ Codex skill/workflow:
 | `/audit-code quality\|migrate\|arch [scope]` | Use `lapesquerapp-code-audit`. |
 | `/audit-mobile [scope]` | Use `lapesquerapp-ui-audit` in mobile mode. |
 | `/audit-desktop [scope]` | Use `lapesquerapp-ui-audit` in desktop mode. |
+| `/audit-design visual\|copy\|consistency [scope]` | Use `lapesquerapp-design-audit`. |
 | `/mobile [view]` | Use `lapesquerapp-mobile-ui`. |
 | `/idea [text]` | Use `lapesquerapp-ideas` capture mode. |
 | `/ideas [module]` | Use `lapesquerapp-ideas` list mode. |

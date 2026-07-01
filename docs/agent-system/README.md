@@ -19,7 +19,7 @@ instructions.
 | Path | Purpose |
 | --- | --- |
 | `rules/` | Project rules grouped by technical area. |
-| `workflows/` | Multi-step procedures such as GAP, audit, mobile, ideas and memory. |
+| `workflows/` | Multi-step procedures such as GAP, code/UI/design audit, mobile, ideas and memory. |
 | `commands/` | Claude-like command mapping for tools that do not have slash commands. |
 | `agents/` | Portable role definitions. |
 | `memory/` | Tool-neutral institutional memory. |

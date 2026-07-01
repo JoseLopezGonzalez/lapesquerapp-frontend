@@ -22,7 +22,8 @@ tools fragile and keep Claude-specific files as the only source of truth.
 A neutral layer lets the project gradually standardize agent behavior across
 tools while keeping current Claude Code workflows stable. Codex receives
 first-class skills in `.agents/skills/`; Cursor receives `.cursor/rules/`
-adapters; Copilot receives `.github/instructions/` adapters. All point to
+adapters; Copilot receives `.github/instructions/` adapters. GAP, code audit,
+UI audit, design audit, mobile, ideas and memory workflows all point to
 `docs/agent-system/` rather than duplicating long protocols.
 
 ## Alternatives considered

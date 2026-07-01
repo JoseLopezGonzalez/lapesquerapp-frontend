@@ -26,6 +26,9 @@ relevant neutral workflow.
 After adding or changing skills, start a fresh Codex session so the skill
 metadata is re-indexed.
 
+Design-quality audit is exposed through `lapesquerapp-design-audit` and the
+`/audit-design visual|copy|consistency` command family.
+
 ## Cursor
 
 Cursor uses:
@@ -33,6 +36,7 @@ Cursor uses:
 - `.cursor/rules/05-agent-system.mdc`
 - `.cursor/rules/15-gap-workflow.mdc`
 - `.cursor/rules/16-audit-workflows.mdc`
+- `.cursor/rules/17-design-audit.mdc`
 - Existing role-specific rules in `.cursor/rules/`
 
 Cursor rules point to `docs/agent-system/` so any model used inside Cursor can
