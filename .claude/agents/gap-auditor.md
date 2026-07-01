@@ -87,21 +87,35 @@ Si el veredicto visual es ❌, el GAP **no puede** moverse a `closed/` independi
 
 ---
 
-### 3c. Activación del UX Reviewer (obligatorio para todos los GAPs de UI)
+### 3c. Revisión UX (obligatoria para todos los GAPs de UI)
 
 Después de completar los checklists técnico y visual, determinar el modo de revisión UX:
 
-**Activar Full UX Review si CUALQUIERA de estos aplica:**
+**Requiere Full UX Review (invocar al agente `ux-reviewer` como subagente) si CUALQUIERA de estos aplica:**
 - El GAP introduce o modifica un flujo de usuario con 2+ pasos
 - El GAP afecta una entidad primaria (pedidos, palets, etiquetas, clientes, proveedores, rutas)
 - El GAP introduce un formulario nuevo, modal, wizard o interacción multi-estado
 - El GAP modifica navegación o routing
 - El GAP introduce cambios de permisos por rol
 
-**Activar Light UX Review si TODOS estos aplican:**
-- El cambio es solo visual, un fix de elemento único, un refactor interno, o un bug fix que restaura comportamiento existente
+**Light UX Review — hacerla tú mismo, sin invocar al `ux-reviewer` (todos los demás casos: cambio solo visual, fix de un único elemento, refactor interno, o bug fix que restaura comportamiento existente).** Ya tienes el contexto de `design-context.md` y el GAP cargados de los pasos anteriores — no hace falta un subagente aparte para 5 checks:
 
-Invocar al agente `ux-reviewer` con el modo determinado. El GAP **no puede** moverse a `closed/` hasta que el veredicto UX sea ✅ o ⚠️.
+```
+UX REVIEW — LIGHT
+═════════════════
+GAP: [número y título]
+Mode: Light (visual/cambio menor)
+
+[ ] El cambio es autoexplicativo para el usuario — no requiere instrucción
+[ ] No introduce una decisión nueva del usuario sin affordance adecuado
+[ ] Consistente con la UI circundante — sin ruptura visual brusca
+[ ] Si es interactivo: hover, focus y active states presentes
+[ ] Si cambió texto: el tono coincide con el resto de la interfaz
+
+VERDICT: ✅ APROBADO / ⚠️ APROBADO CON OBSERVACIONES / ❌ RECHAZADO
+```
+
+Solo invoca al subagente `ux-reviewer` cuando el caso califica como Full Review. El GAP **no puede** moverse a `closed/` hasta que el veredicto UX (propio o del subagente) sea ✅ o ⚠️.
 
 ---
 
@@ -210,5 +224,5 @@ Dejar el archivo en `.claude/gaps/in-progress/`. Decir al Implementador exactame
 - **NUNCA** mover a closed/ un GAP con criterios de aceptación no cumplidos
 - **NUNCA** mover a closed/ un GAP de UI con veredicto visual ❌
 - **NUNCA** mover a closed/ un GAP con veredicto UX ❌
-- **NUNCA** omitir la invocación al UX Reviewer — incluso el Light Review es obligatorio para todos los GAPs de UI
+- **NUNCA** omitir la Revisión UX — obligatoria para todos los GAPs de UI (Light la hace el propio Auditor, Full requiere invocar al subagente `ux-reviewer`)
 - **NUNCA** modificar el código de producción — solo el GAP.md

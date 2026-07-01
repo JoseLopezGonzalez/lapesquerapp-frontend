@@ -80,7 +80,24 @@ Wait for Jose's approval before starting Phase 2.
 
 ## Phase 2 — Audit Loop
 
-Process files in batches of 10. For each file run the checklist for the active mode.
+Process files in batches of 10. For each file, first classify it by type — hook /
+service / component / form / route — then run only the checklist sections that
+apply to that type. Do not run all sections against every file: a service file
+has no JSX to check against COMPONENTS, a component with no server-state query
+has nothing to check against TANSTACK QUERY, etc.
+
+```
+File type → applicable sections
+hook (src/hooks/**)          → TYPESCRIPT, REACT PATTERNS, TANSTACK QUERY, GENERAL
+service (src/services/**)    → HTTP & TENANT, TYPESCRIPT, GENERAL
+component (src/components/**, no form) → TYPESCRIPT, REACT PATTERNS, COMPONENTS, GENERAL
+form component                → above + FORMS
+route (src/app/**)           → TYPESCRIPT, REACT PATTERNS (Server/Client split), GENERAL
+```
+
+If a file doesn't cleanly fit one type (e.g. a component that also fetches
+directly, which is itself a HTTP & TENANT violation), flag that and apply the
+extra section just for that finding — don't apply the whole section speculatively.
 
 ### QUALITY checklist
 

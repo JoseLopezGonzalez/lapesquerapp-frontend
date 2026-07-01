@@ -94,34 +94,6 @@ Basada en `.claude/gaps/_template.md`. Campos obligatorios:
 
 ---
 
-## Escenarios comunes
-
-### Jose describe un bug
-
-→ Discovery dialoga, crea GAP con tipo "Bug" y prioridad según urgencia
-
-### Jose dice "impleméntalo" tras un GAP
-
-→ Implementador toma el GAP de `open/`, empieza el flujo
-
-### Implementador detecta que necesita tocar un archivo no previsto
-
-→ Para, explica a Jose, espera instrucción. **Nunca actúa solo.**
-
-### Auditor rechaza
-
-→ GAP queda en `in-progress/`. Implementador lee las observaciones y corrige. El ciclo se repite desde el paso de corrección.
-
-### Jose quiere cambiar algo de un GAP abierto
-
-→ Discovery lo revisa y actualiza el archivo en `open/` antes de que lo implemente el Implementador
-
-### Jose quiere ver el estado del proyecto
-
-→ Listar `open/` + `in-progress/` + contar `closed/`
-
----
-
 ## Principio rector
 
 Un GAP bien documentado vale más que una implementación rápida. Si el Discovery hace bien su trabajo, la implementación es mecánica y la auditoría es una formalidad. Si el Discovery falla, todo el ciclo se rompe.
