@@ -5,7 +5,7 @@
 - **Tipo:** Refactor
 - **Módulo:** Ventas / Pedidos
 - **Prioridad:** Alta
-- **Estado:** open
+- **Estado:** closed
 - **Fecha:** 2026-07-01
 - **Autor:** Jose
 
@@ -160,15 +160,33 @@ Para cada función afectada:
 
 ## Implementación
 
-> Rellena el Agente Implementador
-
 ### Archivos creados
+
+Ninguno.
 
 ### Archivos modificados
 
+- `src/services/orderService.ts` — 13 funciones migradas a `getAuthToken()` interno; eliminado parámetro `token: AuthToken`; convertidas a `async/await`; eliminados guards `if (!token)` en `getActiveOrders` y `getProductionViewData`. El alias `type AuthToken` se mantiene solo para las 3 funciones de profitability export pendientes de otro GAP.
+- `src/hooks/useOrder.ts` — Eliminado `accessToken` de calls a `getOrder`, `updateOrder` (×2) y `setOrderStatus`; eliminado de 4 sub-hooks; `enabled` simplificado a `!!orderId`; eliminado `status` del destructuring de `useSession`.
+- `src/hooks/orders/useOrderCostAnalysis.ts` — Eliminado `accessToken` del interface, del guard y de deps de callbacks/effects.
+- `src/hooks/orders/useOrderIncidents.ts` — Eliminado `accessToken` del interface y de los 3 useCallback (deps incluidos).
+- `src/hooks/orders/useOrderPlannedDetails.ts` — Eliminado `accessToken` del interface y de los 3 useCallback (deps incluidos).
+- `src/hooks/orders/useOrderOptions.ts` — Eliminado `accessToken` del interface; añadido `useSession()` interno para obtener el token para `getProductOptions`/`getTaxOptions`.
+- `src/hooks/useOrders.js` — Eliminado `useSession` y `token`; `getActiveOrders()` sin token; `enabled: !!tenantId`.
+- `src/hooks/usePallet.ts` — `getActiveOrdersOptions()` sin token ni cast de tipo; cast `as unknown[]` en el `.then()` por tipo de retorno `Promise<unknown>`.
+- `src/__tests__/services/orderService.test.js` — Añadido mock de `getAuthToken`; eliminados args token de las funciones migradas; test `createOrder throws when no session` actualizado para usar `getAuthToken.mockRejectedValueOnce`.
+- `src/__tests__/hooks/useOrder.test.js` — Añadido `getSession` al mock de `next-auth/react`; actualizadas assertions de `setOrderStatus` y `getOrderCostAnalysis`.
+
 ### Decisiones tomadas durante la implementación
 
+- `type AuthToken` no eliminado: las 3 funciones de profitability export aún lo usan (pendiente otro GAP).
+- `useOrderOptions` usa `useSession()` interno en lugar de recibir `accessToken` como prop, para cumplir el criterio de aceptación sin romper las llamadas a `getProductOptions`/`getTaxOptions`.
+- Cast `as unknown[]` mínimo en `usePallet.ts` por el tipo de retorno conservador de `getActiveOrdersOptions()`.
+
 ### Desviaciones del plan (si las hay)
+
+- Se mantuvo `Authorization: Bearer ${token}` en los headers (patrón establecido por GAP-028 en el mismo archivo), aunque `fetchWithTenant` lo inyecta automáticamente.
+- El test `createOrder throws when no session` necesitó mockear `getAuthToken` en lugar de `getSession` porque `createOrder` ya había sido migrado previamente a `getAuthToken()`.
 
 ---
 
