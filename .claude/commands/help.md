@@ -13,7 +13,7 @@ When invoked, output the following block **directly in your text response** to t
 ---
 
 PESQUERAPP — CLAUDE CODE SYSTEM
-version 2.6
+version 2.7
 ════════════════════════════════════════════════
 
 AUDIT COMMANDS
@@ -45,6 +45,13 @@ No command needed — describe what you want in natural language.
 The Discovery agent activates automatically and runs the full
 clarification protocol before writing any GAP.
 
+IDEA PARKING
+────────────
+/idea [texto libre]              Captura rápida — sin preguntas, sin fricción
+/ideas                           Lista el backlog de ideas
+/ideas [módulo]                  Scope a un módulo (ej. /ideas Stock)
+/ideas promote [NNN]             Promociona IDEA-NNN a GAP vía gap-discovery
+
 SYSTEM
 ──────
 /help                            This reference
@@ -71,6 +78,7 @@ KEY FILES
 ─────────
 .claude/design-context.md        Visual & UX criteria — mandatory before any UI work
 .claude/project-learnings.md     Accumulated learnings — mandatory before any audit
+.claude/ideas/parking-lot.md     Idea backlog — powers /idea and /ideas
 CLAUDE.md                        Full project context, rules, git policy
 
 ════════════════════════════════════════════════

@@ -378,6 +378,9 @@ Para documentación extendida, ver `docs/ai-context/`. Para reglas específicas 
 | `/audit-code migrate`         | `code-audit-agent` | Candidatos JS→TS y patrones deprecated    |
 | `/audit-code arch`            | `code-audit-agent` | Problemas arquitectónicos React/Next.js   |
 | `/audit-code [mode] [module]` | `code-audit-agent` | Scope reducido a un módulo específico     |
+| `/idea [texto libre]`         | —                   | Captura rápida en el parking de ideas — sin preguntas |
+| `/ideas [módulo]`             | —                   | Lista el backlog de `.claude/ideas/parking-lot.md`    |
+| `/ideas promote [NNN]`        | `gap-discovery`     | Promociona una idea parked a GAP con protocolo completo |
 
 ---
 
