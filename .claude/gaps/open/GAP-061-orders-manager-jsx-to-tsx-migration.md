@@ -86,9 +86,20 @@ Archivos pendientes detectados en la auditoría quality (FND-013/014/015, audit 
 
 **Total: ~35 archivos**, de los cuales algunos habrán sido parcialmente migrados por GAPs previos.
 
+> **Nota añadida (auditoría MIGRATE 2026-07-01):** falta `src/context/OrderContext.js` (42
+> líneas) en este listado. Es LOW complexity y es importado directamente por 15 archivos del
+> árbol `Order/*` de este mismo batch (todos los que usan `useOrderContext()`). Se recomienda
+> migrarlo **primero**, antes que cualquier Lote — tipar su valor de contexto (reutilizando el
+> tipo de retorno ya existente de `useOrder.ts`, que es TS) evita tener que re-adivinar la
+> forma del contexto en cada componente migrado después. Añadir como "Lote 0" antes del Lote A.
+
 ## Solución acordada
 
 Migración por lotes, en orden de complejidad creciente para minimizar errores en cascada:
+
+**Lote 0 — Prerrequisito de alto apalancamiento:**
+0. `src/context/OrderContext.js` → `.tsx` (tipar `OrderProvider`/`useOrderContext` reutilizando
+   el tipo de retorno de `useOrder.ts`) — hacer antes que cualquier otro lote
 
 **Lote A — Utilidades y configs (sin JSX, sin hooks):**
 1. `sectionsConfig.js` → `.ts`

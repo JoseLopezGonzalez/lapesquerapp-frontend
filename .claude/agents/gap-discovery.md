@@ -224,10 +224,11 @@ Regla de archivos: todo código nuevo es `.ts` o `.tsx` — nunca `.js`.
 Archivos protegidos que requieren permiso explícito de Jose:
 
 - `src/configs/entitiesConfig.js` (121 KB)
-- `src/hooks/useOrder.js` (~40 KB)
-- `src/hooks/usePallet.js` (~48 KB)
-- `src/hooks/useLabelEditor.ts` (~52 KB)
+- `src/hooks/useLabelEditor.ts` (~28 KB / 822 líneas) — único hook gigante real pendiente de refactor
 - `src/middleware.ts`
 - `src/lib/fetchWithTenant.js`
+
+Nota: `useOrder.ts` y `usePallet.ts` ya fueron migrados y refactorizados en sub-hooks
+(2026-07-01) — ya no son archivos protegidos por tamaño (PL-019).
 
 Las reglas completas están en `.claude/rules/`.

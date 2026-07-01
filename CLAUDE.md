@@ -283,9 +283,7 @@ archivo ya señalado en PL-016). Al eliminar `@ts-nocheck`:
 | Archivo                          | Razón                                                                         | Acción requerida                                                     |
 | -------------------------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------------- |
 | `src/configs/entitiesConfig.js`  | Punto de entrada del config modular — reexporta desde `src/configs/entities/` | Solo modificar el reexport; nunca añadir entidades directamente aquí |
-| `src/hooks/useOrder.js` (~40 KB) | Hook gigante — no añadir lógica aquí                                          | Crear sub-hook en `src/hooks/orders/useOrderXxx.ts`                  |
-| `src/hooks/usePallet.ts`         | Hook gigante — no añadir lógica aquí                                          | Crear sub-hook en `src/hooks/pallets/usePalletXxx.ts`                |
-| `src/hooks/useLabelEditor.ts`    | Hook gigante refactorizado — no añadir lógica aquí                            | Crear sub-hook en `src/hooks/labels/useLabelXxx.ts`                  |
+| `src/hooks/useLabelEditor.ts` (~28 KB / 822 líneas) | Único hook gigante real pendiente de refactor — no añadir lógica aquí | Crear sub-hook en `src/hooks/labels/useLabelXxx.ts`                  |
 | `src/middleware.ts`              | Auth + tenant + RBAC crítico                                                  | Revisar impacto en todos los roles antes de modificar                |
 | `src/lib/fetchWithTenant.js`     | Único punto HTTP — un cambio aquí afecta a toda la aplicación                 | Solo con revisión explícita del dev                                  |
 
@@ -298,7 +296,7 @@ archivo ya señalado en PL-016). Al eliminar `@ts-nocheck`:
 3. ✅ **Husky hooks configurados** — `pre-commit` (lint-staged: Prettier + ESLint en archivos staged) · `pre-push` (TypeScript check limpio + ESLint completo).
 4. **Sin tests de UI** — Vitest solo cubre lógica (hooks, services, utils), no componentes React.
 5. **`entitiesConfig.js`** — ✅ partido en módulos por dominio en `src/configs/entities/` (GAP-007).
-6. **Hooks gigantes** — `useOrder` 40 KB · `usePallet` 48 KB · `useLabelEditor` 52 KB. Pendiente refactor en sub-hooks.
+6. **Hooks gigantes** — ✅ `useOrder` y `usePallet` ya migrados a `.ts` y refactorizados en sub-hooks (`hooks/orders/*`, `hooks/pallets/*`). Solo `useLabelEditor` (~28 KB / 822 líneas) sigue pendiente de refactor.
 7. **Cobertura de tests** — 20 archivos de test para 269 componentes y 84+ hooks.
 8. **`entityServiceMapper.js`** — candidato prioritario de migración a TypeScript.
 9. **`maxDuration` en extracción de PDF** — `src/app/api/extraction/chatgpt/route.js` tiene `maxDuration = 60` por límite del plan Hobby de Vercel (máx 60s). El ideal sería 300s para extracciones con modelos lentos (o-series). Opciones: (a) mover la extracción a un endpoint del backend Laravel, (b) upgrade a Vercel Pro, (c) implementar extracción asíncrona con polling.
@@ -365,6 +363,7 @@ Para documentación extendida, ver `docs/ai-context/`. Para reglas específicas 
 | `ui-audit-agent`     | Auditor autónomo de UI — recorre vistas, genera findings, convierte en GAPs                                        | Invocado por `/audit-mobile` o `/audit-desktop`                                                           |
 | `system-learner`     | Memoria institucional — traduce hallazgos y correcciones en reglas permanentes en `project-learnings.md`           | Invocado por el Auditor, UX Reviewer, o Jose                                                              |
 | `code-audit-agent`   | Auditor técnico autónomo — calidad de código, deuda de migración y arquitectura React/Next.js. Nunca evalúa UI/UX. | Invocado por `/audit-code [quality\|migrate\|arch]`                                                       |
+| `design-quality-auditor` | Auditor de craft de diseño — armonía/proporción/jerarquía visual (con captura real cuando es posible), consistencia de textos, y drift entre vistas de la misma familia. Nunca evalúa código ni flujo UX. | Invocado por `/audit-design [visual\|copy\|consistency]`                                                  |
 | `code-reviewer`      | Revisor de código independiente                                                                                    | Revisión de PRs y diffs                                                                                   |
 | `db-architect`       | Arquitecto de base de datos                                                                                        | Cambios de esquema o modelos                                                                              |
 
@@ -378,6 +377,9 @@ Para documentación extendida, ver `docs/ai-context/`. Para reglas específicas 
 | `/audit-code migrate`         | `code-audit-agent` | Candidatos JS→TS y patrones deprecated    |
 | `/audit-code arch`            | `code-audit-agent` | Problemas arquitectónicos React/Next.js   |
 | `/audit-code [mode] [module]` | `code-audit-agent` | Scope reducido a un módulo específico     |
+| `/audit-design visual`        | `design-quality-auditor` | Armonía, proporción, jerarquía y ritmo visual (captura real si hay Playwright+sesión) |
+| `/audit-design copy`          | `design-quality-auditor` | Terminología, tono, capitalización y claridad de mensajes |
+| `/audit-design consistency [family]` | `design-quality-auditor` | Drift entre vistas de la misma familia (listados, sheets, forms, confirmaciones...) |
 | `/idea [texto libre]`         | —                   | Captura rápida en el parking de ideas — sin preguntas |
 | `/ideas [módulo]`             | —                   | Lista el backlog de `.claude/ideas/parking-lot.md`    |
 | `/ideas promote [NNN]`        | `gap-discovery`     | Promociona una idea parked a GAP con protocolo completo |

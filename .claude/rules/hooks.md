@@ -166,19 +166,24 @@ const { data: customers, isLoading } = useCustomersList();
 
 ## Hooks gigantes — regla DURA
 
-Los siguientes hooks NO deben recibir más lógica directamente:
+`useOrder` y `usePallet` **ya fueron migrados y refactorizados** (2026-07-01): hoy son
+`useOrder.ts` (284 líneas) y `usePallet.ts` (302 líneas), orquestadores delgados que delegan
+en sub-hooks (`hooks/orders/*`, `hooks/pallets/*`). Ya no son archivos protegidos por tamaño,
+pero la regla de enrutar lógica nueva a un sub-hook sigue aplicando como buena práctica para
+no volver a hacerlos crecer. `useLabelEditor.ts` sigue siendo el único hook gigante real
+pendiente de refactor:
 
-| Hook                          | Tamaño | Sub-hook destino                    |
-| ----------------------------- | ------ | ----------------------------------- |
-| `src/hooks/useOrder.js`       | ~40 KB | `src/hooks/orders/useOrderXxx.ts`   |
-| `src/hooks/usePallet.js`      | ~48 KB | `src/hooks/pallets/usePalletXxx.ts` |
-| `src/hooks/useLabelEditor.ts` | ~52 KB | `src/hooks/labels/useLabelXxx.ts`   |
+| Hook                          | Tamaño | Estado             | Sub-hook destino                    |
+| ----------------------------- | ------ | ------------------- | ----------------------------------- |
+| `src/hooks/useOrder.ts`       | 284 líneas | ✅ Ya refactorizado | `src/hooks/orders/useOrderXxx.ts`   |
+| `src/hooks/usePallet.ts`      | 302 líneas | ✅ Ya refactorizado | `src/hooks/pallets/usePalletXxx.ts` |
+| `src/hooks/useLabelEditor.ts` | ~28 KB / 822 líneas | ⚠️ Pendiente | `src/hooks/labels/useLabelXxx.ts`   |
 
 ```typescript
-// ❌ NUNCA añadir lógica directamente al hook gigante
-// src/hooks/useOrder.js
-export function useOrder() {
-  // ... 40KB de lógica
+// ❌ NUNCA añadir lógica directamente a un hook orquestador grande
+// src/hooks/useLabelEditor.ts
+export function useLabelEditor() {
+  // ... cientos de líneas de lógica
   const newFeatureLogic = () => {
     /* ← NO */
   };

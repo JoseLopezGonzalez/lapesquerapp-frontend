@@ -3,7 +3,7 @@
 > This file is maintained exclusively by the system-learner agent.
 > Do not edit manually unless correcting an error.
 > Last updated: 2026-07-01
-> Total entries: 23
+> Total entries: 27
 
 ## How this file works
 
@@ -45,6 +45,25 @@ Every entry has:
 - **Found in:** `src/components/Admin/Pallets/PalletDialog/PalletView/index.tsx:1`
 - **Status:** Follow-up: GAP-039.
 
+### PL-022
+- **Date:** 2026-07-01
+- **Source:** /audit-desktop order editor (system-learner)
+- **Category:** AUDIT_RULE
+- **Confidence:** HIGH
+- **Entry:** `useIsMobile` (la variante sin guard de `mounted`) usado para render condicional
+  estructural (ternarios que cambian el árbol de componentes, no solo una clase CSS) recurre
+  en 3+ módulos distintos pese a que el propio docstring de `src/hooks/use-mobile.jsx` lo
+  desaconseja explícitamente: CRM (`GAP-042-useismobile-safe-admin-crm`), Field app
+  (`GAP-016-field-app-useismobile-render-condicional`), y 15 archivos del editor de pedidos
+  (`GAP-067`). **Regla:** cualquier auditoría de UI (mobile o desktop) debe ejecutar
+  `grep -rn "useIsMobile()" --include="*.tsx" --include="*.ts" --include="*.js" --include="*.jsx"`
+  sobre el módulo completo como paso estándar inicial, no solo revisar los archivos
+  muestreados — el patrón recurre lo suficiente como para justificar un grep exhaustivo
+  desde el principio en vez de un spot-check.
+- **Found in:** `src/app/admin/orders/[id]/OrderClient.js` y 14 archivos más bajo
+  `src/components/Admin/OrdersManager/Order/` (ver GAP-067 para el listado completo)
+- **Status:** Follow-up: GAP-067.
+
 ---
 
 ## CODEBASE_PATTERNS
@@ -74,6 +93,21 @@ Every entry has:
   variant or style deviation is needed, create a shadcn variant — do not
   override with className. This is the single most common quality issue found
   in UI reviews.
+
+### PL-020
+
+- **Date:** 2026-07-01
+- **Source:** /audit-code migrate orders manager
+- **Category:** CODEBASE_PATTERN
+- **Confidence:** HIGH
+- **Entry:** `react-icons` (Bs/Ri/Pi/Fa/Tb) es un patrón establecido y aceptado en PesquerApp
+  específicamente para iconos de marca/formato de archivo que Lucide React no cubre
+  (Excel, PDF, logos). No es una desviación aislada como el caso de `@heroicons` (PL-015).
+  Regla: Lucide React para iconografía general de UI; `react-icons` solo para logos de
+  marca/formato de archivo sin equivalente en Lucide.
+- **Found in:** 20 archivos del proyecto — `EntityClient/index.js`, `OrderExport/index.js`,
+  `StoreCard/index.js`, varios cards de `Dashboard/`, etc. (`PiMicrosoftExcelLogo*`,
+  `FaRegFilePdf`, `BsFileEarmarkPdf`, `RiFileExcel2Line`, `TbTruckLoading`, `PiChartLineUp`)
 
 ---
 
@@ -284,6 +318,25 @@ Every entry has:
 - **Status:** Corregido en PR #58. Aplicar preventivamente en cualquier `Select`/`Combobox`
   controlado por un ID de entidad.
 
+### PL-021
+
+- **Date:** 2026-07-01
+- **Source:** /audit-desktop order editor (system-learner)
+- **Category:** ANTI_PATTERN
+- **Confidence:** HIGH
+- **Entry:** Un hook puede tener cobertura correcta de `notify.error` en la mayoría de sus
+  manejadores (20+ sitios en `useOrderPallets.js`) y aun así dejar unos pocos bloques
+  `catch` con solo `console.error`, sin ningún aviso al usuario. Esta cobertura parcial es
+  fácil de pasar por alto en una revisión rápida porque el archivo "parece limpio" a
+  primera vista (el patrón correcto domina visualmente). **Regla para auditores:** al
+  revisar el manejo de errores de un hook, hacer `grep -n "console.error"` y `grep -n
+  "catch"` sobre el archivo completo y verificar que CADA `catch` tiene su
+  `notify.error`/`notify.warning` correspondiente — no basta con confirmar que el patrón
+  correcto existe en el archivo.
+- **Found in:** `src/components/Admin/OrdersManager/Order/OrderPallets/hooks/useOrderPallets.js`
+  (4 catches silenciosos de 8 revisados: líneas 120, 338, 543, 626)
+- **Status:** Follow-up: GAP-065.
+
 ---
 
 ## DEPLOY_RULES
@@ -381,3 +434,23 @@ Every entry has:
   questions, AskUserQuestion calls, and any other structured Q&A format. A question block
   without a recommended option is considered incomplete and must be rewritten before
   Jose can answer.
+
+### PL-019
+
+- **Date:** 2026-07-01
+- **Source:** /audit-code migrate orders manager
+- **Category:** CORRECTION
+- **Confidence:** HIGH
+- **Entry:** La tabla "Hooks gigantes" en CLAUDE.md y `.claude/rules/hooks.md`, y la lista de
+  "archivos protegidos" en `.claude/agents/gap-discovery.md`, estaban desactualizadas para
+  `useOrder` y `usePallet`. Ambos YA fueron migrados a TypeScript y refactorizados en
+  sub-hooks: `useOrder.ts` (284 líneas, delega en `hooks/orders/*`) y `usePallet.ts`
+  (302 líneas, delega en `hooks/pallets/*`) — exactamente el patrón que la propia regla
+  exige. Solo `useLabelEditor.ts` (822 líneas / 28KB) sigue siendo el hook monolítico real
+  pendiente de refactor. Un futuro audit o GAP podría asumir erróneamente que
+  `useOrder`/`usePallet` siguen sin migrar, proponer trabajo ya hecho, o bloquear cambios
+  legítimos tratándolos como "archivo protegido" cuando ya no aplica el mismo riesgo de
+  tamaño. Corregido directamente en CLAUDE.md, `rules/hooks.md` y `gap-discovery.md` en la
+  misma fecha.
+- **Found in:** `src/hooks/useOrder.ts`, `src/hooks/usePallet.ts` (verificados directamente:
+  tamaño e imports de sub-hooks)

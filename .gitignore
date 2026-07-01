@@ -44,3 +44,7 @@ next-env.d.ts
 .vscode/settings.json
 \n# shadcn Nova preset dummy (not versioned)\nshadcn-preset/
 *.bak
+
+# audit tooling — live session cookies, never commit
+.claude/tools/.auth/
+.claude/tools/.audit-screenshots/
