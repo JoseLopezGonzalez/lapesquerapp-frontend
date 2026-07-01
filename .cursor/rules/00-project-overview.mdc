@@ -44,3 +44,14 @@ Check these files when relevant:
 - `docs/ai-context/04-api-services.md`
 - `docs/ai-context/05-entity-client.md`
 - `docs/ai-context/10-current-priorities.md`
+- `docs/agent-system/README.md`
+- `docs/agent-system/commands/README.md`
+- `docs/agent-system/adapters.md`
+
+## Agent workflows
+
+For GAPs, audits, mobile UI, ideas and project memory, use the neutral agent
+system in `docs/agent-system/`.
+
+Treat `.claude/**` as read-only unless the user explicitly invokes the GAP or
+ideas workflow that still stores active files there.

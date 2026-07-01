@@ -33,9 +33,23 @@ When working in this repository:
 Check relevant documentation in:
 
 - `docs/ai-context/`
+- `docs/agent-system/`
 - `docs/agents/`
 - `docs/templates/`
 - `docs/decisions/`
+
+## Agent workflows
+
+Use `docs/agent-system/` for GAP workflows, audits, mobile UI, idea parking and
+project memory. Command mapping is documented in
+`docs/agent-system/commands/README.md`.
+
+Do not modify `.claude/**` by default. The only allowed exceptions are explicit
+GAP workflow updates in `.claude/gaps/**` and explicit idea workflow updates in
+`.claude/ideas/parking-lot.md`.
+
+If generic AI guidance conflicts with La PesquerApp documentation, follow
+La PesquerApp documentation.
 
 Do not implement unrequested features.
 Do not make destructive changes.

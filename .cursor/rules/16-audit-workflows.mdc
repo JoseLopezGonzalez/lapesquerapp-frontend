@@ -1,0 +1,21 @@
+---
+description: Code audit, UI audit and mobile audit workflows
+globs: "src/**/*.{js,jsx,ts,tsx},docs/agent-system/**/*.md"
+alwaysApply: false
+---
+
+# Audit Workflows — La PesquerApp
+
+Use these workflows when the user requests audits or review passes:
+
+- Code audit: `docs/agent-system/workflows/code-audit.md`
+- UI audit: `docs/agent-system/workflows/ui-audit.md`
+- Mobile UI: `docs/agent-system/workflows/mobile-ui.md`
+
+## Rules
+
+- Audits are read-only unless Jose explicitly asks to implement fixes.
+- Present inventory before broad audits.
+- Report findings with severity and file references.
+- Offer GAP creation for approved findings.
+- Read `docs/agent-system/memory/project-learnings.md` before broad audits.

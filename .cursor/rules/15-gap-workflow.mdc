@@ -1,0 +1,27 @@
+---
+description: GAP Discovery, Implementation and Audit workflow rules
+globs: ".claude/gaps/**/*.md,docs/agent-system/**/*.md,src/**/*.{js,jsx,ts,tsx}"
+alwaysApply: false
+---
+
+# GAP Workflow — La PesquerApp
+
+When the user asks to create, implement or audit a GAP, follow:
+
+- `docs/agent-system/workflows/gap-workflow.md`
+- `docs/agent-system/agents/operational-roles.md`
+- `docs/agent-system/rules/*.md` relevant to the affected files
+
+## Rules
+
+- Discovery clarifies and documents; it does not implement.
+- Implementation follows the confirmed GAP and records deviations.
+- Audit verifies acceptance criteria and closes or rejects.
+- Active GAP storage remains `.claude/gaps/**` for now.
+- Do not touch other `.claude/**` files.
+- Do not work outside GAP-listed files without Jose's approval.
+
+## Output
+
+Report the active phase, files inspected, files touched, checks run, risks and
+the GAP state.
