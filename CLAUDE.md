@@ -256,6 +256,26 @@ Antes de hacer push con payload de formulario, comparar el objeto construido con
 `src/types/` para confirmar que todos los campos son del tipo correcto (especialmente
 uniones como `ProspectOrigin`, `ProspectStatus`, etc.).
 
+#### 4. Eliminar `@ts-nocheck` de un archivo grande (>500 líneas) — protocolo reforzado
+Ver PL-BUILD-05 (recurrencia del PR #58, 15 deployments en ERROR seguidos sobre el mismo
+archivo ya señalado en PL-016). Al eliminar `@ts-nocheck`:
+
+- **PR aislado:** no mezclar esta tarea con otros GAPs en el mismo commit/PR. Un archivo
+  grande sin tipos genera su propia cascada; mezclarlo con cambios no relacionados dificulta
+  aislar qué error viene de dónde (ver el caso `CreateOrderForm` afectado por un GAP distinto
+  en el mismo PR).
+- **Lectura completa antes del primer push:** recorrer el archivo símbolo por símbolo
+  (estado, props, callbacks, valores controlados de `Select`/`Combobox` — string vs
+  number vs null, ver patrón en project-learnings.md PL-018) en vez de pushear y esperar el
+  error de Vercel uno a uno.
+- **Grep de variables eliminadas:** si el refactor elimina una variable (p.ej. `session` en
+  el patrón token-as-parameter), buscar TODAS sus referencias en el archivo, incluyendo
+  arrays de dependencias de `useEffect`/`useCallback`/`useMemo` — no solo su declaración y
+  usos obvios.
+- **Prohibido pushear un commit de "reintento"** (p.ej. "Trigger Vercel redeploy") sin un
+  fix de código verificable. Si Vercel falla, el siguiente commit debe corregir el error
+  reportado; un push vacío o sin relación con el error desperdicia un ciclo de build completo.
+
 ---
 
 ## Archivos protegidos — detener y preguntar antes de tocar
