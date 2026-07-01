@@ -84,6 +84,69 @@ For architectural and product decisions, check:
 
 - `docs/decisions/`
 
+## Codex agent system
+
+Codex-specific workflows live in `.agents/skills/lapesquerapp-*`.
+
+Tool-neutral agent documentation lives in:
+
+- `docs/agent-system/`
+
+This folder contains portable rules, workflows, command mappings, operational
+roles, memory and GAP migration notes. It is the preferred source for new
+Codex-native behavior.
+
+### Codex command mapping
+
+When the user invokes a Claude-like command, Codex must map it to the matching
+Codex skill/workflow:
+
+| User input | Codex behavior |
+| --- | --- |
+| `/audit-code quality\|migrate\|arch [scope]` | Use `lapesquerapp-code-audit`. |
+| `/audit-mobile [scope]` | Use `lapesquerapp-ui-audit` in mobile mode. |
+| `/audit-desktop [scope]` | Use `lapesquerapp-ui-audit` in desktop mode. |
+| `/mobile [view]` | Use `lapesquerapp-mobile-ui`. |
+| `/idea [text]` | Use `lapesquerapp-ideas` capture mode. |
+| `/ideas [module]` | Use `lapesquerapp-ideas` list mode. |
+| `/ideas promote [NNN]` | Use `lapesquerapp-gap-discovery`. |
+| `crea un GAP`, `documenta este cambio` | Use `lapesquerapp-gap-discovery`. |
+| `implementa GAP-NNN` | Use `lapesquerapp-gap-implementor`. |
+| `audita GAP-NNN` | Use `lapesquerapp-gap-auditor`. |
+| `recuerda esto`, `añade esto al sistema` | Use `lapesquerapp-system-learner`. |
+
+Detailed mappings are documented in `docs/agent-system/commands/README.md`.
+
+### Claude Code compatibility boundary
+
+The existing Claude Code ecosystem remains in `.claude/**`.
+
+Codex must treat `.claude/**` as read-only by default. Do not modify, move,
+delete or rewrite Claude-specific files unless the user explicitly requests that
+exact action.
+
+Limited exceptions:
+
+- GAP workflow actions may read and update `.claude/gaps/**` because that is
+  still the active GAP store for v1.
+- Idea workflow actions may read and update `.claude/ideas/parking-lot.md`
+  when the user invokes `/idea`, `/ideas`, or `/ideas promote`.
+
+Do not migrate Claude Code to `docs/agent-system/` until Jose explicitly asks.
+
+### Rule precedence
+
+When a generic skill conflicts with La PesquerApp-specific documentation, follow
+La PesquerApp documentation.
+
+Important examples:
+
+- Forms follow `docs/ai-context/03-form-system.md`: React Hook Form with
+  `register()` and `Controller`, not the default shadcn `FormField` pattern.
+- API calls follow the existing service layer and `fetchWithTenant` rules.
+- UI work follows the operational ERP design rules in `docs/ai-context/` and
+  `docs/agent-system/rules/design.md`.
+
 ## Standard implementation response
 
 For implementation tasks, return:

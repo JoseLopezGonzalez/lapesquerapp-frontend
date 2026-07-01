@@ -1,0 +1,63 @@
+---
+description: Tool-neutral agent system, GAP workflows, command mapping and Claude boundary for La PesquerApp
+alwaysApply: true
+---
+
+# Agent System Adapter — La PesquerApp
+
+This repository has a tool-neutral agent system in `docs/agent-system/`.
+
+Use it for workflows that previously existed only in Claude Code:
+
+- GAP Discovery / Implementation / Audit
+- Code audits
+- UI desktop/mobile audits
+- Mobile UI workflow
+- Idea parking and promotion
+- System learner / project memory
+
+## Required sources
+
+For non-trivial tasks, check:
+
+- `AGENTS.md`
+- `docs/agent-system/README.md`
+- `docs/agent-system/commands/README.md`
+- Relevant files in `docs/agent-system/rules/`
+- Relevant files in `docs/agent-system/workflows/`
+
+## Command mapping
+
+When the user writes one of these commands, follow the matching workflow:
+
+- `/audit-code quality|migrate|arch [scope]` → `docs/agent-system/workflows/code-audit.md`
+- `/audit-mobile [scope]` → `docs/agent-system/workflows/ui-audit.md` in mobile mode
+- `/audit-desktop [scope]` → `docs/agent-system/workflows/ui-audit.md` in desktop mode
+- `/mobile [view]` → `docs/agent-system/workflows/mobile-ui.md`
+- `/idea [text]` or `/ideas` → `docs/agent-system/workflows/ideas.md`
+- `/ideas promote [NNN]` → idea workflow, then GAP Discovery
+- `crea un GAP`, `documenta este cambio` → GAP Discovery
+- `implementa GAP-NNN` → GAP Implementation
+- `audita GAP-NNN` → GAP Audit
+- `recuerda esto`, `añade esto al sistema` → System Learner
+
+## Claude Code boundary
+
+Do not modify `.claude/**` by default.
+
+Allowed only when explicitly invoked:
+
+- GAP workflow may read/update `.claude/gaps/**` because it is still the active
+  GAP store.
+- Ideas workflow may read/update `.claude/ideas/parking-lot.md`.
+
+Do not migrate, rewrite or delete Claude Code files unless Jose explicitly asks.
+
+## Precedence
+
+If generic AI guidance conflicts with La PesquerApp docs, follow La PesquerApp:
+
+- Service layer and tenant rules from `docs/agent-system/rules/api-client.md`
+- Form rules from `docs/ai-context/03-form-system.md`
+- UI rules from `docs/agent-system/rules/design.md`
+- Hook/query rules from `docs/agent-system/rules/hooks.md`
