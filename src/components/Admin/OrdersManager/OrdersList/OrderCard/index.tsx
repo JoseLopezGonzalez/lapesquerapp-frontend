@@ -195,7 +195,10 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }: OrderCardPr
               )}
             </div>
             <div>
-              <p className="truncate text-base font-medium" title={order.customer?.name ?? '—'}>
+              <p
+                className="line-clamp-2 [overflow-wrap:anywhere] text-base font-medium"
+                title={order.customer?.name ?? '—'}
+              >
                 {order.customer?.name ?? '—'}
               </p>
             </div>
