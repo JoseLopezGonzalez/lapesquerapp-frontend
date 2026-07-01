@@ -61,7 +61,7 @@ export function MobileStoreDetailView({
   passedStoreName,
   onBack,
 }: MobileStoreDetailViewProps) {
-  const [viewMode, setViewMode] = useState<'map' | 'kanban'>('map');
+  const [viewMode, setViewMode] = useState<'map' | 'kanban'>('kanban');
   const [productsDialogOpen, setProductsDialogOpen] = useState(false);
   const [scannerOpen, setScannerOpen] = useState(false);
   useHideBottomNav();
