@@ -10,6 +10,9 @@ or equivalent natural language, activate the matching skill or workflow.
 | `/audit-code arch [scope]` | `lapesquerapp-code-audit` | `workflows/code-audit.md` |
 | `/audit-mobile [scope]` | `lapesquerapp-ui-audit` | `workflows/ui-audit.md` |
 | `/audit-desktop [scope]` | `lapesquerapp-ui-audit` | `workflows/ui-audit.md` |
+| `/audit-design visual [scope]` | `lapesquerapp-design-audit` | `workflows/design-audit.md` |
+| `/audit-design copy [scope]` | `lapesquerapp-design-audit` | `workflows/design-audit.md` |
+| `/audit-design consistency [family]` | `lapesquerapp-design-audit` | `workflows/design-audit.md` |
 | `/mobile [view]` | `lapesquerapp-mobile-ui` | `workflows/mobile-ui.md` |
 | `/idea [text]` | `lapesquerapp-ideas` | `workflows/ideas.md` |
 | `/ideas [module]` | `lapesquerapp-ideas` | `workflows/ideas.md` |

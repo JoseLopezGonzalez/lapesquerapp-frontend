@@ -21,6 +21,7 @@ Read in this order:
 - GAP audit: `workflows/gap-workflow.md`
 - Code audit: `workflows/code-audit.md`
 - UI audit: `workflows/ui-audit.md`
+- Design audit: `workflows/design-audit.md`
 - Mobile UI: `workflows/mobile-ui.md`
 - Ideas: `workflows/ideas.md`
 - Memory: `workflows/system-learner.md`

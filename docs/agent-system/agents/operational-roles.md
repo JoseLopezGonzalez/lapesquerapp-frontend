@@ -29,6 +29,12 @@ findings with file references and does not modify production code during audit.
 Reviews desktop or mobile UX against the design system, operational workflows
 and project-specific UI patterns.
 
+## Design Quality Auditor
+
+Reviews design craft beyond conformance: visual hierarchy, rhythm, proportion,
+copy quality and cross-view consistency. It reports findings only and does not
+modify production code.
+
 ## Mobile UI Specialist
 
 Builds or improves mobile views while preserving desktop behavior and avoiding

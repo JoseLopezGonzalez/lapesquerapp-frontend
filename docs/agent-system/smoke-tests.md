@@ -12,6 +12,7 @@ include:
 - `lapesquerapp-gap-auditor`
 - `lapesquerapp-code-audit`
 - `lapesquerapp-ui-audit`
+- `lapesquerapp-design-audit`
 - `lapesquerapp-mobile-ui`
 - `lapesquerapp-ideas`
 - `lapesquerapp-system-learner`
@@ -41,6 +42,14 @@ and does not write production code.
 Expected behavior: Codex uses the mobile UI workflow, inspects the current view
 and proposes structure before broad UI changes.
 
+```text
+/audit-design copy orders
+```
+
+Expected behavior: Codex uses `lapesquerapp-design-audit`, reads
+`docs/agent-system/workflows/design-audit.md`, inventories user-facing copy and
+does not modify production code.
+
 ## Cursor
 
 Open the project in Cursor and verify rules are visible/applied:
@@ -48,6 +57,7 @@ Open the project in Cursor and verify rules are visible/applied:
 - `.cursor/rules/05-agent-system.mdc`
 - `.cursor/rules/15-gap-workflow.mdc`
 - `.cursor/rules/16-audit-workflows.mdc`
+- `.cursor/rules/17-design-audit.mdc`
 
 Use a dry prompt:
 
@@ -57,6 +67,13 @@ Use a dry prompt:
 
 Expected behavior: Cursor follows `docs/agent-system/workflows/ui-audit.md` and
 does not implement fixes unless explicitly asked.
+
+```text
+/audit-design consistency tablas
+```
+
+Expected behavior: Cursor follows `docs/agent-system/workflows/design-audit.md`
+and compares the requested family before proposing GAPs.
 
 ## GitHub Copilot
 

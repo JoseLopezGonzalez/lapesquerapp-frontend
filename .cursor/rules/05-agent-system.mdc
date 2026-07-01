@@ -33,6 +33,7 @@ When the user writes one of these commands, follow the matching workflow:
 - `/audit-code quality|migrate|arch [scope]` → `docs/agent-system/workflows/code-audit.md`
 - `/audit-mobile [scope]` → `docs/agent-system/workflows/ui-audit.md` in mobile mode
 - `/audit-desktop [scope]` → `docs/agent-system/workflows/ui-audit.md` in desktop mode
+- `/audit-design visual|copy|consistency [scope]` → `docs/agent-system/workflows/design-audit.md`
 - `/mobile [view]` → `docs/agent-system/workflows/mobile-ui.md`
 - `/idea [text]` or `/ideas` → `docs/agent-system/workflows/ideas.md`
 - `/ideas promote [NNN]` → idea workflow, then GAP Discovery
