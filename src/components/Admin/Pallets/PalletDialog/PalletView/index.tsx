@@ -1943,7 +1943,7 @@ export default function PalletView({
                                       notFoundMessage="No se encontraron productos"
                                       value={oldProductId}
                                       onChange={(value) => {
-                                        setOldProductId(value);
+                                        setOldProductId(String(value));
                                       }}
                                       disabled={isReadOnly}
                                       loading={loading}
@@ -1958,7 +1958,7 @@ export default function PalletView({
                                       notFoundMessage="No se encontraron productos"
                                       value={newProductId}
                                       onChange={(value) => {
-                                        setNewProductId(value);
+                                        setNewProductId(String(value));
                                       }}
                                       disabled={isReadOnly}
                                       loading={productsLoading}
