@@ -271,22 +271,23 @@ export default function OrderCostAnalysis() {
         </Button>
       </div>
 
-      <TabsContent value="product-lines" className="mt-4 min-h-0 flex-1 overflow-hidden">
+      <TabsContent
+        value="product-lines"
+        className={isMobile ? 'mt-4' : 'mt-4 min-h-0 flex-1 overflow-hidden'}
+      >
         {productLines.length === 0 ? (
           <EmptyState
             title="Sin líneas analíticas"
             description="Todavía no hay líneas de producto con datos económicos para este pedido."
             icon={<Package2 />}
-            className="h-full bg-transparent"
+            className={isMobile ? 'bg-transparent' : 'h-full bg-transparent'}
           />
         ) : isMobile ? (
-          <ScrollArea className="h-full pr-1">
-            <Accordion type="single" collapsible className="rounded-md border">
-              {productLines.map((line) => (
-                <ProductLineMobileCard key={line.product.id} line={line} />
-              ))}
-            </Accordion>
-          </ScrollArea>
+          <Accordion type="single" collapsible className="rounded-md border">
+            {productLines.map((line) => (
+              <ProductLineMobileCard key={line.product.id} line={line} />
+            ))}
+          </Accordion>
         ) : (
           <ScrollArea className="h-full">
             <div className="rounded-md border">
@@ -341,22 +342,23 @@ export default function OrderCostAnalysis() {
         )}
       </TabsContent>
 
-      <TabsContent value="pallets" className="mt-4 min-h-0 flex-1 overflow-hidden">
+      <TabsContent
+        value="pallets"
+        className={isMobile ? 'mt-4' : 'mt-4 min-h-0 flex-1 overflow-hidden'}
+      >
         {palletLines.length === 0 ? (
           <EmptyState
             title="Sin palets analíticos"
             description="Todavía no hay palets con datos económicos disponibles para este pedido."
             icon={<Wallet />}
-            className="h-full bg-transparent"
+            className={isMobile ? 'bg-transparent' : 'h-full bg-transparent'}
           />
         ) : isMobile ? (
-          <ScrollArea className="h-full pr-1">
-            <Accordion type="single" collapsible className="rounded-md border">
-              {palletLines.map((pallet) => (
-                <PalletMobileCard key={pallet.palletId} pallet={pallet} />
-              ))}
-            </Accordion>
-          </ScrollArea>
+          <Accordion type="single" collapsible className="rounded-md border">
+            {palletLines.map((pallet) => (
+              <PalletMobileCard key={pallet.palletId} pallet={pallet} />
+            ))}
+          </Accordion>
         ) : (
           <ScrollArea className="h-full">
             <div className="rounded-md border">
@@ -427,69 +429,82 @@ export default function OrderCostAnalysis() {
     </Tabs>
   );
 
+  const header = (
+    <CardHeader className="space-y-2">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <CardTitle className="text-lg font-medium">Análisis económico</CardTitle>
+          <CardDescription>
+            Lectura global y por detalle del coste, importe y margen del pedido #{order?.id}.
+          </CardDescription>
+        </div>
+        {costAnalysisError ? (
+          <Badge variant="outline" className="text-amber-700 dark:text-amber-300">
+            Última recarga con incidencias
+          </Badge>
+        ) : null}
+      </div>
+      <div className={`grid gap-3 ${isMobile ? 'grid-cols-1' : 'grid-cols-2 xl:grid-cols-4'}`}>
+        <AnalysisMetricCard
+          title="Importe"
+          value={getNullableCurrency(summary.totalRevenue)}
+          detail={getNullableCurrencyPerKg(order?.revenuePerKg)}
+          description="Importe total del pedido"
+          icon={Wallet}
+        />
+        <AnalysisMetricCard
+          title="Coste total"
+          value={getNullableCurrency(summary.totalCost)}
+          detail={getNullableCurrencyPerKg(order?.costPerKg)}
+          description={
+            summary.totalCost == null
+              ? 'Sin coste calculable'
+              : 'Coste acumulado de cajas disponibles'
+          }
+          icon={Package2}
+        />
+        <AnalysisMetricCard
+          title="Margen bruto"
+          value={getNullableCurrency(summary.grossMargin)}
+          detail={getNullableCurrencyPerKg(order?.marginPerKg)}
+          description={
+            summary.grossMargin == null ? 'Sin coste calculable' : 'Importe menos coste total'
+          }
+          icon={ChartColumn}
+          emphasize
+        />
+        <AnalysisMetricCard
+          title="Margen %"
+          value={getNullablePercentage(summary.marginPercentage)}
+          description={
+            summary.marginPercentage == null
+              ? 'No calculable con los datos actuales'
+              : 'Porcentaje de margen sobre importe'
+          }
+          icon={ChartColumn}
+        />
+      </div>
+    </CardHeader>
+  );
+
   return (
     <div
       className={isMobile ? 'flex min-h-0 flex-1 flex-col' : 'flex h-full min-h-0 flex-col pb-2'}
     >
-      <Card className="flex min-h-0 flex-1 flex-col bg-transparent">
-        <CardHeader className="space-y-2">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <CardTitle className="text-lg font-medium">Análisis económico</CardTitle>
-              <CardDescription>
-                Lectura global y por detalle del coste, importe y margen del pedido #{order?.id}.
-              </CardDescription>
-            </div>
-            {costAnalysisError ? (
-              <Badge variant="outline" className="text-amber-700 dark:text-amber-300">
-                Última recarga con incidencias
-              </Badge>
-            ) : null}
-          </div>
-          <div className={`grid gap-3 ${isMobile ? 'grid-cols-1' : 'grid-cols-2 xl:grid-cols-4'}`}>
-            <AnalysisMetricCard
-              title="Importe"
-              value={getNullableCurrency(summary.totalRevenue)}
-              detail={getNullableCurrencyPerKg(order?.revenuePerKg)}
-              description="Importe total del pedido"
-              icon={Wallet}
-            />
-            <AnalysisMetricCard
-              title="Coste total"
-              value={getNullableCurrency(summary.totalCost)}
-              detail={getNullableCurrencyPerKg(order?.costPerKg)}
-              description={
-                summary.totalCost == null
-                  ? 'Sin coste calculable'
-                  : 'Coste acumulado de cajas disponibles'
-              }
-              icon={Package2}
-            />
-            <AnalysisMetricCard
-              title="Margen bruto"
-              value={getNullableCurrency(summary.grossMargin)}
-              detail={getNullableCurrencyPerKg(order?.marginPerKg)}
-              description={
-                summary.grossMargin == null ? 'Sin coste calculable' : 'Importe menos coste total'
-              }
-              icon={ChartColumn}
-              emphasize
-            />
-            <AnalysisMetricCard
-              title="Margen %"
-              value={getNullablePercentage(summary.marginPercentage)}
-              description={
-                summary.marginPercentage == null
-                  ? 'No calculable con los datos actuales'
-                  : 'Porcentaje de margen sobre importe'
-              }
-              icon={ChartColumn}
-            />
-          </div>
-        </CardHeader>
-        <CardContent className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          {content}
-        </CardContent>
+      <Card className="flex min-h-0 flex-1 flex-col overflow-hidden bg-transparent">
+        {isMobile ? (
+          <ScrollArea className="min-h-0 flex-1">
+            {header}
+            <CardContent className="flex flex-col pt-0 pb-8">{content}</CardContent>
+          </ScrollArea>
+        ) : (
+          <>
+            {header}
+            <CardContent className="flex min-h-0 flex-1 flex-col overflow-hidden">
+              {content}
+            </CardContent>
+          </>
+        )}
       </Card>
     </div>
   );
