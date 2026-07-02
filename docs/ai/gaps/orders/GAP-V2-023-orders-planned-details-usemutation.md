@@ -6,12 +6,13 @@ category: code-quality
 priority: P1
 risk: medium
 size: M
-status: ready
+status: done
 dependencies:
   - GAP-V2-002
 target_files:
   - src/hooks/orders/useOrderPlannedDetails.ts
   - src/hooks/useOrder.ts
+  - src/__tests__/hooks/useOrderPlannedDetails.test.ts
 created_at: 2026-07-02
 updated_at: 2026-07-02
 ---
@@ -77,15 +78,48 @@ npm run lint
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+- `useOrderPlannedDetails` ahora crea mutaciones TanStack Query para `update`,
+  `delete` y `create`, usando `mutateAsync` para mantener la API pública de
+  `plannedProductDetailActions`.
+- Las mutaciones invalidan `orderKeys.detail(tenantId, order?.id)` en `onSuccess`
+  y conservan la integración `onError?.(err)`; `mutateAsync` mantiene la
+  propagación del error al llamador.
+- Se elimina `onOrderUpdate` del contrato del sub-hook y de la llamada desde
+  `useOrder.ts`.
+- `normalizePlannedProductDetail` queda limitado al valor derivado
+  `plannedProductDetails`.
+- Desviación acotada: se actualizó el test existente
+  `src/__tests__/hooks/useOrderPlannedDetails.test.ts` para envolver el hook con
+  `QueryClientProvider` tras introducir `useQueryClient`.
 
 ## Resultado
 
-{se rellena al terminar la implementación}
+Implementado. Las escrituras de detalles planificados ya no hacen merge local de
+`plannedProductDetails`; refrescan el detalle completo del pedido mediante
+invalidación de TanStack Query.
+
+Validaciones ejecutadas:
+
+```text
+npx vitest run src/__tests__/hooks/useOrderPlannedDetails.test.ts
+npm run type-check
+npm run lint
+npm run build
+```
+
+`lint` pasa con 0 errores y mantiene warnings globales preexistentes. Vitest muestra
+un warning preexistente por clave duplicada `type-check` en `package.json`, no
+relacionado con este GAP.
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+Auditoría con contexto limpio: `done`.
+
+Primer pase: `needs_fix` porque el test unitario del hook no tenía
+`QueryClientProvider` tras introducir `useQueryClient`. Se corrigió el test y se
+reauditó.
+
+Veredicto final: criterios cumplidos, sin riesgos bloqueantes.
 
 ## Links
 

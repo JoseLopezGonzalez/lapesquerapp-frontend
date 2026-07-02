@@ -2,8 +2,23 @@
  * @vitest-environment happy-dom
  */
 import { describe, expect, it, vi } from 'vitest';
+import React, { type ReactNode } from 'react';
 import { renderHook } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { parseTaxRate, useOrderPlannedDetails } from '@/hooks/orders/useOrderPlannedDetails';
+
+function createWrapper() {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  });
+
+  return function Wrapper({ children }: { children: ReactNode }) {
+    return React.createElement(QueryClientProvider, { client: queryClient }, children);
+  };
+}
 
 describe('parseTaxRate', () => {
   it('keeps legitimate zero percent tax distinct from invalid fallbacks', () => {
@@ -32,19 +47,20 @@ describe('parseTaxRate', () => {
 
 describe('useOrderPlannedDetails', () => {
   it('normalizes initially loaded planned details without falling back invalid tax rates to zero', () => {
-    const { result } = renderHook(() =>
-      useOrderPlannedDetails({
-        order: {
-          id: 1,
-          plannedProductDetails: [
-            { id: 1, product: { id: 10, name: 'Merluza' }, tax: { id: 2, rate: '-4%' } },
-            { id: 2, product: { id: 11, name: 'Rape' }, tax: { id: 3, rate: '0%' } },
-          ],
-        } as never,
-        productOptions: [],
-        taxOptions: [],
-        onOrderUpdate: vi.fn(),
-      })
+    const { result } = renderHook(
+      () =>
+        useOrderPlannedDetails({
+          order: {
+            id: 1,
+            plannedProductDetails: [
+              { id: 1, product: { id: 10, name: 'Merluza' }, tax: { id: 2, rate: '-4%' } },
+              { id: 2, product: { id: 11, name: 'Rape' }, tax: { id: 3, rate: '0%' } },
+            ],
+          } as never,
+          productOptions: [],
+          taxOptions: [],
+        }),
+      { wrapper: createWrapper() }
     );
 
     expect(result.current.plannedProductDetails).toEqual(
@@ -56,18 +72,19 @@ describe('useOrderPlannedDetails', () => {
   });
 
   it('keeps an unmatched missing tax rate as pending instead of zero percent', () => {
-    const { result } = renderHook(() =>
-      useOrderPlannedDetails({
-        order: {
-          id: 1,
-          plannedProductDetails: [
-            { id: 1, product: { id: 10, name: 'Merluza' }, tax: { id: 999 } },
-          ],
-        } as never,
-        productOptions: [],
-        taxOptions: [{ value: 2, label: '10%' }],
-        onOrderUpdate: vi.fn(),
-      })
+    const { result } = renderHook(
+      () =>
+        useOrderPlannedDetails({
+          order: {
+            id: 1,
+            plannedProductDetails: [
+              { id: 1, product: { id: 10, name: 'Merluza' }, tax: { id: 999 } },
+            ],
+          } as never,
+          productOptions: [],
+          taxOptions: [{ value: 2, label: '10%' }],
+        }),
+      { wrapper: createWrapper() }
     );
 
     expect(result.current.plannedProductDetails).toEqual(

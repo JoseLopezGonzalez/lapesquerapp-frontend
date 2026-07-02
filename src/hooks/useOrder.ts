@@ -252,7 +252,6 @@ export function useOrder(
     order,
     productOptions,
     taxOptions,
-    onOrderUpdate: updateOrderCache,
     onError: setMutationError,
   });
 

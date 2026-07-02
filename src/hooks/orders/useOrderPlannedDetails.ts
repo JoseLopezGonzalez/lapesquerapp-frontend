@@ -1,12 +1,15 @@
 'use client';
 
 import { useMemo, useCallback } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   createOrderPlannedProductDetail,
   deleteOrderPlannedProductDetail,
   updateOrderPlannedProductDetail,
 } from '@/services/orderService';
 import type { Order } from '@/services/orderService';
+import { orderKeys } from '@/lib/routes/queryKeys';
+import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 
 export interface OrderSelectOption {
   value: number | string;
@@ -88,7 +91,6 @@ interface UseOrderPlannedDetailsParams {
   order: Order | null;
   productOptions: OrderSelectOption[];
   taxOptions: OrderSelectOption[];
-  onOrderUpdate: (updatedOrder: Order) => void;
   onError?: (err: unknown) => void;
 }
 
@@ -105,9 +107,17 @@ export function useOrderPlannedDetails({
   order,
   productOptions,
   taxOptions,
-  onOrderUpdate,
   onError,
 }: UseOrderPlannedDetailsParams): UseOrderPlannedDetailsResult {
+  const queryClient = useQueryClient();
+  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
+  const orderId = order?.id;
+  const orderDetailKey = useMemo(() => orderKeys.detail(tenantId, orderId), [tenantId, orderId]);
+
+  const invalidateOrderDetail = useCallback(() => {
+    return queryClient.invalidateQueries({ queryKey: orderDetailKey });
+  }, [queryClient, orderDetailKey]);
+
   const plannedProductDetails = useMemo(
     () =>
       order?.plannedProductDetails
@@ -118,77 +128,56 @@ export function useOrderPlannedDetails({
     [order?.plannedProductDetails, productOptions, taxOptions]
   );
 
+  const { mutateAsync: updatePlannedProductDetailMutation } = useMutation({
+    mutationFn: ({
+      id,
+      updateData,
+    }: {
+      id: number | string;
+      updateData: Record<string, unknown>;
+    }) => updateOrderPlannedProductDetail(String(id), updateData),
+    onSuccess: invalidateOrderDetail,
+    onError: (err: unknown) => {
+      onError?.(err);
+    },
+  });
+
+  const { mutateAsync: deletePlannedProductDetailMutation } = useMutation({
+    mutationFn: (id: number | string) => deleteOrderPlannedProductDetail(String(id)),
+    onSuccess: invalidateOrderDetail,
+    onError: (err: unknown) => {
+      onError?.(err);
+    },
+  });
+
+  const { mutateAsync: createPlannedProductDetailMutation } = useMutation({
+    mutationFn: (detailData: Record<string, unknown>) =>
+      createOrderPlannedProductDetail(detailData),
+    onSuccess: invalidateOrderDetail,
+    onError: (err: unknown) => {
+      onError?.(err);
+    },
+  });
+
   const updatePlannedProductDetail = useCallback(
     async (id: number | string, updateData: Record<string, unknown>) => {
-      return updateOrderPlannedProductDetail(String(id), updateData)
-        .then((updated) => {
-          if (!order) return;
-          const normalizedUpdated = normalizePlannedProductDetail(
-            updated as Record<string, unknown>,
-            productOptions,
-            taxOptions,
-            updateData
-          );
-          const updatedPlannedDetails = (
-            order.plannedProductDetails as Array<Record<string, unknown>>
-          ).map((d) =>
-            d.id === normalizedUpdated.id
-              ? normalizedUpdated
-              : normalizePlannedProductDetail(d, productOptions, taxOptions)
-          );
-          onOrderUpdate({ ...order, plannedProductDetails: updatedPlannedDetails });
-        })
-        .catch((err: unknown) => {
-          onError?.(err);
-          throw err;
-        });
+      await updatePlannedProductDetailMutation({ id, updateData });
     },
-    [order, productOptions, taxOptions, onOrderUpdate, onError]
+    [updatePlannedProductDetailMutation]
   );
 
   const deletePlannedProductDetail = useCallback(
     async (id: number | string) => {
-      return deleteOrderPlannedProductDetail(String(id))
-        .then(() => {
-          if (!order) return;
-          const filteredDetails = (
-            order.plannedProductDetails as Array<{ id: number | string }>
-          ).filter((d) => d.id !== id);
-          onOrderUpdate({ ...order, plannedProductDetails: filteredDetails });
-        })
-        .catch((err: unknown) => {
-          onError?.(err);
-          throw err;
-        });
+      await deletePlannedProductDetailMutation(id);
     },
-    [order, onOrderUpdate, onError]
+    [deletePlannedProductDetailMutation]
   );
 
   const createPlannedProductDetail = useCallback(
     async (detailData: Record<string, unknown>) => {
-      return createOrderPlannedProductDetail(detailData)
-        .then((created) => {
-          if (!order) return;
-          const normalizedCreated = normalizePlannedProductDetail(
-            created as Record<string, unknown>,
-            productOptions,
-            taxOptions,
-            detailData
-          );
-          const normalizedExisting = (
-            (order.plannedProductDetails as Array<Record<string, unknown>>) || []
-          ).map((d) => normalizePlannedProductDetail(d, productOptions, taxOptions));
-          onOrderUpdate({
-            ...order,
-            plannedProductDetails: [...normalizedExisting, normalizedCreated],
-          });
-        })
-        .catch((err: unknown) => {
-          onError?.(err);
-          throw err;
-        });
+      await createPlannedProductDetailMutation(detailData);
     },
-    [order, productOptions, taxOptions, onOrderUpdate, onError]
+    [createPlannedProductDetailMutation]
   );
 
   return {
