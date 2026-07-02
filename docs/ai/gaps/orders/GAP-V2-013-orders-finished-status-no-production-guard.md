@@ -6,7 +6,7 @@ category: domain-business
 priority: P1
 risk: medium
 size: M
-status: ready
+status: done
 dependencies:
   - GAP-V2-011
 target_files:
@@ -90,15 +90,32 @@ advertencia/bloqueo antes de que la transición se confirme contra el backend.
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+- Se tipó `mergedProductDetails` en `src/hooks/useOrder.ts` con
+  `MergedOrderProductDetail` y `MergedOrderProductStatus`.
+- `Order/index.tsx` calcula las líneas con estado `pending` o `noPlanned` y, si el usuario
+  intenta cambiar el pedido a `finished`, muestra un `AlertDialog` con hasta cinco líneas
+  afectadas antes de llamar a `updateOrderStatus('finished')`.
+- La confirmación no es bloqueo duro: cancelar no envía nada al backend; confirmar mantiene
+  el flujo existente con `notify.promise`.
 
 ## Resultado
 
-{se rellena al terminar la implementación}
+- Implementado. La transición directa a `finished` solo queda sin fricción cuando no hay líneas
+  `pending` ni `noPlanned`; con producción pendiente/no planificada exige confirmación explícita.
+- Validaciones ejecutadas:
+  - `npm run type-check`: OK.
+  - `npm run lint`: OK con warnings preexistentes del repo.
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+Veredicto: `done`.
+
+- Sin hallazgos bloqueantes.
+- La transición a `finished` se intercepta cuando hay líneas `pending` o `noPlanned`.
+- La mutación solo se ejecuta tras confirmación explícita.
+- Las líneas `success` y `difference` mantienen el flujo directo.
+- La regla queda documentada en el código; no requiere entrada adicional en memoria
+  institucional.
 
 ## Links
 

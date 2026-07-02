@@ -1,8 +1,19 @@
 'use client';
 
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { AlertTriangle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import OrderEditSheet from './OrderEditSheet';
 import { OrderProvider, useOrderContext } from '@/context/OrderContext';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -25,6 +36,7 @@ import {
   isOrderPalletsReadOnly,
 } from '@/lib/orders/orderReadOnlyPermissions';
 import type { Order as OrderType, OrderStatus } from '@/services/orderService';
+import type { MergedOrderProductDetail } from '@/hooks/useOrder';
 
 interface OrderContentProps {
   onLoading?: (loading: boolean) => void;
@@ -40,6 +52,7 @@ const OrderContent = ({ onLoading, onClose, readOnly = false }: OrderContentProp
     error,
     reload,
     updateOrderStatus,
+    mergedProductDetails,
     exportDocument,
     activeTab,
     setActiveTab,
@@ -47,6 +60,7 @@ const OrderContent = ({ onLoading, onClose, readOnly = false }: OrderContentProp
   } = useOrderContext();
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [editSheetOpen, setEditSheetOpen] = useState(false);
+  const [pendingFinishedStatus, setPendingFinishedStatus] = useState<OrderStatus | null>(null);
 
   useHideBottomNav(isMobile);
 
@@ -89,7 +103,16 @@ const OrderContent = ({ onLoading, onClose, readOnly = false }: OrderContentProp
     setActiveSection('details');
   }, [activeSection, commercialInProgressBlockedTabIds]);
 
-  const handleStatusChange = useCallback(
+  const incompleteProductionLines = useMemo(
+    () =>
+      // Regla de negocio: finalizar con lineas pendientes/no planificadas exige confirmacion explicita.
+      mergedProductDetails.filter((detail) =>
+        ['pending', 'noPlanned'].includes(detail.status)
+      ) as MergedOrderProductDetail[],
+    [mergedProductDetails]
+  );
+
+  const updateStatusWithNotification = useCallback(
     async (newStatus: OrderStatus) => {
       await notify.promise(updateOrderStatus(newStatus), {
         loading: 'Actualizando estado del pedido...',
@@ -106,6 +129,29 @@ const OrderContent = ({ onLoading, onClose, readOnly = false }: OrderContentProp
     },
     [updateOrderStatus]
   );
+
+  const handleStatusChange = useCallback(
+    async (newStatus: OrderStatus) => {
+      if (newStatus === 'finished' && incompleteProductionLines.length > 0) {
+        setPendingFinishedStatus(newStatus);
+        return;
+      }
+
+      await updateStatusWithNotification(newStatus);
+    },
+    [incompleteProductionLines.length, updateStatusWithNotification]
+  );
+
+  const handleConfirmFinishedStatus = useCallback(async () => {
+    if (!pendingFinishedStatus) return;
+    const statusToApply = pendingFinishedStatus;
+    setPendingFinishedStatus(null);
+    await updateStatusWithNotification(statusToApply);
+  }, [pendingFinishedStatus, updateStatusWithNotification]);
+
+  const handleCancelFinishedStatus = useCallback(() => {
+    setPendingFinishedStatus(null);
+  }, []);
 
   const handleTemperatureChange = useCallback(
     async (newTemperature: unknown) => {
@@ -156,6 +202,57 @@ const OrderContent = ({ onLoading, onClose, readOnly = false }: OrderContentProp
 
   return (
     <div className="relative flex h-full w-full flex-col">
+      <AlertDialog
+        open={pendingFinishedStatus === 'finished'}
+        onOpenChange={(open) => {
+          if (!open) handleCancelFinishedStatus();
+        }}
+      >
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogMedia className="bg-amber-50 text-amber-700">
+              <AlertTriangle className="h-5 w-5" />
+            </AlertDialogMedia>
+            <AlertDialogTitle>Finalizar pedido con producción pendiente</AlertDialogTitle>
+            <AlertDialogDescription>
+              Hay líneas sin cobertura completa de producción. Revisa el pedido antes de finalizarlo
+              o confirma la transición si es intencionada.
+            </AlertDialogDescription>
+            <ul className="bg-muted/30 text-foreground max-h-40 space-y-2 overflow-y-auto rounded-md border p-3 text-left text-xs">
+              {incompleteProductionLines.slice(0, 5).map((detail, index) => {
+                const productName =
+                  typeof detail.product?.name === 'string'
+                    ? detail.product.name
+                    : `Producto ${detail.product?.id ?? index + 1}`;
+                const statusLabel = detail.status === 'noPlanned' ? 'No planificado' : 'Pendiente';
+
+                return (
+                  <li key={`${detail.product?.id ?? productName}-${index}`}>
+                    <span className="font-medium">{productName}</span>
+                    <span className="text-muted-foreground">
+                      {' '}
+                      - {statusLabel}. Planificado: {detail.plannedQuantity} kg; producido:{' '}
+                      {detail.productionQuantity} kg.
+                    </span>
+                  </li>
+                );
+              })}
+              {incompleteProductionLines.length > 5 && (
+                <li className="text-muted-foreground">
+                  Y {incompleteProductionLines.length - 5} línea
+                  {incompleteProductionLines.length - 5 === 1 ? '' : 's'} más.
+                </li>
+              )}
+            </ul>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancelFinishedStatus}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmFinishedStatus}>
+              Finalizar igualmente
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       {isMobile ? (
         activeSection === null ? (
           <>

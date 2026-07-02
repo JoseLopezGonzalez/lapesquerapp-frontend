@@ -28,6 +28,19 @@ export interface NormalizedOrderPallet {
   [key: string]: unknown;
 }
 
+export type MergedOrderProductStatus = 'success' | 'difference' | 'pending' | 'noPlanned';
+
+export interface MergedOrderProductDetail {
+  product: Record<string, unknown>;
+  plannedQuantity: number;
+  plannedBoxes: number;
+  productionQuantity: number;
+  productionBoxes: number;
+  quantityDifference: number;
+  boxesDifference?: number;
+  status: MergedOrderProductStatus;
+}
+
 const normalizeOrderPallet = (pallet: Record<string, unknown>): NormalizedOrderPallet => {
   return {
     ...pallet,
@@ -51,8 +64,8 @@ export const calculateProductionQuantityToleranceKg = (plannedQuantity: number):
 const mergeOrderDetails = (
   plannedProductDetails: unknown[] | undefined,
   productionProductDetails: unknown[] | undefined
-) => {
-  const resultMap = new Map<number | string, Record<string, unknown>>();
+): MergedOrderProductDetail[] => {
+  const resultMap = new Map<number | string, MergedOrderProductDetail>();
 
   (plannedProductDetails as Array<Record<string, unknown>> | undefined)?.forEach((detail) => {
     const product = detail?.product as Record<string, unknown> | undefined;
