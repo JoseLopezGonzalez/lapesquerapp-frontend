@@ -1,8 +1,11 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useCallback, useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getOrderCostAnalysis } from '@/services/orderService';
 import type { OrderCostAnalysisResponse } from '@/services/orderService';
+import { orderCostAnalysisKeys } from '@/lib/routes/queryKeys';
+import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 
 interface UseOrderCostAnalysisParams {
   orderId: number | string | null | undefined;
@@ -23,78 +26,55 @@ export function useOrderCostAnalysis({
   activeTab,
   enabled = true,
 }: UseOrderCostAnalysisParams): UseOrderCostAnalysisResult {
-  const [costAnalysis, setCostAnalysis] = useState<OrderCostAnalysisResponse | null>(null);
-  const [costAnalysisLoading, setCostAnalysisLoading] = useState(false);
-  const [costAnalysisError, setCostAnalysisError] = useState<unknown>(null);
-  const costAnalysisRequestedRef = useRef(false);
-  const previousOrderIdRef = useRef<typeof orderId>(null);
+  const queryClient = useQueryClient();
+  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
+  const queryKey = useMemo(
+    () => orderCostAnalysisKeys.detail(tenantId, orderId),
+    [tenantId, orderId]
+  );
 
   const resetCostAnalysis = useCallback(() => {
-    setCostAnalysis(null);
-    setCostAnalysisError(null);
-    setCostAnalysisLoading(false);
-    costAnalysisRequestedRef.current = false;
-  }, []);
+    queryClient.removeQueries({ queryKey });
+  }, [queryClient, queryKey]);
 
-  useEffect(() => {
-    if (previousOrderIdRef.current !== orderId) {
-      resetCostAnalysis();
-      previousOrderIdRef.current = orderId;
-    }
-  }, [orderId, resetCostAnalysis]);
+  const query = useQuery({
+    queryKey,
+    queryFn: () => getOrderCostAnalysis(orderId as number | string),
+    enabled: Boolean(enabled && tenantId && orderId && activeTab === 'analysis'),
+    staleTime: 60 * 1000,
+    select: (response): OrderCostAnalysisResponse | null =>
+      response
+        ? {
+            ...response,
+            byProductLine: [...(response.byProductLine || [])].sort(
+              (a, b) => (Number(b?.lineRevenue) || 0) - (Number(a?.lineRevenue) || 0)
+            ),
+            byPallet: [...(response.byPallet || [])].sort(
+              (a, b) => (Number(b?.totalCost) || 0) - (Number(a?.totalCost) || 0)
+            ),
+          }
+        : null,
+  });
 
   const loadCostAnalysis = useCallback(
     async ({ force = false } = {}): Promise<OrderCostAnalysisResponse | null> => {
       if (!enabled) return null;
       if (!orderId) return null;
-      if (costAnalysisLoading) return costAnalysis;
-      if (!force && (costAnalysisRequestedRef.current || costAnalysis)) {
-        return costAnalysis;
+      if (!force && query.data) {
+        return query.data;
       }
 
-      setCostAnalysisLoading(true);
-      setCostAnalysisError(null);
-
-      try {
-        const response = await getOrderCostAnalysis(orderId);
-        const normalizedResponse = response
-          ? {
-              ...response,
-              byProductLine: [...(response.byProductLine || [])].sort(
-                (a, b) => (Number(b?.lineRevenue) || 0) - (Number(a?.lineRevenue) || 0)
-              ),
-              byPallet: [...(response.byPallet || [])].sort(
-                (a, b) => (Number(b?.totalCost) || 0) - (Number(a?.totalCost) || 0)
-              ),
-            }
-          : null;
-
-        setCostAnalysis(normalizedResponse);
-        costAnalysisRequestedRef.current = true;
-        return normalizedResponse;
-      } catch (err) {
-        setCostAnalysisError(err);
-        throw err;
-      } finally {
-        setCostAnalysisLoading(false);
-      }
+      const result = await query.refetch();
+      if (result.error) throw result.error;
+      return result.data ?? null;
     },
-    [costAnalysis, costAnalysisLoading, enabled, orderId]
+    [enabled, orderId, query]
   );
 
-  useEffect(() => {
-    if (!enabled) return;
-    if (activeTab !== 'analysis') return;
-    if (!orderId) return;
-    if (costAnalysisRequestedRef.current || costAnalysisLoading) return;
-
-    loadCostAnalysis().catch(() => {});
-  }, [activeTab, orderId, costAnalysisLoading, enabled, loadCostAnalysis]);
-
   return {
-    costAnalysis,
-    costAnalysisLoading,
-    costAnalysisError,
+    costAnalysis: query.data ?? null,
+    costAnalysisLoading: query.isFetching,
+    costAnalysisError: query.error,
     loadCostAnalysis,
     resetCostAnalysis,
   };

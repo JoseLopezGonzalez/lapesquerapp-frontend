@@ -1,14 +1,7 @@
 'use client';
 
-import { getIncotermsOptions } from '@/services/incotermService';
-import { getPaymentTermsOptions } from '@/services/paymentTernService';
-import { getSalespeopleOptions } from '@/services/salespersonService';
-import { getTransportsOptions } from '@/services/transportService';
-import { getCustomersOptions } from '@/services/customerService';
-import { getFieldOperatorsOptions } from '@/services/fieldOperatorService';
-import { externalProcessorService } from '@/services/domain/external-processors/externalProcessorService';
-import { useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useOrderFormOptions } from '@/hooks/useOrderFormOptions';
 
 interface FormFieldOption {
   value: string;
@@ -189,14 +182,23 @@ const initialFormGroups: FormGroup[] = [
         label: 'Destino para docs del maquilador',
         component: 'Textarea',
         colSpan: 'col-span-2',
-        props: { placeholder: 'ej. Cliente Nº1, Olano Italia — aparecerá en CMR y letreros del maquilador', rows: 2, className: 'min-h-[60px]' },
+        props: {
+          placeholder: 'ej. Cliente Nº1, Olano Italia — aparecerá en CMR y letreros del maquilador',
+          rows: 2,
+          className: 'min-h-[60px]',
+        },
       },
       {
         name: 'loadingAddress',
         label: 'Lugar de carga',
         component: 'Textarea',
         colSpan: 'col-span-2',
-        props: { placeholder: 'ej. Polígono Industrial, nave 4. Vigo (Pontevedra) — se auto-rellena con la dirección del maquilador', rows: 2, className: 'min-h-[60px]' },
+        props: {
+          placeholder:
+            'ej. Polígono Industrial, nave 4. Vigo (Pontevedra) — se auto-rellena con la dirección del maquilador',
+          rows: 2,
+          className: 'min-h-[60px]',
+        },
       },
     ],
   },
@@ -331,122 +333,101 @@ const initialFormGroups: FormGroup[] = [
 ];
 
 export function useOrderCreateFormConfig() {
-  const { data: session } = useSession();
   const [defaultValues] = useState<DefaultValues>(initialDefaultValues);
-  const [formGroups, setFormGroups] = useState<FormGroup[]>(initialFormGroups);
-  const [loading, setLoading] = useState(true);
-  const token = (session?.user as { accessToken?: string })?.accessToken;
+  const { options, loading } = useOrderFormOptions({ includeCustomers: true });
 
-  useEffect(() => {
-    const fetchOptions = async () => {
-      try {
-        if (!token) {
-          setLoading(false);
-          return;
+  const formGroups = useMemo<FormGroup[]>(
+    () =>
+      initialFormGroups.map((group) => {
+        switch (group.group) {
+          case 'Cliente':
+            return {
+              ...group,
+              fields: group.fields.map((field) =>
+                field.name === 'customer'
+                  ? {
+                      ...field,
+                      options: options.customers.map((customer) => ({
+                        value: `${customer.id}`,
+                        label: `${customer.name}`,
+                      })),
+                    }
+                  : field
+              ),
+            };
+          case 'Información Comercial':
+            return {
+              ...group,
+              fields: group.fields.map((field) => {
+                if (field.name === 'salesperson') {
+                  return {
+                    ...field,
+                    options: options.salespeople.map((salesperson) => ({
+                      value: `${salesperson.id}`,
+                      label: salesperson.name,
+                    })),
+                  };
+                }
+                if (field.name === 'fieldOperator') {
+                  return {
+                    ...field,
+                    options: options.fieldOperators.map((fieldOperator) => ({
+                      value: `${fieldOperator.id}`,
+                      label: fieldOperator.name,
+                    })),
+                  };
+                }
+                if (field.name === 'payment') {
+                  return {
+                    ...field,
+                    options: options.paymentTerms.map((paymentTerm) => ({
+                      value: `${paymentTerm.id}`,
+                      label: paymentTerm.name,
+                    })),
+                  };
+                }
+                if (field.name === 'incoterm') {
+                  return {
+                    ...field,
+                    options: options.incoterms.map((incoterm) => ({
+                      value: `${incoterm.id}`,
+                      label: incoterm.name,
+                    })),
+                  };
+                }
+                if (field.name === 'externalProcessor') {
+                  return {
+                    ...field,
+                    options: options.externalProcessors.map((externalProcessor) => ({
+                      value: `${externalProcessor.value}`,
+                      label: externalProcessor.label,
+                    })),
+                  };
+                }
+                return field;
+              }),
+            };
+          case 'Transporte':
+            return {
+              ...group,
+              fields: group.fields.map((field) =>
+                field.name === 'transport'
+                  ? {
+                      ...field,
+                      options: options.transports.map((transport) => ({
+                        value: `${transport.id}`,
+                        label: transport.name,
+                      })),
+                    }
+                  : field
+              ),
+            };
+          default:
+            return group;
         }
-        const [salespeople, paymentTerms, incoterms, transports, customers, fieldOperators, externalProcessors] =
-          await Promise.all([
-            getSalespeopleOptions(token),
-            getPaymentTermsOptions(token),
-            getIncotermsOptions(token),
-            getTransportsOptions(token),
-            getCustomersOptions(token),
-            getFieldOperatorsOptions(token),
-            externalProcessorService.getOptions().catch(() => []),
-          ]);
-
-        setFormGroups((prev) =>
-          prev.map((group) => {
-            switch (group.group) {
-              case 'Cliente':
-                return {
-                  ...group,
-                  fields: group.fields.map((field) =>
-                    field.name === 'customer'
-                      ? {
-                          ...field,
-                          options: (customers as Array<{ id: number | string; name: string }>).map(
-                            (c) => ({ value: `${c.id}`, label: `${c.name}` })
-                          ),
-                        }
-                      : field
-                  ),
-                };
-              case 'Información Comercial':
-                return {
-                  ...group,
-                  fields: group.fields.map((field) => {
-                    if (field.name === 'salesperson') {
-                      return {
-                        ...field,
-                        options: (salespeople as Array<{ id: number | string; name: string }>).map(
-                          (sp) => ({ value: `${sp.id}`, label: sp.name })
-                        ),
-                      };
-                    }
-                    if (field.name === 'fieldOperator') {
-                      return {
-                        ...field,
-                        options: (fieldOperators as Array<{ id: number | string; name: string }>).map(
-                          (op) => ({ value: `${op.id}`, label: op.name })
-                        ),
-                      };
-                    }
-                    if (field.name === 'payment') {
-                      return {
-                        ...field,
-                        options: (paymentTerms as Array<{ id: number | string; name: string }>).map(
-                          (pt) => ({ value: `${pt.id}`, label: pt.name })
-                        ),
-                      };
-                    }
-                    if (field.name === 'incoterm') {
-                      return {
-                        ...field,
-                        options: (incoterms as Array<{ id: number | string; name: string }>).map(
-                          (inc) => ({ value: `${inc.id}`, label: inc.name })
-                        ),
-                      };
-                    }
-                    if (field.name === 'externalProcessor') {
-                      return {
-                        ...field,
-                        options: (externalProcessors as Array<{ value: number | string; label: string }>).map(
-                          (ep) => ({ value: `${ep.value}`, label: ep.label })
-                        ),
-                      };
-                    }
-                    return field;
-                  }),
-                };
-              case 'Transporte':
-                return {
-                  ...group,
-                  fields: group.fields.map((field) =>
-                    field.name === 'transport'
-                      ? {
-                          ...field,
-                          options: (transports as Array<{ id: number | string; name: string }>).map(
-                            (tr) => ({ value: `${tr.id}`, label: tr.name })
-                          ),
-                        }
-                      : field
-                  ),
-                };
-              default:
-                return group;
-            }
-          })
-        );
-
-        setLoading(false);
-      } catch (err) {
-        console.error('Error cargando opciones de formulario:', err);
-      }
-    };
-
-    fetchOptions();
-  }, [token]);
+      }),
+    [options]
+  );
 
   return { defaultValues, formGroups, loading };
 }

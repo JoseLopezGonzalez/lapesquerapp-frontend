@@ -6,7 +6,7 @@ category: code-quality
 priority: P2
 risk: medium
 size: M
-status: ready
+status: done
 dependencies:
   - GAP-V2-002
 target_files:
@@ -27,6 +27,7 @@ violando directamente el checklist REACT PATTERNS/TANSTACK QUERY de
 mechanism", "No server data stored in local useState").
 
 **`src/hooks/orders/useOrderCostAnalysis.ts`** (97 líneas completas):
+
 - Líneas 24-26: `costAnalysis`, `costAnalysisLoading`, `costAnalysisError` en
   `useState` — son datos de servidor (`getOrderCostAnalysis(orderId)`, línea 56),
   no estado de UI.
@@ -44,6 +45,7 @@ mechanism", "No server data stored in local useState").
   por `orderId`.
 
 **`src/hooks/orders/useOrderOptions.ts`** (126 líneas completas):
+
 - Líneas 39-42: `productOptions`, `taxOptions`, `optionsLoaded`, `optionsLoading` en
   `useState` — datos de catálogo (`getProductOptions`, `getTaxOptions`) que son
   candidatos directos de `staleTime: 10 * 60 * 1000` según
@@ -101,8 +103,8 @@ implementación, sin cambiar el comportamiento observable.
      fetch (ver Contexto).
 4. Mantener la forma de retorno pública de ambos hooks
    (`{ costAnalysis, costAnalysisLoading, costAnalysisError, loadCostAnalysis,
-   resetCostAnalysis }` y `{ productOptions, taxOptions, optionsLoading,
-   loadOptions }`) para no romper `useOrder.ts` ni los componentes consumidores;
+resetCostAnalysis }` y `{ productOptions, taxOptions, optionsLoading,
+loadOptions }`) para no romper `useOrder.ts` ni los componentes consumidores;
    `loadCostAnalysis`/`loadOptions` pueden mapear a `refetch` internamente si algún
    consumidor los sigue llamando de forma imperativa.
 
@@ -134,15 +136,48 @@ npm run test:run
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+- `useOrderCostAnalysis` se migró a `useQuery` con key tenant-aware
+  `orderCostAnalysisKeys.detail(tenantId, orderId)`, `enabled` por tab
+  `analysis` y `staleTime` de 1 minuto.
+- La normalización de `byProductLine` y `byPallet` se movió al `select` de la
+  query, manteniendo orden descendente por ingresos/coste.
+- `useOrderOptions` se migró a `useQueries`, reutilizando primero
+  `OrdersManagerOptionsContext` y haciendo fallback declarativo solo cuando faltan
+  opciones en la tab `products`.
+- Se mantuvieron las APIs públicas `loadCostAnalysis`, `resetCostAnalysis` y
+  `loadOptions` como wrappers sobre TanStack Query.
 
 ## Resultado
 
-{se rellena al terminar la implementación}
+- Implementado. Los dos hooks dejan de usar `useState` para datos de servidor y no
+  disparan fetching desde `useEffect`; TanStack Query controla carga, caché y
+  refetch.
+- Validaciones ejecutadas: `npm run type-check` limpio; `npx eslint` focalizado en
+  archivos tocados limpio; `npm run lint` sin errores (268 warnings preexistentes
+  en el repo).
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+- 2026-07-02 — gap-auditor: **done**.
+- Criterios verificados:
+  - `useOrderCostAnalysis.ts` y `useOrderOptions.ts` ya no usan `useState` para
+    datos de servidor.
+  - No queda ningún `useEffect` que dispare fetching manual; el fetch inicial queda
+    condicionado por `enabled` de TanStack Query y los efectos restantes solo
+    propagan errores al callback público.
+  - `useOrderCostAnalysis` usa `staleTime: 60 * 1000`; `useOrderOptions` usa
+    `staleTime: 10 * 60 * 1000` para productos e impuestos.
+  - Las query keys salen de factories centralizadas (`orderCostAnalysisKeys`,
+    `productOptionKeys`, `taxOptionKeys`) e incluyen tenant.
+  - Las APIs públicas esperadas por `useOrder.ts` se mantienen:
+    `loadCostAnalysis`, `resetCostAnalysis`, `loadOptions`, flags de loading y
+    datos devueltos.
+  - Los hooks llaman services de dominio existentes; no hay `fetch()` directo ni
+    forwarding de tokens desde hooks.
+- Validaciones revisadas: el implementador reportó `npm run type-check`, lint
+  focalizado, `npm run lint` y `npm run build` limpios. Auditoría no reejecutó la
+  verificación manual en navegador.
+- Hallazgos: ninguno bloqueante.
 
 ## Links
 

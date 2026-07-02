@@ -6,7 +6,7 @@ category: code-quality
 priority: P1
 risk: medium
 size: M
-status: ready
+status: done
 dependencies: []
 target_files:
   - src/hooks/useOrderFormOptions.ts
@@ -32,6 +32,7 @@ El mismo anti-patrón aparece duplicado, de forma independiente, en dos hooks
 distintos del módulo `orders`:
 
 **`src/hooks/useOrderFormOptions.ts`** (157 líneas completas):
+
 - Línea 50: `const token = session?.user?.accessToken as string | undefined;`
 - Líneas 72-95: el token se reenvía manualmente a 5 servicios de otros dominios:
   `getSalespeopleOptions(token)`, `getFieldOperatorsOptions(token)`,
@@ -47,6 +48,7 @@ distintos del módulo `orders`:
 
 **`src/hooks/useOrderCreateFormConfig.ts`** (452 líneas, hook de 130 líneas dentro
 de él):
+
 - Línea 338: `const token = (session?.user as { accessToken?: string })?.accessToken;`
 - Líneas 349-355: el mismo patrón, reenviando el token a **6** servicios:
   `getSalespeopleOptions`, `getPaymentTermsOptions`, `getIncotermsOptions`,
@@ -97,7 +99,7 @@ edición, y `useOrderCreateFormConfig`, usado en creación).
    ese es un cambio previo de servicio, no de estos hooks.
 2. Convertir `useOrderFormOptions` a `useQueries` (una query por catálogo) o a un
    único `useQuery` que agregue las 5 llamadas en su `queryFn`, con `staleTime: 10
-   * 60 * 1000` (catálogos de referencia, según `.claude/rules/hooks.md`).
+   - 60 \* 1000`(catálogos de referencia, según`.claude/rules/hooks.md`).
 3. Evaluar si `useOrderCreateFormConfig` puede reutilizar directamente
    `useOrderFormOptions` (añadiendo `customers` como sexta opción) en vez de
    duplicar el `Promise.all` — eliminando la duplicación entre ambos hooks.
@@ -135,15 +137,42 @@ npm run test:run
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+- `useOrderFormOptions` se migró a `useQueries` con query keys tenant-aware y
+  `staleTime` de 10 minutos para catálogos.
+- Se sustituyeron los imports legacy que exigían token por services de dominio que
+  obtienen el token internamente con `getAuthToken()`.
+- `useOrderCreateFormConfig` reutiliza `useOrderFormOptions({ includeCustomers:
+true })` y deriva `formGroups` con `useMemo`, eliminando el `Promise.all` duplicado
+  y el estado manual de loading.
+- Los errores de carga de opciones se notifican con `notify.error` y dedupe key.
 
 ## Resultado
 
-{se rellena al terminar la implementación}
+- Implementado. Los hooks afectados ya no extraen ni reenvían `accessToken`, y el
+  formulario de creación no puede quedarse en loading indefinido por un `catch`
+  sin `setLoading(false)`.
+- Validaciones ejecutadas: `npm run type-check` limpio; `npm run lint` sin errores
+  (268 warnings preexistentes en el repo); `npx eslint` focalizado en los archivos
+  tocados limpio.
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+- 2026-07-02 — gap-auditor: **done**.
+- Criterios verificados:
+  - `useOrderFormOptions.ts` y `useOrderCreateFormConfig.ts` ya no extraen
+    `accessToken` ni usan `useSession()` para reenviar tokens a services.
+  - Las opciones de formulario se cargan con `useQueries`; el `useEffect`
+    restante en `useOrderFormOptions.ts` solo notifica errores y no dispara fetch.
+  - Las query keys salen de `orderFormOptionKeys.catalog(...)` en
+    `src/lib/routes/queryKeys.ts` e incluyen tenant.
+  - Los services llamados obtienen el token internamente con `getAuthToken()`.
+  - No quedan `console.error` en los archivos objetivo.
+  - El loading del formulario de creación depende de TanStack Query, por lo que un
+    error de una query ya no deja un `catch` sin `setLoading(false)`.
+- Validaciones revisadas: el implementador reportó `npm run type-check`, lint
+  focalizado, `npm run lint` y `npm run build` limpios. Auditoría no reejecutó la
+  verificación manual en navegador.
+- Hallazgos: ninguno bloqueante.
 
 ## Links
 

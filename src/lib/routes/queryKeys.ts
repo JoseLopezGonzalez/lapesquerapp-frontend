@@ -207,6 +207,11 @@ export const taxOptionKeys = {
     ['taxes', 'options', tenantId ?? 'unknown'] as const,
 };
 
+export const orderFormOptionKeys = {
+  catalog: (tenantId: string | null | undefined, catalog: string) =>
+    ['orders', 'form-options', tenantId ?? 'unknown', catalog] as const,
+};
+
 export const productCategoryOptionKeys = {
   list: (tenantId: string | null | undefined) =>
     ['productCategories', 'options', tenantId ?? 'unknown'] as const,
@@ -305,6 +310,11 @@ export const orderKeys = {
     ['orders', 'detail', tenantId ?? 'unknown'] as const,
   detail: (tenantId: string | null | undefined, orderId: number | string | null | undefined) =>
     ['orders', 'detail', tenantId ?? 'unknown', orderId] as const,
+};
+
+export const orderCostAnalysisKeys = {
+  detail: (tenantId: string | null | undefined, orderId: number | string | null | undefined) =>
+    ['orders', 'cost-analysis', tenantId ?? 'unknown', orderId] as const,
 };
 
 export const orderAttachmentKeys = {
