@@ -2,8 +2,8 @@
 
 > This file is maintained exclusively by the system-learner agent.
 > Do not edit manually unless correcting an error.
-> Last updated: 2026-07-01
-> Total entries: 31
+> Last updated: 2026-07-02
+> Total entries: 32
 
 ## How this file works
 
@@ -98,6 +98,26 @@ Every entry has:
   `useOrderContext()`, ya gateado por `Order/index.tsx:148-166`.
 - **Status:** Corregido en el mismo audit antes de generar GAPs (no se creó GAP para el falso
   positivo).
+
+### PL-027
+- **Date:** 2026-07-02
+- **Source:** /audit-skeletons orders manager (skeleton-fidelity-auditor)
+- **Category:** AUDIT_RULE
+- **Confidence:** HIGH
+- **Entry:** Los skeletons de carga del módulo Orders Manager repiten un mismo hueco de
+  fidelidad: el markup del skeleton no tiene rama `isMobile` (o la ignora) aunque el
+  componente real al que sustituye sí ramifica por `isMobile` — ya sea cambiando el número de
+  columnas (`grid-cols-1` en mobile vs grid multi-columna en desktop) o cambiando a un árbol
+  de componentes totalmente distinto (p.ej. la card estrecha centrada de `OrderSectionList`
+  frente al `Card`+barra de tabs de `OrderTabsDesktop`). Encontrado en 3 archivos distintos en
+  una sola pasada de auditoría. **Regla:** cuando el componente real ramifica por `isMobile`,
+  comprobar con grep que el skeleton correspondiente tiene la misma rama antes de asumir que
+  ya está cubierto — un skeleton que "parece correcto" en un viewport a menudo omite
+  silenciosamente el otro.
+- **Found in:** `OrdersManagerLayout.jsx:16-27`, `Order/index.tsx:148-165`,
+  `OrderEditSheet/index.js:446-471` (`OrderEditFormSkeleton`),
+  `OrderCostAnalysis/index.jsx:206-222`.
+- **Status:** Follow-up: GAP-111, GAP-112, GAP-113, GAP-114.
 
 ---
 

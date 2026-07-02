@@ -634,10 +634,12 @@ export async function deleteOrderAuxiliaryLine(orderId: string, lineId: string):
   }
 }
 
+export type OrderStatus = 'pending' | 'finished' | 'incident';
+
 /**
  * Updates the status of an order.
  */
-export async function setOrderStatus(orderId: string, status: number): Promise<unknown> {
+export async function setOrderStatus(orderId: string, status: OrderStatus): Promise<unknown> {
   const token = await getAuthToken();
   const response = await fetchWithTenant(`${API_URL_V2}orders/${orderId}/status`, {
     method: 'PUT',

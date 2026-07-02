@@ -3,19 +3,18 @@
  * @module services/productService
  */
 
-import { fetchWithTenant } from '@lib/fetchWithTenant';
+import { fetchWithTenant } from '@/lib/fetchWithTenant';
 import { API_URL_V2 } from '@/configs/config';
+import { getAuthToken } from '@/lib/auth/getAuthToken';
 import { getErrorMessage } from '@/lib/api/apiHelpers';
 import { getUserAgent } from '@/lib/utils/getUserAgent';
 import type { ProductOption } from '@/types/product';
 
-/** Auth token for API requests */
-type AuthToken = string;
-
 /**
  * Obtiene las opciones de productos (para selects/autocomplete).
  */
-export function getProductOptions(token: AuthToken): Promise<ProductOption[]> {
+export async function getProductOptions(): Promise<ProductOption[]> {
+  const token = await getAuthToken();
   return fetchWithTenant(`${API_URL_V2}products/options`, {
     method: 'GET',
     headers: {

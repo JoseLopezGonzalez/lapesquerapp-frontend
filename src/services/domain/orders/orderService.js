@@ -177,33 +177,8 @@ export const orderService = {
    * @returns {Promise<Array>} Array de órdenes activas
    */
   async getActiveOrders() {
-    try {
-      console.log('[orderService.getActiveOrders] 🔄 Obteniendo token...');
-      const token = await getAuthToken();
-      console.log(
-        '[orderService.getActiveOrders] ✅ Token obtenido, longitud:',
-        token?.length || 0,
-        'primeros 10 chars:',
-        token?.substring(0, 10) || 'none'
-      );
-      const orders = await orderServiceFunctions.getActiveOrders(token);
-      console.log(
-        '[orderService.getActiveOrders] ✅ Pedidos obtenidos, tipo:',
-        typeof orders,
-        '¿Es array?:',
-        Array.isArray(orders),
-        'cantidad:',
-        Array.isArray(orders) ? orders.length : 'N/A'
-      );
-      return orders;
-    } catch (error) {
-      console.error(
-        '[orderService.getActiveOrders] ❌ Error obteniendo pedidos activos:',
-        error.message
-      );
-      console.error('[orderService.getActiveOrders] ❌ Stack:', error.stack);
-      throw error;
-    }
+    const token = await getAuthToken();
+    return orderServiceFunctions.getActiveOrders(token);
   },
 
   /**

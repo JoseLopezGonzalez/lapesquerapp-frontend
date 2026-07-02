@@ -1,10 +1,10 @@
-type OrderCategory = {
+export type OrderCategory = {
   label: string;
   name: string;
   current?: boolean;
 };
 
-type OrderListItem = Record<string, unknown> & {
+export type OrderListItem = Record<string, unknown> & {
   id: number | string;
   status?: string | null;
   loadDate?: string | null;

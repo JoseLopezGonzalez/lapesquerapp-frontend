@@ -27,6 +27,12 @@ import { Printer, SquareMousePointer } from 'lucide-react';
 import { notify } from '@/lib/notifications';
 import { motion } from 'framer-motion';
 
+/**
+ * @param {Object} props
+ * @param {boolean} props.open
+ * @param {() => void} props.onClose
+ * @param {Array<Record<string, unknown>>} [props.boxes]
+ */
 const BoxLabelPrintDialog = ({ open, onClose, boxes = [] }) => {
   const [printInPairs, setPrintInPairs] = useState(false);
   const {

@@ -32,7 +32,7 @@ export function RawMaterialReceptionsOptionsProvider({ children }) {
     setSuppliersLoading(true);
 
     Promise.all([
-      getProductOptions(token).then((products) =>
+      getProductOptions().then((products) =>
         (products || []).map((p) => ({ value: `${p.id}`, label: p.name }))
       ),
       getSupplierOptions(token).then((suppliers) => suppliers || []),

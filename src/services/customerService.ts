@@ -88,9 +88,9 @@ export async function getCustomer(id: string | number): Promise<unknown> {
  */
 export async function getCustomerOrderHistory(
   customerId: string | number,
-  token: AuthToken,
   options: CustomerOrderHistoryOptions = {}
 ): Promise<CustomerOrderHistoryResponse> {
+  const token = await getAuthToken();
   const { dateFrom, dateTo, year } = options;
 
   const queryParams = new URLSearchParams();
@@ -128,9 +128,9 @@ export async function getCustomerOrderHistory(
  * Obtiene los rangos de historial de pedidos disponibles para un cliente.
  */
 export async function getCustomerOrderHistoryRanges(
-  customerId: string | number,
-  token: AuthToken
+  customerId: string | number
 ): Promise<CustomerOrderHistoryRangesResponse> {
+  const token = await getAuthToken();
   const response = await fetchWithTenant(
     `${API_URL_V2}customers/${customerId}/order-history/ranges`,
     {

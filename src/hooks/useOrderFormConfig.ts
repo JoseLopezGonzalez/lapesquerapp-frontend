@@ -3,12 +3,12 @@
 import { useOrderFormOptions } from './useOrderFormOptions';
 import { useEffect, useState, useMemo } from 'react';
 
-interface FormFieldOption {
+export interface FormFieldOption {
   value: string;
   label: string;
 }
 
-interface FormFieldProps {
+export interface FormFieldProps {
   placeholder?: string;
   searchPlaceholder?: string;
   notFoundMessage?: string;
@@ -16,7 +16,7 @@ interface FormFieldProps {
   rows?: number;
 }
 
-interface FormField {
+export interface FormField {
   name: string;
   label: string;
   component: string;
@@ -27,7 +27,7 @@ interface FormField {
   description?: string;
 }
 
-interface FormGroup {
+export interface FormGroup {
   group: string;
   description?: string;
   grid: string;

@@ -9,11 +9,6 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useOrders } from '@/hooks/useOrders';
 
-// Mock next-auth
-vi.mock('next-auth/react', () => ({
-  useSession: vi.fn(() => ({ data: { user: { accessToken: 'test-token' } } })),
-}));
-
 // Mock orderService
 vi.mock('@/services/orderService', () => ({
   getActiveOrders: vi.fn(),
@@ -62,7 +57,7 @@ describe('useOrders', () => {
     });
 
     expect(result.current.orders).toEqual(mockOrders);
-    expect(getActiveOrders).toHaveBeenCalledWith('test-token');
+    expect(getActiveOrders).toHaveBeenCalledWith();
   });
 
   it('returns empty array when no orders', async () => {
@@ -98,7 +93,7 @@ describe('useOrders', () => {
       wrapper: createWrapper(),
     });
 
-    expect(result.current.queryKey).toEqual(['orders', 'test-tenant']);
+    expect(result.current.queryKey).toEqual(['orders', 'active', 'test-tenant']);
     expect(typeof result.current.refetch).toBe('function');
   });
 });

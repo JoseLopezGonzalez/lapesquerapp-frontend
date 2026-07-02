@@ -24,7 +24,7 @@ import {
   getBlockedOrderSectionsForReadOnly,
   isOrderPalletsReadOnly,
 } from '@/lib/orders/orderReadOnlyPermissions';
-import type { Order as OrderType } from '@/services/orderService';
+import type { Order as OrderType, OrderStatus } from '@/services/orderService';
 
 interface OrderContentProps {
   onLoading?: (loading: boolean) => void;
@@ -44,17 +44,7 @@ const OrderContent = ({ onLoading, onClose, readOnly = false }: OrderContentProp
     activeTab,
     setActiveTab,
     updateTemperatureOrder,
-  } = useOrderContext() as {
-    order: OrderType | null;
-    loading: boolean;
-    error: unknown;
-    reload: () => Promise<OrderType | null>;
-    updateOrderStatus: (status: number) => Promise<unknown>;
-    exportDocument: (type: string, format: string, name: string) => void;
-    activeTab: string;
-    setActiveTab: (tab: string) => void;
-    updateTemperatureOrder: (temp: unknown) => Promise<unknown>;
-  };
+  } = useOrderContext();
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [editSheetOpen, setEditSheetOpen] = useState(false);
 
@@ -100,7 +90,7 @@ const OrderContent = ({ onLoading, onClose, readOnly = false }: OrderContentProp
   }, [activeSection, commercialInProgressBlockedTabIds]);
 
   const handleStatusChange = useCallback(
-    async (newStatus: number) => {
+    async (newStatus: OrderStatus) => {
       await notify.promise(updateOrderStatus(newStatus), {
         loading: 'Actualizando estado del pedido...',
         success: 'Estado del pedido actualizado',
@@ -227,8 +217,7 @@ const OrderContent = ({ onLoading, onClose, readOnly = false }: OrderContentProp
                   <ArrowLeft className="h-6 w-6" />
                 </Button>
                 <h2 className="text-center text-xl font-normal dark:text-white">
-                  {SECTIONS_CONFIG.find((s: Record<string, unknown>) => s.id === activeSection)
-                    ?.title || 'Sección'}
+                  {SECTIONS_CONFIG.find((s) => s.id === activeSection)?.title || 'Sección'}
                 </h2>
                 <div className="absolute right-4 h-12 w-12" />
               </div>

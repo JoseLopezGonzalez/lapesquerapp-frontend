@@ -8,7 +8,8 @@ declare const Card: CardComponent;
 declare const CardHeader: CardComponent;
 declare const CardTitle: CardComponent;
 declare const CardDescription: CardComponent;
+declare const CardAction: CardComponent;
 declare const CardContent: CardComponent;
 declare const CardFooter: CardComponent;
 
-export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter };
+export { Card, CardHeader, CardTitle, CardDescription, CardAction, CardContent, CardFooter };

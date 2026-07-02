@@ -197,8 +197,15 @@ export const productionQueryKeys = {
 };
 
 export const productOptionKeys = {
-  list: (tenantId: string | null | undefined) =>
+  options: (tenantId: string | null | undefined) =>
     ['products', 'options', tenantId ?? 'unknown'] as const,
+  list: (tenantId: string | null | undefined) =>
+    productOptionKeys.options(tenantId),
+};
+
+export const taxOptionKeys = {
+  options: (tenantId: string | null | undefined) =>
+    ['taxes', 'options', tenantId ?? 'unknown'] as const,
 };
 
 export const productCategoryOptionKeys = {
@@ -279,6 +286,11 @@ export const palletAttachmentKeys = {
       palletId,
       normalizeQueryParams(params),
     ] as const,
+};
+
+export const orderListKeys = {
+  active: (tenantId: string | null | undefined) =>
+    ['orders', 'active', tenantId ?? 'unknown'] as const,
 };
 
 export const orderAttachmentKeys = {
@@ -596,6 +608,11 @@ export const receptionChartKeys = {
       unit,
       groupBy,
     ] as const,
+};
+
+export const productionViewKeys = {
+  data: (tenantId: string | null | undefined) =>
+    ['productionView', 'data', tenantId ?? 'unknown'] as const,
 };
 
 export const orderChartKeys = {

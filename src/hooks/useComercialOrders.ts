@@ -6,6 +6,7 @@ import { comercialOrderKeys } from '@/lib/routes/queryKeys';
 import { crmService } from '@/services/crmService';
 
 type CommercialOrder = Record<string, unknown> & {
+  id: number | string;
   offerId?: unknown;
   offer_id?: unknown;
 };
@@ -20,7 +21,7 @@ export function useComercialOrders(params: Record<string, unknown> = {}) {
     enabled: Boolean(tenantId) && Boolean(enabled),
     select: (response) => ({
       data: Array.isArray(response?.data)
-        ? response.data.map((order: CommercialOrder) => ({
+        ? (response.data as CommercialOrder[]).map((order) => ({
             ...order,
             offerId: order.offerId ?? order.offer_id ?? null,
           }))

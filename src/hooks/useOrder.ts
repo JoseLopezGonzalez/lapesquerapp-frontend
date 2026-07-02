@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import { getOrder, updateOrder, setOrderStatus } from '@/services/orderService';
-import type { Order } from '@/services/orderService';
+import type { Order, OrderStatus } from '@/services/orderService';
 import { useOrderCostAnalysis } from './orders/useOrderCostAnalysis';
 import { useOrderOptions } from './orders/useOrderOptions';
 import { useOrderIncidents } from './orders/useOrderIncidents';
@@ -14,13 +14,21 @@ import { useOrderPallets } from './orders/useOrderPallets';
 import { useOrderDocuments } from './orders/useOrderDocuments';
 import { useAuxiliaryProductOptions } from './useAuxiliaryProductOptions';
 
-const normalizeOrderPallet = (pallet: Record<string, unknown>) => {
-  if (!pallet) return pallet;
+export interface NormalizedOrderPallet {
+  id: number | string;
+  receptionId: number | string | null;
+  costPerKg: number | null;
+  totalCost: number | null;
+  [key: string]: unknown;
+}
+
+const normalizeOrderPallet = (pallet: Record<string, unknown>): NormalizedOrderPallet => {
   return {
     ...pallet,
-    receptionId: pallet.receptionId ?? pallet.reception_id ?? null,
-    costPerKg: pallet.costPerKg ?? pallet.cost_per_kg ?? null,
-    totalCost: pallet.totalCost ?? pallet.total_cost ?? null,
+    id: pallet.id as number | string,
+    receptionId: (pallet.receptionId ?? pallet.reception_id ?? null) as number | string | null,
+    costPerKg: (pallet.costPerKg ?? pallet.cost_per_kg ?? null) as number | null,
+    totalCost: (pallet.totalCost ?? pallet.total_cost ?? null) as number | null,
   };
 };
 
@@ -177,7 +185,7 @@ export function useOrder(
       });
   };
 
-  const updateOrderStatus = async (statusValue: number) => {
+  const updateOrderStatus = async (statusValue: OrderStatus) => {
     return setOrderStatus(orderId as unknown as string, statusValue)
       .then((updated) => {
         updateOrderCache(updated as Order);

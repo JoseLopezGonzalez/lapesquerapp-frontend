@@ -14,7 +14,8 @@ const OrderMap = () => {
   const isMobile = useIsMobile();
 
   const origin = !loading && settings?.['company.name'] ? settings['company.name'] : COMPANY_NAME;
-  const hasShippingAddress = Boolean(order?.shippingAddress);
+  const shippingAddress = order?.shippingAddress as string | undefined;
+  const hasShippingAddress = Boolean(shippingAddress);
 
   const mapContent =
     hasShippingAddress && GOOGLE_API_KEY ? (
@@ -24,7 +25,7 @@ const OrderMap = () => {
         style={{ border: 0 }}
         loading="lazy"
         allowFullScreen
-        src={`https://www.google.com/maps/embed/v1/directions?key=${GOOGLE_API_KEY}&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(order.shippingAddress)}&mode=driving`}
+        src={`https://www.google.com/maps/embed/v1/directions?key=${GOOGLE_API_KEY}&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(shippingAddress as string)}&mode=driving`}
       />
     ) : (
       <div className="text-muted-foreground flex h-full w-full items-center justify-center p-4 text-sm">

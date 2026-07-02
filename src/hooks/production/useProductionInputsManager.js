@@ -155,7 +155,7 @@ export function useProductionInputsManager({
       const palletIds = [...new Set(inputs.map((input) => input.box?.palletId).filter(Boolean))];
       const loadedPalletsData =
         palletIds.length > 0
-          ? await Promise.all(palletIds.map((palletId) => getPallet(palletId, token)))
+          ? await Promise.all(palletIds.map((palletId) => getPallet(palletId)))
           : [];
 
       // En edición, el endpoint de palet puede no incluir cajas ya consumidas/no disponibles.
@@ -237,7 +237,7 @@ export function useProductionInputsManager({
       const isNumeric = /^\d+$/.test(searchTerm);
       if (isNumeric) {
         const palletId = parseInt(searchTerm, 10);
-        const pallet = await getPallet(palletId, token);
+        const pallet = await getPallet(palletId);
         setLoadedPallets((prev) => {
           if (prev.length === 0) setSelectedPalletId(pallet.id);
           return [...prev, pallet];

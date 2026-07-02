@@ -7,14 +7,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import StatusBadge from '../../StatusBadge';
 
-interface OrderCardOrder {
+export interface OrderCardOrder {
   id: number | string;
-  status?: string;
+  status?: string | null;
   orderType?: string;
   order_type?: string;
   offerId?: number | string | null;
   loadDate?: string | null;
-  customer?: { name?: string } | null;
+  customer?: { name?: string | null } | null;
   numberOfBoxes?: number | null;
   externalProcessor?: { id?: number | string; name?: string } | null;
   externalProcessorId?: number | string | null;

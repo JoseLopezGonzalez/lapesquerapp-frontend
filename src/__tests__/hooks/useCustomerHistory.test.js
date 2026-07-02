@@ -8,11 +8,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { useCustomerHistory } from '@/hooks/useCustomerHistory';
 
-// Mock next-auth
-vi.mock('next-auth/react', () => ({
-  useSession: vi.fn(() => ({ data: { user: { accessToken: 'test-token' } } })),
-}));
-
 // Mock customerService
 vi.mock('@/services/customerService', () => ({
   getCustomerOrderHistory: vi.fn(),
@@ -195,7 +190,7 @@ describe('useCustomerHistory', () => {
       expect(getCustomerOrderHistory).toHaveBeenCalled();
     });
 
-    const detailOptions = getCustomerOrderHistory.mock.calls[0][2];
+    const detailOptions = getCustomerOrderHistory.mock.calls[0][1];
     expect(detailOptions).toMatchObject({
       dateFrom: expect.any(String),
       dateTo: expect.any(String),

@@ -18,14 +18,12 @@ import { getProductFamilyOptions } from '@/services/productFamilyService';
  */
 export function useProductOptions(params = {}) {
   const { enabled = true } = params;
-  const { data: session } = useSession();
-  const token = session?.user?.accessToken;
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: productOptionKeys.list(tenantId),
-    queryFn: () => getProductOptions(token),
-    enabled: !!token && !!tenantId && enabled,
+    queryFn: () => getProductOptions(),
+    enabled: !!tenantId && enabled,
     staleTime: 5 * 60 * 1000,
   });
 

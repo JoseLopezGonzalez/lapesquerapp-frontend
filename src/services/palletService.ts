@@ -93,13 +93,13 @@ export interface PalletTimelineResponse {
   timeline: PalletTimelineEntry[];
 }
 
-export async function getPallet(palletId: number | string, token?: AuthToken): Promise<unknown> {
-  const authToken = token ?? (await getAuthToken());
+export async function getPallet(palletId: number | string): Promise<unknown> {
+  const token = await getAuthToken();
   const response = await fetchWithTenant(`${API_URL_V2}pallets/${palletId}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${authToken}`,
+      Authorization: `Bearer ${token}`,
       'User-Agent': getUserAgent(),
     },
   });
@@ -248,7 +248,8 @@ export function updatePallet(
     });
 }
 
-export async function createPallet(palletData: PalletPayload, token: AuthToken): Promise<unknown> {
+export async function createPallet(palletData: PalletPayload): Promise<unknown> {
+  const token = await getAuthToken();
   const response = await fetchWithTenant(`${API_URL_V2}pallets`, {
     method: 'POST',
     headers: {
@@ -484,9 +485,8 @@ export function searchPalletsByLot(lot: string, token: AuthToken): Promise<unkno
     });
 }
 
-export function getAvailablePalletsForOrder(
-  params: AvailablePalletsParams,
-  token: AuthToken
+export async function getAvailablePalletsForOrder(
+  params: AvailablePalletsParams
 ): Promise<AvailablePalletsResponse> {
   const { orderId, ids, storeId, perPage = 50, page = 1 } = params;
 
@@ -509,6 +509,7 @@ export function getAvailablePalletsForOrder(
 
   const queryString = urlParams.toString();
   const url = `${API_URL_V2}orders/${orderId}/available-pallets${queryString ? `?${queryString}` : ''}`;
+  const token = await getAuthToken();
 
   return fetchWithTenant(url, {
     method: 'GET',

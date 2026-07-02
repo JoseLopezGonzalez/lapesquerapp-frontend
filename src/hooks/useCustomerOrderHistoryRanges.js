@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useSession } from 'next-auth/react';
 import {
   format as formatDate,
   parseISO,
@@ -66,9 +65,6 @@ export function useCustomerOrderHistoryRanges({
   enabled = true,
   notifyOnError = true,
 }) {
-  const { data: session } = useSession();
-  const token = session?.user?.accessToken;
-
   const [customerHistory, setCustomerHistory] = useState([]);
   const [availableYears, setAvailableYears] = useState([]);
   const [availableMonthsByYear, setAvailableMonthsByYear] = useState({});
@@ -120,13 +116,13 @@ export function useCustomerOrderHistoryRanges({
       setIsRangeReady(false);
       setHasHistoryRanges(null);
 
-      if (!customerId || !token) {
+      if (!customerId) {
         setInitialLoading(false);
         return;
       }
 
       try {
-        const result = await getCustomerOrderHistoryRanges(customerId, token);
+        const result = await getCustomerOrderHistoryRanges(customerId);
         const rangesData = result?.data || {};
         const rangesAvailableYears = rangesData.available_years || [];
 
@@ -162,7 +158,7 @@ export function useCustomerOrderHistoryRanges({
     };
 
     initializeRanges();
-  }, [customerId, token, enabled]);
+  }, [customerId, enabled]);
 
   useEffect(() => {
     if (!enabled || !isRangeReady) {
@@ -178,12 +174,6 @@ export function useCustomerOrderHistoryRanges({
 
       if (!customerId) {
         setError('No se pudo obtener el ID del cliente');
-        setInitialLoading(false);
-        return;
-      }
-
-      if (!token) {
-        setError('No se pudo obtener el token de autenticación');
         setInitialLoading(false);
         return;
       }
@@ -208,7 +198,7 @@ export function useCustomerOrderHistoryRanges({
           return;
         }
 
-        const result = await getCustomerOrderHistory(customerId, token, options);
+        const result = await getCustomerOrderHistory(customerId, options);
         setCustomerHistory(result.data || []);
         if (result.available_years?.length > 0) {
           setAvailableYears(result.available_years);
@@ -228,7 +218,7 @@ export function useCustomerOrderHistoryRanges({
 
     loadCustomerHistory();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- customerHistory used only to decide loading state, not as trigger
-  }, [customerId, token, getDateRange, isRangeReady, hasHistoryRanges, enabled]);
+  }, [customerId, getDateRange, isRangeReady, hasHistoryRanges, enabled]);
 
   const currentYear = new Date().getFullYear();
   const hasCurrentYear = availableYears.includes(currentYear);

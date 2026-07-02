@@ -70,7 +70,7 @@ export function useOrderOptions({
     setOptionsLoading(true);
     try {
       const [productsData, taxesData] = await Promise.all([
-        getProductOptions(accessToken),
+        getProductOptions(),
         (
           getTaxOptions as (
             token: string

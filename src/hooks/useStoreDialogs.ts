@@ -157,7 +157,7 @@ export function useStoreDialogs({
 
     setIsDuplicatingPallet(true);
     try {
-      const originalPallet = await notify.promise(getPallet(palletId, token), {
+      const originalPallet = await notify.promise(getPallet(palletId), {
         loading: 'Duplicando...',
         success: 'Datos del palet cargados',
         error: (error: unknown) => {
