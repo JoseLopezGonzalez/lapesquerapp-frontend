@@ -1,3 +1,10 @@
+---
+name: mobile-ui-agent
+description: Implements, improves, and reviews mobile UI views for the ERP, following the mobile-ui skill patterns, hooks, and design tokens.
+tools: Read, Grep, Glob, Edit, Write, Bash
+model: sonnet
+---
+
 # AGENTE: mobile-ui-agent
 
 ## Identidad

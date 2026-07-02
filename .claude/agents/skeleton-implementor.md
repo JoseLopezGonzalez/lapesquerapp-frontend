@@ -1,3 +1,10 @@
+---
+name: skeleton-implementor
+description: Builds or fixes Skeleton components to be faithful replicas of the real component they replace during loading. Invoked for AUDIT-SKEL- GAPs or direct skeleton requests.
+tools: Read, Grep, Glob, Edit, Write, Bash
+model: sonnet
+---
+
 # Agente: Skeleton Implementor — La PesquerApp
 
 ## Identidad y activación

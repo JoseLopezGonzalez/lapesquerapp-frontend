@@ -1,0 +1,9 @@
+# AI Worklog
+
+Log compacto de eventos de la capa v2. No repite el contenido de las auditorías ni de los GAPs — eso vive en `docs/ai/modules/{module}/audit.md` y `docs/ai/gaps/{module}/`. No es memoria de reglas/patrones — eso va a `.claude/project-learnings.md` vía `system-learner`.
+
+| Fecha | Módulo | Acción | Resultado | Siguiente |
+|---|---|---|---|---|
+| 2026-07-02 | — | Fase 0: frontmatter YAML a 13 agentes existentes + 3 agentes nuevos (gap-normalizer, domain-business-auditor, permissions-multitenant-auditor) + allowlist de permisos `docs/ai/**` | 16 agentes con frontmatter/rol definido | Fase 1: estructura docs/ai/** |
+| 2026-07-02 | — | Fase 1: creación de `docs/ai/README.md`, `next-action.md`, `worklog.md`, templates, script `build-gaps-registry.mjs`, skills `/deep-audit-module` e `/implement-next` | Infraestructura v2 lista | `/deep-audit-module module=orders` |
+| 2026-07-02 | orders | Piloto: `/deep-audit-module module=orders` (3 carriles: code-audit-agent, ui-audit-agent, domain-business-auditor) | 12 GAPs candidatos → normalizados a 10 ready, 2 blocked | Confirmar reglas de negocio (GAP-V2-011/013) + `/implement-next module=orders category=code-quality limit=2 risk=low` |

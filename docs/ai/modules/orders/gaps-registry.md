@@ -1,0 +1,45 @@
+# orders — GAPs Registry
+
+> **GENERADO por `node scripts/build-gaps-registry.mjs orders`. No editar a mano.**
+> Última regeneración: 2026-07-02
+> Fuente: frontmatter de `docs/ai/gaps/orders/*.md`
+
+## Ready
+
+| GAP | Título | Categoría | Prioridad | Riesgo | Tamaño | Dependencias | Archivos objetivo | Actualizado |
+|---|---|---|---|---|---|---|---|---|
+| GAP-V2-001 | Sub-hooks de mutación de orders no usan TanStack Query (promesas manuales + caché ad-hoc) | code-quality | P1 | medium | L | GAP-V2-002 | src/hooks/orders/useOrderIncidents.ts<br>src/hooks/orders/useOrderPlannedDetails.ts<br>src/hooks/orders/useOrderAuxiliaryLines.ts<br>src/hooks/orders/useOrderPallets.ts<br>src/hooks/useOrder.ts | 2026-07-02 |
+| GAP-V2-005 | Recurrencia de PL-010 (token-as-parameter) duplicada en useOrderFormOptions y useOrderCreateFormConfig | code-quality | P1 | medium | M | — | src/hooks/useOrderFormOptions.ts<br>src/hooks/useOrderCreateFormConfig.ts | 2026-07-02 |
+| GAP-V2-006 | CreateOrderForm en desktop no tiene forma de cancelar/cerrar | ux-ui | P1 | low | S | — | src/components/Admin/OrdersManager/CreateOrderForm/index.tsx | 2026-07-02 |
+| GAP-V2-012 | parseTaxRate degrada silenciosamente IVA inválido o negativo a 0% sin avisar | domain-business | P1 | medium | S | — | src/hooks/orders/useOrderPlannedDetails.ts | 2026-07-02 |
+| GAP-V2-002 | useOrder.ts usa un array literal como queryKey en vez de una factory | code-quality | P2 | low | S | — | src/hooks/useOrder.ts<br>src/lib/routes/queryKeys.ts | 2026-07-02 |
+| GAP-V2-003 | useOrderCostAnalysis y useOrderOptions reimplementan fetching manual en vez de TanStack Query | code-quality | P2 | medium | M | GAP-V2-002 | src/hooks/orders/useOrderCostAnalysis.ts<br>src/hooks/orders/useOrderOptions.ts | 2026-07-02 |
+| GAP-V2-004 | Migrar src/services/domain/orders/orderService.js a TypeScript | code-quality | P2 | low | S | — | src/services/domain/orders/orderService.js<br>src/lib/ai/tools/orderTools.js<br>src/components/Admin/Productions/ProductionView.jsx | 2026-07-02 |
+| GAP-V2-007 | Touch targets bajo 44px en selectores de estado y temperatura (mobile) | a11y-responsive | P2 | low | S | — | src/components/Admin/OrdersManager/Order/components/OrderStatusDropdown.tsx<br>src/components/Admin/OrdersManager/Order/components/OrderSummaryMobile.tsx | 2026-07-02 |
+| GAP-V2-008 | Estado de error y "no encontrado" del detalle de pedido no sigue el patrón documentado | ux-ui | P2 | low | S | — | src/components/Admin/OrdersManager/Order/index.tsx | 2026-07-02 |
+| GAP-V2-009 | Inconsistencias de copy en Orders Manager (tilde en pestaña y capitalización de placeholder) | ux-ui | P3 | low | XS | — | src/components/Admin/OrdersManager/Order/components/OrderTabsDesktop.tsx<br>src/components/Admin/OrdersManager/OrdersList/index.tsx | 2026-07-02 |
+
+
+## In progress
+
+_ninguno_
+
+
+## Blocked
+
+| GAP | Título | Categoría | Prioridad | Riesgo | Tamaño | Dependencias | Archivos objetivo | Actualizado |
+|---|---|---|---|---|---|---|---|---|
+| GAP-V2-011 | Tolerancia fija de 30kg entre planificado y producido no escala con el tamaño del pedido | domain-business | P1 | medium | S | — | src/hooks/useOrder.ts | 2026-07-02 |
+| GAP-V2-013 | Un pedido puede marcarse "finished" sin validar que la producción cubre lo planificado | domain-business | P1 | medium | M | GAP-V2-011 | src/hooks/useOrder.ts<br>src/components/Admin/OrdersManager/Order/index.tsx | 2026-07-02 |
+
+
+## Done
+
+_ninguno_
+
+
+## Later
+
+_ninguno_
+
+

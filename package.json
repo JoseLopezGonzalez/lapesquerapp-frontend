@@ -12,6 +12,7 @@
     "test:run": "vitest run",
     "type-check": "tsc --noEmit",
     "generate-generic-icons": "node scripts/generate-generic-icons.js",
+    "gaps:registry": "node scripts/build-gaps-registry.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky",
