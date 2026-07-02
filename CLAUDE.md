@@ -364,6 +364,8 @@ Para documentación extendida, ver `docs/ai-context/`. Para reglas específicas 
 | `system-learner`     | Memoria institucional — traduce hallazgos y correcciones en reglas permanentes en `project-learnings.md`           | Invocado por el Auditor, UX Reviewer, o Jose                                                              |
 | `code-audit-agent`   | Auditor técnico autónomo — calidad de código, deuda de migración y arquitectura React/Next.js. Nunca evalúa UI/UX. | Invocado por `/audit-code [quality\|migrate\|arch]`                                                       |
 | `design-quality-auditor` | Auditor de craft de diseño — armonía/proporción/jerarquía visual (con captura real cuando es posible), consistencia de textos, y drift entre vistas de la misma familia. Nunca evalúa código ni flujo UX. | Invocado por `/audit-design [visual\|copy\|consistency]`                                                  |
+| `skeleton-fidelity-auditor` | Auditor de fidelidad de loading states — compara (con captura real cuando es posible) cada `Skeleton` contra el componente real que sustituye: estructura, dimensiones, jerarquía. Mobile y desktop como targets separados. Nunca evalúa si falta el Skeleton (eso es `ui-audit-agent`). | Invocado por `/audit-skeletons [mobile\|desktop\|both]`                                                   |
+| `skeleton-implementor` | Especialista en construir/corregir skeletons fieles al componente real — nunca adivina medidas, siempre variantes mobile/desktop separadas cuando aplica                                          | Jose confirma un GAP `AUDIT-SKEL-*`, o pide directamente un skeleton                                       |
 | `code-reviewer`      | Revisor de código independiente                                                                                    | Revisión de PRs y diffs                                                                                   |
 | `db-architect`       | Arquitecto de base de datos                                                                                        | Cambios de esquema o modelos                                                                              |
 
@@ -380,6 +382,7 @@ Para documentación extendida, ver `docs/ai-context/`. Para reglas específicas 
 | `/audit-design visual`        | `design-quality-auditor` | Armonía, proporción, jerarquía y ritmo visual (captura real si hay Playwright+sesión) |
 | `/audit-design copy`          | `design-quality-auditor` | Terminología, tono, capitalización y claridad de mensajes |
 | `/audit-design consistency [family]` | `design-quality-auditor` | Drift entre vistas de la misma familia (listados, sheets, forms, confirmaciones...) |
+| `/audit-skeletons [mobile\|desktop\|both]` | `skeleton-fidelity-auditor` | Fidelidad de `Skeleton` vs el componente real que sustituye — estructura, dimensiones, jerarquía |
 | `/idea [texto libre]`         | —                   | Captura rápida en el parking de ideas — sin preguntas |
 | `/ideas [módulo]`             | —                   | Lista el backlog de `.claude/ideas/parking-lot.md`    |
 | `/ideas promote [NNN]`        | `gap-discovery`     | Promociona una idea parked a GAP con protocolo completo |
