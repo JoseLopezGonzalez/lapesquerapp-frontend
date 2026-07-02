@@ -6,7 +6,7 @@ category: ux-ui
 priority: P3
 risk: low
 size: XS
-status: ready
+status: done
 dependencies: []
 target_files:
   - src/components/Admin/OrdersManager/Order/components/OrderTabsDesktop.tsx
@@ -78,15 +78,22 @@ npm run type-check
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+- Se corrige la etiqueta desktop de la pestaña de documentos para usar `Envío de Documentos`.
+- Se unifica el placeholder de búsqueda en mobile y desktop como `Buscar por ID o cliente`.
 
 ## Resultado
 
-{se rellena al terminar la implementación}
+- Implementado. La pestaña desktop de documentos usa `Envío de Documentos`.
+- Implementado. El placeholder de búsqueda usa `Buscar por ID o cliente` en todos los breakpoints.
+- Validaciones ejecutadas: `npm run lint`, `npm run type-check` y `npm run build`.
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+Veredicto: `done`.
+
+- La pestaña desktop de documentos muestra `Envío de Documentos`, con tilde.
+- El buscador usa un único placeholder `Buscar por ID o cliente`, sin bifurcación mobile/desktop ni diferencia `ID/id`.
+- Documentación de seguimiento coherente: registry, audit, next-action y worklog apuntan a GAP-V2-009 como resuelto y a GAP-V2-014 como siguiente UX low-risk.
 
 ## Links
 

@@ -13,17 +13,17 @@ orders (Pedidos) — módulo piloto
 
 ## Fase activa
 
-Primera auditoría real de `orders` completada en circuito acotado de 5 carriles. 16 GAPs documentados: 4 `ready`, 11 `done`, 0 `blocked` y 1 `rejected` por merge. Cruce legacy acotado completado en `docs/ai/modules/orders/audit.md` sin crear GAPs nuevos.
+Primera auditoría real de `orders` completada en circuito acotado de 5 carriles. 16 GAPs documentados: 3 `ready`, 12 `done`, 0 `blocked` y 1 `rejected` por merge. Cruce legacy acotado completado en `docs/ai/modules/orders/audit.md` sin crear GAPs nuevos.
 
 ## Acción recomendada
 
-La tolerancia planificado/producido ya quedó implementada en GAP-V2-011, la normalización de IVA pendiente/inválido quedó cerrada en GAP-V2-012, la guarda de finalización con producción incompleta quedó cerrada en GAP-V2-013, la ocultación de coste/margen comercial quedó cerrada en GAP-V2-020, el lote code-quality medio cerró GAP-V2-003 y GAP-V2-005, GAP-V2-006 añadió cancelación explícita al formulario desktop de creación y GAP-V2-008 separó el error recuperable del estado "pedido no encontrado". La siguiente acción recomendada es continuar con UX low-risk:
+La tolerancia planificado/producido ya quedó implementada en GAP-V2-011, la normalización de IVA pendiente/inválido quedó cerrada en GAP-V2-012, la guarda de finalización con producción incompleta quedó cerrada en GAP-V2-013, la ocultación de coste/margen comercial quedó cerrada en GAP-V2-020, el lote code-quality medio cerró GAP-V2-003 y GAP-V2-005, GAP-V2-006 añadió cancelación explícita al formulario desktop de creación, GAP-V2-008 separó el error recuperable del estado "pedido no encontrado" y GAP-V2-009 normalizó copy menor en pestaña/buscador. La siguiente acción recomendada es continuar con UX low-risk:
 
 ```text
 /implement-next module=orders category=ux-ui limit=1 risk=low
 ```
 
-que cogería `GAP-V2-009`.
+que cogería `GAP-V2-014`.
 
 Alternativa low-risk de a11y:
 
@@ -35,7 +35,7 @@ que cogería `GAP-V2-007`.
 
 ## Motivo
 
-Los lotes implementables ya cerraron `GAP-V2-002`, `GAP-V2-004`, `GAP-V2-021`, `GAP-V2-011`, `GAP-V2-012`, `GAP-V2-013`, `GAP-V2-020`, `GAP-V2-003`, `GAP-V2-005`, `GAP-V2-006` y `GAP-V2-008`. El siguiente bloque seguro es UX low-risk; el único code-quality abierto es `GAP-V2-001`, pero tiene `size: L` y requiere autorización explícita o división previa.
+Los lotes implementables ya cerraron `GAP-V2-002`, `GAP-V2-004`, `GAP-V2-021`, `GAP-V2-011`, `GAP-V2-012`, `GAP-V2-013`, `GAP-V2-020`, `GAP-V2-003`, `GAP-V2-005`, `GAP-V2-006`, `GAP-V2-008` y `GAP-V2-009`. El siguiente bloque seguro es UX low-risk; el único code-quality abierto es `GAP-V2-001`, pero tiene `size: L` y requiere autorización explícita o división previa.
 
 ## Archivos clave
 
@@ -53,5 +53,5 @@ Los lotes implementables ya cerraron `GAP-V2-002`, `GAP-V2-004`, `GAP-V2-021`, `
 ## Estado resumido
 
 ```text
-audited_acotado → batch_9_done + business_rules_confirmed (11 done, 4 ready, 0 blocked, 1 rejected)
+audited_acotado → batch_10_done + business_rules_confirmed (12 done, 3 ready, 0 blocked, 1 rejected)
 ```

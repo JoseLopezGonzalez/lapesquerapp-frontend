@@ -257,7 +257,7 @@ const OrdersList = ({
               type="text"
               value={searchText}
               onChange={(e: ChangeEvent<HTMLInputElement>) => onChangeSearch(e.target.value)}
-              placeholder={isMobile ? 'Buscar por ID o cliente' : 'Buscar por id o cliente'}
+              placeholder="Buscar por ID o cliente"
             />
             <InputGroupAddon>
               <Search className="size-4" />

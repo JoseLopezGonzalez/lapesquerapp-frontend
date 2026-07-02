@@ -14,7 +14,7 @@ const TAB_LABELS: Record<string, string> = {
   production: 'Producción',
   labels: 'Etiquetas',
   pallets: 'Palets',
-  documents: 'Envio de Documentos',
+  documents: 'Envío de Documentos',
   export: 'Descargas',
   map: 'Ruta',
   incident: 'Incidencia',
