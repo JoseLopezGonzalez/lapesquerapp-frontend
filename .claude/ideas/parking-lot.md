@@ -42,6 +42,12 @@ y lista para implementar; una idea aquí es solo una nota para no perderla.
 - **Módulo:** Ventas
 - **Descripción:** Al abrir el chip de editar pedido no hay un estado de carga que espere a que los datos lleguen del backend; se abre de golpe con los inputs sin rellenar correctamente y con errores.
 
+### IDEA-006 — OrderManager: layout deja espacio en blanco grande al hacer scroll
+- **Fecha:** 2026-07-02
+- **Tipo:** Bug
+- **Módulo:** Ventas
+- **Descripción:** En el Order Manager, al hacer scroll hacia abajo, todo el contenido se desliza hasta arriba dejando un espacio en blanco muy grande. Parece un problema de layout/scroll.
+
 ---
 
 ## ✅ Promoted
