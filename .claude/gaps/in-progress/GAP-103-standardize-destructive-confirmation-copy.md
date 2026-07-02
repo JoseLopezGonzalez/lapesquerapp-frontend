@@ -5,7 +5,7 @@
 - **Tipo:** Mejora
 - **Módulo:** Ventas
 - **Prioridad:** Media
-- **Estado:** open
+- **Estado:** in-progress
 - **Fecha:** 2026-07-01
 - **Autor:** Jose
 
@@ -50,8 +50,8 @@ Jose confirmó fijar como estándar: **título en formato pregunta + nombrar la 
 ## Archivos a crear o modificar
 
 - `src/components/Admin/OrdersManager/Order/OrderAuxiliaryLines/index.tsx` (líneas ~720-723)
-- `src/components/Admin/OrdersManager/Order/OrderPlannedProductDetails/index.js` (líneas ~851-855)
-- `src/components/Admin/OrdersManager/Order/OrderPallets/dialogs/ConfirmActionDialog.jsx` (título/descripción, posible prop nueva)
+- `src/components/Admin/OrdersManager/Order/OrderPlannedProductDetails/index.tsx` (líneas ~851-855)
+- `src/components/Admin/OrdersManager/Order/OrderPallets/dialogs/ConfirmActionDialog.tsx` (título/descripción, posible prop nueva)
 - Callers de `ConfirmActionDialog` que haya que actualizar para pasar el ID del palet (a identificar durante la implementación — probablemente `OrderPallets/OrderPalletCard/index.js`, `OrderPallets/OrderPalletTableRow.jsx`, `OrderPallets/components/OrderPalletsToolbar.jsx`)
 
 ## Restricciones
@@ -68,11 +68,36 @@ Jose confirmó fijar como estándar: **título en formato pregunta + nombrar la 
 
 ### Archivos creados
 
+- Ninguno.
+
 ### Archivos modificados
+
+- `src/components/Admin/OrdersManager/Order/OrderAuxiliaryLines/index.tsx`
+- `src/components/Admin/OrdersManager/Order/OrderPlannedProductDetails/index.tsx`
+- `src/components/Admin/OrdersManager/Order/OrderPallets/dialogs/ConfirmActionDialog.tsx`
+- `src/components/Admin/OrdersManager/Order/OrderPallets/index.tsx`
+- `.claude/gaps/in-progress/GAP-103-standardize-destructive-confirmation-copy.md`
 
 ### Decisiones tomadas durante la implementación
 
+- Se cambiaron los títulos destructivos outlier a formato pregunta.
+- Se añadió la frase `"No se puede deshacer."` donde faltaba en líneas auxiliares y líneas previstas.
+- `useOrderPallets` ya exponía `confirmPalletId`; no hizo falta modificar el hook ni los callers de card/row/toolbar. Se destructuró en `OrderPallets/index.tsx` y se pasó como prop opcional `palletId` a `ConfirmActionDialog`.
+- `ConfirmActionDialog` usa `el palet #{id}` cuando `palletId` está disponible y fallback genérico `el palet` si no lo está.
+- Se mantuvo el texto de los botones de acción (`Eliminar`, `Desvincular`, `Desvincular todos`).
+
 ### Desviaciones del plan (si las hay)
+
+- Las rutas reales actuales son `.tsx`, no `.js`/`.jsx`.
+- No se tocaron `OrderPalletCard`, `OrderPalletTableRow` ni `OrderPalletsToolbar` porque el ID ya estaba centralizado en `confirmPalletId`.
+- Algunos archivos del área de palets ya tenían cambios previos en el worktree; se conservaron.
+
+### Checks ejecutados
+
+- `rg -n 'Eliminar línea auxiliar|¿Eliminar línea auxiliar\\?|Eliminar línea prevista|¿Eliminar línea prevista\\?|Eliminar Palet|Desvincular Palet|Desvincular todos los palets|¿Eliminar el palet|¿Desvincular el palet|¿Desvincular todos los palets\\?|No se puede deshacer' ...` — títulos antiguos ausentes; títulos pregunta esperados presentes.
+- `rg -n 'Eliminar Palet|Desvincular Palet|¿Eliminar \\$\\{palletLabel\\}|¿Desvincular \\$\\{palletLabel\\}|Esta acción no se puede deshacer|palletId=\\{confirmPalletId\\}|confirmPalletId' ...` — `confirmPalletId` se pasa al diálogo y las descripciones incluyen irreversibilidad.
+- `npx eslint src/components/Admin/OrdersManager/Order/OrderAuxiliaryLines/index.tsx src/components/Admin/OrdersManager/Order/OrderPlannedProductDetails/index.tsx src/components/Admin/OrdersManager/Order/OrderPallets/dialogs/ConfirmActionDialog.tsx src/components/Admin/OrdersManager/Order/OrderPallets/index.tsx` — sin errores; mantiene 1 warning preexistente `react-hooks/immutability` en `OrderPlannedProductDetails/index.tsx:289`, fuera del alcance de este GAP.
+- `git diff --check -- src/components/Admin/OrdersManager/Order/OrderAuxiliaryLines/index.tsx src/components/Admin/OrdersManager/Order/OrderPlannedProductDetails/index.tsx src/components/Admin/OrdersManager/Order/OrderPallets/dialogs/ConfirmActionDialog.tsx src/components/Admin/OrdersManager/Order/OrderPallets/index.tsx .claude/gaps/in-progress/GAP-103-standardize-destructive-confirmation-copy.md` — correcto.
 
 ---
 

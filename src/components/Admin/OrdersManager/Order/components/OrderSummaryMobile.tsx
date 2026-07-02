@@ -1,6 +1,7 @@
 'use client';
 
 import { ThermometerSnowflake, ShoppingBag } from 'lucide-react';
+import Image from 'next/image';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -60,7 +61,7 @@ export default function OrderSummaryMobile({
           </span>
         )}
         <div>
-          <p className="text-xl font-semibold">{customer?.name ?? '—'}</p>
+          <p className="text-xl font-medium">{customer?.name ?? '—'}</p>
           <p className="text-muted-foreground mt-1 text-base">Cliente Nº {customer?.id ?? '—'}</p>
           {order?.buyerReference ? (
             <p className="text-muted-foreground mt-1 text-sm">
@@ -71,9 +72,11 @@ export default function OrderSummaryMobile({
       </div>
 
       <div className="flex flex-col items-center justify-center gap-2">
-        <img
-          className="max-w-[170px]"
+        <Image
+          className="h-auto max-w-[170px]"
           src={transportImage}
+          width={170}
+          height={96}
           alt={`Transporte ${transport?.name || ''}`}
         />
         <p className="text-lg font-medium">{transport?.name || '-'}</p>
@@ -114,19 +117,19 @@ export default function OrderSummaryMobile({
       <div className="flex flex-wrap items-center justify-center gap-6">
         <div>
           <p className="text-muted-foreground mb-1 text-sm">Fecha de Carga</p>
-          <p className="text-lg font-semibold">{formatDate(order.loadDate)}</p>
+          <p className="text-lg font-medium">{formatDate(order.loadDate)}</p>
         </div>
         <div>
           <p className="text-muted-foreground mb-1 text-sm">Temperatura</p>
           {readOnly ? (
-            <span className="flex items-center justify-center gap-1.5 text-lg font-semibold">
+            <span className="flex items-center justify-center gap-1.5 text-lg font-medium">
               <ThermometerSnowflake className="h-5 w-5" />
               {(order.temperature as number | string | undefined) ?? '0'} ºC
             </span>
           ) : (
             <DropdownMenu>
               <DropdownMenuTrigger className="focus:outline-none">
-                <span className="hover:text-muted-foreground flex items-center justify-center gap-1.5 text-lg font-semibold transition-colors">
+                <span className="hover:text-muted-foreground flex items-center justify-center gap-1.5 text-lg font-medium transition-colors">
                   <ThermometerSnowflake className="h-5 w-5" />
                   {(order.temperature as number | string | undefined) ?? '0'} ºC
                 </span>
@@ -150,13 +153,13 @@ export default function OrderSummaryMobile({
       <div className="flex flex-wrap items-center justify-center gap-6">
         <div>
           <p className="text-muted-foreground mb-1 text-sm">Palets</p>
-          <p className="text-lg font-semibold">
+          <p className="text-lg font-medium">
             {order.numberOfPallets ? formatInteger(order.numberOfPallets) : '-'}
           </p>
         </div>
         <div>
           <p className="text-muted-foreground mb-1 text-sm">Importe</p>
-          <p className="text-lg font-semibold">
+          <p className="text-lg font-medium">
             {order.totalAmount ? formatDecimalCurrency(order.totalAmount) : '-'}
           </p>
         </div>

@@ -5,7 +5,7 @@
 - **Tipo:** Refactor
 - **Módulo:** Ventas
 - **Prioridad:** Baja
-- **Estado:** open
+- **Estado:** in-progress
 - **Fecha:** 2026-07-01
 - **Autor:** Jose (vía /audit-design visual, hallazgo auditor)
 
@@ -63,11 +63,39 @@ fijo y pueden usar `width`/`height` explícitos).
 
 ### Archivos creados
 
+Ninguno.
+
 ### Archivos modificados
+
+- `src/components/Admin/OrdersManager/Order/components/OrderSummaryMobile.tsx`
+- `src/components/Admin/OrdersManager/Order/OrderAttachments/index.tsx`
 
 ### Decisiones tomadas durante la implementación
 
+- `OrderHeaderDesktop.tsx` ya usaba `Image` de `next/image` en el árbol actual, así que no
+  necesitó cambios.
+- La imagen de transporte móvil en `OrderSummaryMobile.tsx` pasa a `Image` con
+  `width={170}` y `height={96}`, manteniendo `max-w-[170px]`.
+- Las miniaturas de adjuntos en `OrderAttachments/index.tsx` pasan a `Image fill` sobre los
+  contenedores `relative aspect-square` ya existentes.
+- Las imágenes de adjuntos usan `unoptimized` porque los services entregan blob URLs cacheadas;
+  no dependen de dominios remotos ni requieren tocar `next.config.mjs`.
+- El visor de imágenes usa `Image fill` con `object-contain` y `unoptimized` para preservar el
+  comportamiento anterior de vista previa.
+
 ### Desviaciones del plan (si las hay)
+
+No se modificó `next.config.mjs`: los adjuntos se renderizan desde blob URLs locales generadas
+por el service, no desde dominios remotos que necesiten `images.remotePatterns`.
+
+### Checks ejecutados
+
+- `rg "<img|from 'next/image'|<Image" ...` sobre los tres archivos del GAP — sin `<img>` en el
+  alcance; todos los renders son `Image`.
+- `npm run type-check` — OK.
+- `npx eslint` sobre los tres archivos del GAP — OK con 0 errores y 4 warnings preexistentes en
+  `OrderAttachments` (`setState` en effects e icono dinámico).
+- `git diff --check -- ...` sobre los archivos tocados y el GAP — OK.
 
 ---
 

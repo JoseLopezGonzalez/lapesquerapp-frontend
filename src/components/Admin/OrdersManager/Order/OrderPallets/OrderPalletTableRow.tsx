@@ -3,8 +3,14 @@
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Edit, Copy, Unlink, Trash2, Loader2, Printer } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Edit, Copy, Unlink, Trash2, Loader2, Printer, EllipsisVertical } from 'lucide-react';
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
 import { formatCostPerKg, formatTotalCost } from '@/helpers/production/costFormatters';
 
@@ -62,6 +68,8 @@ export default function OrderPalletTableRow({
   const belongsToReception = pallet?.receptionId != null;
 
   const isUnlinking = unlinkingPalletId === pallet.id;
+  const canPrint = canPrintExpeditionLabels && Boolean(onPrintExpeditionLabel);
+  const hasActions = canPrint || !readOnly;
 
   return (
     <TableRow className="border-muted hover:bg-muted/20 border-b last:border-0">
@@ -93,114 +101,78 @@ export default function OrderPalletTableRow({
         {formatTotalCost(pallet.totalCost)}
       </TableCell>
       <TableCell className="px-4 py-3">
-        <div className="flex justify-end gap-1">
-          {readOnly ? (
-            canPrintExpeditionLabels ? (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
+        <div className="flex justify-end">
+          {!hasActions ? (
+            <span className="text-muted-foreground text-xs">-</span>
+          ) : (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  aria-label={`Acciones del palet ${pallet.id}`}
+                >
+                  <EllipsisVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                {canPrint && (
+                  <DropdownMenuItem
+                    className="cursor-pointer"
                     onClick={() => onPrintExpeditionLabel?.(pallet.id)}
                   >
-                    <Printer className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Etiqueta de expedición</p>
-                </TooltipContent>
-              </Tooltip>
-            ) : (
-              <span className="text-muted-foreground text-xs">-</span>
-            )
-          ) : (
-            <>
-              {canPrintExpeditionLabels && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => onPrintExpeditionLabel?.(pallet.id)}
+                    <Printer className="mr-2 h-4 w-4" />
+                    Etiqueta de expedición
+                  </DropdownMenuItem>
+                )}
+                {!readOnly && (
+                  <>
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      onClick={() => onEdit(pallet.id)}
+                      title={
+                        belongsToReception
+                          ? 'Ver palet (solo lectura - pertenece a una recepción)'
+                          : undefined
+                      }
                     >
-                      <Printer className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Etiqueta de expedición</p>
-                  </TooltipContent>
-                </Tooltip>
-              )}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => onEdit(pallet.id)}
-                    title={
-                      belongsToReception
-                        ? 'Ver palet (solo lectura - pertenece a una recepción)'
-                        : 'Editar palet'
-                    }
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{belongsToReception ? 'Ver palet' : 'Editar palet'}</p>
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => onClone(pallet.id)}
-                    disabled={belongsToReception || isCloning}
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Clonar palet</p>
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => onUnlink(pallet.id)}
-                    disabled={isUnlinking}
-                  >
-                    {isUnlinking ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Unlink className="h-4 w-4" />
-                    )}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Desvincular palet</p>
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => onDelete(pallet.id)}
-                    disabled={belongsToReception}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Eliminar palet</p>
-                </TooltipContent>
-              </Tooltip>
-            </>
+                      <Edit className="mr-2 h-4 w-4" />
+                      {belongsToReception ? 'Ver palet' : 'Editar palet'}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      onClick={() => onClone(pallet.id)}
+                      disabled={belongsToReception || isCloning}
+                    >
+                      <Copy className="mr-2 h-4 w-4" />
+                      Clonar palet
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      onClick={() => onUnlink(pallet.id)}
+                      disabled={isUnlinking}
+                    >
+                      {isUnlinking ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Unlink className="mr-2 h-4 w-4" />
+                      )}
+                      Desvincular palet
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      variant="destructive"
+                      className="cursor-pointer"
+                      onClick={() => onDelete(pallet.id)}
+                      disabled={belongsToReception}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Eliminar palet
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </div>
       </TableCell>

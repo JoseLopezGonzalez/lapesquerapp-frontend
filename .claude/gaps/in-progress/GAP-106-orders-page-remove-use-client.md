@@ -63,15 +63,26 @@ Aplicar exactamente el mismo fix que GAP-046:
 
 ## Implementación
 
-> Rellena el Agente Implementador
+Verificado por Codex el 2026-07-02.
 
 ### Archivos creados
 
+- Ninguno durante esta implementación; `src/app/comercial/orders/page.tsx` ya existía en el árbol de trabajo.
+
 ### Archivos modificados
+
+- `.claude/gaps/in-progress/GAP-106-orders-page-remove-use-client.md`
 
 ### Decisiones tomadas durante la implementación
 
+- Se comprobó que `src/app/comercial/orders/page.tsx` existe y no contiene `'use client'`.
+- Se comprobó que `src/app/comercial/orders/page.js` no existe.
+- Se validó que el archivo mantiene `EntityClient` con `comercialOrdersConfig` sin tocar `configs.orders` ni la lógica de filtrado de exports.
+- Se ejecutó `npm run type-check` correctamente.
+
 ### Desviaciones del plan (si las hay)
+
+- No se realizó renombrado en esta pasada porque el árbol ya estaba en el estado esperado por el GAP antes de implementar.
 
 ---
 

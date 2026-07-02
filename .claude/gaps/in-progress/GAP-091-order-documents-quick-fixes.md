@@ -5,7 +5,7 @@
 - **Tipo:** Mejora
 - **Módulo:** Ventas
 - **Prioridad:** Baja
-- **Estado:** open
+- **Estado:** in-progress
 - **Fecha:** 2026-07-01
 - **Autor:** Jose (vía /audit-design visual, hallazgo auditor)
 
@@ -78,11 +78,38 @@ líneas), detectados en modo heurístico:
 
 ### Archivos creados
 
+- Ninguno.
+
 ### Archivos modificados
+
+- `src/components/Admin/OrdersManager/Order/OrderDocuments/index.tsx`
+- `.claude/gaps/in-progress/GAP-091-order-documents-quick-fixes.md`
 
 ### Decisiones tomadas durante la implementación
 
+- No se modificó `src/components/ui/badge.jsx`: el estado seleccionado de documentos se resolvió
+  usando `Badge variant="default"` cuando está seleccionado y `variant="outline"` cuando no lo está.
+- Se eliminó `getBadgeClass`, que añadía clases sólidas sobre un `Badge variant="outline"`.
+- Se unificó el tratamiento visual de selección: chips de documento y botones de destinatario
+  seleccionados usan `bg-primary`, `text-primary-foreground` y borde `primary`.
+- Se sustituyeron las clases `amber-*` del aviso de maquilador por tokens semánticos
+  `warning`: `border-warning/30`, `bg-warning/10` y `text-warning-foreground`.
+- Se mantuvo el `CardTitle className="text-base"` en tarjetas anidadas sin cambiar la estructura,
+  respetando la restricción de no reestructurar Cards sin revisión visual.
+
 ### Desviaciones del plan (si las hay)
+
+- El GAP menciona `src/components/ui/badge.tsx`, pero el primitivo real del repo es
+  `src/components/ui/badge.jsx` con `badge.d.ts`. No se tocó porque `variant="default"` cubre el
+  estado seleccionado sin ampliar un componente global legacy.
+- `npx prettier --write src/components/Admin/OrdersManager/Order/OrderDocuments/index.tsx` no pudo
+  ejecutarse porque el entorno no encuentra `prettier-plugin-tailwindcss`, aunque está declarado en
+  `package.json`. Se hizo una limpieza manual mínima en las líneas tocadas.
+
+- Checks ejecutados:
+  - `rg -n "getBadgeClass|border-amber|bg-amber|text-amber|bg-primary/20" src/components/Admin/OrdersManager/Order/OrderDocuments/index.tsx`
+  - `npx eslint src/components/Admin/OrdersManager/Order/OrderDocuments/index.tsx`
+  - `npm run type-check`
 
 ---
 

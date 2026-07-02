@@ -5,7 +5,7 @@
 - **Tipo:** Mejora
 - **Módulo:** Ventas
 - **Prioridad:** Media
-- **Estado:** open
+- **Estado:** in-progress
 - **Fecha:** 2026-07-01
 - **Autor:** Jose
 
@@ -56,11 +56,28 @@ Cambiar todas las apariciones de "Seleccione" (usted) en `OrderDocuments/index.t
 
 ### Archivos creados
 
+- Ninguno.
+
 ### Archivos modificados
+
+- `src/components/Admin/OrdersManager/Order/OrderDocuments/index.tsx`
+- `src/components/Admin/OrdersManager/Order/OrderEditSheet/schemas/orderEditSchema.ts`
+- `.claude/gaps/in-progress/GAP-101-standardize-tuteo-order-documents.md`
 
 ### Decisiones tomadas durante la implementación
 
+- Se cambiaron únicamente las apariciones de "Seleccione"/"Por favor seleccione" solicitadas por el GAP.
+- Se mantuvo intacta la lógica de validación Zod y los flujos de envío de documentos.
+
 ### Desviaciones del plan (si las hay)
+
+- `OrderDocuments/index.tsx` ya tenía cambios previos en el worktree. Se conservaron y solo se tocaron los literales de este GAP.
+
+### Checks ejecutados
+
+- `rg -n 'Seleccione|Por favor seleccione|Selecciona un documento|Selecciona al menos un destinatario|Selecciona un comercial' src/components/Admin/OrdersManager/Order/OrderDocuments/index.tsx src/components/Admin/OrdersManager/Order/OrderEditSheet/schemas/orderEditSchema.ts` — sin apariciones de "Seleccione"; textos esperados presentes.
+- `npx eslint src/components/Admin/OrdersManager/Order/OrderDocuments/index.tsx src/components/Admin/OrdersManager/Order/OrderEditSheet/schemas/orderEditSchema.ts` — correcto.
+- `git diff --check -- src/components/Admin/OrdersManager/Order/OrderDocuments/index.tsx src/components/Admin/OrdersManager/Order/OrderEditSheet/schemas/orderEditSchema.ts .claude/gaps/in-progress/GAP-101-standardize-tuteo-order-documents.md` — correcto.
 
 ---
 

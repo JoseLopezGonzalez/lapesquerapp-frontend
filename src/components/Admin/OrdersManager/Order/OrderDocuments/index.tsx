@@ -214,7 +214,7 @@ const OrderDocuments = () => {
 
   const handleOnClickSendMultiple = async () => {
     if (!selectedDocument) {
-      notify.error({ title: 'Por favor seleccione un documento' });
+      notify.error({ title: 'Selecciona un documento' });
       return;
     }
     const selectedRecipientsArray = (
@@ -224,7 +224,7 @@ const OrderDocuments = () => {
       .map(([id]) => id);
 
     if (selectedRecipientsArray.length === 0) {
-      notify.error({ title: 'Por favor seleccione al menos un destinatario' });
+      notify.error({ title: 'Selecciona al menos un destinatario' });
       return;
     }
 
@@ -312,14 +312,6 @@ const OrderDocuments = () => {
     0
   );
 
-  const getBadgeClass = (recipientName: keyof SelectedDocs, docName: string) => {
-    const isSelected = selectedDocs[recipientName]?.includes(docName);
-    if (isSelected) {
-      return 'bg-primary text-primary-foreground hover:bg-primary/90 border-primary';
-    }
-    return '';
-  };
-
   const handleOnClickResetSelectedDocs = () => {
     setSelectedDocs({ customer: [], transport: [], salesperson: [], external_processor: [] });
   };
@@ -368,7 +360,7 @@ const OrderDocuments = () => {
 
   // Sección: Envío al Maquilador (condicional)
   const maquiladorSection = hasMaquilador ? (
-    <Card className="flex h-full flex-col border-amber-200 dark:border-amber-800">
+    <Card className="flex h-full flex-col border-warning/30">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Factory className="size-4" />
@@ -399,17 +391,22 @@ const OrderDocuments = () => {
             ))}
             {(order.externalProcessor?.ccEmails ?? []).map((email) => (
               <div key={email} className="flex items-center gap-1">
-                <Badge variant="outline" className="px-1 text-[10px]">CC</Badge>
-                <a href={`mailto:${email}`} className="hover:underline">{email}</a>
+                <Badge variant="outline" className="px-1 text-[10px]">
+                  CC
+                </Badge>
+                <a href={`mailto:${email}`} className="hover:underline">
+                  {email}
+                </a>
               </div>
             ))}
           </div>
         )}
         {!order.maquiladorDestination && (
-          <div className="mt-3 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 p-2 text-xs text-amber-700 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-400">
+          <div className="mt-3 flex items-start gap-2 rounded-md border border-warning/30 bg-warning/10 p-2 text-xs text-warning-foreground">
             <AlertTriangle className="mt-0.5 size-3 shrink-0" />
             <span>
-              El campo &apos;Destino para docs&apos; está vacío. Los documentos mostrarán &apos;Cliente #{order.id}&apos;.
+              El campo &apos;Destino para docs&apos; está vacío. Los documentos mostrarán
+              &apos;Cliente #{order.id}&apos;.
             </span>
           </div>
         )}
@@ -473,24 +470,21 @@ const OrderDocuments = () => {
                   <p className="text-muted-foreground text-xs font-medium">Documentos</p>
                   {recipient.documents.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
-                      {recipient.documents.map((doc) => (
-                        <Badge
-                          key={doc.name}
-                          variant="outline"
-                          className={`flex cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium shadow-sm transition-all ${getBadgeClass(
-                            recipient.name as keyof SelectedDocs,
-                            doc.name
-                          )}`}
-                          onClick={() =>
-                            toggleDocumentSelection(
-                              recipient.name as keyof SelectedDocs,
-                              doc.name
-                            )
-                          }
-                        >
-                          {doc.label}
-                        </Badge>
-                      ))}
+                      {recipient.documents.map((doc) => {
+                        const recipientName = recipient.name as keyof SelectedDocs;
+                        const isSelected = selectedDocs[recipientName]?.includes(doc.name);
+
+                        return (
+                          <Badge
+                            key={doc.name}
+                            variant={isSelected ? 'default' : 'outline'}
+                            className="flex cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium shadow-sm transition-all"
+                            onClick={() => toggleDocumentSelection(recipientName, doc.name)}
+                          >
+                            {doc.label}
+                          </Badge>
+                        );
+                      })}
                     </div>
                   ) : (
                     <p className="text-muted-foreground text-xs">No hay documentos disponibles</p>
@@ -542,7 +536,7 @@ const OrderDocuments = () => {
       <CardHeader>
         <CardTitle>Envío Múltiple Destinatario</CardTitle>
         <CardDescription>
-          Seleccione un documento para enviarlo a múltiples destinatarios.
+          Selecciona un documento para enviarlo a múltiples destinatarios.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -551,7 +545,7 @@ const OrderDocuments = () => {
             <label className="mb-2 block text-sm font-medium">Documento a enviar:</label>
             <Select value={selectedDocument} onValueChange={setSelectedDocument}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Seleccione un documento" />
+                <SelectValue placeholder="Selecciona un documento" />
               </SelectTrigger>
               <SelectContent>
                 {availableDocuments.map((doc) => (
@@ -573,10 +567,12 @@ const OrderDocuments = () => {
                   variant="outline"
                   className={`h-auto w-full justify-start gap-2 rounded-md p-2 transition-colors ${
                     selectedRecipients[recipient.name as keyof SelectedRecipients]
-                      ? 'border-primary bg-primary/20'
+                      ? 'border-primary bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground'
                       : ''
                   }`}
-                  onClick={() => toggleRecipientSelection(recipient.name as keyof SelectedRecipients)}
+                  onClick={() =>
+                    toggleRecipientSelection(recipient.name as keyof SelectedRecipients)
+                  }
                 >
                   <div className="bg-muted rounded-full p-1 [&_svg]:size-4">{recipient.icon}</div>
                   <span className="text-sm font-medium">{recipient.label}</span>
@@ -654,7 +650,7 @@ const OrderDocuments = () => {
         <DialogContent size="md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-amber-500" />
+              <AlertTriangle className="h-5 w-5 text-warning-foreground" />
               Destino del maquilador no configurado
             </DialogTitle>
             <DialogDescription>

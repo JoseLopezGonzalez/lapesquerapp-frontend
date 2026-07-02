@@ -59,15 +59,27 @@ de opacidad).
 
 ## Implementación
 
-> Rellena el Agente Implementador
+Implementado por Codex el 2026-07-02.
 
 ### Archivos creados
 
+- Ninguno.
+
 ### Archivos modificados
+
+- `src/components/Admin/Stores/StoresManager/StoreCard/index.js`
+- `.claude/gaps/in-progress/GAP-110-storecard-yellow-to-amber.md`
 
 ### Decisiones tomadas durante la implementación
 
+- Se sustituyó el estado `medium` de `yellow-500` a `amber-500` en el borde izquierdo, el fondo/borde de selección y el indicador de progreso.
+- Se mantuvieron intactos los estados `green` y `red`.
+- Se mantuvieron intactas las opacidades existentes (`/10` y `/60`) en el bloque de selección.
+- Se ejecutaron `npx eslint` sobre el archivo modificado y `npm run type-check`.
+
 ### Desviaciones del plan (si las hay)
+
+- Se incluyó también el `bg-yellow-500` del indicador de progreso porque representa el mismo estado `medium`/warning dentro del mismo `StoreCard`.
 
 ---
 

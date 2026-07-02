@@ -5,7 +5,7 @@
 - **Tipo:** Bug
 - **Módulo:** Ventas
 - **Prioridad:** Media
-- **Estado:** open
+- **Estado:** in-progress
 - **Fecha:** 2026-07-01
 - **Autor:** Jose (vía /audit-design visual, hallazgo auditor)
 
@@ -62,11 +62,32 @@ detectados en modo heurístico:
 
 ### Archivos creados
 
+- Ninguno.
+
 ### Archivos modificados
+
+- `src/components/Admin/OrdersManager/Order/OrderMap/index.tsx`
+- `.claude/gaps/in-progress/GAP-093-order-map-quick-fixes.md`
 
 ### Decisiones tomadas durante la implementación
 
+- Se sustituyó el texto plano de ausencia de dirección por `EmptyState` con icono `MapPin`, título
+  y descripción.
+- Se añadió `Skeleton` superpuesto mientras el iframe de Google Maps carga.
+- Se guardó la URL cargada (`loadedMapSrc`) en vez de usar un `useEffect`, de modo que si cambia la
+  dirección o el origen el skeleton vuelve a mostrarse hasta el nuevo `onLoad`.
+- Se mantuvo el proveedor actual de mapas mediante iframe de Google Maps, respetando la restricción
+  del GAP.
+- Si hay dirección pero falta `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`, se muestra `EmptyState` específico
+  de mapa no disponible.
+
 ### Desviaciones del plan (si las hay)
+
+- Ninguna.
+
+- Checks ejecutados:
+  - `npx eslint src/components/Admin/OrdersManager/Order/OrderMap/index.tsx`
+  - `npm run type-check`
 
 ---
 

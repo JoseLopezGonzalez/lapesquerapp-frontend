@@ -93,15 +93,32 @@ compartido entre archivos (fuera de alcance de este GAP).
 
 ## Implementación
 
-> Rellena el Agente Implementador
+Implementado por Codex el 2026-07-02.
 
 ### Archivos creados
 
+- Ninguno.
+
 ### Archivos modificados
+
+- `src/components/Admin/Entity/EntityClient/index.js`
+- `src/components/Admin/Productions/ProductionCostsManager.jsx`
+- `src/components/Admin/Productions/CostCatalogManager.jsx`
+- `src/components/Admin/Productions/ProductionRecordImagesManager.jsx`
+- `src/components/Admin/FieldOperators/FieldOperatorForm.jsx`
+- `.claude/gaps/in-progress/GAP-105-window-confirm-to-alertdialog.md`
 
 ### Decisiones tomadas durante la implementación
 
+- `EntityClient` usa una única instancia de `AlertDialog` controlada por estado local para las cuatro confirmaciones dinámicas.
+- La confirmación de `EntityClient` se expone a los handlers como una promesa local para mantener intacta la secuencia original de cada acción tras confirmar.
+- Los otros cuatro componentes usan estado local específico para el elemento pendiente de borrado y renderizan su propio `AlertDialog`.
+- Las descripciones mantienen el mensaje original y añaden la consecuencia "Esta acción no se puede deshacer".
+
 ### Desviaciones del plan (si las hay)
+
+- No hubo desviaciones de alcance.
+- Se mantuvieron warnings existentes de ESLint no relacionados con el cambio.
 
 ---
 

@@ -5,7 +5,7 @@
 - **Tipo:** Mejora
 - **Módulo:** Ventas
 - **Prioridad:** Media
-- **Estado:** open
+- **Estado:** in-progress
 - **Fecha:** 2026-07-01
 - **Autor:** Jose
 
@@ -37,21 +37,21 @@ No se tocan los `EmptyState` de `OrderCostAnalysis` que representan un estado de
 
 ## Criterios de aceptación
 
-- [ ] `OrderLabels/index.js:484` — título cambia de `"No hay grupos de etiquetas"` a `"No existen grupos de etiquetas"`.
-- [ ] `OrderLabels/index.js:604` — título cambia de `"No hay cajas para mostrar"` a `"No existen cajas para mostrar"`.
+- [ ] `OrderLabels/index.tsx` — título cambia de `"No hay grupos de etiquetas"` a `"No existen grupos de etiquetas"`.
+- [ ] `OrderLabels/index.tsx` — título cambia de `"No hay cajas para mostrar"` a `"No existen cajas para mostrar"`.
 - [ ] `OrderCostAnalysis/index.jsx:280` — título cambia de `"Sin líneas analíticas"` a `"No existen líneas analíticas"`.
 - [ ] `OrderCostAnalysis/index.jsx:351` — título cambia de `"Sin palets analíticos"` a `"No existen palets analíticos"`.
 - [ ] `OrderAttachments/index.tsx:628` — título cambia de `"Sin adjuntos"` a `"No existen adjuntos"`.
-- [ ] `OrderProductDetails/index.js:69` (y su equivalente desktop en la línea 236 si aplica el mismo texto) — descripción cambia a `"Todavía no hay producción registrada para este pedido"`.
+- [ ] `OrderProductDetails/index.tsx` — descripción cambia a `"Todavía no hay producción registrada para este pedido"`.
 - [ ] Los `EmptyState` de error/no-disponible de `OrderCostAnalysis` (`"No se pudo cargar el análisis"`, `"Análisis no disponible"`) **no se modifican**.
 - [ ] No se cambia ningún icono, prop `className` ni estructura de los `EmptyState` afectados — solo el texto de `title`/`description`.
 
 ## Archivos a crear o modificar
 
-- `src/components/Admin/OrdersManager/Order/OrderLabels/index.js` (líneas ~484, ~604)
+- `src/components/Admin/OrdersManager/Order/OrderLabels/index.tsx` (ocurrencias móvil/desktop)
 - `src/components/Admin/OrdersManager/Order/OrderCostAnalysis/index.jsx` (líneas ~280, ~351)
 - `src/components/Admin/OrdersManager/Order/OrderAttachments/index.tsx` (línea ~628)
-- `src/components/Admin/OrdersManager/Order/OrderProductDetails/index.js` (líneas ~69, ~236)
+- `src/components/Admin/OrdersManager/Order/OrderProductDetails/index.tsx` (ocurrencias móvil/desktop)
 
 ## Restricciones
 
@@ -67,11 +67,32 @@ No se tocan los `EmptyState` de `OrderCostAnalysis` que representan un estado de
 
 ### Archivos creados
 
+- Ninguno.
+
 ### Archivos modificados
+
+- `src/components/Admin/OrdersManager/Order/OrderLabels/index.tsx`
+- `src/components/Admin/OrdersManager/Order/OrderCostAnalysis/index.jsx`
+- `src/components/Admin/OrdersManager/Order/OrderAttachments/index.tsx`
+- `src/components/Admin/OrdersManager/Order/OrderProductDetails/index.tsx`
+- `.claude/gaps/in-progress/GAP-100-standardize-empty-state-copy-order-editor.md`
 
 ### Decisiones tomadas durante la implementación
 
+- Se aplicó el patrón `"No existen [X]"` solo a estados vacíos de listas.
+- Se conservaron sin cambios los estados de error/no-disponible de `OrderCostAnalysis`: `"No se pudo cargar el análisis"` y `"Análisis no disponible"`.
+- En `OrderLabels/index.tsx` había cuatro ocurrencias por vistas móvil/desktop; se actualizaron todas para evitar divergencia de copy dentro del mismo componente.
+
 ### Desviaciones del plan (si las hay)
+
+- Las rutas reales actuales son `.tsx` para `OrderLabels` y `OrderProductDetails`, no `.js`.
+- Los archivos ya tenían cambios previos en el worktree; se conservaron y solo se tocaron las cadenas de texto de este GAP.
+
+### Checks ejecutados
+
+- `rg -n 'No hay grupos de etiquetas|No hay cajas para mostrar|Sin líneas analíticas|Sin palets analíticos|Sin adjuntos|No se ha producido actualmente nada|No existen grupos de etiquetas|No existen cajas para mostrar|No existen líneas analíticas|No existen palets analíticos|No existen adjuntos|Todavía no hay producción registrada|No se pudo cargar el análisis|Análisis no disponible' ...` — copies antiguos ausentes, copies nuevos presentes y estados excluidos de `OrderCostAnalysis` conservados.
+- `npx eslint src/components/Admin/OrdersManager/Order/OrderLabels/index.tsx src/components/Admin/OrdersManager/Order/OrderCostAnalysis/index.jsx src/components/Admin/OrdersManager/Order/OrderAttachments/index.tsx src/components/Admin/OrdersManager/Order/OrderProductDetails/index.tsx` — sin errores; mantiene 4 warnings preexistentes en `OrderAttachments/index.tsx` (`react-hooks/set-state-in-effect` y `react-hooks/static-components`) fuera del alcance de este GAP.
+- `git diff --check -- src/components/Admin/OrdersManager/Order/OrderLabels/index.tsx src/components/Admin/OrdersManager/Order/OrderCostAnalysis/index.jsx src/components/Admin/OrdersManager/Order/OrderAttachments/index.tsx src/components/Admin/OrdersManager/Order/OrderProductDetails/index.tsx .claude/gaps/in-progress/GAP-100-standardize-empty-state-copy-order-editor.md` — correcto.
 
 ---
 

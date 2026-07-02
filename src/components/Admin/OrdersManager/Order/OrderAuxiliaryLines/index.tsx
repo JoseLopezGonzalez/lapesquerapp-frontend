@@ -712,9 +712,10 @@ const OrderAuxiliaryLines = () => {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Eliminar línea auxiliar</AlertDialogTitle>
+            <AlertDialogTitle>¿Eliminar línea auxiliar?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción eliminará la línea del pedido y puede afectar los importes totales.
+              Esta acción eliminará la línea del pedido y puede afectar los importes totales. No
+              se puede deshacer.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

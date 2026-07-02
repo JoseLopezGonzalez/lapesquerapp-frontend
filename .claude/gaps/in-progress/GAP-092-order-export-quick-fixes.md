@@ -5,7 +5,7 @@
 - **Tipo:** Mejora
 - **Módulo:** Ventas
 - **Prioridad:** Baja
-- **Estado:** open
+- **Estado:** in-progress
 - **Fecha:** 2026-07-01
 - **Autor:** Jose (vía /audit-design visual, hallazgo auditor)
 
@@ -62,11 +62,36 @@ detectados en modo heurístico:
 
 ### Archivos creados
 
+- Ninguno.
+
 ### Archivos modificados
+
+- `src/components/Admin/OrdersManager/Order/OrderExport/index.tsx`
+- `.claude/gaps/in-progress/GAP-092-order-export-quick-fixes.md`
 
 ### Decisiones tomadas durante la implementación
 
+- Se confirmó que `exportDocuments` no tiene carga propia: viene de `useOrderDocuments` como
+  configuración síncrona filtrada por rol. Se dejó comentario en código y no se añadió `Skeleton`.
+- Se añadió `EmptyState` cuando no hay documentos disponibles para exportar.
+- Se añadió `EmptyState` específico para la sección de descargas rápidas si `fastExportDocuments`
+  está vacío y se deshabilitó `Descargar todos` en ese caso.
+- Se añadieron `className="size-4"` a los iconos de `react-icons` y a los lucide del mismo grupo
+  visual para mantener proporción consistente.
+- Se sustituyó el `useEffect` que sincronizaba `selectedType` por estado derivado y un handler de
+  cambio de documento, eliminando el warning `react-hooks/set-state-in-effect` sin alterar la lógica
+  de descarga.
+
 ### Desviaciones del plan (si las hay)
+
+- El GAP menciona `index.js`, pero el archivo actual del módulo es
+  `src/components/Admin/OrdersManager/Order/OrderExport/index.tsx`.
+- No se ejecutó `Skeleton` porque no existe loading específico para `exportDocuments`; el loading
+  general del pedido se gestiona en `Order/index.tsx` antes de renderizar las secciones.
+
+- Checks ejecutados:
+  - `npx eslint src/components/Admin/OrdersManager/Order/OrderExport/index.tsx`
+  - `npm run type-check`
 
 ---
 

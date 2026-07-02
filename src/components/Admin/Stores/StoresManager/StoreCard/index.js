@@ -22,7 +22,7 @@ const StoreCard = ({ store, isSelected, onClick, disabled }) => {
     occupancyStatus === 'low'
       ? 'border-l-green-500'
       : occupancyStatus === 'medium'
-        ? 'border-l-yellow-500'
+        ? 'border-l-amber-500'
         : 'border-l-red-600';
 
   const isThisSelected = store.id === isSelected;
@@ -31,7 +31,7 @@ const StoreCard = ({ store, isSelected, onClick, disabled }) => {
     (occupancyStatus === 'low'
       ? 'bg-green-500/10 border-green-500/60'
       : occupancyStatus === 'medium'
-        ? 'bg-yellow-500/10 border-yellow-500/60'
+        ? 'bg-amber-500/10 border-amber-500/60'
         : 'bg-red-500/10 border-red-500/60');
 
   const handleOnClick = () => {
@@ -152,7 +152,7 @@ const StoreCard = ({ store, isSelected, onClick, disabled }) => {
               className={cn(
                 'h-2',
                 occupancyStatus === 'low' && '[&_[data-slot=progress-indicator]]:bg-green-500',
-                occupancyStatus === 'medium' && '[&_[data-slot=progress-indicator]]:bg-yellow-500',
+                occupancyStatus === 'medium' && '[&_[data-slot=progress-indicator]]:bg-amber-500',
                 occupancyStatus === 'high' &&
                   '[&_[data-slot=progress-indicator]]:animate-pulse [&_[data-slot=progress-indicator]]:bg-red-600'
               )}

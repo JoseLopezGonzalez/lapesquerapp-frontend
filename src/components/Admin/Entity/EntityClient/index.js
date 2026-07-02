@@ -26,6 +26,16 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   Drawer,
   DrawerContent,
   DrawerHeader,
@@ -57,6 +67,15 @@ const initialPaginationMeta = {
   totalPages: 1,
   totalItems: 0,
   perPage: 12,
+};
+
+const initialConfirmDialog = {
+  open: false,
+  title: '',
+  description: '',
+  confirmLabel: 'Confirmar',
+  onConfirm: null,
+  onCancel: null,
 };
 
 const formatFilters = (filters) => {
@@ -132,8 +151,32 @@ export default function EntityClient({ config }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState(initialConfirmDialog);
   const usesSameTabNavigation = config?.sameTabNavigation === true;
   const { isMobile } = useIsMobileSafe();
+
+  const requestConfirmation = useCallback(({ title, description, confirmLabel = 'Confirmar' }) => {
+    return new Promise((resolve) => {
+      setConfirmDialog({
+        open: true,
+        title,
+        description,
+        confirmLabel,
+        onConfirm: () => resolve(true),
+        onCancel: () => resolve(false),
+      });
+    });
+  }, []);
+
+  const handleConfirmDialogCancel = useCallback(() => {
+    confirmDialog.onCancel?.();
+    setConfirmDialog(initialConfirmDialog);
+  }, [confirmDialog]);
+
+  const handleConfirmDialogConfirm = useCallback(() => {
+    confirmDialog.onConfirm?.();
+    setConfirmDialog(initialConfirmDialog);
+  }, [confirmDialog]);
 
   const perPage = config?.perPage || 12;
   const filtersObject = useMemo(() => {
@@ -232,7 +275,12 @@ export default function EntityClient({ config }) {
 
   const handleDelete = useCallback(
     async (id) => {
-      if (!window.confirm('¿Estás seguro de que deseas eliminar este elemento?')) return;
+      const confirmed = await requestConfirmation({
+        title: 'Eliminar elemento',
+        description: '¿Estás seguro de que deseas eliminar este elemento? Esta acción no se puede deshacer.',
+        confirmLabel: 'Eliminar',
+      });
+      if (!confirmed) return;
 
       const entityService = getEntityService(config.endpoint);
       if (!entityService) {
@@ -276,7 +324,7 @@ export default function EntityClient({ config }) {
         notify.error({ title: errorMessage });
       }
     },
-    [config.endpoint, isQueryDriven, queryResult?.refetch]
+    [config.endpoint, isQueryDriven, queryResult?.refetch, requestConfirmation]
   );
 
   // Handler para abrir modal de creación
@@ -531,7 +579,12 @@ export default function EntityClient({ config }) {
   };
 
   const handleSelectedRowsDelete = async () => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar estos elementos?')) return;
+    const confirmed = await requestConfirmation({
+      title: 'Eliminar elementos seleccionados',
+      description: '¿Estás seguro de que deseas eliminar estos elementos? Esta acción no se puede deshacer.',
+      confirmLabel: 'Eliminar',
+    });
+    if (!confirmed) return;
 
     const entityService = getEntityService(config.endpoint);
     if (!entityService) {
@@ -584,7 +637,14 @@ export default function EntityClient({ config }) {
   const handleGlobalAction = async (action) => {
     const applyTo = selectedRows.length > 0 ? 'selected' : filters.length > 0 ? 'filtered' : 'all';
 
-    if (action.confirmation && !window.confirm(action.confirmation)) return;
+    if (action.confirmation) {
+      const confirmed = await requestConfirmation({
+        title: 'Confirmar acción',
+        description: action.confirmation,
+        confirmLabel: 'Confirmar',
+      });
+      if (!confirmed) return;
+    }
 
     let body = { ...(action.body || {}) };
 
@@ -777,7 +837,14 @@ export default function EntityClient({ config }) {
         );
       }
 
-      if (confirmationText && !window.confirm(confirmationText)) return;
+      if (confirmationText) {
+        const confirmed = await requestConfirmation({
+          title: 'Confirmar acción',
+          description: confirmationText,
+          confirmLabel: 'Confirmar',
+        });
+        if (!confirmed) return;
+      }
 
       try {
         await entityService[action.serviceMethod](id, row);
@@ -794,7 +861,15 @@ export default function EntityClient({ config }) {
         notify.error({ title: errorMessage });
       }
     },
-    [config.endpoint, currentPage, filters, isQueryDriven, queryResult?.refetch, fetchData]
+    [
+      config.endpoint,
+      currentPage,
+      filters,
+      isQueryDriven,
+      queryResult?.refetch,
+      fetchData,
+      requestConfirmation,
+    ]
   );
 
   // Preparar columns y rows para EntityTable
@@ -943,6 +1018,20 @@ export default function EntityClient({ config }) {
           </DialogContent>
         </Dialog>
       )}
+      <AlertDialog open={confirmDialog.open} onOpenChange={(open) => !open && handleConfirmDialogCancel()}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{confirmDialog.title}</AlertDialogTitle>
+            <AlertDialogDescription>{confirmDialog.description}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleConfirmDialogCancel}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={handleConfirmDialogConfirm}>
+              {confirmDialog.confirmLabel}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

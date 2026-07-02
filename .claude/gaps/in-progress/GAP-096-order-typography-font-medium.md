@@ -5,7 +5,7 @@
 - **Tipo:** Refactor
 - **Módulo:** Ventas
 - **Prioridad:** Media
-- **Estado:** open
+- **Estado:** in-progress
 - **Fecha:** 2026-07-01
 - **Autor:** Jose (vía /audit-design visual, hallazgo auditor)
 
@@ -78,11 +78,41 @@ producto y sus métricas comparten hoy `text-sm font-semibold`, el nombre de pro
 
 ### Archivos creados
 
+Ninguno.
+
 ### Archivos modificados
+
+- `src/components/Admin/OrdersManager/Order/components/OrderSummaryMobile.tsx`
+- `src/components/Admin/OrdersManager/Order/OrderDetails/index.tsx`
+- `src/components/Admin/OrdersManager/Order/OrderProductDetails/index.tsx`
+- `src/components/Admin/OrdersManager/Order/OrderCostAnalysis/index.jsx`
+- `src/components/Admin/OrdersManager/Order/OrderLabels/index.tsx`
 
 ### Decisiones tomadas durante la implementación
 
+- Se sustituyó `font-semibold` por `font-medium` en los cinco archivos del alcance.
+- En `OrderProductDetails`, los nombres de producto pasan a `text-base font-medium` y las
+  métricas quedan en `text-sm font-medium`, manteniendo una diferencia visual entre
+  identificador primario y metadatos.
+- En `OrderCostAnalysis`, los identificadores móviles de producto/palet pasan a
+  `text-base font-medium`, mientras los importes laterales quedan en `text-sm font-medium`.
+- En `OrderLabels`, los nombres de producto de tarjetas móviles pasan a `text-base font-medium`;
+  los títulos de sección quedan en `text-base font-medium`.
+- En `OrderDetails`, el pequeño texto `EU` de la matrícula pasa de `text-[9px] font-semibold`
+  a `text-xs font-medium`, evitando mantener un tamaño arbitrario junto al peso eliminado.
+
 ### Desviaciones del plan (si las hay)
+
+Ninguna funcional. Los archivos `OrderSummaryMobile`, `OrderProductDetails` y `OrderLabels` ya
+están migrados a `.tsx` en el árbol actual, así que se implementó sobre las rutas existentes.
+
+### Checks ejecutados
+
+- `rg "font-semibold" ...` sobre los cinco archivos del GAP — sin coincidencias.
+- `npm run type-check` — OK.
+- `npx eslint` sobre los cinco archivos del GAP — OK con 0 errores y 1 warning preexistente
+  (`@next/next/no-img-element` en `OrderSummaryMobile.tsx`).
+- `git diff --check -- ...` sobre los cinco archivos y el GAP — OK.
 
 ---
 

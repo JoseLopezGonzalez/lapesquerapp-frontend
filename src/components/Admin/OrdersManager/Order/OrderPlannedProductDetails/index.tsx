@@ -871,10 +871,10 @@ const OrderPlannedProductDetails = () => {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Eliminar línea prevista</AlertDialogTitle>
+            <AlertDialogTitle>¿Eliminar línea prevista?</AlertDialogTitle>
             <AlertDialogDescription>
               Esta acción eliminará la línea del pedido y puede afectar importes, cajas y
-              preparación.
+              preparación. No se puede deshacer.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -136,7 +136,10 @@ export default function SearchPalletCard({
             {productsSummaryArray.length > 0 ? (
               productsSummaryArray.map((product, index) => (
                 <div key={index} className="flex flex-col overflow-hidden">
-                  <p className="text-foreground max-w-xs truncate overflow-hidden text-sm font-medium">
+                  <p
+                    className="text-foreground max-w-xs truncate overflow-hidden text-sm font-medium"
+                    title={product.name}
+                  >
                     {product.name}
                   </p>
                   {hasMultipleProducts && (product.netWeight > 0 || product.boxCount > 0) && (

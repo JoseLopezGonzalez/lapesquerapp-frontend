@@ -63,15 +63,27 @@ mismo problema de override y aplicar el mismo fix si corresponde.
 
 ## Implementación
 
-> Rellena el Agente Implementador
+Implementado por Codex el 2026-07-02.
 
 ### Archivos creados
 
+- Ninguno.
+
 ### Archivos modificados
+
+- `src/components/Admin/Stores/StoresManager/Store/PositionSlideover/PalletCard/index.tsx`
+- `.claude/gaps/in-progress/GAP-109-palletcard-badge-variant.md`
 
 ### Decisiones tomadas durante la implementación
 
+- El badge de recepción usa ahora `variant={isRelevant ? 'outline' : 'info'}`.
+- Se conservó el override blanco solo para el estado `isRelevant`, porque el badge vive sobre cabecera verde y necesita contraste específico.
+- Se revisaron los otros badges del archivo: el badge de pedido usa tokens `muted`, y el de lotes usa tokens `accent`; no tenían el mismo problema de color azul hardcodeado.
+- Se ejecutaron `npx eslint` sobre el archivo modificado y `npm run type-check`.
+
 ### Desviaciones del plan (si las hay)
+
+- No hubo desviaciones.
 
 ---
 

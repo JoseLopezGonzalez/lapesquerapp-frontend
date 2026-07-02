@@ -13,6 +13,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent } from '@/components/ui/card';
+import { useIsMobileSafe } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 import {
   useLabelsQuery,
   useDeleteLabelMutation,
@@ -252,6 +254,8 @@ export default function LabelSelectorSheet({
   const [labelToDelete, setLabelToDelete] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [duplicatingId, setDuplicatingId] = useState(null);
+  const { isMobile, mounted } = useIsMobileSafe();
+  const sheetSide = mounted && isMobile ? 'bottom' : 'right';
 
   const { data: labels = [], isLoading: loading, error } = useLabelsQuery(open);
   const deleteMutation = useDeleteLabelMutation();
@@ -314,8 +318,13 @@ export default function LabelSelectorSheet({
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetTrigger asChild>{children}</SheetTrigger>
         <SheetContent
-          side="right"
-          className="flex h-full w-[400px] flex-col gap-4 sm:w-[700px] sm:max-w-[700px]"
+          side={sheetSide}
+          className={cn(
+            'flex flex-col gap-4',
+            mounted && isMobile
+              ? 'max-h-[85vh] overflow-y-auto rounded-t-2xl'
+              : 'h-full w-[400px] sm:w-[700px] sm:max-w-[700px]'
+          )}
         >
           <SheetHeader>
             <SheetTitle className="flex items-center gap-2">

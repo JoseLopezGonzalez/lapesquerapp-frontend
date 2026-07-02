@@ -229,12 +229,11 @@ export default function PalletCard({ pallet, isFlipped = false, onFlip }: Pallet
                               onClick={(e) => e.stopPropagation()}
                             >
                               <Badge
-                                variant="outline"
+                                variant={isRelevant ? 'outline' : 'info'}
                                 className={cn(
                                   'flex cursor-pointer items-center gap-1 text-xs',
-                                  isRelevant
-                                    ? 'border-white/30 bg-white/20 text-white hover:bg-white/30'
-                                    : 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100'
+                                  isRelevant &&
+                                    'border-white/30 bg-white/20 text-white hover:bg-white/30'
                                 )}
                               >
                                 <Package className="h-2.5 w-2.5" />

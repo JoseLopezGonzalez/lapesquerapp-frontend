@@ -5,7 +5,7 @@
 - **Tipo:** Mejora
 - **Módulo:** Ventas
 - **Prioridad:** Baja
-- **Estado:** open
+- **Estado:** in-progress
 - **Fecha:** 2026-07-01
 - **Autor:** Jose (vía /audit-design visual, hallazgo auditor)
 
@@ -65,11 +65,34 @@ detectados en modo heurístico:
 
 ### Archivos creados
 
+- Ninguno.
+
 ### Archivos modificados
+
+- `src/components/Admin/OrdersManager/Order/OrderIncident/index.tsx`
+- `.claude/gaps/in-progress/GAP-094-order-incident-quick-fixes.md`
 
 ### Decisiones tomadas durante la implementación
 
+- La consolidación de badge indicada por el criterio 1 ya venía aplicada por `GAP-088` mediante
+  `IncidentStatusBadge`; no se duplicó ese trabajo.
+- Se sustituyeron los `Label` usados como captions de metadato por `<p className="text-muted-foreground text-xs">`.
+- Se mantuvieron los `Label htmlFor` asociados a inputs/selects de formulario.
+- Se eliminó el bloque `sm:hidden` de la cabecera desktop. Es inalcanzable en el flujo esperado:
+  `useIsMobileSafe` envía `<768px` a la rama móvil, mientras `sm:hidden` solo sería visible por
+  debajo de `640px`.
+
 ### Desviaciones del plan (si las hay)
+
+- El GAP menciona `index.js`, pero el archivo actual del módulo es
+  `src/components/Admin/OrdersManager/Order/OrderIncident/index.tsx`.
+- El trabajo de badge dependiente se tomó como ya cubierto por `GAP-088`, que está en
+  `in-progress` y ya modificó este mismo archivo.
+
+- Checks ejecutados:
+  - `rg -n "<Label>|sm:hidden|<Label\\s+htmlFor" src/components/Admin/OrdersManager/Order/OrderIncident/index.tsx`
+  - `npx eslint src/components/Admin/OrdersManager/Order/OrderIncident/index.tsx`
+  - `npm run type-check`
 
 ---
 

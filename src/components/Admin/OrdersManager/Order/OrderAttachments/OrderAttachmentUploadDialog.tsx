@@ -136,7 +136,9 @@ export function OrderAttachmentUploadDialog({
                 <FilePreviewIcon className="text-muted-foreground h-5 w-5" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{selectedFile.name}</p>
+                <p className="truncate text-sm font-medium" title={selectedFile.name}>
+                  {selectedFile.name}
+                </p>
                 <p className="text-muted-foreground text-xs">
                   {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
                 </p>
@@ -165,30 +167,30 @@ export function OrderAttachmentUploadDialog({
             <div className="flex items-center gap-2">
               <Label className="text-sm font-medium">Tipo de adjunto</Label>
               {autoDetected && (
-                <span className="text-primary flex items-center gap-1 text-[11px] font-medium">
+                <span className="text-primary flex items-center gap-1 text-xs font-medium">
                   <Sparkles className="h-3 w-3" />
                   Auto-detectado
                 </span>
               )}
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Tipo de adjunto">
               {(
                 [
                   { value: 'order_document', label: 'Documento', sub: 'PDF, Word, Excel', Icon: FileText },
                   { value: 'order_image', label: 'Imagen / Foto', sub: 'JPG, PNG, WEBP', Icon: ImageIcon },
                 ] as const
               ).map(({ value, label, sub, Icon }) => (
-                <div
+                <Button
                   key={value}
+                  type="button"
+                  variant="outline"
                   role="radio"
                   aria-checked={collection === value}
-                  tabIndex={0}
                   onClick={() => { setCollection(value); setAutoDetected(false); }}
-                  onKeyDown={(e) => e.key === 'Enter' && setCollection(value)}
                   className={cn(
-                    'flex min-w-0 cursor-pointer items-center gap-2 rounded-md border p-2.5 transition-colors select-none',
+                    'h-auto justify-start whitespace-normal p-2.5 text-left',
                     collection === value
-                      ? 'border-primary bg-primary/10'
+                      ? 'border-primary bg-primary/10 hover:bg-primary/10'
                       : 'hover:border-primary/40 hover:bg-muted/40'
                   )}
                 >
@@ -196,10 +198,12 @@ export function OrderAttachmentUploadDialog({
                     <Icon className="h-4 w-4" />
                   </div>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium leading-tight">{label}</p>
+                    <p className="truncate text-sm font-medium leading-tight" title={label}>
+                      {label}
+                    </p>
                     <p className="text-muted-foreground truncate text-xs">{sub}</p>
                   </div>
-                </div>
+                </Button>
               ))}
             </div>
           </div>

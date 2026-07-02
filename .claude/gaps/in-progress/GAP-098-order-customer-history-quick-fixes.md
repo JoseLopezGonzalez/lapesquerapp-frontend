@@ -5,7 +5,7 @@
 - **Tipo:** Mejora
 - **Módulo:** Ventas / CRM
 - **Prioridad:** Baja
-- **Estado:** open
+- **Estado:** in-progress
 - **Fecha:** 2026-07-01
 - **Autor:** Jose (vía /audit-design visual, hallazgo auditor)
 
@@ -14,8 +14,8 @@
 ## Contexto y problema
 
 Hallazgos menores en
-`src/components/Admin/OrdersManager/Order/OrderCustomerHistory/components/CustomerOrderHistoryView/index.jsx`
-(282 líneas), adicionales al fix de `Loader`→`Skeleton` ya cubierto por GAP-078:
+`src/components/Shared/CustomerOrderHistoryView/index.jsx`
+(componente compartido usado por `OrderCustomerHistory`), adicionales al fix de `Loader`→`Skeleton` ya cubierto por GAP-078:
 
 1. **Bloques Card/CardHeader/CardTitle/CardDescription triplicados** para los estados de
    loading, error y "sin datos" (líneas 54-64, 84-90, 117-123) — JSX estructuralmente idéntico
@@ -43,7 +43,7 @@ título/descripción/contenido variable.
 
 ## Archivos a crear o modificar
 
-- `src/components/Admin/OrdersManager/Order/OrderCustomerHistory/components/CustomerOrderHistoryView/index.jsx`
+- `src/components/Shared/CustomerOrderHistoryView/index.jsx`
 
 ## Restricciones
 
@@ -55,11 +55,29 @@ título/descripción/contenido variable.
 
 ### Archivos creados
 
+- Ninguno.
+
 ### Archivos modificados
+
+- `src/components/Shared/CustomerOrderHistoryView/index.jsx`
+- `.claude/gaps/in-progress/GAP-098-order-customer-history-quick-fixes.md`
 
 ### Decisiones tomadas durante la implementación
 
+- Se extrajo un componente local `HistoryStateCard` para reutilizar el shell desktop `Card/CardHeader/CardTitle/CardDescription` en los estados de carga inicial, error y sin datos.
+- Se añadieron constantes locales `HISTORY_TITLE` y `HISTORY_DESCRIPTION` para conservar el copy en un único punto sin cambiar el texto visible.
+- Se mantuvo la clase `flex-shrink-0` del header de carga inicial para no alterar la distribución visual previa.
+
 ### Desviaciones del plan (si las hay)
+
+- El GAP apuntaba a `src/components/Admin/OrdersManager/Order/OrderCustomerHistory/components/CustomerOrderHistoryView/index.jsx`, pero ese archivo no existe en el árbol actual.
+- Jose aprobó tocar la ruta real `src/components/Shared/CustomerOrderHistoryView/index.jsx` antes de implementar.
+
+### Checks ejecutados
+
+- `npx eslint src/components/Shared/CustomerOrderHistoryView/index.jsx` — sin errores; mantiene 2 warnings preexistentes `react-hooks/static-components` por `ShowMoreButton` definido dentro del render, fuera del alcance de este GAP.
+- `npx prettier --check src/components/Shared/CustomerOrderHistoryView/index.jsx .claude/gaps/in-progress/GAP-098-order-customer-history-quick-fixes.md` — no ejecuta porque `node_modules/prettier-plugin-tailwindcss` no está instalado en el entorno local aunque figura en `package.json`.
+- `git diff --check -- src/components/Shared/CustomerOrderHistoryView/index.jsx .claude/gaps/in-progress/GAP-098-order-customer-history-quick-fixes.md` — correcto.
 
 ---
 

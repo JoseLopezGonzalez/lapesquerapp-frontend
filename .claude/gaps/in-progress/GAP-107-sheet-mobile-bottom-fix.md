@@ -92,15 +92,31 @@ Ya respondidas en la ronda de clarificación previa:
 
 ## Implementación
 
-> Rellena el Agente Implementador
+Implementado por Codex el 2026-07-02.
 
 ### Archivos creados
 
+- Ninguno.
+
 ### Archivos modificados
+
+- `src/components/Admin/LabelEditor/LabelSelectorSheet.jsx`
+- `src/components/Admin/ProductionsControlPanel/index.jsx`
+- `.claude/gaps/in-progress/GAP-107-sheet-mobile-bottom-fix.md`
 
 ### Decisiones tomadas durante la implementación
 
+- Se añadió `useIsMobileSafe` en ambos archivos y se usó el guard `mounted`.
+- `LabelSelectorSheet` usa `side={sheetSide}` con bottom-sheet móvil (`max-h-[85vh]`, `rounded-t-2xl`, `overflow-y-auto`) y conserva el ancho desktop `w-[400px] sm:w-[700px] sm:max-w-[700px]`.
+- `ProductionSidePanel` usa bottom-sheet móvil (`max-h-[90vh]`, `rounded-t-2xl`, `overflow-y-auto`) y conserva `sm:max-w-xl` en desktop.
+- El sheet de cajas huérfanas usa bottom-sheet móvil (`max-h-[90vh]`, `rounded-t-2xl`) y conserva `sm:max-w-3xl` en desktop.
+- Se ejecutaron `npx eslint` sobre los dos archivos modificados y `npm run type-check`.
+
 ### Desviaciones del plan (si las hay)
+
+- No hubo desviaciones de alcance.
+- No se tocaron datos, hooks de negocio ni contenido interno de los sheets.
+- ESLint mantiene un warning preexistente en `ProductionsControlPanel/index.jsx` sobre query keys literales, fuera del alcance de este GAP.
 
 ---
 

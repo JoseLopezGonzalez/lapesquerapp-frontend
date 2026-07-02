@@ -81,6 +81,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { PaginationFooter } from '@/components/Admin/Entity/EntityClient/EntityTable/EntityFooter/PaginationFooter';
+import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { useProductionControlPanel } from '@/hooks/production/useProductionControlPanel';
 import {
   useProductionOrphanBoxes,
@@ -1280,6 +1281,8 @@ function groupProductionAlerts(alerts) {
 }
 
 function ProductionSidePanel({ production, open, onOpenChange, onCloseProduction, closePending }) {
+  const { isMobile, mounted } = useIsMobileSafe();
+  const sheetSide = mounted && isMobile ? 'bottom' : 'right';
   const alerts = production?.alerts ?? [];
   const groupedAlerts = groupProductionAlerts(alerts);
   const primaryAlert =
@@ -1291,7 +1294,13 @@ function ProductionSidePanel({ production, open, onOpenChange, onCloseProduction
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-xl">
+      <SheetContent
+        side={sheetSide}
+        className={cn(
+          'w-full',
+          mounted && isMobile ? 'max-h-[90vh] overflow-y-auto rounded-t-2xl' : 'sm:max-w-xl'
+        )}
+      >
         {production ? (
           <>
             <SheetHeader className="border-b">
@@ -1476,6 +1485,8 @@ const initialFilters = {
 
 export default function ProductionsControlPanel() {
   const queryClient = useQueryClient();
+  const { isMobile, mounted } = useIsMobileSafe();
+  const sheetSide = mounted && isMobile ? 'bottom' : 'right';
   const [filters, setFilters] = useState(initialFilters);
   const [appliedFilters, setAppliedFilters] = useState(initialFilters);
   const [page, setPage] = useState(1);
@@ -1766,10 +1777,12 @@ export default function ProductionsControlPanel() {
       <Sheet open={orphanBoxesSheetOpen} onOpenChange={setOrphanBoxesSheetOpen}>
         <SheetContent
           className={cn(
-            'w-full gap-0 overflow-hidden p-0 sm:max-w-3xl',
-            'flex max-h-[100dvh] flex-col'
+            'w-full gap-0 overflow-hidden p-0',
+            mounted && isMobile
+              ? 'flex max-h-[90vh] flex-col rounded-t-2xl'
+              : 'flex max-h-[100dvh] flex-col sm:max-w-3xl'
           )}
-          side="right"
+          side={sheetSide}
         >
           <SheetHeader className="shrink-0 border-b px-6 py-6 pr-14 text-left">
             <SheetTitle>Cajas huérfanas</SheetTitle>

@@ -19,6 +19,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -63,6 +73,7 @@ export default function ProductionCostsManager({ productionRecordId = null, prod
   const [error, setError] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCost, setEditingCost] = useState(null);
+  const [costToDelete, setCostToDelete] = useState(null);
   const [formData, setFormData] = useState({
     cost_catalog_id: '',
     name: '',
@@ -208,8 +219,6 @@ export default function ProductionCostsManager({ productionRecordId = null, prod
   };
 
   const handleDelete = async (costId) => {
-    if (!confirm('¿Estás seguro de eliminar este coste?')) return;
-
     try {
       setLoading(true);
       const token = session.user.accessToken;
@@ -228,6 +237,12 @@ export default function ProductionCostsManager({ productionRecordId = null, prod
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleConfirmDelete = () => {
+    if (!costToDelete) return;
+    handleDelete(costToDelete);
+    setCostToDelete(null);
   };
 
   const showCostsEmpty = !loading && costs.length === 0;
@@ -443,7 +458,7 @@ export default function ProductionCostsManager({ productionRecordId = null, prod
                       <Button variant="ghost" size="sm" onClick={() => handleOpenDialog(cost)}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDelete(cost.id)}>
+                      <Button variant="ghost" size="sm" onClick={() => setCostToDelete(cost.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -454,6 +469,22 @@ export default function ProductionCostsManager({ productionRecordId = null, prod
           </Table>
         )}
       </CardContent>
+      <AlertDialog open={!!costToDelete} onOpenChange={(open) => !open && setCostToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminar coste</AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Estás seguro de eliminar este coste? Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={handleConfirmDelete}>
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

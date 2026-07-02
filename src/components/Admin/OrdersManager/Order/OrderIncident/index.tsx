@@ -23,7 +23,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import StatusBadge from '@/components/Admin/OrdersManager/StatusBadge';
 import { AlertCircle, Ban, CheckCircle } from 'lucide-react';
 import { useOrderContext } from '@/context/OrderContext';
 import { formatDate } from '@/helpers/formats/dates/formatDates';
@@ -49,6 +49,27 @@ function getErrorDescription(error: unknown, fallback: string): string {
     (response?.data?.userMessage as string) ||
     (e?.message as string) ||
     fallback
+  );
+}
+
+function IncidentStatusBadge({
+  status,
+  compact = false,
+}: {
+  status: OrderIncidentData['status'];
+  compact?: boolean;
+}) {
+  const isOpen = status === 'open';
+  const Icon = isOpen ? AlertCircle : CheckCircle;
+
+  return (
+    <StatusBadge
+      color={isOpen ? 'amber' : 'emerald'}
+      className={cn('flex items-center gap-2', compact ? 'px-3 py-1.5' : 'px-4 py-2')}
+    >
+      <Icon />
+      <span className="font-medium">{isOpen ? 'Incidencia abierta' : 'Incidencia resuelta'}</span>
+    </StatusBadge>
   );
 }
 
@@ -129,33 +150,17 @@ export default function OrderIncidentPanel() {
         <div className="space-y-6">
           {/* Badge de estado */}
           <div className="flex justify-center">
-            {isOpen ? (
-              <Badge
-                variant="outline"
-                className="flex items-center gap-2 border-amber-500/50 bg-amber-50 px-4 py-2 text-amber-700 hover:bg-amber-50"
-              >
-                <AlertCircle />
-                <span className="font-medium">Incidencia Abierta</span>
-              </Badge>
-            ) : (
-              <Badge
-                variant="outline"
-                className="flex items-center gap-2 border-emerald-500/50 bg-emerald-50 px-4 py-2 text-emerald-700 hover:bg-emerald-50"
-              >
-                <CheckCircle />
-                <span className="font-medium">Incidencia Resuelta</span>
-              </Badge>
-            )}
+            <IncidentStatusBadge status={incident.status} />
           </div>
 
           {/* Información de la incidencia */}
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label>Fecha de creación</Label>
+              <p className="text-muted-foreground text-xs">Fecha de creación</p>
               <p className="whitespace-pre-line">{formatDate(incident.createdAt)}</p>
             </div>
             <div className="space-y-1.5">
-              <Label>Descripción</Label>
+              <p className="text-muted-foreground text-xs">Descripción</p>
               <p className="whitespace-pre-line">{incident.description}</p>
             </div>
           </div>
@@ -165,11 +170,11 @@ export default function OrderIncidentPanel() {
               <Separator />
               <div className="space-y-4">
                 <div className="space-y-1.5">
-                  <Label>Fecha de resolución</Label>
+                  <p className="text-muted-foreground text-xs">Fecha de resolución</p>
                   <p className="whitespace-pre-line">{formatDate(incident.resolvedAt)}</p>
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Tipo de resolución</Label>
+                  <p className="text-muted-foreground text-xs">Tipo de resolución</p>
                   <p>
                     {incident.resolutionType === 'returned' && 'Devuelto'}
                     {incident.resolutionType === 'partially_returned' && 'Parcialmente devuelto'}
@@ -177,7 +182,7 @@ export default function OrderIncidentPanel() {
                   </p>
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Notas de resolución</Label>
+                  <p className="text-muted-foreground text-xs">Notas de resolución</p>
                   <p className="whitespace-pre-line">{incident.resolutionNotes}</p>
                 </div>
               </div>
@@ -261,7 +266,7 @@ export default function OrderIncidentPanel() {
                       className="min-h-[44px] flex-1"
                     >
                       <Ban />
-                      Cancelar Incidencia
+                      Cancelar incidencia
                     </Button>
                     <Button
                       onClick={handleResolve}
@@ -270,7 +275,7 @@ export default function OrderIncidentPanel() {
                       className="min-h-[44px] flex-1"
                     >
                       <CheckCircle />
-                      Incidencia Resuelta
+                      Incidencia resuelta
                     </Button>
                   </>
                 )}
@@ -283,7 +288,7 @@ export default function OrderIncidentPanel() {
                 className="min-h-[44px] flex-1"
               >
                 <AlertCircle />
-                Crear Incidencia
+                Crear incidencia
               </Button>
             )}
           </div>
@@ -300,31 +305,10 @@ export default function OrderIncidentPanel() {
                 {incident && (
                   <Button onClick={handleDelete} disabled={loading} variant="destructive">
                     <Ban />
-                    Cancelar Incidencia
+                    Cancelar incidencia
                   </Button>
                 )}
               </div>
-              {incident && (
-                <div className="sm:hidden">
-                  {isOpen ? (
-                    <Badge
-                      variant="outline"
-                      className="flex items-center gap-2 border-amber-500/50 bg-amber-50 px-3 py-1.5 text-amber-700 hover:bg-amber-50"
-                    >
-                      <AlertCircle />
-                      <span className="font-medium">Incidencia Abierta</span>
-                    </Badge>
-                  ) : (
-                    <Badge
-                      variant="outline"
-                      className="flex items-center gap-2 border-emerald-500/50 bg-emerald-50 px-3 py-1.5 text-emerald-700 hover:bg-emerald-50"
-                    >
-                      <CheckCircle />
-                      <span className="font-medium">Incidencia Resuelta</span>
-                    </Badge>
-                  )}
-                </div>
-              )}
             </div>
           </CardHeader>
           <CardContent className="flex-1 overflow-y-auto">{content}</CardContent>

@@ -31,6 +31,7 @@ const OrderPallets = ({ readOnly = false }: OrderPalletsProps) => {
     selectedStoreId,
     isConfirmDialogOpen,
     confirmAction,
+    confirmPalletId,
     isPalletLabelDialogOpen,
     selectedPalletForLabel,
     isLinkPalletsDialogOpen,
@@ -229,6 +230,7 @@ const OrderPallets = ({ readOnly = false }: OrderPalletsProps) => {
           if (!open) handleCancelAction();
         }}
         action={confirmAction}
+        palletId={confirmPalletId}
         onConfirm={handleConfirmAction}
         onCancel={handleCancelAction}
         isUnlinking={unlinkingPalletId !== null || isUnlinkingAll}

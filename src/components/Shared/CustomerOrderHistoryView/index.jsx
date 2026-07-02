@@ -16,6 +16,9 @@ import DateFilterTabs from '@/components/Admin/OrdersManager/Order/OrderCustomer
 import ProductHistoryMobileCard from '@/components/Admin/OrdersManager/Order/OrderCustomerHistory/components/ProductHistoryMobileCard';
 import ProductHistoryAccordionItem from '@/components/Admin/OrdersManager/Order/OrderCustomerHistory/components/ProductHistoryAccordionItem';
 
+const HISTORY_TITLE = 'Histórico de Pedidos';
+const HISTORY_DESCRIPTION = 'Análisis completo del historial de compras del cliente.';
+
 export default function CustomerOrderHistoryView({
   customerHistory = [],
   availableYears = [],
@@ -52,19 +55,14 @@ export default function CustomerOrderHistoryView({
               <HistoryCardSkeleton />
             </div>
           ) : (
-            <Card className="flex min-h-0 flex-1 flex-col">
-              <CardHeader className="flex-shrink-0">
-                <CardTitle>Histórico de Pedidos</CardTitle>
-                <CardDescription>
-                  Análisis completo del historial de compras del cliente.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden pt-0">
-                <HistoryRowSkeleton />
-                <HistoryRowSkeleton />
-                <HistoryRowSkeleton />
-              </CardContent>
-            </Card>
+            <HistoryStateCard
+              headerClassName="flex-shrink-0"
+              contentClassName="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden pt-0"
+            >
+              <HistoryRowSkeleton />
+              <HistoryRowSkeleton />
+              <HistoryRowSkeleton />
+            </HistoryStateCard>
           )}
         </div>
       </TooltipProvider>
@@ -84,20 +82,12 @@ export default function CustomerOrderHistoryView({
             </div>
           </div>
         ) : (
-          <Card className="flex min-h-0 flex-1 flex-col">
-            <CardHeader>
-              <CardTitle>Histórico de Pedidos</CardTitle>
-              <CardDescription>
-                Análisis completo del historial de compras del cliente.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-1 items-center justify-center overflow-y-auto py-2">
-              <div className="text-muted-foreground flex flex-col items-center gap-2">
-                <AlertCircle />
-                <p className="text-sm">{error}</p>
-              </div>
-            </CardContent>
-          </Card>
+          <HistoryStateCard contentClassName="flex flex-1 items-center justify-center overflow-y-auto py-2">
+            <div className="text-muted-foreground flex flex-col items-center gap-2">
+              <AlertCircle />
+              <p className="text-sm">{error}</p>
+            </div>
+          </HistoryStateCard>
         )}
       </div>
     );
@@ -117,21 +107,13 @@ export default function CustomerOrderHistoryView({
             </div>
           </div>
         ) : (
-          <Card className="flex min-h-0 flex-1 flex-col">
-            <CardHeader>
-              <CardTitle>Histórico de Pedidos</CardTitle>
-              <CardDescription>
-                Análisis completo del historial de compras del cliente.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-1 items-center justify-center overflow-y-auto py-2">
-              <EmptyState
-                icon={<Calendar className="text-primary" strokeWidth={1.5} />}
-                title="No hay historial de pedidos"
-                description="Este cliente aún no tiene pedidos registrados."
-              />
-            </CardContent>
-          </Card>
+          <HistoryStateCard contentClassName="flex flex-1 items-center justify-center overflow-y-auto py-2">
+            <EmptyState
+              icon={<Calendar className="text-primary" strokeWidth={1.5} />}
+              title="No hay historial de pedidos"
+              description="Este cliente aún no tiene pedidos registrados."
+            />
+          </HistoryStateCard>
         )}
       </div>
     );
@@ -142,10 +124,8 @@ export default function CustomerOrderHistoryView({
       <div>
         {!isMobile && (
           <>
-            <CardTitle>Histórico de Pedidos</CardTitle>
-            <CardDescription>
-              Análisis completo del historial de compras del cliente.
-            </CardDescription>
+            <CardTitle>{HISTORY_TITLE}</CardTitle>
+            <CardDescription>{HISTORY_DESCRIPTION}</CardDescription>
           </>
         )}
       </div>
@@ -285,6 +265,18 @@ export default function CustomerOrderHistoryView({
         )}
       </div>
     </TooltipProvider>
+  );
+}
+
+function HistoryStateCard({ children, contentClassName, headerClassName }) {
+  return (
+    <Card className="flex min-h-0 flex-1 flex-col">
+      <CardHeader className={headerClassName}>
+        <CardTitle>{HISTORY_TITLE}</CardTitle>
+        <CardDescription>{HISTORY_DESCRIPTION}</CardDescription>
+      </CardHeader>
+      <CardContent className={contentClassName}>{children}</CardContent>
+    </Card>
   );
 }
 

@@ -193,8 +193,8 @@ const OrderLabels = () => {
 
   const handlePrintGroupedLabels = () => {
     if (selectedGroupedLines.length === 0) {
-      notify.warning({
-        title: 'Por favor, selecciona al menos una línea agrupada para imprimir.',
+      notify.error({
+        title: 'Selecciona al menos una línea agrupada para imprimir',
       });
       return;
     }
@@ -218,8 +218,8 @@ const OrderLabels = () => {
 
   const handlePrintIndividualLabels = () => {
     if (selectedIndividualLines.length === 0) {
-      notify.warning({
-        title: 'Por favor, selecciona al menos una línea individual para imprimir.',
+      notify.error({
+        title: 'Selecciona al menos una línea individual para imprimir',
       });
       return;
     }
@@ -245,7 +245,7 @@ const OrderLabels = () => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-base font-semibold">Etiquetas Agrupadas</h3>
+                    <h3 className="text-base font-medium">Etiquetas Agrupadas</h3>
                     <p className="text-muted-foreground mt-0.5 text-xs">
                       Etiquetas por lote y producto
                     </p>
@@ -289,26 +289,36 @@ const OrderLabels = () => {
 
                 {/* Cards de grupos */}
                 <div className="space-y-2">
-                  {groupedBoxes.map((group, index) => (
-                    <Card key={index}>
-                      <CardContent>
-                        <div className="flex items-start gap-3">
-                          <Checkbox
-                            checked={isGroupedLineSelected(group)}
-                            onCheckedChange={() => handleSelectGroupedLine(group)}
-                            className="mt-0.5"
-                          />
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-semibold">{group.product?.name}</p>
-                            <div className="mt-1 flex items-center gap-3">
-                              <p className="text-muted-foreground text-xs">Lote: {group.lot}</p>
-                              <p className="text-xs font-medium">{group.count} cajas</p>
+                  {groupedBoxes.length === 0 ? (
+                    <EmptyState
+                      className="py-8"
+                      title="No existen grupos de etiquetas"
+                      description="Añade palets con cajas al pedido para ver grupos por producto y lote."
+                    />
+                  ) : (
+                    groupedBoxes.map((group, index) => (
+                      <Card key={index}>
+                        <CardContent>
+                          <div className="flex items-start gap-3">
+                            <Checkbox
+                              checked={isGroupedLineSelected(group)}
+                              onCheckedChange={() => handleSelectGroupedLine(group)}
+                              className="mt-0.5"
+                            />
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-base font-medium" title={group.product?.name}>
+                                {group.product?.name}
+                              </p>
+                              <div className="mt-1 flex items-center gap-3">
+                                <p className="text-muted-foreground text-xs">Lote: {group.lot}</p>
+                                <p className="text-xs font-medium">{group.count} cajas</p>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
                 </div>
               </div>
 
@@ -318,7 +328,7 @@ const OrderLabels = () => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-base font-semibold">Etiquetas Individuales</h3>
+                    <h3 className="text-base font-medium">Etiquetas Individuales</h3>
                     <p className="text-muted-foreground mt-0.5 text-xs">
                       Etiquetas por caja individual
                     </p>
@@ -416,44 +426,59 @@ const OrderLabels = () => {
 
                 {/* Cards de cajas individuales */}
                 <div className="space-y-2">
-                  {filteredBoxes.map((box) => (
-                    <Card key={box.id}>
-                      <CardContent>
-                        <div className="flex items-start gap-3">
-                          <Checkbox
-                            checked={isIndividualLineSelected(box)}
-                            onCheckedChange={() => handleSelectIndividualLine(box)}
-                            className="mt-0.5"
-                          />
-                          <div className="min-w-0 flex-1 space-y-1">
-                            <p className="truncate text-sm font-semibold">
-                              {box.product?.name || 'Sin producto'}
-                            </p>
-                            <div className="grid grid-cols-2 gap-2 text-xs">
-                              <div>
-                                <span className="text-muted-foreground">Pallet:</span>
-                                <span className="ml-1 font-medium">{box.palletId}</span>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Caja:</span>
-                                <span className="ml-1 font-medium">{box.id}</span>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Lote:</span>
-                                <span className="ml-1 font-medium">{box.lot}</span>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Peso:</span>
-                                <span className="ml-1 font-medium">
-                                  {formatDecimalWeight(box.netWeight)}
-                                </span>
+                  {filteredBoxes.length === 0 ? (
+                    <EmptyState
+                      className="py-8"
+                      title="No existen cajas para mostrar"
+                      description={
+                        typedPallets?.length
+                          ? 'No hay cajas con los filtros seleccionados. Prueba a cambiar pallet, lote o producto.'
+                          : 'Añade palets con cajas al pedido para imprimir etiquetas individuales.'
+                      }
+                    />
+                  ) : (
+                    filteredBoxes.map((box) => (
+                      <Card key={box.id}>
+                        <CardContent>
+                          <div className="flex items-start gap-3">
+                            <Checkbox
+                              checked={isIndividualLineSelected(box)}
+                              onCheckedChange={() => handleSelectIndividualLine(box)}
+                              className="mt-0.5"
+                            />
+                            <div className="min-w-0 flex-1 space-y-1">
+                              <p
+                                className="truncate text-base font-medium"
+                                title={box.product?.name || 'Sin producto'}
+                              >
+                                {box.product?.name || 'Sin producto'}
+                              </p>
+                              <div className="grid grid-cols-2 gap-2 text-xs">
+                                <div>
+                                  <span className="text-muted-foreground">Pallet:</span>
+                                  <span className="ml-1 font-medium">{box.palletId}</span>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Caja:</span>
+                                  <span className="ml-1 font-medium">{box.id}</span>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Lote:</span>
+                                  <span className="ml-1 font-medium">{box.lot}</span>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Peso:</span>
+                                  <span className="ml-1 font-medium">
+                                    {formatDecimalWeight(box.netWeight)}
+                                  </span>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
                 </div>
               </div>
             </div>
@@ -486,7 +511,7 @@ const OrderLabels = () => {
                 {groupedBoxes.length === 0 ? (
                   <EmptyState
                     className="py-8"
-                    title="No hay grupos de etiquetas"
+                    title="No existen grupos de etiquetas"
                     description="Añade palets con cajas al pedido para ver grupos por producto y lote."
                   />
                 ) : (
@@ -615,7 +640,7 @@ const OrderLabels = () => {
                 {filteredBoxes.length === 0 ? (
                   <EmptyState
                     className="py-8"
-                    title="No hay cajas para mostrar"
+                    title="No existen cajas para mostrar"
                     description={
                       typedPallets?.length
                         ? 'No hay cajas con los filtros seleccionados. Prueba a cambiar pallet, lote o producto.'
@@ -659,7 +684,9 @@ const OrderLabels = () => {
                             <TableCell>{box.id}</TableCell>
                             <TableCell>{box.product?.name}</TableCell>
                             <TableCell>{box.lot}</TableCell>
-                            <TableCell className="text-right">{box.netWeight}</TableCell>
+                            <TableCell className="text-right">
+                              {formatDecimalWeight(box.netWeight)}
+                            </TableCell>
                           </TableRow>
                         ))}
                       </TableBody>

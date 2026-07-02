@@ -5,7 +5,7 @@
 - **Tipo:** Mejora
 - **Módulo:** Ventas
 - **Prioridad:** Baja
-- **Estado:** open
+- **Estado:** in-progress
 - **Fecha:** 2026-07-01
 - **Autor:** Jose
 
@@ -13,7 +13,7 @@
 
 ## Contexto y problema
 
-Detectado en `/audit-design copy order editor`. `OrderIncident/index.js` mezcla Title Case y sentence case para la misma acción y para conceptos equivalentes:
+Detectado en `/audit-design copy order editor`. `OrderIncident/index.tsx` mezcla Title Case y sentence case para la misma acción y para conceptos equivalentes:
 
 - Botón móvil `"Crear Incidencia"` (línea 266, Title Case) vs. botón desktop `"Crear incidencia"` (línea 320, sentence case) — mismo `handleCreate`.
 - Botón destructivo `"Cancelar Incidencia"` (línea ~281, Title Case).
@@ -25,7 +25,7 @@ Jose confirmó fijar sentence case como estándar.
 
 ## Solución acordada
 
-Convertir a sentence case las cuatro cadenas de `OrderIncident/index.js` identificadas, manteniendo el resto del comportamiento y estructura sin cambios.
+Convertir a sentence case las cadenas de `OrderIncident/index.tsx` identificadas, manteniendo el resto del comportamiento y estructura sin cambios.
 
 ## Referencias e inspiración
 
@@ -43,7 +43,7 @@ Convertir a sentence case las cuatro cadenas de `OrderIncident/index.js` identif
 
 ## Archivos a crear o modificar
 
-- `src/components/Admin/OrdersManager/Order/OrderIncident/index.js` (las 4 líneas indicadas)
+- `src/components/Admin/OrdersManager/Order/OrderIncident/index.tsx` (las líneas indicadas y duplicados móvil/desktop equivalentes)
 
 ## Restricciones
 
@@ -58,11 +58,28 @@ Convertir a sentence case las cuatro cadenas de `OrderIncident/index.js` identif
 
 ### Archivos creados
 
+- Ninguno.
+
 ### Archivos modificados
+
+- `src/components/Admin/OrdersManager/Order/OrderIncident/index.tsx`
+- `.claude/gaps/in-progress/GAP-102-standardize-capitalization-order-incident.md`
 
 ### Decisiones tomadas durante la implementación
 
+- Se sustituyeron solo literales visibles para pasar a sentence case.
+- Se actualizaron las apariciones duplicadas móvil/desktop equivalentes (`Cancelar incidencia`) para evitar divergencia interna.
+
 ### Desviaciones del plan (si las hay)
+
+- La ruta real actual es `index.tsx`, no `index.js`.
+- El archivo ya tenía cambios previos en el worktree; se conservaron y solo se tocaron cadenas de texto.
+
+### Checks ejecutados
+
+- `rg -n 'Crear Incidencia|Cancelar Incidencia|Incidencia Abierta|Incidencia Resuelta|Crear incidencia|Cancelar incidencia|Incidencia abierta|Incidencia resuelta' src/components/Admin/OrdersManager/Order/OrderIncident/index.tsx` — sin cadenas antiguas en Title Case; cadenas sentence case presentes.
+- `npx eslint src/components/Admin/OrdersManager/Order/OrderIncident/index.tsx` — correcto.
+- `git diff --check -- src/components/Admin/OrdersManager/Order/OrderIncident/index.tsx .claude/gaps/in-progress/GAP-102-standardize-capitalization-order-incident.md` — correcto.
 
 ---
 

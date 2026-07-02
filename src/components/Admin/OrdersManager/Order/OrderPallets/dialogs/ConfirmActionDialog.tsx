@@ -18,6 +18,7 @@ interface ConfirmActionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   action: ConfirmActionDialogAction | null;
+  palletId?: number | string | null;
   onConfirm: () => void;
   onCancel: () => void;
   isUnlinking?: boolean;
@@ -28,6 +29,7 @@ export default function ConfirmActionDialog({
   open,
   onOpenChange: _onOpenChange,
   action,
+  palletId,
   onConfirm,
   onCancel,
   isUnlinking,
@@ -35,20 +37,21 @@ export default function ConfirmActionDialog({
 }: ConfirmActionDialogProps) {
   const isDelete = action === 'delete';
   const isUnlinkAll = action === 'unlinkAll';
+  const palletLabel = palletId != null ? `el palet #${palletId}` : 'el palet';
 
   const title = isDelete
-    ? 'Eliminar Palet'
+    ? `¿Eliminar ${palletLabel}?`
     : isUnlinkAll
-      ? 'Desvincular todos los palets'
-      : 'Desvincular Palet';
+      ? '¿Desvincular todos los palets?'
+      : `¿Desvincular ${palletLabel}?`;
 
   const description = isDelete
-    ? '¿Estás seguro de que quieres eliminar este palet? Esta acción no se puede deshacer.'
+    ? `¿Estás seguro de que quieres eliminar ${palletLabel}? Esta acción no se puede deshacer.`
     : isUnlinkAll
       ? typeof unlinkAllCount === 'number' && unlinkAllCount > 0
-        ? `¿Estás seguro de que quieres desvincular los ${unlinkAllCount} palet${unlinkAllCount === 1 ? '' : 's'} de este pedido? Los palets permanecerán en el almacén pero ya no estarán asociados a este pedido.`
-        : '¿Estás seguro de que quieres desvincular todos los palets de este pedido? Los palets permanecerán en el almacén pero ya no estarán asociados a este pedido.'
-      : '¿Estás seguro de que quieres desvincular este palet del pedido? El palet permanecerá en el almacén pero ya no estará asociado a este pedido.';
+        ? `¿Estás seguro de que quieres desvincular los ${unlinkAllCount} palet${unlinkAllCount === 1 ? '' : 's'} de este pedido? Los palets permanecerán en el almacén pero ya no estarán asociados a este pedido. Esta acción no se puede deshacer.`
+        : '¿Estás seguro de que quieres desvincular todos los palets de este pedido? Los palets permanecerán en el almacén pero ya no estarán asociados a este pedido. Esta acción no se puede deshacer.'
+      : `¿Estás seguro de que quieres desvincular ${palletLabel} del pedido? El palet permanecerá en el almacén pero ya no estará asociado a este pedido. Esta acción no se puede deshacer.`;
 
   const confirmLabel = isDelete ? 'Eliminar' : isUnlinkAll ? 'Desvincular todos' : 'Desvincular';
 

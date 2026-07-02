@@ -5,7 +5,7 @@
 - **Tipo:** Bug
 - **Módulo:** Ventas
 - **Prioridad:** Media
-- **Estado:** open
+- **Estado:** in-progress
 - **Fecha:** 2026-07-01
 - **Autor:** Jose (vía /audit-design visual, hallazgo auditor)
 
@@ -71,12 +71,39 @@ el resto son quick fixes menores:
 
 ### Archivos creados
 
+Ninguno.
+
 ### Archivos modificados
+
+- `src/components/Admin/OrdersManager/Order/OrderCostAnalysis/index.jsx`
 
 ### Decisiones tomadas durante la implementación
 
+- Los footers de ambas tablas reutilizan los valores globales ya mostrados en las
+  `AnalysisMetricCard` (`summary.totalRevenue`, `summary.totalCost`, `summary.grossMargin`,
+  `summary.marginPercentage` y ratios del `order`) para que la reconciliación visual coincida
+  con las cards superiores.
+- Como `summary` no expone peso total, la columna `Cantidad` del footer se calcula sumando las
+  filas visibles (`lineWeightKg` en productos y `totalWeightKg` en palets), sin cambiar ningún
+  cálculo económico.
+- El `CardTitle` ya estaba en la sub-escala acordada `text-lg font-medium`; se añadió comentario
+  inline alineado con GAP-084 para dejar constancia de que es intencional.
+- El KPI principal (`font-semibold`) queda pendiente de GAP-096 según la restricción del GAP; no
+  se duplicó ese ajuste aquí.
+
 ### Desviaciones del plan (si las hay)
 
+Ninguna.
+
+### Checks ejecutados
+
+- `npm run type-check` — OK.
+- `npx eslint src/components/Admin/OrdersManager/Order/OrderCostAnalysis/index.jsx` — OK.
+- `npm run lint` — OK con 0 errores y 269 warnings preexistentes en el repo.
+- `git diff --check -- src/components/Admin/OrdersManager/Order/OrderCostAnalysis/index.jsx` — OK.
+- `npx prettier --write src/components/Admin/OrdersManager/Order/OrderCostAnalysis/index.jsx` —
+  no ejecutable en este entorno: `npx` intentó usar una instalación temporal y no encontró
+  `prettier-plugin-tailwindcss`; tampoco existe binario local en `node_modules/.bin/prettier`.
 ---
 
 ## Auditoría

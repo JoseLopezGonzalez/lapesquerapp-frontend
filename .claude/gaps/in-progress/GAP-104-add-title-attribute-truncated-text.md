@@ -62,15 +62,32 @@ Añadir `title={<valor correspondiente>}` a cada elemento truncado listado, usan
 
 ## Implementación
 
-> Rellena el Agente Implementador
+Implementado por Codex el 2026-07-02.
 
 ### Archivos creados
 
+- Ninguno.
+
 ### Archivos modificados
+
+- `src/components/Admin/OrdersManager/Order/OrderCostAnalysis/index.jsx`
+- `src/components/Admin/OrdersManager/Order/OrderLabels/index.tsx`
+- `src/components/Admin/OrdersManager/Order/OrderAttachments/OrderAttachmentUploadDialog.tsx`
+- `src/components/Admin/OrdersManager/Order/OrderAttachments/index.tsx`
+- `src/components/Admin/OrdersManager/Order/OrderPallets/OrderPalletCard/index.tsx`
+- `src/components/Admin/OrdersManager/Order/OrderPallets/SearchPalletCard/index.tsx`
+- `.claude/gaps/in-progress/GAP-104-add-title-attribute-truncated-text.md`
 
 ### Decisiones tomadas durante la implementación
 
+- Se añadieron atributos `title` usando el mismo valor renderizado en los textos truncados listados.
+- En la línea individual de etiquetas se usó `title={box.product?.name || 'Sin producto'}` para coincidir con el fallback visible.
+- Se verificó la presencia de los atributos con `rg` sobre los archivos afectados.
+
 ### Desviaciones del plan (si las hay)
+
+- `OrderLabels`, `OrderPalletCard` y `SearchPalletCard` existen actualmente como `index.tsx`, no como `index.js`; se aplicó el cambio en los archivos reales equivalentes.
+- El árbol ya contenía cambios previos en varios archivos del editor de pedidos; no se revirtieron ni se modificaron fuera del alcance de este GAP.
 
 ---
 

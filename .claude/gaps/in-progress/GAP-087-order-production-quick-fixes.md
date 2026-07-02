@@ -5,7 +5,7 @@
 - **Tipo:** Mejora
 - **Módulo:** Ventas / Maquiladores
 - **Prioridad:** Baja
-- **Estado:** open
+- **Estado:** in-progress
 - **Fecha:** 2026-07-01
 - **Autor:** Jose (vía /audit-design visual, hallazgo auditor)
 
@@ -13,7 +13,7 @@
 
 ## Contexto y problema
 
-Hallazgos en `src/components/Admin/OrdersManager/Order/OrderProduction/index.js` (350
+Hallazgos en `src/components/Admin/OrdersManager/Order/OrderProduction/index.tsx` (350
 líneas), detectados en modo heurístico:
 
 1. **Color de badge de estado** — ver GAP-088 (normalización cruzada de 3 archivos), no
@@ -50,7 +50,7 @@ líneas), detectados en modo heurístico:
 
 ## Archivos a crear o modificar
 
-- `src/components/Admin/OrdersManager/Order/OrderProduction/index.js`
+- `src/components/Admin/OrdersManager/Order/OrderProduction/index.tsx`
 
 ## Restricciones
 
@@ -63,12 +63,33 @@ líneas), detectados en modo heurístico:
 
 ### Archivos creados
 
+Ninguno.
+
 ### Archivos modificados
+
+- `src/components/Admin/OrdersManager/Order/OrderProduction/index.tsx`
 
 ### Decisiones tomadas durante la implementación
 
+- Se añadió `productionStatusBadgeConfig` y `ProductionStatusBadge` dentro del mismo archivo para
+  que móvil y desktop consuman una única fuente de label/variant/className.
+- Se mantuvieron exactamente los textos, variantes y clases previas de los badges; la
+  normalización cromática queda para GAP-088 según restricción del GAP.
+- El `CardTitle` ya usaba `text-lg font-medium`; se añadió comentario inline alineado con
+  GAP-084/GAP-086 para documentar que la sub-escala es intencional.
+
 ### Desviaciones del plan (si las hay)
 
+- El GAP mencionaba `OrderProduction/index.js`, pero el archivo ya estaba migrado a
+  `OrderProduction/index.tsx` por GAP-061. Se implementó sobre el `.tsx` actual.
+- No se aplicó el cambio de color de GAP-088 para mantener este GAP centrado en deduplicación y
+  criterio de `CardTitle`.
+
+### Checks ejecutados
+
+- `npm run type-check` — OK.
+- `npx eslint src/components/Admin/OrdersManager/Order/OrderProduction/index.tsx` — OK.
+- `git diff --check -- src/components/Admin/OrdersManager/Order/OrderProduction/index.tsx .claude/gaps/in-progress/GAP-087-order-production-quick-fixes.md` — OK.
 ---
 
 ## Auditoría

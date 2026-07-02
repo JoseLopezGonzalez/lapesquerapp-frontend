@@ -12,6 +12,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 // Constantes
 const MAX_IMAGES = 6;
@@ -41,6 +51,7 @@ const ProductionRecordImagesManager = ({
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState(null);
+  const [imageToDelete, setImageToDelete] = useState(null);
   const fileInputRef = useRef(null);
 
   // Máximo 6 imágenes visibles
@@ -111,11 +122,14 @@ const ProductionRecordImagesManager = ({
   };
 
   const handleDeleteImage = useCallback((imageId) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar esta imagen?')) {
-      return;
-    }
-    setImages((prev) => prev.filter((img) => img.id !== imageId));
+    setImageToDelete(imageId);
   }, []);
+
+  const handleConfirmDeleteImage = useCallback(() => {
+    if (!imageToDelete) return;
+    setImages((prev) => prev.filter((img) => img.id !== imageToDelete));
+    setImageToDelete(null);
+  }, [imageToDelete]);
 
   const triggerFileInput = () => {
     fileInputRef.current?.click();
@@ -490,6 +504,23 @@ const ProductionRecordImagesManager = ({
           )}
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!imageToDelete} onOpenChange={(open) => !open && setImageToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminar imagen</AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Estás seguro de que deseas eliminar esta imagen? Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={handleConfirmDeleteImage}>
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 

@@ -5,6 +5,7 @@ import { MOBILE_SAFE_AREAS } from '@/lib/design-tokens-mobile';
 import { AlertTriangle, Info } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import StatusBadge from '@/components/Admin/OrdersManager/StatusBadge';
 import {
   Table,
   TableBody,
@@ -38,6 +39,36 @@ interface MergedProductDetail {
   quantityDifference: number;
   boxesDifference?: number;
   status: 'success' | 'difference' | 'pending' | 'noPlanned';
+}
+
+const productionStatusBadgeConfig = {
+  success: {
+    label: 'Correcto',
+    color: 'green',
+  },
+  difference: {
+    label: 'Diferencia',
+    color: 'orange',
+  },
+  noPlanned: {
+    label: 'No previsto',
+    color: 'red',
+  },
+  pending: {
+    label: 'Pendiente',
+    color: undefined,
+  },
+} as const satisfies Record<
+  MergedProductDetail['status'],
+  { label: string; color: 'green' | 'orange' | 'red' | undefined }
+>;
+
+function ProductionStatusBadge({ status }: { status: MergedProductDetail['status'] }) {
+  const config = productionStatusBadgeConfig[status] ?? productionStatusBadgeConfig.pending;
+
+  if (!config.color) return <Badge>{config.label}</Badge>;
+
+  return <StatusBadge color={config.color} label={config.label} />;
 }
 
 const OrderProduction = () => {
@@ -109,19 +140,7 @@ const OrderProduction = () => {
                           </p>
                         </div>
                         <div>
-                          {detail.status === 'success' ? (
-                            <Badge variant="success" className="text-foreground-50 bg-green-500">
-                              Correcto
-                            </Badge>
-                          ) : detail.status === 'difference' ? (
-                            <Badge variant="warning" className="bg-orange-500">
-                              Diferencia
-                            </Badge>
-                          ) : detail.status === 'noPlanned' ? (
-                            <Badge variant="destructive">No previsto</Badge>
-                          ) : (
-                            <Badge>Pendiente</Badge>
-                          )}
+                          <ProductionStatusBadge status={detail.status} />
                         </div>
                       </div>
 
@@ -247,6 +266,7 @@ const OrderProduction = () => {
         <Card className="flex h-full flex-col bg-transparent">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
+              {/* text-lg: sub-escala intencional para CardTitle de tarjeta dentro de un tab, alineada con GAP-084. */}
               <CardTitle className="text-lg font-medium">Productos del Pedido</CardTitle>
               <p className="text-muted-foreground mt-1 text-sm">
                 Comparación entre productos registrados y paletizados
@@ -328,19 +348,7 @@ const OrderProduction = () => {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-end gap-2">
-                            {detail.status === 'success' ? (
-                              <Badge variant="success" className="text-foreground-50 bg-green-500">
-                                Correcto
-                              </Badge>
-                            ) : detail.status === 'difference' ? (
-                              <Badge variant="warning" className="bg-orange-500">
-                                Diferencia
-                              </Badge>
-                            ) : detail.status === 'noPlanned' ? (
-                              <Badge variant="destructive">No previsto</Badge>
-                            ) : (
-                              <Badge>Pendiente</Badge>
-                            )}
+                            <ProductionStatusBadge status={detail.status} />
                           </div>
                         </TableCell>
                       </TableRow>

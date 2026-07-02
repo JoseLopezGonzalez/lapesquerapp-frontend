@@ -76,7 +76,7 @@ const OrderProductDetails = () => {
             <div className="flex min-h-0 flex-1 items-center justify-center">
               <EmptyState
                 title={'No existen detalles'}
-                description={'No se ha producido actualmente nada para este pedido'}
+                description={'Todavía no hay producción registrada para este pedido'}
               />
             </div>
           ) : (
@@ -91,7 +91,7 @@ const OrderProductDetails = () => {
                     <CardContent className="space-y-3 p-4">
                       {/* Nombre del producto */}
                       <div className="space-y-1">
-                        <p className="text-sm font-semibold">
+                        <p className="text-base font-medium">
                           {detail?.product?.name || 'Sin producto'}
                         </p>
                       </div>
@@ -100,35 +100,35 @@ const OrderProductDetails = () => {
                       <div className="grid grid-cols-2 gap-3 border-t pt-2">
                         <div className="space-y-1">
                           <p className="text-muted-foreground text-xs">Cajas</p>
-                          <p className="text-sm font-semibold tabular-nums">
+                          <p className="text-sm font-medium tabular-nums">
                             {formatInteger(detail.boxes)}
                           </p>
                         </div>
                         <div className="space-y-1">
                           <p className="text-muted-foreground text-xs">Cantidad</p>
-                          <p className="text-sm font-semibold tabular-nums">
+                          <p className="text-sm font-medium tabular-nums">
                             {formatDecimalWeight(detail.netWeight)}
                           </p>
                         </div>
                         <div className="space-y-1">
                           <p className="text-muted-foreground text-xs">Precio</p>
-                          <p className="text-sm font-semibold tabular-nums">
+                          <p className="text-sm font-medium tabular-nums">
                             {formatDecimalCurrency(detail.unitPrice)}
                           </p>
                         </div>
                         <div className="space-y-1">
                           <p className="text-muted-foreground text-xs">Impuesto</p>
-                          <p className="text-sm font-semibold tabular-nums">{`${detail?.tax?.rate ?? 0}%`}</p>
+                          <p className="text-sm font-medium tabular-nums">{`${detail?.tax?.rate ?? 0}%`}</p>
                         </div>
                         <div className="space-y-1">
                           <p className="text-muted-foreground text-xs">Subtotal</p>
-                          <p className="text-sm font-semibold tabular-nums">
+                          <p className="text-sm font-medium tabular-nums">
                             {formatDecimalCurrency(detail.subtotal)}
                           </p>
                         </div>
                         <div className="space-y-1">
                           <p className="text-muted-foreground text-xs">Total</p>
-                          <p className="text-sm font-semibold tabular-nums">
+                          <p className="text-sm font-medium tabular-nums">
                             {formatDecimalCurrency(detail.total)}
                           </p>
                         </div>
@@ -201,7 +201,7 @@ const OrderProductDetails = () => {
               <div className="flex h-full items-center justify-center">
                 <EmptyState
                   title={'No existen detalles'}
-                  description={'No se ha producido actualmente nada para este pedido'}
+                  description={'Todavía no hay producción registrada para este pedido'}
                 />
               </div>
             ) : (

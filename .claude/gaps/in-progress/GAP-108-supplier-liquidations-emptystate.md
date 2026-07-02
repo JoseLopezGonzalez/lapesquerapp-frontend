@@ -80,15 +80,28 @@ icono/copy por adelantado — el implementador elige un icono coherente con el c
 
 ## Implementación
 
-> Rellena el Agente Implementador
+Implementado por Codex el 2026-07-02.
 
 ### Archivos creados
 
+- Ninguno.
+
 ### Archivos modificados
+
+- `src/components/Admin/SupplierLiquidations/SupplierLiquidationsCrudList.tsx`
+- `.claude/gaps/in-progress/GAP-108-supplier-liquidations-emptystate.md`
 
 ### Decisiones tomadas durante la implementación
 
+- Se reemplazó el estado vacío manual por `EmptyState`.
+- Se mantuvo exactamente el copy condicional existente según `hasActiveFilters`.
+- Se usó `FileX` de `lucide-react` como icono coherente con liquidaciones/documentos ausentes.
+- Se ejecutaron `npx eslint src/components/Admin/SupplierLiquidations/SupplierLiquidationsCrudList.tsx` y `npm run type-check`.
+
 ### Desviaciones del plan (si las hay)
+
+- No hubo desviaciones.
+- El archivo conserva su `@ts-nocheck` preexistente; no se añadió ni modificó.
 
 ---
 

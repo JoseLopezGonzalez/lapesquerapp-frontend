@@ -5,7 +5,7 @@
 - **Tipo:** Mejora
 - **Módulo:** Ventas
 - **Prioridad:** Baja
-- **Estado:** open
+- **Estado:** in-progress
 - **Fecha:** 2026-07-01
 - **Autor:** Jose (vía /audit-design visual, hallazgo auditor)
 
@@ -85,11 +85,37 @@ corregir:
 
 ### Archivos creados
 
+Ninguno.
+
 ### Archivos modificados
+
+- `src/components/Admin/OrdersManager/Order/OrderAttachments/index.tsx`
+- `src/components/Admin/OrdersManager/Order/OrderAttachments/OrderAttachmentUploadDialog.tsx`
 
 ### Decisiones tomadas durante la implementación
 
+- Las acciones de `AttachmentCard` y `AttachmentViewer` pasan de `<button>` nativo a `Button`
+  shadcn (`variant="ghost"`, tamaños iconográficos existentes).
+- El SVG inline de "abrir en nueva pestaña" se sustituyó por `ExternalLink` de `lucide-react`.
+- Los tamaños arbitrarios `text-[11px]`/`text-[9px]` se normalizaron a `text-xs`.
+- Se eliminó `hover:scale-[1.02]` de `AttachmentCard`; se mantiene únicamente `hover:shadow-md`
+  como feedback ligero.
+- No existe `RadioGroup` ni `ToggleGroup` en `src/components/ui/`; para evitar añadir
+  dependencias/componentes fuera de alcance, el selector de tipo usa `Button` shadcn con
+  semántica `role="radiogroup"`/`role="radio"`, manteniendo el comportamiento previo.
+- Los overlays de carga de imagen/PDF dentro del visor incorporan `backdrop-blur-sm`.
+
 ### Desviaciones del plan (si las hay)
+
+Ninguna funcional. El selector no usa `RadioGroup`/`ToggleGroup` porque esos primitivos no están
+instalados en el proyecto; se usa `Button` shadcn como alternativa documentada.
+
+### Checks ejecutados
+
+- `npm run type-check` — OK.
+- `npx eslint src/components/Admin/OrdersManager/Order/OrderAttachments/index.tsx src/components/Admin/OrdersManager/Order/OrderAttachments/OrderAttachmentUploadDialog.tsx` — OK con 0 errores y 7 warnings preexistentes/out-of-scope (`setState` en effects, `<img>` cubierto por GAP-097, icono dinámico).
+- `git diff --check -- src/components/Admin/OrdersManager/Order/OrderAttachments/index.tsx src/components/Admin/OrdersManager/Order/OrderAttachments/OrderAttachmentUploadDialog.tsx .claude/gaps/in-progress/GAP-095-order-attachments-quick-fixes.md` — OK.
+- `rg "<button|</button|text-\\[|hover:scale|<svg" ...OrderAttachments...` — sin coincidencias en los dos archivos modificados.
 
 ---
 

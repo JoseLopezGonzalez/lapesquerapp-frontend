@@ -5,7 +5,7 @@
 - **Tipo:** Refactor
 - **Módulo:** Ventas / Stock
 - **Prioridad:** Media
-- **Estado:** open
+- **Estado:** in-progress
 - **Fecha:** 2026-07-01
 - **Autor:** Jose (vía /audit-design visual, hallazgo auditor)
 
@@ -13,7 +13,7 @@
 
 ## Contexto y problema
 
-`OrderPalletTableRow.jsx:67-177` muestra 5 botones de icono sueltos (Printer, Edit, Copy,
+`OrderPalletTableRow.tsx:67-177` muestra 5 botones de icono sueltos (Printer, Edit, Copy,
 Unlink, Trash2), cada uno con su propio Tooltip, en vez del patrón documentado en
 `.claude/design-context.md` § Action Buttons: "Dropdown para 3+ acciones" usando
 `DropdownMenu` + trigger `EllipsisVertical`. Esto ocupa más espacio horizontal del necesario en
@@ -45,7 +45,7 @@ vía `AlertDialog`/`ConfirmActionDialog` en el flujo actual, según lo observado
 
 ## Archivos a crear o modificar
 
-- `src/components/Admin/OrdersManager/Order/OrderPallets/OrderPalletTableRow.jsx`
+- `src/components/Admin/OrdersManager/Order/OrderPallets/OrderPalletTableRow.tsx`
 
 ## Restricciones
 
@@ -59,12 +59,35 @@ vía `AlertDialog`/`ConfirmActionDialog` en el flujo actual, según lo observado
 
 ### Archivos creados
 
+Ninguno.
+
 ### Archivos modificados
+
+- `src/components/Admin/OrdersManager/Order/OrderPallets/OrderPalletTableRow.tsx`
 
 ### Decisiones tomadas durante la implementación
 
+- Se sustituyeron los botones sueltos de acción por un único `DropdownMenu` con trigger
+  `EllipsisVertical`.
+- Las acciones mantienen los mismos callbacks: etiqueta de expedición, editar/ver, clonar,
+  desvincular y eliminar.
+- La acción destructiva `Eliminar palet` usa `DropdownMenuItem variant="destructive"` y queda
+  separada visualmente con `DropdownMenuSeparator`.
+- Se conservaron los mismos guards: impresión solo si `canPrintExpeditionLabels` y callback,
+  acciones de edición ocultas en `readOnly`, clonar/eliminar deshabilitados para palets de
+  recepción y desvincular deshabilitado durante `isUnlinking`.
+- No se añadió ningún `AlertDialog` nuevo; la confirmación aguas arriba se mantiene intacta.
+
 ### Desviaciones del plan (si las hay)
 
+- El GAP mencionaba `OrderPalletTableRow.jsx`, pero el archivo ya está migrado a
+  `OrderPalletTableRow.tsx`; se implementó sobre el archivo actual.
+
+### Checks ejecutados
+
+- `npm run type-check` — OK.
+- `npx eslint src/components/Admin/OrdersManager/Order/OrderPallets/OrderPalletTableRow.tsx` — OK.
+- `git diff --check -- src/components/Admin/OrdersManager/Order/OrderPallets/OrderPalletTableRow.tsx .claude/gaps/in-progress/GAP-089-order-pallets-row-actions-dropdown.md` — OK.
 ---
 
 ## Auditoría

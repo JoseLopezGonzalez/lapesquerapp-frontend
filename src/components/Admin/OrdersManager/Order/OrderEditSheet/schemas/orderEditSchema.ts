@@ -10,7 +10,7 @@ export const orderEditSchema = z.object({
     .date({ required_error: 'La fecha de carga es obligatoria' })
     .nullable()
     .refine((val) => val != null, 'La fecha de carga es obligatoria'),
-  salesperson: z.string().min(1, 'Seleccione un comercial'),
+  salesperson: z.string().min(1, 'Selecciona un comercial'),
   fieldOperator: z.string().optional(),
   externalProcessor: z.string().optional(),
   maquiladorDestination: z.string().max(500, 'Máximo 500 caracteres').optional(),

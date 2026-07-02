@@ -5,7 +5,7 @@
 - **Tipo:** Bug
 - **Módulo:** Ventas / Etiquetas
 - **Prioridad:** Alta
-- **Estado:** open
+- **Estado:** in-progress
 - **Fecha:** 2026-07-01
 - **Autor:** Jose (vía /audit-design visual, hallazgo auditor)
 
@@ -74,11 +74,34 @@ detectados en modo heurístico. Incluye un bloqueante real:
 
 ### Archivos creados
 
+- Ninguno.
+
 ### Archivos modificados
+
+- `src/components/Admin/OrdersManager/Order/OrderLabels/index.tsx`
+- `.claude/gaps/in-progress/GAP-090-order-labels-quick-fixes.md`
 
 ### Decisiones tomadas durante la implementación
 
+- Se cambiaron las validaciones de impresión sin selección de `notify.warning` a `notify.error`,
+  alineándolo con la solución acordada.
+- Se reutilizó el mismo copy de `EmptyState` que ya existía en desktop para las dos ramas móviles.
+- Se mantuvo el patrón sentinel `'all'` existente en móvil y desktop; el archivo ya no tenía
+  `SelectItem value={null}` al comenzar esta implementación.
+- Se aplicó `formatDecimalWeight(box.netWeight)` también en la celda desktop de peso neto.
+
 ### Desviaciones del plan (si las hay)
+
+- El GAP menciona `index.js`, pero el archivo actual del módulo es
+  `src/components/Admin/OrdersManager/Order/OrderLabels/index.tsx`. Se implementó en ese archivo
+  porque corresponde al mismo componente y ubicación funcional.
+- Al iniciar la implementación ya no quedaban `alert()` ni `SelectItem value={null}` en el archivo;
+  se verificó con búsqueda textual y se completaron los criterios pendientes.
+
+- Checks ejecutados:
+  - `rg -n "alert\\(|SelectItem value=\\{null\\}|notify\\.warning|box\\.netWeight\\}" src/components/Admin/OrdersManager/Order/OrderLabels/index.tsx`
+  - `npx eslint src/components/Admin/OrdersManager/Order/OrderLabels/index.tsx`
+  - `npm run type-check`
 
 ---
 

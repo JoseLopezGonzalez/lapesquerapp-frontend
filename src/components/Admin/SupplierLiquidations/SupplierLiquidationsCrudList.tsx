@@ -11,6 +11,7 @@ import {
   Filter,
   X,
   ChevronRight,
+  FileX,
 } from 'lucide-react';
 import { notify } from '@/lib/notifications';
 import { Button } from '@/components/ui/button';
@@ -45,6 +46,7 @@ import { useSupplierLiquidationsList } from '@/hooks/useSupplierLiquidationsList
 import { useSupplierOptions } from '@/hooks/useSupplierOptions';
 import { reopenLiquidation } from '@/services/domain/supplier-liquidations/supplierLiquidationService';
 import { PaginationFooter } from '@/components/Admin/Entity/EntityClient/EntityTable/EntityFooter/PaginationFooter';
+import { EmptyState } from '@/components/Utilities/EmptyState';
 import type { SupplierLiquidationListFilters } from '@/types/supplierLiquidation';
 
 function formatDate(dateString: string | null | undefined): string {
@@ -280,16 +282,15 @@ export function SupplierLiquidationsCrudList() {
             <p className="text-destructive text-sm">{error}</p>
           </div>
         ) : data.length === 0 ? (
-          <div className="text-muted-foreground flex h-full items-center justify-center p-6 text-center">
-            <div>
-              <p className="mb-1 font-medium">No hay liquidaciones cerradas</p>
-              <p className="text-sm">
-                {hasActiveFilters
-                  ? 'Prueba a ajustar los filtros.'
-                  : 'Aún no se ha cerrado ninguna liquidación.'}
-              </p>
-            </div>
-          </div>
+          <EmptyState
+            title="No hay liquidaciones cerradas"
+            description={
+              hasActiveFilters
+                ? 'Prueba a ajustar los filtros.'
+                : 'Aún no se ha cerrado ninguna liquidación.'
+            }
+            icon={<FileX />}
+          />
         ) : (
           <Table>
             <TableHeader className="bg-background sticky top-0 z-10">

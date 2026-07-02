@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import EmailListInput from '@/components/ui/emailListInput';
 import { notify } from '@/lib/notifications';
 import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
@@ -28,6 +38,7 @@ export default function FieldOperatorForm({
   onDeleted,
 }) {
   const router = useRouter();
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const { data: users, isLoading: loadingUsers } = useUsersList({
     filters: { role: 'repartidor_autoventa' },
     page: 1,
@@ -131,7 +142,6 @@ export default function FieldOperatorForm({
 
   const handleDelete = async () => {
     if (!initialData?.id) return;
-    if (!window.confirm('¿Seguro que quieres eliminar este operador de campo?')) return;
 
     await notify.promise(deleteFieldOperator(initialData.id), {
       loading: { title: 'Eliminando operador', description: 'Quitando el operador de campo.' },
@@ -249,7 +259,7 @@ export default function FieldOperatorForm({
               <Button
                 type="button"
                 variant="destructive"
-                onClick={handleDelete}
+                onClick={() => setDeleteConfirmOpen(true)}
                 disabled={isDeleting}
               >
                 <Trash2 className="mr-2 h-4 w-4" />
@@ -259,6 +269,26 @@ export default function FieldOperatorForm({
           </div>
         </form>
       </CardContent>
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminar operador de campo</AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Seguro que quieres eliminar este operador de campo? Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isDeleting}
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

@@ -18,6 +18,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -53,6 +63,7 @@ export default function CostCatalogManager() {
   const [error, setError] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const [itemToDelete, setItemToDelete] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     cost_type: '',
@@ -158,8 +169,6 @@ export default function CostCatalogManager() {
   };
 
   const handleDelete = async (itemId) => {
-    if (!confirm('¿Estás seguro de eliminar este elemento del catálogo?')) return;
-
     try {
       setLoading(true);
       const token = session.user.accessToken;
@@ -178,6 +187,12 @@ export default function CostCatalogManager() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleConfirmDelete = () => {
+    if (!itemToDelete) return;
+    handleDelete(itemToDelete);
+    setItemToDelete(null);
   };
 
   return (
@@ -348,7 +363,7 @@ export default function CostCatalogManager() {
                       <Button variant="ghost" size="sm" onClick={() => handleOpenDialog(item)}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDelete(item.id)}>
+                      <Button variant="ghost" size="sm" onClick={() => setItemToDelete(item.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -359,6 +374,22 @@ export default function CostCatalogManager() {
           </Table>
         )}
       </CardContent>
+      <AlertDialog open={!!itemToDelete} onOpenChange={(open) => !open && setItemToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminar elemento del catálogo</AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Estás seguro de eliminar este elemento del catálogo? Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={handleConfirmDelete}>
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

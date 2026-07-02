@@ -106,7 +106,7 @@ const OrderDetails = () => {
             <div className="space-y-3">
               <div className="flex flex-col items-center justify-center gap-2">
                 <FileText className="text-primary h-5 w-5" />
-                <h3 className="text-lg font-semibold">Comercial</h3>
+                <h3 className="text-lg font-medium">Comercial</h3>
               </div>
               <div className="space-y-3">
                 <div className="text-center">
@@ -184,7 +184,7 @@ const OrderDetails = () => {
             <div className="space-y-3">
               <div className="flex flex-col items-center justify-center gap-2">
                 <Wallet className="text-primary h-5 w-5" />
-                <h3 className="text-lg font-semibold">Rentabilidad</h3>
+                <h3 className="text-lg font-medium">Rentabilidad</h3>
               </div>
               <div className="space-y-3">
                 <div className="text-center">
@@ -217,7 +217,7 @@ const OrderDetails = () => {
             <div className="space-y-3">
               <div className="flex flex-col items-center justify-center gap-2">
                 <Package className="text-primary h-5 w-5" />
-                <h3 className="text-lg font-semibold">Resumen</h3>
+                <h3 className="text-lg font-medium">Resumen</h3>
               </div>
               <div className="space-y-3">
                 <div className="text-center">
@@ -264,17 +264,17 @@ const OrderDetails = () => {
             <div className="space-y-3">
               <div className="flex flex-col items-center justify-center gap-2">
                 <Truck className="text-primary h-5 w-5" />
-                <h3 className="text-lg font-semibold">Envío</h3>
+                <h3 className="text-lg font-medium">Envío</h3>
               </div>
               <div className="space-y-4">
                 <div className="text-center">
-                  <div className="mb-1.5 text-base font-semibold">Dirección de entrega</div>
+                  <div className="mb-1.5 text-base font-medium">Dirección de entrega</div>
                   <p className="text-sm font-light whitespace-pre-line">
                     {order.shippingAddress ?? '—'}
                   </p>
                 </div>
                 <div className="text-center">
-                  <div className="mb-1.5 text-base font-semibold">Transporte</div>
+                  <div className="mb-1.5 text-base font-medium">Transporte</div>
                   <div className="mb-2 text-sm font-medium">{order.transport?.name ?? '—'}</div>
                   <div className="text-muted-foreground mt-2 text-sm whitespace-pre-line">
                     <ul className="flex list-none flex-col items-center gap-1">
@@ -301,7 +301,7 @@ const OrderDetails = () => {
                   </div>
                 </div>
                 <div className="text-center">
-                  <div className="mb-1.5 text-base font-semibold">Observaciones</div>
+                  <div className="mb-1.5 text-base font-medium">Observaciones</div>
                   <div className="text-muted-foreground text-sm">
                     {order.transportationNotes ?? '—'}
                   </div>
@@ -556,7 +556,7 @@ const OrderDetails = () => {
                             alt="Spain Flag"
                           />
                         </span>
-                        <span className="text-[9px] font-semibold">EU</span>
+                        <span className="text-xs font-medium">EU</span>
                       </div>
                     </div>
                     <div

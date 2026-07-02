@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import {
   File,
   FileText,
@@ -16,6 +17,7 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  ExternalLink,
 } from 'lucide-react';
 import { useMe } from '@/hooks/useMe';
 import { Button } from '@/components/ui/button';
@@ -160,7 +162,14 @@ function ImageCardFace({
       {loading ? (
         <Skeleton className="h-full w-full rounded-none" />
       ) : src ? (
-        <img src={src} alt={attachment.originalName} className="h-full w-full object-cover" />
+        <Image
+          src={src}
+          alt={attachment.originalName}
+          fill
+          sizes="(max-width: 640px) 33vw, (max-width: 1280px) 25vw, 20vw"
+          className="object-cover"
+          unoptimized
+        />
       ) : (
         <div className="flex h-full items-center justify-center">
           <ImageOff className="h-5 w-5 text-muted-foreground/40" />
@@ -194,11 +203,14 @@ function DocumentCardFace({
   if (src && !imgError) {
     return (
       <div className="relative aspect-square w-full overflow-hidden bg-muted">
-        <img
+        <Image
           src={src}
           alt={attachment.originalName}
-          className="h-full w-full object-cover"
+          fill
+          sizes="(max-width: 640px) 33vw, (max-width: 1280px) 25vw, 20vw"
+          className="object-cover"
           onError={() => setImgError(true)}
+          unoptimized
         />
       </div>
     );
@@ -207,7 +219,7 @@ function DocumentCardFace({
   return (
     <div className={cn('flex aspect-square w-full flex-col items-center justify-center gap-1', bg)}>
       <Icon className={cn('h-7 w-7', icon)} strokeWidth={1.5} />
-      <span className={cn('rounded px-1 py-0.5 text-[9px] font-bold uppercase tracking-wider', icon)}>
+      <span className={cn('rounded px-1 py-0.5 text-xs font-bold uppercase tracking-wider', icon)}>
         {ext}
       </span>
     </div>
@@ -240,7 +252,7 @@ function AttachmentCard({
   const isImage = attachment.collection === 'order_image';
 
   return (
-    <div className="group relative overflow-hidden rounded-lg border bg-card shadow-sm transition-all hover:shadow-md hover:scale-[1.02]">
+    <div className="group relative overflow-hidden rounded-lg border bg-card shadow-sm transition-shadow hover:shadow-md">
       <div className="relative cursor-pointer" onClick={onPreviewClick}>
         {isImage ? (
           <ImageCardFace orderId={orderId} attachment={attachment} />
@@ -250,8 +262,11 @@ function AttachmentCard({
 
         {/* Overlay de acciones en hover */}
         <div className="absolute inset-0 flex items-end justify-end gap-0.5 bg-black/0 p-1 opacity-0 transition-all group-hover:bg-black/20 group-hover:opacity-100">
-          <button
-            className="rounded bg-black/60 p-1 text-white backdrop-blur-sm transition-colors hover:bg-black/80"
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-xs"
+            className="bg-black/60 text-white backdrop-blur-sm hover:bg-black/80 hover:text-white"
             onClick={(e) => { e.stopPropagation(); onDownload(); }}
             title="Descargar"
           >
@@ -260,33 +275,39 @@ function AttachmentCard({
             ) : (
               <Download className="h-3 w-3" />
             )}
-          </button>
-          <button
-            className="rounded bg-black/60 p-1 text-white backdrop-blur-sm transition-colors hover:bg-black/80"
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-xs"
+            className="bg-black/60 text-white backdrop-blur-sm hover:bg-black/80 hover:text-white"
             onClick={(e) => { e.stopPropagation(); onEdit(); }}
             title="Editar notas"
           >
             <Pencil className="h-3 w-3" />
-          </button>
+          </Button>
           {canDelete && (
-            <button
-              className="rounded bg-red-600/80 p-1 text-white backdrop-blur-sm transition-colors hover:bg-red-700"
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              className="bg-red-600/80 text-white backdrop-blur-sm hover:bg-red-700 hover:text-white"
               onClick={(e) => { e.stopPropagation(); onDelete(); }}
               title="Eliminar"
             >
               <Trash2 className="h-3 w-3" />
-            </button>
+            </Button>
           )}
         </div>
       </div>
 
       {/* Metadata */}
       <div className="px-2 py-1.5">
-        <p className="truncate text-[11px] font-medium text-foreground" title={attachment.originalName}>
+        <p className="truncate text-xs font-medium text-foreground" title={attachment.originalName}>
           {attachment.originalName}
         </p>
         {attachment.notes && (
-          <p className="mt-0.5 line-clamp-1 text-[9px] text-muted-foreground italic">
+          <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground italic">
             {attachment.notes}
           </p>
         )}
@@ -369,44 +390,49 @@ function AttachmentViewer({
 
         {/* Toolbar */}
         <div className="flex items-center justify-between border-b px-4 py-2">
-          <p className="truncate text-sm font-medium">{attachment.originalName}</p>
+          <p className="truncate text-sm font-medium" title={attachment.originalName}>
+            {attachment.originalName}
+          </p>
           <div className="flex shrink-0 items-center gap-1.5">
             {attachments.length > 1 && (
               <span className="text-xs text-muted-foreground">{index + 1} / {attachments.length}</span>
             )}
             {isPdf && src && (
-              <button
-                className="rounded p-1.5 hover:bg-muted"
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
                 onClick={openInNewTab}
                 title="Abrir en nueva pestaña"
               >
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                  <polyline points="15 3 21 3 21 9" />
-                  <line x1="10" y1="14" x2="21" y2="3" />
-                </svg>
-              </button>
+                <ExternalLink className="h-4 w-4" />
+              </Button>
             )}
-            <button
-              className="rounded p-1.5 hover:bg-muted"
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
               onClick={() => onDownload(attachment)}
               title="Descargar"
             >
               <Download className="h-4 w-4" />
-            </button>
+            </Button>
             {canDelete && (
-              <button
-                className="rounded p-1.5 text-destructive hover:bg-destructive/10"
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                 onClick={() => onDelete(attachment)}
                 title="Eliminar"
               >
                 <Trash2 className="h-4 w-4" />
-              </button>
+              </Button>
             )}
             <div className="mx-0.5 h-4 w-px bg-border" />
-            <button className="rounded p-1.5 hover:bg-muted" onClick={onClose}>
+            <Button type="button" variant="ghost" size="icon-sm" onClick={onClose}>
               <X className="h-4 w-4" />
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -416,12 +442,17 @@ function AttachmentViewer({
           {isImage && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/80">
               {loading ? (
-                <Loader2 className="h-8 w-8 animate-spin text-white/50" />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+                  <Loader2 className="h-8 w-8 animate-spin text-white/50" />
+                </div>
               ) : src ? (
-                <img
+                <Image
                   src={src}
                   alt={attachment.originalName}
-                  className="max-h-full max-w-full object-contain"
+                  fill
+                  sizes="100vw"
+                  className="object-contain"
+                  unoptimized
                 />
               ) : (
                 <div className="flex flex-col items-center gap-2 text-white/50">
@@ -436,7 +467,7 @@ function AttachmentViewer({
           {isPdf && (
             <div className="absolute inset-0 bg-muted">
               {loading && (
-                <div className="flex h-full items-center justify-center">
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/40 backdrop-blur-sm">
                   <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
               )}
@@ -487,20 +518,28 @@ function AttachmentViewer({
 
           {/* Navegación */}
           {index > 0 && (
-            <button
-              className="absolute left-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/50 p-1.5 text-white backdrop-blur-sm hover:bg-black/70"
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-lg"
+              className="absolute left-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/50 text-white backdrop-blur-sm hover:bg-black/70 hover:text-white"
               onClick={() => setIndex((i) => i - 1)}
+              title="Adjunto anterior"
             >
               <ChevronLeft className="h-5 w-5" />
-            </button>
+            </Button>
           )}
           {index < attachments.length - 1 && (
-            <button
-              className="absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/50 p-1.5 text-white backdrop-blur-sm hover:bg-black/70"
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-lg"
+              className="absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/50 text-white backdrop-blur-sm hover:bg-black/70 hover:text-white"
               onClick={() => setIndex((i) => i + 1)}
+              title="Adjunto siguiente"
             >
               <ChevronRight className="h-5 w-5" />
-            </button>
+            </Button>
           )}
         </div>
 
@@ -625,7 +664,7 @@ const OrderAttachments = () => {
     <p className="text-destructive text-sm">{error}</p>
   ) : attachments.length === 0 ? (
     <EmptyState
-      title="Sin adjuntos"
+      title="No existen adjuntos"
       description="Este pedido no tiene archivos adjuntos todavía."
       icon={<Paperclip />}
       button={{ name: 'Adjuntar archivo', onClick: () => setUploadOpen(true) }}
