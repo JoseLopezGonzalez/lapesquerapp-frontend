@@ -1,0 +1,72 @@
+---
+description: Project skill adapters for Cursor agents
+globs: ".agents/skills/**/SKILL.md,src/**/*.{js,jsx,ts,tsx},docs/**/*.md"
+alwaysApply: true
+---
+
+# Project Skills — Cursor Adapter
+
+This project exposes reusable AI skills in `.agents/skills/*/SKILL.md`.
+
+Cursor agents do not auto-load Codex skills. Use this rule as the Cursor bridge:
+
+1. Detect whether the user intent matches one of the skills below.
+2. Read the full matching `.agents/skills/<skill>/SKILL.md`.
+3. Follow that skill before acting.
+4. If multiple skills match, load the smallest relevant set.
+5. If a skill conflicts with La PesquerApp docs, follow `AGENTS.md` and
+   `docs/ai-context/**`.
+
+Do not modify `.claude/**` unless Jose explicitly asks for that exact action.
+
+## Available Skills
+
+- `caveman`: ultra-compressed communication mode for fewer tokens.
+- `deep-audit-module`: deep module audits via `/deep-audit-module` or natural language.
+- `find-skills`: list available project skills and agents.
+- `humanizer`: rewrite text, UI copy, PRs or docs so they sound natural.
+- `implement-next`: select and implement next eligible module GAPs.
+- `lapesquerapp-code-audit`: code quality, migration and architecture audits.
+- `lapesquerapp-design-audit`: visual, copy and consistency design audits.
+- `lapesquerapp-gap-auditor`: audit a completed GAP implementation.
+- `lapesquerapp-gap-discovery`: create or prepare a GAP from an idea, bug or feature.
+- `lapesquerapp-gap-implementor`: implement a documented GAP.
+- `lapesquerapp-gap-workflow`: shared GAP lifecycle context.
+- `lapesquerapp-ideas`: capture, list and promote parked ideas.
+- `lapesquerapp-mobile-ui`: mobile-first UI implementation and review.
+- `lapesquerapp-system-learner`: persist reusable project rules and learnings.
+- `lapesquerapp-ui-audit`: mobile and desktop UI/UX audits.
+- `lapesquerapp-ui-system`: La PesquerApp UI, shadcn, Tailwind and form rules.
+- `mobile-crud-generator`: generate mobile UI for simple CRUD entities.
+- `mobile-preview`: isolated mobile UI preview workflow.
+- `mobile-ui`: legacy PesquerApp mobile UI patterns.
+- `napkin`: quick Mermaid or ASCII diagrams.
+- `new-component`: create reusable React components only after checking existing ones.
+- `new-page`: create new app pages with route, component, hook, service and nav steps.
+- `new-service`: create domain services using existing API and tenant conventions.
+- `shadcn`: shadcn component registry, CLI and project guidance.
+- `shadcn-component-discovery`: search shadcn ecosystem before custom UI.
+- `shadcn-component-review`: review components against shadcn patterns.
+- `shadcn-ui`: shadcn/ui implementation patterns.
+- `skill-creator`: create or update project skills.
+- `task-workflow`: legacy GAP workflow context.
+- `token-optimizer`: reduce context or prompt tokens with a documented strategy.
+- `ui-feedback`: capture UI feedback and convert it into durable rules.
+
+## Command Mapping
+
+When Jose writes:
+
+- `/audit-code quality|migrate|arch [scope]` → load `lapesquerapp-code-audit`.
+- `/audit-mobile [scope]` or `/audit-desktop [scope]` → load `lapesquerapp-ui-audit`.
+- `/audit-design visual|copy|consistency [scope]` → load `lapesquerapp-design-audit`.
+- `/mobile [view]` → load `lapesquerapp-mobile-ui`.
+- `/idea`, `/ideas`, `/ideas promote [NNN]` → load `lapesquerapp-ideas` or `lapesquerapp-gap-discovery`.
+- `crea un GAP` / `documenta este cambio` → load `lapesquerapp-gap-discovery`.
+- `implementa GAP-NNN` → load `lapesquerapp-gap-implementor`.
+- `audita GAP-NNN` → load `lapesquerapp-gap-auditor`.
+- `recuerda esto` / `añade esto al sistema` → load `lapesquerapp-system-learner`.
+- `/deep-audit-module module=<module>` → load `deep-audit-module`.
+- `/implement-next module=<module> category=<category>` → load `implement-next`.
+- `/skills` or "qué skills hay" → load `find-skills`.
+- "menos tokens", "caveman", "modo caverna" → load `caveman`.

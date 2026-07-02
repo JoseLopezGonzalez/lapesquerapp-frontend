@@ -1,9 +1,9 @@
 ---
 id: GAP-V2-002
-title: useOrder.ts usa un array literal como queryKey en vez de una factory
+title: useOrder.ts usa una queryKey inline y sin tenantId para el detalle
 module: orders
 category: code-quality
-priority: P2
+priority: P1
 risk: low
 size: S
 status: ready
@@ -15,7 +15,7 @@ created_at: 2026-07-02
 updated_at: 2026-07-02
 ---
 
-# GAP-V2-002 — `useOrder.ts` usa un array literal como queryKey
+# GAP-V2-002 — `useOrder.ts` usa una queryKey inline y sin tenantId para el detalle
 
 ## Problema
 
@@ -39,11 +39,12 @@ todo el módulo que no pasa por una factory.
 Consecuencias directas de no tener una key tenant-aware:
 - La key `['order', orderId]` no incluye `tenantId`, a diferencia de todas las demás
   keys del módulo (`orderListKeys.active(tenantId)`,
-  `orderAttachmentKeys.list(tenantId, orderId)`, etc.). En un entorno multi-tenant
-  esto no es incorrecto en sí (React Query no comparte caché entre pestañas de
-  distinto tenant si el `QueryClient` se resetea en el login), pero rompe la
-  convención uniforme del resto del módulo y dificulta invalidaciones cruzadas
-  (`invalidateQueries` con prefijo por tenant, como se necesita para GAP-V2-001).
+  `orderAttachmentKeys.list(tenantId, orderId)`, etc.). En un entorno multi-tenant,
+  si cambia el tenant efectivo antes de limpiar la caché, un `orderId` igual podría
+  reutilizar temporalmente datos del tenant anterior hasta el refetch.
+- Rompe la convención uniforme del resto del módulo y dificulta invalidaciones
+  cruzadas (`invalidateQueries` con prefijo por tenant, como se necesita para
+  GAP-V2-001).
 - Bloquea GAP-V2-001: los sub-hooks de mutación no tienen una key de prefijo estable
   a la que apuntar `invalidateQueries` sin duplicar el array literal en cada archivo.
 
@@ -142,3 +143,4 @@ npm run test:run
 
 - Auditoría de origen: `docs/ai/modules/orders/audit.md`
 - GAPs relacionados: GAP-V2-001 (depende de esta factory)
+- GAPs fusionados: GAP-V2-019 (mismo punto detectado por el carril permissions/multitenant)

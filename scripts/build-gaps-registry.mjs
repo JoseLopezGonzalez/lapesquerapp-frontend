@@ -124,6 +124,7 @@ const groups = {
   blocked: gaps.filter((g) => g.status === 'blocked'),
   done: gaps.filter((g) => g.status === 'done'),
   later: gaps.filter((g) => g.status === 'later'),
+  rejected: gaps.filter((g) => g.status === 'rejected'),
 };
 
 const known = new Set(Object.values(groups).flat().map((g) => g.file));
@@ -156,7 +157,11 @@ ${renderTable(groups.done)}
 ## Later
 
 ${renderTable(groups.later)}
-${other.length ? `\n## Sin clasificar (status distinto de ready/in_progress/blocked/done/later)\n\n${renderTable(other)}\n` : ''}
+
+## Rejected
+
+${renderTable(groups.rejected)}
+${other.length ? `\n## Sin clasificar (status distinto de ready/in_progress/blocked/done/later/rejected)\n\n${renderTable(other)}\n` : ''}
 `;
 
 mkdirSync(moduleDir, { recursive: true });
@@ -164,5 +169,5 @@ writeFileSync(registryPath, content, 'utf8');
 
 console.log(`✅ ${registryPath}`);
 console.log(
-  `   ready: ${groups.ready.length} · in_progress: ${groups.in_progress.length} · blocked: ${groups.blocked.length} · done: ${groups.done.length} · later: ${groups.later.length}${other.length ? ` · sin clasificar: ${other.length}` : ''}`
+  `   ready: ${groups.ready.length} · in_progress: ${groups.in_progress.length} · blocked: ${groups.blocked.length} · done: ${groups.done.length} · later: ${groups.later.length} · rejected: ${groups.rejected.length}${other.length ? ` · sin clasificar: ${other.length}` : ''}`
 );

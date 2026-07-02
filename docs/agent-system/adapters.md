@@ -34,6 +34,7 @@ Design-quality audit is exposed through `lapesquerapp-design-audit` and the
 Cursor uses:
 
 - `.cursor/rules/05-agent-system.mdc`
+- `.cursor/rules/06-project-skills.mdc`
 - `.cursor/rules/15-gap-workflow.mdc`
 - `.cursor/rules/16-audit-workflows.mdc`
 - `.cursor/rules/17-design-audit.mdc`
@@ -41,6 +42,11 @@ Cursor uses:
 
 Cursor rules point to `docs/agent-system/` so any model used inside Cursor can
 follow the same workflows.
+
+Project skills are exposed to Cursor through
+`.cursor/rules/06-project-skills.mdc`. Cursor agents should treat it as a
+compact index, then read the matching `.agents/skills/<skill>/SKILL.md` only
+when the user intent requires that skill.
 
 ## GitHub Copilot
 
