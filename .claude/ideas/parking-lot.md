@@ -12,7 +12,23 @@ y lista para implementar; una idea aquí es solo una nota para no perderla.
 
 ## 🅿️ Parked
 
-<!-- IDEA-001 va aquí cuando se cree la primera con /idea -->
+### IDEA-001 — Creador de pedidos: no se puede elegir tipo de pedido
+- **Fecha:** 2026-07-02
+- **Tipo:** Bug
+- **Módulo:** Ventas
+- **Descripción:** En el creador de pedidos no hay forma de seleccionar el tipo de pedido.
+
+### IDEA-002 — Creador de pedidos: no permite adjuntos desde el inicio
+- **Fecha:** 2026-07-02
+- **Tipo:** Bug
+- **Módulo:** Ventas
+- **Descripción:** Al crear un pedido no se pueden añadir adjuntos ya de primeras, hay que hacerlo después.
+
+### IDEA-003 — Creador de pedidos: obliga a líneas de previsión sin necesidad
+- **Fecha:** 2026-07-02
+- **Tipo:** Bug
+- **Módulo:** Ventas
+- **Descripción:** El creador obliga siempre a elegir líneas de previsión de productos, incluso cuando no debería ser obligatorio.
 
 ---
 
