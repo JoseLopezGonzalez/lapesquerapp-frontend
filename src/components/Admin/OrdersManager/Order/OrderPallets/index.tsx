@@ -15,9 +15,10 @@ import { useOrderPallets } from './hooks/useOrderPallets';
 
 interface OrderPalletsProps {
   readOnly?: boolean;
+  canViewCostData?: boolean;
 }
 
-const OrderPallets = ({ readOnly = false }: OrderPalletsProps) => {
+const OrderPallets = ({ readOnly = false, canViewCostData = true }: OrderPalletsProps) => {
   const { isMobile, mounted } = useIsMobileSafe();
   const api = useOrderPallets();
   const {
@@ -104,6 +105,7 @@ const OrderPallets = ({ readOnly = false }: OrderPalletsProps) => {
               pallets={pallets}
               isMobile={isMobile}
               readOnly={readOnly}
+              canViewCostData={canViewCostData}
               onEdit={handleOpenEditPallet}
               onClone={handleClonePallet}
               onUnlink={handleUnlinkPallet}
@@ -123,6 +125,7 @@ const OrderPallets = ({ readOnly = false }: OrderPalletsProps) => {
                   pallets={pallets}
                   isMobile={isMobile}
                   readOnly={readOnly}
+                  canViewCostData={canViewCostData}
                   onEdit={handleOpenEditPallet}
                   onClone={handleClonePallet}
                   onUnlink={handleUnlinkPallet}
@@ -174,6 +177,7 @@ const OrderPallets = ({ readOnly = false }: OrderPalletsProps) => {
               pallets={pallets}
               isMobile={isMobile}
               readOnly={readOnly}
+              canViewCostData={canViewCostData}
               onEdit={handleOpenEditPallet}
               onClone={handleClonePallet}
               onUnlink={handleUnlinkPallet}

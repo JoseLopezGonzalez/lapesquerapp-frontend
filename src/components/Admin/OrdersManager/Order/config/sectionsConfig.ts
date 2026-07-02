@@ -35,9 +35,9 @@ const OrderIncident = lazy(() => import('../OrderIncident'));
 const OrderCustomerHistory = lazy(() => import('../OrderCustomerHistory'));
 const OrderAttachments = lazy(() => import('../OrderAttachments'));
 
-// Registro polimórfico: cada sección renderiza un componente con props propias distintas
-// (solo 'pallets' recibe readOnly); se tipa laxo a propósito para admitir esa heterogeneidad.
-type OrderSectionComponent = ComponentType<{ readOnly?: boolean }>;
+// Registro polimórfico: cada sección renderiza un componente con props propias distintas.
+// Se tipa laxo a propósito para admitir esa heterogeneidad sin duplicar registros.
+type OrderSectionComponent = ComponentType<{ readOnly?: boolean; canViewCostData?: boolean }>;
 
 export interface OrderSectionConfig {
   id: string;

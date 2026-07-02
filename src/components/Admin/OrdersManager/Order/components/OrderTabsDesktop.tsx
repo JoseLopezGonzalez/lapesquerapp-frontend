@@ -26,6 +26,7 @@ interface OrderTabsDesktopProps {
   onTabChange: (tab: string) => void;
   blockedTabIds?: string[];
   palletsReadOnly?: boolean;
+  canViewCostData?: boolean;
 }
 
 /**
@@ -36,6 +37,7 @@ export default function OrderTabsDesktop({
   onTabChange,
   blockedTabIds = [],
   palletsReadOnly = false,
+  canViewCostData = true,
 }: OrderTabsDesktopProps) {
   // Secciones bloqueadas para comercial cuando el pedido está en curso
   const allowedSections = SECTIONS_CONFIG.filter((section) => !blockedTabIds.includes(section.id));
@@ -120,7 +122,10 @@ export default function OrderTabsDesktop({
                   : compactTabs.includes(section.id)
                     ? 'h-full min-h-0 flex flex-col'
                     : 'flex w-full h-full flex-col gap-4';
-              const componentProps = section.id === 'pallets' ? { readOnly: palletsReadOnly } : {};
+              const componentProps =
+                section.id === 'pallets'
+                  ? { readOnly: palletsReadOnly, canViewCostData }
+                  : { canViewCostData };
 
               return (
                 <TabsContent key={section.id} value={section.id} className={tabClass}>

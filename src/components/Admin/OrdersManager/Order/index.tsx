@@ -42,9 +42,15 @@ interface OrderContentProps {
   onLoading?: (loading: boolean) => void;
   onClose?: () => void;
   readOnly?: boolean;
+  canViewCostData?: boolean;
 }
 
-const OrderContent = ({ onLoading, onClose, readOnly = false }: OrderContentProps) => {
+const OrderContent = ({
+  onLoading,
+  onClose,
+  readOnly = false,
+  canViewCostData = true,
+}: OrderContentProps) => {
   const { isMobile, mounted } = useIsMobileSafe();
   const {
     order,
@@ -80,10 +86,19 @@ const OrderContent = ({ onLoading, onClose, readOnly = false }: OrderContentProp
     onLoading(loading);
   }, [loading, onLoading]);
 
-  const commercialInProgressBlockedTabIds = getBlockedOrderSectionsForReadOnly({
-    readOnly,
-    status: order?.status as string | undefined,
-  });
+  const commercialInProgressBlockedTabIds = useMemo(
+    () =>
+      getBlockedOrderSectionsForReadOnly({
+        readOnly,
+        status: order?.status as string | undefined,
+      }),
+    [readOnly, order?.status]
+  );
+
+  const blockedTabIds = useMemo(
+    () => [...commercialInProgressBlockedTabIds, ...(!canViewCostData ? ['analysis'] : [])],
+    [commercialInProgressBlockedTabIds, canViewCostData]
+  );
 
   const palletsReadOnly = isOrderPalletsReadOnly({
     readOnly,
@@ -91,17 +106,17 @@ const OrderContent = ({ onLoading, onClose, readOnly = false }: OrderContentProp
   });
 
   useEffect(() => {
-    if (commercialInProgressBlockedTabIds.length === 0) return;
-    if (!commercialInProgressBlockedTabIds.includes(activeTab)) return;
+    if (blockedTabIds.length === 0) return;
+    if (!blockedTabIds.includes(activeTab)) return;
     setActiveTab('details');
-  }, [commercialInProgressBlockedTabIds, activeTab, setActiveTab]);
+  }, [blockedTabIds, activeTab, setActiveTab]);
 
   useEffect(() => {
     if (!activeSection) return;
-    if (commercialInProgressBlockedTabIds.length === 0) return;
-    if (!commercialInProgressBlockedTabIds.includes(activeSection)) return;
+    if (blockedTabIds.length === 0) return;
+    if (!blockedTabIds.includes(activeSection)) return;
     setActiveSection('details');
-  }, [activeSection, commercialInProgressBlockedTabIds]);
+  }, [activeSection, blockedTabIds]);
 
   const incompleteProductionLines = useMemo(
     () =>
@@ -276,7 +291,7 @@ const OrderContent = ({ onLoading, onClose, readOnly = false }: OrderContentProp
               <OrderSectionList
                 onSelectSection={setActiveSection}
                 hasSafeAreaPadding={!!onClose}
-                blockedTabIds={commercialInProgressBlockedTabIds as never[]}
+                blockedTabIds={blockedTabIds as never[]}
               />
             </div>
 
@@ -306,6 +321,7 @@ const OrderContent = ({ onLoading, onClose, readOnly = false }: OrderContentProp
             <OrderSectionContentMobile
               activeSection={activeSection}
               palletsReadOnly={palletsReadOnly}
+              canViewCostData={canViewCostData}
             />
           </div>
         )
@@ -326,8 +342,9 @@ const OrderContent = ({ onLoading, onClose, readOnly = false }: OrderContentProp
               <OrderTabsDesktop
                 activeTab={activeTab}
                 onTabChange={setActiveTab}
-                blockedTabIds={commercialInProgressBlockedTabIds as never[]}
+                blockedTabIds={blockedTabIds as never[]}
                 palletsReadOnly={palletsReadOnly}
+                canViewCostData={canViewCostData}
               />
             </div>
           </CardContent>
@@ -437,12 +454,25 @@ interface OrderProps {
   onLoading?: (loading: boolean) => void;
   onClose?: () => void;
   readOnly?: boolean;
+  canViewCostData?: boolean;
 }
 
-const Order = ({ orderId, onChange, onLoading, onClose, readOnly = false }: OrderProps) => {
+const Order = ({
+  orderId,
+  onChange,
+  onLoading,
+  onClose,
+  readOnly = false,
+  canViewCostData = true,
+}: OrderProps) => {
   return (
-    <OrderProvider orderId={orderId} onChange={onChange}>
-      <OrderContent onLoading={onLoading} onClose={onClose} readOnly={readOnly} />
+    <OrderProvider orderId={orderId} onChange={onChange} canViewCostData={canViewCostData}>
+      <OrderContent
+        onLoading={onLoading}
+        onClose={onClose}
+        readOnly={readOnly}
+        canViewCostData={canViewCostData}
+      />
     </OrderProvider>
   );
 };

@@ -50,9 +50,7 @@ function AnalysisMetricCard({ title, value, description, detail, icon: Icon, emp
       <CardContent className="space-y-1">
         <div
           className={
-            emphasize
-              ? 'text-2xl font-medium tracking-tight'
-              : 'text-xl font-medium tracking-tight'
+            emphasize ? 'text-2xl font-medium tracking-tight' : 'text-xl font-medium tracking-tight'
           }
         >
           {value}
@@ -213,7 +211,7 @@ function PalletMobileCard({ pallet }) {
   );
 }
 
-export default function OrderCostAnalysis() {
+export default function OrderCostAnalysis({ canViewCostData = true }) {
   const { isMobile, mounted } = useIsMobileSafe();
   const { order, costAnalysis, costAnalysisLoading, costAnalysisError, loadCostAnalysis } =
     useOrderContext();
@@ -234,7 +232,7 @@ export default function OrderCostAnalysis() {
     [palletLines]
   );
 
-  if (!mounted) return null;
+  if (!mounted || !canViewCostData) return null;
 
   if (costAnalysisLoading && !costAnalysis) {
     return (

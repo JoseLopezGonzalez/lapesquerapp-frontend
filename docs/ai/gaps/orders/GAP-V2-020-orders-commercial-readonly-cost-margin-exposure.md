@@ -6,14 +6,21 @@ category: architecture-refactor
 priority: P1
 risk: medium
 size: M
-status: ready
+status: done
 dependencies: []
 target_files:
   - src/components/Admin/OrdersManager/ComercialOrderDetailClient.tsx
+  - src/components/Comercial/CRM/ComercialOrdersManager.tsx
+  - src/context/OrderContext.tsx
+  - src/hooks/useOrder.ts
+  - src/hooks/orders/useOrderCostAnalysis.ts
   - src/components/Admin/OrdersManager/Order/index.tsx
   - src/components/Admin/OrdersManager/Order/config/sectionsConfig.ts
+  - src/components/Admin/OrdersManager/Order/components/OrderTabsDesktop.tsx
+  - src/components/Admin/OrdersManager/Order/components/OrderSectionContentMobile.tsx
   - src/components/Admin/OrdersManager/Order/OrderDetails/index.tsx
   - src/components/Admin/OrdersManager/Order/OrderCostAnalysis/index.jsx
+  - src/components/Admin/OrdersManager/Order/OrderPallets/index.tsx
   - src/components/Admin/OrdersManager/Order/OrderPallets/components/OrderPalletsContent.tsx
   - src/components/Admin/OrdersManager/Order/OrderPallets/OrderPalletCard/index.tsx
   - src/components/Admin/OrdersManager/Order/OrderPallets/OrderPalletTableRow.tsx
@@ -55,11 +62,11 @@ La solución ideal debería acompañarse de un contrato API que no devuelva esos
 
 ## Criterios de aceptación
 
-- [ ] `/comercial/orders/[id]` y `/comercial/orders-manager` no muestran coste, margen ni análisis económico.
-- [ ] La pestaña/sección `analysis` no aparece para comercial.
-- [ ] Palets en vista comercial no muestran `costPerKg`, `totalCost` ni columnas equivalentes.
-- [ ] `getOrderCostAnalysis` no se invoca desde vistas comerciales.
-- [ ] El cambio no elimina la visibilidad de coste/margen para roles internos autorizados en `/admin/orders*`.
+- [x] `/comercial/orders/[id]` y `/comercial/orders-manager` no muestran coste, margen ni análisis económico.
+- [x] La pestaña/sección `analysis` no aparece para comercial.
+- [x] Palets en vista comercial no muestran `costPerKg`, `totalCost` ni columnas equivalentes.
+- [x] `getOrderCostAnalysis` no se invoca desde vistas comerciales.
+- [x] El cambio no elimina la visibilidad de coste/margen para roles internos autorizados en `/admin/orders*`.
 
 ## Plan de validación
 
@@ -72,15 +79,20 @@ Manual: entrar como administrador en /admin/orders/[id] y confirmar que el anál
 
 ## Notas de implementación
 
-Pendiente.
+- Se añade `canViewCostData` como capacidad explícita separada de `readOnly`.
+- Las entradas comerciales (`/comercial/orders/[id]` y `/comercial/orders-manager`) montan `Order` con `canViewCostData={false}`.
+- `OrderProvider`/`useOrder` propagan la capacidad hasta `useOrderCostAnalysis`, que no invoca `getOrderCostAnalysis` cuando `enabled=false`.
+- `analysis` se bloquea en tabs/secciones si `canViewCostData=false`.
+- `OrderDetails` y los componentes de palets ocultan coste, margen y columnas equivalentes cuando la capacidad está desactivada.
+- La implementación tocó archivos de soporte no listados inicialmente para cumplir el criterio de no invocar el endpoint desde vistas comerciales.
 
 ## Resultado
 
-Pendiente.
+Implementado. Validaciones locales: `npm run lint` sin errores (270 warnings preexistentes), `npm run type-check` OK y `npm run build` OK.
 
 ## Resultado de auditoría
 
-Pendiente.
+`done` — auditoría con subagente limpio sin hallazgos bloqueantes. El auditor confirmó que comercial desactiva coste explícitamente, `analysis` queda filtrada, palets ocultan coste y `getOrderCostAnalysis` queda protegido con `enabled=false`; admin conserva visibilidad al usar el valor por defecto.
 
 ## Links
 

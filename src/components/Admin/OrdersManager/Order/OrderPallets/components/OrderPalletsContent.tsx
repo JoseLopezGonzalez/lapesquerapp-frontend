@@ -30,6 +30,7 @@ interface OrderPalletsContentProps {
   pallets: OrderPalletsContentPallet[];
   isMobile: boolean;
   readOnly?: boolean;
+  canViewCostData?: boolean;
   onEdit: (palletId: number | string) => void;
   onClone: (palletId: number | string) => void;
   onUnlink: (palletId: number | string) => void;
@@ -49,6 +50,7 @@ const OrderPalletsContent = ({
   pallets,
   isMobile,
   readOnly = false,
+  canViewCostData = true,
   onEdit,
   onClone,
   onUnlink,
@@ -85,6 +87,7 @@ const OrderPalletsContent = ({
             key={pallet.id}
             pallet={pallet}
             readOnly={readOnly}
+            canViewCostData={canViewCostData}
             onEdit={onEdit}
             onClone={onClone}
             onUnlink={onUnlink}
@@ -129,8 +132,12 @@ const OrderPalletsContent = ({
             <TableHead>Observaciones</TableHead>
             <TableHead className="text-right">Cajas</TableHead>
             <TableHead className="text-right">Peso Neto</TableHead>
-            <TableHead className="text-right">Coste €/kg</TableHead>
-            <TableHead className="text-right">Coste Total</TableHead>
+            {canViewCostData && (
+              <>
+                <TableHead className="text-right">Coste €/kg</TableHead>
+                <TableHead className="text-right">Coste Total</TableHead>
+              </>
+            )}
             <TableHead className="text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
@@ -140,6 +147,7 @@ const OrderPalletsContent = ({
               key={pallet.id}
               pallet={pallet}
               readOnly={readOnly}
+              canViewCostData={canViewCostData}
               onEdit={onEdit}
               onClone={onClone}
               onUnlink={onUnlink}

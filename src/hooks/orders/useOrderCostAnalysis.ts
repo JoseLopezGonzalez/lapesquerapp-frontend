@@ -7,6 +7,7 @@ import type { OrderCostAnalysisResponse } from '@/services/orderService';
 interface UseOrderCostAnalysisParams {
   orderId: number | string | null | undefined;
   activeTab: string;
+  enabled?: boolean;
 }
 
 export interface UseOrderCostAnalysisResult {
@@ -20,6 +21,7 @@ export interface UseOrderCostAnalysisResult {
 export function useOrderCostAnalysis({
   orderId,
   activeTab,
+  enabled = true,
 }: UseOrderCostAnalysisParams): UseOrderCostAnalysisResult {
   const [costAnalysis, setCostAnalysis] = useState<OrderCostAnalysisResponse | null>(null);
   const [costAnalysisLoading, setCostAnalysisLoading] = useState(false);
@@ -43,6 +45,7 @@ export function useOrderCostAnalysis({
 
   const loadCostAnalysis = useCallback(
     async ({ force = false } = {}): Promise<OrderCostAnalysisResponse | null> => {
+      if (!enabled) return null;
       if (!orderId) return null;
       if (costAnalysisLoading) return costAnalysis;
       if (!force && (costAnalysisRequestedRef.current || costAnalysis)) {
@@ -76,16 +79,17 @@ export function useOrderCostAnalysis({
         setCostAnalysisLoading(false);
       }
     },
-    [costAnalysis, costAnalysisLoading, orderId]
+    [costAnalysis, costAnalysisLoading, enabled, orderId]
   );
 
   useEffect(() => {
+    if (!enabled) return;
     if (activeTab !== 'analysis') return;
     if (!orderId) return;
     if (costAnalysisRequestedRef.current || costAnalysisLoading) return;
 
     loadCostAnalysis().catch(() => {});
-  }, [activeTab, orderId, costAnalysisLoading, loadCostAnalysis]);
+  }, [activeTab, orderId, costAnalysisLoading, enabled, loadCostAnalysis]);
 
   return {
     costAnalysis,

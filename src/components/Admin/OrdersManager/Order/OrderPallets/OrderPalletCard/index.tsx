@@ -15,10 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
 import { formatCostPerKg, formatTotalCost } from '@/helpers/production/costFormatters';
-import {
-  getAvailableBoxesCount,
-  getAvailableNetWeight,
-} from '@/helpers/pallet/boxAvailability';
+import { getAvailableBoxesCount, getAvailableNetWeight } from '@/helpers/pallet/boxAvailability';
 import { PalletImageStrip } from '@/components/Admin/Pallets/PalletAttachments/PalletImageStrip';
 
 interface OrderPalletCardBox {
@@ -60,6 +57,7 @@ interface OrderPalletCardProps {
   isCloning?: boolean;
   isUnlinking?: boolean;
   readOnly?: boolean;
+  canViewCostData?: boolean;
 }
 
 export default function OrderPalletCard({
@@ -76,6 +74,7 @@ export default function OrderPalletCard({
   isCloning = false,
   isUnlinking = false,
   readOnly = false,
+  canViewCostData = true,
 }: OrderPalletCardProps) {
   // Los palets vinculados al pedido NO tienen productsSummary (solo los resultados de búsqueda lo tienen)
   // Calcular desde boxes o usar productsNames como fallback
@@ -86,23 +85,20 @@ export default function OrderPalletCard({
   if (pallet.boxes && Array.isArray(pallet.boxes)) {
     // Calcular desde boxes
     const availableBoxes = (pallet.boxes || []).filter((box) => box.isAvailable !== false);
-    const productsSummary = availableBoxes.reduce(
-      (acc: Record<string, ProductSummary>, box) => {
-        const product = box.product;
-        if (!product || !product.id) return acc;
-        if (!acc[product.id]) {
-          acc[product.id] = {
-            name: product.name || '',
-            netWeight: 0,
-            boxCount: 0,
-          };
-        }
-        acc[product.id].netWeight += Number(box.netWeight || 0);
-        acc[product.id].boxCount += 1;
-        return acc;
-      },
-      {}
-    );
+    const productsSummary = availableBoxes.reduce((acc: Record<string, ProductSummary>, box) => {
+      const product = box.product;
+      if (!product || !product.id) return acc;
+      if (!acc[product.id]) {
+        acc[product.id] = {
+          name: product.name || '',
+          netWeight: 0,
+          boxCount: 0,
+        };
+      }
+      acc[product.id].netWeight += Number(box.netWeight || 0);
+      acc[product.id].boxCount += 1;
+      return acc;
+    }, {});
     productsSummaryArray = Object.values(productsSummary);
   } else if (pallet.productsNames && Array.isArray(pallet.productsNames)) {
     // Fallback: usar productsNames (sin peso individual)
@@ -309,20 +305,22 @@ export default function OrderPalletCard({
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-3 pt-1">
-          <div>
-            <div className="text-muted-foreground mb-1 text-xs font-medium">Coste €/kg:</div>
-            <div className="text-foreground text-sm font-medium">
-              {formatCostPerKg(pallet.costPerKg)}
+        {canViewCostData && (
+          <div className="grid grid-cols-2 gap-3 pt-1">
+            <div>
+              <div className="text-muted-foreground mb-1 text-xs font-medium">Coste €/kg:</div>
+              <div className="text-foreground text-sm font-medium">
+                {formatCostPerKg(pallet.costPerKg)}
+              </div>
+            </div>
+            <div>
+              <div className="text-muted-foreground mb-1 text-xs font-medium">Coste total:</div>
+              <div className="text-foreground text-sm font-medium">
+                {formatTotalCost(pallet.totalCost)}
+              </div>
             </div>
           </div>
-          <div>
-            <div className="text-muted-foreground mb-1 text-xs font-medium">Coste total:</div>
-            <div className="text-foreground text-sm font-medium">
-              {formatTotalCost(pallet.totalCost)}
-            </div>
-          </div>
-        </div>
+        )}
       </CardContent>
 
       <PalletImageStrip palletId={pallet.id} />

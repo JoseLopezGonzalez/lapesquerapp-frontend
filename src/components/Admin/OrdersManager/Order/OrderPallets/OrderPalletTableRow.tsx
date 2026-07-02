@@ -40,6 +40,7 @@ interface OrderPalletTableRowProps {
   isCloning?: boolean;
   unlinkingPalletId?: number | string | null;
   readOnly?: boolean;
+  canViewCostData?: boolean;
 }
 
 export default function OrderPalletTableRow({
@@ -55,6 +56,7 @@ export default function OrderPalletTableRow({
   isCloning,
   unlinkingPalletId,
   readOnly = false,
+  canViewCostData = true,
 }: OrderPalletTableRowProps) {
   const productNames =
     pallet.productsNames && Array.isArray(pallet.productsNames) && pallet.productsNames.length > 0
@@ -94,12 +96,16 @@ export default function OrderPalletTableRow({
       <TableCell className="px-4 py-3 text-right text-nowrap">
         {formatDecimalWeight(pallet.netWeight || 0)}
       </TableCell>
-      <TableCell className="px-4 py-3 text-right text-nowrap">
-        {formatCostPerKg(pallet.costPerKg)}
-      </TableCell>
-      <TableCell className="px-4 py-3 text-right text-nowrap">
-        {formatTotalCost(pallet.totalCost)}
-      </TableCell>
+      {canViewCostData && (
+        <>
+          <TableCell className="px-4 py-3 text-right text-nowrap">
+            {formatCostPerKg(pallet.costPerKg)}
+          </TableCell>
+          <TableCell className="px-4 py-3 text-right text-nowrap">
+            {formatTotalCost(pallet.totalCost)}
+          </TableCell>
+        </>
+      )}
       <TableCell className="px-4 py-3">
         <div className="flex justify-end">
           {!hasActions ? (

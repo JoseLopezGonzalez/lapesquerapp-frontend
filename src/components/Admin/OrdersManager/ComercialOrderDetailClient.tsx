@@ -9,7 +9,7 @@ interface ComercialOrderDetailClientProps {
 export default function ComercialOrderDetailClient({ orderId }: ComercialOrderDetailClientProps) {
   return (
     <div className="h-full min-h-0 w-full overflow-hidden p-2">
-      <Order orderId={orderId} readOnly />
+      <Order orderId={orderId} readOnly canViewCostData={false} />
     </div>
   );
 }

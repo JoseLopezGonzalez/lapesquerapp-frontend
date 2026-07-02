@@ -82,7 +82,11 @@ const getNullableCurrencyPerKg = (value: number | null | undefined) =>
 
 const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
-const OrderDetails = () => {
+interface OrderDetailsProps {
+  canViewCostData?: boolean;
+}
+
+const OrderDetails = ({ canViewCostData = true }: OrderDetailsProps) => {
   const { order } = useOrderContext() as { order: Order };
   const { isMobile, mounted } = useIsMobileSafe();
 
@@ -152,9 +156,11 @@ const OrderDetails = () => {
                             : ''}
                         </div>
                       )}
-                      <div className="border-t mt-2 pt-2 space-y-1 text-left">
+                      <div className="mt-2 space-y-1 border-t pt-2 text-left">
                         <div>
-                          <div className="text-muted-foreground text-xs font-medium">Destino en sus docs</div>
+                          <div className="text-muted-foreground text-xs font-medium">
+                            Destino en sus docs
+                          </div>
                           <div className="text-xs">
                             {order.maquiladorDestination ?? (
                               <span className="text-muted-foreground italic">No configurado</span>
@@ -162,7 +168,9 @@ const OrderDetails = () => {
                           </div>
                         </div>
                         <div>
-                          <div className="text-muted-foreground text-xs font-medium">Lugar de carga</div>
+                          <div className="text-muted-foreground text-xs font-medium">
+                            Lugar de carga
+                          </div>
                           <div className="text-xs">
                             {order.loadingAddress ?? (
                               <span className="text-muted-foreground italic">No configurado</span>
@@ -180,38 +188,46 @@ const OrderDetails = () => {
 
             <Separator />
 
-            {/* Rentabilidad */}
-            <div className="space-y-3">
-              <div className="flex flex-col items-center justify-center gap-2">
-                <Wallet className="text-primary h-5 w-5" />
-                <h3 className="text-lg font-medium">Rentabilidad</h3>
-              </div>
-              <div className="space-y-3">
-                <div className="text-center">
-                  <div className="text-muted-foreground text-sm">Coste total</div>
-                  <div className="font-medium">{getNullableCurrency(order.totalCost)}</div>
-                  <div className="text-muted-foreground mt-1 text-xs">
-                    {getNullableCurrencyPerKg(order.costPerKg)}
+            {canViewCostData && (
+              <>
+                {/* Rentabilidad */}
+                <div className="space-y-3">
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <Wallet className="text-primary h-5 w-5" />
+                    <h3 className="text-lg font-medium">Rentabilidad</h3>
                   </div>
-                  {order.totalCost == null ? (
-                    <div className="text-muted-foreground mt-1 text-xs">Sin coste calculable</div>
-                  ) : null}
-                </div>
-                <div className="text-center">
-                  <div className="text-muted-foreground text-sm">Margen bruto</div>
-                  <div className="font-medium">{getNullableCurrency(order.grossMargin)}</div>
-                  <div className="text-muted-foreground mt-1 text-xs">
-                    {getNullableCurrencyPerKg(order.marginPerKg)}
+                  <div className="space-y-3">
+                    <div className="text-center">
+                      <div className="text-muted-foreground text-sm">Coste total</div>
+                      <div className="font-medium">{getNullableCurrency(order.totalCost)}</div>
+                      <div className="text-muted-foreground mt-1 text-xs">
+                        {getNullableCurrencyPerKg(order.costPerKg)}
+                      </div>
+                      {order.totalCost == null ? (
+                        <div className="text-muted-foreground mt-1 text-xs">
+                          Sin coste calculable
+                        </div>
+                      ) : null}
+                    </div>
+                    <div className="text-center">
+                      <div className="text-muted-foreground text-sm">Margen bruto</div>
+                      <div className="font-medium">{getNullableCurrency(order.grossMargin)}</div>
+                      <div className="text-muted-foreground mt-1 text-xs">
+                        {getNullableCurrencyPerKg(order.marginPerKg)}
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-muted-foreground text-sm">Margen %</div>
+                      <div className="font-medium">
+                        {getNullablePercentage(order.marginPercentage)}
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className="text-center">
-                  <div className="text-muted-foreground text-sm">Margen %</div>
-                  <div className="font-medium">{getNullablePercentage(order.marginPercentage)}</div>
-                </div>
-              </div>
-            </div>
 
-            <Separator />
+                <Separator />
+              </>
+            )}
 
             {/* Resumen */}
             <div className="space-y-3">
@@ -227,9 +243,7 @@ const OrderDetails = () => {
                   </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-muted-foreground text-sm">
-                    Unidades de envasado
-                  </div>
+                  <div className="text-muted-foreground text-sm">Unidades de envasado</div>
                   <div className="font-medium">
                     {order.totalBoxes
                       ? `${formatInteger(order.totalBoxes)} cajas (${order.numberOfPallets} palets)`
@@ -244,15 +258,11 @@ const OrderDetails = () => {
                   </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-muted-foreground text-sm">
-                    Otros artículos (subtotal)
-                  </div>
+                  <div className="text-muted-foreground text-sm">Otros artículos (subtotal)</div>
                   <div className="font-medium">{getNullableCurrency(order.auxiliarySubtotal)}</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-muted-foreground text-sm">
-                    Otros artículos (total)
-                  </div>
+                  <div className="text-muted-foreground text-sm">Otros artículos (total)</div>
                   <div className="font-medium">{getNullableCurrency(order.auxiliaryTotal)}</div>
                 </div>
               </div>
@@ -340,7 +350,9 @@ const OrderDetails = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+    <div
+      className={`grid grid-cols-1 gap-4 ${canViewCostData ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}
+    >
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -390,9 +402,11 @@ const OrderDetails = () => {
                     {order.externalProcessor.phone ? ` · ${order.externalProcessor.phone}` : ''}
                   </div>
                 )}
-                <div className="border-t mt-2 pt-2 space-y-1">
+                <div className="mt-2 space-y-1 border-t pt-2">
                   <div>
-                    <div className="text-muted-foreground text-xs font-medium">Destino en sus docs</div>
+                    <div className="text-muted-foreground text-xs font-medium">
+                      Destino en sus docs
+                    </div>
                     <div className="text-xs font-normal">
                       {order.maquiladorDestination ?? (
                         <span className="text-muted-foreground italic">
@@ -419,39 +433,41 @@ const OrderDetails = () => {
           </div>
         </CardContent>
       </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Wallet className="size-4" />
-            Rentabilidad
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-3">
-          <div>
-            <div className="text-muted-foreground text-sm">Coste total</div>
-            <div className="text-sm font-medium">{getNullableCurrency(order.totalCost)}</div>
-            <div className="text-muted-foreground mt-1 text-xs">
-              {getNullableCurrencyPerKg(order.costPerKg)}
+      {canViewCostData && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Wallet className="size-4" />
+              Rentabilidad
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-3">
+            <div>
+              <div className="text-muted-foreground text-sm">Coste total</div>
+              <div className="text-sm font-medium">{getNullableCurrency(order.totalCost)}</div>
+              <div className="text-muted-foreground mt-1 text-xs">
+                {getNullableCurrencyPerKg(order.costPerKg)}
+              </div>
+              {order.totalCost == null ? (
+                <div className="text-muted-foreground mt-1 text-xs">Sin coste calculable</div>
+              ) : null}
             </div>
-            {order.totalCost == null ? (
-              <div className="text-muted-foreground mt-1 text-xs">Sin coste calculable</div>
-            ) : null}
-          </div>
-          <div>
-            <div className="text-muted-foreground text-sm">Margen bruto</div>
-            <div className="text-sm font-medium">{getNullableCurrency(order.grossMargin)}</div>
-            <div className="text-muted-foreground mt-1 text-xs">
-              {getNullableCurrencyPerKg(order.marginPerKg)}
+            <div>
+              <div className="text-muted-foreground text-sm">Margen bruto</div>
+              <div className="text-sm font-medium">{getNullableCurrency(order.grossMargin)}</div>
+              <div className="text-muted-foreground mt-1 text-xs">
+                {getNullableCurrencyPerKg(order.marginPerKg)}
+              </div>
             </div>
-          </div>
-          <div>
-            <div className="text-muted-foreground text-sm">Margen %</div>
-            <div className="text-sm font-medium">
-              {getNullablePercentage(order.marginPercentage)}
+            <div>
+              <div className="text-muted-foreground text-sm">Margen %</div>
+              <div className="text-sm font-medium">
+                {getNullablePercentage(order.marginPercentage)}
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

@@ -1,6 +1,13 @@
 'use client';
 
-import React, { createContext, useContext, useMemo, useRef, useCallback, type ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useMemo,
+  useRef,
+  useCallback,
+  type ReactNode,
+} from 'react';
 import { useOrder } from '@/hooks/useOrder';
 
 type OrderContextValue = ReturnType<typeof useOrder>;
@@ -12,9 +19,15 @@ interface OrderProviderProps {
   orderId: number | string | null | undefined;
   children: ReactNode;
   onChange?: (updatedOrder: OrderContextOrder) => void;
+  canViewCostData?: boolean;
 }
 
-export function OrderProvider({ orderId, children, onChange }: OrderProviderProps) {
+export function OrderProvider({
+  orderId,
+  children,
+  onChange,
+  canViewCostData = true,
+}: OrderProviderProps) {
   // Memoizar onChange para evitar que cambie la referencia en cada render
   const onChangeRef = useRef(onChange);
 
@@ -31,7 +44,7 @@ export function OrderProvider({ orderId, children, onChange }: OrderProviderProp
   }, []);
 
   // Se obtienen los datos del pedido utilizando el hook
-  const orderData = useOrder(orderId, stableOnChange);
+  const orderData = useOrder(orderId, stableOnChange, { canViewCostData });
 
   // Memoizar el valor del contexto para evitar re-renders innecesarios
   const contextValue = useMemo(() => orderData, [orderData]);

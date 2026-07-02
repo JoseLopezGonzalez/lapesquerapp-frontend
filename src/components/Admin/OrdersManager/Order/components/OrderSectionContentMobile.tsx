@@ -32,6 +32,7 @@ function getFallback(activeSection: string): ReactNode {
 interface OrderSectionContentMobileProps {
   activeSection: string;
   palletsReadOnly?: boolean;
+  canViewCostData?: boolean;
 }
 
 /**
@@ -40,6 +41,7 @@ interface OrderSectionContentMobileProps {
 export default function OrderSectionContentMobile({
   activeSection,
   palletsReadOnly = false,
+  canViewCostData = true,
 }: OrderSectionContentMobileProps) {
   const section = SECTIONS_CONFIG.find((s) => s.id === activeSection);
   if (!section) return null;
@@ -51,22 +53,25 @@ export default function OrderSectionContentMobile({
     return (
       <div className={SECTION_CONTAINER_CLASS}>
         <ScrollArea className="min-h-0 flex-1">
-          <Component />
+          <Component canViewCostData={canViewCostData} />
         </ScrollArea>
       </div>
     );
   }
 
+  const componentProps =
+    activeSection === 'pallets'
+      ? { readOnly: palletsReadOnly, canViewCostData }
+      : { canViewCostData };
+
   return (
     <div className={SECTION_CONTAINER_CLASS}>
       {isLazy ? (
         <Suspense fallback={getFallback(activeSection)}>
-          {activeSection === 'pallets' ? <Component readOnly={palletsReadOnly} /> : <Component />}
+          <Component {...componentProps} />
         </Suspense>
-      ) : activeSection === 'pallets' ? (
-        <Component readOnly={palletsReadOnly} />
       ) : (
-        <Component />
+        <Component {...componentProps} />
       )}
     </div>
   );

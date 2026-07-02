@@ -121,8 +121,10 @@ const mergeOrderDetails = (
 
 export function useOrder(
   orderId: number | string | null | undefined,
-  onChange?: (order: Order) => void
+  onChange?: (order: Order) => void,
+  options: { canViewCostData?: boolean } = {}
 ) {
+  const { canViewCostData = true } = options;
   const { data: session } = useSession();
   const queryClient = useQueryClient();
   const accessToken = session?.user?.accessToken;
@@ -168,7 +170,7 @@ export function useOrder(
     costAnalysisError,
     loadCostAnalysis,
     resetCostAnalysis,
-  } = useOrderCostAnalysis({ orderId, activeTab });
+  } = useOrderCostAnalysis({ orderId, activeTab, enabled: canViewCostData });
 
   const reload = useCallback(async (): Promise<Order | null> => {
     try {
