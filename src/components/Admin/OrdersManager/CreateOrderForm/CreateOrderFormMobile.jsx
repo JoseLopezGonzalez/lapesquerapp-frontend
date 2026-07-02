@@ -842,7 +842,7 @@ const CreateOrderFormMobile = ({
                     className={`bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/20 h-11 rounded-full px-6 font-semibold shadow-lg transition-transform active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 ${isFirstStep ? 'ml-auto' : ''}`}
                   >
                     <Plus className="mr-2 h-5 w-5" />
-                    {isSubmitting ? 'Creando...' : 'Crear Pedido'}
+                    {isSubmitting ? 'Creando...' : 'Crear pedido'}
                   </Button>
                 )}
               </div>

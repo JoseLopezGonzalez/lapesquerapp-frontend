@@ -104,7 +104,7 @@ export default function LinkPalletsDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Link2 className="h-5 w-5" />
-            Vincular Palets Existentes
+            Vincular palets existentes
           </DialogTitle>
         </DialogHeader>
         {isInitialLoading ? (

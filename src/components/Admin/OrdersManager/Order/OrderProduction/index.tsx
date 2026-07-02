@@ -301,7 +301,7 @@ const OrderProduction = () => {
                     <TableRow>
                       <TableHead className="">Artículo</TableHead>
                       <TableHead>Pedido</TableHead>
-                      <TableHead>Produccion</TableHead>
+                      <TableHead>Producción</TableHead>
                       <TableHead>Diferencia</TableHead>
                       <TableHead>Estado</TableHead>
                     </TableRow>

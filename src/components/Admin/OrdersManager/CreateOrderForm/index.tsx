@@ -902,7 +902,7 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
                 }
               >
                 <Plus className="mr-2 h-4 w-4" />
-                {isSubmitting ? 'Creando...' : 'Crear Pedido'}
+                {isSubmitting ? 'Creando...' : 'Crear pedido'}
               </Button>
             </div>
           </form>

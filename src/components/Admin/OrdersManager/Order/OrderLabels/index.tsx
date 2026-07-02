@@ -306,7 +306,10 @@ const OrderLabels = () => {
                               className="mt-0.5"
                             />
                             <div className="min-w-0 flex-1">
-                              <p className="truncate text-base font-medium" title={group.product?.name}>
+                              <p
+                                className="truncate text-base font-medium"
+                                title={group.product?.name}
+                              >
                                 {group.product?.name}
                               </p>
                               <div className="mt-1 flex items-center gap-3">
@@ -351,10 +354,10 @@ const OrderLabels = () => {
                     onValueChange={(value) => setPalletIdFilter(value === 'all' ? '' : value)}
                   >
                     <SelectTrigger className="h-11 w-full">
-                      <SelectValue placeholder="Todos los Pallets" />
+                      <SelectValue placeholder="Todos los palets" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Todos los Pallets</SelectItem>
+                      <SelectItem value="all">Todos los palets</SelectItem>
                       {palletIds.map((id) => (
                         <SelectItem key={id} value={String(id)}>
                           {id}
@@ -368,10 +371,10 @@ const OrderLabels = () => {
                     onValueChange={(value) => setLotFilter(value === 'all' ? '' : value)}
                   >
                     <SelectTrigger className="h-11 w-full">
-                      <SelectValue placeholder="Todos los Lotes" />
+                      <SelectValue placeholder="Todos los lotes" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Todos los Lotes</SelectItem>
+                      <SelectItem value="all">Todos los lotes</SelectItem>
                       {lots.map((lot) => (
                         <SelectItem key={lot} value={lot}>
                           {lot}
@@ -385,10 +388,10 @@ const OrderLabels = () => {
                     onValueChange={(value) => setProductFilter(value === 'all' ? '' : value)}
                   >
                     <SelectTrigger className="h-11 w-full">
-                      <SelectValue placeholder="Todos los Productos" />
+                      <SelectValue placeholder="Todos los productos" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Todos los Productos</SelectItem>
+                      <SelectItem value="all">Todos los productos</SelectItem>
                       {productNames.map((name) => (
                         <SelectItem key={name} value={name}>
                           {name}
@@ -432,7 +435,7 @@ const OrderLabels = () => {
                       title="No existen cajas para mostrar"
                       description={
                         typedPallets?.length
-                          ? 'No hay cajas con los filtros seleccionados. Prueba a cambiar pallet, lote o producto.'
+                          ? 'No hay cajas con los filtros seleccionados. Prueba a cambiar palet, lote o producto.'
                           : 'Añade palets con cajas al pedido para imprimir etiquetas individuales.'
                       }
                     />
@@ -455,7 +458,7 @@ const OrderLabels = () => {
                               </p>
                               <div className="grid grid-cols-2 gap-2 text-xs">
                                 <div>
-                                  <span className="text-muted-foreground">Pallet:</span>
+                                  <span className="text-muted-foreground">Palet:</span>
                                   <span className="ml-1 font-medium">{box.palletId}</span>
                                 </div>
                                 <div>
@@ -564,7 +567,7 @@ const OrderLabels = () => {
                 <CardTitle>Etiquetas Individuales</CardTitle>
                 <CardDescription>
                   Etiquetas por caja individual. Puedes imprimir etiquetas para cada caja, filtrando
-                  por Pallet, Lote o Producto.
+                  por palet, lote o producto.
                 </CardDescription>
                 <CardAction>
                   <Button
@@ -581,16 +584,16 @@ const OrderLabels = () => {
               <CardContent className="space-y-4">
                 {/* Filtros */}
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                  {/* Filtro por Pallet */}
+                  {/* Filtro por palet */}
                   <Select
                     value={palletIdFilter || 'all'}
                     onValueChange={(value) => setPalletIdFilter(value === 'all' ? '' : value)}
                   >
                     <SelectTrigger className="h-10 w-full text-sm">
-                      <SelectValue placeholder="Todos los Pallets" />
+                      <SelectValue placeholder="Todos los palets" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Todos los Pallets</SelectItem>
+                      <SelectItem value="all">Todos los palets</SelectItem>
                       {palletIds.map((id) => (
                         <SelectItem key={id} value={String(id)}>
                           {id}
@@ -599,16 +602,16 @@ const OrderLabels = () => {
                     </SelectContent>
                   </Select>
 
-                  {/* Filtro por Lote */}
+                  {/* Filtro por lote */}
                   <Select
                     value={lotFilter || 'all'}
                     onValueChange={(value) => setLotFilter(value === 'all' ? '' : value)}
                   >
                     <SelectTrigger className="h-10 w-full text-sm">
-                      <SelectValue placeholder="Todos los Lotes" />
+                      <SelectValue placeholder="Todos los lotes" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Todos los Lotes</SelectItem>
+                      <SelectItem value="all">Todos los lotes</SelectItem>
                       {lots.map((lot) => (
                         <SelectItem key={lot} value={lot}>
                           {lot}
@@ -617,16 +620,16 @@ const OrderLabels = () => {
                     </SelectContent>
                   </Select>
 
-                  {/* Filtro por Producto */}
+                  {/* Filtro por producto */}
                   <Select
                     value={productFilter || 'all'}
                     onValueChange={(value) => setProductFilter(value === 'all' ? '' : value)}
                   >
                     <SelectTrigger className="h-10 w-full text-sm">
-                      <SelectValue placeholder="Todos los Productos" />
+                      <SelectValue placeholder="Todos los productos" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Todos los Productos</SelectItem>
+                      <SelectItem value="all">Todos los productos</SelectItem>
                       {productNames.map((name) => (
                         <SelectItem key={name} value={name}>
                           {name}
@@ -643,7 +646,7 @@ const OrderLabels = () => {
                     title="No existen cajas para mostrar"
                     description={
                       typedPallets?.length
-                        ? 'No hay cajas con los filtros seleccionados. Prueba a cambiar pallet, lote o producto.'
+                        ? 'No hay cajas con los filtros seleccionados. Prueba a cambiar palet, lote o producto.'
                         : 'Añade palets con cajas al pedido para imprimir etiquetas individuales.'
                     }
                   />
@@ -664,7 +667,7 @@ const OrderLabels = () => {
                               checked={isAllIndividualSelected}
                             />
                           </TableHead>
-                          <TableHead>Pallet ID</TableHead>
+                          <TableHead>ID de palet</TableHead>
                           <TableHead>Caja ID</TableHead>
                           <TableHead>Producto</TableHead>
                           <TableHead>Lote</TableHead>

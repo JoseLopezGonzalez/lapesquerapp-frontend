@@ -121,8 +121,8 @@ const OrderPalletsToolbar = ({
   return (
     <CardHeader className="flex flex-row items-center justify-between">
       <div>
-        <CardTitle className="text-lg font-medium">Gestión de Palets</CardTitle>
-        <CardDescription>Modifica los palets de la orden</CardDescription>
+        <CardTitle className="text-lg font-medium">Gestión de palets</CardTitle>
+        <CardDescription>Modifica los palets del pedido</CardDescription>
       </div>
       <div className="flex gap-2">
         {canPrintSelected && (

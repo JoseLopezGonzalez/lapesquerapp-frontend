@@ -6,7 +6,7 @@ category: ux-ui
 priority: P3
 risk: low
 size: S
-status: ready
+status: done
 dependencies: []
 target_files:
   - src/components/Admin/OrdersManager/Order/OrderLabels/index.tsx
@@ -52,11 +52,11 @@ Normalizar las cadenas visibles en los archivos objetivo:
 
 ## Criterios de aceptación
 
-- [ ] No quedan cadenas visibles "Pallet", "Pallets", "pallet" ni "Pallet ID" en `OrderLabels/index.tsx`; se usa "palet/palets" de forma consistente.
-- [ ] La cabecera de producción muestra "Producción" con tilde.
-- [ ] `OrderPalletsToolbar` usa "pedido" y capitalización consistente con el resto del módulo.
-- [ ] El diálogo de vincular palets y los botones de crear pedido usan sentence case coherente.
-- [ ] `GAP-V2-009` sigue pudiendo implementarse de forma independiente o junto con este GAP sin conflicto.
+- [x] No quedan cadenas visibles "Pallet", "Pallets", "pallet" ni "Pallet ID" en `OrderLabels/index.tsx`; se usa "palet/palets" de forma consistente.
+- [x] La cabecera de producción muestra "Producción" con tilde.
+- [x] `OrderPalletsToolbar` usa "pedido" y capitalización consistente con el resto del módulo.
+- [x] El diálogo de vincular palets y los botones de crear pedido usan sentence case coherente.
+- [x] `GAP-V2-009` sigue pudiendo implementarse de forma independiente o junto con este GAP sin conflicto.
 
 ## Plan de validación
 
@@ -69,15 +69,32 @@ npm run type-check
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+- Normalizadas cadenas visibles en `OrderLabels/index.tsx`: `Pallet/Pallets/pallet/Pallet ID` pasan a `palet/palets/ID de palet` y los placeholders/opciones de filtros pasan a sentence case.
+- Corregida la cabecera `Produccion` a `Producción`.
+- Normalizado `OrderPalletsToolbar` a `Gestión de palets` y `pedido`.
+- Normalizados el título del diálogo `Vincular palets existentes` y los botones `Crear pedido` en desktop/mobile.
+- No se tocaron nombres técnicos internos (`palletId`, props, tipos, hooks) porque no son copy visible.
 
 ## Resultado
 
-{se rellena al terminar la implementación}
+Implementado y verificado. Validaciones ejecutadas:
+
+```text
+npm run lint        # exit 0, con warnings preexistentes del repo
+npm run type-check  # exit 0
+npm run build       # exit 0
+```
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+Veredicto: `done`.
+
+Auditoría con contexto limpio confirmó que:
+
+- `OrderLabels/index.tsx` no conserva cadenas visibles `Pallet`, `Pallets`, `pallet` ni `Pallet ID`; las ocurrencias restantes son técnicas.
+- `OrderProduction/index.tsx` muestra `Producción` con tilde.
+- `OrderPalletsToolbar.tsx`, `LinkPalletsDialog.tsx` y los formularios de creación usan sentence case coherente.
+- `GAP-V2-009` no queda interferido.
 
 ## Links
 
