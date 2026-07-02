@@ -48,6 +48,30 @@ y lista para implementar; una idea aquí es solo una nota para no perderla.
 - **Módulo:** Ventas
 - **Descripción:** En el Order Manager, al hacer scroll hacia abajo, todo el contenido se desliza hasta arriba dejando un espacio en blanco muy grande. Parece un problema de layout/scroll.
 
+### IDEA-007 — Dialog de adjuntar archivos: nombres largos cortan el contenido horizontalmente
+- **Fecha:** 2026-07-02
+- **Tipo:** Bug
+- **Módulo:** Ventas
+- **Descripción:** En el dialog de adjuntar archivos al pedido, cuando el nombre del archivo subido es muy largo se corta horizontalmente el contenido del dialog en lugar de truncarse o hacer wrap.
+
+### IDEA-008 — Mapas del editor de pedidos (tabs Información y Ruta) rotos: "No hay dirección de envío"
+- **Fecha:** 2026-07-02
+- **Tipo:** Bug
+- **Módulo:** Ventas
+- **Descripción:** Tras una de las últimas modificaciones sobre los mapas, tanto el tab de Información como el de Ruta del editor de pedidos han dejado de funcionar y ahora muestran "No hay dirección de envío".
+
+### IDEA-009 — Tabla de entidades genéricas: abrir edición de entidad relacionada desde celda
+- **Fecha:** 2026-07-02
+- **Tipo:** Feature
+- **Módulo:** Global
+- **Descripción:** En la tabla de entidades genéricas, poder pulsar sobre la celda de una fila que referencia a otra entidad y que se abra directamente la edición de esa instancia relacionada.
+
+### IDEA-010 — Entidades con campo de estado activo: al editar no carga el estado real y se invierte al guardar
+- **Fecha:** 2026-07-02
+- **Tipo:** Bug
+- **Módulo:** Global
+- **Descripción:** En entidades con campo/atributo de estado activo, al abrir la edición no se carga correctamente el estado actual; al pulsar guardar se pierde y la instancia pasa al estado opuesto o se desactiva.
+
 ---
 
 ## ✅ Promoted

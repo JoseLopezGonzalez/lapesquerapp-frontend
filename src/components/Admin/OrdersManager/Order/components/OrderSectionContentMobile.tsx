@@ -2,7 +2,7 @@
 
 import { Suspense, type ReactNode } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import Loader from '@/components/Utilities/Loader';
+import { Skeleton } from '@/components/ui/skeleton';
 import { SECTIONS_CONFIG } from '../config/sectionsConfig';
 
 const SECTION_CONTAINER_CLASS = 'flex-1 w-full min-h-0 overflow-hidden px-4 py-4 flex flex-col';
@@ -10,21 +10,21 @@ const SECTION_CONTAINER_CLASS = 'flex-1 w-full min-h-0 overflow-hidden px-4 py-4
 function getFallback(activeSection: string): ReactNode {
   if (activeSection === 'customer-history') {
     return (
-      <div className="flex h-32 items-center justify-center">
-        <Loader />
+      <div className="flex h-32 w-full items-center justify-center">
+        <Skeleton className="h-24 w-full rounded-lg" />
       </div>
     );
   }
   if (['export', 'pallets'].includes(activeSection)) {
     return (
-      <div className="flex min-h-0 flex-1 items-center justify-center">
-        <Loader />
+      <div className="flex min-h-0 w-full flex-1 items-center justify-center">
+        <Skeleton className="h-64 w-full rounded-lg" />
       </div>
     );
   }
   return (
-    <div className="flex h-full items-center justify-center">
-      <Loader />
+    <div className="flex h-full w-full items-center justify-center">
+      <Skeleton className="h-64 w-full rounded-lg" />
     </div>
   );
 }

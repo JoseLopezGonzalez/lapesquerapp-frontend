@@ -136,23 +136,7 @@ const OrderContent = ({ onLoading, onClose, readOnly = false }: OrderContentProp
   }, [exportDocument]);
 
   if (loading) {
-    return (
-      <div className="flex h-full w-full flex-col gap-4 p-4">
-        <div className="flex items-center gap-3">
-          <Skeleton className="h-8 w-32" />
-          <Skeleton className="h-6 w-20 rounded-full" />
-        </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-16 rounded-lg" />
-          ))}
-        </div>
-        <Skeleton className="h-8 w-full max-w-xs" />
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Skeleton key={i} className="h-12 w-full rounded-lg" />
-        ))}
-      </div>
-    );
+    return isMobile ? <OrderMobileSkeleton /> : <OrderDesktopSkeleton />;
   }
 
   if (!order) {
@@ -255,6 +239,100 @@ const OrderContent = ({ onLoading, onClose, readOnly = false }: OrderContentProp
     </div>
   );
 };
+
+// Silueta mobile: header (back+título+menú) + resumen centrado + card estrecha de secciones
+function OrderMobileSkeleton() {
+  return (
+    <div className="relative flex h-full w-full flex-col">
+      <div className="bg-background flex-shrink-0 px-0 pt-8 pb-3">
+        <div className="relative flex items-center justify-center px-4">
+          <Skeleton className="absolute left-4 h-12 w-12 rounded-full" />
+          <Skeleton className="h-6 w-16" />
+          <Skeleton className="absolute right-4 h-12 w-12 rounded-full" />
+        </div>
+      </div>
+      <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
+        <div className="flex-shrink-0 space-y-5 px-4 pt-6 text-center">
+          <div className="flex flex-col items-center gap-2">
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-4 w-28" />
+          </div>
+          <div className="flex flex-col items-center gap-2">
+            <Skeleton className="h-16 w-[170px] rounded-md" />
+            <Skeleton className="h-5 w-24" />
+          </div>
+          <div className="flex justify-center">
+            <Skeleton className="h-7 w-32 rounded-full" />
+          </div>
+          <div className="flex justify-center gap-6">
+            <Skeleton className="h-10 w-20" />
+            <Skeleton className="h-10 w-20" />
+          </div>
+          <div className="flex justify-center gap-6">
+            <Skeleton className="h-10 w-20" />
+            <Skeleton className="h-10 w-20" />
+          </div>
+        </div>
+        <div className="flex justify-center px-4 pt-8 pb-2">
+          <Card className="w-full max-w-[280px] overflow-hidden">
+            <CardContent className="p-0">
+              <div className="divide-border/60 divide-y">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="flex min-h-[44px] w-full items-center gap-3 px-3 py-2.5">
+                    <Skeleton className="h-4 w-4 rounded-sm" />
+                    <Skeleton className="h-4 flex-1" />
+                    <Skeleton className="h-4 w-4 rounded-sm" />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Silueta desktop: Card > CardHeader (dos columnas: info + botones/imagen) > CardContent (tabs + contenido)
+function OrderDesktopSkeleton() {
+  return (
+    <Card className="relative h-full w-full">
+      <CardHeader>
+        <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-6 w-24 rounded-full" />
+            <Skeleton className="h-5 w-16" />
+            <Skeleton className="h-5 w-40" />
+            <div className="space-y-1 pt-1">
+              <Skeleton className="h-3 w-20" />
+              <Skeleton className="h-4 w-16" />
+            </div>
+            <div className="space-y-1">
+              <Skeleton className="h-3 w-20" />
+              <Skeleton className="h-4 w-16" />
+            </div>
+          </div>
+          <div className="hidden h-fit flex-col items-end gap-3 pt-2 lg:flex">
+            <div className="flex gap-2">
+              <Skeleton className="h-9 w-24" />
+              <Skeleton className="h-9 w-28" />
+              <Skeleton className="h-9 w-9" />
+            </div>
+            <Skeleton className="h-24 w-[240px] rounded-md" />
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="flex min-h-0 flex-1 flex-col py-0">
+        <div className="mb-4 flex gap-2 overflow-x-auto">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-9 w-20 flex-shrink-0 rounded-md" />
+          ))}
+        </div>
+        <Skeleton className="h-64 w-full rounded-lg" />
+      </CardContent>
+    </Card>
+  );
+}
 
 interface OrderProps {
   orderId: number | string | null | undefined;

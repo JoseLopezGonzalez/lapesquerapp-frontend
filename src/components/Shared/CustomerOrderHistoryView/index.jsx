@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Accordion } from '@/components/ui/accordion';
 import { AlertCircle, Calendar } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import Loader from '@/components/Utilities/Loader';
+import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { Button } from '@/components/ui/button';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -47,8 +47,9 @@ export default function CustomerOrderHistoryView({
       <TooltipProvider>
         <div className="flex h-full flex-col">
           {isMobile ? (
-            <div className="flex min-h-0 flex-1 items-center justify-center">
-              <Loader />
+            <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden py-2">
+              <HistoryCardSkeleton />
+              <HistoryCardSkeleton />
             </div>
           ) : (
             <Card className="flex min-h-0 flex-1 flex-col">
@@ -58,8 +59,10 @@ export default function CustomerOrderHistoryView({
                   Análisis completo del historial de compras del cliente.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="flex min-h-0 flex-1 items-center justify-center">
-                <Loader />
+              <CardContent className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden pt-0">
+                <HistoryRowSkeleton />
+                <HistoryRowSkeleton />
+                <HistoryRowSkeleton />
               </CardContent>
             </Card>
           )}
@@ -193,8 +196,9 @@ export default function CustomerOrderHistoryView({
               )}
               <ScrollArea className="min-h-0 flex-1">
                 {loadingData ? (
-                  <div className="flex h-full items-center justify-center">
-                    <Loader />
+                  <div className="space-y-4 py-2">
+                    <HistoryCardSkeleton />
+                    <HistoryCardSkeleton />
                   </div>
                 ) : hasNoData ? (
                   <div className="flex flex-1 items-center justify-center py-2">
@@ -236,10 +240,14 @@ export default function CustomerOrderHistoryView({
               </CardContent>
             )}
             <CardContent
-              className={`min-h-0 flex-1 py-2 ${loadingData || hasNoData ? 'flex items-center justify-center' : 'overflow-y-auto'}`}
+              className={`min-h-0 flex-1 py-2 ${hasNoData ? 'flex items-center justify-center' : 'overflow-y-auto'}`}
             >
               {loadingData ? (
-                <Loader />
+                <div className="space-y-3">
+                  <HistoryRowSkeleton />
+                  <HistoryRowSkeleton />
+                  <HistoryRowSkeleton />
+                </div>
               ) : hasNoData ? (
                 <EmptyState
                   icon={<Calendar className="text-primary" strokeWidth={1.5} />}
@@ -277,5 +285,55 @@ export default function CustomerOrderHistoryView({
         )}
       </div>
     </TooltipProvider>
+  );
+}
+
+// Silueta de ProductHistoryMobileCard: título + badges + grid de métricas + 2 gráficos
+function HistoryCardSkeleton() {
+  return (
+    <Card>
+      <CardContent className="space-y-4">
+        <div className="space-y-3">
+          <Skeleton className="h-6 w-2/3" />
+          <div className="flex flex-wrap gap-1.5">
+            <Skeleton className="h-6 w-28 rounded-full" />
+            <Skeleton className="h-6 w-24 rounded-full" />
+          </div>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-2 border-t pt-2">
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-8 w-full" />
+          </div>
+        </div>
+        <div className="flex w-full flex-col gap-4 pt-2">
+          <Skeleton className="h-48 w-full rounded-lg" />
+          <Skeleton className="h-48 w-full rounded-lg" />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Silueta de ProductHistoryAccordionItem colapsado: título+badges a la izquierda, métricas a la derecha
+function HistoryRowSkeleton() {
+  return (
+    <div className="rounded-lg border p-3">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0 flex-1 space-y-2">
+          <Skeleton className="h-5 w-1/3" />
+          <div className="flex flex-wrap gap-1.5">
+            <Skeleton className="h-5 w-24 rounded-full" />
+            <Skeleton className="h-5 w-20 rounded-full" />
+          </div>
+        </div>
+        <div className="hidden grid-cols-4 gap-4 md:grid">
+          <Skeleton className="h-8 w-14" />
+          <Skeleton className="h-8 w-14" />
+          <Skeleton className="h-8 w-14" />
+          <Skeleton className="h-8 w-14" />
+        </div>
+      </div>
+    </div>
   );
 }

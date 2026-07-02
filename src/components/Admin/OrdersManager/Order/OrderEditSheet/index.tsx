@@ -344,7 +344,7 @@ const OrderEditSheet = ({
         >
           {loading ? (
             <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
-              <OrderEditFormSkeleton />
+              <OrderEditFormSkeleton isMobile={isMobile} />
             </div>
           ) : isMobile ? (
             <div className="min-h-0 flex-1 overflow-y-auto pr-2">
@@ -472,7 +472,7 @@ const OrderEditSheet = ({
 
 export default OrderEditSheet;
 
-function OrderEditFormSkeleton() {
+function OrderEditFormSkeleton({ isMobile = false }: { isMobile?: boolean }) {
   return (
     <div className="grid gap-6">
       {[
@@ -486,7 +486,9 @@ function OrderEditFormSkeleton() {
       ].map((group, i) => (
         <div key={i} className="space-y-3">
           <Skeleton className="h-4 w-36 rounded" />
-          <div className={`grid gap-4 pt-2 ${group.cols === 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+          <div
+            className={`grid gap-4 pt-2 ${isMobile ? 'grid-cols-1' : group.cols === 2 ? 'grid-cols-2' : 'grid-cols-1'}`}
+          >
             {Array.from({ length: group.rows }).map((_, j) => (
               <Skeleton key={j} className="h-10 w-full rounded-md" />
             ))}

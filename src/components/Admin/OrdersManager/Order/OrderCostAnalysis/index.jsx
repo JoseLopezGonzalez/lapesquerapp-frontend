@@ -62,6 +62,25 @@ function AnalysisMetricCard({ title, value, description, detail, icon: Icon, emp
   );
 }
 
+// Silueta de AnalysisMetricCard: título+icono, valor, detalle y descripción (4 alturas distintas)
+function AnalysisMetricCardSkeleton() {
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between gap-2">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-4 w-4 rounded" />
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-1.5">
+        <Skeleton className="h-7 w-24" />
+        <Skeleton className="h-3 w-16" />
+        <Skeleton className="h-3.5 w-32" />
+      </CardContent>
+    </Card>
+  );
+}
+
 function ProductLineMobileCard({ line }) {
   return (
     <AccordionItem value={`product-${line.product.id}`}>
@@ -206,9 +225,9 @@ export default function OrderCostAnalysis() {
   if (costAnalysisLoading && !costAnalysis) {
     return (
       <div className="flex flex-col gap-4 p-4">
-        <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        <div className={`grid gap-3 ${isMobile ? 'grid-cols-1' : 'grid-cols-2 xl:grid-cols-4'}`}>
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-24 w-full rounded-lg" />
+            <AnalysisMetricCardSkeleton key={i} />
           ))}
         </div>
         <Skeleton className="h-8 w-48 rounded-md" />
