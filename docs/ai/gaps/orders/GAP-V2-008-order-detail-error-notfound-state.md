@@ -6,7 +6,7 @@ category: ux-ui
 priority: P2
 risk: low
 size: S
-status: ready
+status: done
 dependencies: []
 target_files:
   - src/components/Admin/OrdersManager/Order/index.tsx
@@ -73,11 +73,11 @@ que mezcla ambos casos (error / no encontrado) sin distinguirlos.
 
 ## Criterios de aceptación
 
-- [ ] El estado de error de carga se distingue visualmente (color) del estado "pedido no
+- [x] El estado de error de carga se distingue visualmente (color) del estado "pedido no
       encontrado".
-- [ ] El botón "Reintentar" solo aparece cuando la acción puede tener efecto (error de carga),
+- [x] El botón "Reintentar" solo aparece cuando la acción puede tener efecto (error de carga),
       no en el caso "no encontrado".
-- [ ] El bloque sigue un patrón visual consistente con el resto de estados vacíos/error del
+- [x] El bloque sigue un patrón visual consistente con el resto de estados vacíos/error del
       módulo Orders (idealmente `EmptyState`).
 
 ## Plan de validación
@@ -92,15 +92,36 @@ npm run lint
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+- `Order/index.tsx` separa explícitamente `error` de `!order && !error`.
+- El caso de error usa `EmptyState`, icono `AlertCircle` con `text-red-500` y botón
+  `Reintentar`.
+- El caso "Pedido no encontrado" usa `EmptyState` con `PackageX` y no ofrece acción de
+  reintento.
 
 ## Resultado
 
-{se rellena al terminar la implementación}
+Implementado y validado el 2026-07-02.
+
+Validaciones ejecutadas:
+
+```text
+npm run type-check
+npm run lint
+npm run build
+```
+
+Resultado: las tres validaciones terminaron con código 0. `lint` informó warnings
+preexistentes fuera del archivo tocado.
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+Veredicto independiente: `done`.
+
+Resumen:
+
+- El estado de error se distingue visualmente del estado "pedido no encontrado".
+- `Reintentar` aparece solo en el error recuperable.
+- Ambos estados usan el patrón `EmptyState` consistente con Orders.
 
 ## Links
 

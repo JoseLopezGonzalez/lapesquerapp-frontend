@@ -10,7 +10,7 @@ Ejecutar (elige una):
 
 A) Continuar low-risk de UX:
    /implement-next module=orders category=ux-ui limit=1 risk=low
-   → cogería GAP-V2-008.
+   → cogería GAP-V2-009.
 
 B) Continuar low-risk de a11y-responsive:
    /implement-next module=orders category=a11y-responsive limit=1 risk=low
@@ -20,7 +20,7 @@ Contexto:
 Primera auditoría real del sistema completada y ampliada al circuito acotado de
 5 carriles: code-audit-agent, ui-audit-agent, domain-business-auditor,
 design-quality-auditor y permissions-multitenant-auditor. 16 GAPs documentados:
-5 ready, 10 done, 0 blocked y 1 rejected por merge.
+4 ready, 11 done, 0 blocked y 1 rejected por merge.
 
 Restricciones:
 No volver a auditar los mismos 5 carriles sobre los mismos archivos sin
@@ -36,7 +36,7 @@ Las reglas de negocio de GAP-V2-011/012/013 fueron confirmadas por Jose el 2026-
 Estado general: ready_for_implementation
 
 Funcional:        sin incidentes bloqueantes detectados
-UI/copy:           4 hallazgos ux-ui/a11y, incluyendo drift de copy restante
+UI/copy:           3 hallazgos ux-ui/a11y, incluyendo drift de copy restante
 UX:                 cubierto parcialmente vía carriles ux-ui/design-quality (sin ux-reviewer aparte)
 Código:              5 hallazgos de code-quality, todos con solución clara
 Arquitectura:         cubierto parcialmente (sub-hooks de mutación + permisos comerciales)
@@ -48,11 +48,11 @@ Testing:                     sin auditar directamente (se listó como plan de va
 Documentación:                 cruce legacy acotado completado
 
 P0 abiertos: 0   P1 abiertos: 1 (GAP-V2-001)
-P2 abiertos: 2   P3 abiertos: 2
+P2 abiertos: 1   P3 abiertos: 2
 
 Estado de auditoría:      audited_acotado (5 de 5 carriles previstos ejecutados)
-Estado de implementación: batch_8_done (GAP-V2-002, GAP-V2-004, GAP-V2-021, GAP-V2-011, GAP-V2-012, GAP-V2-013, GAP-V2-020, GAP-V2-003, GAP-V2-005, GAP-V2-006)
-Estado de verificación:   GAP-V2-006 audited_done
+Estado de implementación: batch_9_done (GAP-V2-002, GAP-V2-004, GAP-V2-021, GAP-V2-011, GAP-V2-012, GAP-V2-013, GAP-V2-020, GAP-V2-003, GAP-V2-005, GAP-V2-006, GAP-V2-008)
+Estado de verificación:   GAP-V2-008 audited_done
 ```
 
 ## 2. Cobertura
@@ -85,7 +85,7 @@ Pendiente explícitamente fuera de este circuito: performance, testing directo, 
 
 Primera auditoría real ejecutada sobre el módulo `orders` con 3 carriles iniciales en paralelo (`code-audit-agent`, `ui-audit-agent` y `domain-business-auditor`) y continuada el 2026-07-02 con los 2 carriles pendientes (`design-quality-auditor` y `permissions-multitenant-auditor`). Cobertura acotada a un conjunto de archivos concreto por carril, no exhaustiva del módulo completo. Se completó además el cruce legacy acotado contra `.claude/gaps/closed/` para evitar duplicar GAPs ya cerrados.
 
-16 GAPs documentados en total: 5 `ready`, 10 `done`, 0 `blocked` y 1 `rejected` por merge. El primer lote `/implement-next` cerró los dos GAPs code-quality de bajo riesgo: queryKey tenant-aware del detalle de pedido (GAP-V2-002) y migración a TypeScript del wrapper de dominio `orders` (GAP-V2-004). El segundo lote cerró GAP-V2-021, ocultando la creación de pedidos en el manager comercial readOnly. El tercer lote cerró GAP-V2-011, sustituyendo la tolerancia fija de 30 kg por la regla híbrida confirmada. El cuarto lote cerró GAP-V2-012, distinguiendo IVA pendiente/inválido de IVA 0% legítimo. El quinto lote cerró GAP-V2-013 con confirmación explícita antes de finalizar pedidos con producción pendiente/no planificada. El sexto lote cerró GAP-V2-020, separando `readOnly` de la capacidad `canViewCostData` para ocultar coste/margen/análisis en vistas comerciales y evitar la carga de análisis económico. El séptimo lote cerró GAP-V2-005 y GAP-V2-003, migrando opciones/formularios/análisis de pedidos a TanStack Query y eliminando recurrencias de token-as-parameter en formularios. El octavo lote cerró GAP-V2-006, añadiendo cancelación explícita al formulario desktop de creación de pedidos. El hallazgo más significativo de código pendiente sigue siendo el patrón sistémico de sub-hooks de mutación sin `useMutation`/`invalidateQueries` (GAP-V2-001), que queda fuera de `/implement-next` por tamaño L salvo autorización explícita.
+16 GAPs documentados en total: 4 `ready`, 11 `done`, 0 `blocked` y 1 `rejected` por merge. El primer lote `/implement-next` cerró los dos GAPs code-quality de bajo riesgo: queryKey tenant-aware del detalle de pedido (GAP-V2-002) y migración a TypeScript del wrapper de dominio `orders` (GAP-V2-004). El segundo lote cerró GAP-V2-021, ocultando la creación de pedidos en el manager comercial readOnly. El tercer lote cerró GAP-V2-011, sustituyendo la tolerancia fija de 30 kg por la regla híbrida confirmada. El cuarto lote cerró GAP-V2-012, distinguiendo IVA pendiente/inválido de IVA 0% legítimo. El quinto lote cerró GAP-V2-013 con confirmación explícita antes de finalizar pedidos con producción pendiente/no planificada. El sexto lote cerró GAP-V2-020, separando `readOnly` de la capacidad `canViewCostData` para ocultar coste/margen/análisis en vistas comerciales y evitar la carga de análisis económico. El séptimo lote cerró GAP-V2-005 y GAP-V2-003, migrando opciones/formularios/análisis de pedidos a TanStack Query y eliminando recurrencias de token-as-parameter en formularios. El octavo lote cerró GAP-V2-006, añadiendo cancelación explícita al formulario desktop de creación de pedidos. El noveno lote cerró GAP-V2-008, separando el error recuperable del estado "pedido no encontrado" en el detalle de pedido. El hallazgo más significativo de código pendiente sigue siendo el patrón sistémico de sub-hooks de mutación sin `useMutation`/`invalidateQueries` (GAP-V2-001), que queda fuera de `/implement-next` por tamaño L salvo autorización explícita.
 
 ## 4. Baseline anterior
 
@@ -122,7 +122,7 @@ Esta pasada auditó solo un subconjunto acotado de lo anterior (ver §2 Cobertur
 
 - `CreateOrderForm/index.tsx` desktop sin botón cancelar/cerrar — resuelto con botón `Cancelar` en el footer desktop (GAP-V2-006; resuelto)
 - Touch targets bajo 44px en `OrderStatusDropdown`/`OrderSummaryMobile` mobile (GAP-V2-007)
-- Estado error/no-encontrado del detalle de pedido sin distinguir color ni ocultar "Reintentar" cuando no aplica (GAP-V2-008)
+- Estado error/no-encontrado del detalle de pedido separado con `EmptyState`; el error mantiene `Reintentar` y el no encontrado no ofrece acción engañosa (GAP-V2-008; resuelto)
 - Inconsistencias menores de copy: tilde en pestaña, capitalización de placeholder (GAP-V2-009)
 - Drift textual restante en design-quality: "Pallet/Pallets/pallet" vs. "palet/palets", "orden" vs. "pedido", tildes y capitalización (GAP-V2-014)
 - Descartado tras verificación: inconsistencia de badges documentada en `project-learnings.md` ya no reproduce en código actual
@@ -142,7 +142,7 @@ Esta pasada auditó solo un subconjunto acotado de lo anterior (ver §2 Cobertur
 
 ## 7. GAPs generados/actualizados
 
-Ver `docs/ai/modules/orders/gaps-registry.md` (regenerado). Resumen: 5 `ready`, 10 `done`, 0 `blocked`, 0 `later`, 1 `rejected`.
+Ver `docs/ai/modules/orders/gaps-registry.md` (regenerado). Resumen: 4 `ready`, 11 `done`, 0 `blocked`, 0 `later`, 1 `rejected`.
 
 ## 8. GAPs resueltos o descartados
 
@@ -157,6 +157,7 @@ Ver `docs/ai/modules/orders/gaps-registry.md` (regenerado). Resumen: 5 `ready`, 
 - GAP-V2-005 resuelto: las opciones de formularios de pedido usan TanStack Query, query keys tenant-aware y services de dominio sin reenviar `accessToken` desde hooks.
 - GAP-V2-003 resuelto: `useOrderCostAnalysis` y `useOrderOptions` usan TanStack Query con `staleTime` adecuado, manteniendo sus APIs públicas para `useOrder.ts`.
 - GAP-V2-006 resuelto: el formulario desktop de creación de pedidos muestra `Cancelar` antes del submit, usa `variant="outline"` y cierra el panel mediante `onClose` sin tocar el flujo mobile.
+- GAP-V2-008 resuelto: el detalle de pedido usa `EmptyState` para error/no encontrado, diferencia el error con `AlertCircle` rojo y limita `Reintentar` a errores recuperables.
 
 ## 9. Bloqueos y riesgos
 
@@ -193,6 +194,7 @@ Ver `docs/ai/modules/orders/gaps-registry.md` (regenerado). Resumen: 5 `ready`, 
 - 2026-07-02 — Implementación batch 6 architecture-refactor medium: GAP-V2-020 marcado `done`; registry regenerado.
 - 2026-07-02 — Implementación batch 7 code-quality medium: GAP-V2-005 y GAP-V2-003 marcados `done`; registry regenerado.
 - 2026-07-02 — Implementación batch 8 ux-ui low: GAP-V2-006 marcado `done`; registry regenerado.
+- 2026-07-02 — Implementación batch 9 ux-ui low: GAP-V2-008 marcado `done`; registry regenerado.
 
 ## 12. Instrucciones para retomar en otro chat/modelo
 

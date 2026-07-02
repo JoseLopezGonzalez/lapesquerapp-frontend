@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { AlertTriangle, ArrowLeft } from 'lucide-react';
+import { AlertCircle, AlertTriangle, ArrowLeft, PackageX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/Utilities/EmptyState';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -201,15 +202,25 @@ const OrderContent = ({
   }
 
   if (!order) {
+    if (error) {
+      return (
+        <EmptyState
+          className="bg-muted/30 h-full w-full"
+          icon={<AlertCircle className="text-red-500" />}
+          title="Error al cargar el pedido"
+          description="No se pudo obtener la información del pedido. Revisa la conexión e inténtalo de nuevo."
+          button={{ name: 'Reintentar', onClick: () => reload() }}
+        />
+      );
+    }
+
     return (
-      <div className="flex h-full w-full flex-col items-center justify-center gap-4 p-8">
-        <p className="text-muted-foreground text-center text-sm">
-          {error ? 'Error al cargar el pedido.' : 'Pedido no encontrado.'}
-        </p>
-        <Button variant="outline" onClick={() => reload()}>
-          Reintentar
-        </Button>
-      </div>
+      <EmptyState
+        className="bg-muted/30 h-full w-full"
+        icon={<PackageX />}
+        title="Pedido no encontrado"
+        description="El pedido no existe o ya no está disponible en el listado."
+      />
     );
   }
 
