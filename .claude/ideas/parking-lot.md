@@ -30,6 +30,12 @@ y lista para implementar; una idea aquí es solo una nota para no perderla.
 - **Módulo:** Ventas
 - **Descripción:** El creador obliga siempre a elegir líneas de previsión de productos, incluso cuando no debería ser obligatorio.
 
+### IDEA-004 — Editor de pedido no refresca otras secciones al cambiar un campo
+- **Fecha:** 2026-07-02
+- **Tipo:** Bug
+- **Módulo:** Ventas
+- **Descripción:** Al actualizar líneas de previsión, palets vinculados u otros campos del pedido, el resto de secciones (p.ej. detalle de productos) no se refrescan. El editor de pedido debería actualizarse por completo tras cualquier cambio.
+
 ---
 
 ## ✅ Promoted
