@@ -6,7 +6,7 @@ category: code-quality
 priority: P1
 risk: low
 size: S
-status: ready
+status: done
 dependencies: []
 target_files:
   - src/hooks/useOrder.ts
@@ -29,14 +29,15 @@ Esto es un array literal usado directamente como `queryKey` de `useQuery`
 (línea 109) y como key de `queryClient.setQueryData` (línea 119, dentro de
 `updateOrderCache`). El proyecto tiene una regla ESLint activa que prohíbe
 exactamente este patrón — `.claude/rules/hooks.md`, sección "Query Keys — regla
-ESLint activa": *"El proyecto tiene una regla ESLint que prohíbe arrays literales en
-`queryKey`"*. Todas las demás factories de `orders` (`orderListKeys`,
+ESLint activa": _"El proyecto tiene una regla ESLint que prohíbe arrays literales en
+`queryKey`"_. Todas las demás factories de `orders` (`orderListKeys`,
 `orderAttachmentKeys`, `orderStatKeys`, `orderChartKeys`, etc.) viven en
 `src/lib/routes/queryKeys.ts` — pero no existe ninguna factory para el detalle de un
 único pedido (`orders/{id}`). Es el único punto de fetching de detalle de pedido en
 todo el módulo que no pasa por una factory.
 
 Consecuencias directas de no tener una key tenant-aware:
+
 - La key `['order', orderId]` no incluye `tenantId`, a diferencia de todas las demás
   keys del módulo (`orderListKeys.active(tenantId)`,
   `orderAttachmentKeys.list(tenantId, orderId)`, etc.). En un entorno multi-tenant,
@@ -89,10 +90,8 @@ desde los sub-hooks de mutación.
    export const orderKeys = {
      detailPrefix: (tenantId: string | null | undefined) =>
        ['orders', 'detail', tenantId ?? 'unknown'] as const,
-     detail: (
-       tenantId: string | null | undefined,
-       orderId: number | string | null | undefined
-     ) => ['orders', 'detail', tenantId ?? 'unknown', orderId] as const,
+     detail: (tenantId: string | null | undefined, orderId: number | string | null | undefined) =>
+       ['orders', 'detail', tenantId ?? 'unknown', orderId] as const,
    };
    ```
 
@@ -101,7 +100,7 @@ desde los sub-hooks de mutación.
    línea 101 por `const queryKey = orderKeys.detail(tenantId, orderId);`.
 3. Añadir `enabled: !!tenantId && !!orderId` a la query (hoy solo tiene
    `enabled: !!orderId`, sin condicionar al tenant — inconsistente con
-   `.claude/rules/hooks.md`: *"enabled: siempre condicionar al tenant y al token"*).
+   `.claude/rules/hooks.md`: _"enabled: siempre condicionar al tenant y al token"_).
 4. Revisar si el `eslint-disable-next-line` de la línea 122 sigue siendo necesario
    una vez que `queryKey` viene de una factory `as const` (probablemente ya no, al
    ser una referencia derivada de valores primitivos estables); si se mantiene,
@@ -129,15 +128,21 @@ npm run test:run
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+- Añadida `orderKeys.detailPrefix/detail` en `src/lib/routes/queryKeys.ts`.
+- `useOrder.ts` obtiene `tenantId` con `getCurrentTenant()`, usa `orderKeys.detail(tenantId, orderId)` y condiciona la query con `!!tenantId && !!orderId`.
+- Eliminado el `eslint-disable-next-line react-hooks/exhaustive-deps`; la key queda memoizada con `useMemo` y se usa como dependencia directa de `updateOrderCache`.
 
 ## Resultado
 
-{se rellena al terminar la implementación}
+Implementado. `npm run type-check` pasa limpio y `npm run lint` no reporta errores; quedan warnings legacy fuera del alcance de este GAP.
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+Veredicto: `done`.
+
+Auditoría con contexto limpio confirma que `useOrder.ts` usa `orderKeys.detail(tenantId, orderId)`, que existe `orderKeys.detailPrefix/detail`, que la query queda condicionada por `!!tenantId && !!orderId` y que se eliminó el `eslint-disable-next-line`.
+
+Nota no bloqueante: `useOrder.ts` mantiene un patrón legacy de `accessToken` con `useOrderPallets`, ya cubierto por deuda separada y no introducido por este GAP.
 
 ## Links
 

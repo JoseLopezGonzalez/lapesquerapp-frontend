@@ -4,11 +4,11 @@
  * Expone métodos semánticos de negocio para interactuar con pedidos.
  * Oculta detalles técnicos (URLs, endpoints, configuración dinámica).
  *
- * NOTA: Este servicio actúa como wrapper/adapter del orderService.js existente,
+ * NOTA: Este servicio actúa como wrapper/adapter del orderService.ts raíz,
  * que es muy complejo (18 métodos específicos de negocio). Este wrapper implementa
  * la interfaz estándar de servicios de dominio para permitir que EntityClient lo use,
  * mientras que los métodos específicos de orders (estadísticas, incidencias, etc.)
- * siguen estando disponibles directamente desde orderService.js.
+ * siguen estando disponibles directamente desde el servicio raíz de pedidos.
  *
  * Este service encapsula la lógica genérica internamente, pero expone
  * métodos claros y predecibles para componentes y AI Chat.
@@ -17,17 +17,43 @@
 import { API_URL_V2 } from '@/configs/config';
 import { getAuthToken } from '@/lib/auth/getAuthToken';
 import { fetchEntitiesGeneric, deleteEntityGeneric } from '@/services/generic/entityService';
-import {
-  fetchEntityDataGeneric,
-  submitEntityFormGeneric,
-  fetchAutocompleteOptionsGeneric,
-} from '@/services/generic/editEntityService';
+import { fetchAutocompleteOptionsGeneric } from '@/services/generic/editEntityService';
 import { addWithParams } from '@/lib/entity/entityRelationsHelper';
 import { addFiltersToParams } from '@/lib/entity/filtersHelper';
 // Importar funciones del orderService existente
 import * as orderServiceFunctions from '@/services/orderService';
+import type {
+  Order,
+  OrderPayload,
+  OrderPlannedProductDetailPayload,
+  OrderRankingStatsParams,
+  OrderStatus,
+  SalesChartParams,
+  TransportChartParams,
+} from '@/services/orderService';
+import type { CatalogListFilters, CatalogListResponse, CatalogOption } from '@/types/catalog';
 
 const ENDPOINT = 'orders';
+type EntityId = number | string;
+type Pagination = { page?: number; perPage?: number };
+type DateRangeParams = { dateFrom?: string; dateTo?: string; includeAuxiliary?: boolean };
+
+const normalizeOption = (option: unknown): CatalogOption => {
+  if (option && typeof option === 'object') {
+    const record = option as Record<string, unknown>;
+    const value = record.id ?? record.value ?? String(option);
+    const label = record.name ?? record.label ?? String(option);
+    return {
+      value: typeof value === 'number' || typeof value === 'string' ? value : String(value),
+      label: typeof label === 'string' ? label : String(label),
+    };
+  }
+
+  return {
+    value: String(option),
+    label: String(option),
+  };
+};
 
 /**
  * Service de dominio para Orders
@@ -48,7 +74,10 @@ export const orderService = {
    * @example
    * const result = await orderService.list({ search: 'Pedido A' }, { page: 1, perPage: 12 });
    */
-  async list(filters = {}, pagination = {}) {
+  async list(
+    filters: CatalogListFilters = {},
+    pagination: Pagination = {}
+  ): Promise<CatalogListResponse<Order>> {
     const token = await getAuthToken();
     const { page = 1, perPage = 12 } = pagination;
 
@@ -62,11 +91,11 @@ export const orderService = {
       addWithParams(queryParams, filters._requiredRelations);
     }
 
-    queryParams.append('page', page);
-    queryParams.append('perPage', perPage);
+    queryParams.append('page', String(page));
+    queryParams.append('perPage', String(perPage));
 
     const url = `${API_URL_V2}${ENDPOINT}?${queryParams.toString()}`;
-    return fetchEntitiesGeneric(url, token);
+    return fetchEntitiesGeneric(url, token) as Promise<CatalogListResponse<Order>>;
   },
 
   /**
@@ -77,10 +106,9 @@ export const orderService = {
    * @example
    * const order = await orderService.getById(123);
    */
-  async getById(id) {
-    const token = await getAuthToken();
+  async getById(id: EntityId): Promise<Order | null> {
     // Usar función del orderService existente
-    return orderServiceFunctions.getOrder(id, token);
+    return orderServiceFunctions.getOrder(String(id));
   },
 
   /**
@@ -91,7 +119,7 @@ export const orderService = {
    * @example
    * const order = await orderService.create({ customer_id: 1, ... });
    */
-  async create(data) {
+  async create(data: OrderPayload): Promise<Order> {
     // Usar función del orderService existente que maneja el token internamente
     return orderServiceFunctions.createOrder(data);
   },
@@ -105,10 +133,9 @@ export const orderService = {
    * @example
    * const order = await orderService.update(123, { status: 'completed' });
    */
-  async update(id, data) {
-    const token = await getAuthToken();
+  async update(id: EntityId, data: OrderPayload): Promise<Order | undefined> {
     // Usar función del orderService existente
-    return orderServiceFunctions.updateOrder(id, data, token);
+    return orderServiceFunctions.updateOrder(String(id), data);
   },
 
   /**
@@ -119,10 +146,10 @@ export const orderService = {
    * @example
    * await orderService.delete(123);
    */
-  async delete(id) {
+  async delete(id: EntityId): Promise<{ response: Response; data: unknown }> {
     const token = await getAuthToken();
     const url = `${API_URL_V2}${ENDPOINT}/${id}`;
-    return deleteEntityGeneric(url, null, token);
+    return deleteEntityGeneric(url, undefined, token);
   },
 
   /**
@@ -133,7 +160,7 @@ export const orderService = {
    * @example
    * await orderService.deleteMultiple([123, 456, 789]);
    */
-  async deleteMultiple(ids) {
+  async deleteMultiple(ids: EntityId[]): Promise<{ response: Response; data: unknown }> {
     const token = await getAuthToken();
     const url = `${API_URL_V2}${ENDPOINT}`;
     return deleteEntityGeneric(url, { ids }, token);
@@ -147,27 +174,25 @@ export const orderService = {
    * @example
    * const options = await orderService.getOptions();
    */
-  async getOptions() {
-    const token = await getAuthToken();
+  async getOptions(): Promise<CatalogOption[]> {
     // Usar función del orderService existente
-    const options = await orderServiceFunctions.getActiveOrdersOptions(token);
+    const options = await orderServiceFunctions.getActiveOrdersOptions();
     // Convertir al formato estándar si es necesario
     if (options && Array.isArray(options)) {
-      return options.map((opt) => ({
-        value: opt.id || opt.value,
-        label: opt.name || opt.label || opt.toString(),
-      }));
+      return options.map(normalizeOption);
     }
-    return options || [];
+    return [];
   },
 
   /**
    * Obtiene opciones de todos los pedidos para filtros históricos.
    * @returns {Promise<Array<{value: any, label: string}>>}
    */
-  async getAllOptions() {
+  async getAllOptions(): Promise<CatalogOption[]> {
     const token = await getAuthToken();
-    return fetchAutocompleteOptionsGeneric(`${API_URL_V2}${ENDPOINT}/options`, token);
+    return fetchAutocompleteOptionsGeneric(`${API_URL_V2}${ENDPOINT}/options`, token) as Promise<
+      CatalogOption[]
+    >;
   },
 
   // ========== Métodos específicos de Orders (reexportar del orderService original) ==========
@@ -176,9 +201,8 @@ export const orderService = {
    * Obtiene órdenes activas
    * @returns {Promise<Array>} Array de órdenes activas
    */
-  async getActiveOrders() {
-    const token = await getAuthToken();
-    return orderServiceFunctions.getActiveOrders(token);
+  async getActiveOrders(): Promise<Order[]> {
+    return orderServiceFunctions.getActiveOrders();
   },
 
   /**
@@ -187,9 +211,11 @@ export const orderService = {
    * @param {Object} detailData - Datos del detalle
    * @returns {Promise<Object>} Detalle actualizado
    */
-  async updatePlannedProductDetail(detailId, detailData) {
-    const token = await getAuthToken();
-    return orderServiceFunctions.updateOrderPlannedProductDetail(detailId, detailData, token);
+  async updatePlannedProductDetail(
+    detailId: EntityId,
+    detailData: OrderPlannedProductDetailPayload
+  ): Promise<unknown> {
+    return orderServiceFunctions.updateOrderPlannedProductDetail(String(detailId), detailData);
   },
 
   /**
@@ -197,9 +223,8 @@ export const orderService = {
    * @param {string|number} detailId - ID del detalle
    * @returns {Promise<void>}
    */
-  async deletePlannedProductDetail(detailId) {
-    const token = await getAuthToken();
-    return orderServiceFunctions.deleteOrderPlannedProductDetail(detailId, token);
+  async deletePlannedProductDetail(detailId: EntityId): Promise<unknown> {
+    return orderServiceFunctions.deleteOrderPlannedProductDetail(String(detailId));
   },
 
   /**
@@ -207,9 +232,8 @@ export const orderService = {
    * @param {Object} detailData - Datos del detalle
    * @returns {Promise<Object>} Detalle creado
    */
-  async createPlannedProductDetail(detailData) {
-    const token = await getAuthToken();
-    return orderServiceFunctions.createOrderPlannedProductDetail(detailData, token);
+  async createPlannedProductDetail(detailData: OrderPlannedProductDetailPayload): Promise<unknown> {
+    return orderServiceFunctions.createOrderPlannedProductDetail(detailData);
   },
 
   /**
@@ -218,9 +242,8 @@ export const orderService = {
    * @param {string} status - Nuevo estado
    * @returns {Promise<Object>} Pedido actualizado
    */
-  async setStatus(orderId, status) {
-    const token = await getAuthToken();
-    return orderServiceFunctions.setOrderStatus(orderId, status, token);
+  async setStatus(orderId: EntityId, status: OrderStatus): Promise<unknown> {
+    return orderServiceFunctions.setOrderStatus(String(orderId), status);
   },
 
   /**
@@ -229,9 +252,8 @@ export const orderService = {
    * @param {string} description - Descripción de la incidencia
    * @returns {Promise<Object>} Incidencia creada
    */
-  async createIncident(orderId, description) {
-    const token = await getAuthToken();
-    return orderServiceFunctions.createOrderIncident(orderId, description, token);
+  async createIncident(orderId: EntityId, description: string): Promise<unknown> {
+    return orderServiceFunctions.createOrderIncident(String(orderId), description);
   },
 
   /**
@@ -241,13 +263,15 @@ export const orderService = {
    * @param {string} resolutionNotes - Notas de resolución
    * @returns {Promise<Object>} Incidencia actualizada
    */
-  async updateIncident(orderId, resolutionType, resolutionNotes) {
-    const token = await getAuthToken();
+  async updateIncident(
+    orderId: EntityId,
+    resolutionType: string,
+    resolutionNotes: string
+  ): Promise<unknown> {
     return orderServiceFunctions.updateOrderIncident(
-      orderId,
+      String(orderId),
       resolutionType,
-      resolutionNotes,
-      token
+      resolutionNotes
     );
   },
 
@@ -256,9 +280,8 @@ export const orderService = {
    * @param {string|number} orderId - ID del pedido
    * @returns {Promise<void>}
    */
-  async destroyIncident(orderId) {
-    const token = await getAuthToken();
-    return orderServiceFunctions.destroyOrderIncident(orderId, token);
+  async destroyIncident(orderId: EntityId): Promise<unknown> {
+    return orderServiceFunctions.destroyOrderIncident(String(orderId));
   },
 
   /**
@@ -266,9 +289,8 @@ export const orderService = {
    * @param {Object} params - Parámetros { groupBy, valueType, dateFrom, dateTo, speciesId }
    * @returns {Promise<Object>} Estadísticas de ranking
    */
-  async getRankingStats(params) {
-    const token = await getAuthToken();
-    return orderServiceFunctions.getOrderRankingStats(params, token);
+  async getRankingStats(params: Partial<OrderRankingStatsParams> = {}): Promise<unknown> {
+    return orderServiceFunctions.getOrderRankingStats(params as OrderRankingStatsParams);
   },
 
   /**
@@ -276,9 +298,10 @@ export const orderService = {
    * @param {Object} params - Parámetros { dateFrom, dateTo }
    * @returns {Promise<Object>} Ventas por comercial
    */
-  async getSalesBySalesperson(params) {
-    const token = await getAuthToken();
-    return orderServiceFunctions.getSalesBySalesperson(params, token);
+  async getSalesBySalesperson(params: DateRangeParams = {}): Promise<unknown> {
+    return orderServiceFunctions.getSalesBySalesperson(
+      params as { dateFrom: string; dateTo: string }
+    );
   },
 
   /**
@@ -286,9 +309,10 @@ export const orderService = {
    * @param {Object} params - Parámetros { dateFrom, dateTo }
    * @returns {Promise<Object>} Estadísticas de peso neto
    */
-  async getTotalNetWeightStats(params) {
-    const token = await getAuthToken();
-    return orderServiceFunctions.getOrdersTotalNetWeightStats(params, token);
+  async getTotalNetWeightStats(params: DateRangeParams = {}): Promise<unknown> {
+    return orderServiceFunctions.getOrdersTotalNetWeightStats(
+      params as { dateFrom: string; dateTo: string }
+    );
   },
 
   /**
@@ -296,9 +320,10 @@ export const orderService = {
    * @param {Object} params - Parámetros { dateFrom, dateTo }
    * @returns {Promise<Object>} Estadísticas de importe
    */
-  async getTotalAmountStats(params) {
-    const token = await getAuthToken();
-    return orderServiceFunctions.getOrdersTotalAmountStats(params, token);
+  async getTotalAmountStats(params: DateRangeParams = {}): Promise<unknown> {
+    return orderServiceFunctions.getOrdersTotalAmountStats(
+      params as { dateFrom: string; dateTo: string; includeAuxiliary?: boolean }
+    );
   },
 
   /**
@@ -306,9 +331,8 @@ export const orderService = {
    * @param {Object} params - Parámetros { speciesId, categoryId, familyId, from, to, unit, groupBy }
    * @returns {Promise<Array>} Datos del gráfico
    */
-  async getSalesChartData(params) {
-    const token = await getAuthToken();
-    return orderServiceFunctions.getSalesChartData({ token, ...params });
+  async getSalesChartData(params: Partial<SalesChartParams> = {}): Promise<unknown[]> {
+    return orderServiceFunctions.getSalesChartData(params as SalesChartParams);
   },
 
   /**
@@ -316,8 +340,7 @@ export const orderService = {
    * @param {Object} params - Parámetros { from, to }
    * @returns {Promise<Array>} Datos del gráfico
    */
-  async getTransportChartData(params) {
-    const token = await getAuthToken();
-    return orderServiceFunctions.getTransportChartData({ token, ...params });
+  async getTransportChartData(params: Partial<TransportChartParams> = {}): Promise<unknown> {
+    return orderServiceFunctions.getTransportChartData(params as TransportChartParams);
   },
 };

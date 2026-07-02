@@ -118,8 +118,11 @@ Ver Fase 0 de la propuesta para el detalle de qué agentes se convirtieron en su
 
 ```text
 Módulo: orders (Pedidos)
-Fase: 1 — infraestructura creada, auditoría todavía no ejecutada
-Criterio de éxito: cerrar la sesión tras /deep-audit-module, abrir una sesión
-nueva, y que /implement-next funcione sin que Jose tenga que explicar contexto
-adicional.
+Fase: piloto auditado_acotado + primer lote implementado — 5 carriles ejecutados,
+registry generado, cruce legacy acotado completado y 2 GAPs cerrados.
+Criterio de éxito: continuar con /implement-next sin que Jose tenga que explicar
+contexto adicional.
+
+Siguiente acción recomendada:
+/implement-next module=orders category=architecture-refactor limit=1 risk=low
 ```

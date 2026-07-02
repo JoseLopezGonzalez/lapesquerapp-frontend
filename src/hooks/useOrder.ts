@@ -13,6 +13,8 @@ import { useOrderAuxiliaryLines } from './orders/useOrderAuxiliaryLines';
 import { useOrderPallets } from './orders/useOrderPallets';
 import { useOrderDocuments } from './orders/useOrderDocuments';
 import { useAuxiliaryProductOptions } from './useAuxiliaryProductOptions';
+import { orderKeys } from '@/lib/routes/queryKeys';
+import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 
 export interface NormalizedOrderPallet {
   id: number | string;
@@ -98,7 +100,8 @@ export function useOrder(
   const [activeTab, setActiveTab] = useState('details');
   const previousOrderIdRef = useRef<typeof orderId>(null);
 
-  const queryKey = ['order', orderId];
+  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
+  const queryKey = useMemo(() => orderKeys.detail(tenantId, orderId), [tenantId, orderId]);
 
   const {
     data: order = null,
@@ -108,7 +111,7 @@ export function useOrder(
   } = useQuery({
     queryKey,
     queryFn: () => getOrder(orderId as unknown as string),
-    enabled: !!orderId,
+    enabled: !!tenantId && !!orderId,
   });
 
   const error = queryError ?? mutationError;
@@ -119,8 +122,7 @@ export function useOrder(
       queryClient.setQueryData(queryKey, updatedOrder);
       onChange?.(updatedOrder);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [queryClient, JSON.stringify(queryKey), onChange]
+    [queryClient, queryKey, onChange]
   );
 
   // Reset tab when orderId changes
@@ -198,10 +200,7 @@ export function useOrder(
   };
 
   const updateTemperatureOrder = async (updatedTemperature: unknown) => {
-    return updateOrder(
-      orderId as unknown as string,
-      { temperature: updatedTemperature }
-    )
+    return updateOrder(orderId as unknown as string, { temperature: updatedTemperature })
       .then((updated) => {
         if (updated) updateOrderCache(updated);
         return updated;
@@ -244,12 +243,11 @@ export function useOrder(
     onChange,
   });
 
-  const { exportDocument, exportDocuments, fastExportDocuments, sendDocuments, hasMaquilador } = useOrderDocuments(
-    {
+  const { exportDocument, exportDocuments, fastExportDocuments, sendDocuments, hasMaquilador } =
+    useOrderDocuments({
       order,
       session,
-    }
-  );
+    });
 
   return {
     pallets,

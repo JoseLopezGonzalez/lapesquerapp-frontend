@@ -6,7 +6,7 @@ category: code-quality
 priority: P2
 risk: low
 size: S
-status: ready
+status: done
 dependencies: []
 target_files:
   - src/services/domain/orders/orderService.js
@@ -44,6 +44,7 @@ exportados por `orderService.ts` (`import type { Order, OrderStatus, ... } from
 '@/services/orderService'`).
 
 Complejidad de migración: **BAJA**. El archivo:
+
 - No tiene lógica de negocio propia compleja — cada método delega en
   `orderServiceFunctions.*` (líneas 28, 83, 96, 111, etc.) o en helpers genéricos ya
   tipados (`fetchEntitiesGeneric`, `deleteEntityGeneric`).
@@ -110,15 +111,20 @@ npm run test:run
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+- Renombrado `src/services/domain/orders/orderService.js` a `src/services/domain/orders/orderService.ts`.
+- Tipados los métodos del wrapper con tipos existentes de `src/services/orderService.ts` y `src/types/catalog`.
+- Retirados argumentos `token` obsoletos al delegar en `src/services/orderService.ts`, que ya obtiene auth internamente.
+- Los importadores actuales (`orderTools.js` y `ProductionView.jsx`) mantienen el mismo import sin extensión.
 
 ## Resultado
 
-{se rellena al terminar la implementación}
+Implementado. `npm run type-check` pasa limpio y `npm run lint` no reporta errores; quedan warnings legacy fuera del alcance de este GAP.
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+Veredicto: `done`.
+
+Auditoría con contexto limpio confirma que `orderService.js` ya no existe, que `orderService.ts` mantiene el export `orderService`, que los métodos quedan tipados sin `any` implícito y que `orderTools.js`/`ProductionView.jsx` siguen resolviendo el import sin extensión.
 
 ## Links
 

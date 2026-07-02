@@ -199,8 +199,7 @@ export const productionQueryKeys = {
 export const productOptionKeys = {
   options: (tenantId: string | null | undefined) =>
     ['products', 'options', tenantId ?? 'unknown'] as const,
-  list: (tenantId: string | null | undefined) =>
-    productOptionKeys.options(tenantId),
+  list: (tenantId: string | null | undefined) => productOptionKeys.options(tenantId),
 };
 
 export const taxOptionKeys = {
@@ -252,19 +251,18 @@ export const supplierLiquidationKeys = {
     endDate: string | undefined,
     onlyUnliquidated?: boolean
   ) =>
-    ['suppliers-with-activity', tenantId ?? 'unknown', startDate, endDate, onlyUnliquidated] as const,
+    [
+      'suppliers-with-activity',
+      tenantId ?? 'unknown',
+      startDate,
+      endDate,
+      onlyUnliquidated,
+    ] as const,
   // CRUD historial de cerradas
   closedListPrefix: (tenantId: string | null | undefined) =>
     ['supplier-liquidations-closed', tenantId ?? 'unknown'] as const,
-  closedList: (
-    tenantId: string | null | undefined,
-    filters: Record<string, unknown> = {}
-  ) =>
-    [
-      'supplier-liquidations-closed',
-      tenantId ?? 'unknown',
-      normalizeQueryParams(filters),
-    ] as const,
+  closedList: (tenantId: string | null | undefined, filters: Record<string, unknown> = {}) =>
+    ['supplier-liquidations-closed', tenantId ?? 'unknown', normalizeQueryParams(filters)] as const,
   closedShow: (
     tenantId: string | null | undefined,
     liquidationId: number | string | null | undefined
@@ -289,8 +287,10 @@ export const palletAttachmentKeys = {
 };
 
 export const palletTimelineKeys = {
-  detailPrefix: (tenantId: string | null | undefined, palletId: number | string | null | undefined) =>
-    ['pallets', 'timeline', tenantId ?? 'unknown', palletId] as const,
+  detailPrefix: (
+    tenantId: string | null | undefined,
+    palletId: number | string | null | undefined
+  ) => ['pallets', 'timeline', tenantId ?? 'unknown', palletId] as const,
   detail: (tenantId: string | null | undefined, palletId: number | string | null | undefined) =>
     ['pallets', 'timeline', tenantId ?? 'unknown', palletId] as const,
 };
@@ -298,6 +298,13 @@ export const palletTimelineKeys = {
 export const orderListKeys = {
   active: (tenantId: string | null | undefined) =>
     ['orders', 'active', tenantId ?? 'unknown'] as const,
+};
+
+export const orderKeys = {
+  detailPrefix: (tenantId: string | null | undefined) =>
+    ['orders', 'detail', tenantId ?? 'unknown'] as const,
+  detail: (tenantId: string | null | undefined, orderId: number | string | null | undefined) =>
+    ['orders', 'detail', tenantId ?? 'unknown', orderId] as const,
 };
 
 export const orderAttachmentKeys = {
@@ -364,7 +371,8 @@ export const orderStatKeys = {
     dateFrom: string,
     dateTo: string,
     includeAuxiliary = false
-  ) => ['orders', 'totalAmount', tenantId ?? 'unknown', dateFrom, dateTo, includeAuxiliary] as const,
+  ) =>
+    ['orders', 'totalAmount', tenantId ?? 'unknown', dateFrom, dateTo, includeAuxiliary] as const,
   ranking: (
     tenantId: string | null | undefined,
     dateFrom: string,
@@ -428,8 +436,7 @@ export const auxiliaryLineStatKeys = {
 };
 
 export const agendaKeys = {
-  all: (tenantId: string | null | undefined) =>
-    ['crm', 'agenda', tenantId ?? 'unknown'] as const,
+  all: (tenantId: string | null | undefined) => ['crm', 'agenda', tenantId ?? 'unknown'] as const,
   list: (tenantId: string | null | undefined, params: Record<string, unknown> = {}) =>
     ['crm', 'agenda', tenantId ?? 'unknown', normalizeQueryParams(params)] as const,
   summaryPrefix: (tenantId: string | null | undefined) =>
@@ -649,9 +656,6 @@ export const orderChartKeys = {
       unit,
       groupBy,
     ] as const,
-  transport: (
-    tenantId: string | null | undefined,
-    from: string,
-    to: string
-  ) => ['transport', 'chart', tenantId ?? 'unknown', from, to] as const,
+  transport: (tenantId: string | null | undefined, from: string, to: string) =>
+    ['transport', 'chart', tenantId ?? 'unknown', from, to] as const,
 };
