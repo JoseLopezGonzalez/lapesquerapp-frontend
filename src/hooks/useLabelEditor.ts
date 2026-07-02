@@ -1,5 +1,4 @@
 // useLabelEditor.ts
-import { useSession } from 'next-auth/react';
 import {
   useState,
   useCallback,
@@ -189,7 +188,7 @@ function getDateFieldPreviewValue(
   visited.add(key);
   const today = new Date();
   if (mode === 'system' || mode === 'systemOffset') {
-    const v = formatDate(addDays(today, el.systemOffsetDays ?? 0));
+    const v = formatDate(addDays(today, (el.systemOffsetDays as number | undefined) ?? 0));
     if (valuesCache) valuesCache[key] = v;
     return v;
   }
@@ -207,7 +206,9 @@ function getDateFieldPreviewValue(
           : '';
     if (!refStr && refEl?.dateMode === 'manual') refStr = formatDate(today);
     const refDate = parseDate(refStr);
-    const v = refDate ? formatDate(addDays(refDate, el.fieldOffsetDays ?? 0)) : refStr || '';
+    const v = refDate
+      ? formatDate(addDays(refDate, (el.fieldOffsetDays as number | undefined) ?? 0))
+      : refStr || '';
     if (valuesCache) valuesCache[key] = v;
     return v;
   }
@@ -238,9 +239,6 @@ export function useLabelEditor(
   const [canvasHeight, setCanvasHeight] = useState(300);
   const [canvasRotation, setCanvasRotation] = useState(0);
   const [openSelector, setOpenSelector] = useState(false);
-
-  const { data: session } = useSession();
-  const token = session?.user?.accessToken as string | undefined;
 
   const clearEditor = () => {
     setSelectedLabel(null);
@@ -315,7 +313,6 @@ export function useLabelEditor(
     canvasWidth,
     canvasHeight,
     canvasRotation,
-    token,
     setLabelId,
     setSelectedLabel,
     setElements,

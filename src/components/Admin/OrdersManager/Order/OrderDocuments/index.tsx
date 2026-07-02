@@ -29,7 +29,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useOrderContext } from '@/context/OrderContext';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { notify } from '@/lib/notifications';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -95,7 +95,7 @@ type SelectedRecipients = {
 
 const OrderDocuments = () => {
   const { order, sendDocuments, hasMaquilador } = useOrderContext() as OrderContextValue;
-  const isMobile = useIsMobile();
+  const { isMobile, mounted } = useIsMobileSafe();
 
   const [selectedDocs, setSelectedDocs] = useState<SelectedDocs>({
     customer: [],
@@ -624,6 +624,8 @@ const OrderDocuments = () => {
       )}
     </div>
   );
+
+  if (!mounted) return null;
 
   return (
     <>

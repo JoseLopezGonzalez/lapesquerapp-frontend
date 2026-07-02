@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { FileText, Package, Truck, Wallet } from 'lucide-react';
+import { FileText, Package, Truck, Wallet, MapPinOff } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { EmptyState } from '@/components/Utilities/EmptyState';
 import { useOrderContext } from '@/context/OrderContext';
 import {
   formatInteger,
@@ -13,7 +14,7 @@ import {
 } from '@/helpers/formats/numbers/formatNumbers';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface ExternalProcessor {
@@ -83,7 +84,7 @@ const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
 const OrderDetails = () => {
   const { order } = useOrderContext() as { order: Order };
-  const isMobile = useIsMobile();
+  const { isMobile, mounted } = useIsMobileSafe();
 
   const encodedAddress = useMemo(() => {
     return order?.shippingAddress ? encodeURIComponent(order.shippingAddress) : '';
@@ -93,6 +94,8 @@ const OrderDetails = () => {
     if (!encodedAddress || !GOOGLE_API_KEY) return '';
     return `https://www.google.com/maps/embed/v1/place?key=${GOOGLE_API_KEY}&q=${encodedAddress}`;
   }, [encodedAddress]);
+
+  if (!mounted) return null;
 
   if (isMobile) {
     return (
@@ -107,19 +110,19 @@ const OrderDetails = () => {
               </div>
               <div className="space-y-3">
                 <div className="text-center">
-                  <div className="text-muted-foreground text-sm font-medium">Vendedor</div>
+                  <div className="text-muted-foreground text-sm">Vendedor</div>
                   <div className="font-medium">{order.salesperson?.name ?? '—'}</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-muted-foreground text-sm font-medium">Repartidor</div>
+                  <div className="text-muted-foreground text-sm">Repartidor</div>
                   <div className="font-medium">{order.fieldOperator?.name ?? 'Sin repartidor'}</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-muted-foreground text-sm font-medium">Forma de pago</div>
+                  <div className="text-muted-foreground text-sm">Forma de pago</div>
                   <div className="font-medium">{order.paymentTerm?.name ?? '—'}</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-muted-foreground text-sm font-medium">Incoterm</div>
+                  <div className="text-muted-foreground text-sm">Incoterm</div>
                   <div className="font-medium">
                     {order.incoterm
                       ? `${order.incoterm.code} - ${order.incoterm.description}`
@@ -127,7 +130,7 @@ const OrderDetails = () => {
                   </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-muted-foreground text-sm font-medium">Maquilador</div>
+                  <div className="text-muted-foreground text-sm">Maquilador</div>
                   {order.externalProcessor ? (
                     <div className="font-medium">
                       <div>{order.externalProcessor.name}</div>
@@ -185,7 +188,7 @@ const OrderDetails = () => {
               </div>
               <div className="space-y-3">
                 <div className="text-center">
-                  <div className="text-muted-foreground text-sm font-medium">Coste total</div>
+                  <div className="text-muted-foreground text-sm">Coste total</div>
                   <div className="font-medium">{getNullableCurrency(order.totalCost)}</div>
                   <div className="text-muted-foreground mt-1 text-xs">
                     {getNullableCurrencyPerKg(order.costPerKg)}
@@ -195,14 +198,14 @@ const OrderDetails = () => {
                   ) : null}
                 </div>
                 <div className="text-center">
-                  <div className="text-muted-foreground text-sm font-medium">Margen bruto</div>
+                  <div className="text-muted-foreground text-sm">Margen bruto</div>
                   <div className="font-medium">{getNullableCurrency(order.grossMargin)}</div>
                   <div className="text-muted-foreground mt-1 text-xs">
                     {getNullableCurrencyPerKg(order.marginPerKg)}
                   </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-muted-foreground text-sm font-medium">Margen %</div>
+                  <div className="text-muted-foreground text-sm">Margen %</div>
                   <div className="font-medium">{getNullablePercentage(order.marginPercentage)}</div>
                 </div>
               </div>
@@ -218,13 +221,13 @@ const OrderDetails = () => {
               </div>
               <div className="space-y-3">
                 <div className="text-center">
-                  <div className="text-muted-foreground text-sm font-medium">Total productos</div>
+                  <div className="text-muted-foreground text-sm">Total productos</div>
                   <div className="font-medium">
                     {order.totalNetWeight ? formatDecimalWeight(order.totalNetWeight) : '-'}
                   </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-muted-foreground text-sm font-medium">
+                  <div className="text-muted-foreground text-sm">
                     Unidades de envasado
                   </div>
                   <div className="font-medium">
@@ -234,35 +237,20 @@ const OrderDetails = () => {
                   </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-muted-foreground text-sm font-medium">Importe</div>
+                  <div className="text-muted-foreground text-sm">Importe</div>
                   <div className="font-medium">{getNullableCurrency(order.totalAmount)}</div>
                   <div className="text-muted-foreground mt-1 text-xs">
                     {getNullableCurrencyPerKg(order.revenuePerKg)}
                   </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-muted-foreground text-sm font-medium">Coste total</div>
-                  <div className="font-medium">{getNullableCurrency(order.totalCost)}</div>
-                  {order.totalCost == null ? (
-                    <div className="text-muted-foreground mt-1 text-xs">Sin coste calculable</div>
-                  ) : null}
-                </div>
-                <div className="text-center">
-                  <div className="text-muted-foreground text-sm font-medium">Margen bruto</div>
-                  <div className="font-medium">{getNullableCurrency(order.grossMargin)}</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-muted-foreground text-sm font-medium">Margen %</div>
-                  <div className="font-medium">{getNullablePercentage(order.marginPercentage)}</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-muted-foreground text-sm font-medium">
+                  <div className="text-muted-foreground text-sm">
                     Otros artículos (subtotal)
                   </div>
                   <div className="font-medium">{getNullableCurrency(order.auxiliarySubtotal)}</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-muted-foreground text-sm font-medium">
+                  <div className="text-muted-foreground text-sm">
                     Otros artículos (total)
                   </div>
                   <div className="font-medium">{getNullableCurrency(order.auxiliaryTotal)}</div>
@@ -336,9 +324,12 @@ const OrderDetails = () => {
                     src={mapUrl}
                   />
                 ) : (
-                  <div className="text-muted-foreground bg-muted/30 flex h-[270px] items-center justify-center rounded-lg text-sm">
-                    No hay dirección de envío
-                  </div>
+                  <EmptyState
+                    title="Sin dirección de envío"
+                    description="No hay dirección configurada para mostrar en el mapa."
+                    icon={<MapPinOff />}
+                    className="bg-muted/30 h-[270px] rounded-lg"
+                  />
                 )}
               </div>
             </div>
@@ -614,9 +605,12 @@ const OrderDetails = () => {
                 src={mapUrl}
               />
             ) : (
-              <div className="text-muted-foreground bg-muted/30 flex h-[270px] items-center justify-center text-sm">
-                No hay dirección de envío
-              </div>
+              <EmptyState
+                title="Sin dirección de envío"
+                description="No hay dirección configurada para mostrar en el mapa."
+                icon={<MapPinOff />}
+                className="bg-muted/30 h-[270px]"
+              />
             )}
           </div>
         </CardContent>

@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, CardContent } from '@/components/ui/card';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import PalletDialog from '@/components/Admin/Pallets/PalletDialog';
 import PalletLabelDialog from '@/components/Admin/Pallets/PalletLabelDialog';
@@ -18,7 +18,7 @@ interface OrderPalletsProps {
 }
 
 const OrderPallets = ({ readOnly = false }: OrderPalletsProps) => {
-  const isMobile = useIsMobile();
+  const { isMobile, mounted } = useIsMobileSafe();
   const api = useOrderPallets();
   const {
     pallets,
@@ -91,6 +91,8 @@ const OrderPallets = ({ readOnly = false }: OrderPalletsProps) => {
     handleCloseCreateFromForecastDialog,
     handleCreatePalletFromForecast,
   } = api;
+
+  if (!mounted) return null;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">

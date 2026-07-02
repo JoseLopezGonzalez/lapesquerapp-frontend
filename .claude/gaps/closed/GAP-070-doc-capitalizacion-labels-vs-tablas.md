@@ -69,31 +69,42 @@ una nueva subsección "Capitalización") con la regla:
 
 ## Implementación
 
-> Rellena el Agente Implementador
-
 ### Archivos creados
+
+Ninguno.
 
 ### Archivos modificados
 
+- `.claude/design-context.md` — añadida subsección "Capitalización" al final de § 2 Typography
+
 ### Decisiones tomadas durante la implementación
 
+- Se colocó justo antes del `---` de cierre de la sección, junto a las otras reglas
+  puntuales (Leading, Tabular nums, Truncation) en vez de crear una subsección `###`
+  separada — mismo nivel de brevedad que las reglas vecinas.
+
 ### Desviaciones del plan (si las hay)
+
+Ninguna.
 
 ---
 
 ## Auditoría
 
-> Rellena el Agente Auditor
+### Resultado: ✅ APROBADO
 
-### Resultado: ✅ APROBADO | ⚠️ APROBADO CON OBSERVACIONES | ❌ RECHAZADO
-
-### Puntuación: [X/10]
+### Puntuación: 10/10 — cambio de documentación puro, exactamente el texto acordado
 
 ### Checklist
 
-- [ ] Criterios de aceptación cumplidos
-- [ ] Patrones de .claude/rules/ respetados
+- [x] Criterios de aceptación cumplidos (regla documentada con ambos ejemplos; ningún archivo de `src/` tocado)
+- [x] Patrones de .claude/rules/ respetados (N/A — solo doc)
 
 ### Observaciones para Jose
 
+Ninguna. Cambio de documentación exacto a lo acordado, sin tocar código.
+
 ### Estado final de la implementación
+
+`design-context.md` § 2 Typography documenta ahora la regla de capitalización con los
+mismos dos ejemplos reales citados en el GAP.

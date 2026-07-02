@@ -1,10 +1,12 @@
-import { fetchWithTenant } from '@lib/fetchWithTenant';
+import { fetchWithTenant } from '@/lib/fetchWithTenant';
 import { API_URL_V2 } from '@/configs/config';
+import { getAuthToken } from '@/lib/auth/getAuthToken';
 import { getUserAgent } from '@/lib/utils/getUserAgent';
 import { handleLabelServiceResponse } from './labelServiceHelpers';
 import type { Label, LabelFormat, LabelApiResponse } from '@/types/labelEditor';
 
-function authHeaders(token: string) {
+async function authHeaders(): Promise<Record<string, string>> {
+  const token = await getAuthToken();
   return {
     'Content-Type': 'application/json',
     Accept: 'application/json',
@@ -13,14 +15,11 @@ function authHeaders(token: string) {
   };
 }
 
-export function getLabel(labelId: string, token: string): Promise<Label> {
+export async function getLabel(labelId: string): Promise<Label> {
+  const headers = await authHeaders();
   return fetchWithTenant(`${API_URL_V2}labels/${labelId}`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-      'User-Agent': getUserAgent(),
-    },
+    headers,
   })
     .then((response) => handleLabelServiceResponse(response, 'Error al obtener la etiqueta'))
     .then((data: { data?: Label }) => data.data as Label)
@@ -29,14 +28,14 @@ export function getLabel(labelId: string, token: string): Promise<Label> {
     });
 }
 
-export function createLabel(
+export async function createLabel(
   labelName: string,
-  labelFormat: LabelFormat,
-  token: string
+  labelFormat: LabelFormat
 ): Promise<LabelApiResponse> {
+  const headers = await authHeaders();
   return fetchWithTenant(`${API_URL_V2}labels`, {
     method: 'POST',
-    headers: authHeaders(token),
+    headers,
     body: JSON.stringify({ name: labelName, format: labelFormat }),
   })
     .then((response) => handleLabelServiceResponse(response, 'Error al crear la etiqueta'))
@@ -46,15 +45,15 @@ export function createLabel(
     });
 }
 
-export function updateLabel(
+export async function updateLabel(
   labelId: string,
   labelName: string,
-  labelFormat: LabelFormat,
-  token: string
+  labelFormat: LabelFormat
 ): Promise<LabelApiResponse> {
+  const headers = await authHeaders();
   return fetchWithTenant(`${API_URL_V2}labels/${labelId}`, {
     method: 'PUT',
-    headers: authHeaders(token),
+    headers,
     body: JSON.stringify({ name: labelName, format: labelFormat }),
   })
     .then((response) => handleLabelServiceResponse(response, 'Error al actualizar la etiqueta'))
@@ -64,14 +63,11 @@ export function updateLabel(
     });
 }
 
-export function getLabels(token: string): Promise<Label[]> {
+export async function getLabels(): Promise<Label[]> {
+  const headers = await authHeaders();
   return fetchWithTenant(`${API_URL_V2}labels`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-      'User-Agent': getUserAgent(),
-    },
+    headers,
   })
     .then((response) => handleLabelServiceResponse(response, 'Error al obtener las etiquetas'))
     .then((data: { data?: Label[] }) => (data.data ?? data) as Label[])
@@ -80,14 +76,11 @@ export function getLabels(token: string): Promise<Label[]> {
     });
 }
 
-export function deleteLabel(labelId: string, token: string): Promise<void> {
+export async function deleteLabel(labelId: string): Promise<void> {
+  const headers = await authHeaders();
   return fetchWithTenant(`${API_URL_V2}labels/${labelId}`, {
     method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-      'User-Agent': getUserAgent(),
-    },
+    headers,
   })
     .then((response) => handleLabelServiceResponse(response, 'Error al eliminar la etiqueta'))
     .then(() => undefined)
@@ -96,14 +89,11 @@ export function deleteLabel(labelId: string, token: string): Promise<void> {
     });
 }
 
-export function getLabelsOptions(token: string): Promise<unknown> {
+export async function getLabelsOptions(): Promise<unknown> {
+  const headers = await authHeaders();
   return fetchWithTenant(`${API_URL_V2}labels/options`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-      'User-Agent': getUserAgent(),
-    },
+    headers,
   })
     .then((response) =>
       handleLabelServiceResponse(response, 'Error al obtener las opciones de etiquetas')
@@ -114,14 +104,14 @@ export function getLabelsOptions(token: string): Promise<unknown> {
     });
 }
 
-export function duplicateLabel(
+export async function duplicateLabel(
   labelId: string,
-  token: string,
   customName: string | null = null
 ): Promise<LabelApiResponse> {
+  const headers = await authHeaders();
   return fetchWithTenant(`${API_URL_V2}labels/${labelId}/duplicate`, {
     method: 'POST',
-    headers: authHeaders(token),
+    headers,
     body: JSON.stringify(customName ? { name: customName } : {}),
   })
     .then((response) => handleLabelServiceResponse(response, 'Error al duplicar la etiqueta'))

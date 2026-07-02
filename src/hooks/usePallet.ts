@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { getActiveOrdersOptions } from '@/services/orderService';
 import { getPallet } from '@/services/palletService';
@@ -19,6 +19,7 @@ import {
 import { usePalletBoxOperations } from './pallets/usePalletBoxOperations';
 import { usePalletBoxCreation } from './pallets/usePalletBoxCreation';
 import { usePalletSave } from './pallets/usePalletSave';
+import { usePalletScannerEffects } from './pallets/usePalletScannerEffects';
 
 export { saveDiscountPreferences } from './pallets/palletHelpers';
 export type { PalletState } from './pallets/palletHelpers';
@@ -47,7 +48,6 @@ export function usePallet({
   const [error, setError] = useState<string | null>(null);
   const [reload, setReload] = useState(false);
   const { data: session } = useSession();
-  const token = session?.user?.accessToken as string | undefined;
   const externalActor = isExternalActor(session?.user) as boolean;
 
   const [activeOrdersOptions, setActiveOrdersOptions] = useState<unknown[]>([]);
@@ -58,19 +58,26 @@ export function usePallet({
     getInitialBoxCreationData()
   );
 
+  // initialPallet is only meant to seed the "new pallet" state once per id change — it is not
+  // guaranteed to be referentially stable across renders of the caller (it is threaded down
+  // as a prop through PalletDialog/PalletView without local memoization). Reading it through a
+  // ref keeps the load effect's dependency array honest (only id/reload/store/order/actor
+  // actually determine when a (re)load should happen) without re-triggering the full load
+  // (and its loading-state resets) whenever the caller re-renders with a new object reference
+  // for the same logical initialPallet. The ref is updated in its own effect (never mutated
+  // during render, per react-hooks/refs).
+  const initialPalletRef = useRef(initialPallet);
+  useEffect(() => {
+    initialPalletRef.current = initialPallet;
+  });
+
   useEffect(() => {
     setError(null);
     setLoading(true);
     setTemporalPallet(null);
 
-    if (!token) {
-      setError('No hay token de autenticación');
-      setLoading(false);
-      return;
-    }
-
     if (id === 'new' || id === null) {
-      const palletToSet = initialPallet || {
+      const palletToSet = initialPalletRef.current || {
         ...emptyPallet,
         store: initialStoreId ? { id: initialStoreId } : null,
         orderId: initialOrderId || null,
@@ -78,7 +85,7 @@ export function usePallet({
       setPallet(palletToSet as PalletState);
       setLoading(false);
     } else {
-      (getPallet as (id: unknown, token: string) => Promise<unknown>)(id, token)
+      getPallet(id)
         .then((data) => {
           setPallet(data as PalletState);
         })
@@ -115,18 +122,21 @@ export function usePallet({
     }
 
     setProductsLoading(true);
-    (
-      getProductOptions as (
-        token: string
-      ) => Promise<Array<{ id: number | string; name: string; boxGtin?: string | null }>>
-    )(token)
+    getProductOptions()
       .then((data) => {
         setProductsOptions(
-          data.map((product) => ({
-            value: product.id,
-            label: product.name,
-            boxGtin: product.boxGtin || null,
-          }))
+          data.map((product) => {
+            const productWithGtin = product as unknown as {
+              id: number | string;
+              name: string;
+              boxGtin?: string | null;
+            };
+            return {
+              value: productWithGtin.id,
+              label: productWithGtin.name,
+              boxGtin: productWithGtin.boxGtin || null,
+            };
+          })
         );
       })
       .catch((err: unknown) => {
@@ -135,8 +145,7 @@ export function usePallet({
       .finally(() => {
         setProductsLoading(false);
       });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, token, reload, initialStoreId, initialOrderId, externalActor]);
+  }, [id, reload, initialStoreId, initialOrderId, externalActor]);
 
   useEffect(() => {
     if (pallet) {
@@ -190,27 +199,18 @@ export function usePallet({
     setSaving,
     onChange,
     skipBackendSave,
-    token,
     session,
     boxCreationData,
   });
 
-  // Auto-submit scanner when code reaches expected length
-  useEffect(() => {
-    if (boxCreationData.scannedCode.length >= 42) {
-      onAddNewBox({ method: 'lector' });
-      setBoxCreationData((prev) => resetBoxCreationDataPreservingDiscounts(prev));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [boxCreationData.scannedCode]);
-
-  useEffect(() => {
-    if (boxCreationData.deleteScannedCode.length >= 42) {
-      onDeleteScannedCode();
-      setBoxCreationData((prev) => ({ ...prev, deleteScannedCode: '' }));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [boxCreationData.deleteScannedCode]);
+  // Auto-submit scanner when code reaches expected length (add / delete by GS1-128 scan)
+  usePalletScannerEffects({
+    scannedCode: boxCreationData.scannedCode,
+    deleteScannedCode: boxCreationData.deleteScannedCode,
+    onAddNewBox,
+    onDeleteScannedCode,
+    setBoxCreationData,
+  });
 
   const editPallet = {
     box: {

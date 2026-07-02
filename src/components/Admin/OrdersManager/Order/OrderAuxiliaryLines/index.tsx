@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState, useMemo, useCallback } from 'react';
+import { cn } from '@/lib/utils';
+import { MOBILE_SAFE_AREAS } from '@/lib/design-tokens-mobile';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
@@ -28,15 +30,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { EmptyState } from '@/components/Utilities/EmptyState/index';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { notify } from '@/lib/notifications';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { OrderTotalsSummaryDialog } from '@/components/Admin/OrdersManager/Order/components/OrderTotalsSummaryDialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -100,7 +96,7 @@ function toRow(line: AuxiliaryOrderLine): AuxiliaryLineRow {
 const NO_CATALOG_VALUE = '__none__';
 
 const OrderAuxiliaryLines = () => {
-  const isMobile = useIsMobile();
+  const { isMobile, mounted } = useIsMobileSafe();
   const {
     auxiliaryLines,
     auxiliaryLineActions,
@@ -318,6 +314,8 @@ const OrderAuxiliaryLines = () => {
   const articleLabel = (row: AuxiliaryLineRow) =>
     row.auxiliaryProduct?.name || row.description || 'Sin artículo';
 
+  if (!mounted) return null;
+
   return (
     <div
       className={
@@ -342,6 +340,10 @@ const OrderAuxiliaryLines = () => {
                   <div className="space-y-3">
                     <div>
                       {editIndex === index ? (
+                        // !h-9 en Input/Select/Combobox de esta tarjeta: ni Input ni SelectTrigger
+                        // exponen un prop de tamaño que alcance h-9 (Input es fijo h-8, SelectTrigger
+                        // solo ofrece default=h-8/sm=h-7) — override deliberado para un target táctil
+                        // ligeramente mayor en edición móvil, consistente con OrderPlannedProductDetails.
                         <div className="space-y-2">
                           <div className="[&_button]:!h-9">
                             <Combobox
@@ -480,8 +482,10 @@ const OrderAuxiliaryLines = () => {
             </div>
           )}
           <div
-            className="bg-background fixed right-0 bottom-0 left-0 z-50 flex items-center gap-2 border-t p-3"
-            style={{ paddingBottom: `calc(0.75rem + env(safe-area-inset-bottom))` }}
+            className={cn(
+              'bg-background fixed right-0 bottom-0 left-0 z-50 flex items-center gap-2 border-t p-3',
+              MOBILE_SAFE_AREAS.BOTTOM_INSET
+            )}
           >
             <Button
               onClick={() => setShowTotalsDialog(true)}
@@ -497,41 +501,32 @@ const OrderAuxiliaryLines = () => {
             </Button>
           </div>
 
-          <Dialog open={showTotalsDialog} onOpenChange={setShowTotalsDialog}>
-            <DialogContent
-              className={`${isMobile ? 'm-0 flex h-full max-h-full w-full max-w-full flex-col rounded-none' : ''}`}
-            >
-              <DialogHeader>
-                <DialogTitle>Totales</DialogTitle>
-                <DialogDescription>Resumen de las líneas auxiliares del pedido.</DialogDescription>
-              </DialogHeader>
-              <div className={`${isMobile ? 'flex flex-1 flex-col items-center justify-center px-4' : ''}`}>
-                <div className={`space-y-6 ${isMobile ? 'w-full max-w-md' : ''}`}>
-                  <div className="space-y-2 text-center">
-                    <p className="text-muted-foreground text-xs font-normal tracking-wide uppercase">
-                      Subtotal
-                    </p>
-                    <p className="text-foreground text-xl font-medium">
-                      {formatDecimalCurrency(totals.subtotal)}
-                    </p>
-                  </div>
-                  <div className="space-y-2 border-t pt-4 text-center">
-                    <p className="text-muted-foreground text-xs font-normal tracking-wide uppercase">
-                      Total (con IVA)
-                    </p>
-                    <p className="text-foreground text-xl font-medium">
-                      {formatDecimalCurrency(totals.total)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <OrderTotalsSummaryDialog
+            open={showTotalsDialog}
+            onOpenChange={setShowTotalsDialog}
+            title="Totales"
+            description="Resumen de las líneas auxiliares del pedido."
+            isMobile={isMobile}
+            items={[
+              {
+                key: 'subtotal',
+                label: 'Subtotal',
+                value: formatDecimalCurrency(totals.subtotal),
+              },
+              {
+                key: 'total',
+                label: 'Total (con IVA)',
+                value: formatDecimalCurrency(totals.total),
+              },
+            ]}
+          />
         </div>
       ) : (
         <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">
           <CardHeader className="flex shrink-0 flex-row items-center justify-between">
             <div>
+              {/* text-lg: sub-escala intencional para CardTitle de tarjeta dentro de un tab,
+                  un escalón por debajo de text-xl (título de página/sección). Ver design-context.md § Typography */}
               <CardTitle className="text-lg font-medium">Otros artículos</CardTitle>
               <p className="text-muted-foreground mt-1 text-sm">
                 Nieve, envases, palets y otros servicios facturados en el pedido
@@ -542,9 +537,9 @@ const OrderAuxiliaryLines = () => {
               Añadir línea
             </Button>
           </CardHeader>
-          <CardContent className="min-h-0 flex-1 space-y-6 overflow-y-auto">
+          <CardContent className="flex min-h-0 flex-1 flex-col space-y-6 overflow-y-auto">
             {rows.length === 0 ? (
-              <div className="flex min-h-[200px] flex-1 items-center justify-center">
+              <div className="flex flex-1 items-center justify-center">
                 <EmptyState
                   title="No existen líneas auxiliares"
                   description="Añade nieve, envases, palets u otros artículos al pedido"

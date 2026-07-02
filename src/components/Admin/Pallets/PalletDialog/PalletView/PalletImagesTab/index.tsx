@@ -197,13 +197,20 @@ export function Lightbox({
   const [editingNotes, setEditingNotes] = useState(false);
   const [notesValue, setNotesValue] = useState(resolvedNotes ?? '');
 
+  // Reset notes editor when navigating to a different image. Intentionally keyed only on
+  // attachment.id: resolvedNotes is recalculated on every render (it also depends on
+  // notesOverrides), and re-running this effect whenever notesOverrides changes would wipe
+  // out the value the user just saved for the *current* image. Using a ref to read the
+  // latest resolvedNotes keeps the dependency array honest without changing that behavior.
+  // The ref is updated in its own effect (never mutated during render, per react-hooks/refs).
+  const resolvedNotesRef = useRef(resolvedNotes);
   useEffect(() => {
-    const n = notesOverrides.has(attachment.id)
-      ? notesOverrides.get(attachment.id) ?? ''
-      : attachment.notes ?? '';
-    setNotesValue(n);
+    resolvedNotesRef.current = resolvedNotes;
+  });
+
+  useEffect(() => {
+    setNotesValue(resolvedNotesRef.current ?? '');
     setEditingNotes(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attachment.id]);
 
   useEffect(() => {
@@ -442,7 +449,7 @@ export function UploadZone({ onFiles, isUploading, uploadProgress }: UploadZoneP
     return () => { pendingFilesRef.current.forEach((pf) => URL.revokeObjectURL(pf.previewUrl)); };
   }, []);
 
-  const addFiles = (fileList: FileList | null) => {
+  const addFiles = useCallback((fileList: FileList | null) => {
     if (!fileList?.length) return;
     const valid = Array.from(fileList).filter((f) => notifyIfInvalidPalletImageFile(f));
     if (!valid.length) return;
@@ -450,7 +457,7 @@ export function UploadZone({ onFiles, isUploading, uploadProgress }: UploadZoneP
       ...prev,
       ...valid.map((f) => ({ file: f, previewUrl: URL.createObjectURL(f) })),
     ]);
-  };
+  }, []);
 
   const removeFile = (index: number) => {
     setPendingFiles((prev) => {
@@ -474,12 +481,14 @@ export function UploadZone({ onFiles, isUploading, uploadProgress }: UploadZoneP
     clearQueue();
   };
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setDragging(false);
-    addFiles(e.dataTransfer.files);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setDragging(false);
+      addFiles(e.dataTransfer.files);
+    },
+    [addFiles]
+  );
 
   const hasPending = pendingFiles.length > 0;
 
@@ -606,7 +615,9 @@ export default function PalletImagesTab({ palletId, initialLightboxIndex }: Pall
 
   const initialIndexApplied = useRef(false);
 
-  // Auto-open lightbox at initialLightboxIndex once attachments are available
+  // Auto-open lightbox at initialLightboxIndex once attachments are available.
+  // Guarded by initialIndexApplied ref so it only ever fires once, regardless of how many
+  // times attachments/initialLightboxIndex change afterwards.
   useEffect(() => {
     if (
       initialLightboxIndex !== undefined &&
@@ -616,9 +627,11 @@ export default function PalletImagesTab({ palletId, initialLightboxIndex }: Pall
       initialIndexApplied.current = true;
       setLightboxIndex(Math.min(initialLightboxIndex, attachments.length - 1));
     }
-  }, [attachments.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [attachments.length, initialLightboxIndex]);
 
-  // Clamp lightboxIndex when attachments update (e.g. after deletion)
+  // Clamp lightboxIndex when attachments update (e.g. after deletion). Including
+  // lightboxIndex is safe: setLightboxIndex is only called when the value actually needs to
+  // change, so this never loops.
   useEffect(() => {
     if (lightboxIndex === null) return;
     if (attachments.length === 0) {
@@ -626,7 +639,7 @@ export default function PalletImagesTab({ palletId, initialLightboxIndex }: Pall
     } else if (lightboxIndex >= attachments.length) {
       setLightboxIndex(attachments.length - 1);
     }
-  }, [attachments.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [attachments.length, lightboxIndex]);
 
   const handleDelete = (id: number) => setConfirmDeleteId(id);
 

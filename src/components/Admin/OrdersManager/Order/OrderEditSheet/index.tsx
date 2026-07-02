@@ -39,7 +39,7 @@ import { FieldSet, FieldLegend, FieldDescription, FieldGroup } from '@/component
 import { useOrderContext } from '@/context/OrderContext';
 import EmailListInput from '@/components/ui/emailListInput';
 import { DatePicker } from '@/components/ui/datePicker';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -77,7 +77,7 @@ const OrderEditSheet = ({
     orderData: order,
   });
   void loadingProgress;
-  const isMobile = useIsMobile();
+  const { isMobile, mounted } = useIsMobileSafe();
   const [internalOpen, setInternalOpen] = useState(false);
   const isControlled = controlledOpen !== undefined && typeof controlledOnOpenChange === 'function';
   const open = isControlled ? controlledOpen : internalOpen;
@@ -305,6 +305,8 @@ const OrderEditSheet = ({
     [register, control, loading, isMobile]
   );
 
+  if (!mounted) return null;
+
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       {!isControlled && (
@@ -484,7 +486,7 @@ function OrderEditFormSkeleton({ isMobile = false }: { isMobile?: boolean }) {
         { cols: 1, rows: 2 },
         { cols: 1, rows: 2 },
       ].map((group, i) => (
-        <div key={i} className="space-y-3">
+        <div key={i} className="flex flex-col gap-3">
           <Skeleton className="h-4 w-36 rounded" />
           <div
             className={`grid gap-4 pt-2 ${isMobile ? 'grid-cols-1' : group.cols === 2 ? 'grid-cols-2' : 'grid-cols-1'}`}

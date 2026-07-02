@@ -2,8 +2,9 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { Loader2, Search, ChevronRight } from 'lucide-react';
+import { Loader2, Search, SearchX, ChevronRight } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/Utilities/EmptyState';
 import { notify } from '@/lib/notifications';
 import { DateRangePicker } from '@/components/ui/dateRangePicker';
 import { Button } from '@/components/ui/button';
@@ -175,16 +176,11 @@ export function SupplierLiquidationList() {
         {!isLoading && !error && !!applied && (
           <>
             {suppliers.length === 0 ? (
-              <div className="text-muted-foreground flex h-full items-center justify-center py-12 text-center">
-                <div>
-                  <p className="mb-2 text-lg font-medium">
-                    No se encontraron proveedores con actividad
-                  </p>
-                  <p className="text-sm">
-                    No hay recepciones ni salidas de cebo en el rango de fechas seleccionado.
-                  </p>
-                </div>
-              </div>
+              <EmptyState
+                title="No se encontraron proveedores con actividad"
+                description="No hay recepciones ni salidas de cebo en el rango de fechas seleccionado."
+                icon={<SearchX />}
+              />
             ) : (
               <div className="flex h-full flex-col overflow-hidden rounded-md border">
                 <div className="flex-1 overflow-x-auto overflow-y-auto">
@@ -245,11 +241,11 @@ export function SupplierLiquidationList() {
         )}
 
         {!isLoading && !error && !applied && (
-          <div className="text-muted-foreground flex h-full items-center justify-center py-12 text-center">
-            <p className="text-sm">
-              Seleccione un rango de fechas o active &ldquo;Solo no liquidadas&rdquo; para comenzar
-            </p>
-          </div>
+          <EmptyState
+            title="Selecciona un rango de fechas"
+            description="O activa «Solo no liquidadas» para ver proveedores pendientes."
+            icon={<Search />}
+          />
         )}
       </div>
     </div>

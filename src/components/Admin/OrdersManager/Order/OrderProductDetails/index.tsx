@@ -1,6 +1,8 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { cn } from '@/lib/utils';
+import { MOBILE_SAFE_AREAS } from '@/lib/design-tokens-mobile';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
@@ -18,16 +20,10 @@ import {
   formatDecimalWeight,
   formatInteger,
 } from '@/helpers/formats/numbers/formatNumbers';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { OrderTotalsSummaryDialog } from '@/components/Admin/OrdersManager/Order/components/OrderTotalsSummaryDialog';
 import { Info } from 'lucide-react';
 
 interface ProductDetail {
@@ -44,7 +40,7 @@ interface ProductDetail {
 const OrderProductDetails = () => {
   const { order } = useOrderContext();
   const productDetails = order?.productDetails as ProductDetail[] | undefined;
-  const isMobile = useIsMobile();
+  const { isMobile, mounted } = useIsMobileSafe();
   const [showTotalsDialog, setShowTotalsDialog] = useState(false);
 
   // Memoizar el cálculo de totales para evitar recálculos innecesarios
@@ -69,6 +65,8 @@ const OrderProductDetails = () => {
       averagePrice: calculated.netWeight > 0 ? calculated.subtotal / calculated.netWeight : 0,
     };
   }, [productDetails]);
+
+  if (!mounted) return null;
 
   return (
     <div className={isMobile ? 'flex min-h-0 flex-1 flex-col' : 'h-full pb-2'}>
@@ -101,46 +99,36 @@ const OrderProductDetails = () => {
                       {/* Información en grid */}
                       <div className="grid grid-cols-2 gap-3 border-t pt-2">
                         <div className="space-y-1">
-                          <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                            Cajas
+                          <p className="text-muted-foreground text-xs">Cajas</p>
+                          <p className="text-sm font-semibold tabular-nums">
+                            {formatInteger(detail.boxes)}
                           </p>
-                          <p className="text-sm font-semibold">{formatInteger(detail.boxes)}</p>
                         </div>
                         <div className="space-y-1">
-                          <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                            Cantidad
-                          </p>
-                          <p className="text-sm font-semibold">
+                          <p className="text-muted-foreground text-xs">Cantidad</p>
+                          <p className="text-sm font-semibold tabular-nums">
                             {formatDecimalWeight(detail.netWeight)}
                           </p>
                         </div>
                         <div className="space-y-1">
-                          <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                            Precio
-                          </p>
-                          <p className="text-sm font-semibold">
+                          <p className="text-muted-foreground text-xs">Precio</p>
+                          <p className="text-sm font-semibold tabular-nums">
                             {formatDecimalCurrency(detail.unitPrice)}
                           </p>
                         </div>
                         <div className="space-y-1">
-                          <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                            Impuesto
-                          </p>
-                          <p className="text-sm font-semibold">{`${detail?.tax?.rate ?? 0}%`}</p>
+                          <p className="text-muted-foreground text-xs">Impuesto</p>
+                          <p className="text-sm font-semibold tabular-nums">{`${detail?.tax?.rate ?? 0}%`}</p>
                         </div>
                         <div className="space-y-1">
-                          <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                            Subtotal
-                          </p>
-                          <p className="text-sm font-semibold">
+                          <p className="text-muted-foreground text-xs">Subtotal</p>
+                          <p className="text-sm font-semibold tabular-nums">
                             {formatDecimalCurrency(detail.subtotal)}
                           </p>
                         </div>
                         <div className="space-y-1">
-                          <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                            Total
-                          </p>
-                          <p className="text-sm font-semibold">
+                          <p className="text-muted-foreground text-xs">Total</p>
+                          <p className="text-sm font-semibold tabular-nums">
                             {formatDecimalCurrency(detail.total)}
                           </p>
                         </div>
@@ -154,8 +142,10 @@ const OrderProductDetails = () => {
 
           {/* Footer con botón de totales */}
           <div
-            className="bg-background fixed right-0 bottom-0 left-0 z-50 flex items-center gap-2 border-t p-3"
-            style={{ paddingBottom: `calc(0.75rem + env(safe-area-inset-bottom))` }}
+            className={cn(
+              'bg-background fixed right-0 bottom-0 left-0 z-50 flex items-center gap-2 border-t p-3',
+              MOBILE_SAFE_AREAS.BOTTOM_INSET
+            )}
           >
             <Button
               onClick={() => setShowTotalsDialog(true)}
@@ -169,66 +159,32 @@ const OrderProductDetails = () => {
           </div>
 
           {/* Dialog de Totales */}
-          <Dialog open={showTotalsDialog} onOpenChange={setShowTotalsDialog}>
-            <DialogContent
-              className={`${isMobile ? 'm-0 flex h-full max-h-full w-full max-w-full flex-col rounded-none' : ''}`}
-            >
-              <DialogHeader>
-                <DialogTitle>Totales</DialogTitle>
-                <DialogDescription>
-                  Resumen de cajas, cantidad, precio promedio y totales del pedido.
-                </DialogDescription>
-              </DialogHeader>
-              <div
-                className={`${isMobile ? 'flex flex-1 flex-col items-center justify-center px-4' : ''}`}
-              >
-                <div className={`space-y-6 ${isMobile ? 'w-full max-w-md' : ''}`}>
-                  <div className="flex flex-col space-y-6">
-                    <div className="space-y-2 text-center">
-                      <p className="text-muted-foreground text-xs font-normal tracking-wide uppercase">
-                        Cajas
-                      </p>
-                      <p className="text-foreground text-xl font-medium">
-                        {formatInteger(totals.boxes)}
-                      </p>
-                    </div>
-                    <div className="space-y-2 border-t pt-4 text-center">
-                      <p className="text-muted-foreground text-xs font-normal tracking-wide uppercase">
-                        Cantidad
-                      </p>
-                      <p className="text-foreground text-xl font-medium">
-                        {formatDecimalWeight(totals.netWeight)}
-                      </p>
-                    </div>
-                    <div className="space-y-2 border-t pt-4 text-center">
-                      <p className="text-muted-foreground text-xs font-normal tracking-wide uppercase">
-                        Precio promedio
-                      </p>
-                      <p className="text-foreground text-xl font-medium">
-                        {formatDecimalCurrency(totals.averagePrice)}
-                      </p>
-                    </div>
-                    <div className="space-y-2 border-t pt-4 text-center">
-                      <p className="text-muted-foreground text-xs font-normal tracking-wide uppercase">
-                        Subtotal
-                      </p>
-                      <p className="text-foreground text-xl font-medium">
-                        {formatDecimalCurrency(totals.subtotal)}
-                      </p>
-                    </div>
-                    <div className="space-y-2 border-t pt-4 text-center">
-                      <p className="text-muted-foreground text-xs font-normal tracking-wide uppercase">
-                        Total
-                      </p>
-                      <p className="text-foreground text-xl font-medium">
-                        {formatDecimalCurrency(totals.total)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <OrderTotalsSummaryDialog
+            open={showTotalsDialog}
+            onOpenChange={setShowTotalsDialog}
+            title="Totales"
+            description="Resumen de cajas, cantidad, precio promedio y totales del pedido."
+            isMobile={isMobile}
+            items={[
+              { key: 'boxes', label: 'Cajas', value: formatInteger(totals.boxes) },
+              {
+                key: 'netWeight',
+                label: 'Cantidad',
+                value: formatDecimalWeight(totals.netWeight),
+              },
+              {
+                key: 'averagePrice',
+                label: 'Precio promedio',
+                value: formatDecimalCurrency(totals.averagePrice),
+              },
+              {
+                key: 'subtotal',
+                label: 'Subtotal',
+                value: formatDecimalCurrency(totals.subtotal),
+              },
+              { key: 'total', label: 'Total', value: formatDecimalCurrency(totals.total) },
+            ]}
+          />
         </div>
       ) : (
         <Card className="flex h-full flex-col bg-transparent">
@@ -255,12 +211,12 @@ const OrderProductDetails = () => {
                   <TableHeader>
                     <TableRow className="text-nowrap">
                       <TableHead>Artículo</TableHead>
-                      <TableHead>Cajas</TableHead>
-                      <TableHead>Cantidad</TableHead>
-                      <TableHead>Precio</TableHead>
-                      <TableHead>Impuesto (%)</TableHead>
-                      <TableHead>Subtotal</TableHead>
-                      <TableHead>Total</TableHead>
+                      <TableHead className="text-right">Cajas</TableHead>
+                      <TableHead className="text-right">Cantidad</TableHead>
+                      <TableHead className="text-right">Precio</TableHead>
+                      <TableHead className="text-right">Impuesto (%)</TableHead>
+                      <TableHead className="text-right">Subtotal</TableHead>
+                      <TableHead className="text-right">Total</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -270,24 +226,44 @@ const OrderProductDetails = () => {
                         className="text-nowrap"
                       >
                         <TableCell>{detail?.product?.name || 'Sin producto'}</TableCell>
-                        <TableCell>{formatInteger(detail.boxes)}</TableCell>
-                        <TableCell>{formatDecimalWeight(detail.netWeight)}</TableCell>
-                        <TableCell>{formatDecimalCurrency(detail.unitPrice)}</TableCell>
-                        <TableCell>{`${detail?.tax?.rate ?? 0}%`}</TableCell>
-                        <TableCell>{formatDecimalCurrency(detail.subtotal)}</TableCell>
-                        <TableCell>{formatDecimalCurrency(detail.total)}</TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {formatInteger(detail.boxes)}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {formatDecimalWeight(detail.netWeight)}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {formatDecimalCurrency(detail.unitPrice)}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">{`${detail?.tax?.rate ?? 0}%`}</TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {formatDecimalCurrency(detail.subtotal)}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {formatDecimalCurrency(detail.total)}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                   <TableFooter>
                     <TableRow>
                       <TableCell>Total</TableCell>
-                      <TableCell>{formatInteger(totals.boxes)}</TableCell>
-                      <TableCell>{formatDecimalWeight(totals.netWeight)}</TableCell>
-                      <TableCell>{formatDecimalCurrency(totals.averagePrice)}</TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {formatInteger(totals.boxes)}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {formatDecimalWeight(totals.netWeight)}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {formatDecimalCurrency(totals.averagePrice)}
+                      </TableCell>
                       <TableCell></TableCell>
-                      <TableCell>{formatDecimalCurrency(totals.subtotal)}</TableCell>
-                      <TableCell>{formatDecimalCurrency(totals.total)}</TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {formatDecimalCurrency(totals.subtotal)}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {formatDecimalCurrency(totals.total)}
+                      </TableCell>
                     </TableRow>
                   </TableFooter>
                 </Table>

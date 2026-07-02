@@ -288,6 +288,13 @@ export const palletAttachmentKeys = {
     ] as const,
 };
 
+export const palletTimelineKeys = {
+  detailPrefix: (tenantId: string | null | undefined, palletId: number | string | null | undefined) =>
+    ['pallets', 'timeline', tenantId ?? 'unknown', palletId] as const,
+  detail: (tenantId: string | null | undefined, palletId: number | string | null | undefined) =>
+    ['pallets', 'timeline', tenantId ?? 'unknown', palletId] as const,
+};
+
 export const orderListKeys = {
   active: (tenantId: string | null | undefined) =>
     ['orders', 'active', tenantId ?? 'unknown'] as const,
@@ -613,6 +620,10 @@ export const receptionChartKeys = {
 export const productionViewKeys = {
   data: (tenantId: string | null | undefined) =>
     ['productionView', 'data', tenantId ?? 'unknown'] as const,
+};
+
+export const labelQueryKeys = {
+  list: (tenantId: string | null | undefined) => ['labels', tenantId ?? 'unknown'] as const,
 };
 
 export const orderChartKeys = {

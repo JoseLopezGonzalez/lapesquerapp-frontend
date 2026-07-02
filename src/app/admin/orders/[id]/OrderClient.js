@@ -3,15 +3,17 @@
 import Order from '@/components/Admin/OrdersManager/Order';
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobileSafe } from '@/hooks/use-mobile';
 
 const OrderClient = ({ orderId }) => {
   const router = useRouter();
-  const isMobile = useIsMobile();
+  const { isMobile, mounted } = useIsMobileSafe();
 
   const handleClose = () => {
     router.back();
   };
+
+  if (!mounted) return null;
 
   return (
     <div className="h-full w-full overflow-hidden rounded-xl">

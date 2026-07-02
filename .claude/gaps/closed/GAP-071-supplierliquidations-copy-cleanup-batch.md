@@ -67,31 +67,53 @@ Las entities son más frágiles si el texto se reutiliza fuera de JSX (p. ej. en
 
 ## Implementación
 
-> Rellena el Agente Implementador
-
 ### Archivos creados
+
+Ninguno.
 
 ### Archivos modificados
 
+- `src/components/Admin/SupplierLiquidations/SupplierLiquidationPdfDialog.tsx` — FND-A: quitado `:` final del label "Método de pago cebo"
+
 ### Decisiones tomadas durante la implementación
 
+- FND-B ya estaba resuelto: GAP-069 (implementado y cerrado en esta misma sesión, justo
+  antes de este GAP) migró el estado vacío de `SupplierLiquidationList.tsx:250` a
+  `EmptyState`, y de paso sustituyó `&ldquo;Solo no liquidadas&rdquo;` por comillas
+  españolas `«Solo no liquidadas»` en la nueva descripción — el propio GAP-069 documenta
+  la nota "ver GAP-071 para el resto de limpieza de comillas/puntuación del módulo, no
+  repetir ese fix aquí". Verificado con grep que no queda ninguna entity HTML `&ldquo;`/
+  `&rdquo;` en el módulo. No se tocó ese archivo de nuevo para FND-B.
+
 ### Desviaciones del plan (si las hay)
+
+- FND-B no requirió cambio de código en este GAP — ya cubierto por GAP-069 (con comillas
+  «» en vez de comillas rectas `"..."`, pero cumpliendo el mismo objetivo: eliminar las
+  entities HTML frágiles). Criterio de aceptación de FND-B verificado como cumplido por
+  herencia, no por un cambio nuevo en este commit.
 
 ---
 
 ## Auditoría
 
-> Rellena el Agente Auditor
+### Resultado: ✅ APROBADO
 
-### Resultado: ✅ APROBADO | ⚠️ APROBADO CON OBSERVACIONES | ❌ RECHAZADO
-
-### Puntuación: [X/10]
+### Puntuación: 10/10 — FND-A exacto según lo acordado; FND-B verificado como ya resuelto por GAP-069 sin necesidad de duplicar el cambio
 
 ### Checklist
 
-- [ ] Criterios de aceptación cumplidos
-- [ ] Patrones de .claude/rules/ respetados
+- [x] Criterios de aceptación cumplidos — `SupplierLiquidationPdfDialog.tsx:59` sin `:` final; `SupplierLiquidationList.tsx` sin entities HTML (resuelto vía GAP-069)
+- [x] Patrones de .claude/rules/ respetados
 
 ### Observaciones para Jose
 
+FND-B se solapaba con el cambio ya hecho en GAP-069 en la misma sesión (ambos tocaban el
+mismo estado vacío). Se verificó con grep que el resultado final cumple el criterio de
+aceptación (sin entities HTML) aunque el texto final use comillas españolas «» en vez de
+comillas rectas — mismo objetivo, sin duplicar trabajo. No bloquea el cierre.
+
 ### Estado final de la implementación
+
+El label "Método de pago cebo" ya no lleva `:` final, consistente con el resto de labels
+del módulo. El módulo SupplierLiquidations no tiene ninguna entity HTML de comillas
+residual.

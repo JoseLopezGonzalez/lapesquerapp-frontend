@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { PALLET_LABEL_SIZE } from '@/configs/config';
 
 import { AlertTriangle, CloudAlert, Printer } from 'lucide-react';
@@ -19,6 +19,59 @@ interface PalletLabelDialogProps {
   pallet: unknown;
 }
 
+interface MobilePalletLabelPrintTriggerProps {
+  isOpen: boolean;
+  pallet: unknown;
+  onPrint: () => void;
+  onClose: () => void;
+}
+
+// En mobile: saltar el dialog y disparar la impresión directamente al abrir. Se monta solo
+// cuando isMobile es true (ver render condicional más abajo), así que el propio ciclo de
+// montaje/desmontaje sustituye al guard `!isMobile` que antes vivía dentro del efecto —
+// permite declarar deps completas sin volver a disparar la impresión en cada render.
+function MobilePalletLabelPrintTrigger({
+  isOpen,
+  pallet,
+  onPrint,
+  onClose,
+}: MobilePalletLabelPrintTriggerProps) {
+  // onClose (owned by callers outside this GAP's scope, e.g. useStoreDialogs.ts) is not
+  // guaranteed to be referentially stable across parent re-renders. Reading both callbacks
+  // through refs keeps the effect's dependency array honest (isOpen/pallet are the only real
+  // triggers) without risking the timer restarting mid-flight if the parent re-renders while
+  // the 150ms print timeout is pending. Refs are updated in their own effect (never mutated
+  // during render, per react-hooks/refs).
+  const onPrintRef = useRef(onPrint);
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onPrintRef.current = onPrint;
+    onCloseRef.current = onClose;
+  });
+
+  useEffect(() => {
+    if (!isOpen || !pallet) return;
+    const timeout = setTimeout(() => {
+      onPrintRef.current();
+      onCloseRef.current();
+    }, 150);
+    return () => clearTimeout(timeout);
+  }, [isOpen, pallet]);
+
+  if (!isOpen || !pallet) return null;
+  return (
+    <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', top: 0 }}>
+      <div
+        id="print-area-id"
+        className="text-black"
+        style={{ width: PALLET_LABEL_SIZE.width, height: PALLET_LABEL_SIZE.height }}
+      >
+        <PalletLabel pallet={pallet} />
+      </div>
+    </div>
+  );
+}
+
 export default function PalletLabelDialog({ isOpen, onClose, pallet }: PalletLabelDialogProps) {
   const labelWidth = parseInt(PALLET_LABEL_SIZE.width) || 110;
   const labelHeight = parseInt(PALLET_LABEL_SIZE.height) || 150;
@@ -29,33 +82,14 @@ export default function PalletLabelDialog({ isOpen, onClose, pallet }: PalletLab
   });
   const isMobile = useIsMobile();
 
-  // En mobile: saltar el dialog y disparar la impresión directamente
-  useEffect(() => {
-    if (!isMobile || !isOpen || !pallet) return;
-    const timeout = setTimeout(() => {
-      onPrint();
-      onClose();
-    }, 150);
-    return () => clearTimeout(timeout);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMobile, isOpen, pallet]);
-
-  // En mobile con pallet cargado: renderizar etiqueta oculta para que onPrint pueda copiarla
   if (isMobile) {
-    if (!isOpen || !pallet) return null;
     return (
-      <div
-        aria-hidden="true"
-        style={{ position: 'absolute', left: '-9999px', top: 0 }}
-      >
-        <div
-          id="print-area-id"
-          className="text-black"
-          style={{ width: PALLET_LABEL_SIZE.width, height: PALLET_LABEL_SIZE.height }}
-        >
-          <PalletLabel pallet={pallet} />
-        </div>
-      </div>
+      <MobilePalletLabelPrintTrigger
+        isOpen={isOpen}
+        pallet={pallet}
+        onPrint={onPrint}
+        onClose={onClose}
+      />
     );
   }
 

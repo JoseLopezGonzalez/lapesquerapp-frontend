@@ -1,19 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { Printer, MoreVertical, Bookmark, Copy, Ban, Trash2 } from 'lucide-react';
+import Image from 'next/image';
+import { Printer, Bookmark } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import StatusBadge from '../../StatusBadge';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { formatDate } from '@/helpers/formats/dates/formatDates';
 import OrderEditSheet from '../OrderEditSheet';
 import OrderStatusDropdown from './OrderStatusDropdown';
@@ -127,67 +119,14 @@ export default function OrderHeaderDesktop({
               <Printer />
               Imprimir
             </Button>
-            {!readOnly && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon" aria-label="Abrir menú de acciones">
-                    <MoreVertical />
-                  </Button>
-                </DropdownMenuTrigger>
-                <TooltipProvider>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuGroup>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="block w-full cursor-not-allowed">
-                            <DropdownMenuItem disabled className="pointer-events-none">
-                              <Copy />
-                              Duplicar pedido
-                            </DropdownMenuItem>
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent side="left">Próximamente</TooltipContent>
-                      </Tooltip>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="block w-full cursor-not-allowed">
-                            <DropdownMenuItem disabled className="pointer-events-none">
-                              <Ban />
-                              Cancelar pedido
-                            </DropdownMenuItem>
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent side="left">Próximamente</TooltipContent>
-                      </Tooltip>
-                    </DropdownMenuGroup>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuGroup>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="block w-full cursor-not-allowed">
-                            <DropdownMenuItem
-                              disabled
-                              variant="destructive"
-                              className="pointer-events-none"
-                            >
-                              <Trash2 />
-                              Eliminar pedido
-                            </DropdownMenuItem>
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent side="left">Próximamente</TooltipContent>
-                      </Tooltip>
-                    </DropdownMenuGroup>
-                  </DropdownMenuContent>
-                </TooltipProvider>
-              </DropdownMenu>
-            )}
           </div>
           <div className="flex flex-col items-end justify-center">
-            <img
-              className="max-w-[240px]"
+            <Image
               src={transportImage}
               alt={`Transporte ${transport?.name || ''}`}
+              width={240}
+              height={85}
+              className="h-auto w-full max-w-[240px]"
             />
             <p className="text-base font-medium">{transport?.name || '-'}</p>
           </div>

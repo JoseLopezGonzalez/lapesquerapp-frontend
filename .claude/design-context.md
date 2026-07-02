@@ -96,6 +96,7 @@ When these tokens are eventually defined in `globals.css`, migrate all inline ba
 | Class | Size | Weight | Usage |
 |---|---|---|---|
 | `text-xl font-medium` | 1.25rem | 500 | Page / section title (EntityHeader `<h2>`) |
+| `text-lg font-medium` | 1.125rem | 500 | `CardTitle` **inside a tab card** — one step below page/section title (see sub-scale rule below) |
 | `text-base font-medium` | 1rem | 500 | Primary identifier in cards and rows |
 | `text-base` | 1rem | 400 | Input text, body content |
 | `text-sm font-medium` | 0.875rem | 500 | Secondary label, emphasized small text |
@@ -108,6 +109,32 @@ When these tokens are eventually defined in `globals.css`, migrate all inline ba
 **Leading:** `leading-tight` for multi-line card titles that may truncate.
 **Tabular nums:** `tabular-nums` on IDs, dates, quantities for alignment.
 **Truncation:** `truncate` on names/titles that could overflow, paired with `title` attribute.
+
+**Capitalización:**
+- Cabeceras de tabla (`TableHead`): Title Case — "Peso Recepciones", "Importe Salidas"
+- Todo lo demás (pestañas, botones, labels de formulario, títulos de sección,
+  menús): sentence case — "Nueva liquidación", "Rango de fechas", "Descargar PDF"
+
+**Sub-escala de `CardTitle` dentro de tarjetas de tab (regla, GAP-084):**
+
+Cuando un `CardTitle` vive dentro de una tarjeta que a su vez está dentro de un **tab** de un
+detail view (p. ej. las tarjetas de `OrderAuxiliaryLines`, `OrderCostAnalysis`,
+`OrderProduction` dentro de los tabs de `OrderClient`), usa `text-lg font-medium`, no
+`text-xl font-medium`. Es una sub-escala deliberada, un escalón por debajo del título de
+página/sección (`text-xl font-medium`, ver EntityHeader `<h2>`), porque el título de la
+tarjeta es jerárquicamente secundario respecto al título del tab/página que ya lo contextualiza.
+
+```tsx
+// ✅ CardTitle dentro de una tarjeta de tab — un escalón por debajo del título de página
+<CardTitle className="text-lg font-medium">Otros artículos</CardTitle>
+
+// ✅ Título de página o de sección de nivel superior (EntityHeader, cabecera de detail view)
+<h2 className="text-xl font-medium">Pedido #1234</h2>
+```
+
+No confundir con un bug: si un `CardTitle` de tab aparece en `text-lg`, es el patrón correcto,
+no hay que subirlo a `text-xl`. Este criterio se decidió explícitamente para `OrderAuxiliaryLines`
+(GAP-084) y se reutiliza en `OrderCostAnalysis` (GAP-086) y `OrderProduction` (GAP-087).
 
 ---
 

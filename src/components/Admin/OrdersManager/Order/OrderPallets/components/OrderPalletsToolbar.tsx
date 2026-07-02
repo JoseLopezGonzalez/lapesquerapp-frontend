@@ -7,6 +7,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
+import { MOBILE_SAFE_AREAS } from '@/lib/design-tokens-mobile';
 
 interface OrderPalletsToolbarProps {
   isMobile: boolean;
@@ -44,8 +46,10 @@ const OrderPalletsToolbar = ({
     if (readOnly && !canPrintSelected) return null;
     return (
       <div
-        className="bg-background fixed right-0 bottom-0 left-0 z-50 flex items-center gap-2 border-t p-3"
-        style={{ paddingBottom: `calc(0.75rem + env(safe-area-inset-bottom))` }}
+        className={cn(
+          'bg-background fixed right-0 bottom-0 left-0 z-50 flex items-center gap-2 border-t p-3',
+          MOBILE_SAFE_AREAS.BOTTOM_INSET
+        )}
       >
         {!readOnly && (
           <>

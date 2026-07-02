@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
 
+import { cn } from '@/lib/utils';
+import { MOBILE_SAFE_AREAS } from '@/lib/design-tokens-mobile';
 import { AlertTriangle, Info } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,7 +18,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useOrderContext } from '@/context/OrderContext';
 import { formatDecimalWeight, formatInteger } from '@/helpers/formats/numbers/formatNumbers';
 import { EmptyState } from '@/components/Utilities/EmptyState/index';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import {
@@ -39,7 +41,7 @@ interface MergedProductDetail {
 }
 
 const OrderProduction = () => {
-  const isMobile = useIsMobile();
+  const { isMobile, mounted } = useIsMobileSafe();
   const { mergedProductDetails: rawMergedProductDetails } = useOrderContext();
   const mergedProductDetails = rawMergedProductDetails as unknown as MergedProductDetail[];
   const [showTotalsDialog, setShowTotalsDialog] = useState(false);
@@ -61,6 +63,8 @@ const OrderProduction = () => {
       { plannedQuantity: 0, productionQuantity: 0, quantityDifference: 0 }
     );
   }, [mergedProductDetails]);
+
+  if (!mounted) return null;
 
   return (
     <div className={isMobile ? 'flex min-h-0 flex-1 flex-col' : 'h-full pb-2'}>
@@ -177,8 +181,10 @@ const OrderProduction = () => {
 
           {/* Footer con botón de totales */}
           <div
-            className="bg-background fixed right-0 bottom-0 left-0 z-50 flex items-center gap-2 border-t p-3"
-            style={{ paddingBottom: `calc(0.75rem + env(safe-area-inset-bottom))` }}
+            className={cn(
+              'bg-background fixed right-0 bottom-0 left-0 z-50 flex items-center gap-2 border-t p-3',
+              MOBILE_SAFE_AREAS.BOTTOM_INSET
+            )}
           >
             <Button
               onClick={() => setShowTotalsDialog(true)}

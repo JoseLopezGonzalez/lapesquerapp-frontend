@@ -3,7 +3,8 @@
 import { useRef } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createLabel, deleteLabel, updateLabel } from '@/services/labelService';
-import { getLabelsQueryKey } from '@/hooks/useLabels';
+import { labelQueryKeys } from '@/lib/routes/queryKeys';
+import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 import { notify } from '@/lib/notifications';
 import {
   validateLabelName,
@@ -21,7 +22,6 @@ interface UseLabelPersistenceParams {
   canvasWidth: number;
   canvasHeight: number;
   canvasRotation: number;
-  token: string | undefined;
   setLabelId: Dispatch<SetStateAction<string | null>>;
   setSelectedLabel: Dispatch<SetStateAction<Label | LabelDraft | null>>;
   setElements: Dispatch<SetStateAction<LabelElement[]>>;
@@ -51,7 +51,6 @@ export function useLabelPersistence({
   canvasWidth,
   canvasHeight,
   canvasRotation,
-  token,
   setLabelId,
   setSelectedLabel,
   setElements,
@@ -64,24 +63,18 @@ export function useLabelPersistence({
 }: UseLabelPersistenceParams): UseLabelPersistenceResult {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const queryClient = useQueryClient();
+  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
   type SaveMutationVars = {
     labelId?: string;
     labelName: string;
     labelFormat: LabelFormat;
-    token?: string;
   };
 
   const saveMutation = useMutation({
-    mutationFn: async ({
-      labelId: id,
-      labelName: name,
-      labelFormat: format,
-      token: t,
-    }: SaveMutationVars) => {
-      const tk = t ?? '';
-      if (id) return updateLabel(id, name, format, tk);
-      return createLabel(name, format, tk);
+    mutationFn: async ({ labelId: id, labelName: name, labelFormat: format }: SaveMutationVars) => {
+      if (id) return updateLabel(id, name, format);
+      return createLabel(name, format);
     },
     onSuccess: (data, variables) => {
       if (!variables.labelId && data?.data) {
@@ -91,7 +84,7 @@ export function useLabelPersistence({
       notify.success({
         title: `Etiqueta ${variables.labelId ? 'actualizada' : 'guardada'} correctamente`,
       });
-      queryClient.invalidateQueries({ queryKey: getLabelsQueryKey() });
+      queryClient.invalidateQueries({ queryKey: labelQueryKeys.list(tenantId) });
     },
     onError: (err: Error) => {
       const e = err as Error & {
@@ -109,14 +102,14 @@ export function useLabelPersistence({
     },
   });
 
-  type DeleteMutationVars = { labelId: string; token?: string };
+  type DeleteMutationVars = { labelId: string };
 
   const deleteMutation = useMutation({
-    mutationFn: ({ labelId: id, token: t }: DeleteMutationVars) => deleteLabel(id, t ?? ''),
+    mutationFn: ({ labelId: id }: DeleteMutationVars) => deleteLabel(id),
     onSuccess: () => {
       notify.success({ title: 'Etiqueta eliminada correctamente' });
       clearEditor();
-      queryClient.invalidateQueries({ queryKey: getLabelsQueryKey() });
+      queryClient.invalidateQueries({ queryKey: labelQueryKeys.list(tenantId) });
     },
     onError: (err: Error) => {
       const e = err as Error & { userMessage?: string; data?: { userMessage?: string } };
@@ -149,7 +142,7 @@ export function useLabelPersistence({
       elements,
       canvas: { width: canvasWidth, height: canvasHeight, rotation: canvasRotation },
     };
-    saveMutation.mutate({ labelId: labelId || undefined, labelName, labelFormat, token });
+    saveMutation.mutate({ labelId: labelId || undefined, labelName, labelFormat });
   };
 
   const handleOnClickSave = () => {
@@ -161,7 +154,7 @@ export function useLabelPersistence({
       notify.error({ title: 'No hay etiqueta seleccionada para eliminar' });
       return;
     }
-    deleteMutation.mutate({ labelId, token });
+    deleteMutation.mutate({ labelId });
   };
 
   const handleSelectLabel = (label: Label) => {

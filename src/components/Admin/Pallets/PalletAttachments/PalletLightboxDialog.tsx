@@ -49,7 +49,9 @@ export function PalletLightboxDialog({
     if (open) setCurrentIndex(initialIndex);
   }, [open, initialIndex]);
 
-  // Clamp index and auto-close when all images deleted
+  // Clamp index and auto-close when all images deleted. Safe to include currentIndex and
+  // onOpenChange: setCurrentIndex/onOpenChange are only invoked when the condition actually
+  // requires a change, so this never loops.
   useEffect(() => {
     if (!open) return;
     if (attachments.length === 0 && !isLoading) {
@@ -57,7 +59,7 @@ export function PalletLightboxDialog({
     } else if (currentIndex >= attachments.length && attachments.length > 0) {
       setCurrentIndex(attachments.length - 1);
     }
-  }, [attachments.length, isLoading]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [attachments.length, isLoading, open, currentIndex, onOpenChange]);
 
   const handleUpdateNotes = (id: number, notes: string | null) => {
     updateMutation.mutate({ attachmentId: id, notes });

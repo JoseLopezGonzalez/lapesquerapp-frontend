@@ -152,9 +152,9 @@ export async function downloadPalletExpeditionLabels(
 }
 
 export async function getPalletTimeline(
-  palletId: number | string,
-  token: AuthToken
+  palletId: number | string
 ): Promise<PalletTimelineResponse> {
+  const token = await getAuthToken();
   const response = await fetchWithTenant(`${API_URL_V2}pallets/${palletId}/timeline`, {
     method: 'GET',
     headers: {
@@ -220,11 +220,11 @@ export async function deletePalletTimeline(
   return data;
 }
 
-export function updatePallet(
+export async function updatePallet(
   palletId: number | string,
-  palletData: PalletPayload,
-  token: AuthToken
+  palletData: PalletPayload
 ): Promise<unknown> {
+  const token = await getAuthToken();
   return fetchWithTenant(`${API_URL_V2}pallets/${palletId}`, {
     method: 'PUT',
     headers: {

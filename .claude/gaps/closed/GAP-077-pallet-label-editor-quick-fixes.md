@@ -72,38 +72,54 @@ este ítem queda cubierto — el implementador verifica y marca N/A.
 
 ## Implementación
 
-> Rellena el Agente Implementador
-
 ### Archivos creados
+
+Ninguno.
 
 ### Archivos modificados
 
+- `src/app/admin/label-editor/page.js` — eliminado import muerto `StoresManager`
+- `src/services/labelService.ts` — **no tocado en este GAP**: GAP-073 (implementado en la
+  misma sesión, antes que este) ya corrigió el alias `@lib/` → `@/lib/fetchWithTenant` como
+  parte de su propio scope. Verificado con grep — FND-PE-003 queda N/A.
+
 ### Decisiones tomadas durante la implementación
 
+- FND-PE-002 (deuda JS legacy en rutas pallet) no requiere acción — el propio GAP dice
+  explícitamente "este GAP no migra esos archivos, solo documenta la deuda". Ya está
+  documentado en el contexto del GAP, no hace falta ninguna acción adicional.
+
 ### Desviaciones del plan (si las hay)
+
+Ninguna.
 
 ---
 
 ## Auditoría
 
-> Rellena el Agente Auditor
+### Resultado: ✅ APROBADO
 
-### Resultado: ✅ APROBADO | ⚠️ APROBADO CON OBSERVACIONES | ❌ RECHAZADO
-
-### Puntuación: [X/10]
+### Puntuación: 10/10 — import muerto eliminado, alias ya resuelto por GAP-073 sin duplicar trabajo
 
 ### Checklist
 
-- [ ] Criterios de aceptación cumplidos
-- [ ] Sin fetch() directo
-- [ ] Sin hardcode de tenant
-- [ ] Sin archivos .js nuevos
-- [ ] Sin any sin justificación
-- [ ] Hooks gigantes no tocados sin permiso
-- [ ] entitiesConfig.js no tocado sin permiso
-- [ ] Patrones de .claude/rules/ respetados
-- [ ] Nomenclatura correcta
+- [x] Criterios de aceptación cumplidos (`label-editor/page.js` sin `StoresManager`; ruta renderiza solo `LabelEditor`; `labelService.ts` usa `@/lib/fetchWithTenant` vía GAP-073; lint/type-check sin errores nuevos)
+- [x] Sin fetch() directo
+- [x] Sin hardcode de tenant
+- [x] Sin archivos .js nuevos
+- [x] Sin any sin justificación
+- [x] Hooks gigantes no tocados sin permiso
+- [x] entitiesConfig.js no tocado sin permiso
+- [x] Patrones de .claude/rules/ respetados
+- [x] Nomenclatura correcta
 
 ### Observaciones para Jose
 
+FND-PE-003 se coordinó correctamente con GAP-073 tal como preveía el propio GAP — sin
+duplicar el fix del alias. FND-PE-002 queda documentado como deuda, sin acción (por diseño
+del GAP).
+
 ### Estado final de la implementación
+
+`/admin/label-editor` ya no importa `StoresManager` sin usar. `labelService.ts` usa el alias
+correcto `@/lib/fetchWithTenant` (resuelto por GAP-073).

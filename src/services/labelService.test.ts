@@ -8,7 +8,6 @@ import {
   duplicateLabel,
 } from './labelService';
 
-const mockToken = 'test-token';
 const mockLabel = {
   id: '1',
   name: 'Test Label',
@@ -19,8 +18,12 @@ const mockLabel = {
 };
 const mockLabels = [mockLabel];
 
-vi.mock('@lib/fetchWithTenant', () => ({
+vi.mock('@/lib/fetchWithTenant', () => ({
   fetchWithTenant: vi.fn(),
+}));
+
+vi.mock('@/lib/auth/getAuthToken', () => ({
+  getAuthToken: vi.fn().mockResolvedValue('test-token'),
 }));
 
 vi.mock('./labelServiceHelpers', () => ({
@@ -31,7 +34,7 @@ vi.mock('./labelServiceHelpers', () => ({
   }),
 }));
 
-import { fetchWithTenant } from '@lib/fetchWithTenant';
+import { fetchWithTenant } from '@/lib/fetchWithTenant';
 
 describe('labelService', () => {
   beforeEach(() => {
@@ -43,7 +46,7 @@ describe('labelService', () => {
       ok: true,
       json: () => Promise.resolve({ data: mockLabels }),
     } as never);
-    const result = await getLabels(mockToken);
+    const result = await getLabels();
     expect(fetchWithTenant).toHaveBeenCalledWith(
       expect.stringContaining('/labels'),
       expect.objectContaining({ method: 'GET' })
@@ -56,7 +59,7 @@ describe('labelService', () => {
       ok: true,
       json: () => Promise.resolve({ data: mockLabel }),
     } as never);
-    const result = await getLabel('1', mockToken);
+    const result = await getLabel('1');
     expect(fetchWithTenant).toHaveBeenCalledWith(
       expect.stringContaining('/labels/1'),
       expect.any(Object)
@@ -70,7 +73,7 @@ describe('labelService', () => {
       json: () => Promise.resolve({ data: { ...mockLabel, id: '2' } }),
     } as never);
     const format = { elements: [], canvas: { width: 110, height: 90 } };
-    await createLabel('New', format, mockToken);
+    await createLabel('New', format);
     expect(fetchWithTenant).toHaveBeenCalledWith(
       expect.stringContaining('/labels'),
       expect.objectContaining({
@@ -86,7 +89,7 @@ describe('labelService', () => {
       json: () => Promise.resolve({ data: mockLabel }),
     } as never);
     const format = { elements: [], canvas: { width: 110, height: 90 } };
-    await updateLabel('1', 'Updated', format, mockToken);
+    await updateLabel('1', 'Updated', format);
     expect(fetchWithTenant).toHaveBeenCalledWith(
       expect.stringContaining('/labels/1'),
       expect.objectContaining({
@@ -101,7 +104,7 @@ describe('labelService', () => {
       ok: true,
       json: () => Promise.resolve({}),
     } as never);
-    await deleteLabel('1', mockToken);
+    await deleteLabel('1');
     expect(fetchWithTenant).toHaveBeenCalledWith(
       expect.stringContaining('/labels/1'),
       expect.objectContaining({ method: 'DELETE' })
@@ -113,7 +116,7 @@ describe('labelService', () => {
       ok: true,
       json: () => Promise.resolve({ data: { ...mockLabel, id: '2' } }),
     } as never);
-    await duplicateLabel('1', mockToken);
+    await duplicateLabel('1');
     expect(fetchWithTenant).toHaveBeenCalledWith(
       expect.stringContaining('/labels/1/duplicate'),
       expect.objectContaining({ method: 'POST' })

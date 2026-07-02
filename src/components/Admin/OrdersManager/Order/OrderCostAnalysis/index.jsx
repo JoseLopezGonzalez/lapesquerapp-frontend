@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { AlertCircle, ChartColumn, Package2, RefreshCw, Wallet } from 'lucide-react';
 import { useOrderContext } from '@/context/OrderContext';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -210,7 +210,7 @@ function PalletMobileCard({ pallet }) {
 }
 
 export default function OrderCostAnalysis() {
-  const isMobile = useIsMobile();
+  const { isMobile, mounted } = useIsMobileSafe();
   const { order, costAnalysis, costAnalysisLoading, costAnalysisError, loadCostAnalysis } =
     useOrderContext();
 
@@ -221,6 +221,8 @@ export default function OrderCostAnalysis() {
   const palletLines = useMemo(() => costAnalysis?.byPallet ?? [], [costAnalysis?.byPallet]);
 
   const summary = costAnalysis?.summary ?? null;
+
+  if (!mounted) return null;
 
   if (costAnalysisLoading && !costAnalysis) {
     return (

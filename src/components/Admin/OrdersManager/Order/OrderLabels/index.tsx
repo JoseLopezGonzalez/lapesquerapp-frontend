@@ -20,7 +20,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
 
@@ -62,7 +62,7 @@ interface IndividualLabelBox extends OrderLabelBox {
 const OrderLabels = () => {
   const { pallets } = useOrderContext();
   const typedPallets = pallets as unknown as OrderLabelPallet[];
-  const isMobile = useIsMobile();
+  const { isMobile, mounted } = useIsMobileSafe();
 
   const [palletIdFilter, setPalletIdFilter] = useState('');
   const [lotFilter, setLotFilter] = useState('');
@@ -226,6 +226,8 @@ const OrderLabels = () => {
     setLabelPrintDialogBoxes(selectedIndividualLines);
     setIsOpenLabelPrintDialog(true);
   };
+
+  if (!mounted) return null;
 
   return (
     <div

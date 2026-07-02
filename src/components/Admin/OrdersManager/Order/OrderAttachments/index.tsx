@@ -35,7 +35,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useOrderContext } from '@/context/OrderContext';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { useOrderAttachments } from '@/hooks/orders/useOrderAttachments';
 import {
   getThumbnailCached,
@@ -518,7 +518,7 @@ function AttachmentViewer({
 
 const OrderAttachments = () => {
   const { order } = useOrderContext();
-  const isMobile = useIsMobile();
+  const { isMobile, mounted } = useIsMobileSafe();
   const { data: me } = useMe();
   const canDelete = me?.role === 'administrador' || me?.role === 'tecnico';
 
@@ -647,6 +647,8 @@ const OrderAttachments = () => {
       ))}
     </div>
   );
+
+  if (!mounted) return null;
 
   return (
     <div

@@ -42,8 +42,8 @@ import {
   CaseUpper,
   CaseLower,
   CaseSensitive,
+  Bold,
 } from 'lucide-react';
-import { BoldIcon } from '@heroicons/react/20/solid';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import QRConfigPanel from './QRConfigPanel';
@@ -941,7 +941,7 @@ export default function LabelEditorPropertyPanel({
                             });
                           }}
                         >
-                          <BoldIcon className="h-4 w-4" />
+                          <Bold className="h-4 w-4" />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>

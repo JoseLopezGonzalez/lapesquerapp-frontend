@@ -15,14 +15,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { RiFileExcel2Line } from 'react-icons/ri';
 import { useOrderContext } from '@/context/OrderContext';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 const OrderExport = () => {
   const { exportDocument, exportDocuments, fastExportDocuments } = useOrderContext();
   const [selectedDocument, setSelectedDocument] = useState(exportDocuments[0]?.name || '');
   const [selectedType, setSelectedType] = useState(exportDocuments[0]?.types[0] || '');
-  const isMobile = useIsMobile();
+  const { isMobile, mounted } = useIsMobileSafe();
 
   useEffect(() => {
     setSelectedType(exportDocuments.find((doc) => doc.name === selectedDocument)?.types[0] ?? '');
@@ -42,6 +42,8 @@ const OrderExport = () => {
     const documentLabel = exportDocuments.find((doc) => doc.name === selectedDocument)?.label ?? '';
     exportDocument(selectedDocument, selectedType, documentLabel);
   };
+
+  if (!mounted) return null;
 
   const content = (
     <div className={isMobile ? 'space-y-6' : 'grid gap-6 md:grid-cols-2'}>

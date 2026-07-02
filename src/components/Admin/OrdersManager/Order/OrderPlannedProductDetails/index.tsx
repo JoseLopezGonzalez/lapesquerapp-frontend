@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import { cn } from '@/lib/utils';
+import { MOBILE_SAFE_AREAS } from '@/lib/design-tokens-mobile';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
@@ -29,7 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { EmptyState } from '@/components/Utilities/EmptyState/index';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   DropdownMenu,
@@ -38,13 +40,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { notify } from '@/lib/notifications';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { OrderTotalsSummaryDialog } from '@/components/Admin/OrdersManager/Order/components/OrderTotalsSummaryDialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -93,7 +89,7 @@ function getErrorDescription(error: unknown, fallback: string): string {
 }
 
 const OrderPlannedProductDetails = () => {
-  const isMobile = useIsMobile();
+  const { isMobile, mounted } = useIsMobileSafe();
   const {
     options,
     plannedProductDetailActions,
@@ -187,6 +183,37 @@ const OrderPlannedProductDetails = () => {
     setDetails(allDetails);
   }, [allDetails]);
 
+  // Intención de scroll pendiente, consumida por el useEffect de editIndex una vez
+  // que React ya ha pintado la card correspondiente en el DOM (ref directa, sin
+  // delay arbitrario de setTimeout).
+  const pendingScrollIntentRef = useRef<'bottom' | 'card' | null>(null);
+
+  // Hacer scroll (al final al añadir línea, o hasta la card al editar) cuando
+  // editIndex cambia. requestAnimationFrame espera al siguiente frame de pintado
+  // en vez de un delay arbitrario.
+  useEffect(() => {
+    if (!isMobile || editIndex === null || !pendingScrollIntentRef.current) return;
+    const intent = pendingScrollIntentRef.current;
+    pendingScrollIntentRef.current = null;
+
+    const viewportEl = scrollAreaRef.current?.querySelector<HTMLDivElement>(
+      '[data-radix-scroll-area-viewport]'
+    );
+    if (!viewportEl) return;
+
+    requestAnimationFrame(() => {
+      if (intent === 'bottom') {
+        viewportEl.scrollTo({ top: viewportEl.scrollHeight, behavior: 'smooth' });
+        return;
+      }
+
+      const targetCard = viewportEl.querySelector<HTMLElement>(
+        `[data-card-index="${editIndex}"]`
+      );
+      targetCard?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }, [editIndex, isMobile]);
+
   const handleOnClickAddLine = () => {
     if (editIndex !== null) return;
 
@@ -202,46 +229,13 @@ const OrderPlannedProductDetails = () => {
 
     setTemporaryDetails([...temporaryDetails, newTemporaryDetail]);
     // El índice será la posición final en la lista combinada
+    pendingScrollIntentRef.current = 'bottom';
     setEditIndex(plannedProductDetails.length + temporaryDetails.length);
-
-    // Hacer scroll hasta abajo después de añadir la línea
-    if (isMobile && scrollAreaRef.current) {
-      setTimeout(() => {
-        const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
-        if (viewport) {
-          viewport.scrollTo({
-            top: viewport.scrollHeight,
-            behavior: 'smooth',
-          });
-        }
-      }, 100);
-    }
   };
 
   const handleEditLine = (index: number) => {
+    pendingScrollIntentRef.current = 'card';
     setEditIndex(index);
-
-    // Hacer scroll hasta la línea que se está editando para que quede visible arriba
-    if (isMobile && scrollAreaRef.current) {
-      setTimeout(() => {
-        const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
-        if (viewport) {
-          // Buscar la card correspondiente al índice
-          const cards = viewport.querySelectorAll('[data-card-index]');
-          const targetCard = Array.from(cards).find((card) => {
-            const cardIndex = parseInt(card.getAttribute('data-card-index') || '');
-            return cardIndex === index;
-          });
-
-          if (targetCard) {
-            targetCard.scrollIntoView({
-              behavior: 'smooth',
-              block: 'start',
-            });
-          }
-        }
-      }, 100);
-    }
   };
 
   const handleInputChange = useCallback(
@@ -439,6 +433,8 @@ const OrderPlannedProductDetails = () => {
 
   const averageUnitPrice = totals.quantity ? totals.totalAmount / totals.quantity : 0;
 
+  if (!mounted) return null;
+
   return (
     <div
       className={
@@ -471,17 +467,19 @@ const OrderPlannedProductDetails = () => {
                         {/* Artículo */}
                         <div>
                           {editIndex === index ? (
-                            <div className="[&_button]:!h-9">
-                              <Combobox
-                                options={productOptions || []}
-                                value={detail?.product?.id ? String(detail.product.id) : undefined}
-                                onChange={(e) => handleInputChange(index, 'product', e)}
-                                loading={optionsLoading}
-                                placeholder="Seleccionar producto..."
-                                searchPlaceholder="Buscar producto..."
-                                notFoundMessage="No se encontraron productos"
-                              />
-                            </div>
+                            // Combobox no expone un prop de tamaño propio (ver
+                            // src/components/Shadcn/Combobox/index.d.ts); className
+                            // se aplica directamente al Button interno vía cn().
+                            <Combobox
+                              options={productOptions || []}
+                              value={detail?.product?.id ? String(detail.product.id) : undefined}
+                              onChange={(e) => handleInputChange(index, 'product', e)}
+                              loading={optionsLoading}
+                              placeholder="Seleccionar producto..."
+                              searchPlaceholder="Buscar producto..."
+                              notFoundMessage="No se encontraron productos"
+                              className="h-9"
+                            />
                           ) : (
                             <p className="py-2 text-sm font-medium">
                               {detail?.product?.name || 'Sin producto'}
@@ -618,8 +616,10 @@ const OrderPlannedProductDetails = () => {
           )}
           {/* Footer con botones */}
           <div
-            className="bg-background fixed right-0 bottom-0 left-0 z-50 flex items-center gap-2 border-t p-3"
-            style={{ paddingBottom: `calc(0.75rem + env(safe-area-inset-bottom))` }}
+            className={cn(
+              'bg-background fixed right-0 bottom-0 left-0 z-50 flex items-center gap-2 border-t p-3',
+              MOBILE_SAFE_AREAS.BOTTOM_INSET
+            )}
           >
             <Button
               onClick={() => setShowTotalsDialog(true)}
@@ -643,7 +643,7 @@ const OrderPlannedProductDetails = () => {
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem
                     onClick={handleOnClickAddDetectedProducts}
-                    className="animate-pulse"
+                    className="text-info focus:text-info"
                   >
                     <GitBranchPlus size={16} className="mr-2" />
                     Añadir productos detectados
@@ -654,50 +654,26 @@ const OrderPlannedProductDetails = () => {
           </div>
 
           {/* Dialog de Totales */}
-          <Dialog open={showTotalsDialog} onOpenChange={setShowTotalsDialog}>
-            <DialogContent
-              className={`${isMobile ? 'm-0 flex h-full max-h-full w-full max-w-full flex-col rounded-none' : ''}`}
-            >
-              <DialogHeader>
-                <DialogTitle>Totales</DialogTitle>
-                <DialogDescription>
-                  Resumen de cajas, cantidad y precio promedio de la previsión.
-                </DialogDescription>
-              </DialogHeader>
-              <div
-                className={`${isMobile ? 'flex flex-1 flex-col items-center justify-center px-4' : ''}`}
-              >
-                <div className={`space-y-6 ${isMobile ? 'w-full max-w-md' : ''}`}>
-                  <div className="flex flex-col space-y-6">
-                    <div className="space-y-2 text-center">
-                      <p className="text-muted-foreground text-xs font-normal tracking-wide uppercase">
-                        Cajas
-                      </p>
-                      <p className="text-foreground text-xl font-medium">
-                        {formatInteger(totals.boxes)}
-                      </p>
-                    </div>
-                    <div className="space-y-2 border-t pt-4 text-center">
-                      <p className="text-muted-foreground text-xs font-normal tracking-wide uppercase">
-                        Cantidad
-                      </p>
-                      <p className="text-foreground text-xl font-medium">
-                        {formatDecimalWeight(totals.quantity)}
-                      </p>
-                    </div>
-                    <div className="space-y-2 border-t pt-4 text-center">
-                      <p className="text-muted-foreground text-xs font-normal tracking-wide uppercase">
-                        Precio promedio
-                      </p>
-                      <p className="text-foreground text-xl font-medium">
-                        {formatDecimalCurrency(averageUnitPrice)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <OrderTotalsSummaryDialog
+            open={showTotalsDialog}
+            onOpenChange={setShowTotalsDialog}
+            title="Totales"
+            description="Resumen de cajas, cantidad y precio promedio de la previsión."
+            isMobile={isMobile}
+            items={[
+              { key: 'boxes', label: 'Cajas', value: formatInteger(totals.boxes) },
+              {
+                key: 'quantity',
+                label: 'Cantidad',
+                value: formatDecimalWeight(totals.quantity),
+              },
+              {
+                key: 'averagePrice',
+                label: 'Precio promedio',
+                value: formatDecimalCurrency(averageUnitPrice),
+              },
+            ]}
+          />
         </div>
       ) : (
         <Card className="flex min-h-0 flex-1 flex-col overflow-hidden">

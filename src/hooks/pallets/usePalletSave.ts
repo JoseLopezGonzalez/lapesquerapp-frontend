@@ -12,7 +12,6 @@ interface UsePalletSaveParams {
   setSaving: React.Dispatch<React.SetStateAction<boolean>>;
   onChange: (pallet: PalletState) => void;
   skipBackendSave: boolean;
-  token: string | undefined;
   session: { user?: unknown } | null;
   boxCreationData: BoxCreationData;
 }
@@ -33,7 +32,6 @@ export function usePalletSave({
   setSaving,
   onChange,
   skipBackendSave,
-  token,
   session,
   boxCreationData,
 }: UsePalletSaveParams): UsePalletSaveResult {
@@ -71,13 +69,9 @@ export function usePalletSave({
       ...palletPayload,
       palletTareWeightKg,
     };
-    const safeToken = token ?? '';
 
     if (temporalPallet.id === null) {
-      (createPallet as (payload: unknown, token: string) => Promise<unknown>)(
-        normalizedPalletPayload,
-        safeToken
-      )
+      (createPallet as (payload: unknown) => Promise<unknown>)(normalizedPalletPayload)
         .then((data: unknown) => {
           setPallet(data as PalletState);
           onChange(data as PalletState);
@@ -100,10 +94,9 @@ export function usePalletSave({
           setSaving(false);
         });
     } else {
-      (updatePallet as (id: unknown, payload: unknown, token: string) => Promise<unknown>)(
+      (updatePallet as (id: unknown, payload: unknown) => Promise<unknown>)(
         temporalPallet.id,
-        normalizedPalletPayload,
-        safeToken
+        normalizedPalletPayload
       )
         .then((data: unknown) => {
           setPallet(data as PalletState);

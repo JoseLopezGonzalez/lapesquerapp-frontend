@@ -97,38 +97,68 @@ comillas/puntuación del módulo, no repetir ese fix aquí.
 
 ## Implementación
 
-> Rellena el Agente Implementador
-
 ### Archivos creados
+
+Ninguno.
 
 ### Archivos modificados
 
+- `src/components/Admin/SupplierLiquidations/SupplierLiquidationList.tsx` — ambos estados vacíos migrados a `<EmptyState>`; import de `EmptyState` y de `SearchX` (lucide-react) añadidos
+
 ### Decisiones tomadas durante la implementación
 
+- Ninguna clase extra pasada a `EmptyState`: el componente ya usa `h-full` por defecto cuando no se pasa `className`, igual que los `<div>` originales — sin necesidad de replicarlo manualmente.
+
 ### Desviaciones del plan (si las hay)
+
+Ninguna.
 
 ---
 
 ## Auditoría
 
-> Rellena el Agente Auditor
+### Resultado: ✅ APROBADO
 
-### Resultado: ✅ APROBADO | ⚠️ APROBADO CON OBSERVACIONES | ❌ RECHAZADO
-
-### Puntuación: [X/10]
+### Puntuación: 10/10 — migración exacta al patrón estándar, copy literal según lo acordado, sin tocar lógica
 
 ### Checklist
 
-- [ ] Criterios de aceptación cumplidos
-- [ ] Sin fetch() directo
-- [ ] Sin hardcode de tenant
-- [ ] Sin archivos .js nuevos
-- [ ] Sin any sin justificación
-- [ ] Hooks gigantes no tocados sin permiso
-- [ ] entitiesConfig.js no tocado sin permiso
-- [ ] Patrones de .claude/rules/ respetados
-- [ ] Nomenclatura correcta
+- [x] Criterios de aceptación cumplidos (los 4, verificados contra el diff)
+- [x] Sin fetch() directo
+- [x] Sin hardcode de tenant
+- [x] Sin archivos .js nuevos
+- [x] Sin any sin justificación
+- [x] Hooks gigantes no tocados sin permiso
+- [x] entitiesConfig.js no tocado sin permiso
+- [x] Patrones de .claude/rules/ respetados
+- [x] Nomenclatura correcta
+
+### Revisión Visual
+
+- [x] Ambos estados usan el patrón EmptyState (icono en círculo + título + descripción)
+- [x] Icono `SearchX` para "sin resultados", `Search` para "antes de buscar" — coherentes con el botón "Buscar" existente
+- [x] Comillas españolas «» en vez de entities HTML en el estado B
+- [x] Sin inline styles nuevos
+
+**Veredicto visual:** ✅ APROBADO
+
+### Revisión UX — Light
+
+- [x] Autoexplicativo, sin instrucción nueva requerida
+- [x] Sin affordance nueva sin explicar (estado B ahora deja claro qué hacer: "Selecciona un rango de fechas")
+- [x] Consistente con el resto de la app (mismo patrón que OrderAttachments, PalletView, etc.)
+- [x] N/A hover/focus (no interactivo)
+- [x] Tono consistente
+
+VERDICT: ✅ APROBADO
 
 ### Observaciones para Jose
 
+Limpio. `npm run type-check` pasa sin errores. El componente `EmptyState` ya defaultea a
+`h-full`, así que no hizo falta ningún ajuste de altura tras quitar los `<div>` manuales.
+
 ### Estado final de la implementación
+
+`SupplierLiquidationList.tsx` ya no tiene ningún empty state construido a mano — los dos
+casos ("sin resultados tras buscar" y "antes de buscar") usan `EmptyState` con copy e iconos
+según lo acordado en el GAP.

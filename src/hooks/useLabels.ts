@@ -1,53 +1,39 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSession } from 'next-auth/react';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
+import { labelQueryKeys } from '@/lib/routes/queryKeys';
 import { getLabels, deleteLabel, duplicateLabel } from '@/services/labelService';
-import type { Label } from '@/types/labelEditor';
-
-const LABELS_QUERY_KEY = 'labels';
-
-function getLabelsQueryKey(): (string | null)[] {
-  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
-  return [LABELS_QUERY_KEY, tenantId ?? 'unknown'];
-}
 
 export function useLabelsQuery(extraEnabled = true) {
-  const { data: session, status } = useSession();
-  const token = session?.user?.accessToken;
-  const queryKey = getLabelsQueryKey();
+  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
   return useQuery({
-    queryKey,
-    queryFn: () => getLabels(token as string),
-    enabled: extraEnabled && status === 'authenticated' && !!token,
+    queryKey: labelQueryKeys.list(tenantId),
+    queryFn: () => getLabels(),
+    enabled: extraEnabled && !!tenantId,
   });
 }
 
 export function useDeleteLabelMutation() {
   const queryClient = useQueryClient();
-  const { data: session } = useSession();
-  const token = session?.user?.accessToken;
+  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
   return useMutation({
-    mutationFn: ({ labelId }: { labelId: string }) => deleteLabel(labelId, token as string),
+    mutationFn: ({ labelId }: { labelId: string }) => deleteLabel(labelId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: getLabelsQueryKey() });
+      queryClient.invalidateQueries({ queryKey: labelQueryKeys.list(tenantId) });
     },
   });
 }
 
 export function useDuplicateLabelMutation() {
   const queryClient = useQueryClient();
-  const { data: session } = useSession();
-  const token = session?.user?.accessToken;
+  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
 
   return useMutation({
     mutationFn: ({ labelId, customName }: { labelId: string; customName?: string | null }) =>
-      duplicateLabel(labelId, token as string, customName ?? null),
+      duplicateLabel(labelId, customName ?? null),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: getLabelsQueryKey() });
+      queryClient.invalidateQueries({ queryKey: labelQueryKeys.list(tenantId) });
     },
   });
 }
-
-export { getLabelsQueryKey };

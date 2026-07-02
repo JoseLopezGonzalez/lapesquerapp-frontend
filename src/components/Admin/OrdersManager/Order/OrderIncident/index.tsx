@@ -2,6 +2,8 @@
 
 import { notify } from '@/lib/notifications';
 import { useState } from 'react';
+import { cn } from '@/lib/utils';
+import { MOBILE_SAFE_AREAS } from '@/lib/design-tokens-mobile';
 import {
   Card,
   CardContent,
@@ -25,7 +27,7 @@ import { Badge } from '@/components/ui/badge';
 import { AlertCircle, Ban, CheckCircle } from 'lucide-react';
 import { useOrderContext } from '@/context/OrderContext';
 import { formatDate } from '@/helpers/formats/dates/formatDates';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface OrderIncidentData {
@@ -53,7 +55,7 @@ function getErrorDescription(error: unknown, fallback: string): string {
 export default function OrderIncidentPanel() {
   const { order, openOrderIncident, resolveOrderIncident, deleteOrderIncident } =
     useOrderContext();
-  const isMobile = useIsMobile();
+  const { isMobile, mounted } = useIsMobileSafe();
 
   const [newDescription, setNewDescription] = useState('');
   const [resolutionType, setResolutionType] = useState('');
@@ -228,6 +230,8 @@ export default function OrderIncidentPanel() {
     </div>
   );
 
+  if (!mounted) return null;
+
   return (
     <div
       className={isMobile ? 'flex min-h-0 flex-1 flex-col' : 'flex min-h-0 flex-1 flex-col pb-2'}
@@ -240,8 +244,10 @@ export default function OrderIncidentPanel() {
 
           {/* Footer con botones */}
           <div
-            className="bg-background fixed right-0 bottom-0 left-0 z-50 flex items-center gap-2 border-t p-3"
-            style={{ paddingBottom: `calc(0.75rem + env(safe-area-inset-bottom))` }}
+            className={cn(
+              'bg-background fixed right-0 bottom-0 left-0 z-50 flex items-center gap-2 border-t p-3',
+              MOBILE_SAFE_AREAS.BOTTOM_INSET
+            )}
           >
             {incident ? (
               <>

@@ -4,14 +4,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { COMPANY_NAME } from '@/configs/config';
 import { useOrderContext } from '@/context/OrderContext';
 import { useSettings } from '@/context/SettingsContext';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobileSafe } from '@/hooks/use-mobile';
 
 const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
 const OrderMap = () => {
   const { order } = useOrderContext();
   const { settings, loading } = useSettings();
-  const isMobile = useIsMobile();
+  const { isMobile, mounted } = useIsMobileSafe();
 
   const origin = !loading && settings?.['company.name'] ? settings['company.name'] : COMPANY_NAME;
   const shippingAddress = order?.shippingAddress as string | undefined;
@@ -32,6 +32,8 @@ const OrderMap = () => {
         Sin dirección de envío
       </div>
     );
+
+  if (!mounted) return null;
 
   return (
     <div className={isMobile ? 'flex h-full min-h-0 w-full flex-col' : 'h-full pb-2'}>
