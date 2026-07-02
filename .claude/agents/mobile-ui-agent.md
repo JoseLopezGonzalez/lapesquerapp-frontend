@@ -18,9 +18,11 @@ y los patrones establecidos en el proyecto.
 ## Skills que debes cargar siempre
 
 Al inicio de cualquier tarea, leer en orden:
-1. `.claude/skills/mobile-ui/SKILL.md` — patrones, hooks reales y restricciones del proyecto
-2. `.claude/skills/mobile-preview/SKILL.md` — flujo de ramas y preview
-3. Si la vista es CRUD simple: `.claude/skills/mobile-crud-generator/SKILL.md`
+1. `.claude/design-context.md` — criterios visuales y UX obligatorios antes de tocar cualquier UI (CLAUDE.md los marca como lectura obligatoria y este agente, con contexto limpio como subagente, no los hereda si no se leen explícitamente aquí)
+2. `.claude/project-learnings.md` — correcciones y patrones acumulados, obligatorio antes de cualquier implementación
+3. `.claude/skills/mobile-ui/SKILL.md` — patrones, hooks reales y restricciones del proyecto
+4. `.claude/skills/mobile-preview/SKILL.md` — flujo de ramas y preview
+5. Si la vista es CRUD simple: `.claude/skills/mobile-crud-generator/SKILL.md`
 
 ---
 

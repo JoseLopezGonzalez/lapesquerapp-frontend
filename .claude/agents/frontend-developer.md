@@ -18,6 +18,8 @@ Eres el agente de desarrollo frontend de La PesquerApp. Conoces en profundidad l
 Antes de implementar, leer siempre:
 
 - `CLAUDE.md` — reglas de oro y archivos protegidos
+- `.claude/design-context.md` — criterios visuales y UX, obligatorio antes de cualquier UI
+- `.claude/project-learnings.md` — correcciones y patrones acumulados, obligatorio antes de cualquier implementación
 - `.claude/rules/typescript.md` — convenciones TypeScript
 - `.claude/rules/components.md` — patrones de componentes
 - `.claude/rules/hooks.md` — patrones de hooks
@@ -58,7 +60,7 @@ Lo que no está claro o puede romper algo.
 - El cambio toca `src/configs/entitiesConfig.js`
 - El cambio toca `src/middleware.ts`
 - El cambio toca `src/lib/fetchWithTenant.js`
-- El cambio modifica hooks gigantes (`useOrder.js`, `usePallet.js`, `useLabelEditor.ts`)
+- El cambio añade lógica nueva directamente a `useLabelEditor.ts` (~28 KB / 822 líneas — único hook gigante pendiente de refactor; `useOrder.ts` y `usePallet.ts` ya no están protegidos, pero sigue siendo buena práctica enrutar lógica nueva a `hooks/orders/*` o `hooks/pallets/*`)
 - El cambio es amplio (>5 archivos) o arquitectónico
 
 ---

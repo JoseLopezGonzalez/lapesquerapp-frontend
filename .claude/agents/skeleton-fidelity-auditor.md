@@ -242,23 +242,43 @@ Convert findings to GAPs? Start with 🔴 blocking? yes / no / select
 
 ## Phase 4 — GAP Generation
 
-For each approved finding, invoke `gap-discovery` with the finding **and its
-captured reference measurements** as input — this is the detail that lets
-`skeleton-implementor` skip re-discovery. Wait for Jose's answers, write the
-GAP to `open/`.
+**This agent has no `Agent` tool, so it never invokes `gap-discovery` or
+`system-learner` itself.** Phase 4-5 behave differently depending on who launched
+this run:
 
-GAPs from this agent use the naming convention `AUDIT-SKEL-[view-short-name]:
-[finding title]` and must include a `## Skeleton Reference` section (real
-component file:line, skeleton component file:line, viewport(s) affected,
-captured dimensions) so `skeleton-implementor` reads exact numbers instead of
-re-measuring from scratch. Route confirmed GAPs to `skeleton-implementor`, not
+- **Invoked inline via `/audit-skeletons` (main thread, interactive with Jose):**
+  the main thread — not this agent — actually calls `gap-discovery` and
+  `system-learner`, since only the main thread holds the `Agent` tool. Present the
+  approved findings and PL candidates exactly as specified below; the main thread
+  picks them up from there.
+- **Invoked as an isolated subagent by an orchestrator with clean context** (e.g.
+  a future `deep-audit-module` lane): skip Phase 4-5 entirely. Instead, write each
+  approved finding directly as a GAP candidate to `docs/ai/gaps/{module}/`
+  (`status: candidate`, using `docs/ai/templates/gap-v2-template.md`, including the
+  `## Skeleton Reference` section below) per the numbering range given in your
+  prompt, and return only the short summary requested by the caller.
+
+For each approved finding (inline mode only), hand off to `gap-discovery` (via the
+main thread) with the finding **and its captured reference measurements** as
+input — this is the detail that lets `skeleton-implementor` skip re-discovery.
+Wait for Jose's answers, write the GAP to `open/`.
+
+GAPs from this agent get a normal sequential `GAP-NNN` id — there is no special
+filename prefix in practice, so don't rely on the ID to identify them later. What
+must always be present is a `## Skeleton Reference` section (real component
+file:line, skeleton component file:line, viewport(s) affected, captured
+dimensions) — this is what `skeleton-implementor` greps for to recognize a GAP as
+its own and to read exact numbers instead of re-measuring from scratch. Title the
+GAP descriptively (e.g. "Skeleton de lista de pedidos no distingue mobile/desktop"),
+not with an artificial prefix. Route confirmed GAPs to `skeleton-implementor`, not
 the generic `gap-implementor` — this is a skeleton-specific fix.
 
 ---
 
 ## Phase 5 — System Learner Handoff
 
-Compile PL candidates and invoke `system-learner`. Flag explicitly:
+Inline mode only (see note above). Compile PL candidates and hand off to
+`system-learner` via the main thread. Flag explicitly:
 - Any reference dimension worth freezing per recurring UI pattern (card height,
   row height, avatar size) so future new components inherit correct skeleton
   sizing without a fresh audit

@@ -37,6 +37,16 @@ Para cada revisión, producir un informe con este formato:
 
 ## Checks bloqueantes — revisar siempre
 
+### 0. Excepción superadmin — comprobar antes de aplicar los checks 1-2
+
+Si el diff toca `src/app/superadmin/**`, `src/components/Superadmin/**`,
+`src/lib/superadminApi.js`, o `src/context/SuperadminAuthContext.jsx`: `fetch()`
+directo vía `fetchSuperadmin` y la ausencia de `X-Tenant`/`fetchWithTenant` son
+**correctos ahí** (excepción documentada en `CLAUDE.md` § Excepción documentada —
+Panel Superadmin — el superadmin no tiene tenant y usa su propia capa de auth).
+No aplicar los checks 1-2 a ese código. Sí sigue siendo bloqueante si ese código
+importa `fetchWithTenant`, o si `fetchSuperadmin` se usa fuera de esas cuatro rutas.
+
 ### 1. ¿Hay `fetch()` directo?
 
 ```typescript
@@ -74,15 +84,18 @@ src/components/NewComponent.js       ← debe ser .tsx
 
 Si el diff incluye cambios en `src/configs/entitiesConfig.js` y no hay indicación explícita de que el dev lo autorizó, **RECHAZAR y preguntar** si era intencionado.
 
-### 5. ¿Se añadió lógica a los hooks gigantes?
+### 5. ¿Se añadió lógica nueva al hook gigante pendiente de refactor?
 
-Si el diff muestra líneas añadidas en:
+`useOrder.ts` y `usePallet.ts` ya fueron refactorizados (2026-07-01) en orquestadores
+delgados (284 y 302 líneas) que delegan en `hooks/orders/*` y `hooks/pallets/*` —
+ya no son archivos protegidos, aunque routing de lógica nueva a un sub-hook sigue
+siendo buena práctica para no volver a hacerlos crecer.
 
-- `src/hooks/useOrder.js`
-- `src/hooks/usePallet.js`
-- `src/hooks/useLabelEditor.ts`
+Si el diff muestra líneas de lógica nueva añadidas directamente en:
 
-**RECHAZAR** y proponer extraer la lógica a un sub-hook en `hooks/orders/`, `hooks/pallets/` o `hooks/labels/`.
+- `src/hooks/useLabelEditor.ts` (~28 KB / 822 líneas — único hook gigante real pendiente de refactor)
+
+**RECHAZAR** y proponer extraer la lógica a un sub-hook en `hooks/labels/`.
 
 ---
 

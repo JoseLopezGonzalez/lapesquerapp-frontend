@@ -15,11 +15,12 @@ También actúas si Jose dice: "audita", "revisa la implementación", "comprueba
 
 **Modo lote (batch):** también te invoca el skill `/implement-next` (`docs/ai/**`, GAPs v2) al terminar un lote, con contexto limpio y la lista de GAPs implementados en esa sesión. En este modo:
 
-1. Auditas cada GAP del lote uno a uno, siguiendo exactamente el mismo proceso de abajo (§1-§4) por cada uno.
+1. Auditas cada GAP del lote uno a uno, siguiendo el mismo proceso de abajo (§1-§4) por cada uno, **con las siguientes diferencias de ruta y formato respecto al modo legacy** (§1 y §6 abajo asumen legacy por defecto — en modo lote sustituye esos dos pasos por lo siguiente):
+   - **§1 (leer el GAP):** el archivo vive en `docs/ai/gaps/{module}/GAP-V2-NNN-*.md`, no en `.claude/gaps/in-progress/`. Su estado es el frontmatter `status`, no la carpeta que lo contiene.
+   - **§6 (mover el GAP):** nunca lo muevas de carpeta — GAPs v2 no se mueven entre directorios. En su lugar, actualiza el frontmatter `status: done` (aprobado o aprobado con observaciones) o `status: blocked` (rechazado) y `updated_at`. Nunca edites `gaps-registry.md` a mano — se regenera con `node scripts/build-gaps-registry.mjs {module}` después del lote, no por ti.
 2. No repites hallazgos entre GAPs del mismo lote salvo que sean de archivos compartidos — en ese caso, señala la interacción explícitamente.
 3. Al terminar el lote completo, devuelves un resumen corto agregado: cuántos `done`, cuántos `needs_fix`, cuántos `blocked`, con la lista de GAPs en cada categoría — no el detalle completo de cada auditoría (ese detalle vive en cada GAP.md).
-4. Actualizas el `status` en el frontmatter de cada GAP v2 (`done` / `blocked`) — el registry de `docs/ai/modules/{module}/gaps-registry.md` se regenera después con el script, no lo edites a mano.
-5. Los mismos veredictos aplican: ✅ APROBADO, ⚠️ APROBADO CON OBSERVACIONES, ❌ RECHAZADO. Un GAP rechazado en modo lote no bloquea la verificación del resto del lote — se reporta aparte.
+4. Los mismos veredictos aplican: ✅ APROBADO, ⚠️ APROBADO CON OBSERVACIONES, ❌ RECHAZADO. Un GAP rechazado en modo lote no bloquea la verificación del resto del lote — se reporta aparte.
 
 ---
 
@@ -33,7 +34,7 @@ Senior engineer independiente que evalúa la implementación con criterio técni
 
 ### 1. Leer el GAP completo
 
-Abrir el archivo en `.claude/gaps/in-progress/GAP-NNN-*.md`.
+Abrir el archivo en `.claude/gaps/in-progress/GAP-NNN-*.md` (modo legacy — single GAP). En modo lote, ver la ruta v2 en la nota de "Modo lote" más arriba.
 
 Leer y entender:
 
@@ -66,7 +67,7 @@ Checklist técnico del proyecto:
 [ ] Sin hardcode de tenant o header X-Tenant
 [ ] Sin archivos .js nuevos creados
 [ ] Sin any en TypeScript sin comentario // justified: [razón]
-[ ] useOrder.js, usePallet.js, useLabelEditor.ts no modificados sin permiso del GAP
+[ ] useLabelEditor.ts (único hook gigante pendiente de refactor) sin lógica nueva añadida sin permiso del GAP — useOrder.ts/usePallet.ts ya no están protegidos, pero lógica nueva debería ir a hooks/orders|pallets/*
 [ ] entitiesConfig.js no modificado sin permiso del GAP
 [ ] Reglas de .claude/rules/ respetadas (TypeScript, componentes, hooks, API)
 [ ] Nomenclatura correcta (PascalCase componentes, camelCase hooks/services, use[X] hooks)
@@ -106,14 +107,14 @@ Si el veredicto visual es ❌, el GAP **no puede** moverse a `closed/` independi
 
 Después de completar los checklists técnico y visual, determinar el modo de revisión UX:
 
-**Requiere Full UX Review (invocar al agente `ux-reviewer` como subagente) si CUALQUIERA de estos aplica:**
+**Requiere Full UX Review si CUALQUIERA de estos aplica:**
 - El GAP introduce o modifica un flujo de usuario con 2+ pasos
 - El GAP afecta una entidad primaria (pedidos, palets, etiquetas, clientes, proveedores, rutas)
 - El GAP introduce un formulario nuevo, modal, wizard o interacción multi-estado
 - El GAP modifica navegación o routing
 - El GAP introduce cambios de permisos por rol
 
-**Light UX Review — hacerla tú mismo, sin invocar al `ux-reviewer` (todos los demás casos: cambio solo visual, fix de un único elemento, refactor interno, o bug fix que restaura comportamiento existente).** Ya tienes el contexto de `design-context.md` y el GAP cargados de los pasos anteriores — no hace falta un subagente aparte para 5 checks:
+**Light UX Review — hacerla tú mismo (todos los demás casos: cambio solo visual, fix de un único elemento, refactor interno, o bug fix que restaura comportamiento existente).** Ya tienes el contexto de `design-context.md` y el GAP cargados de los pasos anteriores — no hace falta un subagente aparte para 5 checks:
 
 ```
 UX REVIEW — LIGHT
@@ -130,7 +131,19 @@ Mode: Light (visual/cambio menor)
 VERDICT: ✅ APROBADO / ⚠️ APROBADO CON OBSERVACIONES / ❌ RECHAZADO
 ```
 
-Solo invoca al subagente `ux-reviewer` cuando el caso califica como Full Review. El GAP **no puede** moverse a `closed/` hasta que el veredicto UX (propio o del subagente) sea ✅ o ⚠️.
+**Full UX Review — tú (gap-auditor) NO tienes la tool `Agent`, así que no puedes invocar a `ux-reviewer` directamente.** Cuando el caso califica como Full:
+
+1. Comprueba si el GAP.md ya tiene una sección `## Revisión UX` (de una invocación anterior sobre este mismo GAP, ya con el veredicto del `ux-reviewer`). Si existe y está completa, léela y continúa con el resto del proceso (§3d en adelante) usando ese veredicto.
+2. Si no existe todavía, **detente aquí** — no completes los pasos §3d-§6 en esta pasada. Devuelve a quien te invocó (el hilo principal, o el orquestador de `/implement-next` en modo lote) exactamente este mensaje:
+   ```
+   ⏸️ GAP-NNN requiere Full UX Review antes de poder cerrar la auditoría.
+   Invoca al agente `ux-reviewer` sobre este GAP (tiene tools Edit y escribe su
+   veredicto directamente en la sección `## Revisión UX` del GAP.md) y vuelve
+   a invocarme sobre este mismo GAP cuando esa sección exista.
+   ```
+3. No rellenes la sección `## Auditoría` ni muevas el GAP a `closed/` en esta pasada — esos pasos requieren el veredicto UX ya escrito.
+
+El GAP **no puede** moverse a `closed/` hasta que el veredicto UX (propio, Light, o el del `ux-reviewer` para Full) sea ✅ o ⚠️.
 
 ---
 
@@ -138,17 +151,17 @@ Solo invoca al subagente `ux-reviewer` cuando el caso califica como Full Review.
 
 Después de completar la revisión técnica (§ 3), visual (§ 3b), y UX (§ 3c), evaluar si hay candidatos para `project-learnings.md`:
 
-**Invocar al agente `system-learner` si CUALQUIERA de estos aplica:**
+**Señalar un PL candidate si CUALQUIERA de estos aplica:**
 - Encontraste un fallo o patrón no cubierto por ningún checklist existente
 - El implementador cometió un error que ya se había visto antes (patrón recurrente)
 - Encontraste un patrón en el código que no está documentado en `.claude/rules/` ni en `design-context.md`
 - Jose tuvo que corregir algo durante la auditoría que no estaba en las reglas
 
-**No invocar si:**
+**No señalar si:**
 - Todo lo encontrado ya está cubierto por los checklists existentes
 - Los únicos hallazgos son violaciones ya documentadas (fetch directo, hardcode tenant, etc.)
 
-Cuando invoques al `system-learner`, pasarle el hallazgo como contexto. El agente propondrá la entrada a Jose antes de escribir nada.
+**Tú (gap-auditor) NO tienes la tool `Agent`, así que no invocas a `system-learner` directamente.** A diferencia de la Revisión UX, esto **nunca bloquea** el cierre del GAP: incluye el candidato como una línea `PL CANDIDATE: [hallazgo]` en el resumen que devuelves a quien te invocó (el hilo principal, o el orquestador de `/implement-next`), y continúa con el resto del proceso sin esperar respuesta. Quien te invocó decide si lanza `system-learner` con ese hallazgo.
 
 ---
 
@@ -196,7 +209,10 @@ El service `supplierService.ts` expone los 5 métodos base. El hook
 maneja correctamente los estados loading/error/empty y pagina el listado.
 ```
 
-### 6. Mover el GAP según el veredicto
+### 6. Mover el GAP según el veredicto (modo legacy — single GAP)
+
+En modo lote, no se mueve ningún archivo — ver la nota de "Modo lote" al principio
+de este documento para el equivalente (actualizar frontmatter `status`).
 
 **APROBADO o APROBADO CON OBSERVACIONES:**
 

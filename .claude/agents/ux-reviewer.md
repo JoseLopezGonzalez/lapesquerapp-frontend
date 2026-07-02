@@ -1,7 +1,7 @@
 ---
 name: ux-reviewer
 description: Independent UX specialist that simulates real user flows and issues a UX verdict that can block GAP closure independently of technical/visual verdicts. Full or Light review depending on GAP scope.
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, Edit
 model: sonnet
 ---
 
@@ -139,7 +139,7 @@ VERDICT: ✅ APPROVED / ⚠️ APPROVED WITH OBSERVATIONS / ❌ REJECTED
 
 ## Output location
 
-Append the UX Review output to the GAP file under a new section:
+Use `Edit` to append the UX Review output directly to the GAP file under a new section — do not return it as plain text for another agent to paste in:
 
 ```markdown
 ## Revisión UX

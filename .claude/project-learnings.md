@@ -19,10 +19,17 @@ Every entry has:
 **Agents that must read this file before working:**
 
 - `gap-discovery` (before writing any GAP)
+- `gap-implementor` (before implementing any GAP)
 - `gap-auditor` (before running any checklist)
 - `ux-reviewer` (before simulating any flow)
 - `ui-audit-agent` (before starting any audit)
 - `code-audit-agent` (before starting any audit)
+- `design-quality-auditor` (before starting any audit)
+- `skeleton-fidelity-auditor` (before starting any audit)
+- `domain-business-auditor` (before starting any audit)
+- `permissions-multitenant-auditor` (before starting any audit)
+- `frontend-developer` (before implementing any feature)
+- `mobile-ui-agent` (before implementing any mobile view)
 - `system-learner` (always, to avoid duplicates)
 
 ---

@@ -352,16 +352,34 @@ Convert findings to GAPs?
 
 ## Phase 4 — GAP Generation
 
-For each approved finding: invoke `gap-discovery` with the finding as input, run
-its full clarification protocol, wait for Jose's answers, write the GAP to
-`open/`. Batch is allowed for CONSISTENCY findings that share one fix (e.g. "align
-all 3 outlier Sheet widths to max-w-lg" as one GAP) — never batch VISUAL findings
-across unrelated views, each is its own judgment call.
+**This agent has no `Agent` tool, so it never invokes `gap-discovery` or
+`system-learner` itself.** Phase 4-5 behave differently depending on who launched
+this run:
+
+- **Invoked inline via `/audit-design` (main thread, interactive with Jose):** the
+  main thread — not this agent — actually calls `gap-discovery` and
+  `system-learner`, since only the main thread holds the `Agent` tool. Present the
+  approved findings and PL candidates exactly as specified below; the main thread
+  picks them up from there.
+- **Invoked as an isolated subagent by `deep-audit-module`:** skip Phase 4-5
+  entirely. Instead, write each approved finding directly as a GAP candidate to
+  `docs/ai/gaps/{module}/` (`status: candidate`, using
+  `docs/ai/templates/gap-v2-template.md`) per the numbering range given in your
+  prompt, and return only the short summary requested by the caller — no GAP text,
+  no PL text, in the returned message.
+
+For each approved finding (inline mode only): hand off to `gap-discovery` (via the
+main thread) with the finding as input, run its full clarification protocol, wait
+for Jose's answers, write the GAP to `open/`. Batch is allowed for CONSISTENCY
+findings that share one fix (e.g. "align all 3 outlier Sheet widths to max-w-lg"
+as one GAP) — never batch VISUAL findings across unrelated views, each is its own
+judgment call.
 
 ## Phase 5 — System Learner Handoff
 
-Compile PL candidates, invoke `system-learner`. Two things worth flagging to it
-explicitly in this agent's case:
+Inline mode only (see note above). Compile PL candidates, hand off to
+`system-learner` via the main thread. Two things worth flagging to it explicitly
+in this agent's case:
 - Any COPY terminology glossary entry worth freezing into a documented standard
 - Any VISUAL/CONSISTENCY pattern mechanical enough to become an ESLint rule
   instead of something re-discovered by audits (e.g. a literal className string

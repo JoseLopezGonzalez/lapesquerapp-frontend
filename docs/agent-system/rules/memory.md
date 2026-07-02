@@ -5,14 +5,23 @@
 Project memory captures PesquerApp-specific rules, anti-patterns and corrections
 that future agents must remember.
 
-## Current Neutral Memory
+## Current Canonical Memory
 
-The initial neutral memory mirror lives at:
+As of 2026-07-02, there is a **single canonical memory file** for the whole
+project, shared by Claude Code and Codex:
 
-- `docs/agent-system/memory/project-learnings.md`
+- `.claude/project-learnings.md`
 
-Claude Code still maintains its own operational memory in `.claude/**`. Codex
-must not modify `.claude/**` unless Jose explicitly asks.
+`docs/agent-system/memory/project-learnings.md` used to be a separate mirror for
+Codex, but it drifted out of sync with the Claude copy (23 vs 32 entries, never
+reconciled) because nothing synchronized the two. It is now a pointer file only
+— read `.claude/project-learnings.md` directly instead.
+
+This is the one explicit exception to "Codex must not modify `.claude/**`
+unless Jose explicitly asks" (see `docs/agent-system/README.md` § Operating
+Principles #3) — Jose has authorized Codex to read and write
+`.claude/project-learnings.md` specifically, to avoid re-introducing the same
+drift. No other path under `.claude/**` is included in this exception.
 
 ## Adding New Memory
 
@@ -25,9 +34,10 @@ Only add a new memory entry when:
 
 Before writing:
 
-1. Read the current memory file.
+1. Read `.claude/project-learnings.md` (the current memory file).
 2. Check for duplicates or contradictions.
 3. Propose the entry to Jose.
-4. Write only after confirmation.
+4. Write only after confirmation, directly to `.claude/project-learnings.md`,
+   following its existing PL-NNN entry format.
 
 Entries must be concrete, project-specific and grounded in observed evidence.

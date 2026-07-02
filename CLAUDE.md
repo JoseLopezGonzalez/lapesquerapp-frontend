@@ -348,26 +348,37 @@ Este proyecto usa shadcn/ui para todos los componentes de UI.
 
 ## Contexto adicional
 
-Para documentación extendida, ver `docs/ai-context/`. Para reglas específicas por área, ver `.claude/rules/`. Para agentes especializados, ver `.claude/agents/`.
+Para documentación extendida, ver `docs/ai-context/`. Para el estado operativo del flujo v2 (auditorías multi-módulo, GAPs candidatos, próxima acción), ver `docs/ai/` — contrato completo en `docs/ai/README.md`. Para reglas específicas por área, ver `.claude/rules/`. Para agentes especializados, ver `.claude/agents/`.
 
 ### Agentes disponibles en `.claude/agents/`
 
 | Agente               | Rol                                                                                                                | Se activa cuando                                                                                          |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
-| `gap-discovery`      | Tech lead — convierte ideas en GAPs verificables                                                                   | Jose describe un problema, mejora o feature                                                               |
-| `gap-implementor`    | Desarrollador senior — ejecuta exactamente lo que el GAP describe                                                  | Jose confirma un GAP para implementar                                                                     |
-| `gap-auditor`        | Senior engineer independiente — veredicto técnico + visual + invoca UX Reviewer                                    | El Implementador termina                                                                                  |
-| `ux-reviewer`        | UX specialist — simula flujos reales, identifica fricción, bloquea cierre por fallos UX                            | Invocado por el Auditor tras revisión técnica + visual. Full (flujos complejos) / Light (cambios menores) |
+| `gap-discovery`      | Tech lead — convierte ideas en GAPs verificables (modo hilo principal, no es un subagente)                         | Jose describe un problema, mejora o feature                                                               |
+| `gap-implementor`    | Desarrollador senior — ejecuta exactamente lo que el GAP describe (modo hilo principal, no es un subagente)        | Jose confirma un GAP para implementar                                                                     |
+| `gap-auditor`        | Senior engineer independiente — veredicto técnico + visual + UX (Full review vía `ux-reviewer`, orquestado por el hilo principal). También corre en modo lote para `/implement-next` | El Implementador termina, o el orquestador de `/implement-next` al cerrar un lote |
+| `ux-reviewer`        | UX specialist — simula flujos reales, identifica fricción, bloquea cierre por fallos UX. Escribe su propio veredicto en el GAP | Invocado por el hilo principal cuando `gap-auditor` señala que un GAP requiere Full Review. Full (flujos complejos) / Light (cambios menores) |
 | `frontend-developer` | Desarrollador frontend generalista                                                                                 | Tareas de desarrollo que no siguen el flujo GAP                                                           |
 | `mobile-ui-agent`    | Especialista en UI mobile                                                                                          | Trabajo en vistas mobile con `/mobile`                                                                    |
-| `ui-audit-agent`     | Auditor autónomo de UI — recorre vistas, genera findings, convierte en GAPs                                        | Invocado por `/audit-mobile` o `/audit-desktop`                                                           |
-| `system-learner`     | Memoria institucional — traduce hallazgos y correcciones en reglas permanentes en `project-learnings.md`           | Invocado por el Auditor, UX Reviewer, o Jose                                                              |
-| `code-audit-agent`   | Auditor técnico autónomo — calidad de código, deuda de migración y arquitectura React/Next.js. Nunca evalúa UI/UX. | Invocado por `/audit-code [quality\|migrate\|arch]`                                                       |
-| `design-quality-auditor` | Auditor de craft de diseño — armonía/proporción/jerarquía visual (con captura real cuando es posible), consistencia de textos, y drift entre vistas de la misma familia. Nunca evalúa código ni flujo UX. | Invocado por `/audit-design [visual\|copy\|consistency]`                                                  |
+| `ui-audit-agent`     | Auditor autónomo de UI — recorre vistas, genera findings, convierte en GAPs                                        | Invocado por `/audit-mobile`, `/audit-desktop`, o como carril de `/deep-audit-module` (ux-ui, a11y-responsive) |
+| `system-learner`     | Memoria institucional — traduce hallazgos y correcciones en reglas permanentes en `project-learnings.md`           | Invocado por el hilo principal a partir de un PL candidate señalado por cualquier auditor, o directamente por Jose |
+| `code-audit-agent`   | Auditor técnico autónomo — calidad de código, deuda de migración y arquitectura React/Next.js. Nunca evalúa UI/UX. | Invocado por `/audit-code [quality\|migrate\|arch]`, o como carril de `/deep-audit-module` (code-quality, architecture-refactor) |
+| `design-quality-auditor` | Auditor de craft de diseño — armonía/proporción/jerarquía visual (con captura real cuando es posible), consistencia de textos, y drift entre vistas de la misma familia. Nunca evalúa código ni flujo UX. | Invocado por `/audit-design [visual\|copy\|consistency]`, o como carril de `/deep-audit-module` (ux-ui) |
 | `skeleton-fidelity-auditor` | Auditor de fidelidad de loading states — compara (con captura real cuando es posible) cada `Skeleton` contra el componente real que sustituye: estructura, dimensiones, jerarquía. Mobile y desktop como targets separados. Nunca evalúa si falta el Skeleton (eso es `ui-audit-agent`). | Invocado por `/audit-skeletons [mobile\|desktop\|both]`                                                   |
 | `skeleton-implementor` | Especialista en construir/corregir skeletons fieles al componente real — nunca adivina medidas, siempre variantes mobile/desktop separadas cuando aplica                                          | Jose confirma un GAP `AUDIT-SKEL-*`, o pide directamente un skeleton                                       |
+| `domain-business-auditor` | Audita si los flujos y reglas de negocio de un módulo reflejan cómo opera realmente una empresa de pesca/congelados (pesos, formatos, lotes, trazabilidad, fresco/congelado, maquila). Único carril que evalúa corrección de dominio, no código ni UI. | Carril de `/deep-audit-module` (categoría domain-business)                                                |
+| `permissions-multitenant-auditor` | Audita visibilidad de acciones por rol y aislamiento de datos multi-tenant — las dos áreas sin cobertura dedicada previa. | Carril de `/deep-audit-module` (hallazgos de seguridad/tenant, categoría data-api o architecture-refactor) |
+| `gap-normalizer`    | Deduplica, fusiona, divide y clasifica los GAP v2 candidatos generados por `/deep-audit-module` en GAPs implementables con frontmatter completo. Nunca implementa ni audita código directamente. | Fase 6 de `/deep-audit-module` cuando hay más de ~15 candidatos                                            |
 | `code-reviewer`      | Revisor de código independiente                                                                                    | Revisión de PRs y diffs                                                                                   |
-| `db-architect`       | Arquitecto de base de datos                                                                                        | Cambios de esquema o modelos                                                                              |
+| `db-architect`       | Diseño de caché TanStack Query — factories de queryKey, estrategia de invalidación, staleTime, prefetch, updates optimistas | Cambios en el diseño de queries/mutaciones y su caché                                                     |
+
+Nota sobre invocación entre agentes: ningún agente de esta tabla (salvo el hilo
+principal) tiene la tool `Agent` — no pueden lanzarse subagentes entre sí. Cuando
+un agente necesita el resultado de otro (p. ej. `gap-auditor` necesitando a
+`ux-reviewer`, o cualquier auditor señalando un PL candidate a `system-learner`),
+devuelve una señal estructurada a quien lo invocó (el hilo principal, o el
+orquestador de `/deep-audit-module`/`/implement-next`), que es quien lanza el
+siguiente agente y retoma el flujo.
 
 ### Slash commands disponibles
 
@@ -383,9 +394,13 @@ Para documentación extendida, ver `docs/ai-context/`. Para reglas específicas 
 | `/audit-design copy`          | `design-quality-auditor` | Terminología, tono, capitalización y claridad de mensajes |
 | `/audit-design consistency [family]` | `design-quality-auditor` | Drift entre vistas de la misma familia (listados, sheets, forms, confirmaciones...) |
 | `/audit-skeletons [mobile\|desktop\|both]` | `skeleton-fidelity-auditor` | Fidelidad de `Skeleton` vs el componente real que sustituye — estructura, dimensiones, jerarquía |
+| `/deep-audit-module module={módulo}` | code-audit-agent, ui-audit-agent, design-quality-auditor, domain-business-auditor, permissions-multitenant-auditor | Auditoría profunda multi-carril de un módulo; escribe GAP candidates a `docs/ai/gaps/{module}/` (skill, no agente único) |
+| `/implement-next module={módulo} category={cat}` | `gap-implementor` + `gap-auditor` (modo lote) | Implementa el siguiente lote de GAPs v2 `ready` y los verifica con contexto limpio (skill) |
+| `/mobile [vista]`             | `mobile-ui-agent`  | Workflow completo de UI mobile para una vista (crear/qa/merge/status/list) |
 | `/idea [texto libre]`         | —                   | Captura rápida en el parking de ideas — sin preguntas |
 | `/ideas [módulo]`             | —                   | Lista el backlog de `.claude/ideas/parking-lot.md`    |
 | `/ideas promote [NNN]`        | `gap-discovery`     | Promociona una idea parked a GAP con protocolo completo |
+| `/help`                       | —                   | Referencia rápida de todos los comandos y agentes activos |
 
 ---
 

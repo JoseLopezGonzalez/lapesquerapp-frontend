@@ -56,7 +56,7 @@ ARCH: all src/app/ routes + all src/hooks/ + all src/components/
 ### Step 3 — Prioritize
 1. Files touched most recently (higher risk of introducing new issues)
 2. Files in primary entity modules (orders, pallets, labels)
-3. Protected files last (useOrder, usePallet, useLabelEditor — read only, never modify)
+3. Protected files last (useLabelEditor — read only, never modify; useOrder/usePallet already refactored into thin orchestrators and are no longer protected)
 4. Test files excluded unless specifically requested
 
 ### Step 4 — Present inventory for approval
@@ -109,6 +109,15 @@ extra section just for that finding — don't apply the whole section speculativ
 ### QUALITY checklist
 
 HTTP & TENANT
+
+**Superadmin exception first:** `src/app/superadmin/**`, `src/components/Superadmin/**`,
+`src/lib/superadminApi.js`, and `src/context/SuperadminAuthContext.jsx` are a
+documented exception (`CLAUDE.md` § Excepción documentada — Panel Superadmin) —
+direct `fetchSuperadmin` calls without `fetchWithTenant`/`X-Tenant` are correct
+there, not a violation. Skip this section's checks for that surface entirely,
+except flagging the inverse (a `fetchWithTenant` import inside superadmin code,
+or `fetchSuperadmin` used outside those four paths).
+
 - [ ] No direct fetch() calls — all HTTP through fetchWithTenant or generic service helpers
 - [ ] No hardcoded X-Tenant header — injected automatically by fetchWithTenant
 - [ ] Token retrieval uses getAuthToken() inside services — never in components
@@ -166,8 +175,10 @@ JS TO TS MIGRATION
   MEDIUM (some inference needed) / HIGH (complex generics or external type dependencies)
 - [ ] Identify all files that import this file (migration ripple effect)
 - [ ] Check if a .ts version already exists (would be a duplicate)
-- [ ] Note: protected files (useOrder, usePallet, useLabelEditor) — flag but do not
-  migrate in a single GAP; require separate planning
+- [ ] Note: `useLabelEditor.ts` is the only protected giant hook left (already
+  .ts, not a migration candidate, but flag any large refactor of it as requiring
+  separate planning) — `useOrder.ts`/`usePallet.ts` were already migrated and
+  refactored, not migration candidates either
 
 DEPRECATED PATTERNS
 - [ ] Direct fetchWithTenant usage in components (should be in services)
@@ -206,8 +217,10 @@ NEXT.JS APP ROUTER
 
 HOOKS ARCHITECTURE
 - [ ] Hooks follow single responsibility — one concern per hook
-- [ ] Giant hooks (useOrder, usePallet, useLabelEditor) not receiving new logic
-  — new logic goes to sub-hooks in hooks/[domain]/ only
+- [ ] `useLabelEditor.ts` (only remaining giant hook) not receiving new logic —
+  new logic goes to `hooks/labels/*`. `useOrder.ts`/`usePallet.ts` are already
+  thin orchestrators (284/302 lines) delegating to `hooks/orders|pallets/*` —
+  flag only if new logic bypasses that split and grows the orchestrator again
 - [ ] No hooks defined inside components
 - [ ] Custom hooks only call other hooks at top level — no conditional hook calls
 - [ ] Hook naming follows use[Entity]List, use[Entity], use[Action]Form conventions
@@ -286,8 +299,24 @@ Convert findings to GAPs?
 
 ## Phase 4 — GAP Generation
 
-For each approved finding:
-1. Invoke gap-discovery with the finding as input
+**This agent has no `Agent` tool, so it never invokes `gap-discovery` or
+`system-learner` itself.** Phase 4-5 behave differently depending on who launched
+this run:
+
+- **Invoked inline via `/audit-code` (main thread, interactive with Jose):** the
+  main thread — not this agent — actually calls `gap-discovery` and
+  `system-learner`, since only the main thread holds the `Agent` tool. Present the
+  approved findings and PL candidates exactly as specified below; the main thread
+  picks them up from there.
+- **Invoked as an isolated subagent by `deep-audit-module`:** skip Phase 4-5
+  entirely. Instead, write each approved finding directly as a GAP candidate to
+  `docs/ai/gaps/{module}/` (`status: candidate`, using
+  `docs/ai/templates/gap-v2-template.md`) per the numbering range given in your
+  prompt, and return only the short summary requested by the caller — no GAP text,
+  no PL text, in the returned message.
+
+For each approved finding (inline mode only):
+1. Hand off to gap-discovery (via the main thread) with the finding as input
 2. gap-discovery runs full clarification question protocol
 3. Wait for Jose's answers
 4. GAP written and placed in open/
@@ -303,8 +332,9 @@ Batch GAP generation is allowed for MIGRATE mode when migrating similar files
 
 ## Phase 5 — System Learner Handoff
 
-Compile all PL candidates and invoke system-learner.
-System-learner proposes each to Jose before writing.
+Inline mode only (see note above). Compile all PL candidates and hand off the
+list to system-learner via the main thread. System-learner proposes each to
+Jose before writing.
 
 ## Restrictions
 - Never modifies production code — reads and reports only

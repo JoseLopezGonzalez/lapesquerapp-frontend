@@ -22,7 +22,7 @@ instructions.
 | `workflows/` | Multi-step procedures such as GAP, code/UI/design audit, mobile, ideas and memory. |
 | `commands/` | Claude-like command mapping for tools that do not have slash commands. |
 | `agents/` | Portable role definitions. |
-| `memory/` | Tool-neutral institutional memory. |
+| `memory/` | Pointer to the canonical memory file — `.claude/project-learnings.md` is the single source of truth as of 2026-07-02, see `rules/memory.md`. |
 | `gaps/` | Notes about GAP storage and future migration. |
 | `adapters.md` | How Codex, Cursor, Copilot and Claude consume this system. |
 | `generic-agent-quickstart.md` | Minimal entrypoint for tools without native adapters. |

@@ -229,7 +229,7 @@ Regla de archivos: todo código nuevo es `.ts` o `.tsx` — nunca `.js`.
 
 Archivos protegidos que requieren permiso explícito de Jose:
 
-- `src/configs/entitiesConfig.js` (121 KB)
+- `src/configs/entitiesConfig.js` (reexport modular — protegido no por tamaño sino porque es el único punto de entrada; añadir entidades solo en `src/configs/entities/`, nunca aquí directamente)
 - `src/hooks/useLabelEditor.ts` (~28 KB / 822 líneas) — único hook gigante real pendiente de refactor
 - `src/middleware.ts`
 - `src/lib/fetchWithTenant.js`

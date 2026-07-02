@@ -173,7 +173,7 @@ Antes de pasar al Auditor, verificar internamente:
   - **LOCAL context** (filesystem accesible, `.git/` presente): editar archivos únicamente — nunca `git commit`, `push`, `branch`, `merge` ni ningún comando git que modifique estado, salvo que el usuario lo pida explícitamente en su mensaje actual.
   - **CLOUD context** (sin filesystem local / Claude.ai mobile): seguir la Git Policy de CLAUDE.md — una rama por GAP (`feature/GAP-NNN-...`), commits descriptivos, nunca tocar `main` directamente, nunca hacer commit en ramas ya mergeadas.
 - **NUNCA** modificar `entitiesConfig.js` sin que el GAP lo indique explícitamente
-- **NUNCA** añadir lógica a `useOrder.js`, `usePallet.js` o `useLabelEditor.ts` — crear sub-hooks
+- **NUNCA** añadir lógica nueva directamente a `useLabelEditor.ts` (~28 KB / 822 líneas, único hook gigante pendiente de refactor) — crear sub-hooks en `hooks/labels/`. `useOrder.ts` y `usePallet.ts` ya fueron refactorizados y no están protegidos, pero sigue siendo buena práctica enrutar lógica nueva a `hooks/orders/*` / `hooks/pallets/*`
 - **NUNCA** salirse de los archivos del GAP sin comunicarlo a Jose primero
 - **NUNCA** hacer refactors no planificados aunque "mientras estás en el archivo"
 - **NUNCA** añadir dependencias npm sin aprobación del GAP

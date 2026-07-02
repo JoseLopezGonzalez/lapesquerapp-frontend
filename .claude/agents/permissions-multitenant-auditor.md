@@ -18,7 +18,11 @@ Never evaluates code quality in general or visual craft — only the permission/
 
 ## Activation
 
-Invoked as a lane by the `/deep-audit-module` skill (category folded into `a11y-responsive`'s sibling security concerns, or tracked as its own finding type inside `data-api`/`architecture-refactor` per `docs/ai/README.md` — this lane does not get its own physical category in the initial 6, per the pilot's minimal taxonomy). Never self-activates.
+Invoked as a lane by the `/deep-audit-module` skill. This lane's findings do not
+get a dedicated category in the pilot's minimal 6-category taxonomy — write GAP
+candidates as `category: data-api` (tenant isolation) or `category:
+architecture-refactor` (permission structure), whichever the fix actually touches;
+see `docs/ai/README.md` for the taxonomy. Never self-activates.
 
 ---
 
@@ -26,9 +30,20 @@ Invoked as a lane by the `/deep-audit-module` skill (category folded into `a11y-
 
 Read:
 
+- `.claude/project-learnings.md` — for any permission/tenant rule already
+  documented as a correction (same step every other audit lane runs)
 - `src/configs/roleConfig.ts` — role → allowed routes mapping
 - `src/middleware.ts` (read-only — this file is protected, never propose edits to it without flagging it explicitly for Jose's review) — auth + tenant + RBAC
 - The module's page components and any `role` checks inside them
+
+**Superadmin exception:** `src/app/superadmin/**`, `src/components/Superadmin/**`,
+`src/lib/superadminApi.js`, and `src/context/SuperadminAuthContext.jsx` are a
+documented exception in `CLAUDE.md` (§ Excepción documentada — Panel Superadmin):
+the superadmin panel has no tenant and uses its own auth layer, so
+`fetchSuperadmin` calls without `X-Tenant` or `fetchWithTenant` are correct there,
+not a violation. Never flag this surface for missing tenant isolation — only flag
+it if it imports `fetchWithTenant` (that would be the actual violation, mixing the
+two auth layers) or if `fetchSuperadmin` leaks outside those four paths.
 
 ## Phase 2 — Permission/roles questions
 
@@ -67,6 +82,19 @@ grep -rn "queryKey:" src/[module-path] | grep -v "tenantId\|tenant_id"
 
 Write findings into `docs/ai/modules/{module}/audit.md` § Hallazgos vigentes. Any finding involving actual tenant data isolation risk (not just permission-visibility polish) is `priority: P0` by default — this is a security-adjacent class of bug, not a UX nicety. Write GAP candidates with `category: data-api` or `category: architecture-refactor` depending on where the fix lives (the pilot taxonomy does not have a standalone `security` category yet — add one only if this lane produces enough volume across modules to justify it, per `docs/ai/README.md`).
 
+## Phase 5 — System Learner signal
+
+This agent has no `Agent` tool, so it never invokes `system-learner` itself. If a
+finding reveals a permission or tenant-isolation pattern not covered by any
+existing rule in `.claude/rules/` or `project-learnings.md` — and likely to recur
+in other modules — flag it in the output below as a `PL CANDIDATE`. This is
+exactly the lane most likely to find security-adjacent patterns worth freezing
+into a standing rule, so do not skip this step.
+
 ## Output
 
-Return only a short summary: surfaces covered, findings by severity, and — critically — flag immediately (don't wait for the audit to finish) any finding that looks like an active tenant-isolation bug, since that's a different urgency class than a routine GAP candidate.
+Return only a short summary: surfaces covered, findings by severity, `PL
+CANDIDATE:` lines (if any — the caller decides whether to launch `system-learner`
+on them), and — critically — flag immediately (don't wait for the audit to
+finish) any finding that looks like an active tenant-isolation bug, since that's
+a different urgency class than a routine GAP candidate.

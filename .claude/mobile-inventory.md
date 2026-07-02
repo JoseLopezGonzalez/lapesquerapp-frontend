@@ -1,6 +1,13 @@
 # Inventario Mobile — PesquerApp
 > Generado: 2026-06-01. Actualizar tras cada `/mobile merge [vista]`.
 >
+> ⚠️ **Sin actualizar desde 2026-06-01** (más de un mes) mientras `/mobile status`
+> y `/mobile list` lo usan como fuente de verdad. No se han corregido los estados
+> de abajo en esta pasada porque requiere verificar cada vista contra el código
+> real, no un simple fix de texto — pendiente de que Jose confirme si hubo merges
+> `mobile/*` sin actualizar este archivo, o si hace falta una pasada de
+> `/audit-mobile` para regenerarlo con datos reales.
+>
 > Estado: ⬜ pendiente | 🔶 parcial/responsive básico | ✅ mobile nativo completado
 
 ---

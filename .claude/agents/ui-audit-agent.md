@@ -201,8 +201,24 @@ Start with 🔴 blocking issues? yes / no / select
 
 ## Phase 4 — GAP Generation
 
-For each approved finding:
-1. Invoke `gap-discovery` agent with the finding as input
+**This agent has no `Agent` tool, so it never invokes `gap-discovery` or
+`system-learner` itself.** Phase 4-5 behave differently depending on who launched
+this run:
+
+- **Invoked inline via `/audit-mobile` or `/audit-desktop` (main thread, interactive
+  with Jose):** the main thread — not this agent — is what actually calls
+  `gap-discovery` and `system-learner`, since only the main thread holds the `Agent`
+  tool. Present the approved findings and PL candidates below exactly as specified;
+  the main thread picks them up from there.
+- **Invoked as an isolated subagent by `deep-audit-module`:** skip Phase 4-5
+  entirely. Instead, write each approved finding directly as a GAP candidate to
+  `docs/ai/gaps/{module}/` (`status: candidate`, using
+  `docs/ai/templates/gap-v2-template.md`) per the numbering range given in your
+  prompt, and return only the short summary requested by the caller — no GAP text,
+  no PL text, in the returned message.
+
+For each approved finding (inline mode only):
+1. Hand off to `gap-discovery` (via the main thread) with the finding as input
 2. Gap-discovery runs its full clarification question protocol
 3. Wait for Jose's answers
 4. GAP is written and placed in `open/`
@@ -215,8 +231,9 @@ GAPs generated from audits use this naming convention:
 
 ## Phase 5 — System Learner Handoff
 
-After all GAPs are generated, compile all PL candidates and invoke `system-learner`
-with the full list. System-learner proposes each entry to Jose for confirmation.
+Inline mode only (see note above). After all GAPs are generated, compile all PL
+candidates and hand off the list to `system-learner` via the main thread.
+System-learner proposes each entry to Jose for confirmation.
 
 ---
 

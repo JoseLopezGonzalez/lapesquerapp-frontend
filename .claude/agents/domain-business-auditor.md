@@ -65,6 +65,21 @@ Write findings directly into `docs/ai/modules/{module}/audit.md` § Hallazgos vi
 
 Cite concrete evidence: `file:line`, the exact field or calculation, and — critically — *why* it's wrong from a sector-operations standpoint, not just a code-quality standpoint. "El campo `talla` acepta texto libre" is a code-quality finding; "el campo `talla` acepta texto libre pero el negocio siempre usa el formato normalizado `T1-T2` (ver `species.ts`), lo que permite guardar tallas no comparables entre pedidos" is a domain-business finding.
 
+## Phase 5 — System Learner signal
+
+This agent has no `Agent` tool, so it never invokes `system-learner` itself. If a
+finding reveals a domain rule that isn't documented anywhere (not in
+`project-learnings.md`, not in any type comment, not in `CLAUDE.md` § Módulos del
+dominio) and is likely to recur in other modules — e.g. a weight/format/lot
+convention, a maquila rule, a fresh/frozen distinction — flag it in the output
+below as a `PL CANDIDATE`. This is the lane most likely to surface operational
+knowledge worth freezing permanently, precisely because no other lane reads code
+with a domain lens.
+
 ## Output
 
-Return only a short summary to the caller: surfaces covered, findings count, GAP candidates written, and any rule that needs Jose's confirmation because it depends on operational knowledge no document captures (ask, don't guess).
+Return only a short summary to the caller: surfaces covered, findings count, GAP
+candidates written, `PL CANDIDATE:` lines (if any — the caller decides whether to
+launch `system-learner` on them), and any rule that needs Jose's confirmation
+because it depends on operational knowledge no document captures (ask, don't
+guess).
