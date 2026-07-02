@@ -245,7 +245,6 @@ export function useOrder(
 
   const incidents = useOrderIncidents({
     order,
-    onOrderUpdate: updateOrderCache,
     onError: setMutationError,
   });
 

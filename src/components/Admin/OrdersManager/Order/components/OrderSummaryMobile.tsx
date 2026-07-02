@@ -87,7 +87,7 @@ export default function OrderSummaryMobile({
           <StatusBadge color={STATUS_COLORS[status]} label={STATUS_LABELS[status]} />
         ) : (
           <DropdownMenu>
-            <DropdownMenuTrigger className="focus:outline-none">
+            <DropdownMenuTrigger className="flex min-h-[44px] min-w-[44px] items-center justify-center focus:outline-none">
               <StatusBadge color={STATUS_COLORS[status]} label={STATUS_LABELS[status]} />
             </DropdownMenuTrigger>
             <DropdownMenuContent className="flex flex-col items-end">
@@ -128,7 +128,7 @@ export default function OrderSummaryMobile({
             </span>
           ) : (
             <DropdownMenu>
-              <DropdownMenuTrigger className="focus:outline-none">
+              <DropdownMenuTrigger className="flex min-h-[44px] min-w-[44px] items-center justify-center focus:outline-none">
                 <span className="hover:text-muted-foreground flex items-center justify-center gap-1.5 text-lg font-medium transition-colors">
                   <ThermometerSnowflake className="h-5 w-5" />
                   {(order.temperature as number | string | undefined) ?? '0'} ºC

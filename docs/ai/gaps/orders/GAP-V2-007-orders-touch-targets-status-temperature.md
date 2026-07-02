@@ -6,7 +6,7 @@ category: a11y-responsive
 priority: P2
 risk: low
 size: S
-status: ready
+status: done
 dependencies: []
 target_files:
   - src/components/Admin/OrdersManager/Order/components/OrderStatusDropdown.tsx
@@ -79,15 +79,34 @@ npm run lint
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+- Añadido `min-h-[44px] min-w-[44px]` con centrado flex al `DropdownMenuTrigger`
+  reutilizable de estado en `OrderStatusDropdown`.
+- Añadido el mismo mínimo táctil al trigger de estado inline de `OrderSummaryMobile`.
+- Añadido el mismo mínimo táctil al trigger de temperatura de `OrderSummaryMobile`.
+- No se han cambiado `StatusBadge`, textos, opciones ni contratos de datos.
 
 ## Resultado
 
-{se rellena al terminar la implementación}
+Implementación terminada y auditada como `done`.
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+Veredicto: `done`.
+
+Aceptación verificada:
+
+- El trigger de estado inline en `OrderSummaryMobile` aplica `min-h-[44px] min-w-[44px]` sobre el `DropdownMenuTrigger`.
+- El trigger de temperatura en `OrderSummaryMobile` aplica `min-h-[44px] min-w-[44px]` sobre el `DropdownMenuTrigger`.
+- `OrderStatusDropdown` aplica el mismo mínimo táctil en el trigger reutilizable de estado.
+- El contenido visual interior (`StatusBadge` y el texto/icono de temperatura) no cambia: la modificación se limita al área interactiva y centrado del trigger.
+
+Validaciones consideradas:
+
+- `DropdownMenuTrigger` de `src/components/ui/dropdown-menu.jsx` pasa props directamente a `DropdownMenuPrimitive.Trigger`, por lo que `className` afecta al nodo interactivo real.
+- Revisión de diff limitada a clases de los tres triggers y notas del GAP.
+- Se toman como válidas las comprobaciones reportadas por implementación: `npm run type-check` OK, `npm run lint` OK con warnings preexistentes y `npm run build` OK.
+
+Status final: `done`.
 
 ## Links
 

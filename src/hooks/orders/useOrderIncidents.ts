@@ -1,16 +1,18 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   createOrderIncident,
   destroyOrderIncident,
   updateOrderIncident,
 } from '@/services/orderService';
 import type { Order } from '@/services/orderService';
+import { orderKeys } from '@/lib/routes/queryKeys';
+import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 
 interface UseOrderIncidentsParams {
   order: Order | null;
-  onOrderUpdate: (updatedOrder: Order) => void;
   onError?: (err: unknown) => void;
 }
 
@@ -22,54 +24,67 @@ export interface UseOrderIncidentsResult {
 
 export function useOrderIncidents({
   order,
-  onOrderUpdate,
   onError,
 }: UseOrderIncidentsParams): UseOrderIncidentsResult {
+  const queryClient = useQueryClient();
+  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
+  const orderId = order?.id;
+  const orderDetailKey = useMemo(() => orderKeys.detail(tenantId, orderId), [tenantId, orderId]);
+
+  const invalidateOrderDetail = useCallback(() => {
+    return queryClient.invalidateQueries({ queryKey: orderDetailKey });
+  }, [queryClient, orderDetailKey]);
+
+  const { mutateAsync: openIncident } = useMutation({
+    mutationFn: (description: string) => createOrderIncident(String(orderId), description),
+    onSuccess: invalidateOrderDetail,
+    onError: (err: unknown) => {
+      onError?.(err);
+    },
+  });
+
+  const { mutateAsync: resolveIncident } = useMutation({
+    mutationFn: ({
+      resolutionType,
+      resolutionNotes,
+    }: {
+      resolutionType: string;
+      resolutionNotes: string;
+    }) => updateOrderIncident(String(orderId), resolutionType, resolutionNotes),
+    onSuccess: invalidateOrderDetail,
+    onError: (err: unknown) => {
+      onError?.(err);
+    },
+  });
+
+  const { mutateAsync: deleteIncident } = useMutation({
+    mutationFn: () => destroyOrderIncident(String(orderId)),
+    onSuccess: invalidateOrderDetail,
+    onError: (err: unknown) => {
+      onError?.(err);
+    },
+  });
+
   const openOrderIncident = useCallback(
     async (description: string) => {
-      if (!order) return;
-      return createOrderIncident(String(order.id), description)
-        .then((updated) => {
-          if (!order) return;
-          onOrderUpdate({ ...order, status: 'incident', incident: updated });
-        })
-        .catch((err: unknown) => {
-          onError?.(err);
-          throw err;
-        });
+      if (!orderId) return;
+      await openIncident(description);
     },
-    [order, onOrderUpdate, onError]
+    [orderId, openIncident]
   );
 
   const resolveOrderIncident = useCallback(
     async (resolutionType: string, resolutionNotes: string) => {
-      if (!order) return;
-      return updateOrderIncident(String(order.id), resolutionType, resolutionNotes)
-        .then((updatedIncident) => {
-          if (!order) return updatedIncident;
-          onOrderUpdate({ ...order, incident: updatedIncident });
-          return updatedIncident;
-        })
-        .catch((err: unknown) => {
-          onError?.(err);
-          throw err;
-        });
+      if (!orderId) return;
+      return resolveIncident({ resolutionType, resolutionNotes });
     },
-    [order, onOrderUpdate, onError]
+    [orderId, resolveIncident]
   );
 
   const deleteOrderIncident = useCallback(async () => {
-    if (!order) return;
-    return destroyOrderIncident(String(order.id))
-      .then(() => {
-        if (!order) return;
-        onOrderUpdate({ ...order, status: 'finished', incident: null });
-      })
-      .catch((err: unknown) => {
-        onError?.(err);
-        throw err;
-      });
-  }, [order, onOrderUpdate, onError]);
+    if (!orderId) return;
+    await deleteIncident();
+  }, [orderId, deleteIncident]);
 
   return { openOrderIncident, resolveOrderIncident, deleteOrderIncident };
 }

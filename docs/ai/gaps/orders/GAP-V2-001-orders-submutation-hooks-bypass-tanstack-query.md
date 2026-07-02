@@ -6,7 +6,7 @@ category: code-quality
 priority: P1
 risk: medium
 size: L
-status: ready
+status: rejected
 dependencies:
   - GAP-V2-002
 target_files:
@@ -51,10 +51,12 @@ directamente el checklist TANSTACK QUERY de `.claude/agents/code-audit-agent.md`
 La inconsistencia es verificable dentro del mismo módulo: `useOrderAttachments.ts`
 (`src/hooks/orders/useOrderAttachments.ts:44-132`) implementa las mismas operaciones
 (upload/update/delete) correctamente con `useMutation` + `queryClient.invalidateQueries`
-+ `notify` en `onSuccess`/`onError`. Es el patrón de referencia ya existente en el
-propio módulo — no hay que importarlo de otro sitio.
+
+- `notify` en `onSuccess`/`onError`. Es el patrón de referencia ya existente en el
+  propio módulo — no hay que importarlo de otro sitio.
 
 Efectos concretos del patrón actual:
+
 - No hay estado `isPending`/`isError` estandarizado por mutación — cada handler debe
   reinventar su propio manejo de loading/error (algunos usan `mutationError` global
   del hook padre, otros no).
@@ -121,13 +123,22 @@ npm run test:run
 
 ## Resultado
 
-{se rellena al terminar la implementación}
+Reemplazado por sub-GAPs más pequeños para que `/implement-next` pueda ejecutar
+la deuda de forma incremental y auditable:
+
+- `GAP-V2-022`: incidencias de pedido.
+- `GAP-V2-023`: detalles planificados.
+- `GAP-V2-024`: líneas auxiliares.
+- `GAP-V2-025`: palets vinculados al pedido.
+
+El hallazgo original queda conservado como contexto, pero no debe implementarse
+como lote único `size: L`.
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+No aplica: GAP rechazado por división/superseded, sin cambios de producción.
 
 ## Links
 
 - Auditoría de origen: `docs/ai/modules/orders/audit.md`
-- GAPs relacionados: GAP-V2-002 (factory de queryKey para el detalle del pedido, dependencia)
+- GAPs relacionados: GAP-V2-002 (factory de queryKey para el detalle del pedido, dependencia), GAP-V2-022, GAP-V2-023, GAP-V2-024, GAP-V2-025

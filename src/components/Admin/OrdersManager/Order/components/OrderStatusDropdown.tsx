@@ -31,7 +31,7 @@ interface OrderStatusDropdownProps {
 export default function OrderStatusDropdown({ status, onStatusChange }: OrderStatusDropdownProps) {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="focus:outline-none">
+      <DropdownMenuTrigger className="flex min-h-[44px] min-w-[44px] items-center justify-center focus:outline-none">
         <StatusBadge color={STATUS_COLORS[status]} label={STATUS_LABELS[status]} />
       </DropdownMenuTrigger>
       <DropdownMenuContent className="flex flex-col items-end">
