@@ -8,13 +8,13 @@
 ```text
 Ejecutar (elige una):
 
-A) Resolver bloqueos de negocio antes de seguir auditando/implementando:
-   Jose debe confirmar 3 reglas operativas (ver §9 Bloqueos) que bloquean
-   GAP-V2-011 y GAP-V2-013.
+A) Implementar reglas de negocio ya confirmadas por Jose:
+   /implement-next module=orders category=domain-business limit=1 risk=medium
+   → cogería GAP-V2-013 (advertencia/confirmación al finalizar con producción incompleta).
 
-B) Empezar a implementar lo que ya está ready y sin ambigüedad de negocio:
-   /implement-next module=orders category=architecture-refactor limit=1 risk=low
-   → coge GAP-V2-021 (P1, S, low). GAP-V2-020 es P1 pero risk=medium.
+B) Si Jose autoriza risk=medium, continuar permisos comerciales:
+   /implement-next module=orders category=architecture-refactor limit=1 risk=medium
+   → cogería GAP-V2-020 (P1, M, medium). Conviene coordinar con backend/policies.
 
 C) Si Jose autoriza risk=medium, continuar code-quality:
    /implement-next module=orders category=code-quality limit=2 risk=medium
@@ -25,12 +25,12 @@ Contexto:
 Primera auditoría real del sistema completada y ampliada al circuito acotado de
 5 carriles: code-audit-agent, ui-audit-agent, domain-business-auditor,
 design-quality-auditor y permissions-multitenant-auditor. 16 GAPs documentados:
-11 ready, 2 done, 2 blocked por reglas de negocio pendientes y 1 rejected por merge.
+11 ready, 4 done, 0 blocked y 1 rejected por merge.
 
 Restricciones:
 No volver a auditar los mismos 5 carriles sobre los mismos archivos sin
 evidencia de que algo cambió — usar needs_reaudit si aplica.
-No marcar GAP-V2-011/013 como ready sin que Jose confirme la regla de negocio.
+Las reglas de negocio de GAP-V2-011/012/013 fueron confirmadas por Jose el 2026-07-02.
 ```
 
 ---
@@ -38,7 +38,7 @@ No marcar GAP-V2-011/013 como ready sin que Jose confirme la regla de negocio.
 ## 1. Estado del módulo
 
 ```text
-Estado general: ready_for_implementation (con 2 GAPs bloqueados en paralelo)
+Estado general: ready_for_implementation
 
 Funcional:        sin incidentes bloqueantes detectados
 UI/copy:           4 hallazgos ux-ui/a11y, incluyendo drift de copy restante
@@ -52,12 +52,12 @@ Performance:               sin auditar (no hubo carril de performance en este pi
 Testing:                     sin auditar directamente (se listó como plan de validación por GAP)
 Documentación:                 cruce legacy acotado completado
 
-P0 abiertos: 0   P1 abiertos: 8 (GAP-V2-001, 005, 006, 011, 012, 013, 020, 021)
+P0 abiertos: 0   P1 abiertos: 6 (GAP-V2-001, 005, 006, 012, 013, 020)
 P2 abiertos: 3   P3 abiertos: 2
 
 Estado de auditoría:      audited_acotado (5 de 5 carriles previstos ejecutados)
-Estado de implementación: batch_1_done (GAP-V2-002, GAP-V2-004)
-Estado de verificación:   checks_passed_pending_audit
+Estado de implementación: batch_3_done (GAP-V2-002, GAP-V2-004, GAP-V2-021, GAP-V2-011)
+Estado de verificación:   GAP-V2-011 audited_done
 ```
 
 ## 2. Cobertura
@@ -90,7 +90,7 @@ Pendiente explícitamente fuera de este circuito: performance, testing directo, 
 
 Primera auditoría real ejecutada sobre el módulo `orders` con 3 carriles iniciales en paralelo (`code-audit-agent`, `ui-audit-agent` y `domain-business-auditor`) y continuada el 2026-07-02 con los 2 carriles pendientes (`design-quality-auditor` y `permissions-multitenant-auditor`). Cobertura acotada a un conjunto de archivos concreto por carril, no exhaustiva del módulo completo. Se completó además el cruce legacy acotado contra `.claude/gaps/closed/` para evitar duplicar GAPs ya cerrados.
 
-16 GAPs documentados en total: 11 `ready`, 2 `done`, 2 `blocked` y 1 `rejected` por merge. El primer lote `/implement-next` cerró los dos GAPs code-quality de bajo riesgo: queryKey tenant-aware del detalle de pedido (GAP-V2-002) y migración a TypeScript del wrapper de dominio `orders` (GAP-V2-004). El hallazgo más significativo de código pendiente sigue siendo el patrón sistémico de sub-hooks de mutación sin `useMutation`/`invalidateQueries` (GAP-V2-001). La continuación añadió dos riesgos de permisos en vistas comerciales: exposición de coste/margen en detalle readOnly (GAP-V2-020) y acción de creación visible en manager comercial readOnly (GAP-V2-021).
+16 GAPs documentados en total: 11 `ready`, 4 `done`, 0 `blocked` y 1 `rejected` por merge. El primer lote `/implement-next` cerró los dos GAPs code-quality de bajo riesgo: queryKey tenant-aware del detalle de pedido (GAP-V2-002) y migración a TypeScript del wrapper de dominio `orders` (GAP-V2-004). El segundo lote cerró GAP-V2-021, ocultando la creación de pedidos en el manager comercial readOnly. El tercer lote cerró GAP-V2-011, sustituyendo la tolerancia fija de 30 kg por la regla híbrida confirmada. GAP-V2-013 queda desbloqueado al depender de esa tolerancia. El hallazgo más significativo de código pendiente sigue siendo el patrón sistémico de sub-hooks de mutación sin `useMutation`/`invalidateQueries` (GAP-V2-001), y el permiso comercial pendiente más importante queda en GAP-V2-020 (coste/margen visible).
 
 ## 4. Baseline anterior
 
@@ -135,33 +135,37 @@ Esta pasada auditó solo un subconjunto acotado de lo anterior (ver §2 Cobertur
 
 **domain-business (carril `domain-business-auditor`):**
 
-- Tolerancia fija de 30kg entre planificado/producido no escala con el tamaño del pedido, invierte la señal operativa en pedidos grandes casi exactos (GAP-V2-011, blocked)
-- `parseTaxRate` degrada silenciosamente IVA inválido/negativo a 0%, indistinguible de una exención real — riesgo de facturación (GAP-V2-012)
-- Un pedido puede marcarse "finished" sin validar que la producción cubre lo planificado (GAP-V2-013, blocked, depende de GAP-V2-011)
+- Tolerancia fija de 30kg entre planificado/producido no escalaba con el tamaño del pedido; resuelto con la regla confirmada `min(max(10 kg, kg_planificados * 3%), 75 kg)` (GAP-V2-011; resuelto)
+- `parseTaxRate` degrada silenciosamente IVA inválido/negativo a 0%, indistinguible de una exención real; Jose confirmó que IVA 0% legítimo debe seguir permitido y distinguible del fallback (GAP-V2-012)
+- Un pedido puede marcarse "finished" sin validar que la producción cubre lo planificado; regla confirmada: advertencia + confirmación, no bloqueo duro (GAP-V2-013, depende de GAP-V2-011)
 
 **permissions / multitenant (carril `permissions-multitenant-auditor`):**
 
 - `ComercialOrderDetailClient` monta `<Order readOnly />`, pero `readOnly` no oculta coste/margen ni evita cargar análisis económico en detalle comercial (GAP-V2-020)
-- `ComercialOrdersManager` pasa `readOnly` a `OrdersList`, pero la lista sigue mostrando acciones/CTA de crear pedido y puede montar `CreateOrderForm` (GAP-V2-021)
+- `ComercialOrdersManager` pasaba `readOnly` a `OrdersList`, pero la lista seguía mostrando acciones/CTA de crear pedido y podía montar `CreateOrderForm` (GAP-V2-021; resuelto)
 - `useOrder.ts:101` omite `tenantId` en la queryKey del detalle; fusionado en GAP-V2-002 para evitar duplicar el mismo cambio (GAP-V2-019 rejected)
 
 ## 7. GAPs generados/actualizados
 
-Ver `docs/ai/modules/orders/gaps-registry.md` (regenerado). Resumen: 11 `ready`, 2 `done`, 2 `blocked`, 0 `later`, 1 `rejected`.
+Ver `docs/ai/modules/orders/gaps-registry.md` (regenerado). Resumen: 11 `ready`, 4 `done`, 0 `blocked`, 0 `later`, 1 `rejected`.
 
 ## 8. GAPs resueltos o descartados
 
 - GAP-V2-019 descartado como GAP independiente: duplicaba GAP-V2-002. La señal multitenant quedó fusionada en GAP-V2-002.
 - GAP-V2-002 resuelto: `useOrder.ts` usa `orderKeys.detail(tenantId, orderId)` y la query queda condicionada por tenant.
 - GAP-V2-004 resuelto: `src/services/domain/orders/orderService.js` migrado a `orderService.ts` con firmas tipadas.
+- GAP-V2-021 resuelto: el manager comercial readOnly ya no muestra acciones/CTA de creación ni monta `CreateOrderForm`; el flujo admin conserva la creación.
+- GAP-V2-011 resuelto: `mergeOrderDetails` usa tolerancia híbrida por línea (`3%`, mínimo 10 kg, máximo 75 kg) y pruebas de clasificación relativa.
 
 ## 9. Bloqueos y riesgos
 
-**Bloqueos — requieren respuesta de Jose antes de que estos GAPs puedan pasar a `ready`:**
+**Reglas confirmadas por Jose el 2026-07-02:**
 
-1. **Tolerancia planificado vs. producido (GAP-V2-011):** ¿la regla es porcentual, absoluta, combinada (mínimo+máximo), y depende de si el producto es fresco o congelado?
-2. **IVA 0% legítimo (GAP-V2-012, no bloqueante pero a confirmar durante implementación):** ¿existen casos reales de líneas a IVA 0% (exportación extracomunitaria, inversión del sujeto pasivo) que deban seguir soportándose de forma explícita?
-3. **Guarda de estado "finalizado" (GAP-V2-013):** ¿debe ser un bloqueo duro o una confirmación con advertencia cuando quedan líneas sin producir?
+1. **Tolerancia planificado vs. producido (GAP-V2-011):** fórmula híbrida por línea `min(max(10 kg, kg_planificados * 3%), 75 kg)`.
+2. **IVA 0% legítimo (GAP-V2-012):** sí existe y debe seguir soportándose como caso fiscal válido; debe distinguirse de dato ausente/no parseable.
+3. **Guarda de estado "finalizado" (GAP-V2-013):** permitir finalizar con producción incompleta solo tras advertencia y confirmación explícita; no bloqueo duro.
+
+**Bloqueos:** ninguno vigente.
 
 **Riesgos (no bloqueantes, para contexto):**
 
@@ -180,6 +184,9 @@ Ver `docs/ai/modules/orders/gaps-registry.md` (regenerado). Resumen: 11 `ready`,
 - 2026-07-02 — Continuación del circuito acotado: se ejecutan `design-quality-auditor` y `permissions-multitenant-auditor`; se crean GAP-V2-014, 019, 020 y 021; GAP-V2-019 se fusiona en GAP-V2-002; registry regenerado.
 - 2026-07-02 — Continuación documental del circuito: cruce legacy acotado de GAPs cerrados relacionados con `orders`; no se crean GAPs nuevos ni se reabren carriles.
 - 2026-07-02 — Implementación batch 1 code-quality low: GAP-V2-002 y GAP-V2-004 marcados `done`; registry regenerado.
+- 2026-07-02 — Implementación batch 2 architecture-refactor low: GAP-V2-021 marcado `done`; registry regenerado.
+- 2026-07-02 — Jose confirma reglas de negocio de GAP-V2-011/012/013; GAP-V2-011 y GAP-V2-013 pasan a `ready`.
+- 2026-07-02 — Implementación batch 3 domain-business medium: GAP-V2-011 marcado `done`; registry regenerado.
 
 ## 12. Instrucciones para retomar en otro chat/modelo
 

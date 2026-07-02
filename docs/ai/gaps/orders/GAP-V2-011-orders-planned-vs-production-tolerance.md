@@ -6,7 +6,7 @@ category: domain-business
 priority: P1
 risk: medium
 size: S
-status: blocked
+status: done
 dependencies: []
 target_files:
   - src/hooks/useOrder.ts
@@ -31,8 +31,7 @@ valor absoluto sin unidad documentada en el código:
 ```ts
 // src/hooks/useOrder.ts:69-71
 const diff = existing.quantityDifference as number;
-existing.status =
-  diff === 0 ? 'success' : diff <= 30 && diff >= -30 ? 'difference' : 'pending';
+existing.status = diff === 0 ? 'success' : diff <= 30 && diff >= -30 ? 'difference' : 'pending';
 ```
 
 Este `30` se interpreta como kg (por el contexto de `quantityDifference`, derivado de
@@ -70,10 +69,19 @@ aceptable" en pedidos pequeños muy desviados.
 
 ## Solución propuesta
 
-**Requiere confirmación de Jose antes de implementar** — la regla de tolerancia real
-(¿porcentaje?, ¿kg absolutos?, ¿combinación con mínimo y máximo?, ¿depende de si el producto
-es fresco o congelado?) es conocimiento operativo que no está documentado en ningún sitio del
-código ni en `project-learnings.md`. Una vez confirmada la regla:
+Regla confirmada por Jose el 2026-07-02:
+
+```text
+tolerancia_por_linea = min(max(10 kg, kg_planificados * 3%), 75 kg)
+```
+
+Esto combina porcentaje, mínimo operativo y techo máximo:
+
+- líneas pequeñas: tolerancia mínima de 10 kg;
+- líneas medianas/grandes: 3% sobre kg planificados;
+- líneas muy grandes: tolerancia máxima de 75 kg.
+
+Una vez implementada:
 
 1. Extraer el umbral a una constante nombrada (o función) con la fórmula correcta.
 2. Si la regla es porcentual, calcular `diffPct = diff / plannedQuantity` y clasificar sobre
@@ -100,15 +108,38 @@ Verificación manual: abrir un pedido con líneas de distinto tamaño en la pest
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+- Se extrajo `calculateProductionQuantityToleranceKg()` en `src/hooks/useOrder.ts`.
+- La clasificacion de `mergeOrderDetails` compara `Math.abs(quantityDifference)` contra la
+  tolerancia por linea confirmada: `min(max(10 kg, kg_planificados * 3%), 75 kg)`.
+- Se añadieron pruebas en `src/__tests__/hooks/useOrder.test.js` para la formula y para la
+  clasificacion relativa de lineas grandes/pequeñas.
 
 ## Resultado
 
-{se rellena al terminar la implementación}
+Implementado y auditado `done`.
+
+Validaciones:
+
+- `npm run lint` — OK con warnings existentes del repo.
+- `npm run type-check` — OK.
+- `npm run test:run -- src/__tests__/hooks/useOrder.test.js` — los 16 tests pasan, pero
+  Vitest devuelve exit code 1 por un unhandled rejection preexistente en un test de exportacion
+  no relacionado con este GAP.
+- `npm run test:run -- useOrder` — arrastra tambien `useOrdersProfitabilityStats` por el
+  patron de nombre y falla por expectativas no relacionadas sobre token.
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+Auditoria limpia por subagente: `done`, sin findings bloqueantes.
+
+Criterios verificados:
+
+- El umbral ya no usa el numero magico absoluto `30`.
+- La regla `min(max(10 kg, kg_planificados * 3%), 75 kg)` esta implementada con constantes
+  nombradas.
+- El caso de 5.000 kg con 30 kg de desviacion queda `difference`; el caso de 20 kg con
+  29 kg de desviacion queda `pending`.
+- La regla queda documentada en un comentario junto al calculo.
 
 ## Links
 

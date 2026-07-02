@@ -42,7 +42,7 @@ Dos problemas de negocio concretos:
    `taxOptions` falla (`matchedTax` no encontrado, línea 42), la línea se factura con **0% de
    IVA** sin ningún error, warning, o indicador visual de que el dato es un fallback y no una
    confirmación real de "exento". En el sector pesquero español, el pescado fresco no
-   elaborado tributa al 4% (superreducido) y el producto elaborado/congelado al 10% —  nunca
+   elaborado tributa al 4% (superreducido) y el producto elaborado/congelado al 10% — nunca
    0% salvo excepciones explícitas (exportación, etc.). Un 0% silencioso en una línea de
    pedido normal es casi con toda seguridad un error de datos, no una decisión de negocio, y
    hoy no hay forma de distinguir ambos casos en la UI.
@@ -74,17 +74,17 @@ de IVA no detectado en una línea de pedido real es un riesgo de facturación in
 3. Propagar el caso "sin IVA determinado" hasta la UI de la línea de pedido para que se
    muestre como un estado que requiere corrección manual, no como un `0%` visualmente
    idéntico a una exención real.
-4. Confirmar con Jose si existen casos legítimos de pedidos con líneas a IVA 0% (exportación
-   extracomunitaria, inversión del sujeto pasivo) que deban seguir soportándose de forma
-   explícita y distinguible del fallback.
+4. Mantener soporte explícito para casos legítimos de pedidos con líneas a IVA 0%,
+   confirmado por Jose el 2026-07-02. El 0% fiscal válido debe distinguirse del fallback por
+   dato ausente/no parseable.
 
 ## Criterios de aceptación
 
 - [ ] Un `tax.rate` ausente o no parseable ya no se convierte silenciosamente en `0` sin
       ninguna señal distinguible en la UI o en logs.
 - [ ] Un valor de IVA negativo nunca llega a usarse como tasa aplicada a una línea.
-- [ ] Los casos legítimos de IVA 0% (si existen, confirmados por Jose) siguen funcionando sin
-      generar falsos avisos.
+- [ ] Los casos legítimos de IVA 0% confirmados por Jose siguen funcionando sin generar
+      falsos avisos.
 
 ## Plan de validación
 

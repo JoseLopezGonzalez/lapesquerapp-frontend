@@ -13,17 +13,25 @@ orders (Pedidos) — módulo piloto
 
 ## Fase activa
 
-Primera auditoría real de `orders` completada en circuito acotado de 5 carriles. 16 GAPs documentados: 11 `ready`, 2 `done`, 2 `blocked` por reglas de negocio pendientes y 1 `rejected` por merge. Cruce legacy acotado completado en `docs/ai/modules/orders/audit.md` sin crear GAPs nuevos.
+Primera auditoría real de `orders` completada en circuito acotado de 5 carriles. 16 GAPs documentados: 11 `ready`, 4 `done`, 0 `blocked` y 1 `rejected` por merge. Cruce legacy acotado completado en `docs/ai/modules/orders/audit.md` sin crear GAPs nuevos.
 
 ## Acción recomendada
 
-Jose debe confirmar 3 reglas operativas para desbloquear GAP-V2-011 y GAP-V2-013 (ver `docs/ai/modules/orders/audit.md` § 9 Bloqueos). En paralelo, el siguiente lote low risk recomendado es permisos comerciales:
+La tolerancia planificado/producido ya quedó implementada en GAP-V2-011. La siguiente acción recomendada es continuar con la guarda de finalización de pedido incompleto:
 
 ```text
-/implement-next module=orders category=architecture-refactor limit=1 risk=low
+/implement-next module=orders category=domain-business limit=1 risk=medium
 ```
 
-que cogería `GAP-V2-021` (ocultar creación en manager comercial readOnly).
+que cogería `GAP-V2-013`.
+
+Para seguir permisos comerciales hace falta ampliar riesgo:
+
+```text
+/implement-next module=orders category=architecture-refactor limit=1 risk=medium
+```
+
+que cogería `GAP-V2-020` (ocultar/evitar coste y margen en detalle comercial readOnly).
 
 Para seguir code-quality hace falta ampliar riesgo:
 
@@ -35,7 +43,7 @@ que cogería `GAP-V2-003` y `GAP-V2-005`. `GAP-V2-001` sigue fuera por `size: L`
 
 ## Motivo
 
-El primer lote implementable low-risk de code-quality ya se cerró: `GAP-V2-002` y `GAP-V2-004`. Quedan pendientes code-quality de riesgo medio o tamaño L, y una opción architecture-refactor low-risk (`GAP-V2-021`) para avanzar sin tocar reglas de negocio.
+Los lotes implementables ya cerraron `GAP-V2-002`, `GAP-V2-004`, `GAP-V2-021` y `GAP-V2-011`. Al quedar corregida la fuente de verdad de tolerancia planificado/producido, el siguiente avance más coherente es `GAP-V2-013`.
 
 ## Archivos clave
 
@@ -45,7 +53,7 @@ El primer lote implementable low-risk de code-quality ya se cerró: `GAP-V2-002`
 
 ## Restricciones
 
-- No marcar GAP-V2-011 ni GAP-V2-013 como `ready` sin que Jose confirme la regla de negocio.
+- Reglas confirmadas: tolerancia `min(max(10 kg, kg_planificados * 3%), 75 kg)` ya implementada, IVA 0% legítimo permitido, y finalización con producción incompleta mediante advertencia/confirmación.
 - GAP-V2-001, 003, 005, 012 y 020 son `risk: medium` — quedan fuera de `/implement-next` con el filtro `risk=low` salvo que Jose lo autorice explícitamente.
 - GAP-V2-001 es `size: L` — no coger por defecto en ningún lote sin autorización explícita.
 - GAP-V2-020 afecta coste/margen visible para comercial: conviene coordinarlo con backend/policies además del ocultado frontend.
@@ -54,5 +62,5 @@ El primer lote implementable low-risk de code-quality ya se cerró: `GAP-V2-002`
 ## Estado resumido
 
 ```text
-audited_acotado → batch_1_done (2 done, 11 ready, 2 blocked, 1 rejected)
+audited_acotado → batch_3_done + business_rules_confirmed (4 done, 11 ready, 0 blocked, 1 rejected)
 ```

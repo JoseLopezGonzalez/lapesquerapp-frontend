@@ -7,7 +7,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useOrder } from '@/hooks/useOrder';
+import { calculateProductionQuantityToleranceKg, useOrder } from '@/hooks/useOrder';
 
 // Mock next-auth
 vi.mock('next-auth/react', () => ({
@@ -152,6 +152,65 @@ describe('useOrder', () => {
 
     expect(result.current.order).toEqual(mockOrder);
     expect(result.current.error).toBeFalsy();
+  });
+
+  it('calculates production tolerance with confirmed min, percentage and max rule', () => {
+    expect(calculateProductionQuantityToleranceKg(20)).toBe(10);
+    expect(calculateProductionQuantityToleranceKg(1000)).toBe(30);
+    expect(calculateProductionQuantityToleranceKg(5000)).toBe(75);
+  });
+
+  it('classifies production differences with proportional tolerance by planned quantity', async () => {
+    getOrder.mockResolvedValue({
+      ...mockOrder,
+      plannedProductDetails: [
+        {
+          product: { id: 1, name: 'Linea grande' },
+          quantity: 5000,
+          boxes: 100,
+        },
+        {
+          product: { id: 2, name: 'Linea pequena' },
+          quantity: 20,
+          boxes: 1,
+        },
+      ],
+      productionProductDetails: [
+        {
+          product: { id: 1, name: 'Linea grande' },
+          netWeight: 4970,
+          boxes: 100,
+        },
+        {
+          product: { id: 2, name: 'Linea pequena' },
+          netWeight: 49,
+          boxes: 1,
+        },
+      ],
+    });
+
+    const { result } = renderHook(() => useOrder(1), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    expect(result.current.mergedProductDetails).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          product: expect.objectContaining({ id: 1 }),
+          quantityDifference: 30,
+          status: 'difference',
+        }),
+        expect.objectContaining({
+          product: expect.objectContaining({ id: 2 }),
+          quantityDifference: -29,
+          status: 'pending',
+        }),
+      ])
+    );
   });
 
   it('updateOrderStatus updates cache via setOrderStatus', async () => {

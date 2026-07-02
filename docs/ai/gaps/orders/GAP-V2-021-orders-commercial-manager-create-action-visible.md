@@ -6,7 +6,7 @@ category: architecture-refactor
 priority: P1
 risk: low
 size: S
-status: ready
+status: done
 dependencies: []
 target_files:
   - src/components/Comercial/CRM/ComercialOrdersManager.tsx
@@ -58,15 +58,26 @@ Manual: revisar /admin/orders-manager desktop/mobile y confirmar que crear sigue
 
 ## Notas de implementación
 
-Pendiente.
+- `OrdersList` añade `canCreateOrder` opcional, derivado por defecto de `!readOnly`, para ocultar los puntos de creación sin afectar al manager admin.
+- En mobile se conserva la alineación del header con un espaciador cuando no hay permiso de creación.
+- El empty state de `OrdersList` solo muestra CTA de creación si `canCreateOrder` es `true`; en modo lectura usa copy neutral.
+- `ComercialOrdersManager` pasa `canCreateOrder={false}`, elimina el montaje de `CreateOrderForm` y deja el panel vacío sin CTA de creación.
 
 ## Resultado
 
-Pendiente.
+Validaciones de implementación:
+
+- `npm run lint` — OK, 0 errores; mantiene warnings preexistentes del repo.
+- `npm run type-check` — OK.
+- `npm run build` — OK.
 
 ## Resultado de auditoría
 
-Pendiente.
+Veredicto: `done`.
+
+- Sin hallazgos bloqueantes.
+- Criterios de aceptación cumplidos por lectura de código: los botones desktop/mobile de creación quedan condicionados por `canCreateOrder`, los empty states comerciales no exponen CTA de creación, `CreateOrderForm` ya no se importa ni se monta desde `ComercialOrdersManager`, y el flujo admin mantiene creación por defecto.
+- Riesgo residual no bloqueante: no se hizo navegación visual/browser; queda estado defensivo `onCreatingNewOrder` en comercial aunque ya no puede activar montaje de formulario.
 
 ## Links
 

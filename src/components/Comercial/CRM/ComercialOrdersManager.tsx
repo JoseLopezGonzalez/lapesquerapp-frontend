@@ -6,7 +6,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import OrdersList from '@/components/Admin/OrdersManager/OrdersList';
 import type { OrderCardOrder } from '@/components/Admin/OrdersManager/OrdersList/OrderCard';
 import Order from '@/components/Admin/OrdersManager/Order';
-import CreateOrderForm from '@/components/Admin/OrdersManager/CreateOrderForm';
 import OrdersManagerLayout from '@/components/Admin/OrdersManager/shared/OrdersManagerLayout';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/Utilities/EmptyState';
@@ -30,6 +29,7 @@ export default function ComercialOrdersManager() {
   const queryClient = useQueryClient();
   const { isMobile, mounted } = useIsMobileSafe();
   const tenantId = getCurrentTenant();
+  const canCreateOrder = false;
 
   const [onCreatingNewOrder, setOnCreatingNewOrder] = useState(false);
   const [isOrderLoading, setIsOrderLoading] = useState(false);
@@ -135,11 +135,12 @@ export default function ComercialOrdersManager() {
   }, []);
 
   const handleOnClickAddNewOrder = useCallback(() => {
+    if (!canCreateOrder) return;
     setCategories((prev) => prev.map((cat) => ({ ...cat, current: cat.name === 'all' })));
     setSelectedOrder(null);
     setSearchText('');
     setOnCreatingNewOrder(true);
-  }, []);
+  }, [canCreateOrder]);
 
   const handleCloseDetail = useCallback(() => {
     setSelectedOrder(null);
@@ -153,15 +154,6 @@ export default function ComercialOrdersManager() {
       setSelectedOrder((prev) => (prev === orderId ? null : String(orderId)));
     },
     [viewMode]
-  );
-
-  const handleOnCreatedOrder = useCallback(
-    (id: number | string) => {
-      setOnCreatingNewOrder(false);
-      setSelectedOrder(String(id));
-      setTimeout(() => reloadOrders(), 0);
-    },
-    [reloadOrders]
   );
 
   const toggleViewMode = useCallback(() => {
@@ -195,6 +187,7 @@ export default function ComercialOrdersManager() {
         viewMode={viewMode}
         onToggleViewMode={toggleViewMode}
         readOnly
+        canCreateOrder={canCreateOrder}
       />
     ),
     [
@@ -230,20 +223,12 @@ export default function ComercialOrdersManager() {
         </div>
       );
     }
-    if (onCreatingNewOrder) {
-      return (
-        <div className="flex h-full flex-col overflow-hidden">
-          <CreateOrderForm onCreate={handleOnCreatedOrder} onClose={handleCloseDetail} />
-        </div>
-      );
-    }
     return (
       <Card className="flex h-full flex-col p-4 sm:p-7">
         <EmptyState
           title="Seleccione un pedido"
-          description="Selecciona un pedido para ver los detalles y realizar cambios."
+          description="Selecciona un pedido para ver los detalles."
           icon={<Package />}
-          button={{ name: 'Crear pedido nuevo', onClick: handleOnClickAddNewOrder }}
         />
       </Card>
     );
@@ -254,8 +239,6 @@ export default function ComercialOrdersManager() {
     handleOnChange,
     handleOrderLoading,
     handleCloseDetail,
-    handleOnCreatedOrder,
-    handleOnClickAddNewOrder,
   ]);
 
   if (!mounted) return null;

@@ -16,6 +16,10 @@ import { useAuxiliaryProductOptions } from './useAuxiliaryProductOptions';
 import { orderKeys } from '@/lib/routes/queryKeys';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 
+const PRODUCTION_TOLERANCE_PERCENTAGE = 0.03;
+const MIN_PRODUCTION_TOLERANCE_KG = 10;
+const MAX_PRODUCTION_TOLERANCE_KG = 75;
+
 export interface NormalizedOrderPallet {
   id: number | string;
   receptionId: number | string | null;
@@ -32,6 +36,16 @@ const normalizeOrderPallet = (pallet: Record<string, unknown>): NormalizedOrderP
     costPerKg: (pallet.costPerKg ?? pallet.cost_per_kg ?? null) as number | null,
     totalCost: (pallet.totalCost ?? pallet.total_cost ?? null) as number | null,
   };
+};
+
+export const calculateProductionQuantityToleranceKg = (plannedQuantity: number): number => {
+  if (!Number.isFinite(plannedQuantity) || plannedQuantity <= 0) return 0;
+
+  // Regla de negocio confirmada: tolerancia por linea = min(max(10 kg, kg planificados * 3%), 75 kg).
+  return Math.min(
+    Math.max(MIN_PRODUCTION_TOLERANCE_KG, plannedQuantity * PRODUCTION_TOLERANCE_PERCENTAGE),
+    MAX_PRODUCTION_TOLERANCE_KG
+  );
 };
 
 const mergeOrderDetails = (
@@ -69,8 +83,11 @@ const mergeOrderDetails = (
         existing.boxesDifference =
           (existing.plannedBoxes as number) - (existing.productionBoxes as number);
         const diff = existing.quantityDifference as number;
+        const toleranceKg = calculateProductionQuantityToleranceKg(
+          Number(existing.plannedQuantity)
+        );
         existing.status =
-          diff === 0 ? 'success' : diff <= 30 && diff >= -30 ? 'difference' : 'pending';
+          diff === 0 ? 'success' : Math.abs(diff) <= toleranceKg ? 'difference' : 'pending';
       } else {
         resultMap.set(product.id as number | string, {
           product,

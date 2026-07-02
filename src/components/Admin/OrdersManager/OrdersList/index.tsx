@@ -49,6 +49,7 @@ interface OrdersListProps {
   viewMode?: string;
   onToggleViewMode?: () => void;
   readOnly?: boolean;
+  canCreateOrder?: boolean;
 }
 
 function getErrorDescription(error: unknown, fallback: string): string {
@@ -80,9 +81,11 @@ const OrdersList = ({
   selectedOrderId,
   onToggleViewMode,
   readOnly = false,
+  canCreateOrder: canCreateOrderProp,
 }: OrdersListProps) => {
   const visibleCategories = visibleCategoriesProp ?? categories;
   const activeCount = totalActiveOrders ?? orders?.length ?? 0;
+  const canCreateOrder = canCreateOrderProp ?? !readOnly;
 
   const { isMobile, mounted } = useIsMobileSafe();
   const router = useRouter();
@@ -178,15 +181,19 @@ const OrdersList = ({
             <h2 className="flex-1 truncate text-center text-xl font-normal dark:text-white">
               Pedidos Activos
             </h2>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClickAddNewOrder}
-              className="hover:bg-muted h-12 min-h-12 w-12 min-w-12 shrink-0 rounded-full"
-              aria-label="Crear nuevo pedido"
-            >
-              <Plus className="h-6 w-6" />
-            </Button>
+            {canCreateOrder ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onClickAddNewOrder}
+                className="hover:bg-muted h-12 min-h-12 w-12 min-w-12 shrink-0 rounded-full"
+                aria-label="Crear nuevo pedido"
+              >
+                <Plus className="h-6 w-6" />
+              </Button>
+            ) : (
+              <div className="h-12 min-h-12 w-12 min-w-12 shrink-0" aria-hidden="true" />
+            )}
           </div>
         ) : (
           /* Layout desktop: título + botones */
@@ -214,16 +221,18 @@ const OrdersList = ({
                   </TooltipContent>
                 </Tooltip>
               )}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="default" size="icon" onClick={onClickAddNewOrder}>
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Crear nuevo pedido</p>
-                </TooltipContent>
-              </Tooltip>
+              {canCreateOrder && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="default" size="icon" onClick={onClickAddNewOrder}>
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Crear nuevo pedido</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button variant="outline" size="icon" onClick={exportDocument}>
@@ -346,33 +355,41 @@ const OrdersList = ({
                 title={
                   searchText
                     ? 'No se encontraron pedidos'
-                    : (({
-                        finished: 'No hay pedidos terminados',
-                        pending: 'No hay pedidos en producción',
-                        incident: 'No hay pedidos con incidentes',
-                        today: 'No hay pedidos para hoy',
-                        tomorrow: 'No hay pedidos para mañana',
-                      } as Record<string, string>)[activeTab] ?? 'No hay pedidos activos')
+                    : ((
+                        {
+                          finished: 'No hay pedidos terminados',
+                          pending: 'No hay pedidos en producción',
+                          incident: 'No hay pedidos con incidentes',
+                          today: 'No hay pedidos para hoy',
+                          tomorrow: 'No hay pedidos para mañana',
+                        } as Record<string, string>
+                      )[activeTab] ?? 'No hay pedidos activos')
                 }
                 description={
                   searchText
                     ? 'Intenta con otros parámetros de búsqueda o ajusta los filtros.'
-                    : (({
-                        finished:
-                          'Los pedidos terminados aparecerán aquí una vez que se completen.',
-                        pending:
-                          'Los pedidos en producción aparecerán aquí cuando estén en proceso.',
-                        incident:
-                          'Los pedidos con incidentes aparecerán aquí cuando se reporten problemas.',
-                        today:
-                          'No hay pedidos con fecha de carga hoy. Cambia el filtro o crea un pedido.',
-                        tomorrow:
-                          'No hay pedidos con fecha de carga mañana. Cambia el filtro o crea un pedido.',
-                      } as Record<string, string>)[activeTab] ??
-                      'Crea un nuevo pedido para comenzar a gestionar tus pedidos activos.')
+                    : ((
+                        {
+                          finished:
+                            'Los pedidos terminados aparecerán aquí una vez que se completen.',
+                          pending:
+                            'Los pedidos en producción aparecerán aquí cuando estén en proceso.',
+                          incident:
+                            'Los pedidos con incidentes aparecerán aquí cuando se reporten problemas.',
+                          today: canCreateOrder
+                            ? 'No hay pedidos con fecha de carga hoy. Cambia el filtro o crea un pedido.'
+                            : 'No hay pedidos con fecha de carga hoy. Cambia el filtro para revisar otros pedidos.',
+                          tomorrow: canCreateOrder
+                            ? 'No hay pedidos con fecha de carga mañana. Cambia el filtro o crea un pedido.'
+                            : 'No hay pedidos con fecha de carga mañana. Cambia el filtro para revisar otros pedidos.',
+                        } as Record<string, string>
+                      )[activeTab] ??
+                      (canCreateOrder
+                        ? 'Crea un nuevo pedido para comenzar a gestionar tus pedidos activos.'
+                        : 'Los pedidos activos aparecerán aquí cuando estén disponibles.'))
                 }
                 button={
-                  !searchText && activeTab === 'all'
+                  canCreateOrder && !searchText && activeTab === 'all'
                     ? { name: 'Crear nuevo pedido', onClick: onClickAddNewOrder }
                     : undefined
                 }
@@ -403,6 +420,7 @@ export default memo(OrdersList, (prevProps, nextProps) => {
     prevProps.onClickAddNewOrder === nextProps.onClickAddNewOrder &&
     prevProps.onRetry === nextProps.onRetry &&
     prevProps.readOnly === nextProps.readOnly &&
+    prevProps.canCreateOrder === nextProps.canCreateOrder &&
     prevProps.viewMode === nextProps.viewMode &&
     prevProps.onToggleViewMode === nextProps.onToggleViewMode
   );

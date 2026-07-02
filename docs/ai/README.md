@@ -118,11 +118,11 @@ Ver Fase 0 de la propuesta para el detalle de qué agentes se convirtieron en su
 
 ```text
 Módulo: orders (Pedidos)
-Fase: piloto auditado_acotado + primer lote implementado — 5 carriles ejecutados,
-registry generado, cruce legacy acotado completado y 2 GAPs cerrados.
+Fase: piloto auditado_acotado + segundo lote implementado + reglas de negocio confirmadas —
+5 carriles ejecutados, registry generado, cruce legacy acotado completado y 3 GAPs cerrados.
 Criterio de éxito: continuar con /implement-next sin que Jose tenga que explicar
 contexto adicional.
 
 Siguiente acción recomendada:
-/implement-next module=orders category=architecture-refactor limit=1 risk=low
+/implement-next module=orders category=domain-business limit=1 risk=medium
 ```

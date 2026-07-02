@@ -6,7 +6,7 @@ category: domain-business
 priority: P1
 risk: medium
 size: M
-status: blocked
+status: ready
 dependencies:
   - GAP-V2-011
 target_files:
@@ -57,19 +57,18 @@ validación usaría como fuente de verdad debe primero tener un umbral de tolera
 
 ## Solución propuesta
 
-**Requiere confirmación de Jose**: ¿debe ser un bloqueo duro (no se puede finalizar con
-líneas pendientes) o una confirmación con advertencia explícita (el operario puede decidir
-finalizar igualmente, ej. cuando el resto se sirve en un pedido posterior)? Esto es una
-decisión de proceso operativo, no solo técnica.
+Regla confirmada por Jose el 2026-07-02: no debe ser bloqueo duro. Si quedan líneas fuera
+de cobertura/tolerancia, el sistema debe mostrar advertencia y pedir confirmación explícita
+antes de marcar el pedido como `finished`.
 
-Una vez confirmada la regla:
+Una vez implementada:
 
 1. En `Order/index.tsx`, antes de invocar `updateOrderStatus('finished')`, comprobar
    `mergedProductDetails` (ya disponible vía `useOrder`) y si hay líneas `pending` o
    `noPlanned`, mostrar un diálogo de confirmación (patrón ya usado en el proyecto para
    acciones sensibles) con el detalle de qué líneas están incompletas.
-2. Si Jose confirma que debe ser bloqueo duro, deshabilitar la opción `finished` en el
-   selector de estado en vez de solo advertir tras el clic.
+2. Si el usuario confirma, continuar con `updateOrderStatus('finished')`; si cancela, no
+   enviar la transición al backend.
 
 ## Criterios de aceptación
 
