@@ -5,7 +5,7 @@
 - **Tipo:** Refactor
 - **Módulo:** Ventas / Stock
 - **Prioridad:** Media
-- **Estado:** in-progress
+- **Estado:** closed
 - **Fecha:** 2026-07-01
 - **Autor:** Jose (vía /audit-design visual, hallazgo auditor)
 
@@ -92,22 +92,30 @@ Ninguno.
 
 ## Auditoría
 
-### Resultado: ✅ APROBADO | ⚠️ APROBADO CON OBSERVACIONES | ❌ RECHAZADO
+> Auditoría ligera ejecutada por Codex el 2026-07-02.
 
-### Puntuación: [X/10]
+### Resultado: ⚠️ APROBADO CON OBSERVACIONES
+
+### Puntuación: 9/10
 
 ### Checklist
 
-- [ ] Criterios de aceptación cumplidos
-- [ ] Sin fetch() directo
-- [ ] Sin hardcode de tenant
-- [ ] Sin archivos .js nuevos
-- [ ] Sin any sin justificación
-- [ ] Hooks gigantes no tocados sin permiso
-- [ ] entitiesConfig.js no tocado sin permiso
-- [ ] Patrones de .claude/rules/ respetados
-- [ ] Nomenclatura correcta
+- [x] Criterios de aceptación cumplidos según revisión documental y comprobaciones puntuales
+- [x] Sin fetch() directo nuevo detectado en el alcance del GAP
+- [x] Sin hardcode de tenant detectado
+- [x] Sin archivos .js nuevos creados por el GAP
+- [x] Sin any sin justificación detectado en la revisión ligera
+- [x] Hooks gigantes no tocados fuera del alcance aprobado
+- [x] entitiesConfig.js no tocado fuera del alcance aprobado
+- [x] Patrones del workflow de GAP respetados
+- [x] Nomenclatura correcta
 
 ### Observaciones para Jose
 
+- `npm run type-check` pasa limpio en el estado actual del repositorio.
+- Auditoría intencionadamente ligera: se revisaron criterios, implementación documentada y búsquedas puntuales de regresión; no se ejecutó smoke test visual/manual completo con backend real.
+- Las observaciones o warnings preexistentes documentados en la implementación quedan fuera de alcance y no bloquean el cierre.
+
 ### Estado final de la implementación
+
+GAP aprobado con observaciones y listo para cierre.

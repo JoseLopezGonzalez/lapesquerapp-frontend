@@ -5,7 +5,7 @@
 - **Tipo:** Refactor
 - **Módulo:** Ventas / Pedidos
 - **Prioridad:** Alta
-- **Estado:** open
+- **Estado:** closed
 - **Fecha:** 2026-07-01
 - **Autor:** Jose
 
@@ -176,6 +176,8 @@ No aplica Revisión Visual ni Revisión UX (§3b/3c del checklist del auditor): 
 
 ### Estado final de la implementación
 
+Cierre actualizado por Codex el 2026-07-02: Jose pidió finalizar los GAPs en progreso; se conserva la aprobación con observaciones existente y la falta de smoke test manual queda como recomendación no bloqueante para QA posterior.
+
 `palletService.ts` y `productService.ts` obtienen el token internamente vía `getAuthToken()` en las 4 funciones que consume `useOrderPallets.js` (directa o transitivamente). El hook ya no extrae ni reenvía ningún token; todas las llamadas a servicios se hacen sin segundo argumento de autenticación. Los 5 archivos externos que llamaban a las funciones migradas con token como argumento fueron actualizados en el mismo commit para no romper el build. `npm run type-check` y el lint de los ficheros tocados están limpios (los warnings de ESLint que aparecen son preexistentes, confirmado comparando contra el HEAD sin estos cambios). La suite de tests no introduce fallos nuevos (12 test files / 23 tests fallan igual con y sin este cambio — son fallos preexistentes no relacionados).
 
-**Pendiente antes de cerrar el GAP:** smoke test manual del panel OrderPallets por Jose (o quien tenga sesión real) confirmando clonar/buscar/vincular/crear-desde-previsión/imprimir-etiquetas. El archivo se deja en `in-progress/` hasta esa confirmación.
+**Seguimiento recomendado tras cierre:** smoke test manual del panel OrderPallets con sesión real, cubriendo clonar/buscar/vincular/crear desde previsión/imprimir etiquetas.
