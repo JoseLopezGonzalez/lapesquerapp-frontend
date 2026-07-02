@@ -6,7 +6,7 @@ category: ux-ui
 priority: P1
 risk: low
 size: S
-status: ready
+status: done
 dependencies: []
 target_files:
   - src/components/Admin/OrdersManager/CreateOrderForm/index.tsx
@@ -65,11 +65,11 @@ usa. No requiere cambios en el padre.
 
 ## Criterios de aceptación
 
-- [ ] En desktop, existe un botón "Cancelar" visible en el panel de creación de pedido que
+- [x] En desktop, existe un botón "Cancelar" visible en el panel de creación de pedido que
       cierra el panel y vuelve al estado vacío ("Seleccione un pedido").
-- [ ] El botón usa `variant="outline"` y se posiciona antes del submit, según el patrón de
+- [x] El botón usa `variant="outline"` y se posiciona antes del submit, según el patrón de
       `design-context.md` §4 Forms.
-- [ ] No se rompe el flujo mobile existente (`CreateOrderFormMobile` no se toca salvo que se
+- [x] No se rompe el flujo mobile existente (`CreateOrderFormMobile` no se toca salvo que se
       decida compartir lógica).
 
 ## Plan de validación
@@ -83,15 +83,33 @@ npm run lint
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+- Se añade una acción explícita "Cancelar" en el footer desktop de
+  `CreateOrderForm`.
+- El botón usa `variant="outline"`, queda antes del submit y llama a `onClose`
+  cuando la prop está disponible.
+- No se añade confirmación de cambios sin guardar porque el formulario de
+  creación desktop no tenía ese patrón previo; queda fuera de alcance del GAP.
 
 ## Resultado
 
-{se rellena al terminar la implementación}
+- `src/components/Admin/OrdersManager/CreateOrderForm/index.tsx` renderiza
+  "Cancelar" en desktop cuando recibe `onClose`.
+- El botón no dispara submit (`type="button"`), usa `variant="outline"` y queda
+  antes de "Crear Pedido".
+- Validaciones ejecutadas: `npm run type-check`, `npm run lint`, `npm run build`.
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+Veredicto: `done`.
+
+Auditoría con contexto limpio confirma que la rama desktop de `CreateOrderForm`
+renderiza un botón visible `Cancelar` en el footer del formulario, antes del
+submit, con `type="button"`, `variant="outline"` y `onClick={onClose}`. El botón
+queda deshabilitado durante `isSubmitting`, lo que mantiene el patrón de
+prevención de acciones mientras se crea el pedido.
+
+No hay hallazgos bloqueantes. `CreateOrderFormMobile.jsx` no fue modificado y el
+flujo mobile conserva el `onClose` existente.
 
 ## Links
 

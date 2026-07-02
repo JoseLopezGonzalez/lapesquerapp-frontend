@@ -619,7 +619,7 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
                       <Label htmlFor={field.name}>{field.label}</Label>
                       {renderField(field)}
                       {errors[field.name as keyof typeof errors] && (
-                        <p className="text-sm text-destructive">
+                        <p className="text-destructive text-sm">
                           {
                             (errors[field.name as keyof typeof errors] as { message?: string })
                               ?.message
@@ -637,7 +637,7 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
                 | { message?: string; root?: { message?: string } }
                 | undefined;
               const message = arrayError?.root?.message ?? arrayError?.message;
-              return message ? <p className="text-sm text-destructive">{message}</p> : null;
+              return message ? <p className="text-destructive text-sm">{message}</p> : null;
             })()}
 
             <div className="w-full">
@@ -717,27 +717,27 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
                       <Trash2 className="h-4 w-4" />
                     </Button>
                     {errors.plannedProducts?.[index]?.product && (
-                      <p className="col-span-full text-sm text-destructive">
+                      <p className="text-destructive col-span-full text-sm">
                         {errors.plannedProducts[index]?.product?.message}
                       </p>
                     )}
                     {errors.plannedProducts?.[index]?.quantity && (
-                      <p className="col-span-full text-sm text-destructive">
+                      <p className="text-destructive col-span-full text-sm">
                         {errors.plannedProducts[index]?.quantity?.message}
                       </p>
                     )}
                     {errors.plannedProducts?.[index]?.boxes && (
-                      <p className="col-span-full text-sm text-destructive">
+                      <p className="text-destructive col-span-full text-sm">
                         {errors.plannedProducts[index]?.boxes?.message}
                       </p>
                     )}
                     {errors.plannedProducts?.[index]?.unitPrice && (
-                      <p className="col-span-full text-sm text-destructive">
+                      <p className="text-destructive col-span-full text-sm">
                         {errors.plannedProducts[index]?.unitPrice?.message}
                       </p>
                     )}
                     {errors.plannedProducts?.[index]?.tax && (
-                      <p className="col-span-full text-sm text-destructive">
+                      <p className="text-destructive col-span-full text-sm">
                         {errors.plannedProducts[index]?.tax?.message}
                       </p>
                     )}
@@ -846,22 +846,22 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
                       <Trash2 className="h-4 w-4" />
                     </Button>
                     {errors.auxiliaryLines?.[index]?.description && (
-                      <p className="col-span-full text-sm text-destructive">
+                      <p className="text-destructive col-span-full text-sm">
                         {errors.auxiliaryLines[index]?.description?.message}
                       </p>
                     )}
                     {errors.auxiliaryLines?.[index]?.quantity && (
-                      <p className="col-span-full text-sm text-destructive">
+                      <p className="text-destructive col-span-full text-sm">
                         {errors.auxiliaryLines[index]?.quantity?.message}
                       </p>
                     )}
                     {errors.auxiliaryLines?.[index]?.unit && (
-                      <p className="col-span-full text-sm text-destructive">
+                      <p className="text-destructive col-span-full text-sm">
                         {errors.auxiliaryLines[index]?.unit?.message}
                       </p>
                     )}
                     {errors.auxiliaryLines?.[index]?.unitPrice && (
-                      <p className="col-span-full text-sm text-destructive">
+                      <p className="text-destructive col-span-full text-sm">
                         {errors.auxiliaryLines[index]?.unitPrice?.message}
                       </p>
                     )}
@@ -887,6 +887,11 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
             </div>
 
             <div className="flex justify-end gap-4 pt-4">
+              {onClose ? (
+                <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
+                  Cancelar
+                </Button>
+              ) : null}
               <Button
                 type="submit"
                 disabled={submitDisabled}
