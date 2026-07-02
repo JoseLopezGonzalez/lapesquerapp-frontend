@@ -13,13 +13,47 @@ export interface OrderSelectOption {
   label: string | number;
 }
 
-function parseTaxRate(value: unknown): number {
-  if (value == null || value === '') return 0;
-  if (typeof value === 'number') return Number.isNaN(value) ? 0 : value;
+function warnInvalidTaxRate(value: unknown, reason: string) {
+  if (process.env.NODE_ENV !== 'development') return;
+
+  console.warn('[orders] Invalid planned detail tax rate ignored', { value, reason });
+}
+
+export function parseTaxRate(value: unknown): number | null {
+  if (value == null || value === '') {
+    warnInvalidTaxRate(value, 'missing');
+    return null;
+  }
+
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value)) {
+      warnInvalidTaxRate(value, 'not_finite');
+      return null;
+    }
+
+    if (value < 0) {
+      warnInvalidTaxRate(value, 'negative');
+      return null;
+    }
+
+    return value;
+  }
+
   const normalized = String(value).replace(',', '.');
   const match = normalized.match(/-?\d+(\.\d+)?/);
   const parsed = match ? Number(match[0]) : Number(normalized);
-  return Number.isNaN(parsed) ? 0 : parsed;
+
+  if (!Number.isFinite(parsed)) {
+    warnInvalidTaxRate(value, 'not_parseable');
+    return null;
+  }
+
+  if (parsed < 0) {
+    warnInvalidTaxRate(value, 'negative');
+    return null;
+  }
+
+  return parsed;
 }
 
 function normalizePlannedProductDetail(
@@ -40,7 +74,7 @@ function normalizePlannedProductDetail(
   const ft = fallbackDetail?.tax as Record<string, unknown> | undefined;
   const taxId = dt?.id ?? detail?.taxId ?? ft?.id ?? fallbackDetail?.taxId ?? null;
   const matchedTax = taxOptions.find((t) => Number(t?.value) === Number(taxId));
-  const taxRateRaw = dt?.rate ?? ft?.rate ?? matchedTax?.label ?? 0;
+  const taxRateRaw = dt?.rate ?? ft?.rate ?? matchedTax?.label;
   const parsedTaxRate = parseTaxRate(taxRateRaw);
 
   return {
@@ -75,8 +109,13 @@ export function useOrderPlannedDetails({
   onError,
 }: UseOrderPlannedDetailsParams): UseOrderPlannedDetailsResult {
   const plannedProductDetails = useMemo(
-    () => (order?.plannedProductDetails ? [...(order.plannedProductDetails as unknown[])] : []),
-    [order?.plannedProductDetails]
+    () =>
+      order?.plannedProductDetails
+        ? (order.plannedProductDetails as Array<Record<string, unknown>>).map((detail) =>
+            normalizePlannedProductDetail(detail, productOptions, taxOptions)
+          )
+        : [],
+    [order?.plannedProductDetails, productOptions, taxOptions]
   );
 
   const updatePlannedProductDetail = useCallback(

@@ -6,10 +6,12 @@ category: domain-business
 priority: P1
 risk: medium
 size: S
-status: ready
+status: done
 dependencies: []
 target_files:
   - src/hooks/orders/useOrderPlannedDetails.ts
+  - src/components/Admin/OrdersManager/Order/OrderPlannedProductDetails/index.tsx
+  - src/__tests__/hooks/useOrderPlannedDetails.test.ts
 created_at: 2026-07-02
 updated_at: 2026-07-02
 ---
@@ -80,10 +82,10 @@ de IVA no detectado en una línea de pedido real es un riesgo de facturación in
 
 ## Criterios de aceptación
 
-- [ ] Un `tax.rate` ausente o no parseable ya no se convierte silenciosamente en `0` sin
+- [x] Un `tax.rate` ausente o no parseable ya no se convierte silenciosamente en `0` sin
       ninguna señal distinguible en la UI o en logs.
-- [ ] Un valor de IVA negativo nunca llega a usarse como tasa aplicada a una línea.
-- [ ] Los casos legítimos de IVA 0% confirmados por Jose siguen funcionando sin generar
+- [x] Un valor de IVA negativo nunca llega a usarse como tasa aplicada a una línea.
+- [x] Los casos legítimos de IVA 0% confirmados por Jose siguen funcionando sin generar
       falsos avisos.
 
 ## Plan de validación
@@ -98,15 +100,44 @@ tenga `rate` cargado y confirmar que la UI señala el problema en vez de mostrar
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+- `parseTaxRate` ahora devuelve `number | null`: conserva `0` como IVA 0% explícito
+  válido, pero devuelve `null` para datos ausentes, no parseables, infinitos o negativos.
+- Los valores inválidos emiten `console.warn` solo en desarrollo, con motivo (`missing`,
+  `not_parseable`, `not_finite`, `negative`) para que el fallback no sea silencioso.
+- `normalizePlannedProductDetail` ya no aplica `?? 0` cuando falta `tax.rate` y no existe
+  `matchedTax`; el estado queda como `null`.
+- `OrderPlannedProductDetails` reutiliza el parser seguro y muestra `IVA pendiente` cuando
+  la tasa es `null`, distinguiéndolo de `0%`.
+- Se añadieron pruebas para IVA 0% legítimo, dato ausente/no parseable, valores negativos y
+  línea con impuesto no matcheado.
 
 ## Resultado
 
-{se rellena al terminar la implementación}
+Implementado y auditado como `done`.
+
+Validaciones ejecutadas:
+
+```text
+npm run test:run -- useOrderPlannedDetails
+npm run type-check
+npm run lint
+npx eslint src/hooks/orders/useOrderPlannedDetails.ts src/components/Admin/OrdersManager/Order/OrderPlannedProductDetails/index.tsx src/__tests__/hooks/useOrderPlannedDetails.test.ts
+npm run build
+```
+
+Resultado: todas pasan. `npm run lint` conserva warnings existentes del repo (0 errores);
+`package.json` emite un warning preexistente por clave duplicada `type-check`.
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+Veredicto `done` por subagente `gap-auditor` el 2026-07-02.
+
+- `parseTaxRate` devuelve `number | null`, mantiene `0` como válido y rechaza ausente/no
+  parseable/no finito/negativo.
+- Eliminado el fallback silencioso `?? 0` en la normalización.
+- La UI muestra `IVA pendiente` para `null` y `0%` para IVA 0% explícito.
+- La selección de impuesto inválido/no parseable cae a `null`, no a tasa aplicada numérica.
+- Tests focalizados cubren los casos críticos.
 
 ## Links
 

@@ -40,6 +40,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { notify } from '@/lib/notifications';
+import { parseTaxRate } from '@/hooks/orders/useOrderPlannedDetails';
 import { OrderTotalsSummaryDialog } from '@/components/Admin/OrdersManager/Order/components/OrderTotalsSummaryDialog';
 import {
   AlertDialog,
@@ -59,7 +60,7 @@ interface PlannedDetailProduct {
 
 interface PlannedDetailTax {
   id?: number | string | null;
-  rate: number | string;
+  rate: number | string | null;
 }
 
 interface PlannedDetail {
@@ -88,6 +89,10 @@ function getErrorDescription(error: unknown, fallback: string): string {
   );
 }
 
+function formatTaxRate(rate: number | null): string {
+  return rate == null ? 'IVA pendiente' : `${rate}%`;
+}
+
 const OrderPlannedProductDetails = () => {
   const { isMobile, mounted } = useIsMobileSafe();
   const {
@@ -113,16 +118,6 @@ const OrderPlannedProductDetails = () => {
     taxOptions: rawTaxOptions,
     loading: optionsLoading,
   } = options || {};
-
-  const parseTaxRate = useCallback((value: unknown): number => {
-    if (value == null || value === '') return 0;
-    if (typeof value === 'number') return Number.isNaN(value) ? 0 : value;
-
-    const normalized = String(value).replace(',', '.');
-    const match = normalized.match(/-?\d+(\.\d+)?/);
-    const parsed = match ? Number(match[0]) : Number(normalized);
-    return Number.isNaN(parsed) ? 0 : parsed;
-  }, []);
 
   // Asegurar que siempre sean arrays válidos
   const productOptions = useMemo(() => {
@@ -167,12 +162,12 @@ const OrderPlannedProductDetails = () => {
   }, [productOptions]);
 
   const taxOptionsMap = useMemo(() => {
-    const map = new Map<number, number>();
+    const map = new Map<number, number | null>();
     taxOptions.forEach((option) => {
       map.set(Number(option.value), parseTaxRate(option.label));
     });
     return map;
-  }, [taxOptions, parseTaxRate]);
+  }, [taxOptions]);
 
   // Memoizar la combinación de detalles
   const allDetails = useMemo(() => {
@@ -207,9 +202,7 @@ const OrderPlannedProductDetails = () => {
         return;
       }
 
-      const targetCard = viewportEl.querySelector<HTMLElement>(
-        `[data-card-index="${editIndex}"]`
-      );
+      const targetCard = viewportEl.querySelector<HTMLElement>(`[data-card-index="${editIndex}"]`);
       targetCard?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   }, [editIndex, isMobile]);
@@ -222,7 +215,7 @@ const OrderPlannedProductDetails = () => {
       boxes: '',
       quantity: '',
       unitPrice: '',
-      tax: { rate: 0 },
+      tax: { rate: null },
       isTemporary: true, // Marca para identificar líneas temporales
       tempId: Date.now() + Math.random(), // ID único temporal para identificación
     };
@@ -244,7 +237,7 @@ const OrderPlannedProductDetails = () => {
       if (!updatedDetails[index]) return;
 
       if (!updatedDetails[index].tax || typeof updatedDetails[index].tax !== 'object') {
-        updatedDetails[index].tax = { id: null, rate: 0 };
+        updatedDetails[index].tax = { id: null, rate: null };
       }
 
       if (!updatedDetails[index].product || typeof updatedDetails[index].product !== 'object') {
@@ -260,7 +253,7 @@ const OrderPlannedProductDetails = () => {
       } else if (field.includes('tax')) {
         updatedDetails[index].tax.id = Number(value);
         // Usar Map para búsqueda O(1) en lugar de find O(n)
-        updatedDetails[index].tax.rate = taxOptionsMap.get(Number(value)) ?? 0;
+        updatedDetails[index].tax.rate = taxOptionsMap.get(Number(value)) ?? null;
       } else {
         updatedDetails[index][field] = value == '' ? '' : Number(value as string);
       }
@@ -300,7 +293,10 @@ const OrderPlannedProductDetails = () => {
             console.error('Error al crear la línea:', error);
             return {
               title: 'Error al crear la línea',
-              description: getErrorDescription(error, 'No se pudo crear la línea. Intente de nuevo.'),
+              description: getErrorDescription(
+                error,
+                'No se pudo crear la línea. Intente de nuevo.'
+              ),
             };
           },
         })
@@ -402,7 +398,7 @@ const OrderPlannedProductDetails = () => {
       boxes: detail.productionBoxes,
       quantity: detail.productionQuantity,
       unitPrice: '',
-      tax: { rate: 0 },
+      tax: { rate: null },
       isTemporary: true,
       tempId: Date.now() + Math.random(), // ID único temporal para identificación
     };
@@ -457,159 +453,176 @@ const OrderPlannedProductDetails = () => {
               <div className="space-y-6 pb-20">
                 {/* Vista Mobile: Cards */}
                 <div className="space-y-3">
-                  {details.map((detail, index) => (
-                    <Card
-                      key={detail.id || detail.tempId}
-                      data-card-index={index}
-                      className="p-4"
-                    >
-                      <div className="space-y-3">
-                        {/* Artículo */}
-                        <div>
-                          {editIndex === index ? (
-                            // Combobox no expone un prop de tamaño propio (ver
-                            // src/components/Shadcn/Combobox/index.d.ts); className
-                            // se aplica directamente al Button interno vía cn().
-                            <Combobox
-                              options={productOptions || []}
-                              value={detail?.product?.id ? String(detail.product.id) : undefined}
-                              onChange={(e) => handleInputChange(index, 'product', e)}
-                              loading={optionsLoading}
-                              placeholder="Seleccionar producto..."
-                              searchPlaceholder="Buscar producto..."
-                              notFoundMessage="No se encontraron productos"
-                              className="h-9"
-                            />
-                          ) : (
-                            <p className="py-2 text-sm font-medium">
-                              {detail?.product?.name || 'Sin producto'}
-                            </p>
-                          )}
-                        </div>
+                  {details.map((detail, index) => {
+                    const taxRate = parseTaxRate(detail?.tax?.rate);
 
-                        {/* Información en grid */}
-                        <div className="grid grid-cols-2 gap-3">
+                    return (
+                      <Card
+                        key={detail.id || detail.tempId}
+                        data-card-index={index}
+                        className="p-4"
+                      >
+                        <div className="space-y-3">
+                          {/* Artículo */}
                           <div>
-                            <p className="text-muted-foreground mb-1.5 text-xs">Cajas</p>
                             {editIndex === index ? (
-                              <Input
-                                type="number"
-                                value={detail.boxes}
-                                onChange={(e) => handleInputChange(index, 'boxes', e.target.value)}
-                                className="!h-9"
+                              // Combobox no expone un prop de tamaño propio (ver
+                              // src/components/Shadcn/Combobox/index.d.ts); className
+                              // se aplica directamente al Button interno vía cn().
+                              <Combobox
+                                options={productOptions || []}
+                                value={detail?.product?.id ? String(detail.product.id) : undefined}
+                                onChange={(e) => handleInputChange(index, 'product', e)}
+                                loading={optionsLoading}
+                                placeholder="Seleccionar producto..."
+                                searchPlaceholder="Buscar producto..."
+                                notFoundMessage="No se encontraron productos"
+                                className="h-9"
                               />
                             ) : (
                               <p className="py-2 text-sm font-medium">
-                                {formatInteger(detail.boxes)}
+                                {detail?.product?.name || 'Sin producto'}
                               </p>
                             )}
                           </div>
-                          <div>
-                            <p className="text-muted-foreground mb-1.5 text-xs">Cantidad</p>
-                            {editIndex === index ? (
-                              <Input
-                                type="number"
-                                value={detail.quantity}
-                                onChange={(e) =>
-                                  handleInputChange(index, 'quantity', e.target.value)
-                                }
-                                className="!h-9"
-                              />
-                            ) : (
-                              <p className="py-2 text-sm font-medium">
-                                {formatDecimalWeight(detail.quantity)}
-                              </p>
-                            )}
-                          </div>
-                          <div>
-                            <p className="text-muted-foreground mb-1.5 text-xs">Precio</p>
-                            {editIndex === index ? (
-                              <Input
-                                type="number"
-                                value={detail.unitPrice}
-                                onChange={(e) =>
-                                  handleInputChange(index, 'unitPrice', e.target.value)
-                                }
-                                className="!h-9"
-                              />
-                            ) : (
-                              <p className="py-2 text-sm font-medium">
-                                {formatDecimalCurrency(detail.unitPrice)}
-                              </p>
-                            )}
-                          </div>
-                          <div>
-                            <p className="text-muted-foreground mb-1.5 text-xs">Impuesto (%)</p>
-                            {editIndex === index ? (
-                              <div className="[&_button]:!h-9">
-                                <Select
-                                  value={detail?.tax?.id != null ? String(detail.tax.id) : ''}
-                                  onValueChange={(value) => handleInputChange(index, 'tax', value)}
+
+                          {/* Información en grid */}
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <p className="text-muted-foreground mb-1.5 text-xs">Cajas</p>
+                              {editIndex === index ? (
+                                <Input
+                                  type="number"
+                                  value={detail.boxes}
+                                  onChange={(e) =>
+                                    handleInputChange(index, 'boxes', e.target.value)
+                                  }
+                                  className="!h-9"
+                                />
+                              ) : (
+                                <p className="py-2 text-sm font-medium">
+                                  {formatInteger(detail.boxes)}
+                                </p>
+                              )}
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground mb-1.5 text-xs">Cantidad</p>
+                              {editIndex === index ? (
+                                <Input
+                                  type="number"
+                                  value={detail.quantity}
+                                  onChange={(e) =>
+                                    handleInputChange(index, 'quantity', e.target.value)
+                                  }
+                                  className="!h-9"
+                                />
+                              ) : (
+                                <p className="py-2 text-sm font-medium">
+                                  {formatDecimalWeight(detail.quantity)}
+                                </p>
+                              )}
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground mb-1.5 text-xs">Precio</p>
+                              {editIndex === index ? (
+                                <Input
+                                  type="number"
+                                  value={detail.unitPrice}
+                                  onChange={(e) =>
+                                    handleInputChange(index, 'unitPrice', e.target.value)
+                                  }
+                                  className="!h-9"
+                                />
+                              ) : (
+                                <p className="py-2 text-sm font-medium">
+                                  {formatDecimalCurrency(detail.unitPrice)}
+                                </p>
+                              )}
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground mb-1.5 text-xs">Impuesto (%)</p>
+                              {editIndex === index ? (
+                                <div className="[&_button]:!h-9">
+                                  <Select
+                                    value={detail?.tax?.id != null ? String(detail.tax.id) : ''}
+                                    onValueChange={(value) =>
+                                      handleInputChange(index, 'tax', value)
+                                    }
+                                  >
+                                    <SelectTrigger loading={optionsLoading} className="w-full">
+                                      <SelectValue placeholder="IVA" loading={optionsLoading} />
+                                    </SelectTrigger>
+                                    <SelectContent loading={optionsLoading}>
+                                      {(taxOptions || []).map((tax) => (
+                                        <SelectItem key={tax.value} value={String(tax.value)}>
+                                          {tax.label}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              ) : (
+                                <p
+                                  className={cn(
+                                    'py-2 text-sm font-medium',
+                                    taxRate == null && 'text-warning'
+                                  )}
                                 >
-                                  <SelectTrigger loading={optionsLoading} className="w-full">
-                                    <SelectValue placeholder="IVA" loading={optionsLoading} />
-                                  </SelectTrigger>
-                                  <SelectContent loading={optionsLoading}>
-                                    {(taxOptions || []).map((tax) => (
-                                      <SelectItem key={tax.value} value={String(tax.value)}>
-                                        {tax.label}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
+                                  {formatTaxRate(taxRate)}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Acciones */}
+                          <div className="flex gap-2 border-t pt-3">
+                            {editIndex === index ? (
+                              <>
+                                <Button
+                                  onClick={handleOnClickSaveLine}
+                                  size="sm"
+                                  className="flex-1"
+                                >
+                                  <Check />
+                                  Guardar
+                                </Button>
+                                <Button
+                                  variant="secondary"
+                                  onClick={() => handleOnClickCloseLine(detail)}
+                                  size="sm"
+                                  className="flex-1"
+                                >
+                                  <X />
+                                  Cancelar
+                                </Button>
+                              </>
                             ) : (
-                              <p className="py-2 text-sm font-medium">
-                                {parseTaxRate(detail?.tax?.rate)}%
-                              </p>
+                              <>
+                                <Button
+                                  onClick={() => handleEditLine(index)}
+                                  size="sm"
+                                  variant="outline"
+                                  className="flex-1"
+                                >
+                                  <Edit2 />
+                                  Editar
+                                </Button>
+                                <Button
+                                  variant="destructive"
+                                  onClick={() => handleOnClickDeleteLine(detail)}
+                                  size="sm"
+                                  className="flex-1"
+                                >
+                                  <Trash2 />
+                                  Eliminar
+                                </Button>
+                              </>
                             )}
                           </div>
                         </div>
-
-                        {/* Acciones */}
-                        <div className="flex gap-2 border-t pt-3">
-                          {editIndex === index ? (
-                            <>
-                              <Button onClick={handleOnClickSaveLine} size="sm" className="flex-1">
-                                <Check />
-                                Guardar
-                              </Button>
-                              <Button
-                                variant="secondary"
-                                onClick={() => handleOnClickCloseLine(detail)}
-                                size="sm"
-                                className="flex-1"
-                              >
-                                <X />
-                                Cancelar
-                              </Button>
-                            </>
-                          ) : (
-                            <>
-                              <Button
-                                onClick={() => handleEditLine(index)}
-                                size="sm"
-                                variant="outline"
-                                className="flex-1"
-                              >
-                                <Edit2 />
-                                Editar
-                              </Button>
-                              <Button
-                                variant="destructive"
-                                onClick={() => handleOnClickDeleteLine(detail)}
-                                size="sm"
-                                className="flex-1"
-                              >
-                                <Trash2 />
-                                Eliminar
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
+                      </Card>
+                    );
+                  })}
                 </div>
               </div>
             </ScrollArea>
@@ -798,7 +811,9 @@ const OrderPlannedProductDetails = () => {
                                 </SelectContent>
                               </Select>
                             ) : (
-                              `${taxRate}%`
+                              <span className={cn(taxRate == null && 'text-warning')}>
+                                {formatTaxRate(taxRate)}
+                              </span>
                             )}
                           </TableCell>
                           <TableCell className="text-right whitespace-nowrap">
