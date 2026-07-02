@@ -36,6 +36,12 @@ y lista para implementar; una idea aquí es solo una nota para no perderla.
 - **Módulo:** Ventas
 - **Descripción:** Al actualizar líneas de previsión, palets vinculados u otros campos del pedido, el resto de secciones (p.ej. detalle de productos) no se refrescan. El editor de pedido debería actualizarse por completo tras cualquier cambio.
 
+### IDEA-005 — Chip de editar pedido abre sin estado de carga
+- **Fecha:** 2026-07-02
+- **Tipo:** Bug
+- **Módulo:** Ventas
+- **Descripción:** Al abrir el chip de editar pedido no hay un estado de carga que espere a que los datos lleguen del backend; se abre de golpe con los inputs sin rellenar correctamente y con errores.
+
 ---
 
 ## ✅ Promoted
