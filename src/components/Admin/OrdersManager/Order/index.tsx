@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import { useScroll, useTransform } from 'framer-motion';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { AlertCircle, AlertTriangle, ArrowLeft, PackageX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/Utilities/EmptyState';
@@ -68,12 +67,6 @@ const OrderContent = ({
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [editSheetOpen, setEditSheetOpen] = useState(false);
   const [pendingFinishedStatus, setPendingFinishedStatus] = useState<OrderStatus | null>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  // useScroll debe llamarse en el mismo componente que posee y adjunta el ref al DOM —
-  // framer-motion no re-suscribe de forma fiable si el ref se pasa a un componente hijo/hermano.
-  const { scrollY } = useScroll({ container: scrollContainerRef });
-  const transportOpacity = useTransform(scrollY, [0, 60], [1, 0]);
-  const transportHeight = useTransform(scrollY, [0, 60], [142, 0]);
 
   useHideBottomNav(isMobile);
 
@@ -288,38 +281,20 @@ const OrderContent = ({
       {isMobile ? (
         activeSection === null ? (
           <>
-            <div ref={scrollContainerRef} className="min-h-0 w-full flex-1 overflow-y-auto">
-              <div className="sticky top-0 z-20">
-                <OrderHeaderMobile
-                  order={order}
-                  transportImage={transportImage}
-                  onClose={onClose}
-                  onEdit={() => setEditSheetOpen(true)}
-                  onStatusChange={handleStatusChange}
-                  readOnly={readOnly}
-                  transportOpacity={transportOpacity}
-                  transportHeight={transportHeight}
-                />
-              </div>
-
-              <div className="relative w-full">
-                <div className="from-background pointer-events-none absolute inset-x-0 top-0 z-10 h-8 bg-gradient-to-b to-transparent" />
-                <OrderSummaryMobile
-                  order={order}
-                  onTemperatureChange={handleTemperatureChange}
-                  readOnly={readOnly}
-                />
-                <OrderSectionGrid
-                  order={order}
-                  onSelectSection={setActiveSection}
-                  onPrint={handleOnClickPrint}
-                  hasSafeAreaPadding={!!onClose}
-                  blockedTabIds={blockedTabIds as never[]}
-                  productDetailsCount={mergedProductDetails.length}
-                  pendingProductionCount={incompleteProductionLines.length}
-                />
-              </div>
-            </div>
+            <OrderMobileOverview
+              order={order}
+              transportImage={transportImage}
+              onClose={onClose}
+              onEdit={() => setEditSheetOpen(true)}
+              onStatusChange={handleStatusChange}
+              onTemperatureChange={handleTemperatureChange}
+              onSelectSection={setActiveSection}
+              onPrint={handleOnClickPrint}
+              readOnly={readOnly}
+              blockedTabIds={blockedTabIds}
+              productDetailsCount={mergedProductDetails.length}
+              pendingProductionCount={incompleteProductionLines.length}
+            />
 
             {onClose && !readOnly && (
               <OrderEditSheet open={editSheetOpen} onOpenChange={setEditSheetOpen} />
@@ -379,6 +354,126 @@ const OrderContent = ({
     </div>
   );
 };
+
+interface OrderMobileOverviewProps {
+  order: OrderType;
+  transportImage: string;
+  onClose?: () => void;
+  onEdit: () => void;
+  onStatusChange: (status: OrderStatus) => void;
+  onTemperatureChange: (temperature: number) => void;
+  onSelectSection: (sectionId: string) => void;
+  onPrint: () => void;
+  readOnly: boolean;
+  blockedTabIds: string[];
+  productDetailsCount: number;
+  pendingProductionCount: number;
+}
+
+function OrderMobileOverview({
+  order,
+  transportImage,
+  onClose,
+  onEdit,
+  onStatusChange,
+  onTemperatureChange,
+  onSelectSection,
+  onPrint,
+  readOnly,
+  blockedTabIds,
+  productDetailsCount,
+  pendingProductionCount,
+}: OrderMobileOverviewProps) {
+  return (
+    <div className="order-mobile-overview-scroll min-h-0 w-full flex-1 overflow-y-auto">
+      <div className="sticky top-0 z-20">
+        <OrderHeaderMobile
+          order={order}
+          transportImage={transportImage}
+          onClose={onClose}
+          onEdit={onEdit}
+          readOnly={readOnly}
+        />
+      </div>
+
+      <div className="relative w-full">
+        <div className="from-background pointer-events-none absolute inset-x-0 top-0 z-10 h-8 bg-gradient-to-b to-transparent" />
+        <OrderSummaryMobile
+          order={order}
+          onTemperatureChange={onTemperatureChange}
+          readOnly={readOnly}
+        />
+        <OrderSectionGrid
+          order={order}
+          onSelectSection={onSelectSection}
+          onStatusChange={onStatusChange}
+          onPrint={onPrint}
+          hasSafeAreaPadding={!!onClose}
+          readOnly={readOnly}
+          blockedTabIds={blockedTabIds}
+          productDetailsCount={productDetailsCount}
+          pendingProductionCount={pendingProductionCount}
+        />
+      </div>
+      <style jsx global>{`
+        .order-mobile-overview-scroll {
+          scroll-timeline-name: --order-mobile-overview;
+          scroll-timeline-axis: block;
+        }
+
+        .order-mobile-transport {
+          animation: order-mobile-transport-collapse linear both;
+          animation-timeline: --order-mobile-overview;
+          animation-range: 0 72px;
+          transform-origin: top center;
+        }
+
+        .order-mobile-hero-bg {
+          animation: order-mobile-hero-bg-collapse linear both;
+          animation-timeline: --order-mobile-overview;
+          animation-range: 0 72px;
+          transform-origin: top center;
+          will-change: transform;
+        }
+
+        .order-mobile-status {
+          animation: order-mobile-status-reposition linear both;
+          animation-timeline: --order-mobile-overview;
+          animation-range: 0 72px;
+        }
+
+        @keyframes order-mobile-transport-collapse {
+          from {
+            opacity: 1;
+            transform: translate3d(0, 0, 0) scale(1);
+          }
+          to {
+            opacity: 0;
+            transform: translate3d(0, -14px, 0) scale(0.94);
+          }
+        }
+
+        @keyframes order-mobile-hero-bg-collapse {
+          from {
+            transform: scaleY(1);
+          }
+          to {
+            transform: scaleY(0.68);
+          }
+        }
+
+        @keyframes order-mobile-status-reposition {
+          from {
+            transform: translate3d(0, 0, 0);
+          }
+          to {
+            transform: translate3d(0, -112px, 0);
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
 
 // Silueta mobile: hero (back+título+editar+cliente+estado+transporte) + resumen secundario + grid
 function OrderMobileSkeleton() {

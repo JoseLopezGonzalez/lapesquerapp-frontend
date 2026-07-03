@@ -1,12 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion, type MotionValue } from 'framer-motion';
-import { ArrowLeft, ChevronDown, Pencil, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, Pencil, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { MobileOptionSheet } from '@/components/Shadcn/MobileOptionSheet';
 import { cn } from '@/lib/utils';
 import StatusBadge from '../../StatusBadge';
 import type { Order, OrderStatus } from '@/services/orderService';
@@ -21,7 +18,6 @@ const STATUS_LABELS: Record<OrderStatus, string> = {
   finished: 'Terminado',
   incident: 'Incidencia',
 };
-const STATUS_OPTIONS: OrderStatus[] = ['pending', 'finished', 'incident'];
 
 // Fondo del bloque hero: mismo tono que StatusBadge (orange/green/red-500), a saturación
 // completa — el badge se queda con su tinte suave (15%), aquí buscamos presencia real.
@@ -36,10 +32,7 @@ interface OrderHeaderMobileProps {
   transportImage: string;
   onClose?: () => void;
   onEdit: () => void;
-  onStatusChange: (status: OrderStatus) => void;
   readOnly?: boolean;
-  transportOpacity: MotionValue<number>;
-  transportHeight: MotionValue<number>;
 }
 
 /**
@@ -49,9 +42,8 @@ interface OrderHeaderMobileProps {
  * margen lateral ni superior. Fondo sólido → todo el texto encima usa blanco/blanco-translúcido
  * en vez de los tokens muted-foreground/foreground (que asumen fondo neutro del tema).
  *
- * `transportOpacity`/`transportHeight` llegan ya calculados desde el padre (Order/index.tsx),
- * que es quien posee y adjunta `scrollContainerRef` al DOM — framer-motion recomienda llamar
- * useScroll() en el mismo componente que el ref, así que el cálculo vive allí, no aquí.
+ * La visibilidad del transporte depende del scroll del overview móvil. Se anima con CSS
+ * por estado para evitar recalcular height en cada frame de scroll en dispositivos móviles.
  *
  * Solo se muestra cuando existe onClose (contexto sheet/drawer).
  */
@@ -60,13 +52,8 @@ export default function OrderHeaderMobile({
   transportImage,
   onClose,
   onEdit,
-  onStatusChange,
   readOnly = false,
-  transportOpacity,
-  transportHeight,
 }: OrderHeaderMobileProps) {
-  const [statusSheetOpen, setStatusSheetOpen] = useState(false);
-
   if (!onClose) return null;
 
   const status = order.status as OrderStatus;
@@ -74,13 +61,15 @@ export default function OrderHeaderMobile({
   const transport = order.transport as { name?: string } | undefined;
 
   return (
-    <div
-      className={cn(
-        'relative flex-shrink-0 overflow-hidden rounded-bl-[50%_40px] rounded-br-[50%_40px] pt-8 pb-12',
-        STATUS_HERO_BG[status]
-      )}
-    >
-      <div className="relative flex items-center justify-center px-4">
+    <div className="order-mobile-hero relative isolate flex-shrink-0 overflow-hidden pt-8 pb-12">
+      <div
+        className={cn(
+          'order-mobile-hero-bg pointer-events-none absolute inset-0 z-0 rounded-br-[50%_40px] rounded-bl-[50%_40px]',
+          STATUS_HERO_BG[status]
+        )}
+        aria-hidden="true"
+      />
+      <div className="relative z-10 flex items-center justify-center px-4">
         <Button
           variant="ghost"
           size="icon"
@@ -125,7 +114,7 @@ export default function OrderHeaderMobile({
         )}
       </div>
 
-      <div className="mt-5 flex flex-col items-center gap-2 px-4 text-center">
+      <div className="relative z-10 mt-5 flex flex-col items-center gap-2 px-4 text-center">
         <div>
           <p className="text-xl font-medium text-white">{customer?.name ?? '—'}</p>
           <p className="mt-1 text-base text-white/80">Cliente Nº {customer?.id ?? '—'}</p>
@@ -136,40 +125,7 @@ export default function OrderHeaderMobile({
           ) : null}
         </div>
 
-        <div className="flex justify-center">
-          {readOnly ? (
-            <StatusBadge color={STATUS_COLORS[status]} label={STATUS_LABELS[status]} />
-          ) : (
-            <>
-              <button
-                type="button"
-                onClick={() => setStatusSheetOpen(true)}
-                className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1 focus:outline-none"
-              >
-                <StatusBadge color={STATUS_COLORS[status]} label={STATUS_LABELS[status]} />
-                <ChevronDown className="h-3.5 w-3.5 text-white/80" aria-hidden />
-              </button>
-              <MobileOptionSheet
-                open={statusSheetOpen}
-                onOpenChange={setStatusSheetOpen}
-                title="Estado del pedido"
-                value={status}
-                onSelect={onStatusChange}
-                options={STATUS_OPTIONS.map((option) => ({
-                  value: option,
-                  label: (
-                    <StatusBadge color={STATUS_COLORS[option]} label={STATUS_LABELS[option]} />
-                  ),
-                }))}
-              />
-            </>
-          )}
-        </div>
-
-        <motion.div
-          style={{ opacity: transportOpacity, height: transportHeight }}
-          className="overflow-hidden"
-        >
+        <div className="order-mobile-transport overflow-hidden will-change-[opacity,transform]">
           <div className="mt-3 flex flex-col items-center justify-center gap-2">
             <Image
               className="h-auto max-w-[170px]"
@@ -180,7 +136,12 @@ export default function OrderHeaderMobile({
             />
             <p className="text-lg font-medium text-white">{transport?.name || '-'}</p>
           </div>
-        </motion.div>
+        </div>
+        <div className="order-mobile-status flex justify-center will-change-transform">
+          <div className="inline-flex items-center justify-center rounded-full border border-white/35 bg-white/90 p-1 shadow-sm shadow-black/15 backdrop-blur-sm">
+            <StatusBadge color={STATUS_COLORS[status]} label={STATUS_LABELS[status]} />
+          </div>
+        </div>
       </div>
     </div>
   );

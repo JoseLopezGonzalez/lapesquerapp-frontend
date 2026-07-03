@@ -1,16 +1,33 @@
 'use client';
 
-import { Printer } from 'lucide-react';
+import { useState } from 'react';
+import { CircleDot, Printer } from 'lucide-react';
+import { MobileOptionSheet } from '@/components/Shadcn/MobileOptionSheet';
 import { cn } from '@/lib/utils';
 import { formatInteger } from '@/helpers/formats/numbers/formatNumbers';
 import { SECTIONS_CONFIG, type OrderSectionConfig } from '../config/sectionsConfig';
+import StatusBadge from '../../StatusBadge';
 import type { Order, OrderStatus } from '@/services/orderService';
+
+const STATUS_COLORS: Record<OrderStatus, 'orange' | 'green' | 'red'> = {
+  pending: 'orange',
+  finished: 'green',
+  incident: 'red',
+};
+const STATUS_LABELS: Record<OrderStatus, string> = {
+  pending: 'En producción',
+  finished: 'Terminado',
+  incident: 'Incidencia',
+};
+const STATUS_OPTIONS: OrderStatus[] = ['pending', 'finished', 'incident'];
 
 interface OrderSectionGridProps {
   order: Order;
   onSelectSection: (sectionId: string) => void;
+  onStatusChange: (status: OrderStatus) => void;
   onPrint: () => void;
   hasSafeAreaPadding: boolean;
+  readOnly?: boolean;
   blockedTabIds?: string[];
   productDetailsCount: number;
   pendingProductionCount: number;
@@ -24,14 +41,16 @@ interface GridCard {
   variant?: 'destructive' | 'attention';
   fullWidth?: boolean;
   actionOnly?: boolean;
+  disabled?: boolean;
 }
 
 function getDynamicSublabel(
   id: string,
-  { order, productDetailsCount, pendingProductionCount }: Pick<
-    OrderSectionGridProps,
-    'order' | 'productDetailsCount' | 'pendingProductionCount'
-  >
+  {
+    order,
+    productDetailsCount,
+    pendingProductionCount,
+  }: Pick<OrderSectionGridProps, 'order' | 'productDetailsCount' | 'pendingProductionCount'>
 ): string | undefined {
   switch (id) {
     case 'productDetails':
@@ -41,7 +60,9 @@ function getDynamicSublabel(
         ? `${pendingProductionCount} pendiente${pendingProductionCount === 1 ? '' : 's'}`
         : 'Completo';
     case 'pallets':
-      return order.numberOfPallets ? `${formatInteger(order.numberOfPallets)} palets` : 'Sin palets';
+      return order.numberOfPallets
+        ? `${formatInteger(order.numberOfPallets)} palets`
+        : 'Sin palets';
     case 'incident':
       return (order.status as OrderStatus) === 'incident' ? 'Incidencia activa' : 'Sin incidencias';
     default:
@@ -59,14 +80,18 @@ function getDynamicSublabel(
 export default function OrderSectionGrid({
   order,
   onSelectSection,
+  onStatusChange,
   onPrint,
   hasSafeAreaPadding,
+  readOnly = false,
   blockedTabIds = [],
   productDetailsCount,
   pendingProductionCount,
 }: OrderSectionGridProps) {
+  const [statusSheetOpen, setStatusSheetOpen] = useState(false);
   const visibleSections = SECTIONS_CONFIG.filter((s) => !blockedTabIds.includes(s.id));
   const isIncidentActive = (order.status as OrderStatus) === 'incident';
+  const status = order.status as OrderStatus;
 
   const cards: GridCard[] = [];
 
@@ -100,6 +125,15 @@ export default function OrderSectionGrid({
   }
 
   cards.push({
+    id: 'status',
+    icon: CircleDot,
+    label: 'Estado',
+    sublabel: STATUS_LABELS[status],
+    actionOnly: true,
+    disabled: readOnly,
+  });
+
+  cards.push({
     id: 'print',
     icon: Printer,
     label: 'Imprimir',
@@ -108,6 +142,11 @@ export default function OrderSectionGrid({
   });
 
   const handleCardClick = (card: GridCard) => {
+    if (card.disabled) return;
+    if (card.id === 'status') {
+      setStatusSheetOpen(true);
+      return;
+    }
     if (card.actionOnly) {
       onPrint();
     } else {
@@ -116,55 +155,76 @@ export default function OrderSectionGrid({
   };
 
   return (
-    <div
-      className={cn('grid grid-cols-2 gap-3 px-4 pt-6', hasSafeAreaPadding ? 'pb-8' : 'pb-2')}
-      style={
-        hasSafeAreaPadding
-          ? { paddingBottom: 'calc(2rem + env(safe-area-inset-bottom, 0px))' }
-          : undefined
-      }
-    >
-      {cards.map((card) => (
-        <button
-          key={card.id}
-          type="button"
-          onClick={() => handleCardClick(card)}
-          className={cn(
-            'relative flex min-h-[104px] flex-col items-start justify-between rounded-2xl border p-4 text-left transition-all active:scale-[0.97]',
-            card.fullWidth && 'col-span-2',
-            card.variant === 'destructive' && 'border-destructive/25 bg-destructive/5 hover:bg-destructive/10',
-            card.variant === 'attention' &&
-              'border-primary/40 bg-primary/8 shadow-sm shadow-primary/10 ring-1 ring-primary/20 ring-inset hover:bg-primary/12',
-            !card.variant && 'border-border bg-card hover:bg-accent/50'
-          )}
-        >
-          <div
+    <>
+      <div
+        className={cn('grid grid-cols-2 gap-3 px-4 pt-6', hasSafeAreaPadding ? 'pb-8' : 'pb-2')}
+        style={
+          hasSafeAreaPadding
+            ? { paddingBottom: 'calc(2rem + env(safe-area-inset-bottom, 0px))' }
+            : undefined
+        }
+      >
+        {cards.map((card) => (
+          <button
+            key={card.id}
+            type="button"
+            onClick={() => handleCardClick(card)}
+            disabled={card.disabled}
             className={cn(
-              'flex h-9 w-9 items-center justify-center rounded-xl',
-              card.variant === 'destructive' && 'bg-destructive/10 text-destructive',
-              card.variant === 'attention' && 'bg-primary/15 text-primary',
-              !card.variant && 'bg-muted text-foreground'
+              'relative flex min-h-[104px] flex-col items-start justify-between rounded-2xl border p-4 text-left transition-all active:scale-[0.97]',
+              card.fullWidth && 'col-span-2',
+              card.disabled && 'cursor-default opacity-80 active:scale-100',
+              card.variant === 'destructive' &&
+                'border-destructive/25 bg-destructive/5 hover:bg-destructive/10',
+              card.variant === 'attention' &&
+                'border-primary/40 bg-primary/8 shadow-primary/10 ring-primary/20 hover:bg-primary/12 shadow-sm ring-1 ring-inset',
+              !card.variant && 'border-border bg-card hover:bg-accent/50'
             )}
           >
-            <card.icon className="h-5 w-5" />
-          </div>
-
-          <div className="mt-3 space-y-0.5">
-            <p
+            <div
               className={cn(
-                'text-sm font-semibold leading-tight',
-                card.variant === 'destructive' && 'text-destructive',
-                card.variant === 'attention' && 'text-primary'
+                'flex h-9 w-9 items-center justify-center rounded-xl',
+                card.variant === 'destructive' && 'bg-destructive/10 text-destructive',
+                card.variant === 'attention' && 'bg-primary/15 text-primary',
+                card.id === 'status' && 'bg-muted text-foreground',
+                !card.variant && card.id !== 'status' && 'bg-muted text-foreground'
               )}
             >
-              {card.label}
-            </p>
-            {card.sublabel && (
-              <p className="line-clamp-1 text-xs text-muted-foreground">{card.sublabel}</p>
-            )}
-          </div>
-        </button>
-      ))}
-    </div>
+              <card.icon className="h-5 w-5" />
+            </div>
+
+            <div className="mt-3 space-y-0.5">
+              <p
+                className={cn(
+                  'text-sm leading-tight font-semibold',
+                  card.variant === 'destructive' && 'text-destructive',
+                  card.variant === 'attention' && 'text-primary'
+                )}
+              >
+                {card.label}
+              </p>
+              {card.id === 'status' ? (
+                <StatusBadge color={STATUS_COLORS[status]} label={STATUS_LABELS[status]} />
+              ) : (
+                card.sublabel && (
+                  <p className="text-muted-foreground line-clamp-1 text-xs">{card.sublabel}</p>
+                )
+              )}
+            </div>
+          </button>
+        ))}
+      </div>
+      <MobileOptionSheet
+        open={statusSheetOpen}
+        onOpenChange={setStatusSheetOpen}
+        title="Estado del pedido"
+        value={status}
+        onSelect={onStatusChange}
+        options={STATUS_OPTIONS.map((option) => ({
+          value: option,
+          label: <StatusBadge color={STATUS_COLORS[option]} label={STATUS_LABELS[option]} />,
+        }))}
+      />
+    </>
   );
 }
