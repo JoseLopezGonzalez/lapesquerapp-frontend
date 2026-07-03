@@ -385,40 +385,50 @@ function OrderMobileOverview({
   pendingProductionCount,
 }: OrderMobileOverviewProps) {
   return (
-    <div className="order-mobile-overview-scroll min-h-0 w-full flex-1 overflow-y-auto">
-      <div className="sticky top-0 z-20">
-        <OrderHeaderMobile
-          order={order}
-          transportImage={transportImage}
-          onClose={onClose}
-          onEdit={onEdit}
-          readOnly={readOnly}
-        />
-      </div>
+    <div className="order-mobile-overview relative min-h-0 w-full flex-1 overflow-hidden">
+      <div className="order-mobile-content-fade from-background via-background/90 pointer-events-none absolute inset-x-0 z-10 h-16 bg-gradient-to-b to-transparent" />
+      <div className="order-mobile-overview-scroll scrollbar-hide h-full w-full overflow-y-auto">
+        <div className="sticky top-0 z-20">
+          <OrderHeaderMobile
+            order={order}
+            transportImage={transportImage}
+            onClose={onClose}
+            onEdit={onEdit}
+            readOnly={readOnly}
+          />
+        </div>
 
-      <div className="relative w-full">
-        <div className="from-background pointer-events-none absolute inset-x-0 top-0 z-10 h-8 bg-gradient-to-b to-transparent" />
-        <OrderSummaryMobile
-          order={order}
-          onTemperatureChange={onTemperatureChange}
-          readOnly={readOnly}
-        />
-        <OrderSectionGrid
-          order={order}
-          onSelectSection={onSelectSection}
-          onStatusChange={onStatusChange}
-          onPrint={onPrint}
-          hasSafeAreaPadding={!!onClose}
-          readOnly={readOnly}
-          blockedTabIds={blockedTabIds}
-          productDetailsCount={productDetailsCount}
-          pendingProductionCount={pendingProductionCount}
-        />
+        <div className="relative w-full">
+          <OrderSummaryMobile
+            order={order}
+            onTemperatureChange={onTemperatureChange}
+            readOnly={readOnly}
+          />
+          <OrderSectionGrid
+            order={order}
+            onSelectSection={onSelectSection}
+            onStatusChange={onStatusChange}
+            onPrint={onPrint}
+            hasSafeAreaPadding={!!onClose}
+            readOnly={readOnly}
+            blockedTabIds={blockedTabIds}
+            productDetailsCount={productDetailsCount}
+            pendingProductionCount={pendingProductionCount}
+          />
+        </div>
       </div>
       <style jsx global>{`
+        .order-mobile-overview {
+          timeline-scope: --order-mobile-overview;
+        }
+
         .order-mobile-overview-scroll {
           scroll-timeline-name: --order-mobile-overview;
           scroll-timeline-axis: block;
+        }
+
+        .order-mobile-overview-scroll::-webkit-scrollbar {
+          display: none;
         }
 
         .order-mobile-transport {
@@ -438,6 +448,13 @@ function OrderMobileOverview({
 
         .order-mobile-status {
           animation: order-mobile-status-reposition linear both;
+          animation-timeline: --order-mobile-overview;
+          animation-range: 0 72px;
+        }
+
+        .order-mobile-content-fade {
+          top: 316px;
+          animation: order-mobile-content-fade-position linear both;
           animation-timeline: --order-mobile-overview;
           animation-range: 0 72px;
         }
@@ -468,6 +485,15 @@ function OrderMobileOverview({
           }
           to {
             transform: translate3d(0, -112px, 0);
+          }
+        }
+
+        @keyframes order-mobile-content-fade-position {
+          from {
+            transform: translate3d(0, 0, 0);
+          }
+          to {
+            transform: translate3d(0, -96px, 0);
           }
         }
       `}</style>

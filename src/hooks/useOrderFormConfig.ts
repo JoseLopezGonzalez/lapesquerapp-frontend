@@ -409,14 +409,7 @@ export function useOrderFormConfig({ orderData }: { orderData?: OrderData | null
   }, [orderData]);
 
   const formGroupsWithOptions = useMemo(() => {
-    if (
-      optionsLoading &&
-      !options.salespeople?.length &&
-      !options.fieldOperators?.length &&
-      !options.paymentTerms?.length &&
-      !options.incoterms?.length &&
-      !options.transports?.length
-    ) {
+    if (optionsLoading || !orderData) {
       return initialFormGroups;
     }
 
@@ -510,24 +503,10 @@ export function useOrderFormConfig({ orderData }: { orderData?: OrderData | null
     options.transports,
     options.externalProcessors,
     optionsLoading,
+    orderData,
   ]);
 
-  const actualLoading = useMemo(() => {
-    const hasOptions =
-      options.salespeople.length > 0 ||
-      options.fieldOperators.length > 0 ||
-      options.incoterms.length > 0 ||
-      options.paymentTerms.length > 0 ||
-      options.transports.length > 0;
-    return hasOptions ? false : optionsLoading && !hasOptions;
-  }, [
-    optionsLoading,
-    options.salespeople.length,
-    options.fieldOperators.length,
-    options.incoterms.length,
-    options.paymentTerms.length,
-    options.transports.length,
-  ]);
+  const actualLoading = !orderData || optionsLoading;
 
   const loadingProgress = { current: actualLoading ? 0 : 4, total: 4 };
 
