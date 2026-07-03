@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowLeft, ChevronDown, Pencil, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MobileOptionSheet } from '@/components/Shadcn/MobileOptionSheet';
@@ -22,12 +23,16 @@ const STATUS_LABELS: Record<OrderStatus, string> = {
 };
 const STATUS_OPTIONS: OrderStatus[] = ['pending', 'finished', 'incident'];
 
-// Fondo del bloque hero, tintado con el color de estado — misma opacidad que StatusBadge (15%)
+// Fondo del bloque hero, tintado con el color de estado — más saturado que el StatusBadge (15%)
+// para que el hero tenga presencia real, no solo un lavado sutil.
 const STATUS_HERO_BG: Record<OrderStatus, string> = {
-  pending: 'bg-orange-500/15',
-  finished: 'bg-green-500/15',
-  incident: 'bg-red-500/15',
+  pending: 'bg-orange-500/35',
+  finished: 'bg-green-500/35',
+  incident: 'bg-red-500/35',
 };
+
+// Rango de scroll (px) en el que la imagen de transporte se colapsa por completo
+const TRANSPORT_COLLAPSE_RANGE = [0, 60];
 
 interface OrderHeaderMobileProps {
   order: Order;
@@ -36,6 +41,7 @@ interface OrderHeaderMobileProps {
   onEdit: () => void;
   onStatusChange: (status: OrderStatus) => void;
   readOnly?: boolean;
+  scrollContainerRef: RefObject<HTMLDivElement | null>;
 }
 
 /**
@@ -43,6 +49,14 @@ interface OrderHeaderMobileProps {
  * (cliente + estado + transporte), sobre un fondo tintado con el color del estado. Borde
  * inferior ovalado (elipse ancha vía border-radius de dos ejes) — edge-to-edge, sin margen
  * lateral ni superior.
+ *
+ * La imagen y el nombre de transporte se colapsan (alto + opacidad) en cuanto el usuario
+ * empieza a hacer scroll en el contenido de abajo, dejando solo cliente + estado visibles.
+ * Nota: el sistema de motion del proyecto recomienda animar solo transform/opacity — aquí
+ * animamos `height` deliberadamente porque el objetivo es que el hero recupere espacio real
+ * de layout para la grid, no solo un efecto visual; es un caso puntual sobre un único
+ * elemento pequeño, no una lista.
+ *
  * Solo se muestra cuando existe onClose (contexto sheet/drawer).
  */
 export default function OrderHeaderMobile({
@@ -52,14 +66,31 @@ export default function OrderHeaderMobile({
   onEdit,
   onStatusChange,
   readOnly = false,
+  scrollContainerRef,
 }: OrderHeaderMobileProps) {
   const [statusSheetOpen, setStatusSheetOpen] = useState(false);
+  const transportRef = useRef<HTMLDivElement>(null);
+  const [transportNaturalHeight, setTransportNaturalHeight] = useState(140);
+
+  const { scrollY } = useScroll({ container: scrollContainerRef });
+  const transportOpacity = useTransform(scrollY, TRANSPORT_COLLAPSE_RANGE, [1, 0]);
+  const transportHeight = useTransform(scrollY, TRANSPORT_COLLAPSE_RANGE, [
+    transportNaturalHeight,
+    0,
+  ]);
+
+  const transport = order.transport as { name?: string } | undefined;
+
+  useEffect(() => {
+    if (transportRef.current) {
+      setTransportNaturalHeight(transportRef.current.offsetHeight);
+    }
+  }, [transport?.name, transportImage]);
 
   if (!onClose) return null;
 
   const status = order.status as OrderStatus;
   const customer = order.customer as { id?: number | string; name?: string } | undefined;
-  const transport = order.transport as { name?: string } | undefined;
 
   return (
     <div
@@ -154,16 +185,24 @@ export default function OrderHeaderMobile({
           )}
         </div>
 
-        <div className="mt-3 flex flex-col items-center justify-center gap-2">
-          <Image
-            className="h-auto max-w-[170px]"
-            src={transportImage}
-            width={170}
-            height={96}
-            alt={`Transporte ${transport?.name || ''}`}
-          />
-          <p className="text-lg font-medium">{transport?.name || '-'}</p>
-        </div>
+        <motion.div
+          style={{ opacity: transportOpacity, height: transportHeight }}
+          className="overflow-hidden"
+        >
+          <div
+            ref={transportRef}
+            className="mt-3 flex flex-col items-center justify-center gap-2"
+          >
+            <Image
+              className="h-auto max-w-[170px]"
+              src={transportImage}
+              width={170}
+              height={96}
+              alt={`Transporte ${transport?.name || ''}`}
+            />
+            <p className="text-lg font-medium">{transport?.name || '-'}</p>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { AlertCircle, AlertTriangle, ArrowLeft, PackageX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/Utilities/EmptyState';
@@ -20,7 +20,6 @@ import { OrderProvider, useOrderContext } from '@/context/OrderContext';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useIsMobileSafe } from '@/hooks/use-mobile';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { useHideBottomNav } from '@/context/BottomNavContext';
 import { useBackButton } from '@/hooks/use-back-button';
 import { SECTIONS_CONFIG } from './config/sectionsConfig';
@@ -68,6 +67,7 @@ const OrderContent = ({
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [editSheetOpen, setEditSheetOpen] = useState(false);
   const [pendingFinishedStatus, setPendingFinishedStatus] = useState<OrderStatus | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useHideBottomNav(isMobile);
 
@@ -289,10 +289,12 @@ const OrderContent = ({
               onEdit={() => setEditSheetOpen(true)}
               onStatusChange={handleStatusChange}
               readOnly={readOnly}
+              scrollContainerRef={scrollContainerRef}
             />
 
-            <div className="min-h-0 w-full flex-1 overflow-hidden">
-              <ScrollArea className="h-full w-full">
+            <div className="relative min-h-0 w-full flex-1 overflow-hidden">
+              <div className="from-background pointer-events-none absolute inset-x-0 top-0 z-10 h-8 bg-gradient-to-b to-transparent" />
+              <div ref={scrollContainerRef} className="h-full w-full overflow-y-auto">
                 <OrderSummaryMobile
                   order={order}
                   onTemperatureChange={handleTemperatureChange}
@@ -307,7 +309,7 @@ const OrderContent = ({
                   productDetailsCount={mergedProductDetails.length}
                   pendingProductionCount={incompleteProductionLines.length}
                 />
-              </ScrollArea>
+              </div>
             </div>
 
             {onClose && !readOnly && (
