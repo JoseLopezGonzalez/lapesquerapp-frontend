@@ -207,12 +207,12 @@ export default function SearchPalletCard({
       <CardFooter className="w-full p-0">
         <div className="divide-border grid w-full grid-cols-2 divide-x">
           <div className="bg-accent/40 flex items-center justify-center py-3">
-            <span className="text-base font-semibold">
+            <span className="text-base font-medium">
               {availableBoxCount} {availableBoxCount === 1 ? 'caja' : 'cajas'}
             </span>
           </div>
           <div className="bg-accent/40 flex items-center justify-center py-3">
-            <span className="text-base font-semibold">
+            <span className="text-base font-medium">
               {formatDecimalWeight(availableNetWeight)}
             </span>
           </div>

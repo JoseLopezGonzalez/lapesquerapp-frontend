@@ -181,7 +181,7 @@ const OrdersList = ({
             >
               <ArrowLeft className="h-6 w-6" />
             </Button>
-            <h2 className="flex-1 truncate text-center text-xl font-normal dark:text-white">
+            <h2 className="flex-1 truncate text-center text-xl font-medium dark:text-white">
               Pedidos Activos
             </h2>
             {canCreateOrder ? (
@@ -202,7 +202,7 @@ const OrdersList = ({
           /* Layout desktop: título + botones */
           <div className="flex w-full flex-row gap-3 sm:items-center sm:justify-between">
             <div className="flex flex-col gap-1">
-              <h2 className="text-lg font-semibold sm:text-xl dark:text-white">Pedidos Activos</h2>
+              <h2 className="text-xl font-medium dark:text-white">Pedidos Activos</h2>
               {activeCount > 0 && (
                 <p className="text-muted-foreground text-xs sm:text-sm">
                   {activeCount} pedido{activeCount !== 1 ? 's' : ''} activo

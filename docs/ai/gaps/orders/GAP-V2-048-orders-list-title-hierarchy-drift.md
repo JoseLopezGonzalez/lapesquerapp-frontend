@@ -6,7 +6,7 @@ category: ux-ui
 priority: P3
 risk: low
 size: XS
-status: ready
+status: done
 dependencies: []
 target_files:
   - src/components/Admin/OrdersManager/OrdersList/index.tsx
@@ -81,7 +81,20 @@ npm run type-check
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+### Veredicto: ✅ APROBADO
+
+Ambos `<h2>` ("Pedidos Activos") de `OrdersList/index.tsx` usan ahora
+`text-xl font-medium dark:text-white` — mobile (línea 184) y desktop (línea 205).
+El escalón de breakpoint `text-lg sm:text-xl` de la variante desktop se eliminó
+por completo, tal como pedía la solución propuesta. El resto del layout
+(padding, botones, contador `activeCount`) no se tocó.
+
+### Checklist
+
+- [x] `<h2>` mobile y desktop usan idéntica clase `text-xl font-medium`
+- [x] Layout circundante sin cambios (verificado por diff — solo 2 líneas
+      tocadas)
+- [x] Sin fetch/hardcode/`.js` nuevo/`any` — cambio puramente de className
 
 ## Links
 

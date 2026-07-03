@@ -6,7 +6,7 @@ category: code-quality
 priority: P3
 risk: low
 size: M
-status: ready
+status: done
 dependencies: []
 target_files:
   - src/hooks/useComercialOrders.ts
@@ -100,7 +100,39 @@ npm run lint
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+### Resultado: ✅ APROBADO
+
+### Criterios de aceptación
+
+- [x] Los 3 archivos existen en `src/__tests__/hooks/`:
+      `useComercialOrders.test.ts` (3 tests), `useOrderFormConfig.test.ts` (5 tests),
+      `useOrderCreateFormConfig.test.ts` (4 tests) — 12 tests en total.
+- [x] Cada uno cubre normalización específica del dominio, no solo happy path:
+  - `useComercialOrders`: normalización `offer_id`→`offerId` con precedencia correcta
+    (`offerId ?? offer_id ?? null`), fallback de `meta` sin paginación, lista vacía sin
+    `data`.
+  - `useOrderFormConfig`: mapeo de fechas/orderType/ids-a-string desde `orderData`,
+    default sin `orderData`, inyección de `externalProcessor` inactivo no presente en
+    `options` (con el sufijo `" (inactivo)"`), no duplicación cuando ya está presente.
+  - `useOrderCreateFormConfig`: llamada a `useOrderFormOptions({ includeCustomers: true })`,
+    inyección de opciones en los 6 campos con `options`, defaults de fecha (`today`),
+    grupo `Fechas` sin tocar cuando las opciones están vacías.
+- [x] Cada test verificado línea a línea contra la implementación real de los 3 hooks — sin
+      discrepancias de comportamiento.
+- [x] `npx vitest run` de los 3 archivos → 12/12 verde (confirmado de nuevo en esta
+      auditoría).
+- [x] No se modificó ningún archivo fuente (`useComercialOrders.ts`,
+      `useOrderFormConfig.ts`, `useOrderCreateFormConfig.ts`) — GAP estrictamente de tests.
+- [x] Mocking sigue el patrón de `.claude/rules/testing.md` (mock del service/hook
+      dependiente completo, no de `fetchWithTenant`).
+
+### Revisión UX
+
+No aplica — GAP de cobertura de tests, sin superficie de UI.
+
+### PL candidate
+
+Ninguno — cobertura de tests ya está priorizada explícitamente por `.claude/rules/testing.md`.
 
 ## Links
 

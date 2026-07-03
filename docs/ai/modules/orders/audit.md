@@ -6,19 +6,20 @@
 ## NEXT ACTION
 
 ```text
-Ejecutar (elige una):
+Solo queda 1 GAP `ready` en todo el módulo: GAP-V2-028 (P2, tamaño L, riesgo medium).
+Todos los demás GAPs ready P2/P3 pequeños ya están `done`.
 
-A) Implementar el siguiente lote de P3 ready de tamaño pequeño (ux-ui/code-quality),
-   dejando fuera GAP-V2-028 (L, ver B):
-   /implement-next module=orders category=ux-ui limit=4 risk=low
-   → cogería el resto P3 ux-ui: GAP-V2-046, GAP-V2-048, GAP-V2-049, GAP-V2-050.
-   /implement-next module=orders category=code-quality limit=4 risk=low
-   → cogería el resto P3 code-quality: GAP-V2-031, GAP-V2-032, GAP-V2-033, GAP-V2-034.
+Ejecutar (única vía pendiente):
 
-B) Implementar GAP-V2-028 en pasada dedicada (autorizado por Jose el 2026-07-03,
-   tamaño L/riesgo medium, 35 funciones de `orderService.ts` — no combinar con
-   otros GAPs en el mismo commit):
+Implementar GAP-V2-028 en pasada dedicada (autorizado por Jose el 2026-07-03,
+tamaño L/riesgo medium, 35 funciones de `orderService.ts` — no combinar con
+otros GAPs en el mismo commit, ciclo completo de type-check/lint/test/build propio):
    /implement-next module=orders category=architecture-refactor limit=1 risk=medium
+
+Tras GAP-V2-028, el módulo `orders` queda con 0 GAPs `ready` — todo lo demás es `done`
+(37) o `rejected` (3). Punto natural para: (a) commitear toda la sesión, (b) considerar
+una nueva pasada de `/deep-audit-module` si Jose quiere abrir carriles no ejecutados
+(performance sigue sin auditar, ver §1), o (c) pasar a otro módulo.
 
 Progreso 2026-07-03 (sesión local, sin commitear todavía):
 1. Lote completo de los 4 GAPs P1 `ready` cerrado y verificado `done` por `gap-auditor` en
@@ -44,13 +45,37 @@ Progreso 2026-07-03 (sesión local, sin commitear todavía):
    `font-semibold`/`font-bold` → `font-medium` en toda la familia `OrderCustomerHistory`,
    incluyendo `ChartTooltip.jsx` no listado originalmente en `target_files` pero requerido
    por el criterio de aceptación).
+5. Lote de 5 GAPs P3 `ready` (code-quality/ux-ui, `risk=low`, `size=XS`) cerrado y
+   verificado `done` por `gap-auditor` en modo lote — GAP-V2-031 (`'use client'` en
+   `OrderProduction`/`OrderLabels`), GAP-V2-033 (`StatusBadge` extendido con `showDot`,
+   sustituye el badge inline duplicado de `OrderCard` mobile), GAP-V2-048 (título
+   "Pedidos Activos" de `OrdersList` unificado a `text-xl font-medium` en mobile y
+   desktop, fusionaba el alcance de GAP-V2-046 para ese archivo), GAP-V2-049 (jerarquía
+   cliente/ID en `OrderCard` desktop — ID pasa a `text-muted-foreground text-sm
+   font-medium`, cliente queda como único elemento en `text-base font-medium`) y
+   GAP-V2-050 (`CardTitle` de `OrderIncident` alineado a la sub-escala `text-lg
+   font-medium` de sus tarjetas hermanas). Observación no bloqueante en GAP-V2-033: el
+   badge resultante usa `text-xs`/`h-5`/`rounded-4xl` del `Badge` compartido en vez del
+   `text-[11px]`/`rounded-full` del span eliminado — más consistente con el resto del
+   proyecto, no es un defecto real pero el criterio "idéntico" no se cumple al 100%.
+6. Lote de los 3 últimos GAPs P3 pequeños cerrado y verificado `done` por `gap-auditor` en
+   modo lote — GAP-V2-046 (`font-semibold`→`font-medium` en 5 archivos de producción/
+   palets/líneas auxiliares/previsión, sin tocar tamaño), GAP-V2-032 (interfaces de
+   dominio de `orders` movidas de `orderService.ts` a `src/types/orders.ts`, 31 tipos
+   incluyendo `OrderStatus` añadido tras observación del auditor, con re-export de
+   compatibilidad para los ~18 consumidores externos), GAP-V2-034 (3 archivos de test
+   nuevos para `useComercialOrders`, `useOrderFormConfig` y `useOrderCreateFormConfig`,
+   12 tests cubriendo normalización de `offer_id`, mapeo de `orderData` a
+   `defaultValues`, inyección de `externalProcessor` inactivo, e inyección de opciones
+   en `formGroups`).
 
-`npm run type-check`, `eslint` por archivo y `npm run build` limpios en ambos lotes;
+`npm run type-check`, `eslint` por archivo y `npm run build` limpios en los 4 últimos lotes;
 `npm run test:run` sin regresiones (los 22 fallos preexistentes en 11 ficheros no
-relacionados con `orders` no cambiaron, confirmado con `git stash` antes/después). Cambios
-pendientes de commit — recordar a Jose el punto de commit (Claude no commitea en contexto
-LOCAL).
-P0/P1 abiertos: 0. Blocked: 0. Ready: 9 (8 P2/P3 pequeños + GAP-V2-028 L).
+relacionados con `orders` no cambiaron, confirmado con `git stash` antes/después; +12 tests
+nuevos verdes de GAP-V2-034). Cambios pendientes de commit — recordar a Jose el punto de
+commit (Claude no commitea en contexto LOCAL).
+P0/P1 abiertos: 0. Blocked: 0. Ready: 1 (GAP-V2-028, tamaño L — único GAP pendiente de
+todo el módulo).
 
 Contexto:
 Dos líneas de trabajo paralelas sobre `orders` se reconciliaron el 2026-07-03. La rama
@@ -99,11 +124,11 @@ Documentación:                 cruce legacy acotado completado
 
 P0 abiertos: 0   P1 abiertos: 0 (GAP-V2-038, GAP-V2-051, GAP-V2-056, GAP-V2-057 → done, verificados por gap-auditor el 2026-07-03)
 P2 abiertos: 1 (ready: GAP-V2-028 — GAP-V2-029, GAP-V2-030, GAP-V2-037, GAP-V2-047, GAP-V2-052 done; GAP-V2-036 rejected)
-P3 abiertos: 8 (ready: GAP-V2-031, GAP-V2-032, GAP-V2-033, GAP-V2-034, GAP-V2-046, GAP-V2-048, GAP-V2-049, GAP-V2-050 — GAP-V2-026, GAP-V2-027 done)
+P3 abiertos: 0 (todos done: GAP-V2-026, GAP-V2-027, GAP-V2-031, GAP-V2-032, GAP-V2-033, GAP-V2-034, GAP-V2-046, GAP-V2-048, GAP-V2-049, GAP-V2-050)
 
 Estado de auditoría:      audited_ampliado (5 de 5 carriles ejecutados en tres pasadas — piloto acotado + cierre de GAP-024/025 con seguimiento GAP-026 + ampliación a superficies pending)
-Estado de implementación: batch_24_done (GAP-V2-002, GAP-V2-004, GAP-V2-021, GAP-V2-011, GAP-V2-012, GAP-V2-013, GAP-V2-020, GAP-V2-003, GAP-V2-005, GAP-V2-006, GAP-V2-008, GAP-V2-009, GAP-V2-014, GAP-V2-007, GAP-V2-022, GAP-V2-023, GAP-V2-024, GAP-V2-025, GAP-V2-057, GAP-V2-056, GAP-V2-051, GAP-V2-038, GAP-V2-027, GAP-V2-029, GAP-V2-030, GAP-V2-026, GAP-V2-037, GAP-V2-052, GAP-V2-047)
-Estado de verificación:   GAP-V2-025 audited_done (aprobado con observación no bloqueante → generó GAP-V2-026); 20 candidatos nuevos de la ampliación normalizados por `gap-normalizer` — 17 ready, 3 blocked (GAP-V2-027, GAP-V2-028, GAP-V2-036), 0 later/rejected (uno renombrado de GAP-V2-026 a GAP-V2-057 por colisión de numeración con la rama `lv9qnf` al reconciliar); lote de 4 P1 (GAP-V2-057/056/051/038) audited_done por `gap-auditor` en modo lote el 2026-07-03, sin hallazgos bloqueantes; los 3 `blocked` resueltos por decisión directa de Jose el 2026-07-03 — GAP-V2-027 done (sin necesidad de gap-auditor, cambio trivial), GAP-V2-028 ready (autorizado, pendiente de implementación dedicada por tamaño L), GAP-V2-036 rejected (documentado en código); lote de 3 P2/P3 code-quality (GAP-V2-029/030/026) audited_done por `gap-auditor` en modo lote el 2026-07-03, sin hallazgos bloqueantes
+Estado de implementación: batch_32_done (GAP-V2-002, GAP-V2-004, GAP-V2-021, GAP-V2-011, GAP-V2-012, GAP-V2-013, GAP-V2-020, GAP-V2-003, GAP-V2-005, GAP-V2-006, GAP-V2-008, GAP-V2-009, GAP-V2-014, GAP-V2-007, GAP-V2-022, GAP-V2-023, GAP-V2-024, GAP-V2-025, GAP-V2-057, GAP-V2-056, GAP-V2-051, GAP-V2-038, GAP-V2-027, GAP-V2-029, GAP-V2-030, GAP-V2-026, GAP-V2-037, GAP-V2-052, GAP-V2-047, GAP-V2-031, GAP-V2-033, GAP-V2-048, GAP-V2-049, GAP-V2-050, GAP-V2-046, GAP-V2-032, GAP-V2-034)
+Estado de verificación:   GAP-V2-025 audited_done (aprobado con observación no bloqueante → generó GAP-V2-026); 20 candidatos nuevos de la ampliación normalizados por `gap-normalizer` — 17 ready, 3 blocked (GAP-V2-027, GAP-V2-028, GAP-V2-036), 0 later/rejected (uno renombrado de GAP-V2-026 a GAP-V2-057 por colisión de numeración con la rama `lv9qnf` al reconciliar); lote de 4 P1 (GAP-V2-057/056/051/038) audited_done por `gap-auditor` en modo lote el 2026-07-03, sin hallazgos bloqueantes; los 3 `blocked` resueltos por decisión directa de Jose el 2026-07-03 — GAP-V2-027 done (sin necesidad de gap-auditor, cambio trivial), GAP-V2-028 ready (autorizado, pendiente de implementación dedicada por tamaño L), GAP-V2-036 rejected (documentado en código); lote de 3 P2/P3 code-quality (GAP-V2-029/030/026) audited_done por `gap-auditor` en modo lote el 2026-07-03, sin hallazgos bloqueantes; lote de 5 P3 code-quality/ux-ui (GAP-V2-031/033/048/049/050) audited_done por `gap-auditor` en modo lote el 2026-07-03, sin hallazgos bloqueantes (observación no bloqueante en GAP-V2-033); lote final de 3 P2/P3 (GAP-V2-046/032/034) audited_done por `gap-auditor` en modo lote el 2026-07-03 — GAP-V2-032 recibió una observación de tipo faltante (`OrderStatus`) que se corrigió en la misma sesión tras la auditoría, re-verificada limpia. Ready final del módulo: 1 (GAP-V2-028).
 ```
 
 ## 2. Cobertura
@@ -286,8 +311,9 @@ con GAP-V2-026 (doble refetch de `useOrderPallets`, de la rama `lv9qnf`) — son
 distintos que solo compartieron número por accidente antes de la reconciliación.
 
 Ver `docs/ai/modules/orders/gaps-registry.md` (regenerado tras cada lote). Resumen total del
-módulo tras el lote `/implement-next` code-quality del 2026-07-03 (GAP-V2-029/030/026 → done):
-**12 `ready`**, **26 `done`**, **0 `blocked`**, 0 `later`, **3 `rejected`** — 41 GAPs en total.
+módulo tras el lote final del 2026-07-03 (GAP-V2-046/032/034 → done):
+**1 `ready`** (GAP-V2-028), **37 `done`**, **0 `blocked`**, 0 `later`, **3 `rejected`** — 41
+GAPs en total.
 
 ## 8. GAPs resueltos o descartados
 
@@ -323,6 +349,14 @@ módulo tras el lote `/implement-next` code-quality del 2026-07-03 (GAP-V2-029/0
 - GAP-V2-037 resuelto: `renderField` de `OrderEditSheet` recibe `hasError` y lo aplica como `aria-invalid` nativo a `Input`/`Textarea`/`SelectTrigger` (elimina el wrapper `border-red-300` para esos 3 tipos); `Combobox`/`DatePicker` (componentes `.js`/`.jsx` compartidos, 14+ callers cada uno) conservan un wrapper mínimo con `border-destructive` en vez de color hardcodeado — no se extendió soporte nativo a esos dos por estar fuera de `target_files` y disparar la regla de migración `.js→.ts`. Texto de error realineado a `text-red-400 text-xs pt-1` documentado.
 - GAP-V2-052 resuelto: nuevo helper `formatQuantityWithUnit` sustituye el sufijo `kg` fijo de `formatDecimalWeight` por `row.unit` real (fallback a `kg` solo si `unit` está vacío) en las 2 vistas (mobile/desktop) de `OrderAuxiliaryLines`.
 - GAP-V2-047 resuelto: unificados todos los `font-bold`/`font-semibold` a `font-medium` en `OrderCustomerHistory` (`GeneralMetricsGrid`, `ProductHistoryMobileCard`, `ProductHistoryAccordionItem`, `ChartTooltip` — este último añadido fuera de `target_files` porque el criterio de aceptación es un grep sobre toda la carpeta), alineando con la escala documentada donde `font-medium` es el único peso de énfasis válido.
+- GAP-V2-031 resuelto: `OrderProduction/index.tsx` y `OrderLabels/index.tsx` añaden `'use client';` como primera línea, igual que sus 5 hermanos en `Order/`.
+- GAP-V2-033 resuelto: `StatusBadge` extendido con prop `showDot?: boolean` (punto de color delante del label); `OrderCard` mobile sustituye el `<span>` inline duplicado por `<StatusBadge color={ringColor} label={statusLabel} showDot />`. Observación no bloqueante: el resultado usa `text-xs`/`h-5`/`rounded-4xl` del `Badge` compartido en vez de `text-[11px]`/`rounded-full` del span eliminado — más consistente con el resto del proyecto, no es un defecto real.
+- GAP-V2-048 resuelto: título "Pedidos Activos" de `OrdersList` unificado a `text-xl font-medium` en mobile (antes `font-normal`) y desktop (antes `text-lg font-semibold sm:text-xl`), sin cambiar el layout circundante. Absorbe el alcance de GAP-V2-046 para este archivo.
+- GAP-V2-049 resuelto: en `OrderCard` desktop, `#{orderId}` pasa a `text-muted-foreground text-sm font-medium` y el nombre del cliente queda como único elemento en `text-base font-medium`, replicando la jerarquía ya correcta en mobile; orden visual, badges y `line-clamp-2` sin cambios.
+- GAP-V2-050 resuelto: `CardTitle` de `OrderIncident` aplica `className="text-lg font-medium"`, alineado con la sub-escala ya usada por `OrderAuxiliaryLines`, `OrderProduction`, `OrderPallets`, `OrderPlannedProductDetails` y `OrderProductDetails`.
+- GAP-V2-046 resuelto: sustituidos todos los `font-semibold` por `font-medium` (mismo `text-*`) en `OrderProduction`, `OrderPalletCard`, `SearchPalletCard`, `OrderAuxiliaryLines` y `OrderPlannedProductDetails`; las 3 filas de totales de tablas hermanas (`OrderProduction`, `OrderAuxiliaryLines`, `OrderPlannedProductDetails`) quedan con el mismo peso.
+- GAP-V2-032 resuelto: creado `src/types/orders.ts` con las 31 interfaces/tipos de dominio de `orders` (incluyendo `OrderStatus`, añadido tras una observación de `gap-auditor` en la misma sesión); `orderService.ts` los importa desde ahí y los re-exporta (`export type { ... } from '@/types/orders'`) para no romper los ~18 consumidores externos que importaban tipos desde el service.
+- GAP-V2-034 resuelto: 3 archivos de test nuevos (`useComercialOrders.test.ts`, `useOrderFormConfig.test.ts`, `useOrderCreateFormConfig.test.ts`, 12 tests) cubren normalización de `offer_id`→`offerId`, mapeo de `orderData` a `defaultValues` (fechas, tipo de pedido, ids a string), inyección de `externalProcessor` inactivo no presente en opciones, y propagación de opciones de catálogo a `formGroups`.
 
 ## 9. Bloqueos y riesgos
 

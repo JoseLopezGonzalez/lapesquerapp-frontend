@@ -727,13 +727,13 @@ const OrderAuxiliaryLines = () => {
                   </TableBody>
                   <TableFooter>
                     <TableRow>
-                      <TableCell colSpan={4} className="font-semibold">
+                      <TableCell colSpan={4} className="font-medium">
                         Totales
                       </TableCell>
-                      <TableCell className="text-right font-semibold">
+                      <TableCell className="text-right font-medium">
                         {formatDecimalCurrency(totals.subtotal)}
                       </TableCell>
-                      <TableCell colSpan={2} className="text-right font-semibold">
+                      <TableCell colSpan={2} className="text-right font-medium">
                         {totals.hasPendingTax
                           ? 'IVA pendiente en alguna línea'
                           : `${formatDecimalCurrency(totals.total)} con IVA`}

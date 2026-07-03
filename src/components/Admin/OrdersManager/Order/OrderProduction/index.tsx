@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo, useState } from 'react';
 
 import { cn } from '@/lib/utils';
@@ -135,7 +137,7 @@ const OrderProduction = () => {
                           <p className="text-muted-foreground mb-1.5 text-xs tracking-wide uppercase">
                             Artículo
                           </p>
-                          <p className="text-sm font-semibold">
+                          <p className="text-sm font-medium">
                             {detail?.product?.name || 'Sin producto'}
                           </p>
                         </div>
@@ -151,10 +153,10 @@ const OrderProduction = () => {
                             Pedido
                           </p>
                           {detail.status === 'noPlanned' ? (
-                            <p className="text-sm font-semibold">-</p>
+                            <p className="text-sm font-medium">-</p>
                           ) : (
                             <>
-                              <p className="text-sm font-semibold">
+                              <p className="text-sm font-medium">
                                 {formatDecimalWeight(detail.plannedQuantity)}
                               </p>
                               <p className="text-muted-foreground text-xs">
@@ -168,10 +170,10 @@ const OrderProduction = () => {
                             Producción
                           </p>
                           {detail.productionQuantity === 0 && detail.productionBoxes === 0 ? (
-                            <p className="text-sm font-semibold">-</p>
+                            <p className="text-sm font-medium">-</p>
                           ) : (
                             <>
-                              <p className="text-sm font-semibold">
+                              <p className="text-sm font-medium">
                                 {formatDecimalWeight(detail.productionQuantity)}
                               </p>
                               <p className="text-muted-foreground text-xs">
@@ -184,7 +186,7 @@ const OrderProduction = () => {
                           <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
                             Diferencia
                           </p>
-                          <p className="text-sm font-semibold">
+                          <p className="text-sm font-medium">
                             {detail.status === 'noPlanned'
                               ? '-'
                               : formatDecimalWeight(detail.quantityDifference)}

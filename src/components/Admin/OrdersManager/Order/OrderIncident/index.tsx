@@ -298,7 +298,7 @@ export default function OrderIncidentPanel() {
           <CardHeader>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <CardTitle>Incidencia</CardTitle>
+                <CardTitle className="text-lg font-medium">Incidencia</CardTitle>
                 <CardDescription>Crea o resuelve la incidencia asociada al pedido</CardDescription>
               </div>
               <div className="flex gap-2">

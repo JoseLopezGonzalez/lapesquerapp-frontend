@@ -6,7 +6,7 @@ category: ux-ui
 priority: P3
 risk: low
 size: S
-status: ready
+status: done
 dependencies: []
 target_files:
   - src/components/Admin/OrdersManager/Order/OrderProduction/index.tsx
@@ -103,7 +103,37 @@ npm run type-check
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+### Resultado: ✅ APROBADO
+
+### Checklist técnico
+
+- [x] `grep -rn "font-semibold"` sobre los 5 directorios objetivo no devuelve resultados.
+- [x] Las filas de totales de `OrderProduction` (línea 361), `OrderAuxiliaryLines` (líneas
+      730-736) y `OrderPlannedProductDetails` (líneas 881-885) usan el mismo peso
+      (`font-medium`).
+- [x] Ningún `text-*` fue tocado — el diff solo cambia `font-semibold` → `font-medium` en
+      cada línea.
+- [x] Sin fetch directo / hardcode de tenant / archivos `.js` nuevos — no aplica a este GAP.
+
+### Revisión UX — Light
+
+- [x] Cambio autoexplicativo, sin nueva decisión de usuario.
+- [x] Consistente con la UI circundante — iguala el peso ya usado en piezas hermanas.
+- [x] No interactivo — N/A hover/focus/active.
+- [x] Sin cambios de texto.
+
+Verdict: ✅ APROBADO.
+
+### Nota
+
+El diff de `OrderProduction/index.tsx` incluye también la línea `'use client';` al inicio del
+archivo. No forma parte del alcance de este GAP — pertenece a GAP-V2-031 (ya `status: done`),
+que toca el mismo archivo y coincide en el mismo working tree sin commitear. No se penaliza
+aquí.
+
+### PL candidate
+
+Ninguno — el hallazgo ya está cubierto por `PL-024`.
 
 ## Links
 

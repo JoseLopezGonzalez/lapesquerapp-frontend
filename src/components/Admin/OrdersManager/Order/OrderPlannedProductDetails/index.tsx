@@ -878,11 +878,11 @@ const OrderPlannedProductDetails = () => {
                   </TableBody>
                   <TableFooter>
                     <TableRow>
-                      <TableCell className="font-semibold">Totales</TableCell>
-                      <TableCell className="text-right font-semibold">
+                      <TableCell className="font-medium">Totales</TableCell>
+                      <TableCell className="text-right font-medium">
                         {formatInteger(totals.boxes)}
                       </TableCell>
-                      <TableCell className="text-right font-semibold">
+                      <TableCell className="text-right font-medium">
                         {formatDecimalWeight(totals.quantity)}
                       </TableCell>
                       <TableCell colSpan={3}></TableCell>

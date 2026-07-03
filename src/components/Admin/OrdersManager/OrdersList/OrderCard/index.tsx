@@ -112,26 +112,7 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }: OrderCardPr
                 {order.numberOfBoxes != null ? ` · ${order.numberOfBoxes} cajas` : ''}
               </p>
               <div className="flex flex-wrap items-center gap-1.5">
-                <span
-                  className={cn(
-                    'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium',
-                    order.status === 'pending' &&
-                      'bg-orange-500/15 text-orange-700 dark:text-orange-300',
-                    order.status === 'finished' &&
-                      'bg-green-500/15 text-green-700 dark:text-green-300',
-                    order.status === 'incident' && 'bg-red-500/15 text-red-700 dark:text-red-300'
-                  )}
-                >
-                  <span
-                    className={cn(
-                      'h-1.5 w-1.5 rounded-full',
-                      order.status === 'pending' && 'bg-orange-500',
-                      order.status === 'finished' && 'bg-green-500',
-                      order.status === 'incident' && 'bg-red-500'
-                    )}
-                  />
-                  {statusLabel}
-                </span>
+                <StatusBadge color={ringColor} label={statusLabel} showDot />
                 {(order?.orderType === 'autoventa' || order?.order_type === 'autoventa') && (
                   <span className="inline-flex items-center rounded-full border border-neutral-400/50 bg-neutral-500/15 px-2 py-0.5 text-[11px] font-medium text-neutral-700 dark:border-neutral-500/50 dark:text-neutral-300">
                     Autoventa
@@ -177,7 +158,7 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }: OrderCardPr
               )}
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-base font-medium">#{orderId}</h3>
+              <h3 className="text-muted-foreground text-sm font-medium">#{orderId}</h3>
               {(order?.orderType === 'autoventa' || order?.order_type === 'autoventa') && (
                 <span className="inline-flex items-center rounded-full border border-neutral-400/50 bg-neutral-500/15 px-2 py-0.5 text-[11px] font-medium text-neutral-700 dark:border-neutral-500/50 dark:text-neutral-300">
                   Autoventa

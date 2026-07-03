@@ -1,3 +1,5 @@
+'use client';
+
 import { useMemo, useState } from 'react';
 import { Printer } from 'lucide-react';
 import { useOrderContext } from '@/context/OrderContext';

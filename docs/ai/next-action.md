@@ -33,47 +33,54 @@ líneas auxiliares) y `GAP-V2-047` (unifica `font-bold`/`font-semibold` → `fon
 `OrderCustomerHistory`, incluyendo `ChartTooltip.jsx` fuera de `target_files`). Verificados
 `done` (9-10/10) por `gap-auditor` en modo lote.
 
-`npm run type-check`, `eslint` por archivo y `npm run build` limpios en ambos lotes.
+Lote 20 (misma sesión, continuación): 5 GAPs P3 code-quality/ux-ui — `GAP-V2-031`
+(`'use client'` en `OrderProduction`/`OrderLabels`), `GAP-V2-033` (`StatusBadge` extendido
+con `showDot`, sustituye badge inline duplicado en `OrderCard` mobile), `GAP-V2-048`
+(título "Pedidos Activos" unificado a `text-xl font-medium`, absorbe alcance de
+GAP-V2-046 para ese archivo), `GAP-V2-049` (jerarquía cliente/ID en `OrderCard` desktop)
+y `GAP-V2-050` (sub-escala `CardTitle` en `OrderIncident`). Verificados `done` por
+`gap-auditor` en modo lote (observación no bloqueante en GAP-V2-033: el badge resultante
+no es 100% pixel-idéntico al span eliminado, más consistente con el resto del proyecto).
+
+Lote 21 (misma sesión, cierre de P2/P3 pequeños): `GAP-V2-046` (`font-semibold`→
+`font-medium` en 5 archivos de producción/palets/líneas auxiliares/previsión),
+`GAP-V2-032` (interfaces de dominio de `orders` movidas de `orderService.ts` a
+`src/types/orders.ts`, 31 tipos con re-export de compatibilidad — `gap-auditor` señaló
+`OrderStatus` fuera del movimiento inicial, corregido en la misma sesión y re-verificado),
+`GAP-V2-034` (3 archivos de test nuevos — `useComercialOrders`, `useOrderFormConfig`,
+`useOrderCreateFormConfig` — 12 tests cubriendo normalización de dominio específica de
+cada hook). Verificados `done` por `gap-auditor` en modo lote.
+
+`npm run type-check`, `eslint` por archivo y `npm run build` limpios en los 4 últimos lotes.
 `npx vitest run` comparado con `git stash` contra el árbol limpio: mismos 11 archivos/22
 tests en fallo preexistentes antes y después — sin regresión introducida por ninguno de
-los dos lotes.
+los lotes; +12 tests nuevos verdes (GAP-V2-034).
 **Cambios sin commitear todavía** — contexto LOCAL, Claude no commitea por su cuenta;
-pendiente de que Jose revise y commitee (incluye lote 17 + blocked resueltos + lote 18 +
-lote 19, todo en la misma sesión sin commit).
+pendiente de que Jose revise y commitee (incluye lote 17 + blocked resueltos + lotes
+18/19/20/21, todo en la misma sesión sin commit).
 
-P0/P1 abiertos: 0. Blocked: 0. Ready: 9 (8 P3 pequeños + GAP-V2-028, tamaño L).
+P0/P1 abiertos: 0. Blocked: 0. Ready: 1 — GAP-V2-028 (L), único GAP pendiente de todo
+el módulo. Todo lo demás ya es `done` (37) o `rejected` (3).
 
 ## Acción recomendada
 
-Dos vías independientes, no excluyentes:
-
-**A) Siguiente lote P3 pequeño, sin tocar `orderService.ts`:**
-
-```text
-/implement-next module=orders category=ux-ui limit=4 risk=low
-```
-
-→ cogería el resto de P3 ux-ui: `GAP-V2-046`, `GAP-V2-048`, `GAP-V2-049`, `GAP-V2-050`.
-
-```text
-/implement-next module=orders category=code-quality limit=4 risk=low
-```
-
-→ cogería los 4 P3 code-quality restantes: `GAP-V2-031`, `GAP-V2-032`, `GAP-V2-033`,
-`GAP-V2-034`.
-
-**B) GAP-V2-028 en pasada dedicada** (autorizado, tamaño L — no combinar con otros GAPs
-en el mismo commit, ciclo completo de type-check/lint/test/build propio):
+Única vía pendiente — implementar GAP-V2-028 en pasada dedicada (autorizado, tamaño L —
+no combinar con otros GAPs en el mismo commit, ciclo completo de
+type-check/lint/test/build propio):
 
 ```text
 /implement-next module=orders category=architecture-refactor limit=1 risk=medium
 ```
 
+Tras cerrar GAP-V2-028, el módulo `orders` queda en 0 `ready` — punto natural para
+commitear toda la sesión y decidir si abrir una nueva pasada de `/deep-audit-module`
+(el carril `performance` sigue sin auditar nunca) o pasar a otro módulo.
+
 También queda pendiente de confirmación de Jose (no bloquea ningún GAP `ready` todavía, pero condiciona un futuro candidato): si las líneas auxiliares de pedido deben admitir cantidad/precio unitario negativo para representar abonos/devoluciones.
 
 ## Motivo
 
-Los 16 lotes de `/implement-next` de la pasada 2026-07-02 cerraron `GAP-V2-002`, `GAP-V2-004`, `GAP-V2-021`, `GAP-V2-011`, `GAP-V2-012`, `GAP-V2-013`, `GAP-V2-020`, `GAP-V2-003`, `GAP-V2-005`, `GAP-V2-006`, `GAP-V2-008`, `GAP-V2-009`, `GAP-V2-014`, `GAP-V2-007`, `GAP-V2-022` y `GAP-V2-023`. Los lotes 15 y 16 (rama `lv9qnf`, 2026-07-03) cerraron `GAP-V2-024` y `GAP-V2-025`; el segundo generó `GAP-V2-026` como seguimiento no bloqueante de un doble refetch. GAP-V2-001 y GAP-V2-019 quedaron `rejected/superseded` (divididos o fusionados en otros GAPs). La ampliación de auditoría (rama `ewomf1`) cubrió superficies que quedaban `pending` y encontró 20 hallazgos nuevos. El lote 17 (2026-07-03) cerró los 4 P1 `ready` de esa ampliación: `GAP-V2-057`, `GAP-V2-056`, `GAP-V2-051` y `GAP-V2-038`. Jose resolvió los 3 `blocked` restantes en la misma sesión: `GAP-V2-027` (done), `GAP-V2-028` (ready, pendiente de implementar), `GAP-V2-036` (rejected). El lote 18 cerró `GAP-V2-029`, `GAP-V2-030` y `GAP-V2-026`. El lote 19 (misma sesión, continuación) cerró `GAP-V2-037`, `GAP-V2-052` y `GAP-V2-047`.
+Los 16 lotes de `/implement-next` de la pasada 2026-07-02 cerraron `GAP-V2-002`, `GAP-V2-004`, `GAP-V2-021`, `GAP-V2-011`, `GAP-V2-012`, `GAP-V2-013`, `GAP-V2-020`, `GAP-V2-003`, `GAP-V2-005`, `GAP-V2-006`, `GAP-V2-008`, `GAP-V2-009`, `GAP-V2-014`, `GAP-V2-007`, `GAP-V2-022` y `GAP-V2-023`. Los lotes 15 y 16 (rama `lv9qnf`, 2026-07-03) cerraron `GAP-V2-024` y `GAP-V2-025`; el segundo generó `GAP-V2-026` como seguimiento no bloqueante de un doble refetch. GAP-V2-001 y GAP-V2-019 quedaron `rejected/superseded` (divididos o fusionados en otros GAPs). La ampliación de auditoría (rama `ewomf1`) cubrió superficies que quedaban `pending` y encontró 20 hallazgos nuevos. El lote 17 (2026-07-03) cerró los 4 P1 `ready` de esa ampliación: `GAP-V2-057`, `GAP-V2-056`, `GAP-V2-051` y `GAP-V2-038`. Jose resolvió los 3 `blocked` restantes en la misma sesión: `GAP-V2-027` (done), `GAP-V2-028` (ready, pendiente de implementar), `GAP-V2-036` (rejected). El lote 18 cerró `GAP-V2-029`, `GAP-V2-030` y `GAP-V2-026`. El lote 19 (misma sesión, continuación) cerró `GAP-V2-037`, `GAP-V2-052` y `GAP-V2-047`. El lote 20 (misma sesión, continuación) cerró `GAP-V2-031`, `GAP-V2-033`, `GAP-V2-048`, `GAP-V2-049` y `GAP-V2-050`. El lote 21 (misma sesión, cierre) cerró `GAP-V2-046`, `GAP-V2-032` y `GAP-V2-034` — deja el módulo en 1 solo GAP `ready` (`GAP-V2-028`).
 
 ## Archivos clave
 
@@ -96,5 +103,5 @@ Los 16 lotes de `/implement-next` de la pasada 2026-07-02 cerraron `GAP-V2-002`,
 ## Estado resumido
 
 ```text
-audited_ampliado → reconciled_lv9qnf_and_ewomf1 → batch_17_p1_done → blocked_resolved → batch_18_code_quality_done → batch_19_a11y_domain_ux_done (9 ready, 0 blocked, 29 done, 0 later, 3 rejected)
+audited_ampliado → reconciled_lv9qnf_and_ewomf1 → batch_17_p1_done → blocked_resolved → batch_18_code_quality_done → batch_19_a11y_domain_ux_done → batch_20_code_quality_ux_done → batch_21_final_small_gaps_done (1 ready [GAP-V2-028, L], 0 blocked, 37 done, 0 later, 3 rejected)
 ```

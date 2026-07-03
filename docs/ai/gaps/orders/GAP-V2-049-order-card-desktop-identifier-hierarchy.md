@@ -6,7 +6,7 @@ category: ux-ui
 priority: P3
 risk: low
 size: XS
-status: ready
+status: done
 dependencies: []
 target_files:
   - src/components/Admin/OrdersManager/OrdersList/OrderCard/index.tsx
@@ -81,7 +81,21 @@ npm run type-check
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+### Veredicto: ✅ APROBADO
+
+`<h3>#{orderId}</h3>` en la variante desktop pasa de `text-base font-medium` a
+`text-muted-foreground text-sm font-medium`; el nombre del cliente (línea 199,
+`line-clamp-2 [overflow-wrap:anywhere] text-base font-medium`) queda intacto y es
+ahora el único elemento en la escala `text-base font-medium` de la card, igual
+que en mobile. Orden visual sin cambios (ID sigue antes que el nombre), badges
+Autoventa/Desde oferta/Maquilador y `line-clamp-2` verificados sin alteración en
+el diff.
+
+### Checklist
+
+- [x] Cliente e ID ya no comparten tamaño+peso en desktop
+- [x] Cliente queda como elemento dominante, igual que en mobile
+- [x] Contenido, orden de badges y `line-clamp-2` sin cambios
 
 ## Links
 

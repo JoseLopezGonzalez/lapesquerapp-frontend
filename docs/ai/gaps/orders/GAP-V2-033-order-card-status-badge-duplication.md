@@ -6,7 +6,7 @@ category: code-quality
 priority: P3
 risk: low
 size: XS
-status: ready
+status: done
 dependencies: []
 target_files:
   - src/components/Admin/OrdersManager/OrdersList/OrderCard/index.tsx
@@ -83,7 +83,36 @@ npm run lint
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+### Veredicto: ⚠️ APROBADO CON OBSERVACIONES
+
+`StatusBadge.tsx` extendido con `showDot?: boolean` (default `false`, sin cambiar
+el comportamiento de los consumidores existentes) y `dotClasses` mapeado 1:1 con
+`colorClasses`. `OrderCard` (variante mobile) sustituye el `<span>` inline por
+`<StatusBadge color={ringColor} label={statusLabel} showDot />`; `ringColor` se
+calcula igual que antes (`pending→orange`, `finished→green`, `incident→red`), y
+los badges Autoventa/Desde oferta/Maquilador que siguen en el mismo `div` no se
+tocaron.
+
+### Checklist
+
+- [x] `OrderCard` no contiene una implementación de badge de estado distinta de
+      `StatusBadge` en ninguna variante — confirmado en ambas ramas del ternario.
+- [x] Mapeo de color por estado idéntico al original.
+- [x] Badges hermanos (Autoventa/Desde oferta/Maquilador) sin cambios.
+- [~] Resultado visual "idéntico" — ver observación.
+- [x] Sin `fetch()`, sin hardcode de tenant, sin `.js` nuevo, sin `any`.
+
+### Observaciones para Jose
+
+No bloqueante, pero el resultado no es pixel-idéntico al original: el `<span>`
+inline usaba `text-[11px]` y `rounded-full`; el `Badge` compartido
+(`src/components/ui/badge.jsx`) aplica `text-xs` (12px), `rounded-4xl` y `h-5`
+fijo. Es 1px de diferencia de tamaño de fuente y un `height` fijo que antes no
+existía — en la práctica el resultado es más consistente con el resto de badges
+del proyecto (todos usan `Badge`/`text-xs`), así que no lo considero un defecto,
+pero técnicamente el criterio "idéntico al actual" del GAP no se cumple al
+100%. Si Jose quiere paridad exacta de píxel, sería un ajuste de `className`
+puntual en el `StatusBadge` de `OrderCard`; si no, queda como está.
 
 ## Links
 

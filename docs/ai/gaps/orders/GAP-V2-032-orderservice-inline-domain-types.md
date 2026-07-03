@@ -6,7 +6,7 @@ category: code-quality
 priority: P3
 risk: low
 size: M
-status: ready
+status: done
 dependencies: []
 target_files:
   - src/services/orderService.ts
@@ -102,7 +102,36 @@ npm run build
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+### Resultado: ✅ DONE
+
+### Criterios de aceptación
+
+- [x] `src/types/orders.ts` existe y contiene las interfaces de dominio movidas desde
+      `orderService.ts` — 31 exports (29 `interface` + 2 `type`,
+      `OrdersProfitabilityExportJobStatus` y `OrderStatus`), verificados campo a campo
+      contra el `git diff` original sin pérdida de tipos.
+- [x] `orderService.ts` ya no declara ninguna interfaz de dominio inline —
+      `grep -n "^export interface\|^interface\|^export type" src/services/orderService.ts`
+      no devuelve resultados.
+- [x] Los imports internos de `orderService.ts` usan `import type { ... } from '@/types/orders'`
+      (líneas 12-44).
+- [x] Re-export de compatibilidad (`export type { ... } from '@/types/orders'`, líneas 48-80)
+      cubre los 31 tipos movidos, uno a uno contra la lista original.
+- [x] `npm run type-check` y `npm run lint` limpios (confirmado tras el ajuste).
+
+### Nota de seguimiento
+
+La primera pasada de esta auditoría señaló que `OrderStatus` (usado en
+`OrderStatusDropdown.tsx`, `OrderHeaderDesktop.tsx`, `OrderSummaryMobile.tsx`,
+`useOrder.ts`) había quedado fuera del movimiento inicial. Se corrigió en la misma sesión:
+`OrderStatus` ahora vive en `src/types/orders.ts` junto al resto, con el mismo re-export de
+compatibilidad desde `orderService.ts`. `type-check`/`lint` re-verificados limpios tras el
+ajuste.
+
+### PL candidate
+
+Ninguno — el patrón "mover tipos a `src/types/`" ya está cubierto por
+`.claude/rules/typescript.md`.
 
 ## Links
 

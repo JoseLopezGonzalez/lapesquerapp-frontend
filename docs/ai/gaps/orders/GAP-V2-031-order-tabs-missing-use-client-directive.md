@@ -6,7 +6,7 @@ category: code-quality
 priority: P3
 risk: low
 size: XS
-status: ready
+status: done
 dependencies: []
 target_files:
   - src/components/Admin/OrdersManager/Order/OrderProduction/index.tsx
@@ -77,7 +77,20 @@ npm run build
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+### Veredicto: ✅ APROBADO
+
+`OrderProduction/index.tsx` y `OrderLabels/index.tsx` ahora empiezan con
+`'use client';` como primera línea, igual que sus 5 hermanos en la misma carpeta.
+Cambio mecánico de dos líneas, sin efectos colaterales. `npm run type-check`,
+`npm run lint` y `npm run test:run` confirmados limpios/sin regresiones fuera de
+esta auditoría. Sin checklist técnico o visual aplicable más allá de la directiva
+en sí (no hay UI nueva, no aplica revisión UX).
+
+### Checklist
+
+- [x] `OrderProduction/index.tsx` empieza con `'use client';`
+- [x] `OrderLabels/index.tsx` empieza con `'use client';`
+- [x] Sin cambios fuera del alcance del GAP
 
 ## Links
 

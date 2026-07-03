@@ -6,7 +6,7 @@ category: ux-ui
 priority: P3
 risk: low
 size: XS
-status: ready
+status: done
 dependencies: []
 target_files:
   - src/components/Admin/OrdersManager/Order/OrderIncident/index.tsx
@@ -81,7 +81,19 @@ npm run type-check
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+### Veredicto: ✅ APROBADO
+
+`<CardTitle className="text-lg font-medium">Incidencia</CardTitle>` aplicado
+exactamente como especifica la solución propuesta, línea a línea idéntico al
+patrón de `OrderAuxiliaryLines`, `OrderProduction`, `OrderPallets` (vía
+`OrderPalletsToolbar`), `OrderPlannedProductDetails` y `OrderProductDetails`.
+`CardDescription` y el resto del `CardHeader` sin tocar (confirmado por diff:
+una sola línea cambiada).
+
+### Checklist
+
+- [x] `className="text-lg font-medium"` aplicado al `CardTitle`
+- [x] `CardDescription` y resto del `CardHeader` sin cambios
 
 ## Links
 
