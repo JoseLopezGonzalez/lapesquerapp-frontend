@@ -6,7 +6,9 @@
 
 ## Ready
 
-_ninguno_
+| GAP        | Título                                                                          | Categoría    | Prioridad | Riesgo | Tamaño | Dependencias | Archivos objetivo                   | Actualizado |
+| ---------- | ------------------------------------------------------------------------------- | ------------ | --------- | ------ | ------ | ------------ | ----------------------------------- | ----------- |
+| GAP-V2-026 | useOrderPallets dispara doble refetch del detalle del pedido tras cada mutación | code-quality | P3        | low    | XS     | GAP-V2-025   | src/hooks/orders/useOrderPallets.ts | 2026-07-03  |
 
 ## In progress
 
