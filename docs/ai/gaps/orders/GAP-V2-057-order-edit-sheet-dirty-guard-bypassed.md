@@ -1,5 +1,5 @@
 ---
-id: GAP-V2-026
+id: GAP-V2-057
 title: OrderEditSheet — guardia de cambios sin guardar nunca se ejecuta (código muerto)
 module: orders
 category: code-quality
@@ -14,7 +14,7 @@ created_at: 2026-07-03
 updated_at: 2026-07-03
 ---
 
-# GAP-V2-026 — OrderEditSheet: el guard de "cambios sin guardar" nunca se invoca
+# GAP-V2-057 — OrderEditSheet: el guard de "cambios sin guardar" nunca se invoca
 
 ## Problema
 

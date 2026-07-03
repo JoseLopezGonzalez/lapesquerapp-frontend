@@ -257,7 +257,6 @@ export function useOrder(
 
   const { auxiliaryLines, auxiliaryLineActions } = useOrderAuxiliaryLines({
     order,
-    onOrderUpdate: updateOrderCache,
     onError: setMutationError,
   });
 
@@ -268,7 +267,6 @@ export function useOrder(
   const palletHandlers = useOrderPallets({
     order,
     accessToken,
-    onOrderUpdate: updateOrderCache,
     reload,
     onChange,
   });

@@ -30,9 +30,9 @@ fetching/derivación de estado"):
 ```ts
 const [formGroups, setFormGroups] = useState<FormGroup[]>(initialFormGroups);
 // ...
-const formGroupsWithOptions = useMemo(() => { /* ... deriva de options ... */ }, [
-  options.salespeople, options.fieldOperators, /* ... */
-]);
+const formGroupsWithOptions = useMemo(() => {
+  /* ... deriva de options ... */
+}, [options.salespeople, options.fieldOperators /* ... */]);
 // ...
 useEffect(() => {
   setFormGroups(formGroupsWithOptions);
@@ -54,7 +54,9 @@ const [defaultValues, setDefaultValues] = useState<DefaultValues>(initialDefault
 // ...
 useEffect(() => {
   if (orderData) {
-    setDefaultValues({ /* ... mapea orderData a DefaultValues ... */ });
+    setDefaultValues({
+      /* ... mapea orderData a DefaultValues ... */
+    });
   }
 }, [orderData]);
 ```
@@ -144,4 +146,4 @@ npm run test:run
 - Auditoría de origen: `docs/ai/modules/orders/audit.md`
 - GAPs relacionados: GAP-V2-003 (mismo síntoma de fetching/estado manual en otros
   hooks), GAP-V2-005 (mismo módulo, hooks de opciones de formulario),
-  GAP-V2-026 (mismo componente `OrderEditSheet`, hallazgo distinto)
+  GAP-V2-057 (mismo componente `OrderEditSheet`, hallazgo distinto)
