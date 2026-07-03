@@ -17,7 +17,11 @@ const OrderClient = ({ orderId }) => {
 
   return (
     <div className="h-full w-full overflow-hidden rounded-xl">
-      <Order orderId={orderId} onClose={isMobile ? handleClose : undefined} />
+      <Order
+        orderId={orderId}
+        onClose={isMobile ? handleClose : undefined}
+        isMobileOverride={isMobile}
+      />
     </div>
   );
 };

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { MOBILE_SAFE_AREAS } from '@/lib/design-tokens-mobile';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,7 +21,7 @@ import {
   formatDecimalWeight,
   formatInteger,
 } from '@/helpers/formats/numbers/formatNumbers';
-import { GitBranchPlus, Plus, X, Check, Edit2, Trash2, MoreVertical, Info } from 'lucide-react';
+import { GitBranchPlus, Plus, X, Check, Edit2, Trash2, MoreVertical } from 'lucide-react';
 import { Combobox } from '@/components/Shadcn/Combobox';
 import {
   Select,
@@ -41,7 +41,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { notify } from '@/lib/notifications';
 import { parseTaxRate } from '@/hooks/orders/useOrderPlannedDetails';
-import { OrderTotalsSummaryDialog } from '@/components/Admin/OrdersManager/Order/components/OrderTotalsSummaryDialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -52,29 +51,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-
-interface PlannedDetailProduct {
-  id: number | string | null;
-  name: string;
-}
-
-interface PlannedDetailTax {
-  id?: number | string | null;
-  rate: number | string | null;
-}
-
-interface PlannedDetail {
-  id?: number | string;
-  tempId?: number;
-  isTemporary?: boolean;
-  orderId?: number | string;
-  product: PlannedDetailProduct;
-  boxes: number | string;
-  quantity: number | string;
-  unitPrice: number | string;
-  tax: PlannedDetailTax;
-  [key: string]: unknown;
-}
+import { isDetailValid, type PlannedDetail, type PlannedDetailProduct } from './types';
+import { OrderPlannedDetailSheet } from './OrderPlannedDetailSheet';
 
 function getErrorDescription(error: unknown, fallback: string): string {
   const e = error as Record<string, unknown> | undefined;
@@ -91,19 +69,6 @@ function getErrorDescription(error: unknown, fallback: string): string {
 
 function formatTaxRate(rate: number | null): string {
   return rate == null ? 'IVA pendiente' : `${rate}%`;
-}
-
-function isDetailValid(detail: PlannedDetail): boolean {
-  const hasProduct = detail.product?.id != null && detail.product.id !== '';
-  const quantity = detail.quantity === '' ? NaN : Number(detail.quantity);
-  const unitPrice = detail.unitPrice === '' ? NaN : Number(detail.unitPrice);
-  return (
-    hasProduct &&
-    Number.isFinite(quantity) &&
-    quantity > 0 &&
-    Number.isFinite(unitPrice) &&
-    unitPrice >= 0
-  );
 }
 
 const OrderPlannedProductDetails = () => {
@@ -124,7 +89,6 @@ const OrderPlannedProductDetails = () => {
       productionQuantity: number;
     }
   >;
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const {
     productOptions: rawProductOptions,
@@ -160,10 +124,14 @@ const OrderPlannedProductDetails = () => {
   }, [rawTaxOptions]);
 
   const [details, setDetails] = useState<PlannedDetail[]>([]);
-  const [temporaryDetails, setTemporaryDetails] = useState<PlannedDetail[]>([]); // Estado para líneas temporales
-  const [editIndex, setEditIndex] = useState<number | null>(null);
-  const [showTotalsDialog, setShowTotalsDialog] = useState(false);
+  const [temporaryDetails, setTemporaryDetails] = useState<PlannedDetail[]>([]); // Estado para líneas temporales (solo desktop)
+  const [editIndex, setEditIndex] = useState<number | null>(null); // Edición inline (solo desktop)
   const [deleteConfirmDetail, setDeleteConfirmDetail] = useState<PlannedDetail | null>(null);
+
+  // Estado del Sheet de creación/edición (solo mobile)
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheetMode, setSheetMode] = useState<'create' | 'edit'>('create');
+  const [sheetDetail, setSheetDetail] = useState<PlannedDetail | null>(null);
 
   // Crear Maps para búsquedas O(1) en lugar de O(n)
   const productOptionsMap = useMemo(() => {
@@ -191,35 +159,6 @@ const OrderPlannedProductDetails = () => {
     setDetails(allDetails);
   }, [allDetails]);
 
-  // Intención de scroll pendiente, consumida por el useEffect de editIndex una vez
-  // que React ya ha pintado la card correspondiente en el DOM (ref directa, sin
-  // delay arbitrario de setTimeout).
-  const pendingScrollIntentRef = useRef<'bottom' | 'card' | null>(null);
-
-  // Hacer scroll (al final al añadir línea, o hasta la card al editar) cuando
-  // editIndex cambia. requestAnimationFrame espera al siguiente frame de pintado
-  // en vez de un delay arbitrario.
-  useEffect(() => {
-    if (!isMobile || editIndex === null || !pendingScrollIntentRef.current) return;
-    const intent = pendingScrollIntentRef.current;
-    pendingScrollIntentRef.current = null;
-
-    const viewportEl = scrollAreaRef.current?.querySelector<HTMLDivElement>(
-      '[data-radix-scroll-area-viewport]'
-    );
-    if (!viewportEl) return;
-
-    requestAnimationFrame(() => {
-      if (intent === 'bottom') {
-        viewportEl.scrollTo({ top: viewportEl.scrollHeight, behavior: 'smooth' });
-        return;
-      }
-
-      const targetCard = viewportEl.querySelector<HTMLElement>(`[data-card-index="${editIndex}"]`);
-      targetCard?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-  }, [editIndex, isMobile]);
-
   const handleOnClickAddLine = () => {
     if (editIndex !== null) return;
 
@@ -235,12 +174,10 @@ const OrderPlannedProductDetails = () => {
 
     setTemporaryDetails([...temporaryDetails, newTemporaryDetail]);
     // El índice será la posición final en la lista combinada
-    pendingScrollIntentRef.current = 'bottom';
     setEditIndex(plannedProductDetails.length + temporaryDetails.length);
   };
 
   const handleEditLine = (index: number) => {
-    pendingScrollIntentRef.current = 'card';
     setEditIndex(index);
   };
 
@@ -287,56 +224,65 @@ const OrderPlannedProductDetails = () => {
     [details, temporaryDetails, productOptionsMap, taxOptionsMap]
   );
 
-  const handleOnClickSaveLine = async () => {
-    if (editIndex === null) return;
-    const detail = details[editIndex];
-    if (!detail || !isDetailValid(detail)) return;
+  // Lógica de guardado compartida entre la edición inline de desktop y el Sheet de mobile
+  const saveDetail = useCallback(
+    (detail: PlannedDetail, onSuccess: () => void) => {
+      const payload: PlannedDetail = {
+        ...detail,
+        boxes: Number(detail.boxes),
+        quantity: Number(detail.quantity),
+        unitPrice: Number(detail.unitPrice),
+      };
 
-    /* conversion datos enteros y decimales*/
-    detail.boxes = Number(detail.boxes);
-    detail.quantity = Number(detail.quantity);
-    detail.unitPrice = Number(detail.unitPrice);
+      if (!payload.id) {
+        payload.orderId = order?.id;
+        return notify
+          .promise(plannedProductDetailActions.create(payload), {
+            loading: 'Creando nueva línea...',
+            success: 'Línea creada correctamente',
+            error: (error: unknown) => {
+              console.error('Error al crear la línea:', error);
+              return {
+                title: 'Error al crear la línea',
+                description: getErrorDescription(
+                  error,
+                  'No se pudo crear la línea. Intente de nuevo.'
+                ),
+              };
+            },
+          })
+          .then(onSuccess);
+      }
 
-    if (!detail.id) {
-      detail.orderId = order?.id;
-      notify
-        .promise(plannedProductDetailActions.create(detail), {
-          loading: 'Creando nueva línea...',
-          success: 'Línea creada correctamente',
+      return notify
+        .promise(plannedProductDetailActions.update(payload.id as number | string, payload), {
+          loading: 'Actualizando línea...',
+          success: 'Línea actualizada correctamente',
           error: (error: unknown) => {
-            console.error('Error al crear la línea:', error);
+            console.error('Error al actualizar la línea:', error);
             return {
-              title: 'Error al crear la línea',
+              title: 'Error al actualizar la línea',
               description: getErrorDescription(
                 error,
-                'No se pudo crear la línea. Intente de nuevo.'
+                'No se pudo actualizar la línea. Intente de nuevo.'
               ),
             };
           },
         })
-        .then(() => {
-          setTemporaryDetails((prev) => prev.filter((temp) => temp.tempId !== detail.tempId));
-          setEditIndex(null);
-        });
-      return;
-    }
+        .then(onSuccess);
+    },
+    [order?.id, plannedProductDetailActions]
+  );
 
-    notify
-      .promise(plannedProductDetailActions.update(detail.id, detail), {
-        loading: 'Actualizando línea...',
-        success: 'Línea actualizada correctamente',
-        error: (error: unknown) => {
-          console.error('Error al actualizar la línea:', error);
-          return {
-            title: 'Error al actualizar la línea',
-            description: getErrorDescription(
-              error,
-              'No se pudo actualizar la línea. Intente de nuevo.'
-            ),
-          };
-        },
-      })
-      .then(() => setEditIndex(null));
+  const handleOnClickSaveLine = () => {
+    if (editIndex === null) return;
+    const detail = details[editIndex];
+    if (!detail || !isDetailValid(detail)) return;
+
+    saveDetail(detail, () => {
+      setTemporaryDetails((prev) => prev.filter((temp) => temp.tempId !== detail.tempId));
+      setEditIndex(null);
+    });
   };
 
   const deletePersistedLine = useCallback(
@@ -422,6 +368,60 @@ const OrderPlannedProductDetails = () => {
     setEditIndex(plannedProductDetails.length + temporaryDetails.length);
   };
 
+  // Apertura del Sheet de creación/edición (solo mobile) — la edición vive en el
+  // Sheet, no inline en la lista, así que no usa editIndex/temporaryDetails.
+  const openCreateSheet = () => {
+    setSheetMode('create');
+    setSheetDetail({
+      product: { name: '', id: null },
+      boxes: '',
+      quantity: '',
+      unitPrice: '',
+      tax: { rate: null },
+    });
+    setSheetOpen(true);
+  };
+
+  const openEditSheet = (detail: PlannedDetail) => {
+    setSheetMode('edit');
+    setSheetDetail(detail);
+    setSheetOpen(true);
+  };
+
+  const openDetectedProductSheet = () => {
+    const detail = mergedProductDetails.find(
+      (productDetail) => productDetail.status === 'noPlanned'
+    );
+    if (!detail) {
+      notify.error({ title: 'No hay productos detectados' });
+      return;
+    }
+    const product = detail?.product;
+    if (!product?.id) {
+      notify.error({
+        title: 'Producto detectado inválido. Recarga el pedido e inténtalo de nuevo.',
+      });
+      return;
+    }
+    setSheetMode('create');
+    setSheetDetail({
+      product: { name: product?.name || '', id: product.id },
+      boxes: detail.productionBoxes,
+      quantity: detail.productionQuantity,
+      unitPrice: '',
+      tax: { rate: null },
+    });
+    setSheetOpen(true);
+  };
+
+  const handleSheetSave = (detail: PlannedDetail) => {
+    if (!isDetailValid(detail)) return;
+    return saveDetail(detail, () => {
+      setSheetOpen(false);
+      setSheetDetail(null);
+    });
+  };
+
   const isSomeProductDetected = mergedProductDetails.some(
     (productDetail) => productDetail.status === 'noPlanned'
   );
@@ -463,201 +463,119 @@ const OrderPlannedProductDetails = () => {
               />
             </div>
           ) : (
-            <ScrollArea ref={scrollAreaRef} className="min-h-0 flex-1">
-              <div className="space-y-6 pb-20">
-                {/* Vista Mobile: Cards */}
-                <div className="space-y-3">
-                  {details.map((detail, index) => {
+            <ScrollArea className="min-h-0 flex-1">
+              <div className="space-y-3 pb-20">
+                <div className="border-border bg-card sticky top-0 z-10 rounded-lg border p-3 shadow-sm">
+                  <p className="text-muted-foreground text-xs font-medium">Totales</p>
+                  <div className="mt-2 grid grid-cols-3 gap-2">
+                    <div className="min-w-0">
+                      <p className="text-muted-foreground text-[11px] leading-tight">Cajas</p>
+                      <p className="text-sm font-medium tabular-nums">
+                        {formatInteger(totals.boxes)}
+                      </p>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-muted-foreground text-[11px] leading-tight">Cantidad</p>
+                      <p className="text-sm font-medium tabular-nums">
+                        {formatDecimalWeight(totals.quantity)}
+                      </p>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-muted-foreground text-[11px] leading-tight">Precio med.</p>
+                      <p className="text-sm font-medium tabular-nums">
+                        {formatDecimalCurrency(averageUnitPrice)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-border bg-card overflow-hidden rounded-lg border">
+                  {details.map((detail) => {
                     const taxRate = parseTaxRate(detail?.tax?.rate);
 
                     return (
-                      <Card
+                      <article
                         key={detail.id || detail.tempId}
-                        data-card-index={index}
-                        className="p-4"
+                        className="border-border space-y-3 border-b p-3 last:border-b-0"
                       >
-                        <div className="space-y-3">
-                          {/* Artículo */}
-                          <div>
-                            {editIndex === index ? (
-                              // Combobox no expone un prop de tamaño propio (ver
-                              // src/components/Shadcn/Combobox/index.d.ts); className
-                              // se aplica directamente al Button interno vía cn().
-                              <Combobox
-                                options={productOptions || []}
-                                value={detail?.product?.id ? String(detail.product.id) : undefined}
-                                onChange={(e) => handleInputChange(index, 'product', e)}
-                                loading={optionsLoading}
-                                placeholder="Seleccionar producto..."
-                                searchPlaceholder="Buscar producto..."
-                                notFoundMessage="No se encontraron productos"
-                                className="h-9"
-                              />
-                            ) : (
-                              <p className="py-2 text-sm font-medium">
-                                {detail?.product?.name || 'Sin producto'}
-                              </p>
-                            )}
-                          </div>
-
-                          {/* Información en grid */}
-                          <div className="grid grid-cols-2 gap-3">
-                            <div>
-                              <p className="text-muted-foreground mb-1.5 text-xs">Cajas</p>
-                              {editIndex === index ? (
-                                <Input
-                                  type="number"
-                                  value={detail.boxes}
-                                  onChange={(e) =>
-                                    handleInputChange(index, 'boxes', e.target.value)
-                                  }
-                                  className="!h-9"
-                                />
-                              ) : (
-                                <p className="py-2 text-sm font-medium">
-                                  {formatInteger(detail.boxes)}
-                                </p>
-                              )}
-                            </div>
-                            <div>
-                              <p className="text-muted-foreground mb-1.5 text-xs">Cantidad</p>
-                              {editIndex === index ? (
-                                <Input
-                                  type="number"
-                                  value={detail.quantity}
-                                  onChange={(e) =>
-                                    handleInputChange(index, 'quantity', e.target.value)
-                                  }
-                                  className="!h-9"
-                                />
-                              ) : (
-                                <p className="py-2 text-sm font-medium">
-                                  {formatDecimalWeight(detail.quantity)}
-                                </p>
-                              )}
-                            </div>
-                            <div>
-                              <p className="text-muted-foreground mb-1.5 text-xs">Precio</p>
-                              {editIndex === index ? (
-                                <Input
-                                  type="number"
-                                  value={detail.unitPrice}
-                                  onChange={(e) =>
-                                    handleInputChange(index, 'unitPrice', e.target.value)
-                                  }
-                                  className="!h-9"
-                                />
-                              ) : (
-                                <p className="py-2 text-sm font-medium">
-                                  {formatDecimalCurrency(detail.unitPrice)}
-                                </p>
-                              )}
-                            </div>
-                            <div>
-                              <p className="text-muted-foreground mb-1.5 text-xs">Impuesto (%)</p>
-                              {editIndex === index ? (
-                                <div className="[&_button]:!h-9">
-                                  <Select
-                                    value={detail?.tax?.id != null ? String(detail.tax.id) : ''}
-                                    onValueChange={(value) =>
-                                      handleInputChange(index, 'tax', value)
-                                    }
-                                  >
-                                    <SelectTrigger loading={optionsLoading} className="w-full">
-                                      <SelectValue placeholder="IVA" loading={optionsLoading} />
-                                    </SelectTrigger>
-                                    <SelectContent loading={optionsLoading}>
-                                      {(taxOptions || []).map((tax) => (
-                                        <SelectItem key={tax.value} value={String(tax.value)}>
-                                          {tax.label}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                              ) : (
-                                <p
-                                  className={cn(
-                                    'py-2 text-sm font-medium',
-                                    taxRate == null && 'text-warning'
-                                  )}
-                                >
-                                  {formatTaxRate(taxRate)}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Acciones */}
-                          <div className="flex gap-2 border-t pt-3">
-                            {editIndex === index ? (
-                              <>
-                                <Button
-                                  onClick={handleOnClickSaveLine}
-                                  disabled={!isDetailValid(detail)}
-                                  size="sm"
-                                  className="flex-1"
-                                >
-                                  <Check />
-                                  Guardar
-                                </Button>
-                                <Button
-                                  variant="secondary"
-                                  onClick={() => handleOnClickCloseLine(detail)}
-                                  size="sm"
-                                  className="flex-1"
-                                >
-                                  <X />
-                                  Cancelar
-                                </Button>
-                              </>
-                            ) : (
-                              <>
-                                <Button
-                                  onClick={() => handleEditLine(index)}
-                                  size="sm"
-                                  variant="outline"
-                                  className="flex-1"
-                                >
-                                  <Edit2 />
-                                  Editar
-                                </Button>
-                                <Button
-                                  variant="destructive"
-                                  onClick={() => handleOnClickDeleteLine(detail)}
-                                  size="sm"
-                                  className="flex-1"
-                                >
-                                  <Trash2 />
-                                  Eliminar
-                                </Button>
-                              </>
-                            )}
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="min-w-0 flex-1 text-sm leading-snug font-medium">
+                            {detail?.product?.name || 'Sin producto'}
+                          </p>
+                          <div className="flex shrink-0 items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              aria-label="Editar línea"
+                              onClick={() => openEditSheet(detail)}
+                            >
+                              <Edit2 className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-destructive hover:text-destructive h-8 w-8"
+                              aria-label="Eliminar línea"
+                              onClick={() => handleOnClickDeleteLine(detail)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </div>
                         </div>
-                      </Card>
+
+                        <div className="grid grid-cols-2 gap-x-2 gap-y-2">
+                          <div className="min-w-0">
+                            <p className="text-muted-foreground text-[11px] leading-tight">Cajas</p>
+                            <p className="text-sm font-medium tabular-nums">
+                              {formatInteger(detail.boxes)}
+                            </p>
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-muted-foreground text-[11px] leading-tight">
+                              Cantidad
+                            </p>
+                            <p className="text-sm font-medium tabular-nums">
+                              {formatDecimalWeight(detail.quantity)}
+                            </p>
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-muted-foreground text-[11px] leading-tight">
+                              Precio
+                            </p>
+                            <p className="text-sm font-medium tabular-nums">
+                              {formatDecimalCurrency(detail.unitPrice)}
+                            </p>
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-muted-foreground text-[11px] leading-tight">
+                              Impuesto
+                            </p>
+                            <p
+                              className={cn(
+                                'text-sm font-medium tabular-nums',
+                                taxRate == null && 'text-warning'
+                              )}
+                            >
+                              {formatTaxRate(taxRate)}
+                            </p>
+                          </div>
+                        </div>
+                      </article>
                     );
                   })}
                 </div>
               </div>
             </ScrollArea>
           )}
-          {/* Footer con botones */}
+          {/* Footer con acciones */}
           <div
             className={cn(
               'bg-background fixed right-0 bottom-0 left-0 z-50 flex items-center gap-2 border-t p-3',
               MOBILE_SAFE_AREAS.BOTTOM_INSET
             )}
           >
-            <Button
-              onClick={() => setShowTotalsDialog(true)}
-              variant="outline"
-              size="icon"
-              className="min-h-[44px] min-w-[44px]"
-            >
-              <Info className="h-4 w-4" />
-            </Button>
-            <Button onClick={handleOnClickAddLine} size="sm" className="min-h-[44px] flex-1">
+            <Button onClick={openCreateSheet} size="sm" className="min-h-[44px] flex-1">
               <Plus size={16} className="mr-2" />
               Añadir línea
             </Button>
@@ -670,7 +588,7 @@ const OrderPlannedProductDetails = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem
-                    onClick={handleOnClickAddDetectedProducts}
+                    onClick={openDetectedProductSheet}
                     className="text-info focus:text-info"
                   >
                     <GitBranchPlus size={16} className="mr-2" />
@@ -681,26 +599,18 @@ const OrderPlannedProductDetails = () => {
             )}
           </div>
 
-          {/* Dialog de Totales */}
-          <OrderTotalsSummaryDialog
-            open={showTotalsDialog}
-            onOpenChange={setShowTotalsDialog}
-            title="Totales"
-            description="Resumen de cajas, cantidad y precio promedio de la previsión."
-            isMobile={isMobile}
-            items={[
-              { key: 'boxes', label: 'Cajas', value: formatInteger(totals.boxes) },
-              {
-                key: 'quantity',
-                label: 'Cantidad',
-                value: formatDecimalWeight(totals.quantity),
-              },
-              {
-                key: 'averagePrice',
-                label: 'Precio promedio',
-                value: formatDecimalCurrency(averageUnitPrice),
-              },
-            ]}
+          <OrderPlannedDetailSheet
+            open={sheetOpen}
+            onOpenChange={(open) => {
+              setSheetOpen(open);
+              if (!open) setSheetDetail(null);
+            }}
+            mode={sheetMode}
+            detail={sheetDetail}
+            productOptions={productOptions}
+            taxOptions={taxOptions}
+            optionsLoading={optionsLoading}
+            onSave={handleSheetSave}
           />
         </div>
       ) : (

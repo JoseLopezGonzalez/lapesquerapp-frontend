@@ -8,7 +8,7 @@ import {
   updateOrderPlannedProductDetail,
 } from '@/services/orderService';
 import type { Order } from '@/services/orderService';
-import { orderKeys } from '@/lib/routes/queryKeys';
+import { orderKeys, orderCostAnalysisKeys } from '@/lib/routes/queryKeys';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 
 export interface OrderSelectOption {
@@ -113,10 +113,19 @@ export function useOrderPlannedDetails({
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
   const orderId = order?.id;
   const orderDetailKey = useMemo(() => orderKeys.detail(tenantId, orderId), [tenantId, orderId]);
+  const costAnalysisKey = useMemo(
+    () => orderCostAnalysisKeys.detail(tenantId, orderId),
+    [tenantId, orderId]
+  );
 
+  // La previsión alimenta el análisis de costes — invalidarlo también para que
+  // se recalcule solo, sin depender de un botón manual de recarga.
   const invalidateOrderDetail = useCallback(() => {
-    return queryClient.invalidateQueries({ queryKey: orderDetailKey });
-  }, [queryClient, orderDetailKey]);
+    return Promise.all([
+      queryClient.invalidateQueries({ queryKey: orderDetailKey }),
+      queryClient.invalidateQueries({ queryKey: costAnalysisKey }),
+    ]);
+  }, [queryClient, orderDetailKey, costAnalysisKey]);
 
   const plannedProductDetails = useMemo(
     () =>

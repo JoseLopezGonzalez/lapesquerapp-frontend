@@ -28,8 +28,8 @@ import {
 } from '@/components/ui/select';
 import { EmptyState } from '@/components/Utilities/EmptyState/index';
 import { useIsMobileSafe } from '@/hooks/use-mobile';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { notify } from '@/lib/notifications';
-import { OrderTotalsSummaryDialog } from '@/components/Admin/OrdersManager/Order/components/OrderTotalsSummaryDialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,26 +40,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Info } from 'lucide-react';
 import type { AuxiliaryOrderLine, AuxiliaryOrderLinePayload } from '@/services/orderService';
 import type { AuxiliaryProductOption } from '@/types/catalog';
 import { parseTaxRate } from '@/hooks/orders/useOrderPlannedDetails';
+import { isRowValid, NO_CATALOG_VALUE, type AuxiliaryLineRow } from './types';
+import { OrderAuxiliaryLineSheet } from './OrderAuxiliaryLineSheet';
 
 interface OrderSelectOption {
   value: number | string;
   label: string | number;
-}
-
-interface AuxiliaryLineRow {
-  id?: number | string;
-  tempId?: number;
-  isTemporary?: boolean;
-  auxiliaryProduct: { id: number | string; name: string } | null;
-  description: string;
-  quantity: number | string;
-  unit: string;
-  unitPrice: number | string;
-  tax: { id: number | string | null; rate: number | null };
 }
 
 function formatTaxRate(rate: number | null): string {
@@ -68,19 +57,6 @@ function formatTaxRate(rate: number | null): string {
 
 function formatQuantityWithUnit(quantity: number, unit?: string): string {
   return `${formatDecimal(quantity)} ${unit || 'kg'}`;
-}
-
-function isRowValid(row: AuxiliaryLineRow): boolean {
-  const hasArticle = row.auxiliaryProduct != null || row.description.trim() !== '';
-  const quantity = row.quantity === '' ? NaN : Number(row.quantity);
-  const unitPrice = row.unitPrice === '' ? NaN : Number(row.unitPrice);
-  return (
-    hasArticle &&
-    Number.isFinite(quantity) &&
-    quantity > 0 &&
-    Number.isFinite(unitPrice) &&
-    unitPrice >= 0
-  );
 }
 
 function getErrorDescription(error: unknown, fallback: string): string {
@@ -102,8 +78,6 @@ function toRow(line: AuxiliaryOrderLine): AuxiliaryLineRow {
     tax: { id: line.tax?.id ?? null, rate: parseTaxRate(line.tax?.rate) },
   };
 }
-
-const NO_CATALOG_VALUE = '__none__';
 
 const OrderAuxiliaryLines = () => {
   const { isMobile, mounted } = useIsMobileSafe();
@@ -154,10 +128,14 @@ const OrderAuxiliaryLines = () => {
   }, [auxiliaryProductOptions]);
 
   const [rows, setRows] = useState<AuxiliaryLineRow[]>([]);
-  const [temporaryRows, setTemporaryRows] = useState<AuxiliaryLineRow[]>([]);
-  const [editIndex, setEditIndex] = useState<number | null>(null);
-  const [showTotalsDialog, setShowTotalsDialog] = useState(false);
+  const [temporaryRows, setTemporaryRows] = useState<AuxiliaryLineRow[]>([]); // Solo desktop
+  const [editIndex, setEditIndex] = useState<number | null>(null); // Edición inline, solo desktop
   const [deleteConfirmRow, setDeleteConfirmRow] = useState<AuxiliaryLineRow | null>(null);
+
+  // Estado del Sheet de creación/edición (solo mobile)
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheetMode, setSheetMode] = useState<'create' | 'edit'>('create');
+  const [sheetRow, setSheetRow] = useState<AuxiliaryLineRow | null>(null);
 
   const persistedRows = useMemo(() => auxiliaryLines.map(toRow), [auxiliaryLines]);
 
@@ -235,48 +213,54 @@ const OrderAuxiliaryLines = () => {
     setEditIndex(null);
   };
 
-  const handleOnClickSaveLine = async () => {
+  // Lógica de guardado compartida entre la edición inline de desktop y el Sheet de mobile
+  const saveRow = useCallback(
+    (row: AuxiliaryLineRow, onSuccess: () => void) => {
+      const payload: AuxiliaryOrderLinePayload = {
+        auxiliaryProductId: row.auxiliaryProduct?.id ?? null,
+        description: row.description || null,
+        quantity: Number(row.quantity),
+        unit: row.unit,
+        unitPrice: Number(row.unitPrice),
+        taxId: row.tax.id,
+      };
+
+      if (!row.id) {
+        return notify
+          .promise(auxiliaryLineActions.create(payload), {
+            loading: 'Creando línea auxiliar...',
+            success: 'Línea auxiliar creada correctamente',
+            error: (error: unknown) => ({
+              title: 'Error al crear la línea',
+              description: getErrorDescription(error, 'No se pudo crear la línea.'),
+            }),
+          })
+          .then(onSuccess);
+      }
+
+      return notify
+        .promise(auxiliaryLineActions.update(row.id, payload), {
+          loading: 'Actualizando línea auxiliar...',
+          success: 'Línea auxiliar actualizada correctamente',
+          error: (error: unknown) => ({
+            title: 'Error al actualizar la línea',
+            description: getErrorDescription(error, 'No se pudo actualizar la línea.'),
+          }),
+        })
+        .then(onSuccess);
+    },
+    [auxiliaryLineActions]
+  );
+
+  const handleOnClickSaveLine = () => {
     if (editIndex === null) return;
     const row = rows[editIndex];
     if (!row || !isRowValid(row)) return;
 
-    const payload: AuxiliaryOrderLinePayload = {
-      auxiliaryProductId: row.auxiliaryProduct?.id ?? null,
-      description: row.description || null,
-      quantity: Number(row.quantity),
-      unit: row.unit,
-      unitPrice: Number(row.unitPrice),
-      taxId: row.tax.id,
-    };
-
-    if (!row.id) {
-      notify
-        .promise(auxiliaryLineActions.create(payload), {
-          loading: 'Creando línea auxiliar...',
-          success: 'Línea auxiliar creada correctamente',
-          error: (error: unknown) => ({
-            title: 'Error al crear la línea',
-            description: getErrorDescription(error, 'No se pudo crear la línea.'),
-          }),
-        })
-        .then(() => {
-          setTemporaryRows((prev) => prev.filter((temp) => temp.tempId !== row.tempId));
-          setEditIndex(null);
-        });
-      return;
-    }
-
-    const rowId = row.id;
-    notify
-      .promise(auxiliaryLineActions.update(rowId, payload), {
-        loading: 'Actualizando línea auxiliar...',
-        success: 'Línea auxiliar actualizada correctamente',
-        error: (error: unknown) => ({
-          title: 'Error al actualizar la línea',
-          description: getErrorDescription(error, 'No se pudo actualizar la línea.'),
-        }),
-      })
-      .then(() => setEditIndex(null));
+    saveRow(row, () => {
+      setTemporaryRows((prev) => prev.filter((temp) => temp.tempId !== row.tempId));
+      setEditIndex(null);
+    });
   };
 
   const handleOnClickDeleteLine = (row: AuxiliaryLineRow) => {
@@ -303,6 +287,34 @@ const OrderAuxiliaryLines = () => {
         }),
       })
       .then(() => setEditIndex(null));
+  };
+
+  // Apertura del Sheet de creación/edición (solo mobile)
+  const openCreateSheet = () => {
+    setSheetMode('create');
+    setSheetRow({
+      auxiliaryProduct: null,
+      description: '',
+      quantity: '',
+      unit: '',
+      unitPrice: '',
+      tax: { id: null, rate: null },
+    });
+    setSheetOpen(true);
+  };
+
+  const openEditSheet = (row: AuxiliaryLineRow) => {
+    setSheetMode('edit');
+    setSheetRow(row);
+    setSheetOpen(true);
+  };
+
+  const handleSheetSave = (row: AuxiliaryLineRow) => {
+    if (!isRowValid(row)) return;
+    return saveRow(row, () => {
+      setSheetOpen(false);
+      setSheetRow(null);
+    });
   };
 
   const totals = rows.reduce(
@@ -344,165 +356,100 @@ const OrderAuxiliaryLines = () => {
               />
             </div>
           ) : (
-            <div className="space-y-3 pb-24">
-              {rows.map((row, index) => (
-                <Card key={row.id ?? row.tempId} className="p-4">
-                  <div className="space-y-3">
-                    <div>
-                      {editIndex === index ? (
-                        // !h-9 en Input/Select/Combobox de esta tarjeta: ni Input ni SelectTrigger
-                        // exponen un prop de tamaño que alcance h-9 (Input es fijo h-8, SelectTrigger
-                        // solo ofrece default=h-8/sm=h-7) — override deliberado para un target táctil
-                        // ligeramente mayor en edición móvil, consistente con OrderPlannedProductDetails.
-                        <div className="space-y-2">
-                          <div className="[&_button]:!h-9">
-                            <Combobox
-                              options={catalogOptions}
-                              value={
-                                row.auxiliaryProduct
-                                  ? String(row.auxiliaryProduct.id)
-                                  : NO_CATALOG_VALUE
-                              }
-                              onChange={(value) =>
-                                handleInputChange(index, 'auxiliaryProduct', String(value))
-                              }
-                              placeholder="Seleccionar artículo del catálogo..."
-                              searchPlaceholder="Buscar artículo..."
-                              notFoundMessage="No se encontraron artículos"
-                            />
-                          </div>
-                          <Input
-                            placeholder="Descripción libre (opcional si hay artículo)"
-                            value={row.description}
-                            onChange={(e) =>
-                              handleInputChange(index, 'description', e.target.value)
-                            }
-                            className="!h-9"
-                          />
-                        </div>
-                      ) : (
-                        <p className="py-2 text-sm font-medium">{articleLabel(row)}</p>
-                      )}
+            <ScrollArea className="min-h-0 flex-1">
+              <div className="space-y-3 pb-24">
+                <div className="border-border bg-card sticky top-0 z-10 rounded-lg border p-3 shadow-sm">
+                  <p className="text-muted-foreground text-xs font-medium">Totales</p>
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    <div className="min-w-0">
+                      <p className="text-muted-foreground text-[11px] leading-tight">Subtotal</p>
+                      <p className="text-sm font-medium tabular-nums">
+                        {formatDecimalCurrency(totals.subtotal)}
+                      </p>
                     </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <p className="text-muted-foreground mb-1.5 text-xs">Cantidad</p>
-                        {editIndex === index ? (
-                          <Input
-                            type="number"
-                            value={row.quantity}
-                            onChange={(e) => handleInputChange(index, 'quantity', e.target.value)}
-                            className="!h-9"
-                          />
-                        ) : (
-                          <p className="py-2 text-sm font-medium">
-                            {formatQuantityWithUnit(Number(row.quantity), row.unit)}
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground mb-1.5 text-xs">Unidad</p>
-                        {editIndex === index ? (
-                          <Input
-                            value={row.unit}
-                            onChange={(e) => handleInputChange(index, 'unit', e.target.value)}
-                            className="!h-9"
-                          />
-                        ) : (
-                          <p className="py-2 text-sm font-medium">{row.unit || '-'}</p>
-                        )}
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground mb-1.5 text-xs">Precio</p>
-                        {editIndex === index ? (
-                          <Input
-                            type="number"
-                            value={row.unitPrice}
-                            onChange={(e) => handleInputChange(index, 'unitPrice', e.target.value)}
-                            className="!h-9"
-                          />
-                        ) : (
-                          <p className="py-2 text-sm font-medium">
-                            {formatDecimalCurrency(Number(row.unitPrice))}
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground mb-1.5 text-xs">Impuesto (%)</p>
-                        {editIndex === index ? (
-                          <div className="[&_button]:!h-9">
-                            <Select
-                              value={row.tax.id != null ? String(row.tax.id) : ''}
-                              onValueChange={(value) => handleInputChange(index, 'tax', value)}
-                            >
-                              <SelectTrigger loading={optionsLoading} className="w-full">
-                                <SelectValue placeholder="IVA" />
-                              </SelectTrigger>
-                              <SelectContent loading={optionsLoading}>
-                                {taxOptions.map((tax) => (
-                                  <SelectItem key={tax.value} value={String(tax.value)}>
-                                    {tax.label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        ) : (
-                          <p className="py-2 text-sm font-medium">{formatTaxRate(row.tax.rate)}</p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex gap-2 border-t pt-3">
-                      {editIndex === index ? (
-                        <>
-                          <Button
-                            onClick={handleOnClickSaveLine}
-                            disabled={!isRowValid(row)}
-                            size="sm"
-                            className="flex-1"
-                          >
-                            <Check />
-                            Guardar
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            onClick={() => handleOnClickCloseLine(row)}
-                            size="sm"
-                            className="flex-1"
-                          >
-                            <X />
-                            Cancelar
-                          </Button>
-                        </>
-                      ) : (
-                        <>
-                          <Button
-                            onClick={() => handleEditLine(index)}
-                            size="sm"
-                            variant="outline"
-                            className="flex-1"
-                          >
-                            <Edit2 />
-                            Editar
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            onClick={() => handleOnClickDeleteLine(row)}
-                            size="sm"
-                            className="flex-1"
-                          >
-                            <Trash2 />
-                            Eliminar
-                          </Button>
-                        </>
-                      )}
+                    <div className="min-w-0">
+                      <p className="text-muted-foreground text-[11px] leading-tight">
+                        Total (con IVA)
+                      </p>
+                      <p className="text-sm font-medium tabular-nums">
+                        {totals.hasPendingTax
+                          ? 'IVA pendiente'
+                          : formatDecimalCurrency(totals.total)}
+                      </p>
                     </div>
                   </div>
-                </Card>
-              ))}
-            </div>
+                </div>
+
+                <div className="border-border bg-card overflow-hidden rounded-lg border">
+                  {rows.map((row) => (
+                    <article
+                      key={row.id ?? row.tempId}
+                      className="border-border space-y-3 border-b p-3 last:border-b-0"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="min-w-0 flex-1 text-sm leading-snug font-medium">
+                          {articleLabel(row)}
+                        </p>
+                        <div className="flex shrink-0 items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            aria-label="Editar línea"
+                            onClick={() => openEditSheet(row)}
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive hover:text-destructive h-8 w-8"
+                            aria-label="Eliminar línea"
+                            onClick={() => handleOnClickDeleteLine(row)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-x-2 gap-y-2">
+                        <div className="min-w-0">
+                          <p className="text-muted-foreground text-[11px] leading-tight">
+                            Cantidad
+                          </p>
+                          <p className="text-sm font-medium tabular-nums">
+                            {formatQuantityWithUnit(Number(row.quantity), row.unit)}
+                          </p>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-muted-foreground text-[11px] leading-tight">Unidad</p>
+                          <p className="text-sm font-medium tabular-nums">{row.unit || '-'}</p>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-muted-foreground text-[11px] leading-tight">Precio</p>
+                          <p className="text-sm font-medium tabular-nums">
+                            {formatDecimalCurrency(Number(row.unitPrice))}
+                          </p>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-muted-foreground text-[11px] leading-tight">
+                            Impuesto
+                          </p>
+                          <p
+                            className={cn(
+                              'text-sm font-medium tabular-nums',
+                              row.tax.rate == null && 'text-warning'
+                            )}
+                          >
+                            {formatTaxRate(row.tax.rate)}
+                          </p>
+                        </div>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            </ScrollArea>
           )}
           <div
             className={cn(
@@ -510,40 +457,26 @@ const OrderAuxiliaryLines = () => {
               MOBILE_SAFE_AREAS.BOTTOM_INSET
             )}
           >
-            <Button
-              onClick={() => setShowTotalsDialog(true)}
-              variant="outline"
-              size="icon"
-              className="min-h-[44px] min-w-[44px]"
-            >
-              <Info className="h-4 w-4" />
-            </Button>
-            <Button onClick={handleOnClickAddLine} size="sm" className="min-h-[44px] flex-1">
+            <Button onClick={openCreateSheet} size="sm" className="min-h-[44px] flex-1">
               <Plus size={16} className="mr-2" />
               Añadir línea
             </Button>
           </div>
 
-          <OrderTotalsSummaryDialog
-            open={showTotalsDialog}
-            onOpenChange={setShowTotalsDialog}
-            title="Totales"
-            description="Resumen de las líneas auxiliares del pedido."
-            isMobile={isMobile}
-            items={[
-              {
-                key: 'subtotal',
-                label: 'Subtotal',
-                value: formatDecimalCurrency(totals.subtotal),
-              },
-              {
-                key: 'total',
-                label: 'Total (con IVA)',
-                value: totals.hasPendingTax
-                  ? 'IVA pendiente en alguna línea'
-                  : formatDecimalCurrency(totals.total),
-              },
-            ]}
+          <OrderAuxiliaryLineSheet
+            open={sheetOpen}
+            onOpenChange={(open) => {
+              setSheetOpen(open);
+              if (!open) setSheetRow(null);
+            }}
+            mode={sheetMode}
+            row={sheetRow}
+            catalogOptions={catalogOptions}
+            catalogOptionsMap={catalogOptionsMap}
+            taxOptions={taxOptions}
+            taxOptionsMap={taxOptionsMap}
+            optionsLoading={optionsLoading}
+            onSave={handleSheetSave}
           />
         </div>
       ) : (

@@ -1,8 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { cn } from '@/lib/utils';
-import { MOBILE_SAFE_AREAS } from '@/lib/design-tokens-mobile';
+import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
@@ -22,9 +20,6 @@ import {
 } from '@/helpers/formats/numbers/formatNumbers';
 import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Button } from '@/components/ui/button';
-import { OrderTotalsSummaryDialog } from '@/components/Admin/OrdersManager/Order/components/OrderTotalsSummaryDialog';
-import { Info } from 'lucide-react';
 
 interface ProductDetail {
   id?: number | string;
@@ -41,7 +36,6 @@ const OrderProductDetails = () => {
   const { order } = useOrderContext();
   const productDetails = order?.productDetails as ProductDetail[] | undefined;
   const { isMobile, mounted } = useIsMobileSafe();
-  const [showTotalsDialog, setShowTotalsDialog] = useState(false);
 
   // Memoizar el cálculo de totales para evitar recálculos innecesarios
   const totals = useMemo(() => {
@@ -81,110 +75,93 @@ const OrderProductDetails = () => {
             </div>
           ) : (
             <ScrollArea className="min-h-0 flex-1">
-              <div className="space-y-4 pb-3">
-                {/* Vista Mobile: Cards */}
-                {productDetails.map((detail) => (
-                  <Card
-                    key={detail.id || `${detail.product?.id}-${detail.product?.name}`}
-                    className="border"
-                  >
-                    <CardContent className="space-y-3 p-4">
-                      {/* Nombre del producto */}
-                      <div className="space-y-1">
-                        <p className="text-base font-medium">
+              <div className="space-y-3 pb-4">
+                <div className="border-border bg-card sticky top-0 z-10 rounded-lg border p-3 shadow-sm">
+                  <div className="min-w-0">
+                    <p className="text-muted-foreground text-xs font-medium">Total pedido</p>
+                    <p className="text-lg leading-tight font-semibold tabular-nums">
+                      {formatDecimalCurrency(totals.total)}
+                    </p>
+                  </div>
+                  <div className="mt-3 grid grid-cols-3 gap-2">
+                    <div className="min-w-0">
+                      <p className="text-muted-foreground text-[11px] leading-tight">Cajas</p>
+                      <p className="text-sm font-medium tabular-nums">
+                        {formatInteger(totals.boxes)}
+                      </p>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-muted-foreground text-[11px] leading-tight">Cantidad</p>
+                      <p className="text-sm font-medium tabular-nums">
+                        {formatDecimalWeight(totals.netWeight)}
+                      </p>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-muted-foreground text-[11px] leading-tight">Precio med.</p>
+                      <p className="text-sm font-medium tabular-nums">
+                        {formatDecimalCurrency(totals.averagePrice)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-border bg-card overflow-hidden rounded-lg border">
+                  {productDetails.map((detail) => (
+                    <article
+                      key={detail.id || `${detail.product?.id}-${detail.product?.name}`}
+                      className="border-border space-y-3 border-b p-3 last:border-b-0"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="min-w-0 flex-1 text-sm leading-snug font-medium">
                           {detail?.product?.name || 'Sin producto'}
+                        </p>
+                        <p className="shrink-0 text-right text-sm font-semibold tabular-nums">
+                          {formatDecimalCurrency(detail.total)}
                         </p>
                       </div>
 
-                      {/* Información en grid */}
-                      <div className="grid grid-cols-2 gap-3 border-t pt-2">
-                        <div className="space-y-1">
-                          <p className="text-muted-foreground text-xs">Cajas</p>
+                      <div className="grid grid-cols-3 gap-x-2 gap-y-2">
+                        <div className="min-w-0">
+                          <p className="text-muted-foreground text-[11px] leading-tight">Cajas</p>
                           <p className="text-sm font-medium tabular-nums">
                             {formatInteger(detail.boxes)}
                           </p>
                         </div>
-                        <div className="space-y-1">
-                          <p className="text-muted-foreground text-xs">Cantidad</p>
+                        <div className="min-w-0">
+                          <p className="text-muted-foreground text-[11px] leading-tight">
+                            Cantidad
+                          </p>
                           <p className="text-sm font-medium tabular-nums">
                             {formatDecimalWeight(detail.netWeight)}
                           </p>
                         </div>
-                        <div className="space-y-1">
-                          <p className="text-muted-foreground text-xs">Precio</p>
+                        <div className="min-w-0">
+                          <p className="text-muted-foreground text-[11px] leading-tight">Precio</p>
                           <p className="text-sm font-medium tabular-nums">
                             {formatDecimalCurrency(detail.unitPrice)}
                           </p>
                         </div>
-                        <div className="space-y-1">
-                          <p className="text-muted-foreground text-xs">Impuesto</p>
-                          <p className="text-sm font-medium tabular-nums">{`${detail?.tax?.rate ?? 0}%`}</p>
+                        <div className="min-w-0">
+                          <p className="text-muted-foreground text-[11px] leading-tight">IVA</p>
+                          <p className="text-sm font-medium tabular-nums">
+                            {detail?.tax?.rate ?? 0}%
+                          </p>
                         </div>
-                        <div className="space-y-1">
-                          <p className="text-muted-foreground text-xs">Subtotal</p>
+                        <div className="min-w-0">
+                          <p className="text-muted-foreground text-[11px] leading-tight">
+                            Subtotal
+                          </p>
                           <p className="text-sm font-medium tabular-nums">
                             {formatDecimalCurrency(detail.subtotal)}
                           </p>
                         </div>
-                        <div className="space-y-1">
-                          <p className="text-muted-foreground text-xs">Total</p>
-                          <p className="text-sm font-medium tabular-nums">
-                            {formatDecimalCurrency(detail.total)}
-                          </p>
-                        </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                    </article>
+                  ))}
+                </div>
               </div>
             </ScrollArea>
           )}
-
-          {/* Footer con botón de totales */}
-          <div
-            className={cn(
-              'bg-background fixed right-0 bottom-0 left-0 z-50 flex items-center gap-2 border-t p-3',
-              MOBILE_SAFE_AREAS.BOTTOM_INSET
-            )}
-          >
-            <Button
-              onClick={() => setShowTotalsDialog(true)}
-              variant="outline"
-              size="sm"
-              className="min-h-[44px] flex-1"
-            >
-              <Info className="mr-2 h-4 w-4" />
-              Totales
-            </Button>
-          </div>
-
-          {/* Dialog de Totales */}
-          <OrderTotalsSummaryDialog
-            open={showTotalsDialog}
-            onOpenChange={setShowTotalsDialog}
-            title="Totales"
-            description="Resumen de cajas, cantidad, precio promedio y totales del pedido."
-            isMobile={isMobile}
-            items={[
-              { key: 'boxes', label: 'Cajas', value: formatInteger(totals.boxes) },
-              {
-                key: 'netWeight',
-                label: 'Cantidad',
-                value: formatDecimalWeight(totals.netWeight),
-              },
-              {
-                key: 'averagePrice',
-                label: 'Precio promedio',
-                value: formatDecimalCurrency(totals.averagePrice),
-              },
-              {
-                key: 'subtotal',
-                label: 'Subtotal',
-                value: formatDecimalCurrency(totals.subtotal),
-              },
-              { key: 'total', label: 'Total', value: formatDecimalCurrency(totals.total) },
-            ]}
-          />
         </div>
       ) : (
         <Card className="flex h-full flex-col bg-transparent">

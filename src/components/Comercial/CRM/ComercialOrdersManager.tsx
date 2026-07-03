@@ -223,6 +223,7 @@ export default function ComercialOrdersManager() {
             onClose={isMobile ? handleCloseDetail : undefined}
             readOnly
             canViewCostData={false}
+            isMobileOverride={isMobile}
           />
         </div>
       );

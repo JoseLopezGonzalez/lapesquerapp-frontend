@@ -1,10 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
-import { cn } from '@/lib/utils';
-import { MOBILE_SAFE_AREAS } from '@/lib/design-tokens-mobile';
-import { AlertTriangle, Info } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import StatusBadge from '@/components/Admin/OrdersManager/StatusBadge';
@@ -23,14 +21,6 @@ import { formatDecimalWeight, formatInteger } from '@/helpers/formats/numbers/fo
 import { EmptyState } from '@/components/Utilities/EmptyState/index';
 import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 
 interface MergedProductDetail {
   product?: { id: number | string; name: string } | null;
@@ -77,7 +67,6 @@ const OrderProduction = () => {
   const { isMobile, mounted } = useIsMobileSafe();
   const { mergedProductDetails: rawMergedProductDetails } = useOrderContext();
   const mergedProductDetails = rawMergedProductDetails as unknown as MergedProductDetail[];
-  const [showTotalsDialog, setShowTotalsDialog] = useState(false);
 
   // Memoizar el cálculo de discrepancias
   const hasDiscrepancy = useMemo(() => {
@@ -112,7 +101,7 @@ const OrderProduction = () => {
             </div>
           ) : (
             <ScrollArea className="min-h-0 flex-1">
-              <div className="space-y-4 pb-0">
+              <div className="space-y-3 pb-4">
                 {hasDiscrepancy && (
                   <Alert className="border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-50">
                     <AlertTriangle />
@@ -124,145 +113,95 @@ const OrderProduction = () => {
                   </Alert>
                 )}
 
-                {/* Vista Mobile: Cards */}
-                {mergedProductDetails.map((detail) => (
-                  <Card
-                    key={`${detail?.product?.id ?? 'unknown'}-${detail.status}`}
-                    className="p-4"
-                  >
-                    <div className="space-y-3">
-                      {/* Artículo y Estado */}
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <p className="text-muted-foreground mb-1.5 text-xs tracking-wide uppercase">
-                            Artículo
-                          </p>
-                          <p className="text-sm font-medium">
-                            {detail?.product?.name || 'Sin producto'}
-                          </p>
-                        </div>
-                        <div>
+                <div className="border-border bg-card sticky top-0 z-10 rounded-lg border p-3 shadow-sm">
+                  <p className="text-muted-foreground text-xs font-medium">Totales</p>
+                  <div className="mt-2 grid grid-cols-3 gap-2">
+                    <div className="min-w-0">
+                      <p className="text-muted-foreground text-[11px] leading-tight">Pedido</p>
+                      <p className="text-sm font-medium tabular-nums">
+                        {formatDecimalWeight(totals.plannedQuantity)}
+                      </p>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-muted-foreground text-[11px] leading-tight">Producción</p>
+                      <p className="text-sm font-medium tabular-nums">
+                        {formatDecimalWeight(totals.productionQuantity)}
+                      </p>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-muted-foreground text-[11px] leading-tight">Diferencia</p>
+                      <p className="text-sm font-medium tabular-nums">
+                        {formatDecimalWeight(totals.quantityDifference)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-border bg-card overflow-hidden rounded-lg border">
+                  {mergedProductDetails.map((detail) => (
+                    <article
+                      key={`${detail?.product?.id ?? 'unknown'}-${detail.status}`}
+                      className="border-border space-y-3 border-b p-3 last:border-b-0"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="min-w-0 flex-1 text-sm leading-snug font-medium">
+                          {detail?.product?.name || 'Sin producto'}
+                        </p>
+                        <div className="shrink-0">
                           <ProductionStatusBadge status={detail.status} />
                         </div>
                       </div>
 
-                      {/* Información en grid */}
-                      <div className="grid grid-cols-2 gap-3 border-t pt-2">
-                        <div className="space-y-1">
-                          <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                            Pedido
-                          </p>
+                      <div className="grid grid-cols-3 gap-x-2 gap-y-2">
+                        <div className="min-w-0">
+                          <p className="text-muted-foreground text-[11px] leading-tight">Pedido</p>
                           {detail.status === 'noPlanned' ? (
-                            <p className="text-sm font-medium">-</p>
+                            <p className="text-sm font-medium tabular-nums">-</p>
                           ) : (
                             <>
-                              <p className="text-sm font-medium">
+                              <p className="text-sm font-medium tabular-nums">
                                 {formatDecimalWeight(detail.plannedQuantity)}
                               </p>
-                              <p className="text-muted-foreground text-xs">
+                              <p className="text-muted-foreground text-xs tabular-nums">
                                 {formatInteger(detail.plannedBoxes)} cajas
                               </p>
                             </>
                           )}
                         </div>
-                        <div className="space-y-1">
-                          <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                        <div className="min-w-0">
+                          <p className="text-muted-foreground text-[11px] leading-tight">
                             Producción
                           </p>
                           {detail.productionQuantity === 0 && detail.productionBoxes === 0 ? (
-                            <p className="text-sm font-medium">-</p>
+                            <p className="text-sm font-medium tabular-nums">-</p>
                           ) : (
                             <>
-                              <p className="text-sm font-medium">
+                              <p className="text-sm font-medium tabular-nums">
                                 {formatDecimalWeight(detail.productionQuantity)}
                               </p>
-                              <p className="text-muted-foreground text-xs">
+                              <p className="text-muted-foreground text-xs tabular-nums">
                                 {formatInteger(detail.productionBoxes)} cajas
                               </p>
                             </>
                           )}
                         </div>
-                        <div className="col-span-2 space-y-1">
-                          <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                        <div className="min-w-0">
+                          <p className="text-muted-foreground text-[11px] leading-tight">
                             Diferencia
                           </p>
-                          <p className="text-sm font-medium">
+                          <p className="text-sm font-medium tabular-nums">
                             {detail.status === 'noPlanned'
                               ? '-'
                               : formatDecimalWeight(detail.quantityDifference)}
                           </p>
                         </div>
                       </div>
-                    </div>
-                  </Card>
-                ))}
+                    </article>
+                  ))}
+                </div>
               </div>
             </ScrollArea>
           )}
-
-          {/* Footer con botón de totales */}
-          <div
-            className={cn(
-              'bg-background fixed right-0 bottom-0 left-0 z-50 flex items-center gap-2 border-t p-3',
-              MOBILE_SAFE_AREAS.BOTTOM_INSET
-            )}
-          >
-            <Button
-              onClick={() => setShowTotalsDialog(true)}
-              variant="outline"
-              size="sm"
-              className="min-h-[44px] flex-1"
-            >
-              <Info className="mr-2 h-4 w-4" />
-              Totales
-            </Button>
-          </div>
-
-          {/* Dialog de Totales */}
-          <Dialog open={showTotalsDialog} onOpenChange={setShowTotalsDialog}>
-            <DialogContent
-              className={`${isMobile ? 'm-0 flex h-full max-h-full w-full max-w-full flex-col rounded-none' : ''}`}
-            >
-              <DialogHeader>
-                <DialogTitle>Totales</DialogTitle>
-                <DialogDescription>
-                  Comparativa total entre cantidades previstas y producidas.
-                </DialogDescription>
-              </DialogHeader>
-              <div
-                className={`${isMobile ? 'flex flex-1 flex-col items-center justify-center px-4' : ''}`}
-              >
-                <div className={`space-y-6 ${isMobile ? 'w-full max-w-md' : ''}`}>
-                  <div className="flex flex-col space-y-6">
-                    <div className="space-y-2 text-center">
-                      <p className="text-muted-foreground text-xs font-normal tracking-wide uppercase">
-                        Pedido
-                      </p>
-                      <p className="text-foreground text-xl font-medium">
-                        {formatDecimalWeight(totals.plannedQuantity)}
-                      </p>
-                    </div>
-                    <div className="space-y-2 border-t pt-4 text-center">
-                      <p className="text-muted-foreground text-xs font-normal tracking-wide uppercase">
-                        Producción
-                      </p>
-                      <p className="text-foreground text-xl font-medium">
-                        {formatDecimalWeight(totals.productionQuantity)}
-                      </p>
-                    </div>
-                    <div className="space-y-2 border-t pt-4 text-center">
-                      <p className="text-muted-foreground text-xs font-normal tracking-wide uppercase">
-                        Diferencia
-                      </p>
-                      <p className="text-foreground text-xl font-medium">
-                        {formatDecimalWeight(totals.quantityDifference)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
         </div>
       ) : (
         <Card className="flex h-full flex-col bg-transparent">

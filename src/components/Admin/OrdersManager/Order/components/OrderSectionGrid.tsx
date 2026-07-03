@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { CircleDot, Printer } from 'lucide-react';
 import { MobileOptionSheet } from '@/components/Shadcn/MobileOptionSheet';
 import { cn } from '@/lib/utils';
+import { notify } from '@/lib/notifications';
 import { formatInteger } from '@/helpers/formats/numbers/formatNumbers';
 import { SECTIONS_CONFIG, type OrderSectionConfig } from '../config/sectionsConfig';
 import StatusBadge from '../../StatusBadge';
@@ -42,6 +43,7 @@ interface GridCard {
   fullWidth?: boolean;
   actionOnly?: boolean;
   disabled?: boolean;
+  unavailable?: boolean;
 }
 
 function getDynamicSublabel(
@@ -121,6 +123,7 @@ export default function OrderSectionGrid({
         getDynamicSublabel(section.id, { order, productDetailsCount, pendingProductionCount }) ??
         section.mobileDefaultSublabel,
       variant: isAttention ? 'attention' : undefined,
+      unavailable: section.id === 'labels',
     });
   }
 
@@ -142,6 +145,17 @@ export default function OrderSectionGrid({
   });
 
   const handleCardClick = (card: GridCard) => {
+    if (card.unavailable) {
+      notify.info(
+        {
+          title: 'Disponible en escritorio',
+          description:
+            'La gestión de etiquetas todavía se realiza desde la versión de PC. Estamos preparando una experiencia móvil más cómoda.',
+        },
+        { dedupeKey: 'mobile-order-labels-unavailable' }
+      );
+      return;
+    }
     if (card.disabled) return;
     if (card.id === 'status') {
       setStatusSheetOpen(true);
@@ -170,15 +184,18 @@ export default function OrderSectionGrid({
             type="button"
             onClick={() => handleCardClick(card)}
             disabled={card.disabled}
+            aria-disabled={card.disabled || card.unavailable}
             className={cn(
               'relative flex min-h-[104px] flex-col items-start justify-between rounded-2xl border p-4 text-left transition-all active:scale-[0.97]',
               card.fullWidth && 'col-span-2',
               card.disabled && 'cursor-default opacity-80 active:scale-100',
+              card.unavailable && 'cursor-not-allowed opacity-55 grayscale active:scale-100',
               card.variant === 'destructive' &&
                 'border-destructive/25 bg-destructive/5 hover:bg-destructive/10',
               card.variant === 'attention' &&
                 'border-primary/40 bg-primary/8 shadow-primary/10 ring-primary/20 hover:bg-primary/12 shadow-sm ring-1 ring-inset',
-              !card.variant && 'border-border bg-card hover:bg-accent/50'
+              !card.variant && !card.unavailable && 'border-border bg-card hover:bg-accent/50',
+              card.unavailable && 'border-border bg-muted/40'
             )}
           >
             <div

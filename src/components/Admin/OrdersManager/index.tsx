@@ -33,7 +33,9 @@ export default function OrdersManager() {
 
   const { orders = [], isLoading: loading, error: ordersError, queryKey } = useOrders();
   const [categories, setCategories] = useState(INITIAL_ORDER_CATEGORIES);
-  const [selectedOrder, setSelectedOrder] = useState<number | string | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<number | string | null>(
+    () => searchParams.get('order') ?? null
+  );
   const [searchText, setSearchText] = useState('');
   const [viewMode, setViewMode] = useState('normal'); // 'normal' o 'production'
 
@@ -332,6 +334,7 @@ export default function OrdersManager() {
             onChange={handleOnChange}
             onLoading={handleOrderLoading}
             onClose={isMobile ? handleCloseDetail : undefined}
+            isMobileOverride={isMobile}
           />
         </div>
       );

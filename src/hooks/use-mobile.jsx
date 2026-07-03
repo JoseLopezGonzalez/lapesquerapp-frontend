@@ -78,23 +78,27 @@ export function useIsMobile() {
  * @returns {{ isMobile: boolean, mounted: boolean }}
  */
 export function useIsMobileSafe() {
-  const [isMobile, setIsMobile] = React.useState(false);
-  const [mounted, setMounted] = React.useState(false);
+  const [state, setState] = React.useState({
+    isMobile: false,
+    mounted: false,
+  });
 
   React.useEffect(() => {
     // Solo ejecutar en cliente
     if (typeof window === 'undefined') return;
 
-    setMounted(true);
-
     const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
 
     const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+      setState({
+        isMobile: window.innerWidth < MOBILE_BREAKPOINT,
+        mounted: true,
+      });
     };
 
-    // Establecer valor inicial
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    // Establecer valor inicial en una sola actualización para evitar un render
+    // intermedio con mounted=true e isMobile=false.
+    onChange();
 
     // Escuchar cambios
     mql.addEventListener('change', onChange);
@@ -103,8 +107,8 @@ export function useIsMobileSafe() {
   }, []);
 
   return {
-    isMobile: mounted ? isMobile : false,
-    mounted,
+    isMobile: state.mounted ? state.isMobile : false,
+    mounted: state.mounted,
   };
 }
 

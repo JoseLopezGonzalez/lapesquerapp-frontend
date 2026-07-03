@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { AlertCircle, ChartColumn, Package2, RefreshCw, Wallet } from 'lucide-react';
+import { AlertCircle, ChartColumn, Package2, Wallet } from 'lucide-react';
 import { useOrderContext } from '@/context/OrderContext';
 import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,7 +23,6 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import StatusBadge from '@/components/Admin/OrdersManager/StatusBadge';
 import { EmptyState } from '@/components/Utilities/EmptyState/index';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -38,7 +37,47 @@ const getNullableWeight = (value) => (value == null ? '—' : formatDecimalWeigh
 const getNullablePercentage = (value) => (value == null ? '—' : `${formatDecimal(value)}%`);
 const getNullableCurrencyPerKg = (value) => (value == null ? '—' : `${formatDecimal(value)} €/kg`);
 
-function AnalysisMetricCard({ title, value, description, detail, icon: Icon, emphasize = false }) {
+function AnalysisMetricCard({
+  title,
+  value,
+  description,
+  detail,
+  icon: Icon,
+  emphasize = false,
+  isMobile = false,
+}) {
+  // Mobile: mismo lenguaje visual que las cards del grid principal de pedidos
+  // (icono en chip redondeado bg-muted, texto apilado debajo) — ver OrderSectionGrid.
+  // 2 columnas + líneas a una sola altura (line-clamp-1) para mantener la misma
+  // densidad que el resto de cards de la UI de pedidos en mobile.
+  if (isMobile) {
+    return (
+      <div className="border-border bg-card rounded-2xl border p-3">
+        <div className="bg-muted text-foreground flex h-8 w-8 items-center justify-center rounded-xl">
+          <Icon className="h-4 w-4" />
+        </div>
+        <div className="mt-2 space-y-0.5">
+          <p className="text-muted-foreground text-[11px] leading-tight">{title}</p>
+          <div
+            className={
+              emphasize
+                ? 'text-lg leading-tight font-semibold'
+                : 'text-base leading-tight font-semibold'
+            }
+          >
+            {value}
+          </div>
+          {detail ? (
+            <p className="text-muted-foreground line-clamp-1 text-[11px] leading-tight">{detail}</p>
+          ) : null}
+          <p className="text-muted-foreground line-clamp-1 text-[11px] leading-tight">
+            {description}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -63,7 +102,21 @@ function AnalysisMetricCard({ title, value, description, detail, icon: Icon, emp
 }
 
 // Silueta de AnalysisMetricCard: título+icono, valor, detalle y descripción (4 alturas distintas)
-function AnalysisMetricCardSkeleton() {
+function AnalysisMetricCardSkeleton({ isMobile = false }) {
+  if (isMobile) {
+    return (
+      <div className="border-border bg-card rounded-2xl border p-3">
+        <Skeleton className="h-8 w-8 rounded-xl" />
+        <div className="mt-2 space-y-1">
+          <Skeleton className="h-2.5 w-10" />
+          <Skeleton className="h-5 w-14" />
+          <Skeleton className="h-2.5 w-10" />
+          <Skeleton className="h-2.5 w-16" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -237,9 +290,9 @@ export default function OrderCostAnalysis({ canViewCostData = true }) {
   if (costAnalysisLoading && !costAnalysis) {
     return (
       <div className="flex flex-col gap-4 p-4">
-        <div className={`grid gap-3 ${isMobile ? 'grid-cols-1' : 'grid-cols-2 xl:grid-cols-4'}`}>
+        <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <AnalysisMetricCardSkeleton key={i} />
+            <AnalysisMetricCardSkeleton key={i} isMobile={isMobile} />
           ))}
         </div>
         <Skeleton className="h-8 w-48 rounded-md" />
@@ -285,22 +338,10 @@ export default function OrderCostAnalysis({ canViewCostData = true }) {
 
   const content = (
     <Tabs defaultValue="product-lines" className="flex min-h-0 flex-1 flex-col">
-      <div className="flex items-center justify-between gap-3">
-        <TabsList className="w-fit">
-          <TabsTrigger value="product-lines">Por producto</TabsTrigger>
-          <TabsTrigger value="pallets">Por palet</TabsTrigger>
-        </TabsList>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => loadCostAnalysis({ force: true })}
-          disabled={costAnalysisLoading}
-        >
-          <RefreshCw className={`mr-2 h-4 w-4 ${costAnalysisLoading ? 'animate-spin' : ''}`} />
-          Actualizar
-        </Button>
-      </div>
+      <TabsList className="w-fit">
+        <TabsTrigger value="product-lines">Por producto</TabsTrigger>
+        <TabsTrigger value="pallets">Por palet</TabsTrigger>
+      </TabsList>
 
       <TabsContent
         value="product-lines"
@@ -520,10 +561,73 @@ export default function OrderCostAnalysis({ canViewCostData = true }) {
     </Tabs>
   );
 
+  const metricCards = (
+    <>
+      <AnalysisMetricCard
+        title="Importe"
+        value={getNullableCurrency(summary.totalRevenue)}
+        detail={getNullableCurrencyPerKg(order?.revenuePerKg)}
+        description="Importe total del pedido"
+        icon={Wallet}
+        isMobile={isMobile}
+      />
+      <AnalysisMetricCard
+        title="Coste total"
+        value={getNullableCurrency(summary.totalCost)}
+        detail={getNullableCurrencyPerKg(order?.costPerKg)}
+        description={
+          summary.totalCost == null
+            ? 'Sin coste calculable'
+            : 'Coste acumulado de cajas disponibles'
+        }
+        icon={Package2}
+        isMobile={isMobile}
+      />
+      <AnalysisMetricCard
+        title="Margen bruto"
+        value={getNullableCurrency(summary.grossMargin)}
+        detail={getNullableCurrencyPerKg(order?.marginPerKg)}
+        description={
+          summary.grossMargin == null ? 'Sin coste calculable' : 'Importe menos coste total'
+        }
+        icon={ChartColumn}
+        emphasize
+        isMobile={isMobile}
+      />
+      <AnalysisMetricCard
+        title="Margen %"
+        value={getNullablePercentage(summary.marginPercentage)}
+        description={
+          summary.marginPercentage == null
+            ? 'No calculable con los datos actuales'
+            : 'Porcentaje de margen sobre importe'
+        }
+        icon={ChartColumn}
+        isMobile={isMobile}
+      />
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col">
+        <ScrollArea className="min-h-0 flex-1">
+          <div className="space-y-3 px-4 pt-4">
+            {costAnalysisError ? (
+              <StatusBadge color="amber" label="Última recarga con incidencias" />
+            ) : null}
+            <div className="grid grid-cols-2 gap-3">{metricCards}</div>
+          </div>
+          <div className="px-4 pt-4 pb-8">{content}</div>
+        </ScrollArea>
+      </div>
+    );
+  }
+
   const header = (
     <CardHeader className="space-y-2">
-      <div className="flex items-start justify-between gap-3">
-        <div>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
           {/* text-lg: sub-escala intencional para CardTitle de tarjeta dentro de un tab, alineada con GAP-084. */}
           <CardTitle className="text-lg font-medium">Análisis económico</CardTitle>
           <CardDescription>
@@ -534,67 +638,17 @@ export default function OrderCostAnalysis({ canViewCostData = true }) {
           <StatusBadge color="amber" label="Última recarga con incidencias" />
         ) : null}
       </div>
-      <div className={`grid gap-3 ${isMobile ? 'grid-cols-1' : 'grid-cols-2 xl:grid-cols-4'}`}>
-        <AnalysisMetricCard
-          title="Importe"
-          value={getNullableCurrency(summary.totalRevenue)}
-          detail={getNullableCurrencyPerKg(order?.revenuePerKg)}
-          description="Importe total del pedido"
-          icon={Wallet}
-        />
-        <AnalysisMetricCard
-          title="Coste total"
-          value={getNullableCurrency(summary.totalCost)}
-          detail={getNullableCurrencyPerKg(order?.costPerKg)}
-          description={
-            summary.totalCost == null
-              ? 'Sin coste calculable'
-              : 'Coste acumulado de cajas disponibles'
-          }
-          icon={Package2}
-        />
-        <AnalysisMetricCard
-          title="Margen bruto"
-          value={getNullableCurrency(summary.grossMargin)}
-          detail={getNullableCurrencyPerKg(order?.marginPerKg)}
-          description={
-            summary.grossMargin == null ? 'Sin coste calculable' : 'Importe menos coste total'
-          }
-          icon={ChartColumn}
-          emphasize
-        />
-        <AnalysisMetricCard
-          title="Margen %"
-          value={getNullablePercentage(summary.marginPercentage)}
-          description={
-            summary.marginPercentage == null
-              ? 'No calculable con los datos actuales'
-              : 'Porcentaje de margen sobre importe'
-          }
-          icon={ChartColumn}
-        />
-      </div>
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">{metricCards}</div>
     </CardHeader>
   );
 
   return (
-    <div
-      className={isMobile ? 'flex min-h-0 flex-1 flex-col' : 'flex h-full min-h-0 flex-col pb-2'}
-    >
+    <div className="flex h-full min-h-0 flex-col pb-2">
       <Card className="flex min-h-0 flex-1 flex-col overflow-hidden bg-transparent">
-        {isMobile ? (
-          <ScrollArea className="min-h-0 flex-1">
-            {header}
-            <CardContent className="flex flex-col pt-0 pb-8">{content}</CardContent>
-          </ScrollArea>
-        ) : (
-          <>
-            {header}
-            <CardContent className="flex min-h-0 flex-1 flex-col overflow-hidden">
-              {content}
-            </CardContent>
-          </>
-        )}
+        {header}
+        <CardContent className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          {content}
+        </CardContent>
       </Card>
     </div>
   );

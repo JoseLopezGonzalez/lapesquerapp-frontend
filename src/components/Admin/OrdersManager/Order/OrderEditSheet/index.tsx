@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 import { useOrderFormConfig, type FormField } from '@/hooks/useOrderFormConfig';
 import { Button } from '@/components/ui/button';
 import {
@@ -39,7 +39,16 @@ import {
 } from '@/components/ui/select';
 import { Combobox } from '@/components/Shadcn/Combobox';
 import { cn } from '@/lib/utils';
-import { Edit, Save, Loader2, AlertTriangle } from 'lucide-react';
+import {
+  ArrowLeft,
+  Check,
+  ChevronRight,
+  Edit,
+  Save,
+  Loader2,
+  AlertTriangle,
+  Search,
+} from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Label } from '@/components/ui/label';
 import { FieldSet, FieldLegend, FieldDescription, FieldGroup } from '@/components/ui/field';
@@ -93,6 +102,8 @@ const OrderEditSheet = ({
   const [saving, setSaving] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [expandedMobileGroups, setExpandedMobileGroups] = useState<string[]>([]);
+  const [mobileSelectionField, setMobileSelectionField] = useState<FormField | null>(null);
+  const [mobileSelectionSearch, setMobileSelectionSearch] = useState('');
   const mobileGroupRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const {
@@ -101,12 +112,14 @@ const OrderEditSheet = ({
     reset,
     control,
     setError,
+    setValue,
     formState: { errors, isDirty, dirtyFields },
   } = useForm({
     resolver: zodResolver(orderEditSchema),
     defaultValues: defaultValues as unknown as OrderEditFormData,
     mode: 'onChange',
   });
+  const watchedFormValues = useWatch({ control });
 
   // Resetear el formulario a los valores del pedido cuando se abre el Sheet
   useEffect(() => {
@@ -148,6 +161,8 @@ const OrderEditSheet = ({
         setSaving(false);
         setOpen(false);
         setExpandedMobileGroups([]);
+        setMobileSelectionField(null);
+        setMobileSelectionSearch('');
         reset(defaultValues as unknown as OrderEditFormData);
       } catch (error) {
         const e = error as Record<string, unknown> | undefined;
@@ -181,6 +196,8 @@ const OrderEditSheet = ({
     setOpen(false);
     setShowCancelDialog(false);
     setExpandedMobileGroups([]);
+    setMobileSelectionField(null);
+    setMobileSelectionSearch('');
   }, [reset, defaultValues, setOpen]);
 
   const handleSheetOpenChange = (nextOpen: boolean) => {
@@ -202,6 +219,37 @@ const OrderEditSheet = ({
   const mobileControlClass = isMobile ? 'h-11 text-sm' : '';
   const mobileTextareaClass = isMobile ? 'min-h-24 text-sm' : '';
   const mobileComboboxClass = isMobile ? 'h-11 text-sm [&_div]:text-sm' : '';
+
+  const getOptionLabel = useCallback((field: FormField, value: unknown) => {
+    if (value === undefined || value === null || value === '') return '';
+    return (
+      field.options?.find((option) => String(option.value) === String(value))?.label ??
+      String(value)
+    );
+  }, []);
+
+  const openMobileSelection = useCallback((field: FormField) => {
+    setMobileSelectionField(field);
+    setMobileSelectionSearch('');
+  }, []);
+
+  const handleMobileSelectionBack = useCallback(() => {
+    setMobileSelectionField(null);
+    setMobileSelectionSearch('');
+  }, []);
+
+  const handleMobileOptionSelect = useCallback(
+    (field: FormField, value: string) => {
+      setValue(field.name as never, value as never, {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true,
+      });
+      setMobileSelectionField(null);
+      setMobileSelectionSearch('');
+    },
+    [setValue]
+  );
 
   const handleMobileAccordionChange = useCallback((nextValue: string[]) => {
     setExpandedMobileGroups((currentValue) => {
@@ -258,6 +306,36 @@ const OrderEditSheet = ({
               name={field.name as never}
               control={control}
               render={({ field: { onChange, value, onBlur } }) => {
+                if (isMobile) {
+                  const selectedLabel = getOptionLabel(field, value);
+                  return (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={loading}
+                      onClick={() => openMobileSelection(field)}
+                      onBlur={onBlur}
+                      className={cn(
+                        'h-11 w-full justify-between gap-3 px-3 text-left font-normal',
+                        hasError && 'border-destructive'
+                      )}
+                      aria-invalid={hasError}
+                    >
+                      <span
+                        className={cn(
+                          'min-w-0 flex-1 truncate',
+                          !selectedLabel && 'text-muted-foreground'
+                        )}
+                      >
+                        {loading
+                          ? 'Cargando opciones...'
+                          : selectedLabel || field.props?.placeholder || 'Seleccionar'}
+                      </span>
+                      <ChevronRight className="text-muted-foreground size-4 shrink-0" />
+                    </Button>
+                  );
+                }
+
                 return (
                   <Select value={value as string} onValueChange={onChange} onBlur={onBlur}>
                     <SelectTrigger
@@ -292,6 +370,36 @@ const OrderEditSheet = ({
               name={field.name as never}
               control={control}
               render={({ field: { onChange, value, onBlur } }) => {
+                if (isMobile) {
+                  const selectedLabel = getOptionLabel(field, value);
+                  return (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={loading}
+                      onClick={() => openMobileSelection(field)}
+                      onBlur={onBlur}
+                      className={cn(
+                        'h-11 w-full justify-between gap-3 px-3 text-left font-normal',
+                        hasError && 'border-destructive'
+                      )}
+                      aria-invalid={hasError}
+                    >
+                      <span
+                        className={cn(
+                          'min-w-0 flex-1 truncate',
+                          !selectedLabel && 'text-muted-foreground'
+                        )}
+                      >
+                        {loading
+                          ? 'Cargando opciones...'
+                          : selectedLabel || field.props?.placeholder || 'Seleccionar'}
+                      </span>
+                      <ChevronRight className="text-muted-foreground size-4 shrink-0" />
+                    </Button>
+                  );
+                }
+
                 return (
                   <Combobox
                     options={field.options ?? []}
@@ -341,10 +449,47 @@ const OrderEditSheet = ({
           return <Input {...commonProps} />;
       }
     },
-    [register, control, loading, mobileComboboxClass, mobileControlClass, mobileTextareaClass]
+    [
+      register,
+      control,
+      loading,
+      isMobile,
+      getOptionLabel,
+      openMobileSelection,
+      mobileComboboxClass,
+      mobileControlClass,
+      mobileTextareaClass,
+    ]
   );
 
   if (!mounted) return null;
+
+  const selectedMobileValue = mobileSelectionField
+    ? (watchedFormValues as Record<string, unknown> | undefined)?.[mobileSelectionField.name]
+    : undefined;
+  const mobileSelectionBaseOptions =
+    mobileSelectionField && !mobileSelectionField.rules?.required
+      ? [
+          {
+            value: '',
+            label:
+              mobileSelectionField.name === 'fieldOperator'
+                ? 'Sin repartidor'
+                : mobileSelectionField.name === 'externalProcessor'
+                  ? 'Sin maquilador'
+                  : 'Sin seleccionar',
+          },
+          ...(mobileSelectionField.options ?? []),
+        ]
+      : (mobileSelectionField?.options ?? []).filter((option) => option.value);
+  const mobileSelectionOptions = mobileSelectionBaseOptions.filter((option) => {
+    const search = mobileSelectionSearch.trim().toLowerCase();
+    if (!search) return true;
+    return option.label.toLowerCase().includes(search);
+  });
+  const showMobileSelectionSearch =
+    mobileSelectionField?.component === 'Combobox' ||
+    (mobileSelectionField?.options?.length ?? 0) > 8;
 
   return (
     <Sheet open={open} onOpenChange={handleSheetOpenChange}>
@@ -371,176 +516,260 @@ const OrderEditSheet = ({
         <SheetHeader
           className={isMobile ? 'flex-shrink-0 border-b px-5 pt-3 pb-4 text-left' : 'flex-shrink-0'}
         >
-          <div className={isMobile ? 'flex items-start justify-between gap-3' : undefined}>
-            <div className={cn('min-w-0', isMobile && 'pr-10')}>
-              <SheetTitle className={isMobile ? 'truncate text-lg' : undefined}>
-                {isMobile ? 'Editar' : `Editar Pedido #${order?.id || 'N/A'}`}
-              </SheetTitle>
-              {!isMobile && (
-                <SheetDescription>
-                  Modifica los datos del pedido y guarda los cambios.
-                  {(order?.orderType ?? order?.order_type) === 'autoventa' &&
-                    ' Pedido tipo autoventa; algunos campos pueden estar vacíos.'}
-                </SheetDescription>
-              )}
-            </div>
-          </div>
-        </SheetHeader>
-        <form
-          onSubmit={handleFormSubmit}
-          className="flex min-h-0 w-full flex-1 flex-col"
-          noValidate
-        >
-          {loading ? (
-            <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
-              <OrderEditFormSkeleton isMobile={isMobile} />
-            </div>
-          ) : isMobile ? (
-            <div className="min-h-0 flex-1 overflow-y-auto px-5">
-              <Accordion
-                type="multiple"
-                value={expandedMobileGroups}
-                onValueChange={handleMobileAccordionChange}
-                className="py-2"
-              >
-                {formGroups.map((group) => (
-                  <AccordionItem
-                    key={group.group}
-                    ref={(node: HTMLDivElement | null) => {
-                      mobileGroupRefs.current[group.group] = node;
-                    }}
-                    value={group.group}
-                    className="border-b"
-                  >
-                    <AccordionTrigger className="py-4 hover:no-underline">
-                      <div className="min-w-0">
-                        <div className="text-base font-medium">{group.group}</div>
-                        {group.description && (
-                          <FieldDescription className="mt-1 text-xs">
-                            {group.description}
-                          </FieldDescription>
-                        )}
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="pb-5">
-                      <FieldSet className="w-full">
-                        <FieldGroup className="grid w-full grid-cols-1 gap-4">
-                          {group.fields.map((field) => {
-                            const hasError = errors[field.name as keyof typeof errors];
-                            return (
-                              <div key={field.name} className="grid w-full min-w-0 gap-2">
-                                <Label htmlFor={field.name} className="text-sm">
-                                  {field.label}
-                                </Label>
-                                <div
-                                  className={cn(
-                                    field.component === 'DatePicker' &&
-                                      'w-full [&_button]:size-8 [&_input]:h-11 [&_input]:text-sm',
-                                    field.component === 'emailList' &&
-                                      '[&_input]:text-sm [&>div>div]:min-h-11',
-                                    field.component === 'DatePicker' &&
-                                      hasError &&
-                                      'border-destructive rounded-md border'
-                                  )}
-                                >
-                                  {renderField(field, !!hasError)}
-                                </div>
-                                {hasError && (
-                                  <p className="pt-1 text-xs text-red-400">
-                                    * {hasError.message as string}
-                                  </p>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </FieldGroup>
-                      </FieldSet>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </div>
-          ) : (
-            <ScrollArea className="min-h-0 flex-1">
-              <div className="grid gap-6 px-5 py-4">
-                {formGroups.map((group) => (
-                  <FieldSet key={group.group} className="w-full">
-                    <FieldLegend>{group.group}</FieldLegend>
-                    {group.description && <FieldDescription>{group.description}</FieldDescription>}
-                    <FieldGroup className={`grid w-full py-4 ${group.grid || 'grid-cols-1 gap-4'}`}>
-                      {group.fields.map((field) => {
-                        const hasError = errors[field.name as keyof typeof errors];
-                        return (
-                          <div
-                            key={field.name}
-                            className={`grid w-full min-w-0 gap-2 ${field.colSpan || ''}`}
-                          >
-                            <Label htmlFor={field.name}>{field.label}</Label>
-                            <div
-                              className={cn(
-                                field.component === 'DatePicker' &&
-                                  hasError &&
-                                  'border-destructive rounded-md border'
-                              )}
-                            >
-                              {renderField(field, !!hasError)}
-                            </div>
-                            {hasError && (
-                              <p className="pt-1 text-xs text-red-400">
-                                * {hasError.message as string}
-                              </p>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </FieldGroup>
-                  </FieldSet>
-                ))}
-              </div>
-            </ScrollArea>
-          )}
-          <SheetFooter
-            className={
-              isMobile
-                ? 'bg-background grid flex-shrink-0 grid-cols-2 gap-2 border-t px-5 py-4'
-                : 'flex-shrink-0 flex-row justify-end border-t'
-            }
-          >
-            {isMobile && (
+          {isMobile && mobileSelectionField ? (
+            <div className="flex items-start gap-2 pr-10">
               <Button
                 type="button"
-                variant="outline"
-                onClick={() => handleSheetOpenChange(false)}
-                className="min-h-[44px] w-full"
+                variant="ghost"
+                size="icon"
+                className="-ml-2 size-9 shrink-0"
+                onClick={handleMobileSelectionBack}
+                aria-label="Volver al formulario"
               >
-                Cancelar
+                <ArrowLeft className="size-4" />
               </Button>
+              <div className="min-w-0">
+                <SheetTitle className="text-lg">
+                  Seleccionar {mobileSelectionField.label}
+                </SheetTitle>
+                {mobileSelectionField.description && (
+                  <SheetDescription>{mobileSelectionField.description}</SheetDescription>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className={isMobile ? 'flex items-start justify-between gap-3' : undefined}>
+              <div className={cn('min-w-0', isMobile && 'pr-10')}>
+                <SheetTitle className={isMobile ? 'truncate text-lg' : undefined}>
+                  {isMobile ? 'Editar' : `Editar Pedido #${order?.id || 'N/A'}`}
+                </SheetTitle>
+                {!isMobile && (
+                  <SheetDescription>
+                    Modifica los datos del pedido y guarda los cambios.
+                    {(order?.orderType ?? order?.order_type) === 'autoventa' &&
+                      ' Pedido tipo autoventa; algunos campos pueden estar vacíos.'}
+                  </SheetDescription>
+                )}
+              </div>
+            </div>
+          )}
+        </SheetHeader>
+        {isMobile && mobileSelectionField ? (
+          <div className="flex min-h-0 flex-1 flex-col">
+            {showMobileSelectionSearch && (
+              <div className="border-b px-5 py-3">
+                <div className="relative">
+                  <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+                  <Input
+                    value={mobileSelectionSearch}
+                    onChange={(event) => setMobileSelectionSearch(event.target.value)}
+                    placeholder={
+                      mobileSelectionField.props?.searchPlaceholder ||
+                      `Buscar ${mobileSelectionField.label.toLowerCase()}...`
+                    }
+                    className="h-11 pl-9"
+                    autoFocus
+                  />
+                </div>
+              </div>
             )}
-            <Button
-              type="submit"
-              disabled={saving || !isDirty || loading}
-              className={isMobile ? 'min-h-[44px] w-full' : ''}
-            >
-              {isMobile ? (
-                saving ? (
-                  'Guardando...'
-                ) : (
-                  'Guardar'
-                )
-              ) : saving ? (
-                <>
-                  <Loader2 className="animate-spin" />
-                  Guardando...
-                </>
+            <ScrollArea className="min-h-0 flex-1">
+              {loading ? (
+                <div className="text-muted-foreground flex min-h-[180px] items-center justify-center gap-2 text-sm">
+                  <Loader2 className="size-4 animate-spin" />
+                  Cargando opciones...
+                </div>
+              ) : mobileSelectionOptions.length > 0 ? (
+                <div>
+                  {mobileSelectionOptions.map((option) => {
+                    const selected = String(option.value) === String(selectedMobileValue ?? '');
+
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => handleMobileOptionSelect(mobileSelectionField, option.value)}
+                        className={cn(
+                          'border-border flex min-h-[48px] w-full items-center gap-3 border-b px-5 py-3 text-left last:border-b-0',
+                          selected && 'bg-accent text-accent-foreground'
+                        )}
+                      >
+                        <Check
+                          className={cn('size-4 shrink-0', selected ? 'opacity-100' : 'opacity-0')}
+                        />
+                        <span className="min-w-0 flex-1 text-sm leading-snug">{option.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               ) : (
-                <>
-                  <Save />
-                  Guardar
-                </>
+                <div className="text-muted-foreground flex min-h-[180px] items-center justify-center px-6 text-center text-sm">
+                  {mobileSelectionField.props?.notFoundMessage || 'No hay opciones disponibles'}
+                </div>
               )}
-            </Button>
-          </SheetFooter>
-        </form>
+            </ScrollArea>
+          </div>
+        ) : (
+          <form
+            onSubmit={handleFormSubmit}
+            className="flex min-h-0 w-full flex-1 flex-col"
+            noValidate
+          >
+            {loading ? (
+              <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
+                <OrderEditFormSkeleton isMobile={isMobile} />
+              </div>
+            ) : isMobile ? (
+              <div className="min-h-0 flex-1 overflow-y-auto px-5">
+                <Accordion
+                  type="multiple"
+                  value={expandedMobileGroups}
+                  onValueChange={handleMobileAccordionChange}
+                  className="py-2"
+                >
+                  {formGroups.map((group) => (
+                    <AccordionItem
+                      key={group.group}
+                      ref={(node: HTMLDivElement | null) => {
+                        mobileGroupRefs.current[group.group] = node;
+                      }}
+                      value={group.group}
+                      className="border-b"
+                    >
+                      <AccordionTrigger className="py-4 hover:no-underline">
+                        <div className="min-w-0">
+                          <div className="text-base font-medium">{group.group}</div>
+                          {group.description && (
+                            <FieldDescription className="mt-1 text-xs">
+                              {group.description}
+                            </FieldDescription>
+                          )}
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="pb-5">
+                        <FieldSet className="w-full">
+                          <FieldGroup className="grid w-full grid-cols-1 gap-4">
+                            {group.fields.map((field) => {
+                              const hasError = errors[field.name as keyof typeof errors];
+                              return (
+                                <div key={field.name} className="grid w-full min-w-0 gap-2">
+                                  <Label htmlFor={field.name} className="text-sm">
+                                    {field.label}
+                                  </Label>
+                                  <div
+                                    className={cn(
+                                      field.component === 'DatePicker' &&
+                                        'w-full [&_button]:size-8 [&_input]:h-11 [&_input]:text-sm',
+                                      field.component === 'emailList' &&
+                                        '[&_input]:text-sm [&>div>div]:min-h-11',
+                                      field.component === 'DatePicker' &&
+                                        hasError &&
+                                        'border-destructive rounded-md border'
+                                    )}
+                                  >
+                                    {renderField(field, !!hasError)}
+                                  </div>
+                                  {hasError && (
+                                    <p className="pt-1 text-xs text-red-400">
+                                      * {hasError.message as string}
+                                    </p>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </FieldGroup>
+                        </FieldSet>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </div>
+            ) : (
+              <ScrollArea className="min-h-0 flex-1">
+                <div className="grid gap-6 px-5 py-4">
+                  {formGroups.map((group) => (
+                    <FieldSet key={group.group} className="w-full">
+                      <FieldLegend>{group.group}</FieldLegend>
+                      {group.description && (
+                        <FieldDescription>{group.description}</FieldDescription>
+                      )}
+                      <FieldGroup
+                        className={`grid w-full py-4 ${group.grid || 'grid-cols-1 gap-4'}`}
+                      >
+                        {group.fields.map((field) => {
+                          const hasError = errors[field.name as keyof typeof errors];
+                          return (
+                            <div
+                              key={field.name}
+                              className={`grid w-full min-w-0 gap-2 ${field.colSpan || ''}`}
+                            >
+                              <Label htmlFor={field.name}>{field.label}</Label>
+                              <div
+                                className={cn(
+                                  field.component === 'DatePicker' &&
+                                    hasError &&
+                                    'border-destructive rounded-md border'
+                                )}
+                              >
+                                {renderField(field, !!hasError)}
+                              </div>
+                              {hasError && (
+                                <p className="pt-1 text-xs text-red-400">
+                                  * {hasError.message as string}
+                                </p>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </FieldGroup>
+                    </FieldSet>
+                  ))}
+                </div>
+              </ScrollArea>
+            )}
+            <SheetFooter
+              className={
+                isMobile
+                  ? 'bg-background grid flex-shrink-0 grid-cols-2 gap-2 border-t px-5 py-4'
+                  : 'flex-shrink-0 flex-row justify-end border-t'
+              }
+            >
+              {isMobile && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => handleSheetOpenChange(false)}
+                  className="min-h-[44px] w-full"
+                >
+                  Cancelar
+                </Button>
+              )}
+              <Button
+                type="submit"
+                disabled={saving || !isDirty || loading}
+                className={isMobile ? 'min-h-[44px] w-full' : ''}
+              >
+                {isMobile ? (
+                  saving ? (
+                    'Guardando...'
+                  ) : (
+                    'Guardar'
+                  )
+                ) : saving ? (
+                  <>
+                    <Loader2 className="animate-spin" />
+                    Guardando...
+                  </>
+                ) : (
+                  <>
+                    <Save />
+                    Guardar
+                  </>
+                )}
+              </Button>
+            </SheetFooter>
+          </form>
+        )}
 
         {/* Diálogo de confirmación al cancelar con cambios */}
         <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>

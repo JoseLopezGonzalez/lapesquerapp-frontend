@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Download, Layers } from 'lucide-react';
+import { Check, ChevronRight, Download, Layers } from 'lucide-react';
 import { BsFileEarmarkPdf } from 'react-icons/bs';
 import {
   Select,
@@ -13,16 +13,27 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
 import { RiFileExcel2Line } from 'react-icons/ri';
 import { useOrderContext } from '@/context/OrderContext';
 import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { EmptyState } from '@/components/Utilities/EmptyState';
+import { cn } from '@/lib/utils';
+
+type MobileSelectionView = 'document' | 'type' | null;
 
 const OrderExport = () => {
   const { exportDocument, exportDocuments, fastExportDocuments } = useOrderContext();
   const [selectedDocument, setSelectedDocument] = useState(exportDocuments[0]?.name || '');
   const [selectedType, setSelectedType] = useState(exportDocuments[0]?.types[0] || '');
+  const [mobileSelectionView, setMobileSelectionView] = useState<MobileSelectionView>(null);
   const { isMobile, mounted } = useIsMobileSafe();
   // exportDocuments is synchronous role-filtered config from useOrderDocuments; it has no loading state.
   const hasExportDocuments = exportDocuments.length > 0;
@@ -34,6 +45,12 @@ const OrderExport = () => {
   const handleDocumentChange = (value: string) => {
     setSelectedDocument(value);
     setSelectedType(exportDocuments.find((doc) => doc.name === value)?.types[0] ?? '');
+    setMobileSelectionView(null);
+  };
+
+  const handleTypeChange = (value: string) => {
+    setSelectedType(value);
+    setMobileSelectionView(null);
   };
 
   const handleOnClickExportAll = async () => {
@@ -52,6 +69,76 @@ const OrderExport = () => {
   };
 
   if (!mounted) return null;
+
+  const renderMobileSelectionSheet = () => {
+    if (!mobileSelectionView) return null;
+
+    const isDocumentSelection = mobileSelectionView === 'document';
+    const title = isDocumentSelection ? 'Seleccionar documento' : 'Seleccionar formato';
+    const description = isDocumentSelection
+      ? 'Elige el documento que quieres descargar.'
+      : 'Elige el formato de descarga.';
+
+    return (
+      <Sheet
+        open={!!mobileSelectionView}
+        onOpenChange={(open) => !open && setMobileSelectionView(null)}
+      >
+        <SheetContent side="bottom" className="flex max-h-[80vh] flex-col">
+          <SheetHeader>
+            <SheetTitle>{title}</SheetTitle>
+            <SheetDescription>{description}</SheetDescription>
+          </SheetHeader>
+
+          <ScrollArea className="min-h-0 flex-1">
+            <div>
+              {isDocumentSelection
+                ? exportDocuments.map((doc) => {
+                    const selected = doc.name === selectedDocument;
+
+                    return (
+                      <button
+                        key={doc.name}
+                        type="button"
+                        onClick={() => handleDocumentChange(doc.name)}
+                        className={cn(
+                          'border-border flex min-h-[52px] w-full items-center gap-3 border-b px-4 py-3 text-left last:border-b-0',
+                          selected && 'bg-accent text-accent-foreground'
+                        )}
+                      >
+                        <Check
+                          className={cn('size-4 shrink-0', selected ? 'opacity-100' : 'opacity-0')}
+                        />
+                        <span className="min-w-0 flex-1 text-sm leading-snug">{doc.label}</span>
+                      </button>
+                    );
+                  })
+                : selectedExportDocument?.types.map((type) => {
+                    const selected = type === selectedExportType;
+
+                    return (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() => handleTypeChange(type)}
+                        className={cn(
+                          'border-border flex min-h-[52px] w-full items-center gap-3 border-b px-4 py-3 text-left uppercase last:border-b-0',
+                          selected && 'bg-accent text-accent-foreground'
+                        )}
+                      >
+                        <Check
+                          className={cn('size-4 shrink-0', selected ? 'opacity-100' : 'opacity-0')}
+                        />
+                        <span className="min-w-0 flex-1 text-sm leading-snug">{type}</span>
+                      </button>
+                    );
+                  })}
+            </div>
+          </ScrollArea>
+        </SheetContent>
+      </Sheet>
+    );
+  };
 
   const content = !hasExportDocuments ? (
     <EmptyState
@@ -108,32 +195,60 @@ const OrderExport = () => {
         <CardContent className="space-y-4">
           <div className="flex w-full items-center gap-2">
             <div className="min-w-0 flex-1">
-              <Select onValueChange={handleDocumentChange} value={selectedDocument}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {exportDocuments.map((doc) => (
-                    <SelectItem key={doc.name} value={doc.name}>
-                      {doc.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {isMobile ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setMobileSelectionView('document')}
+                  className="h-11 w-full justify-between gap-3 px-3 text-left font-normal"
+                >
+                  <span className="min-w-0 flex-1 truncate">
+                    {selectedExportDocument?.label || 'Seleccionar documento'}
+                  </span>
+                  <ChevronRight className="text-muted-foreground size-4 shrink-0" />
+                </Button>
+              ) : (
+                <Select onValueChange={handleDocumentChange} value={selectedDocument}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {exportDocuments.map((doc) => (
+                      <SelectItem key={doc.name} value={doc.name}>
+                        {doc.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
             <div className="w-[150px] shrink-0">
-              <Select value={selectedExportType} onValueChange={(value) => setSelectedType(value)}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent align="end">
-                  {selectedExportDocument?.types.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {isMobile ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setMobileSelectionView('type')}
+                  className="h-11 w-full justify-between gap-3 px-3 text-left font-normal"
+                >
+                  <span className="min-w-0 flex-1 truncate uppercase">
+                    {selectedExportType || 'Formato'}
+                  </span>
+                  <ChevronRight className="text-muted-foreground size-4 shrink-0" />
+                </Button>
+              ) : (
+                <Select value={selectedExportType} onValueChange={handleTypeChange}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent align="end">
+                    {selectedExportDocument?.types.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           </div>
           {!isMobile && (
@@ -163,6 +278,7 @@ const OrderExport = () => {
           <ScrollArea className="min-h-0 flex-1">
             <div className="py-2">{content}</div>
           </ScrollArea>
+          {renderMobileSelectionSheet()}
         </div>
       ) : (
         <Card className="flex min-h-0 flex-1 flex-col">

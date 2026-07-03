@@ -43,6 +43,7 @@ interface OrderContentProps {
   onClose?: () => void;
   readOnly?: boolean;
   canViewCostData?: boolean;
+  isMobileOverride?: boolean;
 }
 
 const OrderContent = ({
@@ -50,8 +51,11 @@ const OrderContent = ({
   onClose,
   readOnly = false,
   canViewCostData = true,
+  isMobileOverride,
 }: OrderContentProps) => {
   const { isMobile, mounted } = useIsMobileSafe();
+  const resolvedIsMobile = isMobileOverride ?? isMobile;
+  const mobileResolved = isMobileOverride !== undefined || mounted;
   const {
     order,
     loading,
@@ -68,17 +72,34 @@ const OrderContent = ({
   const [editSheetOpen, setEditSheetOpen] = useState(false);
   const [pendingFinishedStatus, setPendingFinishedStatus] = useState<OrderStatus | null>(null);
 
-  useHideBottomNav(isMobile);
+  useHideBottomNav(resolvedIsMobile);
+
+  // La navegación mobile por secciones (activeSection) es independiente del
+  // activeTab de contexto que usan los Tabs de desktop — pero varias queries
+  // (coste analysis, líneas auxiliares) se activan con `enabled: activeTab === 'x'`.
+  // Sin esta sincronización, esas secciones nunca disparaban su carga automática en mobile.
+  const handleSelectSection = useCallback(
+    (sectionId: string) => {
+      setActiveSection(sectionId);
+      setActiveTab(sectionId);
+    },
+    [setActiveTab]
+  );
+
+  const handleBackToGrid = useCallback(() => {
+    setActiveSection(null);
+    setActiveTab('details');
+  }, [setActiveTab]);
 
   useBackButton(
     () => {
       if (activeSection !== null) {
-        setActiveSection(null);
+        handleBackToGrid();
       } else if (onClose) {
         onClose();
       }
     },
-    isMobile && (activeSection !== null || !!onClose)
+    resolvedIsMobile && (activeSection !== null || !!onClose)
   );
 
   useEffect(() => {
@@ -196,8 +217,10 @@ const OrderContent = ({
     exportDocument('order-sheet', 'pdf', 'Hoja de pedido');
   }, [exportDocument]);
 
+  if (!mobileResolved) return null;
+
   if (loading) {
-    return isMobile ? <OrderMobileSkeleton /> : <OrderDesktopSkeleton />;
+    return resolvedIsMobile ? <OrderMobileSkeleton /> : <OrderDesktopSkeleton />;
   }
 
   if (!order) {
@@ -222,8 +245,6 @@ const OrderContent = ({
       />
     );
   }
-
-  if (!mounted) return null;
 
   return (
     <div className="relative flex h-full w-full flex-col">
@@ -278,7 +299,7 @@ const OrderContent = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      {isMobile ? (
+      {resolvedIsMobile ? (
         activeSection === null ? (
           <>
             <OrderMobileOverview
@@ -288,7 +309,7 @@ const OrderContent = ({
               onEdit={() => setEditSheetOpen(true)}
               onStatusChange={handleStatusChange}
               onTemperatureChange={handleTemperatureChange}
-              onSelectSection={setActiveSection}
+              onSelectSection={handleSelectSection}
               onPrint={handleOnClickPrint}
               readOnly={readOnly}
               blockedTabIds={blockedTabIds}
@@ -307,7 +328,7 @@ const OrderContent = ({
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setActiveSection(null)}
+                  onClick={handleBackToGrid}
                   className="hover:bg-muted absolute left-4 h-12 w-12 rounded-full"
                   aria-label="Volver"
                 >
@@ -590,6 +611,7 @@ interface OrderProps {
   onClose?: () => void;
   readOnly?: boolean;
   canViewCostData?: boolean;
+  isMobileOverride?: boolean;
 }
 
 const Order = ({
@@ -599,6 +621,7 @@ const Order = ({
   onClose,
   readOnly = false,
   canViewCostData = true,
+  isMobileOverride,
 }: OrderProps) => {
   return (
     <OrderProvider orderId={orderId} onChange={onChange} canViewCostData={canViewCostData}>
@@ -607,6 +630,7 @@ const Order = ({
         onClose={onClose}
         readOnly={readOnly}
         canViewCostData={canViewCostData}
+        isMobileOverride={isMobileOverride}
       />
     </OrderProvider>
   );

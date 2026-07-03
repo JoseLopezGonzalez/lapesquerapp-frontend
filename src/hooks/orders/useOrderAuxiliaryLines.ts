@@ -8,7 +8,7 @@ import {
   updateOrderAuxiliaryLine,
 } from '@/services/orderService';
 import type { Order, AuxiliaryOrderLine, AuxiliaryOrderLinePayload } from '@/services/orderService';
-import { orderKeys } from '@/lib/routes/queryKeys';
+import { orderKeys, orderCostAnalysisKeys } from '@/lib/routes/queryKeys';
 import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 
 export interface OrderSelectOption {
@@ -38,15 +38,24 @@ export function useOrderAuxiliaryLines({
   const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
   const orderId = order?.id;
   const orderDetailKey = useMemo(() => orderKeys.detail(tenantId, orderId), [tenantId, orderId]);
+  const costAnalysisKey = useMemo(
+    () => orderCostAnalysisKeys.detail(tenantId, orderId),
+    [tenantId, orderId]
+  );
 
   const auxiliaryLines = useMemo(
     () => (order?.auxiliaryLines ? [...order.auxiliaryLines] : []),
     [order?.auxiliaryLines]
   );
 
+  // Las líneas auxiliares aportan al importe/margen del pedido — invalidar también
+  // el análisis de costes para que se recalcule solo, sin depender de un botón manual.
   const invalidateOrderDetail = useCallback(() => {
-    return queryClient.invalidateQueries({ queryKey: orderDetailKey });
-  }, [queryClient, orderDetailKey]);
+    return Promise.all([
+      queryClient.invalidateQueries({ queryKey: orderDetailKey }),
+      queryClient.invalidateQueries({ queryKey: costAnalysisKey }),
+    ]);
+  }, [queryClient, orderDetailKey, costAnalysisKey]);
 
   const { mutateAsync: updateLine } = useMutation({
     mutationFn: ({

@@ -26,6 +26,10 @@ export default function OrdersManagerLayout({
   onToggleViewMode,
 }: OrdersManagerLayoutProps) {
   if (loading) {
+    if (isMobile && hasDetail) {
+      return <div className="flex h-full min-h-0 flex-col overflow-hidden">{detailContent}</div>;
+    }
+
     return (
       <div className="flex h-full flex-col">
         {isMobile ? (
