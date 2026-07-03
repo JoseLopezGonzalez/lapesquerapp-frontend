@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   deletePallet,
   linkPalletToOrder,
@@ -10,6 +11,8 @@ import {
 } from '@/services/palletService';
 import { notify } from '@/lib/notifications';
 import type { Order } from '@/services/orderService';
+import { orderKeys } from '@/lib/routes/queryKeys';
+import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 
 function extractErrorMessage(error: unknown, fallback: string): string {
   if (error && typeof error === 'object') {
@@ -31,7 +34,6 @@ function extractErrorMessage(error: unknown, fallback: string): string {
 interface UseOrderPalletsParams {
   order: Order | null;
   accessToken: string | null | undefined;
-  onOrderUpdate: (updatedOrder: Order) => void;
   reload: () => Promise<Order | null>;
   onChange?: (order: Order) => void;
 }
@@ -48,10 +50,51 @@ export interface UseOrderPalletsResult {
 export function useOrderPallets({
   order,
   accessToken,
-  onOrderUpdate,
   reload,
   onChange,
 }: UseOrderPalletsParams): UseOrderPalletsResult {
+  const queryClient = useQueryClient();
+  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
+  const orderId = order?.id;
+  const orderDetailKey = useMemo(() => orderKeys.detail(tenantId, orderId), [tenantId, orderId]);
+
+  const invalidateOrderDetail = useCallback(() => {
+    return queryClient.invalidateQueries({ queryKey: orderDetailKey });
+  }, [queryClient, orderDetailKey]);
+
+  const { mutateAsync: deletePalletMutation } = useMutation({
+    mutationFn: (palletId: number | string) => deletePallet(palletId, accessToken ?? ''),
+    onSuccess: invalidateOrderDetail,
+  });
+
+  const { mutateAsync: unlinkPalletMutation } = useMutation({
+    mutationFn: (palletId: number | string) => unlinkPalletFromOrder(palletId, accessToken ?? ''),
+    onSuccess: invalidateOrderDetail,
+  });
+
+  const { mutateAsync: linkPalletsMutation } = useMutation({
+    mutationFn: ({
+      palletIds,
+      orderId: targetOrderId,
+    }: {
+      palletIds: (number | string)[];
+      orderId: number | string;
+    }) =>
+      palletIds.length === 1
+        ? linkPalletToOrder(palletIds[0], targetOrderId, accessToken ?? '')
+        : linkPalletsToOrders(
+            palletIds.map((id) => ({ id, orderId: targetOrderId })),
+            accessToken ?? ''
+          ),
+    onSuccess: invalidateOrderDetail,
+  });
+
+  const { mutateAsync: unlinkAllPalletsMutation } = useMutation({
+    mutationFn: (palletIds: (number | string)[]) =>
+      unlinkPalletsFromOrders(palletIds, accessToken ?? ''),
+    onSuccess: invalidateOrderDetail,
+  });
+
   const onEditingPallet = useCallback(
     async (updatedPallet: Record<string, unknown>) => {
       if (!order) return;
@@ -59,11 +102,6 @@ export function useOrderPallets({
         notify.error({ title: 'El pallet no está vinculado a este pedido' });
         return;
       }
-      const pallets = order.pallets as Array<Record<string, unknown>>;
-      onOrderUpdate({
-        ...order,
-        pallets: pallets.map((p) => (p.id == updatedPallet.id ? updatedPallet : p)),
-      } as Order);
 
       try {
         const reloadedOrder = await reload();
@@ -72,7 +110,7 @@ export function useOrderPallets({
         notify.error({ title: extractErrorMessage(error, 'Error al recargar el pedido') });
       }
     },
-    [order, onOrderUpdate, reload, onChange]
+    [order, reload, onChange]
   );
 
   const onCreatingPallet = useCallback(
@@ -82,10 +120,6 @@ export function useOrderPallets({
         notify.error({ title: 'El pallet no está vinculado a este pedido' });
         return;
       }
-      onOrderUpdate({
-        ...order,
-        pallets: [...(order.pallets as unknown[]), newPallet],
-      } as Order);
 
       try {
         const reloadedOrder = await reload();
@@ -97,16 +131,13 @@ export function useOrderPallets({
         notify.error({ title: extractErrorMessage(error, 'Error al recargar el pedido') });
       }
     },
-    [order, onOrderUpdate, reload, onChange]
+    [order, reload, onChange]
   );
 
   const onDeletePallet = useCallback(
     async (palletId: number | string) => {
       try {
-        await deletePallet(palletId, accessToken ?? '');
-        if (!order) return;
-        const pallets = order.pallets as Array<{ id: number | string }>;
-        onOrderUpdate({ ...order, pallets: pallets.filter((p) => p.id !== palletId) } as Order);
+        await deletePalletMutation(palletId);
 
         const reloadedOrder = await reload();
         if (reloadedOrder) onChange?.(reloadedOrder);
@@ -117,16 +148,13 @@ export function useOrderPallets({
         throw error;
       }
     },
-    [order, accessToken, onOrderUpdate, reload, onChange]
+    [deletePalletMutation, reload, onChange]
   );
 
   const onUnlinkPallet = useCallback(
     async (palletId: number | string) => {
       try {
-        await unlinkPalletFromOrder(palletId, accessToken ?? '');
-        if (!order) return;
-        const pallets = order.pallets as Array<{ id: number | string }>;
-        onOrderUpdate({ ...order, pallets: pallets.filter((p) => p.id !== palletId) } as Order);
+        await unlinkPalletMutation(palletId);
 
         const reloadedOrder = await reload();
         if (reloadedOrder) onChange?.(reloadedOrder);
@@ -137,26 +165,19 @@ export function useOrderPallets({
         throw error;
       }
     },
-    [order, accessToken, onOrderUpdate, reload, onChange]
+    [unlinkPalletMutation, reload, onChange]
   );
 
   const onLinkPallets = useCallback(
     async (palletIds: (number | string)[]) => {
-      if (!order?.id) {
+      const currentOrderId = order?.id;
+      if (!currentOrderId) {
         notify.error({ title: 'No se puede vincular palets: el pedido no tiene ID' });
         return;
       }
 
       try {
-        let result: unknown;
-        if (palletIds.length === 1) {
-          result = await linkPalletToOrder(palletIds[0], order.id, accessToken ?? '');
-        } else {
-          result = await linkPalletsToOrders(
-            palletIds.map((id) => ({ id, orderId: order.id })),
-            accessToken ?? ''
-          );
-        }
+        const result = await linkPalletsMutation({ palletIds, orderId: currentOrderId });
 
         const updatedOrder = await reload();
         onChange?.(updatedOrder as Order);
@@ -201,7 +222,7 @@ export function useOrderPallets({
         throw error;
       }
     },
-    [order, accessToken, reload, onChange]
+    [order?.id, linkPalletsMutation, reload, onChange]
   );
 
   const onUnlinkAllPallets = useCallback(
@@ -212,7 +233,7 @@ export function useOrderPallets({
       }
 
       try {
-        const result = await unlinkPalletsFromOrders(palletIds, accessToken ?? '');
+        const result = await unlinkAllPalletsMutation(palletIds);
         const r = result as Record<string, unknown>;
 
         const unlinked = r.unlinked as number;
@@ -247,13 +268,6 @@ export function useOrderPallets({
           });
         }
 
-        if (!order) return;
-        const pallets = order.pallets as Array<{ id: number | string }>;
-        onOrderUpdate({
-          ...order,
-          pallets: pallets.filter((p) => !palletIds.includes(p.id)),
-        } as Order);
-
         const reloadedOrder = await reload();
         if (reloadedOrder) onChange?.(reloadedOrder);
       } catch (error) {
@@ -261,7 +275,7 @@ export function useOrderPallets({
         throw error;
       }
     },
-    [order, accessToken, onOrderUpdate, reload, onChange]
+    [unlinkAllPalletsMutation, reload, onChange]
   );
 
   return {

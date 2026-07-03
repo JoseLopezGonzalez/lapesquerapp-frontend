@@ -267,7 +267,6 @@ export function useOrder(
   const palletHandlers = useOrderPallets({
     order,
     accessToken,
-    onOrderUpdate: updateOrderCache,
     reload,
     onChange,
   });
