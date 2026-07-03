@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type MouseEvent } from 'react';
 import Image from 'next/image';
 import {
   File,
@@ -18,12 +18,19 @@ import {
   ChevronLeft,
   ChevronRight,
   ExternalLink,
+  MoreVertical,
 } from 'lucide-react';
 import { useMe } from '@/hooks/useMe';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import {
@@ -50,6 +57,7 @@ import { formatDateHour } from '@/helpers/formats/dates/formatDates';
 import { cn } from '@/lib/utils';
 import { OrderAttachmentUploadDialog } from './OrderAttachmentUploadDialog';
 import { OrderAttachmentEditNotesDialog } from './OrderAttachmentEditNotesDialog';
+import { SectionHeaderAction } from '../components/SectionHeaderAction';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -87,11 +95,7 @@ function getDocumentColors(mimeType: string): { bg: string; icon: string } {
 
 // ─── Hooks de blob URL ───────────────────────────────────────────────────────
 
-function useAttachmentThumbnail(
-  orderId: number | string,
-  attachmentId: number,
-  enabled = true
-) {
+function useAttachmentThumbnail(orderId: number | string, attachmentId: number, enabled = true) {
   const [src, setSrc] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -100,19 +104,24 @@ function useAttachmentThumbnail(
     let cancelled = false;
     setLoading(true);
     getThumbnailCached(orderId, attachmentId)
-      .then((url) => { if (!cancelled) { setSrc(url); setLoading(false); } })
-      .catch(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
+      .then((url) => {
+        if (!cancelled) {
+          setSrc(url);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [orderId, attachmentId, enabled]);
 
   return { src, loading };
 }
 
-function useAttachmentBlob(
-  orderId: number | string,
-  attachmentId: number,
-  enabled = false
-) {
+function useAttachmentBlob(orderId: number | string, attachmentId: number, enabled = false) {
   const [src, setSrc] = useState<string | null>(null);
   // Empezar en loading=true cuando enabled=true para evitar el flash de "error"
   const [loading, setLoading] = useState(enabled);
@@ -123,9 +132,18 @@ function useAttachmentBlob(
     setSrc(null);
     setLoading(true);
     getBlobUrlCached(orderId, attachmentId)
-      .then((url) => { if (!cancelled) { setSrc(url); setLoading(false); } })
-      .catch(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
+      .then((url) => {
+        if (!cancelled) {
+          setSrc(url);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [orderId, attachmentId, enabled]);
 
   return { src, loading };
@@ -139,9 +157,21 @@ function useDocumentThumbnail(orderId: number | string, attachmentId: number) {
     let cancelled = false;
     setLoading(true);
     getDocumentThumbnailCached(orderId, attachmentId)
-      .then((url) => { if (!cancelled) { setSrc(url); setLoading(false); } })
-      .catch(() => { if (!cancelled) { setSrc(null); setLoading(false); } });
-    return () => { cancelled = true; };
+      .then((url) => {
+        if (!cancelled) {
+          setSrc(url);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setSrc(null);
+          setLoading(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [orderId, attachmentId]);
 
   return { src, loading };
@@ -158,7 +188,7 @@ function ImageCardFace({
 }) {
   const { src, loading } = useAttachmentThumbnail(orderId, attachment.id);
   return (
-    <div className="relative aspect-square w-full overflow-hidden bg-muted">
+    <div className="bg-muted relative aspect-square w-full overflow-hidden">
       {loading ? (
         <Skeleton className="h-full w-full rounded-none" />
       ) : src ? (
@@ -172,7 +202,7 @@ function ImageCardFace({
         />
       ) : (
         <div className="flex h-full items-center justify-center">
-          <ImageOff className="h-5 w-5 text-muted-foreground/40" />
+          <ImageOff className="text-muted-foreground/40 h-5 w-5" />
         </div>
       )}
     </div>
@@ -202,7 +232,7 @@ function DocumentCardFace({
 
   if (src && !imgError) {
     return (
-      <div className="relative aspect-square w-full overflow-hidden bg-muted">
+      <div className="bg-muted relative aspect-square w-full overflow-hidden">
         <Image
           src={src}
           alt={attachment.originalName}
@@ -219,7 +249,7 @@ function DocumentCardFace({
   return (
     <div className={cn('flex aspect-square w-full flex-col items-center justify-center gap-1', bg)}>
       <Icon className={cn('h-7 w-7', icon)} strokeWidth={1.5} />
-      <span className={cn('rounded px-1 py-0.5 text-xs font-bold uppercase tracking-wider', icon)}>
+      <span className={cn('rounded px-1 py-0.5 text-xs font-bold tracking-wider uppercase', icon)}>
         {ext}
       </span>
     </div>
@@ -233,6 +263,7 @@ interface AttachmentCardProps {
   attachment: OrderAttachment;
   canDelete: boolean;
   isDownloading: boolean;
+  isMobile: boolean;
   onDownload: () => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -244,6 +275,7 @@ function AttachmentCard({
   attachment,
   canDelete,
   isDownloading,
+  isMobile,
   onDownload,
   onEdit,
   onDelete,
@@ -252,7 +284,7 @@ function AttachmentCard({
   const isImage = attachment.collection === 'order_image';
 
   return (
-    <div className="group relative overflow-hidden rounded-lg border bg-card shadow-sm transition-shadow hover:shadow-md">
+    <div className="group bg-card relative overflow-hidden rounded-lg border shadow-sm transition-shadow hover:shadow-md">
       <div className="relative cursor-pointer" onClick={onPreviewClick}>
         {isImage ? (
           <ImageCardFace orderId={orderId} attachment={attachment} />
@@ -260,54 +292,106 @@ function AttachmentCard({
           <DocumentCardFace orderId={orderId} attachment={attachment} />
         )}
 
-        {/* Overlay de acciones en hover */}
-        <div className="absolute inset-0 flex items-end justify-end gap-0.5 bg-black/0 p-1 opacity-0 transition-all group-hover:bg-black/20 group-hover:opacity-100">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-xs"
-            className="bg-black/60 text-white backdrop-blur-sm hover:bg-black/80 hover:text-white"
-            onClick={(e) => { e.stopPropagation(); onDownload(); }}
-            title="Descargar"
-          >
-            {isDownloading ? (
-              <Loader2 className="h-3 w-3 animate-spin" />
-            ) : (
-              <Download className="h-3 w-3" />
-            )}
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-xs"
-            className="bg-black/60 text-white backdrop-blur-sm hover:bg-black/80 hover:text-white"
-            onClick={(e) => { e.stopPropagation(); onEdit(); }}
-            title="Editar notas"
-          >
-            <Pencil className="h-3 w-3" />
-          </Button>
-          {canDelete && (
+        {isMobile ? (
+          // Mobile: sin hover, un único menú siempre visible con área de toque >= 44px
+          <div className="absolute top-1 right-1">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-11 w-11 rounded-full bg-black/50 text-white backdrop-blur-sm hover:bg-black/70 hover:text-white"
+                  onClick={(e) => e.stopPropagation()}
+                  aria-label="Más acciones del adjunto"
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" onClick={(e: MouseEvent) => e.stopPropagation()}>
+                <DropdownMenuItem onClick={() => onDownload()} disabled={isDownloading}>
+                  {isDownloading ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="mr-2 h-4 w-4" />
+                  )}
+                  Descargar
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onEdit()}>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Editar notas
+                </DropdownMenuItem>
+                {canDelete && (
+                  <DropdownMenuItem
+                    onClick={() => onDelete()}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Eliminar
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        ) : (
+          /* Overlay de acciones en hover — desktop */
+          <div className="absolute inset-0 flex items-end justify-end gap-0.5 bg-black/0 p-1 opacity-0 transition-all group-hover:bg-black/20 group-hover:opacity-100">
             <Button
               type="button"
               variant="ghost"
               size="icon-xs"
-              className="bg-red-600/80 text-white backdrop-blur-sm hover:bg-red-700 hover:text-white"
-              onClick={(e) => { e.stopPropagation(); onDelete(); }}
-              title="Eliminar"
+              className="bg-black/60 text-white backdrop-blur-sm hover:bg-black/80 hover:text-white"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDownload();
+              }}
+              title="Descargar"
             >
-              <Trash2 className="h-3 w-3" />
+              {isDownloading ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <Download className="h-3 w-3" />
+              )}
             </Button>
-          )}
-        </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              className="bg-black/60 text-white backdrop-blur-sm hover:bg-black/80 hover:text-white"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit();
+              }}
+              title="Editar notas"
+            >
+              <Pencil className="h-3 w-3" />
+            </Button>
+            {canDelete && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-xs"
+                className="bg-red-600/80 text-white backdrop-blur-sm hover:bg-red-700 hover:text-white"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete();
+                }}
+                title="Eliminar"
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Metadata */}
       <div className="px-2 py-1.5">
-        <p className="truncate text-xs font-medium text-foreground" title={attachment.originalName}>
+        <p className="text-foreground truncate text-xs font-medium" title={attachment.originalName}>
           {attachment.originalName}
         </p>
         {attachment.notes && (
-          <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground italic">
+          <p className="text-muted-foreground mt-0.5 line-clamp-1 text-xs italic">
             {attachment.notes}
           </p>
         )}
@@ -316,11 +400,37 @@ function AttachmentCard({
   );
 }
 
+// ─── Tile "Adjuntar" en el grid (mobile) ──────────────────────────────────────
+
+function AddAttachmentTile({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="border-border bg-muted/30 text-muted-foreground active:bg-muted/50 flex w-full flex-col overflow-hidden rounded-lg border border-dashed transition-colors"
+    >
+      {/* Mismo alto que AttachmentCard: bloque aspect-square + franja de metadata debajo */}
+      <div className="flex aspect-square w-full flex-col items-center justify-center gap-1.5">
+        <Plus className="h-6 w-6" />
+        <span className="text-xs font-medium">Adjuntar</span>
+      </div>
+      <div className="px-2 py-1.5">
+        <p className="invisible text-xs font-medium">Adjuntar</p>
+      </div>
+    </button>
+  );
+}
+
 // ─── Skeleton grid ────────────────────────────────────────────────────────────
 
-function AttachmentGridSkeleton() {
+function AttachmentGridSkeleton({ isMobile = false }: { isMobile?: boolean }) {
   return (
-    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 xl:grid-cols-5">
+    <div
+      className={cn(
+        'grid gap-2',
+        isMobile ? 'grid-cols-2' : 'grid-cols-3 sm:grid-cols-4 xl:grid-cols-5'
+      )}
+    >
       {Array.from({ length: 8 }).map((_, i) => (
         <div key={i} className="space-y-1.5">
           <Skeleton className="aspect-square w-full rounded-lg" />
@@ -358,8 +468,7 @@ function AttachmentViewer({
   const isImage = attachment.collection === 'order_image';
   // Comprueba MIME y también extensión por si el backend almacena application/octet-stream
   const isPdf =
-    attachment.mimeType === 'application/pdf' ||
-    attachment.extension.toLowerCase() === 'pdf';
+    attachment.mimeType === 'application/pdf' || attachment.extension.toLowerCase() === 'pdf';
   const needsBlob = isImage || isPdf;
 
   const { src, loading } = useAttachmentBlob(orderId, attachment.id, needsBlob);
@@ -395,7 +504,9 @@ function AttachmentViewer({
           </p>
           <div className="flex shrink-0 items-center gap-1.5">
             {attachments.length > 1 && (
-              <span className="text-xs text-muted-foreground">{index + 1} / {attachments.length}</span>
+              <span className="text-muted-foreground text-xs">
+                {index + 1} / {attachments.length}
+              </span>
             )}
             {isPdf && src && (
               <Button
@@ -429,7 +540,7 @@ function AttachmentViewer({
                 <Trash2 className="h-4 w-4" />
               </Button>
             )}
-            <div className="mx-0.5 h-4 w-px bg-border" />
+            <div className="bg-border mx-0.5 h-4 w-px" />
             <Button type="button" variant="ghost" size="icon-sm" onClick={onClose}>
               <X className="h-4 w-4" />
             </Button>
@@ -465,10 +576,10 @@ function AttachmentViewer({
 
           {/* PDF — visor nativo del navegador via <object> */}
           {isPdf && (
-            <div className="absolute inset-0 bg-muted">
+            <div className="bg-muted absolute inset-0">
               {loading && (
-                <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/40 backdrop-blur-sm">
-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                <div className="bg-background/40 absolute inset-0 z-10 flex items-center justify-center backdrop-blur-sm">
+                  <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
                 </div>
               )}
               {!loading && src && (
@@ -478,7 +589,7 @@ function AttachmentViewer({
                   className="absolute inset-0 h-full w-full"
                 >
                   {/* Fallback si el navegador no puede mostrar el PDF inline */}
-                  <div className="flex h-full flex-col items-center justify-center gap-3 text-muted-foreground">
+                  <div className="text-muted-foreground flex h-full flex-col items-center justify-center gap-3">
                     <FileText className="h-10 w-10" />
                     <p className="text-sm">Este navegador no puede mostrar PDFs inline.</p>
                     <Button variant="outline" size="sm" onClick={openInNewTab}>
@@ -492,7 +603,7 @@ function AttachmentViewer({
                 </object>
               )}
               {!loading && !src && (
-                <div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
+                <div className="text-muted-foreground flex h-full flex-col items-center justify-center gap-2">
                   <FileText className="h-10 w-10" />
                   <p className="text-sm">No se pudo cargar el documento</p>
                   <Button variant="outline" size="sm" onClick={() => onDownload(attachment)}>
@@ -507,7 +618,10 @@ function AttachmentViewer({
           {/* Word / Excel / otros — sin vista previa */}
           {!isImage && !isPdf && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/80 text-white/70">
-              {(() => { const Icon = getFileIcon(attachment.mimeType); return <Icon className="h-14 w-14" strokeWidth={1} />; })()}
+              {(() => {
+                const Icon = getFileIcon(attachment.mimeType);
+                return <Icon className="h-14 w-14" strokeWidth={1} />;
+              })()}
               <p className="text-sm">Vista previa no disponible para este formato</p>
               <Button variant="secondary" size="sm" onClick={() => onDownload(attachment)}>
                 <Download className="mr-1.5 h-4 w-4" />
@@ -522,7 +636,7 @@ function AttachmentViewer({
               type="button"
               variant="ghost"
               size="icon-lg"
-              className="absolute left-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/50 text-white backdrop-blur-sm hover:bg-black/70 hover:text-white"
+              className="absolute top-1/2 left-2 z-10 -translate-y-1/2 rounded-full bg-black/50 text-white backdrop-blur-sm hover:bg-black/70 hover:text-white"
               onClick={() => setIndex((i) => i - 1)}
               title="Adjunto anterior"
             >
@@ -534,7 +648,7 @@ function AttachmentViewer({
               type="button"
               variant="ghost"
               size="icon-lg"
-              className="absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/50 text-white backdrop-blur-sm hover:bg-black/70 hover:text-white"
+              className="absolute top-1/2 right-2 z-10 -translate-y-1/2 rounded-full bg-black/50 text-white backdrop-blur-sm hover:bg-black/70 hover:text-white"
               onClick={() => setIndex((i) => i + 1)}
               title="Adjunto siguiente"
             >
@@ -544,9 +658,12 @@ function AttachmentViewer({
         </div>
 
         {/* Footer */}
-        <div className="border-t px-4 py-2 text-xs text-muted-foreground">
-          {formatBytes(attachment.size)} · {attachment.uploadedBy?.name} · {formatDateHour(attachment.createdAt)}
-          {attachment.notes && <span className="ml-2 italic">&ldquo;{attachment.notes}&rdquo;</span>}
+        <div className="text-muted-foreground border-t px-4 py-2 text-xs">
+          {formatBytes(attachment.size)} · {attachment.uploadedBy?.name} ·{' '}
+          {formatDateHour(attachment.createdAt)}
+          {attachment.notes && (
+            <span className="ml-2 italic">&ldquo;{attachment.notes}&rdquo;</span>
+          )}
         </div>
       </DialogContent>
     </Dialog>
@@ -614,9 +731,7 @@ const OrderAttachments = () => {
   };
 
   const previewIndex =
-    previewAttachmentId !== null
-      ? attachments.findIndex((a) => a.id === previewAttachmentId)
-      : -1;
+    previewAttachmentId !== null ? attachments.findIndex((a) => a.id === previewAttachmentId) : -1;
 
   const actions = (
     <div className="flex items-center gap-1.5">
@@ -640,7 +755,7 @@ const OrderAttachments = () => {
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 text-destructive hover:text-destructive"
+              className="text-destructive hover:text-destructive h-7 w-7"
               onClick={() => setDeleteAllOpen(true)}
               title="Eliminar todos"
               disabled={deleteAllMutation.isPending}
@@ -648,7 +763,7 @@ const OrderAttachments = () => {
               <Trash2 className="h-3.5 w-3.5" />
             </Button>
           )}
-          <div className="mx-0.5 h-4 w-px bg-border" />
+          <div className="bg-border mx-0.5 h-4 w-px" />
         </>
       )}
       <Button size="sm" onClick={() => setUploadOpen(true)}>
@@ -658,8 +773,45 @@ const OrderAttachments = () => {
     </div>
   );
 
+  // Mobile: menú compacto para acciones masivas — la acción primaria (adjuntar)
+  // vive ahora como tile dentro del propio grid, no como botón suelto arriba.
+  const mobileBulkActionsMenu = (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-11 w-11"
+          aria-label="Más acciones sobre los adjuntos"
+        >
+          <MoreVertical className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={handleDownloadAll} disabled={isDownloadingAll}>
+          {isDownloadingAll ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Download className="mr-2 h-4 w-4" />
+          )}
+          Descargar todos
+        </DropdownMenuItem>
+        {canDelete && (
+          <DropdownMenuItem
+            onClick={() => setDeleteAllOpen(true)}
+            disabled={deleteAllMutation.isPending}
+            className="text-destructive focus:text-destructive"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Eliminar todos
+          </DropdownMenuItem>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
   const gridContent = isLoading ? (
-    <AttachmentGridSkeleton />
+    <AttachmentGridSkeleton isMobile={isMobile} />
   ) : error ? (
     <p className="text-destructive text-sm">{error}</p>
   ) : attachments.length === 0 ? (
@@ -670,7 +822,12 @@ const OrderAttachments = () => {
       button={{ name: 'Adjuntar archivo', onClick: () => setUploadOpen(true) }}
     />
   ) : (
-    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 xl:grid-cols-5">
+    <div
+      className={cn(
+        'grid gap-2',
+        isMobile ? 'grid-cols-2' : 'grid-cols-3 sm:grid-cols-4 xl:grid-cols-5'
+      )}
+    >
       {attachments.map((att) => (
         <AttachmentCard
           key={att.id}
@@ -678,12 +835,14 @@ const OrderAttachments = () => {
           attachment={att}
           canDelete={canDelete}
           isDownloading={downloadingId === att.id}
+          isMobile={isMobile}
           onDownload={() => handleDownload(att)}
           onEdit={() => setEditTarget(att)}
           onDelete={() => setDeleteTargetId(att.id)}
           onPreviewClick={() => setPreviewAttachmentId(att.id)}
         />
       ))}
+      {isMobile && <AddAttachmentTile onClick={() => setUploadOpen(true)} />}
     </div>
   );
 
@@ -699,16 +858,9 @@ const OrderAttachments = () => {
         <div className="flex min-h-0 flex-1 flex-col">
           <ScrollArea className="min-h-0 flex-1">
             <div className="space-y-4 py-6">
-              <div className="flex items-center justify-between">
-                <p className="text-muted-foreground text-sm">
-                  {isLoading ? (
-                    <Skeleton className="h-4 w-24" />
-                  ) : (
-                    `${total} ${total === 1 ? 'adjunto' : 'adjuntos'}`
-                  )}
-                </p>
-                {actions}
-              </div>
+              {attachments.length > 0 && !isLoading && (
+                <SectionHeaderAction>{mobileBulkActionsMenu}</SectionHeaderAction>
+              )}
               {gridContent}
             </div>
           </ScrollArea>
@@ -719,9 +871,7 @@ const OrderAttachments = () => {
             <div className="flex items-start justify-between gap-3">
               <div>
                 <CardTitle className="text-lg font-medium">Adjuntos</CardTitle>
-                <CardDescription>
-                  Archivos y documentos adjuntos a este pedido.
-                </CardDescription>
+                <CardDescription>Archivos y documentos adjuntos a este pedido.</CardDescription>
               </div>
               {actions}
             </div>
@@ -777,8 +927,8 @@ const OrderAttachments = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>¿Eliminar todos los adjuntos?</AlertDialogTitle>
             <AlertDialogDescription>
-              Se eliminarán {total} {total === 1 ? 'adjunto' : 'adjuntos'} de forma permanente.
-              Esta acción no se puede deshacer.
+              Se eliminarán {total} {total === 1 ? 'adjunto' : 'adjuntos'} de forma permanente. Esta
+              acción no se puede deshacer.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

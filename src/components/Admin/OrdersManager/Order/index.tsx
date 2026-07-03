@@ -31,6 +31,7 @@ import OrderHeaderDesktop from './components/OrderHeaderDesktop';
 import OrderTabsDesktop from './components/OrderTabsDesktop';
 import { notify } from '@/lib/notifications';
 import OrderSectionContentMobile from './components/OrderSectionContentMobile';
+import { SECTION_HEADER_ACTION_SLOT_ID } from './components/SectionHeaderAction';
 import {
   getBlockedOrderSectionsForReadOnly,
   isOrderPalletsReadOnly,
@@ -337,7 +338,10 @@ const OrderContent = ({
                 <h2 className="text-center text-xl font-normal dark:text-white">
                   {SECTIONS_CONFIG.find((s) => s.id === activeSection)?.title || 'Sección'}
                 </h2>
-                <div className="absolute right-4 h-12 w-12" />
+                <div
+                  id={SECTION_HEADER_ACTION_SLOT_ID}
+                  className="absolute right-4 flex h-12 w-12 items-center justify-center"
+                />
               </div>
             </div>
             <OrderSectionContentMobile
