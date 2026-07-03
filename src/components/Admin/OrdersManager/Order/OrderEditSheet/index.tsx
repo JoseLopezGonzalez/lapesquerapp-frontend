@@ -73,19 +73,18 @@ const OrderEditSheet = ({
   onOpenChange: controlledOnOpenChange,
 }: OrderEditSheetProps) => {
   const { order, updateOrderData } = useOrderContext();
-  const { formGroups, defaultValues, loading, loadingProgress } = useOrderFormConfig({
+  const { formGroups, defaultValues, loading } = useOrderFormConfig({
     orderData: order,
   });
-  void loadingProgress;
   const { isMobile, mounted } = useIsMobileSafe();
   const [internalOpen, setInternalOpen] = useState(false);
   const isControlled = controlledOpen !== undefined && typeof controlledOnOpenChange === 'function';
   const open = isControlled ? controlledOpen : internalOpen;
-  const setOpen = isControlled ? (controlledOnOpenChange as (open: boolean) => void) : setInternalOpen;
+  const setOpen = isControlled
+    ? (controlledOnOpenChange as (open: boolean) => void)
+    : setInternalOpen;
   const [saving, setSaving] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
-  const [initialValues, setInitialValues] = useState<typeof defaultValues | null>(null);
-  void initialValues;
 
   const {
     register,
@@ -100,10 +99,9 @@ const OrderEditSheet = ({
     mode: 'onChange',
   });
 
-  // Guardar valores iniciales cuando se abre el Sheet
+  // Resetear el formulario a los valores del pedido cuando se abre el Sheet
   useEffect(() => {
     if (open && defaultValues && !loading) {
-      setInitialValues(defaultValues);
       reset(defaultValues as unknown as OrderEditFormData);
     }
   }, [open, defaultValues, loading, reset]);
@@ -141,14 +139,10 @@ const OrderEditSheet = ({
         setSaving(false);
         setOpen(false);
         reset(defaultValues as unknown as OrderEditFormData);
-        setInitialValues(null);
       } catch (error) {
         const e = error as Record<string, unknown> | undefined;
         if (e?.status === 422 && (e?.data as Record<string, unknown> | undefined)?.errors) {
-          setErrorsFrom422(
-            setError,
-            (e.data as { errors: Record<string, string[]> }).errors
-          );
+          setErrorsFrom422(setError, (e.data as { errors: Record<string, string[]> }).errors);
         }
         setSaving(false);
       }
@@ -176,17 +170,19 @@ const OrderEditSheet = ({
     reset(defaultValues as unknown as OrderEditFormData);
     setOpen(false);
     setShowCancelDialog(false);
-    setInitialValues(null);
   }, [reset, defaultValues, setOpen]);
 
-  const onCloseSheet = () => {
+  const handleSheetOpenChange = (nextOpen: boolean) => {
+    if (nextOpen) {
+      setOpen(true);
+      return;
+    }
     if (isDirty) {
       setShowCancelDialog(true);
-    } else {
-      handleConfirmClose();
+      return;
     }
+    handleConfirmClose();
   };
-  void onCloseSheet;
 
   const handleCancelDialog = () => {
     setShowCancelDialog(false);
@@ -308,7 +304,7 @@ const OrderEditSheet = ({
   if (!mounted) return null;
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet open={open} onOpenChange={handleSheetOpenChange}>
       {!isControlled && (
         <SheetTrigger asChild>
           <Button

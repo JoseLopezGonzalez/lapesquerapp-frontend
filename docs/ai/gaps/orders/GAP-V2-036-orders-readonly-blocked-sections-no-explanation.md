@@ -6,7 +6,7 @@ category: ux-ui
 priority: P2
 risk: low
 size: S
-status: blocked
+status: rejected
 dependencies: []
 target_files:
   - src/components/Admin/OrdersManager/Order/components/OrderTabsDesktop.tsx
@@ -49,13 +49,13 @@ sin manera de saber si es un permiso, un bug, o un estado de carga.
 ## Objetivo
 
 Cuando una sección o acción no está disponible por permisos (no por no aplicabilidad de negocio),
-el usuario comercial debe poder entender *por qué* sin necesidad de preguntar a otra persona —
+el usuario comercial debe poder entender _por qué_ sin necesidad de preguntar a otra persona —
 siguiendo el mismo patrón ya usado en `useOrderDocuments.ts` para documentos restringidos.
 
 ## Contexto
 
 - Reglas de permisos ya confirmadas y correctas en GAP-V2-020/021 (ocultar coste/margen, ocultar
-  creación) — este GAP no cuestiona *qué* se bloquea, solo que el bloqueo sea comunicado.
+  creación) — este GAP no cuestiona _qué_ se bloquea, solo que el bloqueo sea comunicado.
 - `COMMERCIAL_IN_PROGRESS_BLOCKED_ORDER_SECTIONS` en `orderReadOnlyPermissions.ts` es la fuente
   única de verdad de qué se bloquea — cualquier cambio de UI debe consumir esa lista, no
   duplicarla.
@@ -108,13 +108,30 @@ de diseño de Jose (a diferencia de GAP-V2-056, donde sí existe un default
 seguro). Pasa a `ready` en cuanto Jose elija una de las 3 opciones (o proponga
 una distinta).
 
+## Decisión de Jose (2026-07-03) — rechazado
+
+El rol comercial no tiene expectativa de que estas secciones/acciones existan — no es una
+función que "antes tenía y ahora no ve" ni algo que descubra comparando con un compañero
+administrador en el flujo normal de trabajo. Avisar de que "hay más opciones que no puedes
+ver" no aporta valor y puede generar más preguntas/ruido que dejarlo como está. El
+comportamiento actual (ocultar sin mensaje) queda confirmado como correcto para este rol,
+sin necesidad de ningún tooltip, mensaje contextual ni toast.
+
+Documentado directamente en el código para que no se reabra como hallazgo en futuras
+auditorías: comentarios junto a `COMMERCIAL_IN_PROGRESS_BLOCKED_ORDER_SECTIONS` e
+`isOrderPalletsReadOnly` en `src/lib/orders/orderReadOnlyPermissions.ts` (fuente única de
+verdad de qué se bloquea), referenciando este GAP como `rejected`.
+
 ## Resultado
 
-{se rellena al terminar la implementación}
+No se implementa ninguna de las 3 opciones de UX propuestas. Único cambio: 2 comentarios
+añadidos en `src/lib/orders/orderReadOnlyPermissions.ts` documentando la decisión. Sin
+cambios funcionales — `npm run type-check` limpio.
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+No aplica — GAP rechazado por decisión explícita de producto (Jose), no requiere
+verificación técnica de `gap-auditor`.
 
 ## Links
 

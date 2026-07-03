@@ -6,7 +6,7 @@ category: code-quality
 priority: P1
 risk: low
 size: S
-status: ready
+status: done
 dependencies: []
 target_files:
   - src/components/Admin/OrdersManager/Order/OrderEditSheet/index.tsx
@@ -101,15 +101,48 @@ npm run lint
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+- Sustituido `onCloseSheet` (nunca invocado) por `handleSheetOpenChange(nextOpen: boolean)`,
+  conectado directamente a `<Sheet onOpenChange={handleSheetOpenChange}>`. Si `nextOpen` es
+  `false` e `isDirty`, muestra `showCancelDialog` y no cierra; si no hay cambios, delega en
+  `handleConfirmClose`. Si `nextOpen` es `true`, delega en `setOpen(true)`.
+- `initialValues`/`setInitialValues` eran código muerto genuino (solo se escribían, nunca se
+  leían — `isDirty` de react-hook-form ya cubre la detección de cambios vía `reset()`).
+  Eliminado el estado completo y sus 3 puntos de escritura.
+- `loadingProgress` (destructurado de `useOrderFormConfig`) tampoco se usaba en ningún render;
+  `loading` ya cubre el mismo caso binario. Eliminado de la destructuración en este archivo
+  (el hook en sí no se ha tocado — fuera de `target_files`).
+- Ya no queda ningún `void x;` de supresión de lint en el archivo.
 
 ## Resultado
 
-{se rellena al terminar la implementación}
+`npm run type-check` limpio. `eslint` sobre el archivo sin warnings/errores. Pendiente de
+verificación funcional manual (Escape/click fuera/swipe con cambios sin guardar) por
+`gap-auditor`.
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+### Veredicto: ✅ APROBADO (done)
+
+Verificado contra el diff real (`git diff` de `src/components/Admin/OrdersManager/Order/OrderEditSheet/index.tsx`):
+
+- `<Sheet open={open} onOpenChange={handleSheetOpenChange}>` (línea 308) reemplaza correctamente
+  `onOpenChange={setOpen}`. `handleSheetOpenChange` (líneas 176-186): si `nextOpen` es `true`
+  delega en `setOpen(true)`; si `nextOpen` es `false` y `isDirty`, hace `setShowCancelDialog(true)`
+  y retorna sin cerrar; si no hay cambios, delega en `handleConfirmClose()`. Cubre Escape, click
+  fuera y swipe (todos disparan `onOpenChange(false)` de Radix Dialog subyacente).
+- Sin cambios (`isDirty === false`) el cierre sigue siendo directo vía `handleConfirmClose`, sin
+  mostrar el diálogo — comportamiento previo preservado.
+- Ya no queda ningún `void x;` de supresión de lint: se eliminaron `void loadingProgress;` y
+  `void initialValues;` junto con el estado/destructuring que los originaba
+  (`initialValues`/`setInitialValues` era código muerto genuino — solo se escribía, nunca se leía;
+  `loadingProgress` no se usaba en ningún render). El `void onCloseSheet;` desapareció al
+  renombrar la función a `handleSheetOpenChange` y conectarla realmente al `Sheet`.
+- `npm run type-check` confirmado limpio en esta auditoría (ejecutado de nuevo sobre el estado
+  actual del working tree).
+
+Sin hallazgos bloqueantes. Verificación funcional manual (Escape/click fuera/swipe) queda
+pendiente para QA humano, pero el código conecta correctamente el guard — no hay ninguna ruta de
+`onOpenChange(false)` que la esquive.
 
 ## Links
 

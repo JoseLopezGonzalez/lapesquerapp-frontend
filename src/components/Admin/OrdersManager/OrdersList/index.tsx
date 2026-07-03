@@ -50,6 +50,7 @@ interface OrdersListProps {
   onToggleViewMode?: () => void;
   readOnly?: boolean;
   canCreateOrder?: boolean;
+  canExportListData?: boolean;
 }
 
 function getErrorDescription(error: unknown, fallback: string): string {
@@ -82,10 +83,12 @@ const OrdersList = ({
   onToggleViewMode,
   readOnly = false,
   canCreateOrder: canCreateOrderProp,
+  canExportListData: canExportListDataProp,
 }: OrdersListProps) => {
   const visibleCategories = visibleCategoriesProp ?? categories;
   const activeCount = totalActiveOrders ?? orders?.length ?? 0;
   const canCreateOrder = canCreateOrderProp ?? !readOnly;
+  const canExportListData = canExportListDataProp ?? !readOnly;
 
   const { isMobile, mounted } = useIsMobileSafe();
   const router = useRouter();
@@ -233,16 +236,18 @@ const OrdersList = ({
                   </TooltipContent>
                 </Tooltip>
               )}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" size="icon" onClick={exportDocument}>
-                    <Download className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Exportar productos planificados activos</p>
-                </TooltipContent>
-              </Tooltip>
+              {canExportListData && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" size="icon" onClick={exportDocument}>
+                      <Download className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Exportar productos planificados activos</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
             </div>
           </div>
         )}

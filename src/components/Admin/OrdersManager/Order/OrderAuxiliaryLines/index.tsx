@@ -46,6 +46,7 @@ import {
 import { Info } from 'lucide-react';
 import type { AuxiliaryOrderLine, AuxiliaryOrderLinePayload } from '@/services/orderService';
 import type { AuxiliaryProductOption } from '@/types/catalog';
+import { parseTaxRate } from '@/hooks/orders/useOrderPlannedDetails';
 
 interface OrderSelectOption {
   value: number | string;
@@ -61,16 +62,24 @@ interface AuxiliaryLineRow {
   quantity: number | string;
   unit: string;
   unitPrice: number | string;
-  tax: { id: number | string | null; rate: number };
+  tax: { id: number | string | null; rate: number | null };
 }
 
-function parseTaxRate(value: unknown): number {
-  if (value == null || value === '') return 0;
-  if (typeof value === 'number') return Number.isNaN(value) ? 0 : value;
-  const normalized = String(value).replace(',', '.');
-  const match = normalized.match(/-?\d+(\.\d+)?/);
-  const parsed = match ? Number(match[0]) : Number(normalized);
-  return Number.isNaN(parsed) ? 0 : parsed;
+function formatTaxRate(rate: number | null): string {
+  return rate == null ? 'IVA pendiente' : `${rate}%`;
+}
+
+function isRowValid(row: AuxiliaryLineRow): boolean {
+  const hasArticle = row.auxiliaryProduct != null || row.description.trim() !== '';
+  const quantity = row.quantity === '' ? NaN : Number(row.quantity);
+  const unitPrice = row.unitPrice === '' ? NaN : Number(row.unitPrice);
+  return (
+    hasArticle &&
+    Number.isFinite(quantity) &&
+    quantity > 0 &&
+    Number.isFinite(unitPrice) &&
+    unitPrice >= 0
+  );
 }
 
 function getErrorDescription(error: unknown, fallback: string): string {
@@ -97,21 +106,17 @@ const NO_CATALOG_VALUE = '__none__';
 
 const OrderAuxiliaryLines = () => {
   const { isMobile, mounted } = useIsMobileSafe();
-  const {
-    auxiliaryLines,
-    auxiliaryLineActions,
-    auxiliaryProductOptions,
-    options,
-  } = useOrderContext() as {
-    auxiliaryLines: AuxiliaryOrderLine[];
-    auxiliaryLineActions: {
-      update: (id: number | string, data: AuxiliaryOrderLinePayload) => Promise<void>;
-      delete: (id: number | string) => Promise<void>;
-      create: (data: AuxiliaryOrderLinePayload) => Promise<void>;
+  const { auxiliaryLines, auxiliaryLineActions, auxiliaryProductOptions, options } =
+    useOrderContext() as {
+      auxiliaryLines: AuxiliaryOrderLine[];
+      auxiliaryLineActions: {
+        update: (id: number | string, data: AuxiliaryOrderLinePayload) => Promise<void>;
+        delete: (id: number | string) => Promise<void>;
+        create: (data: AuxiliaryOrderLinePayload) => Promise<void>;
+      };
+      auxiliaryProductOptions: AuxiliaryProductOption[];
+      options: { taxOptions: OrderSelectOption[]; loading: boolean };
     };
-    auxiliaryProductOptions: AuxiliaryProductOption[];
-    options: { taxOptions: OrderSelectOption[]; loading: boolean };
-  };
 
   const { taxOptions: rawTaxOptions, loading: optionsLoading } = options || {};
 
@@ -123,7 +128,7 @@ const OrderAuxiliaryLines = () => {
   }, [rawTaxOptions]);
 
   const taxOptionsMap = useMemo(() => {
-    const map = new Map<string, number>();
+    const map = new Map<string, number | null>();
     taxOptions.forEach((option) => map.set(String(option.value), parseTaxRate(option.label)));
     return map;
   }, [taxOptions]);
@@ -173,7 +178,7 @@ const OrderAuxiliaryLines = () => {
       quantity: '',
       unit: '',
       unitPrice: '',
-      tax: { id: null, rate: 0 },
+      tax: { id: null, rate: null },
       isTemporary: true,
       tempId: Date.now() + Math.random(),
     };
@@ -203,7 +208,7 @@ const OrderAuxiliaryLines = () => {
         } else if (field === 'unit') {
           row.unit = value;
         } else if (field === 'tax') {
-          row.tax = { id: value, rate: taxOptionsMap.get(value) ?? 0 };
+          row.tax = { id: value, rate: taxOptionsMap.get(value) ?? null };
         } else if (field === 'quantity' || field === 'unitPrice') {
           row[field] = value === '' ? '' : Number(value);
         }
@@ -232,7 +237,7 @@ const OrderAuxiliaryLines = () => {
   const handleOnClickSaveLine = async () => {
     if (editIndex === null) return;
     const row = rows[editIndex];
-    if (!row) return;
+    if (!row || !isRowValid(row)) return;
 
     const payload: AuxiliaryOrderLinePayload = {
       auxiliaryProductId: row.auxiliaryProduct?.id ?? null,
@@ -305,10 +310,14 @@ const OrderAuxiliaryLines = () => {
       const unitPrice = Number(row.unitPrice) || 0;
       const subtotal = quantity * unitPrice;
       acc.subtotal += subtotal;
-      acc.total += subtotal * (1 + row.tax.rate / 100);
+      if (row.tax.rate == null) {
+        acc.hasPendingTax = true;
+      } else {
+        acc.total += subtotal * (1 + row.tax.rate / 100);
+      }
       return acc;
     },
-    { subtotal: 0, total: 0 }
+    { subtotal: 0, total: 0, hasPendingTax: false }
   );
 
   const articleLabel = (row: AuxiliaryLineRow) =>
@@ -348,7 +357,11 @@ const OrderAuxiliaryLines = () => {
                           <div className="[&_button]:!h-9">
                             <Combobox
                               options={catalogOptions}
-                              value={row.auxiliaryProduct ? String(row.auxiliaryProduct.id) : NO_CATALOG_VALUE}
+                              value={
+                                row.auxiliaryProduct
+                                  ? String(row.auxiliaryProduct.id)
+                                  : NO_CATALOG_VALUE
+                              }
                               onChange={(value) =>
                                 handleInputChange(index, 'auxiliaryProduct', String(value))
                               }
@@ -360,7 +373,9 @@ const OrderAuxiliaryLines = () => {
                           <Input
                             placeholder="Descripción libre (opcional si hay artículo)"
                             value={row.description}
-                            onChange={(e) => handleInputChange(index, 'description', e.target.value)}
+                            onChange={(e) =>
+                              handleInputChange(index, 'description', e.target.value)
+                            }
                             className="!h-9"
                           />
                         </div>
@@ -380,7 +395,9 @@ const OrderAuxiliaryLines = () => {
                             className="!h-9"
                           />
                         ) : (
-                          <p className="py-2 text-sm font-medium">{formatDecimalWeight(Number(row.quantity))}</p>
+                          <p className="py-2 text-sm font-medium">
+                            {formatDecimalWeight(Number(row.quantity))}
+                          </p>
                         )}
                       </div>
                       <div>
@@ -431,7 +448,7 @@ const OrderAuxiliaryLines = () => {
                             </Select>
                           </div>
                         ) : (
-                          <p className="py-2 text-sm font-medium">{row.tax.rate}%</p>
+                          <p className="py-2 text-sm font-medium">{formatTaxRate(row.tax.rate)}</p>
                         )}
                       </div>
                     </div>
@@ -439,7 +456,12 @@ const OrderAuxiliaryLines = () => {
                     <div className="flex gap-2 border-t pt-3">
                       {editIndex === index ? (
                         <>
-                          <Button onClick={handleOnClickSaveLine} size="sm" className="flex-1">
+                          <Button
+                            onClick={handleOnClickSaveLine}
+                            disabled={!isRowValid(row)}
+                            size="sm"
+                            className="flex-1"
+                          >
                             <Check />
                             Guardar
                           </Button>
@@ -516,7 +538,9 @@ const OrderAuxiliaryLines = () => {
               {
                 key: 'total',
                 label: 'Total (con IVA)',
-                value: formatDecimalCurrency(totals.total),
+                value: totals.hasPendingTax
+                  ? 'IVA pendiente en alguna línea'
+                  : formatDecimalCurrency(totals.total),
               },
             ]}
           />
@@ -566,7 +590,11 @@ const OrderAuxiliaryLines = () => {
                           {editIndex === index ? (
                             <Combobox
                               options={catalogOptions}
-                              value={row.auxiliaryProduct ? String(row.auxiliaryProduct.id) : NO_CATALOG_VALUE}
+                              value={
+                                row.auxiliaryProduct
+                                  ? String(row.auxiliaryProduct.id)
+                                  : NO_CATALOG_VALUE
+                              }
                               onChange={(value) =>
                                 handleInputChange(index, 'auxiliaryProduct', String(value))
                               }
@@ -576,14 +604,18 @@ const OrderAuxiliaryLines = () => {
                               className="w-full"
                             />
                           ) : (
-                            row.auxiliaryProduct?.name || <span className="text-muted-foreground">—</span>
+                            row.auxiliaryProduct?.name || (
+                              <span className="text-muted-foreground">—</span>
+                            )
                           )}
                         </TableCell>
                         <TableCell className="min-w-[160px]">
                           {editIndex === index ? (
                             <Input
                               value={row.description}
-                              onChange={(e) => handleInputChange(index, 'description', e.target.value)}
+                              onChange={(e) =>
+                                handleInputChange(index, 'description', e.target.value)
+                              }
                               placeholder="Descripción libre"
                             />
                           ) : (
@@ -618,7 +650,9 @@ const OrderAuxiliaryLines = () => {
                             <Input
                               type="number"
                               value={row.unitPrice}
-                              onChange={(e) => handleInputChange(index, 'unitPrice', e.target.value)}
+                              onChange={(e) =>
+                                handleInputChange(index, 'unitPrice', e.target.value)
+                              }
                               className="w-full text-right"
                             />
                           ) : (
@@ -643,13 +677,18 @@ const OrderAuxiliaryLines = () => {
                               </SelectContent>
                             </Select>
                           ) : (
-                            `${row.tax.rate}%`
+                            formatTaxRate(row.tax.rate)
                           )}
                         </TableCell>
                         <TableCell className="text-right whitespace-nowrap">
                           {editIndex === index ? (
                             <div className="flex flex-nowrap items-center justify-end gap-2">
-                              <Button onClick={handleOnClickSaveLine} size="icon-sm" aria-label="Guardar línea">
+                              <Button
+                                onClick={handleOnClickSaveLine}
+                                disabled={!isRowValid(row)}
+                                size="icon-sm"
+                                aria-label="Guardar línea"
+                              >
                                 <Check />
                               </Button>
                               <Button
@@ -694,7 +733,9 @@ const OrderAuxiliaryLines = () => {
                         {formatDecimalCurrency(totals.subtotal)}
                       </TableCell>
                       <TableCell colSpan={2} className="text-right font-semibold">
-                        {formatDecimalCurrency(totals.total)} con IVA
+                        {totals.hasPendingTax
+                          ? 'IVA pendiente en alguna línea'
+                          : `${formatDecimalCurrency(totals.total)} con IVA`}
                       </TableCell>
                     </TableRow>
                   </TableFooter>
@@ -714,8 +755,8 @@ const OrderAuxiliaryLines = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>¿Eliminar línea auxiliar?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción eliminará la línea del pedido y puede afectar los importes totales. No
-              se puede deshacer.
+              Esta acción eliminará la línea del pedido y puede afectar los importes totales. No se
+              puede deshacer.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -6,7 +6,7 @@ category: architecture-refactor
 priority: P2
 risk: medium
 size: L
-status: blocked
+status: ready
 dependencies: []
 target_files:
   - src/services/orderService.ts
@@ -115,16 +115,12 @@ npm run build
 
 ## Notas de implementación
 
-**Bloqueado por `gap-normalizer` (2026-07-03):** GAP de tamaño `L` — según la
-regla del skill, no puede quedar `ready` sin autorización explícita de Jose.
-El contenido está completo (problema, objetivo, solución, criterios de
-aceptación y plan de validación verificables) y no depende de ninguna decisión
-de negocio, solo del visto bueno de Jose para acometer un cambio de este
-tamaño en `orderService.ts`. Alternativa a la autorización directa: dividir en
-sub-GAPs más pequeños por grupo de funciones (CRUD / estadísticas /
-exportación) antes de implementar, igual que ocurrió con GAP-V2-001 →
-GAP-V2-022/023/024/025 — el propio implementador puede optar por esa vía si
-Jose prefiere no autorizar el GAP L completo de una sola vez.
+**Desbloqueado por Jose (2026-07-03):** autorizado explícitamente el refactor de tamaño `L`
+completo, sin dividir en sub-GAPs — implementar como un único GAP siguiendo exactamente la
+solución propuesta (helper interno `orderFetch`, migrar las 35 llamadas, unificar
+`handleServiceResponse`). Pasa a `ready`. Dado su tamaño/riesgo (L/medium), tratar como
+implementación dedicada con su propio ciclo `type-check`/`lint`/`test:run`/`build` completo
+y verificación de `gap-auditor` — no combinar en el mismo commit que otros GAPs.
 
 ## Resultado
 

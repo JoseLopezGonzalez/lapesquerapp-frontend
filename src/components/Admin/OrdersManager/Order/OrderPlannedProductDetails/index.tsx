@@ -93,6 +93,19 @@ function formatTaxRate(rate: number | null): string {
   return rate == null ? 'IVA pendiente' : `${rate}%`;
 }
 
+function isDetailValid(detail: PlannedDetail): boolean {
+  const hasProduct = detail.product?.id != null && detail.product.id !== '';
+  const quantity = detail.quantity === '' ? NaN : Number(detail.quantity);
+  const unitPrice = detail.unitPrice === '' ? NaN : Number(detail.unitPrice);
+  return (
+    hasProduct &&
+    Number.isFinite(quantity) &&
+    quantity > 0 &&
+    Number.isFinite(unitPrice) &&
+    unitPrice >= 0
+  );
+}
+
 const OrderPlannedProductDetails = () => {
   const { isMobile, mounted } = useIsMobileSafe();
   const {
@@ -277,6 +290,7 @@ const OrderPlannedProductDetails = () => {
   const handleOnClickSaveLine = async () => {
     if (editIndex === null) return;
     const detail = details[editIndex];
+    if (!detail || !isDetailValid(detail)) return;
 
     /* conversion datos enteros y decimales*/
     detail.boxes = Number(detail.boxes);
@@ -580,6 +594,7 @@ const OrderPlannedProductDetails = () => {
                               <>
                                 <Button
                                   onClick={handleOnClickSaveLine}
+                                  disabled={!isDetailValid(detail)}
                                   size="sm"
                                   className="flex-1"
                                 >
@@ -821,6 +836,7 @@ const OrderPlannedProductDetails = () => {
                               <div className="flex flex-nowrap items-center justify-end gap-2">
                                 <Button
                                   onClick={handleOnClickSaveLine}
+                                  disabled={!isDetailValid(detail)}
                                   size="icon-sm"
                                   aria-label="Guardar línea"
                                 >

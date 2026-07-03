@@ -188,6 +188,9 @@ export default function ComercialOrdersManager() {
         onToggleViewMode={toggleViewMode}
         readOnly
         canCreateOrder={canCreateOrder}
+        // canExportListData no se pasa a propósito: el default `!readOnly` de OrdersList
+        // lo deja en false para comercial hasta confirmar que el xlsx no expone coste/margen
+        // (GAP-V2-056).
       />
     ),
     [

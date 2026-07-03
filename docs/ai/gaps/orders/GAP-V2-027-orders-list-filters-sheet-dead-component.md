@@ -6,7 +6,7 @@ category: code-quality
 priority: P3
 risk: low
 size: XS
-status: blocked
+status: done
 dependencies: []
 target_files:
   - src/components/Admin/OrdersManager/OrdersList/OrdersListFiltersSheet.tsx
@@ -83,13 +83,27 @@ determina si el archivo se elimina (plan descartado) o se conecta al flujo real
 inferir cuál de las dos opciones aplica. Pasa a `ready` en cuanto Jose confirme
 el estado del plan de Fase 3.
 
+Decisión de Jose (2026-07-03): el plan de Fase 3 (`docs/mobile-app/implementacion/02-plan-lista-pedidos-mobile.md`)
+ya no está vigente — `OrdersList/index.tsx` resolvió búsqueda/filtros mobile de otra forma
+(inline en el header). Eliminar el archivo.
+
 ## Resultado
 
-{se rellena al terminar la implementación}
+Eliminado `src/components/Admin/OrdersManager/OrdersList/OrdersListFiltersSheet.tsx` (154
+líneas). Confirmado por `grep -rn "OrdersListFiltersSheet" src/` antes de borrar: cero
+importadores reales, solo el propio archivo y referencias en docs (`docs/mobile-app/**`,
+`docs/audits/orders-block/**`) — no se tocan, quedan como rastro histórico del plan
+descartado, no bloquean nada. `npm run type-check` limpio tras el borrado (no había ningún
+import roto). Nota: `docs/mobile-app/implementacion/02-plan-lista-pedidos-mobile.md:253`
+afirma "Implementado: Fases 1–7" incluyendo este archivo — es documentación desactualizada
+de una iteración anterior, no se corrige aquí (fuera de `target_files` de este GAP).
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+No aplica — GAP de tamaño XS/riesgo low con decisión explícita de Jose (eliminar), sin
+lógica de negocio ni superficie de UI que verificar (el componente no se renderizaba en
+ningún flujo real). `npm run type-check` limpio confirma que no queda ninguna referencia
+rota.
 
 ## Links
 
