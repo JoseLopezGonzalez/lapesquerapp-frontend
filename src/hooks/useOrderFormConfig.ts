@@ -62,6 +62,13 @@ interface OrderData {
   ccEmails?: string[];
 }
 
+type RawOption = {
+  value?: number | string | null;
+  label?: string | null;
+  id?: number | string | null;
+  name?: string | null;
+};
+
 interface DefaultValues {
   orderType: string;
   entryDate: Date | null;
@@ -376,6 +383,33 @@ function parseDate(dateValue: string | Date | null | undefined): Date | null {
   return null;
 }
 
+function toFormFieldOption(option: RawOption): FormFieldOption | null {
+  const value = option.value ?? option.id;
+  const label = option.label ?? option.name;
+
+  if (value === undefined || value === null || label === undefined || label === null) {
+    return null;
+  }
+
+  return {
+    value: `${value}`,
+    label: `${label}`,
+  };
+}
+
+function normalizeOptions(options: RawOption[] = []): FormFieldOption[] {
+  const seen = new Set<string>();
+
+  return options.reduce<FormFieldOption[]>((acc, option) => {
+    const normalized = toFormFieldOption(option);
+    if (!normalized || seen.has(normalized.value)) return acc;
+
+    seen.add(normalized.value);
+    acc.push(normalized);
+    return acc;
+  }, []);
+}
+
 export function useOrderFormConfig({ orderData }: { orderData?: OrderData | null }) {
   const { options, loading: optionsLoading } = useOrderFormOptions();
 
@@ -421,44 +455,29 @@ export function useOrderFormConfig({ orderData }: { orderData?: OrderData | null
             if (field.name === 'salesperson') {
               return {
                 ...field,
-                options: options.salespeople.map((sp) => ({
-                  value: `${sp.id}`,
-                  label: `${sp.name}`,
-                })),
+                options: normalizeOptions(options.salespeople),
               };
             }
             if (field.name === 'fieldOperator') {
               return {
                 ...field,
-                options: options.fieldOperators.map((op) => ({
-                  value: `${op.id}`,
-                  label: `${op.name}`,
-                })),
+                options: normalizeOptions(options.fieldOperators),
               };
             }
             if (field.name === 'payment') {
               return {
                 ...field,
-                options: options.paymentTerms.map((pt) => ({
-                  value: `${pt.id}`,
-                  label: `${pt.name}`,
-                })),
+                options: normalizeOptions(options.paymentTerms),
               };
             }
             if (field.name === 'incoterm') {
               return {
                 ...field,
-                options: options.incoterms.map((inc) => ({
-                  value: `${inc.id}`,
-                  label: `${inc.name}`,
-                })),
+                options: normalizeOptions(options.incoterms),
               };
             }
             if (field.name === 'externalProcessor') {
-              const baseOptions = options.externalProcessors.map((ep) => ({
-                value: `${ep.value}`,
-                label: ep.label,
-              }));
+              const baseOptions = normalizeOptions(options.externalProcessors);
               // Inject current processor if not in list (e.g. inactive but already assigned)
               const currentEp = orderData?.externalProcessor;
               if (currentEp?.id) {
@@ -483,10 +502,7 @@ export function useOrderFormConfig({ orderData }: { orderData?: OrderData | null
             if (field.name === 'transport') {
               return {
                 ...field,
-                options: options.transports.map((tr) => ({
-                  value: `${tr.id}`,
-                  label: `${tr.name}`,
-                })),
+                options: normalizeOptions(options.transports),
               };
             }
             return field;

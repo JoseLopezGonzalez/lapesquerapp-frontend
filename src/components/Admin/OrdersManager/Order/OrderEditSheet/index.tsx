@@ -273,11 +273,13 @@ const OrderEditSheet = ({
                       />
                     </SelectTrigger>
                     <SelectContent loading={loading}>
-                      {field.options?.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </SelectItem>
-                      ))}
+                      {field.options
+                        ?.filter((opt) => opt.value)
+                        .map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                 );
