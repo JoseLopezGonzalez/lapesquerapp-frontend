@@ -6,7 +6,7 @@ category: architecture-refactor
 priority: P1
 risk: medium
 size: S
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/components/Admin/OrdersManager/OrdersList/index.tsx
@@ -56,25 +56,37 @@ tercero quedó fuera por omisión, no por decisión de diseño.
 
 ## Solución propuesta
 
-1. Confirmar con backend/Jose si `orders/xlsx/active-planned-products` incluye campos de
-   coste/precio/margen.
-2. Añadir una prop explícita a `OrdersList` (p.ej. `canExportListData?: boolean`, default
+**Acción por defecto (no requiere esperar la confirmación de contenido del xlsx — gatea por la
+misma disciplina de capacidad ya usada por los botones hermanos, independientemente de si el
+reporte expone coste/margen):**
+
+1. Añadir una prop explícita a `OrdersList` (p.ej. `canExportListData?: boolean`, default
    `!readOnly` para no romper el comportamiento actual en `/admin`) y gatear el botón "Exportar"
-   con ella, siguiendo el mismo patrón que `canCreateOrder`.
-3. Pasar `canExportListData={false}` desde `ComercialOrdersManager.tsx` si el paso 1 confirma
-   datos sensibles; si el reporte resulta no sensible, documentar la decisión explícitamente en
-   `orderReadOnlyPermissions.ts` o en un comentario en el propio componente para que quede
-   trazado por qué el botón permanece visible.
+   con ella, siguiendo el mismo patrón que `canCreateOrder` y `!readOnly` de "Vista de
+   Producción" en el mismo componente.
+2. `ComercialOrdersManager.tsx` monta `<OrdersList readOnly ... />`, por lo que
+   `canExportListData` queda en `false` automáticamente por el default — no hace falta pasar
+   ningún prop adicional desde ese componente para conseguir el gateo; se documenta así en el
+   propio componente (comentario) para que quede explícito que es intencional, no un olvido.
+
+**Seguimiento opcional (no bloquea este GAP):** confirmar con backend/Jose si
+`orders/xlsx/active-planned-products` contiene columnas de coste/precio/margen. Si se confirma
+que NO contiene datos sensibles, un GAP de seguimiento puede reactivar el botón para comercial
+pasando `canExportListData` explícitamente en `ComercialOrdersManager.tsx` — pero mientras no se
+confirme, el default seguro (oculto en cualquier vista `readOnly`) es el comportamiento correcto.
 
 ## Criterios de aceptación
 
-- [ ] Verificado (con backend o Jose) si el xlsx exportado contiene coste/precio/margen.
-- [ ] Si contiene datos sensibles: el botón "Exportar" de `OrdersList` no aparece en
-      `/comercial/orders-manager`.
-- [ ] Si no contiene datos sensibles: decisión documentada explícitamente (comentario o entrada en
-      `orderReadOnlyPermissions.ts`) para que una futura auditoría no vuelva a marcarlo como hueco.
+- [ ] El botón "Exportar" de `OrdersList` está gateado por una capacidad explícita
+      (`canExportListData` o equivalente) igual que "Crear" (`canCreateOrder`) y "Vista de
+      Producción" (`!readOnly`) en la misma barra de herramientas.
+- [ ] El botón "Exportar" no aparece ni es funcional en `/comercial/orders-manager` (por el
+      default `!readOnly`, sin necesidad de esperar confirmación sobre el contenido del xlsx).
 - [ ] El comportamiento en `/admin/orders-manager` no cambia (el botón sigue visible para roles
       internos).
+- [ ] Queda un comentario o nota en el código indicando que el gateo es intencional y que la
+      confirmación de contenido del xlsx (coste/margen) es un seguimiento opcional, no un
+      bloqueo de este GAP.
 
 ## Plan de validación
 
@@ -87,7 +99,11 @@ Exportar; entrar como administrador en /admin/orders-manager y confirmar que no 
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+{se rellena durante la implementación. Nota de `gap-normalizer` (2026-07-03): este GAP queda
+`ready` (no `blocked`) porque el propio fix propuesto — gatear por `canExportListData` con
+default `!readOnly` — resuelve el hallazgo de seguridad/permisos sin necesitar confirmar antes
+si el xlsx expone coste/margen. La verificación de contenido del reporte queda como
+seguimiento opcional, no como bloqueo.}
 
 ## Resultado
 

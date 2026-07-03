@@ -6,7 +6,7 @@ category: code-quality
 priority: P3
 risk: low
 size: XS
-status: candidate
+status: blocked
 dependencies: []
 target_files:
   - src/components/Admin/OrdersManager/OrdersList/OrdersListFiltersSheet.tsx
@@ -75,7 +75,13 @@ npm run build
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Bloqueado por `gap-normalizer` (2026-07-03):** el paso 1 de la solución
+propuesta ("Confirmar con Jose si `docs/mobile-app/implementacion/02-PLAN-LISTA-PEDIDOS-MOBILE.md`
+Fase 3 sigue vigente") es una decisión de roadmap que solo Jose puede tomar —
+determina si el archivo se elimina (plan descartado) o se conecta al flujo real
+(plan vigente). No hay información disponible en el código o en `audit.md` para
+inferir cuál de las dos opciones aplica. Pasa a `ready` en cuanto Jose confirme
+el estado del plan de Fase 3.
 
 ## Resultado
 

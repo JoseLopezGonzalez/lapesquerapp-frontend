@@ -6,9 +6,8 @@ category: code-quality
 priority: P3
 risk: low
 size: M
-status: candidate
-dependencies:
-  - GAP-V2-028
+status: ready
+dependencies: []
 target_files:
   - src/services/orderService.ts
 created_at: 2026-07-03
@@ -56,10 +55,12 @@ importar los tipos sin importar el service.
 
 ## Contexto
 
-Depende de GAP-V2-028 (refactor de boilerplate en el mismo archivo) solo en el
-sentido de que ambos tocan `orderService.ts` extensamente — se recomienda
-implementar GAP-V2-028 primero para evitar conflictos de merge, no porque haya
-una dependencia funcional real.
+No depende funcionalmente de GAP-V2-028 (que además queda `blocked` a la espera
+de autorización de Jose por ser tamaño L) — ambos tocan `orderService.ts`
+extensamente, pero este GAP puede implementarse de forma independiente. Si
+GAP-V2-028 se implementa primero, aplicar este cambio después reduce el riesgo
+de conflictos de merge; si se implementa antes, no bloquea ni invalida el
+refactor de boilerplate posterior.
 
 ## Solución propuesta
 

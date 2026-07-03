@@ -6,7 +6,7 @@ category: ux-ui
 priority: P3
 risk: low
 size: XS
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/components/Admin/OrdersManager/OrdersList/index.tsx
@@ -42,6 +42,12 @@ igual que el resto de títulos de página/sección del proyecto (`EntityHeader`)
 Extiende `PL-024` (recurrencia de pesos fuera de escala) a la superficie de listado, no
 cubierta por GAP-096 ni por GAP-V2-009/014 (que trataron copy/tildes/capitalización de este
 mismo archivo, no peso tipográfico).
+
+**Nota de `gap-normalizer` (2026-07-03):** GAP-V2-046 señalaba originalmente el mismo
+`OrdersList/index.tsx:202` (`font-semibold` en desktop) como parte de su batch general de
+`font-semibold`. Se fusionó aquí porque este GAP ya cubre el caso completo (ambas variantes,
+mobile y desktop, no solo el `font-semibold` de escritorio) — GAP-V2-046 quedó con ese archivo
+retirado de su alcance.
 
 ## Solución propuesta
 

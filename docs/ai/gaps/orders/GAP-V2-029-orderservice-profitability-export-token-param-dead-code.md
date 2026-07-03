@@ -6,7 +6,7 @@ category: code-quality
 priority: P2
 risk: low
 size: S
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/services/orderService.ts
@@ -69,22 +69,28 @@ token-as-parameter y su ausencia de caller real.
 
 ## Solución propuesta
 
-1. Confirmar con Jose si existe un plan de UI pendiente para la exportación
-   asíncrona de rentabilidad (job + polling). Si sí, mantener las funciones y
-   continuar con el paso 2. Si no, evaluar eliminarlas junto con el tipo
-   `AuthToken` y los tipos `OrdersProfitabilityExportJob*` asociados.
-2. Si se mantienen: quitar el parámetro `token: AuthToken` de las 3 firmas,
-   sustituir por `const token = await getAuthToken();` interno, igual que el
-   resto del archivo.
-3. Actualizar `src/__tests__/services/orderService.test.js` para dejar de pasar
+**Acción por defecto (no requiere esperar a Jose — resuelve el hallazgo de
+código-calidad de forma segura y de bajo riesgo):**
+
+1. Quitar el parámetro `token: AuthToken` de las 3 firmas, sustituir por
+   `const token = await getAuthToken();` interno, igual que el resto del
+   archivo.
+2. Actualizar `src/__tests__/services/orderService.test.js` para dejar de pasar
    `token` como argumento en estas 3 llamadas.
-4. Eliminar el tipo `AuthToken` si ya no lo usa ninguna función tras el cambio.
+3. Eliminar el tipo `AuthToken` si ya no lo usa ninguna función tras el cambio.
+
+**Seguimiento opcional (no bloquea este GAP):** preguntar a Jose si existe un
+plan de UI pendiente para la exportación asíncrona de rentabilidad (job +
+polling). Si confirma que no hay plan, las 3 funciones y sus tipos
+`OrdersProfitabilityExportJob*` pueden eliminarse como código muerto en un GAP
+de seguimiento separado — no es necesario resolver esa pregunta para cerrar
+este GAP, que se limita a corregir el patrón token-as-parameter.
 
 ## Criterios de aceptación
 
 - [ ] Ninguna función de `orderService.ts` recibe el token como parámetro
-      explícito (todas usan `getAuthToken()` internamente), o las 3 funciones se
-      eliminan junto con sus tipos si se confirma que son código muerto.
+      explícito — las 3 funciones de exportación de rentabilidad usan
+      `getAuthToken()` internamente igual que el resto del archivo.
 - [ ] `src/__tests__/services/orderService.test.js` actualizado y pasando.
 - [ ] `npm run type-check` y `npm run lint` limpios.
 
@@ -98,8 +104,11 @@ npm run test:run
 
 ## Notas de implementación
 
-{se rellena durante la implementación — la decisión de "mantener vs. eliminar"
-debe registrarse aquí antes de implementar el resto.}
+{se rellena durante la implementación. Nota de `gap-normalizer`: este GAP queda
+`ready` sobre la base de la acción por defecto — internalizar el token en las 3
+funciones, sin necesidad de decidir primero si se eliminan. La pregunta sobre
+si existe un plan de UI pendiente para la exportación de rentabilidad puede
+lanzarse a Jose en paralelo, sin bloquear el cierre de este GAP.}
 
 ## Resultado
 

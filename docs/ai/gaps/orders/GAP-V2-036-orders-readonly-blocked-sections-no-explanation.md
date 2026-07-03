@@ -6,7 +6,7 @@ category: ux-ui
 priority: P2
 risk: low
 size: S
-status: candidate
+status: blocked
 dependencies: []
 target_files:
   - src/components/Admin/OrdersManager/Order/components/OrderTabsDesktop.tsx
@@ -98,7 +98,15 @@ Verificación manual: simular sesión comercial (readOnly=true) sobre un pedido 
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Bloqueado por `gap-normalizer` (2026-07-03):** la propia solución propuesta
+lista 3 opciones de UX (tooltip en pestañas deshabilitadas / mensaje
+contextual único / toast puntual en `OrderPalletsToolbar`) y pide
+explícitamente "confirmar con Jose la opción preferida antes de implementar —
+este GAP no debe implementarse a ciegas dado que toca UX de permisos ya
+sensible". No hay una opción por defecto segura que no implique una decisión
+de diseño de Jose (a diferencia de GAP-V2-056, donde sí existe un default
+seguro). Pasa a `ready` en cuanto Jose elija una de las 3 opciones (o proponga
+una distinta).
 
 ## Resultado
 

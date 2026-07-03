@@ -6,7 +6,7 @@ category: ux-ui
 priority: P1
 risk: medium
 size: M
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/components/Admin/OrdersManager/Order/OrderAuxiliaryLines/index.tsx

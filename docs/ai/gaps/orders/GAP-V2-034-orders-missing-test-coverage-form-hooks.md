@@ -6,9 +6,8 @@ category: code-quality
 priority: P3
 risk: low
 size: M
-status: candidate
-dependencies:
-  - GAP-V2-030
+status: ready
+dependencies: []
 target_files:
   - src/hooks/useComercialOrders.ts
   - src/hooks/useOrderFormConfig.ts
@@ -57,10 +56,11 @@ específicos del dominio (no solo el happy path genérico).
 
 ## Contexto
 
-Este GAP depende conceptualmente de GAP-V2-030 (que cambia `useOrderFormConfig`
-de `useState`+`useEffect` a derivación directa) — se recomienda escribir los
-tests después de ese refactor para no tener que reescribirlos, aunque puede
-implementarse antes si se prefiere tener regresión cubierta primero.
+No depende funcionalmente de GAP-V2-030 (que cambia `useOrderFormConfig` de
+`useState`+`useEffect` a derivación directa) — se recomienda por orden de
+implementación escribir los tests después de ese refactor para no tener que
+reescribirlos, pero puede implementarse antes si se prefiere tener regresión
+cubierta primero; ninguno de los dos órdenes bloquea al otro.
 
 ## Solución propuesta
 

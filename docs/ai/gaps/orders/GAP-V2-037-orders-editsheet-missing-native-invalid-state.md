@@ -6,7 +6,7 @@ category: a11y-responsive
 priority: P2
 risk: low
 size: S
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/components/Admin/OrdersManager/Order/OrderEditSheet/index.tsx

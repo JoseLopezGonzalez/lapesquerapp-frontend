@@ -6,7 +6,7 @@ category: ux-ui
 priority: P2
 risk: low
 size: M
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/components/Admin/OrdersManager/Order/OrderCustomerHistory/components/GeneralMetricsGrid.jsx
