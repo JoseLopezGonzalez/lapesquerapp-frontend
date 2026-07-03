@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowLeft, ChevronDown, Pencil, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MobileOptionSheet } from '@/components/Shadcn/MobileOptionSheet';
@@ -30,6 +31,7 @@ const STATUS_HERO_BG: Record<OrderStatus, string> = {
 
 interface OrderHeaderMobileProps {
   order: Order;
+  transportImage: string;
   onClose?: () => void;
   onEdit: () => void;
   onStatusChange: (status: OrderStatus) => void;
@@ -38,12 +40,14 @@ interface OrderHeaderMobileProps {
 
 /**
  * Bloque hero móvil: barra de navegación (back + título + editar) + identidad del pedido
- * (cliente + estado), sobre un fondo redondeado (solo esquinas inferiores) tintado con el
- * color del estado — edge-to-edge, sin margen lateral ni superior.
+ * (cliente + estado + transporte), sobre un fondo tintado con el color del estado. Borde
+ * inferior ovalado (elipse ancha vía border-radius de dos ejes) — edge-to-edge, sin margen
+ * lateral ni superior.
  * Solo se muestra cuando existe onClose (contexto sheet/drawer).
  */
 export default function OrderHeaderMobile({
   order,
+  transportImage,
   onClose,
   onEdit,
   onStatusChange,
@@ -55,11 +59,12 @@ export default function OrderHeaderMobile({
 
   const status = order.status as OrderStatus;
   const customer = order.customer as { id?: number | string; name?: string } | undefined;
+  const transport = order.transport as { name?: string } | undefined;
 
   return (
     <div
       className={cn(
-        'relative flex-shrink-0 overflow-hidden rounded-b-3xl pt-8 pb-5',
+        'relative flex-shrink-0 overflow-hidden rounded-bl-[50%_40px] rounded-br-[50%_40px] pt-8 pb-12',
         STATUS_HERO_BG[status]
       )}
     >
@@ -147,6 +152,17 @@ export default function OrderHeaderMobile({
               />
             </>
           )}
+        </div>
+
+        <div className="mt-3 flex flex-col items-center justify-center gap-2">
+          <Image
+            className="h-auto max-w-[170px]"
+            src={transportImage}
+            width={170}
+            height={96}
+            alt={`Transporte ${transport?.name || ''}`}
+          />
+          <p className="text-lg font-medium">{transport?.name || '-'}</p>
         </div>
       </div>
     </div>

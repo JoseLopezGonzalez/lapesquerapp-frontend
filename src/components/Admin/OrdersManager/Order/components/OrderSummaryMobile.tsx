@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { ThermometerSnowflake, ChevronDown } from 'lucide-react';
-import Image from 'next/image';
 import { MobileOptionSheet } from '@/components/Shadcn/MobileOptionSheet';
 import { formatDate } from '@/helpers/formats/dates/formatDates';
 import { formatInteger, formatDecimalCurrency } from '@/helpers/formats/numbers/formatNumbers';
@@ -12,39 +11,25 @@ const TEMPERATURE_OPTIONS = [0, 4, -18, -23];
 
 interface OrderSummaryMobileProps {
   order: Order;
-  transportImage: string;
   onTemperatureChange: (temperature: number) => void;
   readOnly?: boolean;
 }
 
 /**
- * Resumen secundario móvil: transporte, fecha de carga, temperatura, palets, importe.
- * Cliente y estado viven en el bloque hero de OrderHeaderMobile.
+ * Resumen secundario móvil: fecha de carga, temperatura, palets, importe.
+ * Cliente, estado y transporte viven en el bloque hero de OrderHeaderMobile.
  */
 export default function OrderSummaryMobile({
   order,
-  transportImage,
   onTemperatureChange,
   readOnly = false,
 }: OrderSummaryMobileProps) {
   const [temperatureSheetOpen, setTemperatureSheetOpen] = useState(false);
 
-  const transport = order.transport as { name?: string } | undefined;
   const temperature = Number((order.temperature as number | string | undefined) ?? 0);
 
   return (
     <div className="flex-shrink-0 space-y-4 px-4 pt-5 text-center">
-      <div className="flex flex-col items-center justify-center gap-2">
-        <Image
-          className="h-auto max-w-[170px]"
-          src={transportImage}
-          width={170}
-          height={96}
-          alt={`Transporte ${transport?.name || ''}`}
-        />
-        <p className="text-lg font-medium">{transport?.name || '-'}</p>
-      </div>
-
       <div className="flex flex-wrap items-start justify-center gap-6">
         <div>
           <p className="text-muted-foreground mb-1 text-sm">Fecha de Carga</p>
