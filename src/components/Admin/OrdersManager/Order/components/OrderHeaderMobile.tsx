@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState, type RefObject } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, type MotionValue } from 'framer-motion';
 import { ArrowLeft, ChevronDown, Pencil, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MobileOptionSheet } from '@/components/Shadcn/MobileOptionSheet';
@@ -23,16 +23,13 @@ const STATUS_LABELS: Record<OrderStatus, string> = {
 };
 const STATUS_OPTIONS: OrderStatus[] = ['pending', 'finished', 'incident'];
 
-// Fondo del bloque hero, tintado con el color de estado — más saturado que el StatusBadge (15%)
-// para que el hero tenga presencia real, no solo un lavado sutil.
+// Fondo del bloque hero: mismo tono que StatusBadge (orange/green/red-500), a saturación
+// completa — el badge se queda con su tinte suave (15%), aquí buscamos presencia real.
 const STATUS_HERO_BG: Record<OrderStatus, string> = {
-  pending: 'bg-orange-500/35',
-  finished: 'bg-green-500/35',
-  incident: 'bg-red-500/35',
+  pending: 'bg-orange-500',
+  finished: 'bg-green-500',
+  incident: 'bg-red-500',
 };
-
-// Rango de scroll (px) en el que la imagen de transporte se colapsa por completo
-const TRANSPORT_COLLAPSE_RANGE = [0, 60];
 
 interface OrderHeaderMobileProps {
   order: Order;
@@ -41,21 +38,20 @@ interface OrderHeaderMobileProps {
   onEdit: () => void;
   onStatusChange: (status: OrderStatus) => void;
   readOnly?: boolean;
-  scrollContainerRef: RefObject<HTMLDivElement | null>;
+  transportOpacity: MotionValue<number>;
+  transportHeight: MotionValue<number>;
 }
 
 /**
  * Bloque hero móvil: barra de navegación (back + título + editar) + identidad del pedido
- * (cliente + estado + transporte), sobre un fondo tintado con el color del estado. Borde
- * inferior ovalado (elipse ancha vía border-radius de dos ejes) — edge-to-edge, sin margen
- * lateral ni superior.
+ * (cliente + estado + transporte), sobre un fondo sólido tintado con el color del estado.
+ * Borde inferior ovalado (elipse ancha vía border-radius de dos ejes) — edge-to-edge, sin
+ * margen lateral ni superior. Fondo sólido → todo el texto encima usa blanco/blanco-translúcido
+ * en vez de los tokens muted-foreground/foreground (que asumen fondo neutro del tema).
  *
- * La imagen y el nombre de transporte se colapsan (alto + opacidad) en cuanto el usuario
- * empieza a hacer scroll en el contenido de abajo, dejando solo cliente + estado visibles.
- * Nota: el sistema de motion del proyecto recomienda animar solo transform/opacity — aquí
- * animamos `height` deliberadamente porque el objetivo es que el hero recupere espacio real
- * de layout para la grid, no solo un efecto visual; es un caso puntual sobre un único
- * elemento pequeño, no una lista.
+ * `transportOpacity`/`transportHeight` llegan ya calculados desde el padre (Order/index.tsx),
+ * que es quien posee y adjunta `scrollContainerRef` al DOM — framer-motion recomienda llamar
+ * useScroll() en el mismo componente que el ref, así que el cálculo vive allí, no aquí.
  *
  * Solo se muestra cuando existe onClose (contexto sheet/drawer).
  */
@@ -66,31 +62,16 @@ export default function OrderHeaderMobile({
   onEdit,
   onStatusChange,
   readOnly = false,
-  scrollContainerRef,
+  transportOpacity,
+  transportHeight,
 }: OrderHeaderMobileProps) {
   const [statusSheetOpen, setStatusSheetOpen] = useState(false);
-  const transportRef = useRef<HTMLDivElement>(null);
-  const [transportNaturalHeight, setTransportNaturalHeight] = useState(140);
-
-  const { scrollY } = useScroll({ container: scrollContainerRef });
-  const transportOpacity = useTransform(scrollY, TRANSPORT_COLLAPSE_RANGE, [1, 0]);
-  const transportHeight = useTransform(scrollY, TRANSPORT_COLLAPSE_RANGE, [
-    transportNaturalHeight,
-    0,
-  ]);
-
-  const transport = order.transport as { name?: string } | undefined;
-
-  useEffect(() => {
-    if (transportRef.current) {
-      setTransportNaturalHeight(transportRef.current.offsetHeight);
-    }
-  }, [transport?.name, transportImage]);
 
   if (!onClose) return null;
 
   const status = order.status as OrderStatus;
   const customer = order.customer as { id?: number | string; name?: string } | undefined;
+  const transport = order.transport as { name?: string } | undefined;
 
   return (
     <div
@@ -104,16 +85,16 @@ export default function OrderHeaderMobile({
           variant="ghost"
           size="icon"
           onClick={onClose}
-          className="hover:bg-background/60 absolute left-4 h-12 min-h-[44px] w-12 min-w-[44px] rounded-full"
+          className="absolute left-4 h-12 min-h-[44px] w-12 min-w-[44px] rounded-full text-white hover:bg-white/15 hover:text-white"
           aria-label="Volver"
         >
           <ArrowLeft className="h-6 w-6" />
         </Button>
         <div className="flex flex-col items-center gap-1">
-          <h2 className="text-center text-xl font-normal">#{order.id}</h2>
+          <h2 className="text-center text-xl font-normal text-white">#{order.id}</h2>
           {(order?.orderType ?? order?.order_type) === 'autoventa' && (
             <span
-              className="border-border bg-background/60 text-muted-foreground inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium"
+              className="inline-flex items-center gap-1 rounded-full border border-white/30 bg-white/15 px-2 py-0.5 text-[10px] font-medium text-white"
               aria-label="Tipo de pedido: Autoventa"
             >
               <ShoppingBag className="h-3 w-3" aria-hidden />
@@ -123,7 +104,7 @@ export default function OrderHeaderMobile({
           {order?.offerId ? (
             <Link
               href={`/comercial/ofertas/${order.offerId}`}
-              className="text-primary text-xs hover:underline"
+              className="text-xs text-white underline decoration-white/50 hover:decoration-white"
             >
               Ver oferta #{order.offerId as string | number}
             </Link>
@@ -134,7 +115,7 @@ export default function OrderHeaderMobile({
             variant="ghost"
             size="icon"
             onClick={onEdit}
-            className="hover:bg-background/60 absolute right-4 h-12 min-h-[44px] w-12 min-w-[44px] rounded-full"
+            className="absolute right-4 h-12 min-h-[44px] w-12 min-w-[44px] rounded-full text-white hover:bg-white/15 hover:text-white"
             aria-label="Editar pedido"
           >
             <Pencil className="h-6 w-6" />
@@ -146,10 +127,10 @@ export default function OrderHeaderMobile({
 
       <div className="mt-5 flex flex-col items-center gap-2 px-4 text-center">
         <div>
-          <p className="text-xl font-medium">{customer?.name ?? '—'}</p>
-          <p className="text-muted-foreground mt-1 text-base">Cliente Nº {customer?.id ?? '—'}</p>
+          <p className="text-xl font-medium text-white">{customer?.name ?? '—'}</p>
+          <p className="mt-1 text-base text-white/80">Cliente Nº {customer?.id ?? '—'}</p>
           {order?.buyerReference ? (
-            <p className="text-muted-foreground mt-1 text-sm">
+            <p className="mt-1 text-sm text-white/80">
               Ref. cliente: {order.buyerReference as string}
             </p>
           ) : null}
@@ -166,7 +147,7 @@ export default function OrderHeaderMobile({
                 className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1 focus:outline-none"
               >
                 <StatusBadge color={STATUS_COLORS[status]} label={STATUS_LABELS[status]} />
-                <ChevronDown className="text-muted-foreground h-3.5 w-3.5" aria-hidden />
+                <ChevronDown className="h-3.5 w-3.5 text-white/80" aria-hidden />
               </button>
               <MobileOptionSheet
                 open={statusSheetOpen}
@@ -189,10 +170,7 @@ export default function OrderHeaderMobile({
           style={{ opacity: transportOpacity, height: transportHeight }}
           className="overflow-hidden"
         >
-          <div
-            ref={transportRef}
-            className="mt-3 flex flex-col items-center justify-center gap-2"
-          >
+          <div className="mt-3 flex flex-col items-center justify-center gap-2">
             <Image
               className="h-auto max-w-[170px]"
               src={transportImage}
@@ -200,7 +178,7 @@ export default function OrderHeaderMobile({
               height={96}
               alt={`Transporte ${transport?.name || ''}`}
             />
-            <p className="text-lg font-medium">{transport?.name || '-'}</p>
+            <p className="text-lg font-medium text-white">{transport?.name || '-'}</p>
           </div>
         </motion.div>
       </div>

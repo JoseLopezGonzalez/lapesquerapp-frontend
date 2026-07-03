@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useScroll, useTransform } from 'framer-motion';
 import { AlertCircle, AlertTriangle, ArrowLeft, PackageX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/Utilities/EmptyState';
@@ -68,6 +69,11 @@ const OrderContent = ({
   const [editSheetOpen, setEditSheetOpen] = useState(false);
   const [pendingFinishedStatus, setPendingFinishedStatus] = useState<OrderStatus | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  // useScroll debe llamarse en el mismo componente que posee y adjunta el ref al DOM —
+  // framer-motion no re-suscribe de forma fiable si el ref se pasa a un componente hijo/hermano.
+  const { scrollY } = useScroll({ container: scrollContainerRef });
+  const transportOpacity = useTransform(scrollY, [0, 60], [1, 0]);
+  const transportHeight = useTransform(scrollY, [0, 60], [142, 0]);
 
   useHideBottomNav(isMobile);
 
@@ -289,7 +295,8 @@ const OrderContent = ({
               onEdit={() => setEditSheetOpen(true)}
               onStatusChange={handleStatusChange}
               readOnly={readOnly}
-              scrollContainerRef={scrollContainerRef}
+              transportOpacity={transportOpacity}
+              transportHeight={transportHeight}
             />
 
             <div className="relative min-h-0 w-full flex-1 overflow-hidden">
