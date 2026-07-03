@@ -6,14 +6,14 @@ category: code-quality
 priority: P1
 risk: medium
 size: S
-status: ready
+status: done
 dependencies:
   - GAP-V2-002
 target_files:
   - src/hooks/orders/useOrderAuxiliaryLines.ts
   - src/hooks/useOrder.ts
 created_at: 2026-07-02
-updated_at: 2026-07-02
+updated_at: 2026-07-03
 ---
 
 # GAP-V2-024 — useOrderAuxiliaryLines debe usar useMutation e invalidar el detalle del pedido
@@ -50,11 +50,11 @@ independiente de detalles planificados e incidencias.
 
 ## Criterios de aceptación
 
-- [ ] Las tres operaciones de `auxiliaryLineActions` usan `useMutation`.
-- [ ] No queda ningún merge local de `auxiliaryLines` vía `onOrderUpdate`.
-- [ ] `auxiliaryLineActions.update/delete/create` mantiene nombres y parámetros.
-- [ ] `auxiliaryLines` sigue derivándose de `order.auxiliaryLines`.
-- [ ] `npm run type-check` y `npm run lint` pasan sin errores.
+- [x] Las tres operaciones de `auxiliaryLineActions` usan `useMutation`.
+- [x] No queda ningún merge local de `auxiliaryLines` vía `onOrderUpdate`.
+- [x] `auxiliaryLineActions.update/delete/create` mantiene nombres y parámetros.
+- [x] `auxiliaryLines` sigue derivándose de `order.auxiliaryLines`.
+- [x] `npm run type-check` y `npm run lint` pasan sin errores.
 
 ## Plan de validación
 
@@ -67,15 +67,45 @@ npm run lint
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+`src/hooks/orders/useOrderAuxiliaryLines.ts`: se sustituyeron las tres promesas
+manuales por `useMutation` (`updateLine`, `deleteLine`, `createLine`), cada una
+invalidando `orderKeys.detail(tenantId, order?.id)` en `onSuccess` mediante un
+`invalidateOrderDetail` compartido (mismo patrón que `useOrderIncidents.ts`). Se
+eliminó el parámetro `onOrderUpdate` de `UseOrderAuxiliaryLinesParams` y de la
+firma del hook. `auxiliaryLines` sigue derivándose de `order?.auxiliaryLines` vía
+`useMemo`, sin tocar su lógica.
+
+`src/hooks/useOrder.ts`: se quitó `onOrderUpdate: updateOrderCache` de la llamada
+a `useOrderAuxiliaryLines`; sin más cambios en el archivo.
 
 ## Resultado
 
-{se rellena al terminar la implementación}
+Implementado y validado localmente: `npm run type-check` (0 errores), `npm run
+lint` (0 errores, solo warnings preexistentes no relacionados) y `npm run build`
+(compila correctamente). Commit `19cd8f2` en `claude/orders-deep-audit-lv9qnf`
+(rama recreada desde `origin/main` porque el PR anterior de esa rama ya estaba
+mergeado).
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+**Veredicto: DONE** (gap-auditor, contexto limpio, 2026-07-03).
+
+Los 5 criterios de aceptación se verificaron contra el código real y el
+consumidor `OrderAuxiliaryLines/index.tsx`: firmas públicas intactas, sin merge
+local restante vía `onOrderUpdate`, queryKey de invalidación idéntica a la del
+`useQuery` principal de `useOrder.ts`, manejo de errores equivalente al previo.
+
+Observaciones no bloqueantes registradas por el auditor:
+
+- El toast de éxito y el cierre de `editIndex` en `OrderAuxiliaryLines/index.tsx`
+  ahora esperan al refetch del detalle (porque `onSuccess` se await antes de que
+  `mutateAsync` resuelva) — latencia percibida ligeramente mayor pero UI con
+  datos garantizados frescos. Pendiente de probar manualmente en red lenta.
+- No se añadió test dedicado para `useOrderAuxiliaryLines` — consistente con el
+  precedente de GAP-V2-023 (`useOrderPlannedDetails`), que tampoco añadió test
+  de mutación. Queda como deuda de test coverage, no bloqueante.
+- Sin PL candidate: el patrón ya está documentado en `.claude/rules/hooks.md` y
+  reforzado por el precedente de `useOrderPlannedDetails.ts`.
 
 ## Links
 
