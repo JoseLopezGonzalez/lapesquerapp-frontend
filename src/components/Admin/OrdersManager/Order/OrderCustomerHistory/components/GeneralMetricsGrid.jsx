@@ -11,11 +11,9 @@ export default function GeneralMetricsGrid({ metrics, variant = 'desktop' }) {
   const gridClass = isMobile ? 'grid grid-cols-2 gap-2' : 'grid grid-cols-2 md:grid-cols-4 gap-2';
   const cardClass = 'p-3';
   const iconClass = isMobile ? 'h-3.5 w-3.5' : 'h-3.5 w-3.5';
-  const labelClass = isMobile
-    ? 'text-xs font-medium text-muted-foreground'
-    : 'text-xs text-muted-foreground';
-  const valueClass = isMobile ? 'text-base font-bold' : 'text-xl font-semibold';
-  const lastValueClass = isMobile ? 'text-base font-bold' : 'text-base font-semibold';
+  const labelClass = 'text-xs font-medium text-muted-foreground';
+  const valueClass = isMobile ? 'text-base font-medium' : 'text-xl font-medium';
+  const lastValueClass = 'text-base font-medium';
 
   const gapClass = isMobile ? 'gap-1' : 'gap-1.5';
 

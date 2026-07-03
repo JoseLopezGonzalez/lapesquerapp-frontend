@@ -1,7 +1,7 @@
 'use client';
 
 import { useOrderFormOptions } from './useOrderFormOptions';
-import { useEffect, useState, useMemo } from 'react';
+import { useMemo } from 'react';
 
 export interface FormFieldOption {
   value: string;
@@ -286,7 +286,8 @@ const initialFormGroups: FormGroup[] = [
         component: 'Textarea',
         colSpan: 'col-span-1',
         props: {
-          placeholder: 'ej. Cliente Nº1, Olano Italia — aparecerá como destinatario en CMR y letreros del maquilador',
+          placeholder:
+            'ej. Cliente Nº1, Olano Italia — aparecerá como destinatario en CMR y letreros del maquilador',
           className: 'min-h-[60px]',
           rows: 2,
         },
@@ -376,38 +377,35 @@ function parseDate(dateValue: string | Date | null | undefined): Date | null {
 }
 
 export function useOrderFormConfig({ orderData }: { orderData?: OrderData | null }) {
-  const [defaultValues, setDefaultValues] = useState<DefaultValues>(initialDefaultValues);
-  const [formGroups, setFormGroups] = useState<FormGroup[]>(initialFormGroups);
   const { options, loading: optionsLoading } = useOrderFormOptions();
 
-  useEffect(() => {
-    if (orderData) {
-      setDefaultValues({
-        orderType:
-          (orderData.orderType ?? orderData.order_type) === 'autoventa' ? 'autoventa' : 'standard',
-        entryDate: parseDate(orderData.entryDate),
-        loadDate: parseDate(orderData.loadDate),
-        salesperson: `${orderData.salesperson?.id || ''}`,
-        fieldOperator: `${orderData.fieldOperator?.id || orderData.fieldOperatorId || ''}`,
-        externalProcessor: `${orderData.externalProcessorId || orderData.externalProcessor?.id || ''}`,
-        maquiladorDestination: orderData.maquiladorDestination || '',
-        loadingAddress: orderData.loadingAddress || '',
-        payment: `${orderData.paymentTerm?.id || ''}`,
-        incoterm: `${orderData.incoterm?.id || ''}`,
-        buyerReference: orderData.buyerReference || '',
-        transport: `${orderData.transport?.id || ''}`,
-        truckPlate: orderData.truckPlate || '',
-        trailerPlate: orderData.trailerPlate || '',
-        transportationNotes: orderData.transportationNotes || '',
-        billingAddress: orderData.billingAddress || '',
-        shippingAddress: orderData.shippingAddress || '',
-        productionNotes: orderData.productionNotes || '',
-        accountingNotes: orderData.accountingNotes || '',
-        transportNotes: orderData.transportNotes || '',
-        emails: orderData.emails || [],
-        ccEmails: orderData.ccEmails || [],
-      });
-    }
+  const defaultValues = useMemo<DefaultValues>(() => {
+    if (!orderData) return initialDefaultValues;
+    return {
+      orderType:
+        (orderData.orderType ?? orderData.order_type) === 'autoventa' ? 'autoventa' : 'standard',
+      entryDate: parseDate(orderData.entryDate),
+      loadDate: parseDate(orderData.loadDate),
+      salesperson: `${orderData.salesperson?.id || ''}`,
+      fieldOperator: `${orderData.fieldOperator?.id || orderData.fieldOperatorId || ''}`,
+      externalProcessor: `${orderData.externalProcessorId || orderData.externalProcessor?.id || ''}`,
+      maquiladorDestination: orderData.maquiladorDestination || '',
+      loadingAddress: orderData.loadingAddress || '',
+      payment: `${orderData.paymentTerm?.id || ''}`,
+      incoterm: `${orderData.incoterm?.id || ''}`,
+      buyerReference: orderData.buyerReference || '',
+      transport: `${orderData.transport?.id || ''}`,
+      truckPlate: orderData.truckPlate || '',
+      trailerPlate: orderData.trailerPlate || '',
+      transportationNotes: orderData.transportationNotes || '',
+      billingAddress: orderData.billingAddress || '',
+      shippingAddress: orderData.shippingAddress || '',
+      productionNotes: orderData.productionNotes || '',
+      accountingNotes: orderData.accountingNotes || '',
+      transportNotes: orderData.transportNotes || '',
+      emails: orderData.emails || [],
+      ccEmails: orderData.ccEmails || [],
+    };
   }, [orderData]);
 
   const formGroupsWithOptions = useMemo(() => {
@@ -531,11 +529,12 @@ export function useOrderFormConfig({ orderData }: { orderData?: OrderData | null
     options.transports.length,
   ]);
 
-  useEffect(() => {
-    setFormGroups(formGroupsWithOptions);
-  }, [formGroupsWithOptions]);
-
   const loadingProgress = { current: actualLoading ? 0 : 4, total: 4 };
 
-  return { defaultValues, formGroups, loading: actualLoading, loadingProgress };
+  return {
+    defaultValues,
+    formGroups: formGroupsWithOptions,
+    loading: actualLoading,
+    loadingProgress,
+  };
 }

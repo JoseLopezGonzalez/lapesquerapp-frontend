@@ -244,14 +244,11 @@ describe('orderService', () => {
 
       fetchWithTenant.mockResolvedValueOnce(mockJsonResponse(job));
 
-      const result = await createOrdersProfitabilityExportJob(
-        {
-          dateFrom: '2025-12-31',
-          dateTo: '2026-04-28',
-          productIds: [],
-        },
-        token
-      );
+      const result = await createOrdersProfitabilityExportJob({
+        dateFrom: '2025-12-31',
+        dateTo: '2026-04-28',
+        productIds: [],
+      });
 
       expect(fetchWithTenant).toHaveBeenCalledWith(
         expect.stringContaining('statistics/orders/profitability-summary/export-jobs'),
@@ -293,7 +290,7 @@ describe('orderService', () => {
 
       fetchWithTenant.mockResolvedValueOnce(mockJsonResponse({ data: job }));
 
-      const result = await getOrdersProfitabilityExportJob('job-1', token);
+      const result = await getOrdersProfitabilityExportJob('job-1');
 
       expect(fetchWithTenant).toHaveBeenCalledWith(
         expect.stringContaining('statistics/orders/profitability-summary/export-jobs/job-1'),
@@ -325,8 +322,7 @@ describe('orderService', () => {
       });
 
       const result = await downloadOrdersProfitabilityExportJob(
-        '/api/v2/statistics/orders/profitability-summary/export-jobs/job-1/download',
-        token
+        '/api/v2/statistics/orders/profitability-summary/export-jobs/job-1/download'
       );
 
       expect(fetchWithTenant).toHaveBeenCalledWith(

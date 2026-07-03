@@ -6,7 +6,7 @@ category: code-quality
 priority: P2
 risk: low
 size: S
-status: ready
+status: done
 dependencies: []
 target_files:
   - src/hooks/useOrderFormConfig.ts
@@ -131,15 +131,55 @@ npm run test:run
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+Se sustituyó `const [defaultValues, setDefaultValues] = useState(...)` +
+`useEffect` de sincronización por un `useMemo(() => ..., [orderData])` que
+devuelve `initialDefaultValues` cuando `orderData` es null/undefined, y el
+objeto mapeado en caso contrario. Se eliminó también el `useState`/`useEffect`
+que copiaba `formGroupsWithOptions` a `formGroups`: el hook ahora devuelve
+`formGroupsWithOptions` (ya un `useMemo`) directamente en el objeto de
+retorno. Se eliminaron los imports `useState`/`useEffect`, ya sin uso en el
+archivo. No se tocó el `useEffect` de `OrderEditSheet/index.tsx` que llama a
+`reset(defaultValues)` al abrir el Sheet — sigue siendo necesario porque
+`reset()` es una API imperativa de react-hook-form, no derivable con
+`useMemo`.
 
 ## Resultado
 
-{se rellena al terminar la implementación}
+`npm run type-check` limpio (0 errores). `npx eslint` sobre los 2 archivos
+tocados: 0 errores, 2 warnings preexistentes y no relacionados (falta de
+`orderData?.externalProcessor` en las deps de un `useMemo` que ya existía sin
+cambios, ajeno a este GAP). No existen tests dedicados a
+`useOrderFormConfig` ni a `OrderEditSheet` en el repo. Verificación manual
+pendiente para Jose: abrir "Editar" sobre un pedido con datos completos en
+`/admin/orders-manager` y confirmar precarga correcta, y cambiar de pedido
+seleccionado sin recargar para confirmar que el formulario refleja el nuevo
+pedido.
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+Veredicto: `done`.
+
+Auditoría con contexto limpio confirma: `useOrderFormConfig.ts` ya no importa
+`useState`/`useEffect` (solo `useMemo`, línea 4); `defaultValues` se deriva
+con `useMemo(() => ..., [orderData])` devolviendo `initialDefaultValues`
+cuando `orderData` es null/undefined (líneas 381-408); `formGroupsWithOptions`
+se devuelve directamente en el objeto de retorno (`formGroups:
+formGroupsWithOptions`, línea 535) sin el `useState`+`useEffect` intermedio
+que existía antes. El contrato de retorno del hook
+(`{ defaultValues, formGroups, loading, loadingProgress }`) no cambió. El
+consumidor `OrderEditSheet/index.tsx` no fue tocado (confirmado por `git diff
+--stat`) y sigue haciendo `reset(defaultValues)` en su propio `useEffect`
+condicionado a `open && defaultValues && !loading` (líneas 104-107) — correcto,
+ya que `reset()` es una API imperativa de react-hook-form que no se puede
+sustituir por derivación pura, tal como razona la nota de implementación.
+`npm run type-check` limpio. `npx eslint` sobre el archivo: 0 errores, 2
+warnings preexistentes y no relacionados con este cambio (dependencia
+`orderData?.externalProcessor` faltante en el `useMemo` de
+`formGroupsWithOptions`, líneas 410/504 — ese `useMemo` y su array de
+dependencias no fueron tocados por este GAP, confirmado por el diff). No hay
+tests dedicados a este hook ni a `OrderEditSheet` en el repo, por lo que la
+verificación manual de precarga/cambio de pedido sigue pendiente para Jose
+como señala la nota de implementación.
 
 ## Links
 

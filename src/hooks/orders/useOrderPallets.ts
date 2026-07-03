@@ -59,7 +59,7 @@ export function useOrderPallets({
   const orderDetailKey = useMemo(() => orderKeys.detail(tenantId, orderId), [tenantId, orderId]);
 
   const invalidateOrderDetail = useCallback(() => {
-    return queryClient.invalidateQueries({ queryKey: orderDetailKey });
+    return queryClient.invalidateQueries({ queryKey: orderDetailKey, refetchType: 'none' });
   }, [queryClient, orderDetailKey]);
 
   const { mutateAsync: deletePalletMutation } = useMutation({

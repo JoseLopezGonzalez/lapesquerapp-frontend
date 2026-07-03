@@ -16,10 +16,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useOrderContext } from '@/context/OrderContext';
-import {
-  formatDecimalCurrency,
-  formatDecimalWeight,
-} from '@/helpers/formats/numbers/formatNumbers';
+import { formatDecimal, formatDecimalCurrency } from '@/helpers/formats/numbers/formatNumbers';
 import { Plus, X, Check, Edit2, Trash2 } from 'lucide-react';
 import { Combobox } from '@/components/Shadcn/Combobox';
 import {
@@ -67,6 +64,10 @@ interface AuxiliaryLineRow {
 
 function formatTaxRate(rate: number | null): string {
   return rate == null ? 'IVA pendiente' : `${rate}%`;
+}
+
+function formatQuantityWithUnit(quantity: number, unit?: string): string {
+  return `${formatDecimal(quantity)} ${unit || 'kg'}`;
 }
 
 function isRowValid(row: AuxiliaryLineRow): boolean {
@@ -396,7 +397,7 @@ const OrderAuxiliaryLines = () => {
                           />
                         ) : (
                           <p className="py-2 text-sm font-medium">
-                            {formatDecimalWeight(Number(row.quantity))}
+                            {formatQuantityWithUnit(Number(row.quantity), row.unit)}
                           </p>
                         )}
                       </div>
@@ -631,7 +632,7 @@ const OrderAuxiliaryLines = () => {
                               className="w-full text-right"
                             />
                           ) : (
-                            formatDecimalWeight(Number(row.quantity))
+                            formatQuantityWithUnit(Number(row.quantity), row.unit)
                           )}
                         </TableCell>
                         <TableCell className="text-right">

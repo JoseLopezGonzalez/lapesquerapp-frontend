@@ -6,7 +6,7 @@ category: code-quality
 priority: P2
 risk: low
 size: S
-status: ready
+status: done
 dependencies: []
 target_files:
   - src/services/orderService.ts
@@ -104,19 +104,41 @@ npm run test:run
 
 ## Notas de implementación
 
-{se rellena durante la implementación. Nota de `gap-normalizer`: este GAP queda
-`ready` sobre la base de la acción por defecto — internalizar el token en las 3
-funciones, sin necesidad de decidir primero si se eliminan. La pregunta sobre
-si existe un plan de UI pendiente para la exportación de rentabilidad puede
-lanzarse a Jose en paralelo, sin bloquear el cierre de este GAP.}
+Se internalizó `getAuthToken()` en las 3 funciones de exportación de
+rentabilidad (`createOrdersProfitabilityExportJob`,
+`getOrdersProfitabilityExportJob`, `downloadOrdersProfitabilityExportJob`),
+igual que el resto del archivo. Se eliminó el tipo `AuthToken` (ya sin uso) y
+se actualizaron las 3 llamadas correspondientes en
+`src/__tests__/services/orderService.test.js` para dejar de pasar `token`
+como argumento explícito (el mock de `getAuthToken` ya cubre el valor
+esperado en las aserciones de `Authorization`). No se eliminó código muerto:
+sigue pendiente la pregunta a Jose sobre si hay plan de UI para la
+exportación asíncrona de rentabilidad (fuera de alcance de este GAP).
 
 ## Resultado
 
-{se rellena al terminar la implementación}
+`npm run type-check` y `npm run lint` limpios (0 errores). Test suite de
+`orderService.test.js` en verde (20/20). Sin cambios de comportamiento en
+runtime — las 3 funciones siguen requiriendo un token válido, solo cambia de
+dónde lo obtienen.
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+Veredicto: `done`.
+
+Auditoría con contexto limpio confirma: las 3 funciones
+(`createOrdersProfitabilityExportJob`, `getOrdersProfitabilityExportJob`,
+`downloadOrdersProfitabilityExportJob`, `src/services/orderService.ts:1117-1187`)
+ya no reciben `token` como parámetro — internamente hacen
+`const token = await getAuthToken();` igual que las 32 funciones restantes del
+archivo (verificado con grep, no queda ningún caller pasando `token`
+explícito). El tipo `AuthToken` fue eliminado (`grep -n AuthToken` no devuelve
+resultados). `src/__tests__/services/orderService.test.js` ya no pasa `token`
+en las 3 llamadas (líneas 247, 293, 324) y sigue usando `token` solo como
+valor esperado en las aserciones de `Authorization`. Re-ejecutado
+`npx vitest run src/__tests__/services/orderService.test.js`: 20/20 en verde.
+`npm run type-check` limpio. Sin desviación entre notas de implementación y
+código real.
 
 ## Links
 

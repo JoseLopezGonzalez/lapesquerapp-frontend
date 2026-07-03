@@ -6,7 +6,7 @@ category: code-quality
 priority: P3
 risk: low
 size: XS
-status: ready
+status: done
 dependencies:
   - GAP-V2-025
 target_files:
@@ -103,15 +103,44 @@ npm run lint
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+Cambio de una línea: `invalidateOrderDetail` en `useOrderPallets.ts:61-63` pasa
+ahora `refetchType: 'none'` a `queryClient.invalidateQueries(...)`. No se tocó
+`reload()` en `useOrder.ts` ni los sub-hooks hermanos, tal como especifica el
+GAP.
 
 ## Resultado
 
-{se rellena al terminar la implementación}
+`npm run type-check` y `npx eslint src/hooks/orders/useOrderPallets.ts`
+limpios (0 errores). No hay test dedicado a `useOrderPallets`. Se ejecutó la
+suite completa (`npx vitest run`) y se comparó contra el árbol limpio antes
+del lote (via `git stash`): mismos 11 archivos / 22 tests en fallo antes y
+después del cambio — son fallos preexistentes no relacionados (mocking de
+`getAuthToken`, fechas, etc.), sin regresión introducida por este GAP.
+Verificación manual pendiente para Jose: confirmar en Network (DevTools) que
+cada operación de palet genera una sola petición GET al detalle del pedido.
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+Veredicto: `done`.
+
+Auditoría con contexto limpio confirma: `invalidateOrderDetail`
+(`src/hooks/orders/useOrderPallets.ts:61-63`) pasa ahora
+`refetchType: 'none'` a `queryClient.invalidateQueries(...)`, exactamente el
+cambio de una línea descrito en las notas de implementación (`git diff`
+confirma que es el único cambio del archivo). `reload()` en
+`src/hooks/useOrder.ts` y los sub-hooks hermanos
+(`useOrderIncidents.ts`, `useOrderPlannedDetails.ts`,
+`useOrderAuxiliaryLines.ts`) no muestran ningún cambio en `git diff --stat` —
+quedaron intactos tal como exige el GAP. Las cuatro mutaciones
+(`deletePalletMutation`, `unlinkPalletMutation`, `linkPalletsMutation`,
+`unlinkAllPalletsMutation`) siguen usando `invalidateOrderDetail` como
+`onSuccess` y cada wrapper sigue llamando a `reload()` después, por lo que el
+único refetch real de red pasa a ser el de `reload()` (la invalidación ahora
+solo marca stale, sin disparar refetch automático) — resuelve el doble
+refetch sin tocar `resetCostAnalysis()` ni la propagación de `onChange`.
+`npm run type-check` limpio. `npx eslint` sobre el archivo: 0 errores. No hay
+test dedicado a `useOrderPallets`; la verificación manual en Network
+(DevTools) sigue pendiente para Jose como señala la nota de implementación.
 
 ## Links
 

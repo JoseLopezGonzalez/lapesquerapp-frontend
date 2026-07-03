@@ -6,7 +6,7 @@ category: a11y-responsive
 priority: P2
 risk: low
 size: S
-status: ready
+status: done
 dependencies: []
 target_files:
   - src/components/Admin/OrdersManager/Order/OrderEditSheet/index.tsx
@@ -94,15 +94,99 @@ y confirmar (a) borde de error visible en el control real (no en un div contened
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+`renderField` ahora recibe `hasError: boolean` como segundo parámetro (antes se calculaba
+solo en el JSX que lo envolvía) y lo añade a `commonProps['aria-invalid']` para
+`Input`/`Textarea`, y como prop directo `aria-invalid` a `SelectTrigger` (ambos ya soportan
+el estilo `aria-invalid:border-destructive` vía Tailwind, verificado en
+`src/components/ui/input.jsx`, `textarea.jsx` y `select.jsx`). El wrapper `<div
+className="rounded-md border-red-300">` se eliminó para estos 3 tipos de campo.
+
+Para `Combobox` (`@/components/Shadcn/Combobox`, `.js` sin soporte de `aria-invalid`) se
+aplica el token semántico `border-destructive` vía `className` (usando `cn()`, importado
+nuevo) en vez de mantener el wrapper. Para `DatePicker` (`@/components/ui/datePicker.jsx`),
+que no acepta ni `className` ni `aria-invalid` en su firma actual, se conserva un wrapper
+mínimo pero reemplazando el color hardcodeado `border-red-300` por el token semántico
+`border-destructive` — decisión explícita de **no** modificar `Combobox`/`DatePicker`
+(componentes compartidos usados por 14+ callers cada uno) para añadirles soporte nativo de
+`aria-invalid`, ya que están fuera de los `target_files` declarados en este GAP y su tipo
+de archivo (`.js`/`.jsx`) dispararía la regla de migración obligatoria a `.ts` en el mismo
+commit (`.claude/rules/typescript.md`) — alcance mayor al tamaño `S`/riesgo `low` de este
+GAP. Queda anotado como seguimiento posible si Jose quiere extender el soporte nativo a
+esos dos componentes.
+
+El texto de error se realineó al patrón documentado en `.claude/design-context.md` §Forms
+("Error message style"): `text-red-400 text-xs pt-1` con prefijo `*`, eliminando el icono
+`AlertTriangle` inline (se mantiene el import porque sigue en uso en el diálogo de
+confirmación de descarte, línea ~458) — no había un segundo patrón establecido en el resto
+del módulo que justificara mantener `text-red-500 text-sm` + icono, así que no fue necesario
+preguntar a Jose ni actualizar `design-context.md`.
 
 ## Resultado
 
-{se rellena al terminar la implementación}
+`npm run type-check` limpio (0 errores). `npx eslint` sobre el archivo: 0 errores.
+`npx vitest run`: mismos 11 archivos/22 tests en fallo preexistentes que en el árbol
+limpio, sin regresión. No hay test dedicado a `OrderEditSheet`. Verificación manual
+pendiente para Jose: abrir "Editar" sobre un pedido, dejar un campo requerido vacío,
+enviar, y confirmar en DevTools que el campo real (`Input`/`SelectTrigger`) expone
+`aria-invalid="true"` y aplica el borde `destructive`.
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+### Resultado: ✅ APROBADO
+
+### Puntuación: 9/10
+
+Verificado contra el código real (`src/components/Admin/OrdersManager/Order/OrderEditSheet/index.tsx`):
+
+- `renderField` recibe `hasError: boolean` como segundo parámetro (línea 194) y `commonProps`
+  incluye `'aria-invalid': hasError` (línea 200), aplicado a `Input` (línea 300, `{...commonProps}`)
+  y `Textarea` (línea 277, `{...commonProps}` con `aria-invalid` no sobrescrito por el `className`
+  posterior). `SelectTrigger` recibe `aria-invalid={hasError}` directo (línea 232). Confirmado que
+  `input.jsx`/`textarea.jsx`/`select.jsx` ya definen `aria-invalid:border-destructive` en su
+  className base — el estado llega al DOM real vía spread de props de Radix, no se pierde en
+  ningún punto.
+- El wrapper `<div className="rounded-md border-red-300">` fue eliminado para `Input`/`Textarea`/
+  `Select`. Grep de `border-red|text-red-5|red-300|red-500` sobre el archivo: 0 resultados.
+- `Combobox` usa `cn(field.props?.className, hasError && 'border-destructive')` (línea 267) — token
+  semántico, no hardcode.
+- `DatePicker` conserva un wrapper mínimo pero con `border-destructive` (líneas 371/407), nunca
+  `border-red-300`.
+- Texto de error realineado a `text-red-400 text-xs pt-1` con prefijo `*` (líneas 377-379,
+  412-415), coincide con el patrón documentado en `design-context.md` §Forms.
+- `AlertTriangle` sigue importado y en uso real en el `AlertDialogTitle` del diálogo de descarte
+  (línea 458) — no es un import muerto.
+
+**Sobre la decisión de scope (no tocar `Combobox`/`DatePicker`):** razonable y bien documentada.
+Verifiqué directamente ambos componentes compartidos: `src/components/Shadcn/Combobox/index.js`
+solo expone `className` (sin `aria-invalid`) y se usa vía `cn()` correctamente; `src/components/
+ui/datePicker.jsx` (línea 49) tiene una firma de props cerrada (`date, onChange, formatStyle,
+fromDate, id, disabled`) sin `className` ni rest-spread — literalmente no hay forma de inyectarle
+ni `aria-invalid` ni una clase de borde sin modificar el componente en sí. Migrarlos habría
+disparado la regla de migración `.js`→`.ts` obligatoria en el mismo commit
+(`.claude/rules/typescript.md`), fuera del tamaño `S`/riesgo `low` declarado en este GAP. No lo
+marco `needs_fix`: la solución aplicada (wrapper `border-destructive` para `DatePicker`, className
+condicional para `Combobox`) ya resuelve el problema real del GAP (color hardcodeado eliminado,
+paridad visual con el resto de campos) sin tocar componentes compartidos de 14+ callers. Es un
+candidato limpio para un GAP de seguimiento si Jose quiere accesibilidad nativa completa en esos
+dos componentes.
+
+### Checklist
+
+- [x] Criterios de aceptación cumplidos (los 4 del GAP)
+- [x] Sin fetch() directo / sin hardcode de tenant (n/a, sin HTTP en este componente)
+- [x] Sin archivos .js nuevos
+- [x] Sin `any` sin justificar
+- [x] Patrones de `.claude/rules/` respetados
+- [x] Sin colores hardcodeados (`border-red-*`, `text-red-5*`) — 0 resultados en grep
+
+### Observaciones para Jose
+
+Implementación sólida y quirúrgica — resuelve el problema de fondo (indicador de error atado al
+control real, no a un div wrapper) sin extender el scope a `Combobox`/`DatePicker`, decisión que
+comparto dado el coste de migración que dispararía. Resto 1 punto solo porque la verificación
+manual en DevTools (abrir el Sheet, dejar un campo vacío, confirmar `aria-invalid="true"` visible)
+sigue pendiente — no bloquea el cierre, es una confirmación visual de bajo riesgo dado que el
+código está correcto.
 
 ## Links
 

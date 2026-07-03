@@ -15,7 +15,7 @@ export default function ChartTooltip({ active, payload, isCurrency }) {
           <p className="text-foreground text-sm">
             {formatDateShort(data.payload.load_date || data.payload.month)}
           </p>
-          <p className="text-sm font-semibold" style={{ color: data.color }}>
+          <p className="text-sm font-medium" style={{ color: data.color }}>
             {isCurrency
               ? `${formatDecimalCurrency(data.value)}/kg`
               : formatDecimalWeight(data.value)}

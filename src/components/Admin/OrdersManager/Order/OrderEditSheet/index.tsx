@@ -32,6 +32,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Combobox } from '@/components/Shadcn/Combobox';
+import { cn } from '@/lib/utils';
 import { Edit, Save, Loader2, AlertTriangle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Label } from '@/components/ui/label';
@@ -190,12 +191,13 @@ const OrderEditSheet = ({
 
   // Memoizar renderField para evitar re-renders innecesarios
   const renderField = useCallback(
-    (field: FormField) => {
+    (field: FormField, hasError: boolean) => {
       const commonProps = {
         id: field.name,
         placeholder: field.props?.placeholder || '',
         ...register(field.name as never),
         className: isMobile ? 'h-12 text-base' : '',
+        'aria-invalid': hasError,
       };
 
       switch (field.component) {
@@ -227,7 +229,7 @@ const OrderEditSheet = ({
               render={({ field: { onChange, value, onBlur } }) => {
                 return (
                   <Select value={value as string} onValueChange={onChange} onBlur={onBlur}>
-                    <SelectTrigger className="w-full" loading={loading}>
+                    <SelectTrigger className="w-full" loading={loading} aria-invalid={hasError}>
                       <SelectValue
                         placeholder={field.props?.placeholder}
                         loading={loading}
@@ -262,7 +264,7 @@ const OrderEditSheet = ({
                     value={value as string}
                     onChange={onChange}
                     onBlur={onBlur}
-                    className={field.props?.className}
+                    className={cn(field.props?.className, hasError && 'border-destructive')}
                     loading={loading}
                   />
                 );
@@ -364,13 +366,18 @@ const OrderEditSheet = ({
                             <Label htmlFor={field.name} className={isMobile ? 'text-sm' : ''}>
                               {field.label}
                             </Label>
-                            <div className={hasError ? 'rounded-md border-red-300' : ''}>
-                              {renderField(field)}
+                            <div
+                              className={cn(
+                                field.component === 'DatePicker' &&
+                                  hasError &&
+                                  'border-destructive rounded-md border'
+                              )}
+                            >
+                              {renderField(field, !!hasError)}
                             </div>
                             {hasError && (
-                              <p className="flex items-center gap-1 text-sm text-red-500">
-                                <AlertTriangle className="h-3 w-3" />
-                                {hasError.message as string}
+                              <p className="pt-1 text-xs text-red-400">
+                                * {hasError.message as string}
                               </p>
                             )}
                           </div>
@@ -397,13 +404,18 @@ const OrderEditSheet = ({
                             className={`grid w-full min-w-0 gap-2 ${field.colSpan || ''}`}
                           >
                             <Label htmlFor={field.name}>{field.label}</Label>
-                            <div className={hasError ? 'rounded-md border-red-300' : ''}>
-                              {renderField(field)}
+                            <div
+                              className={cn(
+                                field.component === 'DatePicker' &&
+                                  hasError &&
+                                  'border-destructive rounded-md border'
+                              )}
+                            >
+                              {renderField(field, !!hasError)}
                             </div>
                             {hasError && (
-                              <p className="flex items-center gap-1 text-sm text-red-500">
-                                <AlertTriangle className="h-3 w-3" />
-                                {hasError.message as string}
+                              <p className="pt-1 text-xs text-red-400">
+                                * {hasError.message as string}
                               </p>
                             )}
                           </div>

@@ -6,7 +6,7 @@ category: domain-business
 priority: P2
 risk: low
 size: S
-status: ready
+status: done
 dependencies: []
 target_files:
   - src/components/Admin/OrdersManager/Order/OrderAuxiliaryLines/index.tsx
@@ -91,15 +91,56 @@ mostrada en modo lectura usa esa unidad, en mobile y desktop.
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+Se añadió el helper local `formatQuantityWithUnit(quantity, unit?)` (junto a
+`formatTaxRate`, mismo patrón de helpers locales del archivo), que combina
+`formatDecimal` (sin sufijo) con `row.unit`, cayendo a `kg` solo si `unit` está vacío.
+Se sustituyeron las 2 llamadas a `formatDecimalWeight(Number(row.quantity))` (mobile
+línea ~404, desktop línea ~639) por `formatQuantityWithUnit(Number(row.quantity),
+row.unit)`. Se eliminó el import de `formatDecimalWeight` (ya sin uso en el archivo) y
+se añadió `formatDecimal` al import existente de `@/helpers/formats/numbers/formatNumbers`.
+No se tocó `OrderTotalsSummaryDialog` — sus totales son monetarios
+(`formatDecimalCurrency`), confirmando que no repite el mismo sufijo fijo de peso.
 
 ## Resultado
 
-{se rellena al terminar la implementación}
+`npm run type-check` y `npx eslint` sobre el archivo: limpios (0 errores). No hay test
+dedicado a `OrderAuxiliaryLines`. Verificación manual pendiente para Jose: crear una línea
+auxiliar con un artículo cuya unidad no sea `kg` (p.ej. `ud`) y confirmar que la cantidad en
+modo lectura muestra esa unidad, en mobile y desktop; confirmar que una línea con
+`unit === 'kg'` no cambia visualmente.
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+### Resultado: ✅ APROBADO
+
+### Puntuación: 10/10
+
+Verificado contra `src/components/Admin/OrdersManager/Order/OrderAuxiliaryLines/index.tsx`:
+
+- Helper local `formatQuantityWithUnit(quantity: number, unit?: string)` (líneas 72-74):
+  `` `${formatDecimal(quantity)} ${unit || 'kg'}` `` — combina `formatDecimal` (sin sufijo) con
+  el fallback a `'kg'` solo si `unit` está vacío, exactamente como describe el GAP.
+- Ambas llamadas anteriores a `formatDecimalWeight(Number(row.quantity))` sustituidas: mobile
+  línea 403, desktop línea 638, ambas usan `formatQuantityWithUnit(Number(row.quantity), row.unit)`.
+- Import de `formatDecimalWeight` eliminado del bloque de import de `formatNumbers` (líneas 19-22
+  solo importan `formatDecimal` y `formatDecimalCurrency`); grep de `formatDecimalWeight` sobre el
+  archivo completo: 0 resultados — confirmado que no queda ningún uso huérfano.
+- `OrderTotalsSummaryDialog.tsx` no aparece en `git status` como modificado — confirmado que no se
+  tocó, correcto dado que sus totales son monetarios.
+
+### Checklist
+
+- [x] Criterios de aceptación cumplidos (los 3 del GAP)
+- [x] Sin fetch() directo / sin hardcode de tenant (n/a)
+- [x] Sin archivos .js nuevos
+- [x] Sin `any` sin justificar
+- [x] Patrones de `.claude/rules/` respetados
+
+### Observaciones para Jose
+
+Cambio limpio y acotado exactamente al problema descrito — el fallback a `'kg'` solo cuando
+`unit` está vacío es la decisión correcta (no hay unidad universal segura para descripción libre
+sin catálogo, y `kg` es el caso más común en este dominio). Nada que objetar.
 
 ## Links
 

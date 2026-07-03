@@ -41,7 +41,7 @@ export default function ProductHistoryMobileCard({
       <CardContent className="space-y-4">
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-lg font-semibold">{product.product.name}</h3>
+            <h3 className="text-lg font-medium">{product.product.name}</h3>
             {trend.direction !== 'stable' && (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -78,23 +78,23 @@ export default function ProductHistoryMobileCard({
           <div className="grid grid-cols-2 gap-x-6 gap-y-2 border-t pt-2 text-sm">
             <div className="flex flex-col">
               <span className="text-muted-foreground text-xs font-medium">Cajas Totales</span>
-              <span className="text-base font-semibold">{formatInteger(product.total_boxes)}</span>
+              <span className="text-base font-medium">{formatInteger(product.total_boxes)}</span>
             </div>
             <div className="flex flex-col">
               <span className="text-muted-foreground text-xs font-medium">Peso Neto</span>
-              <span className="text-base font-semibold">
+              <span className="text-base font-medium">
                 {formatDecimalWeight(product.total_net_weight)}
               </span>
             </div>
             <div className="flex flex-col">
               <span className="text-muted-foreground text-xs font-medium">Precio Medio</span>
-              <span className="text-base font-semibold">
+              <span className="text-base font-medium">
                 {formatDecimalCurrency(product.average_unit_price)}
               </span>
             </div>
             <div className="flex flex-col">
               <span className="text-muted-foreground text-xs font-medium">Importe Total</span>
-              <span className="text-base font-semibold">
+              <span className="text-base font-medium">
                 {formatDecimalCurrency(product.total_amount)}
               </span>
             </div>
@@ -104,7 +104,7 @@ export default function ProductHistoryMobileCard({
         <div className="flex w-full flex-col gap-4 pt-2">
           <Card className="flex h-48 w-full flex-col overflow-hidden">
             <CardHeader className="flex-shrink-0 pb-2">
-              <CardTitle className="text-sm font-semibold">Evolución de precio</CardTitle>
+              <CardTitle className="text-sm font-medium">Evolución de precio</CardTitle>
             </CardHeader>
             <CardContent className="text-primary/50 min-h-0 flex-1 pt-0">
               <ResponsiveContainer width="100%" height="100%">
@@ -138,7 +138,7 @@ export default function ProductHistoryMobileCard({
           </Card>
           <Card className="flex h-48 w-full flex-col overflow-hidden">
             <CardHeader className="flex-shrink-0 pb-2">
-              <CardTitle className="text-sm font-semibold">Evolución de peso</CardTitle>
+              <CardTitle className="text-sm font-medium">Evolución de peso</CardTitle>
             </CardHeader>
             <CardContent className="text-primary/50 min-h-0 flex-1 pt-0">
               <ResponsiveContainer width="100%" height="100%">

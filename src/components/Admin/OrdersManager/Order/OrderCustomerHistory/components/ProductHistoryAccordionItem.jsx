@@ -42,7 +42,7 @@ export default function ProductHistoryAccordionItem({
     ? 'px-5 py-4 hover:bg-muted/50 transition-colors [&>svg]:transition-transform no-underline hover:no-underline'
     : 'px-4 py-3 hover:bg-muted/50 transition-colors [&>svg]:transition-transform no-underline hover:no-underline';
   const itemClass = 'rounded-lg overflow-hidden';
-  const titleClass = isMobile ? 'font-semibold text-lg' : 'font-medium text-base';
+  const titleClass = isMobile ? 'font-medium text-lg' : 'font-medium text-base';
   const badgeClass = isMobile
     ? 'flex items-center gap-1 text-xs h-6 px-2.5 cursor-help'
     : 'flex items-center gap-1 text-xs h-5 cursor-help';
@@ -50,12 +50,12 @@ export default function ProductHistoryAccordionItem({
   const metricsGridClass = isMobile
     ? 'gap-x-6 gap-y-2 text-sm pr-0'
     : 'gap-x-4 gap-y-1 text-xs pr-4';
-  const metricsValueClass = isMobile ? 'font-semibold text-base' : 'font-medium text-sm';
+  const metricsValueClass = isMobile ? 'font-medium text-base' : 'font-medium text-sm';
   const contentClass = isMobile ? 'p-4 space-y-3 w-full' : 'p-3 space-y-3 w-full';
   const chartGapClass = isMobile ? 'gap-4' : 'gap-3';
   const chartHeight = isMobile ? 'h-48' : 'h-40';
   const chartHeaderClass = 'pb-2 flex-shrink-0';
-  const chartTitleClass = isMobile ? 'text-sm font-semibold' : 'text-xs font-medium';
+  const chartTitleClass = isMobile ? 'text-sm font-medium' : 'text-xs font-medium';
   const chartContentClass = isMobile ? 'px-3' : 'px-2';
 
   return (
@@ -235,7 +235,7 @@ export default function ProductHistoryAccordionItem({
             <TableBody>
               {(product.lines || []).map((order) => (
                 <TableRow key={order.order_id}>
-                  <TableCell className={isMobile ? 'text-sm font-semibold' : 'font-medium'}>
+                  <TableCell className={isMobile ? 'text-sm font-medium' : 'font-medium'}>
                     {order.formatted_id}
                   </TableCell>
                   <TableCell className={isMobile ? 'text-sm' : ''}>
@@ -253,7 +253,7 @@ export default function ProductHistoryAccordionItem({
                   <TableCell className={`text-right ${isMobile ? 'text-sm font-medium' : ''}`}>
                     {formatDecimalCurrency(order.subtotal)}
                   </TableCell>
-                  <TableCell className={`text-right ${isMobile ? 'text-sm font-semibold' : ''}`}>
+                  <TableCell className={`text-right ${isMobile ? 'text-sm font-medium' : ''}`}>
                     {formatDecimalCurrency(order.total)}
                   </TableCell>
                 </TableRow>

@@ -9,9 +9,6 @@ import { getAuthToken } from '@/lib/auth/getAuthToken';
 import { getErrorMessage, handleServiceResponse, ApiError } from '@/lib/api/apiHelpers';
 import { getUserAgent } from '@/lib/utils/getUserAgent';
 
-/** Auth token for API requests — used by profitability export functions still pending migration */
-type AuthToken = string;
-
 /** Order payload for create/update */
 export interface OrderPayload {
   [key: string]: unknown;
@@ -349,7 +346,11 @@ export async function getOrderCostAnalysis(
       'User-Agent': getUserAgent(),
     },
   });
-  const data = await handleServiceResponse(response, null, 'Error al obtener el análisis económico');
+  const data = await handleServiceResponse(
+    response,
+    null,
+    'Error al obtener el análisis económico'
+  );
   if (!data) return null;
   return (data.data || data) as OrderCostAnalysisResponse;
 }
@@ -381,7 +382,9 @@ export async function updateOrder(
     );
   }
   const data: { data?: Order } | Order = await response.json();
-  return (data && typeof data === 'object' && 'data' in data ? data.data : data) as Order | undefined;
+  return (data && typeof data === 'object' && 'data' in data ? data.data : data) as
+    | Order
+    | undefined;
 }
 
 /**
@@ -777,7 +780,12 @@ export async function getProductionViewData(): Promise<unknown[]> {
     throw new Error(getErrorMessage(errorData) || 'Error al obtener los datos de producción');
   }
   const data: unknown[] | { data?: unknown[] } = await response.json();
-  if (data && typeof data === 'object' && 'data' in data && Array.isArray((data as { data?: unknown[] }).data)) {
+  if (
+    data &&
+    typeof data === 'object' &&
+    'data' in data &&
+    Array.isArray((data as { data?: unknown[] }).data)
+  ) {
     return (data as { data: unknown[] }).data;
   }
   if (Array.isArray(data)) return data;
@@ -1118,9 +1126,9 @@ export async function getOrdersProfitabilitySummary(
  * Creates an async profitability export job for orders.
  */
 export async function createOrdersProfitabilityExportJob(
-  params: OrdersProfitabilityExportJobParams,
-  token: AuthToken
+  params: OrdersProfitabilityExportJobParams
 ): Promise<OrdersProfitabilityExportJob> {
+  const token = await getAuthToken();
   const response = await fetchWithTenant(
     `${API_URL_V2}statistics/orders/profitability-summary/export-jobs`,
     {
@@ -1148,9 +1156,9 @@ export async function createOrdersProfitabilityExportJob(
  * Fetches the current status of an async profitability export job.
  */
 export async function getOrdersProfitabilityExportJob(
-  id: string,
-  token: AuthToken
+  id: string
 ): Promise<OrdersProfitabilityExportJob> {
+  const token = await getAuthToken();
   const response = await fetchWithTenant(
     `${API_URL_V2}statistics/orders/profitability-summary/export-jobs/${id}`,
     {
@@ -1177,9 +1185,9 @@ export async function getOrdersProfitabilityExportJob(
  * Downloads a finished async profitability export job.
  */
 export async function downloadOrdersProfitabilityExportJob(
-  downloadUrl: string,
-  token: AuthToken
+  downloadUrl: string
 ): Promise<OrdersProfitabilityExportDownload> {
+  const token = await getAuthToken();
   const response = await fetchWithTenant(normalizeProfitabilityExportDownloadUrl(downloadUrl), {
     method: 'GET',
     headers: {
