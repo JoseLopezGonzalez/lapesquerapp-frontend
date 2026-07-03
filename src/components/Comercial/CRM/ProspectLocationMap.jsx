@@ -10,7 +10,11 @@ import { geocodeAddress, hasMapboxToken } from '@/lib/maps/geocoding';
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 const DEFAULT_VIEW = { longitude: -3.7038, latitude: 40.4168, zoom: 5.5 };
 
-export default function ProspectLocationMap({ address, companyName }) {
+export default function ProspectLocationMap({
+  address,
+  companyName,
+  minHeightClassName = 'min-h-[320px]',
+}) {
   const mapRef = useRef(null);
   const [status, setStatus] = useState('idle');
   const [coords, setCoords] = useState(null);
@@ -93,7 +97,7 @@ export default function ProspectLocationMap({ address, companyName }) {
 
   if (!hasToken) {
     return (
-      <div className="bg-muted/10 flex min-h-[320px] items-center justify-center">
+      <div className={`bg-muted/10 flex items-center justify-center ${minHeightClassName}`}>
         <EmptyState
           icon={<MapPin className="text-primary h-10 w-10" />}
           title="Mapa no disponible"
@@ -106,7 +110,9 @@ export default function ProspectLocationMap({ address, companyName }) {
 
   if (!trimmedAddress) {
     return (
-      <div className="text-muted-foreground flex min-h-[320px] items-center justify-center px-6 text-center text-sm">
+      <div
+        className={`text-muted-foreground flex items-center justify-center px-6 text-center text-sm ${minHeightClassName}`}
+      >
         Añade una dirección para mostrar la ubicación del prospecto.
       </div>
     );
@@ -114,7 +120,9 @@ export default function ProspectLocationMap({ address, companyName }) {
 
   if (status === 'error') {
     return (
-      <div className="text-muted-foreground flex min-h-[320px] items-center justify-center px-6 text-center text-sm">
+      <div
+        className={`text-muted-foreground flex items-center justify-center px-6 text-center text-sm ${minHeightClassName}`}
+      >
         {error || 'No se pudo localizar la dirección del prospecto.'}
       </div>
     );
@@ -122,7 +130,9 @@ export default function ProspectLocationMap({ address, companyName }) {
 
   if (status === 'loading' || (status === 'idle' && !coords)) {
     return (
-      <div className="text-muted-foreground flex min-h-[320px] items-center justify-center px-6 text-center text-sm">
+      <div
+        className={`text-muted-foreground flex items-center justify-center px-6 text-center text-sm ${minHeightClassName}`}
+      >
         Localizando dirección...
       </div>
     );
@@ -130,14 +140,16 @@ export default function ProspectLocationMap({ address, companyName }) {
 
   if (!coords) {
     return (
-      <div className="text-muted-foreground flex min-h-[320px] items-center justify-center px-6 text-center text-sm">
+      <div
+        className={`text-muted-foreground flex items-center justify-center px-6 text-center text-sm ${minHeightClassName}`}
+      >
         No se ha podido ubicar esta dirección en el mapa.
       </div>
     );
   }
 
   return (
-    <div className="relative h-full min-h-[320px] w-full">
+    <div className={`relative h-full w-full ${minHeightClassName}`}>
       {googleMapsHref ? (
         <a
           href={googleMapsHref}

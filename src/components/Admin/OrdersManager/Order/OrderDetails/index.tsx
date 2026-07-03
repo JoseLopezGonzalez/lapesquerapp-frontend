@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useMemo } from 'react';
-import { FileText, Package, Truck, Wallet, MapPinOff } from 'lucide-react';
+import React from 'react';
+import { FileText, Package, Truck, Wallet } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { EmptyState } from '@/components/Utilities/EmptyState';
 import { useOrderContext } from '@/context/OrderContext';
+import ProspectLocationMap from '@/components/Comercial/CRM/ProspectLocationMap';
 import {
   formatInteger,
   formatDecimal,
@@ -85,8 +85,6 @@ const getNullablePercentage = (value: number | null | undefined) =>
 const getNullableCurrencyPerKg = (value: number | null | undefined) =>
   value == null ? '—' : `${formatDecimal(value)} €/kg`;
 
-const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-
 interface OrderDetailsProps {
   canViewCostData?: boolean;
 }
@@ -94,15 +92,6 @@ interface OrderDetailsProps {
 const OrderDetails = ({ canViewCostData = true }: OrderDetailsProps) => {
   const { order } = useOrderContext() as { order: Order };
   const { isMobile, mounted } = useIsMobileSafe();
-
-  const encodedAddress = useMemo(() => {
-    return order?.shippingAddress ? encodeURIComponent(order.shippingAddress) : '';
-  }, [order?.shippingAddress]);
-
-  const mapUrl = useMemo(() => {
-    if (!encodedAddress || !GOOGLE_API_KEY) return '';
-    return `https://www.google.com/maps/embed/v1/place?key=${GOOGLE_API_KEY}&q=${encodedAddress}`;
-  }, [encodedAddress]);
 
   if (!mounted) return null;
 
@@ -650,23 +639,11 @@ const OrderDetails = ({ canViewCostData = true }: OrderDetailsProps) => {
       <Card className="overflow-hidden">
         <CardContent className="grid p-0">
           <div className="map-container">
-            {mapUrl ? (
-              <iframe
-                width="100%"
-                height="270"
-                style={{ border: 0 }}
-                loading="lazy"
-                allowFullScreen
-                src={mapUrl}
-              />
-            ) : (
-              <EmptyState
-                title="Sin dirección de envío"
-                description="No hay dirección configurada para mostrar en el mapa."
-                icon={<MapPinOff />}
-                className="bg-muted/30 h-[270px]"
-              />
-            )}
+            <ProspectLocationMap
+              address={order?.shippingAddress ?? ''}
+              companyName={(order?.customer as { name?: string } | undefined)?.name}
+              minHeightClassName="min-h-[270px]"
+            />
           </div>
         </CardContent>
       </Card>
