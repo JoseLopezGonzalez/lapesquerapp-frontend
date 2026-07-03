@@ -1,12 +1,15 @@
 'use client';
 
 import { useMemo, useCallback } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   createOrderAuxiliaryLine,
   deleteOrderAuxiliaryLine,
   updateOrderAuxiliaryLine,
 } from '@/services/orderService';
 import type { Order, AuxiliaryOrderLine, AuxiliaryOrderLinePayload } from '@/services/orderService';
+import { orderKeys } from '@/lib/routes/queryKeys';
+import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
 
 export interface OrderSelectOption {
   value: number | string;
@@ -15,7 +18,6 @@ export interface OrderSelectOption {
 
 interface UseOrderAuxiliaryLinesParams {
   order: Order | null;
-  onOrderUpdate: (updatedOrder: Order) => void;
   onError?: (err: unknown) => void;
 }
 
@@ -30,62 +32,75 @@ export interface UseOrderAuxiliaryLinesResult {
 
 export function useOrderAuxiliaryLines({
   order,
-  onOrderUpdate,
   onError,
 }: UseOrderAuxiliaryLinesParams): UseOrderAuxiliaryLinesResult {
+  const queryClient = useQueryClient();
+  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
+  const orderId = order?.id;
+  const orderDetailKey = useMemo(() => orderKeys.detail(tenantId, orderId), [tenantId, orderId]);
+
   const auxiliaryLines = useMemo(
     () => (order?.auxiliaryLines ? [...order.auxiliaryLines] : []),
     [order?.auxiliaryLines]
   );
 
+  const invalidateOrderDetail = useCallback(() => {
+    return queryClient.invalidateQueries({ queryKey: orderDetailKey });
+  }, [queryClient, orderDetailKey]);
+
+  const { mutateAsync: updateLine } = useMutation({
+    mutationFn: ({
+      id,
+      updateData,
+    }: {
+      id: number | string;
+      updateData: AuxiliaryOrderLinePayload;
+    }) => updateOrderAuxiliaryLine(String(orderId), String(id), updateData),
+    onSuccess: invalidateOrderDetail,
+    onError: (err: unknown) => {
+      onError?.(err);
+    },
+  });
+
+  const { mutateAsync: deleteLine } = useMutation({
+    mutationFn: (id: number | string) => deleteOrderAuxiliaryLine(String(orderId), String(id)),
+    onSuccess: invalidateOrderDetail,
+    onError: (err: unknown) => {
+      onError?.(err);
+    },
+  });
+
+  const { mutateAsync: createLine } = useMutation({
+    mutationFn: (lineData: AuxiliaryOrderLinePayload) =>
+      createOrderAuxiliaryLine(String(orderId), lineData),
+    onSuccess: invalidateOrderDetail,
+    onError: (err: unknown) => {
+      onError?.(err);
+    },
+  });
+
   const updateAuxiliaryLine = useCallback(
     async (id: number | string, updateData: AuxiliaryOrderLinePayload) => {
-      if (!order) return;
-      return updateOrderAuxiliaryLine(String(order.id), String(id), updateData)
-        .then((updated) => {
-          const updatedLines = (order.auxiliaryLines ?? []).map((line) =>
-            line.id === updated.id ? updated : line
-          );
-          onOrderUpdate({ ...order, auxiliaryLines: updatedLines });
-        })
-        .catch((err: unknown) => {
-          onError?.(err);
-          throw err;
-        });
+      if (!orderId) return;
+      await updateLine({ id, updateData });
     },
-    [order, onOrderUpdate, onError]
+    [orderId, updateLine]
   );
 
   const deleteAuxiliaryLine = useCallback(
     async (id: number | string) => {
-      if (!order) return;
-      return deleteOrderAuxiliaryLine(String(order.id), String(id))
-        .then(() => {
-          const filteredLines = (order.auxiliaryLines ?? []).filter((line) => line.id !== id);
-          onOrderUpdate({ ...order, auxiliaryLines: filteredLines });
-        })
-        .catch((err: unknown) => {
-          onError?.(err);
-          throw err;
-        });
+      if (!orderId) return;
+      await deleteLine(id);
     },
-    [order, onOrderUpdate, onError]
+    [orderId, deleteLine]
   );
 
   const createAuxiliaryLine = useCallback(
     async (lineData: AuxiliaryOrderLinePayload) => {
-      if (!order) return;
-      return createOrderAuxiliaryLine(String(order.id), lineData)
-        .then((created) => {
-          const newLines = [...(order.auxiliaryLines ?? []), created];
-          onOrderUpdate({ ...order, auxiliaryLines: newLines });
-        })
-        .catch((err: unknown) => {
-          onError?.(err);
-          throw err;
-        });
+      if (!orderId) return;
+      await createLine(lineData);
     },
-    [order, onOrderUpdate, onError]
+    [orderId, createLine]
   );
 
   return {

@@ -5,7 +5,7 @@
 
 ## Fecha
 
-2026-07-02
+2026-07-03
 
 ## Módulo activo
 
@@ -13,39 +13,43 @@ orders (Pedidos) — módulo piloto
 
 ## Fase activa
 
-Primera auditoría real de `orders` completada en circuito acotado de 5 carriles. 20 GAPs documentados: 2 `ready`, 16 `done`, 0 `blocked` y 2 `rejected/superseded`. Cruce legacy acotado completado en `docs/ai/modules/orders/audit.md` sin crear GAPs nuevos.
+Circuito acotado de 5 carriles de `orders` sustancialmente cerrado: 21 GAPs documentados, 1 `ready` (GAP-V2-026, de seguimiento puntual), 18 `done`, 0 `blocked`, 2 `rejected/superseded`. GAP-V2-001 (sub-hooks de mutación sin TanStack Query) quedó completamente resuelto vía sus cuatro sub-GAPs (GAP-V2-022/023/024/025). GAP-V2-026 nació de una observación no bloqueante del `gap-auditor` al verificar GAP-V2-025.
 
 ## Acción recomendada
 
-La tolerancia planificado/producido ya quedó implementada en GAP-V2-011, la normalización de IVA pendiente/inválido quedó cerrada en GAP-V2-012, la guarda de finalización con producción incompleta quedó cerrada en GAP-V2-013, la ocultación de coste/margen comercial quedó cerrada en GAP-V2-020, el lote code-quality medio cerró GAP-V2-003 y GAP-V2-005, GAP-V2-006 añadió cancelación explícita al formulario desktop de creación, GAP-V2-008 separó el error recuperable del estado "pedido no encontrado", GAP-V2-009 normalizó copy menor en pestaña/buscador, GAP-V2-014 cerró el drift restante de palets/tildes/capitalización, GAP-V2-007 cerró el hallazgo a11y-responsive de touch targets mobile, GAP-V2-022 migró incidencias a `useMutation` y GAP-V2-023 migró detalles planificados a `useMutation`.
-
-La siguiente acción recomendada es implementar el siguiente sub-GAP de mutaciones:
-
 ```text
-/implement-next module=orders category=code-quality limit=1 risk=medium
+/implement-next module=orders category=code-quality limit=1 risk=low
 ```
 
-que cogería `GAP-V2-024`.
+que cogería `GAP-V2-026`: aplicar `refetchType: 'none'` en `invalidateOrderDetail` de
+`src/hooks/orders/useOrderPallets.ts` para eliminar el doble refetch por operación de
+palet, sin tocar `reload()`/`resetCostAnalysis()`/`onChange`.
+
+Tras cerrarlo, el circuito acotado de `orders` queda sin GAPs `ready`. Opciones
+posteriores: ampliar `/deep-audit-module module=orders` a superficies pending
+(listado/tablas, testing, performance, pase visual con capturas), o pasar a otro
+módulo piloto con `/deep-audit-module module={otro_módulo}`.
 
 ## Motivo
 
-Los lotes implementables ya cerraron `GAP-V2-002`, `GAP-V2-004`, `GAP-V2-021`, `GAP-V2-011`, `GAP-V2-012`, `GAP-V2-013`, `GAP-V2-020`, `GAP-V2-003`, `GAP-V2-005`, `GAP-V2-006`, `GAP-V2-008`, `GAP-V2-009`, `GAP-V2-014`, `GAP-V2-007`, `GAP-V2-022` y `GAP-V2-023`. GAP-V2-001 quedó rechazado como lote único y reemplazado por sub-GAPs; siguen `ready` `GAP-V2-024` y `GAP-V2-025`.
+Los 16 lotes de `/implement-next` ejecutados cerraron los 18 GAPs `done`: `GAP-V2-002`, `GAP-V2-004`, `GAP-V2-021`, `GAP-V2-011`, `GAP-V2-012`, `GAP-V2-013`, `GAP-V2-020`, `GAP-V2-003`, `GAP-V2-005`, `GAP-V2-006`, `GAP-V2-008`, `GAP-V2-009`, `GAP-V2-014`, `GAP-V2-007`, `GAP-V2-022`, `GAP-V2-023`, `GAP-V2-024` y `GAP-V2-025`. GAP-V2-001 y GAP-V2-019 quedaron `rejected/superseded` (divididos o fusionados en otros GAPs). GAP-V2-026 se creó el 2026-07-03 a partir del hallazgo no bloqueante señalado al verificar GAP-V2-025.
 
 ## Archivos clave
 
 - `docs/ai/modules/orders/audit.md`
 - `docs/ai/modules/orders/gaps-registry.md`
-- `docs/ai/gaps/orders/GAP-V2-001..009.md`, `GAP-V2-011..014.md` y `GAP-V2-019..025.md` (20 archivos, ver registry para el desglose ready/blocked/rejected)
+- `docs/ai/gaps/orders/GAP-V2-001..009.md`, `GAP-V2-011..014.md` y `GAP-V2-019..026.md` (21 archivos, ver registry para el desglose ready/done/rejected)
 
 ## Restricciones
 
 - Reglas confirmadas: tolerancia `min(max(10 kg, kg_planificados * 3%), 75 kg)` ya implementada, IVA 0% legítimo permitido y distinguido de IVA pendiente/inválido, y finalización con producción incompleta mediante advertencia/confirmación ya implementada.
-- Implementar GAP-V2-024/025 de uno en uno porque ambos pueden tocar `src/hooks/useOrder.ts`.
 - GAP-V2-020 ya quedó resuelto en frontend, pero conviene coordinar el refuerzo equivalente con backend/policies.
+- GAP-V2-026 depende de GAP-V2-025 (ya `done`) y toca el mismo archivo — verificar en DevTools/Network que la operación sigue refrescando en una sola petición tras el cambio, no en cero.
 - Recordar commitear `docs/ai/modules/orders/`, `docs/ai/gaps/orders/`, y el resto de la capa v2 antes de la próxima auditoría o implementación (guard de git en `/deep-audit-module`).
+- La rama `claude/orders-deep-audit-lv9qnf` fue recreada desde `origin/main` el 2026-07-03 porque el PR anterior de esa rama ya estaba mergeado; el siguiente trabajo debe seguir usando ese mismo nombre de rama salvo indicación contraria.
 
 ## Estado resumido
 
 ```text
-audited_acotado → batch_14_done + split_GAP_V2_001 (16 done, 2 ready, 0 blocked, 2 rejected)
+audited_acotado → batch_16_done + split_GAP_V2_001 + GAP_V2_026_created (18 done, 1 ready, 0 blocked, 2 rejected)
 ```
