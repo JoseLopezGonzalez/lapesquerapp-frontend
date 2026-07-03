@@ -21,8 +21,7 @@ interface GridCard {
   icon: OrderSectionConfig['icon'];
   label: string;
   sublabel?: string;
-  tier: 1 | 2;
-  variant?: 'destructive';
+  variant?: 'destructive' | 'attention';
   fullWidth?: boolean;
   actionOnly?: boolean;
 }
@@ -51,8 +50,11 @@ function getDynamicSublabel(
 }
 
 /**
- * Grid de acciones/secciones móvil (patrón HubScreen del editor de palet):
- * cards grandes con icono + título + sublabel, jerarquía por frecuencia de uso.
+ * Grid de acciones/secciones móvil (patrón HubScreen del editor de palet).
+ * La jerarquía la marca el orden (secciones de uso frecuente primero, vía
+ * mobileTier en sectionsConfig) — no el tamaño de la card. El tinte "attention"
+ * (igual que el primary del Hub de palets) se reserva para estados que
+ * requieren acción real, no para marcar frecuencia de uso de forma estática.
  */
 export default function OrderSectionGrid({
   order,
@@ -75,7 +77,6 @@ export default function OrderSectionGrid({
       icon: incidentSection.icon,
       label: incidentSection.title,
       sublabel: 'Incidencia activa',
-      tier: 2,
       variant: 'destructive',
       fullWidth: true,
     });
@@ -86,6 +87,7 @@ export default function OrderSectionGrid({
   const tier2 = rest.filter((s) => s.mobileTier !== 1);
 
   for (const section of [...tier1, ...tier2]) {
+    const isAttention = section.id === 'production' && pendingProductionCount > 0;
     cards.push({
       id: section.id,
       icon: section.icon,
@@ -93,7 +95,7 @@ export default function OrderSectionGrid({
       sublabel:
         getDynamicSublabel(section.id, { order, productDetailsCount, pendingProductionCount }) ??
         section.mobileDefaultSublabel,
-      tier: section.mobileTier === 1 ? 1 : 2,
+      variant: isAttention ? 'attention' : undefined,
     });
   }
 
@@ -102,7 +104,6 @@ export default function OrderSectionGrid({
     icon: Printer,
     label: 'Imprimir',
     sublabel: 'Hoja de pedido',
-    tier: 2,
     actionOnly: true,
   });
 
@@ -115,62 +116,51 @@ export default function OrderSectionGrid({
   };
 
   return (
-    <div className="relative min-h-0 w-full flex-1 overflow-hidden">
-      <div
-        className={cn(
-          'h-full overflow-y-auto px-4 pt-6',
-          hasSafeAreaPadding ? 'pb-8' : 'pb-2'
-        )}
-        style={hasSafeAreaPadding ? { paddingBottom: 'env(safe-area-inset-bottom)' } : {}}
-      >
-        <div className="grid grid-cols-2 gap-3">
-          {cards.map((card) => (
-            <button
-              key={card.id}
-              type="button"
-              onClick={() => handleCardClick(card)}
+    <div
+      className={cn('grid grid-cols-2 gap-3 px-4 pt-6', hasSafeAreaPadding ? 'pb-8' : 'pb-2')}
+      style={hasSafeAreaPadding ? { paddingBottom: 'env(safe-area-inset-bottom)' } : {}}
+    >
+      {cards.map((card) => (
+        <button
+          key={card.id}
+          type="button"
+          onClick={() => handleCardClick(card)}
+          className={cn(
+            'relative flex min-h-[104px] flex-col items-start justify-between rounded-2xl border p-4 text-left transition-all active:scale-[0.97]',
+            card.fullWidth && 'col-span-2',
+            card.variant === 'destructive' && 'border-destructive/25 bg-destructive/5 hover:bg-destructive/10',
+            card.variant === 'attention' &&
+              'border-primary/40 bg-primary/8 shadow-sm shadow-primary/10 ring-1 ring-primary/20 ring-inset hover:bg-primary/12',
+            !card.variant && 'border-border bg-card hover:bg-accent/50'
+          )}
+        >
+          <div
+            className={cn(
+              'flex h-9 w-9 items-center justify-center rounded-xl',
+              card.variant === 'destructive' && 'bg-destructive/10 text-destructive',
+              card.variant === 'attention' && 'bg-primary/15 text-primary',
+              !card.variant && 'bg-muted text-foreground'
+            )}
+          >
+            <card.icon className="h-5 w-5" />
+          </div>
+
+          <div className="mt-3 space-y-0.5">
+            <p
               className={cn(
-                'relative flex flex-col items-start justify-between rounded-2xl border p-4 text-left transition-all active:scale-[0.97]',
-                card.fullWidth && 'col-span-2',
-                card.variant === 'destructive'
-                  ? 'min-h-[96px] border-destructive/25 bg-destructive/5 hover:bg-destructive/10'
-                  : card.tier === 1
-                    ? 'min-h-[124px] border-border bg-card shadow-sm hover:bg-accent/50'
-                    : 'min-h-[104px] border-border bg-card hover:bg-accent/50'
+                'text-sm font-semibold leading-tight',
+                card.variant === 'destructive' && 'text-destructive',
+                card.variant === 'attention' && 'text-primary'
               )}
             >
-              <div
-                className={cn(
-                  'flex items-center justify-center rounded-xl',
-                  card.variant === 'destructive'
-                    ? 'h-10 w-10 bg-destructive/10 text-destructive'
-                    : card.tier === 1
-                      ? 'h-11 w-11 bg-muted text-foreground'
-                      : 'h-9 w-9 bg-muted text-foreground'
-                )}
-              >
-                <card.icon className={cn(card.tier === 1 ? 'h-5.5 w-5.5' : 'h-5 w-5')} />
-              </div>
-
-              <div className="mt-3 space-y-0.5">
-                <p
-                  className={cn(
-                    'text-sm font-semibold leading-tight',
-                    card.variant === 'destructive' && 'text-destructive'
-                  )}
-                >
-                  {card.label}
-                </p>
-                {card.sublabel && (
-                  <p className="line-clamp-1 text-xs text-muted-foreground">{card.sublabel}</p>
-                )}
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-background to-transparent" />
+              {card.label}
+            </p>
+            {card.sublabel && (
+              <p className="line-clamp-1 text-xs text-muted-foreground">{card.sublabel}</p>
+            )}
+          </div>
+        </button>
+      ))}
     </div>
   );
 }

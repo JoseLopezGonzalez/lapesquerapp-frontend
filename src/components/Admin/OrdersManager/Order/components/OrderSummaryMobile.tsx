@@ -49,7 +49,7 @@ export default function OrderSummaryMobile({
   const transport = order.transport as { name?: string } | undefined;
 
   return (
-    <div className="flex-shrink-0 space-y-5 px-4 pt-6 text-center">
+    <div className="flex-shrink-0 space-y-4 px-4 pt-5 text-center">
       <div className="flex flex-col items-center gap-2">
         {(order?.orderType ?? order?.order_type) === 'autoventa' && (
           <span
@@ -115,7 +115,7 @@ export default function OrderSummaryMobile({
         )}
       </div>
 
-      <div className="flex flex-wrap items-center justify-center gap-6">
+      <div className="flex flex-wrap items-start justify-center gap-6">
         <div>
           <p className="text-muted-foreground mb-1 text-sm">Fecha de Carga</p>
           <p className="text-lg font-medium">{formatDate(order.loadDate)}</p>
@@ -129,7 +129,7 @@ export default function OrderSummaryMobile({
             </span>
           ) : (
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex min-h-[44px] min-w-[44px] items-center justify-center focus:outline-none">
+              <DropdownMenuTrigger className="flex min-h-[44px] min-w-[44px] items-start justify-center focus:outline-none">
                 <span className="hover:text-muted-foreground flex items-center justify-center gap-1.5 text-lg font-medium transition-colors">
                   <ThermometerSnowflake className="h-5 w-5" />
                   {(order.temperature as number | string | undefined) ?? '0'} ºC

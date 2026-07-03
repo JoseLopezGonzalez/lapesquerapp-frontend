@@ -289,23 +289,25 @@ const OrderContent = ({
               readOnly={readOnly}
             />
 
-            <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
-              <OrderSummaryMobile
-                order={order}
-                transportImage={transportImage}
-                onStatusChange={handleStatusChange}
-                onTemperatureChange={handleTemperatureChange}
-                readOnly={readOnly}
-              />
-              <OrderSectionGrid
-                order={order}
-                onSelectSection={setActiveSection}
-                onPrint={handleOnClickPrint}
-                hasSafeAreaPadding={!!onClose}
-                blockedTabIds={blockedTabIds as never[]}
-                productDetailsCount={mergedProductDetails.length}
-                pendingProductionCount={incompleteProductionLines.length}
-              />
+            <div className="min-h-0 w-full flex-1 overflow-hidden">
+              <ScrollArea className="h-full w-full">
+                <OrderSummaryMobile
+                  order={order}
+                  transportImage={transportImage}
+                  onStatusChange={handleStatusChange}
+                  onTemperatureChange={handleTemperatureChange}
+                  readOnly={readOnly}
+                />
+                <OrderSectionGrid
+                  order={order}
+                  onSelectSection={setActiveSection}
+                  onPrint={handleOnClickPrint}
+                  hasSafeAreaPadding={!!onClose}
+                  blockedTabIds={blockedTabIds as never[]}
+                  productDetailsCount={mergedProductDetails.length}
+                  pendingProductionCount={incompleteProductionLines.length}
+                />
+              </ScrollArea>
             </div>
 
             {onClose && !readOnly && (
