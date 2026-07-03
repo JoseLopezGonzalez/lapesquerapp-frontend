@@ -257,7 +257,6 @@ export function useOrder(
 
   const { auxiliaryLines, auxiliaryLineActions } = useOrderAuxiliaryLines({
     order,
-    onOrderUpdate: updateOrderCache,
     onError: setMutationError,
   });
 
