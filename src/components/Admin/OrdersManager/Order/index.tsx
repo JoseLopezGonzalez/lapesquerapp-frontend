@@ -288,20 +288,22 @@ const OrderContent = ({
       {isMobile ? (
         activeSection === null ? (
           <>
-            <OrderHeaderMobile
-              order={order}
-              transportImage={transportImage}
-              onClose={onClose}
-              onEdit={() => setEditSheetOpen(true)}
-              onStatusChange={handleStatusChange}
-              readOnly={readOnly}
-              transportOpacity={transportOpacity}
-              transportHeight={transportHeight}
-            />
+            <div ref={scrollContainerRef} className="min-h-0 w-full flex-1 overflow-y-auto">
+              <div className="sticky top-0 z-20">
+                <OrderHeaderMobile
+                  order={order}
+                  transportImage={transportImage}
+                  onClose={onClose}
+                  onEdit={() => setEditSheetOpen(true)}
+                  onStatusChange={handleStatusChange}
+                  readOnly={readOnly}
+                  transportOpacity={transportOpacity}
+                  transportHeight={transportHeight}
+                />
+              </div>
 
-            <div className="relative min-h-0 w-full flex-1 overflow-hidden">
-              <div className="from-background pointer-events-none absolute inset-x-0 top-0 z-10 h-8 bg-gradient-to-b to-transparent" />
-              <div ref={scrollContainerRef} className="h-full w-full overflow-y-auto">
+              <div className="relative w-full">
+                <div className="from-background pointer-events-none absolute inset-x-0 top-0 z-10 h-8 bg-gradient-to-b to-transparent" />
                 <OrderSummaryMobile
                   order={order}
                   onTemperatureChange={handleTemperatureChange}
@@ -382,7 +384,7 @@ const OrderContent = ({
 function OrderMobileSkeleton() {
   return (
     <div className="relative flex h-full w-full flex-col">
-      <div className="bg-muted flex-shrink-0 rounded-bl-[50%_40px] rounded-br-[50%_40px] pt-8 pb-12">
+      <div className="bg-muted flex-shrink-0 rounded-br-[50%_40px] rounded-bl-[50%_40px] pt-8 pb-12">
         <div className="relative flex items-center justify-center px-4">
           <Skeleton className="absolute left-4 h-12 w-12 rounded-full" />
           <Skeleton className="h-6 w-16" />
