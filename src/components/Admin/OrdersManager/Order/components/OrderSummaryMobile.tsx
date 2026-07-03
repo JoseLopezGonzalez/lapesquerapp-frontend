@@ -1,6 +1,6 @@
 'use client';
 
-import { ThermometerSnowflake, ShoppingBag } from 'lucide-react';
+import { ThermometerSnowflake, ShoppingBag, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 import {
   DropdownMenu,
@@ -87,8 +87,9 @@ export default function OrderSummaryMobile({
           <StatusBadge color={STATUS_COLORS[status]} label={STATUS_LABELS[status]} />
         ) : (
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex min-h-[44px] min-w-[44px] items-center justify-center focus:outline-none">
+            <DropdownMenuTrigger className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1 focus:outline-none">
               <StatusBadge color={STATUS_COLORS[status]} label={STATUS_LABELS[status]} />
+              <ChevronDown className="text-muted-foreground h-3.5 w-3.5" aria-hidden />
             </DropdownMenuTrigger>
             <DropdownMenuContent className="flex flex-col items-end">
               <DropdownMenuItem
@@ -132,6 +133,7 @@ export default function OrderSummaryMobile({
                 <span className="hover:text-muted-foreground flex items-center justify-center gap-1.5 text-lg font-medium transition-colors">
                   <ThermometerSnowflake className="h-5 w-5" />
                   {(order.temperature as number | string | undefined) ?? '0'} ºC
+                  <ChevronDown className="text-muted-foreground h-3.5 w-3.5" aria-hidden />
                 </span>
               </DropdownMenuTrigger>
               <DropdownMenuContent>

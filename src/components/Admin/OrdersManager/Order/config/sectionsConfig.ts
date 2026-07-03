@@ -45,16 +45,27 @@ export interface OrderSectionConfig {
   component: OrderSectionComponent | LazyExoticComponent<OrderSectionComponent>;
   lazy?: boolean;
   icon: LucideIcon;
+  /** Nivel de énfasis en la grid móvil: 1 = card grande (uso frecuente), 2 = card estándar (consulta) */
+  mobileTier?: 1 | 2;
+  /** Sublabel mostrado en la grid móvil cuando la sección no tiene un dato dinámico calculado */
+  mobileDefaultSublabel?: string;
 }
 
 export const SECTIONS_CONFIG: OrderSectionConfig[] = [
-  { id: 'details', title: 'Información', component: OrderDetails, icon: Info },
+  {
+    id: 'details',
+    title: 'Información',
+    component: OrderDetails,
+    icon: Info,
+    mobileDefaultSublabel: 'Datos generales',
+  },
   {
     id: 'products',
     title: 'Previsión',
     component: OrderPlannedProductDetails,
     lazy: true,
     icon: Package,
+    mobileDefaultSublabel: 'Producto previsto',
   },
   {
     id: 'productDetails',
@@ -62,6 +73,7 @@ export const SECTIONS_CONFIG: OrderSectionConfig[] = [
     component: OrderProductDetails,
     lazy: true,
     icon: ListCollapse,
+    mobileTier: 1,
   },
   {
     id: 'auxiliary',
@@ -69,6 +81,7 @@ export const SECTIONS_CONFIG: OrderSectionConfig[] = [
     component: OrderAuxiliaryLines,
     lazy: true,
     icon: PackagePlus,
+    mobileDefaultSublabel: 'Nieve, envases, servicios',
   },
   {
     id: 'analysis',
@@ -76,25 +89,63 @@ export const SECTIONS_CONFIG: OrderSectionConfig[] = [
     component: OrderCostAnalysis,
     lazy: true,
     icon: ChartColumn,
+    mobileDefaultSublabel: 'Rentabilidad del pedido',
   },
-  { id: 'production', title: 'Producción', component: OrderProduction, lazy: true, icon: Factory },
-  { id: 'pallets', title: 'Palets', component: OrderPallets, lazy: true, icon: Package },
-  { id: 'labels', title: 'Etiquetas', component: OrderLabels, lazy: true, icon: Tickets },
+  {
+    id: 'production',
+    title: 'Producción',
+    component: OrderProduction,
+    lazy: true,
+    icon: Factory,
+    mobileTier: 1,
+  },
+  {
+    id: 'pallets',
+    title: 'Palets',
+    component: OrderPallets,
+    lazy: true,
+    icon: Package,
+    mobileTier: 1,
+  },
+  {
+    id: 'labels',
+    title: 'Etiquetas',
+    component: OrderLabels,
+    lazy: true,
+    icon: Tickets,
+    mobileDefaultSublabel: 'Gestionar etiquetas',
+  },
   {
     id: 'documents',
     title: 'Envío de Documentos',
     component: OrderDocuments,
     lazy: true,
     icon: FileCheck,
+    mobileDefaultSublabel: 'Enviar documentación',
   },
-  { id: 'export', title: 'Descargas', component: OrderExport, lazy: true, icon: Download },
-  { id: 'map', title: 'Ruta', component: OrderMap, lazy: true, icon: Map },
+  {
+    id: 'export',
+    title: 'Descargas',
+    component: OrderExport,
+    lazy: true,
+    icon: Download,
+    mobileDefaultSublabel: 'Descargar PDF/Excel',
+  },
+  {
+    id: 'map',
+    title: 'Ruta',
+    component: OrderMap,
+    lazy: true,
+    icon: Map,
+    mobileDefaultSublabel: 'Ver ruta de entrega',
+  },
   {
     id: 'incident',
     title: 'Incidencia',
     component: OrderIncident,
     lazy: true,
     icon: AlertTriangle,
+    mobileDefaultSublabel: 'Sin incidencias',
   },
   {
     id: 'customer-history',
@@ -102,6 +153,7 @@ export const SECTIONS_CONFIG: OrderSectionConfig[] = [
     component: OrderCustomerHistory,
     lazy: true,
     icon: History,
+    mobileDefaultSublabel: 'Histórico del cliente',
   },
   {
     id: 'attachments',
@@ -109,7 +161,6 @@ export const SECTIONS_CONFIG: OrderSectionConfig[] = [
     component: OrderAttachments,
     lazy: true,
     icon: Paperclip,
+    mobileDefaultSublabel: 'Archivos adjuntos',
   },
 ];
-
-export const PRIMARY_SECTION_IDS_MOBILE = ['products', 'production', 'documents'];

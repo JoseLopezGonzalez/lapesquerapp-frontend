@@ -27,7 +27,7 @@ import { SECTIONS_CONFIG } from './config/sectionsConfig';
 import { getTransportImage } from './utils/getTransportImage';
 import OrderHeaderMobile from './components/OrderHeaderMobile';
 import OrderSummaryMobile from './components/OrderSummaryMobile';
-import OrderSectionList from './components/OrderSectionList';
+import OrderSectionGrid from './components/OrderSectionGrid';
 import OrderHeaderDesktop from './components/OrderHeaderDesktop';
 import OrderTabsDesktop from './components/OrderTabsDesktop';
 import { notify } from '@/lib/notifications';
@@ -285,9 +285,7 @@ const OrderContent = ({
             <OrderHeaderMobile
               order={order}
               onClose={onClose}
-              onNavigateSection={setActiveSection}
               onEdit={() => setEditSheetOpen(true)}
-              onPrint={handleOnClickPrint}
               readOnly={readOnly}
             />
 
@@ -299,10 +297,14 @@ const OrderContent = ({
                 onTemperatureChange={handleTemperatureChange}
                 readOnly={readOnly}
               />
-              <OrderSectionList
+              <OrderSectionGrid
+                order={order}
                 onSelectSection={setActiveSection}
+                onPrint={handleOnClickPrint}
                 hasSafeAreaPadding={!!onClose}
                 blockedTabIds={blockedTabIds as never[]}
+                productDetailsCount={mergedProductDetails.length}
+                pendingProductionCount={incompleteProductionLines.length}
               />
             </div>
 
@@ -398,20 +400,10 @@ function OrderMobileSkeleton() {
             <Skeleton className="h-10 w-20" />
           </div>
         </div>
-        <div className="flex justify-center px-4 pt-8 pb-2">
-          <Card className="w-full max-w-[280px] overflow-hidden">
-            <CardContent className="p-0">
-              <div className="divide-border/60 divide-y">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="flex min-h-[44px] w-full items-center gap-3 px-3 py-2.5">
-                    <Skeleton className="h-4 w-4 rounded-sm" />
-                    <Skeleton className="h-4 flex-1" />
-                    <Skeleton className="h-4 w-4 rounded-sm" />
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-2 gap-3 px-4 pt-6">
+          {[124, 124, 124, 104, 104, 104].map((height, i) => (
+            <Skeleton key={i} className="rounded-2xl" style={{ height }} />
+          ))}
         </div>
       </div>
     </div>
