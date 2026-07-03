@@ -1,13 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import { ThermometerSnowflake, ShoppingBag, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { MobileOptionSheet } from '@/components/Shadcn/MobileOptionSheet';
 import { formatDate } from '@/helpers/formats/dates/formatDates';
 import { formatInteger, formatDecimalCurrency } from '@/helpers/formats/numbers/formatNumbers';
 import StatusBadge from '../../StatusBadge';
@@ -24,6 +20,7 @@ const STATUS_LABELS: Record<OrderStatus, string> = {
   incident: 'Incidencia',
 };
 
+const STATUS_OPTIONS: OrderStatus[] = ['pending', 'finished', 'incident'];
 const TEMPERATURE_OPTIONS = [0, 4, -18, -23];
 
 interface OrderSummaryMobileProps {
@@ -44,9 +41,13 @@ export default function OrderSummaryMobile({
   onTemperatureChange,
   readOnly = false,
 }: OrderSummaryMobileProps) {
+  const [statusSheetOpen, setStatusSheetOpen] = useState(false);
+  const [temperatureSheetOpen, setTemperatureSheetOpen] = useState(false);
+
   const status = order.status as OrderStatus;
   const customer = order.customer as { id?: number | string; name?: string } | undefined;
   const transport = order.transport as { name?: string } | undefined;
+  const temperature = Number((order.temperature as number | string | undefined) ?? 0);
 
   return (
     <div className="flex-shrink-0 space-y-4 px-4 pt-5 text-center">
@@ -86,32 +87,27 @@ export default function OrderSummaryMobile({
         {readOnly ? (
           <StatusBadge color={STATUS_COLORS[status]} label={STATUS_LABELS[status]} />
         ) : (
-          <DropdownMenu>
-            <DropdownMenuTrigger className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1 focus:outline-none">
+          <>
+            <button
+              type="button"
+              onClick={() => setStatusSheetOpen(true)}
+              className="flex min-h-[44px] min-w-[44px] items-center justify-center gap-1 focus:outline-none"
+            >
               <StatusBadge color={STATUS_COLORS[status]} label={STATUS_LABELS[status]} />
               <ChevronDown className="text-muted-foreground h-3.5 w-3.5" aria-hidden />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="flex flex-col items-end">
-              <DropdownMenuItem
-                className="cursor-pointer"
-                onClick={() => onStatusChange('pending')}
-              >
-                <StatusBadge color="orange" label="En producción" />
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="cursor-pointer"
-                onClick={() => onStatusChange('finished')}
-              >
-                <StatusBadge color="green" label="Terminado" />
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="cursor-pointer"
-                onClick={() => onStatusChange('incident')}
-              >
-                <StatusBadge color="red" label="Incidencia" />
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            </button>
+            <MobileOptionSheet
+              open={statusSheetOpen}
+              onOpenChange={setStatusSheetOpen}
+              title="Estado del pedido"
+              value={status}
+              onSelect={onStatusChange}
+              options={STATUS_OPTIONS.map((option) => ({
+                value: option,
+                label: <StatusBadge color={STATUS_COLORS[option]} label={STATUS_LABELS[option]} />,
+              }))}
+            />
+          </>
         )}
       </div>
 
@@ -125,29 +121,33 @@ export default function OrderSummaryMobile({
           {readOnly ? (
             <span className="flex items-center justify-center gap-1.5 text-lg font-medium">
               <ThermometerSnowflake className="h-5 w-5" />
-              {(order.temperature as number | string | undefined) ?? '0'} ºC
+              {temperature} ºC
             </span>
           ) : (
-            <DropdownMenu>
-              <DropdownMenuTrigger className="flex min-h-[44px] min-w-[44px] items-start justify-center focus:outline-none">
+            <>
+              <button
+                type="button"
+                onClick={() => setTemperatureSheetOpen(true)}
+                className="flex min-h-[44px] min-w-[44px] items-start justify-center focus:outline-none"
+              >
                 <span className="hover:text-muted-foreground flex items-center justify-center gap-1.5 text-lg font-medium transition-colors">
                   <ThermometerSnowflake className="h-5 w-5" />
-                  {(order.temperature as number | string | undefined) ?? '0'} ºC
+                  {temperature} ºC
                   <ChevronDown className="text-muted-foreground h-3.5 w-3.5" aria-hidden />
                 </span>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                {TEMPERATURE_OPTIONS.map((temp) => (
-                  <DropdownMenuItem
-                    key={temp}
-                    className="cursor-pointer"
-                    onClick={() => onTemperatureChange(temp)}
-                  >
-                    {temp} ºC
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+              </button>
+              <MobileOptionSheet
+                open={temperatureSheetOpen}
+                onOpenChange={setTemperatureSheetOpen}
+                title="Temperatura del pedido"
+                value={temperature}
+                onSelect={onTemperatureChange}
+                options={TEMPERATURE_OPTIONS.map((temp) => ({
+                  value: temp,
+                  label: `${temp} ºC`,
+                }))}
+              />
+            </>
           )}
         </div>
       </div>

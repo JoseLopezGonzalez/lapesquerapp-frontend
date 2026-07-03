@@ -118,7 +118,11 @@ export default function OrderSectionGrid({
   return (
     <div
       className={cn('grid grid-cols-2 gap-3 px-4 pt-6', hasSafeAreaPadding ? 'pb-8' : 'pb-2')}
-      style={hasSafeAreaPadding ? { paddingBottom: 'env(safe-area-inset-bottom)' } : {}}
+      style={
+        hasSafeAreaPadding
+          ? { paddingBottom: 'calc(2rem + env(safe-area-inset-bottom, 0px))' }
+          : undefined
+      }
     >
       {cards.map((card) => (
         <button
