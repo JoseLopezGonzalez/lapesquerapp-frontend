@@ -75,6 +75,7 @@ export default function OrdersManager() {
   useEffect(() => {
     const shouldOpenCreate = searchParams.get('create') === '1';
     const prefillKey = searchParams.get('prefill');
+    const orderIdFromUrl = searchParams.get('order');
     let parsedPrefill = null;
 
     if (prefillKey) {
@@ -99,6 +100,8 @@ export default function OrdersManager() {
     if (shouldOpenCreate) {
       setSelectedOrder(null);
       setOnCreatingNewOrder(true);
+    } else if (orderIdFromUrl) {
+      setSelectedOrder(orderIdFromUrl);
     }
 
     if (!shouldOpenCreate && !prefillKey) {
@@ -111,6 +114,22 @@ export default function OrdersManager() {
     const nextQuery = nextParams.toString();
     router.replace(nextQuery ? `/admin/orders-manager?${nextQuery}` : '/admin/orders-manager');
   }, [searchParams, router]);
+
+  // Sincroniza el pedido abierto con la URL (history.replaceState directo, sin pasar
+  // por el router de Next ni crear entradas de historial) — la vista de detalle no es
+  // una ruta real, solo estado de React, así que un pull-to-refresh o una recarga del
+  // navegador perdían la selección y devolvían siempre al listado. Con el id en la URL,
+  // el efecto de montaje de arriba lo restaura.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const nextUrl = selectedOrder
+      ? `/admin/orders-manager?order=${selectedOrder}`
+      : '/admin/orders-manager';
+    const currentUrl = `${window.location.pathname}${window.location.search}`;
+    if (currentUrl !== nextUrl) {
+      window.history.replaceState(null, '', nextUrl);
+    }
+  }, [selectedOrder]);
 
   // Memoizar la categoría activa para evitar búsquedas repetidas
   const activeCategory = useMemo(() => {

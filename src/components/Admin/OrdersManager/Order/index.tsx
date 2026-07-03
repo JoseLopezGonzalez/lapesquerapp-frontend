@@ -286,6 +286,7 @@ const OrderContent = ({
               order={order}
               onClose={onClose}
               onEdit={() => setEditSheetOpen(true)}
+              onStatusChange={handleStatusChange}
               readOnly={readOnly}
             />
 
@@ -294,7 +295,6 @@ const OrderContent = ({
                 <OrderSummaryMobile
                   order={order}
                   transportImage={transportImage}
-                  onStatusChange={handleStatusChange}
                   onTemperatureChange={handleTemperatureChange}
                   readOnly={readOnly}
                 />
@@ -369,29 +369,27 @@ const OrderContent = ({
   );
 };
 
-// Silueta mobile: header (back+título+menú) + resumen centrado + card estrecha de secciones
+// Silueta mobile: hero (back+título+editar+cliente+estado) + resumen secundario + grid de secciones
 function OrderMobileSkeleton() {
   return (
     <div className="relative flex h-full w-full flex-col">
-      <div className="bg-background flex-shrink-0 px-0 pt-8 pb-3">
+      <div className="bg-muted flex-shrink-0 rounded-b-3xl pt-8 pb-5">
         <div className="relative flex items-center justify-center px-4">
           <Skeleton className="absolute left-4 h-12 w-12 rounded-full" />
           <Skeleton className="h-6 w-16" />
           <Skeleton className="absolute right-4 h-12 w-12 rounded-full" />
         </div>
+        <div className="mt-5 flex flex-col items-center gap-2 px-4">
+          <Skeleton className="h-6 w-40" />
+          <Skeleton className="h-4 w-28" />
+          <Skeleton className="mt-1 h-7 w-32 rounded-full" />
+        </div>
       </div>
       <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
-        <div className="flex-shrink-0 space-y-5 px-4 pt-6 text-center">
-          <div className="flex flex-col items-center gap-2">
-            <Skeleton className="h-6 w-40" />
-            <Skeleton className="h-4 w-28" />
-          </div>
+        <div className="flex-shrink-0 space-y-4 px-4 pt-5 text-center">
           <div className="flex flex-col items-center gap-2">
             <Skeleton className="h-16 w-[170px] rounded-md" />
             <Skeleton className="h-5 w-24" />
-          </div>
-          <div className="flex justify-center">
-            <Skeleton className="h-7 w-32 rounded-full" />
           </div>
           <div className="flex justify-center gap-6">
             <Skeleton className="h-10 w-20" />
@@ -403,7 +401,7 @@ function OrderMobileSkeleton() {
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3 px-4 pt-6">
-          {[124, 124, 124, 104, 104, 104].map((height, i) => (
+          {[104, 104, 104, 104, 104, 104].map((height, i) => (
             <Skeleton key={i} className="rounded-2xl" style={{ height }} />
           ))}
         </div>
