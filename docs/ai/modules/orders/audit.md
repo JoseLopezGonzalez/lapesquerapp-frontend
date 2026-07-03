@@ -8,23 +8,50 @@
 ```text
 Ejecutar (elige una):
 
-A) Implementar el GAP de seguimiento del doble refetch:
+A) Implementar el GAP más rápido, ya validado como seguimiento de la pasada anterior:
    /implement-next module=orders category=code-quality limit=1 risk=low
-   → cogería GAP-V2-026 (refetchType: 'none' en useOrderPallets.ts).
+   → cogería GAP-V2-026 (`refetchType: 'none'` en `useOrderPallets.ts`, P3/XS).
+
+B) Implementar el lote de P1 ready más urgente de la ampliación de auditoría (guard
+   de cierre + validación de líneas + IVA duplicado + export sin gate):
+   /implement-next module=orders category=code-quality limit=1 risk=low
+   → cogería GAP-V2-057 (guard de "descartar cambios" en `OrderEditSheet` — este GAP
+     se creó originalmente como GAP-V2-026 en esta rama, pero se renombró a GAP-V2-057
+     al reconciliar con `claude/orders-deep-audit-lv9qnf`, que ya usaba ese número para
+     un hallazgo distinto y ya estaba mergeada a `main`).
+
+C) Pedir a Jose las 3 decisiones pendientes que desbloquean los GAPs `blocked`:
+   - GAP-V2-027 (¿sigue vigente el componente `OrdersListFiltersSheet` para un
+     plan mobile Fase 3, o se elimina como código muerto?)
+   - GAP-V2-036 (elegir entre 3 opciones de UX para explicar secciones
+     bloqueadas a comercial readOnly)
+   - GAP-V2-028 (autorizar explícitamente refactor L/riesgo medium de
+     `orderService.ts` — 35 funciones — o pedir que se divida en sub-GAPs)
 
 Contexto:
-Primera auditoría real del sistema completada y ampliada al circuito acotado de
-5 carriles: code-audit-agent, ui-audit-agent, domain-business-auditor,
-design-quality-auditor y permissions-multitenant-auditor. 21 GAPs documentados:
-1 ready (GAP-V2-026, de seguimiento), 18 done, 0 blocked y 2 rejected/superseded.
+Dos líneas de trabajo paralelas sobre `orders` se reconciliaron el 2026-07-03. La rama
+`claude/orders-deep-audit-lv9qnf` cerró GAP-V2-024/025 vía `/implement-next` y creó
+GAP-V2-026 (seguimiento de doble refetch en `useOrderPallets`) — ya mergeada a `main`
+(PR #68). En paralelo, esta rama (`claude/orders-deep-audit-ewomf1`) amplió la auditoría
+a los 5 carriles sobre las superficies `pending`/`partial` restantes de la matriz
+(confirmado por Jose: "todo el módulo, los 5 carriles"), generando 20 candidatos nuevos
+normalizados por `gap-normalizer` a 17 `ready` + 3 `blocked`. Al mergear `main` en esta
+rama se detectó que el primer hallazgo de esta pasada también se había numerado
+`GAP-V2-026` — colisión con el de `lv9qnf` — y se renombró a `GAP-V2-057` antes de
+consolidar. Total del módulo tras la reconciliación: 41 GAPs — 18 `ready`, 3 `blocked`,
+18 `done`, 0 `later`, 2 `rejected/superseded`.
 
 Restricciones:
 No volver a auditar los mismos 5 carriles sobre los mismos archivos sin
 evidencia de que algo cambió — usar needs_reaudit si aplica.
 Las reglas de negocio de GAP-V2-011/012/013 fueron confirmadas por Jose el 2026-07-02.
-Tras cerrar GAP-V2-026, el circuito acotado queda sin GAPs `ready`; opciones para
-seguir: ampliar `/deep-audit-module module=orders` a superficies pending, o pasar
-a otro módulo piloto.
+GAP-V2-051 debe reutilizar el `parseTaxRate` ya corregido en
+`useOrderPlannedDetails.ts` (GAP-V2-012, done) — no reimplementar la lógica.
+Queda pendiente confirmar con Jose si las líneas auxiliares deben admitir
+cantidad/precio negativo (abonos/devoluciones) — ver §9 Bloqueos y riesgos.
+GAP-V2-026 (doble refetch en `useOrderPallets`) y GAP-V2-057 (guard de cierre de
+`OrderEditSheet`) son GAPs completamente distintos pese a haber compartido el mismo
+número originalmente — no confundirlos al leer el histórico de commits.
 ```
 
 ---
@@ -35,23 +62,24 @@ a otro módulo piloto.
 Estado general: ready_for_implementation
 
 Funcional:        sin incidentes bloqueantes detectados
-UI/copy:           drift textual y hallazgo a11y-responsive mobile resueltos
-UX:                 cubierto parcialmente vía carriles ux-ui/design-quality (sin ux-reviewer aparte)
-Código:              5 hallazgos de code-quality, todos con solución clara
-Arquitectura:         cubierto parcialmente (sub-hooks de mutación + permisos comerciales)
-Responsive:            hallazgo de touch targets mobile resuelto
-Accesibilidad:           cubierto solo de forma incidental (a11y-responsive), sin pase dedicado
-Permisos/tenant:          2 hallazgos P1 + 1 señal fusionada en GAP-V2-002; sin P0 de tenant isolation
-Performance:               sin auditar (no hubo carril de performance en este piloto)
-Testing:                     sin auditar directamente (se listó como plan de validación por GAP)
+UI/copy:           drift textual y hallazgo a11y-responsive mobile resueltos; nuevo drift tipográfico (font-semibold) detectado en detalle/listado
+UX:                 cubierto ampliamente vía carriles ux-ui/design-quality (sin ux-reviewer aparte); nuevos huecos de validación inline y explicabilidad de permisos detectados
+Código:              14 hallazgos nuevos de code-quality/architecture-refactor (services, hooks de formulario, componentización), sumados a los 5 de la pasada anterior
+Arquitectura:         cubierto ampliamente (sub-hooks de mutación + permisos comerciales + orderService.ts completo revisado)
+Responsive:            hallazgo de touch targets mobile resuelto; a11y-responsive de edición ahora audited
+Accesibilidad:           edición y validaciones ahora audited (aria-invalid nativo); resto de superficies siguen parciales
+Permisos/tenant:          2 hallazgos P1 previos + 1 hallazgo P1 nuevo (GAP-V2-056, botón exportar sin gate de rol); sin P0 de tenant isolation en ninguna pasada
+Performance:               sin auditar (sigue fuera de alcance)
+Testing:                     code-quality ahora audited (falta de cobertura en hooks de formulario, GAP-V2-034); architecture-refactor/data-api siguen pending/partial
 Documentación:                 cruce legacy acotado completado
 
-P0 abiertos: 0   P1 abiertos: 0
-P2 abiertos: 0   P3 abiertos: 1 (GAP-V2-026, seguimiento de doble refetch)
+P0 abiertos: 0   P1 abiertos: 4 (GAP-V2-038, GAP-V2-051, GAP-V2-056, GAP-V2-057 — todos ready)
+P2 abiertos: 7 (ready: GAP-V2-029, GAP-V2-030, GAP-V2-037, GAP-V2-047, GAP-V2-052 · blocked: GAP-V2-028, GAP-V2-036)
+P3 abiertos: 10 (ready: GAP-V2-026, GAP-V2-031, GAP-V2-032, GAP-V2-033, GAP-V2-034, GAP-V2-046, GAP-V2-048, GAP-V2-049, GAP-V2-050 · blocked: GAP-V2-027)
 
-Estado de auditoría:      audited_acotado (5 de 5 carriles previstos ejecutados)
-Estado de implementación: batch_16_done (GAP-V2-002, GAP-V2-004, GAP-V2-021, GAP-V2-011, GAP-V2-012, GAP-V2-013, GAP-V2-020, GAP-V2-003, GAP-V2-005, GAP-V2-006, GAP-V2-008, GAP-V2-009, GAP-V2-014, GAP-V2-007, GAP-V2-022, GAP-V2-023, GAP-V2-024, GAP-V2-025) + GAP-V2-026 creado como seguimiento
-Estado de verificación:   GAP-V2-025 audited_done (aprobado con observación no bloqueante); GAP-V2-026 pendiente de implementación
+Estado de auditoría:      audited_ampliado (5 de 5 carriles ejecutados en tres pasadas — piloto acotado + cierre de GAP-024/025 con seguimiento GAP-026 + ampliación a superficies pending)
+Estado de implementación: batch_16_done (GAP-V2-002, GAP-V2-004, GAP-V2-021, GAP-V2-011, GAP-V2-012, GAP-V2-013, GAP-V2-020, GAP-V2-003, GAP-V2-005, GAP-V2-006, GAP-V2-008, GAP-V2-009, GAP-V2-014, GAP-V2-007, GAP-V2-022, GAP-V2-023, GAP-V2-024, GAP-V2-025)
+Estado de verificación:   GAP-V2-025 audited_done (aprobado con observación no bloqueante → generó GAP-V2-026); 20 candidatos nuevos de la ampliación normalizados por `gap-normalizer` — 17 ready, 3 blocked (GAP-V2-027, GAP-V2-028, GAP-V2-036), 0 later/rejected (uno renombrado de GAP-V2-026 a GAP-V2-057 por colisión de numeración con la rama `lv9qnf` al reconciliar)
 ```
 
 ## 2. Cobertura
@@ -60,31 +88,37 @@ Superficies × carriles. Estados: `pending · partial · audited · needs_reaudi
 
 | Superficie         | ux-ui          | code-quality   | architecture-refactor | data-api       | domain-business | a11y-responsive |
 | ------------------ | -------------- | -------------- | --------------------- | -------------- | --------------- | --------------- |
-| listado            | partial        | pending        | pending               | pending        | not_applicable  | pending         |
-| detalle            | partial        | pending        | pending               | pending        | partial         | pending         |
-| creación           | audited        | pending        | pending               | pending        | not_applicable  | pending         |
-| edición            | pending        | partial        | pending               | pending        | partial         | pending         |
-| formularios        | audited        | partial        | pending               | pending        | partial         | pending         |
-| tablas/listados    | partial        | pending        | pending               | pending        | not_applicable  | pending         |
-| estados loading    | pending        | not_applicable | not_applicable        | not_applicable | not_applicable  | pending         |
-| estados empty      | pending        | not_applicable | not_applicable        | not_applicable | not_applicable  | pending         |
+| listado            | audited        | audited        | audited               | audited        | not_applicable  | partial         |
+| detalle            | audited        | audited        | audited               | audited        | audited         | partial         |
+| creación           | audited        | audited        | audited               | partial        | not_applicable  | pending         |
+| edición            | audited        | audited        | audited               | partial        | audited         | audited         |
+| formularios        | audited        | audited        | partial               | partial        | audited         | pending         |
+| tablas/listados    | audited        | audited        | partial               | audited        | not_applicable  | partial         |
+| estados loading    | audited        | not_applicable | not_applicable        | not_applicable | not_applicable  | partial         |
+| estados empty      | audited        | not_applicable | not_applicable        | not_applicable | not_applicable  | partial         |
 | estados error      | audited        | not_applicable | not_applicable        | partial        | not_applicable  | pending         |
-| estados success    | pending        | not_applicable | not_applicable        | pending        | not_applicable  | pending         |
-| permisos/roles     | pending        | not_applicable | audited               | audited        | not_applicable  | not_applicable  |
-| integración API    | not_applicable | partial        | partial               | audited        | pending         | not_applicable  |
-| validaciones       | pending        | partial        | not_applicable        | pending        | audited         | not_applicable  |
-| tipos/interfaces   | not_applicable | partial        | partial               | pending        | not_applicable  | not_applicable  |
-| componentización   | not_applicable | partial        | partial               | not_applicable | not_applicable  | not_applicable  |
-| dominio de negocio | not_applicable | not_applicable | not_applicable        | pending        | partial         | not_applicable  |
-| testing            | not_applicable | pending        | pending               | pending        | not_applicable  | not_applicable  |
+| estados success    | audited        | not_applicable | not_applicable        | audited        | not_applicable  | pending         |
+| permisos/roles     | audited        | not_applicable | audited               | audited        | not_applicable  | not_applicable  |
+| integración API    | not_applicable | audited        | audited               | audited        | audited         | not_applicable  |
+| validaciones       | audited        | partial        | not_applicable        | audited        | audited         | audited         |
+| tipos/interfaces   | not_applicable | audited        | partial               | partial        | not_applicable  | not_applicable  |
+| componentización   | not_applicable | audited        | partial               | not_applicable | not_applicable  | not_applicable  |
+| dominio de negocio | not_applicable | not_applicable | not_applicable        | partial        | audited         | not_applicable  |
+| testing            | not_applicable | audited        | pending               | partial        | not_applicable  | not_applicable  |
 
-Pendiente explícitamente fuera de este circuito: performance, testing directo, documentación y un pase visual con screenshots autenticados. `design-quality-auditor` se ejecutó en modo heurístico/copy/consistency, sin capturas.
+Pendiente explícitamente fuera de este circuito: performance, un pase visual con screenshots autenticados (`design-quality-auditor` sigue en modo heurístico/copy/consistency, sin capturas), y celdas puntuales de a11y-responsive (creación/formularios/estados error/success) y architecture-refactor de testing.
 
 ## 3. Resumen ejecutivo
 
 Primera auditoría real ejecutada sobre el módulo `orders` con 3 carriles iniciales en paralelo (`code-audit-agent`, `ui-audit-agent` y `domain-business-auditor`) y continuada el 2026-07-02 con los 2 carriles pendientes (`design-quality-auditor` y `permissions-multitenant-auditor`). Cobertura acotada a un conjunto de archivos concreto por carril, no exhaustiva del módulo completo. Se completó además el cruce legacy acotado contra `.claude/gaps/closed/` para evitar duplicar GAPs ya cerrados.
 
-21 GAPs documentados en total: 1 `ready` (GAP-V2-026, de seguimiento), 18 `done`, 0 `blocked` y 2 `rejected/superseded`. El primer lote `/implement-next` cerró los dos GAPs code-quality de bajo riesgo: queryKey tenant-aware del detalle de pedido (GAP-V2-002) y migración a TypeScript del wrapper de dominio `orders` (GAP-V2-004). El segundo lote cerró GAP-V2-021, ocultando la creación de pedidos en el manager comercial readOnly. El tercer lote cerró GAP-V2-011, sustituyendo la tolerancia fija de 30 kg por la regla híbrida confirmada. El cuarto lote cerró GAP-V2-012, distinguiendo IVA pendiente/inválido de IVA 0% legítimo. El quinto lote cerró GAP-V2-013 con confirmación explícita antes de finalizar pedidos con producción pendiente/no planificada. El sexto lote cerró GAP-V2-020, separando `readOnly` de la capacidad `canViewCostData` para ocultar coste/margen/análisis en vistas comerciales y evitar la carga de análisis económico. El séptimo lote cerró GAP-V2-005 y GAP-V2-003, migrando opciones/formularios/análisis de pedidos a TanStack Query y eliminando recurrencias de token-as-parameter en formularios. El octavo lote cerró GAP-V2-006, añadiendo cancelación explícita al formulario desktop de creación de pedidos. El noveno lote cerró GAP-V2-008, separando el error recuperable del estado "pedido no encontrado" en el detalle de pedido. El décimo lote cerró GAP-V2-009, normalizando la tilde de la pestaña de documentos y la capitalización de `ID` en el buscador. El undécimo lote cerró GAP-V2-014, normalizando `palet/palets`, `pedido`, tildes y sentence case restante en Orders Manager. El duodécimo lote cerró GAP-V2-007, ampliando a 44x44px los triggers móviles de estado y temperatura sin cambiar el contenido visual. El GAP grande GAP-V2-001 se dividió en cuatro sub-GAPs implementables: GAP-V2-022 y GAP-V2-023 migraron incidencias y detalles planificados a `useMutation` + invalidación, el decimoquinto lote cerró GAP-V2-024 con el mismo patrón para líneas auxiliares, y el decimosexto lote cerró GAP-V2-025 para palets (aprobado con una observación no bloqueante de doble refetch). Esa observación se convirtió en GAP-V2-026, un GAP de seguimiento puntual (P3, low, XS) para aplicar `refetchType: 'none'` en la invalidación de `useOrderPallets.ts`.
+21 GAPs documentados en aquel momento: 1 `ready` (GAP-V2-026, de seguimiento), 18 `done`, 0 `blocked` y 2 `rejected/superseded`. El primer lote `/implement-next` cerró los dos GAPs code-quality de bajo riesgo: queryKey tenant-aware del detalle de pedido (GAP-V2-002) y migración a TypeScript del wrapper de dominio `orders` (GAP-V2-004). El segundo lote cerró GAP-V2-021, ocultando la creación de pedidos en el manager comercial readOnly. El tercer lote cerró GAP-V2-011, sustituyendo la tolerancia fija de 30 kg por la regla híbrida confirmada. El cuarto lote cerró GAP-V2-012, distinguiendo IVA pendiente/inválido de IVA 0% legítimo. El quinto lote cerró GAP-V2-013 con confirmación explícita antes de finalizar pedidos con producción pendiente/no planificada. El sexto lote cerró GAP-V2-020, separando `readOnly` de la capacidad `canViewCostData` para ocultar coste/margen/análisis en vistas comerciales y evitar la carga de análisis económico. El séptimo lote cerró GAP-V2-005 y GAP-V2-003, migrando opciones/formularios/análisis de pedidos a TanStack Query y eliminando recurrencias de token-as-parameter en formularios. El octavo lote cerró GAP-V2-006, añadiendo cancelación explícita al formulario desktop de creación de pedidos. El noveno lote cerró GAP-V2-008, separando el error recuperable del estado "pedido no encontrado" en el detalle de pedido. El décimo lote cerró GAP-V2-009, normalizando la tilde de la pestaña de documentos y la capitalización de `ID` en el buscador. El undécimo lote cerró GAP-V2-014, normalizando `palet/palets`, `pedido`, tildes y sentence case restante en Orders Manager. El duodécimo lote cerró GAP-V2-007, ampliando a 44x44px los triggers móviles de estado y temperatura sin cambiar el contenido visual. El GAP grande GAP-V2-001 se dividió en cuatro sub-GAPs implementables: GAP-V2-022 y GAP-V2-023 migraron incidencias y detalles planificados a `useMutation` + invalidación, el decimoquinto lote cerró GAP-V2-024 con el mismo patrón para líneas auxiliares, y el decimosexto lote cerró GAP-V2-025 para palets (aprobado con una observación no bloqueante de doble refetch). Esa observación se convirtió en GAP-V2-026, un GAP de seguimiento puntual (P3, low, XS) para aplicar `refetchType: 'none'` en la invalidación de `useOrderPallets.ts`. Este trabajo se hizo en la rama `claude/orders-deep-audit-lv9qnf`, ya mergeada a `main` (PR #68).
+
+**Continuación 2026-07-03 — ampliación a los 5 carriles sobre las superficies `pending` restantes de la matriz, en paralelo en la rama `claude/orders-deep-audit-ewomf1`** (confirmado por Jose: "todo el módulo, los 5 carriles"). `code-audit-agent` auditó `OrdersList`, `OrderCard`, las pestañas de detalle no revisadas antes (`OrderDetails`, `OrderProductDetails`, `OrderEditSheet`, `OrderProduction`, `OrderCustomerHistory`, `OrderExport`, `OrderMap`, `OrderLabels`), `src/services/orderService.ts` completo (1383 líneas) y cobertura de tests de hooks de formulario — 9 candidatos (GAP-V2-027 a 034, más GAP-V2-057). `ui-audit-agent` cubrió listado/detalle/edición/estados loading-empty-success/permisos-roles/validaciones — 3 candidatos (GAP-V2-036 a 038). `design-quality-auditor` amplió su revisión visual/copy a listado, detalle y edición (antes solo había cubierto creación/formularios) — 5 candidatos (GAP-V2-046 a 050), incluyendo una recurrencia notable del anti-patrón `font-semibold` (PL-024) en varios componentes de detalle. `domain-business-auditor` confirmó que las 3 reglas de negocio ya cerradas (GAP-V2-011/012/013) no necesitan reabrirse y encontró una recurrencia de regla de negocio duplicada: `parseTaxRate` de `OrderAuxiliaryLines` nunca recibió el fix de GAP-V2-012 — 2 candidatos (GAP-V2-051, 052). `permissions-multitenant-auditor` confirmó que `orderService.ts` completo usa `fetchWithTenant` sin excepciones y que las queryKeys de `useOrders`/`useOrdersStats`/`useComercialOrders`/`useFieldOrders` son tenant-aware, pero detectó que el botón "Exportar" del listado no está gateado por `canCreateOrder`/`readOnly` como sus botones hermanos — 1 candidato (GAP-V2-056).
+
+Total de esta pasada: 20 candidatos nuevos, procesados por `gap-normalizer` (más de 15, según regla del skill): 17 `ready`, 3 `blocked` (GAP-V2-027, GAP-V2-028, GAP-V2-036 — requieren decisión de Jose antes de implementarse), 0 `later`/`rejected`. Ver §7 para el detalle final normalizado.
+
+**Reconciliación 2026-07-03** — al mergear `main` (con GAP-V2-024/025/026 ya cerrados/creados por `lv9qnf`) en esta rama, se detectó que el primer candidato de esta pasada se había numerado también `GAP-V2-026`, colisionando con el `GAP-V2-026` de doble refetch de `lv9qnf`. Se renombró el archivo y todas sus referencias a `GAP-V2-057` antes de consolidar. Total del módulo tras la reconciliación de ambas ramas: **41 GAPs — 18 `ready`, 3 `blocked`, 18 `done`, 0 `later`, 2 `rejected/superseded`.**
 
 ## 4. Baseline anterior
 
@@ -139,9 +173,99 @@ Esta pasada auditó solo un subconjunto acotado de lo anterior (ver §2 Cobertur
 - `ComercialOrdersManager` pasaba `readOnly` a `OrdersList`, pero la lista seguía mostrando acciones/CTA de crear pedido y podía montar `CreateOrderForm` (GAP-V2-021; resuelto)
 - `useOrder.ts:101` omite `tenantId` en la queryKey del detalle; fusionado en GAP-V2-002 para evitar duplicar el mismo cambio (GAP-V2-019 rejected)
 
+**Continuación 2026-07-03 — code-quality / architecture-refactor (carril `code-audit-agent`):**
+
+- `OrderEditSheet/index.tsx:311` — `onOpenChange={setOpen}` evita el guard de "descartar cambios" (`onCloseSheet` queda muerto con `void onCloseSheet;`), permitiendo cerrar con cambios sin guardar vía click fuera/Escape/swipe (GAP-V2-057; ready)
+- `OrdersList/OrdersListFiltersSheet.tsx` — componente muerto, no importado en ningún lado (GAP-V2-027; blocked)
+- `services/orderService.ts` — 35 funciones exportadas duplican boilerplate de fetch/headers/token en vez de usar los helpers genéricos de `api-client.md` (GAP-V2-028; blocked)
+- `services/orderService.ts:1120-1211` — recurrencia de PL-010 (token-as-parameter) en 3 funciones de exportación de rentabilidad, sin llamadores en producción (solo el test las referencia) (GAP-V2-029; ready)
+- `useOrderFormConfig.ts` — `formGroups`/`defaultValues` se espejan a `useState` vía `useEffect` desde valores ya derivados, a diferencia de `useOrderCreateFormConfig.ts` que usa `useMemo` correctamente (GAP-V2-030; ready)
+- `OrderProduction/index.tsx`, `OrderLabels/index.tsx` — falta `'use client'` pese a usar hooks, inconsistente con las 5 pestañas hermanas (GAP-V2-031; ready)
+- `services/orderService.ts:16-306` — ~15 interfaces de dominio definidas inline en el service en vez de `src/types/` (GAP-V2-032; ready)
+- `OrderCard/index.tsx:114-134` — variante mobile reimplementa el badge de estado inline en vez de extender `StatusBadge` compartido (GAP-V2-033; ready)
+- `useComercialOrders.ts`, `useOrderFormConfig.ts`, `useOrderCreateFormConfig.ts` — sin cobertura de test pese a tener lógica de mapeo específica de dominio (GAP-V2-034; ready)
+
+**Continuación 2026-07-03 — ux-ui / a11y-responsive (carril `ui-audit-agent`):**
+
+- Secciones/acciones bloqueadas para comercial `readOnly` desaparecen sin explicación (sin usar el toast ya existente en `useOrderDocuments.ts:197-205` como precedente) — `orderReadOnlyPermissions.ts`, `OrderTabsDesktop.tsx`, `OrderSectionList.tsx`, `OrderPalletsToolbar.tsx` (GAP-V2-036; blocked)
+- `OrderEditSheet/index.tsx` no usa el `aria-invalid` nativo de shadcn (`input.jsx:15`), envuelve campos en un div `border-red-300` a mano, perdiendo la señal de accesibilidad (GAP-V2-037; ready)
+- Editores de línea inline en `OrderAuxiliaryLines`/`OrderPlannedProductDetails` nunca deshabilitan "Guardar" ni validan campos requeridos antes de enviar, a diferencia del resto del módulo (GAP-V2-038; ready)
+
+**Continuación 2026-07-03 — ux-ui/copy/consistencia (carril `design-quality-auditor`, ampliación a listado/detalle/edición):**
+
+- Recurrencia del anti-patrón `font-semibold` (PL-024) en `OrdersList`, `OrderProduction`, `OrderPallets`, filas de total de `OrderAuxiliaryLines`/`OrderPlannedProductDetails` (GAP-V2-046; ready)
+- `OrderCustomerHistory` (familia completa) codifica pesos de fuente distintos mobile vs. desktop para el mismo dato — la concentración más alta de PL-024 encontrada (GAP-V2-047; ready)
+- Título de `OrdersList` con pesos de fuente distintos mobile/desktop, sin seguir la escala documentada `text-xl font-medium` (GAP-V2-048; ready)
+- `OrderCard` desktop iguala el peso visual de ID y nombre de cliente, diluyendo el identificador primario (GAP-V2-049; ready)
+- `OrderIncident` es la única de 5 pestañas hermanas sin la sub-escala documentada de `CardTitle` (GAP-V2-050; ready)
+
+**Continuación 2026-07-03 — domain-business (carril `domain-business-auditor`):**
+
+- `OrderAuxiliaryLines/index.tsx:67-74` reimplementa `parseTaxRate` localmente con el mismo fallback silencioso a 0% que GAP-V2-012 ya corrigió en `useOrderPlannedDetails.ts` — la corrección nunca se propagó a líneas auxiliares (GAP-V2-051; ready)
+- `OrderAuxiliaryLines/index.tsx:383,602` muestra toda cantidad con `formatDecimalWeight` (sufijo `kg` fijo) ignorando `row.unit`, que puede ser `ud` u otra unidad no-peso según el catálogo (GAP-V2-052; ready)
+
+**Continuación 2026-07-03 — permissions / multitenant (carril `permissions-multitenant-auditor`):**
+
+- `OrdersList/index.tsx:236-245` — el botón "Exportar" no está gateado por ninguna capacidad, a diferencia de "Vista de Producción" (`!readOnly`) y "Crear" (`canCreateOrder`) en la misma barra; visible/funcional para `comercial` en modo readOnly sin confirmar si el xlsx expone coste/margen (GAP-V2-056; ready)
+- Verificado sin hallazgos: `orderService.ts` completo (34 endpoints) usa `fetchWithTenant` sin excepciones; queryKeys de `useOrders`/`useOrdersStats`/`useComercialOrders`/`useFieldOrders` son tenant-aware; `ProductionView` no expone coste/margen y no es alcanzable por `operario`/`comercial`; `middleware.ts` aplica RBAC server-side real, no solo oculto en UI
+
 ## 7. GAPs generados/actualizados
 
-Ver `docs/ai/modules/orders/gaps-registry.md` (regenerado). Resumen: 1 `ready`, 18 `done`, 0 `blocked`, 0 `later`, 2 `rejected`.
+**Rama `claude/orders-deep-audit-lv9qnf` (mergeada a `main`, PR #68):** GAP-V2-024 y GAP-V2-025
+cerrados `done`; GAP-V2-026 (doble refetch en `useOrderPallets`) creado `ready` como
+seguimiento no bloqueante. Resumen en ese momento: 1 `ready`, 18 `done`, 0 `blocked`, 0
+`later`, 2 `rejected`.
+
+**Rama `claude/orders-deep-audit-ewomf1` (esta rama) — normalizados por `gap-normalizer` el
+2026-07-03** (20 candidatos → 20 GAPs finales: ninguno se fusionó como GAP independiente
+completo, aunque GAP-V2-046 cedió el caso `OrdersList/index.tsx:202` a GAP-V2-048 por solape
+exacto de archivo/línea; ninguno se dividió; uno renombrado de GAP-V2-026 a **GAP-V2-057**
+al reconciliar con `main`, que ya usaba ese número para el GAP de doble refetch de
+`lv9qnf`). Estado final tras normalizar:
+
+**Ready (17):**
+
+- GAP-V2-057 — `OrderEditSheet`: guard de "descartar cambios" nunca se invoca (code-quality, P1)
+- GAP-V2-029 — Token-as-parameter + código muerto en 3 funciones de export de rentabilidad (code-quality, P2)
+- GAP-V2-030 — `useOrderFormConfig` sincroniza estado derivado con `useEffect` (code-quality, P2)
+- GAP-V2-031 — `OrderProduction`/`OrderLabels` sin `'use client'` (code-quality, P3)
+- GAP-V2-032 — Tipos de dominio de `orders` inline en `orderService.ts` (code-quality, P3)
+- GAP-V2-033 — `OrderCard` duplica `StatusBadge` en su variante mobile (code-quality, P3)
+- GAP-V2-034 — Sin cobertura de test en 3 hooks de formulario (code-quality, P3)
+- GAP-V2-037 — `OrderEditSheet` sin `aria-invalid` nativo (a11y-responsive, P2)
+- GAP-V2-038 — Editores de línea sin validación de campos requeridos antes de guardar (ux-ui, P1)
+- GAP-V2-046 — Recurrencia `font-semibold` en producción/palets/líneas auxiliares/previsión (ux-ui, P3)
+- GAP-V2-047 — Drift tipográfico de `OrderCustomerHistory` mobile↔desktop (ux-ui, P2)
+- GAP-V2-048 — Título de `OrdersList` no sigue `text-xl font-medium` (ux-ui, P3; incorpora el caso de `font-semibold` desktop originalmente en GAP-V2-046)
+- GAP-V2-049 — Jerarquía ID vs. cliente en `OrderCard` desktop (ux-ui, P3)
+- GAP-V2-050 — `OrderIncident` sin la sub-escala de `CardTitle` (ux-ui, P3)
+- GAP-V2-051 — `parseTaxRate` reimplementado en `OrderAuxiliaryLines` con el fallback silencioso a 0% (domain-business, P1)
+- GAP-V2-052 — Cantidad de línea auxiliar siempre en "kg" ignorando `row.unit` (domain-business, P2)
+- GAP-V2-056 — Botón "Exportar" de `OrdersList` gateado por `canExportListData` (default `!readOnly`) (architecture-refactor, P1)
+
+**Blocked (3):**
+
+- GAP-V2-027 — `OrdersListFiltersSheet.tsx` código muerto (code-quality, P3): bloqueado a la
+  espera de que Jose confirme si el plan mobile Fase 3 referenciado en el propio archivo sigue
+  vigente (determina eliminar vs. conectar).
+- GAP-V2-028 — `orderService.ts` duplica boilerplate de fetch/headers en 35 funciones
+  (architecture-refactor, P2, tamaño **L**): bloqueado por regla del skill — ningún GAP L/XL
+  puede quedar `ready` sin autorización explícita de Jose. Contenido completo y verificable;
+  solo falta el visto bueno o la decisión de dividirlo en sub-GAPs más pequeños (como se hizo con
+  GAP-V2-001 → 022/023/024/025).
+- GAP-V2-036 — Secciones/acciones bloqueadas para comercial readOnly desaparecen sin explicación
+  (ux-ui, P2): bloqueado porque el propio GAP lista 3 opciones de UX distintas y pide
+  explícitamente confirmación de Jose antes de implementar, sin default seguro.
+
+Sin overlap real entre GAP-V2-057 (guard de cierre de `OrderEditSheet`) y GAP-V2-028
+(boilerplate de `orderService.ts`) pese a tocar superficies relacionadas del mismo flujo de
+edición — quedan independientes, como anticipaba `audit.md` §9. GAP-V2-057 tampoco se solapa
+con GAP-V2-026 (doble refetch de `useOrderPallets`, de la rama `lv9qnf`) — son hallazgos
+distintos que solo compartieron número por accidente antes de la reconciliación.
+
+Ver `docs/ai/modules/orders/gaps-registry.md` (regenerado tras la reconciliación de ambas
+ramas). Resumen total del módulo: **18 `ready`** (1 de `lv9qnf` + 17 de esta rama), **18
+`done`**, **3 `blocked`**, 0 `later`, **2 `rejected`** — 41 GAPs en total.
 
 ## 8. GAPs resueltos o descartados
 
@@ -176,12 +300,19 @@ Ver `docs/ai/modules/orders/gaps-registry.md` (regenerado). Resumen: 1 `ready`, 
 
 **Bloqueos:** ninguno vigente.
 
+**Pendiente de confirmación de Jose (no adivinado, bloquea `ready` de un candidato futuro sobre validación de signo):**
+
+- ¿Las líneas auxiliares de pedido (`OrderAuxiliaryLines`) deben permitir cantidad/precio unitario negativo para representar abonos/devoluciones, o deben bloquearse? No hay validación de signo en el formulario actual ni convención documentada. Señalado por `domain-business-auditor` en la continuación 2026-07-03; no se abrió GAP sobre esto a la espera de la respuesta.
+- GAP-V2-056 (botón "Exportar" del listado sin gate de rol) requiere verificar con backend si el xlsx generado (`downloadActivePlannedProductsXls`) contiene coste/margen antes de decidir si el fix es igual al de GAP-V2-020 (ocultar) o más ligero (solo confirmar que no expone datos económicos).
+
 **Riesgos (no bloqueantes, para contexto):**
 
 - El auditor de GAP-V2-024 señaló que `invalidateOrderDetail` corre dentro de `onSuccess` de `useMutation`, por lo que el toast de éxito y el cierre de edición en `OrderAuxiliaryLines/index.tsx` ahora esperan al refetch del detalle (latencia percibida ligeramente mayor, datos más frescos). No bloqueante; pendiente de probar manualmente en red lenta.
 - El auditor de GAP-V2-025 señaló doble refetch en `useOrderPallets.ts`: cada mutación exitosa dispara `invalidateOrderDetail()` (refetch automático por ser query activa) y además `reload()` (su propio `queryRefetch()`), duplicando la petición de red al detalle del pedido por cada operación de palet. No rompe nada funcionalmente. Convertido en GAP-V2-026 (P3, low, XS) — acotado a este archivo, GAP-V2-022/023/024 no comparten el problema porque no llaman a `reload()` tras invalidar.
 - GAP-V2-020 ya oculta/evita la carga de coste/margen en frontend para comercial, pero la frontera real debería reforzarse también en API/policy/resource.
 - Se detectó un segundo hook llamado `useOrderPallets` en `src/components/Admin/OrdersManager/Order/OrderPallets/hooks/useOrderPallets.ts`, fuera del alcance auditado, que genera ambigüedad de nombres con `src/hooks/orders/useOrderPallets.ts` — no se abrió GAP, queda anotado para una futura pasada.
+- GAP-V2-057 y GAP-V2-028 tocan el mismo archivo (`OrderEditSheet/index.tsx`) y `orderService.ts` respectivamente desde ángulos distintos (guard de cierre vs. boilerplate de fetch) — revisar en `gap-normalizer` si conviene ordenarlos como dependencia o quedan independientes.
+- PL candidate señalado por `domain-business-auditor` (no auto-aplicado, pendiente de que `system-learner` lo evalúe): "al corregir una función de negocio compartida (no solo queryKey), grep del nombre de la función en todo el módulo para detectar copias locales no refactorizadas" — visto con `parseTaxRate` duplicado entre `useOrderPlannedDetails.ts` (ya corregido en GAP-V2-012) y `OrderAuxiliaryLines/index.tsx` (todavía con el fallback silencioso, GAP-V2-051).
 
 ## 10. Decisiones tomadas
 
@@ -209,13 +340,16 @@ Ver `docs/ai/modules/orders/gaps-registry.md` (regenerado). Resumen: 1 `ready`, 
 - 2026-07-02 — División documental code-quality: GAP-V2-001 queda `rejected/superseded`; se crean GAP-V2-022, GAP-V2-023, GAP-V2-024 y GAP-V2-025 como `ready`; registry regenerado.
 - 2026-07-02 — Implementación batch 13 code-quality medium: GAP-V2-022 marcado `done`; registry regenerado.
 - 2026-07-02 — Implementación batch 14 code-quality medium: GAP-V2-023 marcado `done`; registry regenerado.
-- 2026-07-03 — Implementación batch 15 code-quality medium: GAP-V2-024 marcado `done` tras verificación `gap-auditor` (veredicto DONE, contexto limpio); registry regenerado. Rama `claude/orders-deep-audit-lv9qnf` recreada desde `origin/main` porque el PR anterior de esa rama ya estaba mergeado.
-- 2026-07-03 — Implementación batch 16 code-quality medium: GAP-V2-025 marcado `done` tras verificación `gap-auditor` (veredicto aprobado con observación no bloqueante de doble refetch); registry regenerado. Circuito acotado de 5 carriles queda sin GAPs `ready` (0 ready, 18 done, 0 blocked, 2 rejected).
-- 2026-07-03 — Se crea GAP-V2-026 (P3, low, XS) a partir de la observación no bloqueante de GAP-V2-025: `refetchType: 'none'` en la invalidación de `useOrderPallets.ts` para eliminar el doble refetch; registry regenerado (1 ready, 18 done, 0 blocked, 2 rejected).
+- 2026-07-03 — [rama `claude/orders-deep-audit-lv9qnf`] Implementación batch 15 code-quality medium: GAP-V2-024 marcado `done` tras verificación `gap-auditor` (veredicto DONE, contexto limpio); registry regenerado. Rama recreada desde `origin/main` porque el PR anterior de esa rama ya estaba mergeado.
+- 2026-07-03 — [rama `claude/orders-deep-audit-lv9qnf`] Implementación batch 16 code-quality medium: GAP-V2-025 marcado `done` tras verificación `gap-auditor` (veredicto aprobado con observación no bloqueante de doble refetch); registry regenerado. Circuito acotado de 5 carriles queda sin GAPs `ready` (0 ready, 18 done, 0 blocked, 2 rejected).
+- 2026-07-03 — [rama `claude/orders-deep-audit-lv9qnf`] Se crea GAP-V2-026 (P3, low, XS) a partir de la observación no bloqueante de GAP-V2-025: `refetchType: 'none'` en la invalidación de `useOrderPallets.ts` para eliminar el doble refetch; registry regenerado (1 ready, 18 done, 0 blocked, 2 rejected). Esta rama se mergea a `main` vía PR #68.
+- 2026-07-03 — [rama `claude/orders-deep-audit-ewomf1`, en paralelo] Jose confirma alcance de nueva pasada: "todo el módulo, los 5 carriles" sobre las celdas `pending`/`partial` restantes de la matriz. Se lanzan `code-audit-agent`, `ui-audit-agent`, `design-quality-auditor`, `domain-business-auditor` y `permissions-multitenant-auditor` en paralelo con rangos de GAP-V2 reservados (026-035, 036-045, 046-050, 051-055, 056-060). 20 candidatos escritos (GAP-V2-026 a 056, no consecutivos); matriz de cobertura actualizada de mayoritariamente `pending` a mayoritariamente `audited`. Un carril (`domain-business-auditor`) editó `audit.md` directamente durante su ejecución, violando la regla del skill — revertido antes del merge; su contenido se incorporó correctamente en esta misma pasada a partir de su resumen devuelto.
+- 2026-07-03 — [rama `claude/orders-deep-audit-ewomf1`] `gap-normalizer` procesa los 20 candidatos: 17 `ready`, 3 `blocked` (GAP-V2-027, GAP-V2-028, GAP-V2-036), 0 `later`/`rejected`; registry regenerado.
+- 2026-07-03 — **Reconciliación**: Jose señala que la rama `lv9qnf` (sesión anterior) llevaba tiempo sin mergear. Se hace `git fetch` + `git merge origin/main` en `claude/orders-deep-audit-ewomf1`. Se detecta que ambas ramas habían numerado de forma independiente un `GAP-V2-026` distinto (esta rama: guard de cierre de `OrderEditSheet`; `lv9qnf`: doble refetch de `useOrderPallets`, ya mergeado). Se renombra el de esta rama a `GAP-V2-057` (archivo, frontmatter `id`, y todas las referencias cruzadas en otros GAPs y en este `audit.md`). Se reconcilian manualmente los 4 bloques en conflicto de `audit.md` (NEXT ACTION, Estado del módulo, Resumen ejecutivo, §7 y §11) combinando ambas historias sin perder información de ninguna. Registry regenerado con el estado final: 41 GAPs — 18 `ready`, 3 `blocked`, 18 `done`, 0 `later`, 2 `rejected`.
 
 ## 12. Instrucciones para retomar en otro chat/modelo
 
-Leer este archivo completo y `docs/ai/next-action.md`. Los 20 GAPs documentados viven en `docs/ai/gaps/orders/` con frontmatter completo — el registry generado en `docs/ai/modules/orders/gaps-registry.md` es la vista rápida de qué está `ready` vs `blocked` vs `rejected`. GAP-V2-001 no debe implementarse como lote único: está rechazado por división en GAP-V2-022/023/024/025.
+Leer este archivo completo y `docs/ai/next-action.md`. Los 41 GAPs documentados viven en `docs/ai/gaps/orders/` con frontmatter completo — el registry generado en `docs/ai/modules/orders/gaps-registry.md` es la vista rápida de qué está `ready` vs `blocked` vs `done` vs `rejected`. GAP-V2-001 no debe implementarse como lote único: está rechazado por división en GAP-V2-022/023/024/025. GAP-V2-026 (doble refetch en `useOrderPallets`) y GAP-V2-057 (guard de cierre de `OrderEditSheet`) son GAPs distintos que compartieron número por accidente entre dos ramas paralelas antes de reconciliarse el 2026-07-03 — no confundirlos.
 
 ## 13. Reglas específicas para futuras auditorías de este módulo
 
