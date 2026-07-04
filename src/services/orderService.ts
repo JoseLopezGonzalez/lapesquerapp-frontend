@@ -79,6 +79,26 @@ export type {
   OrderStatus,
 } from '@/types/orders';
 
+/**
+ * Punto único de construcción de la petición HTTP para todo este service:
+ * obtiene el token, fusiona los headers comunes (Content-Type, Authorization,
+ * User-Agent) con los headers específicos de cada llamada, y delega en
+ * fetchWithTenant. Devuelve la Response sin parsear — cada función decide cómo
+ * leerla (JSON u blob) según su contrato de retorno.
+ */
+async function orderFetch(url: string, options: RequestInit = {}): Promise<Response> {
+  const token = await getAuthToken();
+  return fetchWithTenant(url, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      'User-Agent': getUserAgent(),
+      ...options.headers,
+    },
+  });
+}
+
 function buildProfitabilityQuery(
   params: OrdersProfitabilitySummaryParams & { granularity?: string }
 ): URLSearchParams {
@@ -157,15 +177,7 @@ function getFilenameFromContentDisposition(contentDisposition: string | null): s
  * Fetches the details of an order by its ID.
  */
 export async function getOrder(orderId: string): Promise<Order | null> {
-  const token = await getAuthToken();
-  const response = await fetchWithTenant(`${API_URL_V2}orders/${orderId}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-      'User-Agent': getUserAgent(),
-    },
-  });
+  const response = await orderFetch(`${API_URL_V2}orders/${orderId}`, { method: 'GET' });
   const data = await handleServiceResponse(response, null, 'Error al obtener el pedido');
   if (!data) return null;
   return (data.data || data) as Order;
@@ -177,14 +189,8 @@ export async function getOrder(orderId: string): Promise<Order | null> {
 export async function getOrderCostAnalysis(
   orderId: string | number
 ): Promise<OrderCostAnalysisResponse | null> {
-  const token = await getAuthToken();
-  const response = await fetchWithTenant(`${API_URL_V2}orders/${orderId}/cost-analysis`, {
+  const response = await orderFetch(`${API_URL_V2}orders/${orderId}/cost-analysis`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-      'User-Agent': getUserAgent(),
-    },
   });
   const data = await handleServiceResponse(
     response,
@@ -197,20 +203,18 @@ export async function getOrderCostAnalysis(
 
 /**
  * Updates an order with the given data.
+ *
+ * Mantiene el parseo de error manual con `ApiError` (no `handleServiceResponse`)
+ * porque `OrderEditSheet` depende de `error.status === 422` y `error.data.errors`
+ * para mapear errores de validación a los campos del formulario.
  */
 export async function updateOrder(
   orderId: string,
   orderData: OrderPayload
 ): Promise<Order | undefined> {
-  const token = await getAuthToken();
-  const response = await fetchWithTenant(`${API_URL_V2}orders/${orderId}`, {
+  const response = await orderFetch(`${API_URL_V2}orders/${orderId}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      Authorization: `Bearer ${token}`,
-      'User-Agent': getUserAgent(),
-    },
+    headers: { Accept: 'application/json' },
     body: JSON.stringify(orderData),
   });
   if (!response.ok) {
@@ -252,23 +256,15 @@ function normalizeActiveOrder(order: Record<string, unknown>): Order {
  * Fetches the active orders from the API.
  */
 export async function getActiveOrders(): Promise<Order[]> {
-  const token = await getAuthToken();
-  const response = await fetchWithTenant(`${API_URL_V2}orders/active`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-      'User-Agent': getUserAgent(),
-    },
-  });
-  if (!response.ok) {
-    const errorData: { message?: string } = await response.json();
-    throw new Error(getErrorMessage(errorData) || 'Error al obtener los pedidos activos');
-  }
-  const data: Order[] | { data?: Order[] } = await response.json();
+  const response = await orderFetch(`${API_URL_V2}orders/active`, { method: 'GET' });
+  const data: Order[] | { data?: Order[] } | null = await handleServiceResponse(
+    response,
+    null,
+    'Error al obtener los pedidos activos'
+  );
   const raw: Order[] = Array.isArray(data)
     ? data
-    : Array.isArray((data as { data?: Order[] }).data)
+    : Array.isArray((data as { data?: Order[] } | null)?.data)
       ? (data as { data: Order[] }).data
       : [];
   return raw.map((order) => normalizeActiveOrder(order));
@@ -276,15 +272,13 @@ export async function getActiveOrders(): Promise<Order[]> {
 
 /**
  * Downloads the XLS report of active planned products.
+ *
+ * Descarga de blob sin cuerpo JSON de error estructurado — no se unifica con
+ * `handleServiceResponse` (pensado para respuestas JSON).
  */
 export async function downloadActivePlannedProductsXls(): Promise<Blob> {
-  const token = await getAuthToken();
-  const response = await fetchWithTenant(`${API_URL_V2}orders/xlsx/active-planned-products`, {
+  const response = await orderFetch(`${API_URL_V2}orders/xlsx/active-planned-products`, {
     method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'User-Agent': getUserAgent(),
-    },
   });
   if (!response.ok) throw new Error(`Error ${response.status} al exportar`);
   return response.blob();
@@ -297,49 +291,31 @@ export async function updateOrderPlannedProductDetail(
   detailId: string,
   detailData: OrderPlannedProductDetailPayload
 ): Promise<unknown> {
-  const token = await getAuthToken();
-  const response = await fetchWithTenant(`${API_URL_V2}order-planned-product-details/${detailId}`, {
+  const response = await orderFetch(`${API_URL_V2}order-planned-product-details/${detailId}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      Authorization: `Bearer ${token}`,
-      'User-Agent': getUserAgent(),
-    },
+    headers: { Accept: 'application/json' },
     body: JSON.stringify(detailData),
   });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(getErrorMessage(errorData) || 'Error al actualizar la linea del pedido');
-  }
-
-  const data = await response.json();
-  return data.data;
+  const data = await handleServiceResponse(
+    response,
+    null,
+    'Error al actualizar la linea del pedido'
+  );
+  return data?.data;
 }
 
 /**
  * Deletes the planned product detail of an order.
  */
 export async function deleteOrderPlannedProductDetail(detailId: string): Promise<unknown> {
-  const token = await getAuthToken();
-  const response = await fetchWithTenant(`${API_URL_V2}order-planned-product-details/${detailId}`, {
+  const response = await orderFetch(`${API_URL_V2}order-planned-product-details/${detailId}`, {
     method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      Authorization: `Bearer ${token}`,
-      'User-Agent': getUserAgent(),
-    },
+    headers: { Accept: 'application/json' },
   });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(getErrorMessage(errorData) || 'Error al eliminar la linea del pedido');
-  }
-
-  const data = await response.json();
-  return data.data;
+  const data = await handleServiceResponse(response, null, 'Error al eliminar la linea del pedido');
+  return data?.data;
 }
 
 /**
@@ -348,49 +324,31 @@ export async function deleteOrderPlannedProductDetail(detailId: string): Promise
 export async function createOrderPlannedProductDetail(
   detailData: OrderPlannedProductDetailPayload
 ): Promise<unknown> {
-  const token = await getAuthToken();
-  const response = await fetchWithTenant(`${API_URL_V2}order-planned-product-details`, {
+  const response = await orderFetch(`${API_URL_V2}order-planned-product-details`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      Authorization: `Bearer ${token}`,
-      'User-Agent': getUserAgent(),
-    },
+    headers: { Accept: 'application/json' },
     body: JSON.stringify(detailData),
   });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(getErrorMessage(errorData) || 'Error al crear la linea del pedido');
-  }
-
-  const data = await response.json();
-  return data.data;
+  const data = await handleServiceResponse(response, null, 'Error al crear la linea del pedido');
+  return data?.data;
 }
 
 /**
  * Fetches the auxiliary lines of an order.
  */
 export async function getOrderAuxiliaryLines(orderId: string): Promise<AuxiliaryOrderLine[]> {
-  const token = await getAuthToken();
-  const response = await fetchWithTenant(`${API_URL_V2}orders/${orderId}/auxiliary-lines`, {
+  const response = await orderFetch(`${API_URL_V2}orders/${orderId}/auxiliary-lines`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      Authorization: `Bearer ${token}`,
-      'User-Agent': getUserAgent(),
-    },
+    headers: { Accept: 'application/json' },
   });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(getErrorMessage(errorData) || 'Error al obtener las líneas auxiliares');
-  }
-
-  const data = await response.json();
-  return data.data;
+  const data = await handleServiceResponse(
+    response,
+    null,
+    'Error al obtener las líneas auxiliares'
+  );
+  return data?.data ?? [];
 }
 
 /**
@@ -400,25 +358,14 @@ export async function createOrderAuxiliaryLine(
   orderId: string,
   lineData: AuxiliaryOrderLinePayload
 ): Promise<AuxiliaryOrderLine> {
-  const token = await getAuthToken();
-  const response = await fetchWithTenant(`${API_URL_V2}orders/${orderId}/auxiliary-lines`, {
+  const response = await orderFetch(`${API_URL_V2}orders/${orderId}/auxiliary-lines`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      Authorization: `Bearer ${token}`,
-      'User-Agent': getUserAgent(),
-    },
+    headers: { Accept: 'application/json' },
     body: JSON.stringify(lineData),
   });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(getErrorMessage(errorData) || 'Error al crear la línea auxiliar');
-  }
-
-  const data = await response.json();
-  return data.data;
+  const data = await handleServiceResponse(response, null, 'Error al crear la línea auxiliar');
+  return data?.data;
 }
 
 /**
@@ -429,101 +376,53 @@ export async function updateOrderAuxiliaryLine(
   lineId: string,
   lineData: AuxiliaryOrderLinePayload
 ): Promise<AuxiliaryOrderLine> {
-  const token = await getAuthToken();
-  const response = await fetchWithTenant(
-    `${API_URL_V2}orders/${orderId}/auxiliary-lines/${lineId}`,
-    {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
-        'User-Agent': getUserAgent(),
-      },
-      body: JSON.stringify(lineData),
-    }
-  );
+  const response = await orderFetch(`${API_URL_V2}orders/${orderId}/auxiliary-lines/${lineId}`, {
+    method: 'PATCH',
+    headers: { Accept: 'application/json' },
+    body: JSON.stringify(lineData),
+  });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(getErrorMessage(errorData) || 'Error al actualizar la línea auxiliar');
-  }
-
-  const data = await response.json();
-  return data.data;
+  const data = await handleServiceResponse(response, null, 'Error al actualizar la línea auxiliar');
+  return data?.data;
 }
 
 /**
  * Deletes an auxiliary line of an order.
  */
 export async function deleteOrderAuxiliaryLine(orderId: string, lineId: string): Promise<void> {
-  const token = await getAuthToken();
-  const response = await fetchWithTenant(
-    `${API_URL_V2}orders/${orderId}/auxiliary-lines/${lineId}`,
-    {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
-        'User-Agent': getUserAgent(),
-      },
-    }
-  );
+  const response = await orderFetch(`${API_URL_V2}orders/${orderId}/auxiliary-lines/${lineId}`, {
+    method: 'DELETE',
+    headers: { Accept: 'application/json' },
+  });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(getErrorMessage(errorData) || 'Error al eliminar la línea auxiliar');
-  }
+  await handleServiceResponse(response, null, 'Error al eliminar la línea auxiliar');
 }
 
 /**
  * Updates the status of an order.
  */
 export async function setOrderStatus(orderId: string, status: OrderStatus): Promise<unknown> {
-  const token = await getAuthToken();
-  const response = await fetchWithTenant(`${API_URL_V2}orders/${orderId}/status`, {
+  const response = await orderFetch(`${API_URL_V2}orders/${orderId}/status`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      Authorization: `Bearer ${token}`,
-      'User-Agent': getUserAgent(),
-    },
+    headers: { Accept: 'application/json' },
     body: JSON.stringify({ status }),
   });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(getErrorMessage(errorData) || 'Error al actualizar el pedido');
-  }
-
-  const data = await response.json();
-  return data.data;
+  const data = await handleServiceResponse(response, null, 'Error al actualizar el pedido');
+  return data?.data;
 }
 
 /**
  * Creates an incident for an order.
  */
 export async function createOrderIncident(orderId: string, description: string): Promise<unknown> {
-  const token = await getAuthToken();
-  const response = await fetchWithTenant(`${API_URL_V2}orders/${orderId}/incident`, {
+  const response = await orderFetch(`${API_URL_V2}orders/${orderId}/incident`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      Authorization: `Bearer ${token}`,
-      'User-Agent': getUserAgent(),
-    },
+    headers: { Accept: 'application/json' },
     body: JSON.stringify({ description }),
   });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(getErrorMessage(errorData) || 'Error al crear la incidencia');
-  }
-
-  return response.json();
+  return handleServiceResponse(response, null, 'Error al crear la incidencia');
 }
 
 /**
@@ -534,90 +433,48 @@ export async function updateOrderIncident(
   resolutionType: string,
   resolutionNotes: string
 ): Promise<unknown> {
-  const token = await getAuthToken();
-  const response = await fetchWithTenant(`${API_URL_V2}orders/${orderId}/incident`, {
+  const response = await orderFetch(`${API_URL_V2}orders/${orderId}/incident`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      Authorization: `Bearer ${token}`,
-      'User-Agent': getUserAgent(),
-    },
+    headers: { Accept: 'application/json' },
     body: JSON.stringify({
       resolution_type: resolutionType,
       resolution_notes: resolutionNotes,
     }),
   });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(getErrorMessage(errorData) || 'Error al resolver la incidencia');
-  }
-
-  return response.json();
+  return handleServiceResponse(response, null, 'Error al resolver la incidencia');
 }
 
 /**
  * Deletes an order incident.
  */
 export async function destroyOrderIncident(orderId: string): Promise<unknown> {
-  const token = await getAuthToken();
-  const response = await fetchWithTenant(`${API_URL_V2}orders/${orderId}/incident`, {
+  const response = await orderFetch(`${API_URL_V2}orders/${orderId}/incident`, {
     method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      Authorization: `Bearer ${token}`,
-      'User-Agent': getUserAgent(),
-    },
+    headers: { Accept: 'application/json' },
   });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(getErrorMessage(errorData) || 'Error al eliminar la incidencia');
-  }
-
-  return response.json();
+  return handleServiceResponse(response, null, 'Error al eliminar la incidencia');
 }
 
 /**
  * Fetches active orders options.
  */
 export async function getActiveOrdersOptions(): Promise<unknown> {
-  const token = await getAuthToken();
-  const response = await fetchWithTenant(`${API_URL_V2}active-orders/options`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-      'User-Agent': getUserAgent(),
-    },
-  });
-  if (!response.ok) {
-    const errorData: { message?: string } = await response.json();
-    throw new Error(getErrorMessage(errorData) || 'Error al obtener los pedidos activos');
-  }
-  return response.json();
+  const response = await orderFetch(`${API_URL_V2}active-orders/options`, { method: 'GET' });
+  return handleServiceResponse(response, null, 'Error al obtener los pedidos activos');
 }
 
 /**
  * Fetches production view data.
  */
 export async function getProductionViewData(): Promise<unknown[]> {
-  const token = await getAuthToken();
-  const response = await fetchWithTenant(`${API_URL_V2}orders/production-view`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-      'User-Agent': getUserAgent(),
-    },
-  });
-  if (!response.ok) {
-    const errorData: { message?: string } = await response.json();
-    throw new Error(getErrorMessage(errorData) || 'Error al obtener los datos de producción');
-  }
-  const data: unknown[] | { data?: unknown[] } = await response.json();
+  const response = await orderFetch(`${API_URL_V2}orders/production-view`, { method: 'GET' });
+  const data = await handleServiceResponse(
+    response,
+    null,
+    'Error al obtener los datos de producción'
+  );
   if (
     data &&
     typeof data === 'object' &&
@@ -645,26 +502,12 @@ export async function getOrderRankingStats(params: OrderRankingStatsParams): Pro
     query.append('speciesId', params.speciesId);
   }
 
-  const token = await getAuthToken();
-  const response = await fetchWithTenant(
-    `${API_URL_V2}statistics/orders/ranking?${query.toString()}`,
-    {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
-        'User-Agent': getUserAgent(),
-      },
-    }
-  );
+  const response = await orderFetch(`${API_URL_V2}statistics/orders/ranking?${query.toString()}`, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+  });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(getErrorMessage(errorData) || 'Error al obtener el ranking de pedidos');
-  }
-
-  return response.json();
+  return handleServiceResponse(response, null, 'Error al obtener el ranking de pedidos');
 }
 
 /**
@@ -674,27 +517,16 @@ export async function getSalesBySalesperson(params: {
   dateFrom: string;
   dateTo: string;
 }): Promise<unknown> {
-  const token = await getAuthToken();
   const query = new URLSearchParams(params);
-  const response = await fetchWithTenant(
+  const response = await orderFetch(
     `${API_URL_V2}orders/sales-by-salesperson?${query.toString()}`,
     {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
-        'User-Agent': getUserAgent(),
-      },
+      headers: { Accept: 'application/json' },
     }
   );
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(getErrorMessage(errorData) || 'Error al obtener las ventas por comercial');
-  }
-
-  return response.json();
+  return handleServiceResponse(response, null, 'Error al obtener las ventas por comercial');
 }
 
 /**
@@ -704,27 +536,16 @@ export async function getOrdersTotalNetWeightStats(params: {
   dateFrom: string;
   dateTo: string;
 }): Promise<unknown> {
-  const token = await getAuthToken();
   const query = new URLSearchParams(params);
-  const response = await fetchWithTenant(
+  const response = await orderFetch(
     `${API_URL_V2}statistics/orders/total-net-weight?${query.toString()}`,
     {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
-        'User-Agent': getUserAgent(),
-      },
+      headers: { Accept: 'application/json' },
     }
   );
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(getErrorMessage(errorData) || 'Error al obtener la cantidad total vendida');
-  }
-
-  return response.json();
+  return handleServiceResponse(response, null, 'Error al obtener la cantidad total vendida');
 }
 
 /**
@@ -735,31 +556,20 @@ export async function getOrdersTotalAmountStats(params: {
   dateTo: string;
   includeAuxiliary?: boolean;
 }): Promise<unknown> {
-  const token = await getAuthToken();
   const { includeAuxiliary, ...rest } = params;
   const query = new URLSearchParams(rest);
   if (includeAuxiliary) {
     query.set('includeAuxiliary', 'true');
   }
-  const response = await fetchWithTenant(
+  const response = await orderFetch(
     `${API_URL_V2}statistics/orders/total-amount?${query.toString()}`,
     {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
-        'User-Agent': getUserAgent(),
-      },
+      headers: { Accept: 'application/json' },
     }
   );
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(getErrorMessage(errorData) || 'Error al obtener el importe total vendido');
-  }
-
-  return response.json();
+  return handleServiceResponse(response, null, 'Error al obtener el importe total vendido');
 }
 
 /**
@@ -769,29 +579,20 @@ export async function getAuxiliaryLinesTotalAmountStats(params: {
   dateFrom: string;
   dateTo: string;
 }): Promise<AuxiliaryLinesTotalAmountStats> {
-  const token = await getAuthToken();
   const query = new URLSearchParams(params);
-  const response = await fetchWithTenant(
+  const response = await orderFetch(
     `${API_URL_V2}statistics/auxiliary-lines/total-amount?${query.toString()}`,
     {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
-        'User-Agent': getUserAgent(),
-      },
+      headers: { Accept: 'application/json' },
     }
   );
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(
-      getErrorMessage(errorData) || 'Error al obtener el importe total de líneas auxiliares'
-    );
-  }
-
-  return response.json();
+  return handleServiceResponse(
+    response,
+    null,
+    'Error al obtener el importe total de líneas auxiliares'
+  );
 }
 
 /**
@@ -801,29 +602,20 @@ export async function getAuxiliaryLinesByProductStats(params: {
   dateFrom: string;
   dateTo: string;
 }): Promise<AuxiliaryLinesByProductStat[]> {
-  const token = await getAuthToken();
   const query = new URLSearchParams(params);
-  const response = await fetchWithTenant(
+  const response = await orderFetch(
     `${API_URL_V2}statistics/auxiliary-lines/by-product?${query.toString()}`,
     {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
-        'User-Agent': getUserAgent(),
-      },
+      headers: { Accept: 'application/json' },
     }
   );
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(
-      getErrorMessage(errorData) || 'Error al obtener el ranking de líneas auxiliares por artículo'
-    );
-  }
-
-  return response.json();
+  return handleServiceResponse(
+    response,
+    null,
+    'Error al obtener el ranking de líneas auxiliares por artículo'
+  );
 }
 
 /**
@@ -833,29 +625,20 @@ export async function getAuxiliaryLinesByCustomerStats(params: {
   dateFrom: string;
   dateTo: string;
 }): Promise<AuxiliaryLinesByCustomerStat[]> {
-  const token = await getAuthToken();
   const query = new URLSearchParams(params);
-  const response = await fetchWithTenant(
+  const response = await orderFetch(
     `${API_URL_V2}statistics/auxiliary-lines/by-customer?${query.toString()}`,
     {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
-        'User-Agent': getUserAgent(),
-      },
+      headers: { Accept: 'application/json' },
     }
   );
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(
-      getErrorMessage(errorData) || 'Error al obtener el ranking de líneas auxiliares por cliente'
-    );
-  }
-
-  return response.json();
+  return handleServiceResponse(
+    response,
+    null,
+    'Error al obtener el ranking de líneas auxiliares por cliente'
+  );
 }
 
 /**
@@ -866,33 +649,24 @@ export async function getAuxiliaryLinesChartData(params: {
   dateTo: string;
   groupBy?: 'day' | 'week' | 'month';
 }): Promise<AuxiliaryLinesChartPoint[]> {
-  const token = await getAuthToken();
   const query = new URLSearchParams({
     dateFrom: params.dateFrom,
     dateTo: params.dateTo,
     groupBy: params.groupBy ?? 'day',
   });
-  const response = await fetchWithTenant(
+  const response = await orderFetch(
     `${API_URL_V2}statistics/auxiliary-lines/chart-data?${query.toString()}`,
     {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
-        'User-Agent': getUserAgent(),
-      },
+      headers: { Accept: 'application/json' },
     }
   );
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(
-      getErrorMessage(errorData) || 'Error al obtener la serie temporal de líneas auxiliares'
-    );
-  }
-
-  return response.json();
+  return handleServiceResponse(
+    response,
+    null,
+    'Error al obtener la serie temporal de líneas auxiliares'
+  );
 }
 
 /**
@@ -901,18 +675,12 @@ export async function getAuxiliaryLinesChartData(params: {
 export async function getOrdersProfitabilitySummary(
   params: OrdersProfitabilitySummaryParams
 ): Promise<ProfitabilitySummaryResponse> {
-  const token = await getAuthToken();
   const query = buildProfitabilityQuery(params);
-  const response = await fetchWithTenant(
+  const response = await orderFetch(
     `${API_URL_V2}statistics/orders/profitability-summary?${query.toString()}`,
     {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
-        'User-Agent': getUserAgent(),
-      },
+      headers: { Accept: 'application/json' },
     }
   );
 
@@ -932,17 +700,11 @@ export async function getOrdersProfitabilitySummary(
 export async function createOrdersProfitabilityExportJob(
   params: OrdersProfitabilityExportJobParams
 ): Promise<OrdersProfitabilityExportJob> {
-  const token = await getAuthToken();
-  const response = await fetchWithTenant(
+  const response = await orderFetch(
     `${API_URL_V2}statistics/orders/profitability-summary/export-jobs`,
     {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
-        'User-Agent': getUserAgent(),
-      },
+      headers: { Accept: 'application/json' },
       body: JSON.stringify(buildProfitabilityExportJobPayload(params)),
     }
   );
@@ -962,17 +724,11 @@ export async function createOrdersProfitabilityExportJob(
 export async function getOrdersProfitabilityExportJob(
   id: string
 ): Promise<OrdersProfitabilityExportJob> {
-  const token = await getAuthToken();
-  const response = await fetchWithTenant(
+  const response = await orderFetch(
     `${API_URL_V2}statistics/orders/profitability-summary/export-jobs/${id}`,
     {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
-        'User-Agent': getUserAgent(),
-      },
+      headers: { Accept: 'application/json' },
     }
   );
 
@@ -987,17 +743,17 @@ export async function getOrdersProfitabilityExportJob(
 
 /**
  * Downloads a finished async profitability export job.
+ *
+ * Descarga de blob con nombre de fichero leído de `content-disposition` — no se
+ * unifica con `handleServiceResponse` (pensado para respuestas JSON).
  */
 export async function downloadOrdersProfitabilityExportJob(
   downloadUrl: string
 ): Promise<OrdersProfitabilityExportDownload> {
-  const token = await getAuthToken();
-  const response = await fetchWithTenant(normalizeProfitabilityExportDownloadUrl(downloadUrl), {
+  const response = await orderFetch(normalizeProfitabilityExportDownloadUrl(downloadUrl), {
     method: 'GET',
     headers: {
       Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      Authorization: `Bearer ${token}`,
-      'User-Agent': getUserAgent(),
     },
   });
 
@@ -1028,18 +784,12 @@ export async function downloadOrdersProfitabilityExportJob(
 export async function getOrdersProfitabilityTimeline(
   params: OrdersProfitabilityTimelineParams
 ): Promise<ProfitabilityTimelineResponse> {
-  const token = await getAuthToken();
   const query = buildProfitabilityQuery(params);
-  const response = await fetchWithTenant(
+  const response = await orderFetch(
     `${API_URL_V2}statistics/orders/profitability-timeline?${query.toString()}`,
     {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
-        'User-Agent': getUserAgent(),
-      },
+      headers: { Accept: 'application/json' },
     }
   );
 
@@ -1059,22 +809,16 @@ export async function getOrdersProfitabilityTimeline(
 export async function getOrdersProfitabilityProducts(
   params: OrdersProfitabilityProductsParams
 ): Promise<ProfitabilityProductsResponse> {
-  const token = await getAuthToken();
   const query = new URLSearchParams({
     dateFrom: params.dateFrom,
     dateTo: params.dateTo,
   });
 
-  const response = await fetchWithTenant(
+  const response = await orderFetch(
     `${API_URL_V2}statistics/orders/profitability-products?${query.toString()}`,
     {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
-        'User-Agent': getUserAgent(),
-      },
+      headers: { Accept: 'application/json' },
     }
   );
 
@@ -1109,21 +853,17 @@ export async function getSalesChartData(params: SalesChartParams): Promise<unkno
     query.append('familyId', params.familyId);
   }
 
-  const token = await getAuthToken();
-  const data = await fetchWithTenant(`${API_URL_V2}orders/sales-chart-data?${query.toString()}`, {
+  const response = await orderFetch(`${API_URL_V2}orders/sales-chart-data?${query.toString()}`, {
     method: 'GET',
-    headers: { Authorization: `Bearer ${token}`, 'User-Agent': getUserAgent() },
-  }).then(async (response) => {
-    const result = await handleServiceResponse(
-      response,
-      [],
-      'Error al obtener datos del gráfico de ventas'
-    );
-    if (!result) return [];
-    return result;
   });
+  const result = await handleServiceResponse(
+    response,
+    [],
+    'Error al obtener datos del gráfico de ventas'
+  );
+  if (!result) return [];
 
-  return (data as { data?: unknown[] })?.data ?? (data as unknown[]);
+  return (result as { data?: unknown[] })?.data ?? (result as unknown[]);
 }
 
 /**
@@ -1136,42 +876,28 @@ export async function getTransportChartData(params: TransportChartParams): Promi
     dateTo: params.to,
   });
 
-  const token = await getAuthToken();
-  const response = await fetchWithTenant(
+  const response = await orderFetch(
     `${API_URL_V2}orders/transport-chart-data?${query.toString()}`,
     {
       method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        'User-Agent': getUserAgent(),
-      },
+      headers: { Accept: 'application/json' },
     }
   );
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(getErrorMessage(errorData) || 'Error al obtener los datos de transporte');
-  }
-
-  return response.json();
+  return handleServiceResponse(response, null, 'Error al obtener los datos de transporte');
 }
 
 /**
  * Creates a new order.
+ *
+ * Mantiene el parseo de error manual con `ApiError` (no `handleServiceResponse`)
+ * porque `CreateOrderForm` depende de `error.status === 422` y `error.data.errors`
+ * para mapear errores de validación a los campos del formulario.
  */
 export const createOrder = async (orderPayload: OrderPayload): Promise<Order> => {
-  const token = await getAuthToken();
-
-  const response = await fetchWithTenant(`${API_URL_V2}orders`, {
+  const response = await orderFetch(`${API_URL_V2}orders`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      Authorization: `Bearer ${token}`,
-      'User-Agent': getUserAgent(),
-    },
+    headers: { Accept: 'application/json' },
     body: JSON.stringify(orderPayload),
   });
 

@@ -110,10 +110,7 @@ describe('orderService', () => {
   describe('getActiveOrders', () => {
     it('fetches active orders and returns array', async () => {
       const mockOrders = [mockOrder, { ...mockOrder, id: 2 }];
-      fetchWithTenant.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockOrders,
-      });
+      fetchWithTenant.mockResolvedValueOnce(mockJsonResponse(mockOrders));
 
       const result = await getActiveOrders();
 
@@ -131,20 +128,14 @@ describe('orderService', () => {
 
     it('returns data.data when response has data wrapper', async () => {
       const mockOrders = [mockOrder];
-      fetchWithTenant.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ data: mockOrders }),
-      });
+      fetchWithTenant.mockResolvedValueOnce(mockJsonResponse({ data: mockOrders }));
 
       const result = await getActiveOrders();
       expect(result).toEqual(mockOrders);
     });
 
     it('returns empty array when data.data is not array', async () => {
-      fetchWithTenant.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ data: null }),
-      });
+      fetchWithTenant.mockResolvedValueOnce(mockJsonResponse({ data: null }));
 
       const result = await getActiveOrders();
       expect(result).toEqual([]);
@@ -436,10 +427,7 @@ describe('orderService', () => {
     it('sets order status via PUT request', async () => {
       const status = 'finished';
       const updatedOrder = { ...mockOrder, status };
-      fetchWithTenant.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ data: updatedOrder }),
-      });
+      fetchWithTenant.mockResolvedValueOnce(mockJsonResponse({ data: updatedOrder }));
 
       const result = await setOrderStatus(1, status);
 
