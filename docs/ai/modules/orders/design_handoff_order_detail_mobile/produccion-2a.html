@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Producción — mobile (referencia 2a)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#f0eee9;font-family:'Inter',system-ui,sans-serif;display:flex;justify-content:center;padding:40px 16px}
+  .screen{width:375px;background:#fafafa;overflow:hidden;display:flex;flex-direction:column;min-height:780px}
+  .topbar{display:flex;align-items:center;gap:12px;padding:18px 16px 14px;background:#fff;border-bottom:1px solid #ececec}
+  .back{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#18181b;font-size:16px}
+  .title{font-size:16px;font-weight:700;color:#18181b}
+  .scroll{flex:1;padding:14px}
+  .summary{background:#fff;border:1px solid #e4e4e7;border-radius:12px;padding:16px;margin-bottom:14px;position:sticky;top:0;z-index:2}
+  .summary-label{font-size:11px;color:#71717a;margin-bottom:3px}
+  .summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding-top:2px}
+  .summary-grid .k{font-size:10.5px;color:#a1a1aa}
+  .summary-grid .v{font-size:15px;font-weight:700;color:#18181b}
+  .list{display:flex;flex-direction:column;gap:10px}
+  .item{background:#fff;border:1px solid #e4e4e7;border-radius:12px;overflow:hidden}
+  .item.is-mismatch{border-color:#fecaca}
+  .item-head{display:flex;justify-content:space-between;align-items:center;padding:13px 14px;cursor:pointer;gap:10px}
+  .item-name{font-size:13.5px;font-weight:600;color:#18181b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .item-right{display:flex;align-items:center;gap:8px;flex:none}
+  .badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px}
+  .badge.ok{color:#15803d;background:#dcfce7}
+  .badge.bad{color:#b91c1c;background:#fee2e2}
+  .chevron{color:#d4d4d8;font-size:11px;transition:transform .15s ease}
+  .item.is-open .chevron{color:#a1a1aa;transform:rotate(180deg)}
+  .item-detail{padding:0 14px 14px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;border-top:1px solid #f4f4f5;padding-top:12px;display:none}
+  .item.is-open .item-detail{display:grid}
+  .item-detail .k{font-size:10px;color:#a1a1aa;margin-bottom:2px}
+  .item-detail .v{font-size:12.5px;font-weight:600;color:#3f3f46}
+  .item-detail .sub{font-size:10.5px;color:#a1a1aa;margin-top:1px}
+  .diff-bad{color:#b91c1c !important;font-weight:700 !important}
+</style>
+</head>
+<body>
+  <div class="screen">
+    <div class="topbar">
+      <div class="back">&#8592;</div>
+      <div class="title">Producci&oacute;n</div>
+    </div>
+    <div class="scroll">
+      <div class="summary">
+        <div class="summary-label">Totales</div>
+        <div class="summary-grid">
+          <div><div class="k">Pedido</div><div class="v">1.311,48 kg</div></div>
+          <div><div class="k">Producci&oacute;n</div><div class="v">1.311,48 kg</div></div>
+          <div><div class="k">Diferencia</div><div class="v">0,00 kg</div></div>
+        </div>
+      </div>
+
+      <div class="list">
+        <div class="item is-open">
+          <div class="item-head" onclick="this.parentElement.classList.toggle('is-open')">
+            <div class="item-name">Pulpo azul (0,800-1,000kg)</div>
+            <div class="item-right"><span class="badge ok">Correcto</span><span class="chevron">&#9662;</span></div>
+          </div>
+          <div class="item-detail">
+            <div><div class="k">Pedido</div><div class="v">190,42 kg</div><div class="sub">14 cajas</div></div>
+            <div><div class="k">Producci&oacute;n</div><div class="v">190,42 kg</div><div class="sub">14 cajas</div></div>
+            <div><div class="k">Diferencia</div><div class="v">0,00 kg</div></div>
+          </div>
+        </div>
+
+        <div class="item">
+          <div class="item-head" onclick="this.parentElement.classList.toggle('is-open')">
+            <div class="item-name">Pulpo azul (0,500-0,800kg)</div>
+            <div class="item-right"><span class="badge ok">Correcto</span><span class="chevron">&#9662;</span></div>
+          </div>
+          <div class="item-detail">
+            <div><div class="k">Pedido</div><div class="v">137,54 kg</div><div class="sub">12 cajas</div></div>
+            <div><div class="k">Producci&oacute;n</div><div class="v">137,54 kg</div><div class="sub">12 cajas</div></div>
+            <div><div class="k">Diferencia</div><div class="v">0,00 kg</div></div>
+          </div>
+        </div>
+
+        <div class="item is-mismatch">
+          <div class="item-head" onclick="this.parentElement.classList.toggle('is-open')">
+            <div class="item-name">Pulpo azul (1,000-2,000kg)</div>
+            <div class="item-right"><span class="badge bad">Descuadre</span><span class="chevron">&#9662;</span></div>
+          </div>
+          <div class="item-detail">
+            <div><div class="k">Pedido</div><div class="v">575,12 kg</div><div class="sub">39 cajas</div></div>
+            <div><div class="k">Producci&oacute;n</div><div class="v">568,40 kg</div><div class="sub">38 cajas</div></div>
+            <div><div class="k">Diferencia</div><div class="v diff-bad">-6,72 kg</div></div>
+          </div>
+        </div>
+
+        <div class="item">
+          <div class="item-head" onclick="this.parentElement.classList.toggle('is-open')">
+            <div class="item-name">Pulpo azul (2,000-3,000kg)</div>
+            <div class="item-right"><span class="badge ok">Correcto</span><span class="chevron">&#9662;</span></div>
+          </div>
+          <div class="item-detail">
+            <div><div class="k">Pedido</div><div class="v">35,80 kg</div><div class="sub">2 cajas</div></div>
+            <div><div class="k">Producci&oacute;n</div><div class="v">35,80 kg</div><div class="sub">2 cajas</div></div>
+            <div><div class="k">Diferencia</div><div class="v">0,00 kg</div></div>
+          </div>
+        </div>
+
+        <div class="item">
+          <div class="item-head" onclick="this.parentElement.classList.toggle('is-open')">
+            <div class="item-name">Pulpo azul (+6,000kg)</div>
+            <div class="item-right"><span class="badge ok">Correcto</span><span class="chevron">&#9662;</span></div>
+          </div>
+          <div class="item-detail">
+            <div><div class="k">Pedido</div><div class="v">65,58 kg</div><div class="sub">4 cajas</div></div>
+            <div><div class="k">Producci&oacute;n</div><div class="v">65,58 kg</div><div class="sub">4 cajas</div></div>
+            <div><div class="k">Diferencia</div><div class="v">0,00 kg</div></div>
+          </div>
+        </div>
+
+        <div class="item">
+          <div class="item-head" onclick="this.parentElement.classList.toggle('is-open')">
+            <div class="item-name">Pulpo azul (Mixto)</div>
+            <div class="item-right"><span class="badge ok">Correcto</span><span class="chevron">&#9662;</span></div>
+          </div>
+          <div class="item-detail">
+            <div><div class="k">Pedido</div><div class="v">307,02 kg</div><div class="sub">22 cajas</div></div>
+            <div><div class="k">Producci&oacute;n</div><div class="v">307,02 kg</div><div class="sub">22 cajas</div></div>
+            <div><div class="k">Diferencia</div><div class="v">0,00 kg</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

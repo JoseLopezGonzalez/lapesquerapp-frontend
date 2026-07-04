@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Detalle pedido — mobile (referencia 1b)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#f0eee9;font-family:'Inter',system-ui,sans-serif;display:flex;justify-content:center;padding:40px 16px}
+  .screen{width:375px;background:#fafafa;border-radius:0;overflow:hidden;display:flex;flex-direction:column;min-height:780px}
+  .topbar{display:flex;align-items:center;gap:12px;padding:18px 16px 14px;background:#fff;border-bottom:1px solid #ececec}
+  .back{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#18181b;font-size:16px}
+  .title{font-size:16px;font-weight:700;color:#18181b}
+  .scroll{flex:1;padding:14px}
+  .summary{background:#fff;border:1px solid #e4e4e7;border-radius:12px;padding:16px;margin-bottom:14px;position:sticky;top:0;z-index:2}
+  .summary-label{font-size:11px;color:#71717a;margin-bottom:3px}
+  .summary-total{font-size:24px;font-weight:800;color:#18181b;letter-spacing:-.02em;margin-bottom:12px}
+  .summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding-top:12px;border-top:1px solid #f0f0f0}
+  .summary-grid .k{font-size:10.5px;color:#a1a1aa}
+  .summary-grid .v{font-size:13.5px;font-weight:600;color:#27272a}
+  .list{display:flex;flex-direction:column;gap:10px}
+  .item{background:#fff;border:1px solid #e4e4e7;border-radius:12px;overflow:hidden}
+  .item-head{display:flex;justify-content:space-between;align-items:center;padding:13px 14px;cursor:pointer}
+  .item-name-wrap{display:flex;align-items:center;gap:8px}
+  .dot{width:6px;height:6px;border-radius:50%;background:#d4d4d8}
+  .item.is-open .dot{background:#a1a1aa}
+  .item-name{font-size:13.5px;font-weight:600;color:#18181b}
+  .item-right{display:flex;align-items:center;gap:8px}
+  .item-total{font-size:14.5px;font-weight:700;color:#18181b}
+  .chevron{color:#d4d4d8;font-size:11px;transition:transform .15s ease}
+  .item.is-open .chevron{color:#a1a1aa;transform:rotate(180deg)}
+  .item-detail{padding:0 14px 14px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;border-top:1px solid #f4f4f5;padding-top:12px;display:none}
+  .item.is-open .item-detail{display:grid}
+  .item-detail .k{font-size:10px;color:#a1a1aa;margin-bottom:2px}
+  .item-detail .v{font-size:12.5px;font-weight:600;color:#3f3f46}
+</style>
+</head>
+<body>
+  <div class="screen">
+    <div class="topbar">
+      <div class="back">&#8592;</div>
+      <div class="title">Detalle productos</div>
+    </div>
+    <div class="scroll">
+      <div class="summary">
+        <div class="summary-label">Total pedido</div>
+        <div class="summary-total">8.362,48 &euro;</div>
+        <div class="summary-grid">
+          <div><div class="k">Cajas</div><div class="v">93</div></div>
+          <div><div class="k">Cantidad</div><div class="v">1.311,48 kg</div></div>
+          <div><div class="k">Precio med.</div><div class="v">5,80 &euro;</div></div>
+        </div>
+      </div>
+
+      <div class="list">
+        <div class="item is-open">
+          <div class="item-head" onclick="this.parentElement.classList.toggle('is-open')">
+            <div class="item-name-wrap"><span class="dot"></span><div class="item-name">Pulpo azul (0,500-0,800kg)</div></div>
+            <div class="item-right"><div class="item-total">847,25 &euro;</div><span class="chevron">&#9662;</span></div>
+          </div>
+          <div class="item-detail">
+            <div><div class="k">Cajas</div><div class="v">12</div></div>
+            <div><div class="k">Cantidad</div><div class="v">137,54 kg</div></div>
+            <div><div class="k">Precio</div><div class="v">5,60 &euro;</div></div>
+            <div><div class="k">IVA</div><div class="v">10,00%</div></div>
+            <div><div class="k">Subtotal</div><div class="v">770,22 &euro;</div></div>
+          </div>
+        </div>
+
+        <div class="item">
+          <div class="item-head" onclick="this.parentElement.classList.toggle('is-open')">
+            <div class="item-name-wrap"><span class="dot"></span><div class="item-name">Pulpo azul (0,800-1,000kg)</div></div>
+            <div class="item-right"><div class="item-total">1.235,83 &euro;</div><span class="chevron">&#9662;</span></div>
+          </div>
+          <div class="item-detail">
+            <div><div class="k">Cajas</div><div class="v">14</div></div>
+            <div><div class="k">Cantidad</div><div class="v">190,42 kg</div></div>
+            <div><div class="k">Precio</div><div class="v">5,90 &euro;</div></div>
+            <div><div class="k">IVA</div><div class="v">10,00%</div></div>
+            <div><div class="k">Subtotal</div><div class="v">1.123,48 &euro;</div></div>
+          </div>
+        </div>
+
+        <div class="item">
+          <div class="item-head" onclick="this.parentElement.classList.toggle('is-open')">
+            <div class="item-name-wrap"><span class="dot"></span><div class="item-name">Pulpo azul (1,000-2,000kg)</div></div>
+            <div class="item-right"><div class="item-total">3.922,32 &euro;</div><span class="chevron">&#9662;</span></div>
+          </div>
+          <div class="item-detail">
+            <div><div class="k">Cajas</div><div class="v">39</div></div>
+            <div><div class="k">Cantidad</div><div class="v">575,12 kg</div></div>
+            <div><div class="k">Precio</div><div class="v">6,20 &euro;</div></div>
+            <div><div class="k">IVA</div><div class="v">10,00%</div></div>
+            <div><div class="k">Subtotal</div><div class="v">3.565,74 &euro;</div></div>
+          </div>
+        </div>
+
+        <div class="item">
+          <div class="item-head" onclick="this.parentElement.classList.toggle('is-open')">
+            <div class="item-name-wrap"><span class="dot"></span><div class="item-name">Pulpo azul (+6,000kg)</div></div>
+            <div class="item-right"><div class="item-total">476,11 &euro;</div><span class="chevron">&#9662;</span></div>
+          </div>
+          <div class="item-detail">
+            <div><div class="k">Cajas</div><div class="v">4</div></div>
+            <div><div class="k">Cantidad</div><div class="v">65,58 kg</div></div>
+            <div><div class="k">Precio</div><div class="v">6,60 &euro;</div></div>
+            <div><div class="k">IVA</div><div class="v">10,00%</div></div>
+            <div><div class="k">Subtotal</div><div class="v">432,83 &euro;</div></div>
+          </div>
+        </div>
+
+        <div class="item">
+          <div class="item-head" onclick="this.parentElement.classList.toggle('is-open')">
+            <div class="item-name-wrap"><span class="dot"></span><div class="item-name">Pulpo azul (2,000-3,000kg)</div></div>
+            <div class="item-right"><div class="item-total">259,91 &euro;</div><span class="chevron">&#9662;</span></div>
+          </div>
+          <div class="item-detail">
+            <div><div class="k">Cajas</div><div class="v">2</div></div>
+            <div><div class="k">Cantidad</div><div class="v">35,80 kg</div></div>
+            <div><div class="k">Precio</div><div class="v">6,60 &euro;</div></div>
+            <div><div class="k">IVA</div><div class="v">10,00%</div></div>
+            <div><div class="k">Subtotal</div><div class="v">236,28 &euro;</div></div>
+          </div>
+        </div>
+
+        <div class="item">
+          <div class="item-head" onclick="this.parentElement.classList.toggle('is-open')">
+            <div class="item-name-wrap"><span class="dot"></span><div class="item-name">Pulpo azul (Mixto)</div></div>
+            <div class="item-right"><div class="item-total">1.621,07 &euro;</div><span class="chevron">&#9662;</span></div>
+          </div>
+          <div class="item-detail">
+            <div><div class="k">Cajas</div><div class="v">&mdash;</div></div>
+            <div><div class="k">Cantidad</div><div class="v">&mdash;</div></div>
+            <div><div class="k">Precio</div><div class="v">&mdash;</div></div>
+            <div><div class="k">IVA</div><div class="v">&mdash;</div></div>
+            <div><div class="k">Subtotal</div><div class="v">&mdash;</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
