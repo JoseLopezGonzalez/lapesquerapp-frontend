@@ -6,12 +6,13 @@ category: architecture-refactor
 priority: P2
 risk: medium
 size: L
-status: ready
+status: done
 dependencies: []
 target_files:
   - src/services/orderService.ts
+  - src/__tests__/services/orderService.test.js
 created_at: 2026-07-03
-updated_at: 2026-07-03
+updated_at: 2026-07-04
 ---
 
 # GAP-V2-028 — `orderService.ts` no usa la capa de helpers genéricos; duplica boilerplate 35 veces
@@ -124,7 +125,45 @@ y verificación de `gap-auditor` — no combinar en el mismo commit que otros GA
 
 ## Resultado
 
-{se rellena al terminar la implementación}
+Implementado exactamente según la solución propuesta:
+
+- Se creó el helper interno privado `orderFetch(url, options)` en
+  `src/services/orderService.ts`, que obtiene el token con `getAuthToken()`,
+  fusiona los headers comunes (`Content-Type`, `Authorization`, `User-Agent`)
+  con los headers específicos de cada llamada, y delega en `fetchWithTenant`
+  devolviendo la `Response` sin parsear.
+- Las 35 llamadas directas a `fetchWithTenant` se sustituyeron por `orderFetch`.
+  Ahora solo queda **1** ocurrencia literal de `` Authorization: `Bearer ${token}` ``
+  en todo el archivo (dentro del propio helper).
+- Se unificó el manejo de errores con `handleServiceResponse` en todas las
+  funciones cuyo contrato de retorno lo permitía (listados, detalle, líneas
+  auxiliares, incidencias, estadísticas, rentabilidad, etc.).
+- Se documentaron con comentario los 4 casos que no se unifican con
+  `handleServiceResponse`, tal y como preveía el GAP:
+  - `updateOrder` y `createOrder` mantienen el parseo manual con `ApiError`
+    porque `OrderEditSheet` y `CreateOrderForm` dependen de
+    `error.status === 422` / `error.data.errors` para mapear errores 422 a los
+    campos del formulario (`handleServiceResponse` lanza un `Error` genérico
+    sin esas propiedades).
+  - `downloadActivePlannedProductsXls` y `downloadOrdersProfitabilityExportJob`
+    son descargas de blob (una con error simple, otra con nombre de fichero
+    leído de `content-disposition`) — no encajan en el contrato JSON de
+    `handleServiceResponse`.
+- Ningún endpoint, payload ni contrato de retorno público cambió.
+- Se ajustaron 4 mocks en `src/__tests__/services/orderService.test.js`
+  (`getActiveOrders` ×3, `setOrderStatus` ×1) para incluir `headers.get(...)`
+  en la respuesta simulada, ya que ahora esas funciones pasan por
+  `handleServiceResponse`, que lee `content-type` incluso en la rama de éxito.
+  No se modificó ninguna expectativa de negocio — solo la forma del mock.
+
+Validación:
+
+- `npm run type-check` — limpio.
+- `npm run lint` — 0 errores (warnings preexistentes en otros archivos, ninguno en `orderService.ts`).
+- `npm run test:run` — mismos 22 fallos preexistentes en 11 ficheros no relacionados
+  (confirmado comparando contra el baseline con `git stash`); los 20 tests de
+  `orderService.test.js` pasan.
+- `npm run build` — build de producción completo sin errores.
 
 ## Resultado de auditoría
 
