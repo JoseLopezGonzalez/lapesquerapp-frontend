@@ -122,6 +122,13 @@ auditorías: comentarios junto a `COMMERCIAL_IN_PROGRESS_BLOCKED_ORDER_SECTIONS`
 `isOrderPalletsReadOnly` en `src/lib/orders/orderReadOnlyPermissions.ts` (fuente única de
 verdad de qué se bloquea), referenciando este GAP como `rejected`.
 
+**Nota de reconciliación (2026-07-04):** la sesión mobile del 2026-07-03 eliminó
+`OrderSectionList.tsx` (uno de los `target_files` originales de este GAP) y lo
+sustituyó por `OrderSectionGrid.tsx` como componente equivalente en mobile. No
+cambia la decisión de rechazo (sigue vigente, misma lógica de ocultar sin
+mensaje), solo se deja constancia de que el archivo ya no existe con ese
+nombre, por si este GAP se reabre en el futuro.
+
 ## Resultado
 
 No se implementa ninguna de las 3 opciones de UX propuestas. Único cambio: 2 comentarios

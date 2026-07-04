@@ -5,13 +5,75 @@
 
 ## Fecha
 
-2026-07-03
+2026-07-04
 
 ## Módulo activo
 
 orders (Pedidos) — módulo piloto
 
 ## Fase activa
+
+Reconciliación 2026-07-04: Jose hizo una sesión de pareo mobile fuera del flujo
+GAP (2026-07-03 18:50 → 2026-07-04 00:52, 10 commits directos sobre `main`/rama
+del módulo: `deda30b`..`60125f1`) que reescribió en profundidad la UI mobile de
+`Order` — `OrderSectionList.tsx` eliminado y sustituido por
+`OrderSectionGrid.tsx`, `OrderHeaderMobile`/`OrderSummaryMobile` reescritos con
+`MobileOptionSheet` (nuevo componente en `src/components/Shadcn/`),
+`OrderContent`/`Order/index.tsx` con scroll/animaciones y `isMobileOverride`,
+`OrderEditSheet` con acordeón mobile, `OrderAuxiliaryLines` dividido en
+`index.tsx` + `OrderAuxiliaryLineSheet.tsx` + `types.ts`, `OrdersManager`/
+`ComercialOrdersManager` con restauración de pedido seleccionado desde la URL,
+`AttachmentCard` con `DropdownMenu` mobile, y `OrderDetails`/`OrderMap` con
+`ProspectLocationMap`/`RouteMap` sustituyendo el iframe de Google Maps.
+
+Se revisaron los 41 GAPs de `orders` contra ese diff para detectar cuáles
+quedaban obsoletos, en conflicto, o necesitaban reabrirse:
+
+- **GAP-V2-057** (única `ready` de code-quality, guard de cierre en
+  `OrderEditSheet`) — estaba **desactualizada**: el mismo refactor mobile de
+  ayer (commit `375a1d5`) ya conecta `onOpenChange` del `Sheet` a
+  `handleSheetOpenChange`, que reproduce exactamente la lógica pedida por el
+  GAP. Verificado línea a línea contra el código actual + `npm run
+type-check` limpio → **pasada a `done`** en esta sesión (sin pasar por
+  `gap-auditor`, verificación directa documentada en el propio GAP).
+- **GAP-V2-036** (rejected) — uno de sus `target_files`
+  (`OrderSectionList.tsx`) ya no existe, sustituido por `OrderSectionGrid.tsx`.
+  No cambia la decisión de rechazo; se añadió una nota de reconciliación en el
+  GAP para que una futura reapertura no busque un archivo inexistente.
+- **GAP-V2-020, GAP-V2-030, GAP-V2-038, GAP-V2-046, GAP-V2-051, GAP-V2-052,
+  GAP-V2-007, GAP-V2-031** (todos `done`, archivos reescritos por la sesión
+  mobile) — verificados uno a uno contra el código actual: los 8 siguen
+  cumpliendo sus criterios de aceptación sin regresión (`canViewCostData` sigue
+  ocultando coste/margen, `useOrderFormConfig` sigue sin `useState`+`useEffect`
+  espejo, `isRowValid`/`isDetailValid` siguen bloqueando guardado — movidos a
+  `OrderAuxiliaryLines/types.ts` pero intactos —, `font-medium` se mantiene,
+  `parseTaxRate` compartido se mantiene, unidad de catálogo en vez de `kg` fijo
+  se mantiene, `min-h-[44px]`/`min-w-[44px]` se mantiene en los triggers
+  reescritos con `MobileOptionSheet`, `'use client'` se mantiene en los 3
+  componentes reescritos).
+- **GAP-V2-028** (`ready`, `orderService.ts`) — no tocado por la sesión mobile,
+  sigue igual, sin cambios necesarios.
+- Resto de GAPs `done`/`rejected` no tocados por el diff mobile (`OrdersList`,
+  `OrderCard`, `OrderIncident`, `OrderCustomerHistory`, etc.) — sin necesidad
+  de re-verificación.
+
+`npm ci` + `npm run type-check` (limpio) + `npx vitest run` sobre toda la
+suite: mismos 22 tests/11 archivos en fallo preexistentes ya documentados en
+GAP-V2-038 (ninguno de `orders`, salvo `useOrdersProfitabilityStats.test.ts`
+que ya figuraba en esa misma lista) — **sin regresión nueva** introducida por
+la sesión mobile de ayer.
+
+**Hallazgo nuevo, no bloqueante, sin GAP abierto todavía:** `npx eslint` sobre
+los ~30 archivos tocados por la sesión mobile marca 19 warnings (0 errores),
+en su mayoría `react-hooks/set-state-in-effect` en `OrdersManager/index.tsx`,
+`ComercialOrdersManager.tsx` y `ProspectLocationMap.jsx` (restauración de
+`selectedOrder`/categoría activa desde `useEffect` + `setState` síncrono) — el
+mismo patrón de "estado espejo" que GAP-V2-030 ya corrigió en
+`useOrderFormConfig`, ahora reintroducido en 3 sitios nuevos por el código de
+ayer. No se abre GAP todavía (P3 potencial, sin síntoma funcional reportado) —
+queda para la próxima pasada de auditoría si Jose confirma que quiere cubrirlo.
+
+## Fase activa (histórico, sesión 2026-07-03)
 
 Sesión local 2026-07-03 (continuación): tras cerrar el lote 17 (4 P1) y resolver los 3
 `blocked`, se ejecutó `/implement-next module=orders category=code-quality limit=3
@@ -76,6 +138,12 @@ Tras cerrar GAP-V2-028, el módulo `orders` queda en 0 `ready` — punto natural
 commitear toda la sesión y decidir si abrir una nueva pasada de `/deep-audit-module`
 (el carril `performance` sigue sin auditar nunca) o pasar a otro módulo.
 
+Adicional (opcional, no bloqueante): confirmar con Jose si quiere abrir un GAP P3
+para el patrón `react-hooks/set-state-in-effect` reintroducido ayer en
+`OrdersManager/index.tsx`, `ComercialOrdersManager.tsx` y `ProspectLocationMap.jsx`
+(ver hallazgo en "Fase activa" de esta misma sesión) antes de la próxima
+`/deep-audit-module` sobre `orders`.
+
 También queda pendiente de confirmación de Jose (no bloquea ningún GAP `ready` todavía, pero condiciona un futuro candidato): si las líneas auxiliares de pedido deben admitir cantidad/precio unitario negativo para representar abonos/devoluciones.
 
 ## Motivo
@@ -91,17 +159,18 @@ Los 16 lotes de `/implement-next` de la pasada 2026-07-02 cerraron `GAP-V2-002`,
 ## Restricciones
 
 - Reglas confirmadas: tolerancia `min(max(10 kg, kg_planificados * 3%), 75 kg)` ya implementada, IVA 0% legítimo permitido y distinguido de IVA pendiente/inválido, y finalización con producción incompleta mediante advertencia/confirmación ya implementada.
-- `OrderEditSheet/index.tsx`: GAP-V2-057, GAP-V2-030 (hook consumido) y GAP-V2-037 (aria-invalid) ya `done` — sin GAPs `ready` pendientes sobre este archivo.
-- `OrderAuxiliaryLines/index.tsx`: GAP-V2-051, GAP-V2-038 y GAP-V2-052 (unidad) ya `done` — GAP-V2-046 (`ready`, font-semibold) sigue pendiente sobre el mismo archivo, releer antes de implementarlo.
+- `OrderEditSheet/index.tsx`: GAP-V2-057, GAP-V2-030 (hook consumido) y GAP-V2-037 (aria-invalid) ya `done` (GAP-V2-057 confirmado `done` de nuevo el 2026-07-04 tras el refactor mobile de acordeón) — sin GAPs `ready` pendientes sobre este archivo.
+- `OrderAuxiliaryLines/index.tsx`: GAP-V2-051, GAP-V2-038, GAP-V2-046 y GAP-V2-052 (unidad) ya `done` — todos verificados de nuevo el 2026-07-04 tras el split en `index.tsx`/`OrderAuxiliaryLineSheet.tsx`/`types.ts` de la sesión mobile, sin regresión. Ningún GAP `ready` pendiente sobre este archivo.
 - GAP-V2-028 (ready, L) es el único GAP grande pendiente — implementar en pasada aislada. GAP-V2-029 (mismo archivo `orderService.ts`, ángulo distinto) ya está `done`, no genera conflicto de commit al implementar GAP-V2-028.
 - `src/lib/orders/orderReadOnlyPermissions.ts` tiene ahora 2 comentarios documentando el rechazo de GAP-V2-036 — no reabrir "acción oculta sin feedback" para `COMMERCIAL_IN_PROGRESS_BLOCKED_ORDER_SECTIONS`/`isOrderPalletsReadOnly` en futuras auditorías sin evidencia de que la decisión de producto cambió.
 - GAP-V2-020 ya quedó resuelto en frontend, pero conviene coordinar el refuerzo equivalente con backend/policies.
 - No volver a auditar los mismos 5 carriles sobre los mismos archivos sin evidencia de que algo cambió — usar `needs_reaudit` si aplica.
 - Recordar commitear `docs/ai/modules/orders/`, `docs/ai/gaps/orders/`, y el código de esta sesión (lote 17 + resolución de los 3 blocked + lote 18) antes de la próxima auditoría o implementación (guard de git en `/deep-audit-module`) — sigue sin commitear al cierre de esta sesión.
 - Antes de empezar trabajo nuevo sobre `orders`, comprobar si hay otra rama `claude/orders-*` sin mergear (`git branch -r | grep orders`) para evitar que se repita esta reconciliación.
+- Sesiones de pareo fuera del flujo GAP (como la mobile de 2026-07-03/04) no actualizan `next-action.md`/`gaps-registry.md` por su cuenta — tras cualquiera de estas sesiones, repasar los GAPs `ready`/`done` cuyos `target_files` coincidan con los archivos tocados antes de fiarse del estado del registro.
 
 ## Estado resumido
 
 ```text
-audited_ampliado → reconciled_lv9qnf_and_ewomf1 → batch_17_p1_done → blocked_resolved → batch_18_code_quality_done → batch_19_a11y_domain_ux_done → batch_20_code_quality_ux_done → batch_21_final_small_gaps_done (1 ready [GAP-V2-028, L], 0 blocked, 37 done, 0 later, 3 rejected)
+audited_ampliado → reconciled_lv9qnf_and_ewomf1 → batch_17_p1_done → blocked_resolved → batch_18_code_quality_done → batch_19_a11y_domain_ux_done → batch_20_code_quality_ux_done → batch_21_final_small_gaps_done → mobile_pairing_session_2026-07-03_04 (fuera de flujo GAP) → reconciled_2026-07-04 (GAP-V2-057 ready→done, GAP-V2-036 nota de archivo renombrado, 8 GAPs done re-verificados sin regresión) (1 ready [GAP-V2-028, L], 0 blocked, 38 done, 0 later, 3 rejected)
 ```
