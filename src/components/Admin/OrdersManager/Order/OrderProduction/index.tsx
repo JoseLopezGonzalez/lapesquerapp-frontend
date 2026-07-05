@@ -21,6 +21,13 @@ import { formatDecimalWeight, formatInteger } from '@/helpers/formats/numbers/fo
 import { EmptyState } from '@/components/Utilities/EmptyState/index';
 import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import { cn } from '@/lib/utils';
 
 interface MergedProductDetail {
   product?: { id: number | string; name: string } | null;
@@ -54,6 +61,11 @@ const productionStatusBadgeConfig = {
   MergedProductDetail['status'],
   { label: string; color: 'green' | 'orange' | 'red' | undefined }
 >;
+
+const productionItemBorderConfig: Partial<Record<MergedProductDetail['status'], string>> = {
+  difference: 'border-orange-200 dark:border-orange-900',
+  noPlanned: 'border-red-200 dark:border-red-900',
+};
 
 function ProductionStatusBadge({ status }: { status: MergedProductDetail['status'] }) {
   const config = productionStatusBadgeConfig[status] ?? productionStatusBadgeConfig.pending;
@@ -137,68 +149,87 @@ const OrderProduction = () => {
                   </div>
                 </div>
 
-                <div className="border-border bg-card overflow-hidden rounded-lg border">
-                  {mergedProductDetails.map((detail) => (
-                    <article
-                      key={`${detail?.product?.id ?? 'unknown'}-${detail.status}`}
-                      className="border-border space-y-3 border-b p-3 last:border-b-0"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <p className="min-w-0 flex-1 text-sm leading-snug font-medium">
-                          {detail?.product?.name || 'Sin producto'}
-                        </p>
-                        <div className="shrink-0">
-                          <ProductionStatusBadge status={detail.status} />
-                        </div>
-                      </div>
+                <Accordion type="multiple" className="w-full space-y-2.5">
+                  {mergedProductDetails.map((detail) => {
+                    const hasDifference =
+                      detail.status !== 'noPlanned' && detail.quantityDifference !== 0;
 
-                      <div className="grid grid-cols-3 gap-x-2 gap-y-2">
-                        <div className="min-w-0">
-                          <p className="text-muted-foreground text-[11px] leading-tight">Pedido</p>
-                          {detail.status === 'noPlanned' ? (
-                            <p className="text-sm font-medium tabular-nums">-</p>
-                          ) : (
-                            <>
-                              <p className="text-sm font-medium tabular-nums">
-                                {formatDecimalWeight(detail.plannedQuantity)}
+                    return (
+                      <AccordionItem
+                        key={`${detail?.product?.id ?? 'unknown'}-${detail.status}`}
+                        value={`${detail?.product?.id ?? 'unknown'}-${detail.status}`}
+                        className={cn(
+                          'border-border bg-card overflow-hidden rounded-lg border',
+                          productionItemBorderConfig[detail.status]
+                        )}
+                      >
+                        <AccordionTrigger className="px-3">
+                          <div className="flex w-full min-w-0 items-center justify-between gap-3">
+                            <p className="min-w-0 flex-1 truncate text-left text-sm font-medium">
+                              {detail?.product?.name || 'Sin producto'}
+                            </p>
+                            <div className="shrink-0">
+                              <ProductionStatusBadge status={detail.status} />
+                            </div>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="px-3">
+                          <div className="border-border grid grid-cols-3 gap-x-2 gap-y-2 border-t pt-3">
+                            <div className="min-w-0">
+                              <p className="text-muted-foreground text-[11px] leading-tight">
+                                Pedido
                               </p>
-                              <p className="text-muted-foreground text-xs tabular-nums">
-                                {formatInteger(detail.plannedBoxes)} cajas
+                              {detail.status === 'noPlanned' ? (
+                                <p className="text-sm font-medium tabular-nums">-</p>
+                              ) : (
+                                <>
+                                  <p className="text-sm font-medium tabular-nums">
+                                    {formatDecimalWeight(detail.plannedQuantity)}
+                                  </p>
+                                  <p className="text-muted-foreground text-xs tabular-nums">
+                                    {formatInteger(detail.plannedBoxes)} cajas
+                                  </p>
+                                </>
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-muted-foreground text-[11px] leading-tight">
+                                Producción
                               </p>
-                            </>
-                          )}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-muted-foreground text-[11px] leading-tight">
-                            Producción
-                          </p>
-                          {detail.productionQuantity === 0 && detail.productionBoxes === 0 ? (
-                            <p className="text-sm font-medium tabular-nums">-</p>
-                          ) : (
-                            <>
-                              <p className="text-sm font-medium tabular-nums">
-                                {formatDecimalWeight(detail.productionQuantity)}
+                              {detail.productionQuantity === 0 && detail.productionBoxes === 0 ? (
+                                <p className="text-sm font-medium tabular-nums">-</p>
+                              ) : (
+                                <>
+                                  <p className="text-sm font-medium tabular-nums">
+                                    {formatDecimalWeight(detail.productionQuantity)}
+                                  </p>
+                                  <p className="text-muted-foreground text-xs tabular-nums">
+                                    {formatInteger(detail.productionBoxes)} cajas
+                                  </p>
+                                </>
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-muted-foreground text-[11px] leading-tight">
+                                Diferencia
                               </p>
-                              <p className="text-muted-foreground text-xs tabular-nums">
-                                {formatInteger(detail.productionBoxes)} cajas
+                              <p
+                                className={cn(
+                                  'text-sm font-medium tabular-nums',
+                                  hasDifference && 'text-destructive font-semibold'
+                                )}
+                              >
+                                {detail.status === 'noPlanned'
+                                  ? '-'
+                                  : formatDecimalWeight(detail.quantityDifference)}
                               </p>
-                            </>
-                          )}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-muted-foreground text-[11px] leading-tight">
-                            Diferencia
-                          </p>
-                          <p className="text-sm font-medium tabular-nums">
-                            {detail.status === 'noPlanned'
-                              ? '-'
-                              : formatDecimalWeight(detail.quantityDifference)}
-                          </p>
-                        </div>
-                      </div>
-                    </article>
-                  ))}
-                </div>
+                            </div>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    );
+                  })}
+                </Accordion>
               </div>
             </ScrollArea>
           )}

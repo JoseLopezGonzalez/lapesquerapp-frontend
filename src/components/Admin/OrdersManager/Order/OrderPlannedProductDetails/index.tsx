@@ -34,6 +34,12 @@ import { EmptyState } from '@/components/Utilities/EmptyState/index';
 import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -489,82 +495,93 @@ const OrderPlannedProductDetails = () => {
                   </div>
                 </div>
 
-                <div className="border-border bg-card overflow-hidden rounded-lg border">
-                  {details.map((detail) => {
-                    const taxRate = parseTaxRate(detail?.tax?.rate);
+                <Accordion type="multiple" className="w-full">
+                  <div className="border-border bg-card overflow-hidden rounded-lg border">
+                    {details.map((detail) => {
+                      const taxRate = parseTaxRate(detail?.tax?.rate);
+                      const subtotal = Number(detail.quantity || 0) * Number(detail.unitPrice || 0);
+                      const itemKey = String(detail.id || detail.tempId);
 
-                    return (
-                      <article
-                        key={detail.id || detail.tempId}
-                        className="border-border space-y-3 border-b p-3 last:border-b-0"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <p className="min-w-0 flex-1 text-sm leading-snug font-medium">
-                            {detail?.product?.name || 'Sin producto'}
-                          </p>
-                          <div className="flex shrink-0 items-center gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              aria-label="Editar línea"
-                              onClick={() => openEditSheet(detail)}
-                            >
-                              <Edit2 className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-destructive hover:text-destructive h-8 w-8"
-                              aria-label="Eliminar línea"
-                              onClick={() => handleOnClickDeleteLine(detail)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                      return (
+                        <AccordionItem key={itemKey} value={itemKey} className="">
+                          <div className="flex items-center gap-0.5 pl-3">
+                            <AccordionTrigger className="min-w-0 flex-1 py-3 pr-1">
+                              <div className="flex min-w-0 flex-1 items-start justify-between gap-2">
+                                <p className="min-w-0 flex-1 text-left text-sm leading-snug font-medium">
+                                  {detail?.product?.name || 'Sin producto'}
+                                </p>
+                                <p className="shrink-0 text-sm font-semibold tabular-nums">
+                                  {formatDecimalCurrency(subtotal)}
+                                </p>
+                              </div>
+                            </AccordionTrigger>
+                            <div className="flex shrink-0 items-center gap-0.5 pr-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                aria-label="Editar línea"
+                                onClick={() => openEditSheet(detail)}
+                              >
+                                <Edit2 className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-destructive hover:text-destructive h-8 w-8"
+                                aria-label="Eliminar línea"
+                                onClick={() => handleOnClickDeleteLine(detail)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-x-2 gap-y-2">
-                          <div className="min-w-0">
-                            <p className="text-muted-foreground text-[11px] leading-tight">Cajas</p>
-                            <p className="text-sm font-medium tabular-nums">
-                              {formatInteger(detail.boxes)}
-                            </p>
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-muted-foreground text-[11px] leading-tight">
-                              Cantidad
-                            </p>
-                            <p className="text-sm font-medium tabular-nums">
-                              {formatDecimalWeight(detail.quantity)}
-                            </p>
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-muted-foreground text-[11px] leading-tight">
-                              Precio
-                            </p>
-                            <p className="text-sm font-medium tabular-nums">
-                              {formatDecimalCurrency(detail.unitPrice)}
-                            </p>
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-muted-foreground text-[11px] leading-tight">
-                              Impuesto
-                            </p>
-                            <p
-                              className={cn(
-                                'text-sm font-medium tabular-nums',
-                                taxRate == null && 'text-warning'
-                              )}
-                            >
-                              {formatTaxRate(taxRate)}
-                            </p>
-                          </div>
-                        </div>
-                      </article>
-                    );
-                  })}
-                </div>
+                          <AccordionContent className="px-3">
+                            <div className="border-border grid grid-cols-2 gap-x-2 gap-y-2 border-t pt-3">
+                              <div className="min-w-0">
+                                <p className="text-muted-foreground text-[11px] leading-tight">
+                                  Cajas
+                                </p>
+                                <p className="text-sm font-medium tabular-nums">
+                                  {formatInteger(detail.boxes)}
+                                </p>
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-muted-foreground text-[11px] leading-tight">
+                                  Cantidad
+                                </p>
+                                <p className="text-sm font-medium tabular-nums">
+                                  {formatDecimalWeight(detail.quantity)}
+                                </p>
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-muted-foreground text-[11px] leading-tight">
+                                  Precio
+                                </p>
+                                <p className="text-sm font-medium tabular-nums">
+                                  {formatDecimalCurrency(detail.unitPrice)}
+                                </p>
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-muted-foreground text-[11px] leading-tight">
+                                  Impuesto
+                                </p>
+                                <p
+                                  className={cn(
+                                    'text-sm font-medium tabular-nums',
+                                    taxRate == null && 'text-warning'
+                                  )}
+                                >
+                                  {formatTaxRate(taxRate)}
+                                </p>
+                              </div>
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      );
+                    })}
+                  </div>
+                </Accordion>
               </div>
             </ScrollArea>
           )}
