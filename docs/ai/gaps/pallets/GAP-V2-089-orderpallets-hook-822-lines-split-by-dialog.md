@@ -6,13 +6,13 @@ category: architecture-refactor
 priority: P2
 risk: medium
 size: L
-status: blocked
+status: ready
 dependencies:
   - GAP-V2-088
 target_files:
   - src/components/Admin/OrdersManager/Order/OrderPallets/hooks/useOrderPallets.ts
 created_at: 2026-07-05
-updated_at: 2026-07-05
+updated_at: 2026-07-06
 normalized_at: 2026-07-05
 ---
 
@@ -125,6 +125,9 @@ tratamiento que GAP-V2-058/062/065 en la primera pasada. Depende de GAP-V2-088
 su propio sub-hook, para no dividir el archivo dos veces). Relacionado con
 GAP-V2-090 (extracción de `buildGs1128`/reparto de peso, subconjunto de este
 split más amplio, verificable de forma independiente).
+
+**Decisión de Jose (2026-07-06):** autorizado — PR aislado, implementar después
+de GAP-V2-088.
 
 ## Resultado
 

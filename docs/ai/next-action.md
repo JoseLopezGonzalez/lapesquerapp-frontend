@@ -5,14 +5,17 @@
 
 ## Fecha
 
-2026-07-05
+2026-07-06
 
 ## Módulo activo
 
 pallets (Palets) — 2 pasadas de `/deep-audit-module` completas (pasada 1:
 pantalla de creación/edición, desktop + mobile; pasada 2: listado, movimientos
-de almacén, vinculación masiva desde pedido). `orders` queda en segundo plano
-con 1 solo GAP `ready` pendiente (`GAP-V2-028`, ver histórico más abajo).
+de almacén, vinculación masiva desde pedido) + los 6 `blocked` de la pasada 2
+resueltos por Jose (2026-07-06, 5 desbloqueados, 1 sigue `blocked` en espera de
+verificación de backend). Módulo listo para `/implement-next` a gran escala:
+**42 `ready`, 1 `blocked`, 5 `rejected`**. `orders` queda en segundo plano con 1
+solo GAP `ready` pendiente (`GAP-V2-028`, ver histórico más abajo).
 
 ## Fase activa
 
@@ -51,18 +54,26 @@ GAP-V2-109, P0, dependiente de GAP-V2-078. Candidato a regla permanente en
 distintos (pallets, production, label editor) — la construcción de GS1-128
 debería centralizarse.
 
-**6 `blocked` de la pasada 2, pendientes de que Jose decida (ver
-`docs/ai/modules/pallets/audit.md` § 10 para el detalle):**
-- GAP-V2-087 y GAP-V2-089 (ambos tamaño L) — solo necesitan autorización de
-  tamaño, mismo protocolo que GAP-V2-058/062 de la pasada 1.
-- GAP-V2-103 — confirmar nombre exacto del campo backend de fecha de
-  creación/entrada del palet.
-- GAP-V2-105 — confirmar si el backend soporta filtrar por disponibilidad de
-  stock.
-- GAP-V2-106 — decisión de negocio: ¿una posición de almacén aloja
-  legítimamente uno o varios palets a la vez?
-- GAP-V2-107 — confirmar si `pallets/move-to-store` limpia el campo `position`
-  del palet de origen.
+**Actualización 2026-07-06 — Jose resolvió 5 de los 6 `blocked` de la pasada 2**
+(ver `docs/ai/modules/pallets/audit.md` § 10 para el detalle completo):
+- GAP-V2-087 y GAP-V2-089 (ambos L) — autorizados, PR aislado cada uno
+  (GAP-V2-085→087, GAP-V2-088→089). Pasan a `ready`.
+- GAP-V2-106 — confirmado: una posición **puede alojar varios palets** a la
+  vez. Re-scopeado de "bloquear" a "mostrar info de ocupación", P1→P2, M→S.
+  Pasa a `ready`.
+- GAP-V2-107 — confirmado: el backend **sí limpia** `position` al traspasar.
+  Re-scopeado de "domain-business + posible fix" a "ux-ui, solo copy
+  informativo", P1→P3, S→XS. Pasa a `ready`.
+- GAP-V2-103 — Jose no conoce el campo backend exacto, pide verificarlo al
+  implementar. Pasa a `ready` con criterio explícito: confirmar contra
+  `GET /api/v2/pallets` antes de escribir el header.
+- **GAP-V2-105 sigue `blocked`** — a diferencia de 103, aquí no está
+  garantizado que el backend soporte filtrar por disponibilidad de stock.
+  Quien lo retome debe verificar contra la API real primero; si no hay
+  soporte, es una petición de backend, no un GAP de este módulo frontend.
+
+Registry regenerado: **42 ready, 1 blocked (GAP-V2-105), 0 done, 0 later, 5
+rejected** — total del módulo, ambas pasadas.
 
 ### Pasada 1 de `pallets` (histórico, mismo día)
 
@@ -230,19 +241,21 @@ Seguido de cerca por el P0 de UX (acción destructiva sin confirmación):
 ```
 → GAP-V2-068 ("Eliminar todas las cajas" sin confirmación en desktop).
 
-Tras esos 2, quedan 35 GAPs `ready` más en `pallets` (ver
-`docs/ai/modules/pallets/gaps-registry.md`, 37 `ready` en total sumando ambas
-pasadas). GAP-V2-058 (L) y GAP-V2-062 (XL, depende de 058) requieren PR aislado
-cada uno por el historial PL-BUILD-05 de `PalletView`. GAP-V2-109 (P0, GS1-128
-recurrente) conviene encadenarlo justo después de GAP-V2-078 en la misma sesión,
-ya que corrige el mismo bug en un archivo distinto.
+Tras esos 2, quedan 40 GAPs `ready` más en `pallets` (ver
+`docs/ai/modules/pallets/gaps-registry.md`, 42 `ready` en total sumando ambas
+pasadas, tras la resolución de blocked del 2026-07-06). Cadenas de GAPs
+grandes (L/XL) a respetar, cada una en PR aislado: GAP-V2-058 → GAP-V2-062 →
+GAP-V2-065 (primera pasada, `PalletView`); GAP-V2-085 → GAP-V2-087 (segunda
+pasada, `useStore`/`useStoreDialogs`); GAP-V2-088 → GAP-V2-089 (segunda pasada,
+split de `OrderPallets/hooks/useOrderPallets.ts`). GAP-V2-109 (P0, GS1-128
+recurrente) conviene encadenarlo justo después de GAP-V2-078 en la misma
+sesión, ya que corrige el mismo bug en un archivo distinto.
 
-**Antes de tocar `pallets` de nuevo:** quedan 6 GAPs `blocked` de la pasada 2 sin
-resolver (GAP-V2-087, 089, 103, 105, 106, 107 — ver detalle en "Fase activa" más
-arriba y en `docs/ai/modules/pallets/audit.md` § 10). No bloquean el resto del
-módulo, pero conviene que Jose los resuelva pronto para no dejar huecos de
-cobertura en movimientos de almacén (GAP-V2-106 en particular tiene el mismo
-perfil de riesgo físico que los P0/P1 ya priorizados).
+**Único pendiente en `pallets`:** GAP-V2-105 (filtro de disponibilidad de stock
+en el listado) sigue `blocked` — antes de implementarlo, verificar contra la
+API real (`GET /api/v2/pallets`) si el backend soporta filtrar por
+disponibilidad; si no, es una petición de cambio de backend, no un GAP
+implementable solo en este repo frontend.
 
 **Pendiente secundario — `orders`:** implementar GAP-V2-028 en pasada dedicada
 (autorizado, tamaño L — no combinar con otros GAPs en el mismo commit, ciclo
@@ -301,7 +314,13 @@ registry: 20 ready, 0 blocked, 0 done, 0 later, 3 rejected
     3_lanes_executed → 25_candidates (incluye corrección de GAP-V2-059) →
     gap-normalizer (2 fusiones, 0 splits, GAP-V2-059 reescrito in-place) → 23
     GAPs → registry final módulo (2 pasadas): 37 ready, 6 blocked, 0 done, 0
-    later, 5 rejected → pendiente: jose_resolve_6_blocked_pass_2
+    later, 5 rejected
+  → jose_resolved_5_of_6_blocked_pass_2 (2026-07-06): GAP-V2-087/089 (L,
+    autorizados) · GAP-V2-106 (re-scopeado, varios palets por posición) ·
+    GAP-V2-107 (re-scopeado, backend confirmado limpia position) ·
+    GAP-V2-103 (ready, verificar campo al implementar) → registry final: 42
+    ready, 1 blocked (GAP-V2-105, pendiente de verificar soporte backend),
+    0 done, 0 later, 5 rejected → listo para /implement-next a gran escala
 
 orders: audited_ampliado → reconciled_lv9qnf_and_ewomf1 → batch_17_p1_done → blocked_resolved → batch_18_code_quality_done → batch_19_a11y_domain_ux_done → batch_20_code_quality_ux_done → batch_21_final_small_gaps_done → mobile_pairing_session_2026-07-03_04 (fuera de flujo GAP) → reconciled_2026-07-04 (GAP-V2-057 ready→done, GAP-V2-036 nota de archivo renombrado, 8 GAPs done re-verificados sin regresión) (1 ready [GAP-V2-028, L], 0 blocked, 38 done, 0 later, 3 rejected)
 ```

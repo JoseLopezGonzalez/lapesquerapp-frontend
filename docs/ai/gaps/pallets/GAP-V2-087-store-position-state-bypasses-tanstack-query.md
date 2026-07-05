@@ -6,7 +6,7 @@ category: architecture-refactor
 priority: P2
 risk: medium
 size: L
-status: blocked
+status: ready
 dependencies:
   - GAP-V2-085
 target_files:
@@ -14,7 +14,7 @@ target_files:
   - src/hooks/useStoreDialogs.ts
   - src/hooks/useStoreData.ts
 created_at: 2026-07-05
-updated_at: 2026-07-05
+updated_at: 2026-07-06
 normalized_at: 2026-07-05
 ---
 
@@ -135,6 +135,9 @@ caché real de TanStack Query). No fusionar — son dos violaciones independient
 verificables por separado, aunque secuenciales. Desbloquear cuando Jose autorice
 GAPs L/XL en este módulo (mismo criterio aplicado a GAP-V2-058/062/065 en la
 primera pasada, ver `docs/ai/modules/pallets/audit.md` § 10).
+
+**Decisión de Jose (2026-07-06):** autorizado — PR aislado, implementar después
+de GAP-V2-085.
 
 ## Resultado
 

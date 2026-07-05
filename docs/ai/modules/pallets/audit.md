@@ -6,15 +6,12 @@
 ## NEXT ACTION
 
 ```text
-Segunda pasada normalizada y mergeada (2026-07-05): 25 candidatos nuevos de
-3 superficies (listado de palets, movimientos de almacén, vinculación masiva
-desde pedido) procesados → 23 GAPs finales (tras fusionar 2 pares y no dividir
-ninguno): 17 ready, 6 blocked, 0 later, 2 rejected (absorbidos). Además se
-corrigió la premisa de GAP-V2-059 (primera pasada) tras evidencia de GAP-V2-083
-— ver § 7, PRIORITARIO antes de cualquier /implement-next sobre ese GAP.
-`gaps-registry.md` ya regenerado (37 ready · 6 blocked · 5 rejected en total,
-ambas pasadas). Solo queda pendiente que Jose resuelva los 6 nuevos `blocked`
-de esta pasada (ver § 10) — el resto ya puede pasar a `/implement-next`.
+Segunda pasada normalizada y mergeada (2026-07-05), y los 6 `blocked` resueltos
+por Jose (2026-07-06, ver § 10): registry final del módulo (2 pasadas): **42
+ready, 1 blocked, 0 done, 0 later, 5 rejected**. Solo queda 1 GAP bloqueado
+(GAP-V2-105, filtro de disponibilidad de stock — pendiente de verificar si el
+backend lo soporta antes de poder implementarlo). Todo lo demás ya puede pasar
+a `/implement-next`.
 
 Ejecutar (orden recomendado, por severidad real):
 
@@ -26,20 +23,19 @@ Ejecutar (orden recomendado, por severidad real):
 2. /implement-next module=pallets category=ux-ui limit=1 risk=low
    → GAP-V2-068 (Eliminar todas las cajas sin confirmación en desktop)
 
-3. GAP-V2-058 (L) en PR aislado, seguido de GAP-V2-062 (XL, depende de 058) y
-   GAP-V2-065 (depende de 062) — cada uno su propio PR, sin mezclar con otros
-   GAPs (protocolo reforzado de CLAUDE.md, historial PL-BUILD-05 en este mismo
-   archivo).
+3. GAPs grandes (L/XL) autorizados por Jose, cada uno en PR aislado, respetando
+   dependencias: GAP-V2-058 → GAP-V2-062 → GAP-V2-065 (cadena de la primera
+   pasada); GAP-V2-085 → GAP-V2-087 (cadena de la segunda pasada, movimientos de
+   almacén); GAP-V2-088 → GAP-V2-089 (cadena de la segunda pasada, split de
+   `useOrderPallets` de `OrderPallets`).
 
-4. Resto de los GAPs ready pequeños (ver gaps-registry.md, tras regenerar) por
-   lotes de category+risk=low/medium — incluye los 17 nuevos ready de la
-   segunda pasada.
+4. Resto de los 42 GAPs `ready` (ver gaps-registry.md) por lotes de
+   category+risk=low/medium.
 
-5. Antes de lo anterior: Jose debe resolver los 6 nuevos `blocked` de la
-   segunda pasada (ver § 10) para no dejar huecos en la cobertura de movimientos
-   de almacén — en particular GAP-V2-106 (posición ya ocupada) tiene el mismo
-   perfil de riesgo de trazabilidad física que motivó los P0/P1 de la primera
-   pasada.
+5. GAP-V2-105 sigue `blocked` — antes de tomarlo, verificar contra la API real
+   (`GET /api/v2/pallets`) si el backend soporta filtrar por disponibilidad de
+   stock; si no, no es implementable solo en frontend (ver notas del propio
+   GAP).
 ```
 
 ---
@@ -60,8 +56,9 @@ Performance:               not_started
 Testing:                     needs_review (deuda ya documentada, sin GAP nuevo)
 Documentación:                 needs_review
 
-P0 abiertos: 3   P1 abiertos: 15   P2 abiertos: 14   P3 abiertos: 9   P4 abiertos: 2
-(cuenta tras 2 pasadas: ready + blocked, excluye rejected — ver gaps-registry.md)
+P0 abiertos: 3   P1 abiertos: 13   P2 abiertos: 15   P3 abiertos: 10   P4 abiertos: 2
+(cuenta tras 2 pasadas + resolución de blocked del 2026-07-06: ready + blocked,
+excluye rejected — ver gaps-registry.md)
 
 Estado de auditoría:      done (pasada 1: creación/edición · pasada 2: listado,
                            movimientos de almacén, vinculación masiva desde pedido)
@@ -575,6 +572,38 @@ ver arriba), GAP-V2-098 (absorbido en GAP-V2-104, fusión de duplicado).
        legítimamente uno o varios palets a la vez?
      - GAP-V2-107: confirmar si el endpoint de traspaso de almacén
        (`pallets/move-to-store`) limpia el campo `position` del palet.
+- 2026-07-06 — Jose resuelve 5 de los 6 `blocked` de la pasada 2 (queda 1
+  pendiente de investigación técnica, no de decisión de negocio):
+  1. **GAP-V2-087 y GAP-V2-089 (ambos L):** autorizados, mismo protocolo que
+     GAP-V2-058/062/065 — PR aislado cada uno, respetando dependencias
+     (GAP-V2-085 → 087; GAP-V2-088 → 089). Pasan a `ready`.
+  2. **GAP-V2-106 (posición ya ocupada):** una posición de almacén **puede
+     alojar legítimamente varios palets a la vez** — no es un hueco de un solo
+     palet. Se descarta el bloqueo/confirmación; el GAP se re-scopea a mostrar
+     información de ocupación en el diálogo de asignación antes de confirmar
+     (sin impedir la acción). Categoría se mantiene `domain-business`,
+     prioridad P1→P2, tamaño M→S. Pasa a `ready`.
+  3. **GAP-V2-107 (traspaso de almacén y posición anterior):** confirmado que
+     el backend limpia el campo `position` al traspasar — sin riesgo real de
+     colisión. Se descarta cualquier cambio de payload/lógica; el GAP se
+     re-scopea a solo añadir copy informativo en los diálogos de traspaso
+     indicando que el palet queda sin ubicar en destino. Categoría
+     domain-business→ux-ui, prioridad P1→P3, tamaño S→XS. Pasa a `ready`.
+  4. **GAP-V2-103 (columna de fecha):** Jose no conoce el nombre exacto del
+     campo backend — pide que se verifique en el momento de implementar. Pasa
+     a `ready` con un criterio de aceptación explícito: confirmar el campo
+     contra la respuesta real de `GET /api/v2/pallets` antes de escribir el
+     header (no asumir `created_at` sin comprobar).
+  5. **GAP-V2-105 (filtro de disponibilidad de stock):** Jose tampoco lo sabe
+     de memoria y pide investigar/probar contra el backend. A diferencia de
+     GAP-V2-103, aquí no está garantizado que el backend soporte el filtro —
+     **queda `blocked`**: quien lo retome debe verificar primero contra la API
+     real: si hay soporte del lado servidor, pasa a `ready`; si no, se
+     convierte en petición de cambio de backend, fuera del alcance de este
+     módulo frontend.
+
+Registry regenerado tras estas decisiones (2026-07-06): **42 ready, 1 blocked
+(GAP-V2-105), 0 done, 0 later, 5 rejected** — total del módulo, ambas pasadas.
 
 ## 11. Cambios desde la última auditoría
 
