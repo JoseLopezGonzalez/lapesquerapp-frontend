@@ -1,17 +1,18 @@
 ---
 id: GAP-V2-098
-title: Filtro "Posición" (ubicado/no ubicado) en el listado de palets sin columna que confirme el resultado
+title: "ABSORBIDO en GAP-V2-104 — Filtro \"Posición\" (ubicado/no ubicado) en el listado de palets sin columna que confirme el resultado"
 module: pallets
 category: ux-ui
 priority: P3
 risk: low
 size: S
-status: candidate
+status: rejected
 dependencies: []
 target_files:
   - src/configs/entities/entitiesConfig.stock.ts
 created_at: 2026-07-05
 updated_at: 2026-07-05
+normalized_at: 2026-07-05
 ---
 
 # GAP-V2-098 — Listado de palets: filtro de posición sin columna visible
@@ -75,7 +76,16 @@ npm run lint
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Normalización (gap-normalizer, 2026-07-05):** ABSORBIDO — mismo hallazgo que
+GAP-V2-104 (domain-business-auditor), visto desde dos ángulos: este GAP lo enmarca
+como "el filtro no tiene columna que confirme su resultado" (ux-ui), GAP-V2-104 lo
+enmarca como "el operario no puede ver la posición física para localizar el
+palet" (domain-business). Ambos apuntan al mismo archivo
+(`entitiesConfig.stock.ts`) y a la misma solución (añadir columna `position` a
+`table.headers`). Fusionado en GAP-V2-104, que conserva el matiz UX de este GAP
+("el resultado del filtro debe ser verificable directamente en la tabla") en sus
+criterios de aceptación. No es un hallazgo descartado — no reabrir como GAP
+independiente.
 
 ## Resultado
 

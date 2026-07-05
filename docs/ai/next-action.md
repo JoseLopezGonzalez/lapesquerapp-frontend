@@ -9,19 +9,70 @@
 
 ## Módulo activo
 
-pallets (Palets) — primera pasada de `/deep-audit-module` completa (alcance:
-pantalla de creación/edición de palet, desktop + mobile). `orders` queda en
-segundo plano con 1 solo GAP `ready` pendiente (`GAP-V2-028`, ver histórico
-más abajo).
+pallets (Palets) — 2 pasadas de `/deep-audit-module` completas (pasada 1:
+pantalla de creación/edición, desktop + mobile; pasada 2: listado, movimientos
+de almacén, vinculación masiva desde pedido). `orders` queda en segundo plano
+con 1 solo GAP `ready` pendiente (`GAP-V2-028`, ver histórico más abajo).
 
 ## Fase activa
+
+**Pasada 2 de `pallets` completa y mergeada (2026-07-05):** mismos 3 carriles
+(code-audit-agent, ui-audit-agent, domain-business-auditor) sobre las 3
+superficies que quedaron fuera de alcance en la pasada 1: listado de palets
+(solo config específica, no el motor genérico `EntityClient`), movimientos de
+almacén (assign/move position, código en `Stores`), y vinculación masiva desde
+pedido (`OrderPallets/hooks/useOrderPallets.ts`, evitando duplicar
+GAP-V2-025/026 de `orders`). 25 GAP candidates escritos, normalizados por
+`gap-normalizer` a 23 GAPs (2 pares fusionados, 0 divisiones) → **17 `ready`, 6
+`blocked`, 0 `done`, 0 `later`, 2 `rejected`**. Registry regenerado: **total
+módulo pallets (2 pasadas): 37 `ready`, 6 `blocked`, 0 `done`, 0 `later`, 5
+`rejected`**.
+
+**Hallazgo más importante de la pasada 2 — corrección de un GAP ya `ready` de
+la pasada 1:** GAP-V2-083 demostró que la premisa de GAP-V2-059 ("servicio
+legacy muerto, eliminar el archivo") era incorrecta —
+`src/services/domain/pallets/palletService.js` alimenta activamente
+`list`/`delete`/`deleteMultiple` del listado `/admin/pallets` vía
+`entityServiceMapper.ts` → `EntityClient`. Ejecutarlo tal como estaba escrito
+habría roto el listado en producción. `gap-normalizer` reescribió GAP-V2-059
+in-place con el alcance correcto (eliminar solo los 4 métodos confirmados
+muertos) antes de que llegara a `/implement-next` — ver
+`docs/ai/modules/pallets/audit.md` § 7 y § 10 para el detalle completo. Lección
+para futuras pasadas: cualquier hallazgo de "servicio/archivo muerto" debe
+verificar imports relativos además de imports con alias `@/`, ya que un grep
+por el path con alias puede no detectar un import relativo real.
+
+**Segundo hallazgo relevante:** el mismo bug P0 de GS1-128 de la pasada 1
+(GAP-V2-078, AI de precisión incorrecto, peso decodificado ×100 por lectores
+externos) reaparece en un tercer punto de creación de cajas
+(`useOrderPallets.ts`, creación de palet desde previsión de pedido) — nuevo
+GAP-V2-109, P0, dependiente de GAP-V2-078. Candidato a regla permanente en
+`project-learnings.md`: el bug se ha visto en 6+ archivos de 3 módulos
+distintos (pallets, production, label editor) — la construcción de GS1-128
+debería centralizarse.
+
+**6 `blocked` de la pasada 2, pendientes de que Jose decida (ver
+`docs/ai/modules/pallets/audit.md` § 10 para el detalle):**
+- GAP-V2-087 y GAP-V2-089 (ambos tamaño L) — solo necesitan autorización de
+  tamaño, mismo protocolo que GAP-V2-058/062 de la pasada 1.
+- GAP-V2-103 — confirmar nombre exacto del campo backend de fecha de
+  creación/entrada del palet.
+- GAP-V2-105 — confirmar si el backend soporta filtrar por disponibilidad de
+  stock.
+- GAP-V2-106 — decisión de negocio: ¿una posición de almacén aloja
+  legítimamente uno o varios palets a la vez?
+- GAP-V2-107 — confirmar si `pallets/move-to-store` limpia el campo `position`
+  del palet de origen.
+
+### Pasada 1 de `pallets` (histórico, mismo día)
 
 Pasada 1 de `pallets` completa (2026-07-05): 3 carriles ejecutados en paralelo
 (code-audit-agent, ui-audit-agent, domain-business-auditor) sobre creación/edición
 de palet. 22 GAP candidates escritos, normalizados por `gap-normalizer` a 21 GAPs
 (2 pares fusionados, 1 dividido). Jose resolvió los 7 `blocked` en la misma sesión
 (ver `docs/ai/modules/pallets/audit.md` § 10 para el detalle de cada decisión) →
-registry final: **20 `ready`, 0 `blocked`, 0 `done`, 0 `later`, 3 `rejected`**.
+registry final tras pasada 1: **20 `ready`, 0 `blocked`, 0 `done`, 0 `later`, 3
+`rejected`**.
 
 Dos P0 reales, primeros a implementar:
 - **GAP-V2-078** — el código de barras GS1-128 impreso en la etiqueta física de caja
@@ -179,11 +230,19 @@ Seguido de cerca por el P0 de UX (acción destructiva sin confirmación):
 ```
 → GAP-V2-068 ("Eliminar todas las cajas" sin confirmación en desktop).
 
-Tras esos 2, quedan 18 GAPs `ready` más en `pallets` (ver
-`docs/ai/modules/pallets/gaps-registry.md`) — 0 `blocked`, todas las decisiones de
-Jose ya están tomadas y documentadas en `docs/ai/modules/pallets/audit.md` § 10.
-GAP-V2-058 (L) y GAP-V2-062 (XL, depende de 058) requieren PR aislado cada uno por
-el historial PL-BUILD-05 de `PalletView`.
+Tras esos 2, quedan 35 GAPs `ready` más en `pallets` (ver
+`docs/ai/modules/pallets/gaps-registry.md`, 37 `ready` en total sumando ambas
+pasadas). GAP-V2-058 (L) y GAP-V2-062 (XL, depende de 058) requieren PR aislado
+cada uno por el historial PL-BUILD-05 de `PalletView`. GAP-V2-109 (P0, GS1-128
+recurrente) conviene encadenarlo justo después de GAP-V2-078 en la misma sesión,
+ya que corrige el mismo bug en un archivo distinto.
+
+**Antes de tocar `pallets` de nuevo:** quedan 6 GAPs `blocked` de la pasada 2 sin
+resolver (GAP-V2-087, 089, 103, 105, 106, 107 — ver detalle en "Fase activa" más
+arriba y en `docs/ai/modules/pallets/audit.md` § 10). No bloquean el resto del
+módulo, pero conviene que Jose los resuelva pronto para no dejar huecos de
+cobertura en movimientos de almacén (GAP-V2-106 en particular tiene el mismo
+perfil de riesgo físico que los P0/P1 ya priorizados).
 
 **Pendiente secundario — `orders`:** implementar GAP-V2-028 en pasada dedicada
 (autorizado, tamaño L — no combinar con otros GAPs en el mismo commit, ciclo
@@ -235,11 +294,14 @@ Los 16 lotes de `/implement-next` de la pasada 2026-07-02 cerraron `GAP-V2-002`,
 ## Estado resumido
 
 ```text
-pallets: audit_pass_1_done → 3_lanes_executed (code-audit-agent, ui-audit-agent,
-domain-business-auditor) → 22_candidates → gap-normalizer (2 fusiones, 1 split) →
-21 GAPs → jose_resolved_7_blocked (2026-07-05) → registry final: 20 ready, 0
-blocked, 0 done, 0 later, 3 rejected (2 por fusión + GAP-V2-081 por decisión de
-negocio real)
+pallets: audit_pass_1_done → 3_lanes_executed → 22_candidates → gap-normalizer
+(2 fusiones, 1 split) → 21 GAPs → jose_resolved_7_blocked (2026-07-05) → pass_1
+registry: 20 ready, 0 blocked, 0 done, 0 later, 3 rejected
+  → audit_pass_2_done (listado, movimientos de almacén, vinculación masiva) →
+    3_lanes_executed → 25_candidates (incluye corrección de GAP-V2-059) →
+    gap-normalizer (2 fusiones, 0 splits, GAP-V2-059 reescrito in-place) → 23
+    GAPs → registry final módulo (2 pasadas): 37 ready, 6 blocked, 0 done, 0
+    later, 5 rejected → pendiente: jose_resolve_6_blocked_pass_2
 
 orders: audited_ampliado → reconciled_lv9qnf_and_ewomf1 → batch_17_p1_done → blocked_resolved → batch_18_code_quality_done → batch_19_a11y_domain_ux_done → batch_20_code_quality_ux_done → batch_21_final_small_gaps_done → mobile_pairing_session_2026-07-03_04 (fuera de flujo GAP) → reconciled_2026-07-04 (GAP-V2-057 ready→done, GAP-V2-036 nota de archivo renombrado, 8 GAPs done re-verificados sin regresión) (1 ready [GAP-V2-028, L], 0 blocked, 38 done, 0 later, 3 rejected)
 ```

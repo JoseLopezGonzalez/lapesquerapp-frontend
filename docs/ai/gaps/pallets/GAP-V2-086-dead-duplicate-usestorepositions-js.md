@@ -6,12 +6,13 @@ category: code-quality
 priority: P3
 risk: low
 size: XS
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/hooks/useStorePositions.js
 created_at: 2026-07-05
 updated_at: 2026-07-05
+normalized_at: 2026-07-05
 ---
 
 # GAP-V2-086 — Duplicado muerto `useStorePositions.js` (pre-migración de `useStorePositions.ts`)
@@ -76,7 +77,8 @@ npm run build
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Normalización (gap-normalizer, 2026-07-05):** verificación de duplicado real
+(no como el caso GAP-V2-059) — marcado `ready` sin cambios de fondo.
 
 ## Resultado
 

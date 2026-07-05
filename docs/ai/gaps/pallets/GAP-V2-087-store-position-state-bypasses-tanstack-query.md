@@ -6,7 +6,7 @@ category: architecture-refactor
 priority: P2
 risk: medium
 size: L
-status: candidate
+status: blocked
 dependencies:
   - GAP-V2-085
 target_files:
@@ -15,6 +15,7 @@ target_files:
   - src/hooks/useStoreData.ts
 created_at: 2026-07-05
 updated_at: 2026-07-05
+normalized_at: 2026-07-05
 ---
 
 # GAP-V2-087 — El flujo de posición/movimiento de palets no usa TanStack Query para reflejar cambios
@@ -121,7 +122,19 @@ npm run lint
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Normalización (gap-normalizer, 2026-07-05):** GAP completo y técnicamente listo
+(criterios de aceptación verificables, plan de validación claro), pero de tamaño
+`L` — regla dura de `gap-normalizer`: "No dejar un GAP de tamaño L o XL como ready
+sin autorización explícita de Jose". Marcado `blocked` únicamente por esta razón,
+no por falta de información. Depende además de GAP-V2-085 (debe implementarse
+primero: este GAP asume que las mutaciones ya viven en un hook, no en el
+componente). Complementa (causa raíz distinta) a GAP-V2-085: 085 corrige *dónde*
+se hace la llamada HTTP (componente vs. hook + token-as-parameter); 087 corrige
+*qué pasa después de la llamada* (mutar una copia local en `useState` en vez de la
+caché real de TanStack Query). No fusionar — son dos violaciones independientes
+verificables por separado, aunque secuenciales. Desbloquear cuando Jose autorice
+GAPs L/XL en este módulo (mismo criterio aplicado a GAP-V2-058/062/065 en la
+primera pasada, ver `docs/ai/modules/pallets/audit.md` § 10).
 
 ## Resultado
 

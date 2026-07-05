@@ -6,7 +6,7 @@ category: ux-ui
 priority: P1
 risk: medium
 size: S
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/components/Admin/Stores/StoresManager/Store/PositionSlideover/PalletCard/index.tsx
@@ -14,6 +14,7 @@ target_files:
   - src/hooks/useStorePositions.ts
 created_at: 2026-07-05
 updated_at: 2026-07-05
+normalized_at: 2026-07-05
 ---
 
 # GAP-V2-094 — "Quitar de posición" ejecuta sin confirmación previa
@@ -90,7 +91,9 @@ npm run lint
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Normalización (gap-normalizer, 2026-07-05):** independiente de GAP-V2-106
+(dominio: asignar a posición ocupada) — esta acción es la inversa (quitar), sin
+solapamiento de criterios. Marcado `ready` sin cambios de fondo.
 
 ## Resultado
 

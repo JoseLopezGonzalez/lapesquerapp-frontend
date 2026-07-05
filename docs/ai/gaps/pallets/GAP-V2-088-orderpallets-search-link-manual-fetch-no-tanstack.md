@@ -6,12 +6,13 @@ category: architecture-refactor
 priority: P2
 risk: medium
 size: M
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/components/Admin/OrdersManager/Order/OrderPallets/hooks/useOrderPallets.ts
 created_at: 2026-07-05
 updated_at: 2026-07-05
+normalized_at: 2026-07-05
 ---
 
 # GAP-V2-088 — Flujo de búsqueda/vinculación de palets reimplementa fetch manual
@@ -115,7 +116,13 @@ npm run lint
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Normalización (gap-normalizer, 2026-07-05):** tamaño M — no requiere
+autorización de Jose (la regla de autorización explícita solo aplica a L/XL).
+Independiente del antipatrón ya `ready` de la primera pasada GAP-V2-058
+(`usePallet` sin TanStack Query): son hooks distintos (`usePallet.ts` vs. este
+hook de componente de `OrderPallets`), sin solapamiento de archivos ni de query
+keys — confirmado, no fusionable. GAP-V2-089 (split del mismo hook de 822 líneas)
+depende de este GAP.
 
 ## Resultado
 

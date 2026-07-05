@@ -6,7 +6,7 @@ category: code-quality
 priority: P4
 risk: low
 size: XS
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/components/Admin/OrdersManager/Order/OrderPallets/OrderPalletCard/index.tsx
@@ -15,6 +15,7 @@ target_files:
   - src/components/Admin/Stores/StoresManager/Store/MoveMultiplePalletsToStoreDialog/index.tsx
 created_at: 2026-07-05
 updated_at: 2026-07-05
+normalized_at: 2026-07-05
 ---
 
 # GAP-V2-091 — `key={index}` en el resumen de productos de un palet, repetido en 4 archivos
@@ -82,7 +83,8 @@ grep -rn "key={index}" src/components/Admin/OrdersManager/Order/OrderPallets/ sr
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Normalización (gap-normalizer, 2026-07-05):** cambio mecánico, bajo riesgo —
+marcado `ready` sin cambios de fondo.
 
 ## Resultado
 

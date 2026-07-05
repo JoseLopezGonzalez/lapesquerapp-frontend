@@ -6,12 +6,13 @@ category: code-quality
 priority: P4
 risk: low
 size: XS
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/configs/entities/entitiesConfig.stock.ts
 created_at: 2026-07-05
 updated_at: 2026-07-05
+normalized_at: 2026-07-05
 ---
 
 # GAP-V2-084 — Bloques de acciones comentadas en la config de palets
@@ -74,7 +75,10 @@ npm run lint
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Normalización (gap-normalizer, 2026-07-05):** sin duplicados ni ambigüedad —
+marcado `ready` sin cambios de fondo. Verificado con `Read` de
+`entitiesConfig.stock.ts:638-660` que las 4 acciones reales (Registrado/Almacenado/
+Enviado/Procesado) están inmediatamente después del bloque comentado.
 
 ## Resultado
 

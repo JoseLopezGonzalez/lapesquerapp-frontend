@@ -6,13 +6,14 @@ category: ux-ui
 priority: P3
 risk: low
 size: S
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/components/Admin/Stores/StoresManager/Store/PositionSlideover/PalletCard/index.tsx
   - src/components/Admin/Stores/StoresManager/Store/MoveMultiplePalletsToStoreDialog/index.tsx
 created_at: 2026-07-05
 updated_at: 2026-07-05
+normalized_at: 2026-07-05
 ---
 
 # GAP-V2-100 — `font-semibold` fuera de escala en tarjetas de la superficie de movimientos
@@ -74,7 +75,17 @@ grep -rn "font-semibold" src/components/Admin/Stores/StoresManager/Store/Positio
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Normalización (gap-normalizer, 2026-07-05):** decisión — se mantiene como GAP
+independiente en vez de ampliar `target_files` de GAP-V2-073 (ya `ready` desde la
+primera pasada), por 3 motivos: (1) GAP-V2-073 ya está aprobado y podría
+implementarse en cualquier momento — ampliar su alcance retroactivamente cambia
+silenciosamente qué cubre un GAP ya cerrado para implementación; (2) cubre una
+superficie distinta (movimientos de almacén, Superficie B de esta pasada) de la
+que auditó GAP-V2-073 (creación/edición, primera pasada) — mantener la
+trazabilidad por superficie/pasada; (3) permite verificación independiente sin
+reabrir el GAP original. Mismo criterio de reemplazo (`font-semibold` →
+`font-medium`) que GAP-V2-073 — el implementor debe usarlo como referencia directa
+para no introducir un tercer criterio.
 
 ## Resultado
 

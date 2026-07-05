@@ -6,7 +6,7 @@ category: a11y-responsive
 priority: P1
 risk: medium
 size: S
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/components/Admin/Stores/StoresManager/Store/PositionSlideover/index.tsx
@@ -15,6 +15,7 @@ target_files:
   - src/components/Admin/Stores/StoresManager/Store/MoveMultiplePalletsToStoreDialog/index.tsx
 created_at: 2026-07-05
 updated_at: 2026-07-05
+normalized_at: 2026-07-05
 ---
 
 # GAP-V2-093 — `useIsMobile()` sin guard en 4 componentes de movimientos de almacén
@@ -89,7 +90,9 @@ grep -rn "useIsMobile()" src/components/Admin/Stores/StoresManager/Store
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Normalización (gap-normalizer, 2026-07-05):** recurrencia clara de PL-022, sin
+solapamiento con GAP-V2-060 (archivo distinto, `PalletLabelDialog`) — marcado
+`ready` sin cambios de fondo.
 
 ## Resultado
 

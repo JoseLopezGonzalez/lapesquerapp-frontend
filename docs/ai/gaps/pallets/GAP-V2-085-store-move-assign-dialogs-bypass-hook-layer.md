@@ -2,11 +2,11 @@
 id: GAP-V2-085
 title: Diálogos de mover/ubicar palets llaman a palletService directamente y extraen el token en el componente
 module: pallets
-category: code-quality
+category: architecture-refactor
 priority: P1
 risk: medium
 size: M
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/components/Admin/Stores/StoresManager/Store/MovePalletToStoreDialog/index.tsx
@@ -17,6 +17,7 @@ target_files:
   - src/hooks/useStore.ts
 created_at: 2026-07-05
 updated_at: 2026-07-05
+normalized_at: 2026-07-05
 ---
 
 # GAP-V2-085 — Diálogos de movimiento de palets llaman al service directamente desde el componente
@@ -61,23 +62,23 @@ parámetro (anti-patrón token-as-parameter, PL-010), obligando a cualquier llam
 extraer la sesión manualmente. `moveMultiplePalletsToStore` (:331-335) no lo hace y
 usa `getAuthToken()` internamente — inconsistencia dentro del mismo archivo.
 
-Consecuencia adicional en dos de los tres diálogos: no hay guard de
-pending/`isSubmitting` real durante la petición.
-`MovePalletToStoreDialog:handleSubmit` (líneas 48-73) no es `async`, no deshabilita
-el botón mientras la petición está en vuelo (`disabled={!selectedStoreValue}` es la
-única condición) — riesgo de doble envío con doble clic.
-`AddElementToPositionDialog:onSubmit` (líneas 66-80) tiene el mismo problema: sin
-estado de `isSubmitting`, el botón solo se deshabilita por selección vacía
-(`disabled={selectedPalletIds.length === 0}`). `MoveMultiplePalletsToStoreDialog` sí
-implementa correctamente `isSubmitting` (líneas 58,144,197) y deshabilita el botón
-durante el envío — de nuevo, el patrón correcto ya existe en el mismo módulo.
+Consecuencia adicional detectada en el mismo análisis (dos de los tres diálogos sin
+guard de pending/`isSubmitting`): **normalizada por separado en GAP-V2-099**
+(mismo módulo, mismos dos componentes), para no duplicar la corrección en dos
+GAPs. Este GAP se acota exclusivamente a la capa de llamada (service directo desde
+componente + token-as-parameter); el guard de `isSubmitting`/doble envío se
+implementa y verifica en GAP-V2-099. Si GAP-V2-085 se implementa primero (moviendo
+las llamadas a un hook con `useMutation`), el estado `isSubmitting` de GAP-V2-099
+puede derivarse directamente de `isPending` de la mutación en vez de un `useState`
+manual — documentar esa simplificación en las notas de implementación de
+GAP-V2-099 si aplica.
 
 ## Objetivo
 
 Las tres operaciones de movimiento/ubicación de palets se invocan desde un hook
 (`useMutation` o wrapper equivalente), no directamente desde el componente. Ningún
-componente de este grupo extrae el token de sesión. Los tres diálogos deshabilitan
-su botón de confirmación mientras la operación está en curso.
+componente de este grupo extrae el token de sesión. (El guard de `isSubmitting`
+durante el envío se cubre en GAP-V2-099, no es objetivo de este GAP.)
 
 ## Contexto
 
@@ -105,9 +106,8 @@ GAP-V2-025/026 (orders): aquellos cubren `src/hooks/orders/useOrderPallets.ts`
   en `useStoreDialogs.ts:152-156` sigue necesitando el guard de token — si
   `getPallet` ya usa `getAuthToken()` internamente, ese guard también podría
   simplificarse, pero no es obligatorio para este GAP).
-- Añadir `isSubmitting` + deshabilitar el botón de confirmación en
-  `MovePalletToStoreDialog` y `AddElementToPositionDialog`, replicando el patrón ya
-  usado en `MoveMultiplePalletsToStoreDialog`.
+- No incluir aquí el guard de `isSubmitting`/deshabilitado de botón — se
+  implementa y verifica en GAP-V2-099 (mismos dos componentes).
 
 ## Criterios de aceptación
 
@@ -117,8 +117,6 @@ GAP-V2-025/026 (orders): aquellos cubren `src/hooks/orders/useOrderPallets.ts`
       reciben `token` como parámetro.
 - [ ] Ningún componente de este grupo llama a `useSession()` para extraer
       `accessToken`.
-- [ ] `MovePalletToStoreDialog` y `AddElementToPositionDialog` deshabilitan su botón
-      de confirmación mientras la petición está en curso.
 - [ ] Las tres operaciones (mover, ubicar, mover múltiples) siguen funcionando igual
       desde la UI.
 - [ ] `npm run type-check` y `npm run lint` pasan sin errores.
@@ -131,13 +129,22 @@ npm run lint
 grep -rn "from '@/services/palletService'" src/components/Admin/Stores/
 # debe devolver 0 resultados tras el fix
 # Manual: abrir un almacén, mover un palet individual, ubicar un palet sin ubicar
-# en una posición, mover varios palets a la vez. Confirmar que doble clic rápido
-# en el botón de confirmación no dispara doble petición.
+# en una posición, mover varios palets a la vez. Confirmar que el comportamiento
+# visible no cambia.
 ```
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Normalización (gap-normalizer, 2026-07-05):** categoría cambiada de
+`code-quality` a `architecture-refactor` (violación de la capa
+componente→hook→service, no solo estilo de código). Se retiró el criterio de
+`isSubmitting`/doble envío de este GAP porque duplica exactamente el alcance de
+GAP-V2-099 (carril ui-audit-agent, mismos 2 componentes) — queda como nota de
+implementación para quien resuelva GAP-V2-099: si este GAP (085) se implementa
+primero, el `isSubmitting` de 099 puede derivarse de `isPending` de la mutación en
+vez de un `useState` manual nuevo. Complementa (no se fusiona con) GAP-V2-087,
+que cubre la sincronización de la query de `useStoreData` tras estas mutaciones —
+GAP-V2-087 depende explícitamente de este GAP.
 
 ## Resultado
 
@@ -150,4 +157,6 @@ grep -rn "from '@/services/palletService'" src/components/Admin/Stores/
 ## Links
 
 - Auditoría de origen: `docs/ai/modules/pallets/audit.md`
-- GAPs relacionados: GAP-V2-025, GAP-V2-026 (orders, hook distinto — sin solapamiento)
+- GAPs relacionados: GAP-V2-025, GAP-V2-026 (orders, hook distinto — sin
+  solapamiento), GAP-V2-099 (isSubmitting de estos mismos 2 componentes,
+  normalizado por separado), GAP-V2-087 (depende de este GAP)

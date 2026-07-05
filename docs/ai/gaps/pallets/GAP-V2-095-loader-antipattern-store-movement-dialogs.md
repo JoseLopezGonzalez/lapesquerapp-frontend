@@ -6,7 +6,7 @@ category: ux-ui
 priority: P1
 risk: low
 size: S
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/components/Admin/Stores/StoresManager/Store/MovePalletToStoreDialog/index.tsx
@@ -14,6 +14,7 @@ target_files:
   - src/components/Admin/OrdersManager/Order/OrderPallets/dialogs/LinkPalletsDialog.tsx
 created_at: 2026-07-05
 updated_at: 2026-07-05
+normalized_at: 2026-07-05
 ---
 
 # GAP-V2-095 — `<Loader/>` en vez de `Skeleton` para cargar listas de almacenes/palets
@@ -79,7 +80,9 @@ grep -rn "<Loader" src/components/Admin/Stores/StoresManager/Store src/component
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Normalización (gap-normalizer, 2026-07-05):** sin solapamiento con GAP-V2-063
+(archivo distinto, `PalletTimeline`, primera pasada) — marcado `ready` sin cambios
+de fondo.
 
 ## Resultado
 

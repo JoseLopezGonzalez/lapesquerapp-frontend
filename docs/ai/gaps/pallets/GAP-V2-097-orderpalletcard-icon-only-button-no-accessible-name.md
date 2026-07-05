@@ -6,12 +6,13 @@ category: a11y-responsive
 priority: P1
 risk: low
 size: XS
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/components/Admin/OrdersManager/Order/OrderPallets/OrderPalletCard/index.tsx
 created_at: 2026-07-05
 updated_at: 2026-07-05
+normalized_at: 2026-07-05
 ---
 
 # GAP-V2-097 — Botón de acciones sin nombre accesible en `OrderPalletCard`
@@ -94,7 +95,9 @@ grep -rn "<svg" src/components/Admin/OrdersManager/Order/OrderPallets/OrderPalle
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Normalización (gap-normalizer, 2026-07-05):** patrón ya corregido en el
+componente hermano de escritorio (`OrderPalletTableRow`), fix mecánico de bajo
+riesgo — marcado `ready` sin cambios de fondo.
 
 ## Resultado
 

@@ -6,13 +6,14 @@ category: architecture-refactor
 priority: P2
 risk: medium
 size: L
-status: candidate
+status: blocked
 dependencies:
   - GAP-V2-088
 target_files:
   - src/components/Admin/OrdersManager/Order/OrderPallets/hooks/useOrderPallets.ts
 created_at: 2026-07-05
 updated_at: 2026-07-05
+normalized_at: 2026-07-05
 ---
 
 # GAP-V2-089 — Dividir `OrderPallets/hooks/useOrderPallets.ts` por responsabilidad
@@ -115,7 +116,15 @@ wc -l src/components/Admin/OrdersManager/Order/OrderPallets/hooks/useOrderPallet
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Normalización (gap-normalizer, 2026-07-05):** GAP completo (mismo patrón ya
+aplicado con éxito a `useOrder`/`usePallet`/`PalletView` — precedente claro,
+criterios verificables), pero tamaño `L` — marcado `blocked` únicamente por la
+regla dura "no ready sin autorización explícita de Jose para L/XL", mismo
+tratamiento que GAP-V2-058/062/065 en la primera pasada. Depende de GAP-V2-088
+(la parte de búsqueda debe migrar a TanStack Query antes o durante la extracción a
+su propio sub-hook, para no dividir el archivo dos veces). Relacionado con
+GAP-V2-090 (extracción de `buildGs1128`/reparto de peso, subconjunto de este
+split más amplio, verificable de forma independiente).
 
 ## Resultado
 

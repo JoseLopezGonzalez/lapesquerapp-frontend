@@ -6,12 +6,13 @@ category: ux-ui
 priority: P2
 risk: low
 size: S
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/components/Admin/Stores/StoresManager/Store/PalletsListDialog/index.tsx
 created_at: 2026-07-05
 updated_at: 2026-07-05
+normalized_at: 2026-07-05
 ---
 
 # GAP-V2-096 — Tabla/lista de `PalletsListDialog` sin estado vacío
@@ -74,7 +75,8 @@ npm run lint
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Normalización (gap-normalizer, 2026-07-05):** hallazgo aislado, sin
+solapamiento con otros GAPs de esta pasada — marcado `ready` sin cambios de fondo.
 
 ## Resultado
 

@@ -6,13 +6,14 @@ category: ux-ui
 priority: P2
 risk: low
 size: S
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/components/Admin/Stores/StoresManager/Store/MovePalletToStoreDialog/index.tsx
   - src/components/Admin/Stores/StoresManager/Store/AddElementToPositionDialog/index.tsx
 created_at: 2026-07-05
 updated_at: 2026-07-05
+normalized_at: 2026-07-05
 ---
 
 # GAP-V2-099 — Submit sin estado `isSubmitting` en 2 diálogos de movimiento/ubicación
@@ -77,7 +78,14 @@ npm run lint
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Normalización (gap-normalizer, 2026-07-05):** este GAP absorbe el criterio de
+`isSubmitting` que originalmente aparecía también en GAP-V2-085 (mismos 2
+componentes) — se retiró de 085 para no duplicar. Si GAP-V2-085 se implementa
+antes que este, el `isSubmitting` puede derivarse directamente de `isPending` de
+la mutación resultante en vez de un `useState` manual nuevo; si se implementa
+este GAP primero, usar `useState` local como está descrito aquí y dejar que
+GAP-V2-085 lo simplifique después. Sin dependencia dura entre ambos — cualquier
+orden es válido.
 
 ## Resultado
 
@@ -90,5 +98,7 @@ npm run lint
 ## Links
 
 - Auditoría de origen: `docs/ai/modules/pallets/audit.md`
-- GAPs relacionados: ninguno directo; patrón de referencia ya correcto en
-  `MoveMultiplePalletsToStoreDialog` y `CreateFromForecastDialog` (misma superficie)
+- GAPs relacionados: GAP-V2-085 (mismos 2 componentes, capa de llamada — criterio
+  de isSubmitting movido aquí durante la normalización); patrón de referencia ya
+  correcto en `MoveMultiplePalletsToStoreDialog` y `CreateFromForecastDialog`
+  (misma superficie)

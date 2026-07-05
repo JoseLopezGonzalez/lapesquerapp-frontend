@@ -1,12 +1,12 @@
 ---
 id: GAP-V2-083
-title: Corregir premisa de GAP-V2-059 — palletService.js no está muerto, alimenta el listado de palets
+title: "ABSORBIDO en GAP-V2-059 — Corregir premisa: palletService.js no está muerto, alimenta el listado de palets"
 module: pallets
 category: code-quality
 priority: P0
 risk: high
 size: XS
-status: candidate
+status: rejected
 dependencies: []
 target_files:
   - src/services/domain/pallets/palletService.js
@@ -15,6 +15,7 @@ target_files:
   - docs/ai/gaps/pallets/GAP-V2-059-dead-duplicate-legacy-pallet-service.md
 created_at: 2026-07-05
 updated_at: 2026-07-05
+normalized_at: 2026-07-05
 ---
 
 # GAP-V2-083 — Corregir premisa de GAP-V2-059: `palletService.js` no está muerto
@@ -126,7 +127,17 @@ npm run lint
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Normalización (gap-normalizer, 2026-07-05):** ABSORBIDO — no es un hallazgo
+descartado, es una corrección aceptada al 100%. La verificación de este GAP
+(evidencia file:line de `entityServiceMapper.ts:60,104` y
+`EntityClient/index.js:285,417,589`) se confirmó de forma independiente por
+gap-normalizer (grep directo sobre `entitiesConfig.stock.ts` y `EntityClient/index.js`)
+y quedó incorporada directamente en el alcance corregido de **GAP-V2-059**, que es
+donde vive la solución final a implementar (eliminar solo `getById`/`create`/
+`update`/`getOptions`, mantener `list`/`delete`/`deleteMultiple`). No ejecutar
+`gap-implementor` sobre este GAP — su contenido ya está aplicado a GAP-V2-059.
+Se conserva este archivo (en vez de borrarlo) para no perder la evidencia
+detallada que motivó la corrección.
 
 ## Resultado
 

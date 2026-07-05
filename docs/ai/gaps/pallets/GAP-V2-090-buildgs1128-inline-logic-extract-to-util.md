@@ -6,13 +6,15 @@ category: code-quality
 priority: P3
 risk: medium
 size: S
-status: candidate
-dependencies: []
+status: ready
+dependencies:
+  - GAP-V2-109
 target_files:
   - src/components/Admin/OrdersManager/Order/OrderPallets/hooks/useOrderPallets.ts
   - src/components/Admin/OrdersManager/Order/OrderPallets/utils/roundToTwoDecimals.ts
 created_at: 2026-07-05
 updated_at: 2026-07-05
+normalized_at: 2026-07-05
 ---
 
 # GAP-V2-090 — Lógica de reparto de peso y GS1-128 embebida en el hook, no extraída a util
@@ -56,6 +58,11 @@ pedido) de esta segunda pasada. Bajo riesgo funcional inmediato (el código ya
 funciona), pero alto valor de prevención: un error futuro en el formato GS1-128 o en
 el reparto de peso solo se detectaría manualmente en una etiqueta impresa, no en CI.
 
+**Depende de GAP-V2-109** (mismo archivo, misma función `buildGs1128`, bug de AI
+de precisión incorrecto 3100→3102): implementar primero la corrección del valor en
+GAP-V2-109 y después extraer la función ya corregida a `utils/` aquí, para no
+extraer una función pura con un bug conocido y tener que tocarla dos veces.
+
 ## Solución propuesta
 
 - Extraer `buildGs1128` a `src/components/Admin/OrdersManager/Order/OrderPallets/utils/buildGs1128.ts`,
@@ -95,7 +102,11 @@ npm run test:run
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Normalización (gap-normalizer, 2026-07-05):** añadida dependencia explícita de
+GAP-V2-109 (mismo archivo/función, corrección del AI GS1-128 P0) — implementar
+109 primero. GAP-V2-109 ya está `ready` (dependiente a su vez de GAP-V2-078,
+también `ready`), así que esta cadena de dependencias es ejecutable de inmediato
+sin bloqueo real. Tamaño S — no requiere autorización de Jose.
 
 ## Resultado
 
