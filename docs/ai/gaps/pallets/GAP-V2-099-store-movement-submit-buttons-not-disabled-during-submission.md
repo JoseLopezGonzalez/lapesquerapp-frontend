@@ -1,0 +1,94 @@
+---
+id: GAP-V2-099
+title: Botones de confirmar traslado/ubicación no se deshabilitan durante el envío — riesgo de doble petición
+module: pallets
+category: ux-ui
+priority: P2
+risk: low
+size: S
+status: candidate
+dependencies: []
+target_files:
+  - src/components/Admin/Stores/StoresManager/Store/MovePalletToStoreDialog/index.tsx
+  - src/components/Admin/Stores/StoresManager/Store/AddElementToPositionDialog/index.tsx
+created_at: 2026-07-05
+updated_at: 2026-07-05
+---
+
+# GAP-V2-099 — Submit sin estado `isSubmitting` en 2 diálogos de movimiento/ubicación
+
+## Problema
+
+`MovePalletToStoreDialog/index.tsx:48-73,150-154` y
+`AddElementToPositionDialog/index.tsx:66-94,224-228` ejecutan su acción principal
+(`movePalletToStore` / `assignPalletsToPosition`) mediante una promesa (`.then()/.catch()`)
+sin ningún estado `isSubmitting`/`isPending`. El botón de confirmación
+(`Confirmar traslado` / `Ubicar N pallets`) solo se deshabilita en función de si hay una
+selección válida (`disabled={!selectedStoreValue}` / `disabled={selectedPalletIds.length === 0}`),
+nunca en función de si la petición ya está en curso.
+
+Esto contrasta con el patrón correcto ya implementado en la misma superficie de movimientos de
+almacén, en `MoveMultiplePalletsToStoreDialog/index.tsx` (`isSubmitting` state, botón
+`disabled={... || isSubmitting}`, texto "Moviendo..." con `Loader2` — ver líneas 58,628-637) y
+en `CreateFromForecastDialog.tsx` (`isCreating`, línea 98). Sin ese guard, un doble clic o una
+red lenta permiten disparar dos peticiones de traslado/ubicación del mismo palet, con riesgo
+real de estado inconsistente en un almacén físico (dos traslados simultáneos del mismo palet a
+almacenes/posiciones distintos).
+
+## Objetivo
+
+`MovePalletToStoreDialog` y `AddElementToPositionDialog` deshabilitan su botón de confirmación
+mientras la petición está en curso y muestran feedback de carga (`Loader2` + texto), igual que
+`MoveMultiplePalletsToStoreDialog` y `CreateFromForecastDialog` en la misma superficie.
+
+## Contexto
+
+Ver `design-context.md` § Forms → "Submit button placement... Disabled state" y el checklist
+DESKTOP del propio auditor: "Submit button is last in footer, disabled during submission".
+`MoveMultiplePalletsToStoreDialog` (mismo directorio, misma superficie) es la referencia
+directa a seguir — implementa exactamente el patrón correcto que falta en estos 2 archivos.
+
+## Solución propuesta
+
+Añadir `const [isSubmitting, setIsSubmitting] = useState(false)` en ambos componentes,
+envolver la llamada de servicio en `setIsSubmitting(true)` / `finally setIsSubmitting(false)`,
+y añadir `disabled={... || isSubmitting}` + indicador `Loader2` + texto de progreso al botón
+de confirmación, replicando el patrón de `MoveMultiplePalletsToStoreDialog/index.tsx:628-637`.
+
+## Criterios de aceptación
+
+- [ ] `MovePalletToStoreDialog` deshabilita "Confirmar traslado" mientras la petición está en
+      curso y muestra un indicador de progreso.
+- [ ] `AddElementToPositionDialog` deshabilita "Ubicar N pallets" mientras la petición está en
+      curso y muestra un indicador de progreso.
+- [ ] Un doble clic rápido en cualquiera de los dos botones no dispara una segunda petición.
+- [ ] El cierre del diálogo (`handleClose`/`resetAndClose`) también respeta el estado de envío
+      en curso (no cerrar mientras se está enviando), igual que ya hace
+      `LinkPalletsDialog.handleClose` (línea 89-93).
+
+## Plan de validación
+
+```text
+npm run type-check
+npm run lint
+# Manual: en ambos diálogos, hacer doble clic rápido en el botón de confirmación con
+# throttling de red y confirmar que solo se dispara una petición (verificar en Network tab).
+```
+
+## Notas de implementación
+
+{se rellena durante la implementación}
+
+## Resultado
+
+{se rellena al terminar la implementación}
+
+## Resultado de auditoría
+
+{se rellena por gap-auditor}
+
+## Links
+
+- Auditoría de origen: `docs/ai/modules/pallets/audit.md`
+- GAPs relacionados: ninguno directo; patrón de referencia ya correcto en
+  `MoveMultiplePalletsToStoreDialog` y `CreateFromForecastDialog` (misma superficie)
