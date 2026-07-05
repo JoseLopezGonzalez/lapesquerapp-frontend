@@ -6,12 +6,13 @@ category: code-quality
 priority: P3
 risk: low
 size: XS
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/services/domain/pallets/palletService.js
 created_at: 2026-07-05
 updated_at: 2026-07-05
+normalized_at: 2026-07-05
 ---
 
 # GAP-V2-059 — Dead duplicate legacy service `palletService.js`
@@ -72,7 +73,7 @@ npm run build
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Normalización (gap-normalizer, 2026-07-05):** sin duplicados ni ambigüedad — marcado `ready` sin cambios de fondo.
 
 ## Resultado
 

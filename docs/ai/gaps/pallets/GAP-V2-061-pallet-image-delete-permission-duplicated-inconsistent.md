@@ -6,7 +6,7 @@ category: code-quality
 priority: P2
 risk: medium
 size: S
-status: candidate
+status: blocked
 dependencies: []
 target_files:
   - src/components/Admin/Pallets/PalletDialog/PalletView/PalletImagesTab/index.tsx
@@ -14,6 +14,7 @@ target_files:
   - src/lib/auth/actor.ts
 created_at: 2026-07-05
 updated_at: 2026-07-05
+normalized_at: 2026-07-05
 ---
 
 # GAP-V2-061 — Lógica de permiso para borrar imágenes de palet duplicada y no centralizada
@@ -92,7 +93,13 @@ grep -rn "roles.some" src/components/Admin/Pallets/   # debe devolver 0 tras el 
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Normalización (gap-normalizer, 2026-07-05):** marcado `blocked` — el propio GAP
+requiere como paso 1 de su solución "confirmar con Jose/negocio cuál es el
+conjunto de roles correcto para borrar imágenes" antes de fijar el helper en
+`lib/auth/actor.ts`. La parte de arquitectura (centralizar en un helper, eliminar
+duplicación) es clara y no depende de nada, pero implementarla sin la decisión de
+negocio arriesga fijar una regla de permisos incorrecta con más autoridad
+(centralizada) que el bug actual. No implementar hasta tener respuesta de Jose.
 
 ## Resultado
 

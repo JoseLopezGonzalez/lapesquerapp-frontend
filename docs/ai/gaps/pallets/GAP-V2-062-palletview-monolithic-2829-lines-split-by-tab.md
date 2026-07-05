@@ -6,13 +6,14 @@ category: architecture-refactor
 priority: P2
 risk: high
 size: XL
-status: candidate
+status: blocked
 dependencies:
   - GAP-V2-058
 target_files:
   - src/components/Admin/Pallets/PalletDialog/PalletView/index.tsx
 created_at: 2026-07-05
 updated_at: 2026-07-05
+normalized_at: 2026-07-05
 ---
 
 # GAP-V2-062 — `PalletView/index.tsx` monolítico (2829 líneas) sin dividir por pestaña
@@ -106,6 +107,12 @@ Dado el tamaño (XL) y el historial de PL-BUILD-05, este GAP debe implementarse
 como PR aislado, sin mezclar con otros GAPs del módulo, y con lectura completa
 símbolo por símbolo antes del primer push (protocolo reforzado de CLAUDE.md
 § "Eliminar @ts-nocheck de un archivo grande").
+
+**Normalización (gap-normalizer, 2026-07-05):** marcado `blocked` por dos motivos
+independientes: (1) `size: XL` no puede marcarse `ready` sin autorización
+explícita de Jose (regla dura de `gap-normalizer.md`); (2) depende
+funcionalmente de GAP-V2-058, que a su vez está `blocked` por la misma razón de
+tamaño (L). GAP-V2-065 depende de este GAP y hereda el mismo bloqueo en cascada.
 
 ## Resultado
 

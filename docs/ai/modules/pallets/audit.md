@@ -6,14 +6,28 @@
 ## NEXT ACTION
 
 ```text
-Pasada 1 completa: 3 carriles ejecutados, 22 GAP candidates escritos en
-docs/ai/gaps/pallets/. Pendiente: normalizar (gap-normalizer, >15 candidatos)
-y regenerar el registry.
+Pasada 1 completa y normalizada: 22 GAP candidates → 21 GAPs finales
+(gap-normalizer fusionó 2 pares duplicados entre carriles y dividió 1
+sobredimensionado). Registry regenerado: 14 ready, 7 blocked, 0 later,
+0 rejected (+2 archivos rejected como registro de fusión, no hallazgos
+descartados).
 
-Ejecutar tras normalizar:
-/implement-next module=pallets category=domain-business limit=1 risk=high
-  → empezar por GAP-V2-078 (GS1-128 AI incorrecto), P0 real de negocio con
-    impacto físico (lectores externos decodifican el peso x100).
+Ejecutar (orden recomendado, por severidad real):
+
+1. /implement-next module=pallets category=domain-business limit=1 risk=high
+   → GAP-V2-078 (AI GS1-128 incorrecto, peso decodificado x100 por lectores
+     externos — impacto físico real, no solo interno)
+
+2. /implement-next module=pallets category=ux-ui limit=1 risk=low
+   → GAP-V2-068 (Eliminar todas las cajas sin confirmación en desktop)
+
+3. Resto de los 12 GAPs ready restantes (ver gaps-registry.md) por lotes
+   pequeños de category+risk=low/medium.
+
+Antes de tocar los 7 blocked: Jose debe resolver 3 preguntas de dominio
+(GAP-V2-079/081/082, ver § 9) y autorizar tamaño para 2 GAPs L/XL
+(GAP-V2-058, GAP-V2-062 — este último arrastra a GAP-V2-065) y decidir
+el rol correcto para GAP-V2-061.
 ```
 
 ---
@@ -34,7 +48,7 @@ Performance:               not_started
 Testing:                     needs_review (deuda ya documentada, sin GAP nuevo)
 Documentación:                 needs_review
 
-P0 abiertos: 2   P1 abiertos: 7   P2 abiertos: 7   P3 abiertos: 6
+P0 abiertos: 2   P1 abiertos: 7   P2 abiertos: 5   P3 abiertos: 7
 
 Estado de auditoría:      done (pasada 1, alcance: creación/edición)
 Estado de implementación: not_started
@@ -206,7 +220,36 @@ ui-audit-agent              → GAP-V2-068 .. GAP-V2-077
 domain-business-auditor        → GAP-V2-078 .. GAP-V2-087
 ```
 
-{lista final tras normalizar, Fase 6}
+Tras `gap-normalizer` (22 candidatos → 21 GAPs finales, ver `gaps-registry.md` para
+el detalle completo):
+
+**Fusiones:**
+- GAP-V2-060 (code-audit-agent) + GAP-V2-071 (ui-audit-agent) → único GAP en
+  GAP-V2-060 (`PalletLabelDialog` `useIsMobile()` sin guard), categoría final
+  `a11y-responsive`, P1, `ready`. GAP-V2-071 reescrito como `rejected` (absorbido).
+- GAP-V2-063 (code-audit-agent) + GAP-V2-070 (ui-audit-agent) → único GAP en
+  GAP-V2-063 (`PalletTimeline` usa `<Loader>` en vez de `Skeleton`), categoría
+  `ux-ui`, P1, `ready`. GAP-V2-070 reescrito como `rejected` (absorbido).
+
+**División:** GAP-V2-063 original mezclaba 2 problemas — se separó la parte de
+migración `.jsx`→`.tsx` (con `.d.ts` manual) en un GAP nuevo: GAP-V2-067
+(`PalletTimeline` migración a TSX nativo), `code-quality`, P3, `ready`.
+
+**Ready (14):** GAP-V2-059, 060, 063, 064, 066, 067, 068, 069, 072, 073, 074, 075,
+078, 080.
+
+**Blocked (7):**
+- GAP-V2-058 (L) — migrar `usePallet` a TanStack Query, requiere autorización de
+  tamaño.
+- GAP-V2-061 — confirmar rol correcto para borrar imágenes de palet.
+- GAP-V2-062 (XL) — split de `PalletView/index.tsx`, requiere autorización de tamaño.
+- GAP-V2-065 — bloqueado en cascada por depender de GAP-V2-062.
+- GAP-V2-079 — Opción A (quitar "peso bruto" por caja) vs B (calcularlo real),
+  pendiente de decisión de Jose.
+- GAP-V2-081 — pendiente de confirmar si el backend ya valida producto-pedido.
+- GAP-V2-082 — depende de GAP-V2-079 + pregunta sobre tara fija/variable por envase.
+
+**Rejected por fusión (2, no son hallazgos descartados):** GAP-V2-070, GAP-V2-071.
 
 ## 8. GAPs resueltos o descartados
 

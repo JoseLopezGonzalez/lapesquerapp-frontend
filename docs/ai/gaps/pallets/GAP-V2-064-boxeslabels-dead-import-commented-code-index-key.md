@@ -6,12 +6,13 @@ category: code-quality
 priority: P3
 risk: low
 size: S
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/components/Admin/Pallets/PalletDialog/PalletView/BoxesLabels/index.js
 created_at: 2026-07-05
 updated_at: 2026-07-05
+normalized_at: 2026-07-05
 ---
 
 # GAP-V2-064 — `BoxesLabels/index.js`: limpieza de calidad + migración a TSX
@@ -96,7 +97,8 @@ npm run test:run
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Normalización (gap-normalizer, 2026-07-05):** contenido completo, sin
+solapamiento con otros candidatos — marcado `ready` sin cambios de fondo.
 
 ## Resultado
 

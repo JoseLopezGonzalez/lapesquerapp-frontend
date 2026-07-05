@@ -6,13 +6,14 @@ category: architecture-refactor
 priority: P3
 risk: medium
 size: M
-status: candidate
+status: blocked
 dependencies:
   - GAP-V2-062
 target_files:
   - src/components/Admin/Pallets/PalletDialog/PalletView/index.tsx
 created_at: 2026-07-05
 updated_at: 2026-07-05
+normalized_at: 2026-07-05
 ---
 
 # GAP-V2-065 — `PalletView` importa y llama services directamente, saltándose la capa de hooks
@@ -92,7 +93,11 @@ npm run test:run
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Normalización (gap-normalizer, 2026-07-05):** marcado `blocked` — depende de
+GAP-V2-062 (división de `PalletView/index.tsx`), que a su vez está `blocked` por
+tamaño XL pendiente de autorización de Jose. Este GAP hereda el bloqueo en
+cascada; no tiene sentido implementarlo antes de que se decida si/cuándo se
+divide el archivo contenedor.
 
 ## Resultado
 

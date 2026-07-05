@@ -6,7 +6,7 @@ category: architecture-refactor
 priority: P1
 risk: high
 size: L
-status: candidate
+status: blocked
 dependencies: []
 target_files:
   - src/hooks/usePallet.ts
@@ -15,6 +15,7 @@ target_files:
   - src/components/Admin/Pallets/PalletDialog/MobilePalletView/index.tsx
 created_at: 2026-07-05
 updated_at: 2026-07-05
+normalized_at: 2026-07-05
 ---
 
 # GAP-V2-058 — usePallet bypasses TanStack Query and is called twice per dialog open
@@ -102,7 +103,13 @@ npm run test:run
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Normalización (gap-normalizer, 2026-07-05):** contenido completo y verificable
+(criterios de aceptación y plan de validación claros), pero `size: L` no puede
+marcarse `ready` sin autorización explícita de Jose (regla dura de
+`.claude/agents/gap-normalizer.md`). Marcado `blocked` únicamente por esa razón —
+no falta información técnica. GAP-V2-062 y GAP-V2-065 dependen indirectamente de
+este GAP (062 lo declara como dependencia explícita); su desbloqueo también
+espera a esta decisión de tamaño.
 
 ## Resultado
 

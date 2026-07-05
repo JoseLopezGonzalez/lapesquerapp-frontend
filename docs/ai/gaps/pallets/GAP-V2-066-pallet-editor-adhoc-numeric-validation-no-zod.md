@@ -6,7 +6,7 @@ category: code-quality
 priority: P3
 risk: low
 size: M
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/hooks/pallets/usePalletSave.ts
@@ -14,6 +14,7 @@ target_files:
   - src/hooks/pallets/usePalletBoxOperations.ts
 created_at: 2026-07-05
 updated_at: 2026-07-05
+normalized_at: 2026-07-05
 ---
 
 # GAP-V2-066 — Validación numérica del editor de palet sin esquema estructurado (Zod)
@@ -94,7 +95,15 @@ npm run test:run
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Normalización (gap-normalizer, 2026-07-05):** marcado `ready`. Relacionado con
+GAP-V2-080 (bug concreto: alta manual/promedio permite peso ≤0) — comparten
+`usePalletBoxCreation.ts`, pero son problemas de tipo distinto (este es una
+refactorización DRY de validación; GAP-V2-080 es un bug de validación ausente con
+prioridad más alta). No se establece dependencia formal entre ambos: GAP-V2-080
+puede y debe corregirse primero sin esperar a este refactor, dado que tiene P1
+frente al P3 de este GAP. Implementar este GAP después beneficiará
+automáticamente a GAP-V2-080 si aún no se ha corregido, pero no es obligatorio en
+ese orden.
 
 ## Resultado
 
