@@ -9,6 +9,14 @@
 
 ## Módulo activo
 
+**dashboard-home — nueva auditoría (2026-07-05):** primera pasada de
+`/deep-audit-module` completa. Solo carril `ui-audit-agent` sobre la superficie
+Admin/Dirección (Jose limitó el alcance explícitamente — el resto de
+dashboards de rol y carriles quedan pendientes). 9 GAPs `ready`, 0 `blocked`.
+Ver `docs/ai/modules/dashboard-home/audit.md` para el detalle completo. No
+compite en prioridad con `pallets` (backlog mucho mayor, ver abajo) — Jose
+decide cuál implementar primero.
+
 pallets (Palets) — 2 pasadas de `/deep-audit-module` completas (pasada 1:
 pantalla de creación/edición, desktop + mobile; pasada 2: listado, movimientos
 de almacén, vinculación masiva desde pedido) + los 6 `blocked` de la pasada 2
@@ -227,6 +235,16 @@ el módulo. Todo lo demás ya es `done` (37) o `rejected` (3).
 
 ## Acción recomendada
 
+**Opción rápida — `dashboard-home` (9 GAPs `ready`, módulo pequeño, sin bloqueos):**
+
+```text
+/implement-next module=dashboard-home category=ux-ui
+```
+
+Incluye el único P0 del módulo (GAP-V2-004, `CompanySetupAlert` solapado con
+`BottomNav` en mobile). GAP-V2-003 es size L (18 archivos) — valorar dividir
+al implementar.
+
 **Prioridad — `pallets`:** empezar por el P0 de dominio, mayor riesgo (impacto físico
 en lectores externos, no solo interno):
 
@@ -283,6 +301,9 @@ Los 16 lotes de `/implement-next` de la pasada 2026-07-02 cerraron `GAP-V2-002`,
 
 ## Archivos clave
 
+- `docs/ai/modules/dashboard-home/audit.md`
+- `docs/ai/modules/dashboard-home/gaps-registry.md`
+- `docs/ai/gaps/dashboard-home/GAP-V2-{001..009}.md` (9 archivos, todos `ready`)
 - `docs/ai/modules/pallets/audit.md`
 - `docs/ai/modules/pallets/gaps-registry.md`
 - `docs/ai/gaps/pallets/GAP-V2-{058..067,068..069,072..082}.md` (21 archivos vivos +
@@ -307,6 +328,16 @@ Los 16 lotes de `/implement-next` de la pasada 2026-07-02 cerraron `GAP-V2-002`,
 ## Estado resumido
 
 ```text
+dashboard-home: audit_pass_1_done (2026-07-05) → 1_lane_executed (ui-audit-agent,
+solo superficie Admin/Dirección, alcance limitado por Jose) → 8_candidates →
+2_decisiones_de_producto_con_jose (OrdersProfitabilityTimelineCard: integrar →
+GAP-V2-009 nuevo; NewLabelingFeatureCard: eliminar → GAP-V2-006 reescrito) →
+normalizado_en_hilo_principal (≤15 candidatos, sin gap-normalizer) → 9 GAPs,
+todos ready → registry: 9 ready, 0 blocked, 0 done, 0 later, 0 rejected.
+Pendiente: resto de superficies (Comercial, Operario/Almacén, Field) y resto de
+carriles (code-audit-agent, domain-business-auditor,
+permissions-multitenant-auditor) sobre Admin/Dirección.
+
 pallets: audit_pass_1_done → 3_lanes_executed → 22_candidates → gap-normalizer
 (2 fusiones, 1 split) → 21 GAPs → jose_resolved_7_blocked (2026-07-05) → pass_1
 registry: 20 ready, 0 blocked, 0 done, 0 later, 3 rejected

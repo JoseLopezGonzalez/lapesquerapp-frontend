@@ -7,15 +7,21 @@
 
 ```text
 Ejecutar:
-Pendiente de aprobación de Jose sobre alcance (superficies × carriles) — Fase 3 del skill deep-audit-module.
+/implement-next module=dashboard-home category=ux-ui
+(también hay 2 GAPs de category a11y-responsive: GAP-V2-004, GAP-V2-007)
 
 Contexto:
-Primera auditoría del módulo. Mapeo de superficie completado (Fase 2). El módulo
-"dashboard-home" en realidad son 4 dashboards de rol distintos que reutilizan
-piezas entre sí, más un dashboard de superadmin desconectado.
+Primera pasada de auditoría cerrada: carril ui-audit-agent sobre el dashboard
+Admin/Dirección. 9 GAPs ready, ninguno bloqueado. El resto de superficies
+(Comercial, Operario/Almacén, Field) y el resto de carriles (code-audit-agent,
+domain-business-auditor, permissions-multitenant-auditor) quedan pendientes
+para próximas pasadas — no se han auditado todavía.
 
 Restricciones:
-No lanzar carriles hasta confirmación explícita del alcance.
+GAP-V2-003 es size L (18 archivos) — valorar dividir en sub-GAPs por familia de
+widget antes o durante la implementación. No reabrir la decisión ya tomada sobre
+OrdersProfitabilityTimelineCard (integrar, GAP-V2-009) ni NewLabelingFeatureCard
+(eliminar, GAP-V2-006).
 ```
 
 ---
@@ -23,22 +29,22 @@ No lanzar carriles hasta confirmación explícita del alcance.
 ## 1. Estado del módulo
 
 ```text
-Estado general: not_started
+Estado general: ready_for_implementation
 
 Funcional:        not_started
-UI:                not_started
-UX:                 not_started
+UI:                auditing
+UX:                 auditing
 Código:              not_started
 Arquitectura:         not_started
-Responsive:            not_started
-Accesibilidad:           not_started
+Responsive:            partial
+Accesibilidad:           partial
 Performance:               not_started
 Testing:                     not_started
 Documentación:                 not_started
 
-P0 abiertos: 0   P1 abiertos: 0   P2 abiertos: 0   P3 abiertos: 0
+P0 abiertos: 1   P1 abiertos: 3   P2 abiertos: 3   P3 abiertos: 2
 
-Estado de auditoría:      not_started
+Estado de auditoría:      in_progress
 Estado de implementación: not_started
 Estado de verificación:   not_started
 ```
@@ -49,28 +55,36 @@ Superficies × carriles. Estados: `pending · partial · audited · needs_reaudi
 
 | Superficie | ux-ui | code-quality | architecture-refactor | data-api | domain-business | a11y-responsive |
 |---|---|---|---|---|---|---|
-| dashboard admin/dirección (`Admin/Dashboard`) | pending | pending | pending | pending | pending | pending |
+| dashboard admin/dirección (`Admin/Dashboard`) | audited | pending | pending | pending | pending | audited |
 | dashboard comercial (`ComercialDashboard`) | pending | pending | pending | pending | pending | pending |
 | dashboard operario/almacén (`OperarioDashboard`) | pending | pending | pending | pending | pending | pending |
 | dashboard field/repartidor (`FieldDashboard`) | pending | pending | pending | pending | pending | pending |
 | production (sin home propia) | pending | pending | not_applicable | not_applicable | not_applicable | not_applicable |
-| widgets KPI (cards) | pending | pending | pending | pending | pending | pending |
-| gráficos (Recharts) | pending | pending | not_applicable | pending | pending | pending |
-| estados loading | pending | pending | not_applicable | not_applicable | not_applicable | pending |
+| widgets KPI (cards) | audited | pending | pending | pending | pending | audited |
+| gráficos (Recharts) | audited | pending | not_applicable | pending | pending | audited |
+| estados loading | audited | pending | not_applicable | not_applicable | not_applicable | pending |
 | estados empty | pending | pending | not_applicable | not_applicable | not_applicable | pending |
-| estados error | pending | pending | not_applicable | pending | not_applicable | pending |
+| estados error | audited | pending | not_applicable | pending | not_applicable | pending |
 | permisos/roles (routing por rol) | pending | not_applicable | pending | pending | not_applicable | not_applicable |
 | integración API | not_applicable | pending | pending | pending | pending | not_applicable |
 | componentización / duplicación entre dashboards | not_applicable | pending | pending | not_applicable | not_applicable | not_applicable |
 | dominio de negocio (KPIs pesca/congelados) | not_applicable | not_applicable | not_applicable | pending | pending | not_applicable |
-| dead code (huérfanos detectados en mapeo) | not_applicable | pending | pending | not_applicable | not_applicable | not_applicable |
+| dead code (huérfanos detectados en mapeo) | audited | pending | pending | not_applicable | not_applicable | not_applicable |
 
 ## 3. Resumen ejecutivo
 
-Primera pasada: solo mapeo de superficie (Fase 2), sin auditoría de contenido todavía.
-Hallazgo temprano relevante: el componente `CrmDashboardWidgets.jsx` parece dead code,
-`OrdersProfitabilityTimelineCard` no está importado en `Dashboard/index.tsx`, y `production/`
-no tiene página home propia. Pendiente de aprobación de alcance para lanzar carriles.
+Primera pasada auditada (carril `ui-audit-agent`, superficie Admin/Dirección únicamente):
+9 GAPs `ready`, ninguno bloqueado. El hallazgo más sistémico es que la mayoría de widgets
+ignoran el `error` que sus propios hooks ya exponen (GAP-V2-003, confunde fallo de API con
+"sin datos") y varios widgets usan spinner/`Loader2` en vez de `Skeleton` como loading
+primario (GAP-V2-001/002), rompiendo el patrón que sí siguen correctamente
+`TransportRadarChart` y `DailyCalibersBySpeciesCard`. Único P0: `CompanySetupAlert` se
+solapa con el `BottomNav` en mobile (GAP-V2-004). Se resolvieron 2 dudas de producto con
+Jose: `OrdersProfitabilityTimelineCard` se integra (GAP-V2-009, oculto para `supervisor`)
+y `NewLabelingFeatureCard` se elimina (GAP-V2-006, ya no es "nueva funcionalidad").
+Quedan pendientes: el resto de superficies (Comercial, Operario/Almacén, Field) y el resto
+de carriles (code-audit-agent, domain-business-auditor, permissions-multitenant-auditor)
+sobre esta misma superficie.
 
 ## 4. Baseline anterior
 
@@ -115,25 +129,51 @@ Tipos:
 
 ## 6. Hallazgos vigentes
 
-{pendiente — se completa tras lanzar carriles}
+Carril `ui-audit-agent`, superficie Admin/Dirección:
+
+- 🔴 P0 — `CompanySetupAlert.tsx` (`fixed right-4 bottom-4 z-50 w-96`) se solapa con
+  `BottomNav` (mismo z-index) y desborda viewport <400px → GAP-V2-004.
+- 🔴 P1 — `SalesChart`, `ReceptionChart`, `DispatchChart`, `AuxiliaryLinesChartCard`
+  usan `Loader2` + texto en vez de `Skeleton` → GAP-V2-001.
+- 🔴 P1 — `OrderRanking`, `SalesBySalespersonPieChart`, `AuxiliaryLinesByProductCard`,
+  `AuxiliaryLinesByCustomerCard` usan `<Loader>` (reservado para session gates) →
+  GAP-V2-002.
+- 🔴 P1 — de ~18 widgets, solo `DailyCalibersBySpeciesCard` renderiza el `error` que
+  su hook expone; el resto confunde fallo de API con "sin datos" → GAP-V2-003 (size L,
+  18 archivos, valorar split en implementación).
+- 🟡 P2 — `CompanySetupAlert` sin affordance de cierre → GAP-V2-005.
+- 🟡 P2 — tooltips "Info" inconsistentes: `<span>` no focuseable en `CurrentStockCard`,
+  `TotalAmountSoldCard`, `AuxiliaryLinesTotalCard` vs. `<button aria-label>` correcto en
+  otros widgets → GAP-V2-007.
+- 🟡 P2 — `OrdersProfitabilityTimelineCard` nunca integrado en el grid (para ningún rol,
+  no es ocultamiento intencional) → GAP-V2-009 (integrar, oculto para supervisor).
+- 🟢 P3 — `NewLabelingFeatureCard` código muerto, funcionalidad ya no es "nueva" →
+  GAP-V2-006 (eliminar).
+- 🟢 P3 — grid de KPI con 5 tarjetas en `2xl:grid-cols-4`, última fila desequilibrada →
+  GAP-V2-008.
 
 ## 7. GAPs generados/actualizados
 
-{pendiente}
+Ver `docs/ai/gaps/dashboard-home/gaps-registry.md` (regenerado con
+`scripts/build-gaps-registry.mjs`). 9 GAPs, todos `ready`: GAP-V2-001 a GAP-V2-009.
 
 ## 8. GAPs resueltos o descartados
 
-{pendiente — primera pasada}
+Ninguno todavía — primera pasada, ningún GAP implementado aún.
 
 ## 9. Bloqueos y riesgos
 
-Esperando confirmación de Jose sobre qué superficies (roles) y carriles cubrir en esta
-primera pasada — el módulo es más amplio de lo que sugiere el nombre "dashboard-home"
-(4 dashboards de rol reales + 1 de superadmin desconectado).
+Sin bloqueos. GAP-V2-003 es size L (18 archivos) — riesgo de PR grande y difícil de
+revisar; recomendable dividir en sub-GAPs por familia de widget al implementar
+(`/implement-next` o `gap-implementor` pueden decidirlo).
 
 ## 10. Decisiones tomadas
 
-{pendiente}
+- 2026-07-05 — Jose confirma alcance de la primera pasada: solo dashboard
+  Admin/Dirección, solo carril `ui-audit-agent`.
+- 2026-07-05 — Jose confirma: `OrdersProfitabilityTimelineCard` se integra en el grid
+  (no estaba oculto por rol, era simplemente código sin conectar) → GAP-V2-009.
+- 2026-07-05 — Jose confirma: `NewLabelingFeatureCard` se elimina → GAP-V2-006.
 
 ## 11. Cambios desde la última auditoría
 
