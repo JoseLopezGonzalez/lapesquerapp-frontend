@@ -5,13 +5,52 @@
 
 ## Fecha
 
-2026-07-04
+2026-07-05
 
 ## Módulo activo
 
-orders (Pedidos) — módulo piloto
+pallets (Palets) — primera pasada de `/deep-audit-module` completa (alcance:
+pantalla de creación/edición de palet, desktop + mobile). `orders` queda en
+segundo plano con 1 solo GAP `ready` pendiente (`GAP-V2-028`, ver histórico
+más abajo).
 
 ## Fase activa
+
+Pasada 1 de `pallets` completa (2026-07-05): 3 carriles ejecutados en paralelo
+(code-audit-agent, ui-audit-agent, domain-business-auditor) sobre creación/edición
+de palet. 22 GAP candidates escritos, normalizados por `gap-normalizer` a 21 GAPs
+(2 pares fusionados, 1 dividido). Jose resolvió los 7 `blocked` en la misma sesión
+(ver `docs/ai/modules/pallets/audit.md` § 10 para el detalle de cada decisión) →
+registry final: **20 `ready`, 0 `blocked`, 0 `done`, 0 `later`, 3 `rejected`**.
+
+Dos P0 reales, primeros a implementar:
+- **GAP-V2-078** — el código de barras GS1-128 impreso en la etiqueta física de caja
+  usa el Application Identifier de precisión incorrecto (3100/3200 en vez de
+  3102/3202) — cualquier lector externo (cliente, transportista, carretilla)
+  decodifica el peso ×100. Bug de dominio con impacto físico real, no solo interno.
+- **GAP-V2-068** — "Eliminar todas las cajas" en desktop (`PalletView`) ejecuta sin
+  ningún diálogo de confirmación, a diferencia de mobile que sí lo pide.
+
+Decisiones clave que desbloquearon los 7 `blocked`:
+- GAP-V2-058 (L) y GAP-V2-062 (XL, + GAP-V2-065 en cascada) — autorizados, PRs
+  aislados, 058 antes que 062.
+- GAP-V2-061 — rol para borrar imágenes de palet = mismo que
+  `canManagePalletCostFields` (administrador/dirección/técnico).
+- GAP-V2-079 — Opción A: eliminar el campo "peso bruto" por caja del historial
+  (queda solo a nivel de palet).
+- GAP-V2-081 — **rechazado**: no hay validación backend y la lógica de negocio
+  permite intencionalmente vincular un palet a un pedido sin producto
+  coincidente (sustitución/reasignación legítima).
+- GAP-V2-082 — mantenido, re-scopeado sin depender ya de GAP-V2-079; tara
+  variable caja a caja, sin catálogo ni memoria de sesión.
+
+Patrón transversal detectado por 2 carriles independientes: `PalletView/index.tsx`
+(2829 líneas, creció desde ~1100 tras GAP-039 legacy) es monolítico y diverge del
+patrón correctamente modularizado de `MobilePalletView/*` — mismo síntoma visto
+desde código (GAP-V2-062) y desde UX (GAP-V2-068/069/070, falta de guardrails de
+confirmación/loading que sí tiene mobile).
+
+## Fase activa (histórico, sesión 2026-07-04 — módulo orders)
 
 Reconciliación 2026-07-04: Jose hizo una sesión de pareo mobile fuera del flujo
 GAP (2026-07-03 18:50 → 2026-07-04 00:52, 10 commits directos sobre `main`/rama
@@ -126,9 +165,29 @@ el módulo. Todo lo demás ya es `done` (37) o `rejected` (3).
 
 ## Acción recomendada
 
-Única vía pendiente — implementar GAP-V2-028 en pasada dedicada (autorizado, tamaño L —
-no combinar con otros GAPs en el mismo commit, ciclo completo de
-type-check/lint/test/build propio):
+**Prioridad — `pallets`:** empezar por el P0 de dominio, mayor riesgo (impacto físico
+en lectores externos, no solo interno):
+
+```text
+/implement-next module=pallets category=domain-business limit=1 risk=high
+```
+→ GAP-V2-078 (GS1-128 AI de precisión incorrecto).
+
+Seguido de cerca por el P0 de UX (acción destructiva sin confirmación):
+```text
+/implement-next module=pallets category=ux-ui limit=1 risk=low
+```
+→ GAP-V2-068 ("Eliminar todas las cajas" sin confirmación en desktop).
+
+Tras esos 2, quedan 18 GAPs `ready` más en `pallets` (ver
+`docs/ai/modules/pallets/gaps-registry.md`) — 0 `blocked`, todas las decisiones de
+Jose ya están tomadas y documentadas en `docs/ai/modules/pallets/audit.md` § 10.
+GAP-V2-058 (L) y GAP-V2-062 (XL, depende de 058) requieren PR aislado cada uno por
+el historial PL-BUILD-05 de `PalletView`.
+
+**Pendiente secundario — `orders`:** implementar GAP-V2-028 en pasada dedicada
+(autorizado, tamaño L — no combinar con otros GAPs en el mismo commit, ciclo
+completo de type-check/lint/test/build propio):
 
 ```text
 /implement-next module=orders category=architecture-refactor limit=1 risk=medium
@@ -152,6 +211,10 @@ Los 16 lotes de `/implement-next` de la pasada 2026-07-02 cerraron `GAP-V2-002`,
 
 ## Archivos clave
 
+- `docs/ai/modules/pallets/audit.md`
+- `docs/ai/modules/pallets/gaps-registry.md`
+- `docs/ai/gaps/pallets/GAP-V2-{058..067,068..069,072..082}.md` (21 archivos vivos +
+  2 marcados `rejected` como registro de fusión — ver registry para el desglose)
 - `docs/ai/modules/orders/audit.md`
 - `docs/ai/modules/orders/gaps-registry.md`
 - `docs/ai/gaps/orders/GAP-V2-{001..009,011..014,019..034,036..038,046..052,056,057}.md` (41 archivos, ver registry para el desglose ready/done/rejected)
@@ -172,5 +235,11 @@ Los 16 lotes de `/implement-next` de la pasada 2026-07-02 cerraron `GAP-V2-002`,
 ## Estado resumido
 
 ```text
-audited_ampliado → reconciled_lv9qnf_and_ewomf1 → batch_17_p1_done → blocked_resolved → batch_18_code_quality_done → batch_19_a11y_domain_ux_done → batch_20_code_quality_ux_done → batch_21_final_small_gaps_done → mobile_pairing_session_2026-07-03_04 (fuera de flujo GAP) → reconciled_2026-07-04 (GAP-V2-057 ready→done, GAP-V2-036 nota de archivo renombrado, 8 GAPs done re-verificados sin regresión) (1 ready [GAP-V2-028, L], 0 blocked, 38 done, 0 later, 3 rejected)
+pallets: audit_pass_1_done → 3_lanes_executed (code-audit-agent, ui-audit-agent,
+domain-business-auditor) → 22_candidates → gap-normalizer (2 fusiones, 1 split) →
+21 GAPs → jose_resolved_7_blocked (2026-07-05) → registry final: 20 ready, 0
+blocked, 0 done, 0 later, 3 rejected (2 por fusión + GAP-V2-081 por decisión de
+negocio real)
+
+orders: audited_ampliado → reconciled_lv9qnf_and_ewomf1 → batch_17_p1_done → blocked_resolved → batch_18_code_quality_done → batch_19_a11y_domain_ux_done → batch_20_code_quality_ux_done → batch_21_final_small_gaps_done → mobile_pairing_session_2026-07-03_04 (fuera de flujo GAP) → reconciled_2026-07-04 (GAP-V2-057 ready→done, GAP-V2-036 nota de archivo renombrado, 8 GAPs done re-verificados sin regresión) (1 ready [GAP-V2-028, L], 0 blocked, 38 done, 0 later, 3 rejected)
 ```
