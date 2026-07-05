@@ -6,7 +6,7 @@ category: code-quality
 priority: P2
 risk: medium
 size: S
-status: blocked
+status: ready
 dependencies: []
 target_files:
   - src/components/Admin/Pallets/PalletDialog/PalletView/PalletImagesTab/index.tsx
@@ -69,11 +69,12 @@ cuál sea la regla correcta.
 
 ## Solución propuesta
 
-1. Confirmar con Jose/negocio cuál es el conjunto de roles correcto para borrar
-   imágenes (¿igual a `canManagePalletCostFields`? ¿un permiso nuevo?).
-2. Añadir el helper correspondiente en `src/lib/auth/actor.ts` siguiendo el mismo
-   patrón que `canManagePalletCostFields`.
-3. Reemplazar la lógica inline en ambos archivos (`PalletImagesTab/index.tsx` y
+1. Añadir `canDeletePalletAttachment(user)` en `src/lib/auth/actor.ts` con el
+   mismo conjunto de roles que `canManagePalletCostFields`
+   (`administrador`/`direccion`/`tecnico`, confirmado por Jose el 2026-07-05 —
+   borrar una imagen es gestión de datos sensibles del palet, coherente con
+   quién gestiona costes).
+2. Reemplazar la lógica inline en ambos archivos (`PalletImagesTab/index.tsx` y
    `MobilePalletView/ImagenesTab.tsx`) por una llamada al nuevo helper.
 
 ## Criterios de aceptación
@@ -81,7 +82,9 @@ cuál sea la regla correcta.
 - [ ] Ningún archivo de Pallets calcula permisos de rol con `roles.some(...)`
       inline — todo pasa por helpers de `@/lib/auth/actor.ts`.
 - [ ] El mismo helper se usa en desktop y mobile — imposible que diverjan de nuevo.
-- [ ] Regla de negocio confirmada con Jose antes de fijar el conjunto de roles.
+- [ ] `canDeletePalletAttachment` devuelve `true` para
+      `administrador`/`direccion`/`tecnico` y `false` para el resto (incluye
+      dirección, que el código actual excluía incorrectamente).
 
 ## Plan de validación
 
@@ -100,6 +103,11 @@ conjunto de roles correcto para borrar imágenes" antes de fijar el helper en
 duplicación) es clara y no depende de nada, pero implementarla sin la decisión de
 negocio arriesga fijar una regla de permisos incorrecta con más autoridad
 (centralizada) que el bug actual. No implementar hasta tener respuesta de Jose.
+
+**Decisión de Jose (2026-07-05):** el rol correcto es el mismo que
+`canManagePalletCostFields` (`administrador`/`direccion`/`tecnico`). Esto amplía
+el acceso actual (que excluía `direccion`) — verificar que no rompe ningún test
+o expectativa de UI que asumiera lo contrario.
 
 ## Resultado
 

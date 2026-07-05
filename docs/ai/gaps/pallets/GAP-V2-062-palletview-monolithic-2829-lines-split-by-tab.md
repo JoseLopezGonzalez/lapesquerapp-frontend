@@ -6,7 +6,7 @@ category: architecture-refactor
 priority: P2
 risk: high
 size: XL
-status: blocked
+status: ready
 dependencies:
   - GAP-V2-058
 target_files:
@@ -113,6 +113,10 @@ independientes: (1) `size: XL` no puede marcarse `ready` sin autorización
 explícita de Jose (regla dura de `gap-normalizer.md`); (2) depende
 funcionalmente de GAP-V2-058, que a su vez está `blocked` por la misma razón de
 tamaño (L). GAP-V2-065 depende de este GAP y hereda el mismo bloqueo en cascada.
+
+**Decisión de Jose (2026-07-05):** autorizado. Implementar después de
+GAP-V2-058 (dependencia real, no solo de tamaño) — PR aislado, sin mezclar con
+otros GAPs, lectura completa símbolo por símbolo antes del primer push.
 
 ## Resultado
 

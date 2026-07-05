@@ -6,11 +6,9 @@
 ## NEXT ACTION
 
 ```text
-Pasada 1 completa y normalizada: 22 GAP candidates → 21 GAPs finales
-(gap-normalizer fusionó 2 pares duplicados entre carriles y dividió 1
-sobredimensionado). Registry regenerado: 14 ready, 7 blocked, 0 later,
-0 rejected (+2 archivos rejected como registro de fusión, no hallazgos
-descartados).
+Todos los bloqueos resueltos (2026-07-05): Jose respondió las 7 preguntas
+pendientes (ver § 10). Registry regenerado: 20 ready, 0 blocked, 0 done,
+0 later, 3 rejected.
 
 Ejecutar (orden recomendado, por severidad real):
 
@@ -21,13 +19,13 @@ Ejecutar (orden recomendado, por severidad real):
 2. /implement-next module=pallets category=ux-ui limit=1 risk=low
    → GAP-V2-068 (Eliminar todas las cajas sin confirmación en desktop)
 
-3. Resto de los 12 GAPs ready restantes (ver gaps-registry.md) por lotes
-   pequeños de category+risk=low/medium.
+3. GAP-V2-058 (L) en PR aislado, seguido de GAP-V2-062 (XL, depende de 058) y
+   GAP-V2-065 (depende de 062) — cada uno su propio PR, sin mezclar con otros
+   GAPs (protocolo reforzado de CLAUDE.md, historial PL-BUILD-05 en este mismo
+   archivo).
 
-Antes de tocar los 7 blocked: Jose debe resolver 3 preguntas de dominio
-(GAP-V2-079/081/082, ver § 9) y autorizar tamaño para 2 GAPs L/XL
-(GAP-V2-058, GAP-V2-062 — este último arrastra a GAP-V2-065) y decidir
-el rol correcto para GAP-V2-061.
+4. Resto de los GAPs ready pequeños (ver gaps-registry.md) por lotes de
+   category+risk=low/medium.
 ```
 
 ---
@@ -48,7 +46,7 @@ Performance:               not_started
 Testing:                     needs_review (deuda ya documentada, sin GAP nuevo)
 Documentación:                 needs_review
 
-P0 abiertos: 2   P1 abiertos: 7   P2 abiertos: 5   P3 abiertos: 7
+P0 abiertos: 2   P1 abiertos: 7   P2 abiertos: 4   P3 abiertos: 7
 
 Estado de auditoría:      done (pasada 1, alcance: creación/edición)
 Estado de implementación: not_started
@@ -235,21 +233,18 @@ el detalle completo):
 migración `.jsx`→`.tsx` (con `.d.ts` manual) en un GAP nuevo: GAP-V2-067
 (`PalletTimeline` migración a TSX nativo), `code-quality`, P3, `ready`.
 
-**Ready (14):** GAP-V2-059, 060, 063, 064, 066, 067, 068, 069, 072, 073, 074, 075,
-078, 080.
+**Ready (20, tras resolver los 7 blocked el 2026-07-05):** GAP-V2-058, 059, 060,
+061, 062, 063, 064, 065, 066, 067, 068, 069, 072, 073, 074, 075, 078, 079, 080, 082.
 
-**Blocked (7):**
-- GAP-V2-058 (L) — migrar `usePallet` a TanStack Query, requiere autorización de
-  tamaño.
-- GAP-V2-061 — confirmar rol correcto para borrar imágenes de palet.
-- GAP-V2-062 (XL) — split de `PalletView/index.tsx`, requiere autorización de tamaño.
-- GAP-V2-065 — bloqueado en cascada por depender de GAP-V2-062.
-- GAP-V2-079 — Opción A (quitar "peso bruto" por caja) vs B (calcularlo real),
-  pendiente de decisión de Jose.
-- GAP-V2-081 — pendiente de confirmar si el backend ya valida producto-pedido.
-- GAP-V2-082 — depende de GAP-V2-079 + pregunta sobre tara fija/variable por envase.
+**Rejected (3):**
+- GAP-V2-070, GAP-V2-071 — absorbidos por fusión en GAP-V2-063 y GAP-V2-060
+  respectivamente (no son hallazgos descartados).
+- GAP-V2-081 — decisión de negocio de Jose: vincular un palet a un pedido sin
+  coincidencia de producto es comportamiento intencional (sustitución/
+  reasignación legítima), no un bug. No reabrir sin evidencia de que la
+  decisión de producto cambió.
 
-**Rejected por fusión (2, no son hallazgos descartados):** GAP-V2-070, GAP-V2-071.
+Ver § 10 para el detalle de cada decisión que desbloqueó los 7 GAPs.
 
 ## 8. GAPs resueltos o descartados
 
@@ -278,13 +273,8 @@ migración `.jsx`→`.tsx` (con `.d.ts` manual) en un GAP nuevo: GAP-V2-067
   el GET inicial del palet ya oculta campos de coste a nivel de backend para roles sin
   permiso. Esto es competencia de `permissions-multitenant-auditor`, no lanzado en esta
   pasada — considerar para una futura pasada si Jose lo prioriza.
-- 3 preguntas de domain-business-auditor pendientes de respuesta de Jose (no bloquean el
-  resto de la auditoría, sí condicionan el alcance de GAP-V2-081/082):
-  1. ¿Existe validación backend que impida vincular un palet a un pedido cuyo producto no
-     está en ninguna línea?
-  2. ¿El "peso bruto" por caja es un dato que el negocio necesita a nivel de caja
-     individual, o solo a nivel de palet (donde sí se calcula bien)?
-  3. ¿La tara de caja es un valor fijo por tipo de envase o variable?
+- ~~3 preguntas de domain-business-auditor pendientes de respuesta de Jose~~ —
+  resueltas el 2026-07-05, ver § 10.
 
 ## 10. Decisiones tomadas
 
@@ -295,6 +285,24 @@ migración `.jsx`→`.tsx` (con `.d.ts` manual) en un GAP nuevo: GAP-V2-067
 - 2026-07-05 — Jose confirma carriles: los 3 por defecto del piloto (code-audit-agent,
   ui-audit-agent, domain-business-auditor). No se añade permissions-multitenant-auditor
   ni design-quality-auditor en esta pasada.
+- 2026-07-05 — Jose resuelve los 7 `blocked` de la normalización:
+  1. **GAP-V2-058 (L) y GAP-V2-062 (XL, + GAP-V2-065 en cascada):** autorizados
+     ambos. Implementar en PRs aislados, GAP-V2-058 primero (GAP-V2-062 depende
+     de él).
+  2. **GAP-V2-061 (rol para borrar imágenes de palet):** mismo conjunto que
+     `canManagePalletCostFields` (administrador/dirección/técnico) — amplía el
+     acceso actual, que excluía incorrectamente a dirección.
+  3. **GAP-V2-079 (peso bruto por caja):** Opción A — eliminar el campo del
+     historial de trazabilidad a nivel de caja individual (queda solo a nivel
+     de palet, donde sí es real).
+  4. **GAP-V2-081 (validación producto-pedido al vincular):** no existe
+     validación backend, y la lógica de negocio permite deliberadamente
+     vincular un palet a un pedido sin producto coincidente (sustitución/
+     reasignación legítima) — GAP rechazado, es comportamiento intencional.
+  5. **GAP-V2-082 (tara en modo manual):** se mantiene como mejora de UX,
+     re-scopeada para no depender ya de GAP-V2-079 (con Opción A, la mejora de
+     tara sigue siendo válida por sí misma). Tara variable caja a caja, sin
+     catálogo de envase ni memoria de sesión entre altas.
 
 ## 11. Cambios desde la última auditoría
 

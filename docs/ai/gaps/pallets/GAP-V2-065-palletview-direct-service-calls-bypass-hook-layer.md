@@ -6,7 +6,7 @@ category: architecture-refactor
 priority: P3
 risk: medium
 size: M
-status: blocked
+status: ready
 dependencies:
   - GAP-V2-062
 target_files:
@@ -98,6 +98,9 @@ GAP-V2-062 (división de `PalletView/index.tsx`), que a su vez está `blocked` p
 tamaño XL pendiente de autorización de Jose. Este GAP hereda el bloqueo en
 cascada; no tiene sentido implementarlo antes de que se decida si/cuándo se
 divide el archivo contenedor.
+
+**Decisión de Jose (2026-07-05):** autorizado junto con GAP-V2-062. Implementar
+después de GAP-V2-062 (dependencia real de orden, no solo de tamaño).
 
 ## Resultado
 

@@ -19,10 +19,11 @@ más abajo).
 Pasada 1 de `pallets` completa (2026-07-05): 3 carriles ejecutados en paralelo
 (code-audit-agent, ui-audit-agent, domain-business-auditor) sobre creación/edición
 de palet. 22 GAP candidates escritos, normalizados por `gap-normalizer` a 21 GAPs
-(2 pares fusionados, 1 dividido) → 14 `ready`, 7 `blocked`, 0 `later`, 0 `rejected`
-(+ 2 archivos marcados `rejected` como registro de fusión, no hallazgos descartados).
+(2 pares fusionados, 1 dividido). Jose resolvió los 7 `blocked` en la misma sesión
+(ver `docs/ai/modules/pallets/audit.md` § 10 para el detalle de cada decisión) →
+registry final: **20 `ready`, 0 `blocked`, 0 `done`, 0 `later`, 3 `rejected`**.
 
-Dos P0 reales:
+Dos P0 reales, primeros a implementar:
 - **GAP-V2-078** — el código de barras GS1-128 impreso en la etiqueta física de caja
   usa el Application Identifier de precisión incorrecto (3100/3200 en vez de
   3102/3202) — cualquier lector externo (cliente, transportista, carretilla)
@@ -30,19 +31,24 @@ Dos P0 reales:
 - **GAP-V2-068** — "Eliminar todas las cajas" en desktop (`PalletView`) ejecuta sin
   ningún diálogo de confirmación, a diferencia de mobile que sí lo pide.
 
+Decisiones clave que desbloquearon los 7 `blocked`:
+- GAP-V2-058 (L) y GAP-V2-062 (XL, + GAP-V2-065 en cascada) — autorizados, PRs
+  aislados, 058 antes que 062.
+- GAP-V2-061 — rol para borrar imágenes de palet = mismo que
+  `canManagePalletCostFields` (administrador/dirección/técnico).
+- GAP-V2-079 — Opción A: eliminar el campo "peso bruto" por caja del historial
+  (queda solo a nivel de palet).
+- GAP-V2-081 — **rechazado**: no hay validación backend y la lógica de negocio
+  permite intencionalmente vincular un palet a un pedido sin producto
+  coincidente (sustitución/reasignación legítima).
+- GAP-V2-082 — mantenido, re-scopeado sin depender ya de GAP-V2-079; tara
+  variable caja a caja, sin catálogo ni memoria de sesión.
+
 Patrón transversal detectado por 2 carriles independientes: `PalletView/index.tsx`
 (2829 líneas, creció desde ~1100 tras GAP-039 legacy) es monolítico y diverge del
 patrón correctamente modularizado de `MobilePalletView/*` — mismo síntoma visto
-desde código (GAP-V2-062, size XL, `blocked` por tamaño hasta autorización de Jose)
-y desde UX (GAP-V2-068/069/070, falta de guardrails de confirmación/loading que sí
-tiene mobile).
-
-7 `blocked` pendientes de decisión de Jose (ver `docs/ai/modules/pallets/audit.md`
-§ 9 para las 3 preguntas de dominio y § "GAPs L/XL" para los 2 que requieren
-autorización de tamaño): GAP-V2-058 (L, TanStack Query en `usePallet`), GAP-V2-061
-(rol correcto para borrar imágenes), GAP-V2-062 (XL, split de `PalletView`),
-GAP-V2-065 (depende de 062), GAP-V2-079 (peso bruto por caja), GAP-V2-081
-(validación producto-pedido), GAP-V2-082 (depende de 079).
+desde código (GAP-V2-062) y desde UX (GAP-V2-068/069/070, falta de guardrails de
+confirmación/loading que sí tiene mobile).
 
 ## Fase activa (histórico, sesión 2026-07-04 — módulo orders)
 
@@ -173,9 +179,11 @@ Seguido de cerca por el P0 de UX (acción destructiva sin confirmación):
 ```
 → GAP-V2-068 ("Eliminar todas las cajas" sin confirmación en desktop).
 
-Tras esos 2, quedan 12 GAPs `ready` más en `pallets` (ver
-`docs/ai/modules/pallets/gaps-registry.md`) y 7 `blocked` pendientes de que Jose
-resuelva las preguntas de dominio/tamaño en `docs/ai/modules/pallets/audit.md` § 9.
+Tras esos 2, quedan 18 GAPs `ready` más en `pallets` (ver
+`docs/ai/modules/pallets/gaps-registry.md`) — 0 `blocked`, todas las decisiones de
+Jose ya están tomadas y documentadas en `docs/ai/modules/pallets/audit.md` § 10.
+GAP-V2-058 (L) y GAP-V2-062 (XL, depende de 058) requieren PR aislado cada uno por
+el historial PL-BUILD-05 de `PalletView`.
 
 **Pendiente secundario — `orders`:** implementar GAP-V2-028 en pasada dedicada
 (autorizado, tamaño L — no combinar con otros GAPs en el mismo commit, ciclo
@@ -229,7 +237,9 @@ Los 16 lotes de `/implement-next` de la pasada 2026-07-02 cerraron `GAP-V2-002`,
 ```text
 pallets: audit_pass_1_done → 3_lanes_executed (code-audit-agent, ui-audit-agent,
 domain-business-auditor) → 22_candidates → gap-normalizer (2 fusiones, 1 split) →
-21 GAPs (14 ready, 7 blocked, 0 later, 0 rejected, +2 rejected-por-fusión)
+21 GAPs → jose_resolved_7_blocked (2026-07-05) → registry final: 20 ready, 0
+blocked, 0 done, 0 later, 3 rejected (2 por fusión + GAP-V2-081 por decisión de
+negocio real)
 
 orders: audited_ampliado → reconciled_lv9qnf_and_ewomf1 → batch_17_p1_done → blocked_resolved → batch_18_code_quality_done → batch_19_a11y_domain_ux_done → batch_20_code_quality_ux_done → batch_21_final_small_gaps_done → mobile_pairing_session_2026-07-03_04 (fuera de flujo GAP) → reconciled_2026-07-04 (GAP-V2-057 ready→done, GAP-V2-036 nota de archivo renombrado, 8 GAPs done re-verificados sin regresión) (1 ready [GAP-V2-028, L], 0 blocked, 38 done, 0 later, 3 rejected)
 ```

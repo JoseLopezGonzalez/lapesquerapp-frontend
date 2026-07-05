@@ -6,7 +6,7 @@ category: architecture-refactor
 priority: P1
 risk: high
 size: L
-status: blocked
+status: ready
 dependencies: []
 target_files:
   - src/hooks/usePallet.ts
@@ -110,6 +110,9 @@ marcarse `ready` sin autorización explícita de Jose (regla dura de
 no falta información técnica. GAP-V2-062 y GAP-V2-065 dependen indirectamente de
 este GAP (062 lo declara como dependencia explícita); su desbloqueo también
 espera a esta decisión de tamaño.
+
+**Decisión de Jose (2026-07-05):** autorizado. Implementar como PR aislado
+(no combinar con otros GAPs del módulo en el mismo commit).
 
 ## Resultado
 
