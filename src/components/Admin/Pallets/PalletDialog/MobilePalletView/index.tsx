@@ -35,6 +35,7 @@ import ResumenTab from './ResumenTab';
 import ImagenesTab from './ImagenesTab';
 import EliminarTab from './EliminarTab';
 import HistorialTab from './HistorialTab';
+import type { RawOrderOption } from '../utils/orderOptions';
 
 const QrScannerWidget = dynamic(
   () => import('@/components/Shared/QrScannerWidget').then((m) => ({ default: m.QrScannerWidget })),
@@ -302,13 +303,7 @@ function MobilePalletViewInner({
           <PedidoScreen
             temporalPallet={temporalPallet}
             onEditOrderId={(id) => editPallet.orderId(id)}
-            activeOrdersOptions={
-              activeOrdersOptions as Array<{
-                id: string | number;
-                name: string;
-                load_date: string;
-              }>
-            }
+            activeOrdersOptions={activeOrdersOptions as RawOrderOption[]}
             activeOrdersLoading={activeOrdersLoading}
             orderIdBlocked={orderIdBlocked}
             onBack={goToHub}

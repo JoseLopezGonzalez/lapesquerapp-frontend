@@ -12,21 +12,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { formatDateShort } from '@/helpers/formats/dates/formatDates';
 import type { PalletState } from '@/hooks/pallets/palletHelpers';
-
-interface OrderOption {
-  id: string | number;
-  name: string;
-  load_date: string;
-}
+import { normalizeOrderOptions, type RawOrderOption } from '../utils/orderOptions';
 
 interface InfoTabProps {
   temporalPallet: PalletState;
   onEditObservations: (obs: string) => void;
   onEditPalletTareWeightKg: (value: string) => void;
   onEditOrderId: (id: number | string | null) => void;
-  activeOrdersOptions: OrderOption[];
+  activeOrdersOptions: RawOrderOption[];
   activeOrdersLoading: boolean;
   orderIdBlocked: boolean;
   isReadOnly: boolean;
@@ -44,6 +38,8 @@ export default function InfoTab({
   isReadOnly,
   externalActor,
 }: InfoTabProps) {
+  const normalizedActiveOrdersOptions = normalizeOrderOptions(activeOrdersOptions);
+
   return (
     <div className="flex flex-col gap-5 pb-4">
       <div className="flex flex-col gap-2">
@@ -89,14 +85,14 @@ export default function InfoTab({
               <SelectValue placeholder="Sin pedido asignado" loading={activeOrdersLoading} />
             </SelectTrigger>
             <SelectContent loading={activeOrdersLoading}>
-              {activeOrdersOptions.map((order) => (
-                <SelectItem key={order.id} value={String(order.id)}>
-                  #{order.name} — {formatDateShort(order.load_date)}
+              {normalizedActiveOrdersOptions.map((order) => (
+                <SelectItem key={order.value} value={order.value}>
+                  {order.label}
                 </SelectItem>
               ))}
               {temporalPallet.orderId &&
-                !activeOrdersOptions.some(
-                  (o) => String(o.id) === String(temporalPallet.orderId)
+                !normalizedActiveOrdersOptions.some(
+                  (order) => order.value === String(temporalPallet.orderId)
                 ) && (
                   <SelectItem value={String(temporalPallet.orderId)}>
                     #{temporalPallet.orderId} — Pedido actual

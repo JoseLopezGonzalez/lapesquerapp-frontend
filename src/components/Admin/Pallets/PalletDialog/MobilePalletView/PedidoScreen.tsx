@@ -4,20 +4,14 @@ import { useMemo } from 'react';
 import { Link2Off } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MobileCombobox } from '@/components/Shadcn/MobileCombobox';
-import { formatDateShort } from '@/helpers/formats/dates/formatDates';
 import type { PalletState } from '@/hooks/pallets/palletHelpers';
+import { normalizeOrderOptions, type RawOrderOption } from '../utils/orderOptions';
 import { MobilePalletScreenHeader } from './MobilePalletScreenHeader';
-
-interface OrderOption {
-  id: string | number;
-  name: string;
-  load_date: string;
-}
 
 interface PedidoScreenProps {
   temporalPallet: PalletState;
   onEditOrderId: (id: number | string | null) => void;
-  activeOrdersOptions: OrderOption[];
+  activeOrdersOptions: RawOrderOption[];
   activeOrdersLoading: boolean;
   orderIdBlocked: boolean;
   onBack: () => void;
@@ -34,14 +28,11 @@ export default function PedidoScreen({
   isReadOnly,
 }: PedidoScreenProps) {
   const comboboxOptions = useMemo(() => {
-    const opts = activeOrdersOptions.map((order) => ({
-      value: String(order.id),
-      label: `#${order.name} — ${formatDateShort(order.load_date)}`,
-    }));
+    const opts = normalizeOrderOptions(activeOrdersOptions);
 
     // If current order is not in the active list, add it so it shows correctly
     const currentId = temporalPallet.orderId ? String(temporalPallet.orderId) : null;
-    if (currentId && !activeOrdersOptions.some((o) => String(o.id) === currentId)) {
+    if (currentId && !opts.some((option) => option.value === currentId)) {
       opts.push({ value: currentId, label: `#${currentId} — Pedido actual` });
     }
 

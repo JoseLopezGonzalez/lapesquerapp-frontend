@@ -86,7 +86,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
-import { formatDateShort, formatDateHour } from '@/helpers/formats/dates/formatDates';
+import { formatDateHour } from '@/helpers/formats/dates/formatDates';
 
 import { usePallet, saveDiscountPreferences } from '@/hooks/usePallet';
 import { usePalletTimeline } from '@/hooks/usePalletTimeline';
@@ -100,6 +100,7 @@ import { deletePalletTimeline, downloadPalletExpeditionLabel } from '@/services/
 import { getProductionByLot } from '@/services/productionService';
 import BoxesLabels from './BoxesLabels';
 import { PalletTimeline } from './PalletTimeline';
+import { normalizeOrderOptions, type RawOrderOption } from '../utils/orderOptions';
 import { canDeletePallet, canManagePalletCostFields, isExternalActor } from '@/lib/auth/actor';
 
 interface PalletViewProps {
@@ -153,8 +154,10 @@ export default function PalletView({
     hasPalletChanges = false,
   } = usePallet({ id: palletId ?? null, onChange, initialStoreId: initialStoreId ?? null, initialOrderId: initialOrderId ?? null, initialPallet: initialPallet as PalletState | null | undefined });
 
-  type ActiveOrderOption = { id: string; name: string; load_date: string };
-  const typedActiveOrdersOptions = activeOrdersOptions as ActiveOrderOption[] | undefined;
+  const normalizedActiveOrdersOptions = useMemo(
+    () => normalizeOrderOptions((activeOrdersOptions ?? []) as RawOrderOption[]),
+    [activeOrdersOptions]
+  );
 
   const {
     timeline,
@@ -1095,7 +1098,11 @@ export default function PalletView({
                               <Label>Pedido vinculado (opcional)</Label>
                               <Select
                                 disabled={orderIdBlocked}
-                                value={temporalPallet.orderId != null ? String(temporalPallet.orderId) : undefined}
+                                value={
+                                  temporalPallet.orderId != null
+                                    ? String(temporalPallet.orderId)
+                                    : undefined
+                                }
                                 onValueChange={(value) => editPallet.orderId(value)}
                               >
                                 <SelectTrigger loading={activeOrdersLoading}>
@@ -1105,14 +1112,14 @@ export default function PalletView({
                                   />
                                 </SelectTrigger>
                                 <SelectContent loading={activeOrdersLoading}>
-                                  {typedActiveOrdersOptions?.map((order) => (
-                                    <SelectItem key={order.id} value={order.id}>
-                                      #{order.name} - {formatDateShort(order.load_date)}
+                                  {normalizedActiveOrdersOptions.map((order) => (
+                                    <SelectItem key={order.value} value={order.value}>
+                                      {order.label}
                                     </SelectItem>
                                   ))}
                                   {temporalPallet.orderId &&
-                                    !typedActiveOrdersOptions?.some(
-                                      (order) => order.id === temporalPallet.orderId
+                                    !normalizedActiveOrdersOptions.some(
+                                      (order) => order.value === String(temporalPallet.orderId)
                                     ) && (
                                       <SelectItem value={String(temporalPallet.orderId)}>
                                         #{temporalPallet.orderId} - Pedido Actual
