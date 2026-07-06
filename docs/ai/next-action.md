@@ -9,6 +9,19 @@
 
 ## Módulo activo
 
+**dashboard-home — 2 pasadas completas (2026-07-05/06):** pasada 1 (solo
+`ui-audit-agent` sobre Admin/Dirección) + pasada 2 (11 carriles en paralelo —
+code-audit-agent, ui-audit-agent, domain-business-auditor — completando
+Admin/Dirección y cubriendo Comercial, Operario/Almacén y Field). 83 GAP
+candidates de la pasada 2 → `gap-normalizer` fusionó 8 duplicados → 75 GAPs.
+**Total módulo: 60 `ready`, 20 `blocked`, 4 `later`, 8 `rejected`.** Pendiente
+de cubrir: carril `permissions-multitenant-auditor` (ningún carril de
+multi-tenant/permisos se ha lanzado todavía sobre este módulo). Ver
+`docs/ai/modules/dashboard-home/audit.md` § 7 para las 14 preguntas de negocio
+agrupadas que desbloquean los 20 `blocked` — ninguna bloquea los 60 `ready`.
+Compite en prioridad con `pallets` (backlog algo mayor, ver abajo) — Jose
+decide cuál implementar primero.
+
 pallets (Palets) — 2 pasadas de `/deep-audit-module` completas (pasada 1:
 pantalla de creación/edición, desktop + mobile; pasada 2: listado, movimientos
 de almacén, vinculación masiva desde pedido) + los 6 `blocked` de la pasada 2
@@ -227,6 +240,21 @@ el módulo. Todo lo demás ya es `done` (37) o `rejected` (3).
 
 ## Acción recomendada
 
+**Opción — `dashboard-home` (60 GAPs `ready` tras 2 pasadas, ver detalle abajo):**
+
+```text
+/implement-next module=dashboard-home category=ux-ui
+```
+
+Empezar por el P0 (GAP-V2-004, `CompanySetupAlert` solapado con `BottomNav` en
+mobile) y el bug confirmado de GAP-V2-050 (diálogo "Cancelar acción" de agenda
+comercial envía payload incompleto, rompe la función tal cual está). GAP-V2-003
+(size L, 18 archivos) y GAP-V2-135 (`useStoreData` reimplementado a mano en
+`warehouse/[storeId]/page.js`) son buenos candidatos de PR aislado por tamaño.
+Antes de un lote grande, valorar si conviene que Jose resuelva primero las 14
+preguntas de negocio de § 7 del audit.md — desbloquean 20 GAPs adicionales sin
+tocar los 60 ya `ready`.
+
 **Prioridad — `pallets`:** empezar por el P0 de dominio, mayor riesgo (impacto físico
 en lectores externos, no solo interno):
 
@@ -283,6 +311,11 @@ Los 16 lotes de `/implement-next` de la pasada 2026-07-02 cerraron `GAP-V2-002`,
 
 ## Archivos clave
 
+- `docs/ai/modules/dashboard-home/audit.md`
+- `docs/ai/modules/dashboard-home/gaps-registry.md`
+- `docs/ai/gaps/dashboard-home/GAP-V2-{001..213}.md` (92 archivos con huecos por
+  rangos reservados de carril; 60 `ready`, 20 `blocked`, 4 `later`, 8 `rejected`
+  — ver registry para el desglose exacto de IDs)
 - `docs/ai/modules/pallets/audit.md`
 - `docs/ai/modules/pallets/gaps-registry.md`
 - `docs/ai/gaps/pallets/GAP-V2-{058..067,068..069,072..082}.md` (21 archivos vivos +
@@ -307,6 +340,26 @@ Los 16 lotes de `/implement-next` de la pasada 2026-07-02 cerraron `GAP-V2-002`,
 ## Estado resumido
 
 ```text
+dashboard-home: audit_pass_1_done (2026-07-05) → 1_lane_executed (ui-audit-agent,
+solo superficie Admin/Dirección, alcance limitado por Jose) → 8_candidates →
+2_decisiones_de_producto_con_jose (OrdersProfitabilityTimelineCard: integrar →
+GAP-V2-009 nuevo; NewLabelingFeatureCard: eliminar → GAP-V2-006 reescrito) →
+normalizado_en_hilo_principal (≤15 candidatos, sin gap-normalizer) → 9 GAPs,
+todos ready → registry pasada 1: 9 ready, 0 blocked, 0 done, 0 later, 0 rejected
+  → audit_pass_2_done (2026-07-06, Jose pidió continuar tras confirmar que la
+    cobertura no estaba completa) → 11_lanes_executed_en_paralelo
+    (code-audit-agent + domain-business-auditor completando Admin/Dirección;
+    los 3 carriles del piloto sobre Comercial, Operario/Almacén, Field) →
+    2 fallos por límite de sesión de la API a mitad de camino (el primero
+    detuvo los 11 antes de escribir nada, relanzados igual; el segundo detuvo
+    solo gap-normalizer antes de escribir nada, relanzado igual) → sin pérdida
+    de trabajo en ningún caso → 83 candidates → gap-normalizer (8
+    fusiones/rejected, 2 divisiones) → 75 GAPs → registry final módulo (2
+    pasadas): 60 ready, 20 blocked, 4 later, 8 rejected. 20 blocked: 6 por
+    tamaño L/XL sin autorizar, 14 por preguntas de negocio/backend (ver
+    audit.md § 7, 14 preguntas agrupadas). Pendiente: carril
+    permissions-multitenant-auditor, nunca lanzado sobre este módulo.
+
 pallets: audit_pass_1_done → 3_lanes_executed → 22_candidates → gap-normalizer
 (2 fusiones, 1 split) → 21 GAPs → jose_resolved_7_blocked (2026-07-05) → pass_1
 registry: 20 ready, 0 blocked, 0 done, 0 later, 3 rejected
