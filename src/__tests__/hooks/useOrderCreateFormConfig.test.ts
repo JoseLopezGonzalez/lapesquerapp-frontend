@@ -70,6 +70,37 @@ describe('useOrderCreateFormConfig', () => {
     ]);
   });
 
+  it('accepts value/label options from autocomplete endpoints without rendering undefined', () => {
+    mockUseOrderFormOptions.mockReturnValue({
+      options: {
+        salespeople: [{ value: 1, label: 'Ana' }],
+        fieldOperators: [{ value: 2, label: 'Luis' }],
+        incoterms: [{ value: 3, label: 'FOB' }],
+        paymentTerms: [{ value: 4, label: '30 días' }],
+        transports: [{ value: 5, label: 'Transportes Rías' }],
+        externalProcessors: [{ value: '6', label: 'Maquilador A' }],
+        customers: [
+          { value: 7, label: 'Cliente A' },
+          { value: 7, label: 'Cliente A duplicado' },
+          { value: null, label: 'Sin valor' },
+        ],
+      },
+      loading: false,
+    });
+
+    const { result } = renderHook(() => useOrderCreateFormConfig());
+
+    expect(findField(result.current.formGroups, 'Cliente', 'customer')?.options).toEqual([
+      { value: '7', label: 'Cliente A' },
+    ]);
+    expect(findField(result.current.formGroups, 'Información Comercial', 'salesperson')?.options).toEqual([
+      { value: '1', label: 'Ana' },
+    ]);
+    expect(findField(result.current.formGroups, 'Transporte', 'transport')?.options).toEqual([
+      { value: '5', label: 'Transportes Rías' },
+    ]);
+  });
+
   it('returns today for both entryDate and loadDate defaults, and an empty plannedProducts list', () => {
     const { result } = renderHook(() => useOrderCreateFormConfig());
 

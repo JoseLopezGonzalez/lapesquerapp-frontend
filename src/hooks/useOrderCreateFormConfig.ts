@@ -8,6 +8,13 @@ interface FormFieldOption {
   label: string;
 }
 
+interface RawOption {
+  id?: number | string | null;
+  name?: string | null;
+  value?: number | string | null;
+  label?: string | null;
+}
+
 interface FormFieldProps {
   placeholder?: string;
   searchPlaceholder?: string;
@@ -332,6 +339,33 @@ const initialFormGroups: FormGroup[] = [
   },
 ];
 
+function toFormFieldOption(option: RawOption): FormFieldOption | null {
+  const value = option.value ?? option.id;
+  const label = option.label ?? option.name;
+
+  if (value === undefined || value === null || label === undefined || label === null) {
+    return null;
+  }
+
+  return {
+    value: `${value}`,
+    label: `${label}`,
+  };
+}
+
+function normalizeOptions(options: RawOption[] = []): FormFieldOption[] {
+  const seen = new Set<string>();
+
+  return options.reduce<FormFieldOption[]>((acc, option) => {
+    const normalized = toFormFieldOption(option);
+    if (!normalized || seen.has(normalized.value)) return acc;
+
+    seen.add(normalized.value);
+    acc.push(normalized);
+    return acc;
+  }, []);
+}
+
 export function useOrderCreateFormConfig() {
   const [defaultValues] = useState<DefaultValues>(initialDefaultValues);
   const { options, loading } = useOrderFormOptions({ includeCustomers: true });
@@ -347,10 +381,7 @@ export function useOrderCreateFormConfig() {
                 field.name === 'customer'
                   ? {
                       ...field,
-                      options: options.customers.map((customer) => ({
-                        value: `${customer.id}`,
-                        label: `${customer.name}`,
-                      })),
+                      options: normalizeOptions(options.customers),
                     }
                   : field
               ),
@@ -362,46 +393,31 @@ export function useOrderCreateFormConfig() {
                 if (field.name === 'salesperson') {
                   return {
                     ...field,
-                    options: options.salespeople.map((salesperson) => ({
-                      value: `${salesperson.id}`,
-                      label: salesperson.name,
-                    })),
+                    options: normalizeOptions(options.salespeople),
                   };
                 }
                 if (field.name === 'fieldOperator') {
                   return {
                     ...field,
-                    options: options.fieldOperators.map((fieldOperator) => ({
-                      value: `${fieldOperator.id}`,
-                      label: fieldOperator.name,
-                    })),
+                    options: normalizeOptions(options.fieldOperators),
                   };
                 }
                 if (field.name === 'payment') {
                   return {
                     ...field,
-                    options: options.paymentTerms.map((paymentTerm) => ({
-                      value: `${paymentTerm.id}`,
-                      label: paymentTerm.name,
-                    })),
+                    options: normalizeOptions(options.paymentTerms),
                   };
                 }
                 if (field.name === 'incoterm') {
                   return {
                     ...field,
-                    options: options.incoterms.map((incoterm) => ({
-                      value: `${incoterm.id}`,
-                      label: incoterm.name,
-                    })),
+                    options: normalizeOptions(options.incoterms),
                   };
                 }
                 if (field.name === 'externalProcessor') {
                   return {
                     ...field,
-                    options: options.externalProcessors.map((externalProcessor) => ({
-                      value: `${externalProcessor.value}`,
-                      label: externalProcessor.label,
-                    })),
+                    options: normalizeOptions(options.externalProcessors),
                   };
                 }
                 return field;
@@ -414,10 +430,7 @@ export function useOrderCreateFormConfig() {
                 field.name === 'transport'
                   ? {
                       ...field,
-                      options: options.transports.map((transport) => ({
-                        value: `${transport.id}`,
-                        label: transport.name,
-                      })),
+                      options: normalizeOptions(options.transports),
                     }
                   : field
               ),
