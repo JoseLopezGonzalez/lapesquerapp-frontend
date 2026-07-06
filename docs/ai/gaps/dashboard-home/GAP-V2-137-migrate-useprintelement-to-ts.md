@@ -6,7 +6,7 @@ category: code-quality
 priority: P3
 risk: medium
 size: S
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/hooks/usePrintElement.js

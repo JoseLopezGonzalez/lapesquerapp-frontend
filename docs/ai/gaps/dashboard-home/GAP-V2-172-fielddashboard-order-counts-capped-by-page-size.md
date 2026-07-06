@@ -6,11 +6,12 @@ category: ux-ui
 priority: P1
 risk: medium
 size: M
-status: candidate
+status: blocked
 dependencies: []
 target_files:
   - src/components/Field/FieldDashboard.jsx
   - src/hooks/useFieldOrders.ts
+  - src/components/Field/FieldOrdersPage.jsx
 created_at: 2026-07-06
 updated_at: 2026-07-06
 ---
@@ -18,6 +19,15 @@ updated_at: 2026-07-06
 # GAP-V2-172 — Conteos de "Pedidos operativos" quedan capados por perPage fijo
 
 ## Problema
+
+**Fusionado desde GAP-V2-212 (carril domain-business, mismo síntoma, ángulo complementario):**
+además del problema de paginación descrito abajo, el conteo tampoco aplica el filtro `active`
+que sí usa `FieldOrdersPage.jsx:213` (`{ perPage: 20, active: true }`) para excluir pedidos no
+relevantes operativamente — el dashboard llama a `useFieldOrders({ perPage: 20 })` sin ese
+filtro. Un repartidor que abre la app antes de salir a ruta necesita una respuesta operativa
+inmediata a "¿cuántas entregas me quedan por hacer HOY?" — no un conteo de "los últimos 20
+pedidos que devuelva la API" sin acotar por fecha/estado activo, que puede incluir pedidos de la
+semana pasada aún no cerrados administrativamente.
 
 `FieldDashboard` calcula los conteos de pedidos pendientes/finalizados filtrando en
 cliente una única página de pedidos:
@@ -70,12 +80,18 @@ Dos alternativas, a decidir según lo que ya soporte el backend (`field/orders`)
 En ambos casos, evitar seguir derivando el conteo de un `perPage` fijo pensado para
 otro propósito (poblar el listado, no contar).
 
+Además, pasar `active: true` a `useFieldOrders` en `FieldDashboard`, igual que ya hace
+`FieldOrdersPage`, para no contar pedidos no relevantes operativamente.
+
 ## Criterios de aceptación
 
 - [ ] Los conteos de "Pendientes"/"Finalizados" son correctos incluso cuando el
       operador tiene más de 20 pedidos en cualquiera de los dos estados.
 - [ ] No se introduce una llamada que traiga listados completos solo para contar
       (evitar `perPage` alto como workaround).
+- [ ] El conteo usa el mismo filtro `active: true` que `FieldOrdersPage`.
+- [ ] Confirmado con Jose si el conteo debe acotarse además a la ruta activa del día
+      (`routeId: todayRoute.id`) o mantenerse como "todos los pedidos activos del operador".
 - [ ] `npm run type-check` y `npm run lint` limpios.
 
 ## Plan de validación
@@ -89,8 +105,17 @@ npm run lint
 
 ## Notas de implementación
 
-{se rellena durante la implementación — aquí debe documentarse cuál de las dos
-alternativas de "Solución propuesta" se usó y por qué}
+**Fusión (gap-normalizer, 2026-07-06):** este GAP absorbe GAP-V2-212 ("KPI 'Pedidos operativos'
+del dashboard Field no está acotado a hoy/ruta activa", carril domain-business) — mismo síntoma
+(conteo incorrecto en la card "Pedidos operativos"), causas complementarias (paginación +
+filtro `active` ausente). GAP-V2-212 queda `rejected` y redirige aquí.
+
+**Bloqueado (gap-normalizer, 2026-07-06):** GAP-V2-212 señala una pregunta abierta para Jose sin
+resolver — si el KPI debe representar "todos los pedidos activos del operador" o "solo los de la
+ruta activa del día" (cruce por `routeId`). El fix de `active: true` + `meta.total` puede
+implementarse sin esa respuesta, pero uno de los criterios de aceptación exige la confirmación
+explícita, por lo que el GAP completo queda `blocked` hasta entonces. Aquí se documentará cuál de
+las alternativas de "Solución propuesta" se usó y por qué.
 
 ## Resultado
 
@@ -103,4 +128,4 @@ alternativas de "Solución propuesta" se usó y por qué}
 ## Links
 
 - Auditoría de origen: `docs/ai/modules/dashboard-home/audit.md`
-- GAPs relacionados: ninguno
+- GAPs relacionados: GAP-V2-212 (fusionado aquí)

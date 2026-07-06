@@ -6,7 +6,7 @@ category: architecture-refactor
 priority: P4
 risk: low
 size: XS
-status: candidate
+status: blocked
 dependencies: []
 target_files:
   - src/services/storeService.ts

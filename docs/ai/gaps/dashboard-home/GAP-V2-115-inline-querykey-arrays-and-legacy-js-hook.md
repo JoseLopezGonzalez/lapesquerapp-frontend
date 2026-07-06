@@ -6,7 +6,7 @@ category: code-quality
 priority: P2
 risk: low
 size: S
-status: candidate
+status: rejected
 dependencies: []
 target_files:
   - src/components/Warehouse/OperarioDashboard/index.tsx
@@ -98,9 +98,16 @@ npm run lint
 
 ## Notas de implementación
 
-{se rellena durante la implementación — migración .js→.ts de bajo riesgo,
-seguir protocolo de CLAUDE.md § migraciones .jsx→.tsx (baseline type-check
-antes/después)}
+**Dividido y fusionado (gap-normalizer, 2026-07-06):** este candidato mezclaba dos problemas
+sobre dos archivos distintos, cada uno ya cubierto por separado y con más detalle por el carril
+code-audit-agent:
+- La parte de `useReceptionsList.js` (queryKey inline + migración a TS) se fusionó en
+  **GAP-V2-133**.
+- La parte de `OperarioDashboard/index.tsx` (`handleRefresh` con arrays literales) se fusionó en
+  **GAP-V2-134**.
+
+Este archivo queda `rejected` — no se implementa por separado, ver GAP-V2-133 y GAP-V2-134 para
+el contenido vigente.
 
 ## Resultado
 

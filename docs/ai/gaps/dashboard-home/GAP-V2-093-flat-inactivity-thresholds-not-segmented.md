@@ -6,7 +6,7 @@ category: domain-business
 priority: P3
 risk: low
 size: M
-status: candidate
+status: blocked
 dependencies: []
 target_files:
   - src/components/Admin/Dashboard/ComercialDashboard/index.js

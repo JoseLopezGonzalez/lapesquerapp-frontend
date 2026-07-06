@@ -6,7 +6,7 @@ category: code-quality
 priority: P1
 risk: low
 size: S
-status: candidate
+status: rejected
 dependencies: []
 target_files:
   - src/components/Admin/Dashboard/ComercialDashboard/index.js
@@ -95,7 +95,18 @@ npm run lint
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Dividido y fusionado (gap-normalizer, 2026-07-06):** este candidato mezclaba dos hallazgos
+sobre dos componentes distintos que ya estaban cubiertos por separado por otros carriles de
+auditoría:
+- La parte relativa a `ComercialDashboard`/`useCrmDashboard` se fusionó en **GAP-V2-052**
+  ("Los 3 widgets CRM del dashboard Comercial muestran 'todo al día' cuando en realidad la
+  petición ha fallado").
+- La parte relativa a `CommercialSalesSummaryCard`/`useOrdersTotalAmountStats` se fusionó en
+  **GAP-V2-053** ("CommercialSalesSummaryCard etiqueta como 'Tus ventas' un dato que es en
+  realidad la venta total de la empresa, e ignora el error del hook").
+
+Este archivo queda `rejected` — no se implementa por separado, ver GAP-V2-052 y GAP-V2-053 para
+el contenido vigente.
 
 ## Resultado
 

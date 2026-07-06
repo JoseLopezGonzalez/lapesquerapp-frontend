@@ -6,7 +6,7 @@ category: code-quality
 priority: P1
 risk: medium
 size: XS
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/components/Admin/Dashboard/TotalQuantitySoldCard/index.js

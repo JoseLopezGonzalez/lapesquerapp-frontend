@@ -6,7 +6,7 @@ category: domain-business
 priority: P1
 risk: medium
 size: XS
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/components/Field/FieldRouteExecutionPage.jsx

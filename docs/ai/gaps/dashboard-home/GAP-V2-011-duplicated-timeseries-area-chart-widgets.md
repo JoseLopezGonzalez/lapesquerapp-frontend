@@ -6,7 +6,7 @@ category: architecture-refactor
 priority: P2
 risk: medium
 size: L
-status: candidate
+status: blocked
 dependencies: []
 target_files:
   - src/components/Admin/Dashboard/SalesChart/index.js
@@ -98,6 +98,11 @@ npm run build
 ```
 
 ## Notas de implementación
+
+**Bloqueado por tamaño (gap-normalizer, 2026-07-06):** este GAP es `size: L` — la regla del
+proyecto exige autorización explícita de Jose antes de marcarlo `ready` (no basta con que el
+riesgo sea `medium`). Queda `blocked` hasta que Jose confirme que quiere abordar esta
+refactorización de arquitectura en un PR dedicado.
 
 ## Resultado
 

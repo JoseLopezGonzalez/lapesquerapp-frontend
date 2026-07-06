@@ -6,7 +6,7 @@ category: domain-business
 priority: P2
 risk: low
 size: S
-status: candidate
+status: blocked
 dependencies: []
 target_files:
   - src/components/Admin/Dashboard/OrdersProfitabilitySummaryCard/index.js

@@ -6,7 +6,7 @@ category: architecture-refactor
 priority: P3
 risk: medium
 size: L
-status: candidate
+status: blocked
 dependencies: []
 target_files:
   - src/services/fieldOperatorService.ts
@@ -107,7 +107,9 @@ npm run test:run
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Bloqueado por tamaño (gap-normalizer, 2026-07-06):** `size: L` — requiere autorización
+explícita de Jose antes de marcarlo `ready`, dado además el volumen de superficie afectada (12
+archivos importadores, funcionalidad operativa crítica para repartidores en campo).
 
 ## Resultado
 

@@ -6,7 +6,7 @@ category: code-quality
 priority: P2
 risk: low
 size: S
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/hooks/useReceptionsList.js
@@ -85,6 +85,13 @@ npm run test:run
 
 ## Notas de implementación
 
+**Fusión (gap-normalizer, 2026-07-06):** GAP-V2-115 ("queryKeys inline en handleRefresh y
+useReceptionsList.js sin factory ni migración a TS", carril ui-audit-agent) cubría el mismo
+hallazgo de `useReceptionsList.js` mezclado con el hallazgo de invalidación de
+`OperarioDashboard` (ver GAP-V2-134). Ambos hallazgos ya estaban mejor separados por el carril
+code-audit-agent en este GAP (133, hook) y en GAP-V2-134 (dashboard). GAP-V2-115 queda
+`rejected`, dividido y fusionado en estos dos GAPs.
+
 ## Resultado
 
 ## Resultado de auditoría
@@ -94,4 +101,5 @@ npm run test:run
 - Auditoría de origen: `docs/ai/modules/dashboard-home/audit.md`
 - GAPs relacionados: GAP-V2-134 (invalidación con arrays hardcodeados en `OperarioDashboard`),
   GAP-V2-111 (estado de error ignorado en ambos list cards), GAP-V2-014 (mismo tipo de
-  violación en otros hooks del dashboard, archivos distintos)
+  violación en otros hooks del dashboard, archivos distintos), GAP-V2-115 (fusionado aquí y en
+  GAP-V2-134)

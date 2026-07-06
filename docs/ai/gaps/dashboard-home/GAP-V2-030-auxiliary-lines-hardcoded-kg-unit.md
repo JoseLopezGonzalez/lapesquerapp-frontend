@@ -6,7 +6,7 @@ category: domain-business
 priority: P1
 risk: low
 size: XS
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/components/Admin/Dashboard/AuxiliaryLinesByProductCard/index.tsx

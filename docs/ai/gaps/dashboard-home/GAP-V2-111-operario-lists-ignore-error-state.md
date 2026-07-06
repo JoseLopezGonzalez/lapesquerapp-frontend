@@ -6,7 +6,7 @@ category: ux-ui
 priority: P0
 risk: low
 size: S
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/components/Warehouse/ReceptionsListCard/index.tsx

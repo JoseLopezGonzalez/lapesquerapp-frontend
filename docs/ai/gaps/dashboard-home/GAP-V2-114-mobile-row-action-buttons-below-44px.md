@@ -6,7 +6,7 @@ category: a11y-responsive
 priority: P1
 risk: low
 size: M
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/components/Warehouse/ReceptionsListCard/index.tsx

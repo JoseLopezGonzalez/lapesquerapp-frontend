@@ -6,7 +6,7 @@ category: ux-ui
 priority: P2
 risk: low
 size: XS
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/components/Field/FieldDashboard.jsx

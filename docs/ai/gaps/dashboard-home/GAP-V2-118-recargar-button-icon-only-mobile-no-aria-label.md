@@ -6,7 +6,7 @@ category: a11y-responsive
 priority: P2
 risk: low
 size: XS
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/components/Warehouse/OperarioDashboard/index.tsx
@@ -48,8 +48,8 @@ mobile (icon-only), no solo un `title`.
 ## Contexto
 
 Hallazgo puntual y de bajo esfuerzo — mismo componente que ya se toca en
-GAP-V2-115 (queryKey de `handleRefresh`), podría agruparse en el mismo commit
-si Jose lo prefiere.
+GAP-V2-134 (queryKey de `handleRefresh`; GAP-V2-115 quedó fusionado ahí tras la normalización),
+podría agruparse en el mismo commit si Jose lo prefiere.
 
 ## Solución propuesta
 
@@ -89,4 +89,4 @@ npm run lint
 ## Links
 
 - Auditoría de origen: `docs/ai/modules/dashboard-home/audit.md`
-- GAPs relacionados: GAP-V2-115 (mismo componente)
+- GAPs relacionados: GAP-V2-134 (mismo componente)

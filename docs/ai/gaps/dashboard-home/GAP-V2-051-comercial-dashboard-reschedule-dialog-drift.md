@@ -6,7 +6,7 @@ category: ux-ui
 priority: P1
 risk: low
 size: S
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/components/Admin/Dashboard/ComercialDashboard/index.js

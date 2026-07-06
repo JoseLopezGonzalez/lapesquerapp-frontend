@@ -6,7 +6,7 @@ category: domain-business
 priority: P1
 risk: high
 size: S
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/components/Field/FieldAutoventaWizard.jsx

@@ -6,7 +6,7 @@ category: data-api
 priority: P1
 risk: medium
 size: M
-status: candidate
+status: blocked
 dependencies: []
 target_files:
   - src/components/Warehouse/OperarioDashboard/index.tsx
@@ -14,6 +14,8 @@ target_files:
   - src/components/Warehouse/DispatchesListCard/index.tsx
   - src/hooks/useReceptionsList.js
   - src/hooks/useDispatchesList.ts
+  - src/services/domain/raw-material-receptions/rawMaterialReceptionService.js
+  - src/services/domain/cebo-dispatches/ceboDispatchService.js
 created_at: 2026-07-06
 updated_at: 2026-07-06
 ---
@@ -21,6 +23,15 @@ updated_at: 2026-07-06
 # GAP-V2-112 — `storeId` es una prop muerta: las listas de recepciones/salidas no se filtran por almacén
 
 ## Problema
+
+**Fusionado desde GAP-V2-151 (carril domain-business, mismo hallazgo, misma raíz):** en un
+tenant con más de un almacén, el panel operativo diario que un operario usa decenas de veces al
+día para ver "las recepciones y salidas de hoy" mostraría las de **todos** los almacenes del
+tenant mezcladas, no solo las del almacén en el que está físicamente trabajando — pese a que la
+app sí sabe en qué almacén está (`storeId` llega desde la ruta). Es además inconsistente con el
+lado de escritura: `OperarioCreateReceptionForm` y `OperarioCreateCeboForm` sí reciben y usan
+`storeId` para asociar la recepción/salida al almacén correcto al crearla. El flujo de creación
+es store-aware; el flujo de lectura no.
 
 `OperarioDashboard` recibe un `storeId` (del operario autenticado en
 `/operator`, o del almacén de la URL en `/warehouse/[storeId]`) y lo propaga
@@ -103,7 +114,18 @@ npm run lint
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Fusión (gap-normalizer, 2026-07-06):** este GAP absorbe GAP-V2-151 ("Recepciones y salidas de
+cebo del dashboard operario no se filtran por el almacén asignado (storeId)", carril
+domain-business) — mismo hallazgo raíz confirmado desde dos ángulos (wiring de props vacías vs.
+consecuencia de negocio de mezclar almacenes). GAP-V2-151 queda `rejected` y redirige aquí.
+
+**Bloqueado (gap-normalizer, 2026-07-06):** ambos carriles señalan la misma pregunta abierta sin
+respuesta de Jose/backend: ¿el backend ya filtra por almacén de alguna forma implícita
+(`assignedStoreId` del JWT) o el filtro debe añadirse explícitamente en frontend? No se marca
+`ready` hasta confirmar esto — implementar sin esa confirmación arriesga añadir un filtro
+redundante o, peor, dar una falsa sensación de que el problema ya estaba resuelto en el backend
+cuando no lo está. También depende de GAP-V2-153 en sentido inverso (ese GAP no puede
+implementarse de forma fiable hasta que este se resuelva).
 
 ## Resultado
 
@@ -116,4 +138,5 @@ npm run lint
 ## Links
 
 - Auditoría de origen: `docs/ai/modules/dashboard-home/audit.md`
-- GAPs relacionados: posible solape con hallazgos de `permissions-multitenant-auditor`
+- GAPs relacionados: posible solape con hallazgos de `permissions-multitenant-auditor`,
+  GAP-V2-151 (fusionado aquí), GAP-V2-153 (depende de este GAP)

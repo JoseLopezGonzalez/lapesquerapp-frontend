@@ -6,7 +6,7 @@ category: architecture-refactor
 priority: P3
 risk: low
 size: S
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/app/admin/home/page.js

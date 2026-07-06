@@ -6,7 +6,7 @@ category: domain-business
 priority: P2
 risk: medium
 size: M
-status: candidate
+status: blocked
 dependencies:
   - GAP-V2-090
 target_files:

@@ -6,7 +6,7 @@ category: architecture-refactor
 priority: P3
 risk: medium
 size: L
-status: candidate
+status: blocked
 dependencies: []
 target_files:
   - src/components/Admin/Dashboard/WorkerStatisticsCard/index.js
@@ -91,6 +91,9 @@ npm run build
 ```
 
 ## Notas de implementación
+
+**Bloqueado por tamaño (gap-normalizer, 2026-07-06):** `size: L` — requiere autorización
+explícita de Jose antes de marcarlo `ready`, según la regla del proyecto para GAPs L/XL.
 
 ## Resultado
 

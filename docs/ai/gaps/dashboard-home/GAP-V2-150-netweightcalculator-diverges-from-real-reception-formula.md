@@ -6,7 +6,7 @@ category: domain-business
 priority: P1
 risk: medium
 size: S
-status: candidate
+status: blocked
 dependencies: []
 target_files:
   - src/components/Warehouse/NetWeightCalculatorDialog/index.js

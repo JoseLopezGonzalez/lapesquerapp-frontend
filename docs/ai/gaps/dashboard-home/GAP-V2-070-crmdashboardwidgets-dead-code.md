@@ -6,7 +6,7 @@ category: architecture-refactor
 priority: P2
 risk: low
 size: S
-status: candidate
+status: rejected
 dependencies: []
 target_files:
   - src/components/Comercial/CRM/CrmDashboardWidgets.jsx
@@ -73,7 +73,11 @@ npm run lint
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Fusionado (gap-normalizer, 2026-07-06):** mismo hallazgo que GAP-V2-055
+("CrmDashboardWidgets.jsx es un archivo huérfano — nunca se importa en ningún sitio", carril
+ui-audit-agent), confirmado independientemente por ambos carriles. El detalle del anti-patrón
+`window.prompt()` de este candidato se incorporó a GAP-V2-055. Este archivo queda `rejected` —
+no se implementa por separado.
 
 ## Resultado
 

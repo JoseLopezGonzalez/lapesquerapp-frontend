@@ -6,7 +6,7 @@ category: ux-ui
 priority: P2
 risk: low
 size: S
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/components/Admin/Dashboard/ComercialDashboard/index.js
@@ -80,7 +80,12 @@ npm run lint
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Fusión (gap-normalizer, 2026-07-06):** este GAP absorbe GAP-V2-071 ("Función ReminderRow
+definida pero nunca renderizada en ComercialDashboard/index.js", carril code-audit-agent) — es
+exactamente el mismo hallazgo de código muerto sobre el mismo bloque
+(`ReminderRow`/`crm-agenda`), con el añadido de que este GAP también corrige la regresión de
+navegación (falta el enlace "Abrir cliente/prospecto" en el menú de acciones real). GAP-V2-071
+queda `rejected` y redirige aquí.
 
 ## Resultado
 
@@ -93,4 +98,4 @@ npm run lint
 ## Links
 
 - Auditoría de origen: `docs/ai/modules/dashboard-home/audit.md`
-- GAPs relacionados: ninguno
+- GAPs relacionados: GAP-V2-071 (fusionado aquí)

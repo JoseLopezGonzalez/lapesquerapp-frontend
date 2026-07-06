@@ -6,7 +6,7 @@ category: domain-business
 priority: P2
 risk: medium
 size: S
-status: candidate
+status: rejected
 dependencies: []
 target_files:
   - src/components/Field/FieldDashboard.jsx
@@ -106,7 +106,11 @@ contra el listado real en /field/pedidos para el mismo operador.
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Fusionado (gap-normalizer, 2026-07-06):** mismo síntoma que GAP-V2-172 ("Conteos de 'Pedidos
+operativos' en FieldDashboard quedan capados por perPage fijo", carril code-audit-agent),
+confirmado desde el ángulo de negocio (filtro `active` ausente + posible necesidad de acotar por
+`routeId`). Fusionado en GAP-V2-172, que queda `blocked` pendiente de la pregunta abierta para
+Jose sobre el alcance del KPI. Este archivo queda `rejected` — no se implementa por separado.
 
 ## Resultado
 

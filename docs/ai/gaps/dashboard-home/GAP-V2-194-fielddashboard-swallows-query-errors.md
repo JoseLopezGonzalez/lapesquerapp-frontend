@@ -6,7 +6,7 @@ category: code-quality
 priority: P2
 risk: low
 size: S
-status: candidate
+status: rejected
 dependencies: []
 target_files:
   - src/components/Field/FieldDashboard.jsx
@@ -78,7 +78,10 @@ npm run lint
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Fusionado (gap-normalizer, 2026-07-06):** mismo hallazgo que GAP-V2-170 ("FieldDashboard no
+muestra estado de error de useFieldRoutes/useFieldOrders", carril ui-audit-agent), confirmado
+independientemente por ambos carriles. Fusionado en GAP-V2-170. Este archivo queda `rejected` —
+no se implementa por separado.
 
 ## Resultado
 

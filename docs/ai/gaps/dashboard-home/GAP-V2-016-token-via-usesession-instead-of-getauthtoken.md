@@ -6,7 +6,7 @@ category: architecture-refactor
 priority: P3
 risk: low
 size: M
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/hooks/useSpeciesOptions.js

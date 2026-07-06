@@ -6,7 +6,7 @@ category: domain-business
 priority: P1
 risk: medium
 size: M
-status: candidate
+status: rejected
 dependencies: []
 target_files:
   - src/components/Warehouse/OperarioDashboard/index.tsx
@@ -88,6 +88,12 @@ confirmar que no aparece en el dashboard operario del almacén B.
 ```
 
 ## Notas de implementación
+
+**Fusionado (gap-normalizer, 2026-07-06):** mismo hallazgo raíz que GAP-V2-112 ("storeId se pasa
+a ReceptionsListCard/DispatchesListCard pero nunca se usa para filtrar", carril ui-audit-agent/
+data-api), confirmado desde el ángulo de negocio en este candidato. Fusionado en GAP-V2-112, que
+queda `blocked` pendiente de la misma pregunta abierta (¿el backend ya filtra implícitamente por
+almacén?). Este archivo queda `rejected` — no se implementa por separado.
 
 ## Resultado
 

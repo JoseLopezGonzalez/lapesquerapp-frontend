@@ -6,7 +6,7 @@ category: architecture-refactor
 priority: P3
 risk: medium
 size: M
-status: candidate
+status: blocked
 dependencies: []
 target_files:
   - src/app/operator/page.js

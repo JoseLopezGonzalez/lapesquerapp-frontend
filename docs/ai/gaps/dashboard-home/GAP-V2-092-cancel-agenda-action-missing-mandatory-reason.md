@@ -6,7 +6,7 @@ category: domain-business
 priority: P2
 risk: medium
 size: S
-status: candidate
+status: rejected
 dependencies: []
 target_files:
   - src/components/Admin/Dashboard/ComercialDashboard/index.js
@@ -103,7 +103,13 @@ npm run lint
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Fusionado (gap-normalizer, 2026-07-06):** este hallazgo describe el mismo bloque de código
+que GAP-V2-050 ("El botón 'Confirmar cancelación' del dashboard Comercial envía un payload con
+forma incorrecta y omite el motivo obligatorio"), que ya cubría el bug técnico de payload en
+`handleCancel`. Se ha fusionado el análisis de negocio (por qué el motivo es obligatorio para
+la trazabilidad comercial) dentro de GAP-V2-050, que queda como GAP único e implementable para
+este defecto. Este archivo queda `rejected` para no duplicar el trabajo — no se implementa por
+separado. Ver GAP-V2-050 para el contenido completo y los criterios de aceptación vigentes.
 
 ## Resultado
 

@@ -6,8 +6,8 @@ category: architecture-refactor
 priority: P3
 risk: medium
 size: L
-status: candidate
-dependencies: [GAP-V2-070, GAP-V2-071, GAP-V2-072]
+status: blocked
+dependencies: [GAP-V2-055, GAP-V2-054, GAP-V2-072]
 target_files:
   - src/components/Admin/Dashboard/ComercialDashboard/index.js
   - src/components/Comercial/CRM/CommercialSalesSummaryCard.jsx
@@ -99,7 +99,11 @@ npm run build
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Bloqueado por tamaño (gap-normalizer, 2026-07-06):** `size: L` — requiere autorización
+explícita de Jose antes de marcarlo `ready`. Actualización de dependencias tras normalización:
+GAP-V2-070 y GAP-V2-071 quedaron `rejected` (fusionados en GAP-V2-055 y GAP-V2-054
+respectivamente) — este GAP debe depender de esos dos IDs canónicos y de GAP-V2-072, no de los
+IDs rechazados.
 
 ## Resultado
 

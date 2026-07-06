@@ -6,7 +6,7 @@ category: architecture-refactor
 priority: P4
 risk: medium
 size: XL
-status: candidate
+status: blocked
 dependencies: []
 target_files:
   - src/components/Admin/Dashboard/CurrentStockCard/index.js
@@ -112,6 +112,10 @@ npm run test:run
 ```
 
 ## Notas de implementación
+
+**Bloqueado por tamaño (gap-normalizer, 2026-07-06):** `size: XL` — el propio GAP ya recomienda
+trocearlo en sub-lotes; no se marca `ready` sin que Jose decida el orden/alcance de esos
+sub-lotes y autorice explícitamente empezar.
 
 ## Resultado
 

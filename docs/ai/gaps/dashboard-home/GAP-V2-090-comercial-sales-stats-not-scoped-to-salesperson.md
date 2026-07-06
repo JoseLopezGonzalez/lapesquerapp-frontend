@@ -6,7 +6,7 @@ category: domain-business
 priority: P1
 risk: high
 size: L
-status: candidate
+status: blocked
 dependencies: []
 target_files:
   - src/components/Comercial/CRM/CommercialSalesSummaryCard.jsx

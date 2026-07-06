@@ -6,7 +6,7 @@ category: code-quality
 priority: P4
 risk: medium
 size: M
-status: candidate
+status: blocked
 dependencies: []
 target_files:
   - src/services/fieldOperatorService.ts

@@ -6,7 +6,7 @@ category: code-quality
 priority: P2
 risk: low
 size: S
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/app/operator/page.js

@@ -6,7 +6,7 @@ category: architecture-refactor
 priority: P2
 risk: medium
 size: M
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/app/warehouse/[storeId]/page.js

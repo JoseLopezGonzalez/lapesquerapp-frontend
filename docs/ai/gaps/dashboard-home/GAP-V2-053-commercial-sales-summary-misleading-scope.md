@@ -6,7 +6,7 @@ category: ux-ui
 priority: P1
 risk: low
 size: XS
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/components/Comercial/CRM/CommercialSalesSummaryCard.jsx
@@ -68,16 +68,17 @@ el texto debe tomarla Jose (posible consulta a `domain-business-auditor`).
 
 ## Solución propuesta
 
-Opción A (mínima, sin cambios de backend): cambiar el título a algo neutro y preciso,
-p.ej. "Ventas totales de la empresa este año" o reusar el título ya usado en
-`TotalAmountSoldCard` ("Importe Total de Ventas"), evitando el posesivo "Tus".
+**Este GAP implementa la Opción A (mínima, sin cambios de backend, ejecutable ahora sin esperar
+confirmación de Jose):** cambiar el título a algo neutro y preciso, p.ej. "Ventas totales de la
+empresa este año" o reusar el título ya usado en `TotalAmountSoldCard` ("Importe Total de
+Ventas"), evitando el posesivo "Tus".
 
-Opción B (si el negocio lo requiere): añadir un parámetro de filtrado por
-comercial/vendedor al endpoint `statistics/orders/total-amount` y pasarlo desde
-`CommercialSalesSummaryCard` con el id del comercial autenticado — mayor alcance,
-requiere cambio de backend.
+La Opción B (filtrar de verdad por comercial/vendedor, con cambio de backend) es de mayor
+alcance y requiere confirmación de Jose — se gestiona en **GAP-V2-090** (`blocked`, pendiente de
+esa confirmación), no en este GAP. Este GAP no debe esperar a que se resuelva GAP-V2-090: es la
+mitigación honesta inmediata mientras esa decisión de negocio no llega.
 
-En cualquiera de las dos opciones, además:
+Además, incorporando el hallazgo fusionado desde GAP-V2-075 (mismo componente, mismo hook):
 1. Desestructurar `error` de `useOrdersTotalAmountStats()`.
 2. Renderizar un estado de error (`text-destructive`) distinto del estado
    "Sin datos suficientes" cuando `error` no es `null`.
@@ -95,13 +96,21 @@ En cualquiera de las dos opciones, además:
 ```text
 npm run type-check
 npm run lint
-# Manual: confirmar con Jose el alcance esperado del dato antes de implementar
-# (Opción A vs B).
+# Manual: en /comercial, confirmar que la tarjeta ya no usa el posesivo "Tus ventas" y
+# que un error simulado en useOrdersTotalAmountStats se muestra distinto de "Sin datos
+# suficientes".
 ```
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Fusión (gap-normalizer, 2026-07-06):** este GAP absorbe la parte de GAP-V2-075
+("ComercialDashboard y CommercialSalesSummaryCard ignoran el error expuesto por sus hooks")
+relativa a `CommercialSalesSummaryCard`/`useOrdersTotalAmountStats` — mismo hallazgo exacto. La
+parte de GAP-V2-075 relativa a `ComercialDashboard`/`useCrmDashboard` se fusiona en GAP-V2-052
+en su lugar. GAP-V2-075 queda `rejected` (dividido y fusionado en estos dos GAPs).
+
+El alcance de este GAP se limita a la Opción A (copy neutro + manejo de error) — no espera a
+GAP-V2-090 para implementarse.
 
 ## Resultado
 
@@ -114,4 +123,5 @@ npm run lint
 ## Links
 
 - Auditoría de origen: `docs/ai/modules/dashboard-home/audit.md`
-- GAPs relacionados: GAP-V2-052, GAP-V2-003
+- GAPs relacionados: GAP-V2-052, GAP-V2-003, GAP-V2-090 (filtrado real por comercial, `blocked`,
+  mayor alcance), GAP-V2-075 (fusionado aquí parcialmente)

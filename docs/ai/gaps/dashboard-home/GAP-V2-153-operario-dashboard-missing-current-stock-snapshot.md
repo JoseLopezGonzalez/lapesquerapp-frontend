@@ -6,9 +6,9 @@ category: domain-business
 priority: P3
 risk: low
 size: M
-status: candidate
+status: blocked
 dependencies:
-  - GAP-V2-151
+  - GAP-V2-112
 target_files:
   - src/components/Warehouse/OperarioDashboard/index.tsx
 created_at: 2026-07-06
@@ -41,9 +41,9 @@ la operativa diaria de almacén).
 
 ## Contexto
 
-Depende de que `storeId` filtre correctamente los datos del almacén (GAP-V2-151) — sin ese
-filtro, cualquier resumen de stock añadido aquí heredaría el mismo problema de mezclar datos
-de varios almacenes.
+Depende de que `storeId` filtre correctamente los datos del almacén (GAP-V2-112, tras la
+normalización que fusionó en él el hallazgo original de GAP-V2-151) — sin ese filtro, cualquier
+resumen de stock añadido aquí heredaría el mismo problema de mezclar datos de varios almacenes.
 
 **Pregunta para Jose:** qué métrica de stock es la más útil para el operario en este punto
 concreto del flujo — ¿total kg en stock?, ¿nº de palets disponibles?, ¿desglose por
@@ -72,6 +72,9 @@ coincide con el stock real de ese almacén.
 ```
 
 ## Notas de implementación
+
+**Bloqueado (gap-normalizer, 2026-07-06):** depende de GAP-V2-112 (`blocked`) y tiene su propia
+pregunta abierta para Jose sobre qué métrica de stock mostrar — doble motivo de bloqueo.
 
 ## Resultado
 

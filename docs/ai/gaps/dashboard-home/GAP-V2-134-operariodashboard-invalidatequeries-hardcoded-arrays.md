@@ -6,7 +6,7 @@ category: code-quality
 priority: P2
 risk: low
 size: XS
-status: candidate
+status: ready
 dependencies:
   - GAP-V2-133
 target_files:
@@ -83,6 +83,14 @@ npm run lint
 
 ## Notas de implementación
 
+**Fusión (gap-normalizer, 2026-07-06):** GAP-V2-115 (carril ui-audit-agent) cubría también este
+mismo hallazgo (arrays literales en `handleRefresh` de `OperarioDashboard`) mezclado con el
+hallazgo de `useReceptionsList.js` (ver GAP-V2-133). GAP-V2-115 queda `rejected`, dividido y
+fusionado en estos dos GAPs. Este GAP sigue `ready` y `depends on GAP-V2-133` como ya estaba
+documentado — el estado `ready` solo se materializa en la práctica una vez GAP-V2-133 esté
+implementado, pero no requiere marcarse `blocked` porque la dependencia es de secuenciación de
+implementación, no de información faltante.
+
 ## Resultado
 
 ## Resultado de auditoría
@@ -90,4 +98,5 @@ npm run lint
 ## Links
 
 - Auditoría de origen: `docs/ai/modules/dashboard-home/audit.md`
-- GAPs relacionados: GAP-V2-133 (factory de recepciones necesaria como prerequisito)
+- GAPs relacionados: GAP-V2-133 (factory de recepciones necesaria como prerequisito), GAP-V2-115
+  (fusionado aquí y en GAP-V2-133), GAP-V2-118 (mismo componente, aria-label del botón Recargar)

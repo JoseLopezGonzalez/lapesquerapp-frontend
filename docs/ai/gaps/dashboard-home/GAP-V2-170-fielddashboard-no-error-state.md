@@ -6,7 +6,7 @@ category: ux-ui
 priority: P0
 risk: low
 size: S
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/components/Field/FieldDashboard.jsx
@@ -102,7 +102,10 @@ npm run lint
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Fusión (gap-normalizer, 2026-07-06):** este GAP absorbe GAP-V2-194 ("FieldDashboard ignora el
+estado de error de useFieldRoutes/useFieldOrders", carril code-audit-agent) — mismo hallazgo
+exacto confirmado independientemente por dos carriles (ui-audit-agent y code-audit-agent).
+GAP-V2-194 queda `rejected` y redirige aquí.
 
 ## Resultado
 
@@ -115,4 +118,4 @@ npm run lint
 ## Links
 
 - Auditoría de origen: `docs/ai/modules/dashboard-home/audit.md`
-- GAPs relacionados: ninguno
+- GAPs relacionados: GAP-V2-194 (fusionado aquí)

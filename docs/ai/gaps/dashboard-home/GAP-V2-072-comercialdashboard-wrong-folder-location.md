@@ -6,7 +6,7 @@ category: architecture-refactor
 priority: P2
 risk: medium
 size: S
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/components/Admin/Dashboard/ComercialDashboard/index.js

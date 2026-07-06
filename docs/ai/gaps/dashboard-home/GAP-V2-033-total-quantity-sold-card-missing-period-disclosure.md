@@ -6,7 +6,7 @@ category: domain-business
 priority: P3
 risk: low
 size: XS
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/components/Admin/Dashboard/TotalQuantitySoldCard/index.js

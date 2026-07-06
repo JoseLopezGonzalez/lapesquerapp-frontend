@@ -6,7 +6,7 @@ category: code-quality
 priority: P3
 risk: low
 size: XS
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/app/field/page.js

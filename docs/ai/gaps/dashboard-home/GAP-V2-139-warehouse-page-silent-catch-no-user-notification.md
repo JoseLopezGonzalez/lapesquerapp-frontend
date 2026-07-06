@@ -6,7 +6,7 @@ category: code-quality
 priority: P2
 risk: medium
 size: XS
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/app/warehouse/[storeId]/page.js

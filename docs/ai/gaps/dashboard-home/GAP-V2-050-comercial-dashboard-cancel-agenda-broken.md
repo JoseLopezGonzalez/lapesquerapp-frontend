@@ -1,12 +1,12 @@
 ---
 id: GAP-V2-050
-title: El botón "Confirmar cancelación" del dashboard Comercial envía un payload con forma incorrecta y omite el motivo obligatorio
+title: El botón "Confirmar cancelación" del dashboard Comercial envía un payload con forma incorrecta y omite el motivo obligatorio de negocio
 module: dashboard-home
 category: ux-ui
 priority: P0
 risk: medium
 size: S
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/components/Admin/Dashboard/ComercialDashboard/index.js
@@ -47,7 +47,20 @@ mismatch de firma no genera ningún error de compilación, solo falla en producc
 
 Además, el `AlertDialog` de cancelación en este mismo archivo (líneas 681-699) no incluye
 ningún campo para el motivo (`reason`), pese a que el servicio lo requiere como
-`string` obligatorio. La implementación de referencia correcta ya existe en
+`string` obligatorio.
+
+**Por qué el motivo es obligatorio, no un detalle de forma (fusionado desde GAP-V2-092,
+hallazgo domain-business):** en el CRM comercial de una pesquera, cada acción pendiente en la
+agenda representa un compromiso de seguimiento sobre un cliente o prospecto (llamar, visitar,
+enviar oferta). Cuando esa acción se cancela en lugar de completarse, perder la razón ("el
+cliente cambió de proveedor", "prospecto duplicado", "ya se resolvió por otra vía", "dato
+erróneo") es perder memoria institucional sobre por qué se dejó de perseguir una oportunidad —
+dato que Dirección necesita para revisar el pipeline comercial y que el propio comercial
+necesita si retoma esa cuenta meses después. El propio contrato de la API ya asume que ese
+motivo es obligatorio (`reason: string`, no `string | null`), lo que indica que esta es una
+regla de negocio ya reconocida en el backend pero no implementada en la UI que la origina.
+
+La implementación de referencia correcta ya existe en
 `src/components/Comercial/CRM/AgendaPageClient.jsx:1059-1080,1224-1255`: incluye un
 `Textarea` para `cancelReason`, valida que no esté vacío antes de enviar
 (`if (!cancelReason.trim())`), llama a la mutación con
@@ -112,7 +125,12 @@ npm run lint
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Fusión (gap-normalizer, 2026-07-06):** este GAP absorbe el contenido de GAP-V2-092
+("Cancelar una acción pendiente de agenda no captura el motivo obligatorio que exige la
+trazabilidad comercial", carril domain-business) — mismo bloque de código
+(`handleCancel`/`AlertDialog` de cancelación en `ComercialDashboard/index.js`), dos ángulos del
+mismo defecto (bug técnico de payload + regla de negocio de motivo obligatorio). GAP-V2-092
+queda marcado `rejected` y redirige aquí.
 
 ## Resultado
 
@@ -125,4 +143,4 @@ npm run lint
 ## Links
 
 - Auditoría de origen: `docs/ai/modules/dashboard-home/audit.md`
-- GAPs relacionados: GAP-V2-051 (mismo patrón de duplicación en el diálogo de reprogramar)
+- GAPs relacionados: GAP-V2-051 (mismo patrón de duplicación en el diálogo de reprogramar), GAP-V2-092 (fusionado aquí)

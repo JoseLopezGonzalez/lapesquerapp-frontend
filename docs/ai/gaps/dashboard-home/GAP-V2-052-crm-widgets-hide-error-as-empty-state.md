@@ -6,7 +6,7 @@ category: ux-ui
 priority: P0
 risk: low
 size: S
-status: candidate
+status: ready
 dependencies: []
 target_files:
   - src/components/Admin/Dashboard/ComercialDashboard/index.js
@@ -101,7 +101,11 @@ npm run lint
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Fusión (gap-normalizer, 2026-07-06):** este GAP absorbe la parte de GAP-V2-075 ("ComercialDashboard
+y CommercialSalesSummaryCard ignoran el error expuesto por sus hooks") relativa a
+`ComercialDashboard`/`useCrmDashboard` — mismo hallazgo exacto, mismo bloque de código. La parte
+de GAP-V2-075 relativa a `CommercialSalesSummaryCard`/`useOrdersTotalAmountStats` se fusiona en
+GAP-V2-053 en su lugar. GAP-V2-075 queda `rejected` (dividido y fusionado en estos dos GAPs).
 
 ## Resultado
 
@@ -114,4 +118,4 @@ npm run lint
 ## Links
 
 - Auditoría de origen: `docs/ai/modules/dashboard-home/audit.md`
-- GAPs relacionados: GAP-V2-003 (mismo anti-patrón en dashboard Admin/Dirección), GAP-V2-053
+- GAPs relacionados: GAP-V2-003 (mismo anti-patrón en dashboard Admin/Dirección), GAP-V2-053, GAP-V2-075 (fusionado aquí parcialmente)

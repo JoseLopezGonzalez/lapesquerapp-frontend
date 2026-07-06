@@ -6,7 +6,7 @@ category: domain-business
 priority: P2
 risk: low
 size: XS
-status: candidate
+status: blocked
 dependencies:
   - GAP-V2-210
 target_files:

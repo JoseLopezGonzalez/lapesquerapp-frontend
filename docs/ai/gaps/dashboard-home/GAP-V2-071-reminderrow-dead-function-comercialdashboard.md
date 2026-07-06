@@ -6,7 +6,7 @@ category: code-quality
 priority: P3
 risk: low
 size: XS
-status: candidate
+status: rejected
 dependencies: []
 target_files:
   - src/components/Admin/Dashboard/ComercialDashboard/index.js
@@ -73,7 +73,10 @@ npm run lint
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Fusionado (gap-normalizer, 2026-07-06):** mismo hallazgo que GAP-V2-054 ("`ReminderRow` es
+código muerto y su acción 'Abrir cliente/prospecto' no existe en el widget de agenda realmente
+renderizado", carril ui-audit-agent), que además cubre la regresión de navegación asociada.
+Fusionado en GAP-V2-054. Este archivo queda `rejected` — no se implementa por separado.
 
 ## Resultado
 

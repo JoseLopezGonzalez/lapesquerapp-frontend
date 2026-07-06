@@ -6,7 +6,7 @@ category: a11y-responsive
 priority: P3
 risk: low
 size: L
-status: candidate
+status: blocked
 dependencies: []
 target_files:
   - src/components/Warehouse/ReceptionsListCard/index.tsx
@@ -90,7 +90,10 @@ npm run lint
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+**Bloqueado (gap-normalizer, 2026-07-06):** requiere decisión explícita de Jose (migrar a
+`useIsMobileSafe` o documentar excepción aceptada) — el propio GAP ya lo señala como criterio de
+aceptación. Además `size: L`, lo que por sí solo ya exigiría autorización explícita antes de
+`ready`.
 
 ## Resultado
 
