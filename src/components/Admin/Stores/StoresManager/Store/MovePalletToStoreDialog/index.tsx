@@ -6,6 +6,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -13,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSession } from 'next-auth/react';
-import { Warehouse, Check, Search, X, Loader2 } from 'lucide-react';
+import { Warehouse, Check, Search, X, Loader2, AlertTriangle } from 'lucide-react';
 import { movePalletToStore } from '@/services/palletService';
 import { useStoreContext } from '@/context/StoreContext';
 import { notify } from '@/lib/notifications';
@@ -25,10 +26,17 @@ export default function MovePalletToStoreDialog() {
     movePalletToStoreDialogData: palletId,
     isOpenMovePalletToStoreDialog: isOpen,
     updateStoreWhenOnMovePalletToStore,
+    pallets,
   } = useStoreContext();
 
   const { data: session } = useSession();
   const token = session?.user?.accessToken;
+
+  const linkedOrderId = pallets?.find((p) => p.id === palletId)?.orderId as
+    | string
+    | number
+    | null
+    | undefined;
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStoreValue, setSelectedStoreValue] = useState<string | number | null>(null);
@@ -100,7 +108,21 @@ export default function MovePalletToStoreDialog() {
       >
         <DialogHeader>
           <DialogTitle>Traspaso de almacén - Palet #{palletId}</DialogTitle>
+          <DialogDescription>
+            El palet quedará sin ubicar en el almacén destino tras el traspaso — deberá asignarle
+            una posición manualmente si lo necesita.
+          </DialogDescription>
         </DialogHeader>
+
+        {linkedOrderId && (
+          <div className="flex items-start gap-2 rounded-md border border-orange-200 bg-orange-50 p-3 text-sm text-orange-700">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>
+              Este palet está vinculado al pedido #{linkedOrderId}. El almacén de origen determina
+              desde dónde se preparará ese pedido.
+            </span>
+          </div>
+        )}
 
         {/* Buscador */}
         <div className="relative my-2">

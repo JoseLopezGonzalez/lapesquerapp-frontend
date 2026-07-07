@@ -53,9 +53,11 @@ export default function AddElementToPosition({ open }: { open: boolean }) {
     closeAddElementToPosition,
     pallets,
     changePalletsPosition,
+    getPositionPallets,
   } = useStoreContext();
 
   const position = addElementToPositionDialogData;
+  const occupyingPallets = position !== null ? (getPositionPallets(position) as Pallet[]) : [];
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPalletIds, setSelectedPalletIds] = useState<(string | number)[]>([]);
@@ -162,6 +164,34 @@ export default function AddElementToPosition({ open }: { open: boolean }) {
             Seleccione uno o varios pallets de la lista para ubicarlos en esta posición.
           </DialogDescription>
         </DialogHeader>
+
+        {occupyingPallets.length > 0 && (
+          <div className="bg-muted/50 rounded-md border p-3 text-sm">
+            <p className="text-muted-foreground mb-1.5 flex items-center gap-1.5 text-xs font-medium">
+              <MapPin className="h-3.5 w-3.5" />
+              Esta posición ya tiene {occupyingPallets.length}{' '}
+              {occupyingPallets.length === 1 ? 'pallet ubicado' : 'pallets ubicados'}
+            </p>
+            <ul className="flex flex-col gap-1">
+              {occupyingPallets.map((occupyingPallet) => (
+                <li key={occupyingPallet.id} className="text-muted-foreground line-clamp-1">
+                  <span className="text-foreground font-medium">Pallet #{occupyingPallet.id}</span>
+                  {Array.isArray(occupyingPallet.products) &&
+                    occupyingPallet.products.length > 0 && (
+                      <>
+                        {' — '}
+                        {occupyingPallet.products.map((product) => product.name).join(', ')}
+                      </>
+                    )}
+                  {Array.isArray(occupyingPallet.lotNumbers) &&
+                    occupyingPallet.lotNumbers.length > 0 && (
+                      <> · Lotes: {occupyingPallet.lotNumbers.join(', ')}</>
+                    )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <Tabs
           defaultValue="unlocated"

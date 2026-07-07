@@ -135,7 +135,7 @@ export default function PalletCard({ pallet, isFlipped = false, onFlip }: Pallet
     setShrinking(target < current);
     containerHeightRef.current = target;
     setContainerHeight(target);
-  }, [isFlipped]);  
+  }, [isFlipped]);
 
   const flipTo = (flip: boolean) => {
     const targetRef = flip ? backRef : frontRef;
@@ -212,7 +212,7 @@ export default function PalletCard({ pallet, isFlipped = false, onFlip }: Pallet
               <div className="min-w-0">
                 <p
                   className={cn(
-                    'text-base leading-tight font-semibold',
+                    'text-base leading-tight font-medium',
                     isRelevant ? 'text-white' : 'text-foreground'
                   )}
                 >
@@ -333,7 +333,7 @@ export default function PalletCard({ pallet, isFlipped = false, onFlip }: Pallet
           {/* Body */}
           <div className="space-y-3 px-4 py-3">
             <div>
-              <p className="text-muted-foreground mb-1.5 text-[10px] font-semibold tracking-wider uppercase">
+              <p className="text-muted-foreground mb-1.5 text-[10px] font-medium tracking-wider uppercase">
                 Productos
               </p>
               <div className="space-y-1.5">
@@ -341,7 +341,9 @@ export default function PalletCard({ pallet, isFlipped = false, onFlip }: Pallet
                   <div key={i} className="flex min-w-0 items-start gap-2">
                     <div className="bg-foreground/8 mt-0.5 h-1.5 w-1.5 flex-shrink-0 rounded-full" />
                     <div className="min-w-0 flex-1 overflow-hidden">
-                      <p className="line-clamp-2 text-sm leading-tight font-medium">{product.name}</p>
+                      <p className="line-clamp-2 text-sm leading-tight font-medium">
+                        {product.name}
+                      </p>
                       {hasMultipleProducts && (
                         <p className="text-muted-foreground mt-0.5 truncate text-xs">
                           {formatDecimalWeight(product.netWeight)}
@@ -357,7 +359,7 @@ export default function PalletCard({ pallet, isFlipped = false, onFlip }: Pallet
 
             {pallet.lots?.length > 0 && (
               <div>
-                <p className="text-muted-foreground mb-1.5 text-[10px] font-semibold tracking-wider uppercase">
+                <p className="text-muted-foreground mb-1.5 text-[10px] font-medium tracking-wider uppercase">
                   Lotes
                 </p>
                 <div className="flex flex-wrap gap-1">
@@ -377,7 +379,7 @@ export default function PalletCard({ pallet, isFlipped = false, onFlip }: Pallet
 
             {pallet.observations && (
               <div>
-                <p className="text-muted-foreground mb-1 text-[10px] font-semibold tracking-wider uppercase">
+                <p className="text-muted-foreground mb-1 text-[10px] font-medium tracking-wider uppercase">
                   Obs.
                 </p>
                 <p className="text-muted-foreground line-clamp-2 text-xs leading-relaxed">
@@ -392,13 +394,13 @@ export default function PalletCard({ pallet, isFlipped = false, onFlip }: Pallet
           {/* Stats footer */}
           <div className="grid grid-cols-2 divide-x border-t">
             <div className="flex min-w-0 items-center justify-center gap-1.5 py-2.5">
-              <span className="truncate text-sm font-semibold tabular-nums">{availableBoxCount}</span>
+              <span className="truncate text-sm font-medium tabular-nums">{availableBoxCount}</span>
               <span className="text-muted-foreground shrink-0 text-xs">
                 {availableBoxCount === 1 ? 'caja' : 'cajas'}
               </span>
             </div>
             <div className="flex min-w-0 items-center justify-center gap-1.5 py-2.5">
-              <span className="truncate text-sm font-semibold tabular-nums">
+              <span className="truncate text-sm font-medium tabular-nums">
                 {formatDecimalWeight(availableNetWeight)}
               </span>
             </div>
@@ -431,9 +433,7 @@ export default function PalletCard({ pallet, isFlipped = false, onFlip }: Pallet
               isRelevant ? 'bg-green-500 text-white' : 'bg-muted/40'
             )}
           >
-            <p
-              className={cn('text-sm font-semibold', isRelevant ? 'text-white' : 'text-foreground')}
-            >
+            <p className={cn('text-sm font-medium', isRelevant ? 'text-white' : 'text-foreground')}>
               Acciones · Palet #{pallet.id}
             </p>
             <button

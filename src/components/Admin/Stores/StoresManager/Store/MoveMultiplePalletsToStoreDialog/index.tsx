@@ -25,6 +25,7 @@ import {
   Loader2,
   Layers,
   ArrowRightLeft,
+  AlertTriangle,
 } from 'lucide-react';
 import { moveMultiplePalletsToStore } from '@/services/palletService';
 import { useStoreContext } from '@/context/StoreContext';
@@ -69,9 +70,15 @@ export default function MoveMultiplePalletsToStoreDialog() {
       lots?: string[];
       observations?: string;
       boxes?: unknown[];
+      orderId?: string | number | null;
       [key: string]: unknown;
     }>;
   }, [store]);
+
+  const selectedLinkedPallets = useMemo(
+    () => allPallets.filter((p) => selectedPalletIds.has(p.id) && p.orderId),
+    [allPallets, selectedPalletIds]
+  );
 
   const filteredStores = storeOptions.filter((s) =>
     s.label.toLowerCase().includes(searchQuery.toLowerCase())
@@ -301,6 +308,7 @@ export default function MoveMultiplePalletsToStoreDialog() {
                 lots?: string[];
                 observations?: string;
                 boxes?: unknown[];
+                orderId?: string | number | null;
               }) => {
                 const isSelected = selectedPalletIds.has(pallet.id);
                 const palletInfo = getPalletInfo(pallet);
@@ -328,6 +336,15 @@ export default function MoveMultiplePalletsToStoreDialog() {
                             <h4 className="text-foreground truncate text-base font-medium">
                               Palet #{pallet.id}
                             </h4>
+                            {pallet.orderId && (
+                              <Badge
+                                variant="outline"
+                                className="flex shrink-0 items-center gap-1 border-orange-200 bg-orange-50 text-xs text-orange-700"
+                              >
+                                <AlertTriangle className="h-3 w-3" />
+                                Pedido #{pallet.orderId}
+                              </Badge>
+                            )}
                           </div>
 
                           <div className="mb-2">
@@ -393,13 +410,13 @@ export default function MoveMultiplePalletsToStoreDialog() {
                     <CardFooter className="w-full p-0">
                       <div className="divide-border grid w-full grid-cols-2 divide-x">
                         <div className="bg-accent/40 flex items-center justify-center py-2">
-                          <span className="text-sm font-semibold">
+                          <span className="text-sm font-medium">
                             {palletInfo.availableBoxCount}{' '}
                             {palletInfo.availableBoxCount === 1 ? 'caja' : 'cajas'}
                           </span>
                         </div>
                         <div className="bg-accent/40 flex items-center justify-center py-2">
-                          <span className="text-sm font-semibold">
+                          <span className="text-sm font-medium">
                             {formatDecimalWeight(palletInfo.availableNetWeight)}
                           </span>
                         </div>
@@ -504,6 +521,21 @@ export default function MoveMultiplePalletsToStoreDialog() {
           </div>
         </div>
 
+        {/* Aviso de palets vinculados a pedido */}
+        {selectedLinkedPallets.length > 0 && (
+          <div className="flex items-start gap-2 rounded-md border border-orange-200 bg-orange-50 p-3 text-sm text-orange-700">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>
+              {selectedLinkedPallets.length === 1
+                ? `El palet #${selectedLinkedPallets[0].id} está vinculado al pedido #${selectedLinkedPallets[0].orderId}.`
+                : `${selectedLinkedPallets.length} palets seleccionados están vinculados a un pedido: ${selectedLinkedPallets
+                    .map((p) => `#${p.id} (pedido #${p.orderId})`)
+                    .join(', ')}.`}{' '}
+              El almacén de origen determina desde dónde se preparará ese pedido.
+            </span>
+          </div>
+        )}
+
         {/* Indicador de dirección */}
         <div className="flex justify-center">
           <div className="bg-muted rounded-full p-2">
@@ -519,10 +551,15 @@ export default function MoveMultiplePalletsToStoreDialog() {
             </div>
             <div>
               <p className="text-muted-foreground text-xs">Almacén destino</p>
-              <p className="text-sm font-semibold">{selectedStoreName}</p>
+              <p className="text-sm font-medium">{selectedStoreName}</p>
             </div>
           </div>
         </div>
+
+        <p className="text-muted-foreground text-center text-xs">
+          Los palets quedarán sin ubicar en el almacén destino tras el traspaso — deberá asignarles
+          una posición manualmente si lo necesita.
+        </p>
       </div>
     </div>
   );
@@ -566,7 +603,8 @@ export default function MoveMultiplePalletsToStoreDialog() {
             </div>
           ) : (
             <DialogDescription>
-              Seleccione los palets que desea mover y el almacén de destino
+              Seleccione los palets que desea mover y el almacén de destino. Quedarán sin ubicar en
+              el almacén destino tras el traspaso.
             </DialogDescription>
           )}
         </DialogHeader>
