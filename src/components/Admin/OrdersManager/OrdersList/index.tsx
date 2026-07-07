@@ -296,7 +296,7 @@ const OrdersList = ({
         )}
       </div>
       <div
-        className={`flex min-h-0 flex-1 flex-col overflow-hidden ${isMobile ? 'px-4' : 'px-4 sm:px-7'}`}
+        className={`flex min-h-0 flex-1 flex-col ${isMobile ? 'overflow-visible px-4' : 'overflow-hidden px-4 sm:px-7'}`}
       >
         {/* Barra de búsqueda (siempre visible) + tabs con efecto badge y scroll con fade */}
         <div

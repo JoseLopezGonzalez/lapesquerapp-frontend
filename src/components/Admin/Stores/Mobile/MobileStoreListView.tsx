@@ -12,7 +12,6 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/in
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
 import {
   ArrowLeft,
-  ChevronRight,
   Loader2,
   Package,
   ScanLine,
@@ -64,6 +63,18 @@ const OCCUPANCY_TEXT_CLASS: Record<'low' | 'medium' | 'high', string> = {
   high: 'text-red-700 dark:text-red-400',
 };
 
+const OCCUPANCY_BADGE_CLASS: Record<'low' | 'medium' | 'high', string> = {
+  low: 'bg-green-500/15 text-green-700 dark:text-green-300',
+  medium: 'bg-orange-500/15 text-orange-700 dark:text-orange-300',
+  high: 'bg-red-500/15 text-red-700 dark:text-red-300',
+};
+
+const OCCUPANCY_LABEL: Record<'low' | 'medium' | 'high', string> = {
+  low: 'Libre',
+  medium: 'Ocupado',
+  high: 'Lleno',
+};
+
 function storeInitials(name: string) {
   const cleaned = name.replace(/^Almacén\s*/i, '').trim();
   const words = cleaned.split(/\s+/).filter(Boolean);
@@ -113,10 +124,10 @@ function MobileStoreCard({
       )}
     >
       <CardContent className="py-0">
-        <div className="flex w-full min-w-0 grow items-center gap-3 pr-1">
+        <div className="flex w-full min-w-0 grow items-center gap-3">
           <div
             className={cn(
-              'flex h-11 w-11 shrink-0 items-center justify-center rounded-[13px] text-[13px] font-extrabold text-white',
+              'flex h-11 w-11 shrink-0 items-center justify-center rounded-[13px] text-base font-extrabold text-white',
               isGhostStore ? 'bg-slate-500' : OCCUPANCY_AVATAR_CLASS[occupancyStatus]
             )}
             aria-hidden="true"
@@ -124,7 +135,19 @@ function MobileStoreCard({
             {isGhostStore ? <Package className="h-5 w-5" /> : storeInitials(store.name)}
           </div>
           <div className="min-w-0 flex-1 space-y-1">
-            <p className="truncate text-base leading-tight font-medium">{store.name}</p>
+            <div className="flex items-center justify-between gap-2">
+              <p className="truncate text-base leading-tight font-medium">{store.name}</p>
+              {!isGhostStore && (
+                <span
+                  className={cn(
+                    'shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold',
+                    OCCUPANCY_BADGE_CLASS[occupancyStatus]
+                  )}
+                >
+                  {OCCUPANCY_LABEL[occupancyStatus]}
+                </span>
+              )}
+            </div>
 
             {isGhostStore ? (
               <p className="text-muted-foreground text-sm tabular-nums">
@@ -146,32 +169,30 @@ function MobileStoreCard({
                 )}
               </div>
             )}
-
-            <div className="flex items-center gap-2">
-              <Progress
-                value={
-                  isGhostStore
-                    ? (store.content?.pallets?.length ?? 0) > 0
-                      ? 100
-                      : 0
-                    : Math.min(fillPercentage, 100)
-                }
-                className={cn('h-2.5 flex-1', progressClass)}
-              />
-              {!isGhostStore && (
-                <span
-                  className={cn(
-                    'w-9 shrink-0 text-right text-[11px] font-bold tabular-nums',
-                    OCCUPANCY_TEXT_CLASS[occupancyStatus]
-                  )}
-                >
-                  {Math.round(Math.min(fillPercentage, 100))}%
-                </span>
-              )}
-            </div>
           </div>
+        </div>
 
-          <ChevronRight className="text-muted-foreground h-5 w-5 flex-shrink-0" aria-hidden />
+        <div className="mt-3 flex items-center gap-2">
+          <Progress
+            value={
+              isGhostStore
+                ? (store.content?.pallets?.length ?? 0) > 0
+                  ? 100
+                  : 0
+                : Math.min(fillPercentage, 100)
+            }
+            className={cn('h-2.5 flex-1', progressClass)}
+          />
+          {!isGhostStore && (
+            <span
+              className={cn(
+                'w-9 shrink-0 text-right text-[11px] font-bold tabular-nums',
+                OCCUPANCY_TEXT_CLASS[occupancyStatus]
+              )}
+            >
+              {Math.round(Math.min(fillPercentage, 100))}%
+            </span>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -338,7 +359,7 @@ export function MobileStoreListView({
       </div>
 
       {/* Contenido — estructura idéntica a gestor de pedidos */}
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-4">
+      <div className="flex min-h-0 flex-1 flex-col overflow-visible px-4">
         {/* Buscador + tabs */}
         <div className="relative z-10 -mt-8 mb-3 w-full flex-shrink-0 space-y-4">
           <InputGroup className="bg-background w-full rounded-2xl border-0 shadow-lg shadow-black/10">
