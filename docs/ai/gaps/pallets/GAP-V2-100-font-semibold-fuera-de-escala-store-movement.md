@@ -6,13 +6,13 @@ category: ux-ui
 priority: P3
 risk: low
 size: S
-status: ready
+status: done
 dependencies: []
 target_files:
   - src/components/Admin/Stores/StoresManager/Store/PositionSlideover/PalletCard/index.tsx
   - src/components/Admin/Stores/StoresManager/Store/MoveMultiplePalletsToStoreDialog/index.tsx
 created_at: 2026-07-05
-updated_at: 2026-07-05
+updated_at: 2026-07-07
 normalized_at: 2026-07-05
 ---
 
@@ -89,11 +89,37 @@ para no introducir un tercer criterio.
 
 ## Resultado
 
-{se rellena al terminar la implementación}
+Reemplazados todos los `font-semibold` por `font-medium` en
+`PositionSlideover/PalletCard/index.tsx` (identificador, labels de sección,
+footer de stats, cabecera de la cara trasera) y en
+`MoveMultiplePalletsToStoreDialog/index.tsx` (footer de stats de la tarjeta,
+nombre del almacén destino en confirmación). `grep -rn "font-semibold"` sobre
+ambos directorios no devuelve resultados. Mismo criterio que GAP-V2-073. `npm
+run type-check` y `npm run lint` limpios.
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+### Veredicto: ✅ done
+
+`grep -n "font-semibold"` sobre ambos target files no devuelve resultados — confirmado
+leyendo ambos archivos completos. Todos los pesos son `font-medium`.
+
+Jerarquía visual verificada por lectura del código:
+
+- `PalletCard/index.tsx:213-220`: identificador "Palet #{id}" en `text-base leading-tight
+font-medium` (el tamaño de fuente más grande del componente); labels de sección
+  ("Productos"/"Lotes"/"Obs.") en `text-[10px] font-medium uppercase` (línea 336, 360, 380);
+  footer de stats en `text-sm font-medium` (línea 395, 401); cabecera cara trasera en
+  `text-sm font-medium` (línea 435). La jerarquía se mantiene correctamente solo por tamaño
+  (`text-base` > `text-sm` > `text-[10px]`), tal como exige el criterio de aceptación.
+- `MoveMultiplePalletsToStoreDialog/index.tsx:336-338`: identificador "Palet #{id}" en
+  `text-base font-medium`; footer de stats en `text-sm font-medium` (línea 413, 419); nombre
+  de almacén destino en confirmación en `text-sm font-medium` (línea 554). Mismo patrón,
+  mismo criterio que `GAP-V2-073`.
+
+`npm run type-check` limpio. `npx eslint` sobre ambos archivos sin errores nuevos (mismo
+warning preexistente ya reportado en GAP-V2-075, no relacionado con este cambio). Sin
+observaciones.
 
 ## Links
 

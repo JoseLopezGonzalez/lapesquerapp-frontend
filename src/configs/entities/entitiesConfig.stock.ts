@@ -581,6 +581,8 @@ const stockConfig: Record<string, any> = {
         { name: 'productsNames', label: 'Artículos', type: 'list', path: 'productsNames' },
         /* lots */
         { name: 'lots', label: 'Lotes', type: 'list', path: 'lots' },
+        /* createdAt */
+        { name: 'createdAt', label: 'Fecha de creación', type: 'date', path: 'createdAt' },
         /* observations */
         { name: 'observations', label: 'Observaciones', type: 'text', path: 'observations' },
         /* store */

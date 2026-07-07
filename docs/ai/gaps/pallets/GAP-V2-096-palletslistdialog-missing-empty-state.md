@@ -6,7 +6,7 @@ category: ux-ui
 priority: P2
 risk: low
 size: S
-status: in_progress
+status: done
 dependencies: []
 target_files:
   - src/components/Admin/Stores/StoresManager/Store/PalletsListDialog/index.tsx
@@ -88,7 +88,27 @@ type-check` y `npm run lint` limpios.
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+### Resultado: ✅ APROBADO
+
+Verificado directamente contra `src/components/Admin/Stores/StoresManager/Store/PalletsListDialog/index.tsx`:
+
+- `EmptyState` (`@/components/Utilities/EmptyState`) importado y renderizado cuando
+  `filteredPallets.length === 0` (línea 267), antes del bloque `hidden sm:block` /
+  `sm:hidden`, compartido por ambas ramas — cumple.
+- Distingue "Sin resultados" / "No hay palets que coincidan con esta búsqueda." (con
+  `searchText.trim()` activo) de "Sin palets" / "Esta especie no tiene palets registrados
+  en este almacén." (sin búsqueda) — cumple el criterio opcional de distinción.
+- Icono `PackageSearch` (lucide-react) — icono + título + descripción, patrón correcto.
+- Rama con resultados (tabla desktop y `PalletCard` mobile) no fue tocada salvo por quedar
+  dentro del `else` del condicional — sin regresión.
+- `npm run type-check`: limpio (0 errores). `npm run lint`: 0 errores; único warning en
+  este archivo es preexistente y no relacionado (`react-hooks/exhaustive-deps` en
+  `safePallets`, línea 77, ya presente antes de este GAP).
+
+Los 3 criterios de aceptación se cumplen. Sin fetch directo, sin hardcode de tenant, sin
+archivos `.js` nuevos, sin `any` sin justificar. UX Light (cambio visual de un único
+componente, sin flujo multi-paso) — autoexplicativo, consistente con el resto de empty
+states del proyecto, sin ruptura visual.
 
 ## Links
 

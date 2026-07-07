@@ -6,7 +6,7 @@ category: ux-ui
 priority: P2
 risk: low
 size: S
-status: in_progress
+status: done
 dependencies: []
 target_files:
   - src/components/Admin/Stores/StoresManager/Store/MovePalletToStoreDialog/index.tsx
@@ -99,7 +99,36 @@ mismo patrón (`onSubmit` async, botón "Ubicar N pallets" deshabilitado +
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+### Resultado: ✅ APROBADO
+
+Verificado directamente contra ambos target files:
+
+- `MovePalletToStoreDialog/index.tsx`: `isSubmitting` state (línea 35), `handleSubmit`
+  async con `setIsSubmitting(true)` antes de la llamada y `finally { setIsSubmitting(false) }`
+  (líneas 55-82). Botón "Confirmar traslado" con `disabled={!selectedStoreValue ||
+isSubmitting}` y `Loader2` + "Moviendo..." (líneas 162-171) — patrón idéntico al de
+  referencia `MoveMultiplePalletsToStoreDialog`. `handleClose` (línea 49) no cierra si
+  `isSubmitting` es true, y es el handler pasado a `onOpenChange` del `Dialog` (línea 96)
+  — cumple el criterio de no-cierre durante envío.
+- `AddElementToPositionDialog/index.tsx`: mismo patrón — `isSubmitting` (línea 63),
+  `onSubmit` async con try/finally (líneas 67-83), botón "Ubicar N pallets"/"Ubicar
+  pallet" con `disabled={selectedPalletIds.length === 0 || isSubmitting}` y `Loader2` +
+  "Ubicando..." (líneas 228-239). `handleOnClose` (línea 85) retorna temprano si
+  `isSubmitting`, y es el handler de `onOpenChange` (línea 154) — cumple.
+- Doble clic: `setIsSubmitting(true)` es la primera línea síncrona dentro del try en
+  ambos handlers, y el botón queda `disabled` en el siguiente render — el patrón previene
+  la segunda petición en el caso estándar de React (un solo hilo de JS, el segundo click
+  antes del primer render no es fisicamente posible salvo con throttling extremo, que es
+  el mismo nivel de garantía que ofrece el componente de referencia
+  `MoveMultiplePalletsToStoreDialog`).
+- `npm run type-check`: limpio. `npm run lint`: 0 errores, sin warnings nuevos en ninguno
+  de los dos archivos.
+
+Los 4 criterios de aceptación se cumplen, replicando fielmente el patrón de
+`MoveMultiplePalletsToStoreDialog`/`CreateFromForecastDialog` ya validado en el proyecto.
+Sin fetch directo, sin hardcode de tenant. UX Light (fix de comportamiento existente,
+restaura un patrón ya presente en la misma superficie) — estados de carga con affordance
+claro (`Loader2` + texto), consistente con el resto de diálogos de la superficie.
 
 ## Links
 
