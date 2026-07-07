@@ -6,13 +6,13 @@ category: ux-ui
 priority: P2
 risk: low
 size: S
-status: ready
+status: in_progress
 dependencies: []
 target_files:
   - src/components/Admin/Stores/StoresManager/Store/MovePalletToStoreDialog/index.tsx
   - src/components/Admin/Stores/StoresManager/Store/AddElementToPositionDialog/index.tsx
 created_at: 2026-07-05
-updated_at: 2026-07-05
+updated_at: 2026-07-07
 normalized_at: 2026-07-05
 ---
 
@@ -89,7 +89,13 @@ orden es válido.
 
 ## Resultado
 
-{se rellena al terminar la implementación}
+Añadido `isSubmitting` (`useState`) en ambos diálogos. `MovePalletToStoreDialog`:
+`handleSubmit` async con try/finally, botón "Confirmar traslado" deshabilitado
+durante el envío con `Loader2` + "Moviendo...", `onOpenChange` sustituido por
+`handleClose` que no cierra mientras `isSubmitting`. `AddElementToPositionDialog`:
+mismo patrón (`onSubmit` async, botón "Ubicar N pallets" deshabilitado +
+"Ubicando...", `handleOnClose` respeta `isSubmitting`). `npm run type-check` y
+`npm run lint` limpios.
 
 ## Resultado de auditoría
 

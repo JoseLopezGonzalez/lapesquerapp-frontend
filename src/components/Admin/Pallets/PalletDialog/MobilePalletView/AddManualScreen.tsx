@@ -95,7 +95,7 @@ export default function AddManualScreen({
             disabled={isReadOnly}
             loading={productsLoading}
           />
-          {productError && <p className="text-xs text-destructive">{productError}</p>}
+          {productError && <p className="text-destructive text-xs">{productError}</p>}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -159,13 +159,9 @@ export default function AddManualScreen({
       </div>
 
       {/* CTAs sticky at bottom */}
-      <div
-        className="shrink-0 border-t bg-background px-4 pb-4 pt-3"
-        style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
-      >
-        <p className="mb-2.5 text-center text-xs text-muted-foreground">
-          Cajas en el palet:{' '}
-          <span className="font-semibold text-foreground">{totalBoxCount}</span>
+      <div className="bg-background shrink-0 border-t px-4 pt-3 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+        <p className="text-muted-foreground mb-2.5 text-center text-xs">
+          Cajas en el palet: <span className="text-foreground font-semibold">{totalBoxCount}</span>
         </p>
         <div className="flex gap-3">
           <Button

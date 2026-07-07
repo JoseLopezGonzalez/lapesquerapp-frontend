@@ -65,8 +65,12 @@ function useImageBlobUrl(palletId: number | string, attachmentId: number, thumbn
           setLoading(false);
         }
       })
-      .catch(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
+      .catch(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [palletId, attachmentId, thumbnail]);
 
   return { src, loading };
@@ -88,8 +92,8 @@ function ContactThumb({ palletId, attachment, isActive, onClick }: ContactThumbP
       className={cn(
         'h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all duration-150',
         isActive
-          ? 'border-primary shadow-md scale-[1.08]'
-          : 'border-transparent opacity-50 hover:opacity-80 hover:scale-105'
+          ? 'border-primary scale-[1.08] shadow-md'
+          : 'border-transparent opacity-50 hover:scale-105 hover:opacity-80'
       )}
       aria-label={attachment.originalName}
     >
@@ -119,23 +123,23 @@ function ImageCard({ attachment, palletId, canDelete, onDelete, onClick }: Image
 
   return (
     <div
-      className="group relative cursor-pointer overflow-hidden rounded-xl border bg-card shadow-sm transition-all hover:shadow-md hover:scale-[1.02]"
+      className="group bg-card relative cursor-pointer overflow-hidden rounded-xl border shadow-sm transition-all hover:scale-[1.02] hover:shadow-md"
       onClick={onClick}
     >
-      <div className="relative aspect-square w-full bg-muted">
+      <div className="bg-muted relative aspect-square w-full">
         {loading ? (
           <Skeleton className="h-full w-full rounded-none" />
         ) : src ? (
           <img src={src} alt={attachment.originalName} className="h-full w-full object-cover" />
         ) : (
           <div className="flex h-full items-center justify-center">
-            <ImageOff className="h-8 w-8 text-muted-foreground/40" />
+            <ImageOff className="text-muted-foreground/40 h-8 w-8" />
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
         {canDelete && (
           <button
-            className="absolute top-1.5 right-1.5 hidden rounded-md bg-black/60 p-1 text-white backdrop-blur-sm transition-colors hover:bg-black/80 group-hover:flex"
+            className="absolute top-1.5 right-1.5 hidden rounded-md bg-black/60 p-1 text-white backdrop-blur-sm transition-colors group-hover:flex hover:bg-black/80"
             onClick={(e) => {
               e.stopPropagation();
               onDelete(attachment.id);
@@ -147,12 +151,12 @@ function ImageCard({ attachment, palletId, canDelete, onDelete, onClick }: Image
         )}
       </div>
       <div className="px-3 py-2">
-        <p className="truncate text-xs font-medium text-foreground">{attachment.originalName}</p>
-        <p className="text-[10px] text-muted-foreground">
+        <p className="text-foreground truncate text-xs font-medium">{attachment.originalName}</p>
+        <p className="text-muted-foreground text-[10px]">
           {formatBytes(attachment.size)} · {formatDateHour(attachment.createdAt)}
         </p>
         {attachment.notes && (
-          <p className="mt-1 line-clamp-1 text-[11px] text-muted-foreground italic">
+          <p className="text-muted-foreground mt-1 line-clamp-1 text-[11px] italic">
             {attachment.notes}
           </p>
         )}
@@ -191,7 +195,7 @@ export function Lightbox({
   const thumbsRef = useRef<HTMLDivElement>(null);
 
   const resolvedNotes = notesOverrides.has(attachment.id)
-    ? notesOverrides.get(attachment.id) ?? null
+    ? (notesOverrides.get(attachment.id) ?? null)
     : attachment.notes;
 
   const [editingNotes, setEditingNotes] = useState(false);
@@ -261,7 +265,7 @@ export function Lightbox({
         <div className="relative flex min-h-0 flex-1 items-center justify-center bg-zinc-950">
           {/* Floating actions — top right */}
           <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
-            <span className="rounded-md bg-black/60 px-2.5 py-1 text-xs font-semibold tabular-nums text-white/90 backdrop-blur-sm">
+            <span className="rounded-md bg-black/60 px-2.5 py-1 text-xs font-semibold text-white/90 tabular-nums backdrop-blur-sm">
               {currentIndex + 1} / {attachments.length}
             </span>
             <Button
@@ -271,6 +275,7 @@ export function Lightbox({
               onClick={handleDownload}
               disabled={!src}
               title="Descargar"
+              aria-label="Descargar"
             >
               <Download className="h-4 w-4" />
             </Button>
@@ -278,9 +283,10 @@ export function Lightbox({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 rounded-md bg-black/60 backdrop-blur-sm hover:bg-black/80 text-red-400 hover:text-red-300"
+                className="h-8 w-8 rounded-md bg-black/60 text-red-400 backdrop-blur-sm hover:bg-black/80 hover:text-red-300"
                 onClick={() => onDelete(attachment.id)}
                 title="Eliminar"
+                aria-label="Eliminar imagen"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -291,6 +297,7 @@ export function Lightbox({
               className="h-8 w-8 rounded-md bg-black/60 text-white backdrop-blur-sm hover:bg-black/80 hover:text-white"
               onClick={onClose}
               title="Cerrar"
+              aria-label="Cerrar"
             >
               <X className="h-4 w-4" />
             </Button>
@@ -309,7 +316,7 @@ export function Lightbox({
           )}
 
           {/* Image */}
-          <div className="flex min-h-[280px] w-full items-center justify-center py-8 px-16">
+          <div className="flex min-h-[280px] w-full items-center justify-center px-16 py-8">
             {loading ? (
               <Loader2 className="h-10 w-10 animate-spin text-white/30" />
             ) : src ? (
@@ -339,11 +346,7 @@ export function Lightbox({
         {/* Thumbnail strip */}
         {attachments.length > 1 && (
           <div className="border-t border-zinc-800 bg-zinc-950 px-4 py-2.5">
-            <div
-              ref={thumbsRef}
-              className="flex gap-2 overflow-x-auto"
-              style={{ scrollbarWidth: 'none' }}
-            >
+            <div ref={thumbsRef} className="scrollbar-hide flex gap-2 overflow-x-auto">
               {attachments.map((att, i) => (
                 <ContactThumb
                   key={att.id}
@@ -358,11 +361,11 @@ export function Lightbox({
         )}
 
         {/* Info + Notes */}
-        <div className="border-t bg-background px-4 py-3">
+        <div className="bg-background border-t px-4 py-3">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold">{attachment.originalName}</p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 {formatBytes(attachment.size)} · {attachment.uploadedBy.name} ·{' '}
                 {formatDateHour(attachment.createdAt)}
               </p>
@@ -414,11 +417,11 @@ export function Lightbox({
               </div>
             </div>
           ) : resolvedNotes ? (
-            <p className="mt-1 line-clamp-2 text-sm text-muted-foreground italic">
+            <p className="text-muted-foreground mt-1 line-clamp-2 text-sm italic">
               {resolvedNotes}
             </p>
           ) : (
-            <p className="mt-1 text-xs italic text-muted-foreground/50">
+            <p className="text-muted-foreground/50 mt-1 text-xs italic">
               Sin nota · pulsa &quot;Nota&quot; para añadir
             </p>
           )}
@@ -444,9 +447,13 @@ export function UploadZone({ onFiles, isUploading, uploadProgress }: UploadZoneP
 
   // Revoke all preview URLs on unmount
   const pendingFilesRef = useRef<PendingFile[]>([]);
-  useEffect(() => { pendingFilesRef.current = pendingFiles; }, [pendingFiles]);
   useEffect(() => {
-    return () => { pendingFilesRef.current.forEach((pf) => URL.revokeObjectURL(pf.previewUrl)); };
+    pendingFilesRef.current = pendingFiles;
+  }, [pendingFiles]);
+  useEffect(() => {
+    return () => {
+      pendingFilesRef.current.forEach((pf) => URL.revokeObjectURL(pf.previewUrl));
+    };
   }, []);
 
   const addFiles = useCallback((fileList: FileList | null) => {
@@ -503,7 +510,10 @@ export function UploadZone({ onFiles, isUploading, uploadProgress }: UploadZoneP
           hasPending && !isUploading && 'border-primary/30 bg-muted/20',
           !hasPending && !isUploading && 'cursor-pointer'
         )}
-        onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragging(true);
+        }}
         onDragLeave={() => setDragging(false)}
         onDrop={handleDrop}
         onClick={() => !hasPending && !isUploading && inputRef.current?.click()}
@@ -519,9 +529,9 @@ export function UploadZone({ onFiles, isUploading, uploadProgress }: UploadZoneP
 
         {isUploading ? (
           <div className="flex flex-col items-center justify-center gap-2 p-6">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
             {uploadProgress && uploadProgress.total > 1 && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Subiendo {uploadProgress.current + 1} de {uploadProgress.total}…
               </p>
             )}
@@ -531,7 +541,7 @@ export function UploadZone({ onFiles, isUploading, uploadProgress }: UploadZoneP
             {pendingFiles.map(({ file, previewUrl }, i) => (
               <div
                 key={i}
-                className="flex items-center gap-2 rounded-lg bg-background/80 p-1.5 shadow-sm"
+                className="bg-background/80 flex items-center gap-2 rounded-lg p-1.5 shadow-sm"
               >
                 <img
                   src={previewUrl}
@@ -540,12 +550,15 @@ export function UploadZone({ onFiles, isUploading, uploadProgress }: UploadZoneP
                 />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-xs font-medium">{file.name}</p>
-                  <p className="text-[10px] text-muted-foreground">{formatBytes(file.size)}</p>
+                  <p className="text-muted-foreground text-[10px]">{formatBytes(file.size)}</p>
                 </div>
                 <button
                   type="button"
-                  className="flex-shrink-0 rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground"
-                  onClick={(e) => { e.stopPropagation(); removeFile(i); }}
+                  className="text-muted-foreground hover:text-foreground flex-shrink-0 rounded p-0.5 transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeFile(i);
+                  }}
                   aria-label="Quitar imagen"
                 >
                   <X className="h-3.5 w-3.5" />
@@ -554,7 +567,7 @@ export function UploadZone({ onFiles, isUploading, uploadProgress }: UploadZoneP
             ))}
             <button
               type="button"
-              className="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-dashed py-1.5 text-xs text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
+              className="text-muted-foreground hover:border-primary/50 hover:text-foreground flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-dashed py-1.5 text-xs transition-colors"
               onClick={() => inputRef.current?.click()}
             >
               <Upload className="h-3 w-3" />
@@ -563,12 +576,13 @@ export function UploadZone({ onFiles, isUploading, uploadProgress }: UploadZoneP
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center gap-2 p-6">
-            <Upload className="h-6 w-6 text-muted-foreground" />
-            <p className="text-center text-sm text-muted-foreground">
-              Arrastra imágenes o{' '}
-              <span className="font-medium text-foreground">haz click</span>
+            <Upload className="text-muted-foreground h-6 w-6" />
+            <p className="text-muted-foreground text-center text-sm">
+              Arrastra imágenes o <span className="text-foreground font-medium">haz click</span>
             </p>
-            <p className="text-xs text-muted-foreground">JPG, PNG o WebP · máx. 10 MB · varias a la vez</p>
+            <p className="text-muted-foreground text-xs">
+              JPG, PNG o WebP · máx. 10 MB · varias a la vez
+            </p>
           </div>
         )}
       </div>
@@ -610,7 +624,9 @@ export default function PalletImagesTab({ palletId, initialLightboxIndex }: Pall
   const [notesOverrides, setNotesOverrides] = useState<Map<number, string | null>>(new Map());
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number } | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number } | null>(
+    null
+  );
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
 
   const initialIndexApplied = useRef(false);
@@ -709,15 +725,15 @@ export default function PalletImagesTab({ palletId, initialLightboxIndex }: Pall
   }
 
   if (error) {
-    return <p className="p-6 text-sm text-destructive">{error}</p>;
+    return <p className="text-destructive p-6 text-sm">{error}</p>;
   }
 
   return (
     <div className="flex h-full min-h-0 gap-6 overflow-hidden">
       {/* Left panel — upload */}
-      <div className="w-64 flex-shrink-0 space-y-4 overflow-y-auto py-4 pl-1 pr-2">
+      <div className="w-64 flex-shrink-0 space-y-4 overflow-y-auto py-4 pr-2 pl-1">
         <div>
-          <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <p className="text-muted-foreground mb-3 text-xs font-semibold tracking-wider uppercase">
             Subir imágenes
           </p>
           <UploadZone
@@ -729,8 +745,8 @@ export default function PalletImagesTab({ palletId, initialLightboxIndex }: Pall
 
         {attachments.length > 0 && (
           <div className="space-y-2">
-            <div className="rounded-lg border bg-muted/30 px-3 py-2.5 text-xs text-muted-foreground">
-              <span className="font-medium text-foreground">{attachments.length}</span>{' '}
+            <div className="bg-muted/30 text-muted-foreground rounded-lg border px-3 py-2.5 text-xs">
+              <span className="text-foreground font-medium">{attachments.length}</span>{' '}
               {attachments.length === 1 ? 'imagen' : 'imágenes'}
               {' · '}
               {formatBytes(attachments.reduce((s, a) => s + a.size, 0))} total
@@ -754,15 +770,15 @@ export default function PalletImagesTab({ palletId, initialLightboxIndex }: Pall
       </div>
 
       {/* Right panel — gallery */}
-      <div className="min-w-0 flex-1 overflow-y-auto py-4 pb-6 pr-1">
+      <div className="min-w-0 flex-1 overflow-y-auto py-4 pr-1 pb-6">
         {attachments.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-              <ImageIcon className="h-8 w-8 text-muted-foreground/60" strokeWidth={1.5} />
+            <div className="bg-muted flex h-16 w-16 items-center justify-center rounded-full">
+              <ImageIcon className="text-muted-foreground/60 h-8 w-8" strokeWidth={1.5} />
             </div>
             <div>
-              <p className="text-sm font-medium text-foreground">Sin imágenes</p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-foreground text-sm font-medium">Sin imágenes</p>
+              <p className="text-muted-foreground text-xs">
                 Sube la primera imagen desde el panel izquierdo
               </p>
             </div>

@@ -6,12 +6,12 @@ category: code-quality
 priority: P2
 risk: low
 size: S
-status: ready
+status: done
 dependencies: []
 target_files:
   - src/services/domain/pallets/palletService.js
 created_at: 2026-07-05
-updated_at: 2026-07-05
+updated_at: 2026-07-07
 normalized_at: 2026-07-05
 ---
 
@@ -127,11 +127,46 @@ Verificado directamente por gap-normalizer con grep sobre `entitiesConfig.stock.
 
 ## Resultado
 
-{se rellena al terminar la implementación}
+Eliminados `getById`, `create`, `update` y `getOptions` de `palletService.js`, junto
+con sus imports exclusivos (`fetchEntityDataGeneric`, `submitEntityFormGeneric`,
+`fetchAutocompleteOptionsGeneric`, `createEntityGeneric`). `list`, `delete` y
+`deleteMultiple` intactos. Confirmado que `entityServiceMapper.ts:60,104` sigue
+siendo el único importador y solo invoca esos tres métodos vía `EntityClient`.
+`npm run type-check` y `npm run lint` limpios.
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+### Resultado: ✅ APROBADO
+
+### Puntuación: 10/10
+
+### Checklist
+
+- [x] `list`, `delete`, `deleteMultiple` intactos y exportados.
+- [x] `getById`, `create`, `update`, `getOptions` eliminados, junto con sus imports exclusivos
+      (`createEntityGeneric`, `fetchEntityDataGeneric`, `submitEntityFormGeneric`,
+      `fetchAutocompleteOptionsGeneric`) — sin imports huérfanos.
+- [x] `entityServiceMapper.ts:60,104` (único importador) verificado: sigue apuntando a
+      `palletService` y el tipo `DomainService` tiene todos sus métodos opcionales (`?`), por
+      lo que la eliminación no rompe el contrato estructural.
+- [x] `grep -rn "domain/pallets/palletService" src/` no devuelve más resultados que
+      `entityServiceMapper.ts`.
+- [x] `grep -rn "palletService\."` fuera del propio archivo no muestra ninguna llamada a los
+      métodos eliminados.
+- [x] `npm run type-check` y `npm run lint` limpios.
+
+### Observaciones para Jose
+
+Cambio quirúrgico, exactamente el alcance corregido documentado en el propio GAP tras
+GAP-V2-083. Nada que objetar — el archivo `list`/`delete`/`deleteMultiple` sigue
+funcionando para `/admin/pallets` sin tocar el motor genérico de `EntityClient`.
+
+### Estado final de la implementación
+
+`palletService.js` queda reducido a los 3 métodos realmente activos vía
+`entityServiceMapper.ts` → `EntityClient` (tabla, borrado individual, borrado masivo de
+`/admin/pallets`). Los 4 métodos muertos y sus imports exclusivos fueron eliminados sin dejar
+referencias huérfanas.
 
 ## Links
 

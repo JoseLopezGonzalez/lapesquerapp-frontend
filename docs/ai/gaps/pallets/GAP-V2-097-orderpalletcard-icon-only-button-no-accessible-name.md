@@ -6,12 +6,12 @@ category: a11y-responsive
 priority: P1
 risk: low
 size: XS
-status: ready
+status: done
 dependencies: []
 target_files:
   - src/components/Admin/OrdersManager/Order/OrderPallets/OrderPalletCard/index.tsx
 created_at: 2026-07-05
-updated_at: 2026-07-05
+updated_at: 2026-07-07
 normalized_at: 2026-07-05
 ---
 
@@ -46,8 +46,8 @@ Esto es doblemente inconsistente:
    pasada.
 2. **Sin nombre accesible:** a diferencia de `OrderPalletTableRow.tsx:119`
    (`aria-label={\`Acciones del palet ${pallet.id}\`}`) y de
-   `PositionSlideover/PalletCard/index.tsx:281` (`<span className="sr-only">Acciones</span>`),
-   este botón no tiene ni `aria-label` ni `sr-only` — un lector de pantalla lo anuncia como
+`PositionSlideover/PalletCard/index.tsx:281` (`<span className="sr-only">Acciones</span>`),
+este botón no tiene ni `aria-label`ni`sr-only` — un lector de pantalla lo anuncia como
    "botón" sin ninguna indicación de su propósito.
 
 Es la misma clase de hallazgo que `GAP-V2-072` (primera pasada, botones de icono sin nombre
@@ -70,8 +70,8 @@ componente hermano exacto (misma lista, misma acción, solo cambia el breakpoint
 
 Reemplazar el bloque `<svg>...</svg>` por `import { EllipsisVertical } from 'lucide-react'` y
 `<EllipsisVertical className="h-4 w-4" />`, y añadir
-`aria-label={\`Acciones del palet ${pallet.id}\`}` al `Button` trigger, replicando
-exactamente el patrón de `OrderPalletTableRow.tsx:116-122`.
+`aria-label={\`Acciones del palet ${pallet.id}\`}`al`Button`trigger, replicando
+exactamente el patrón de`OrderPalletTableRow.tsx:116-122`.
 
 ## Criterios de aceptación
 
@@ -101,11 +101,34 @@ riesgo — marcado `ready` sin cambios de fondo.
 
 ## Resultado
 
-{se rellena al terminar la implementación}
+Reemplazado el `<svg>` manual por `EllipsisVertical` de `lucide-react` (mismo
+icono que `OrderPalletTableRow`) y añadido `aria-label={\`Acciones del palet
+${pallet.id}\`}`al`Button`trigger, replicando el patrón del componente
+hermano de escritorio.`grep -rn "<svg"`sobre el directorio`OrderPallets`ya
+no devuelve resultados de iconos manuales.`npm run type-check`y`npm run lint` limpios.
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+### Resultado: ✅ APROBADO
+
+### Puntuación: 10/10
+
+### Checklist
+
+- [x] `EllipsisVertical` de `lucide-react` importado y usado en vez del `<svg>` manual.
+- [x] `aria-label={\`Acciones del palet ${pallet.id}\`}`añadido, idéntico al patrón de
+   `OrderPalletTableRow.tsx:119`.
+- [x] `grep -rn "<svg"` sobre `OrderPallets` ya no devuelve iconos manuales.
+- [x] Sin regresión visual — mismo glifo (tres puntos verticales), mismo tamaño (`h-4 w-4`).
+
+### Observaciones para Jose
+
+Fix mecánico ejecutado exactamente como el componente hermano de escritorio. Nada que objetar.
+
+### Estado final de la implementación
+
+`OrderPalletCard` usa el mismo icono y el mismo patrón de `aria-label` que
+`OrderPalletTableRow`, eliminando la duplicación manual de icono y el hueco de accesibilidad.
 
 ## Links
 

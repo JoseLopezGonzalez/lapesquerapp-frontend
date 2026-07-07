@@ -6,12 +6,12 @@ category: ux-ui
 priority: P2
 risk: low
 size: S
-status: ready
+status: in_progress
 dependencies: []
 target_files:
   - src/components/Admin/Stores/StoresManager/Store/PalletsListDialog/index.tsx
 created_at: 2026-07-05
-updated_at: 2026-07-05
+updated_at: 2026-07-07
 normalized_at: 2026-07-05
 ---
 
@@ -80,7 +80,11 @@ solapamiento con otros GAPs de esta pasada — marcado `ready` sin cambios de fo
 
 ## Resultado
 
-{se rellena al terminar la implementación}
+Añadido `EmptyState` (icono `PackageSearch`) antes de las ramas desktop/mobile,
+mostrado cuando `filteredPallets.length === 0`. Distingue "Sin resultados"
+(con búsqueda activa) de "Sin palets" (especie sin palets registrados). Sin
+regresión en el caso con resultados — misma tabla/lista de siempre. `npm run
+type-check` y `npm run lint` limpios.
 
 ## Resultado de auditoría
 

@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Link2, Search, Loader2, X } from 'lucide-react';
 import { Combobox } from '@/components/Shadcn/Combobox';
 import {
@@ -22,7 +23,6 @@ import {
 } from '@/components/ui/pagination';
 import Masonry from 'react-masonry-css';
 import SearchPalletCard, { type SearchPalletCardData } from '../SearchPalletCard';
-import Loader from '@/components/Utilities/Loader';
 import { cn } from '@/lib/utils';
 
 interface PaginationMeta {
@@ -108,8 +108,10 @@ export default function LinkPalletsDialog({
           </DialogTitle>
         </DialogHeader>
         {isInitialLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader />
+          <div className="grid grid-cols-1 gap-3 py-2 sm:grid-cols-2">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-32 w-full rounded-md" />
+            ))}
           </div>
         ) : (
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden">

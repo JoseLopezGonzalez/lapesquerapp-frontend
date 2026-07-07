@@ -1,17 +1,17 @@
 ---
 id: GAP-V2-063
-title: "PalletTimeline usa <Loader/> en vez de Skeleton para la carga de datos del historial (PL-023)"
+title: 'PalletTimeline usa <Loader/> en vez de Skeleton para la carga de datos del historial (PL-023)'
 module: pallets
 category: ux-ui
 priority: P1
 risk: low
 size: S
-status: ready
+status: done
 dependencies: []
 target_files:
   - src/components/Admin/Pallets/PalletDialog/PalletView/PalletTimeline/index.jsx
 created_at: 2026-07-05
-updated_at: 2026-07-05
+updated_at: 2026-07-07
 normalized_at: 2026-07-05
 ---
 
@@ -139,11 +139,19 @@ la recurrencia ya establecida de PL-023 y con la prioridad que le dio
 
 ## Resultado
 
-{se rellena al terminar la implementación}
+Reemplazado el `<Loader/>` de `PalletTimeline/index.jsx` por 4 filas `Skeleton`
+(mismo patrón que `HistorialTab.tsx` mobile), eliminado el import de
+`Loader`. No se tocó el guard de `HistorialTab.tsx` mobile (sigue mostrando su
+propio `Skeleton` antes de delegar con `loading={false}`). Estados de error y
+vacío sin cambios. `npm run type-check` y `npm run lint` limpios.
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+**gap-auditor (2026-07-07):** ✅ APROBADO — done. Sin `Loader`, sin `fetch`/tenant,
+sin cambios a `entitiesConfig.js`. Los 4 criterios de aceptación se cumplen.
+`npm run type-check` limpio, `npm run lint` sin warnings nuevos,
+`palletLabelQrPayload.test.js` pasa. Revisión UX Light: autoexplicativo,
+consistente con la referencia mobile — aprobado.
 
 ## Links
 

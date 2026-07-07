@@ -3,7 +3,7 @@
 import React from 'react';
 import { CloudAlert } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import Loader from '@/components/Utilities/Loader';
+import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import { TimelineEventItem } from './TimelineEventItem';
 import { formatDateHourShort } from '@/helpers/formats/dates/formatDates';
@@ -11,8 +11,10 @@ import { formatDateHourShort } from '@/helpers/formats/dates/formatDates';
 export function PalletTimeline({ timeline = [], loading, error, openStates, onItemOpenChange }) {
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center py-4">
-        <Loader />
+      <div className="space-y-3 pl-1">
+        {[1, 2, 3, 4].map((i) => (
+          <Skeleton key={i} className="h-12 w-full" />
+        ))}
       </div>
     );
   }

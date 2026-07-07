@@ -38,7 +38,7 @@ export default function TaraScreen({
 
         {/* Input area */}
         <div className="w-full max-w-xs space-y-3">
-          <p className="text-center text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-center text-sm">
             Peso del palet de madera vacío
           </p>
 
@@ -49,16 +49,16 @@ export default function TaraScreen({
               min="0"
               value={value}
               onChange={handleChange}
-              className="h-16 pr-14 text-right text-3xl font-semibold tabular-nums"
+              className="h-16 pr-14 text-right text-3xl font-medium tabular-nums"
               placeholder="0.00"
               disabled={isReadOnly}
             />
-            <span className="pointer-events-none absolute right-4 text-lg font-medium text-muted-foreground">
+            <span className="text-muted-foreground pointer-events-none absolute right-4 text-lg font-medium">
               kg
             </span>
           </div>
 
-          <p className="text-center text-xs text-muted-foreground">
+          <p className="text-muted-foreground text-center text-xs">
             No modifica el peso neto de las cajas
           </p>
         </div>

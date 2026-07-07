@@ -1,19 +1,19 @@
 ---
 id: GAP-V2-095
-title: "<Loader/> usado como estado de carga de datos en 3 diálogos de movimiento/vinculación de palets (PL-023 recurrence)"
+title: '<Loader/> usado como estado de carga de datos en 3 diálogos de movimiento/vinculación de palets (PL-023 recurrence)'
 module: pallets
 category: ux-ui
 priority: P1
 risk: low
 size: S
-status: ready
+status: done
 dependencies: []
 target_files:
   - src/components/Admin/Stores/StoresManager/Store/MovePalletToStoreDialog/index.tsx
   - src/components/Admin/Stores/StoresManager/Store/MoveMultiplePalletsToStoreDialog/index.tsx
   - src/components/Admin/OrdersManager/Order/OrderPallets/dialogs/LinkPalletsDialog.tsx
 created_at: 2026-07-05
-updated_at: 2026-07-05
+updated_at: 2026-07-07
 normalized_at: 2026-07-05
 ---
 
@@ -86,11 +86,44 @@ de fondo.
 
 ## Resultado
 
-{se rellena al terminar la implementación}
+Reemplazado `<Loader/>` por `Skeleton` en los 3 archivos: filas de almacén
+(5x `Skeleton h-10`) en `MovePalletToStoreDialog` y
+`MoveMultiplePalletsToStoreDialog`, grid de tarjetas (4x `Skeleton h-32`) en
+`LinkPalletsDialog`. Eliminado el import de `Loader` en los 3 archivos.
+`grep -rn "<Loader"` sobre ambos directorios solo devuelve usos de `Loader2`
+(spinners de botón de envío), no del gate de sesión/auth. `npm run type-check`
+y `npm run lint` limpios.
 
 ## Resultado de auditoría
 
-{se rellena por gap-auditor}
+### Resultado: ✅ APROBADO
+
+### Puntuación: 9/10
+
+### Checklist
+
+- [x] Los 3 archivos usan `Skeleton` en vez de `<Loader />`, import de `Loader` eliminado en
+      los 3.
+- [x] El `Skeleton` aproxima la forma real: 5x `h-10` (fila de almacén) en
+      `MovePalletToStoreDialog`/`MoveMultiplePalletsToStoreDialog`, grid 4x `h-32`
+      (tarjeta de palet) en `LinkPalletsDialog`.
+- [x] `grep -rn "<Loader"` sobre ambos directorios solo devuelve `Loader2` (spinners de botón
+      de envío) — verificado directamente, cero usos de `<Loader/>` como loading de datos.
+- [x] `npm run type-check` y `npm run lint` limpios.
+
+### Observaciones para Jose
+
+Correcto y directo. Único punto menor (no bloqueante): en `LinkPalletsDialog.tsx` la
+`SearchPalletCard` real es más alta que `h-32` cuando el palet tiene varios productos
+(header + lista de productos puede superar 150-200px) — el skeleton de 128px es una
+aproximación razonable pero no exacta. No amerita rechazo, es el mismo nivel de fidelidad
+que el resto de skeletons de listas de card del proyecto.
+
+### Estado final de la implementación
+
+Los 3 diálogos reemplazan `<Loader/>` por `Skeleton` con forma reconocible del contenido que
+sustituyen, alineado con `design-context.md` § Loading States y cerrando la recurrencia de
+PL-023 en esta superficie.
 
 ## Links
 

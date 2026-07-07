@@ -1,5 +1,15 @@
 'use client';
-import { Layers, Package, Printer, Edit, Copy, Unlink, Trash2, ExternalLink } from 'lucide-react';
+import {
+  Layers,
+  Package,
+  Printer,
+  Edit,
+  Copy,
+  Unlink,
+  Trash2,
+  ExternalLink,
+  EllipsisVertical,
+} from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -167,23 +177,13 @@ export default function OrderPalletCard({
           {!readOnly && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-muted-foreground h-8 w-8">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-4 w-4"
-                  >
-                    <circle cx="12" cy="12" r="1" />
-                    <circle cx="12" cy="5" r="1" />
-                    <circle cx="12" cy="19" r="1" />
-                  </svg>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-muted-foreground h-8 w-8"
+                  aria-label={`Acciones del palet ${pallet.id}`}
+                >
+                  <EllipsisVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-52">
@@ -333,9 +333,7 @@ export default function OrderPalletCard({
             </span>
           </div>
           <div className="bg-accent/40 flex items-center justify-center py-3">
-            <span className="text-base font-medium">
-              {formatDecimalWeight(availableNetWeight)}
-            </span>
+            <span className="text-base font-medium">{formatDecimalWeight(availableNetWeight)}</span>
           </div>
         </div>
       </CardFooter>

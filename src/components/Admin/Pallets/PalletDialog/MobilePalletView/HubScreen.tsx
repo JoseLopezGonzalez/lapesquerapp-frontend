@@ -159,11 +159,11 @@ export default function HubScreen({
     <div className="relative flex h-full min-h-0 flex-col">
       {/* Summary strip — only when there are boxes */}
       {boxes.length > 0 && (
-        <div className="shrink-0 border-b bg-muted/40 px-4 py-2">
-          <p className="text-xs text-muted-foreground">
-            <span className="font-medium text-foreground">{boxes.length}</span>{' '}
+        <div className="bg-muted/40 shrink-0 border-b px-4 py-2">
+          <p className="text-muted-foreground text-xs">
+            <span className="text-foreground font-medium">{boxes.length}</span>{' '}
             {boxes.length === 1 ? 'caja' : 'cajas'} ·{' '}
-            <span className="font-medium text-foreground">{totalWeight} kg</span> neto
+            <span className="text-foreground font-medium">{totalWeight} kg</span> neto
           </p>
         </div>
       )}
@@ -181,18 +181,18 @@ export default function HubScreen({
                   'relative flex flex-col items-start justify-between rounded-2xl border p-4 text-left transition-all active:scale-[0.97]',
                   // Primary action cards: slightly taller + subtle ring for emphasis
                   card.variant === 'primary' &&
-                    'min-h-[124px] border-primary/40 bg-primary/8 shadow-sm shadow-primary/10 ring-1 ring-primary/20 ring-inset hover:bg-primary/12',
+                    'border-primary/40 bg-primary/8 shadow-primary/10 ring-primary/20 hover:bg-primary/12 min-h-[124px] shadow-sm ring-1 ring-inset',
                   card.variant === 'destructive' &&
-                    'min-h-[112px] border-destructive/25 bg-destructive/5 hover:bg-destructive/10',
+                    'border-destructive/25 bg-destructive/5 hover:bg-destructive/10 min-h-[112px]',
                   card.variant === 'default' &&
-                    'min-h-[120px] border-border bg-card shadow-sm hover:bg-accent/50',
+                    'border-border bg-card hover:bg-accent/50 min-h-[120px] shadow-sm',
                   (!card.variant || card.variant === undefined) &&
-                    'min-h-[112px] border-border bg-card hover:bg-accent/50'
+                    'border-border bg-card hover:bg-accent/50 min-h-[112px]'
                 )}
               >
                 {/* Badge */}
                 {card.badge !== undefined && (
-                  <Badge className="absolute top-3 right-3 min-w-7 px-2 text-xs font-semibold tabular-nums shadow-sm">
+                  <Badge className="absolute top-3 right-3 min-w-7 px-2 text-xs font-medium tabular-nums shadow-sm">
                     {card.badge}
                   </Badge>
                 )}
@@ -201,9 +201,11 @@ export default function HubScreen({
                 <div
                   className={cn(
                     'flex items-center justify-center rounded-xl',
-                    card.variant === 'primary' && 'h-11 w-11 bg-primary/15 text-primary',
-                    card.variant === 'destructive' && 'h-10 w-10 bg-destructive/10 text-destructive',
-                    (!card.variant || card.variant === 'default') && 'h-10 w-10 bg-muted text-foreground'
+                    card.variant === 'primary' && 'bg-primary/15 text-primary h-11 w-11',
+                    card.variant === 'destructive' &&
+                      'bg-destructive/10 text-destructive h-10 w-10',
+                    (!card.variant || card.variant === 'default') &&
+                      'bg-muted text-foreground h-10 w-10'
                   )}
                 >
                   <card.icon
@@ -215,7 +217,7 @@ export default function HubScreen({
                 <div className="mt-3 space-y-0.5">
                   <p
                     className={cn(
-                      'text-sm font-semibold leading-tight',
+                      'text-sm leading-tight font-medium',
                       card.variant === 'primary' && 'text-primary',
                       card.variant === 'destructive' && 'text-destructive'
                     )}
@@ -223,7 +225,7 @@ export default function HubScreen({
                     {card.label}
                   </p>
                   {card.sublabel && (
-                    <p className="line-clamp-1 text-xs text-muted-foreground">{card.sublabel}</p>
+                    <p className="text-muted-foreground line-clamp-1 text-xs">{card.sublabel}</p>
                   )}
                 </div>
               </button>
@@ -232,7 +234,7 @@ export default function HubScreen({
         </div>
 
         {/* Bottom fade overflow indicator */}
-        <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-background to-transparent" />
+        <div className="from-background pointer-events-none absolute right-0 bottom-0 left-0 h-10 bg-gradient-to-t to-transparent" />
       </div>
     </div>
   );
