@@ -11,12 +11,6 @@ import {
   deleteEntityGeneric,
   performActionGeneric,
 } from '@/services/generic/entityService';
-import { createEntityGeneric } from '@/services/generic/createEntityService';
-import {
-  fetchEntityDataGeneric,
-  submitEntityFormGeneric,
-  fetchAutocompleteOptionsGeneric,
-} from '@/services/generic/editEntityService';
 import { addFiltersToParams } from '@/lib/entity/filtersHelper';
 import { addWithParams } from '@/lib/entity/entityRelationsHelper';
 
@@ -54,28 +48,6 @@ export const palletService = {
     return fetchEntitiesGeneric(url, token);
   },
 
-  async getById(id) {
-    const token = await getAuthToken();
-    const url = `${API_URL_V2}${ENDPOINT}/${id}`;
-    return fetchEntityDataGeneric(url, token);
-  },
-
-  async create(data) {
-    const token = await getAuthToken();
-    const url = `${API_URL_V2}${ENDPOINT}`;
-    const response = await createEntityGeneric(url, data, token);
-    const result = await response.json();
-    return result.data || result;
-  },
-
-  async update(id, data) {
-    const token = await getAuthToken();
-    const url = `${API_URL_V2}${ENDPOINT}/${id}`;
-    const response = await submitEntityFormGeneric(url, 'PUT', data, token);
-    const result = await response.json();
-    return result.data || result;
-  },
-
   async delete(id) {
     const token = await getAuthToken();
     const url = `${API_URL_V2}${ENDPOINT}/${id}`;
@@ -86,11 +58,5 @@ export const palletService = {
     const token = await getAuthToken();
     const url = `${API_URL_V2}${ENDPOINT}`;
     return deleteEntityGeneric(url, { ids }, token);
-  },
-
-  async getOptions() {
-    const token = await getAuthToken();
-    const url = `${API_URL_V2}${ENDPOINT}/options`;
-    return fetchAutocompleteOptionsGeneric(url, token);
   },
 };

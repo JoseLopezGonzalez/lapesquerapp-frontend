@@ -11,9 +11,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useSession } from 'next-auth/react';
-import { Warehouse, Check, Search, X } from 'lucide-react';
-import Loader from '@/components/Utilities/Loader';
+import { Warehouse, Check, Search, X, Loader2 } from 'lucide-react';
 import { movePalletToStore } from '@/services/palletService';
 import { useStoreContext } from '@/context/StoreContext';
 import { notify } from '@/lib/notifications';
@@ -32,6 +32,7 @@ export default function MovePalletToStoreDialog() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStoreValue, setSelectedStoreValue] = useState<string | number | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { storeOptions, loading } = useStoresOptions();
 
@@ -45,7 +46,13 @@ export default function MovePalletToStoreDialog() {
     closeMovePalletToStoreDialog();
   };
 
-  const handleSubmit = () => {
+  const handleClose = () => {
+    if (!isSubmitting) {
+      resetAndClose();
+    }
+  };
+
+  const handleSubmit = async () => {
     if (!palletId) return;
     if (!selectedStoreValue) {
       notify.error({
@@ -55,21 +62,23 @@ export default function MovePalletToStoreDialog() {
       return;
     }
 
-    movePalletToStore(palletId, selectedStoreValue, token ?? '')
-      .then(() => {
-        notify.success({
-          title: 'Palet movido',
-          description: 'El palet se ha movido correctamente al almacén seleccionado.',
-        });
-        updateStoreWhenOnMovePalletToStore({ palletId, storeId: selectedStoreValue });
-        resetAndClose();
-      })
-      .catch(() => {
-        notify.error({
-          title: 'Error al mover palet',
-          description: 'No se pudo mover el palet. Intente de nuevo.',
-        });
+    setIsSubmitting(true);
+    try {
+      await movePalletToStore(palletId, selectedStoreValue, token ?? '');
+      notify.success({
+        title: 'Palet movido',
+        description: 'El palet se ha movido correctamente al almacén seleccionado.',
       });
+      updateStoreWhenOnMovePalletToStore({ palletId, storeId: selectedStoreValue });
+      resetAndClose();
+    } catch {
+      notify.error({
+        title: 'Error al mover palet',
+        description: 'No se pudo mover el palet. Intente de nuevo.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleStoreClick = (value: string | number) => {
@@ -84,7 +93,7 @@ export default function MovePalletToStoreDialog() {
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={resetAndClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent
         size="lg"
         className="flex max-h-[85vh] flex-col max-sm:top-0 max-sm:left-0 max-sm:h-dvh max-sm:max-h-dvh max-sm:w-full max-sm:max-w-full max-sm:translate-x-0 max-sm:translate-y-0 max-sm:overflow-y-auto max-sm:rounded-none"
@@ -117,8 +126,10 @@ export default function MovePalletToStoreDialog() {
 
         {/* Lista de almacenes */}
         {loading ? (
-          <div className="flex h-[50vh] w-full flex-col items-center justify-center">
-            <Loader />
+          <div className="flex h-[50vh] w-full flex-col gap-2 pr-3">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Skeleton key={i} className="h-10 w-full rounded-md" />
+            ))}
           </div>
         ) : filteredStores.length === 0 ? (
           <div className="text-muted-foreground py-6 text-center text-sm">
@@ -148,8 +159,15 @@ export default function MovePalletToStoreDialog() {
         )}
 
         <DialogFooter className="mt-4">
-          <Button onClick={handleSubmit} disabled={!selectedStoreValue}>
-            Confirmar traslado
+          <Button onClick={handleSubmit} disabled={!selectedStoreValue || isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Moviendo...
+              </>
+            ) : (
+              'Confirmar traslado'
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

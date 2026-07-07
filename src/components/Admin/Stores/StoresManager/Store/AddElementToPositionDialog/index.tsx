@@ -2,7 +2,7 @@
 
 import { notify } from '@/lib/notifications';
 import { useState, type ChangeEvent } from 'react';
-import { Layers, Search, X, Check, MapPin } from 'lucide-react';
+import { Layers, Search, X, Check, MapPin, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -60,26 +60,30 @@ export default function AddElementToPosition({ open }: { open: boolean }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPalletIds, setSelectedPalletIds] = useState<(string | number)[]>([]);
   const [activeTab, setActiveTab] = useState('unlocated');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { data: session } = useSession();
   const token = session?.user?.accessToken;
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
     if (position === null) return;
-    assignPalletsToPosition(String(position), selectedPalletIds.map(Number), token ?? '')
-      .then(() => {
-        notify.success({ title: 'Pallets ubicados correctamente' });
-        setSelectedPalletIds([]);
-        setSearchQuery('');
-        changePalletsPosition(selectedPalletIds, position);
-        closeAddElementToPosition();
-      })
-      .catch((error: unknown) => {
-        console.error('Error al ubicar los pallets:', error);
-        notify.error({ title: 'Error al ubicar los pallets' });
-      });
+    setIsSubmitting(true);
+    try {
+      await assignPalletsToPosition(String(position), selectedPalletIds.map(Number), token ?? '');
+      notify.success({ title: 'Pallets ubicados correctamente' });
+      setSelectedPalletIds([]);
+      setSearchQuery('');
+      changePalletsPosition(selectedPalletIds, position);
+      closeAddElementToPosition();
+    } catch (error: unknown) {
+      console.error('Error al ubicar los pallets:', error);
+      notify.error({ title: 'Error al ubicar los pallets' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleOnClose = () => {
+    if (isSubmitting) return;
     setSelectedPalletIds([]);
     setSearchQuery('');
     closeAddElementToPosition();
@@ -221,10 +225,17 @@ export default function AddElementToPosition({ open }: { open: boolean }) {
             )}
           </div>
 
-          <Button onClick={handleSubmit} disabled={selectedPalletIds.length === 0}>
-            {selectedPalletIds.length === 1
-              ? 'Ubicar pallet'
-              : `Ubicar ${selectedPalletIds.length} pallets`}
+          <Button onClick={handleSubmit} disabled={selectedPalletIds.length === 0 || isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Ubicando...
+              </>
+            ) : selectedPalletIds.length === 1 ? (
+              'Ubicar pallet'
+            ) : (
+              `Ubicar ${selectedPalletIds.length} pallets`
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -585,6 +585,8 @@ const stockConfig: Record<string, any> = {
         { name: 'observations', label: 'Observaciones', type: 'text', path: 'observations' },
         /* store */
         { name: 'store', label: 'Almacén', type: 'text', path: 'store.name' },
+        /* position */
+        { name: 'position', label: 'Posición', type: 'text', path: 'position' },
         /* orderId*/
         { name: 'orderId', label: 'Pedido', type: 'text', path: 'orderId' },
         /* { name: "name", label: "Nombre", type: "text", path: "article.name" }, */

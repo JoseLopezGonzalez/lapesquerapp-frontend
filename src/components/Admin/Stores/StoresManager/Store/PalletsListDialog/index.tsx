@@ -16,13 +16,14 @@ import { cn } from '@/lib/utils';
 import { useStoreContext } from '@/context/StoreContext';
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
 import { PiMicrosoftExcelLogo } from 'react-icons/pi';
-import { Edit, Printer, MapPinHouse, Copy } from 'lucide-react';
+import { Edit, Printer, MapPinHouse, Copy, PackageSearch } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { getAvailableBoxesCount, getAvailableNetWeight } from '@/helpers/pallet/boxAvailability';
 import { useSession } from 'next-auth/react';
 import type { StorePallet } from '@/hooks/useStoreDialogs';
 import { PalletImageStrip } from '@/components/Admin/Pallets/PalletAttachments/PalletImageStrip';
 import PalletCard from '@/components/Admin/Stores/StoresManager/Store/PositionSlideover/PalletCard';
+import { EmptyState } from '@/components/Utilities/EmptyState';
 
 interface PalletsListDialogProps {
   open?: boolean;
@@ -146,8 +147,7 @@ export function PalletsListDialog({ open, onOpenChange }: PalletsListDialogProps
       const productNames = Array.from(
         new Set(fullPallet?.boxes?.map((b) => (b as PalletBox).product?.name))
       ).join(', ');
-      const lots =
-        fullPallet && Array.isArray(fullPallet.lots) ? fullPallet.lots.join(', ') : '';
+      const lots = fullPallet && Array.isArray(fullPallet.lots) ? fullPallet.lots.join(', ') : '';
       const observations = String(fullPallet?.observations ?? '');
 
       return {
@@ -164,10 +164,7 @@ export function PalletsListDialog({ open, onOpenChange }: PalletsListDialogProps
 
     const currenDate = new Date();
     const formattedDate = `${currenDate.getDate().toString().padStart(2, '0')}-${(currenDate.getMonth() + 1).toString().padStart(2, '0')}-${currenDate.getFullYear()}`;
-    const formattedStoreName = storeName
-      .replace(/\s+/g, '_')
-      .normalize('NFD')
-      .replace(/[̀-ͯ]/g, '');
+    const formattedStoreName = storeName.replace(/\s+/g, '_').normalize('NFD').replace(/[̀-ͯ]/g, '');
 
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
@@ -214,9 +211,9 @@ export function PalletsListDialog({ open, onOpenChange }: PalletsListDialogProps
             <h3 className="text-muted-foreground mb-2.5 text-sm font-medium">Especies</h3>
             <div className="relative -mx-2">
               {/* Fade izquierdo */}
-              <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-background to-transparent" />
+              <div className="from-background pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r to-transparent" />
               {/* Fade derecho */}
-              <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-background to-transparent" />
+              <div className="from-background pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l to-transparent" />
 
               <div className="flex gap-2 overflow-x-auto px-4 py-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {species.map((s, idx) => (
@@ -267,156 +264,173 @@ export function PalletsListDialog({ open, onOpenChange }: PalletsListDialogProps
             </div>
           </div>
 
-          {/* ── DESKTOP: tabla con columna de fotos ── */}
-          <div className="hidden sm:block max-h-[315px] overflow-x-auto overflow-y-auto rounded-md border">
-            <table className="w-full min-w-[820px] text-sm">
-              <thead>
-                <tr className="text-muted-foreground bg-muted text-left font-medium">
-                  <th className="px-4 py-2">ID</th>
-                  <th className="px-4 py-2">Fotos</th>
-                  <th className="px-4 py-2">Artículos</th>
-                  <th className="px-4 py-2">Lotes</th>
-                  <th className="px-4 py-2">Observaciones</th>
-                  <th className="px-4 py-2 text-right">Cajas</th>
-                  <th className="px-4 py-2 text-right text-nowrap">Peso neto</th>
-                  <th className="px-4 py-2 text-right">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredPallets.map((pallet) => {
-                  const fullPallet = safePallets.find((p) => p.id === pallet.id);
-                  if (!fullPallet) return null;
+          {filteredPallets.length === 0 ? (
+            <EmptyState
+              icon={<PackageSearch />}
+              title={searchText.trim() ? 'Sin resultados' : 'Sin palets'}
+              description={
+                searchText.trim()
+                  ? 'No hay palets que coincidan con esta búsqueda.'
+                  : 'Esta especie no tiene palets registrados en este almacén.'
+              }
+              className="bg-muted/30 min-h-[200px]"
+            />
+          ) : (
+            <>
+              {/* ── DESKTOP: tabla con columna de fotos ── */}
+              <div className="hidden max-h-[315px] overflow-x-auto overflow-y-auto rounded-md border sm:block">
+                <table className="w-full min-w-[820px] text-sm">
+                  <thead>
+                    <tr className="text-muted-foreground bg-muted text-left font-medium">
+                      <th className="px-4 py-2">ID</th>
+                      <th className="px-4 py-2">Fotos</th>
+                      <th className="px-4 py-2">Artículos</th>
+                      <th className="px-4 py-2">Lotes</th>
+                      <th className="px-4 py-2">Observaciones</th>
+                      <th className="px-4 py-2 text-right">Cajas</th>
+                      <th className="px-4 py-2 text-right text-nowrap">Peso neto</th>
+                      <th className="px-4 py-2 text-right">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredPallets.map((pallet) => {
+                      const fullPallet = safePallets.find((p) => p.id === pallet.id);
+                      if (!fullPallet) return null;
 
-                  const productNames = Array.from(
-                    new Set(
-                      (fullPallet.boxes ?? []).map((b) => (b as PalletBox).product?.name).filter(Boolean)
-                    )
-                  ).join('\n');
+                      const productNames = Array.from(
+                        new Set(
+                          (fullPallet.boxes ?? [])
+                            .map((b) => (b as PalletBox).product?.name)
+                            .filter(Boolean)
+                        )
+                      ).join('\n');
 
-                  const lots = Array.isArray(fullPallet.lots) ? fullPallet.lots : [];
-                  const observations = String(fullPallet.observations ?? '');
+                      const lots = Array.isArray(fullPallet.lots) ? fullPallet.lots : [];
+                      const observations = String(fullPallet.observations ?? '');
 
-                  return (
-                    <tr
-                      key={pallet.id}
-                      className="border-muted hover:bg-muted/20 border-b last:border-0"
-                    >
-                      <td className="px-4 py-2 font-medium">{pallet.id}</td>
-                      <td className="py-1">
-                        <PalletImageStrip palletId={fullPallet.id} canInteract={false} />
-                      </td>
-                      <td className="px-4 py-2 whitespace-pre-wrap">{productNames}</td>
-                      <td className="max-w-[150px] truncate px-4 py-2" title={lots.join(', ')}>
-                        {lots.join(', ')}
-                      </td>
-                      <td className="max-w-[200px] truncate px-4 py-2" title={observations}>
-                        {observations}
-                      </td>
-                      <td className="px-4 py-2 text-right">{pallet.totalBoxes}</td>
-                      <td className="px-4 py-2 text-right text-nowrap">
-                        {formatDecimalWeight(pallet.totalWeight)}
-                      </td>
-                      <td className="px-4 py-2 text-right">
-                        <div className="flex justify-end gap-1">
-                          {(() => {
-                            const receptionId = fullPallet?.receptionId;
-                            const belongsToReception =
-                              receptionId !== null && receptionId !== undefined;
-                            return (
+                      return (
+                        <tr
+                          key={pallet.id}
+                          className="border-muted hover:bg-muted/20 border-b last:border-0"
+                        >
+                          <td className="px-4 py-2 font-medium">{pallet.id}</td>
+                          <td className="py-1">
+                            <PalletImageStrip palletId={fullPallet.id} canInteract={false} />
+                          </td>
+                          <td className="px-4 py-2 whitespace-pre-wrap">{productNames}</td>
+                          <td className="max-w-[150px] truncate px-4 py-2" title={lots.join(', ')}>
+                            {lots.join(', ')}
+                          </td>
+                          <td className="max-w-[200px] truncate px-4 py-2" title={observations}>
+                            {observations}
+                          </td>
+                          <td className="px-4 py-2 text-right">{pallet.totalBoxes}</td>
+                          <td className="px-4 py-2 text-right text-nowrap">
+                            {formatDecimalWeight(pallet.totalWeight)}
+                          </td>
+                          <td className="px-4 py-2 text-right">
+                            <div className="flex justify-end gap-1">
+                              {(() => {
+                                const receptionId = fullPallet?.receptionId;
+                                const belongsToReception =
+                                  receptionId !== null && receptionId !== undefined;
+                                return (
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <div>
+                                        <Button
+                                          variant="outline"
+                                          size="icon"
+                                          onClick={() => openPalletDialog(pallet.id)}
+                                        >
+                                          <Edit className="h-4 w-4" />
+                                        </Button>
+                                      </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>
+                                        {belongsToReception
+                                          ? 'Ver palet (solo lectura - pertenece a una recepción)'
+                                          : 'Editar palet'}
+                                      </p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                );
+                              })()}
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <div>
+                                  <Button
+                                    variant="default"
+                                    size="icon"
+                                    onClick={() => openPalletLabelDialog(pallet.id)}
+                                  >
+                                    <Printer className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Imprimir etiqueta</p>
+                                </TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => openDuplicatePalletDialog(pallet.id)}
+                                    disabled={isDuplicatingPallet}
+                                  >
+                                    <Copy className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Duplicar</p>
+                                </TooltipContent>
+                              </Tooltip>
+                              {!isStoreOperator && (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
                                     <Button
                                       variant="outline"
                                       size="icon"
-                                      onClick={() => openPalletDialog(pallet.id)}
+                                      onClick={() => openMovePalletToStoreDialog(pallet.id)}
                                     >
-                                      <Edit className="h-4 w-4" />
+                                      <MapPinHouse className="h-4 w-4" />
                                     </Button>
-                                  </div>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>
-                                    {belongsToReception
-                                      ? 'Ver palet (solo lectura - pertenece a una recepción)'
-                                      : 'Editar palet'}
-                                  </p>
-                                </TooltipContent>
-                              </Tooltip>
-                            );
-                          })()}
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="default"
-                                size="icon"
-                                onClick={() => openPalletLabelDialog(pallet.id)}
-                              >
-                                <Printer className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Imprimir etiqueta</p>
-                            </TooltipContent>
-                          </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => openDuplicatePalletDialog(pallet.id)}
-                                disabled={isDuplicatingPallet}
-                              >
-                                <Copy className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Duplicar</p>
-                            </TooltipContent>
-                          </Tooltip>
-                          {!isStoreOperator && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  size="icon"
-                                  onClick={() => openMovePalletToStoreDialog(pallet.id)}
-                                >
-                                  <MapPinHouse className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Reubicar</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Reubicar</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* ── MOBILE: PalletCard existente ── */}
+              <div className="space-y-4 sm:hidden">
+                {filteredPallets.map((pallet) => {
+                  const fullPallet = safePallets.find((p) => p.id === pallet.id);
+                  if (!fullPallet) return null;
+                  return (
+                    <PalletCard
+                      key={pallet.id}
+                      pallet={{
+                        ...fullPallet,
+                        lots: Array.isArray(fullPallet.lots) ? (fullPallet.lots as string[]) : [],
+                      }}
+                      isFlipped={flippedId === pallet.id}
+                      onFlip={(f) => setFlippedId(f ? pallet.id : null)}
+                    />
                   );
                 })}
-              </tbody>
-            </table>
-          </div>
-
-          {/* ── MOBILE: PalletCard existente ── */}
-          <div className="sm:hidden space-y-4">
-            {filteredPallets.map((pallet) => {
-              const fullPallet = safePallets.find((p) => p.id === pallet.id);
-              if (!fullPallet) return null;
-              return (
-                <PalletCard
-                  key={pallet.id}
-                  pallet={{
-                    ...fullPallet,
-                    lots: Array.isArray(fullPallet.lots) ? (fullPallet.lots as string[]) : [],
-                  }}
-                  isFlipped={flippedId === pallet.id}
-                  onFlip={(f) => setFlippedId(f ? pallet.id : null)}
-                />
-              );
-            })}
-          </div>
+              </div>
+            </>
+          )}
         </div>
 
         <DialogFooter>

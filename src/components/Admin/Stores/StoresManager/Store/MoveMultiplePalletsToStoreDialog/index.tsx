@@ -15,6 +15,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Warehouse,
   Check,
@@ -25,7 +26,6 @@ import {
   Layers,
   ArrowRightLeft,
 } from 'lucide-react';
-import Loader from '@/components/Utilities/Loader';
 import { moveMultiplePalletsToStore } from '@/services/palletService';
 import { useStoreContext } from '@/context/StoreContext';
 import { useStoresOptions } from '@/hooks/useStoresOptions';
@@ -89,9 +89,7 @@ export default function MoveMultiplePalletsToStoreDialog() {
   }, [allPallets, palletSearchQuery]);
 
   const selectedStoreName = useMemo(
-    () =>
-      storeOptions.find((s) => s.value === selectedStoreValue)?.label ??
-      'Almacén',
+    () => storeOptions.find((s) => s.value === selectedStoreValue)?.label ?? 'Almacén',
     [storeOptions, selectedStoreValue]
   );
 
@@ -145,10 +143,7 @@ export default function MoveMultiplePalletsToStoreDialog() {
     const palletIdsArray = Array.from(selectedPalletIds).map((id) => Number(id));
 
     try {
-      const response = await moveMultiplePalletsToStore(
-        palletIdsArray,
-        Number(selectedStoreValue)
-      );
+      const response = await moveMultiplePalletsToStore(palletIdsArray, Number(selectedStoreValue));
 
       const { moved_count, total_count, errors } = response as {
         moved_count: number;
@@ -296,9 +291,7 @@ export default function MoveMultiplePalletsToStoreDialog() {
       <ScrollArea className="min-h-0 flex-1 rounded-md border">
         {filteredPallets.length === 0 ? (
           <div className="text-muted-foreground py-6 text-center text-sm">
-            {allPallets.length === 0
-              ? 'No hay palets en este almacén'
-              : 'No se encontraron palets'}
+            {allPallets.length === 0 ? 'No hay palets en este almacén' : 'No se encontraron palets'}
           </div>
         ) : (
           <div className="flex flex-col gap-3 p-3">
@@ -316,9 +309,7 @@ export default function MoveMultiplePalletsToStoreDialog() {
                   <Card
                     key={pallet.id}
                     className={`cursor-pointer transition-all ${
-                      isSelected
-                        ? 'border-primary bg-accent shadow-md'
-                        : 'hover:border-primary/50'
+                      isSelected ? 'border-primary bg-accent shadow-md' : 'hover:border-primary/50'
                     }`}
                   >
                     <CardContent className="p-3" onClick={() => handleTogglePallet(pallet.id)}>
@@ -345,10 +336,7 @@ export default function MoveMultiplePalletsToStoreDialog() {
                             </div>
                             <div className="space-y-2">
                               {palletInfo.productsSummaryArray.map((product, index) => (
-                                <div
-                                  key={index}
-                                  className="flex min-w-0 flex-col overflow-hidden"
-                                >
+                                <div key={index} className="flex min-w-0 flex-col overflow-hidden">
                                   <p className="text-foreground truncate text-sm font-medium">
                                     {product.name}
                                   </p>
@@ -455,8 +443,10 @@ export default function MoveMultiplePalletsToStoreDialog() {
       </div>
 
       {storesLoading ? (
-        <div className="flex min-h-0 flex-1 flex-col items-center justify-center">
-          <Loader />
+        <div className="flex min-h-0 flex-1 flex-col gap-2 rounded-md border p-3">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <Skeleton key={i} className="h-10 w-full rounded-md" />
+          ))}
         </div>
       ) : filteredStores.length === 0 ? (
         <div className="text-muted-foreground flex min-h-0 flex-1 flex-col items-center justify-center rounded-md border py-6 text-center text-sm">

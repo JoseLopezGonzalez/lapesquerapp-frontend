@@ -71,11 +71,7 @@ function MobilePalletSkeleton() {
 export default function MobilePalletView(props: MobilePalletViewProps) {
   const [retryKey, setRetryKey] = useState(0);
   return (
-    <MobilePalletViewInner
-      key={retryKey}
-      {...props}
-      onRetry={() => setRetryKey((k) => k + 1)}
-    />
+    <MobilePalletViewInner key={retryKey} {...props} onRetry={() => setRetryKey((k) => k + 1)} />
   );
 }
 
@@ -136,9 +132,11 @@ function MobilePalletViewInner({
     palletId && palletId !== 'new' && !String(palletId).startsWith('temp-')
   );
 
-  const { timeline, loading: timelineLoading, refetch: refetchTimeline } = usePalletTimeline(
-    showHistorial ? palletId : null
-  );
+  const {
+    timeline,
+    loading: timelineLoading,
+    refetch: refetchTimeline,
+  } = usePalletTimeline(showHistorial ? palletId : null);
 
   const receptionId = temporalPallet?.receptionId as string | number | null | undefined;
   const isReadOnly = (receptionId !== null && receptionId !== undefined) || readOnlyProp;
@@ -205,10 +203,10 @@ function MobilePalletViewInner({
     return (
       <div className="flex h-full w-full flex-col items-center justify-center gap-3 px-6 py-10">
         <div className="flex items-center justify-center rounded-full bg-red-100 p-4">
-          <CloudAlert className="h-10 w-10 text-destructive" />
+          <CloudAlert className="text-destructive h-10 w-10" />
         </div>
-        <h2 className="text-lg font-semibold text-destructive">Error al cargar el palet</h2>
-        <p className="text-center text-sm text-muted-foreground">{error}</p>
+        <h2 className="text-destructive text-lg font-medium">Error al cargar el palet</h2>
+        <p className="text-muted-foreground text-center text-sm">{error}</p>
         <Button variant="outline" onClick={onRetry} className="mt-1 gap-2">
           <RefreshCcw className="h-4 w-4" />
           Reintentar
@@ -344,18 +342,16 @@ function MobilePalletViewInner({
   return (
     <div className="flex h-full min-h-0 w-full flex-col">
       {isReadOnly && (
-        <Alert className="mx-3 mt-2 shrink-0 border-warning/20 bg-warning/10">
-          <AlertCircle className="h-4 w-4 text-warning-foreground" />
-          <AlertDescription className="text-sm text-warning-foreground">
+        <Alert className="border-warning/20 bg-warning/10 mx-3 mt-2 shrink-0">
+          <AlertCircle className="text-warning-foreground h-4 w-4" />
+          <AlertDescription className="text-warning-foreground text-sm">
             Pertenece a una recepción de materia prima. Solo lectura.
           </AlertDescription>
         </Alert>
       )}
 
       {/* Screen content */}
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        {renderScreen()}
-      </div>
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{renderScreen()}</div>
 
       {/* Fullscreen QR scanner */}
       {scannerOpen && (
@@ -373,9 +369,7 @@ function MobilePalletViewInner({
 
       {/* Sticky save/discard bar */}
       {showSaveBar && (
-        <div
-          className="shrink-0 bg-background/95 px-3 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-sm"
-        >
+        <div className="bg-background/95 shrink-0 px-3 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-sm">
           <div className="flex gap-3">
             <Button
               variant="outline"

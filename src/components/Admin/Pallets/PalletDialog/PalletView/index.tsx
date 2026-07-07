@@ -152,7 +152,13 @@ export default function PalletView({
     onClose,
     setBoxPrinted,
     hasPalletChanges = false,
-  } = usePallet({ id: palletId ?? null, onChange, initialStoreId: initialStoreId ?? null, initialOrderId: initialOrderId ?? null, initialPallet: initialPallet as PalletState | null | undefined });
+  } = usePallet({
+    id: palletId ?? null,
+    onChange,
+    initialStoreId: initialStoreId ?? null,
+    initialOrderId: initialOrderId ?? null,
+    initialPallet: initialPallet as PalletState | null | undefined,
+  });
 
   const normalizedActiveOrdersOptions = useMemo(
     () => normalizeOrderOptions((activeOrdersOptions ?? []) as RawOrderOption[]),
@@ -261,7 +267,9 @@ export default function PalletView({
         error: (err: unknown) => {
           const e = err as Record<string, unknown>;
           const data = e?.data as Record<string, unknown> | undefined;
-          const responseData = (e?.response as Record<string, unknown> | undefined)?.data as Record<string, unknown> | undefined;
+          const responseData = (e?.response as Record<string, unknown> | undefined)?.data as
+            | Record<string, unknown>
+            | undefined;
           return {
             title: 'Error al generar la etiqueta',
             description:
@@ -297,7 +305,8 @@ export default function PalletView({
     } catch (err) {
       notify.error({
         title: 'Producción no encontrada',
-        description: (err as { message?: string })?.message || 'No existe ninguna producción con ese lote.',
+        description:
+          (err as { message?: string })?.message || 'No existe ninguna producción con ese lote.',
       });
     } finally {
       setResolvingProductionLot(null);
@@ -317,7 +326,9 @@ export default function PalletView({
       notify.success({ title: res?.message || 'Historial borrado correctamente' });
       refetchTimeline();
     } catch (err) {
-      notify.error({ title: (err as { message?: string })?.message || 'Error al borrar el historial' });
+      notify.error({
+        title: (err as { message?: string })?.message || 'Error al borrar el historial',
+      });
     } finally {
       setDeletingTimeline(false);
     }
@@ -328,6 +339,8 @@ export default function PalletView({
   const [addBoxesTab, setAddBoxesTab] = useState('lector');
   const [deleteBoxConfirmId, setDeleteBoxConfirmId] = useState<number | string | null>(null);
   const [deleteTimelineConfirmOpen, setDeleteTimelineConfirmOpen] = useState(false);
+  const [deleteAllBoxesConfirmOpen, setDeleteAllBoxesConfirmOpen] = useState(false);
+  const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
   const scannerInputRef = useRef<HTMLInputElement>(null);
   const [bulkActionType, setBulkActionType] = useState<string | null>(null); // 'lot', 'weight', 'weightAdd' o 'product'
   const [bulkActionValue, setBulkActionValue] = useState('');
@@ -440,12 +453,22 @@ export default function PalletView({
 
   const handleOnClickDeleteAllBoxes = () => {
     if (isReadOnly) return;
+    setDeleteAllBoxesConfirmOpen(true);
+  };
+
+  const handleConfirmDeleteAllBoxes = () => {
     deleteAllBoxes();
+    setDeleteAllBoxesConfirmOpen(false);
   };
 
   const handleOnClickReset = () => {
     if (isReadOnly) return;
+    setResetConfirmOpen(true);
+  };
+
+  const handleConfirmReset = () => {
     resetAllChanges();
+    setResetConfirmOpen(false);
   };
 
   const handleOnClickSaveChanges = () => {
@@ -480,12 +503,17 @@ export default function PalletView({
   // Helper function to get production information from box
   const getBoxProductionInfo = (box: PalletBox) => {
     // El campo production contiene { id, lot }
-    return (box as { production?: { id: number | null; lot: string | null } | null }).production || null;
+    return (
+      (box as { production?: { id: number | null; lot: string | null } | null }).production || null
+    );
   };
 
   // Agrupar cajas por producción
   const groupBoxesByProduction = () => {
-    const productionGroups = new Map<string | number, { production: { id: number | null; lot: string | null } | null; boxes: PalletBox[] }>();
+    const productionGroups = new Map<
+      string | number,
+      { production: { id: number | null; lot: string | null } | null; boxes: PalletBox[] }
+    >();
     const availableBoxes: PalletBox[] = [];
 
     if (!temporalPallet) return { available: availableBoxes, inProduction: [] };
@@ -550,7 +578,7 @@ export default function PalletView({
             <div className="mb-2 flex items-center justify-center rounded-full bg-red-100 p-5">
               <CloudAlert className="text-destructive h-12 w-12" />
             </div>
-            <h2 className="text-destructive text-xl font-semibold">¡Vaya! Ocurrió un error</h2>
+            <h2 className="text-destructive text-xl font-medium">¡Vaya! Ocurrió un error</h2>
             <p className="text-muted-foreground max-w-xs text-sm">
               Por favor, revisa tu conexión o inténtalo nuevamente más tarde.
             </p>
@@ -1242,7 +1270,10 @@ export default function PalletView({
                                           <TooltipTrigger asChild>
                                             <div className="cursor-help text-right">
                                               <span className="text-sm font-medium text-green-700">
-                                                {parseFloat(String(box.traceableCostPerKg ?? 0)).toFixed(2)} €/kg
+                                                {parseFloat(
+                                                  String(box.traceableCostPerKg ?? 0)
+                                                ).toFixed(2)}{' '}
+                                                €/kg
                                               </span>
                                               <p className="text-muted-foreground text-xs">
                                                 Trazable
@@ -1345,7 +1376,10 @@ export default function PalletView({
                                       <Tooltip>
                                         <TooltipTrigger asChild>
                                           <span className="cursor-help text-green-700">
-                                            {parseFloat(String(box.traceableCostPerKg ?? 0)).toFixed(2)} €/kg
+                                            {parseFloat(
+                                              String(box.traceableCostPerKg ?? 0)
+                                            ).toFixed(2)}{' '}
+                                            €/kg
                                           </span>
                                         </TooltipTrigger>
                                         <TooltipContent>
@@ -1358,7 +1392,10 @@ export default function PalletView({
                                       <Tooltip>
                                         <TooltipTrigger asChild>
                                           <span className="cursor-help text-blue-600">
-                                            {parseFloat(String(box.manualCostPerKg ?? 0)).toFixed(2)} €/kg
+                                            {parseFloat(String(box.manualCostPerKg ?? 0)).toFixed(
+                                              2
+                                            )}{' '}
+                                            €/kg
                                           </span>
                                         </TooltipTrigger>
                                         <TooltipContent>
@@ -1414,28 +1451,28 @@ export default function PalletView({
                         return (
                           <>
                             <div className="flex flex-shrink-0 items-center justify-between">
-                              <h3 className="text-lg font-semibold">Cajas en el Palet</h3>
+                              <h3 className="text-lg font-medium">Cajas en el Palet</h3>
                               <div className="text-muted-foreground bg-muted/50 flex items-center rounded-full px-4 py-1 text-sm">
                                 <span>
-                                  <span className="text-foreground font-semibold">
+                                  <span className="text-foreground font-medium">
                                     {summaryData.numberOfBoxes}
                                   </span>{' '}
                                   cajas
                                 </span>
                                 <Separator orientation="vertical" className="mx-2 h-3" />
-                                <span className="text-foreground font-semibold">
+                                <span className="text-foreground font-medium">
                                   {formatDecimalWeight(summaryData.netWeight)}
                                 </span>
                                 <Separator orientation="vertical" className="mx-2 h-3" />
                                 <span>
-                                  <span className="text-foreground font-semibold">
+                                  <span className="text-foreground font-medium">
                                     {summaryData.totalProducts}
                                   </span>{' '}
                                   productos
                                 </span>
                                 <Separator orientation="vertical" className="mx-2 h-3" />
                                 <span>
-                                  <span className="text-foreground font-semibold">
+                                  <span className="text-foreground font-medium">
                                     {summaryData.totalLots}
                                   </span>{' '}
                                   lotes
@@ -1539,14 +1576,16 @@ export default function PalletView({
                                                   <TableCell className="text-right text-sm">
                                                     {box.traceableCostPerKg != null ? (
                                                       <span className="text-green-700">
-                                                        {parseFloat(String(box.traceableCostPerKg ?? 0)).toFixed(
-                                                          2
-                                                        )}{' '}
+                                                        {parseFloat(
+                                                          String(box.traceableCostPerKg ?? 0)
+                                                        ).toFixed(2)}{' '}
                                                         €/kg
                                                       </span>
                                                     ) : box.manualCostPerKg != null ? (
                                                       <span className="text-blue-600">
-                                                        {parseFloat(String(box.manualCostPerKg ?? 0)).toFixed(2)}{' '}
+                                                        {parseFloat(
+                                                          String(box.manualCostPerKg ?? 0)
+                                                        ).toFixed(2)}{' '}
                                                         €/kg
                                                       </span>
                                                     ) : (
@@ -1596,7 +1635,7 @@ export default function PalletView({
                                                         </TooltipTrigger>
                                                         <TooltipContent>
                                                           <div className="space-y-1">
-                                                            <p className="font-semibold">
+                                                            <p className="font-medium">
                                                               En Producción
                                                             </p>
                                                             <p className="text-xs">
@@ -1715,10 +1754,11 @@ export default function PalletView({
                                                 return (
                                                   <TableRow className="bg-orange-50/50 hover:bg-orange-50">
                                                     <TableCell colSpan={4} className="py-2">
-                                                      <div className="flex items-center gap-2 font-semibold text-orange-900">
+                                                      <div className="flex items-center gap-2 font-medium text-orange-900">
                                                         <Factory className="h-4 w-4" />
                                                         <span>
-                                                          Producción #{group.production?.id || 'N/A'}
+                                                          Producción #
+                                                          {group.production?.id || 'N/A'}
                                                         </span>
                                                         {group.production?.lot && (
                                                           <>
@@ -2130,7 +2170,7 @@ export default function PalletView({
 
                     <div className="col-span-3 flex flex-col space-y-4 overflow-y-auto">
                       <div className="flex flex-shrink-0 items-center justify-between">
-                        <h3 className="text-lg font-semibold">Vista Previa de Cajas</h3>
+                        <h3 className="text-lg font-medium">Vista Previa de Cajas</h3>
                         <div className="text-muted-foreground/90 bg-foreground-50 flex items-center rounded-full px-4 py-1 text-sm">
                           <span>{temporalPallet.boxes.length} cajas</span>
                           <Separator orientation="vertical" className="mx-2 h-3" />
@@ -2196,7 +2236,9 @@ export default function PalletView({
                                               <Tooltip>
                                                 <TooltipTrigger asChild>
                                                   <span className="cursor-help text-green-700">
-                                                    {parseFloat(String(box.traceableCostPerKg ?? 0)).toFixed(2)}{' '}
+                                                    {parseFloat(
+                                                      String(box.traceableCostPerKg ?? 0)
+                                                    ).toFixed(2)}{' '}
                                                     €/kg
                                                   </span>
                                                 </TooltipTrigger>
@@ -2210,7 +2252,9 @@ export default function PalletView({
                                               <Tooltip>
                                                 <TooltipTrigger asChild>
                                                   <span className="cursor-help text-blue-600">
-                                                    {parseFloat(String(box.manualCostPerKg ?? 0)).toFixed(2)}{' '}
+                                                    {parseFloat(
+                                                      String(box.manualCostPerKg ?? 0)
+                                                    ).toFixed(2)}{' '}
                                                     €/kg
                                                   </span>
                                                 </TooltipTrigger>
@@ -2235,7 +2279,7 @@ export default function PalletView({
                                               </TooltipTrigger>
                                               <TooltipContent>
                                                 <div className="space-y-1">
-                                                  <p className="font-semibold">En Producción</p>
+                                                  <p className="font-medium">En Producción</p>
                                                   <p className="text-xs">
                                                     Producción #{productionInfo.id || 'N/A'}
                                                   </p>
@@ -2257,7 +2301,7 @@ export default function PalletView({
                                                 </div>
                                               </TooltipTrigger>
                                               <TooltipContent>
-                                                <p className="font-semibold">Disponible</p>
+                                                <p className="font-medium">Disponible</p>
                                               </TooltipContent>
                                             </Tooltip>
                                           </TooltipProvider>
@@ -2621,7 +2665,7 @@ export default function PalletView({
 
                       <div className="col-span-3 space-y-4 overflow-y-auto">
                         <div className="flex items-center justify-between">
-                          <h3 className="text-lg font-semibold">Cajas en el Palet</h3>
+                          <h3 className="text-lg font-medium">Cajas en el Palet</h3>
                           <div className="text-muted-foreground/90 bg-foreground-50 flex items-center rounded-full px-4 py-1 text-sm">
                             <span>{temporalPallet.numberOfBoxes} cajas</span>
                             <Separator orientation="vertical" className="mx-2 h-3" />
@@ -2682,7 +2726,7 @@ export default function PalletView({
                                               </TooltipTrigger>
                                               <TooltipContent>
                                                 <div className="space-y-1">
-                                                  <p className="font-semibold">
+                                                  <p className="font-medium">
                                                     Producción #{productionInfo.id || 'N/A'}
                                                   </p>
                                                   {productionInfo.lot && (
@@ -2827,6 +2871,52 @@ export default function PalletView({
               onClick={handleConfirmDeleteTimeline}
             >
               Borrar historial
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Confirmación: eliminar todas las cajas */}
+      <AlertDialog open={deleteAllBoxesConfirmOpen} onOpenChange={setDeleteAllBoxesConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar todas las cajas?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Se eliminarán las {temporalPallet?.boxes?.length ?? 0} caja
+              {(temporalPallet?.boxes?.length ?? 0) !== 1 ? 's' : ''} del palet. Esta acción no se
+              puede deshacer una vez guardado.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleConfirmDeleteAllBoxes}
+            >
+              Eliminar todas
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Confirmación: deshacer cambios */}
+      <AlertDialog open={resetConfirmOpen} onOpenChange={setResetConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Deshacer los cambios?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {(temporalPallet?.boxes?.length ?? 0) > 0
+                ? `Se perderán todos los cambios, incluyendo las ${temporalPallet?.boxes?.length} caja${temporalPallet?.boxes?.length !== 1 ? 's' : ''} del palet. Esta acción no se puede deshacer.`
+                : 'Se perderán todos los cambios realizados en este palet.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleConfirmReset}
+            >
+              Deshacer
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
