@@ -224,10 +224,7 @@ export function useOrderPallets() {
         },
         error: (error: unknown) => ({
           title: 'Error al generar la etiqueta',
-          description: getErrorMessageFrom(
-            error,
-            'No se pudo generar la etiqueta de expedición.'
-          ),
+          description: getErrorMessageFrom(error, 'No se pudo generar la etiqueta de expedición.'),
         }),
       });
     },
@@ -463,9 +460,7 @@ export function useOrderPallets() {
           }
           const result = await getAvailablePalletsForOrder({
             orderId: order?.id as number | string,
-            ids: idsToSearch
-              .map((id) => parseInt(String(id), 10))
-              .filter((id) => !isNaN(id)),
+            ids: idsToSearch.map((id) => parseInt(String(id), 10)).filter((id) => !isNaN(id)),
             perPage: 50,
             page: 1,
           });
@@ -498,7 +493,10 @@ export function useOrderPallets() {
         setPaginationMeta(meta);
       } catch (error) {
         console.error('Error al buscar palets:', error);
-        const msg = getErrorMessageFrom(error, 'No se pudieron buscar los palets. Intente de nuevo.');
+        const msg = getErrorMessageFrom(
+          error,
+          'No se pudieron buscar los palets. Intente de nuevo.'
+        );
         notify.error({ title: 'Error al buscar palets', description: msg });
       } finally {
         setIsSearching(false);
@@ -539,7 +537,10 @@ export function useOrderPallets() {
       setCurrentPage(1);
     } catch (error) {
       console.error('Error al vincular palets:', error);
-      const msg = getErrorMessageFrom(error, 'No se pudieron vincular los palets. Intente de nuevo.');
+      const msg = getErrorMessageFrom(
+        error,
+        'No se pudieron vincular los palets. Intente de nuevo.'
+      );
       notify.error({ title: 'Error al vincular palets', description: msg });
     } finally {
       setIsLinking(false);
@@ -633,6 +634,9 @@ export function useOrderPallets() {
       });
     }
 
+    // AI GS1 3102: peso neto codificado con 2 decimales implícitos. No usar 3100 (0
+    // decimales) — un lector GS1-128 externo decodificaría el peso como 100 veces el real.
+    // Mismo criterio que usePalletBoxOperations.ts. Ver GAP-V2-078/GAP-V2-109.
     const buildGs1128 = (
       productId: number | string | undefined,
       lotVal: string,
@@ -647,7 +651,7 @@ export function useOrderPallets() {
       const gtin = normalizedBoxGtin || fallbackGtinFromProduct || '00000000000000';
       const w = netWeight || 0;
       const formatted = w.toFixed(2).replace('.', '').padStart(6, '0');
-      return `(01)${gtin}(3100)${formatted}(10)${lotVal}`;
+      return `(01)${gtin}(3102)${formatted}(10)${lotVal}`;
     };
 
     let nextBoxId = Date.now();

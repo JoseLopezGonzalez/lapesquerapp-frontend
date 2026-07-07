@@ -70,11 +70,15 @@ export function usePalletBoxOperations({
     return product?.boxGtin ?? null;
   };
 
+  // AI GS1 3102/3202: peso neto codificado con 2 decimales implícitos (el dígito "n" de la
+  // familia 310n/320n indica el número de decimales según el estándar GS1 General
+  // Specifications). No usar 3100/3200 (0 decimales) — un lector GS1-128 externo
+  // decodificaría el peso como 100 veces el real. Ver GAP-V2-078.
   const getGs1128 = (productId: number | string, lot: string, netWeight: unknown): string => {
     const boxGtin = getBoxGtinById(productId);
     const weight = parseFloat(String(netWeight)) || 0;
     const formattedNetWeight = weight.toFixed(2).replace('.', '').padStart(6, '0');
-    return `(01)${boxGtin}(3100)${formattedNetWeight}(10)${lot}`;
+    return `(01)${boxGtin}(3102)${formattedNetWeight}(10)${lot}`;
   };
 
   const getGs1128WithPounds = (
@@ -84,7 +88,7 @@ export function usePalletBoxOperations({
   ): string => {
     const boxGtin = getBoxGtinById(productId);
     const formattedNetWeight = netWeightInPounds.toFixed(2).replace('.', '').padStart(6, '0');
-    return `(01)${boxGtin}(3200)${formattedNetWeight}(10)${lot}`;
+    return `(01)${boxGtin}(3202)${formattedNetWeight}(10)${lot}`;
   };
 
   const addBox = (
