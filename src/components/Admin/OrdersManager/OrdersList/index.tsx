@@ -25,11 +25,14 @@ import { useBackButton } from '@/hooks/use-back-button';
 import { notify } from '@/lib/notifications';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { EmptyState } from '@/components/Utilities/EmptyState';
+import { cn } from '@/lib/utils';
+import type { OrderStatusCounts } from '@/lib/orders/orderListFilters';
 
 interface OrdersListCategory {
   name: string;
   label: string;
   current?: boolean;
+  count?: number;
 }
 
 interface OrdersListProps {
@@ -37,6 +40,7 @@ interface OrdersListProps {
   categories: OrdersListCategory[];
   visibleCategories?: OrdersListCategory[];
   totalActiveOrders?: number;
+  statusCounts?: OrderStatusCounts;
   onClickCategory: (categoryName: string) => void;
   onChangeSearch: (value: string) => void;
   searchText: string;
@@ -52,6 +56,12 @@ interface OrdersListProps {
   canCreateOrder?: boolean;
   canExportListData?: boolean;
 }
+
+const STATUS_CHIP_DEFS: { key: keyof OrderStatusCounts; label: string; dotClass: string }[] = [
+  { key: 'pending', label: 'En producción', dotClass: 'bg-orange-400' },
+  { key: 'finished', label: 'Terminado', dotClass: 'bg-green-400' },
+  { key: 'incident', label: 'Incidencia', dotClass: 'bg-red-400' },
+];
 
 function getErrorDescription(error: unknown, fallback: string): string {
   const e = error as Record<string, unknown> | undefined;
@@ -71,6 +81,7 @@ const OrdersList = ({
   categories,
   visibleCategories: visibleCategoriesProp,
   totalActiveOrders,
+  statusCounts,
   onClickCategory,
   onChangeSearch,
   searchText,
@@ -167,37 +178,69 @@ const OrdersList = ({
     <div className={`relative flex h-full flex-col overflow-hidden`}>
       {/* Header */}
       <div
-        className={`bg-background flex-shrink-0 ${isMobile ? 'px-0 pt-4 pb-3' : 'px-4 pt-2 pb-3 sm:px-7 sm:pt-3'}`}
+        className={
+          isMobile
+            ? 'bg-invert relative shrink-0 overflow-hidden rounded-br-[50%_42px] rounded-bl-[50%_42px] pt-5 pb-12'
+            : 'bg-background shrink-0 px-4 pt-2 pb-3 sm:px-7 sm:pt-3'
+        }
       >
         {isMobile ? (
-          /* Layout mobile: Back + título + Crear (un solo punto de entrada a filtros = fila "Filtrar") */
-          <div className="relative flex items-center justify-between gap-2 px-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => router.back()}
-              className="hover:bg-muted h-12 min-h-12 w-12 min-w-12 flex-shrink-0 rounded-full"
-              aria-label="Volver"
-            >
-              <ArrowLeft className="h-6 w-6" />
-            </Button>
-            <h2 className="flex-1 truncate text-center text-xl font-medium dark:text-white">
-              Pedidos Activos
-            </h2>
-            {canCreateOrder ? (
+          /* Layout mobile: hero oscuro (back + título + crear, nº de pedidos activos, chips de estado) */
+          <>
+            <div className="relative flex items-center justify-between gap-2 px-4">
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={onClickAddNewOrder}
-                className="hover:bg-muted h-12 min-h-12 w-12 min-w-12 shrink-0 rounded-full"
-                aria-label="Crear nuevo pedido"
+                onClick={() => router.back()}
+                className="text-invert-foreground h-11 min-h-11 w-11 min-w-11 shrink-0 rounded-full hover:bg-white/10 hover:text-white"
+                aria-label="Volver"
               >
-                <Plus className="h-6 w-6" />
+                <ArrowLeft className="h-5 w-5" />
               </Button>
-            ) : (
-              <div className="h-12 min-h-12 w-12 min-w-12 shrink-0" aria-hidden="true" />
+              <h2 className="text-invert-foreground flex-1 truncate text-center text-base font-semibold">
+                Pedidos Activos
+              </h2>
+              {canCreateOrder ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onClickAddNewOrder}
+                  className="text-invert-foreground h-11 min-h-11 w-11 min-w-11 shrink-0 rounded-full bg-white/10 hover:bg-white/15 hover:text-white"
+                  aria-label="Crear nuevo pedido"
+                >
+                  <Plus className="h-5 w-5" />
+                </Button>
+              ) : (
+                <div className="h-11 min-h-11 w-11 min-w-11 shrink-0" aria-hidden="true" />
+              )}
+            </div>
+
+            <div className="relative mt-3 text-center">
+              <p className="text-invert-foreground text-[40px] leading-none font-extrabold tracking-tight">
+                {activeCount}
+              </p>
+              <p className="text-invert-foreground/60 mt-1 text-[13px] font-medium">
+                pedido{activeCount !== 1 ? 's' : ''} activo{activeCount !== 1 ? 's' : ''}
+              </p>
+            </div>
+
+            {statusCounts && (
+              <div className="relative mt-4 flex flex-wrap justify-center gap-1.5 px-4">
+                {STATUS_CHIP_DEFS.map(({ key, label, dotClass }) =>
+                  statusCounts[key] > 0 ? (
+                    <span
+                      key={key}
+                      className="text-invert-foreground inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-[11px] font-semibold"
+                    >
+                      <span className={cn('h-1.5 w-1.5 rounded-full', dotClass)} />
+                      {label}
+                      <span className="text-invert-foreground/60">{statusCounts[key]}</span>
+                    </span>
+                  ) : null
+                )}
+              </div>
             )}
-          </div>
+          </>
         ) : (
           /* Layout desktop: título + botones */
           <div className="flex w-full flex-row gap-3 sm:items-center sm:justify-between">
@@ -256,8 +299,16 @@ const OrdersList = ({
         className={`flex min-h-0 flex-1 flex-col overflow-hidden ${isMobile ? 'px-4' : 'px-4 sm:px-7'}`}
       >
         {/* Barra de búsqueda (siempre visible) + tabs con efecto badge y scroll con fade */}
-        <div className={`w-full flex-shrink-0 ${isMobile ? 'mb-3 space-y-4 pt-1' : 'mb-5 pt-2'}`}>
-          <InputGroup className="w-full">
+        <div
+          className={`w-full flex-shrink-0 ${isMobile ? 'relative z-10 -mt-8 mb-3 space-y-4' : 'mb-5 pt-2'}`}
+        >
+          <InputGroup
+            className={
+              isMobile
+                ? 'bg-background w-full rounded-2xl border-0 shadow-lg shadow-black/10'
+                : 'w-full'
+            }
+          >
             <InputGroupInput
               type="text"
               value={searchText}
@@ -276,10 +327,19 @@ const OrdersList = ({
           >
             {isMobile ? (
               <div className="scrollbar-hide -mx-4 overflow-x-auto px-4">
-                <TabsList className="w-max">
+                <TabsList className="h-auto w-max gap-1.5 bg-transparent p-0">
                   {visibleCategories.map((category) => (
-                    <TabsTrigger key={category.name} value={category.name}>
+                    <TabsTrigger
+                      key={category.name}
+                      value={category.name}
+                      className="group bg-muted/60 text-foreground/70 data-active:bg-invert data-active:text-invert-foreground dark:data-active:bg-invert dark:data-active:text-invert-foreground gap-1.5 rounded-full border-none px-3 py-1.5 text-[13px] font-semibold whitespace-nowrap shadow-none data-active:shadow-none dark:data-active:border-transparent"
+                    >
                       {category.label}
+                      {typeof category.count === 'number' && (
+                        <span className="text-foreground/60 group-data-active:text-invert-foreground rounded-full bg-black/10 px-1.5 py-0.5 text-[11px] font-bold group-data-active:bg-white/20">
+                          {category.count}
+                        </span>
+                      )}
                     </TabsTrigger>
                   ))}
                 </TabsList>

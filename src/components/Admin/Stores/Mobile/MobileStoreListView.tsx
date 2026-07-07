@@ -52,6 +52,26 @@ interface MobileStoreListViewProps {
   onLoadMore: () => void;
 }
 
+const OCCUPANCY_AVATAR_CLASS: Record<'low' | 'medium' | 'high', string> = {
+  low: 'bg-green-500',
+  medium: 'bg-orange-500',
+  high: 'bg-red-600',
+};
+
+const OCCUPANCY_TEXT_CLASS: Record<'low' | 'medium' | 'high', string> = {
+  low: 'text-green-700 dark:text-green-400',
+  medium: 'text-orange-700 dark:text-orange-400',
+  high: 'text-red-700 dark:text-red-400',
+};
+
+function storeInitials(name: string) {
+  const cleaned = name.replace(/^Almacén\s*/i, '').trim();
+  const words = cleaned.split(/\s+/).filter(Boolean);
+  if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase();
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return 'AL';
+}
+
 function MobileStoreCard({
   store,
   disabled,
@@ -89,11 +109,20 @@ function MobileStoreCard({
       className={cn(
         'transition-colors',
         disabled && 'pointer-events-none opacity-60',
-        !disabled && 'cursor-pointer active:bg-accent/60'
+        !disabled && 'active:bg-accent/60 cursor-pointer'
       )}
     >
       <CardContent className="py-0">
         <div className="flex w-full min-w-0 grow items-center gap-3 pr-1">
+          <div
+            className={cn(
+              'flex h-11 w-11 shrink-0 items-center justify-center rounded-[13px] text-[13px] font-extrabold text-white',
+              isGhostStore ? 'bg-slate-500' : OCCUPANCY_AVATAR_CLASS[occupancyStatus]
+            )}
+            aria-hidden="true"
+          >
+            {isGhostStore ? <Package className="h-5 w-5" /> : storeInitials(store.name)}
+          </div>
           <div className="min-w-0 flex-1 space-y-1">
             <p className="truncate text-base leading-tight font-medium">{store.name}</p>
 
@@ -118,16 +147,28 @@ function MobileStoreCard({
               </div>
             )}
 
-            <Progress
-              value={
-                isGhostStore
-                  ? (store.content?.pallets?.length ?? 0) > 0
-                    ? 100
-                    : 0
-                  : Math.min(fillPercentage, 100)
-              }
-              className={cn('h-2.5', progressClass)}
-            />
+            <div className="flex items-center gap-2">
+              <Progress
+                value={
+                  isGhostStore
+                    ? (store.content?.pallets?.length ?? 0) > 0
+                      ? 100
+                      : 0
+                    : Math.min(fillPercentage, 100)
+                }
+                className={cn('h-2.5 flex-1', progressClass)}
+              />
+              {!isGhostStore && (
+                <span
+                  className={cn(
+                    'w-9 shrink-0 text-right text-[11px] font-bold tabular-nums',
+                    OCCUPANCY_TEXT_CLASS[occupancyStatus]
+                  )}
+                >
+                  {Math.round(Math.min(fillPercentage, 100))}%
+                </span>
+              )}
+            </div>
           </div>
 
           <ChevronRight className="text-muted-foreground h-5 w-5 flex-shrink-0" aria-hidden />
@@ -195,6 +236,12 @@ export function MobileStoreListView({
     return () => observer.disconnect();
   }, [hasMoreStores, loadingMore, onLoadMore]);
 
+  const getOccupancyStatus = (s: Store): 'low' | 'medium' | 'high' => {
+    const cap = s.capacity || s.totalNetWeight || 1;
+    const fill = cap > 0 ? ((s.totalNetWeight ?? 0) / cap) * 100 : 0;
+    return fill <= 50 ? 'low' : fill <= 80 ? 'medium' : 'high';
+  };
+
   const realStores = (stores ?? []).filter((s) => s.id !== REGISTERED_PALLETS_STORE_ID);
 
   const filteredStores = search.trim()
@@ -206,48 +253,95 @@ export function MobileStoreListView({
       ? filteredStores
       : filteredStores.filter((s) => {
           if (s.id === REGISTERED_PALLETS_STORE_ID) return false;
-          const cap = s.capacity || s.totalNetWeight || 1;
-          const fill = cap > 0 ? ((s.totalNetWeight ?? 0) / cap) * 100 : 0;
-          const status = fill <= 50 ? 'low' : fill <= 80 ? 'medium' : 'high';
-          return status === activeTab;
+          return getOccupancyStatus(s) === activeTab;
         });
 
   const isEmpty = !stores || stores.length === 0;
 
+  const tabDefs: { key: TabId; label: string }[] = [
+    { key: 'all', label: 'Todos' },
+    { key: 'low', label: 'Libres' },
+    { key: 'medium', label: 'Ocupados' },
+    { key: 'high', label: 'Llenos' },
+  ];
+  const countForTab = (key: TabId) =>
+    key === 'all'
+      ? filteredStores.length
+      : filteredStores.filter(
+          (s) => s.id !== REGISTERED_PALLETS_STORE_ID && getOccupancyStatus(s) === key
+        ).length;
+
+  const STATUS_CHIP_DEFS: { key: 'medium' | 'low' | 'high'; label: string; dotClass: string }[] = [
+    { key: 'medium', label: 'Ocupado', dotClass: 'bg-orange-400' },
+    { key: 'low', label: 'Libre', dotClass: 'bg-green-400' },
+    { key: 'high', label: 'Lleno', dotClass: 'bg-red-400' },
+  ];
+  const statusCounts = {
+    low: realStores.filter((s) => getOccupancyStatus(s) === 'low').length,
+    medium: realStores.filter((s) => getOccupancyStatus(s) === 'medium').length,
+    high: realStores.filter((s) => getOccupancyStatus(s) === 'high').length,
+  };
+
   return (
     <div className="relative flex h-full flex-col overflow-hidden">
       {/* Header */}
-      <div className="bg-background flex-shrink-0 px-0 pt-4 pb-3">
-        <div className="flex items-center justify-between gap-2 px-2">
+      <div className="bg-invert relative shrink-0 overflow-hidden rounded-br-[50%_42px] rounded-bl-[50%_42px] pt-5 pb-12">
+        <div className="relative flex items-center justify-between gap-2 px-4">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => router.back()}
-            className="hover:bg-muted h-12 min-h-12 w-12 min-w-12 shrink-0 rounded-full"
+            className="text-invert-foreground h-11 min-h-11 w-11 min-w-11 shrink-0 rounded-full hover:bg-white/10 hover:text-white"
             aria-label="Volver"
           >
-            <ArrowLeft className="h-6 w-6" />
+            <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h2 className="flex-1 truncate text-center text-xl font-normal">
+          <h2 className="text-invert-foreground flex-1 truncate text-center text-base font-semibold">
             Almacenes
           </h2>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setScannerOpen(true)}
-            className="hover:bg-muted h-12 min-h-12 w-12 min-w-12 shrink-0 rounded-full"
+            className="text-invert-foreground h-11 min-h-11 w-11 min-w-11 shrink-0 rounded-full bg-white/10 hover:bg-white/15 hover:text-white"
             aria-label="Escanear QR de palet"
           >
-            <ScanLine className="h-6 w-6" />
+            <ScanLine className="h-5 w-5" />
           </Button>
         </div>
+
+        <div className="relative mt-3 text-center">
+          <p className="text-invert-foreground text-[40px] leading-none font-extrabold tracking-tight">
+            {realStores.length}
+          </p>
+          <p className="text-invert-foreground/60 mt-1 text-[13px] font-medium">
+            almacén{realStores.length !== 1 ? 'es' : ''}
+          </p>
+        </div>
+
+        {!isEmpty && (
+          <div className="relative mt-4 flex flex-wrap justify-center gap-1.5 px-4">
+            {STATUS_CHIP_DEFS.map(({ key, label, dotClass }) =>
+              statusCounts[key] > 0 ? (
+                <span
+                  key={key}
+                  className="text-invert-foreground inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-[11px] font-semibold"
+                >
+                  <span className={cn('h-1.5 w-1.5 rounded-full', dotClass)} />
+                  {label}
+                  <span className="text-invert-foreground/60">{statusCounts[key]}</span>
+                </span>
+              ) : null
+            )}
+          </div>
+        )}
       </div>
 
       {/* Contenido — estructura idéntica a gestor de pedidos */}
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-4">
         {/* Buscador + tabs */}
-        <div className="w-full flex-shrink-0 mb-3 space-y-4 pt-1">
-          <InputGroup className="w-full">
+        <div className="relative z-10 -mt-8 mb-3 w-full flex-shrink-0 space-y-4">
+          <InputGroup className="bg-background w-full rounded-2xl border-0 shadow-lg shadow-black/10">
             <InputGroupInput
               type="text"
               value={search}
@@ -266,11 +360,19 @@ export function MobileStoreListView({
               onValueChange={(v: string) => setActiveTab(v as TabId)}
             >
               <div className="scrollbar-hide overflow-x-auto">
-                <TabsList className="w-max">
-                  <TabsTrigger value="all">Todos</TabsTrigger>
-                  <TabsTrigger value="low">Libres</TabsTrigger>
-                  <TabsTrigger value="medium">Ocupados</TabsTrigger>
-                  <TabsTrigger value="high">Llenos</TabsTrigger>
+                <TabsList className="h-auto w-max gap-1.5 bg-transparent p-0">
+                  {tabDefs.map(({ key, label }) => (
+                    <TabsTrigger
+                      key={key}
+                      value={key}
+                      className="group bg-muted/60 text-foreground/70 data-active:bg-invert data-active:text-invert-foreground dark:data-active:bg-invert dark:data-active:text-invert-foreground gap-1.5 rounded-full border-none px-3 py-1.5 text-[13px] font-semibold whitespace-nowrap shadow-none data-active:shadow-none dark:data-active:border-transparent"
+                    >
+                      {label}
+                      <span className="text-foreground/60 group-data-active:text-invert-foreground rounded-full bg-black/10 px-1.5 py-0.5 text-[11px] font-bold group-data-active:bg-white/20">
+                        {countForTab(key)}
+                      </span>
+                    </TabsTrigger>
+                  ))}
                 </TabsList>
               </div>
             </Tabs>

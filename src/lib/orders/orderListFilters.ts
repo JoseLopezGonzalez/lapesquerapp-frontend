@@ -2,6 +2,13 @@ export type OrderCategory = {
   label: string;
   name: string;
   current?: boolean;
+  count?: number;
+};
+
+export type OrderStatusCounts = {
+  pending: number;
+  finished: number;
+  incident: number;
 };
 
 export type OrderListItem = Record<string, unknown> & {
@@ -49,12 +56,16 @@ export function buildVisibleOrderCategories(orders: OrderListItem[] = []) {
     (order) => getDateOnly(order.loadDate)?.getTime() === tomorrow.getTime()
   );
 
-  const result: OrderCategory[] = [{ label: 'Todos', name: 'all' }];
-  if (hasOrdersToday) result.push({ label: 'Hoy', name: 'today' });
-  if (hasOrdersTomorrow) result.push({ label: 'Mañana', name: 'tomorrow' });
+  const countFor = (categoryName: string) =>
+    filterAndSortOrders(orders, { activeCategoryName: categoryName }).length;
+
+  const result: OrderCategory[] = [{ label: 'Todos', name: 'all', count: countFor('all') }];
+  if (hasOrdersToday) result.push({ label: 'Hoy', name: 'today', count: countFor('today') });
+  if (hasOrdersTomorrow)
+    result.push({ label: 'Mañana', name: 'tomorrow', count: countFor('tomorrow') });
   result.push(
-    { label: 'En producción', name: 'pending' },
-    { label: 'Terminados', name: 'finished' }
+    { label: 'En producción', name: 'pending', count: countFor('pending') },
+    { label: 'Terminados', name: 'finished', count: countFor('finished') }
   );
 
   return result;
@@ -101,4 +112,16 @@ export function filterAndSortOrders(
       const rightDate = new Date(String(right.loadDate ?? ''));
       return leftDate.getTime() - rightDate.getTime();
     });
+}
+
+export function countOrdersByStatus(orders: OrderListItem[] = []): OrderStatusCounts {
+  return orders.reduce<OrderStatusCounts>(
+    (acc, order) => {
+      if (order.status === 'pending') acc.pending += 1;
+      else if (order.status === 'finished') acc.finished += 1;
+      else if (order.status === 'incident') acc.incident += 1;
+      return acc;
+    },
+    { pending: 0, finished: 0, incident: 0 }
+  );
 }

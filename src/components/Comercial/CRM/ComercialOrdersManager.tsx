@@ -18,7 +18,7 @@ import {
   enrichOrdersWithOffers,
   filterAndSortCommercialOrders,
 } from '@/lib/comercial/comercialOrders';
-import { INITIAL_ORDER_CATEGORIES } from '@/lib/orders/orderListFilters';
+import { countOrdersByStatus, INITIAL_ORDER_CATEGORIES } from '@/lib/orders/orderListFilters';
 import { notify } from '@/lib/notifications';
 import { Package } from 'lucide-react';
 import { offerKeys } from '@/lib/routes/queryKeys';
@@ -105,6 +105,8 @@ export default function ComercialOrdersManager() {
     });
   }, [enrichedOrders, debouncedSearchText, activeCategory]);
 
+  const statusCounts = useMemo(() => countOrdersByStatus(enrichedOrders), [enrichedOrders]);
+
   const reloadOrders = useCallback(() => {
     refetch();
     queryClient.invalidateQueries({ queryKey: offerKeys.listPrefix(tenantId) });
@@ -173,6 +175,7 @@ export default function ComercialOrdersManager() {
       <OrdersList
         orders={sortedOrders as unknown as OrderCardOrder[]}
         totalActiveOrders={enrichedOrders.length}
+        statusCounts={statusCounts}
         categories={categories}
         visibleCategories={visibleCategoriesForTabs}
         onClickCategory={handleOnClickCategory}
@@ -196,6 +199,7 @@ export default function ComercialOrdersManager() {
     [
       sortedOrders,
       enrichedOrders.length,
+      statusCounts,
       categories,
       visibleCategoriesForTabs,
       searchText,

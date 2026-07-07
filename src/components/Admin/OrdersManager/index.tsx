@@ -17,6 +17,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import {
   INITIAL_ORDER_CATEGORIES,
   buildVisibleOrderCategories,
+  countOrdersByStatus,
   filterAndSortOrders,
   type OrderListItem,
 } from '@/lib/orders/orderListFilters';
@@ -173,6 +174,8 @@ export default function OrdersManager() {
     });
   }, [orders, debouncedSearchText, activeCategory]);
 
+  const statusCounts = useMemo(() => countOrdersByStatus(orders), [orders]);
+
   // Toggle entre vista normal y vista cocina
   const toggleViewMode = useCallback(() => {
     setViewMode((prev) => (prev === 'normal' ? 'production' : 'normal'));
@@ -287,6 +290,7 @@ export default function OrdersManager() {
         onClickOrderCard={handleOnClickOrderCard}
         orders={sortedOrders}
         totalActiveOrders={orders.length}
+        statusCounts={statusCounts}
         categories={categories}
         visibleCategories={visibleCategoriesForTabs}
         onClickCategory={handleOnClickCategory}
@@ -303,6 +307,7 @@ export default function OrdersManager() {
     [
       sortedOrders,
       orders.length,
+      statusCounts,
       categories,
       visibleCategoriesForTabs,
       searchText,

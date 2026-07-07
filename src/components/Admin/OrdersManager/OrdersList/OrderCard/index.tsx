@@ -7,6 +7,19 @@ import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import StatusBadge from '../../StatusBadge';
 
+const AVATAR_BG_CLASS: Record<'orange' | 'green' | 'red', string> = {
+  orange: 'bg-orange-500',
+  green: 'bg-green-500',
+  red: 'bg-red-500',
+};
+
+function customerInitials(name: string | null | undefined) {
+  const words = (name ?? '').trim().split(/\s+/).filter(Boolean);
+  if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase();
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return '—';
+}
+
 export interface OrderCardOrder {
   id: number | string;
   status?: string | null;
@@ -98,8 +111,17 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }: OrderCardPr
     >
       <CardContent className="py-0">
         {isMobile ? (
-          /* Mobile: Cliente protagonista → ID · Fecha (secundario) → estado badge discreto */
+          /* Mobile: avatar coloreado por estado → Cliente protagonista → ID · Fecha (secundario) → estado badge discreto */
           <div className="flex w-full min-w-0 grow items-center gap-3 pr-1">
+            <div
+              className={cn(
+                'flex h-11 w-11 shrink-0 items-center justify-center rounded-[13px] text-[13px] font-extrabold text-white',
+                AVATAR_BG_CLASS[ringColor]
+              )}
+              aria-hidden="true"
+            >
+              {customerInitials(order.customer?.name)}
+            </div>
             <div className="min-w-0 flex-1 space-y-1">
               <p
                 className="truncate text-base leading-tight font-medium"
@@ -177,7 +199,7 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }: OrderCardPr
             </div>
             <div>
               <p
-                className="line-clamp-2 [overflow-wrap:anywhere] text-base font-medium"
+                className="line-clamp-2 text-base font-medium [overflow-wrap:anywhere]"
                 title={order.customer?.name ?? '—'}
               >
                 {order.customer?.name ?? '—'}
