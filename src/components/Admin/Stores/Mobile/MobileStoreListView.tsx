@@ -136,7 +136,12 @@ function MobileStoreCard({
           </div>
           <div className="min-w-0 flex-1 space-y-1">
             <div className="flex items-center justify-between gap-2">
-              <p className="truncate text-base leading-tight font-medium">{store.name}</p>
+              <p
+                className="max-w-[58%] min-w-0 flex-1 truncate text-base leading-tight font-medium"
+                title={store.name}
+              >
+                {store.name}
+              </p>
               {!isGhostStore && (
                 <span
                   className={cn(

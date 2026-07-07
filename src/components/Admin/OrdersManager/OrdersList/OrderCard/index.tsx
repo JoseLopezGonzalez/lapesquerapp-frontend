@@ -124,7 +124,7 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }: OrderCardPr
             <div className="min-w-0 flex-1 space-y-1">
               <div className="flex items-center justify-between gap-2">
                 <p
-                  className="truncate text-base leading-tight font-medium"
+                  className="max-w-[58%] min-w-0 flex-1 truncate text-base leading-tight font-medium"
                   title={order.customer?.name ?? '—'}
                 >
                   {order.customer?.name ?? '—'}
