@@ -17,7 +17,7 @@ function roundToTwoDecimals(weight) {
 }
 
 /**
- * Normaliza un código escaneado a formato GS1-128 estándar (01)(3100|3200)(10).
+ * Normaliza un código escaneado a formato GS1-128 estándar (01)(3102|3202)(10).
  * @param {string} scannedCode - Código crudo (con o sin paréntesis)
  * @returns {string|null} Forma normalizada o null si no coincide
  */
