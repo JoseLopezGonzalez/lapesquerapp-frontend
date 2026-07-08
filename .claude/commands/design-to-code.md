@@ -3,6 +3,7 @@
 ## Uso
 ```
 /design-to-code [vista] [fuente opcional]
+/design-to-code refine [vista] [fuente opcional]
 /design-to-code audit [vista]
 ```
 
@@ -10,6 +11,7 @@
 ```
 /design-to-code pedidos-mobile
 /design-to-code dashboard-comercial .claude/design-imports/dashboard-comercial/source.html
+/design-to-code refine pedidos-mobile
 /design-to-code audit pedidos-mobile
 ```
 
@@ -31,13 +33,23 @@
 `/design-to-code audit [vista]` re-ejecuta solo el PASO D sobre una vista ya
 implementada — útil tras aplicar fixes de un ❌ DRIFT sin repetir todo el flujo.
 
+`/design-to-code refine [vista] [fuente opcional]` activa el **Modo REFINAR**
+del skill: para una vista **que ya existe en el proyecto** — incluida una
+implementada en otra sesión sin pasar nunca por este circuito. Recupera (o
+localiza y persiste por primera vez) la fuente del diseño, audita el estado
+actual contra ella para obtener la lista priorizada de drift, y solo entonces
+delega una pasada de ajuste quirúrgico — nunca una reescritura. Úsalo cuando
+la petición sea "afina esta pantalla para que se parezca más al diseño" en
+vez de "implementa esta pantalla nueva".
+
 ---
 
 ## Aliases reconocidos
 
 | Comando | Acción |
 |---------|--------|
-| `/design-to-code [vista] [fuente]` | Iniciar el circuito completo para una vista |
+| `/design-to-code [vista] [fuente]` | Iniciar el circuito completo para una vista nueva |
+| `/design-to-code refine [vista] [fuente]` | Afinar fidelidad de una vista ya implementada (con o sin circuito previo) |
 | `/design-to-code audit [vista]` | Re-ejecutar solo la auditoría de fidelidad (PASO D) |
 
 ---
@@ -64,6 +76,26 @@ implementada — útil tras aplicar fixes de un ❌ DRIFT sin repetir todo el fl
 6. Jose prueba en móvil real o DevTools
 
 7. "merge [vista]"   ← cuando está listo (igual que /mobile merge)
+```
+
+### Flujo típico — Modo REFINAR (vista ya implementada)
+
+```
+1. /design-to-code refine [vista]
+   → Claude busca .claude/design-imports/[vista]/source.html
+     - si existe: lo reutiliza directamente
+     - si no existe: pide/localiza la fuente igual que en el PASO 0 y la
+       persiste, para que la próxima vez ya esté disponible
+   → Claude localiza el componente ya implementado en el codebase
+
+2. Claude audita fidelidad ANTES de tocar código (design-fidelity-auditor)
+   → si hay ❓ NEEDS JOSE'S CALL (vista sin brief.md previo), Jose resuelve
+     esos puntos primero — quedan guardados para la próxima vez
+   → produce la lista priorizada de ❌ DRIFT
+
+3. Claude afina solo esos puntos (cambio quirúrgico, no reescritura)
+
+4. Claude re-audita hasta 0 drift o hasta que Jose diga "suficiente"
 ```
 
 ---

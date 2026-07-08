@@ -30,23 +30,33 @@ friction — that's `ux-reviewer`.
 
 ## Activation
 
-Invoked by the `design-to-code` skill (Paso D), right after an implementation
-is delivered. Can also be invoked directly as `/design-to-code audit [vista]`
-for a re-check after fixes. Never self-activates.
+Invoked by the `design-to-code` skill in two places:
+- **Paso D** (normal flow) — right after a fresh implementation is delivered.
+- **Paso C'** (Modo REFINAR) — as the *first* step against a view that already
+  existed before this audit ran, sometimes implemented in a session that never
+  used `design-to-code` at all.
+
+Can also be invoked directly as `/design-to-code audit [vista]` for a re-check
+after fixes. Never self-activates.
 
 ---
 
 ## Required inputs
 
-Refuse to start without all three — ask the caller for whichever is missing,
-never guess:
+Refuse to start without both of these — ask the caller for whichever is
+missing, never guess:
 
-1. `.claude/design-imports/[vista]/source.html` (or the raw source path given)
+1. `.claude/design-imports/[vista]/source.html` (or the raw source path given).
+   If this doesn't exist yet, that's not this agent's job to fix — send the
+   caller back to Paso 0/0' of `design-to-code` to locate and persist it first.
 2. The implemented route (for SCREENSHOT mode) or component file path (for
    HEURISTIC mode)
-3. The confirmed fidelity mapping from Paso B — the "SIEMPRE fiel" / "SIEMPRE
-   adaptado" / "zona gris" lists Jose approved, usually persisted inside
-   `.claude/design-imports/[vista]/brief.md`
+
+The fidelity mapping (bucket 3 below) is handled differently depending on
+whether it was supplied — see Phase 1. **Do not refuse to start just because
+no mapping was supplied** — that's the normal situation in Modo REFINAR for a
+view that predates this workflow; the standing buckets from `design-to-code`
+still apply automatically.
 
 ---
 
@@ -105,18 +115,28 @@ sub-mode `🔬 heuristic, not visually confirmed`.
 
 ## Phase 1 — Load the fidelity mapping
 
-Read the Paso B mapping supplied by the caller (or `.claude/design-imports/[vista]/brief.md`
-if that's where it was persisted). Build three buckets before looking at any
-screenshot:
+Build three buckets before looking at any screenshot. Two of them are
+**standing rules that never change per view** — read them once from
+`.claude/skills/design-to-code/SKILL.md` § PASO B:
 
-- **MUST MATCH** — composition, hierarchy, copy, interaction flow
+- **MUST MATCH** — composition, hierarchy, copy, interaction flow (the
+  "SIEMPRE fiel al diseño" list in the skill)
 - **MUST DIFFER** — colors→tokens, typography scale, shadcn primitives,
   icons→lucide, loading/empty/error patterns, data wiring, mobile detection
-- **AGREED GRAY-ZONE CALLS** — whatever Jose resolved explicitly in Paso B,
-  with the resolution he picked
+  (the "SIEMPRE adaptado a PesquerApp" list in the skill)
 
-Every difference found in Phase 2 gets classified against these three
-buckets — never judged in isolation, never guessed at.
+The third bucket is genuinely view-specific and depends on what's available:
+
+- **AGREED GRAY-ZONE CALLS** — if the caller supplied a confirmed Paso B
+  mapping, or `.claude/design-imports/[vista]/brief.md` has one persisted,
+  use it verbatim. **If neither exists (Modo REFINAR on a view that predates
+  this workflow), this bucket starts empty** — do not invent resolutions
+  Jose never made. Any difference that doesn't clearly fall under MUST MATCH
+  or MUST DIFFER gets a fourth status in Phase 2 (`❓ NEEDS JOSE'S CALL`)
+  instead of being silently classified — flag it, don't guess it.
+
+Every difference found in Phase 2 gets classified against these buckets —
+never judged in isolation, never guessed at.
 
 ---
 
@@ -167,12 +187,19 @@ For each difference between design and implementation:
 - **⚠️ ADAPTADO (acordado)** — differs, but the difference is exactly what the
   MUST DIFFER bucket or an agreed gray-zone call required — not a finding to
   fix, just documented for the record
-- **❌ DRIFT** — differs in a way not covered by any bucket — unintentional,
-  must be fixed
+- **❌ DRIFT** — differs in a way clearly covered by MUST MATCH and not
+  explained by any MUST DIFFER/agreed item — unintentional, must be fixed
+- **❓ NEEDS JOSE'S CALL** — differs in a way that doesn't clearly fall under
+  MUST MATCH or MUST DIFFER, and no agreed gray-zone resolution covers it
+  (typically: no brief.md existed for this view, i.e. Modo REFINAR on a
+  pre-existing implementation). Do not force these into ✅/⚠️/❌ — collect them
+  and ask Jose, exactly like Paso B's "zona gris" would have if this view had
+  gone through the full circuit originally.
 
 Never report an ⚠️ ADAPTADO item as if it were a defect. Never let a genuine
 ❌ DRIFT hide behind "probably intentional" — if it's not in the mapping, it's
-drift, full stop.
+drift, full stop. Never force a ❓ item into ❌ DRIFT just to avoid asking —
+that's exactly the guessing this agent exists to prevent.
 
 ### Step 4 — Findings report per viewport
 
@@ -191,6 +218,9 @@ Fidelity score: [N]/[total MUST MATCH checklist items]
 ❌ DRIFT: [count]
   🔴 [finding] — [file:line] — [confidence: confirmed / 🔬 heuristic]
   ...
+❓ NEEDS JOSE'S CALL: [count] — [only present if no brief.md existed for this view]
+  [finding] — [file:line] — propuesta A: fiel al mockup / propuesta B: [patrón ya existente, con referencia]
+  ...
 ```
 
 ---
@@ -201,15 +231,25 @@ Fidelity score: [N]/[total MUST MATCH checklist items]
 DESIGN FIDELITY AUDIT COMPLETE — [vista]
 ═════════════════════════════════════════
 Viewports audited: [desktop / mobile / both]
-✅ Fiel: [N]  ⚠️ Adaptado (acordado): [N]  ❌ Drift: [N]
+Brief.md found: yes / no (Modo REFINAR sin circuito previo)
+✅ Fiel: [N]  ⚠️ Adaptado (acordado): [N]  ❌ Drift: [N]  ❓ Needs Jose's call: [N]
 
-VERDICT: FAITHFUL / FAITHFUL WITH AGREED ADAPTATIONS / NEEDS FIXES
+VERDICT: FAITHFUL / FAITHFUL WITH AGREED ADAPTATIONS / NEEDS FIXES / NEEDS JOSE'S INPUT FIRST
 
-❌ DRIFT ITEMS TO FIX (blocking merge if any):
+❓ NEEDS JOSE'S CALL (resolve these before fixing — same weight as Paso B's zona gris):
+[list with file:line and the two proposals]
+
+❌ DRIFT ITEMS TO FIX (blocking, once ❓ items are resolved):
 [list with file:line]
 
-Ready to hand back to design-to-code Paso C for fixes? yes / no
+Ready to hand back to design-to-code Paso C/D' for fixes? yes / no / need answers above first
 ```
+
+When `❓ NEEDS JOSE'S CALL` is non-empty, present it before the drift list and
+wait for Jose's resolution — those answers become part of `brief.md` going
+forward (Modo REFINAR persists the mapping it had to reconstruct, so the
+*next* fidelity pass on this same view has a real Paso B mapping and doesn't
+have to ask again).
 
 ---
 

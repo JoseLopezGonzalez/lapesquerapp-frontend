@@ -399,6 +399,7 @@ siguiente agente y retoma el flujo.
 | `/implement-next module={módulo} category={cat}` | `gap-implementor` + `gap-auditor` (modo lote) | Implementa el siguiente lote de GAPs v2 `ready` y los verifica con contexto limpio (skill) |
 | `/mobile [vista]`             | `mobile-ui-agent`  | Workflow completo de UI mobile para una vista (crear/qa/merge/status/list) |
 | `/design-to-code [vista] [fuente]` | `mobile-ui-agent` / `frontend-developer` + `design-fidelity-auditor` | Circuito recurrente: importa un diseño de Claude Design, propone mapeo de fidelidad vs adaptación, implementa y audita fidelidad contra el mockup original (skill) |
+| `/design-to-code refine [vista] [fuente]` | `design-fidelity-auditor` + `mobile-ui-agent` / `frontend-developer` | Modo REFINAR: audita primero una vista ya implementada (con o sin circuito previo) contra su diseño original y afina solo el drift detectado, sin reescribir |
 | `/design-to-code audit [vista]` | `design-fidelity-auditor` | Re-ejecuta solo la auditoría de fidelidad de una vista ya implementada |
 | `/idea [texto libre]`         | —                   | Captura rápida en el parking de ideas — sin preguntas |
 | `/ideas [módulo]`             | —                   | Lista el backlog de `.claude/ideas/parking-lot.md`    |

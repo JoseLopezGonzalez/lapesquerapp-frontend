@@ -16,10 +16,16 @@ cada vez.
 
 ## Cuándo se activa
 
-- Comando explícito `/design-to-code [vista] [fuente]`
+- Comando explícito `/design-to-code [vista] [fuente]` (implementación nueva)
+  o `/design-to-code refine [vista]` (afinar una vista ya implementada)
 - Jose menciona "el diseño de Claude Design", "lo que diseñé en claude.ai/design",
   "envía a Claude Code Web", o pide implementar/mejorar una vista a partir de un
   mockup que ha creado en Claude Design
+- Jose pide afinar, mejorar o aumentar la fidelidad de una vista **que ya
+  existe en el proyecto** respecto a un diseño de Claude Design — incluso si
+  esa vista se implementó en otra sesión sin usar este circuito. Esto activa
+  el **Modo REFINAR** (ver más abajo), no un cambio de UI genérico sin
+  referencia — la diferencia importa porque cambia el protocolo a seguir
 
 ## Skills relacionadas que debes cargar siempre
 
@@ -233,6 +239,97 @@ cero.
 
 ---
 
+## Modo REFINAR — afinar fidelidad de una vista YA implementada
+
+Se activa cuando Jose pide mejorar/afinar/aumentar la fidelidad de una vista
+que **ya existe en el proyecto** respecto a un diseño de Claude Design — tanto
+si esa vista se implementó originalmente con este mismo circuito como si se
+implementó en cualquier otra sesión sin pasar por `/design-to-code` (p. ej.
+"ayer implementé esta pantalla a partir de lo que diseñé, hoy quiero que
+quede más fiel"). Frases que activan este modo: "afina esta pantalla para que
+se parezca más al diseño", "mejora la fidelidad de [vista]", "quiero que
+[vista] quede más parecida a lo que diseñé en Claude Design". Se activa por
+la intención de Jose, no solo por el comando explícito `/design-to-code refine`.
+
+**Regla clave: nunca reconstruir el diseño de memoria ni de la descripción
+verbal de Jose.** Si la fuente no está persistida todavía, se localiza y se
+guarda — exactamente igual que en el PASO 0 — antes de tocar nada. El
+objetivo de persistir `source.html` y `brief.md` en
+`.claude/design-imports/[vista]/` en el PASO 0 del flujo normal es
+precisamente que este modo pueda reutilizarlos sin volver a pedírselos a Jose
+cada vez que se quiera afinar algo.
+
+### PASO 0' — Localizar (o recuperar) la fuente
+
+```bash
+ls .claude/design-imports/[vista]/ 2>/dev/null
+```
+
+- Si `source.html` ya existe → reutilizar directamente, no volver a pedirlo a
+  Jose.
+- Si no existe → ejecutar el PASO 0 normal de este skill (repo sembrado por
+  "Send to Claude Code Web" / `DesignSync` en contexto local / archivo o
+  enlace que dé Jose) y guardarlo en esa ruta antes de continuar, para que
+  quede disponible en la próxima sesión de afinado sin repetir la búsqueda.
+
+### PASO A' — Localizar la implementación existente
+
+A diferencia del flujo normal, aquí no se crea nada desde cero: hay que
+encontrar el componente ya implementado en el codebase.
+
+```bash
+find . -path "*[vista]*" -name "index.*" -not -path "*/node_modules/*"
+grep -r "useIsMobile\|isMobile\|Mobile\b" [ruta-encontrada] --include="*.tsx" --include="*.ts"
+```
+
+Si hay ambigüedad sobre qué archivo o ruta es "la vista" a la que Jose se
+refiere, preguntar antes de seguir — nunca asumir.
+
+### PASO B' — Mapeo de fidelidad (reutilizar o reconstruir)
+
+- Si existe `.claude/design-imports/[vista]/brief.md` con un mapeo ya
+  confirmado (de una ejecución previa del circuito completo) → reutilizarlo
+  tal cual, sin volver a preguntar.
+- Si no existe (la vista se implementó fuera de este circuito) → reconstruirlo
+  ahora. Las listas "SIEMPRE fiel al diseño" / "SIEMPRE adaptado a
+  PesquerApp" del PASO B de este skill son **reglas fijas del proyecto, no
+  cambian por vista** — no hace falta volver a preguntarlas. Solo la "zona
+  gris" es específica de esta vista concreta y sí requiere confirmación
+  explícita de Jose, igual que en el PASO B normal. Generar y persistir el
+  `brief.md` resultante para que quede disponible en la próxima sesión de
+  afinado de esta misma vista.
+
+### PASO C' — Auditar primero (no implementar primero)
+
+A diferencia del flujo normal (donde la auditoría es el último paso), en modo
+REFINAR la auditoría es el **punto de partida**: invocar
+`design-fidelity-auditor` sobre el estado actual (fuente + implementación
+existente + mapeo del PASO B') para obtener la lista priorizada de ❌ DRIFT
+antes de tocar ningún archivo. Sin esta lista no hay forma fiable de saber
+qué "afinar" — adivinarlo a ojo es exactamente lo que este circuito existe
+para evitar.
+
+### PASO D' — Afinar (cirugía dirigida, no reescritura)
+
+Delegar a `mobile-ui-agent` / `frontend-developer` (según corresponda) **solo**
+la lista de ❌ DRIFT obtenida en el PASO C', con instrucción explícita:
+
+> "Ajuste quirúrgico de fidelidad — NO reescribir el componente, NO tocar
+> nada fuera de esta lista de drift. Cada punto es un cambio localizado y
+> mínimo sobre código que ya funciona en producción."
+
+Esto es una pasada de refinamiento sobre código que ya funciona, no una
+reimplementación — el riesgo de scope creep es alto si no se acota así de
+explícito.
+
+### PASO E' — Re-auditar
+
+Repetir `design-fidelity-auditor` sobre el resultado. Iterar (D'→E') hasta
+0 drift, o hasta que Jose decida que el nivel de fidelidad actual ya es
+suficiente y detenga el ciclo explícitamente.
+
+---
+
 ## PASO E — Entregar
 
 ```
@@ -261,6 +358,9 @@ Siguiente paso:
   diseño parezca simple o autoexplicativo
 - Nunca inventar el contenido del diseño si no se pudo localizar la fuente en
   el PASO 0 — detener el circuito y preguntar a Jose
+- Nunca "afinar fidelidad" de memoria o a partir de la descripción verbal de
+  Jose de cómo era el diseño — en Modo REFINAR, si `source.html` no está
+  persistido, se localiza primero (PASO 0'), igual que en una vista nueva
 - Nunca mezclar esta importación con GAPs no relacionados en el mismo commit
 - Nunca saltarse el PASO D (auditoría de fidelidad) — es lo que hace que el
   circuito sea confiable de repetir, no solo la primera vez
