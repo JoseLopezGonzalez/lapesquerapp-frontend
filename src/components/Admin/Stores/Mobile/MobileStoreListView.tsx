@@ -136,7 +136,10 @@ function MobileStoreCard({
             {isGhostStore ? <Package className="h-5 w-5" /> : storeInitials(store.name)}
           </div>
           <div className="min-w-0 flex-1 space-y-1">
-            <p className="truncate text-base leading-tight font-medium" title={store.name}>
+            <p
+              className="max-w-[60vw] truncate text-base leading-tight font-medium"
+              title={store.name}
+            >
               {store.name}
             </p>
 
@@ -145,7 +148,7 @@ function MobileStoreCard({
                 {store.content?.pallets?.length ?? 0} palets en espera
               </p>
             ) : (
-              <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-sm tabular-nums">
+              <div className="text-muted-foreground flex max-w-[65vw] flex-wrap items-center gap-x-3 gap-y-1 text-sm tabular-nums">
                 {store.temperature != null && (
                   <span className="flex items-center gap-1.5">
                     <ThermometerSnowflake className="h-3.5 w-3.5 shrink-0" />
