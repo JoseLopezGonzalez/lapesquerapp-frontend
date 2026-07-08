@@ -367,7 +367,7 @@ export function MobileStoreListView({
       <div className="flex min-h-0 flex-1 flex-col overflow-visible px-4">
         {/* Buscador + tabs */}
         <div className="relative z-10 -mt-8 mb-3 w-full flex-shrink-0 space-y-4">
-          <InputGroup className="bg-background w-full rounded-2xl border-0 shadow-lg shadow-black/10">
+          <InputGroup className="bg-background h-12 w-full rounded-lg border-0 shadow-lg shadow-black/10">
             <InputGroupInput
               type="text"
               value={search}

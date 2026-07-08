@@ -305,7 +305,7 @@ const OrdersList = ({
           <InputGroup
             className={
               isMobile
-                ? 'bg-background w-full rounded-2xl border-0 shadow-lg shadow-black/10'
+                ? 'bg-background h-12 w-full rounded-lg border-0 shadow-lg shadow-black/10'
                 : 'w-full'
             }
           >
