@@ -11,10 +11,11 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
 import {
-  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
   Loader2,
   Package,
-  ScanLine,
+  Scan,
   Search,
   ThermometerSnowflake,
   Warehouse,
@@ -135,31 +136,16 @@ function MobileStoreCard({
             {isGhostStore ? <Package className="h-5 w-5" /> : storeInitials(store.name)}
           </div>
           <div className="min-w-0 flex-1 space-y-1">
-            <div className="flex items-center justify-between gap-2">
-              <p
-                className="max-w-[58%] min-w-0 flex-1 truncate text-base leading-tight font-medium"
-                title={store.name}
-              >
-                {store.name}
-              </p>
-              {!isGhostStore && (
-                <span
-                  className={cn(
-                    'shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold',
-                    OCCUPANCY_BADGE_CLASS[occupancyStatus]
-                  )}
-                >
-                  {OCCUPANCY_LABEL[occupancyStatus]}
-                </span>
-              )}
-            </div>
+            <p className="truncate text-base leading-tight font-medium" title={store.name}>
+              {store.name}
+            </p>
 
             {isGhostStore ? (
               <p className="text-muted-foreground text-sm tabular-nums">
                 {store.content?.pallets?.length ?? 0} palets en espera
               </p>
             ) : (
-              <div className="text-muted-foreground flex items-center gap-3 text-sm tabular-nums">
+              <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-sm tabular-nums">
                 {store.temperature != null && (
                   <span className="flex items-center gap-1.5">
                     <ThermometerSnowflake className="h-3.5 w-3.5 shrink-0" />
@@ -172,9 +158,18 @@ function MobileStoreCard({
                     {formatDecimalWeight(store.totalNetWeight ?? 0)}
                   </span>
                 )}
+                <span
+                  className={cn(
+                    'ml-auto shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold',
+                    OCCUPANCY_BADGE_CLASS[occupancyStatus]
+                  )}
+                >
+                  {OCCUPANCY_LABEL[occupancyStatus]}
+                </span>
               </div>
             )}
           </div>
+          <ChevronRight className="text-muted-foreground h-5 w-5 flex-shrink-0" aria-hidden />
         </div>
 
         <div className="mt-3 flex items-center gap-2">
@@ -186,7 +181,7 @@ function MobileStoreCard({
                   : 0
                 : Math.min(fillPercentage, 100)
             }
-            className={cn('h-2.5 flex-1', progressClass)}
+            className={cn('h-1.5 flex-1', progressClass)}
           />
           {!isGhostStore && (
             <span
@@ -320,7 +315,7 @@ export function MobileStoreListView({
             className="text-invert-foreground h-11 min-h-11 w-11 min-w-11 shrink-0 rounded-full hover:bg-white/10 hover:text-white"
             aria-label="Volver"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ChevronLeft className="h-5 w-5" />
           </Button>
           <h2 className="text-invert-foreground flex-1 truncate text-center text-base font-semibold">
             Almacenes
@@ -329,10 +324,10 @@ export function MobileStoreListView({
             variant="ghost"
             size="icon"
             onClick={() => setScannerOpen(true)}
-            className="text-invert-foreground h-11 min-h-11 w-11 min-w-11 shrink-0 rounded-full bg-white/10 hover:bg-white/15 hover:text-white"
+            className="text-invert-foreground h-11 min-h-11 w-11 min-w-11 shrink-0 rounded-lg bg-white/10 hover:bg-white/15 hover:text-white"
             aria-label="Escanear QR de palet"
           >
-            <ScanLine className="h-5 w-5" />
+            <Scan className="h-5 w-5" />
           </Button>
         </div>
 
@@ -385,7 +380,7 @@ export function MobileStoreListView({
               value={activeTab}
               onValueChange={(v: string) => setActiveTab(v as TabId)}
             >
-              <div className="scrollbar-hide overflow-x-auto">
+              <div className="scrollbar-hide -mx-4 overflow-x-auto [mask-image:linear-gradient(to_right,transparent,black_16px,black_calc(100%-16px),transparent)] px-4 [-webkit-mask-image:linear-gradient(to_right,transparent,black_16px,black_calc(100%-16px),transparent)]">
                 <TabsList className="h-auto w-max gap-1.5 bg-transparent p-0">
                   {tabDefs.map(({ key, label }) => (
                     <TabsTrigger

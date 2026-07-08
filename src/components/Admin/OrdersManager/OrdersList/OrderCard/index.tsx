@@ -2,6 +2,7 @@
 
 import { formatDate } from '@/helpers/formats/dates/formatDates';
 import { useIsMobileSafe } from '@/hooks/use-mobile';
+import { ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import StatusBadge from '../../StatusBadge';
@@ -122,43 +123,36 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }: OrderCardPr
               {customerInitials(order.customer?.name)}
             </div>
             <div className="min-w-0 flex-1 space-y-1">
-              <div className="flex items-center justify-between gap-2">
-                <p
-                  className="max-w-[58%] min-w-0 flex-1 truncate text-base leading-tight font-medium"
-                  title={order.customer?.name ?? '—'}
-                >
-                  {order.customer?.name ?? '—'}
-                </p>
-                <StatusBadge color={ringColor} label={statusLabel} showDot className="shrink-0" />
-              </div>
+              <p
+                className="truncate text-base leading-tight font-medium"
+                title={order.customer?.name ?? '—'}
+              >
+                {order.customer?.name ?? '—'}
+              </p>
               <p className="text-muted-foreground text-sm tabular-nums">
                 #{orderId} · {loadDate}
                 {order.numberOfBoxes != null ? ` · ${order.numberOfBoxes} cajas` : ''}
               </p>
-              {(order?.orderType === 'autoventa' ||
-                order?.order_type === 'autoventa' ||
-                order?.offerId ||
-                order?.externalProcessor ||
-                order?.externalProcessorId) && (
-                <div className="flex flex-wrap items-center gap-1.5">
-                  {(order?.orderType === 'autoventa' || order?.order_type === 'autoventa') && (
-                    <span className="inline-flex items-center rounded-full border border-neutral-400/50 bg-neutral-500/15 px-2 py-0.5 text-[11px] font-medium text-neutral-700 dark:border-neutral-500/50 dark:text-neutral-300">
-                      Autoventa
-                    </span>
-                  )}
-                  {order?.offerId && (
-                    <span className="inline-flex items-center rounded-full border border-blue-400/50 bg-blue-500/15 px-2 py-0.5 text-[11px] font-medium text-blue-700 dark:border-blue-500/50 dark:text-blue-300">
-                      Desde oferta
-                    </span>
-                  )}
-                  {(order?.externalProcessor || order?.externalProcessorId) && (
-                    <span className="inline-flex items-center rounded-full border border-amber-400/50 bg-amber-500/15 px-2 py-0.5 text-[11px] font-medium text-amber-700 dark:border-amber-500/50 dark:text-amber-300">
-                      {order.externalProcessor?.name ?? 'Maquilador'}
-                    </span>
-                  )}
-                </div>
-              )}
+              <div className="flex flex-wrap items-center gap-1.5">
+                <StatusBadge color={ringColor} label={statusLabel} showDot />
+                {(order?.orderType === 'autoventa' || order?.order_type === 'autoventa') && (
+                  <span className="inline-flex items-center rounded-full border border-neutral-400/50 bg-neutral-500/15 px-2 py-0.5 text-[11px] font-medium text-neutral-700 dark:border-neutral-500/50 dark:text-neutral-300">
+                    Autoventa
+                  </span>
+                )}
+                {order?.offerId && (
+                  <span className="inline-flex items-center rounded-full border border-blue-400/50 bg-blue-500/15 px-2 py-0.5 text-[11px] font-medium text-blue-700 dark:border-blue-500/50 dark:text-blue-300">
+                    Desde oferta
+                  </span>
+                )}
+                {(order?.externalProcessor || order?.externalProcessorId) && (
+                  <span className="inline-flex items-center rounded-full border border-amber-400/50 bg-amber-500/15 px-2 py-0.5 text-[11px] font-medium text-amber-700 dark:border-amber-500/50 dark:text-amber-300">
+                    {order.externalProcessor?.name ?? 'Maquilador'}
+                  </span>
+                )}
+              </div>
             </div>
+            <ChevronRight className="text-muted-foreground h-5 w-5 flex-shrink-0" aria-hidden />
           </div>
         ) : (
           <div className="w-full max-w-xs grow space-y-2 sm:space-y-2 xl:max-w-none">
