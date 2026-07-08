@@ -124,7 +124,7 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }: OrderCardPr
             </div>
             <div className="min-w-0 flex-1 space-y-1">
               <p
-                className="truncate text-base leading-tight font-medium"
+                className="max-w-[60vw] truncate text-base leading-tight font-medium"
                 title={order.customer?.name ?? '—'}
               >
                 {order.customer?.name ?? '—'}
@@ -133,7 +133,7 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }: OrderCardPr
                 #{orderId} · {loadDate}
                 {order.numberOfBoxes != null ? ` · ${order.numberOfBoxes} cajas` : ''}
               </p>
-              <div className="flex flex-wrap items-center gap-1.5">
+              <div className="flex max-w-[65vw] flex-wrap items-center gap-1.5">
                 <StatusBadge color={ringColor} label={statusLabel} showDot />
                 {(order?.orderType === 'autoventa' || order?.order_type === 'autoventa') && (
                   <span className="inline-flex items-center rounded-full border border-neutral-400/50 bg-neutral-500/15 px-2 py-0.5 text-[11px] font-medium text-neutral-700 dark:border-neutral-500/50 dark:text-neutral-300">
