@@ -371,6 +371,7 @@ Para documentación extendida, ver `docs/ai-context/`. Para el estado operativo 
 | `gap-normalizer`    | Deduplica, fusiona, divide y clasifica los GAP v2 candidatos generados por `/deep-audit-module` en GAPs implementables con frontmatter completo. Nunca implementa ni audita código directamente. | Fase 6 de `/deep-audit-module` cuando hay más de ~15 candidatos                                            |
 | `code-reviewer`      | Revisor de código independiente                                                                                    | Revisión de PRs y diffs                                                                                   |
 | `db-architect`       | Diseño de caché TanStack Query — factories de queryKey, estrategia de invalidación, staleTime, prefetch, updates optimistas | Cambios en el diseño de queries/mutaciones y su caché                                                     |
+| `design-fidelity-auditor` | Compara una vista implementada contra su mockup original de Claude Design (con captura real cuando es posible) y clasifica cada diferencia como fiel / adaptación acordada / drift no acordado. Nunca evalúa craft visual absoluto (eso es `design-quality-auditor`) ni corrección de código. | Invocado por el skill `design-to-code` (PASO D) tras una implementación, o directamente vía `/design-to-code audit [vista]` |
 
 Nota sobre invocación entre agentes: ningún agente de esta tabla (salvo el hilo
 principal) tiene la tool `Agent` — no pueden lanzarse subagentes entre sí. Cuando
@@ -397,6 +398,9 @@ siguiente agente y retoma el flujo.
 | `/deep-audit-module module={módulo}` | code-audit-agent, ui-audit-agent, design-quality-auditor, domain-business-auditor, permissions-multitenant-auditor | Auditoría profunda multi-carril de un módulo; escribe GAP candidates a `docs/ai/gaps/{module}/` (skill, no agente único) |
 | `/implement-next module={módulo} category={cat}` | `gap-implementor` + `gap-auditor` (modo lote) | Implementa el siguiente lote de GAPs v2 `ready` y los verifica con contexto limpio (skill) |
 | `/mobile [vista]`             | `mobile-ui-agent`  | Workflow completo de UI mobile para una vista (crear/qa/merge/status/list) |
+| `/design-to-code [vista] [fuente]` | `mobile-ui-agent` / `frontend-developer` + `design-fidelity-auditor` | Circuito recurrente: importa un diseño de Claude Design, propone mapeo de fidelidad vs adaptación, implementa y audita fidelidad contra el mockup original (skill) |
+| `/design-to-code refine [vista] [fuente]` | `design-fidelity-auditor` + `mobile-ui-agent` / `frontend-developer` | Modo REFINAR: audita primero una vista ya implementada (con o sin circuito previo) contra su diseño original y afina solo el drift detectado, sin reescribir |
+| `/design-to-code audit [vista]` | `design-fidelity-auditor` | Re-ejecuta solo la auditoría de fidelidad de una vista ya implementada |
 | `/idea [texto libre]`         | —                   | Captura rápida en el parking de ideas — sin preguntas |
 | `/ideas [módulo]`             | —                   | Lista el backlog de `.claude/ideas/parking-lot.md`    |
 | `/ideas promote [NNN]`        | `gap-discovery`     | Promociona una idea parked a GAP con protocolo completo |

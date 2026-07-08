@@ -13,7 +13,7 @@ When invoked, output the following block **directly in your text response** to t
 ---
 
 PESQUERAPP — CLAUDE CODE SYSTEM
-version 2.8
+version 2.9
 ════════════════════════════════════════════════
 
 AUDIT COMMANDS (legacy — single agent, .claude/gaps/)
@@ -59,6 +59,20 @@ MOBILE WORKFLOW
 /mobile qa [vista]               QA checklist de una vista mobile
 /mobile list                     Lista todas las vistas mobile y su estado
 
+DESIGN-TO-CODE WORKFLOW
+────────────────────────
+/design-to-code [vista] [fuente] Importa un diseño de Claude Design, propone
+                                  mapeo de fidelidad vs adaptación, delega la
+                                  implementación (mobile-ui-agent /
+                                  frontend-developer) y audita fidelidad
+                                  contra el mockup original al terminar
+/design-to-code refine [vista]   Modo REFINAR — afina una vista YA implementada
+                                  (con o sin circuito previo) contra su diseño
+                                  original: audita primero, ajusta solo el
+                                  drift detectado, nunca reescribe
+/design-to-code audit [vista]    Re-ejecuta solo la auditoría de fidelidad
+                                  sobre una vista ya implementada
+
 GAP WORKFLOW (legacy)
 ──────────────────────
 No command needed — describe what you want in natural language.
@@ -78,7 +92,7 @@ SYSTEM
 
 ════════════════════════════════════════════════
 
-ACTIVE AGENTS (17)
+ACTIVE AGENTS (18)
 ──────────────────
 gap-discovery                    Converts requests into verified GAPs with full Q&A (main-thread mode, not a subagent)
 gap-implementor                  Executes GAPs exactly — no creative interpretation (main-thread mode, not a subagent)
@@ -89,6 +103,7 @@ code-audit-agent                 Autonomous code auditor — powers /audit-code,
 design-quality-auditor           Visual craft, copy quality, cross-view consistency — powers /audit-design
 skeleton-fidelity-auditor        Skeleton vs real-component fidelity — powers /audit-skeletons
 skeleton-implementor             Builds/fixes skeletons flagged by skeleton-fidelity-auditor
+design-fidelity-auditor          Compares an implementation against its original Claude Design mockup — powers /design-to-code (PASO D, and Modo REFINAR's audit-first pass)
 domain-business-auditor          Sector domain correctness (pesca/congelados) — deep-audit-module lane
 permissions-multitenant-auditor  Role visibility + tenant isolation — deep-audit-module lane
 gap-normalizer                   Dedup/merge/split/classify GAP v2 candidates from /deep-audit-module
@@ -111,6 +126,7 @@ KEY FILES
 .claude/design-context.md        Visual & UX criteria — mandatory before any UI work
 .claude/project-learnings.md     Accumulated learnings — mandatory before any audit
 .claude/ideas/parking-lot.md     Idea backlog — powers /idea and /ideas
+.claude/design-imports/[vista]/  Raw Claude Design source + Design Brief per view — powers /design-to-code
 docs/ai/README.md                Contrato de archivos del flujo v2 (deep-audit-module / implement-next)
 docs/ai/next-action.md           Estado operativo actual — próxima acción sugerida
 CLAUDE.md                        Full project context, rules, git policy
