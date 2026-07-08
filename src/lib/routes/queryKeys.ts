@@ -199,7 +199,12 @@ export const productionQueryKeys = {
 export const productOptionKeys = {
   options: (tenantId: string | null | undefined) =>
     ['products', 'options', tenantId ?? 'unknown'] as const,
-  list: (tenantId: string | null | undefined) => productOptionKeys.options(tenantId),
+  // Clave separada de `options`: esta cachea el array crudo {id, name} del endpoint,
+  // mientras que `options` cachea la versión ya mapeada a {value, label} que usan
+  // OrdersManagerOptionsContext y useOrderOptions. Compartir la misma clave hacía que
+  // ambos shapes colisionaran en caché y el que perdía la carrera leía campos undefined.
+  list: (tenantId: string | null | undefined) =>
+    ['products', 'options', 'raw', tenantId ?? 'unknown'] as const,
 };
 
 export const taxOptionKeys = {
