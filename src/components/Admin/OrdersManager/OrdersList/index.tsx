@@ -5,7 +5,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   PackageSearch,
   SearchX,
-  ArrowLeft,
+  ChevronLeft,
   CheckCircle2,
   Clock,
   AlertCircle,
@@ -195,7 +195,7 @@ const OrdersList = ({
                 className="text-invert-foreground h-11 min-h-11 w-11 min-w-11 shrink-0 rounded-full hover:bg-white/10 hover:text-white"
                 aria-label="Volver"
               >
-                <ArrowLeft className="h-5 w-5" />
+                <ChevronLeft className="h-5 w-5" />
               </Button>
               <h2 className="text-invert-foreground flex-1 truncate text-center text-base font-semibold">
                 Pedidos Activos
@@ -205,7 +205,7 @@ const OrdersList = ({
                   variant="ghost"
                   size="icon"
                   onClick={onClickAddNewOrder}
-                  className="text-invert-foreground h-11 min-h-11 w-11 min-w-11 shrink-0 rounded-full bg-white/10 hover:bg-white/15 hover:text-white"
+                  className="text-invert-foreground h-11 min-h-11 w-11 min-w-11 shrink-0 rounded-lg bg-white/10 hover:bg-white/15 hover:text-white"
                   aria-label="Crear nuevo pedido"
                 >
                   <Plus className="h-5 w-5" />
@@ -305,7 +305,7 @@ const OrdersList = ({
           <InputGroup
             className={
               isMobile
-                ? 'bg-background w-full rounded-2xl border-0 shadow-lg shadow-black/10'
+                ? 'bg-background h-12 w-full rounded-lg border-0 shadow-lg shadow-black/10'
                 : 'w-full'
             }
           >
@@ -326,7 +326,7 @@ const OrdersList = ({
             className={isMobile ? 'mt-0' : 'mt-5 mb-5'}
           >
             {isMobile ? (
-              <div className="scrollbar-hide -mx-4 overflow-x-auto px-4">
+              <div className="scrollbar-hide -mx-4 overflow-x-auto [mask-image:linear-gradient(to_right,transparent,black_16px,black_calc(100%-16px),transparent)] px-4 [-webkit-mask-image:linear-gradient(to_right,transparent,black_16px,black_calc(100%-16px),transparent)]">
                 <TabsList className="h-auto w-max gap-1.5 bg-transparent p-0">
                   {visibleCategories.map((category) => (
                     <TabsTrigger
