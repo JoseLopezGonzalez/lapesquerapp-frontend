@@ -313,6 +313,11 @@ select:focus-visible,
 }
 [data-sonner-toaster] {
   z-index: 9999 !important;
+  /* Radix Dialog (modal) deshabilita pointer-events en los hermanos de su portal
+     mientras está abierto, incluido el contenedor de Sonner. Sin esto, el swipe
+     y el tap-to-dismiss de los toasts quedan bloqueados cuando aparecen con un
+     Dialog modal abierto (p. ej. creación/edición de palets en mobile). */
+  pointer-events: auto !important;
 }
 
 .scrollbar-hide {
@@ -372,25 +377,55 @@ select:focus-visible,
 
   /* QrScannerWidget */
   @keyframes qr-scan-line {
-    0%   { top: 11%; opacity: 0; }
-    7%   { opacity: 1; }
-    93%  { opacity: 1; }
-    100% { top: 89%; opacity: 0; }
+    0% {
+      top: 11%;
+      opacity: 0;
+    }
+    7% {
+      opacity: 1;
+    }
+    93% {
+      opacity: 1;
+    }
+    100% {
+      top: 89%;
+      opacity: 0;
+    }
   }
   @keyframes qr-shimmer {
-    from { background-position: -200% center; }
-    to   { background-position:  200% center; }
+    from {
+      background-position: -200% center;
+    }
+    to {
+      background-position: 200% center;
+    }
   }
   @keyframes qr-result-in {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
   @keyframes qr-result-scale {
-    from { transform: scale(0.55) translateY(12px); opacity: 0; }
-    to   { transform: scale(1)    translateY(0);    opacity: 1; }
+    from {
+      transform: scale(0.55) translateY(12px);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+    }
   }
   @keyframes qr-badge-pop {
-    from { transform: scale(0.2); opacity: 0; }
-    to   { transform: scale(1);   opacity: 1; }
+    from {
+      transform: scale(0.2);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
   }
 }
