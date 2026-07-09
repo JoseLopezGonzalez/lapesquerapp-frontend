@@ -8,6 +8,7 @@ import {
   recalculatePalletStats,
   generateUniqueIntId,
   roundToTwoDecimals,
+  parseDecimalInput,
 } from './palletHelpers';
 
 interface UsePalletBoxOperationsParams {
@@ -206,7 +207,7 @@ export function usePalletBoxOperations({
     manualCostPerKg: (boxId, value) => {
       if (!temporalPallet) return;
       const parsed =
-        value === '' || value === null || value === undefined ? null : parseFloat(String(value));
+        value === '' || value === null || value === undefined ? null : parseDecimalInput(value);
       const cost = parsed !== null && isNaN(parsed) ? null : parsed;
       setTemporalPallet((prev) =>
         prev
@@ -272,7 +273,7 @@ export function usePalletBoxOperations({
         return;
       }
 
-      const parsedWeight = parseFloat(String(netWeight));
+      const parsedWeight = parseDecimalInput(netWeight);
       if (isNaN(parsedWeight) || parsedWeight <= 0) {
         notify.error({
           title: 'Peso no válido',
@@ -321,7 +322,7 @@ export function usePalletBoxOperations({
         return;
       }
 
-      const parsedDifference = parseFloat(String(weightDifference));
+      const parsedDifference = parseDecimalInput(weightDifference);
       if (isNaN(parsedDifference)) {
         notify.error({
           title: 'Peso no válido',

@@ -153,8 +153,14 @@ export function resetBoxCreationDataPreservingDiscounts(
   };
 }
 
+export function parseDecimalInput(value: unknown): number {
+  if (typeof value === 'number') return value;
+  const normalized = String(value).trim().replace(',', '.');
+  return parseFloat(normalized);
+}
+
 export function roundToTwoDecimals(weight: unknown): number {
-  const num = parseFloat(String(weight));
+  const num = parseDecimalInput(weight);
   if (isNaN(num)) return 0;
   return parseFloat(num.toFixed(2));
 }

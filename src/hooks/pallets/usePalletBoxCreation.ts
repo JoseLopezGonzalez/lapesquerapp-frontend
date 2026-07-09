@@ -10,6 +10,7 @@ import {
   ProductOption,
   recalculatePalletStats,
   roundToTwoDecimals,
+  parseDecimalInput,
   resetBoxCreationDataPreservingDiscounts,
   saveDiscountPreferences,
 } from './palletHelpers';
@@ -80,7 +81,7 @@ export function usePalletBoxCreation({
         return;
       }
       const product = getProductById(productId as number | string);
-      const parsedCost = manualCostPerKg ? parseFloat(manualCostPerKg) : null;
+      const parsedCost = manualCostPerKg ? parseDecimalInput(manualCostPerKg) : null;
       const canCost = canManagePalletCostFields(
         session?.user as Parameters<typeof canManagePalletCostFields>[0]
       );

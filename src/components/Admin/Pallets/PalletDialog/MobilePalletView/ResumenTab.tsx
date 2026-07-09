@@ -1,7 +1,7 @@
 'use client';
 
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
-import type { PalletState } from '@/hooks/pallets/palletHelpers';
+import { parseDecimalInput, type PalletState } from '@/hooks/pallets/palletHelpers';
 import { MobilePalletScreenHeader } from './MobilePalletScreenHeader';
 
 interface ResumenTabProps {
@@ -11,7 +11,7 @@ interface ResumenTabProps {
 
 export default function ResumenTab({ temporalPallet, onBack }: ResumenTabProps) {
   const boxes = temporalPallet.boxes ?? [];
-  const totalWeight = boxes.reduce((sum, box) => sum + parseFloat(String(box.netWeight ?? 0)), 0);
+  const totalWeight = boxes.reduce((sum, box) => sum + parseDecimalInput(box.netWeight ?? 0), 0);
   const uniqueProducts = new Set(
     boxes
       .map((b) => (b.product as { name?: string } | null)?.name)
@@ -19,7 +19,7 @@ export default function ResumenTab({ temporalPallet, onBack }: ResumenTabProps) 
   ).size;
   const uniqueLots = new Set(boxes.map((b) => b.lot).filter(Boolean)).size;
 
-  const palletTareWeight = Number(temporalPallet.palletTareWeightKg);
+  const palletTareWeight = parseDecimalInput(temporalPallet.palletTareWeightKg);
   const hasPalletTareWeight =
     temporalPallet.palletTareWeightKg !== null &&
     temporalPallet.palletTareWeightKg !== undefined &&

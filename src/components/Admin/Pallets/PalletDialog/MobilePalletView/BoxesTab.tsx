@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
-import type { PalletBox, PalletState } from '@/hooks/pallets/palletHelpers';
+import { parseDecimalInput, type PalletBox, type PalletState } from '@/hooks/pallets/palletHelpers';
 import { MobilePalletScreenHeader } from './MobilePalletScreenHeader';
 
 interface BoxesTabProps {
@@ -110,7 +110,7 @@ function BoxExpandedPanel({
             value={localWeight}
             onChange={(e: ChangeEvent<HTMLInputElement>) => {
               setLocalWeight(e.target.value);
-              onEditNetWeight(parseFloat(e.target.value));
+              onEditNetWeight(parseDecimalInput(e.target.value));
             }}
             className="h-10 text-right text-sm"
           />

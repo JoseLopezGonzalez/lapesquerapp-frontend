@@ -4,7 +4,12 @@ import { createPallet, updatePallet } from '@/services/palletService';
 import { notify } from '@/lib/notifications';
 import { canManagePalletCostFields } from '@/lib/auth/actor';
 import { stripPalletCostFieldsFromPayload } from '@/helpers/pallet/stripCostFieldsForApi';
-import { PalletState, BoxCreationData, saveDiscountPreferences } from './palletHelpers';
+import {
+  PalletState,
+  BoxCreationData,
+  saveDiscountPreferences,
+  parseDecimalInput,
+} from './palletHelpers';
 
 interface UsePalletSaveParams {
   temporalPallet: PalletState | null;
@@ -22,7 +27,7 @@ export interface UsePalletSaveResult {
 
 const normalizePalletTareWeight = (value: unknown): number | null => {
   if (value === null || value === undefined || value === '') return null;
-  const parsed = Number(value);
+  const parsed = parseDecimalInput(value);
   return Number.isFinite(parsed) ? parsed : NaN;
 };
 
