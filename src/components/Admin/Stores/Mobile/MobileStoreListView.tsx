@@ -64,18 +64,6 @@ const OCCUPANCY_TEXT_CLASS: Record<'low' | 'medium' | 'high', string> = {
   high: 'text-red-700 dark:text-red-400',
 };
 
-const OCCUPANCY_BADGE_CLASS: Record<'low' | 'medium' | 'high', string> = {
-  low: 'bg-green-500/15 text-green-700 dark:text-green-300',
-  medium: 'bg-orange-500/15 text-orange-700 dark:text-orange-300',
-  high: 'bg-red-500/15 text-red-700 dark:text-red-300',
-};
-
-const OCCUPANCY_LABEL: Record<'low' | 'medium' | 'high', string> = {
-  low: 'Libre',
-  medium: 'Ocupado',
-  high: 'Lleno',
-};
-
 function storeInitials(name: string) {
   const cleaned = name.replace(/^Almacén\s*/i, '').trim();
   const words = cleaned.split(/\s+/).filter(Boolean);
@@ -161,14 +149,6 @@ function MobileStoreCard({
                     {formatDecimalWeight(store.totalNetWeight ?? 0)}
                   </span>
                 )}
-                <span
-                  className={cn(
-                    'ml-auto shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold',
-                    OCCUPANCY_BADGE_CLASS[occupancyStatus]
-                  )}
-                >
-                  {OCCUPANCY_LABEL[occupancyStatus]}
-                </span>
               </div>
             )}
           </div>
@@ -513,7 +493,7 @@ export function MobileStoreListSkeleton() {
   );
 }
 
-// Silueta de MobileStoreCard: avatar redondeado + nombre + temp/peso/badge + chevron + barra de ocupación
+// Silueta de MobileStoreCard: avatar redondeado + nombre + temp/peso + chevron + barra de ocupación
 function MobileStoreCardSkeleton() {
   return (
     <div className="border-border bg-card rounded-xl border p-4">
@@ -524,7 +504,6 @@ function MobileStoreCardSkeleton() {
           <div className="flex items-center gap-3">
             <Skeleton className="h-3.5 w-12" />
             <Skeleton className="h-3.5 w-14" />
-            <Skeleton className="ml-auto h-5 w-16 shrink-0 rounded-full" />
           </div>
         </div>
         <Skeleton className="h-5 w-5 shrink-0 rounded-full" />
