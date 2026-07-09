@@ -75,25 +75,34 @@ export default function OrdersManagerLayout({
   );
 }
 
-// Silueta de OrdersList mobile: header (back+título+crear) + búsqueda + tabs + tarjetas ≈104px
+// Silueta de OrdersList mobile: hero oscuro (back+título+crear, nº activos, chips estado) + búsqueda + tabs + tarjetas
 function MobileOrdersListSkeleton() {
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden">
-      <div className="flex-shrink-0 px-0 pt-4 pb-3">
-        <div className="flex items-center justify-between gap-2 px-2">
-          <Skeleton className="h-12 w-12 rounded-full" />
-          <Skeleton className="h-5 w-32" />
-          <Skeleton className="h-12 w-12 rounded-full" />
+      <div className="bg-invert relative shrink-0 overflow-hidden rounded-br-[50%_42px] rounded-bl-[50%_42px] pt-5 pb-12">
+        <div className="relative flex items-center justify-between gap-2 px-4">
+          <Skeleton className="h-11 w-11 shrink-0 rounded-full bg-white/10" />
+          <Skeleton className="h-4 w-32 bg-white/10" />
+          <Skeleton className="h-11 w-11 shrink-0 rounded-lg bg-white/10" />
+        </div>
+        <div className="relative mt-3 flex flex-col items-center gap-2">
+          <Skeleton className="h-10 w-16 bg-white/10" />
+          <Skeleton className="h-3 w-24 bg-white/10" />
+        </div>
+        <div className="relative mt-4 flex flex-wrap justify-center gap-1.5 px-4">
+          <Skeleton className="h-6 w-28 rounded-full bg-white/10" />
+          <Skeleton className="h-6 w-24 rounded-full bg-white/10" />
+          <Skeleton className="h-6 w-20 rounded-full bg-white/10" />
         </div>
       </div>
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-4">
-        <div className="mb-3 flex-shrink-0 space-y-4 pt-1">
-          <Skeleton className="h-9 w-full rounded-md" />
-          <div className="flex gap-2 overflow-hidden">
-            <Skeleton className="h-8 w-16 flex-shrink-0 rounded-md" />
-            <Skeleton className="h-8 w-20 flex-shrink-0 rounded-md" />
-            <Skeleton className="h-8 w-16 flex-shrink-0 rounded-md" />
-            <Skeleton className="h-8 w-20 flex-shrink-0 rounded-md" />
+      <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-visible px-4">
+        <div className="-mt-8 mb-3 flex-shrink-0 space-y-4">
+          <Skeleton className="h-12 w-full rounded-lg shadow-lg shadow-black/10" />
+          <div className="flex gap-1.5 overflow-hidden">
+            <Skeleton className="h-8 w-14 flex-shrink-0 rounded-full" />
+            <Skeleton className="h-8 w-24 flex-shrink-0 rounded-full" />
+            <Skeleton className="h-8 w-20 flex-shrink-0 rounded-full" />
+            <Skeleton className="h-8 w-20 flex-shrink-0 rounded-full" />
           </div>
         </div>
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden pt-2">
@@ -106,17 +115,18 @@ function MobileOrdersListSkeleton() {
   );
 }
 
-// Silueta de OrderCard mobile: nombre + metadata + badge (3 alturas distintas) + chevron
+// Silueta de OrderCard mobile: avatar redondeado + nombre + id·fecha·cajas + badge de estado + chevron
 function MobileOrderCardSkeleton() {
   return (
-    <div className="rounded-lg border p-4">
-      <div className="flex items-center gap-3">
+    <div className="border-border bg-card rounded-xl border p-4">
+      <div className="flex w-full min-w-0 items-center gap-3 pr-1">
+        <Skeleton className="h-11 w-11 shrink-0 rounded-[13px]" />
         <div className="min-w-0 flex-1 space-y-1.5">
-          <Skeleton className="h-4 w-3/5" />
-          <Skeleton className="h-3 w-2/5" />
-          <Skeleton className="h-4 w-16 rounded-full" />
+          <Skeleton className="h-4 w-2/5" />
+          <Skeleton className="h-3.5 w-3/5" />
+          <Skeleton className="h-5 w-24 rounded-full" />
         </div>
-        <Skeleton className="h-5 w-5 flex-shrink-0 rounded-full" />
+        <Skeleton className="h-5 w-5 shrink-0 rounded-full" />
       </div>
     </div>
   );

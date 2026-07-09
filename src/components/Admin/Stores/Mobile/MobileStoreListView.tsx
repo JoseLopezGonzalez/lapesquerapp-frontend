@@ -473,12 +473,66 @@ export function MobileStoreListView({
   );
 }
 
+// Silueta de MobileStoreListView: hero oscuro (back+título+escanear, nº almacenes, chips estado) + búsqueda + tabs + tarjetas
 export function MobileStoreListSkeleton() {
   return (
-    <div className="flex flex-col gap-3 p-4">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <Skeleton key={i} className="h-[108px] w-full rounded-xl" />
-      ))}
+    <div className="flex h-full min-h-0 flex-col overflow-hidden">
+      <div className="bg-invert relative shrink-0 overflow-hidden rounded-br-[50%_42px] rounded-bl-[50%_42px] pt-5 pb-12">
+        <div className="relative flex items-center justify-between gap-2 px-4">
+          <Skeleton className="h-11 w-11 shrink-0 rounded-full bg-white/10" />
+          <Skeleton className="h-4 w-24 bg-white/10" />
+          <Skeleton className="h-11 w-11 shrink-0 rounded-lg bg-white/10" />
+        </div>
+        <div className="relative mt-3 flex flex-col items-center gap-2">
+          <Skeleton className="h-10 w-12 bg-white/10" />
+          <Skeleton className="h-3 w-20 bg-white/10" />
+        </div>
+        <div className="relative mt-4 flex flex-wrap justify-center gap-1.5 px-4">
+          <Skeleton className="h-6 w-24 rounded-full bg-white/10" />
+          <Skeleton className="h-6 w-20 rounded-full bg-white/10" />
+          <Skeleton className="h-6 w-20 rounded-full bg-white/10" />
+        </div>
+      </div>
+      <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-visible px-4">
+        <div className="-mt-8 mb-3 flex-shrink-0 space-y-4">
+          <Skeleton className="h-12 w-full rounded-lg shadow-lg shadow-black/10" />
+          <div className="flex gap-1.5 overflow-hidden">
+            <Skeleton className="h-8 w-16 flex-shrink-0 rounded-full" />
+            <Skeleton className="h-8 w-16 flex-shrink-0 rounded-full" />
+            <Skeleton className="h-8 w-24 flex-shrink-0 rounded-full" />
+            <Skeleton className="h-8 w-16 flex-shrink-0 rounded-full" />
+          </div>
+        </div>
+        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden pt-2">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <MobileStoreCardSkeleton key={i} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Silueta de MobileStoreCard: avatar redondeado + nombre + temp/peso/badge + chevron + barra de ocupación
+function MobileStoreCardSkeleton() {
+  return (
+    <div className="border-border bg-card rounded-xl border p-4">
+      <div className="flex w-full min-w-0 items-center gap-3">
+        <Skeleton className="h-11 w-11 shrink-0 rounded-[13px]" />
+        <div className="min-w-0 flex-1 space-y-1.5">
+          <Skeleton className="h-4 w-2/5" />
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-3.5 w-12" />
+            <Skeleton className="h-3.5 w-14" />
+            <Skeleton className="ml-auto h-5 w-16 shrink-0 rounded-full" />
+          </div>
+        </div>
+        <Skeleton className="h-5 w-5 shrink-0 rounded-full" />
+      </div>
+      <div className="mt-3 flex items-center gap-2">
+        <Skeleton className="h-1.5 flex-1 rounded-full" />
+        <Skeleton className="h-3 w-9 shrink-0" />
+      </div>
     </div>
   );
 }
